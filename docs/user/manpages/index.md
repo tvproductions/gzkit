@@ -69,6 +69,11 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz register-adrs`](register-adrs.md) | Register existing ADR packages and linked OBPIs into ledger |
 | [`gz personas drift`](personas-drift.md) | Report persona trait adherence from behavioral proxies |
 | [`gz personas list`](personas-list.md) | Enumerate persona files from `.gzkit/personas/` |
+| [`gz ontology sense`](ontology-sense.md) | Sweep the current structural shape and surface STRUCTURAL seams |
+| [`gz ontology trace`](ontology-trace.md) | Walk one node's vertical lineage + lateral proof with edge provenance |
+| [`gz ontology resense`](ontology-resense.md) | Diff the current shape versus the last sweep (the airlock re-sense gate) |
+| [`gz ontology seams`](ontology-seams.md) | Fast contacts-only STRUCTURAL seam check |
+| [`gz ontology reach`](ontology-reach.md) | Return one node's downstream blast-radius (transitive dependents) |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
 | [`gz task list`](task-list.md) | List tasks for an OBPI with status |
 | [`gz task start`](task-start.md) | Start or resume a task |

@@ -2,6 +2,7 @@
 
 import json
 import re
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
 
@@ -153,6 +154,30 @@ def _render_artifact_state_table(graph: dict[str, dict[str, Any]], *, full: bool
             attested,
         )
 
+    console.print(table)
+
+
+def render_l3_table(
+    title: str,
+    columns: Sequence[str],
+    rows: Sequence[tuple[str, ...]],
+    *,
+    full: bool = False,
+) -> None:
+    """Render a Layer-3 shape table — the reusable render behind ``gz state``.
+
+    A thin ``rich.Table`` wrapper extracted so sibling L3 imaging surfaces
+    (e.g. the ``gz ontology`` sonar, ADR-0.32.0 OBPI-03) render the derived
+    shape through one code path instead of re-deriving the table idiom. The
+    ``state()`` / ``state_repair()`` contracts and ``_render_artifact_state_table``
+    are unchanged; this is additive.
+    """
+    table = Table(title=title)
+    overflow = "fold" if full else "ellipsis"
+    for column in columns:
+        table.add_column(column, overflow=overflow, no_wrap=not full)
+    for row in rows:
+        table.add_row(*row)
     console.print(table)
 
 

@@ -48,6 +48,12 @@ _LAZY_HANDLERS: dict[str, str] = {
     "state": "gzkit.commands.state",
     "status": "gzkit.commands.status",
     "upgrade_cmd": "gzkit.commands.upgrade",
+    # --- ontology group (parser_governance) ---
+    "ontology_sense_cmd": "gzkit.commands.ontology",
+    "ontology_trace_cmd": "gzkit.commands.ontology",
+    "ontology_resense_cmd": "gzkit.commands.ontology",
+    "ontology_seams_cmd": "gzkit.commands.ontology",
+    "ontology_reach_cmd": "gzkit.commands.ontology",
     # --- maintenance group (parser_maintenance) ---
     "chores_advise": "gzkit.commands.chores",
     "chores_audit": "gzkit.commands.chores",

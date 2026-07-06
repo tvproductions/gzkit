@@ -841,3 +841,95 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Operator identity who signs airworthiness (required; never an agent)",
     )
     p_mx_exit.set_defaults(func=_mx_dispatch)
+
+    # gz ontology — read-only sonar over the corpus projection (ADR-0.32.0, OBPI-03)
+    p_ontology = commands.add_parser(
+        "ontology",
+        help="Image the governance shape (read-only ontology sonar)",
+        description=(
+            "Read-only sonar over the corpus-domain projection. Never writes "
+            "graph state (Boundary Invariant #2); sense/seams/resense exit 0 "
+            "(a sonar never gates), trace/reach exit 1 on an unknown node id."
+        ),
+        epilog=build_epilog(
+            [
+                "gz ontology sense",
+                "gz ontology trace ADR-0.31.0-obpi-state-machine",
+                "gz ontology resense",
+                "gz ontology reach ADR-0.32.0-gzkit-ontology",
+            ]
+        ),
+    )
+    ontology_commands = p_ontology.add_subparsers(dest="ontology_command")
+    ontology_commands.required = True
+
+    def _add_dot_flag(parser: argparse.ArgumentParser) -> None:
+        parser.add_argument(
+            "--dot", action="store_true", help="Emit a graphviz DOT rendering to stdout"
+        )
+
+    p_ontology_sense = ontology_commands.add_parser(
+        "sense",
+        help="Sweep the current structural shape and surface STRUCTURAL seams",
+        description="Image the whole current shape and label STRUCTURAL seams (read-only).",
+        epilog=build_epilog(["gz ontology sense", "gz ontology sense --json"]),
+    )
+    add_json_flag(p_ontology_sense)
+    _add_dot_flag(p_ontology_sense)
+    p_ontology_sense.set_defaults(
+        func=lambda a: _lazy("ontology_sense_cmd")(as_json=a.as_json, as_dot=a.dot)
+    )
+
+    p_ontology_trace = ontology_commands.add_parser(
+        "trace",
+        help="Walk one node's vertical lineage + lateral proof with edge provenance",
+        description="Trace one node's vertical lineage + lateral anchors/proof (read-only).",
+        epilog=build_epilog(["gz ontology trace ADR-0.31.0-obpi-state-machine"]),
+    )
+    p_ontology_trace.add_argument("node_id", metavar="ID", help="Node id to trace")
+    add_json_flag(p_ontology_trace)
+    _add_dot_flag(p_ontology_trace)
+    p_ontology_trace.set_defaults(
+        func=lambda a: _lazy("ontology_trace_cmd")(
+            node_id=a.node_id, as_json=a.as_json, as_dot=a.dot
+        )
+    )
+
+    p_ontology_resense = ontology_commands.add_parser(
+        "resense",
+        help="Diff the current shape versus the last sweep (the airlock re-sense gate)",
+        description="Report added/removed nodes and edges versus the last sweep (read-only).",
+        epilog=build_epilog(["gz ontology resense", "gz ontology resense --json"]),
+    )
+    add_json_flag(p_ontology_resense)
+    _add_dot_flag(p_ontology_resense)
+    p_ontology_resense.set_defaults(
+        func=lambda a: _lazy("ontology_resense_cmd")(as_json=a.as_json, as_dot=a.dot)
+    )
+
+    p_ontology_seams = ontology_commands.add_parser(
+        "seams",
+        help="Fast contacts-only STRUCTURAL seam check (no per-node lineage)",
+        description="List STRUCTURAL seams without full per-node lineage (read-only).",
+        epilog=build_epilog(["gz ontology seams", "gz ontology seams --json"]),
+    )
+    add_json_flag(p_ontology_seams)
+    _add_dot_flag(p_ontology_seams)
+    p_ontology_seams.set_defaults(
+        func=lambda a: _lazy("ontology_seams_cmd")(as_json=a.as_json, as_dot=a.dot)
+    )
+
+    p_ontology_reach = ontology_commands.add_parser(
+        "reach",
+        help="Return one node's downstream blast-radius (transitive dependents)",
+        description="Report the transitive-dependent blast-radius for one node (read-only).",
+        epilog=build_epilog(["gz ontology reach ADR-0.32.0-gzkit-ontology"]),
+    )
+    p_ontology_reach.add_argument("node_id", metavar="ID", help="Node id to expand")
+    add_json_flag(p_ontology_reach)
+    _add_dot_flag(p_ontology_reach)
+    p_ontology_reach.set_defaults(
+        func=lambda a: _lazy("ontology_reach_cmd")(
+            node_id=a.node_id, as_json=a.as_json, as_dot=a.dot
+        )
+    )

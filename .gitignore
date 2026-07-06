@@ -69,3 +69,6 @@ site/
 
 # Test-health profiler runtime output (regenerated each run; CHORE-LOG.md is the tracked evidence)
 .gzkit/chores/*/proofs/health-report.json
+
+# Ontology last-sweep diff-baseline cache (ADR-0.32.0 — Tier-B derived, regenerable, never authority)
+.gzkit/ontology/last_sweep.json

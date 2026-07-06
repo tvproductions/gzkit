@@ -427,6 +427,24 @@ to Layer 2 ledger events (see `docs/governance/pipeline-marker-migration-path.md
 
 ---
 
+## Imaging the Governance Shape (Ontology Sonar)
+
+Before reasoning about lineage from memory or stale docs, image the actual
+shape with the read-only ontology sonar (ADR-0.32.0). It is a Tier-B derived
+view — never authority — and never writes graph state:
+
+```bash
+uv run gz ontology sense                 # sweep the current structural shape + STRUCTURAL seams
+uv run gz ontology sense --json          # + the rebuild-fidelity self-report (replay completeness + freshness)
+uv run gz ontology trace <ID>            # one node's vertical lineage + lateral proof + edge provenance
+uv run gz ontology reach <ID>            # one node's downstream blast-radius (transitive dependents)
+```
+
+`sense` images STRUCTURAL coverage only and never claims semantic completeness.
+Full reference: [`gz ontology`](manpages/ontology.md).
+
+---
+
 ## Drift Control (Required Before Closeout)
 
 Until ledger-derived brief sync is automated, treat OBPI brief status/date fields as drift-prone and

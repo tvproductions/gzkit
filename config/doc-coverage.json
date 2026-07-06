@@ -1161,6 +1161,56 @@
         "docstring": true
       },
       "governance_relevant": true
+    },
+    "ontology sense": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "ontology trace": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "ontology resense": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "ontology seams": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "ontology reach": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": false,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
     }
   }
 }

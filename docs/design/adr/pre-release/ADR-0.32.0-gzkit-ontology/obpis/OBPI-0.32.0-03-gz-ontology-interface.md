@@ -3,7 +3,7 @@ id: OBPI-0.32.0-03-gz-ontology-interface
 parent: ADR-0.32.0-gzkit-ontology
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   - REQ-0.32.0-03-01  # `sense` shape-sweep verb — one indivisible command + its @covers test.
   - REQ-0.32.0-03-02  # `trace <id>` lineage verb with edge provenance — one indivisible command + its @covers test.
@@ -23,7 +23,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #3 - "gz ontology interface -- sense (structural-shape sweep + labeled structural seams), trace <id> (vertical lineage + lateral proof + edge provenance), resense (diff vs last sweep), seams, reach; --json/--dot; extends commands/state.py L3 render + manpage + cli-audit + behave smoke. [MVP spine]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -55,13 +55,23 @@ humans and machines.
 - `src/gzkit/cli/parser_handler_manifest.py` — **MODIFY**: add the ontology handler key(s) to `_LAZY_HANDLERS` so `_lazy(...)` resolves the new group's handlers (fenced by `tests/cli/test_handler_manifest_resolves.py`).
 - `src/gzkit/commands/state.py` — **MODIFY**: light extension only — expose/reuse the existing L3 render (`_render_artifact_state_table` and the ledger-graph derivation) for the ontology shape sweep. No change to the `state()` / `state_repair()` contracts.
 - `.gzkit/ontology/last_sweep.json` — **CREATE** (generated): the Tier-B derived last-sweep snapshot `sense` persists and `resense` diffs against — regenerable, never authoritative, never graph state (mirrors OBPI-07's `source_anchors.json` derived-index pattern).
-- `docs/user/manpages/ontology.md` — **CREATE**: the gz ontology verb-group manpage (Gate 3 proof; `gz cli audit` manpage coverage).
-- `docs/user/manpages/index.md` — **MODIFY**: add the gz ontology index entry (`gz cli audit` index coverage).
+- `docs/user/manpages/ontology.md` — **CREATE**: the gz ontology verb-group overview manpage (`# gz ontology`; group entry point).
+- `docs/user/manpages/ontology-sense.md` — **CREATE**: `# gz ontology sense` per-verb manpage (Gate 3 proof; `gz cli audit` manpage coverage — `manpage_path_for("ontology sense")` → this file).
+- `docs/user/manpages/ontology-trace.md` — **CREATE**: `# gz ontology trace` per-verb manpage (`gz cli audit` manpage coverage).
+- `docs/user/manpages/ontology-resense.md` — **CREATE**: `# gz ontology resense` per-verb manpage (`gz cli audit` manpage coverage).
+- `docs/user/manpages/ontology-seams.md` — **CREATE**: `# gz ontology seams` per-verb manpage (`gz cli audit` manpage coverage).
+- `docs/user/manpages/ontology-reach.md` — **CREATE**: `# gz ontology reach` per-verb manpage (`gz cli audit` manpage coverage).
+- `docs/user/manpages/index.md` — **MODIFY**: add the gz ontology group + per-verb index entries (`gz cli audit` index coverage).
 - `config/doc-coverage.json` — **MODIFY**: declare the documentation obligation for the new `ontology sense` / `trace` / `resense` / `seams` / `reach` commands (an undeclared command fails `gz cli audit` / doc-coverage).
 - `docs/user/runbook.md` — **MODIFY**: reference the new gz ontology verbs in the operator workflow (Gate 3 runbook covenant).
 - `docs/governance/governance_runbook.md` — **MODIFY**: reference the gz ontology re-sense workflow (the airlock gate) for governance maintainers.
 - `tests/commands/test_ontology.py` — **CREATE**: the `@covers(REQ-0.32.0-03-NN)` behavior tests for the six BEHAVIOR REQs.
 - `features/ontology.feature` — **CREATE**: the behave smoke for the gz ontology verb group (Gate 4).
+- `.gzkit/skills/gz-ontology/SKILL.md` — **CREATE**: the wielding skill required by `.claude/rules/tool-skill-runbook-alignment.md` Invariant 1 (every new CLI verb needs a skill that wields it); the generated mirrors under `src/gzkit/skills/`, `.claude/skills/`, `.agents/skills/`, `.github/skills/` are `gz agent sync control-surfaces` outputs, not hand-edited.
+- `.gzkit/skills/gz-governance/SKILL.md` — **MODIFY**: route `gz-ontology` under the governance namespace router (router-tables-coverage requires every concrete skill be reachable from a router); version bump + sync mirrors.
+- `docs/user/skills/gz-ontology.md` — **CREATE**: the operator skill manpage (skill-manpage-coverage: every active skill needs a manpage).
+- `docs/user/skills/index.md` — **MODIFY**: link the gz-ontology skill manpage from the skills index (skill-index-coverage).
+- `.gitignore` — **MODIFY**: gitignore the regenerable `.gzkit/ontology/last_sweep.json` derived diff-baseline cache (Tier-B, never authority).
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md` — parent ADR for intent and scope (read-only reference; Boundary Invariants anchor).
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/**` — parent ADR package scope (this brief; evidence).
 
@@ -77,14 +87,17 @@ humans and machines.
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: Deliver the gz ontology verb group — `sense`, `trace <id>`, `resense`, `seams`, `reach <id>` — with `--json` and `--dot` output, registered under one noun namespace and reachable through the gz parser tree.
-2. REQUIREMENT: Every verb consumes the corpus-domain projection READ-ONLY. NEVER write graph state, emit a graph-mutation event, or edit the projection directly — writeback reaches the graph only by rebuild (Boundary Invariant #2).
-3. REQUIREMENT: `sense` output MUST label STRUCTURAL vs semantic coverage and MUST NOT claim semantic completeness (Boundary Invariant #3).
-4. REQUIREMENT: `--json` MUST include the graph's rebuild-fidelity self-report (replay completeness + freshness) so the shape can confess an incomplete or stale replay rather than image a lie.
-5. REQUIREMENT: The new verb group MUST ship a manpage, `gz cli audit` coverage (manpage + index + doc-coverage entry), and a behave smoke before completion.
-6. REQUIREMENT: Work MUST stay inside the Allowed Paths; the model (item #1), the substrate/projection internals (item #2), and the L2 edge schema (item #6) remain untouched.
-7. ALWAYS: Reconcile this brief against the parent ADR § Decision (item #3) before implementation; quote the sentence this OBPI implements verbatim into `### Implementation Summary`.
-8. NEVER: Mark this OBPI accepted while scaffold defaults remain, or while any REQ lacks its declared proof channel (BEHAVIOR `@covers`, SUPPORT ledger+validator, STRUCTURAL-FENCE parent-ADR anchor).
+1. REQUIREMENT: `sense` images the current structural shape (sweeps the corpus subgraph and surfaces STRUCTURAL seams) and exits 0 on a healthy tree with zero spurious seams (REQ-0.32.0-03-01).
+2. REQUIREMENT: `trace <id>` returns one node's vertical lineage plus lateral anchors/proof, with edge provenance for why each edge is present or absent (REQ-0.32.0-03-02).
+3. REQUIREMENT: `resense` reports the diff versus the last sweep (added/removed nodes and edges); the baseline is persisted by `sense` as a Tier-B derived snapshot (REQ-0.32.0-03-03).
+4. REQUIREMENT: `seams` runs the fast contacts-only STRUCTURAL seam check without full per-node lineage (REQ-0.32.0-03-04).
+5. REQUIREMENT: `reach <id>` returns the downstream blast-radius (transitive dependents) for one node (REQ-0.32.0-03-05).
+6. REQUIREMENT: all five verbs register under one noun namespace reachable through the gz parser tree; `--json` includes the graph's rebuild-fidelity self-report (replay completeness + freshness) and `--dot` emits a graphviz rendering (REQ-0.32.0-03-06).
+7. REQUIREMENT: `sense` labels STRUCTURAL versus semantic coverage and never claims semantic completeness (Boundary Invariant #3; REQ-0.32.0-03-07).
+8. REQUIREMENT: every verb consumes the corpus-domain projection READ-ONLY and never writes graph state — the `last_sweep.json` diff-baseline is an exempt derived cache, not graph state (Boundary Invariant #2; REQ-0.32.0-03-08).
+9. REQUIREMENT: the verb group ships per-verb manpages, `gz cli audit` coverage (manpage + index + doc-coverage entry), and a behave smoke before completion (REQ-0.32.0-03-09).
+
+> Process guards: reconcile this brief against the parent ADR § Decision (item #3) before implementation and quote the implemented sentence verbatim into `### Implementation Summary`; do not mark this OBPI accepted while scaffold defaults remain or while any REQ lacks its declared proof channel (BEHAVIOR `@covers`, SUPPORT ledger+validator, STRUCTURAL-FENCE parent-ADR anchor). Work stays inside the Allowed Paths; the model (item #1), the substrate/projection internals (item #2), and the L2 edge schema (item #6) remain untouched.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -257,15 +270,27 @@ uv run gz ontology reach ADR-0.32.0-gzkit-ontology
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run gz ontology sense` on the live governance tree images the shape and reports zero spurious structural seams (REQ-01 false-positive floor holding against reality, not just fixtures):
+
+```
+Nodes: 1165  Edges: 1746  Seams: 0
+STRUCTURAL coverage only — semantic completeness is NOT claimed (semantic-seam recall is deferred to RECALL / Phase-4, L3-advisory).
+```
+
+`uv run gz ontology sense --json` carries the rebuild-fidelity self-report (complete=True, fresh=True, unaccounted_event_types=[]); `uv run gz ontology trace ADR-0.32.0-gzkit-ontology` walks up to PRD-GZKIT-1.0.0 and down to its 7 OBPIs. Full suite green: receipt arb-step-unittest-b09f321435e441028a5cdb152f01f619 (6834 tests OK).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Delivered: the gz ontology read-only sonar (ADR-0.32.0 Decision item #3) — "Operator surface is verb-first under a noun namespace: gz ontology sense ... trace <id> ... resense ... plus seams and reach; --json/--dot output; extends commands/state.py's L3 render." Five verbs consume the OBPI-02 corpus projection READ-ONLY.
+- Files created: src/gzkit/commands/ontology.py; tests/commands/test_ontology.py; features/ontology.feature; 6 manpages (ontology.md + 5 per-verb); docs/user/skills/gz-ontology.md; .gzkit/skills/gz-ontology/SKILL.md (+ synced mirrors).
+- Files modified: src/gzkit/cli/parser_governance.py (noun namespace + 5 verbs); src/gzkit/cli/parser_handler_manifest.py (5 lazy keys); src/gzkit/commands/state.py (additive render_l3_table; state()/state_repair() contracts unchanged); config/doc-coverage.json; docs/user/manpages/index.md; docs/user/skills/index.md; docs/user/runbook.md; docs/governance/governance_runbook.md; .gzkit/skills/gz-governance/SKILL.md (routed gz-ontology, v0.4.0); .gitignore.
+- Tests added: 14 unit (13 @covers over the 6 BEHAVIOR REQs + 1 read-only-fence regression guard) and 7 behave scenarios; full suite 6834 tests OK.
+- Read-only fence honored (Boundary Invariant #2): the sole filesystem write is the Tier-B derived .gzkit/ontology/last_sweep.json diff-baseline cache (gitignored, never authority).
+- Date completed: 2026-07-06.
+- Attestation status: operator-attested (g0, "attest completed"); independent adversary NOT-REFUTED.
+- Defects noted: none.
 
 ## Tracked Defects
 
@@ -276,12 +301,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Gate 5 human attestation by operator g0 (2026-07-06) for the gz ontology read-only sonar (OBPI-0.32.0-03). Evidence: full suite 6834 tests OK (arb-step-unittest-b09f321435e441028a5cdb152f01f619), ruff clean (arb-ruff-99092de9114641ada6c686f60361be95), typecheck clean (arb-step-typecheck-b367bfe2b83244c29c36795595ba7487), mkdocs strict (arb-step-mkdocs-7ca7bb9a7b904a7789fcf9edcfd4daac), behave 7/7 (arb-step-behave-efd43e3e17254dc790a0375e5fffeeb4); covers behavior_uncovered_reqs=0 across 9 REQs; live sense on 1165-node graph reports 0 seams; independent adversary verdict NOT-REFUTED with its weakest point closed by a read-only-fence regression guard.
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -

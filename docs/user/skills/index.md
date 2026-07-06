@@ -117,6 +117,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-implement`](gz-implement.md) | Run Gate 2 verification and record result events |
 | [`/gz-init`](gz-init.md) | Initialize gzkit governance scaffolding for a repository |
 | [`/gz-interview`](gz-interview.md) | Run interactive governance interviews |
+| [`/gz-ontology`](gz-ontology.md) | Image the governance shape with the read-only ontology sonar |
 | [`/gz-prd`](gz-prd.md) | Create product requirement artifacts |
 | [`/gz-state`](gz-state.md) | Query artifact relationships and readiness state |
 | [`/gz-status`](gz-status.md) | Report gate and lifecycle status across ADRs |

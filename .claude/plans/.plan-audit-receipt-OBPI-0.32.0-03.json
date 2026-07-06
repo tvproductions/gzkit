@@ -1,6 +1,6 @@
 {
-  "obpi_id": "OBPI-0.32.0-03-gz-ontology-interface",
-  "timestamp": "2026-07-06T11:38:57.511840+00:00",
+  "obpi_id": "OBPI-0.32.0-03",
+  "timestamp": "2026-07-06T11:24:58.177764+00:00",
   "verdict": "PASS",
   "plan_file": "OBPI-0.32.0-03-gz-ontology-interface.md",
   "gaps_found": 0,
@@ -273,11 +273,6 @@
       "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
       "contested_paths": [
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -532,11 +527,6 @@
       "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
       "contested_paths": [
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -747,11 +737,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -762,11 +747,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -777,11 +757,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -792,11 +767,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -807,11 +777,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -822,11 +787,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -860,11 +820,6 @@
         "src/gzkit/cli/parser_handler_manifest.py",
         "src/gzkit/commands/state.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -875,11 +830,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
@@ -897,11 +847,6 @@
         "src/gzkit/cli/parser_governance.py",
         "src/gzkit/cli/parser_handler_manifest.py",
         "docs/user/manpages/ontology.md",
-        "docs/user/manpages/ontology-sense.md",
-        "docs/user/manpages/ontology-trace.md",
-        "docs/user/manpages/ontology-resense.md",
-        "docs/user/manpages/ontology-seams.md",
-        "docs/user/manpages/ontology-reach.md",
         "docs/user/manpages/index.md"
       ]
     },
