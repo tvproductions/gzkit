@@ -55,18 +55,21 @@ _SCORECARD_PATH = _PROJECT_ROOT / "docs" / "governance" / "advisory-rules-audit.
 _AGENTS_MD = _PROJECT_ROOT / "AGENTS.md"
 _CLAUDE_MD = _PROJECT_ROOT / "CLAUDE.md"
 
-# OpenAI Codex CLI default ``project_doc_max_bytes``: the per-turn surface Codex
-# loads (root AGENTS.md) is silently truncated past this many BYTES
-# (github.com/openai/codex issue #7138). External upstream constant; its proper
-# single-source home is the config store tracked by the return-to-health plan
-# Tier-2 item 2.5 (config-first SSOT).
-_CODEX_PROJECT_DOC_CAP_BYTES = 32768
+# gzkit's project-doc budget ceiling (BYTES). Codex's CLI default
+# ``project_doc_max_bytes`` is 32768 B — root AGENTS.md is silently truncated
+# past that many bytes UNDER CODEX (github.com/openai/codex issue #7138). Per
+# operator ruling 2026-07-06 ("that hard-coded value is noise, bump") this
+# ceiling is DECOUPLED from the Codex vendor cap — hexagonal: an adapter limit
+# must not gate the core contract. NOTE: AGENTS.md content between 32768 B and
+# this ceiling still truncates under Codex at runtime; the durable headroom path
+# is corpus-splitting (GHI #533), not a larger number here.
+_PROJECT_DOC_BUDGET_CEILING_BYTES = 65536
 
 
-def _budget_within_codex_cap(char_budget: int) -> bool:
+def _budget_within_ceiling(char_budget: int) -> bool:
     """A configured per-turn char budget must not exceed Codex's project-doc byte
     cap; a budget above the cap would green-light a silently-truncated surface."""
-    return char_budget <= _CODEX_PROJECT_DOC_CAP_BYTES
+    return char_budget <= _PROJECT_DOC_BUDGET_CEILING_BYTES
 
 
 _RULE_VERSION = "0.1.0"
@@ -176,19 +179,19 @@ class BudgetTightening(unittest.TestCase):
                 files.get(name), int, f"{name} budget must be a configured integer"
             )
 
-        # The configured AGENTS.md budget must not itself exceed Codex's project-doc
-        # cap — a budget above the cap green-lights a silently-truncated surface
-        # (the calibration defect flagged when the budget was 33000 > 32768).
+        # The configured AGENTS.md budget must not exceed gzkit's project-doc
+        # budget ceiling (decoupled from Codex's 32768 B cap per operator ruling
+        # 2026-07-06; Codex still truncates at 32768 B at runtime).
         self.assertTrue(
-            _budget_within_codex_cap(files["AGENTS.md"]),
-            f"AGENTS.md budget {files['AGENTS.md']} exceeds Codex project-doc cap "
-            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B — would allow a truncated surface",
+            _budget_within_ceiling(files["AGENTS.md"]),
+            f"AGENTS.md budget {files['AGENTS.md']} exceeds the project-doc budget "
+            f"ceiling {_PROJECT_DOC_BUDGET_CEILING_BYTES} B",
         )
-        # The cap guard has teeth: it accepts the current value and rejects the
-        # pre-2026-06-04 over-cap value, with no mutation of the real config file.
+        # The ceiling guard has teeth: it rejects an absurd over-ceiling budget,
+        # with no mutation of the real config file.
         self.assertFalse(
-            _budget_within_codex_cap(33000),
-            "33000 exceeded Codex's 32768 B cap and must be rejected",
+            _budget_within_ceiling(70000),
+            "70000 exceeds the project-doc budget ceiling and must be rejected",
         )
 
         for name, path in (("AGENTS.md", _AGENTS_MD), ("CLAUDE.md", _CLAUDE_MD)):
@@ -204,9 +207,9 @@ class BudgetTightening(unittest.TestCase):
         agents_bytes = len(_AGENTS_MD.read_text(encoding="utf-8").encode("utf-8"))
         self.assertLessEqual(
             agents_bytes,
-            _CODEX_PROJECT_DOC_CAP_BYTES,
+            _PROJECT_DOC_BUDGET_CEILING_BYTES,
             f"AGENTS.md is {agents_bytes} B, exceeds Codex project-doc cap "
-            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B (silent-truncation risk; GHI #519)",
+            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B (silent-truncation risk; GHI #519)",
         )
 
 

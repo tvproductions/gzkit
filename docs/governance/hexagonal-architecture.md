@@ -11,6 +11,12 @@
 Alistair Cockburn, **Hexagonal Architecture** (2005), originally subtitled
 *"or, Ports and Adapters"*. Source: <https://alistair.cockburn.us/hexagonal-architecture/>.
 
+Book-length treatment (figures + the "copy this code" formulation), enshrined as
+gzkit's hexagonal canon: <https://alistaircockburn.com/figs%20hexarch%20book.pdf>.
+Its § 1.1 states the load-bearing requirement verbatim: *"Never explicitly name
+any external object or technology. Always take a parameter for any external
+object or technology you wish to access."*
+
 The pattern names two roles:
 
 - **Port** — an abstract contract every implementation must honor. Defined by
@@ -22,6 +28,69 @@ The pattern names two roles:
 Cockburn's original framing: ports point inward to invariance; adapters point
 outward to concrete dependencies. The hexagon is the application core
 surrounded by adapters on every side.
+
+## Hexagonal as gzkit's primary code-architecture directive
+
+Beyond the ADR-taxonomy mapping below, hexagonal is gzkit's **primary code
+architecture directive** (operator ruling, 2026-07-06 — mid-course reflection on
+ADR-0.32.0). The binding per-turn form lives in
+[`.gzkit/rules/hexagonal-architecture.md`](../../.gzkit/rules/hexagonal-architecture.md);
+this section enshrines the full Cockburn reference (§1–§2.3) and maps every
+element to gzkit's actual structure.
+
+### The demand, and the strong form
+
+> "Never explicitly name any external object or technology. Always take a
+> parameter for any external object or technology you wish to access." (§1.1)
+
+The full ("strong") implementation: **"The app cannot know anything about the
+external technology."** The core is not merely decoupled — it is *ignorant* of
+what sits behind the port, so it can be regression-tested with no production
+connection, swap technologies, and survive a dependency going away.
+
+### The five elements (four in the pattern + the configurator)
+
+| # | Cockburn element | What it is | gzkit realization |
+|---|---|---|---|
+| 1 | **App / System / Hexagon / Core** | All business logic, technology-agnostic — no reference to DB / network / UI | Domain layer: `src/gzkit/ontology/` (graph, model, purity), `src/gzkit/core/`, pure `governance/*` logic. Stdlib + Pydantic only. |
+| 2 | **Ports** | The app's true boundary; each is a set of interactions with one *intention*, named "For &lt;verb&gt;-ing" | Driving (provided/API): the `gz` verb contracts. Driven (required/SPI): the `Ledger`, filesystem, git, config contracts. In Python ports aren't declared — a port is "all the calls the app makes" at that seam. |
+| 3 | **Actors (driving / driven)** | Driving (primary) kicks the app into action; driven (secondary) is called by the app | Driving: the operator, `gz` invocations, test cases. Driven: `.gzkit/ledger.jsonl`, filesystem, git, GitHub. |
+| 4 | **Adapters** | Code that fits an actor's interface to a port; lives *outside* the app | Driving: the argparse CLI (`commands/*`, `cli/*`). Driven: `Ledger(path)`, `FileConfigStore`, git/subprocess runners. **Test doubles are adapters too** (`tests/fakes/`). |
+| 5 | **Configurator** (5th, officially outside) | Instantiates driven adapters, instantiates the app injecting them, then instantiates driving adapters passing the app (Fig 2.1) | gzkit's **command layer**: `get_project_root()` resolves once at the edge (`commands/common.py`) and threads `project_root: Path` / `Ledger` inward as parameters. Plain constructor/parameter injection — **no DI framework** ("like Spring" is deliberately not adopted; stdlib-first). |
+
+### Ports: provided vs required (API vs SPI), and the who-knows-whom asymmetry
+
+- **Provided interface** (driving / primary / inbound / API) — the services the app offers.
+- **Required interface** (driven / secondary / outbound / SPI) — "all the calls the app will make" at that port. *The surprising, powerful half:* the app says "I will only talk to you in my language," defines that language, and the technology behind it becomes swappable at configuration time.
+- **Asymmetry:** the app does not know *who* calls its provided interface, but it *does* hold the handle for its driven actors — which is exactly why driven dependencies must be **injected** (the parameterize-everything rule).
+
+### How the configurator wires it (Fig 2.1) — and the testing payoff
+
+Order: (1) instantiate driven adapters → (2) instantiate the app, injecting the driven actors via its constructor → (3) instantiate driving adapters, passing them the app. Legend: I=implements, U=uses, K=knows-of, iN=instantiates.
+
+- **In testing, the test case is BOTH the configurator and the driving actor** — it builds and connects the players, then drives the app. This is precisely gzkit's working test pattern: a test builds a temp-dir `Ledger`, injects it into `project_corpus(ledger)`, and drives it — no production connection (e.g. `tests/test_ontology_corpus.py`).
+- **In production, `main` / the composition root is the configurator** — in gzkit, the `gz` command layer.
+
+### Costs & benefits (§1.4)
+
+Benefits: **(1) testing** — system-level tests with no production connection, purer/faster; **(2)** swap production ↔ test connections for any port without recompile; **(3) leakage protection** — a test wall catches business logic leaking into technology or vice versa; **(4)** large-system independent development; **(5)** long-running technology swap over years; **(6)** DDD focus once technology is outside the boundary. Cost: complexity, higher in type-declared languages (an instance variable per driven actor, or fetch-on-demand).
+
+### Conformance checklist (§2.4) — the mechanical "are we actually hexagonal?" test
+
+**Required by the pattern (all six MUST hold):**
+
+1. The app defines a provided or required interface for **every** external interaction.
+2. The app defines **driving ports** for provided interfaces, **driven ports** for required interfaces (implicit in Python — a port is "all the calls the app makes" there).
+3. The app allows **driven actors to be configured at run time** (injection).
+4. The app has **no source-code dependency on its primary or secondary actors**.
+5. External actors interact **only through the defined ports** — never reach inside the hexagon directly.
+6. Ports and interfaces are **technology-neutral and expressed in business terms**.
+
+**Weak vs strong conformance (the quality gradient):** *Weak* (legal but leaky) — the driven port expresses e.g. SQL concepts without naming a specific database, still tying the system to SQL. *Strong* (the target) — **"the app cannot know anything about the external technology"**; the driven port is expressed purely in application-language concepts and can't even know a database exists.
+
+**Not part of the pattern at all:** how the app is structured *internally* (DDD or not, function-vs-model or not). This is where hexagonal differs from Clean/Onion, which *do* legislate internal layering — hexagonal governs only the boundary.
+
+**gzkit conformance today (honest code assessment):** gzkit satisfies the pattern **through parameter injection, not through its declared ports layer.** Rules 3/4 hold via `project_root: Path` (738 param sites) and path-injectable `Ledger(path)` threaded from the command layer; tests act as configurator + driving actor over temp worlds; `tests/policy/test_import_boundaries.py` is a real AST "test wall" enforcing rule 5; the `ontology/` package is the strong-conformance exemplar (pure core, single injectable seam). **Gap:** the declared `src/gzkit/ports/` + `tests/fakes/` + `src/gzkit/adapters/` layer is built and conformance-tested but wired into **zero** production code and injected into **zero** domain tests — dormant scaffolding. The working hexagon is the injection seam; the advertised one is not yet load-bearing. Closing that (wire the ports, or bless injection as the canonical seam and retire the facade) is the live conformance decision.
 
 ## Mapping to gzkit ADR taxonomy
 

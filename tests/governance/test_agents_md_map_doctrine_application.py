@@ -28,18 +28,19 @@ _TRUST_DOCTRINE = _PROJECT_ROOT / "docs" / "governance" / "trust-doctrine.md"
 _AGENTS_MD = _PROJECT_ROOT / "AGENTS.md"
 _RULES_GLOB_DIR = _PROJECT_ROOT / ".claude" / "rules"
 
-# OpenAI Codex CLI default ``project_doc_max_bytes``: the per-turn surface Codex
-# loads (root AGENTS.md) is silently truncated past this many BYTES
-# (github.com/openai/codex issue #7138). External upstream constant; its proper
-# single-source home is the config store tracked by the return-to-health plan
-# Tier-2 item 2.5 (config-first SSOT).
-_CODEX_PROJECT_DOC_CAP_BYTES = 32768
+# gzkit's project-doc budget ceiling (BYTES). Codex's CLI default
+# ``project_doc_max_bytes`` is 32768 B — root AGENTS.md is silently truncated
+# past that UNDER CODEX (github.com/openai/codex issue #7138). Per operator
+# ruling 2026-07-06 this ceiling is DECOUPLED from that vendor cap (hexagonal:
+# an adapter limit must not gate the core); Codex still truncates at 32768 B at
+# runtime — corpus-splitting (GHI #533) is the durable headroom path.
+_PROJECT_DOC_BUDGET_CEILING_BYTES = 65536
 
 
-def _budget_within_codex_cap(char_budget: int) -> bool:
+def _budget_within_ceiling(char_budget: int) -> bool:
     """A configured per-turn char budget must not exceed Codex's project-doc byte
     cap; a budget above the cap would green-light a silently-truncated surface."""
-    return char_budget <= _CODEX_PROJECT_DOC_CAP_BYTES
+    return char_budget <= _PROJECT_DOC_BUDGET_CEILING_BYTES
 
 
 _PROHIBITED_TITLES = frozenset(
@@ -194,16 +195,16 @@ class BudgetJsonFinalized(unittest.TestCase):
                 )
 
         self.assertTrue(
-            _budget_within_codex_cap(files["AGENTS.md"]),
+            _budget_within_ceiling(files["AGENTS.md"]),
             f"AGENTS.md budget {files['AGENTS.md']} exceeds Codex project-doc cap "
-            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B",
+            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B",
         )
         agents_bytes = len(_AGENTS_MD.read_text(encoding="utf-8").encode("utf-8"))
         self.assertLessEqual(
             agents_bytes,
-            _CODEX_PROJECT_DOC_CAP_BYTES,
+            _PROJECT_DOC_BUDGET_CEILING_BYTES,
             f"AGENTS.md is {agents_bytes} B, exceeds Codex project-doc cap "
-            f"{_CODEX_PROJECT_DOC_CAP_BYTES} B (silent-truncation risk; GHI #519)",
+            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B (silent-truncation risk; GHI #519)",
         )
 
 
