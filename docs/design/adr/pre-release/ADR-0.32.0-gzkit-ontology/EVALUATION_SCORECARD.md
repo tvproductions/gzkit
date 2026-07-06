@@ -3,7 +3,7 @@ ADR STRUCTURAL-COMPLETENESS SCORECARD
 
 ADR: ADR-0.32.0
 Evaluator: gz adr eval (deterministic STRUCTURAL-COMPLETENESS lint)
-Date: 2026-07-05
+Date: 2026-07-06
 
 NOTE: This scorecard grades STRUCTURAL COMPLETENESS only — section
 presence, depth, counts, and references. It is NOT a judgment of decision

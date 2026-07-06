@@ -142,7 +142,7 @@ and the parent ADR's Fidelity Assertions bind against.
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
+- [ ] No behavior surface in this library-only unit; it contributes no BDD scenario. The ADR's Gate-4 BDD is owned by OBPI-0.32.0-03 (`features/ontology.feature`, the sole `gz ontology` verb surface) and discharged once by the ADR-level `uv run -m behave features/` at closeout.
 
 ### Gate 5: Human (Heavy only)
 
