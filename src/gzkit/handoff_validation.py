@@ -290,8 +290,15 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
         # Must look like a file path (contains / or .)
         if "/" not in candidate and "." not in candidate:
             continue
-        resolved = base_path / candidate
-        if not resolved.exists():
+        # Resolve against committed/tracked state, not local disk: an
+        # untracked-but-present path (a stale __pycache__ shell, a git-rm'd
+        # directory with lingering bytecode) counts as absent because a clean
+        # clone / CI would not have it (GHI #671). Fall back to on-disk
+        # existence only when git cannot answer (non-git base_path — e.g. a
+        # unit-test temp dir).
+        tracked = _is_git_tracked(base_path, candidate)
+        present = (base_path / candidate).exists() if tracked is None else tracked
+        if not present:
             missing.append(candidate)
 
     # Ephemeral, gitignored evidence (e.g. ARB receipts under the gitignored
@@ -380,6 +387,37 @@ def _is_git_ignored(base_path: Path, rel_path: str) -> bool:
     except OSError:
         return False
     return result.returncode == 0
+
+
+def _is_git_tracked(base_path: Path, rel_path: str) -> bool | None:
+    """Return whether ``rel_path`` is tracked in git under ``base_path``.
+
+    ``True`` if git tracks the path — a tracked file, or a directory prefix
+    containing at least one tracked file; ``False`` if the path is not tracked;
+    ``None`` if committed state cannot be determined (``base_path`` is not a git
+    work tree, or git is unavailable), signalling the caller to fall back to a
+    local-disk check.
+
+    The Evidence-section referenced-file check must reflect committed/tracked
+    state — what any clean clone or CI sees — not the authoring machine's local
+    disk, where an untracked leftover (a stale ``__pycache__`` shell, a git-rm'd
+    directory with lingering bytecode) would otherwise mask a broken reference
+    (GHI #671, the inverse of the gitignored-exemption sibling #633). Bytes-mode
+    capture (no stdout decode) keeps this off the non-UTF-8 subprocess-read
+    class (GHI #582).
+    """
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--", rel_path],
+            cwd=base_path,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    return bool(result.stdout.strip())
 
 
 def _strip_frontmatter(content: str) -> str:

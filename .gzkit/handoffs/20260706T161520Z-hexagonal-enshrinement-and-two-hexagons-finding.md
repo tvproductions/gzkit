@@ -71,4 +71,4 @@ An independent code assessment found gzkit realizes the hexagonal testing benefi
 - Model: `src/gzkit/ontology/model.py` (`Provenance` enum + `provenance` field on OntologyEdge); backfill in `src/gzkit/ontology/corpus.py`.
 - Budget: `data/instructions_files_budget.json` (50000/15000/30000); guard renamed in `tests/governance/test_agents_md_map_doctrine.py` + `tests/governance/test_agents_md_map_doctrine_application.py`.
 - Prior OBPI-0.32.0-04 completion handoff: `.gzkit/handoffs/20260706T130549Z-OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants-complete.md`.
-- The two-hexagons finding was produced by an independent read-only code assessment (Explore subagent) cross-checked against the then-present ports/adapters facade (since retired by the 2026-07-06 facade retirement, commit `ba01f1e9`, and its stale empty shells swept), `tests/fakes/`, and the 738 `project_root: Path` injection sites.
+- The two-hexagons finding was produced by an independent read-only code assessment (Explore subagent) cross-checked against the then-present ports/adapters/fakes facade — since retired (commit `ba01f1e9`) — and the 738 `project_root: Path` injection sites.

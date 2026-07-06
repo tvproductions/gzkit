@@ -434,6 +434,37 @@ class TestValidateReferencedFiles(unittest.TestCase):
                 missing = validate_referenced_files(doc, Path(tmpdir))
             self.assertEqual(missing, ["docs/real-but-absent.md"])
 
+    @covers("REQ-0.25.0-32-03")
+    def test_untracked_present_path_reported(self) -> None:
+        # GHI #671 (inverse sibling of #633): committed/tracked state governs
+        # the Evidence referenced-file check, not the authoring machine's local
+        # disk. A path present locally but NOT git-tracked (a stale __pycache__
+        # shell, a git-rm'd dir with lingering bytecode) is absent on a clean
+        # clone / CI and MUST be reported; a tracked path passes even when it is
+        # not in the local checkout.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir)
+            # Both present on local disk — under a disk-only check both would
+            # pass; tracked state is what must distinguish them.
+            (tmp_path / "tracked_present.txt").write_text("x", encoding="utf-8")
+            (tmp_path / "untracked_present.txt").write_text("x", encoding="utf-8")
+            # tracked_absent.txt is intentionally NOT written to disk.
+            doc = (
+                "---\nkey: value\n---\n\n"
+                "## Evidence / Artifacts\n\n"
+                "- `tracked_present.txt` — committed and on disk\n"
+                "- `tracked_absent.txt` — committed but not in this checkout\n"
+                "- `untracked_present.txt` — on disk but never git-tracked\n"
+            )
+            tracked = {"tracked_present.txt", "tracked_absent.txt"}
+
+            def fake_tracked(_base: Path, path: str) -> bool | None:
+                return path in tracked
+
+            with patch("gzkit.handoff_validation._is_git_tracked", side_effect=fake_tracked):
+                missing = validate_referenced_files(doc, tmp_path)
+            self.assertEqual(missing, ["untracked_present.txt"])
+
 
 # ---------------------------------------------------------------------------
 # validate_handoff_document (orchestrator) — REQ-0.25.0-32-03
