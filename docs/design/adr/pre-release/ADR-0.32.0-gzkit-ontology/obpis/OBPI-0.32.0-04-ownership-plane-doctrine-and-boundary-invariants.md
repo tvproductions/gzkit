@@ -3,7 +3,7 @@ id: OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants
 parent: ADR-0.32.0-gzkit-ontology
 item: 4
 lane: Lite
-status: Draft
+status: Completed
 # req_atomic (task-discovery subdivision sub-invariant): authoring-only OBPI;
 # each REQ is one indivisible declaration unit. REQ-01 is the single
 # doctrine-authoring unit (ownership/plane + Harness-Purity written together);
@@ -27,7 +27,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #4 — "ownership/plane doctrine surface + this ADR's ## Boundary Invariants (rebuild-fidelity fence; Tier-B derived-never-authority; sense images structural-only) as STRUCTURAL-FENCE, audited at closeout. [MVP spine]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -73,13 +73,14 @@ Author one governance doctrine document — `docs/governance/ontology-ownership-
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: A governance doctrine document MUST exist at `docs/governance/ontology-ownership-plane-doctrine.md` and MUST state the two-axis separation — ownership (`harness|product`) × plane (`product|process`) — and the Harness-Purity Invariant (`ownership:harness` admits only GovZero-universal object types; gzkit's own product objects are `ownership:product`).
-2. REQUIREMENT: The doctrine MUST record the parent ADR's five `## Boundary Invariants` (rebuild-fidelity; derived-never-authority; `sense` images structure only; harness-purity; OKF-absorption-open) as STRUCTURAL-FENCE claims audited at ADR closeout, each mapping 1:1 to the parent ADR entry.
-3. NEVER: This OBPI MUST NOT add, rename, or change any CLI verb, JSON schema, validator scope, or runtime contract — the ontology model/substrate/CLI are OBPIs 01–03 and are out of scope.
-4. NEVER: This OBPI MUST NOT rewrite the parent ADR `## Boundary Invariants` section — those five entries are already authored; the doctrine references them and the STRUCTURAL-FENCE REQs anchor to them.
-5. NEVER: The doctrine document MUST NOT be consumed as governance authority by any `gz validate` scope, gate, or closeout step (parent ADR Boundary Invariant #2, derived-never-authority) — it is an orientation surface audited at closeout, never a gate against the current corpus.
-6. ALWAYS: Work MUST stay inside the Allowed Paths; the doctrine document is the only net-new artifact.
-7. ALWAYS: Reconcile this brief against the parent ADR `## Boundary Invariants` before authoring, so each STRUCTURAL-FENCE REQ maps to a real ADR entry.
+1. REQUIREMENT: A governance doctrine document MUST exist at `docs/governance/ontology-ownership-plane-doctrine.md` and MUST state the two-axis separation — ownership (`harness|product`) × plane (`product|process`) — and the Harness-Purity Invariant (`ownership:harness` admits only GovZero-universal object types; gzkit's own product objects are `ownership:product`). [→ REQ-01, SUPPORT]
+2. REQUIREMENT: The doctrine MUST record parent ADR `## Boundary Invariants` #1 (rebuild-fidelity — the Tier-B projection reconstructs from L1 canon + L2 ledger with no missed event type, and `sense` self-reports replay completeness and freshness) as a STRUCTURAL-FENCE claim audited at ADR closeout, mapping 1:1 to the ADR entry. [→ REQ-02, STRUCTURAL-FENCE]
+3. REQUIREMENT: The doctrine MUST record parent ADR `## Boundary Invariants` #2 (derived-never-authority — the graph is a Tier-B projection that never gates) as a STRUCTURAL-FENCE claim, and MUST itself remain an orientation surface that is not consumed as governance authority by any `gz validate` scope, gate, or closeout step — audited at closeout, never a gate against the current corpus. [→ REQ-03, STRUCTURAL-FENCE]
+4. REQUIREMENT: The doctrine MUST record parent ADR `## Boundary Invariants` #3 (`sense` images STRUCTURAL seams only and never claims semantic completeness; semantic-seam recall is deferred to RECALL/Phase-4, L3-advisory) as a STRUCTURAL-FENCE claim audited at closeout, mapping 1:1 to the ADR entry. [→ REQ-04, STRUCTURAL-FENCE]
+5. REQUIREMENT: The doctrine MUST record parent ADR `## Boundary Invariants` #4 (harness purity — `ownership:harness` admits only GovZero-universal types; gzkit's product objects CliVerb/Validator/Skill/Chore are `ownership:product` and never enter the harness subgraph) as a STRUCTURAL-FENCE claim audited at closeout, mapping 1:1 to the ADR entry. [→ REQ-05, STRUCTURAL-FENCE]
+6. REQUIREMENT: The doctrine MUST record parent ADR `## Boundary Invariants` #5 (OKF absorption stays open — Doc `subtype` = OKF `type` verbatim; no consumer rejects a Doc for an unknown `type`; no OKF frontmatter or link read as authority) as a STRUCTURAL-FENCE claim audited at closeout, mapping 1:1 to the ADR entry. [→ REQ-06, STRUCTURAL-FENCE]
+
+**Guardrails** (constraints on the work, enforced by the Denied Paths and Discovery Checklist below — not separately-numbered REQs): this OBPI must not add, rename, or change any CLI verb, JSON schema, validator scope, or runtime contract (the ontology model/substrate/CLI are OBPIs 01–03); it must not rewrite the parent ADR `## Boundary Invariants` section (those five entries are already authored — the doctrine references them and the fences anchor to them); work stays inside the Allowed Paths, with the doctrine document the only net-new artifact; and this brief is reconciled against the parent ADR `## Boundary Invariants` before authoring so each STRUCTURAL-FENCE REQ maps to a real ADR entry.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -250,15 +251,18 @@ The five STRUCTURAL-FENCE REQs map 1:1 to the parent ADR's five ## Boundary Inva
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run gz validate --closeout-proof` → exit 0 (five STRUCTURAL-FENCE claims resolve against ADR-0.32.0 `## Boundary Invariants`). `uv run gz covers OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants --json` → all 6 REQs `proof_status=pass`, `behavior_uncovered_reqs=0` (REQ-01 SUPPORT → ledger+validator; REQ-02..06 STRUCTURAL-FENCE → parent-ADR-invariant). ARB receipts: arb-ruff-43c30432134f4c3da94764a8f6e6332d, arb-step-typecheck-0ec2b1dd281c47a8b76b51967e50f6b8, arb-step-unittest-96d23b578ee7498ca3dbf749ec48f84a (6834/6834 pass).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `docs/governance/ontology-ownership-plane-doctrine.md` — two-axis (ownership × plane) type model + Harness-Purity Invariant + five Boundary Invariants recorded as STRUCTURAL-FENCE
+- Files modified: OBPI brief — FAIL-CLOSED requirements realigned to 6 (1 SUPPORT + 5 STRUCTURAL-FENCE) per operator ratification, restoring sibling-OBPI convention; evidence recorded
+- Tests added: none — authoring OBPI with no BEHAVIOR REQs; proves via SUPPORT (ledger + `gz validate --documents`) and STRUCTURAL-FENCE (parent-ADR Boundary Invariants) channels
+- Date completed: 2026-07-06
+- Attestation status: operator-attested (g0, verbatim "attest completed")
+- Defects noted: none; brief req_count drift resolved pre-implementation with operator approval
 
 ## Tracked Defects
 
@@ -269,12 +273,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.32.0-04 authored docs/governance/ontology-ownership-plane-doctrine.md (two-axis ownership×plane type model + Harness-Purity Invariant + five Boundary Invariants recorded as STRUCTURAL-FENCE, mapping 1:1 to ADR-0.32.0 BI#1–#5); Stage 3 green (ruff arb-ruff-43c30432134f4c3da94764a8f6e6332d, typecheck arb-step-typecheck-0ec2b1dd281c47a8b76b51967e50f6b8, unittest 6834/6834 arb-step-unittest-96d23b578ee7498ca3dbf749ec48f84a, mkdocs --strict clean, closeout-proof + req-kind-discipline + documents pass); all 6 REQs proof_status=pass (behavior_uncovered=0); independent adversarial validation returned NOT-REFUTED.
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -

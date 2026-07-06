@@ -1,0 +1,50 @@
+{
+  "obpi_id": "OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants",
+  "generated_at": "2026-07-06T12:58:54.711642+00:00",
+  "demos": [
+    {
+      "command": "cat docs/governance/ontology-ownership-plane-doctrine.md",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "\n### BI #2 — Derived-never-authority\n\n*(Parent ADR `## Boundary Invariants` #2.)*\n\nThe ontology graph is a Tier-B projection: it **never gates**, and no `gz validate` scope, gate, or closeout step consumes it as enforcement evidence. Truth lives in L1 canon and the L2 ledger (state-doctrine Rule 5); the graph is an imaging/navigation aid. Writeback reaches the graph only by rebuild, never by direct edit.\n\n**This doctrine document inherits BI #2 for itself.** It is an orientation surface audited at closeout — it is never read as governance authority against the current corpus. A future `gz validate` scope that consumed this doctrine (or the graph it describes) as a gate would breach BI #2.\n\n### BI #3 — `sense` images structure only\n\n*(Parent ADR `## Boundary Invariants` #3.)*\n\nThe `sense` sweep enumerates **STRUCTURAL** seams and never claims semantic completeness; the pre-registered falsifier is *\"no un-accounted STRUCTURAL seam.\"* Semantic-seam recall — *\"the code does X, the REQ meant Y\"* — is out of scope, deferred to RECALL / Phase-4 as strictly L3-advisory. `sense` is honest about coverage: it labels STRUCTURAL vs semantic and never launders a semantic blind spot into false structural confidence.\n\n### BI #4 — Harness purity\n\n*(Parent ADR `## Boundary Invariants` #4 — the two-axis fence.)*\n\n`ownership:harness` admits only GovZero-universal object types; gzkit's own product objects (CliVerb / Validator / Skill / Chore) are `ownership:product` and never appear in the harness subgraph. This is the fence form of the Harness-Purity Invariant stated above — recorded here so closeout audits the two-axis model actually held.\n\n### BI #5 — OKF absorption stays open\n\n*(Parent ADR `## Boundary Invariants` #5.)*\n\nDoc `subtype` = OKF `type` **verbatim**; no consumer rejects a Doc for an unknown `type`, and no OKF frontmatter or link is consumed as enforcement evidence — preserving OKF (ADR-0.30.0) Boundary Invariants BI-1 and BI-3. A closed-set subset-validator over OKF types would breach both OKF fences and break shipped OKF v0.30.0; open-absorption (subtype = type verbatim) is the only OKF-legal path.\n\n---\n\n## Relationship to State Doctrine\n\nThis doctrine sits beside [`state-doctrine.md`](state-doctrine.md): the ontology graph is a **Layer-3 derived view** (state-doctrine Rule 5 — Layer-3 views are never source-of-truth). The two-axis type model and the five Boundary Invariants together are the discipline that keeps the L3 sonar trustworthy — derived-never-authority is not a limitation to work around but the property that lets the graph image the shape without ever becoming the shape.\n\n---\n\n## Related\n\n- [ADR-0.32.0 — gzkit ontology](../design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md) (parent; § Decision, § Boundary Invariants)\n- [State Doctrine](state-doctrine.md) (three-layer model; Rule 5 — L3 views never source-of-truth)\n- OKF documentation knowledge structure (ADR-0.30.0) — the open-absorption fences BI #5 preserves"
+    },
+    {
+      "command": "uv run gz validate --closeout-proof",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Validated: closeout_proof\n\n✓ All validations passed (1 scopes)."
+    },
+    {
+      "command": "uv run gz covers OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Coverage by ADR\nADR                   Covered    Total        %\n------------------------------------------------\nADR-0.32.0                  0        6     0.0%\n\nCoverage by OBPI\nOBPI                  Covered    Total        %\n------------------------------------------------\nOBPI-0.32.0-04              0        6     0.0%\n\nSummary: 0/6 REQs covered (0.0%)"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-43c30432134f4c3da94764a8f6e6332d.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-0ec2b1dd281c47a8b76b51967e50f6b8.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-96d23b578ee7498ca3dbf749ec48f84a.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 6,
+  "covers_uncovered": 6,
+  "attestable": false,
+  "blockers": [
+    "6 REQ(s) uncovered by any test."
+  ]
+}
