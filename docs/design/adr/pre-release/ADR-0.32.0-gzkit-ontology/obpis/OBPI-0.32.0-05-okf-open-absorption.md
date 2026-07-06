@@ -3,7 +3,20 @@ id: OBPI-0.32.0-05-okf-open-absorption
 parent: ADR-0.32.0-gzkit-ontology
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  # Each REQ is one indivisible unit of labor with no sub-step below it —
+  # implemented as a single Red-Green-Refactor cycle each in the one small
+  # module src/gzkit/ontology/okf.py: 01 verbatim subtype, 02 unknown-type
+  # tolerance, 03 links_to edges, 04/05 structural fences (proof-by-absence +
+  # parent-ADR Boundary-Invariant #5 anchor, no code), 06 the Implementation
+  # Summary parent-ADR quote (support). No labor subdivided below any REQ.
+  - REQ-0.32.0-05-01
+  - REQ-0.32.0-05-02
+  - REQ-0.32.0-05-03
+  - REQ-0.32.0-05-04
+  - REQ-0.32.0-05-05
+  - REQ-0.32.0-05-06
 ---
 
 # OBPI-0.32.0-05-okf-open-absorption: OKF Open-Absorption
@@ -13,7 +26,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #5 - "OKF open-absorption: Doc subtype = OKF type verbatim, no subset-validator (honors OKF BI-1/BI-3), links_to edges kept."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -35,6 +48,7 @@ Heavy because it adds a new importable runtime surface — the OKF Doc-absorptio
 
 - `src/gzkit/ontology/okf.py` — **CREATE**: the Doc-ingestion path that reads the generated OKF bundle (`.gzkit/governance/knowledge/`) and emits `Doc` nodes (subtype = OKF `type` verbatim) + `links_to` edges from the concept-doc markdown links
 - `tests/test_ontology_okf.py` — **CREATE**: `@covers`-decorated REQ tests (verbatim-subtype, unknown-type tolerance, links_to edges)
+- `src/gzkit/ontology/model.py` — **CONSUMED (read-only; operator-ratified in-flight 2026-07-06)**: imported by `okf.py` and the REQ tests for `OntologyNode`/`OntologyEdge`/`LinkType.LINKS_TO`/`ObjectType.DOC`/`Provenance`/`OBJECT_TYPE_REGISTRY` type references only — NEVER modified here (OBPI-01's frozen model). Listed in Allowed (not Denied) because the same-package REQ-test import trips the reconcile neighborhood heuristic (GHI #645), which cannot distinguish a consumed sibling from a leaked one; declaring it honestly resolves the reconcile-freshness gate. Sibling precedent: OBPI-02 lists `model.py` in Allowed with a scoped annotation.
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/obpis/OBPI-0.32.0-05-okf-open-absorption.md` — this brief (evidence writeback only)
 
 ## Denied Paths
@@ -45,7 +59,6 @@ Heavy because it adds a new importable runtime surface — the OKF Doc-absorptio
 - `src/gzkit/governance/trust_audits/okf_conformance.py` — the `--okf-conformance` validator (ADR-0.30.0); untouched
 - `src/gzkit/governance/trust_audits/**` — NO new validator scope; specifically no closed-set/subset check on `Doc.subtype` (the rejected alternative)
 - `.gzkit/governance/knowledge/**` — the generated OKF bundle is READ-ONLY input; never written by this OBPI
-- `src/gzkit/ontology/model.py` (OntologyNode/OntologyEdge/typed LinkType, OBPI-0.32.0-01) — the model is CONSUMED, never modified here
 - `src/gzkit/ontology/corpus.py` (corpus projection, OBPI-0.32.0-02) — consumed via its Doc-admission surface; its internals are not modified here
 - `src/gzkit/commands/**`, `src/gzkit/cli/**` — no CLI verb here (that is OBPI-0.32.0-03, the gz ontology interface)
 - `src/gzkit/schemas/**` — no schema change (the ontology schema is OBPI-0.32.0-01)
@@ -199,7 +212,7 @@ uv run python -c "from gzkit.ontology.okf import absorb_okf_bundle; nodes, edges
 - [ ] REQ-0.32.0-05-01 [BEHAVIOR]: The OKF absorption path sets a `Doc` node's `subtype` to the source OKF concept doc's `type` frontmatter value VERBATIM — byte-for-byte, no normalization or mapping — pinned by a `@covers(REQ-0.32.0-05-01)` test in `tests/test_ontology_okf.py` that ingests a bundle concept doc of a known `type` and asserts `Doc.subtype` equals it exactly.
 - [ ] REQ-0.32.0-05-02 [BEHAVIOR]: Ingesting an OKF concept doc whose `type` is an arbitrary, never-registered string produces a `Doc` node and raises no error — the absorption path holds no closed `type` set and rejects nothing, honoring OKF (ADR-0.30.0) Boundary Invariant BI-3 (unknown `type` values are NOT errors) — pinned by a `@covers(REQ-0.32.0-05-02)` test asserting the tolerated `Doc.subtype` is carried verbatim.
 - [ ] REQ-0.32.0-05-03 [BEHAVIOR]: For every markdown link in an ingested OKF concept doc body, the absorption path emits a `links_to` `OntologyEdge` from the `Doc` node to the link target — pinned by a `@covers(REQ-0.32.0-05-03)` test that ingests a concept doc carrying a known markdown link (its `Canonical source:` edge) and asserts the corresponding `links_to` edge is present in the emitted edge set.
-- [ ] REQ-0.32.0-05-04 [STRUCTURAL-FENCE]: The absorption path reads OKF `type` and OKF markdown links ONLY to populate the derived Tier-B ontology (`Doc.subtype`, `links_to` edges); no OKF `type`, tag, description, or link is consumed as enforcement evidence by any `gz validate` scope, gate, or closeout step — preserving OKF (ADR-0.30.0) Boundary Invariant BI-1 and honoring ADR-0.32.0 Boundary Invariant #5. Anchored in the parent ADR `## Boundary Invariants` (entry #5, "OKF absorption stays open").
+- [ ] REQ-0.32.0-05-04 [STRUCTURAL-FENCE]: The absorption path reads OKF `type` and OKF markdown links ONLY to populate the derived Tier-B ontology (`Doc.subtype`, `links_to` edges); no OKF `type`, tag, description, or link is read as governance authority by any `gz validate` scope, gate, or closeout step — preserving OKF (ADR-0.30.0) Boundary Invariant BI-1 and honoring ADR-0.32.0 Boundary Invariant #5. Anchored in the parent ADR `## Boundary Invariants` (entry #5, "OKF absorption stays open").
 - [ ] REQ-0.32.0-05-05 [STRUCTURAL-FENCE]: No subset-validator — no closed-set membership check constraining `Doc.subtype` to an enumerated OKF `type` set — is added anywhere by this OBPI (the rejected alternative: a closed-set check would breach OKF BI-1/BI-3 and break shipped OKF v0.30.0). Anchored in the parent ADR `## Boundary Invariants` (entry #5) and its "OKF subset-validator ... REJECTED" alternative.
 - [ ] REQ-0.32.0-05-06 [SUPPORT]: This brief's `### Implementation Summary` quotes the parent ADR § Decision OKF open-absorption clause verbatim (Requirements (FAIL-CLOSED) reconciliation item 6) — proven by `uv run gz validate --documents` passing AND an `artifact_edited` ledger event citing this brief file emitted at OBPI completion.
 
@@ -261,15 +274,27 @@ uv run python -c "from gzkit.ontology.okf import absorb_okf_bundle; nodes, edges
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Real-bundle absorption (verified by independent Codex adversary):
+
+  uv run python -c "from gzkit.ontology.okf import absorb_okf_bundle; n,e=absorb_okf_bundle('.gzkit/governance/knowledge'); print([(d.id,d.subtype) for d in n]); print([(x.source_id,x.link_type.value,x.target_id) for x in e][:2])"
+
+Output: 6 Doc nodes with verbatim subtypes (doctrine, index, ...) and links_to edges, e.g.
+  ('.gzkit/governance/knowledge/active-campaign.md', 'links_to', '../../../docs/governance/build-to-1.0-campaign-2026-06-30.md')
+
+Scoped tests: 5/5 pass — receipt arb-step-unittest-bd98cb749ceb4b1b928a2fcddf1d1125.
+Full sweep: 6756/6756 pass — receipt arb-step-unittest-4e4ad40a402e428bb40ee48e2bb953c9.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision implemented (parent ADR-0.32.0 § Decision, verbatim): "Docs are absorbed via OKF open-absorption: Doc subtype = OKF type verbatim, NO subset-validator (a closed-set check would breach OKF BI-1/BI-3), links_to edges kept."
+- Files created: src/gzkit/ontology/okf.py (Doc model composing OntologyNode(object_type=Doc) + verbatim subtype + source path; doc_from_concept factory; absorb_okf_bundle reading .gzkit/governance/knowledge/ READ-ONLY), tests/test_ontology_okf.py (5 @covers REQ tests).
+- Tests added: 5 (REQ-01 verbatim-subtype x2, REQ-02 unknown-type tolerance x2, REQ-03 links_to edge from markdown link).
+- Design: Doc subsumes OntologyNode (hexagonal rule #8) — reuses the typed node for identity, adds only OKF subtype + path; no parallel model, no model.py modification.
+- Date completed: 2026-07-06.
+- Attestation status: operator-attested (g0, "attest completed").
+- Defects noted: REQ-04 fence wording corrected in-flight (enforcement-keyword false-positive -> "read as governance authority"); model.py reclassified Denied->Allowed-consumed (operator-ratified in-flight, Gate Friction loop).
 
 ## Tracked Defects
 
@@ -280,12 +305,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OKF open-absorption (src/gzkit/ontology/okf.py) delivered: Doc.subtype = OKF `type` verbatim, no subset-validator, links_to edges from concept-doc markdown links, honoring OKF BI-1/BI-3 and parent ADR-0.32.0 Boundary Invariant #5. All 6 REQs proof_status=pass; 5/5 scoped tests green (arb-step-unittest-bd98cb749ceb4b1b928a2fcddf1d1125), full 6756-test sweep green (arb-step-unittest-4e4ad40a402e428bb40ee48e2bb953c9), ruff/typecheck/mkdocs clean (arb-ruff-e5621ae8f23e4994b2989f6657a0a384, arb-step-typecheck-c6156d1b504f4b9fadc68ecfd8877242, arb-step-mkdocs-27ccc6608376417ab74a2587c7bd8495). Independent Codex adversary returned REFUTED-WITH-CAVEATS; the one real defect (REQ-04 fence-wording false-positive) fixed and re-validated in-flight; model.py Denied->Allowed-consumed reclassification operator-ratified.
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -
