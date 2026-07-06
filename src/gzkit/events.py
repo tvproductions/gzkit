@@ -639,6 +639,7 @@ TypedLedgerEvent = Annotated[
     | ObpiLockReleasedEvent
     | ObpiLockTtlWarningEvent
     | ObpiWithdrawnEvent
+    | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent

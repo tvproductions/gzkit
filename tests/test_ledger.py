@@ -1404,6 +1404,32 @@ class TestTypedEventModels(unittest.TestCase):
         self.assertEqual(event.receipt_event, "validated")
         self.assertEqual(event.obpi_completion, "completed")
 
+    def test_parse_typed_event_obpi_superseded(self) -> None:
+        """Discriminated union parses obpi_superseded into ObpiSupersededEvent.
+
+        Regression: ObpiSupersededEvent was defined but never wired into the
+        TypedLedgerEvent union, so parse_typed_event raised ValidationError on a
+        real obpi_superseded event (surfaced by the OBPI-0.32.0-02 Step-4b
+        adversary probing the ontology fidelity fence).
+        """
+        from gzkit.events import ObpiSupersededEvent, parse_typed_event
+
+        data = {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_superseded",
+            "id": "OBPI-0.1.0-01",
+            "parent": "ADR-0.1.0",
+            "ts": "2026-01-01T00:00:00+00:00",
+            "superseded_by": "OBPI-0.1.0-02",
+            "rationale": "refactor",
+            "attestor": "g0",
+        }
+        event = parse_typed_event(data)
+        self.assertIsInstance(event, ObpiSupersededEvent)
+        assert isinstance(event, ObpiSupersededEvent)
+        self.assertEqual(event.superseded_by, "OBPI-0.1.0-02")
+        self.assertEqual(event.attestor, "g0")
+
     def test_typed_event_backward_compat_extra(self) -> None:
         """Typed event .extra property returns event-specific fields as dict."""
         from gzkit.events import AdrCreatedEvent, parse_typed_event
