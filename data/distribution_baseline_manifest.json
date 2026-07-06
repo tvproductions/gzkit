@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.28.1",
+  "gzkit_version": "0.31.0",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -88,6 +88,7 @@
       "gz-obpi-reconcile/SKILL.md",
       "gz-obpi-simplify/SKILL.md",
       "gz-obpi-specify/SKILL.md",
+      "gz-ontology/SKILL.md",
       "gz-patch-release/SKILL.md",
       "gz-plan/SKILL.md",
       "gz-plan-audit/SKILL.md",
