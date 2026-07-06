@@ -35,6 +35,7 @@ from gzkit.ontology.model import (
     OntologyNode,
     Ownership,
     Plane,
+    Provenance,
 )
 from gzkit.traceability import covers
 
@@ -54,8 +55,22 @@ def _healthy_graph() -> OntologyGraph:
     g.add_node(_node("ADR-1", ObjectType.ADR))
     g.add_node(_node("OBPI-1"))
     g.add_node(_node("OBPI-2"))
-    g.add_edge(OntologyEdge(source_id="ADR-1", target_id="OBPI-1", link_type=LinkType.CHILD))
-    g.add_edge(OntologyEdge(source_id="ADR-1", target_id="OBPI-2", link_type=LinkType.CHILD))
+    g.add_edge(
+        OntologyEdge(
+            source_id="ADR-1",
+            target_id="OBPI-1",
+            link_type=LinkType.CHILD,
+            provenance=Provenance.INTENT,
+        )
+    )
+    g.add_edge(
+        OntologyEdge(
+            source_id="ADR-1",
+            target_id="OBPI-2",
+            link_type=LinkType.CHILD,
+            provenance=Provenance.INTENT,
+        )
+    )
     return g
 
 
@@ -63,7 +78,14 @@ def _dangling_graph() -> OntologyGraph:
     """A CHILD edge points at a node never materialized -> exactly one seam."""
     g = OntologyGraph()
     g.add_node(_node("ADR-1", ObjectType.ADR))
-    g.add_edge(OntologyEdge(source_id="ADR-1", target_id="OBPI-GHOST", link_type=LinkType.CHILD))
+    g.add_edge(
+        OntologyEdge(
+            source_id="ADR-1",
+            target_id="OBPI-GHOST",
+            link_type=LinkType.CHILD,
+            provenance=Provenance.INTENT,
+        )
+    )
     return g
 
 
@@ -112,7 +134,12 @@ class TestTrace(unittest.TestCase):
     def test_trace_returns_vertical_lineage_and_lateral_provenance(self) -> None:
         g = _healthy_graph()
         g.add_edge(
-            OntologyEdge(source_id="OBPI-1", target_id="OBPI-1", link_type=LinkType.VALIDATES)
+            OntologyEdge(
+                source_id="OBPI-1",
+                target_id="OBPI-1",
+                link_type=LinkType.VALIDATES,
+                provenance=Provenance.OBSERVED,
+            )
         )
         trace = compute_trace(g, "OBPI-1")
         assert trace is not None
@@ -135,7 +162,12 @@ class TestResense(unittest.TestCase):
         mutated = _healthy_graph()
         mutated.add_node(_node("OBPI-3"))  # add a node
         mutated.add_edge(
-            OntologyEdge(source_id="ADR-1", target_id="OBPI-3", link_type=LinkType.CHILD)
+            OntologyEdge(
+                source_id="ADR-1",
+                target_id="OBPI-3",
+                link_type=LinkType.CHILD,
+                provenance=Provenance.INTENT,
+            )
         )
         after = snapshot_of(mutated)
         diff = diff_snapshots(before, after)
@@ -197,8 +229,16 @@ class TestReach(unittest.TestCase):
         g = OntologyGraph()
         for nid in ("A", "B", "C"):
             g.add_node(_node(nid))
-        g.add_edge(OntologyEdge(source_id="A", target_id="B", link_type=LinkType.CHILD))
-        g.add_edge(OntologyEdge(source_id="B", target_id="C", link_type=LinkType.CHILD))
+        g.add_edge(
+            OntologyEdge(
+                source_id="A", target_id="B", link_type=LinkType.CHILD, provenance=Provenance.INTENT
+            )
+        )
+        g.add_edge(
+            OntologyEdge(
+                source_id="B", target_id="C", link_type=LinkType.CHILD, provenance=Provenance.INTENT
+            )
+        )
         self.assertEqual(compute_reach(g, "A"), ["B", "C"])
 
     @covers("REQ-0.32.0-03-05")

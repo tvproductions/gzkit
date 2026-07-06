@@ -25,6 +25,7 @@ from gzkit.ontology.model import (
     ObjectType,
     OntologyEdge,
     OntologyNode,
+    Provenance,
 )
 
 # ledger get_artifact_graph node ``type`` string -> typed ObjectType. Every node
@@ -216,20 +217,42 @@ def _relation_edges(node_id: str, info: dict, source_graph: dict[str, dict]) -> 
     """
     edges: list[OntologyEdge] = []
     for child_id in info.get("children", []):
-        edges.append(OntologyEdge(source_id=node_id, target_id=child_id, link_type=LinkType.CHILD))
+        edges.append(
+            OntologyEdge(
+                source_id=node_id,
+                target_id=child_id,
+                link_type=LinkType.CHILD,
+                provenance=Provenance.INTENT,
+            )
+        )
     superseded_by = info.get("superseded_by")
     if info.get("superseded") and superseded_by in source_graph:
         edges.append(
             OntologyEdge(
-                source_id=str(superseded_by), target_id=node_id, link_type=LinkType.SUPERSEDES
+                source_id=str(superseded_by),
+                target_id=node_id,
+                link_type=LinkType.SUPERSEDES,
+                provenance=Provenance.INTENT,
             )
         )
     if info.get("validated"):
         edges.append(
-            OntologyEdge(source_id=node_id, target_id=node_id, link_type=LinkType.VALIDATES)
+            OntologyEdge(
+                source_id=node_id,
+                target_id=node_id,
+                link_type=LinkType.VALIDATES,
+                provenance=Provenance.OBSERVED,
+            )
         )
     if info.get("attested"):
-        edges.append(OntologyEdge(source_id=node_id, target_id=node_id, link_type=LinkType.ATTESTS))
+        edges.append(
+            OntologyEdge(
+                source_id=node_id,
+                target_id=node_id,
+                link_type=LinkType.ATTESTS,
+                provenance=Provenance.OBSERVED,
+            )
+        )
     return edges
 
 

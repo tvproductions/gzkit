@@ -16,6 +16,7 @@ from gzkit.ontology.model import (
     OntologyNode,
     Ownership,
     Plane,
+    Provenance,
 )
 from gzkit.traceability import covers
 
@@ -40,8 +41,22 @@ class TestOntologyGraphSubstrate(unittest.TestCase):
         graph = OntologyGraph()
         graph.add_node(_node("A"))
         graph.add_node(_node("B"))
-        graph.add_edge(OntologyEdge(source_id="A", target_id="B", link_type=LinkType.PARENT))
-        graph.add_edge(OntologyEdge(source_id="A", target_id="B", link_type=LinkType.SUPERSEDES))
+        graph.add_edge(
+            OntologyEdge(
+                source_id="A",
+                target_id="B",
+                link_type=LinkType.PARENT,
+                provenance=Provenance.INTENT,
+            )
+        )
+        graph.add_edge(
+            OntologyEdge(
+                source_id="A",
+                target_id="B",
+                link_type=LinkType.SUPERSEDES,
+                provenance=Provenance.INTENT,
+            )
+        )
 
         self.assertEqual(graph.edge_count(), 2, "both parallel edges must be retained")
         link_types = sorted(
@@ -56,8 +71,16 @@ class TestOntologyGraphSubstrate(unittest.TestCase):
         graph = OntologyGraph()
         for node_id in ("A", "B", "C"):
             graph.add_node(_node(node_id))
-        graph.add_edge(OntologyEdge(source_id="A", target_id="B", link_type=LinkType.CHILD))
-        graph.add_edge(OntologyEdge(source_id="B", target_id="C", link_type=LinkType.CHILD))
+        graph.add_edge(
+            OntologyEdge(
+                source_id="A", target_id="B", link_type=LinkType.CHILD, provenance=Provenance.INTENT
+            )
+        )
+        graph.add_edge(
+            OntologyEdge(
+                source_id="B", target_id="C", link_type=LinkType.CHILD, provenance=Provenance.INTENT
+            )
+        )
 
         self.assertEqual(graph.reachable_from("A"), {"B", "C"})
 

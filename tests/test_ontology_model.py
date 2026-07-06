@@ -22,6 +22,7 @@ from gzkit.ontology.model import (
     OntologyNode,
     Ownership,
     Plane,
+    Provenance,
     ontology_node_json_schema,
 )
 from gzkit.schemas import load_schema
@@ -71,13 +72,29 @@ class TestOntologyModelImmutability(unittest.TestCase):
 
     @covers("REQ-0.32.0-01-01")
     def test_edge_is_frozen(self) -> None:
-        edge = OntologyEdge(source_id="a", target_id="b", link_type=LinkType.PARENT)
+        edge = OntologyEdge(
+            source_id="a", target_id="b", link_type=LinkType.PARENT, provenance=Provenance.INTENT
+        )
         with self.assertRaises(pydantic.ValidationError):
             edge.source_id = "mutated"  # type: ignore[misc]
 
     @covers("REQ-0.32.0-01-01")
     def test_linktype_is_closed_strenum(self) -> None:
         self.assertTrue(issubclass(LinkType, enum.StrEnum))
+
+    @covers("REQ-0.32.0-01-01")
+    def test_edge_requires_provenance_vein(self) -> None:
+        # Every edge MUST declare its INTENT|OBSERVED vein (non-erasable; airlock
+        # two-graph doctrine — the seam-diff is uncomputable without it).
+        with self.assertRaises(pydantic.ValidationError):
+            OntologyEdge(source_id="a", target_id="b", link_type=LinkType.CHILD)
+        edge = OntologyEdge(
+            source_id="a",
+            target_id="b",
+            link_type=LinkType.CHILD,
+            provenance=Provenance.INTENT,
+        )
+        self.assertIs(edge.provenance, Provenance.INTENT)
         with self.assertRaises(ValueError):
             LinkType("not_a_real_link")
 

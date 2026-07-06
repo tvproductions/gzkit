@@ -92,6 +92,14 @@ Benefits: **(1) testing** — system-level tests with no production connection, 
 
 **gzkit conformance today (honest code assessment):** gzkit satisfies the pattern **through parameter injection, not through its declared ports layer.** Rules 3/4 hold via `project_root: Path` (738 param sites) and path-injectable `Ledger(path)` threaded from the command layer; tests act as configurator + driving actor over temp worlds; `tests/policy/test_import_boundaries.py` is a real AST "test wall" enforcing rule 5; the `ontology/` package is the strong-conformance exemplar (pure core, single injectable seam). **Gap:** the declared `src/gzkit/ports/` + `tests/fakes/` + `src/gzkit/adapters/` layer is built and conformance-tested but wired into **zero** production code and injected into **zero** domain tests — dormant scaffolding. The working hexagon is the injection seam; the advertised one is not yet load-bearing. Closing that (wire the ports, or bless injection as the canonical seam and retire the facade) is the live conformance decision.
 
+### Relationship to DDD, bounded contexts, and ACLs (§5.6–§5.7)
+
+- **DDD and Ports & Adapters are independent but compatible.** You can do either without the other; they work well together. P&A is a *precursor* that simplifies DDD — it puts all external technology outside the app, so the inside contains only domain concepts and you do domain-driven design without distraction.
+- **A bounded context is not automatically a hexagon.** Hexagons *per se* don't exist — ports (provided/required interfaces) are what exist. A bounded context becomes a P&A component only when it has **ports AND tests at the boundary**; without tests, "you have a nice drawing but not much more."
+- **Tests make the boundary real** (the load-bearing theme, Fig 5.10–5.11): *"You can draw a line around any part of your code and call it anything you like, but only when you have to maintain the tests do boundaries become real."* → gzkit's `tests/policy/test_import_boundaries.py` is exactly this AST test wall — it makes the ports/core boundary *real*, not merely drawn.
+- **ACLs (anti-corruption layers) are broader than adapters.** An ACL translates between two modeling languages and can sit *partially inside and partially outside* the hexagon. Whether an ACL *is* an adapter is "maybe" — yes if the boundary has ports + tests (then it is a driven adapter), no if it is just internal translation.
+- **P&A is a special case of Component + Strategy** — the protected boundary is where external technology connects to the app, or where a team's decision authority ends.
+
 ## Mapping to gzkit ADR taxonomy
 
 gzkit's ADR-kind taxonomy maps directly onto Cockburn's pattern:

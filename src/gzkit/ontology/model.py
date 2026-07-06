@@ -31,6 +31,22 @@ class Plane(enum.StrEnum):
     PROCESS = "process"
 
 
+class Provenance(enum.StrEnum):
+    """The vein an edge belongs to: authored INTENT or extracted/observed fact.
+
+    Non-erasable per the airlock two-graph doctrine (``docs/governance/
+    work-phases-and-airlock.md`` § 2): a seam is the diff between the INTENT vein
+    ("what ought to be touched") and the OBSERVED vein ("what is touched"), so
+    every edge MUST record which vein it belongs to or the diff is uncomputable.
+    Binding-vs-advisory is NOT stored here — it is derived from the intent
+    endpoint's node type (REQ/ADR => binding; Doc => advisory), which auto-honors
+    OKF Boundary Invariant #1 (ADR-0.30.0).
+    """
+
+    INTENT = "intent"
+    OBSERVED = "observed"
+
+
 class LinkType(enum.StrEnum):
     """Closed taxonomy of ontology edge relations."""
 
@@ -84,6 +100,7 @@ class OntologyEdge(BaseModel):
     source_id: str
     target_id: str
     link_type: LinkType
+    provenance: Provenance
 
 
 # gzkit's own product object types — never admitted to `ownership:harness`
