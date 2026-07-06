@@ -283,6 +283,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 | 62 | Honor the marker: when `.gzkit/mx-active` exists, most guards drop to advisory | **Promotable** | The marker-check is structural (file exists/not); the awareness hook (`src/gzkit/mx/awareness.py`) fires per-turn but liveness is advisory. Could promote to fail-closed via a `gz validate --mx-marker-coherence` scope that confirms guard fatality state is consistent with marker presence. Parent ADR-0.0.74. |
 | 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. |
 
+### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 64 | **Dependencies live in adapters, never in the core.** Any third-party import (networkx, tree-sitter, future deps) is confined to an adapter module behind a port. Core domain logic imports **stdlib + Pydantic ONLY** | **Promotable** | Core-purity ("no third-party import in a core/domain module outside adapter packages") is a tractable `gz validate` scope; `tests/policy/test_import_boundaries.py` already gives partial AST enforcement of the ports/core boundary. The Protocol-over-ABC, composition-over-inheritance, and encapsulate-first (formalize the port only when a second adapter is real) guidance stays Judgment. Full Cockburn reference enshrined in `docs/governance/hexagonal-architecture.md`; rule at `.gzkit/rules/hexagonal-architecture.md`; operator ruling 2026-07-06. |
+
 ---
 
 ## Summary
@@ -291,8 +297,8 @@ Counts updated 2026-05-26 after REQ Scope Discipline taxonomy added as Mechanica
 
 | Score | Count | % |
 |-------|-------|---|
-| **Mechanical** | 43 | 64% |
-| **Promotable** | 6 | 9% |
+| **Mechanical** | 43 | 62% |
+| **Promotable** | 7 | 10% |
 | **Judgment** | 19 | 28% |
 | **Ambiguous** | 0 | 0% |
 
