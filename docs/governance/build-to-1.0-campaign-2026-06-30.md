@@ -437,3 +437,28 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   post-1.0" deferral (`scripts/session_orientation.py`); the Movement IV taxonomy
   item is thereby a pre-1.0 requirement. §3a and Movement IV are amended in place
   to match. Ratified: g0, 2026-07-05.
+- **2026-07-06 (operator-ratified) — Hexagonal (Ports & Adapters) is gzkit's
+  primary code-architecture directive; the parameter-injection seam is blessed as
+  the canonical hexagon and the dormant ports/adapters facade is retired.** This
+  amendment records operator-ratified code-architecture doctrine that landed as a
+  binding per-turn rule (`.gzkit/rules/hexagonal-architecture.md`) plus a
+  direct-fix correction under ADR-0.0.3 (commit `ba01f1e9`) — **not** a Queue
+  item, so no §7 Movement checkbox moved. Two rulings: **(1)** Hexagonal is the
+  primary code-architecture directive (deps behind adapters, stdlib+Pydantic core,
+  parameterize-everything, Protocol>ABC, encapsulate-first). **(2)** The
+  two-hexagons conformance gap (the declared `src/gzkit/ports/` +
+  `src/gzkit/adapters/` + `tests/fakes/` layer was wired into zero production code
+  and injected into zero domain tests) is resolved by decision **(b)**: bless
+  gzkit's **parameter-injection seam** (`project_root: Path` at 738 sites,
+  `Ledger(path)`, `load_config(path=)`, wired by the command-layer configurator,
+  Cockburn Fig 2.1) as the canonical hexagon and **retire the dormant facade**
+  (~1,064 lines deleted; supersession callouts on OBPI-0.0.3-01/-04/-05/-09). The
+  wire-the-ports alternative (a) was rejected as the speculative generality the
+  new rule forbids. The Cockburn "adapters live outside the core" folder-structure
+  realization is the intended direction but **deferred to a new pool ADR**
+  (`ADR-pool.hexagonal-folder-structure-realization`) — operator: *"too big to
+  rewire in a correction; gzkit + adopters not yet ready."* This changes no §8
+  1.0 gate and no sequencing: the topmost item remains Movement III Phase 2 (HULL),
+  now inheriting a clean single-seam code-architecture floor. Campaign-edit scope
+  operator-selected this session: *"Append § Amendments entry"* (no checkbox, no
+  Topmost-note change). Ratified: g0, 2026-07-06.
