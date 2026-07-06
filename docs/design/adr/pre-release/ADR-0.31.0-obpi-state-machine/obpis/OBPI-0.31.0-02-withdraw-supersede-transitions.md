@@ -3,6 +3,7 @@ id: OBPI-0.31.0-02-withdraw-supersede-transitions
 parent: ADR-0.31.0-obpi-state-machine
 item: 2
 lane: Heavy
+sensitivity: security
 status: Completed
 # req_atomic (ADR-0.0.64 / OBPI-04 task-envelope exemption): every REQ below
 # was implemented as one indivisible RGR cycle — REQ-01 (elevate withdraw:
