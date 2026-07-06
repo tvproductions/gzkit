@@ -15,6 +15,7 @@ from gzkit.governance.brief_reconcile import (
     ReconcileResult,
     ReqCountDelta,
     VerificationDelta,
+    _compute_missing_in_brief,
     reconcile_brief,
 )
 from gzkit.governance.trust_audits.brief_reconcile import validate_brief_reconcile
@@ -447,6 +448,76 @@ class TestMissingInBrief(unittest.TestCase):
             # src/gzkit/*.py file is allowlisted (which makes src/gzkit/ a
             # neighborhood of traceability.py). GHI #645.
             self.assertNotIn("src/gzkit/traceability.py", result.allowlist_delta.missing_in_brief)
+
+    def _build_infra_variant_tree(self, tmp: Path) -> None:
+        """src stubs + a REQ test importing package-init infra (``gzkit.schemas``
+        -> ``schemas/__init__.py``), the cross-cutting ``gzkit.config`` loader,
+        AND a genuine domain sibling (``gzkit.ledger``). Mirrors OBPI-0.32.0-06's
+        false-positive shape: with ``events.py`` (parent ``src/gzkit``) and an
+        in-package file allowlisted, the neighborhood filter leaks the infra
+        imports. Exercises ``_compute_missing_in_brief`` directly to isolate the
+        exemption from unrelated brief-frontmatter parsing."""
+        for rel in (
+            "src/gzkit/events.py",
+            "src/gzkit/config.py",
+            "src/gzkit/ledger.py",
+            "src/gzkit/schemas/__init__.py",
+            "src/gzkit/schemas/work_edges.json",
+        ):
+            p = tmp / rel
+            p.parent.mkdir(parents=True, exist_ok=True)
+            p.write_text("# stub\n", encoding="utf-8")
+        test_file = tmp / "tests" / "test_z.py"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
+        test_file.write_text(
+            textwrap.dedent("""\
+                from gzkit.events import MxSessionOpenedEvent  # allowlisted top-level
+                from gzkit.schemas import load_schema          # package-init infra
+                from gzkit.config import load_config           # cross-cutting loader
+                from gzkit.ledger import Ledger                # GENUINE domain sibling
+
+                @covers("REQ-9.9.9-01-01")
+                def test_something():
+                    pass
+                """),
+            encoding="utf-8",
+        )
+
+    # allowlist that makes both src/gzkit (via events.py) and src/gzkit/schemas
+    # (via work_edges.json) neighborhoods, leaking the infra imports pre-fix.
+    _INFRA_ALLOWLIST = ["src/gzkit/events.py", "src/gzkit/schemas/work_edges.json"]
+
+    @covers("REQ-0.0.37-05-02")
+    def test_package_init_marker_excluded_from_missing_in_brief(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            self._build_infra_variant_tree(tmp)
+            missing = _compute_missing_in_brief(["REQ-9.9.9-01-01"], self._INFRA_ALLOWLIST, tmp)
+            # A package __init__.py is never a subject-under-test — importing a
+            # symbol FROM a package resolves to __init__.py, but the real subject
+            # is defined elsewhere. It must not be flagged even in-neighborhood.
+            self.assertNotIn("src/gzkit/schemas/__init__.py", missing)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_config_loader_infra_excluded_from_missing_in_brief(self):
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            self._build_infra_variant_tree(tmp)
+            missing = _compute_missing_in_brief(["REQ-9.9.9-01-01"], self._INFRA_ALLOWLIST, tmp)
+            # gzkit.config is a cross-cutting path/loader utility (a sibling of the
+            # @covers infra) — imported for infra, never the OBPI's subject.
+            self.assertNotIn("src/gzkit/config.py", missing)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_genuine_domain_sibling_still_flagged_alongside_infra(self):
+        # Negative control (surgical exemption): the infra exemption MUST NOT
+        # suppress a genuine domain coupling. gzkit.ledger is a real subject —
+        # it stays flagged even as config.py / schemas/__init__.py are excluded.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            self._build_infra_variant_tree(tmp)
+            missing = _compute_missing_in_brief(["REQ-9.9.9-01-01"], self._INFRA_ALLOWLIST, tmp)
+            self.assertIn("src/gzkit/ledger.py", missing)
 
 
 class TestValidateBriefReconcile(unittest.TestCase):

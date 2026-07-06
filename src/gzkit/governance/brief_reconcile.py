@@ -285,14 +285,24 @@ def _module_to_src_rel(module: str, project_root: Path) -> str | None:
 
 
 # Cross-cutting test-infrastructure modules — imported by REQ tests for the
-# decorator/harness they provide, never subjects-under-test. Excluded from
+# decorator/harness/loader they provide, never subjects-under-test. Excluded from
 # missing_in_brief UNCONDITIONALLY (GHI #645): the neighborhood filter alone
 # leaks these the moment a top-level ``src/gzkit/*.py`` file is allowlisted —
 # its parent ``src/gzkit/`` then becomes a neighborhood of every sibling
-# module, including the ``@covers`` infra. Hard-excluding by module name keeps
+# module, including cross-cutting infra. Hard-excluding by module name keeps
 # the genuine sibling-leakage signal while killing the systematic false
-# positive every @covers-using OBPI with a top-level allowlist entry would hit.
-_TEST_INFRA_SRC_RELS = frozenset({"src/gzkit/traceability.py"})
+# positive every OBPI with a top-level allowlist entry would hit. Widened from
+# the sole ``traceability`` (GHI #645) after a drift-corpus retrospective found
+# ``config.py`` and ``tasks.py`` are the same class of infra false-positive
+# (imported for the loader / ``@advances`` decorator, never the subject); package
+# ``__init__.py`` markers are excluded structurally below, not by name.
+_TEST_INFRA_SRC_RELS = frozenset(
+    {
+        "src/gzkit/traceability.py",  # @covers decorator (GHI #645)
+        "src/gzkit/tasks.py",  # @advances decorator — exact sibling of @covers
+        "src/gzkit/config.py",  # cross-cutting path/config loader (load_config)
+    }
+)
 
 
 def _compute_missing_in_brief(
@@ -331,6 +341,13 @@ def _compute_missing_in_brief(
             if src_rel is None or src_rel in src_allowlist:
                 continue
             if src_rel in _TEST_INFRA_SRC_RELS:
+                continue
+            if src_rel.endswith("/__init__.py"):
+                # A package ``__init__.py`` is never a subject-under-test — a
+                # ``from gzkit.pkg import symbol`` resolves the module to the
+                # package marker, but the real subject is defined in a submodule.
+                # Flagging the marker is a systematic false positive (drift-corpus
+                # retrospective: schemas/__init__.py, governance/__init__.py, etc.).
                 continue
             if Path(src_rel).parent.as_posix() in neighborhoods and src_rel not in reported:
                 reported.append(src_rel)
