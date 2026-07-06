@@ -90,7 +90,7 @@ def _non_docstring_string_ranges(content: str) -> list[tuple[int, int]]:
 
     Falls back to ``[]`` on any AST/tokenize error so callers preserve their
     historical behavior of "regex over raw source" when the file cannot be
-    parsed (e.g. deliberate-syntax-error fixtures under ``tests/fakes/``).
+    parsed (e.g. a fixture containing a deliberate syntax error).
     """
     try:
         tree = ast.parse(content)
