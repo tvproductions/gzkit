@@ -35,7 +35,15 @@ An independent code assessment found gzkit realizes the hexagonal testing benefi
 - The `Snapshot` diff-baseline stores edges as `"source|target|link_type"` strings (no provenance) — so the provenance field did NOT break `resense`. If the seam-diff needs provenance in edge identity later, extend `snapshot_of`.
 - Commit cascade lesson: adding a canonical rule file coupled through **three** surfaces — advisory scorecard (`docs/governance/advisory-rules-audit.md`), `bullet_retention` (scorecard bullet must render verbatim in a per-turn surface; `_ENFORCED_CLASSES={mechanical,promotable}`), and the distribution baseline (`gz validate --distribution --regenerate`). All Invariant-1a couplings; budget for them when adding rules.
 
-## Immediate Next Steps (advisory — operator rules)
+## Decisions Made
+
+- **Hexagonal (Ports & Adapters) is gzkit's primary code-architecture directive** (operator ruling 2026-07-06) — deps behind adapters, stdlib+Pydantic core, parameterize-everything, Protocol>ABC, encapsulate-first. Enshrined as a binding per-turn rule.
+- **Bump all instructions-files limits and decouple from the Codex 32768 cap** (operator: "bump all limits, that hard-coded value is noise") — the vendor cap must not gate the core contract (hexagonal).
+- **Edge provenance is `INTENT | OBSERVED`, required (non-erasable), backfilled** — binding-vs-advisory derived from the intent-endpoint node type, not stored (auto-honors OKF BI#1).
+- **Provenance landed as a direct-fix correction under ADR-0.32.0** (operator directed "land the provenance field") — the airlock/seam thesis the ADR names cannot compute without it; corrective, not new-design.
+- **networkx kept, tree-sitter deferred to exercised-polyglot** (operator re-affirmed on review) — `ast` for gzkit's own Python first; adopt tree-sitter when a non-Python adopter codebase needs imaging.
+
+## Immediate Next Steps
 
 1. **Decide the two-hexagons issue** (wire ports vs bless injection + retire facade). This is the operator's call; the rule leans toward (b).
 2. **Wire the seam-diff** on the new provenance field — needs the push-domain (OBSERVED) edges: source domain `covers`/`surface` (OBPI-0.32.0-07) and work domain `blocks`/`blocked_by`/`discovered_from` (OBPI-0.32.0-06). Both are ADR-0.32.0 deferred-breadth, gated behind BI#1 fidelity (proven) and operator work-start authorization (not yet given).
@@ -53,3 +61,14 @@ An independent code assessment found gzkit realizes the hexagonal testing benefi
 - [ ] `uv run python -m unittest tests.test_ontology_model tests.test_ontology_graph tests.commands.test_ontology tests.test_ontology_corpus` → all pass (50 in the model/graph/command trio).
 - [ ] `uv run gz validate --advisory-scorecard --distribution` → pass (scorecard #64 + regenerated baseline).
 - [ ] Key proof of provenance: `OntologyEdge(source_id="a", target_id="b", link_type=LinkType.CHILD)` raises `ValidationError` (provenance required); with `provenance=Provenance.INTENT` it carries the vein.
+
+## Evidence / Artifacts
+
+- Commits (all on `main`, pushed): `219d23fd` (hexagonal rule + budget bump + test-constant rename), `dfb5a953` (scorecard #64 + distribution baseline regen), `ffd8ac75` (DDD/ACL doctrine section + provenance field). This handoff rides the next commit.
+- Rule: `.gzkit/rules/hexagonal-architecture.md` (+ mirrors `.claude/rules/`, `.agents/`, `.github/instructions/`, `src/gzkit/rules/`).
+- Doctrine: `docs/governance/hexagonal-architecture.md` (Cockburn §1–§5.7 reference + gzkit conformance section).
+- Scorecard: `docs/governance/advisory-rules-audit.md` row #64 (Promotable).
+- Model: `src/gzkit/ontology/model.py` (`Provenance` enum + `provenance` field on OntologyEdge); backfill in `src/gzkit/ontology/corpus.py`.
+- Budget: `data/instructions_files_budget.json` (50000/15000/30000); guard renamed in `tests/governance/test_agents_md_map_doctrine.py` + `tests/governance/test_agents_md_map_doctrine_application.py`.
+- Prior OBPI-0.32.0-04 completion handoff: `.gzkit/handoffs/20260706T130549Z-OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants-complete.md`.
+- The two-hexagons finding was produced by an independent read-only code assessment (Explore subagent) cross-checked against `src/gzkit/ports/`, `tests/fakes/`, `src/gzkit/adapters/`, and the 738 `project_root: Path` injection sites.
