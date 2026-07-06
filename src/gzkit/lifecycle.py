@@ -13,6 +13,7 @@ This module re-exports those and adds the I/O-coupled LifecycleStateMachine.
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 from gzkit.core.lifecycle import (
@@ -60,15 +61,22 @@ class LifecycleStateMachine:
         sm.transition("ADR-0.16.0", "ADR", "Draft", "Proposed")
     """
 
-    def __init__(self, ledger: Any | None = None) -> None:
-        """Initialize with an optional ledger for event recording.
+    def __init__(self, ledger: Any | None = None, project_root: Path | None = None) -> None:
+        """Initialize with optional injected I/O seams.
 
         Args:
             ledger: A ``Ledger`` instance. If None, transitions are validated
                     but no events are emitted.
+            project_root: Project root for the evaluation-justify-binding gate.
+                    If None, transitions are validated but the I/O-coupled gate
+                    is not evaluated — the same opt-in-by-injection contract as
+                    ``ledger``. Injected by the command-layer configurator; the
+                    core never resolves it from the ambient environment
+                    (hexagonal rule 4: take external dependencies as parameters).
 
         """
         self._ledger = ledger
+        self._project_root = project_root
 
     def transition(
         self,
@@ -101,15 +109,17 @@ class LifecycleStateMachine:
         if to_state not in allowed:
             raise InvalidTransitionError(content_type, from_state, to_state, allowed)
 
-        # Gate: evaluation-justify-binding fires when advancing past Pending
-        if from_state in ("Pending", "Draft"):
-            from gzkit.commands.common import get_project_root  # noqa: PLC0415
+        # Gate: evaluation-justify-binding fires when advancing past Pending —
+        # but only when a project_root was injected. Like the ledger seam, this
+        # I/O-coupled gate is opt-in by injection; without a root the transition
+        # is validated only. The root is never resolved from the command layer
+        # (hexagonal rule 4: take external dependencies as parameters).
+        if self._project_root is not None and from_state in ("Pending", "Draft"):
             from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
                 validate_evaluation_justify_binding,
             )
 
-            _project_root = get_project_root()
-            gate_errors = validate_evaluation_justify_binding(artifact_id, _project_root)
+            gate_errors = validate_evaluation_justify_binding(artifact_id, self._project_root)
             if gate_errors:
                 error = gate_errors[0]
                 raise ValueError(f"Lifecycle gate blocked for {artifact_id}: {error.message}")

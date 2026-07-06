@@ -347,7 +347,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             )
         else:
             try:
-                sm = LifecycleStateMachine(ledger)
+                sm = LifecycleStateMachine(ledger, project_root=project_root)
                 sm.transition(adr_id, "ADR", "Completed", "Validated")
                 status_transition = {"from": "Completed", "to": "Validated"}
             except InvalidTransitionError:

@@ -216,5 +216,53 @@ class TestAuditTriggeredTransition(unittest.TestCase):
         self.assertEqual(result["to_state"], "Validated")
 
 
+class TestGateProjectRootInjection(unittest.TestCase):
+    """The evaluation-justify-binding gate consults an INJECTED project_root,
+    never the ambient command-layer resolution (hexagonal rule 4).
+
+    Mirrors the ledger-injection contract: as an SM built without a ledger
+    validates without emitting events, an SM built without a project_root
+    validates without evaluating the I/O-coupled gate.
+    """
+
+    def test_constructor_accepts_project_root(self) -> None:
+        """project_root is a constructor seam (injected, not resolved internally)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            sm = LifecycleStateMachine(project_root=Path(tmp))
+            result = sm.transition("ADR-9.9.9", "ADR", "Draft", "Proposed")
+            self.assertEqual(result["to_state"], "Proposed")
+
+    def test_gate_consults_injected_root_and_blocks(self) -> None:
+        """A failing eval in the INJECTED root with no justify artifact blocks the
+        Draft -> Proposed gate — proving the gate reads the injected root, not the
+        ambient repo."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            (root / ".gzkit" / "ledger.jsonl").write_text(
+                json.dumps(
+                    {
+                        "event": "adr-evaluation",
+                        "id": "ADR-9.9.9",
+                        "dimensions": {"clarity": 1.0},
+                        "red_team_challenges_fired": [],
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            sm = LifecycleStateMachine(project_root=root)
+            with self.assertRaises(ValueError) as ctx:
+                sm.transition("ADR-9.9.9", "ADR", "Draft", "Proposed")
+            self.assertIn("Lifecycle gate blocked", str(ctx.exception))
+
+    def test_gate_skipped_without_project_root(self) -> None:
+        """No injected project_root -> the I/O-coupled gate is not evaluated
+        (validation-only), so the transition never touches the filesystem."""
+        sm = LifecycleStateMachine()
+        result = sm.transition("ADR-9.9.9", "ADR", "Draft", "Proposed")
+        self.assertEqual(result["to_state"], "Proposed")
+
+
 if __name__ == "__main__":
     unittest.main()
