@@ -18,7 +18,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
-            [--closeout-proof] [--okf-conformance]
+            [--closeout-proof] [--okf-conformance] [--ontology-purity]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1462,6 +1462,33 @@ A STRUCTURAL-FENCE REQ proves only when the parent ADR carries a
 
 **Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
 See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
+
+### `--ontology-purity`
+
+Enforces the ADR-0.32.0 Harness-Purity Boundary Invariant (#4): the ontology's
+`ownership:harness` axis admits only GovZero-universal object types. gzkit's own
+product object types — `CliVerb`, `Validator`, `Skill`, `Chore` — are
+`ownership:product` and must never appear in the harness subgraph.
+
+The validator audits the total `OBJECT_TYPE_REGISTRY`
+(`gzkit.ontology.model`) — the single seating list that classifies every
+`ObjectType` on the two axes (`ownership` × `plane`). A product object type
+seated at `ownership:harness` is a policy breach (exit 3).
+
+**Usage:**
+
+```bash
+gz validate --ontology-purity
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every seated object type honors Harness purity | — |
+| 3 | A product object type is classified `ownership:harness` | Reclassify the type to `ownership:product` in `OBJECT_TYPE_REGISTRY` |
+
+**Related:** ADR-0.32.0 / OBPI-0.32.0-01 (ontology model and purity).
 
 ### `--brief-command-shape`
 

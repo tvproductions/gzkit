@@ -102,6 +102,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "ontology_purity",
         "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",

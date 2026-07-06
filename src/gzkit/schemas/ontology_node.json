@@ -1,0 +1,65 @@
+{
+  "$defs": {
+    "ObjectType": {
+      "description": "Closed catalog of seated ontology object types.",
+      "enum": [
+        "ADR",
+        "OBPI",
+        "REQ",
+        "GHI",
+        "Receipt",
+        "Doc",
+        "TASK",
+        "CliVerb",
+        "Validator",
+        "Skill",
+        "Chore"
+      ],
+      "title": "ObjectType",
+      "type": "string"
+    },
+    "Ownership": {
+      "description": "Whether an object type is GovZero-universal (harness) or gzkit-specific.",
+      "enum": [
+        "harness",
+        "product"
+      ],
+      "title": "Ownership",
+      "type": "string"
+    },
+    "Plane": {
+      "description": "Product plane (constrains code) or process plane (constrains governance).\n\nMembers reproduced verbatim from the dormant governance schema\n``.gzkit/governance/ontology.schema.json`` ``$defs.plane`` for\ncontinuity-of-naming (parent ADR \u00a7 Decision).",
+      "enum": [
+        "product",
+        "process"
+      ],
+      "title": "Plane",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A typed ontology object: a node in the object/link plane.",
+  "properties": {
+    "node_id": {
+      "title": "Node Id",
+      "type": "string"
+    },
+    "object_type": {
+      "$ref": "#/$defs/ObjectType"
+    },
+    "ownership": {
+      "$ref": "#/$defs/Ownership"
+    },
+    "plane": {
+      "$ref": "#/$defs/Plane"
+    }
+  },
+  "required": [
+    "node_id",
+    "object_type",
+    "ownership",
+    "plane"
+  ],
+  "title": "OntologyNode",
+  "type": "object"
+}

@@ -3,7 +3,19 @@ id: OBPI-0.32.0-01-ontology-model-and-purity
 parent: ADR-0.32.0-gzkit-ontology
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  # Each REQ is one indivisible unit of labor with no sub-step below it —
+  # implemented as a single Red-Green-Refactor cycle each: 01 the two frozen
+  # models, 02 the two-axis + verbatim plane, 03 the purity fence, 04 the total
+  # partition registry, 05 the committed schema projection, 06 the parent-ADR
+  # Boundary-Invariant anchor (no code). No labor subdivided below any REQ.
+  - REQ-0.32.0-01-01
+  - REQ-0.32.0-01-02
+  - REQ-0.32.0-01-03
+  - REQ-0.32.0-01-04
+  - REQ-0.32.0-01-05
+  - REQ-0.32.0-01-06
 ---
 
 # OBPI-0.32.0-01-ontology-model-and-purity: Ontology Model And Purity
@@ -13,7 +25,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #1 - "Pydantic ontology model (OntologyNode/OntologyEdge + typed LinkType) + two-axis ownership/plane classification + Harness-Purity validator (with a refusal test: a product object pushed into ownership:harness is rejected); plane semantics validated to partition our objects; JSON schema under src/gzkit/schemas/."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -45,6 +57,7 @@ and the parent ADR's Fidelity Assertions bind against.
 - `tests/test_ontology_purity.py` — **CREATE**: `@covers` refusal test for the Harness-Purity validator
 - `src/gzkit/commands/validate_cmd.py` — register the `ontology_purity` scope ONLY: one `VALIDATOR_REGISTRY` entry (explicit tier), the `checks` map key, the `check_ontology_purity` param, and the `_POLICY_BREACH_ERROR_TYPES` membership so it exits 3 on refusal
 - `src/gzkit/cli/parser_maintenance.py` — add the additive `--ontology-purity` argparse flag on `gz validate` and wire `check_ontology_purity=a.check_ontology_purity` (mirrors `--req-kind-discipline`)
+- `tests/cli/test_validate_registry_parity.py` — **COUPLED SURFACE (AGENTS.md § DO IT RIGHT 1a)**: the registry-parity fence pins the explicit-tier stem set against a golden reference; registering `ontology_purity` in `VALIDATOR_REGISTRY` requires adding it to `_GOLDEN_EXPLICIT_SET` in the same commit, or the fence fails. Declared here per coupled-surface-coherence (surfaced by Step 4b adversary).
 - `docs/user/manpages/validate.md` — document the new `--ontology-purity` flag (Gate 3 docs coherence)
 - `src/gzkit/schemas/__init__.py` — **UNTOUCHED NEIGHBOR** (`load_schema()` is name-generic; no per-schema registration needed)
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md` — parent ADR `## Boundary Invariants` #4 is the STRUCTURAL-FENCE anchor (read-only reference, no edit)
@@ -72,7 +85,6 @@ and the parent ADR's Fidelity Assertions bind against.
 4. NEVER: add a new runtime dependency (networkx, tree-sitter); the models are pure Pydantic + stdlib `enum.StrEnum`.
 5. ALWAYS: reproduce the `plane` members (`product`/`process`) verbatim from the dormant `.gzkit/governance/ontology.schema.json` `plane` `$defs` enum; naming or member drift from that canonical field is a fail-closed defect (parent ADR § Decision — continuity-of-naming).
 6. ALWAYS: keep `OntologyNode`/`OntologyEdge` frozen with `extra="forbid"` per `.claude/rules/models.md`, and keep the committed `src/gzkit/schemas/ontology_node.json` the projection of the model (loadable via `load_schema`).
-7. ALWAYS: reconcile this brief against parent ADR § Decision and § Boundary Invariants #4 before implementation; quote the Decision line into `### Implementation Summary`.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -142,7 +154,8 @@ and the parent ADR's Fidelity Assertions bind against.
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] No behavior surface in this library-only unit; it contributes no BDD scenario. The ADR's Gate-4 BDD is owned by OBPI-0.32.0-03 (`features/ontology.feature`, the sole `gz ontology` verb surface) and discharged once by the ADR-level `uv run -m behave features/` at closeout.
+<!-- gz-validate-skip: command-shape -->
+- [ ] No behavior surface in this library-only unit; it contributes no BDD scenario. The ADR's Gate-4 BDD is owned by OBPI-0.32.0-03 (`features/ontology.feature`, the sole `gz ontology` verb surface — a planned OBPI-03 verb, not yet registered) and discharged once by the ADR-level `uv run -m behave features/` at closeout.
 
 ### Gate 5: Human (Heavy only)
 
@@ -270,15 +283,37 @@ uv run python -c "from gzkit.schemas import load_schema; print('ontology_node sc
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The Harness-Purity fence, proven both clean and fail-closed:
+
+$ uv run gz validate --ontology-purity
+Validated: ontology_purity
+# exit 0 - the seated OBJECT_TYPE_REGISTRY is Harness-Purity clean
+
+Independently proven to fail closed (Step 4b adversary, Codex): poisoning the
+registry (ObjectType.CLI_VERB -> Ownership.HARNESS) makes the same command emit
+"Harness-Purity breach: product object type 'CliVerb' placed in ownership:harness"
+and exit 3 (policy breach), then restored to clean.
+
+$ uv run -m unittest tests.test_ontology_model tests.test_ontology_purity
+Ran 18 tests ... OK
+
+$ uv run python -c "from gzkit.schemas import load_schema; from gzkit.ontology.model import ontology_node_json_schema; print(load_schema('ontology_node') == ontology_node_json_schema())"
+True
+
+ARB receipts: arb-step-unittest-6f66d02a946b4b14a57057dc127118cf (full suite 6799/6799), arb-ruff-9189c035fa8141569407bdcffd697767, arb-step-typecheck-3a406f22a1d84830b46cf857113e65d9, arb-step-mkdocs-bb8c15d81536413fbc3656b63e80f012.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision implemented (parent ADR-0.32.0 § Decision, verbatim): "A two-axis type model classifies every object: ownership (harness|product; a Harness-Purity Invariant admits only GovZero-universal types into ownership:harness, enforced by a validator landing in the same increment) x plane (product|process; the semantics are seated in ontology.schema.json's dormant plane field for continuity-of-naming and validated to genuinely partition our objects, not merely asserted)."
+- Files created: src/gzkit/ontology/__init__.py, src/gzkit/ontology/model.py (OntologyNode/OntologyEdge frozen extra=forbid; Ownership/Plane/LinkType/ObjectType closed StrEnums; total OBJECT_TYPE_REGISTRY; ontology_node_json_schema projector), src/gzkit/ontology/purity.py (audit_ontology_purity + harness_purity_violations), src/gzkit/schemas/ontology_node.json (committed projection), tests/test_ontology_model.py (15 tests), tests/test_ontology_purity.py (3 tests).
+- Files modified: src/gzkit/commands/validate_cmd.py (registered ontology_purity scope: runner + VALIDATOR_REGISTRY entry + checks map + check_ontology_purity param + _POLICY_BREACH_ERROR_TYPES), src/gzkit/cli/parser_maintenance.py (additive --ontology-purity flag + call-site), docs/user/manpages/validate.md (flag doc), tests/cli/test_validate_registry_parity.py (golden explicit-tier set + ontology_purity; coupled surface per DO IT RIGHT 1a).
+- Tests added: 18 total, each @covers its REQ (REQ-01 immutability x5, REQ-02 two-axis/plane-verbatim x5, REQ-04 partition x4, REQ-05 schema coherence x1, REQ-03 purity fence x3). Full unittest suite 6799/6799 green.
+- Plane members reproduced verbatim from .gzkit/governance/ontology.schema.json $defs.plane (product/process), pinned by a runtime schema-load test.
+- Date completed: 2026-07-06
+- Attestation status: operator-attested (g0, "attest completed"), Gate 5 operator-verbatim.
+- Defects noted: none substantive. Step 4b (Codex) scope-hygiene caveat resolved: coupled parity fence declared in allowlist; pre-existing ADR-0.31.0 derived-view drift isolated to commit db432ae6.
 
 ## Tracked Defects
 
@@ -289,12 +324,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane OBPI-0.32.0-01 ontology model + Harness-Purity fence: 6 REQs covered (18 scoped tests, 15 model + 3 purity), full suite 6799/6799 green (receipt arb-step-unittest-6f66d02a946b4b14a57057dc127118cf), lint clean (arb-ruff-9189c035fa8141569407bdcffd697767), typecheck clean (arb-step-typecheck-3a406f22a1d84830b46cf857113e65d9), mkdocs --strict clean (arb-step-mkdocs-bb8c15d81536413fbc3656b63e80f012). gz validate --ontology-purity fails closed at exit 3 on a real product-in-harness breach, independently verified by the Codex Step 4b adversary (verdict REFUTED-WITH-CAVEATS; the sole scope-hygiene caveat resolved — coupled parity fence declared in-allowlist, ADR-0.31.0 reconcile isolated to commit db432ae6). Precomplete 8/8 READY.
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -

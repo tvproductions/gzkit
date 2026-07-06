@@ -390,6 +390,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
     ),
+    _ScopeEntry("ontology_purity", "explicit", True, lambda r, _f: _ontology_purity_runner(r)),
     _ScopeEntry(
         "brief_command_shape", "explicit", True, lambda r, _f: _ta().audit_brief_command_shape(r)
     ),
@@ -434,6 +435,13 @@ def _invariant_coherence_runner(project_root: Path) -> list[ValidationError]:
     from gzkit.governance import trust_audits  # noqa: PLC0415
 
     return trust_audits.validate_invariant_coherence(project_root)
+
+
+def _ontology_purity_runner(project_root: Path) -> list[ValidationError]:
+    """Import ontology.purity lazily (avoids import cost at module load)."""
+    from gzkit.ontology.purity import audit_ontology_purity  # noqa: PLC0415
+
+    return audit_ontology_purity(project_root)
 
 
 def _rendition_freshness_runner(project_root: Path) -> list[ValidationError]:
@@ -1011,6 +1019,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_reconcile",
         "router_tables",
         "req_kind_discipline",
+        "ontology_purity",
         "brief_command_shape",
         "tautological_test_audit",
         "task_envelope_coherence",
@@ -1279,6 +1288,7 @@ def validate(
     check_brief_reconcile: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
+    check_ontology_purity: bool = False,
     check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
     check_setpoint_coherence: bool = False,
@@ -1380,6 +1390,7 @@ def validate(
         "brief_reconcile": check_brief_reconcile,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
+        "ontology_purity": check_ontology_purity,
         "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
         "task_envelope_coherence": check_task_envelope_coherence,
