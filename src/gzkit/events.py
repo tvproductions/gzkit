@@ -616,6 +616,48 @@ class MxSessionClosedEvent(_EventBase):
     attestor: str = Field(..., description="Operator who closed the hangar")
 
 
+# ---------------------------------------------------------------------------
+# Work-domain L2 edge events (ADR-0.32.0, OBPI-06). The four net-new,
+# append-only edge event types expressing work coupling: precedence
+# (blocks / its inverse blocked_by), provenance (discovered_from), and
+# verification (validates). Permanent once emitted — the ADR's one true
+# one-way door (§ Consequences Negative #4). Emission is code-gated on a
+# recorded WWHTBT edge-vocabulary attestation (gzkit.ontology.work, REQ-07).
+# ---------------------------------------------------------------------------
+
+
+class BlocksEvent(_EventBase):
+    """blocks event — ``blocker`` blocks ``blocked`` (precedence edge)."""
+
+    event: Literal["blocks"]
+    blocker: str = Field(..., description="The id that must resolve first")
+    blocked: str = Field(..., description="The id that cannot proceed until the blocker resolves")
+
+
+class BlockedByEvent(_EventBase):
+    """blocked_by event — ``blocked`` is blocked_by ``blocker`` (inverse precedence edge)."""
+
+    event: Literal["blocked_by"]
+    blocked: str = Field(..., description="The id that cannot proceed until the blocker resolves")
+    blocker: str = Field(..., description="The id that must resolve first")
+
+
+class DiscoveredFromEvent(_EventBase):
+    """discovered_from event — ``discovered`` was discovered_from ``origin`` (provenance edge)."""
+
+    event: Literal["discovered_from"]
+    discovered: str = Field(..., description="The id that was surfaced")
+    origin: str = Field(..., description="The id the discovery originated from")
+
+
+class ValidatesEvent(_EventBase):
+    """validates event — ``validator`` validates ``validated`` (verification edge)."""
+
+    event: Literal["validates"]
+    validator: str = Field(..., description="The id that provides the validation")
+    validated: str = Field(..., description="The id that is validated")
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -663,7 +705,11 @@ TypedLedgerEvent = Annotated[
     | BriefReconcileDriftOverriddenEvent
     | EnforcementClaimVerifiedEvent
     | MxSessionOpenedEvent
-    | MxSessionClosedEvent,
+    | MxSessionClosedEvent
+    | BlocksEvent
+    | BlockedByEvent
+    | DiscoveredFromEvent
+    | ValidatesEvent,
     Field(discriminator="event"),
 ]
 

@@ -3,7 +3,24 @@ id: OBPI-0.32.0-06-work-domain-l2-schema-and-queue
 parent: ADR-0.32.0-gzkit-ontology
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic — each REQ is one indivisible unit of labor with no sub-REQ
+# subdivision. The work domain was authored as one continuous TDD flow, one
+# RGR increment per REQ: REQ-01 (four additive events + committed schema
+# projection + its coupled coherence surfaces — one cohesive "the edge schema
+# exists coherently" deliverable), REQ-02 (queue replay), REQ-03 (advisory-
+# first surfacing, tied to the same replay), REQ-04 (torque-up constant),
+# REQ-05 (structural-fence declaration, no code), REQ-06 (additive round-trip),
+# REQ-07 (WWHTBT-gated emit). None subdivided into seq=02+; the pipeline-minted
+# seq=01-per-REQ buckets ARE the true labor shape (GHI #590).
+req_atomic:
+  - REQ-0.32.0-06-01
+  - REQ-0.32.0-06-02
+  - REQ-0.32.0-06-03
+  - REQ-0.32.0-06-04
+  - REQ-0.32.0-06-05
+  - REQ-0.32.0-06-06
+  - REQ-0.32.0-06-07
 ---
 
 # OBPI-0.32.0-06-work-domain-l2-schema-and-queue: Work Domain L2 Schema And Queue
@@ -13,7 +30,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #6 - "work domain: net-new L2 event schema (blocks/blocked_by/discovered_from/validates) + ready/blocked queue + advisory-first blocks with a declared fail-closed torque-up milestone; gated last on its own WWHTBT of the edge set (the one-way door)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -60,6 +77,11 @@ contract once emitted — the highest-scrutiny surface in ADR-0.32.0.
 - `src/gzkit/ontology/work.py` — **CREATE**: TASK nodes + `ready`/`blocked` queue replayed from the four L2 edges + advisory-first surfacing (block provenance) + the additive edge structural validator + the schema projector `work_edge_json_schema()` + the declared `TORQUE_UP_MILESTONE` doctrine constant.
 - `src/gzkit/ontology/__init__.py` — **CREATE**: package marker for the `ontology` package (docstring-only; no logic). Idempotent — a no-op if OBPI-0.32.0-01/02 already introduced the package.
 - `tests/test_ontology_work.py` — **CREATE**: `@covers`-decorated REQ tests (flat convention, mirrors `tests/test_obpi_state_machine.py`).
+- `src/gzkit/ontology/corpus.py` — **EDIT (additive disposition only; operator-ratified allowlist amendment 2026-07-06)**: add the four net-new discriminators (`blocks`, `blocked_by`, `discovered_from`, `validates`) to `_ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES` so the registry-coupled rebuild-fidelity fence (parent ADR Boundary Invariant #1) reads `complete=True` — the work-domain edges are consciously NOT imaged by the corpus projection. NO corpus projection **logic** change. Coupled-surface coherence per AGENTS.md § DO IT RIGHT 1a: joining the four events into the live `TypedLedgerEvent` union (REQ-01/06) is introspected by the fidelity fence at `corpus.py:112`, so the disposition MUST land in the same commit.
+- `src/gzkit/schemas/ledger.json` — **EDIT (additive only; operator-ratified 2026-07-06)**: add one `events` schema entry per net-new discriminator so `audit_event_schemas` (`test_ledger_event_schema_coverage`) and the runtime `gz validate --ledger` recognize the four types. Coupled-surface of REQ-01's union addition.
+- `tests/test_schemas.py` — **EDIT (additive only; operator-ratified 2026-07-06)**: add the four `discriminator → model class` rows to `_EVENT_MODELS` so the model↔schema symmetry tests (`test_all_schema_events_have_models` / `test_all_models_have_schema_events`) stay coherent with the four new `ledger.json` entries.
+- `src/gzkit/ledger.py` — **READ-ONLY test/runtime import (NOT edited; reconcile coupling)**: `tests/test_ontology_work.py` imports `Ledger`/`LedgerEvent` to construct fixture ledgers, and `emit_work_edge` appends through the existing `Ledger.append`. No edit to `ledger.py` — declared here only because `gz brief reconcile` flags REQ-test src-imports (`brief_reconcile.py` `missing_in_brief`). Edit-scope remains DENIED (see Denied Paths).
+- `src/gzkit/schemas/__init__.py` — **READ-ONLY test import (NOT edited; reconcile coupling)**: the coherence test imports `load_schema("work_edges")` from the existing drop-in loader. No edit.
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/obpis/OBPI-0.32.0-06-work-domain-l2-schema-and-queue.md` — this brief (evidence).
 
 ## Denied Paths
@@ -67,8 +89,8 @@ contract once emitted — the highest-scrutiny surface in ADR-0.32.0.
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - **Existing event-type semantics in `src/gzkit/events.py`** — every pre-existing `_EventBase` subclass, discriminator literal, and field is UNTOUCHED. The four types are additive; parse-compatibility is pinned by REQ-06.
-- `src/gzkit/ledger.py`, `src/gzkit/ledger_events.py`, `src/gzkit/ledger_proof.py`, `src/gzkit/ledger_semantics.py` — the append-only ledger writers/proof helpers; not edited here.
-- **Corpus domain** (`ledger.get_artifact_graph` / corpus projection — OBPI-0.32.0-02) and **source domain** (tree-sitter anchors — OBPI-0.32.0-07).
+- `src/gzkit/ledger.py`, `src/gzkit/ledger_events.py`, `src/gzkit/ledger_proof.py`, `src/gzkit/ledger_semantics.py` — the append-only ledger writers/proof helpers; **not EDITED here**. (`ledger.py` is imported READ-ONLY by tests / the `emit_work_edge` append path — declared read-only in Allowed Paths above; edit-scope stays denied.)
+- **Corpus domain projection LOGIC** (`ledger.get_artifact_graph` typing, node/edge lifting, `project_corpus` — OBPI-0.32.0-02) and **source domain** (tree-sitter anchors — OBPI-0.32.0-07). NARROWED (operator-ratified 2026-07-06): the ONE permitted `corpus.py` touch is the additive disposition-set entry in Allowed Paths above (registering the four work-domain discriminators as consciously-not-imaged so the fidelity fence stays `complete=True`); no projection algorithm, no node/edge lift, no fidelity-report logic changes.
 - The **`ontology` CLI verb family** (`sense`/`trace`/`resense`/`seams`/`reach`) — that is OBPI-0.32.0-03; this OBPI adds NO new CLI verb and NO new `gz validate` scope.
 - The parent ADR body — this OBPI anchors its STRUCTURAL-FENCE (REQ-05) to an **existing** Boundary Invariant (#2); no ADR edit.
 - New third-party dependencies, CI files, lockfiles.
@@ -234,7 +256,7 @@ validator), STRUCTURAL-FENCE (parent-ADR ## Boundary Invariants entry).
 - [ ] REQ-0.32.0-06-02 [BEHAVIOR]: `gzkit.ontology.work` replays a `ready`/`blocked` TASK queue **purely** from the four L2 edge events — a TASK partitions to `ready` when it has zero unsatisfied blocking edges (`blocked_by`/`blocks`) and to `blocked` otherwise; the partition is a deterministic rebuild over L2 (no L1/frontmatter read, no direct-edit state). Pinned by a `@covers(REQ-0.32.0-06-02)` table-driven test in `tests/test_ontology_work.py` over edge fixtures.
 - [ ] REQ-0.32.0-06-03 [BEHAVIOR]: Advisory-first — given a TASK with an unsatisfied block, when the queue is replayed, then the TASK appears in the `blocked` partition **with its blocking edge(s) surfaced as provenance** AND the computation returns normally (no exception raised, no non-zero gate). Pinned by a `@covers(REQ-0.32.0-06-03)` test asserting the block is reported (present with its blocker) and that no gating error is raised — the block is surfaced, never a hard refusal.
 - [ ] REQ-0.32.0-06-04 [SUPPORT]: The fail-closed **torque-up milestone** — the FUTURE hard-block-refusal end-state where an unsatisfied block gates work — is DECLARED (not implemented) as a promotable future gate via the `TORQUE_UP_MILESTONE` doctrine constant in `gzkit.ontology.work` (marked `enforced=False`) and in this brief; the shipped release is advisory-first only. Proven by `uv run gz validate --documents` passing (structural validator admits the declaration's shape in this brief) AND an `artifact_edited` ledger event citing this brief file emitted at OBPI completion.
-- [ ] REQ-0.32.0-06-05 [STRUCTURAL-FENCE]: The work-domain `ready`/`blocked` queue is a Tier-B **derived-never-authority** projection — advisory-only; it NEVER gates, and no `gz validate` scope, gate, or closeout step consumes the queue as enforcement evidence; the work module adds no `gz` verb or `gz validate` scope. Anchored in the parent ADR `## Boundary Invariants` #2 (Derived-never-authority), audited at ADR closeout.
+- [ ] REQ-0.32.0-06-05 [STRUCTURAL-FENCE]: The work-domain `ready`/`blocked` queue is a Tier-B **derived-never-authority** projection — advisory-only; it NEVER gates, and no `gz validate` scope, gate, or closeout step consumes the queue as authoritative gating evidence; the work module adds no `gz` verb or `gz validate` scope. This is a state-property fence (it asserts the ABSENCE of authority, not the presence of a guard), anchored in the parent ADR `## Boundary Invariants` #2 (Derived-never-authority), audited at ADR closeout.
 - [ ] REQ-0.32.0-06-06 [BEHAVIOR]: Additive-not-mutative — after the four types are added, every pre-existing event type STILL parses unchanged through `parse_typed_event` (no discriminator collision, no altered existing field/semantic), and each of the four new types round-trips (`parse_typed_event(model.model_dump()).event == model.event`). Pinned by a `@covers(REQ-0.32.0-06-06)` regression test asserting a representative pre-existing type parses identically AND the four new types round-trip.
 - [ ] REQ-0.32.0-06-07 [BEHAVIOR]: Emission of the four edge event types is MECHANICALLY fail-closed on the WWHTBT record — `gzkit.ontology.work` exposes the SOLE sanctioned emit path for `blocks`/`blocked_by`/`discovered_from`/`validates`, and that path RAISES (refuses to emit) unless a recorded WWHTBT edge-vocabulary attestation is present AND its discriminator set equals the committed `work_edges.json` set. A `@covers(REQ-0.32.0-06-07)` test asserts (a) emission is REFUSED when the WWHTBT record is absent or its vocabulary diverges from the schema, and (b) emission succeeds only when the record is present and matches — so "frozen before emission" is enforced by code, not by brief-prose presence. Because L2 is append-only, the four types are permanent once emitted (the one true one-way door, § Consequences Negative #4); the mechanical gate is what makes the WWHTBT pass load-bearing rather than ceremonial. (Test-safety: the success-branch test MUST target a fixture ledger, never the real append-only ledger — emitting the four permanent L2 types during a test would slam the one-way door.)
 
@@ -308,23 +330,23 @@ event is ever emitted.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
 
-Intended proof (fill with observed output at completion):
-`uv run python -c "from gzkit.ontology.work import replay_work_queue; q = replay_work_queue(); print('ready:', len(q.ready), 'blocked:', len(q.blocked))"`
-— demonstrates the ready/blocked partition replayed purely from the four L2 edge
-events, returning normally with blocks surfaced (never refused).
+- WWHTBT-gated sole emit path (observed under test, fixture ledger only): emit_work_edge(BlocksEvent(...), ledger, None) raises WorkEmissionRefused; a vocabulary-divergent WwhtbtRecord also raises; emission succeeds only with a record whose vocabulary == the committed WORK_EDGE_DISCRIMINATORS set, after which the edge replays into queue.blocked (test_emitted_edge_feeds_the_queue_replay).
+- Advisory-first replay (read-only, real ledger): `uv run python -c "from gzkit.ontology.work import replay_work_queue; q=replay_work_queue(); print('ready:',len(q.ready),'blocked:',len(q.blocked))"` -> `ready: 0 blocked: 0` (returns normally, never gates).
+- Schema drift fail-close: `uv run python -c "from gzkit.schemas import load_schema; from gzkit.ontology.work import work_edge_json_schema; print(load_schema('work_edges')==work_edge_json_schema())"` -> `True`.
+- Receipts: arb-step-unittest-4f355d8f43ed4bb5ba4e22ef45a14aaf (exit 0), arb-ruff-ea8ca24bf9d94215af415c61b0bf40fe, arb-step-typecheck-cb8fb3fa178c4e72ab584dfe7d7a9079, arb-step-mkdocs-11da5a9ede23406aa7b96a1fb42bbe99.
 
 ### Implementation Summary
 
-<!-- Quote parent ADR § Decision checklist item #6 verbatim here, plus the
-     recorded WWHTBT pass over the exact edge set (REQ-07). -->
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- ADR Decision item #6 (verbatim): "work domain: net-new L2 event schema (blocks/blocked_by/discovered_from/validates) + ready/blocked queue + advisory-first blocks with a declared fail-closed torque-up milestone; gated last on its own WWHTBT of the edge set (the one-way door)."
+- WWHTBT pass (exact edge set, recorded before emission): frozen vocabulary is exactly {blocks, blocked_by, discovered_from, validates} — precedence (blocks / inverse blocked_by), provenance (discovered_from), verification (validates); no fourth relation the ready/blocked partition needs; blocks+blocked_by kept distinct (L2 append-only, cheap to keep, impossible to split later); no discriminator collision (verified against the union); satisfaction/removal deliberately excluded (that is the torque-up milestone). emit_work_edge refuses any emission whose vocabulary != this committed set.
+- Files created: src/gzkit/ontology/work.py (queue replay + advisory-first surfacing + TORQUE_UP_MILESTONE + WwhtbtRecord + WWHTBT-gated emit_work_edge + work_edge_json_schema), src/gzkit/schemas/work_edges.json (committed projection), tests/test_ontology_work.py (18 @covers REQ tests).
+- Files modified: src/gzkit/events.py (four additive frozen event types + union join, no pre-existing type touched); coupled coherence surfaces (operator-ratified allowlist amendment) src/gzkit/ontology/corpus.py (fidelity-fence disposition), src/gzkit/schemas/ledger.json (four schema entries), tests/test_schemas.py (four _EVENT_MODELS rows).
+- Tests: 18 REQ tests + 43 coupled-surface tests green; covers parity uncovered_reqs=0.
+- Date completed: 2026-07-06.
+- Attestation status: operator-attested ("Attest this"), attestor g0.
+- Defects noted: none shipped. Independent Codex adversary REFUTED; actionable REQ-05 fence classification fixed in-flight (proof_status=pass via parent-ADR Boundary Invariant anchor); REQ-07 raw-Ledger.append residual disclosed — advisory-first design, hard-lock is the declared torque-up milestone.
 
 ## Tracked Defects
 
@@ -335,12 +357,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: Attest this — OBPI-0.32.0-06 work-domain L2 edge schema + ready/blocked queue: four additive frozen event types (blocks/blocked_by/discovered_from/validates) joined into TypedLedgerEvent, advisory-first ready/blocked queue replayed purely from L2 edges, code-enforced WWHTBT-gated sole emit path, and a declared (enforced=False) TORQUE_UP_MILESTONE. 18 REQ tests + 43 coupled-surface tests green; covers parity uncovered_reqs=0; independent Codex adversary REFUTED with one actionable finding (REQ-05 fence misclassification) fixed in-flight to proof_status=pass and the REQ-07 raw-append residual disclosed. Receipts: arb-step-unittest-4f355d8f43ed4bb5ba4e22ef45a14aaf, arb-ruff-ea8ca24bf9d94215af415c61b0bf40fe, arb-step-typecheck-cb8fb3fa178c4e72ab584dfe7d7a9079, arb-step-mkdocs-11da5a9ede23406aa7b96a1fb42bbe99.
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -

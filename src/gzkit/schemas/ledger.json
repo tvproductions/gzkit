@@ -1445,6 +1445,70 @@
           "min_length": 1
         }
       }
+    },
+    "blocks": {
+      "required": [
+        "blocker",
+        "blocked"
+      ],
+      "properties": {
+        "blocker": {
+          "type": "string",
+          "min_length": 1
+        },
+        "blocked": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "blocked_by": {
+      "required": [
+        "blocked",
+        "blocker"
+      ],
+      "properties": {
+        "blocked": {
+          "type": "string",
+          "min_length": 1
+        },
+        "blocker": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "discovered_from": {
+      "required": [
+        "discovered",
+        "origin"
+      ],
+      "properties": {
+        "discovered": {
+          "type": "string",
+          "min_length": 1
+        },
+        "origin": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "validates": {
+      "required": [
+        "validator",
+        "validated"
+      ],
+      "properties": {
+        "validator": {
+          "type": "string",
+          "min_length": 1
+        },
+        "validated": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

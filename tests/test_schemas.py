@@ -20,6 +20,8 @@ from gzkit.events import (
     AttestedEvent,
     AuditGeneratedEvent,
     AuditReceiptEmittedEvent,
+    BlockedByEvent,
+    BlocksEvent,
     BriefReconciledEvent,
     BriefReconcileDriftDetectedEvent,
     BriefReconcileDriftOverriddenEvent,
@@ -30,6 +32,7 @@ from gzkit.events import (
     CompositionRenderedEvent,
     ConstitutionCreatedEvent,
     CorpusEntryAppendedEvent,
+    DiscoveredFromEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
     GateCheckedEvent,
@@ -57,6 +60,7 @@ from gzkit.events import (
     TaskCompletedEvent,
     TaskEscalatedEvent,
     TaskStartedEvent,
+    ValidatesEvent,
 )
 from gzkit.models.frontmatter import (
     AdrFrontmatter,
@@ -289,6 +293,11 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "enforcement_claim_verified": EnforcementClaimVerifiedEvent,
     "mx_session_opened": MxSessionOpenedEvent,
     "mx_session_closed": MxSessionClosedEvent,
+    # Work-domain L2 edge events (ADR-0.32.0, OBPI-06)
+    "blocks": BlocksEvent,
+    "blocked_by": BlockedByEvent,
+    "discovered_from": DiscoveredFromEvent,
+    "validates": ValidatesEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

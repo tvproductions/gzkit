@@ -1,0 +1,226 @@
+{
+  "discriminators": [
+    "blocked_by",
+    "blocks",
+    "discovered_from",
+    "validates"
+  ],
+  "events": {
+    "blocked_by": {
+      "additionalProperties": false,
+      "description": "blocked_by event \u2014 ``blocked`` is blocked_by ``blocker`` (inverse precedence edge).",
+      "properties": {
+        "blocked": {
+          "description": "The id that cannot proceed until the blocker resolves",
+          "title": "Blocked",
+          "type": "string"
+        },
+        "blocker": {
+          "description": "The id that must resolve first",
+          "title": "Blocker",
+          "type": "string"
+        },
+        "event": {
+          "const": "blocked_by",
+          "title": "Event",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "schema_": {
+          "default": "gzkit.ledger.v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "ts": {
+          "title": "Ts",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "event",
+        "blocked",
+        "blocker"
+      ],
+      "title": "BlockedByEvent",
+      "type": "object"
+    },
+    "blocks": {
+      "additionalProperties": false,
+      "description": "blocks event \u2014 ``blocker`` blocks ``blocked`` (precedence edge).",
+      "properties": {
+        "blocked": {
+          "description": "The id that cannot proceed until the blocker resolves",
+          "title": "Blocked",
+          "type": "string"
+        },
+        "blocker": {
+          "description": "The id that must resolve first",
+          "title": "Blocker",
+          "type": "string"
+        },
+        "event": {
+          "const": "blocks",
+          "title": "Event",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "schema_": {
+          "default": "gzkit.ledger.v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "ts": {
+          "title": "Ts",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "event",
+        "blocker",
+        "blocked"
+      ],
+      "title": "BlocksEvent",
+      "type": "object"
+    },
+    "discovered_from": {
+      "additionalProperties": false,
+      "description": "discovered_from event \u2014 ``discovered`` was discovered_from ``origin`` (provenance edge).",
+      "properties": {
+        "discovered": {
+          "description": "The id that was surfaced",
+          "title": "Discovered",
+          "type": "string"
+        },
+        "event": {
+          "const": "discovered_from",
+          "title": "Event",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "origin": {
+          "description": "The id the discovery originated from",
+          "title": "Origin",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "schema_": {
+          "default": "gzkit.ledger.v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "ts": {
+          "title": "Ts",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "event",
+        "discovered",
+        "origin"
+      ],
+      "title": "DiscoveredFromEvent",
+      "type": "object"
+    },
+    "validates": {
+      "additionalProperties": false,
+      "description": "validates event \u2014 ``validator`` validates ``validated`` (verification edge).",
+      "properties": {
+        "event": {
+          "const": "validates",
+          "title": "Event",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent"
+        },
+        "schema_": {
+          "default": "gzkit.ledger.v1",
+          "title": "Schema",
+          "type": "string"
+        },
+        "ts": {
+          "title": "Ts",
+          "type": "string"
+        },
+        "validated": {
+          "description": "The id that is validated",
+          "title": "Validated",
+          "type": "string"
+        },
+        "validator": {
+          "description": "The id that provides the validation",
+          "title": "Validator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "event",
+        "validator",
+        "validated"
+      ],
+      "title": "ValidatesEvent",
+      "type": "object"
+    }
+  }
+}

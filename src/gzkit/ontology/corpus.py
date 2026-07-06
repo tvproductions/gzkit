@@ -71,6 +71,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "agent_sync_completed",
         "artifact_edited",
         "audit_generated",
+        # Work-domain L2 edge events (ADR-0.32.0, OBPI-06) — imaged by the work
+        # subgraph (gzkit.ontology.work), consciously NOT by the corpus projection.
+        "blocked_by",
+        "blocks",
         "brief_reconcile_drift_detected",
         "brief_reconcile_drift_overridden",
         "brief_reconciled",
@@ -79,6 +83,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "composition_drift_detected",
         "composition_rendered",
         "corpus_entry_appended",
+        "discovered_from",
         "distribution_baseline_regenerated",
         "enforcement_claim_verified",
         "gate_checked",
@@ -99,6 +104,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "task_completed",
         "task_escalated",
         "task_started",
+        "validates",
     }
 )
 
