@@ -3,6 +3,8 @@
     "ObjectType": {
       "description": "Closed catalog of seated ontology object types.",
       "enum": [
+        "PRD",
+        "Constitution",
         "ADR",
         "OBPI",
         "REQ",

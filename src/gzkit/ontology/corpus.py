@@ -1,0 +1,265 @@
+"""Corpus-domain projection over ``ledger.get_artifact_graph`` (ADR-0.32.0, OBPI-02).
+
+The corpus projection absorbs ``ledger.get_artifact_graph()`` — gzkit's single
+artifact-lineage replay path — into the typed ``OntologyGraph``, surfacing
+parent/child lineage plus supersedes/attests/validates as first-class typed
+edges, and emits a rebuild-fidelity self-report that confesses an incomplete or
+stale replay (parent ADR Boundary Invariant #1).
+"""
+
+from __future__ import annotations
+
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import get_args
+
+from pydantic import BaseModel, ConfigDict
+
+from gzkit.config import load_config
+from gzkit.events import TypedLedgerEvent
+from gzkit.ledger import Ledger
+from gzkit.ontology.graph import OntologyGraph
+from gzkit.ontology.model import (
+    OBJECT_TYPE_REGISTRY,
+    LinkType,
+    ObjectType,
+    OntologyEdge,
+    OntologyNode,
+)
+
+# ledger get_artifact_graph node ``type`` string -> typed ObjectType. Every node
+# type get_artifact_graph yields (prd/constitution/adr/obpi) maps here; an
+# unmapped type is confessed, never silently dropped.
+_NODE_TYPE_MAP: dict[str, ObjectType] = {
+    "prd": ObjectType.PRD,
+    "constitution": ObjectType.CONSTITUTION,
+    "adr": ObjectType.ADR,
+    "obpi": ObjectType.OBPI,
+}
+
+# Corpus-lineage event types the projection LIFTS into nodes/edges — the ones
+# ``get_artifact_graph``'s replay materializes into artifact structure.
+_CORPUS_LINEAGE_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        "prd_created",
+        "constitution_created",
+        "adr_created",
+        "obpi_created",
+        "artifact_renamed",
+        "attested",
+        "closeout_initiated",
+        "audit_receipt_emitted",
+        "obpi_receipt_emitted",
+        "pipeline_launched",
+        "obpi_withdrawn",
+        "obpi_superseded",
+        "obpi_completion_repudiated",
+    }
+)
+
+# Event types the corpus domain consciously does NOT image — they belong to the
+# work/source/process domains (deferred OBPI-05/06/07) or are non-lineage. This
+# is a DISPOSITION, not a silent drop: they are accounted-for so the fidelity
+# report reads complete=True today, and a NEW discriminator (in neither set)
+# surfaces as unaccounted -> complete=False (parent ADR Boundary Invariant #1).
+_ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        "adr-evaluation",
+        "adr_annotated",
+        "adr_eval_completed",
+        "agent_sync_completed",
+        "artifact_edited",
+        "audit_generated",
+        "brief_reconcile_drift_detected",
+        "brief_reconcile_drift_overridden",
+        "brief_reconciled",
+        "chore_decommission_processed",
+        "composition_candidate_emitted",
+        "composition_drift_detected",
+        "composition_rendered",
+        "corpus_entry_appended",
+        "distribution_baseline_regenerated",
+        "enforcement_claim_verified",
+        "gate_checked",
+        "intrinsic-complexity-attestation",
+        "lifecycle_transition",
+        "mx_session_closed",
+        "mx_session_opened",
+        "obpi_completion_uncovered_accept",
+        "obpi_lock_claimed",
+        "obpi_lock_released",
+        "obpi_lock_ttl_warning",
+        "patch-release",
+        "pipeline_marker_purged",
+        "project_init",
+        "rendition_advisor_verdict",
+        "rendition_committed",
+        "task_blocked",
+        "task_completed",
+        "task_escalated",
+        "task_started",
+    }
+)
+
+# The projection's full disposition of the ledger event universe. A discriminator
+# in the LIVE registry but absent here is unaccounted -> complete=False.
+_ACCOUNTED_EVENT_TYPES: frozenset[str] = (
+    _CORPUS_LINEAGE_EVENT_TYPES | _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES
+)
+
+
+def ledger_event_discriminators() -> frozenset[str]:
+    """Enumerate the LIVE ``TypedLedgerEvent`` discriminator registry.
+
+    Introspected from the discriminated union — never a hardcoded list — so a
+    discriminator added to the union by a later ADR appears here automatically
+    and, until dispositioned in ``_ACCOUNTED_EVENT_TYPES``, drives
+    ``complete=False`` (parent ADR Boundary Invariant #1, registry-coupled).
+    """
+    union, _field = get_args(TypedLedgerEvent)
+    return frozenset(
+        get_args(member.model_fields["event"].annotation)[0] for member in get_args(union)
+    )
+
+
+class RebuildFidelity(BaseModel):
+    """The projection's self-report: can it confess an incomplete/stale replay?"""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    complete: bool
+    fresh: bool
+    unaccounted_event_types: tuple[str, ...]
+    unregistered_replayed_event_types: tuple[str, ...]
+    latest_event_ts: str | None
+    build_ts: str
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        accounted: frozenset[str],
+        registry: frozenset[str],
+        replayed: frozenset[str],
+        latest_ts: str | None,
+        build_ts: str,
+    ) -> RebuildFidelity:
+        """Diff the projection's disposition against the LIVE registry AND the
+        actually-replayed event types.
+
+        ``unaccounted`` = discriminators the projection has not dispositioned,
+        drawn from the union of the live registry and the replayed event types —
+        so BOTH a newly-registered discriminator (the forcing fence) AND a type
+        present in the ledger but absent from the typed union drive
+        ``complete=False``. ``unregistered_replayed_event_types`` confesses
+        replayed types missing from the ``TypedLedgerEvent`` registry (a
+        typed-union gap) — and ALSO drives ``complete=False`` even when the
+        projection disposes such a type, because a ledger holding events the
+        typed union does not know is exactly the "the graph might be lying about
+        what it saw" condition this fence exists to confess (ADR-0.32.0 BI#1).
+        ``fresh`` is False when the latest ledger event postdates the build.
+        """
+        unaccounted = tuple(sorted((registry | replayed) - accounted))
+        unregistered_replayed = tuple(sorted(replayed - registry))
+        fresh = latest_ts is None or latest_ts <= build_ts
+        return cls(
+            complete=not (unaccounted or unregistered_replayed),
+            fresh=fresh,
+            unaccounted_event_types=unaccounted,
+            unregistered_replayed_event_types=unregistered_replayed,
+            latest_event_ts=latest_ts,
+            build_ts=build_ts,
+        )
+
+
+class CorpusProjection:
+    """The typed corpus view + its source graph + its fidelity self-report."""
+
+    def __init__(
+        self,
+        graph: OntologyGraph,
+        source_graph: dict[str, dict],
+        fidelity: RebuildFidelity,
+    ) -> None:
+        self.graph = graph
+        self.source_graph = source_graph
+        self.fidelity = fidelity
+
+
+def _default_ledger() -> Ledger:
+    """Resolve the project ledger from config (library layer, not command layer)."""
+    config = load_config()
+    return Ledger(Path.cwd() / config.paths.ledger)
+
+
+def _typed_node(node_id: str, info: dict) -> OntologyNode | None:
+    """Type one ``get_artifact_graph`` node; None if its type is unmapped."""
+    object_type = _NODE_TYPE_MAP.get(str(info.get("type")))
+    if object_type is None:
+        return None  # unmapped node type — confessed, never silently retyped
+    ownership, plane = OBJECT_TYPE_REGISTRY[object_type]
+    return OntologyNode(node_id=node_id, object_type=object_type, ownership=ownership, plane=plane)
+
+
+def _relation_edges(node_id: str, info: dict, source_graph: dict[str, dict]) -> list[OntologyEdge]:
+    """Lift a node's lineage + attestation metadata into typed edges.
+
+    Parent/child edges are built from ``get_artifact_graph``'s authoritative
+    forward adjacency (the ``children`` lists it materializes and traverses),
+    NOT the raw ``parent`` back-pointer — the two diverge (short-form parent
+    resolution maintains ``children``), and a node parented to a non-node id
+    (e.g. an ADR whose parent is a GHI) has no ``children`` entry, so no phantom
+    edge is minted (faithful to get_artifact_graph, REQ-02). Supersedes is
+    node->node from ``superseded_by`` (REQ-03); validates/attests are unary
+    attestation facts lifted to self-loop edges so they are first-class, not
+    implicit in node dicts (REQ-03, ADR-0.32.0 operator ruling 2026-07-06).
+    """
+    edges: list[OntologyEdge] = []
+    for child_id in info.get("children", []):
+        edges.append(OntologyEdge(source_id=node_id, target_id=child_id, link_type=LinkType.CHILD))
+    superseded_by = info.get("superseded_by")
+    if info.get("superseded") and superseded_by in source_graph:
+        edges.append(
+            OntologyEdge(
+                source_id=str(superseded_by), target_id=node_id, link_type=LinkType.SUPERSEDES
+            )
+        )
+    if info.get("validated"):
+        edges.append(
+            OntologyEdge(source_id=node_id, target_id=node_id, link_type=LinkType.VALIDATES)
+        )
+    if info.get("attested"):
+        edges.append(OntologyEdge(source_id=node_id, target_id=node_id, link_type=LinkType.ATTESTS))
+    return edges
+
+
+def project_corpus(ledger: Ledger | None = None) -> CorpusProjection:
+    """Project ``get_artifact_graph`` into the typed corpus ``OntologyGraph``.
+
+    Consumes ``get_artifact_graph`` as the SOLE replay source (its manifest is
+    read from the same single replay, opening no second scan), reproduces every
+    node and parent/child lineage edge as typed ``OntologyNode``/``OntologyEdge``,
+    and emits the registry-coupled rebuild-fidelity self-report.
+    """
+    ledger = ledger or _default_ledger()
+    source_graph = ledger.get_artifact_graph()
+    manifest = ledger.get_replay_manifest()  # cached from the same single replay
+    graph = OntologyGraph()
+
+    for node_id, info in source_graph.items():
+        node = _typed_node(node_id, info)
+        if node is not None:
+            graph.add_node(node)
+
+    for node_id, info in source_graph.items():
+        for edge in _relation_edges(node_id, info, source_graph):
+            graph.add_edge(edge)
+
+    fidelity = RebuildFidelity.build(
+        accounted=_ACCOUNTED_EVENT_TYPES,
+        registry=ledger_event_discriminators(),
+        replayed=manifest.event_types,
+        latest_ts=manifest.latest_ts,
+        build_ts=datetime.now(UTC).isoformat(),
+    )
+    return CorpusProjection(graph, source_graph, fidelity)

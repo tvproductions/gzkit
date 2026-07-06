@@ -26,6 +26,11 @@ dependencies = [
     "pyyaml>=6.0.3",
     "rich>=15.0",
     "structlog>=26.1",
+    # Stdlib-First named departure (ADR-0.32.0-gzkit-ontology § Decision;
+    # GO-attested Phase-0 airlock-in 2026-07-02): networkx supplies the
+    # MultiDiGraph + lateral/reachability traversal that stdlib graphlib
+    # (a topological sorter only) cannot. Consumed by src/gzkit/ontology/.
+    "networkx>=3.4",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
     # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;

@@ -172,6 +172,22 @@ def resolve_adr_lane(info: dict[str, Any], default_mode: str) -> str:
     return lane if lane in {"lite", "heavy"} else default_mode
 
 
+class LedgerReplayManifest(BaseModel):
+    """Read-side summary of the single ``get_artifact_graph`` replay pass.
+
+    Captured from the same ``read_all()`` the graph build already performs, so a
+    consumer (the ontology corpus projection) can report replay completeness and
+    freshness WITHOUT opening a second replay (ADR-0.32.0 rebuild-fidelity fence,
+    single-replay invariant).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    event_types: frozenset[str] = Field(default_factory=frozenset)
+    latest_ts: str | None = None
+    event_count: int = 0
+
+
 class Ledger:
     """Append-only ledger for governance events.
 
@@ -189,6 +205,7 @@ class Ledger:
         self.path = path
         self._cached_events: list[LedgerEvent] | None = None
         self._cached_graph: dict[str, dict[str, Any]] | None = None
+        self._replay_manifest: LedgerReplayManifest | None = None
 
     def exists(self) -> bool:
         """Check if the ledger file exists."""
@@ -203,6 +220,7 @@ class Ledger:
         """Invalidate all in-memory caches after a mutation."""
         self._cached_events = None
         self._cached_graph = None
+        self._replay_manifest = None
 
     def append(self, event: LedgerEvent) -> None:
         """Append an event to the ledger.
@@ -800,8 +818,23 @@ class Ledger:
 
         self._resolve_short_form_parents(graph)
 
+        self._replay_manifest = LedgerReplayManifest(
+            event_types=frozenset(event.event for event in events),
+            latest_ts=max((event.ts for event in events), default=None),
+            event_count=len(events),
+        )
         self._cached_graph = graph
         return graph
+
+    def get_replay_manifest(self) -> LedgerReplayManifest:
+        """Return the manifest of the single ``get_artifact_graph`` replay pass.
+
+        Building the graph is the single replay; this returns the manifest
+        captured during it (no second ``read_all``). Consumed by the ontology
+        corpus projection for its rebuild-fidelity self-report.
+        """
+        self.get_artifact_graph()
+        return self._replay_manifest or LedgerReplayManifest()
 
     def get_pending_attestations(self) -> list[str]:
         """Get artifact IDs that need attestation.

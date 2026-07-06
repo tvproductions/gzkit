@@ -43,12 +43,15 @@ class LinkType(enum.StrEnum):
     BLOCKED_BY = "blocked_by"
     DISCOVERED_FROM = "discovered_from"
     VALIDATES = "validates"
+    ATTESTS = "attests"
     SUPERSEDES = "supersedes"
 
 
 class ObjectType(enum.StrEnum):
     """Closed catalog of seated ontology object types."""
 
+    PRD = "PRD"
+    CONSTITUTION = "Constitution"
     ADR = "ADR"
     OBPI = "OBPI"
     REQ = "REQ"
@@ -98,6 +101,8 @@ PRODUCT_OBJECT_TYPES: frozenset[ObjectType] = frozenset(
 # governance workflow (`process` plane). Harness purity holds: no PRODUCT_OBJECT_TYPE
 # is `harness`. Adding an ObjectType member without an entry here fails REQ-04.
 OBJECT_TYPE_REGISTRY: dict[ObjectType, tuple[Ownership, Plane]] = {
+    ObjectType.PRD: (Ownership.HARNESS, Plane.PROCESS),
+    ObjectType.CONSTITUTION: (Ownership.HARNESS, Plane.PROCESS),
     ObjectType.ADR: (Ownership.HARNESS, Plane.PROCESS),
     ObjectType.OBPI: (Ownership.HARNESS, Plane.PROCESS),
     ObjectType.REQ: (Ownership.HARNESS, Plane.PROCESS),

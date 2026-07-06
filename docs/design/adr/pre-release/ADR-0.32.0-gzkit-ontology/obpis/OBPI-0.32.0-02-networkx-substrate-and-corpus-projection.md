@@ -4,7 +4,22 @@ parent: ADR-0.32.0-gzkit-ontology
 item: 2
 lane: Heavy
 sensitivity: security
-status: Draft
+status: Completed
+req_atomic:
+  # Each REQ is one indivisible unit of labor — a single Red-Green-Refactor
+  # cycle with no sub-step below it: 01 the MultiDiGraph substrate, 02 the
+  # corpus node/forward-adjacency parity, 03 the typed supersedes/attests/
+  # validates edges, 04 the single-replay manifest, 05 the registry-coupled
+  # fidelity self-report, 06 the parent-ADR Boundary-Invariant anchor (no code),
+  # 07 the networkx dependency declaration. The Step-4b adversary-driven repairs
+  # to 02/05 were corrections WITHIN each REQ's unit, not subdivided labor.
+  - REQ-0.32.0-02-01
+  - REQ-0.32.0-02-02
+  - REQ-0.32.0-02-03
+  - REQ-0.32.0-02-04
+  - REQ-0.32.0-02-05
+  - REQ-0.32.0-02-06
+  - REQ-0.32.0-02-07
 ---
 
 # OBPI-0.32.0-02-networkx-substrate-and-corpus-projection: Networkx Substrate And Corpus Projection
@@ -14,7 +29,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #2 - "networkx MultiDiGraph substrate + corpus-domain projection absorbing ledger.get_artifact_graph as a typed view over one replay path; rebuild-fidelity self-report (replay completeness + freshness); Tier-B rebuild-only guardrail. [MVP spine]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -60,6 +75,8 @@ is the mandated escalation, not net-new ledger-write security work.
 - `uv.lock` — lock the `networkx` resolution for reproducible delivery (`gz validate --distribution`).
 - `tests/test_ontology_graph.py` — **CREATE**: `@covers`-decorated REQ tests for the MultiDiGraph substrate.
 - `tests/test_ontology_corpus.py` — **CREATE**: `@covers`-decorated REQ tests for the corpus projection, absorption parity, single-replay, and the fidelity self-report.
+- `src/gzkit/ontology/model.py` — **CORRECTION (operator-ratified in-flight 2026-07-06)**: additive only — (a) add `ObjectType.PRD` + `ObjectType.CONSTITUTION` (both `(HARNESS, PROCESS)`) + their `OBJECT_TYPE_REGISTRY` entries so the corpus projection can type every node `get_artifact_graph()` yields (a `prd` root node exists; a new PRD is minted per major release); (b) add `LinkType.ATTESTS` so the projection can lift the attestation fact (542 attested nodes) into a first-class typed edge distinct from `VALIDATES` (REQ-03; `LinkType` had no attestation member). OBPI-01's model omitted these first-class corpus-lineage members; per operator "more-is-needed is a correction" doctrine this is a correction under the same parent ADR, not new design. No behavior of OBPI-01's delivered surface changes (harness purity preserved; additions are enum-additive).
+- `src/gzkit/schemas/ontology_node.json` — **CORRECTION (coupled surface, DO IT RIGHT §1a)**: regenerate the committed schema projection so `load_schema("ontology_node") == ontology_node_json_schema()` (pinned by the schema-parity test in `tests/test_ontology_model.py`, line 164) holds after the enum grows.
 - `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/obpis/OBPI-0.32.0-02-networkx-substrate-and-corpus-projection.md` — this brief (evidence).
 
 ## Denied Paths
@@ -69,7 +86,7 @@ is the mandated escalation, not net-new ledger-write security work.
 - `src/gzkit/cli/**`, `src/gzkit/commands/state.py`, `docs/user/manpages/**` — the gz ontology CLI namespace (sense / trace / resense / seams / reach) and the `commands/state.py` L3-render extension are OBPI-03, not this brief.
 - `src/gzkit/events.py`, `src/gzkit/ledger_events.py`, `src/gzkit/schemas/*.json` — the net-new L2 work-domain event schema (blocks/blocked_by/discovered_from/validates) is OBPI-06 (the one-way door); this brief emits NO new ledger event type.
 - `src/gzkit/triangle.py`, `src/gzkit/ontology/source*.py` — tree-sitter code-coupling + `@covers`/`@surface` anchors + `detect_drift` subgraph are the source domain (OBPI-07).
-- `src/gzkit/ontology/model.py` and the ontology JSON schema under `src/gzkit/schemas/` — OBPI-01 owns the model + schema; this brief consumes them read-only and never edits them.
+- `src/gzkit/ontology/model.py` and the ontology JSON schema under `src/gzkit/schemas/` — OBPI-01 owns the model + schema; this brief consumes them read-only **except** the single operator-ratified additive correction declared in Allowed Paths (adding `ObjectType.PRD`/`CONSTITUTION` + registry entries and regenerating `ontology_node.json`). No other model/schema edit — the `OntologyNode`/`OntologyEdge`/`LinkType` shapes and existing members are untouched.
 - New runtime dependencies **other than** `networkx` — tree-sitter lands with the source domain (OBPI-07); no other dependency is added here.
 - Any path not listed in Allowed Paths.
 
@@ -118,14 +135,14 @@ is the mandated escalation, not net-new ledger-write security work.
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] `src/gzkit/ontology/model.py` (`OntologyNode`/`OntologyEdge`/`LinkType`) delivered by OBPI-0.32.0-01 — the typed carriers the graph holds
-- [ ] `src/gzkit/ledger.py::Ledger.get_artifact_graph` present — the single replay source to absorb
+- [ ] `src/gzkit/ledger.py` `Ledger.get_artifact_graph` present — the single replay source to absorb
 - [ ] `networkx` resolvable on PyPI for the pinned Python (`>=3.13`) before it is added to `pyproject.toml`
 - [ ] Parent ADR present and registered in `gz state`
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/ledger.py::Ledger.get_artifact_graph` (~line 776) — returns `dict[str, dict[str, Any]]`; nodes carry `type`/`parent`/`children`/`attested` plus supersede/attest/validate metadata applied by `_apply_graph_event_metadata`
-- [ ] `src/gzkit/commands/state.py::state` — the current L3 dict consumer whose behavior the projection must not break (compat)
+- [ ] `src/gzkit/ledger.py` `Ledger.get_artifact_graph` (~line 776) — returns `dict[str, dict[str, Any]]`; nodes carry `type`/`parent`/`children`/`attested` plus supersede/attest/validate metadata applied by `_apply_graph_event_metadata`
+- [ ] `src/gzkit/commands/state.py` (`state` render) — the current L3 dict consumer whose behavior the projection must not break (compat)
 - [ ] `src/gzkit/req_kind.py` — `enum.StrEnum` + frozen Pydantic precedent for the typed model shape
 - [ ] `.claude/rules/pythonic.md` — module/function size limits and top-level-import policy for the two new modules
 
@@ -158,7 +175,8 @@ is the mandated escalation, not net-new ledger-write security work.
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] No behavior surface in this library-only unit; it contributes no BDD scenario. The ADR's Gate-4 BDD is owned by OBPI-0.32.0-03 (`features/ontology.feature`, the sole `gz ontology` verb surface) and discharged once by the ADR-level `uv run -m behave features/` at closeout.
+<!-- gz-validate-skip: command-shape -->
+- [ ] No behavior surface in this library-only unit; it contributes no BDD scenario. The ADR's Gate-4 BDD is owned by OBPI-0.32.0-03 (`features/ontology.feature`, the sole `gz ontology` verb surface — a planned OBPI-03 verb, not yet registered) and discharged once by the ADR-level `uv run -m behave features/` at closeout.
 
 ### Gate 5: Human (Heavy only)
 
@@ -283,15 +301,23 @@ uv run python -c "from gzkit.ontology.corpus import project_corpus; print(sorted
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The corpus projection lifts ledger.get_artifact_graph() into the typed OntologyGraph over ONE replay path, with a registry-coupled fidelity self-report:
+
+    uv run python -c "from gzkit.ontology.corpus import project_corpus; p=project_corpus(); f=p.fidelity; print('nodes',p.graph.node_count(),'edges',p.graph.edge_count(),'node_parity',set(p.graph.node_ids())==set(p.source_graph),'complete',f.complete,'fresh',f.fresh)"
+    # nodes 1165 edges 1713 node_parity True complete True fresh True
+
+Live edge parity is exact against get_artifact_graph's forward adjacency (1130 child + 542 attests + 73 validates = 1713); reachable_from('ADR-0.31.0-obpi-state-machine') returns its OBPIs via networkx traversal. ARB receipts: arb-step-unittest-2f9596313a2342cc8c53ca0646500b7e (6819/6819), arb-ruff-ff3e8d7a575c45a6a1e9ffa885014ae4, arb-step-typecheck-fd5d8a5be6a1448a9d50dcf43a94ad99, arb-step-mkdocs-a59e36137bda492cbc1db1fdc7fa2e7d. Independent Step 4b Codex adversary: NOT-REFUTED after two REFUTED-round fixes.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: src/gzkit/ontology/graph.py (OntologyGraph networkx MultiDiGraph wrapper: parallel edges of distinct LinkType retained, reachable_from transitive traversal); src/gzkit/ontology/corpus.py (project_corpus, CorpusProjection, RebuildFidelity, live TypedLedgerEvent registry introspection); tests/test_ontology_graph.py, tests/test_ontology_corpus.py
+- Files modified: src/gzkit/ledger.py (read-side LedgerReplayManifest captured in the existing single get_artifact_graph read_all pass + getter); src/gzkit/ontology/model.py (operator-ratified in-flight correction: ObjectType.PRD + ObjectType.CONSTITUTION + OBJECT_TYPE_REGISTRY entries, LinkType.ATTESTS); src/gzkit/schemas/ontology_node.json (regenerated projection); pyproject.toml + uv.lock (networkx>=3.4, attested STDLIB-FIRST departure)
+- Tests added: 20 REQ @covers tests (3 graph substrate + 17 corpus projection covering absorption parity, dangling-parent regression, typed supersedes/attests/validates edges, single-replay spy, registry+replayed fidelity fence)
+- Date completed: 2026-07-06
+- Attestation status: operator-attested (attestor g0, operator-verbatim "attest completed")
+- Defects noted: 2 pre-existing tracked in .gzkit/insights/agent-insights.jsonl (OBPI-0.31.0-02 sensitivity-floor omission; obpi_superseded defined in events.py but absent from the TypedLedgerEvent union)
 
 ## Tracked Defects
 
@@ -302,12 +328,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.32.0-02 networkx substrate + corpus projection landed TDD: full suite 6819/6819 (arb-step-unittest-2f9596313a2342cc8c53ca0646500b7e), lint clean (arb-ruff-ff3e8d7a575c45a6a1e9ffa885014ae4), typecheck clean (arb-step-typecheck-fd5d8a5be6a1448a9d50dcf43a94ad99), mkdocs-strict clean (arb-step-mkdocs-a59e36137bda492cbc1db1fdc7fa2e7d); gz covers behavior_uncovered_reqs=0; live projection node_parity True, fidelity complete=True fresh=True; Step 4b Codex adversary REFUTED (weak-fixture edge-parity gap + replayed-types fence hole) then NOT-REFUTED after fixes + caveat close (live edge parity 1130==1130, 0 phantom/0 dropped, single replay read_all==1).
+- Date: 2026-07-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-06
 
 **Evidence Hash:** -
