@@ -1,5 +1,16 @@
 # Python CLI Tool: Principles, Practices, and Guidelines (v3)
 
+> **⚠ Facade retired — 2026-07-06 injection-seam ruling.** This document describes
+> a `cli → core → ports → adapters` layering with `tests/fakes/` port doubles.
+> That `src/gzkit/ports/` + `src/gzkit/adapters/` + `tests/fakes/` facade was
+> **retired**: it was wired into zero production code. gzkit's canonical hexagon is
+> the parameter-injection seam (`Ledger(path)` / `load_config(path=)` /
+> `project_root: Path`, wired by the command-layer configurator — Cockburn Fig 2.1).
+> Read the `ports`/`adapters`/`fakes` sections below as original design intent, not
+> current structure. (The folder-structure question — where real adapters should
+> live — is **deferred to future ADR work**, not adopted here.) Canon:
+> [`../governance/hexagonal-architecture.md`](../governance/hexagonal-architecture.md).
+
 This document defines the design philosophy, architectural decisions, engineering
 standards, and working directives for building a Python CLI tool. It serves as a
 reference for both human developers and AI agents working on the project.

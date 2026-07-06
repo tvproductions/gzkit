@@ -17,9 +17,12 @@ from pathlib import Path
 SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "gzkit"
 
 CORE_DIR = SRC_ROOT / "core"
-PORTS_DIR = SRC_ROOT / "ports"
 
-# Modules that core/ must never import from
+# Modules that core/ must never import from. `gzkit.adapters` is retained as a
+# forward-fence: the ports/adapters facade was retired (2026-07-06 ruling — see
+# docs/governance/hexagonal-architecture.md), but the deps-behind-adapters
+# directive keeps `adapters` a live architectural concept, so core purity from
+# any future adapter package still holds.
 CORE_FORBIDDEN_PREFIXES = (
     "gzkit.cli",
     "gzkit.adapters",
@@ -27,40 +30,7 @@ CORE_FORBIDDEN_PREFIXES = (
 )
 CORE_FORBIDDEN_TOP_LEVEL = ("rich", "argparse")
 
-# Allowed top-level module names for ports/ (stdlib type annotation modules only)
-PORTS_ALLOWED_MODULES = frozenset(
-    {
-        "__future__",
-        "typing",
-        "typing_extensions",
-        "types",
-        "pathlib",
-        "collections",
-        "collections.abc",
-        "abc",
-        "enum",
-        "dataclasses",
-        "re",
-        "os",
-        "sys",
-    }
-)
-
 COMMANDS_DIR = SRC_ROOT / "commands"
-
-# Commands are allowed to import from these gzkit sub-packages
-COMMANDS_ALLOWED_GZKIT_PREFIXES = (
-    "gzkit.commands",  # intra-package
-    "gzkit.core",  # domain layer
-    "gzkit.cli",  # CLI helpers
-    "gzkit.ports",  # port interfaces
-    "gzkit.ledger",  # ledger access
-    "gzkit.quality",  # quality checks
-    "gzkit.skills",  # skill utilities
-)
-
-# Commands must NOT import from these
-COMMANDS_FORBIDDEN_PREFIXES = ("gzkit.adapters",)  # adapter layer (should go through ports)
 
 # Env vars permitted anywhere in commands/
 COMMAND_ENV_ALLOWLIST: frozenset[str] = frozenset({"NO_COLOR", "FORCE_COLOR"})
@@ -280,69 +250,21 @@ class TestCoreImportBoundaries(unittest.TestCase):
                 self._assert_file_clean(path)
 
 
-class TestPortsImportBoundaries(unittest.TestCase):
-    """ports/ must import only stdlib type annotation modules."""
+class TestCommandLayerSanity(unittest.TestCase):
+    """commands/ presence sanity.
 
-    def test_ports_files_exist(self) -> None:
-        """Sanity check: ports/ directory contains at least one .py file."""
-        files = _collect_py_files(PORTS_DIR)
-        self.assertGreater(len(files), 0, f"No .py files found in {PORTS_DIR}")
-
-    def test_ports_only_stdlib_type_modules(self) -> None:
-        """ports/ must only import from allowed stdlib type annotation modules."""
-        for path in _collect_py_files(PORTS_DIR):
-            with self.subTest(file=path.name):
-                tree = _parse_file(path)
-                violations: list[str] = []
-
-                for _kind, module in _collect_imports(tree):
-                    if not module:
-                        continue
-                    # Allow intra-package re-exports (gzkit.ports.* -> gzkit.ports.*)
-                    if module == "gzkit.ports" or module.startswith("gzkit.ports."):
-                        continue
-                    top = _top_level_module(module)
-                    # Allow the full dotted name or the top-level name
-                    if module not in PORTS_ALLOWED_MODULES and top not in PORTS_ALLOWED_MODULES:
-                        violations.append(f"'{module}'")
-
-                if violations:
-                    self.fail(
-                        f"{path.name}: ports/ imports non-allowed modules: "
-                        + ", ".join(violations)
-                        + f"\nAllowed: {sorted(PORTS_ALLOWED_MODULES)}"
-                    )
-
-
-class TestCommandImportBoundaries(unittest.TestCase):
-    """commands/ must not import from gzkit.adapters directly.
-
-    Commands should go through core/ports, not reach into the adapters layer.
+    The former "commands must not import gzkit.adapters" rule was retired
+    (2026-07-06 injection-seam ruling): the command layer IS gzkit's
+    configurator (Cockburn Fig 2.1), so it is precisely where driven adapters
+    are instantiated — forbidding that import contradicts the blessed pattern.
+    Core purity from any adapter package is still enforced by
+    TestCoreImportBoundaries.
     """
 
     def test_commands_files_exist(self) -> None:
         """Sanity check: commands/ directory contains at least one .py file."""
         files = _collect_py_files(COMMANDS_DIR)
         self.assertGreater(len(files), 0, f"No .py files found in {COMMANDS_DIR}")
-
-    def test_commands_no_adapter_imports(self) -> None:
-        """command files must not import from gzkit.adapters."""
-        for path in _collect_py_files(COMMANDS_DIR):
-            with self.subTest(file=path.name):
-                tree = _parse_file(path)
-                violations: list[str] = []
-                for _kind, module in _collect_imports(tree):
-                    for forbidden_prefix in COMMANDS_FORBIDDEN_PREFIXES:
-                        if module == forbidden_prefix or module.startswith(forbidden_prefix + "."):
-                            violations.append(
-                                f"imports '{module}' (forbidden prefix '{forbidden_prefix}')"
-                            )
-                if violations:
-                    self.fail(
-                        f"{path.name}: commands/ import boundary violations "
-                        f"(commands must not reach into gzkit.adapters directly — "
-                        f"use core/ports instead):\n" + "\n".join(violations)
-                    )
 
 
 class TestCommandEnvUsage(unittest.TestCase):

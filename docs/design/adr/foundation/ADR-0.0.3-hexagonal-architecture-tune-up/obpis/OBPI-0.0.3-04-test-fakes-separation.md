@@ -121,6 +121,17 @@ uv run -m unittest tests.test_fakes -v
 
 ## Acceptance Criteria
 
+> **⚠ Partial supersession — 2026-07-06 injection-seam ruling.** The `tests/fakes/`
+> in-memory port doubles were completed and Gate-5 attested, then **superseded**:
+> the port facade they conformed to was retired when parameter-injection was
+> blessed as gzkit's canonical hexagon. The fakes were injected into zero domain
+> tests — they only conformance-tested themselves (Cockburn: *"a nice drawing but
+> not much more"*). gzkit's real test doubles are temp-dir worlds injected via
+> `Ledger(path)` / `load_config(path=)`. **Superseded:** REQ-0.0.3-04-01, -04-02,
+> -04-03, -04-04, -04-06, -04-08. **Retained:** -04-05 (test-dir layout), -04-07
+> (suite passes). Canon:
+> [`hexagonal-architecture.md`](../../../../../governance/hexagonal-architecture.md).
+
 - [x] REQ-0.0.3-04-01: `tests/fakes/filesystem.py` contains InMemoryFileStore satisfying FileStore Protocol
 - [x] REQ-0.0.3-04-02: `tests/fakes/process.py` contains InMemoryProcessRunner satisfying ProcessRunner Protocol
 - [x] REQ-0.0.3-04-03: `tests/fakes/ledger.py` contains InMemoryLedgerStore satisfying LedgerStore Protocol

@@ -127,6 +127,17 @@ uv run -m unittest tests.test_ports -v
 
 ## Acceptance Criteria
 
+> **⚠ Partial supersession — 2026-07-06 injection-seam ruling.** The facade REQs
+> below were completed and Gate-5 attested, then **superseded**: the
+> `src/gzkit/ports/` + `src/gzkit/adapters/` skeleton was retired when
+> parameter-injection was blessed as gzkit's canonical hexagon (Cockburn Fig 2.1 —
+> the command layer is the configurator; `Ledger(path)` / `project_root: Path` are
+> the real injectable seam). The facade was wired into zero production code and
+> injected into zero domain tests. **Superseded:** REQ-0.0.3-01-01, -01-02, -01-03,
+> -01-04, -01-05, -01-07, -01-08, -01-10. **Retained (real boundary):** -01-06
+> (`core/__init__`), -01-09 (lint/type). Canon:
+> [`hexagonal-architecture.md`](../../../../../governance/hexagonal-architecture.md).
+
 - [x] REQ-0.0.3-01-01: `src/gzkit/ports/interfaces.py` exists and defines FileStore Protocol
 - [x] REQ-0.0.3-01-02: `src/gzkit/ports/interfaces.py` defines ProcessRunner Protocol
 - [x] REQ-0.0.3-01-03: `src/gzkit/ports/interfaces.py` defines LedgerStore Protocol

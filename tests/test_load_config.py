@@ -1,11 +1,18 @@
-"""Tests for load_config() entry point and FileConfigStore adapter."""
+"""Tests for the load_config() parameter-injection entry point.
+
+`load_config(path=...)` is gzkit's canonical config seam (the hexagonal
+injection point per the 2026-07-06 ruling that blessed parameter injection as
+the canonical hexagon). The former `FileConfigStore` adapter — a ConfigStore
+Protocol impl that duplicated this function and was wired into zero production
+code — was retired with REQ-0.0.3-05-03 superseded. See
+docs/governance/hexagonal-architecture.md.
+"""
 
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.adapters.config import FileConfigStore
 from gzkit.config import GzkitConfig, load_config
 from gzkit.traceability import covers
 
@@ -103,60 +110,6 @@ class TestLoadConfigPrecedence(unittest.TestCase):
 
         sig = inspect.signature(load_config)
         self.assertNotIn("env", sig.parameters)
-
-
-class TestFileConfigStore(unittest.TestCase):
-    """FileConfigStore satisfies ConfigStore Protocol."""
-
-    def test_load_missing_file_returns_empty_dict(self) -> None:
-        """load() returns {} when file does not exist."""
-        store = FileConfigStore(Path("/nonexistent/.gzkit.json"))
-        result = store.load()
-        self.assertEqual(result, {})
-
-    def test_save_and_load_roundtrip(self) -> None:
-        """Data saved with save() can be recovered with load()."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            store = FileConfigStore(Path(tmpdir) / ".gzkit.json")
-            data = {"mode": "heavy", "project_name": "test"}
-            store.save(data)
-            loaded = store.load()
-            self.assertEqual(loaded, data)
-
-    def test_save_writes_json_with_trailing_newline(self) -> None:
-        """Saved file ends with a newline (POSIX convention)."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / ".gzkit.json"
-            store = FileConfigStore(path)
-            store.save({"mode": "lite"})
-            raw = path.read_text(encoding="utf-8")
-            self.assertTrue(raw.endswith("\n"))
-
-    def test_load_empty_file_returns_empty_dict(self) -> None:
-        """load() returns {} for a zero-byte file."""
-        with tempfile.TemporaryDirectory() as tmpdir:
-            path = Path(tmpdir) / ".gzkit.json"
-            path.write_text("", encoding="utf-8")
-            store = FileConfigStore(path)
-            self.assertEqual(store.load(), {})
-
-    def test_default_path_is_gzkit_json(self) -> None:
-        """Default path attribute is .gzkit.json."""
-        store = FileConfigStore()
-        self.assertEqual(store._path, Path(".gzkit.json"))
-
-    @covers("REQ-0.0.3-05-03")
-    def test_satisfies_config_store_protocol(self) -> None:
-        """FileConfigStore satisfies ConfigStore Protocol (duck-type check)."""
-        from typing import Protocol, runtime_checkable
-
-        @runtime_checkable
-        class _RCConfigStore(Protocol):
-            def load(self) -> dict: ...
-            def save(self, data: dict) -> None: ...
-
-        store = FileConfigStore()
-        self.assertIsInstance(store, _RCConfigStore)
 
 
 if __name__ == "__main__":

@@ -123,6 +123,16 @@ uv run -m unittest discover -s tests/policy -v
 
 ## Acceptance Criteria
 
+> **⚠ Partial supersession — 2026-07-06 injection-seam ruling.** REQ-0.0.3-**09-02**
+> (the AST wall verifies `ports/` import rules) was **superseded**: the `ports/`
+> package was retired, so that clause (`PORTS_DIR`, `PORTS_ALLOWED_MODULES`,
+> `TestPortsImportBoundaries`) was removed from `test_import_boundaries.py`. **The
+> genuinely load-bearing wall is retained** — -09-01 (core/ purity) is the real
+> hexagonal boundary the AST wall makes real (Cockburn: *"only when you maintain
+> the tests do boundaries become real"*), unaffected by the facade retirement.
+> -09-03..-09-06 also intact. Canon:
+> [`hexagonal-architecture.md`](../../../../../governance/hexagonal-architecture.md).
+
 - [x] REQ-0.0.3-09-01: [doc] `test_import_boundaries.py` exists and verifies core/ import rules via AST scanning
 - [x] REQ-0.0.3-09-02: [doc] `test_import_boundaries.py` verifies ports/ import rules via AST scanning
 - [x] REQ-0.0.3-09-03: [doc] `test_env_usage.py` exists and detects `os.getenv`/`os.environ` outside allowlist

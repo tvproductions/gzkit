@@ -113,6 +113,17 @@ uv run -m unittest tests.test_config_precedence -v
 
 ## Acceptance Criteria
 
+> **⚠ Partial supersession — 2026-07-06 injection-seam ruling.** REQ-0.0.3-**05-03**
+> (`FileConfigStore` satisfies the `ConfigStore` Protocol) was completed and
+> Gate-5 attested, then **superseded**: the adapter was production-unused and
+> duplicated `load_config(path=)`, which IS the canonical injection seam (Cockburn
+> §1.1 — *"take a parameter for any external object"*). An adapter class over a
+> single impl beside a working self-contained function is the speculative
+> generality the enshrined rule forbids. **The rest of this brief is intact** —
+> -05-01/-05-02/-05-04/-05-07 (the real `load_config` precedence seam) are the
+> blessed hexagon. Canon:
+> [`hexagonal-architecture.md`](../../../../../governance/hexagonal-architecture.md).
+
 - [x] REQ-0.0.3-05-01: `load_config()` implements defaults → file → CLI precedence (no env layer)
 - [x] REQ-0.0.3-05-02: Config model uses `ConfigDict(frozen=True, extra="forbid")`
 - [x] REQ-0.0.3-05-03: Config adapter satisfies ConfigStore Protocol

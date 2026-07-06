@@ -10,6 +10,20 @@ date: 2026-03-15
 
 # ADR-0.0.3-hexagonal-architecture-tune-up: Hexagonal Architecture Tune-Up
 
+> **⚠ Partial supersession — 2026-07-06 injection-seam ruling.** The
+> `src/gzkit/ports/` + `src/gzkit/adapters/` + `tests/fakes/` facade this ADR
+> introduced (FileStore/ProcessRunner/LedgerStore/ConfigStore Protocols, the
+> in-memory fakes, and `FileConfigStore`) was **retired**: it was wired into zero
+> production code and injected into zero domain tests, while gzkit's real hexagon
+> is the parameter-injection seam (`Ledger(path)` / `load_config(path=)` /
+> `project_root: Path`, wired by the command-layer configurator — Cockburn Fig 2.1).
+> Parameter-injection is now blessed as gzkit's canonical hexagon. (Whether real
+> adapters should later live *outside* the core in a `domain`/`adapters` folder
+> layout is **deferred to dedicated ADR work** — not adopted in this correction.)
+> Affected briefs: OBPI-0.0.3-01/-04/-05/-09 (each carries a supersession
+> callout). The historical decision record below is preserved as authored. Canon:
+> [`hexagonal-architecture.md`](../../../../governance/hexagonal-architecture.md).
+
 ## Why foundation tier?
 
 Without this ADR, gzkit has no separation between core domain logic and I/O concerns — every command handler mixes ports, adapters, and business logic, making the codebase untestable without patching internals and structurally unable to support the governance pipeline the project exists to deliver.
