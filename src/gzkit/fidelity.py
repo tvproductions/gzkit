@@ -53,6 +53,18 @@ _TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
 _SEPARATOR_RE = re.compile(r"^\s*\|[-| :]+\|\s*$")
 
 
+def _strip_inline_code(cell: str) -> str:
+    """Strip surrounding markdown inline-code backticks from a command cell.
+
+    ADR authors naturally wrap a command in ``backticks`` (it renders as code in
+    the table). The gate runs the cell via ``shlex.split(command, shell=False)``,
+    so a literal backtick makes the first token ```uv`` — not an executable —
+    yielding an opaque ``observed=-1`` (GHI #673). Stripping surrounding backticks
+    makes the natural authoring form runnable; a bare command is unaffected.
+    """
+    return cell.strip().strip("`").strip()
+
+
 def _extract_fidelity_block(text: str) -> list[str]:
     """Return lines between the ## Fidelity Assertions heading and the next H2."""
     lines = text.splitlines()
@@ -114,7 +126,7 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
             FidelityAssertion(
                 adr_id=adr_id,
                 claim=claim.strip(),
-                command=command.strip(),
+                command=_strip_inline_code(command),
                 expected_exit=expected_exit,
                 observed=None,
                 result=None,
@@ -211,9 +223,23 @@ def assert_fidelity_for_ceremony(adr_path: Path, adr_id: str) -> list[FidelityAs
     results = run_fidelity_gate(assertions, adr_id=adr_id)
     failed = [r for r in results if r.result == "fail"]
     if failed:
+
+        def _hint(assertion: FidelityAssertion) -> str:
+            # observed == -1 is the runner's "could not execute" sentinel (OSError
+            # /ValueError from shlex.split + subprocess), distinct from a real
+            # exit-code mismatch. Name the cause so the failure is actionable
+            # (guardrail-feedback-prose rule), not an opaque -1 (GHI #673).
+            if assertion.observed == -1:
+                return (
+                    " — command could not be executed (not found or unparseable; "
+                    "check for stray markdown backticks or a shell builtin, "
+                    "not a real exit-code mismatch)"
+                )
+            return ""
+
         lines = "\n".join(
             f"  FAIL  {r.claim} (command={r.command!r}, "
-            f"expected={r.expected_exit}, observed={r.observed})"
+            f"expected={r.expected_exit}, observed={r.observed}){_hint(r)}"
             for r in failed
         )
         raise PolicyBreachError(

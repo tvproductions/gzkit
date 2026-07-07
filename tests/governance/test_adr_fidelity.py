@@ -173,6 +173,44 @@ class TestFidelityAssertionParser(unittest.TestCase):
         self.assertEqual(assertions[1].expected_exit, 1)
 
     @covers("REQ-0.0.73-03-02")
+    def test_parser_strips_backtick_wrapped_command(self) -> None:
+        """A markdown inline-code command cell parses to the bare, runnable command.
+
+        ADR authors naturally wrap a command in `backticks` (it renders as code in
+        the table). The gate runs the cell via ``shlex.split(..., shell=False)``, so a
+        literal backtick makes the first token ```uv`` — not an executable —
+        yielding an opaque ``observed=-1`` (the ADR-0.32.0 closeout defect, GHI #673).
+        The parser strips surrounding backticks so the natural authoring form runs; a
+        bare command is unaffected.
+        """
+        from gzkit.fidelity import parse_fidelity_assertions
+
+        adr = textwrap.dedent("""\
+            ---
+            id: ADR-backtick
+            ---
+
+            # ADR Backtick
+
+            ## Decision
+
+            Text.
+
+            ## Fidelity Assertions
+
+            | Claim | Command | Expected exit |
+            |-------|---------|---------------|
+            | Backtick-wrapped command | `uv run gz ontology sense` | 0 |
+            | Bare command unaffected | uv run gz ontology seams | 0 |
+
+            ## Evidence
+            """)
+        adr_path = self._write_adr(adr)
+        assertions = parse_fidelity_assertions(adr_path)
+        self.assertEqual(assertions[0].command, "uv run gz ontology sense")
+        self.assertEqual(assertions[1].command, "uv run gz ontology seams")
+
+    @covers("REQ-0.0.73-03-02")
     def test_parser_raises_when_block_absent(self) -> None:
         from gzkit.fidelity import parse_fidelity_assertions
 
