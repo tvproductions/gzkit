@@ -33,6 +33,14 @@ from gzkit.events import (
     ValidatesEvent,
 )
 from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ontology.model import (
+    OBJECT_TYPE_REGISTRY,
+    LinkType,
+    ObjectType,
+    OntologyEdge,
+    OntologyNode,
+    Provenance,
+)
 
 # The frozen work-edge vocabulary — the exact discriminator set the WWHTBT pass
 # ratified (see the brief § WWHTBT). Permanent once emitted; the committed
@@ -45,6 +53,18 @@ WORK_EDGE_DISCRIMINATORS: frozenset[str] = frozenset(
 # and ``validates`` are provenance/verification edges — they contribute lineage,
 # not a block.
 _BLOCKING_EDGE_TYPES: frozenset[str] = frozenset({"blocks", "blocked_by"})
+
+# Registry-coupled projection of the four L2 edge events into typed ontology
+# edges: (source-field, target-field, link_type, provenance). ``blocks``/``blocked_by``
+# are authored precedence (INTENT vein); ``discovered_from``/``validates`` are
+# extracted/observed facts (OBSERVED vein) — every edge must record its vein so the
+# airlock INTENT-vs-OBSERVED diff is computable (model.py ``Provenance`` docstring).
+_WORK_EDGE_PROJECTION: dict[str, tuple[str, str, LinkType, Provenance]] = {
+    "blocks": ("blocker", "blocked", LinkType.BLOCKS, Provenance.INTENT),
+    "blocked_by": ("blocked", "blocker", LinkType.BLOCKED_BY, Provenance.INTENT),
+    "discovered_from": ("discovered", "origin", LinkType.DISCOVERED_FROM, Provenance.OBSERVED),
+    "validates": ("validator", "validated", LinkType.VALIDATES, Provenance.OBSERVED),
+}
 
 WorkEdgeEvent = BlocksEvent | BlockedByEvent | DiscoveredFromEvent | ValidatesEvent
 
@@ -165,6 +185,51 @@ def replay_work_queue(ledger: Ledger | None = None) -> WorkQueue:
     )
     ready = tuple(sorted(all_tasks - set(blockers_by_task)))
     return WorkQueue(ready=ready, blocked=blocked)
+
+
+def _task_node(node_id: str) -> OntologyNode:
+    """Materialize a work-edge endpoint as a typed TASK ``OntologyNode``."""
+    ownership, plane = OBJECT_TYPE_REGISTRY[ObjectType.TASK]
+    return OntologyNode(
+        node_id=node_id, object_type=ObjectType.TASK, ownership=ownership, plane=plane
+    )
+
+
+def project_work_edges(
+    ledger: Ledger | None = None,
+) -> tuple[list[OntologyNode], list[OntologyEdge]]:
+    """Replay the four L2 edge events into typed ``OntologyEdge``s + TASK endpoint nodes.
+
+    READ-ONLY work-subgraph projection: consumes ``ledger.read_all()`` only and
+    NEVER calls :func:`emit_work_edge` (the append-only one-way door, § Consequences
+    Negative #4). Each ``blocks``/``blocked_by``/``discovered_from``/``validates``
+    event becomes a typed ``OntologyEdge`` between its two endpoints, both
+    materialized as TASK ``OntologyNode``s so a composed edge lands on real nodes
+    (parent ADR Boundary Invariant #2, derived-never-authority).
+    """
+    ledger = ledger or _default_ledger()
+    nodes: dict[str, OntologyNode] = {}
+    edges: list[OntologyEdge] = []
+    for event in ledger.read_all():
+        spec = _WORK_EDGE_PROJECTION.get(event.event)
+        if spec is None:
+            continue
+        source_field, target_field, link_type, provenance = spec
+        source_id = str(event.extra.get(source_field, ""))
+        target_id = str(event.extra.get(target_field, ""))
+        if not source_id or not target_id:
+            continue
+        for endpoint in (source_id, target_id):
+            nodes.setdefault(endpoint, _task_node(endpoint))
+        edges.append(
+            OntologyEdge(
+                source_id=source_id,
+                target_id=target_id,
+                link_type=link_type,
+                provenance=provenance,
+            )
+        )
+    return list(nodes.values()), edges
 
 
 def emit_work_edge(

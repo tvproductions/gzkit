@@ -24,15 +24,25 @@ from pydantic import BaseModel, ConfigDict
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.state import render_l3_table
-from gzkit.ontology.corpus import CorpusProjection, project_corpus
+from gzkit.ontology.corpus import CorpusProjection
 from gzkit.ontology.graph import OntologyGraph
 from gzkit.ontology.model import LinkType, OntologyEdge
+from gzkit.ontology.unified import UnifiedProjection, project_all
 
 _LAST_SWEEP_REL = Path(".gzkit") / "ontology" / "last_sweep.json"
 
 _STRUCTURAL_NOTE = (
     "STRUCTURAL coverage only — semantic completeness is NOT claimed "
     "(semantic-seam recall is deferred to RECALL / Phase-4, L3-advisory)."
+)
+
+# The domains project_all() images, disclosed so operators are not misled into
+# reading sense as whole-shape when a domain is empty/absent (GHI #672). Code
+# coupling is deliberately NOT imaged here — it lives in source_anchors.json and
+# carries no LinkType.
+_DOMAINS_NOTE = (
+    "Domains imaged: corpus, work, source-anchors, okf; "
+    "code-coupling → source_anchors.json (per-domain fidelity in --json)."
 )
 
 
@@ -229,8 +239,14 @@ def diff_snapshots(old: Snapshot, new: Snapshot) -> ShapeDiff:
     )
 
 
-def render_sense_json(projection: CorpusProjection) -> dict:
-    """Machine-readable shape + the rebuild-fidelity self-report (REQ-06)."""
+def render_sense_json(projection: CorpusProjection | UnifiedProjection) -> dict:
+    """Machine-readable shape + the rebuild-fidelity self-report (REQ-06).
+
+    Accepts either the corpus-only ``CorpusProjection`` or the composed
+    ``UnifiedProjection`` (duck-typed on ``.graph``/``.fidelity``). For the unified
+    projection the ``fidelity`` block additively carries per-domain sub-reports
+    (corpus/source/work/okf) alongside the back-compat aggregate keys (GHI #672).
+    """
     graph = projection.graph
     node_types: dict[str, int] = {}
     for node in graph.nodes():
@@ -238,6 +254,7 @@ def render_sense_json(projection: CorpusProjection) -> dict:
     return {
         "coverage": "structural",
         "coverage_note": _STRUCTURAL_NOTE,
+        "domains_note": _DOMAINS_NOTE,
         "node_count": graph.node_count(),
         "edge_count": graph.edge_count(),
         "node_types": node_types,
@@ -285,7 +302,7 @@ def _load_last_sweep() -> Snapshot | None:
 
 def ontology_sense_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:
     """Image the current structural shape and surface STRUCTURAL seams."""
-    projection = project_corpus()
+    projection = project_all()
     _persist_last_sweep(projection.graph)
     if as_json:
         print(json.dumps(render_sense_json(projection), indent=2))  # noqa: T201
@@ -306,11 +323,12 @@ def ontology_sense_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:
     for seam in seams:
         console.print(f"  [red]seam[/red] {seam.source_id} -{seam.link_type}-> {seam.target_id}")
     console.print(f"\n{_STRUCTURAL_NOTE}")
+    console.print(_DOMAINS_NOTE)
 
 
 def ontology_trace_cmd(*, node_id: str, as_json: bool = False, as_dot: bool = False) -> None:
     """Walk one node's vertical lineage + lateral proof with edge provenance."""
-    projection = project_corpus()
+    projection = project_all()
     trace = compute_trace(projection.graph, node_id)
     if trace is None:
         console.print(f"[red]Unknown node:[/red] {node_id}")
@@ -331,7 +349,7 @@ def ontology_trace_cmd(*, node_id: str, as_json: bool = False, as_dot: bool = Fa
 def ontology_resense_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:
     """Report the diff versus the last sweep — the airlock re-sense gate."""
     baseline = _load_last_sweep()
-    current = snapshot_of(project_corpus().graph)
+    current = snapshot_of(project_all().graph)
     if baseline is None:
         if as_json:
             print(json.dumps({"baseline": None, "diff": None}, indent=2))  # noqa: T201
@@ -351,7 +369,7 @@ def ontology_resense_cmd(*, as_json: bool = False, as_dot: bool = False) -> None
 
 def ontology_seams_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:
     """Fast contacts-only STRUCTURAL seam check (no per-node lineage)."""
-    graph = project_corpus().graph
+    graph = project_all().graph
     seams = compute_seams(graph)
     if as_json:
         print(json.dumps([s.model_dump() for s in seams], indent=2))  # noqa: T201
@@ -365,7 +383,7 @@ def ontology_seams_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:
 
 def ontology_reach_cmd(*, node_id: str, as_json: bool = False, as_dot: bool = False) -> None:
     """Return the downstream blast-radius (transitive dependents) for one node."""
-    graph = project_corpus().graph
+    graph = project_all().graph
     reach = compute_reach(graph, node_id)
     if reach is None:
         console.print(f"[red]Unknown node:[/red] {node_id}")

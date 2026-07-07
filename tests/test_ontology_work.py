@@ -23,6 +23,7 @@ from gzkit.events import (
     parse_typed_event,
 )
 from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ontology.model import LinkType, ObjectType, Provenance
 from gzkit.ontology.work import (
     TORQUE_UP_MILESTONE,
     WORK_EDGE_DISCRIMINATORS,
@@ -31,6 +32,7 @@ from gzkit.ontology.work import (
     WorkQueue,
     WwhtbtRecord,
     emit_work_edge,
+    project_work_edges,
     replay_work_queue,
     work_edge_json_schema,
 )
@@ -236,6 +238,70 @@ class TestTorqueUpMilestone(unittest.TestCase):
         self.assertFalse(TORQUE_UP_MILESTONE.enforced)
         self.assertIn("torque-up", TORQUE_UP_MILESTONE.summary.lower())
         self.assertGreater(len(TORQUE_UP_MILESTONE.summary), 40)
+
+
+class TestWorkEdgeProjector(unittest.TestCase):
+    """GHI #672: read-only projection of the four L2 edges into typed edges + TASK nodes.
+
+    Corrective work under ADR-0.32.0 (OBPI-03 sense imaged corpus only). The
+    projector replays the four L2 edge events into typed ``OntologyEdge``s plus
+    TASK endpoint ``OntologyNode``s, purely from ``ledger.read_all()`` and NEVER
+    via ``emit_work_edge`` (the append-only one-way door). Direct-fix regression
+    tests, so no ``@covers`` (no governing REQ).
+    """
+
+    def test_four_edges_project_to_typed_edges_and_task_nodes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _queue_ledger(
+                tmp,
+                _edge("blocks", blocker="TASK-A", blocked="TASK-B"),
+                _edge("blocked_by", blocked="TASK-C", blocker="TASK-D"),
+                _edge("discovered_from", discovered="TASK-E", origin="TASK-F"),
+                _edge("validates", validator="TASK-G", validated="TASK-H"),
+            )
+            nodes, edges = project_work_edges(ledger)
+
+            self.assertEqual(
+                {n.node_id for n in nodes},
+                {f"TASK-{c}" for c in "ABCDEFGH"},
+            )
+            self.assertTrue(all(n.object_type is ObjectType.TASK for n in nodes))
+
+            by_type = {e.link_type: (e.source_id, e.target_id) for e in edges}
+            self.assertEqual(by_type[LinkType.BLOCKS], ("TASK-A", "TASK-B"))
+            self.assertEqual(by_type[LinkType.BLOCKED_BY], ("TASK-C", "TASK-D"))
+            self.assertEqual(by_type[LinkType.DISCOVERED_FROM], ("TASK-E", "TASK-F"))
+            self.assertEqual(by_type[LinkType.VALIDATES], ("TASK-G", "TASK-H"))
+
+    def test_precedence_edges_are_intent_and_provenance_edges_are_observed(self) -> None:
+        # blocks/blocked_by are authored precedence (INTENT vein); discovered_from /
+        # validates are extracted/observed facts (OBSERVED vein) — the airlock diff
+        # depends on every edge recording its vein (model.py Provenance docstring).
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _queue_ledger(
+                tmp,
+                _edge("blocks", blocker="A", blocked="B"),
+                _edge("validates", validator="V", validated="W"),
+            )
+            _nodes, edges = project_work_edges(ledger)
+            vein = {e.link_type: e.provenance for e in edges}
+            self.assertEqual(vein[LinkType.BLOCKS], Provenance.INTENT)
+            self.assertEqual(vein[LinkType.VALIDATES], Provenance.OBSERVED)
+
+    def test_projector_never_writes_to_the_ledger(self) -> None:
+        # READ-ONLY (Boundary Invariant #2): replay must not append an event.
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _queue_ledger(tmp, _edge("blocks", blocker="A", blocked="B"))
+            before = len(ledger.read_all())
+            project_work_edges(ledger)
+            self.assertEqual(len(ledger.read_all()), before)
+
+    def test_non_edge_events_are_ignored(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = Ledger(Path(tmp) / "ledger.jsonl")
+            ledger.append(LedgerEvent(event="project_init", id="x", mode="lite"))
+            nodes, edges = project_work_edges(ledger)
+            self.assertEqual((nodes, edges), ([], []))
 
 
 class TestWwhtbtGatedEmission(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 Fixtures build ``OntologyGraph`` directly so the pure helpers are exercised
 without a ledger; the side-effecting command handlers are driven with
-``project_corpus`` / ``get_project_root`` patched to a fixture + temp root so no
+``project_all`` / ``get_project_root`` patched to a fixture + temp root so no
 test mutates the real repository (the read-only fence, REQ-08).
 """
 
@@ -26,7 +26,14 @@ from gzkit.commands.ontology import (
     render_sense_json,
     snapshot_of,
 )
-from gzkit.ontology.corpus import CorpusProjection, RebuildFidelity
+from gzkit.ledger import (
+    Ledger,
+    LedgerEvent,
+    adr_created_event,
+    obpi_created_event,
+    prd_created_event,
+)
+from gzkit.ontology.corpus import CorpusProjection, RebuildFidelity, project_corpus
 from gzkit.ontology.graph import OntologyGraph
 from gzkit.ontology.model import (
     LinkType,
@@ -37,6 +44,7 @@ from gzkit.ontology.model import (
     Plane,
     Provenance,
 )
+from gzkit.ontology.unified import UnifiedProjection, project_all
 from gzkit.traceability import covers
 
 
@@ -120,9 +128,7 @@ class TestSenseSeamFloor(unittest.TestCase):
     def test_sense_exits_zero_on_a_healthy_tree(self) -> None:
         with (
             tempfile.TemporaryDirectory() as tmp,
-            mock.patch.object(
-                ontology, "project_corpus", return_value=_projection(_healthy_graph())
-            ),
+            mock.patch.object(ontology, "project_all", return_value=_projection(_healthy_graph())),
             mock.patch.object(ontology, "get_project_root", return_value=Path(tmp)),
             redirect_stdout(io.StringIO()),
         ):
@@ -184,7 +190,7 @@ class TestResense(unittest.TestCase):
             with (
                 mock.patch.object(ontology, "get_project_root", return_value=root),
                 mock.patch.object(
-                    ontology, "project_corpus", return_value=_projection(_healthy_graph())
+                    ontology, "project_all", return_value=_projection(_healthy_graph())
                 ),
                 redirect_stdout(io.StringIO()),
             ):
@@ -194,7 +200,7 @@ class TestResense(unittest.TestCase):
             buf = io.StringIO()
             with (
                 mock.patch.object(ontology, "get_project_root", return_value=root),
-                mock.patch.object(ontology, "project_corpus", return_value=_projection(mutated)),
+                mock.patch.object(ontology, "project_all", return_value=_projection(mutated)),
                 redirect_stdout(buf),
             ):
                 ontology.ontology_resense_cmd(as_json=True)
@@ -206,9 +212,7 @@ class TestResense(unittest.TestCase):
         with (
             tempfile.TemporaryDirectory() as tmp,
             mock.patch.object(ontology, "get_project_root", return_value=Path(tmp)),
-            mock.patch.object(
-                ontology, "project_corpus", return_value=_projection(_healthy_graph())
-            ),
+            mock.patch.object(ontology, "project_all", return_value=_projection(_healthy_graph())),
             redirect_stdout(io.StringIO()),
         ):
             ontology.ontology_resense_cmd()  # no baseline -> clean message, exit 0
@@ -279,13 +283,158 @@ class TestReadOnlyFence(unittest.TestCase):
             with (
                 mock.patch.object(ontology, "get_project_root", return_value=root),
                 mock.patch.object(
-                    ontology, "project_corpus", return_value=_projection(_healthy_graph())
+                    ontology, "project_all", return_value=_projection(_healthy_graph())
                 ),
                 redirect_stdout(io.StringIO()),
             ):
                 ontology.ontology_sense_cmd()
             written = sorted(p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file())
             self.assertEqual(written, [".gzkit/ontology/last_sweep.json"])
+
+
+_CONCEPT_MD = """---
+type: doctrine
+title: Alpha
+---
+
+# Alpha
+
+See [beta](./beta.md) and [external](../../docs/x.md)
+"""
+
+_SRC_MODULE = (
+    "from gzkit.traceability import covers\n\n\n"
+    '@covers("REQ-0.1.0-01-01")\n'
+    "def run() -> None:\n"
+    "    pass\n"
+)
+
+
+def _corpus_ledger(root: Path) -> Ledger:
+    """A minimal PRD -> ADR -> OBPI corpus-lineage ledger."""
+    ledger = Ledger(root / "ledger.jsonl")
+    ledger.append(prd_created_event("PRD-1"))
+    ledger.append(adr_created_event("ADR-0.1.0", "PRD-1", "heavy"))
+    ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+    return ledger
+
+
+def _work_edge_event(event: str, **fields: str) -> LedgerEvent:
+    return LedgerEvent(event=event, id=f"{event}-{fields}", **fields)
+
+
+def _full_fixture(root: Path) -> tuple[Ledger, Path, Path]:
+    """Corpus lineage + a work edge, plus an OKF bundle and a src anchor tree."""
+    ledger = _corpus_ledger(root)
+    ledger.append(_work_edge_event("blocks", blocker="TASK-1", blocked="TASK-2"))
+    okf_dir = root / "knowledge"
+    okf_dir.mkdir()
+    (okf_dir / "alpha.md").write_text(_CONCEPT_MD, encoding="utf-8")
+    src_root = root / "src"
+    (src_root / "pkg").mkdir(parents=True)
+    (src_root / "pkg" / "mod.py").write_text(_SRC_MODULE, encoding="utf-8")
+    return ledger, src_root, okf_dir
+
+
+class TestProjectAllComposition(unittest.TestCase):
+    """GHI #672: eager project_all() composes four domains without a seam flood.
+
+    Corrective work under ADR-0.32.0 — OBPI-03's sense imaged the corpus domain
+    only; project_all unifies corpus/work/source/okf. Direct-fix regression tests,
+    so no ``@covers`` (no governing REQ). Assertions derive from the design intent:
+    composition adds zero seams (edges land only on materialized nodes) and images
+    the work + okf domains onto the corpus graph.
+    """
+
+    def test_composition_adds_zero_structural_seams(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            unified = project_all(ledger, source_root=src_root, okf_bundle=okf_dir)
+            self.assertEqual(compute_seams(unified.graph), [])
+
+    def test_composition_never_regresses_the_corpus_seam_baseline(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            corpus_seams = len(compute_seams(project_corpus(ledger).graph))
+            unified_seams = len(
+                compute_seams(project_all(ledger, source_root=src_root, okf_bundle=okf_dir).graph)
+            )
+            self.assertLessEqual(unified_seams, corpus_seams)
+
+    def test_composition_is_a_superset_of_the_corpus_graph(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            corpus_ids = set(project_corpus(ledger).graph.node_ids())
+            unified_ids = set(
+                project_all(ledger, source_root=src_root, okf_bundle=okf_dir).graph.node_ids()
+            )
+            self.assertTrue(corpus_ids <= unified_ids)
+
+    def test_work_and_okf_domains_are_imaged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            graph = project_all(ledger, source_root=src_root, okf_bundle=okf_dir).graph
+            types = {n.object_type.value for n in graph.nodes()}
+            self.assertIn("TASK", types)  # work endpoints materialized
+            self.assertIn("Doc", types)  # OKF concept doc absorbed
+            # the work BLOCKS edge lands on its two TASK endpoints
+            blocks = {
+                (e.source_id, e.target_id) for e in graph.edges() if e.link_type is LinkType.BLOCKS
+            }
+            self.assertIn(("TASK-1", "TASK-2"), blocks)
+
+    def test_returns_a_unified_projection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            unified = project_all(ledger, source_root=src_root, okf_bundle=okf_dir)
+            self.assertIsInstance(unified, UnifiedProjection)
+
+
+class TestUnifiedFidelityConfession(unittest.TestCase):
+    """GHI #672 (BI#1): the UnifiedFidelity genuinely confesses per-domain gaps.
+
+    Without this per-domain confession the composition re-creates the laundered
+    blind spot (ADR Negative #2). An absent domain input must drive that domain's
+    complete=False AND the aggregate; a full input reads complete=True.
+    """
+
+    def test_full_input_reports_every_domain_complete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            fid = project_all(ledger, source_root=src_root, okf_bundle=okf_dir).fidelity
+            self.assertTrue(fid.corpus.complete)
+            self.assertTrue(fid.work.complete)
+            self.assertTrue(fid.source.complete)
+            self.assertTrue(fid.okf.complete)
+            self.assertTrue(fid.complete)  # aggregate
+
+    def test_absent_okf_and_source_confess_incomplete(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger = _corpus_ledger(root)
+            fid = project_all(
+                ledger, source_root=root / "nonexistent", okf_bundle=root / "nonexistent"
+            ).fidelity
+            self.assertFalse(fid.okf.complete)  # bundle absent
+            self.assertFalse(fid.source.complete)  # source root absent
+            self.assertFalse(fid.complete)  # aggregate confesses
+            self.assertTrue(fid.work.complete)  # registry intact
+            self.assertTrue(fid.corpus.complete)
+
+    def test_sense_json_carries_per_domain_fidelity_sub_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            unified = project_all(ledger, source_root=src_root, okf_bundle=okf_dir)
+            result = render_sense_json(unified)
+            self.assertEqual(result["coverage"], "structural")
+            fidelity = result["fidelity"]
+            for domain in ("corpus", "source", "work", "okf"):
+                self.assertIn(domain, fidelity)
+                self.assertIn("complete", fidelity[domain])
+                self.assertIn("fresh", fidelity[domain])
+            # back-compat aggregate keys preserved additively
+            self.assertIn("complete", fidelity)
+            self.assertIn("fresh", fidelity)
 
 
 if __name__ == "__main__":
