@@ -128,12 +128,16 @@ closeout form left implicit — grounded in independent source/test review.
 - **BI#1 registry-derived CONFIRMED** (the critical claim) — `corpus.py:118-129`.
 - **BI#2 no-leak CONFIRMED** — derived graph never consumed as authority.
 - Provenance note (recorded below).
-- Honest limitation (disclosed in-code): source/OKF `fidelity.complete` is a
-  directory-present boolean (`unified.py:224,244`), not a replay-completeness
-  diff — so BI#1's rigorous registry-diff fence protects the **corpus and work**
-  vocabularies; source/OKF confess *presence*, not replay fidelity. Consistent
-  with the ADR's "structural shape only" posture and disclosed by the
-  `honest domain disclosure` commit (GHI #672).
+- Honest limitation (disclosed in-code at audit time): source/OKF
+  `fidelity.complete` was a directory-present boolean (`unified.py:224,244`), not
+  a replay-completeness diff — so BI#1's rigorous fence protected the **corpus
+  and work** vocabularies while source/OKF confessed only *presence*.
+  **Post-audit resolution (GHI #675 → commit `a7e9fc0b`):** the source domain now
+  confesses tree-sitter parse failures (`SourceParser.parse_failures`), pulling
+  `source.complete` to False on any unparseable unit — closing the silent-drop.
+  OKF stays `complete=present` by design (its `absorb_okf_bundle` is all-or-raise,
+  so presence *is* completeness). BI#1 now covers corpus, work, and source
+  vocabularies; OKF's presence-basis is verified correct, not a gap.
 
 ## Provenance Note (governance lesson, tracked + resolved)
 
