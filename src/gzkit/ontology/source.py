@@ -122,6 +122,10 @@ class SourceAnchorIndex(BaseModel):
     coupling_edges: tuple[CodeCouplingEdge, ...] = Field(
         default=(), description="Code-coupling edges, deterministically sorted"
     )
+    parse_failures: tuple[str, ...] = Field(
+        default=(),
+        description="Sorted rel-paths of units the parser could not fully parse (BI#1)",
+    )
 
     @property
     def edges(self) -> list[OntologyEdge]:
@@ -165,6 +169,16 @@ class SourceParser(Protocol):
 
     def coupling(self, files: list[tuple[str, str]]) -> list[CodeCouplingEdge]:
         """Build import + definition coupling edges across ``(path, source)`` pairs."""
+        ...
+
+    def parse_failures(self, files: list[tuple[str, str]]) -> tuple[str, ...]:
+        """Return the sorted rel-paths of units this parser could not fully parse.
+
+        A unit whose parse is incomplete silently drops its ``@covers``/``@surface``
+        anchors, so naming it is the source domain's rebuild-fidelity confession
+        (parent-ADR Boundary Invariant #1). Domain-typed (rule 3): rel-paths, never
+        a parser-native node.
+        """
         ...
 
 
@@ -282,6 +296,16 @@ class AstSourceParser:
             imports_by_unit[rel], defs_by_unit[rel] = _ast_imports_and_defs(text)
         return _assemble_coupling_edges(files, imports_by_unit, defs_by_unit)
 
+    def parse_failures(self, files: list[tuple[str, str]]) -> tuple[str, ...]:
+        """Rel-paths whose source is not valid Python (``ast.parse`` raises)."""
+        failures: list[str] = []
+        for rel, text in files:
+            try:
+                ast.parse(text)
+            except SyntaxError:
+                failures.append(rel)
+        return tuple(sorted(failures))
+
 
 def _ast_anchor_from_decorator(deco: ast.expr, unit_path: str) -> SourceAnchor | None:
     """Return a ``SourceAnchor`` for an ``@covers("REQ-...")`` / ``@surface(...)`` decorator."""
@@ -364,6 +388,14 @@ class TreeSitterSourceParser:
             imports_by_unit[rel] = _walk_imports(root, source_bytes)
             defs_by_unit[rel] = _walk_definitions(root, source_bytes)
         return _assemble_coupling_edges(files, imports_by_unit, defs_by_unit)
+
+    def parse_failures(self, files: list[tuple[str, str]]) -> tuple[str, ...]:
+        """Rel-paths whose tree-sitter parse tree contains ERROR/MISSING nodes."""
+        parser = _ts_parser()
+        failures = [
+            rel for rel, text in files if parser.parse(text.encode("utf-8")).root_node.has_error
+        ]
+        return tuple(sorted(failures))
 
 
 def _ts_parser() -> Any:
@@ -557,7 +589,11 @@ def build_source_anchor_index(
     anchors = _scan_all_anchors(parser, files)
     coupling = parser.coupling(files)
 
-    index = SourceAnchorIndex(anchors=tuple(anchors), coupling_edges=tuple(coupling))
+    index = SourceAnchorIndex(
+        anchors=tuple(anchors),
+        coupling_edges=tuple(coupling),
+        parse_failures=parser.parse_failures(files),
+    )
     if write:
         out = Path(index_path) if index_path is not None else _default_index_path()
         out.parent.mkdir(parents=True, exist_ok=True)

@@ -306,5 +306,41 @@ class TestDetectDriftSubgraphView(unittest.TestCase):
 # the artifact_edited event citing this brief), never a unit test.
 
 
+_BROKEN_SRC = "def (:\n    this is not valid python @@@\n"
+
+
+class TestParseFailureConfession(unittest.TestCase):
+    """GHI #675 (ADR-0.32.0 BI#1): the source parser confesses unparseable units.
+
+    tree-sitter's ``.parse()`` never raises — a broken unit yields a tree with
+    ERROR nodes and its anchors silently vanish. A parser that cannot name the
+    units it failed to parse lets the source domain report ``complete=true`` over
+    a partial image (the "graph never lies about the shape" fence). Direct-fix
+    regression test, so no ``@covers`` (no governing REQ); assertions derive from
+    BI#1's confession intent. Both adapters must agree (REQ-08 parity shape).
+    """
+
+    def test_clean_tree_reports_no_parse_failures(self) -> None:
+        files = [("ok.py", "import os\n\n\ndef run() -> None:\n    pass\n")]
+        for parser in (AstSourceParser(), TreeSitterSourceParser()):
+            with self.subTest(parser=type(parser).__name__):
+                self.assertEqual(parser.parse_failures(files), ())
+
+    def test_unparseable_unit_is_named(self) -> None:
+        files = [("ok.py", "x = 1\n"), ("broken.py", _BROKEN_SRC)]
+        for parser in (AstSourceParser(), TreeSitterSourceParser()):
+            with self.subTest(parser=type(parser).__name__):
+                self.assertEqual(parser.parse_failures(files), ("broken.py",))
+
+    def test_index_carries_parse_failures(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root, "pkg/ok.py", "x = 1\n")
+            _write(root, "pkg/broken.py", _BROKEN_SRC)
+            idx = source.build_source_anchor_index(root, write=False)
+            self.assertIn("pkg/broken.py", idx.parse_failures)
+            self.assertNotIn("pkg/ok.py", idx.parse_failures)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -421,6 +421,19 @@ class TestUnifiedFidelityConfession(unittest.TestCase):
             self.assertTrue(fid.work.complete)  # registry intact
             self.assertTrue(fid.corpus.complete)
 
+    def test_present_source_with_unparseable_unit_confesses_incomplete(self) -> None:
+        # GHI #675: a present source root is not enough — a unit tree-sitter
+        # cannot parse silently drops its anchors, so complete must go False.
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger, src_root, okf_dir = _full_fixture(Path(tmp))
+            (src_root / "pkg" / "broken.py").write_text("def (:\n  @@@ bad\n", encoding="utf-8")
+            fid = project_all(ledger, source_root=src_root, okf_bundle=okf_dir).fidelity
+            self.assertFalse(fid.source.complete)  # parse failure confessed
+            self.assertIn("broken.py", fid.source.detail)  # names the failing unit
+            self.assertFalse(fid.complete)  # aggregate confesses
+            self.assertTrue(fid.okf.complete)  # unaffected domains stay honest
+            self.assertTrue(fid.corpus.complete)
+
     def test_sense_json_carries_per_domain_fidelity_sub_reports(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ledger, src_root, okf_dir = _full_fixture(Path(tmp))

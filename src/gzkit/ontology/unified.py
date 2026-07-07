@@ -229,19 +229,32 @@ def _compose_source(graph: OntologyGraph, src_root: Path) -> DomainFidelity:
     present = src_root.is_dir()
     unit_count = 0
     anchor_count = 0
+    failures: tuple[str, ...] = ()
     if present:
         unit_count = sum(1 for _ in src_root.rglob("*.py"))
-        edges = build_source_anchor_index(src_root, write=False).edges
+        index = build_source_anchor_index(src_root, write=False)
+        failures = index.parse_failures
+        edges = index.edges
         anchor_count = len(edges)
         for edge in edges:
             graph.add_node(_req_node(edge.target_id))
         _add_grounded_edges(graph, edges)
-    detail = (
-        f"parsed {unit_count} discoverable src unit(s); {anchor_count} source->REQ anchor(s)"
-        if present
-        else f"source root {src_root.as_posix()} not discoverable — parse coverage unknown"
+    if not present:
+        detail = f"source root {src_root.as_posix()} not discoverable — parse coverage unknown"
+    elif failures:
+        detail = (
+            f"parsed {unit_count} discoverable src unit(s); {anchor_count} source->REQ anchor(s); "
+            f"{len(failures)} unit(s) failed to parse: {', '.join(failures)}"
+        )
+    else:
+        detail = (
+            f"parsed {unit_count} discoverable src unit(s); {anchor_count} source->REQ anchor(s)"
+        )
+    # BI#1: a present root is not enough — an unparseable unit drops its anchors,
+    # so parse failures must pull the domain's fidelity to complete=False (GHI #675).
+    return DomainFidelity(
+        domain="source", complete=present and not failures, fresh=True, detail=detail
     )
-    return DomainFidelity(domain="source", complete=present, fresh=True, detail=detail)
 
 
 def project_all(
