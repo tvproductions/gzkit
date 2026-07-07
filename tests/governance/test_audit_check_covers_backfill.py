@@ -472,6 +472,35 @@ class TestComputeBackfillFindings(unittest.TestCase):
         self.assertGreater(findings[0].gap_days, -1)
 
 
+class TestTimezoneConsistentCommitDates(unittest.TestCase):
+    """Commit dates (git ``%cI``, local offset) and receipt dates (ledger ts, UTC)
+    MUST be compared in a consistent timezone.
+
+    Regression for a latent time-of-day flake: a same-instant cosmetic-backfill
+    triple committed in the evening (local) emits its receipt event in UTC —
+    already past midnight — so a naive ``.date()`` on each put them on different
+    calendar days near the UTC boundary. That made ``receipt_after_intro`` True,
+    wrongly exempting the triple, so the heuristic silently stopped firing after
+    ~19:00 US-Central every day. Both parsers normalize to the UTC date.
+    """
+
+    @covers("REQ-0.0.23-05-01")
+    def test_git_local_and_ledger_utc_same_instant_yield_same_date(self) -> None:
+        from gzkit.commands.adr_audit_covers_backfill import (
+            _parse_first_log_header,
+            _ts_to_date,
+        )
+
+        # The SAME instant: 2026-07-06T20:55:32-05:00 == 2026-07-07T01:55:32+00:00.
+        parsed = _parse_first_log_header("8bd1e7e|2026-07-06T20:55:32-05:00\n")
+        self.assertIsNotNone(parsed)
+        assert parsed is not None
+        _sha, commit_date = parsed
+        receipt_date = _ts_to_date("2026-07-07T01:55:32+00:00")
+        self.assertEqual(commit_date, receipt_date)
+        self.assertEqual(commit_date, date(2026, 7, 7))
+
+
 # --------------------------------------------------------------------------- #
 # Legitimate-authoring guard (GHI #386 — ceremony trailer, file-creation)       #
 # --------------------------------------------------------------------------- #

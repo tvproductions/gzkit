@@ -30,7 +30,7 @@ import math
 import re
 import subprocess
 from collections.abc import Callable, Mapping, Sequence
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Literal, cast
 
@@ -181,10 +181,8 @@ def _parse_first_log_header(stdout: str) -> tuple[str, date] | None:
         if match is None:
             continue
         sha = match.group("sha")[:7]
-        ts = match.group("ts")
-        try:
-            commit_date = datetime.fromisoformat(ts).date()
-        except ValueError:
+        commit_date = _iso_to_utc_date(match.group("ts"))
+        if commit_date is None:
             continue
         return sha, commit_date
     return None
@@ -272,11 +270,27 @@ def _parent_obpi_id(req_id: str) -> str | None:
     return f"OBPI-{match.group(1)}-{match.group(2)}"
 
 
-def _ts_to_date(ts: str) -> date | None:
+def _iso_to_utc_date(ts: str) -> date | None:
+    """Parse an ISO-8601 timestamp to its UTC calendar date.
+
+    Both git ``%cI`` (local-offset) and ledger event ts (UTC) flow through here so
+    the SAME instant expressed in different offsets yields the SAME date. Without
+    UTC normalization, a commit made in the evening (local) and its receipt event
+    (UTC, already past midnight) land on different calendar days near the UTC
+    boundary — making ``receipt_after_intro`` True and wrongly exempting a
+    same-instant cosmetic-backfill triple (a time-of-day-dependent flake).
+    """
     try:
-        return datetime.fromisoformat(ts).date()
+        parsed = datetime.fromisoformat(ts)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC).date()
+
+
+def _ts_to_date(ts: str) -> date | None:
+    return _iso_to_utc_date(ts)
 
 
 def _event_field(event: Mapping, key: str) -> object:
