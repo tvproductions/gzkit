@@ -80,5 +80,50 @@ class TestAbsorbBundle(unittest.TestCase):
             self.assertEqual([d.subtype for d in docs], ["galactic-charter"])
 
 
+class TestOkfCompositionLinkResolution(unittest.TestCase):
+    """GHI #674: intra-bundle Doc->Doc links_to edges resolve into the composed graph."""
+
+    @covers("REQ-0.32.0-05-03")
+    def test_intra_bundle_doc_link_imaged_in_graph(self) -> None:
+        """A concept doc linking a sibling concept doc yields a links_to edge
+        between their Doc nodes in the composed graph. The raw markdown ref
+        (./beta.md) resolves to the sibling's absolute node_id (GHI #674)."""
+        from gzkit.ontology.graph import OntologyGraph
+        from gzkit.ontology.unified import _compose_okf
+
+        with TemporaryDirectory() as tmp:
+            bundle = Path(tmp)
+            _write_concept(bundle, "alpha", link="./beta.md")
+            _write_concept(bundle, "beta", link="./alpha.md")
+            graph = OntologyGraph()
+            _compose_okf(graph, bundle)
+            alpha_id = bundle.joinpath("alpha.md").as_posix()
+            beta_id = bundle.joinpath("beta.md").as_posix()
+            links = {
+                (e.source_id, e.target_id)
+                for e in graph.edges()
+                if e.link_type == LinkType.LINKS_TO
+            }
+            self.assertIn((alpha_id, beta_id), links)
+            self.assertIn((beta_id, alpha_id), links)
+
+    @covers("REQ-0.32.0-05-03")
+    def test_cross_bundle_link_not_minted(self) -> None:
+        """A ref pointing outside the bundle resolves to no Doc node and is
+        dropped — never minted into a fake node (BI#1)."""
+        from gzkit.ontology.graph import OntologyGraph
+        from gzkit.ontology.unified import _compose_okf
+
+        with TemporaryDirectory() as tmp:
+            bundle = Path(tmp)
+            _write_concept(bundle, "alpha", link="../../docs/outside.md")
+            graph = OntologyGraph()
+            _compose_okf(graph, bundle)
+            alpha_id = bundle.joinpath("alpha.md").as_posix()
+            self.assertEqual(graph.node_ids(), [alpha_id])
+            links = [e for e in graph.edges() if e.link_type == LinkType.LINKS_TO]
+            self.assertEqual(links, [])
+
+
 if __name__ == "__main__":
     unittest.main()

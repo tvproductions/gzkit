@@ -28,6 +28,7 @@ no ``LinkType`` (``CodeCouplingEdge`` is outside the object/link model).
 
 from __future__ import annotations
 
+import posixpath
 from collections.abc import Iterable
 from pathlib import Path
 
@@ -182,6 +183,28 @@ def _compose_work(graph: OntologyGraph, ledger: Ledger, registry: frozenset[str]
     return DomainFidelity(domain="work", complete=not missing, fresh=True, detail=detail)
 
 
+def _resolve_okf_link_targets(
+    edges: Iterable[OntologyEdge], doc_ids: set[str]
+) -> list[OntologyEdge]:
+    """Rewrite intra-bundle ``links_to`` targets from authored refs to Doc node_ids.
+
+    A concept doc's markdown ref (e.g. ``./other.md``) is authored relative to the
+    doc's own location; normalize it lexically against the source ``Doc``'s parent
+    dir (cross-platform via ``posixpath`` — node_ids are ``as_posix()``). If it lands
+    on a materialized ``Doc`` node, rewrite the target so :func:`_add_grounded_edges`
+    admits the edge; otherwise leave the ref raw so it is dropped — a cross-bundle /
+    non-Doc target is never minted into a fake node (BI#1, GHI #674).
+    """
+    resolved: list[OntologyEdge] = []
+    for edge in edges:
+        candidate = posixpath.normpath(
+            posixpath.join(posixpath.dirname(edge.source_id), edge.target_id)
+        )
+        target = candidate if candidate in doc_ids else edge.target_id
+        resolved.append(edge.model_copy(update={"target_id": target}))
+    return resolved
+
+
 def _compose_okf(graph: OntologyGraph, okf_dir: Path) -> DomainFidelity:
     """Compose OKF Doc nodes + links_to edges (absorb UNCHANGED — BI#5)."""
     present = okf_dir.is_dir()
@@ -189,9 +212,10 @@ def _compose_okf(graph: OntologyGraph, okf_dir: Path) -> DomainFidelity:
     if present:
         docs, edges = absorb_okf_bundle(okf_dir)
         doc_count = len(docs)
+        doc_ids = {doc.id for doc in docs}
         for doc in docs:
             graph.add_node(doc.node)
-        _add_grounded_edges(graph, edges)
+        _add_grounded_edges(graph, _resolve_okf_link_targets(edges, doc_ids))
     detail = (
         f"bundle read: {doc_count} concept Doc(s) absorbed"
         if present
