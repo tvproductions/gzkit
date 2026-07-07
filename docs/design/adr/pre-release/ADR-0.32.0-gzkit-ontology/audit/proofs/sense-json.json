@@ -1,0 +1,48 @@
+{
+  "coverage": "structural",
+  "coverage_note": "STRUCTURAL coverage only \u2014 semantic completeness is NOT claimed (semantic-seam recall is deferred to RECALL / Phase-4, L3-advisory).",
+  "domains_note": "Domains imaged: corpus, work, source-anchors, okf; code-coupling \u2192 source_anchors.json (per-domain fidelity in --json).",
+  "node_count": 1171,
+  "edge_count": 1757,
+  "node_types": {
+    "PRD": 1,
+    "ADR": 261,
+    "OBPI": 903,
+    "Doc": 6
+  },
+  "seams": [],
+  "fidelity": {
+    "complete": true,
+    "fresh": true,
+    "unaccounted_event_types": [],
+    "unregistered_replayed_event_types": [],
+    "latest_event_ts": "2026-07-07T09:24:14.757559+00:00",
+    "build_ts": "2026-07-07T09:40:04.617658+00:00",
+    "corpus": {
+      "complete": true,
+      "fresh": true,
+      "unaccounted_event_types": [],
+      "unregistered_replayed_event_types": [],
+      "latest_event_ts": "2026-07-07T09:24:14.757559+00:00",
+      "build_ts": "2026-07-07T09:40:04.617658+00:00"
+    },
+    "source": {
+      "domain": "source",
+      "complete": true,
+      "fresh": true,
+      "detail": "parsed 379 discoverable src unit(s); 0 source->REQ anchor(s)"
+    },
+    "work": {
+      "domain": "work",
+      "complete": true,
+      "fresh": true,
+      "detail": "replayed 0 L2 work edge(s); all 4 edge event types registered"
+    },
+    "okf": {
+      "domain": "okf",
+      "complete": true,
+      "fresh": true,
+      "detail": "bundle read: 6 concept Doc(s) absorbed"
+    }
+  }
+}

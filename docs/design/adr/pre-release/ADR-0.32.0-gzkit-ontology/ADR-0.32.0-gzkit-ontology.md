@@ -1,6 +1,6 @@
 ---
 id: ADR-0.32.0-gzkit-ontology
-status: Completed
+status: Validated
 kind: feature
 semver: 0.32.0
 lane: heavy

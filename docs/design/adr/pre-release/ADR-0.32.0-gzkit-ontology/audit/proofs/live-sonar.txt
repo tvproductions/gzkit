@@ -1,0 +1,70 @@
+### gz ontology sense (live)
+                          Ontology Shape (STRUCTURAL)
+┏┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━┳━━┓
+┃┃ ID                                                                 ┃ Ow… ┃  ┃
+┡╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━╇━━┩
+││ ADR-0.0.1-canonical-govzero-parity                                 │ ha… │  │
+││ ADR-0.0.10-storage-tiers-simplicity-profile                        │ ha… │  │
+││ ADR-0.0.11-persona-driven-agent-identity-frames                    │ ha… │  │
+││ ADR-0.0.12-agent-role-persona-profiles                             │ ha… │  │
+││ ADR-0.0.13-portable-persona-control-surface                        │ ha… │  │
+││ ADR-0.0.14-deterministic-obpi-commands                             │ ha… │  │
+││ ADR-0.0.15-ghi-driven-patch-release-ceremony                       │ ha… │  │
+││ ADR-0.0.16-frontmatter-ledger-coherence-guard                      │ ha… │  │
+││ ADR-0.0.17-adr-taxonomy-mechanical                                 │ ha… │  │
+││ ADR-0.0.18-adr-taxonomy-doctrine                                   │ ha… │  │
+││ ADR-0.0.19-pre-execution-reasoning-walkthrough                     │ ha… │  │
+││ ADR-0.0.2-stdlib-cli-and-agent-sync                                │ ha… │  │
+││ ADR-0.0.20-agent-rule-placement-invariant                          │ ha… │  │
+││ ADR-0.0.21-chores-as-gzkit-surface                                 │ ha… │  │
+││ ADR-0.0.22-security-sensitivity-doctrine                           │ ha… │  │
+││ ADR-0.0.23-agent-failure-mode-taxonomy                             │ ha… │  │
+││ ADR-0.0.24-attestation-receipt-binding                             │ ha… │  │
+││ ADR-0.0.25-obpi-completion-req-coverage-gate                       │ ha… │  │
+││ ADR-0.0.26-evaluation-feedback-loop-doctrine                       │ ha… │  │
+││ ADR-0.0.27-exemplar-corpus-doctrine                                │ ha… │  │
+││ ADR-0.0.28-complexity-threshold-doctrine                           │ ha… │  │
+││ ADR-0.0.29-complexity-advisor                                      │ ha… │  │
+││ ADR-0.0.3-hexagonal-architecture-tune-up                           │ ha… │  │
+││ ADR-0.0.30-complexity-authoring-guidance                           │ ha… │  │
+││ ADR-0.0.31-distribution-invariant-doctrine                         │ ha… │  │
+││ ADR-0.0.32-canonical-surface-packaging                             │ ha… │  │
+││ ADR-0.0.33-agent-control-surface-fidelity                          │ ha… │  │
+││ ADR-0.0.34-agent-control-surface-rendering-substrate               │ ha… │  │
+││ ADR-0.0.35-foundation-feature-invariance-test                      │ ha… │  │
+││ ADR-0.0.36-universal-obpi-attestation                              │ ha… │  │
+││ ADR-0.0.37-constitutional-invariant-composition                    │ ha… │  │
+││ ADR-0.0.38-evidence-authority-projection-doctrine                  │ ha… │  │
+││ ADR-0.0.39-llm-as-judge-doctrine                                   │ ha… │  │
+││ ADR-0.0.4-cli-standards-presentation-foundation                    │ ha… │  │
+││ ADR-0.0.40-judge-enforcement-validators                            │ ha… │  │
+││ ADR-0.0.41-token-block-lock-discipline                             │ ha… │  │
+
+### gz ontology trace ADR-0.32.0-gzkit-ontology (live)
+ADR-0.32.0-gzkit-ontology
+  ancestors:   PRD-GZKIT-1.0.0
+  descendants: OBPI-0.32.0-01-ontology-model-and-purity,
+OBPI-0.32.0-02-networkx-substrate-and-corpus-projection,
+OBPI-0.32.0-03-gz-ontology-interface,
+OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants,
+OBPI-0.32.0-05-okf-open-absorption,
+OBPI-0.32.0-06-work-domain-l2-schema-and-queue,
+OBPI-0.32.0-07-source-domain-tree-sitter-anchors
+   child: declared child of PRD-GZKIT-1.0.0 (get_artifact_graph children)
+   child: declared parent of OBPI-0.32.0-01-ontology-model-and-purity
+(get_artifact_graph children)
+   child: declared parent of
+OBPI-0.32.0-02-networkx-substrate-and-corpus-projection (get_artifact_graph
+children)
+   child: declared parent of OBPI-0.32.0-03-gz-ontology-interface
+(get_artifact_graph children)
+   child: declared parent of
+OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants
+(get_artifact_graph children)
+   child: declared parent of OBPI-0.32.0-05-okf-open-absorption
+(get_artifact_graph children)
+   child: declared parent of OBPI-0.32.0-06-work-domain-l2-schema-and-queue
+(get_artifact_graph children)
+   child: declared parent of OBPI-0.32.0-07-source-domain-tree-sitter-anchors
+(get_artifact_graph children)
+   attests: node carries a completion attestation (self-loop)
