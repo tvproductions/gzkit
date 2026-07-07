@@ -332,6 +332,50 @@ class DriftReport(BaseModel):
     scan_timestamp: str = Field(..., description="ISO-8601 timestamp of the scan")
 
 
+class SourceSubgraphView(BaseModel):
+    """The typed source-subgraph projection ``detect_drift`` reads from (ADR-0.32.0).
+
+    The spec-test-code linkages, viewed as the source subgraph: which REQs are
+    known, which are covered, which REQ ids tests target, and which code ids are
+    justified. ``detect_drift`` is re-expressed as a VIEW over this projection so
+    the drift model and the ontology source subgraph share one shape — behavior
+    preserved (OBPI-0.32.0-07 REQ-06; golden-fixture parity pinned).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    known_req_ids: frozenset[str] = Field(..., description="REQ ids declared in briefs")
+    covered_req_ids: frozenset[str] = Field(..., description="Known REQs with a COVERS edge")
+    test_target_req_ids: frozenset[str] = Field(..., description="All COVERS-edge target REQ ids")
+    justified_code_ids: frozenset[str] = Field(..., description="Code ids with a JUSTIFIES edge")
+
+
+def _project_source_subgraph(
+    reqs: list[ReqEntity], linkage_records: list[LinkageRecord]
+) -> SourceSubgraphView:
+    """Project reqs + linkage records into the typed source-subgraph view."""
+    known_req_ids = {str(req.id) for req in reqs}
+
+    covered_req_ids: set[str] = set()
+    test_target_req_ids: set[str] = set()
+    justified_code_ids: set[str] = set()
+    for record in linkage_records:
+        if record.edge_type == EdgeType.COVERS:
+            target_id = record.target.identifier
+            test_target_req_ids.add(target_id)
+            if target_id in known_req_ids:
+                covered_req_ids.add(target_id)
+        elif record.edge_type == EdgeType.JUSTIFIES:
+            justified_code_ids.add(record.source.identifier)
+
+    return SourceSubgraphView(
+        known_req_ids=frozenset(known_req_ids),
+        covered_req_ids=frozenset(covered_req_ids),
+        test_target_req_ids=frozenset(test_target_req_ids),
+        justified_code_ids=frozenset(justified_code_ids),
+    )
+
+
 def detect_drift(
     reqs: list[ReqEntity],
     linkage_records: list[LinkageRecord],
@@ -340,30 +384,18 @@ def detect_drift(
 ) -> DriftReport:
     """Compute drift across the spec-test-code triangle.
 
-    Pure computation — no I/O. Deterministic: same inputs always produce same outputs.
-    Results sorted by identifier (semantic version order for REQs, alphabetical for code).
+    Re-expressed as a VIEW over the typed source subgraph (``SourceSubgraphView``)
+    so the drift model and the ontology source subgraph share one shape
+    (ADR-0.32.0, OBPI-0.32.0-07 REQ-06). Behavior is preserved exactly: pure
+    computation — no I/O, deterministic, results sorted by identifier (semantic
+    version order for REQs, alphabetical for code).
     """
-    known_req_ids = {str(req.id) for req in reqs}
+    view = _project_source_subgraph(reqs, linkage_records)
 
-    covered_req_ids: set[str] = set()
-    test_target_req_ids: set[str] = set()
-    for record in linkage_records:
-        if record.edge_type == EdgeType.COVERS:
-            target_id = record.target.identifier
-            test_target_req_ids.add(target_id)
-            if target_id in known_req_ids:
-                covered_req_ids.add(target_id)
-
-    unlinked = sorted(known_req_ids - covered_req_ids, key=_req_id_sort_key)
-    orphans = sorted(test_target_req_ids - known_req_ids, key=_req_id_sort_key)
-
-    justified_code_ids: set[str] = set()
-    for record in linkage_records:
-        if record.edge_type == EdgeType.JUSTIFIES:
-            justified_code_ids.add(record.source.identifier)
-
+    unlinked = sorted(view.known_req_ids - view.covered_req_ids, key=_req_id_sort_key)
+    orphans = sorted(view.test_target_req_ids - view.known_req_ids, key=_req_id_sort_key)
     unjustified = sorted(
-        v.identifier for v in changed_code_vertices if v.identifier not in justified_code_ids
+        v.identifier for v in changed_code_vertices if v.identifier not in view.justified_code_ids
     )
 
     return DriftReport(

@@ -3,7 +3,29 @@ id: OBPI-0.32.0-07-source-domain-tree-sitter-anchors
 parent: ADR-0.32.0-gzkit-ontology
 item: 7
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic — each REQ is one indivisible unit of labor with no sub-REQ
+# subdivision. The source domain was authored as one continuous TDD flow, one
+# Red-Green-Refactor increment per REQ: 01 (@covers source anchors via structural
+# decorator-walk), 02 (@surface many-to-many layer), 03 (tree-sitter import +
+# definition coupling resolved between source units), 04 (deterministic
+# round-tripping source_anchors.json), 05 (orphan-gap detection), 06 (detect_drift
+# re-expressed as a subgraph view — one behavior-preserving absorption), 07
+# [SUPPORT] (the tree-sitter dependency add — no test labor), 08 (the SourceParser
+# port + two adapters — one cohesive "an interchangeable port exists" deliverable;
+# its internal parts — port, ast adapter, tree-sitter adapter, contract test — are
+# the single act of building the port, not separately-attributable labor units).
+# None subdivided into seq=02+; the pipeline-minted seq=01-per-REQ buckets ARE the
+# true labor shape (GHI #590).
+req_atomic:
+  - REQ-0.32.0-07-01
+  - REQ-0.32.0-07-02
+  - REQ-0.32.0-07-03
+  - REQ-0.32.0-07-04
+  - REQ-0.32.0-07-05
+  - REQ-0.32.0-07-06
+  - REQ-0.32.0-07-07
+  - REQ-0.32.0-07-08
 ---
 
 # OBPI-0.32.0-07-source-domain-tree-sitter-anchors: Source Domain Tree Sitter Anchors
@@ -13,7 +35,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md`
 - **Checklist Item:** #7 - "source domain: tree-sitter code-coupling + @covers/@surface anchors + source->REQ first-class + source_anchors.json query index + orphan-gap detection; absorbs triangle.py's edge model, re-expressing detect_drift as a subgraph view (compat-view, behavior preserved)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -61,6 +83,7 @@ live.
 
 - `src/gzkit/ontology/source.py` — **CREATE**: tree-sitter polyglot code-coupling extraction + `@covers`/`@surface` source-anchor scanning → source→REQ edges; `source_anchors.json` index builder; orphan-gap detector
 - `src/gzkit/ontology/__init__.py` — **CREATE** (package marker; created by OBPI-0.32.0-01/02 if not already present — reconcile only, no behavioral edit)
+- `src/gzkit/ontology/model.py` — **CONSUMED (import-only, never edited)**: `source.py` and the tests import `OntologyNode`/`OntologyEdge`/`LinkType`/`Provenance` from it. Declared here for coupled-surface honesty (AGENTS.md § DO IT RIGHT 1a — the source domain's real import dependency); owned by OBPI-0.32.0-01, NEVER modified by this OBPI
 - `.gzkit/ontology/source_anchors.json` — **CREATE** (generated): the Tier-B derived query-before-grep index of every source→REQ anchor (regenerable from source, never authoritative)
 - `src/gzkit/triangle.py` — **MODIFY (compat)**: re-express `detect_drift` as a subgraph VIEW over the source-subgraph; preserve the public surface (`EdgeType`, `LinkageRecord`, `VertexRef`, `DriftReport`, `detect_drift` signature) with behavior unchanged — no deletions
 - `tests/test_ontology_source.py` — **CREATE**: `@covers`-decorated REQ tests including the `detect_drift` golden-fixture parity test (flat convention, mirrors `tests/test_lifecycle.py`)
@@ -78,7 +101,7 @@ live.
 - `src/gzkit/commands/**`, `src/gzkit/cli/**` — the ontology CLI verb surface (item #3); this OBPI builds no CLI verb and adds no manpage
 - The ontology Pydantic model + `src/gzkit/schemas/` ontology schema (OBPI-0.32.0-01) — `OntologyNode`/`OntologyEdge`/`LinkType` are imported, never modified
 - `networkx` as a new dependency — item #2 owns the graph-substrate dependency; this OBPI adds only `tree-sitter`
-- `src/gzkit/traceability.py` — the existing `@covers` test-tree scanner is reused via import, not edited; `@surface` scanning is net-new in `source.py`
+- `src/gzkit/traceability.py` — NOT edited (denied). NOTE (operator-ratified port refactor, 2026-07-06): source anchors are extracted by **structural decorator-walk** inside the `SourceParser` adapters (`ast` walks `decorator_list`; tree-sitter walks `decorator` nodes) — superseding the earlier `find_covers_in_source` reuse. Decorator-walk is strictly more correct for product source (a real decorator is never inside a string, so the GHI #390 masking class does not arise) and lets both adapters agree by construction. `traceability.py` is untouched.
 - Deleting or renaming any public name in `src/gzkit/triangle.py` — absorption is a compat view, not a removal
 - Any path not listed in Allowed Paths
 
@@ -93,6 +116,8 @@ live.
 4. ALWAYS: The `source_anchors.json` index is Tier-B derived — regenerable from source, never authoritative, and never consumed as a gate or `gz validate` enforcement input (parent ADR Boundary Invariant #2, derived-never-authority).
 5. ALWAYS: The `tree-sitter` dependency is added under the parent ADR's GO-attested STDLIB-FIRST departure (Phase-0 airlock-in, 2026-07-02) — quote that attestation verbatim into `### Implementation Summary`. NEVER add `networkx` here (item #2 owns it).
 6. ALWAYS: Reconcile this brief against the parent ADR § Decision (source-domain clause) before implementation; on missing prerequisites, print a BLOCKERS list and halt.
+7. ALWAYS: `build_source_anchor_index()` is deterministic — identical source trees yield byte-identical `source_anchors.json` (sorted keys, stable ordering) and the index round-trips through its Pydantic model (`load(dump(x)) == x`). NEVER emit nondeterministic ordering.
+8. ALWAYS: source parsing is a `SourceParser` port (`typing.Protocol` returning domain types) with TWO real adapters — `AstSourceParser` (stdlib) and `TreeSitterSourceParser` (polyglot). tree-sitter is confined to `TreeSitterSourceParser` (function-local import) and NEVER crosses the port — adapters return only `SourceAnchor`/`CodeCouplingEdge`, never a parser-native node (hexagonal-architecture.md rules 3/5/6). The core MUST be exercisable via `AstSourceParser` without importing tree-sitter.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -241,6 +266,7 @@ STRUCTURAL-FENCE proves via a parent-ADR ## Boundary Invariants entry.
 - [ ] REQ-0.32.0-07-05 [BEHAVIOR]: Orphan-gap detection deterministically surfaces every REQ with no covering source anchor (and, symmetrically, every source anchor whose REQ id is not a known brief REQ), returned as a sorted report; pinned by a `@covers(REQ-0.32.0-07-05)` test over a fixture with a known gap.
 - [ ] REQ-0.32.0-07-06 [BEHAVIOR]: `triangle.py`'s `detect_drift` is re-expressed as a subgraph VIEW over the source-subgraph while its public surface (`detect_drift` signature, `EdgeType`, `LinkageRecord`, `VertexRef`, `DriftReport`) is preserved unchanged — for identical inputs (including `scan_timestamp`) the view returns a `DriftReport` equal to the pre-absorption result; pinned by a golden-fixture parity `@covers(REQ-0.32.0-07-06)` test.
 - [ ] REQ-0.32.0-07-07 [SUPPORT]: The `tree-sitter` runtime dependency (core + Python grammar) is added to `pyproject.toml` and locked in `uv.lock` as a STDLIB-FIRST departure attested in the parent ADR § Decision (GO-attested Phase-0 airlock-in, 2026-07-02) quoted verbatim into `### Implementation Summary`; proven by `uv run gz validate --documents` passing AND an `artifact_edited` ledger event citing this brief emitted at OBPI completion.
+- [ ] REQ-0.32.0-07-08 [BEHAVIOR]: Source parsing is expressed as a `SourceParser` port (`typing.Protocol` returning domain `SourceAnchor`/`CodeCouplingEdge` models) fulfilled by TWO real adapters — `AstSourceParser` (stdlib `ast`, Python-only, the STDLIB-FIRST default) and `TreeSitterSourceParser` (the polyglot departure). The core (`build_source_anchor_index`, `detect_orphan_gaps`) depends on the port by injection and runs on the `ast` adapter without importing tree-sitter (rule 6); a port-contract test asserts both adapters produce identical anchors and coupling on a Python fixture (operator-ratified port refactor, 2026-07-06); pinned by a `@covers(REQ-0.32.0-07-08)` test.
 
 ## Completion Checklist
 
@@ -300,15 +326,25 @@ STRUCTURAL-FENCE proves via a parent-ADR ## Boundary Invariants entry.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Port interchangeability across the full src tree (REQ-08):
+
+$ uv run python -c "from gzkit.ontology.source import build_source_anchor_index as b, AstSourceParser, TreeSitterSourceParser; a=b(parser=AstSourceParser(),write=False); t=b(parser=TreeSitterSourceParser(),write=False); print('anchors',a.anchors==t.anchors,'coupling',a.coupling_edges==t.coupling_edges,'n',len(t.coupling_edges))"
+anchors True coupling True n 3947
+
+The stdlib and tree-sitter adapters produce byte-identical domain output over the entire src/** tree — the port is a real seam, not a facade. REQ-03 definition coupling: `from b import helper` (helper defined in b.py) yields a uses_definition edge c.py->b.py symbol=helper. rule 6: build_source_anchor_index(parser=AstSourceParser()) runs with `import tree_sitter` blocked. Full suite: Ran 6788 tests in ~92s, OK — receipt arb-step-unittest-a35bb141b207490d96f61a14a7bb0cde (exit_status=0). Both adversaries NOT-REFUTED; negative controls (break _walk_definitions / AstSourceParser.coupling) turned the port-contract test RED then restored green.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/ontology/source.py` (SourceParser Protocol port + AstSourceParser/TreeSitterSourceParser adapters; @covers/@surface structural decorator-walk; import+definition coupling resolved between source units; deterministic source_anchors.json build/load; orphan-gap detection; triangle edge-model absorption). `tests/test_ontology_source.py` (11 @covers tests incl. REQ-08 port-contract equivalence). `.gzkit/ontology/source_anchors.json` (Tier-B derived index, 3947 coupling edges).
+- Files modified: `src/gzkit/triangle.py` (detect_drift re-expressed as a SourceSubgraphView subgraph view; public surface — detect_drift signature, EdgeType, LinkageRecord, VertexRef, DriftReport — preserved unchanged). `pyproject.toml` + `uv.lock` (tree-sitter + tree-sitter-python added). Brief (REQ-08, FAIL-CLOSED requirement 8, req_atomic, model.py declared consumed).
+- Parent ADR Decision (verbatim): "source (tree-sitter code-coupling + @covers/@surface anchors; source->REQ first-class; absorbs triangle.py's edge model and re-expresses detect_drift as a subgraph view)". STDLIB-FIRST departure GO-attested Phase-0 airlock-in, 2026-07-02: tree-sitter supplies deterministic multi-surface (polyglot) parsing stdlib ast (Python-only) cannot.
+- Hexagonal: source parsing is a SourceParser port fulfilled by two real adapters; tree-sitter confined function-local to TreeSitterSourceParser; core exercisable via AstSourceParser without importing tree-sitter (rule 6); adapters byte-identical across the full src tree.
+- Tests added: 11 scoped (REQ-01..06 + REQ-08 BEHAVIOR; REQ-07 SUPPORT proves via ledger+validator).
+- Date completed: 2026-07-06.
+- Attestation status: operator-attested (g0, "attest completed").
+- Defects noted: pre-existing Windows-backslash paths in historical artifact_edited ledger entries (out-of-scope; Stage-5 GHI candidate).
 
 ## Tracked Defects
 
@@ -319,12 +355,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Heavy-lane OBPI-0.32.0-07 source domain built as a SourceParser hexagonal port with two interchangeable adapters (AstSourceParser stdlib + TreeSitterSourceParser polyglot), proven byte-identical across the full src tree (3947 coupling edges; anchors+coupling equal). 8 REQs covered (11 scoped tests), full suite 6788/6788 green (receipt arb-step-unittest-a35bb141b207490d96f61a14a7bb0cde), lint clean (arb-ruff-6cdc178aad0f49f99695c7073f48e78e), typecheck clean (arb-step-typecheck-05c4cdd55d5d48a18e85bb9daccbe3ab), mkdocs --strict clean (arb-step-mkdocs-2ae5dc67a7fc46bc9560e32ff1b54c5e). REQ-03 import+definition coupling between source units and REQ-08 port contract independently validated by two adversaries (Codex + independent Claude, both NOT-REFUTED with fired negative controls); the Codex-caught REQ-03 semantic gap and the operator-directed port refactor were both corrected in flight. tree-sitter confirmed GO-attested against canon (not paraphrase). Precomplete 8/8 READY.
+- Date: 2026-07-07
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-07
 
 **Evidence Hash:** -

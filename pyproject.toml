@@ -31,6 +31,13 @@ dependencies = [
     # MultiDiGraph + lateral/reachability traversal that stdlib graphlib
     # (a topological sorter only) cannot. Consumed by src/gzkit/ontology/.
     "networkx>=3.4",
+    # Stdlib-First named departure (ADR-0.32.0-gzkit-ontology § Decision;
+    # GO-attested Phase-0 airlock-in 2026-07-02): tree-sitter is the polyglot
+    # source sensor that stdlib `ast` (Python-only) cannot be — gzkit is a
+    # harness that runs on adopter codebases. Confined to the adapter in
+    # src/gzkit/ontology/source.py per hexagonal-architecture.md.
+    "tree-sitter>=0.23",
+    "tree-sitter-python>=0.23",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
     # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;

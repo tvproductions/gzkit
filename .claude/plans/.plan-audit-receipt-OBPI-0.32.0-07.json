@@ -1,0 +1,58 @@
+{
+  "obpi_id": "OBPI-0.32.0-07",
+  "timestamp": "2026-07-06T22:31:56.430490+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.32.0-07-source-domain-tree-sitter-anchors.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-03-drift-detection-engine",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-01-req-entity-and-triangle-data-model",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-02-brief-req-extraction",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-02-req-kind-discipline-validator",
+      "contested_paths": [
+        "src/gzkit/triangle.py"
+      ]
+    }
+  ]
+}
