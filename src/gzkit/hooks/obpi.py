@@ -331,12 +331,12 @@ def normalize_git_sync_state(raw_state: Any) -> dict[str, Any] | None:
 
 
 def _should_use_sealed_scope(obpi_info: dict[str, Any]) -> bool:
-    """Return whether to trust an OBPI's sealed completion scope evidence over
-    the live working tree (GHI #66; GHI #610 Gap A).
+    """Return whether to trust an OBPI's sealed completion scope over the live tree.
 
-    A ledger-completed OBPI uses its sealed ``scope_audit``. A *repudiated* OBPI
-    (``gz obpi repudiate``, ADR-0.0.71) whose completion was reversed but whose
-    deliverables remain committed reuses the same sealed evidence — otherwise
+    GHI #66; GHI #610 Gap A. A ledger-completed OBPI uses its sealed
+    ``scope_audit``. A *repudiated* OBPI (``gz obpi repudiate``, ADR-0.0.71)
+    whose completion was reversed but whose deliverables remain committed
+    reuses the same sealed evidence — otherwise
     the live tree shows only post-repudiation governance churn, the changed-files
     audit false-fails, and the re-completion the repudiate contract promises is
     blocked.

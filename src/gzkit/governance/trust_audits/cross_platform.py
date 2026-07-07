@@ -437,7 +437,7 @@ def _is_truthy_constant(value: ast.expr) -> bool:
 
 
 def _decodes_text(kwargs: dict[str, ast.expr]) -> bool:
-    """True when the call decodes bytes→str (text mode).
+    """Return True when the call decodes bytes→str (text mode).
 
     Only text-mode calls decode; passing ``errors=`` to a bytes-mode call would
     silently *enable* text mode (subprocess docs), flipping the return type — so
@@ -454,7 +454,7 @@ def _decodes_text(kwargs: dict[str, ast.expr]) -> bool:
 
 
 def _captures_output(func_name: str, kwargs: dict[str, ast.expr]) -> bool:
-    """True when the call captures sub-process stdout/stderr (something to decode)."""
+    """Return True when the call captures sub-process stdout/stderr (something to decode)."""
     if func_name == "check_output":
         return True
     if _is_truthy_constant(kwargs.get("capture_output", ast.Constant(value=False))):

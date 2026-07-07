@@ -562,7 +562,7 @@ def evaluate_persona_drift(
 
 
 def render_persona_for_vendor(vendor: str, fm: PersonaFrontmatter, body: str = "") -> str:
-    """Render a persona frame for the given vendor.
+    r"""Render a persona frame for the given vendor.
 
     Looks up the vendor in ``VENDOR_ADAPTERS``.  If no adapter is registered,
     returns the raw canonical markdown as fallback (REQ-0.0.13-04-04).

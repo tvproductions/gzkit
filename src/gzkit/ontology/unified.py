@@ -57,7 +57,7 @@ _OKF_BUNDLE_REL = Path(".gzkit") / "governance" / "knowledge"
 
 
 class DomainFidelity(BaseModel):
-    """One domain's self-report: was it fully imaged, and is it fresh?"""
+    """Self-report on whether one domain was fully imaged and is fresh."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 

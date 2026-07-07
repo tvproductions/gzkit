@@ -39,5 +39,6 @@ class TransitionMonitor:
         Returns:
             True if the (from_state, to_state) pair matches a declared transition;
             False otherwise.
+
         """
         return (from_state, to_state) in self._allowed_transitions

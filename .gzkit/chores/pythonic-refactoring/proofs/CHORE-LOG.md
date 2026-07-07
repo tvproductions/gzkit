@@ -935,3 +935,168 @@ Ran 6660 tests in 81.954s
 
 OK
 ```
+## 2026-07-07T05:47:41-05:00
+- Status: FAIL
+- Chore: pythonic-refactoring
+- Title: Pythonic Refactoring (ruff + ty)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx ruff check .` => rc=0 (0.07s) -- exit 0 == 0
+  - [FAIL] `uvx ty check . --exclude features` => rc=1 (0.43s) -- exit 1 != 0
+
+```text
+[uvx ruff check .] stdout:
+All checks passed!
+[uvx ty check . --exclude features] stdout:
+error[missing-argument]: No argument provided for required parameter `provenance`
+  --> tests/test_ontology_model.py:60:13
+   |
+60 | /             OntologyEdge(
+61 | |                 source_id="a",
+62 | |                 target_id="b",
+63 | |                 link_type=LinkType.PARENT,
+64 | |                 bogus=1,  # type: ignore[call-arg]
+65 | |             )
+   | |_____________^
+   |
+
+error[missing-argument]: No argument provided for required parameter `provenance`
+  --> tests/test_ontology_model.py:90:13
+   |
+90 |             OntologyEdge(source_id="a", target_id="b", link_type=LinkType.CHILD)
+   |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+
+error[missing-argument]: No argument provided for required parameter `ownership`
+   --> tests/test_ontology_model.py:128:13
+    |
+128 |             OntologyNode(node_id="n1", object_type=ObjectType.ADR, plane=Plane.PRODUCT)  # type: ignore[call-arg]
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+
+error[missing-argument]: No argument provided for required parameter `plane`
+   --> tests/test_ontology_model.py:133:13
+    |
+133 |             OntologyNode(node_id="n1", object_type=ObjectType.ADR, ownership=Ownership.HARNESS)  # type: ignore[call-arg]
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+
+Found 4 diagnostics
+```
+## 2026-07-07T06:35:27-05:00
+- Status: FAIL
+- Chore: pythonic-refactoring
+- Title: Pythonic Refactoring (ruff + ty)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx ruff check .` => rc=0 (0.04s) -- exit 0 == 0
+  - [PASS] `uvx ty check . --exclude features` => rc=0 (0.35s) -- exit 0 == 0
+  - [FAIL] `uv run -m unittest -q` => rc=1 (83.18s) -- exit 1 != 0
+
+```text
+[uvx ruff check .] stdout:
+All checks passed!
+[uvx ty check . --exclude features] stdout:
+All checks passed!
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+refused: OBPI-test.md carries terminal OBPI status 'abandoned' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+======================================================================
+FAIL: test_no_new_deps_shell_true_or_dataclass (tests.governance.test_agent_contract_fold.TestAgentContractFold.test_no_new_deps_shell_true_or_dataclass)
+REQ 13: OBPI-02 introduces no stdlib ``dataclass``, no ``shell=True``,
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/governance/test_agent_contract_fold.py", line 356, in test_no_new_deps_shell_true_or_dataclass
+    self.assertFalse(
+    ~~~~~~~~~~~~~~~~^
+        non_conforming,
+        ^^^^^^^^^^^^^^^
+        f"OBPI-02 may not introduce new imports: {non_conforming!r}",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+AssertionError: ['import subprocess'] is not false : OBPI-02 may not introduce new imports: ['import subprocess']
+
+----------------------------------------------------------------------
+Ran 6808 tests in 82.610s
+
+FAILED (failures=1)
+```
+## 2026-07-07T06:42:29-05:00
+- Status: PASS
+- Chore: pythonic-refactoring
+- Title: Pythonic Refactoring (ruff + ty)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx ruff check .` => rc=0 (0.04s) -- exit 0 == 0
+  - [PASS] `uvx ty check . --exclude features` => rc=0 (0.37s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest -q` => rc=0 (78.16s) -- exit 0 == 0
+
+```text
+[uvx ruff check .] stdout:
+All checks passed!
+[uvx ty check . --exclude features] stdout:
+All checks passed!
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+refused: OBPI-test.md carries terminal OBPI status 'abandoned' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:376: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 6808 tests in 77.613s
+
+OK
+```

@@ -22,6 +22,7 @@ class OntologyGraph:
     """
 
     def __init__(self) -> None:
+        """Initialize an empty ontology graph (no nodes, no edges)."""
         self._graph: nx.MultiDiGraph = nx.MultiDiGraph()
         self._nodes: dict[str, OntologyNode] = {}
 
@@ -31,8 +32,11 @@ class OntologyGraph:
         self._graph.add_node(node.node_id)
 
     def add_edge(self, edge: OntologyEdge) -> None:
-        """Add a typed edge, keyed by ``link_type`` so parallel relations of
-        distinct type between the same node pair are all retained (multigraph)."""
+        """Add a typed edge to the multigraph.
+
+        Keyed by ``link_type`` so parallel relations of distinct type between the
+        same node pair are all retained.
+        """
         self._graph.add_edge(
             edge.source_id,
             edge.target_id,
@@ -41,18 +45,23 @@ class OntologyGraph:
         )
 
     def node_count(self) -> int:
+        """Return the number of registered nodes."""
         return len(self._nodes)
 
     def edge_count(self) -> int:
+        """Return the number of edges (parallel edges counted separately)."""
         return self._graph.number_of_edges()
 
     def node_ids(self) -> list[str]:
+        """Return the registered node ids in insertion order."""
         return list(self._nodes)
 
     def nodes(self) -> list[OntologyNode]:
+        """Return the registered nodes in insertion order."""
         return list(self._nodes.values())
 
     def edges(self) -> list[OntologyEdge]:
+        """Return every typed edge held in the multigraph."""
         return [data["edge"] for _, _, data in self._graph.edges(data=True)]
 
     def reachable_from(self, node_id: str) -> set[str]:

@@ -159,6 +159,7 @@ def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
 
     Returns:
         The corresponding OBPIState, or None if unmapped.
+
     """
     # Try direct OBPIState enum match (case-insensitive)
     try:
@@ -188,7 +189,7 @@ def _map_vocab_to_obpi_state(vocab_term: str) -> OBPIState | None:
 
 
 def obpi_status_is_terminal(status_term: str) -> bool:
-    """True when a frontmatter/ledger status maps to a terminal ``OBPIState``.
+    """Return True when a frontmatter/ledger status maps to a terminal ``OBPIState``.
 
     Terminal OBPI states (``withdrawn``, ``superseded``) have no outgoing
     canonical transition. A lifecycle auto-fix must never silently move an OBPI
@@ -217,6 +218,7 @@ def _status_is_valid_obpi_transition(
 
     Returns:
         True if the transition is allowed; False if not allowed or not recognized.
+
     """
     try:
         # Map vocabulary terms to OBPIState values

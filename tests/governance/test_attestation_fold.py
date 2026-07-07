@@ -11,6 +11,7 @@ observed state.
 from __future__ import annotations
 
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -257,6 +258,13 @@ class TestAttestationFold(unittest.TestCase):
         REQ-05/06/07: inbound references must point at AGENTS.md § Attestation
         or docs/governance/arb-middleware.md. Historical roots listed in
         ``BUCKET_3_ROOTS`` are preserved as-is and excluded from the scan.
+
+        "Live" is operationalized as git-tracked files — the committed governed
+        surface. Untracked caches (``.ruff_cache``), the virtualenv, mkdocs
+        ``site/`` output, and sibling git worktrees are not live state and are
+        excluded by definition; scanning them also produced the whole-tree
+        ``rglob`` blow-up (261k paths) that pushed this test past the
+        test-health budget (test-isolation chore).
         """
         legacy_patterns = (
             ".gzkit/rules/attestation-enrichment.md",
@@ -265,17 +273,23 @@ class TestAttestationFold(unittest.TestCase):
             ".agents/rules/attestation-enrichment.md",
         )
 
+        tracked = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        ).stdout.split("\0")
+
         offenders: list[str] = []
-        for path in REPO_ROOT.rglob("*"):
-            if not path.is_file():
+        for rel in tracked:
+            if not rel or not rel.endswith((".md", ".json", ".py")):
                 continue
-            if path.suffix not in {".md", ".json", ".py"}:
-                continue
-            rel = path.relative_to(REPO_ROOT).as_posix()
             if any(rel.startswith(root) or rel == root for root in BUCKET_3_ROOTS):
                 continue
             try:
-                text = path.read_text(encoding="utf-8")
+                text = (REPO_ROOT / rel).read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
             for pattern in legacy_patterns:
@@ -383,6 +397,10 @@ class TestAttestationFold(unittest.TestCase):
         allowed_prefixes = (
             "from __future__ import ",
             "import json",
+            # stdlib, no new dependency: git ls-files scopes the live-files scan
+            # in test_no_inbound_references_to_legacy_paths_in_live_files to the
+            # tracked governed surface (never shell=True).
+            "import subprocess",
             "import unittest",
             "from pathlib import Path",
             "from gzkit.",

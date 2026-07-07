@@ -61,6 +61,7 @@ class TestOntologyModelImmutability(unittest.TestCase):
                 source_id="a",
                 target_id="b",
                 link_type=LinkType.PARENT,
+                provenance=Provenance.INTENT,
                 bogus=1,  # type: ignore[call-arg]
             )
 
@@ -87,7 +88,7 @@ class TestOntologyModelImmutability(unittest.TestCase):
         # Every edge MUST declare its INTENT|OBSERVED vein (non-erasable; airlock
         # two-graph doctrine — the seam-diff is uncomputable without it).
         with self.assertRaises(pydantic.ValidationError):
-            OntologyEdge(source_id="a", target_id="b", link_type=LinkType.CHILD)
+            OntologyEdge(source_id="a", target_id="b", link_type=LinkType.CHILD)  # ty: ignore[missing-argument]
         edge = OntologyEdge(
             source_id="a",
             target_id="b",
@@ -125,12 +126,12 @@ class TestOntologyTwoAxis(unittest.TestCase):
     @covers("REQ-0.32.0-01-02")
     def test_node_requires_ownership_axis(self) -> None:
         with self.assertRaises(pydantic.ValidationError):
-            OntologyNode(node_id="n1", object_type=ObjectType.ADR, plane=Plane.PRODUCT)  # type: ignore[call-arg]
+            OntologyNode(node_id="n1", object_type=ObjectType.ADR, plane=Plane.PRODUCT)  # ty: ignore[missing-argument]
 
     @covers("REQ-0.32.0-01-02")
     def test_node_requires_plane_axis(self) -> None:
         with self.assertRaises(pydantic.ValidationError):
-            OntologyNode(node_id="n1", object_type=ObjectType.ADR, ownership=Ownership.HARNESS)  # type: ignore[call-arg]
+            OntologyNode(node_id="n1", object_type=ObjectType.ADR, ownership=Ownership.HARNESS)  # ty: ignore[missing-argument]
 
     @covers("REQ-0.32.0-01-02")
     def test_node_rejects_out_of_enum_axis(self) -> None:

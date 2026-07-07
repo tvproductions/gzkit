@@ -64,9 +64,11 @@ from gzkit.utils import capture_validation_anchor
 
 
 def _withdraw_transition_available(current_state: OBPIState) -> bool:
-    """True iff CANONICAL_TRANSITIONS declares a withdraw transition out of
-    ``current_state``. Genuinely consults the model: a state with no outgoing
-    transition into WITHDRAWN (i.e. a terminal state) cannot be withdrawn."""
+    """Return True iff a withdraw transition out of ``current_state`` is declared.
+
+    Genuinely consults CANONICAL_TRANSITIONS: a state with no outgoing transition
+    into WITHDRAWN (i.e. a terminal state) cannot be withdrawn.
+    """
     return any(
         t.from_state == current_state and t.to_state == OBPIState.WITHDRAWN
         for t in CANONICAL_TRANSITIONS
@@ -74,10 +76,12 @@ def _withdraw_transition_available(current_state: OBPIState) -> bool:
 
 
 def _supersede_transition_available(current_state: OBPIState) -> bool:
-    """True iff CANONICAL_TRANSITIONS declares a supersede transition out of
-    ``current_state``. Genuinely consults the model, mirroring
-    ``_withdraw_transition_available``: a state with no outgoing transition
-    into SUPERSEDED (i.e. a terminal state) cannot be superseded."""
+    """Return True iff a supersede transition out of ``current_state`` is declared.
+
+    Genuinely consults CANONICAL_TRANSITIONS, mirroring
+    ``_withdraw_transition_available``: a state with no outgoing transition into
+    SUPERSEDED (i.e. a terminal state) cannot be superseded.
+    """
     return any(
         t.from_state == current_state and t.to_state == OBPIState.SUPERSEDED
         for t in CANONICAL_TRANSITIONS
@@ -85,9 +89,9 @@ def _supersede_transition_available(current_state: OBPIState) -> bool:
 
 
 def _current_terminal_state(info: dict[str, Any]) -> OBPIState | None:
-    """Map an artifact-graph entry's terminal flags to the concrete terminal
-    ``OBPIState``, or ``None`` when the OBPI is non-terminal.
+    """Map an artifact-graph entry's terminal flags to a terminal ``OBPIState``.
 
+    Returns ``None`` when the OBPI is non-terminal.
     The exact non-terminal lifecycle position is deferred-in-keel (parent ADR);
     for the withdraw/supersede gates only the terminal cases must be resolved,
     since every non-terminal state shares the same declared transition.
@@ -220,8 +224,7 @@ def _reset_brief_status_after_repudiation(
     ledger: Ledger,
     canonical_id: str,
 ) -> Path | None:
-    """Reset a repudiated OBPI brief's frontmatter ``status: Completed`` to
-    ``Active`` (GHI #610 Gap B).
+    """Reset a repudiated OBPI brief's ``status: Completed`` to ``Active`` (GHI #610 Gap B).
 
     ``gz obpi repudiate`` reverses Gate-5 (ADR-0.0.71); the OBPI is
     re-completable, so the Layer-1 brief must leave the terminal ``Completed``

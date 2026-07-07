@@ -130,7 +130,7 @@ def ledger_event_discriminators() -> frozenset[str]:
 
 
 class RebuildFidelity(BaseModel):
-    """The projection's self-report: can it confess an incomplete/stale replay?"""
+    """Self-report on whether the projection can confess an incomplete/stale replay."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -151,8 +151,7 @@ class RebuildFidelity(BaseModel):
         latest_ts: str | None,
         build_ts: str,
     ) -> RebuildFidelity:
-        """Diff the projection's disposition against the LIVE registry AND the
-        actually-replayed event types.
+        """Diff the projection's disposition against the live registry and replayed types.
 
         ``unaccounted`` = discriminators the projection has not dispositioned,
         drawn from the union of the live registry and the replayed event types —
@@ -188,6 +187,7 @@ class CorpusProjection:
         source_graph: dict[str, dict],
         fidelity: RebuildFidelity,
     ) -> None:
+        """Bind the typed corpus view to its source graph and fidelity self-report."""
         self.graph = graph
         self.source_graph = source_graph
         self.fidelity = fidelity

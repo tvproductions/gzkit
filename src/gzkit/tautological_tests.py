@@ -174,9 +174,9 @@ def _class_setup_map(
 
 
 def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
-    """Return True if the function operates on Python *source code as data* — a
-    static-analysis fence, not a governance-doc content echo (GHI #632).
+    """Return True if the function operates on Python *source code as data*.
 
+    A static-analysis fence, not a governance-doc content echo (GHI #632).
     Signals (deliberately narrow, so real tautologies are not laundered):
     parsing source with ``ast.parse``, or globbing Python source files
     (``rglob``/``glob`` with a ``"*.py"`` pattern). Asserting a structural
@@ -200,10 +200,9 @@ def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
 
 
 def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
-    """Collect ``self.<attr>`` names a fixture binds to a dynamically-loaded
-    project module (GHI #632).
+    """Collect ``self.<attr>`` names a fixture binds to a dynamically-loaded module.
 
-    A test file that ``importlib``-loads a project script/module and calls its
+    (GHI #632.) A test file that ``importlib``-loads a project script/module and calls its
     functions exercises production code, even though the loaded module is not a
     static ``gzkit`` import the name heuristic can see. Returns attr names only
     when the file uses importlib spec-loading — the signal that a
@@ -240,8 +239,9 @@ def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
 def _calls_self_module(
     node: ast.FunctionDef | ast.AsyncFunctionDef, module_attrs: frozenset[str]
 ) -> bool:
-    """Return True if the function calls a method on a ``self.<attr>`` bound to a
-    loaded project module — a production call the static-import heuristic misses.
+    """Return True if the function calls a method on a loaded-module ``self.<attr>``.
+
+    A production call the static-import heuristic misses.
     """
     for child in ast.walk(node):
         if (

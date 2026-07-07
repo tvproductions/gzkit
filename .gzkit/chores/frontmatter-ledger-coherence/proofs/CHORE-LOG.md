@@ -84,3 +84,24 @@ sha256:ba823432b322276ad608c8322a0aa813565383ad9e415fe7b0c9d077f0165818
   pool ADRs skipped: 169
   no drift detected
 ```
+## 2026-07-07T06:14:57-05:00
+- Status: PASS
+- Chore: frontmatter-ledger-coherence
+- Title: Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz frontmatter reconcile --dry-run` => rc=0 (1.17s) -- exit 0 == 0
+
+```text
+[uv run gz frontmatter reconcile --dry-run] stdout:
+Frontmatter-ledger reconciliation DRY-RUN
+  ledger cursor:
+sha256:dbb1a1a85aa0e41e0b946dbde224ffe5098aa6b9648d463898a07f45ce3ed270
+  started / ended:   2026-07-07T11:14:56.360811+00:00 /
+2026-07-07T11:14:57.371602+00:00
+  files rewritten:   0
+  refused rewrites:  0
+  pool ADRs skipped: 171
+  no drift detected
+```
