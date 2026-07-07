@@ -12421,3 +12421,4 @@
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.32.0-gzkit-ontology","ts":"2026-07-07T08:03:18.181342+00:00","gate":3,"status":"pass","command":"uv run mkdocs build --strict","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"gate_checked","id":"ADR-0.32.0-gzkit-ontology","ts":"2026-07-07T08:03:34.983130+00:00","gate":4,"status":"pass","command":"uv run -m behave features/","returncode":0}
 {"schema":"gzkit.ledger.v1","event":"lifecycle_transition","id":"ADR-0.32.0-gzkit-ontology","ts":"2026-07-07T08:03:34.995658+00:00","content_type":"adr","from_state":"Proposed","to_state":"Completed"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.ontology-source-unit-node-type.md","ts":"2026-07-07T09:24:14.757559+00:00","path":"docs/design/adr/pool/ADR-pool.ontology-source-unit-node-type.md"}
