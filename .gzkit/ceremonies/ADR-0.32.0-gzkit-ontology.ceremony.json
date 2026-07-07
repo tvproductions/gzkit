@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.32.0-gzkit-ontology",
-  "current_step": 10,
+  "current_step": 11,
   "is_foundation": false,
   "started_at": "2026-07-07T02:06:04Z",
-  "updated_at": "2026-07-07T08:05:02Z",
+  "updated_at": "2026-07-07T08:16:52Z",
   "step_history": [
     {
       "step": 1,
@@ -53,6 +53,11 @@
     {
       "step": 10,
       "presented_at": "2026-07-07T08:05:02Z",
+      "acknowledged_at": "2026-07-07T08:16:52Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-07-07T08:16:52Z",
       "acknowledged_at": null
     }
   ],
@@ -68,7 +73,7 @@
   ],
   "walkthrough_index": 7,
   "attestation": "Completed",
-  "completed_at": null,
+  "completed_at": "2026-07-07T08:16:52Z",
   "attempt": 1,
   "paused_at": null
 }
