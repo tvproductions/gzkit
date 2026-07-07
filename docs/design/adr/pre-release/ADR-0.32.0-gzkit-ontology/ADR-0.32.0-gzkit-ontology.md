@@ -1,6 +1,6 @@
 ---
 id: ADR-0.32.0-gzkit-ontology
-status: Draft
+status: Completed
 kind: feature
 semver: 0.32.0
 lane: heavy
@@ -109,10 +109,10 @@ by which the graph gates a `gz validate` scope, gate, or closeout (Boundary Inva
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| `gz ontology sense` images the current shape and exits clean on a healthy tree | `uv run gz ontology sense` | 0 |
-| `gz ontology trace` walks a real node's vertical + lateral lineage | `uv run gz ontology trace ADR-0.31.0-obpi-state-machine` | 0 |
-| The Harness-Purity fence refuses a product object placed in `ownership:harness` | `uv run gz validate --ontology-purity` | 0 |
-| `sense --json` emits the machine-readable shape plus the rebuild-fidelity self-report | `uv run gz ontology sense --json` | 0 |
+| `gz ontology sense` images the current shape and exits clean on a healthy tree | uv run gz ontology sense | 0 |
+| `gz ontology trace` walks a real node's vertical + lateral lineage | uv run gz ontology trace ADR-0.31.0-obpi-state-machine | 0 |
+| The Harness-Purity fence refuses a product object placed in `ownership:harness` | uv run gz validate --ontology-purity | 0 |
+| `sense --json` emits the machine-readable shape plus the rebuild-fidelity self-report | uv run gz ontology sense --json | 0 |
 
 ## Decomposition Scorecard
 
@@ -229,4 +229,4 @@ stdlib graphlib + adjacency + ast substrate (REJECTED, and reverted in-session):
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.32.0 | Pending | | | |
+| 0.32.0 | Completed | g0 | 2026-07-07 | Completed |

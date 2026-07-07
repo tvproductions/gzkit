@@ -5,8 +5,9 @@ product objects (CliVerb/Validator/Skill/Chore) are ``ownership:product`` and
 must never appear in the harness subgraph. Dispatched by
 ``gz validate --ontology-purity``.
 
-SKELETON — fence deliberately absent so the REQ-0.32.0-01-03 refusal test reds
-on its assertion; filled below.
+Ships ``harness_purity_violations`` (the node-level refusal) and
+``audit_ontology_purity`` (the registry-seating audit dispatched by the
+validator).
 """
 
 from __future__ import annotations

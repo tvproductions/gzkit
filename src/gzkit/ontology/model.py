@@ -1,7 +1,9 @@
 """Ontology object/link model layer (ADR-0.32.0, OBPI-0.32.0-01).
 
-SKELETON — behavior deliberately absent so REQ tests red on their own
-assertions (RGR negative control), filled per-behavior below.
+Ships the frozen ``OntologyNode``/``OntologyEdge`` Pydantic models, the closed
+``Ownership``/``Plane``/``Provenance``/``LinkType``/``ObjectType`` StrEnums, and
+the total ``OBJECT_TYPE_REGISTRY`` seating every object type on the two-axis
+ownership × plane classification.
 """
 
 from __future__ import annotations

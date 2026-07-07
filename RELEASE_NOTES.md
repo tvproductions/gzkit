@@ -1,5 +1,27 @@
 # gzkit Release Notes
 
+## v0.32.0 (2026-07-07)
+
+**ADR:** ADR-0.32.0-gzkit-ontology — the object/link plane of the gzkit ontology: a typed, queryable substrate that images the *actual* shape of governance so ratified facts become queryable nodes and silent reversals light up instead of slipping through as "corrections." Answers a live drift incident where a GO-attested substrate decision was silently reversed from a handoff paraphrase because nothing imaged the real decided shape. Corpus-first MVP tracer (KEEL/ADR-0.31.0 discipline); work/source/OKF breadth gated behind the rebuild-fidelity fence proven live.
+
+### Delivered
+
+- **Ontology model + Harness-Purity fence (OBPI-01)** — frozen `OntologyNode`/`OntologyEdge` Pydantic models, closed `LinkType`/`ObjectType` StrEnums, and a total `OBJECT_TYPE_REGISTRY` seating every object on the two-axis ownership (harness|product) × plane (product|process) classification. `gz validate --ontology-purity` refuses a product object mis-seated in `ownership:harness`.
+- **networkx substrate + corpus projection (OBPI-02)** — a `MultiDiGraph` substrate lifting `ledger.get_artifact_graph()` into typed nodes/edges over one replay path, surfacing supersedes/attests/validates as first-class edges. Emits a **rebuild-fidelity self-report** whose completeness is computed by diffing replayed event types against the *live* `TypedLedgerEvent` registry — the graph confesses a stale or incomplete replay rather than silently under-imaging. The MVP spine every later domain reads.
+- **`gz ontology` read-only sonar (OBPI-03)** — `sense` (image the shape + structural seams), `trace <id>` (vertical lineage + lateral proof + edge provenance), `resense` (diff vs last sweep — the airlock re-sense gate), `seams` (fast contacts-only), `reach <id>` (downstream blast-radius); each with `--json`/`--dot`. Never writes graph state.
+- **Ownership-plane doctrine + Boundary Invariants (OBPI-04)** — the two-axis type-separation doctrine and the five STRUCTURAL-FENCE invariants (rebuild-fidelity; derived-never-authority; sense-images-structure-only; harness-purity; OKF-absorption-open), audited at closeout.
+- **OKF open-absorption (OBPI-05)** — Doc objects enter the corpus subgraph with `subtype` = OKF `type` verbatim and no subset-validator, preserving OKF (ADR-0.30.0) BI-1/BI-3 (unknown types are not errors).
+- **Work-domain L2 schema + queue (OBPI-06)** — four net-new L2 edge event types (`blocks`/`blocked_by`/`discovered_from`/`validates`) added additively; a ready/blocked TASK queue replayed purely from those edges, advisory-first (never hard-refusing), with the emit path mechanically fail-closed on a WWHTBT edge-vocabulary attestation. The one irreversible surface, gated last.
+- **Source-domain tree-sitter anchors (OBPI-07)** — `@covers`/`@surface` anchors extracted as source→REQ edges, tree-sitter polyglot code-coupling edges, a regenerable `source_anchors.json` query-before-grep index, and orphan-gap detection. Absorbs `triangle.py`'s `detect_drift` as a behavior-preserving subgraph VIEW (public surface intact). Discharges the tree-sitter half of the GO-attested STDLIB-FIRST departure via a `SourceParser` port with ast + tree-sitter adapters.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied (Heavy lane). Independent review: spec-reviewer 49/49 REQs PASS (29 BEHAVIOR with semantic `@covers`, 8 SUPPORT, 12 STRUCTURAL-FENCE); quality-reviewer integration-drift finding reconciled to full-vision-prose-vs-scoped-MVP and routed to GHI #672. Bound fidelity gate: 4 assertions pass (`gz adr fidelity ADR-0.32.0-gzkit-ontology`). Full suite 6789 tests pass; ruff/ty/mkdocs-strict clean.
+
+### Stats
+
+- 7 OBPIs attested; STDLIB-FIRST departure (networkx + tree-sitter) discharged per GO-attested Phase-0 airlock-in; GHI #672 filed (breadth-composition follow-on); 2 in-ceremony defects fixed (stale SKELETON docstrings; ADR fidelity-block backtick escaping)
+
 ## v0.31.0 (2026-07-04)
 
 **ADR:** ADR-0.31.0-obpi-state-machine — the airlock-critical tracer of the OBPI state machine: the first end-to-end slice (schema → model → monitor → CLI → ledger) that makes governance state *machined* rather than choreographed, laid alongside the legacy string-keyed lifecycle and retiring none of it.
