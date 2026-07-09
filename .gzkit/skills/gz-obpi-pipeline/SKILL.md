@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.27.0"
+skill-version: "6.28.0"
 last_reviewed: 2026-07-09
 model: sonnet
 ---
@@ -431,7 +431,9 @@ If any baseline check fails, attempt fix and re-verify once. If still failing, r
 
 #### Phase 1b: REQ → @covers Parity Gate (#113)
 
-Every REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds.
+Every **BEHAVIOR** REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds for those REQs.
+
+**Proof channels are per-kind (ADR-0.0.59).** SUPPORT REQs are proven by a ledger event plus a structural validator scope; STRUCTURAL-FENCE REQs by a parent-ADR `## Boundary Invariants` entry. Neither carries a `@covers` test. **Never author a unit test merely to make a non-BEHAVIOR REQ appear covered** — that is the exact category error ADR-0.0.59 exists to prohibit (GHI #531 -> #571).
 
 ```bash
 uv run gz covers {OBPI-SLUG} --json
@@ -607,7 +609,7 @@ fires only when the incantation would overflow.
 **Files modified:**
 - <path> (<description>)
 
-**REQ coverage:** (every row populated; every cell concrete; verified by Stage 3 Phase 1b)
+**REQ coverage:** (every row populated; every cell concrete; BEHAVIOR rows verified by Stage 3 Phase 1b)
 
 > **Rendering rule (GHI #301, generalizes GHI #293):** The REQ coverage
 > table is the canonical single form — render it as a markdown table and
@@ -623,22 +625,23 @@ fires only when the incantation would overflow.
 > keyed by the same label. One render, one form. The labeled-list
 > fallback is the operator-confusion vector the rule exists to prevent.
 
-| REQ | Mechanism | `@covers` location | Test Coverage | Result |
-|-----|-----------|--------------------|---------------|--------|
-| REQ-X.Y.Z-NN-01 | <function/mechanism, or short label> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests), or short label | Pass |
-| REQ-X.Y.Z-NN-02 | ... | ... | ... | ... |
+| REQ | Kind | Mechanism | Proof location | Proof | Result |
+|-----|------|-----------|----------------|-------|--------|
+| REQ-X.Y.Z-NN-01 | BEHAVIOR | <function/mechanism> | `tests/<file>.py:<line>` or `TestClass.test_method` | <test class> (N tests) | Pass |
+| REQ-X.Y.Z-NN-02 | SUPPORT | <artifact> | `<ledger event type>` + `gz validate --<scope>` | event cites path; validator admits shape | Pass |
+| REQ-X.Y.Z-NN-03 | STRUCTURAL-FENCE | <invariant> | parent-ADR `## Boundary Invariants` anchor | audited at ADR closeout | Pass |
 
 If any row uses short labels for long cells, expand them in a single fenced block immediately after the table:
 
 ```text
-# req-01:absence-check — REQ-X.Y.Z-NN-01 Test Coverage
-test ! -e <path>
-
-# req-02:scoped-tests — REQ-X.Y.Z-NN-02 Test Coverage
+# req-01:scoped-tests — REQ-X.Y.Z-NN-01 (BEHAVIOR) Proof
 uv run -m unittest tests.<module> -v
+
+# req-02:support-proof — REQ-X.Y.Z-NN-02 (SUPPORT) Proof
+uv run gz validate --<scope>   # structural validator admits the artifact's shape
 ```
 
-The `@covers location` column is **not** optional. If you cannot fill it in for a row, the parity gate in Stage 3 Phase 1b will fail and the pipeline will not advance — fix the gap before continuing.
+The **Proof location** column is proof-channel specific, not always `@covers`. For BEHAVIOR REQs cite the `@covers` test location; for SUPPORT REQs cite the ledger event type/path and the `gz validate` scope; for STRUCTURAL-FENCE REQs cite the parent-ADR `## Boundary Invariants` anchor. A missing BEHAVIOR `@covers` location is a blocker — the Phase 1b parity gate will fail and the pipeline will not advance. **A non-BEHAVIOR REQ must never be forced into a unit test to fill the cell** (GHI #571).
 
 **4. Awaiting attestation.** Do NOT proceed to Stage 5 until human responds.
 ```

@@ -73,16 +73,8 @@
       "context_hint": ""
     },
     {
-      "file_path": "tests/commands/test_l3_gate_independence.py",
-      "line_number": 151,
-      "operation_kind": "read_text",
-      "function_name": "test_gate_imports_exclude_pipeline_markers",
-      "assertion_kind": "assert",
-      "context_hint": "gates.py source must not import from the pipeline_markers module."
-    },
-    {
       "file_path": "tests/commands/test_skills.py",
-      "line_number": 218,
+      "line_number": 219,
       "operation_kind": "exists",
       "function_name": "test_init_scaffolds_adr_create_and_removes_adr_manager",
       "assertion_kind": "assertTrue",
@@ -90,19 +82,11 @@
     },
     {
       "file_path": "tests/commands/test_skills.py",
-      "line_number": 233,
+      "line_number": 234,
       "operation_kind": "read_text",
       "function_name": "test_init_scaffolds_git_sync_skill_with_canonical_body",
       "assertion_kind": "assertTrue",
       "context_hint": "gz init delivers the git-sync skill that ``gz git-sync --skill`` advertises.\n\n        Canonical contract: the path printed by ``gz git-sync --skill``\n        (``.gzkit/skills/git-sync/SKILL.md``) MUST exist on consumer projects\n        after ``gz init``, and the body MUST be the canonical workflow \u2014 not\n        the generic ``Step 1 / Step 2 / Step 3`` template placeholder, which\n        provides no operator value (GHI #315).\n        "
-    },
-    {
-      "file_path": "tests/complexity/advisor/test_timeout.py",
-      "line_number": 186,
-      "operation_kind": "read_text",
-      "function_name": "test_all_functions_under_50_lines",
-      "assertion_kind": "assertLessEqual",
-      "context_hint": "utf-8"
     },
     {
       "file_path": "tests/complexity/test_baseline.py",
@@ -130,27 +114,11 @@
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
-      "line_number": 267,
-      "operation_kind": "read_text",
-      "function_name": "test_function_size_discipline",
-      "assertion_kind": "assertEqual",
-      "context_hint": "Parse the AST and assert no function exceeds the size limit."
-    },
-    {
-      "file_path": "tests/complexity/test_measurement.py",
       "line_number": 284,
       "operation_kind": "read_text",
       "function_name": "test_module_size_discipline",
       "assertion_kind": "assertLessEqual",
       "context_hint": "The module respects the 600-line module ceiling."
-    },
-    {
-      "file_path": "tests/complexity/test_measurement.py",
-      "line_number": 304,
-      "operation_kind": "read_text",
-      "function_name": "test_no_operator_pii_in_complexity_package",
-      "assertion_kind": "assertEqual",
-      "context_hint": "No file under ``src/gzkit/complexity`` or ``tests/complexity`` carries the literal."
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
@@ -242,7 +210,7 @@
     },
     {
       "file_path": "tests/governance/test_req_coverage_record.py",
-      "line_number": 491,
+      "line_number": 496,
       "operation_kind": "exists",
       "function_name": "test_grandfathering_json_exists",
       "assertion_kind": "assertTrue",
@@ -250,7 +218,7 @@
     },
     {
       "file_path": "tests/governance/test_req_coverage_record.py",
-      "line_number": 497,
+      "line_number": 502,
       "operation_kind": "read_text",
       "function_name": "test_grandfathering_json_is_valid_json",
       "assertion_kind": "assertIsInstance",
@@ -319,22 +287,6 @@
       "function_name": "test_security_sensitivity_rule_authored_at_named_path",
       "assertion_kind": "assertTrue",
       "context_hint": "security-sensitivity.md"
-    },
-    {
-      "file_path": "tests/governance/test_test_fixture_encoding.py",
-      "line_number": 53,
-      "operation_kind": "read_text",
-      "function_name": "_scan_file",
-      "assertion_kind": "assert",
-      "context_hint": "Return [(lineno, method, source_line)] for every offending site."
-    },
-    {
-      "file_path": "tests/policy/test_env_usage.py",
-      "line_number": 202,
-      "operation_kind": "read_text",
-      "function_name": "test_this_module_imports_no_gzkit",
-      "assertion_kind": "assertFalse",
-      "context_hint": "This test file must not import any gzkit application module."
     },
     {
       "file_path": "tests/policy/test_naming_conventions.py",
@@ -474,7 +426,7 @@
     },
     {
       "file_path": "tests/test_audit_pipeline.py",
-      "line_number": 770,
+      "line_number": 783,
       "operation_kind": "read_text",
       "function_name": "test_audit_md_contains_generated_timestamp",
       "assertion_kind": "assertIn",
@@ -482,7 +434,7 @@
     },
     {
       "file_path": "tests/test_audit_pipeline.py",
-      "line_number": 794,
+      "line_number": 807,
       "operation_kind": "read_text",
       "function_name": "test_audit_md_verification_results_section",
       "assertion_kind": "assertIn",
@@ -529,96 +481,8 @@
       "context_hint": "doc-coverage-report.schema.json"
     },
     {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 130,
-      "operation_kind": "read_text",
-      "function_name": "test_overwrite_updates_content",
-      "assertion_kind": "assertEqual",
-      "context_hint": "first"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 135,
-      "operation_kind": "exists",
-      "function_name": "test_exists_returns_false_for_missing_path",
-      "assertion_kind": "assertFalse",
-      "context_hint": "no/such/file.txt"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 139,
-      "operation_kind": "exists",
-      "function_name": "test_exists_returns_true_after_write",
-      "assertion_kind": "assertTrue",
-      "context_hint": "data"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 143,
-      "operation_kind": "exists",
-      "function_name": "test_exists_returns_true_for_parent_directory",
-      "assertion_kind": "assertTrue",
-      "context_hint": "content"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 147,
-      "operation_kind": "exists",
-      "function_name": "test_exists_returns_true_for_nested_parent",
-      "assertion_kind": "assertTrue",
-      "context_hint": "x"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 153,
-      "operation_kind": "read_text",
-      "function_name": "test_read_text_raises_file_not_found_for_missing_path",
-      "assertion_kind": "assertRaises",
-      "context_hint": "nonexistent.txt"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 158,
-      "operation_kind": "read_text",
-      "function_name": "test_read_text_error_message_contains_path",
-      "assertion_kind": "assertIn",
-      "context_hint": "ghost/file.txt"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 199,
-      "operation_kind": "read_text",
-      "function_name": "test_initial_data_is_readable",
-      "assertion_kind": "assertEqual",
-      "context_hint": "seed content"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 220,
-      "operation_kind": "read_text",
-      "function_name": "test_table_driven_write_read",
-      "assertion_kind": "assertEqual",
-      "context_hint": "file.txt"
-    },
-    {
-      "file_path": "tests/test_fakes.py",
-      "line_number": 457,
-      "operation_kind": "read_text",
-      "function_name": "test_file_store_same_result_for_same_input",
-      "assertion_kind": "assertEqual",
-      "context_hint": "consistent"
-    },
-    {
-      "file_path": "tests/test_formatters.py",
-      "line_number": 388,
-      "operation_kind": "read_text",
-      "function_name": "test_formatters_does_not_import_core",
-      "assertion_kind": "assertFalse",
-      "context_hint": "Verify formatters.py has no imports from gzkit.core or gzkit.ports."
-    },
-    {
       "file_path": "tests/test_hooks.py",
-      "line_number": 339,
+      "line_number": 457,
       "operation_kind": "read_text",
       "function_name": "test_all_hook_commands_anchor_to_project_dir",
       "assertion_kind": "assertTrue",
@@ -626,7 +490,7 @@
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 372,
+      "line_number": 490,
       "operation_kind": "read_text",
       "function_name": "test_all_hook_commands_anchor_to_git_toplevel",
       "assertion_kind": "assertTrue",
@@ -634,7 +498,7 @@
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 1018,
+      "line_number": 1136,
       "operation_kind": "exists",
       "function_name": "test_self_audits_when_receipt_missing_and_allows_on_pass",
       "assertion_kind": "assertEqual",
@@ -642,23 +506,15 @@
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 1092,
+      "line_number": 1210,
       "operation_kind": "exists",
       "function_name": "test_allows_when_self_audit_writes_fail_receipt_with_nonzero_exit",
       "assertion_kind": "assertEqual",
       "context_hint": "Real `gz plan audit` writes a FAIL receipt AND exits 1 when the brief\n        has CREATE-path gaps (the common new-OBPI case). The hook must re-check\n        the freshly written receipt regardless of the subprocess exit code \u2014\n        FAIL is a valid receipt verdict per check_audit_receipt's contract.\n        "
     },
     {
-      "file_path": "tests/test_logging.py",
-      "line_number": 316,
-      "operation_kind": "read_text",
-      "function_name": "test_core_binding_only_imports",
-      "assertion_kind": "assertFalse",
-      "context_hint": "Verify that using structlog in core requires only structlog, not cli.logging."
-    },
-    {
       "file_path": "tests/test_quality.py",
-      "line_number": 167,
+      "line_number": 195,
       "operation_kind": "read_text",
       "function_name": "test_no_shell_true_in_quality_source",
       "assertion_kind": "assertNotRegex",
@@ -666,7 +522,7 @@
     },
     {
       "file_path": "tests/test_quality.py",
-      "line_number": 172,
+      "line_number": 200,
       "operation_kind": "read_text",
       "function_name": "test_subprocess_run_uses_non_shell_form",
       "assertion_kind": "assertNotRegex",
@@ -703,30 +559,6 @@
       "function_name": "test_skill_dirs_and_frontmatter_names_are_kebab_case",
       "assertion_kind": "assertTrue",
       "context_hint": "Missing skills root: "
-    },
-    {
-      "file_path": "tests/test_skills.py",
-      "line_number": 266,
-      "operation_kind": "exists",
-      "function_name": "test_skill_template_does_not_exist",
-      "assertion_kind": "assertFalse",
-      "context_hint": "skill.md"
-    },
-    {
-      "file_path": "tests/test_skills.py",
-      "line_number": 272,
-      "operation_kind": "read_text",
-      "function_name": "test_scaffold_skill_module_does_not_import_render_template",
-      "assertion_kind": "assertNotIn",
-      "context_hint": "__init__.py"
-    },
-    {
-      "file_path": "tests/test_validate_sync_parity.py",
-      "line_number": 69,
-      "operation_kind": "exists",
-      "function_name": "setUp",
-      "assertion_kind": "assert",
-      "context_hint": "utf-8"
     }
   ],
   "generated_at": "2026-06-01T00:13:19.910175+00:00"

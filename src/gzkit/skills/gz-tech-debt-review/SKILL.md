@@ -5,9 +5,9 @@ description: Survey scoped technical debt across existing gzkit probes and rende
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-29
+last_reviewed: 2026-07-09
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.3.0"
 model: sonnet
 ---
 
@@ -88,7 +88,8 @@ read.
 | `lint` | `uv run ruff check .` | Unfixed ruff diagnostics (excluding cosmetic) |
 | `types` | `uvx ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
 | `pythonic` | `gz-pythonic-pattern-detect` candidates report | Java-shaped Python (Strategy classes, Singletons, Visitor ladders) |
-| `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | <40% coverage, REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags |
+| `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | <40% coverage, **BEHAVIOR** REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags. SUPPORT and STRUCTURAL-FENCE REQs carry no `@covers` test by proof channel (ADR-0.0.59) — never report their absence as debt |
+| `test-shape` | `uv run gz test-shape --json` | Tautological content-echo operations with proposed disposition; output/render assertions whose `# output-contract:` carve-out is undeclared. Advisory — the fail-closed growth gate is `gz validate --tautological-test-audit` (GHI #571) |
 | `dead-code` | ruff `F401`/`F841`, `vulture` if available, grep for unreferenced exports | Unused imports, unreferenced symbols, orphan modules |
 | `cli-drift` | `uv run gz cli audit`, `gz validate --cli-alignment` | Unregistered verbs in docs, undocumented verbs in code |
 | `doc-drift` | `doc-coverage` chore, `gz validate --documents --surfaces`, `mkdocs build --strict` | Stale examples, drifted manpages, broken links |
@@ -111,7 +112,7 @@ big the diff is to fix.
 
 | Severity | Definition | Examples |
 |----------|------------|----------|
-| **Critical** | Violates a Prime-Directive invariant, a Gate Covenant rule, or a published external contract. Operator should stop and route now. | Unsuppressed `# type: ignore[code]` (GHI #197 class), missing `@covers` on a Completed/Validated heavy brief, `gz` verb prescribed in runbook but unregistered, ledger reference to a missing receipt, security-sensitivity finding. |
+| **Critical** | Violates a Prime-Directive invariant, a Gate Covenant rule, or a published external contract. Operator should stop and route now. | Unsuppressed `# type: ignore[code]` (GHI #197 class), missing `@covers` on a **BEHAVIOR** REQ in a Completed/Validated heavy brief, `gz` verb prescribed in runbook but unregistered, ledger reference to a missing receipt, security-sensitivity finding. |
 | **High** | Breaks a binding rule but not Gate-Covenant. Will block the next operator touching the surface. | Module >600 LOC, function >50 LOC in a hot path, xenon hot-spot above configured band, ruff/ty error not suppressed, doc example drifted from CLI output, frontmatter/ledger disagreement. |
 | **Medium** | Drift that compounds silently. Worth scheduling but won't block a near-term change. | Pythonic-pattern candidate, dead code with no tests pinning it, TODO older than 90 days, dependency >2y stale (not yet 5y), CLI verb registered but undocumented. |
 | **Low** | Stylistic or cosmetic, fixed by autotools or one-line edits. Bundle into the next opportunistic touch. | ruff-fixable warning, missing docstring, single-line dead import. |

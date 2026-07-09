@@ -42,7 +42,7 @@
       "gates_step": "tautological-test baseline (gz validate --tautological-tests)",
       "mechanism": "shrink-ratchet",
       "entries_path": "operations",
-      "baseline_count": 91
+      "baseline_count": 70
     },
     {
       "data_file": "data/interview_transcript_waivers.json",

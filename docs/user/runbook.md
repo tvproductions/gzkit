@@ -253,6 +253,11 @@ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 # Witness that a BEHAVIOR REQ's test can actually fail (GHI #642).
 # Runs the covering test against the base tree with the production hunks withheld.
 uv run gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock-data-model-and-events
+
+# Advisory inventory of test-shape debt: tautological content-echo tests, and
+# output/render assertions whose carve-out is undeclared. Never gates (GHI #571).
+uv run gz test-shape
+uv run gz test-shape --kind output --undeclared-only
 uv run gz arb coverage run -m unittest discover -s tests -t .
 uv run gz arb validate --limit 20
 uv run gz arb advise --limit 10       # optional: review frequent-rule advice

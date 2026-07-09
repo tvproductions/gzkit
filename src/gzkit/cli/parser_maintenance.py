@@ -157,6 +157,43 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    p_test_shape = commands.add_parser(
+        "test-shape",
+        help="Advisory inventory of test-shape debt (tautological + output assertions)",
+        description=(
+            "Report advisory test-shape debt: tautological-shaped operations with their "
+            "proposed disposition, and output/render assertions with whether their "
+            "output-form carve-out is declared. Always exits 0 -- this is a reporting "
+            "surface, never a gate (GHI #571)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz test-shape",
+                "gz test-shape --kind tautological",
+                "gz test-shape --kind output --undeclared-only",
+                "gz test-shape --json",
+            ]
+        ),
+    )
+    p_test_shape.add_argument(
+        "--kind",
+        choices=["tautological", "output", "all"],
+        default="all",
+        help="Which screen to report (default: all).",
+    )
+    p_test_shape.add_argument(
+        "--undeclared-only",
+        dest="undeclared_only",
+        action="store_true",
+        help="Show only output assertions with no declared output-form carve-out.",
+    )
+    add_json_flag(p_test_shape)
+    p_test_shape.set_defaults(
+        func=lambda a: _lazy("test_shape_cmd")(
+            kind=a.kind, undeclared_only=a.undeclared_only, as_json=a.as_json
+        )
+    )
+
     p_covers = commands.add_parser(
         "covers",
         help="Report requirement coverage from @covers annotations",

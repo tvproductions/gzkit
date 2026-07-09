@@ -67,6 +67,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "check_config_paths_cmd": "gzkit.commands.config_paths",
     "covers_cmd": "gzkit.commands.covers",
     "drift_cmd": "gzkit.commands.drift",
+    "test_shape_cmd": "gzkit.commands.test_shape",
     "frontmatter_reconcile_cmd": "gzkit.commands.frontmatter_reconcile",
     "flag_explain_cmd": "gzkit.commands.flags",
     "flags_list_cmd": "gzkit.commands.flags",
