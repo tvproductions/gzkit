@@ -450,6 +450,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="adr-status.md must agree with on-disk ADR canon (GHI #322)",
     )
     p_validate.add_argument(
+        "--adversarial-validation",
+        dest="check_adversarial_validation",
+        action="store_true",
+        help="Step-4b adversary verdict must be in the ledger and the brief (GHI #676)",
+    )
+    p_validate.add_argument(
         "--session-green-gate",
         dest="check_session_green_gate",
         action="store_true",
@@ -782,6 +788,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_instructions_files_budget=a.check_instructions_files_budget,
             check_agents_md_map_conformance=a.check_agents_md_map_conformance,
             check_adr_status_fresh=a.check_adr_status_fresh,
+            check_adversarial_validation=a.check_adversarial_validation,
             check_session_green_gate=a.check_session_green_gate,
             check_orientation_freshness=a.check_orientation_freshness,
             check_taxonomy=a.check_taxonomy,

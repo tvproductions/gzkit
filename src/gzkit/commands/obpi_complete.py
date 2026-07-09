@@ -46,7 +46,13 @@ from gzkit.governance.trust_audits.attestation_receipts import (
 )
 from gzkit.governance.trust_audits.sensitivity import detect_brief_security_floor
 from gzkit.hooks.obpi import section_body
-from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
+from gzkit.ledger import (
+    LEDGER_SCHEMA,
+    Ledger,
+    LedgerEvent,
+    parse_frontmatter_value,
+    resolve_adr_lane,
+)
 
 # section_body is used in _has_human_attestation_content for H2 section extraction
 from gzkit.ledger_events import (
@@ -963,6 +969,11 @@ def obpi_complete_cmd(
     accept_security_floor: str | None = None,
     accept_stale_reconciliation: bool = False,
     accept_stale_reconciliation_reason: str | None = None,
+    adversary_verdict: str | None = None,
+    adversary: str | None = None,
+    adversary_job_id: str | None = None,
+    refuted_claim: str | None = None,
+    adversary_resolution: str | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -1206,7 +1217,29 @@ def obpi_complete_cmd(
         )
         return
 
+    # 5c. GHI #676 Step-4b gate — the LAST gate before the write. Placed after the
+    # structural gates (reconcile, REQ coverage, security floor) so those report
+    # their own cause first: an operator with an uncovered REQ must hear about the
+    # REQ, not the adversary. A --dry-run has already returned above; it writes
+    # nothing, so it gates nothing.
+    _enforce_adversarial_validation(
+        obpi_id=obpi_id,
+        parent_lane=parent_lane,
+        verdict=adversary_verdict,
+        adversary=adversary,
+        resolution=adversary_resolution,
+        as_json=as_json,
+    )
+
     # 6-8. Execute atomic transaction
+    adversarial_event = _build_adversarial_event(
+        obpi_id=obpi_id,
+        verdict=adversary_verdict,
+        adversary=adversary,
+        job_id=adversary_job_id,
+        refuted_claim=refuted_claim,
+        resolution=adversary_resolution,
+    )
     try:
         _execute_transaction(
             obpi_file=obpi_file,
@@ -1216,6 +1249,7 @@ def obpi_complete_cmd(
             audit_entry=audit_entry,
             ledger=ledger,
             receipt_event=receipt_event,
+            adversarial_event=adversarial_event,
         )
     except OSError as exc:
         _fail(f"I/O error during completion: {exc}", exit_code=2, as_json=as_json, obpi_id=obpi_id)
@@ -1387,6 +1421,7 @@ def _execute_transaction(
     audit_entry: dict[str, Any],
     ledger: Ledger,
     receipt_event: Any,
+    adversarial_event: LedgerEvent | None = None,
 ) -> None:
     """Execute the three-phase write with rollback on failure.
 
@@ -1405,7 +1440,11 @@ def _execute_transaction(
         # Phase 2: Write brief file (single atomic write)
         obpi_file.write_text(new_content, encoding="utf-8")
 
-        # Phase 3: Emit receipt to main ledger
+        # Phase 3: Emit receipt to main ledger. The Step-4b verdict lands FIRST
+        # (GHI #676) so a completion receipt can never exist in the ledger without
+        # the adversarial finding that gated it.
+        if adversarial_event is not None:
+            ledger.append(adversarial_event)
         ledger.append(receipt_event)
 
         # Phase 4: Auto-complete in_progress TASKs tied to this OBPI
@@ -1738,6 +1777,104 @@ def _rollback_audit_ledger(ledger_file: Path) -> None:
 # ---------------------------------------------------------------------------
 # Output helpers
 # ---------------------------------------------------------------------------
+
+
+ADVERSARY_VERDICTS: tuple[str, ...] = (
+    "refuted",
+    "not-refuted",
+    "refuted-with-caveats",
+    "degraded-human-only",
+)
+
+
+def _build_adversarial_event(
+    *,
+    obpi_id: str,
+    verdict: str | None,
+    adversary: str | None,
+    job_id: str | None,
+    refuted_claim: str | None,
+    resolution: str | None,
+) -> LedgerEvent | None:
+    """Render the Step-4b verdict as an ``adversarial_validation`` ledger event.
+
+    Returns ``None`` when no verdict was supplied — the lite lane, where the gate
+    does not fire. Optional detail fields are omitted rather than emitted as null,
+    matching ``_EventBase._serialize``.
+    """
+    if not verdict or not adversary:
+        return None
+    now = datetime.now(UTC)
+    payload: dict[str, Any] = {
+        "schema": LEDGER_SCHEMA,
+        "event": "adversarial_validation",
+        "id": f"ADV-{obpi_id}-{now.strftime('%Y%m%dT%H%M%SZ')}",
+        "ts": now.isoformat(),
+        "obpi_id": obpi_id,
+        "verdict": verdict,
+        "adversary": adversary,
+    }
+    for key, value in (
+        ("job_id", job_id),
+        ("refuted_claim", refuted_claim),
+        ("resolution", resolution),
+    ):
+        if value:
+            payload[key] = value
+    return LedgerEvent.model_validate(payload)
+
+
+def _enforce_adversarial_validation(
+    *,
+    obpi_id: str,
+    parent_lane: str,
+    verdict: str | None,
+    adversary: str | None,
+    resolution: str | None,
+    as_json: bool,
+) -> None:
+    """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
+
+    Step 4b is already a fail-closed gate in the pipeline skill: no OBPI reaches
+    attestation without an independent adversary re-deriving the completion claim
+    under instruction to REFUTE. Nothing enforced it at the chokepoint, so an agent
+    that skipped 4b and one that was refuted and attested anyway left indistinguishable
+    durable records — the verdict lived only in a transcript or a vendor cache.
+
+    Heavy lane only, matching the lane that already carries fail-closed Gate 3/4.
+    A ``refuted`` verdict with no recorded resolution is itself blocking: a known
+    refutation must never be handed to the operator dressed as clean.
+    """
+    if parent_lane.lower() != "heavy":
+        return
+
+    if not verdict or not adversary:
+        _fail(
+            "Completion blocked: Step 4b independent adversarial validation is not "
+            f"recorded for {obpi_id}. The heavy lane forbids attestation on evidence "
+            "the authoring agent produced alone (GHI #643/#676) — an adversary "
+            "prompted to REFUTE must re-derive the completion claim, and its verdict "
+            "must land in the ledger, not a transcript. Re-run with "
+            "--adversary-verdict <" + "|".join(ADVERSARY_VERDICTS) + "> "
+            "--adversary <vendor/model>. If neither a different-vendor adversary nor "
+            "an independent subagent could run, record the degraded floor explicitly: "
+            "--adversary-verdict degraded-human-only --adversary human.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+    if verdict == "refuted" and not resolution:
+        _fail(
+            f"Completion blocked: the adversary refuted {obpi_id} and no resolution is "
+            "recorded. A known refutation must never be handed to the operator dressed "
+            "as clean. Fix the refuted claim, re-verify against the adversary's own "
+            "check, then re-run with --adversary-resolution '<what was fixed and how "
+            "the adversary's check was re-run>'.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
 
 
 def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> None:

@@ -415,6 +415,11 @@ _FIXTURE_IMPL_SUMMARY = (
 )
 _FIXTURE_KEY_PROOF = "uv run -m unittest tests/test_fixture.py -v passes 1/1."
 
+# Heavy-lane completion fails closed without a Step-4b adversary verdict (GHI #676).
+# These scenarios are about receipt binding, not Step 4b, so they satisfy the gate
+# rather than exercise it — its own behaviour is covered in tests/.
+_ADVERSARY_ARGS = ["--adversary-verdict", "not-refuted", "--adversary", "codex/gpt-5.4"]
+
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" using attestor-present')
 def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:  # type: ignore[no-untyped-def]
@@ -431,6 +436,7 @@ def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> N
         "--key-proof",
         _FIXTURE_KEY_PROOF,
         "--attestor-present",
+        *_ADVERSARY_ARGS,
     ]
     context.exit_code, context.output = _invoke(args)
 
@@ -449,6 +455,7 @@ def step_complete_without_attestor_present(context, obpi_id: str, run_id: str) -
         _FIXTURE_IMPL_SUMMARY,
         "--key-proof",
         _FIXTURE_KEY_PROOF,
+        *_ADVERSARY_ARGS,
     ]
     context.exit_code, context.output = _invoke(args)
 

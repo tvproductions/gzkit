@@ -229,6 +229,9 @@ class _CoverageGateWireFixture(unittest.TestCase):
                         ),
                         implementation_summary="- Files: src/gzkit/governance/req_coverage.py",
                         key_proof="gz obpi complete fires the gate.",
+                        # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                        adversary_verdict="not-refuted",
+                        adversary="codex/gpt-5.4",
                         as_json=False,
                         dry_run=False,
                     )
@@ -620,6 +623,9 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
                         ),
                         implementation_summary="- Files: src/gzkit/governance/req_coverage.py",
                         key_proof="gz obpi complete fires the gate.",
+                        # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                        adversary_verdict="not-refuted",
+                        adversary="codex/gpt-5.4",
                         as_json=False,
                         dry_run=False,
                         accept_uncovered=accept_uncovered,

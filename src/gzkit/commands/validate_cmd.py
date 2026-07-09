@@ -289,6 +289,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "adr_status_fresh", "explicit", True, lambda r, _f: _ta().audit_adr_status_fresh(r)
     ),
     _ScopeEntry(
+        "adversarial_validation",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_adversarial_validation(r),
+    ),
+    _ScopeEntry(
         "session_green_gate", "explicit", False, lambda r, _f: _ta().audit_session_green_gate(r)
     ),
     _ScopeEntry(
@@ -1256,6 +1262,7 @@ def validate(
     check_instructions_files_budget: bool = False,
     check_agents_md_map_conformance: bool = False,
     check_adr_status_fresh: bool = False,
+    check_adversarial_validation: bool = False,
     check_session_green_gate: bool = False,
     check_orientation_freshness: bool = False,
     check_taxonomy: bool = False,
@@ -1358,6 +1365,7 @@ def validate(
         "instructions_files_budget": check_instructions_files_budget,
         "agents_md_map_conformance": check_agents_md_map_conformance,
         "adr_status_fresh": check_adr_status_fresh,
+        "adversarial_validation": check_adversarial_validation,
         "session_green_gate": check_session_green_gate,
         "orientation_freshness": check_orientation_freshness,
         "taxonomy": check_taxonomy,

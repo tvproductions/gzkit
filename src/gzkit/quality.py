@@ -605,6 +605,19 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_adversarial_validation_audit(project_root: Path) -> QualityResult:
+    """Run the Step-4b adversary-verdict capture gate (GHI #676).
+
+    Fails closed when a post-cutover heavy-lane completion receipt carries no
+    paired `adversarial_validation` ledger event, when a refuted verdict has no
+    recorded resolution, or when a terminal heavy-lane brief omits its
+    `### Step 4b` evidence section.
+    Recovery: re-run `uv run gz obpi complete` with `--adversary-verdict` and
+    `--adversary`, or add the brief's Step-4b section.
+    """
+    return run_command("uv run gz validate --adversarial-validation", cwd=project_root)
+
+
 def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
     """Run the rendition-freshness gate (OBPI-0.0.37-22).
 

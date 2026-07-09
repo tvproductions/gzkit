@@ -262,6 +262,9 @@ class _ReconcileGateFixture(unittest.TestCase):
                         ),
                         implementation_summary=("- Files: src/gzkit/commands/obpi_complete.py"),
                         key_proof="gz obpi complete fires the reconcile gate.",
+                        # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                        adversary_verdict="not-refuted",
+                        adversary="codex/gpt-5.4",
                         as_json=False,
                         dry_run=False,
                         accept_stale_reconciliation=accept_stale_reconciliation,

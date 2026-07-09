@@ -27,6 +27,9 @@ from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.absorption_duplicates import (
     audit_absorption_duplicates,
 )
+from gzkit.governance.trust_audits.adversarial_validation import (
+    audit_adversarial_validation,
+)
 from gzkit.governance.trust_audits.advisor_proof_binding import (
     validate_advisor_proof_binding,
 )
@@ -161,6 +164,7 @@ __all__ = [
     "audit_absorption_duplicates",
     "audit_adr_status_fresh",
     "audit_adr_taxonomy",
+    "audit_adversarial_validation",
     "audit_advisory_scorecard",
     "audit_attestation_receipts",
     "audit_behave_req_tags",

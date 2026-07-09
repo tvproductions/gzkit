@@ -14,6 +14,7 @@ from gzkit.events import (
     AdrCreatedEvent,
     AdrEvalCompletedEvent,
     AdrEvaluationEvent,
+    AdversarialValidationEvent,
     AgentSyncCompletedEvent,
     AirlockInEvent,
     AirlockOutEvent,
@@ -301,6 +302,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "discovered_from": DiscoveredFromEvent,
     "validates": ValidatesEvent,
     # Airlock L2 edge events (ADR-0.33.0, OBPI-01)
+    "adversarial_validation": AdversarialValidationEvent,
     "airlock_in": AirlockInEvent,
     "airlock_out": AirlockOutEvent,
 }

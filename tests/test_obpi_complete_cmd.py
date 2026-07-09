@@ -754,6 +754,9 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
                     "- Files: obpi_complete.py, parser_artifacts.py\n- Tests: 11 added"
                 ),
                 key_proof="gz obpi complete OBPI-0.0.14-01 exits 0",
+                # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                adversary_verdict="not-refuted",
+                adversary="codex/gpt-5.4",
                 as_json=False,
                 dry_run=False,
             )
@@ -774,8 +777,11 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
             parsed = json.loads(audit_entries[0])
             self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
-            # Main ledger should have been appended
-            ledger.append.assert_called_once()
+            # Main ledger receives the Step-4b verdict BEFORE the completion receipt
+            # (GHI #676): a receipt must never exist in the ledger without the
+            # adversarial finding that gated it. Order is the invariant, not the count.
+            appended = [call.args[0].event for call in ledger.append.call_args_list]
+            self.assertEqual(appended, ["adversarial_validation", "obpi_receipt_emitted"])
 
 
 @covers("OBPI-0.0.14-02")
@@ -841,6 +847,12 @@ class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
                     attestation_text="Verified",
                     implementation_summary="- Files: obpi_complete.py",
                     key_proof="gz obpi complete exits 0",
+                    # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                    # Supplying one lets the run reach the transaction this test is
+                    # about — and the failing `ledger.append` it trips is now the
+                    # adversarial_validation write, which must roll back like any other.
+                    adversary_verdict="not-refuted",
+                    adversary="codex/gpt-5.4",
                     as_json=False,
                     dry_run=False,
                 )
@@ -923,12 +935,17 @@ class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
                 attestation_text="attest completed -- obpi_complete.py verified",
                 implementation_summary="- Files: obpi_complete.py",
                 key_proof="gz obpi complete exits 0",
+                # Heavy lane fails closed without a Step-4b verdict (GHI #676).
+                adversary_verdict="not-refuted",
+                adversary="codex/gpt-5.4",
                 as_json=False,
                 dry_run=False,
             )
 
             self.assertIn("status: Completed", obpi_file.read_text(encoding="utf-8"))
-            ledger.append.assert_called_once()
+            # Verdict lands before the receipt it gated (GHI #676).
+            appended = [call.args[0].event for call in ledger.append.call_args_list]
+            self.assertEqual(appended, ["adversarial_validation", "obpi_receipt_emitted"])
             audit_file = adr_dir / "logs" / "obpi-audit.jsonl"
             parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
             self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")

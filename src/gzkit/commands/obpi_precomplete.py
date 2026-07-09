@@ -125,6 +125,7 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_brief_headings_scoped(project_root, brief_path)
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
     yield _check_task_envelope_coherence(project_root, brief_path)
+    yield _check_adversarial_validation(brief_path)
 
 
 def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:
@@ -463,6 +464,60 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
         name="task_envelope_coherence",
         ok=True,
         message="No seq=01-only-without-req_atomic residue; completion will not reopen the gate.",
+    )
+
+
+def _check_adversarial_validation(brief_path: Path) -> CheckResult:
+    """Heavy-lane briefs MUST carry Step-4b evidence BEFORE completion (GHI #676).
+
+    Checks the brief, not the ledger: ``gz obpi complete`` writes the
+    ``adversarial_validation`` event, so at precomplete time no such event can
+    exist yet. The brief section is the pre-check; the ledger event is the durable
+    receipt. Surfacing the gap here spares the operator a rejected completion.
+    """
+    from gzkit.governance.trust_audits.adversarial_validation import (  # noqa: PLC0415
+        _STEP_4B_RE,
+    )
+    from gzkit.governance.trust_audits.briefs import _LANE_IN_FRONTMATTER  # noqa: PLC0415
+
+    try:
+        text = brief_path.read_text(encoding="utf-8")
+    except OSError as exc:
+        return CheckResult(
+            name="adversarial_validation",
+            ok=False,
+            message=f"brief unreadable: {exc}",
+            remediation=f"Re-create or restore {brief_path.name}.",
+        )
+
+    lane_match = _LANE_IN_FRONTMATTER.search(text)
+    if not lane_match or lane_match.group(1).lower() != "heavy":
+        return CheckResult(
+            name="adversarial_validation",
+            ok=True,
+            message="lite-lane brief; Step 4b evidence not required",
+        )
+
+    if not _STEP_4B_RE.search(text):
+        return CheckResult(
+            name="adversarial_validation",
+            ok=False,
+            message="heavy-lane brief carries no '### Step 4b' evidence section",
+            remediation=(
+                "Dispatch an independent adversary prompted to REFUTE the completion "
+                "claim, then add a `### Step 4b — Independent Adversarial Validation` "
+                "section naming the adversary, the verdict, the claim it broke, and "
+                "how that was resolved. Pass the verdict to `gz obpi complete` via "
+                "--adversary-verdict/--adversary so it lands in the ledger. If no "
+                "adversary could run, record the degraded floor explicitly: "
+                "--adversary-verdict degraded-human-only --adversary human."
+            ),
+        )
+
+    return CheckResult(
+        name="adversarial_validation",
+        ok=True,
+        message="Step 4b evidence section present",
     )
 
 

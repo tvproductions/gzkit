@@ -1510,6 +1510,36 @@
         }
       }
     },
+    "adversarial_validation": {
+      "required": [
+        "obpi_id",
+        "verdict",
+        "adversary"
+      ],
+      "properties": {
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "verdict": {
+          "type": "string",
+          "min_length": 1
+        },
+        "adversary": {
+          "type": "string",
+          "min_length": 1
+        },
+        "job_id": {
+          "type": "string"
+        },
+        "refuted_claim": {
+          "type": "string"
+        },
+        "resolution": {
+          "type": "string"
+        }
+      }
+    },
     "airlock_in": {
       "required": []
     },

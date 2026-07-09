@@ -26,8 +26,51 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--accept-security-floor REASON` | Override the security-scan canonical-slot fail-closed gate when the auto-detect classified the brief security-sensitive on surface-overlap but the change is structurally defensive/additive (GHI #462). The override is recorded in console output for audit trail. |
 | `--accept-stale-reconciliation` | Override a missing, stale, or drifted reconciliation receipt (OBPI-0.0.37-08). Requires `--reason TEXT` (min 10 chars). Emits `brief_reconcile_drift_overridden` to the ledger before the completion receipt. |
 | `--reason TEXT` | Rationale for `--accept-stale-reconciliation` (min 10 chars). |
+| `--adversary-verdict {refuted,not-refuted,refuted-with-caveats,degraded-human-only}` | Step-4b independent adversarial validation verdict. **Required on the heavy lane** (GHI #676). Emits an `adversarial_validation` ledger event before the completion receipt. |
+| `--adversary IDENTITY` | Adversary identity — vendor/model (e.g. `codex/gpt-5.4`), or `human` in degraded mode. Required whenever `--adversary-verdict` is given. |
+| `--adversary-job-id ID` | Adversary run id, when the runtime supplies one (e.g. a Codex `task-*` id). |
+| `--refuted-claim TEXT` | The specific claim the adversary broke, verbatim. |
+| `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict refuted`** — a known refutation may never be handed to the operator dressed as clean. |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
+
+## Step 4b — Independent adversarial validation (heavy lane)
+
+Stage 4 of the OBPI pipeline is fail-closed: no OBPI reaches attestation without an
+independent adversary, prompted to **refute**, re-deriving the completion claim from
+the REQs and the repository (GHI #643). Nothing enforced that at the chokepoint, so a
+run that skipped Step 4b and a run that was refuted and attested anyway left
+indistinguishable durable records — the verdict lived only in an agent transcript or a
+vendor cache (GHI #676).
+
+`gz obpi complete` now refuses a heavy-lane completion unless the verdict is recorded,
+and writes it to the ledger as an `adversarial_validation` event **before** the
+completion receipt, so a receipt can never exist without the finding that gated it.
+
+```bash
+# The adversary found nothing.
+uv run gz obpi complete OBPI-0.33.0-01-airlock-data-model-and-events \
+  --attestor 'g0' --attestation-text 'attest completed' \
+  --adversary-verdict not-refuted --adversary codex/gpt-5.4 \
+  --adversary-job-id task-mrcrhhaq-dambrd
+
+# The adversary refuted the work; the gap was fixed and re-verified.
+uv run gz obpi complete OBPI-0.33.0-01-airlock-data-model-and-events \
+  --attestor 'g0' --attestation-text 'attest completed' \
+  --adversary-verdict refuted --adversary codex/gpt-5.4 \
+  --refuted-claim 'closed enum vocabularies are not fail-closed' \
+  --adversary-resolution 'membership assertions added to REQ-03/04; the adversary
+   mutation (Authority.MATE + Decision.DEFER + Verdict.REVIEW) now FAILS'
+
+# Neither a different-vendor adversary nor an independent subagent could run.
+# The degraded floor is explicit and attested — never silence.
+uv run gz obpi complete OBPI-0.0.99-01-example \
+  --attestor 'g0' --attestation-text 'attest completed' \
+  --adversary-verdict degraded-human-only --adversary human
+```
+
+`--adversary-verdict refuted` without `--adversary-resolution` is blocked. The lite
+lane is exempt, matching the lane that already carries fail-closed Gate 3 and Gate 4.
 
 ## Runtime Behavior
 

@@ -89,6 +89,14 @@ def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     return audit_adr_status_fresh(root)
 
 
+def _ep_adversarial_validation(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.adversarial_validation import (  # noqa: PLC0415
+        audit_adversarial_validation,
+    )
+
+    return audit_adversarial_validation(root)
+
+
 def _ep_rendition_freshness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.rendition_freshness import (  # noqa: PLC0415
         validate_rendition_freshness,

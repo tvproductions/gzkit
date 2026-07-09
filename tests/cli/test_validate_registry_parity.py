@@ -72,6 +72,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "instructions_files_budget",
         "agents_md_map_conformance",
         "adr_status_fresh",
+        "adversarial_validation",  # GHI #676 — Step-4b verdict capture
         "session_green_gate",
         "orientation_freshness",
         "brief_headings",

@@ -363,6 +363,11 @@ _IMPL_SUMMARY = (
 )
 _KEY_PROOF = "uv run -m unittest tests.test_fixture -v passes 1/1."
 
+# Heavy-lane completion fails closed without a Step-4b adversary verdict (GHI #676).
+# These scenarios are about the REQ-coverage gate, not Step 4b, so they satisfy the
+# gate rather than exercise it — its own behaviour is covered in tests/.
+_ADVERSARY_ARGS = ["--adversary-verdict", "not-refuted", "--adversary", "codex/gpt-5.4"]
+
 
 def _complete_args(
     obpi_id: str,
@@ -384,6 +389,7 @@ def _complete_args(
         _IMPL_SUMMARY,
         "--key-proof",
         _KEY_PROOF,
+        *_ADVERSARY_ARGS,
     ]
     if attestor_present:
         args.append("--attestor-present")
@@ -564,6 +570,7 @@ def step_complete_accept_no_reason(  # type: ignore[no-untyped-def]
         "--accept-uncovered",
         req_id,
         "--attestor-present",
+        *_ADVERSARY_ARGS,
     ]
     context.exit_code, context.output = _invoke(args)
 

@@ -58,6 +58,10 @@ _BRIEF_EVIDENCE_H3_HEADINGS = (
     "Implementation Summary",
     "Key Proof",
     "Closing Argument",
+    # GHI #676. `_canonical_h3_heading` splits on "(" before folding, so the
+    # authored form `### Step 4b — Independent Adversarial Validation (GHI #643)`
+    # matches, and its H2 drift is caught like any other evidence heading.
+    "Step 4b — Independent Adversarial Validation",
 )
 
 

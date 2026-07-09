@@ -134,6 +134,33 @@ def _build_adr_status_freshness() -> Path:
     return root
 
 
+def _build_adversarial_validation() -> Path:
+    """Violation: a post-cutover heavy completion with no verdict, in a brief with no 4b section.
+
+    Trips BOTH halves of the audit (GHI #676) — a control that exercised only the
+    brief scan would leave the ledger-coherence half unproven, which is the half
+    the issue was actually about.
+    """
+    root = _mkroot("adversarial-validation")
+    obpi_id = "OBPI-0.0.1-01-example"
+    _write(
+        root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.1-x" / "obpis" / f"{obpi_id}.md",
+        f"---\nid: {obpi_id}\nlane: heavy\nstatus: Completed\n---\n\n### Key Proof\n\nran it.\n",
+    )
+    _write_jsonl(
+        root / ".gzkit" / "ledger.jsonl",
+        [
+            {
+                "event": "obpi_receipt_emitted",
+                "id": obpi_id,
+                "ts": "2030-01-01T00:00:00+00:00",
+                "receipt_event": "completed",
+            }
+        ],
+    )
+    return root
+
+
 def _build_rendition_freshness() -> Path:
     root = _mkroot("rendition-freshness")
     _write(
@@ -510,6 +537,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ("cli-audit", lambda: _build_empty("cli-audit"), _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
+    ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),
     ("rendition-freshness", _build_rendition_freshness, _ep._ep_rendition_freshness),
     (
         "rendition-floor-coherence",

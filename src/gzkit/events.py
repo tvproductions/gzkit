@@ -658,6 +658,45 @@ class ValidatesEvent(_EventBase):
     validated: str = Field(..., description="The id that is validated")
 
 
+class AdversarialValidationEvent(_EventBase):
+    """adversarial_validation event — an independent adversary's verdict on an OBPI
+    completion claim, recorded before Gate 5 (GHI #676, upstream GHI #643).
+
+    Step 4b of the OBPI pipeline is fail-closed: no OBPI reaches attestation without
+    an independent adversary, prompted to REFUTE, re-deriving the completion claim.
+    This event is that verdict's durable home. Without it the verdict lives only in an
+    agent transcript or a vendor cache — outside the repo, the ledger, and the brief —
+    so an agent that skipped 4b and one that was refuted and attested anyway leave
+    indistinguishable records.
+
+    ``degraded-human-only`` is the explicit, attested floor when neither a
+    different-vendor adversary nor an independent subagent could run. Silence is never
+    a substitute for it.
+    """
+
+    event: Literal["adversarial_validation"]
+    obpi_id: str = Field(..., description="OBPI whose completion claim was attacked")
+    verdict: Literal[
+        "refuted",
+        "not-refuted",
+        "refuted-with-caveats",
+        "degraded-human-only",
+    ] = Field(..., description="The adversary's finding; a closed vocabulary")
+    adversary: str = Field(
+        ...,
+        description="Independent adversary identity — vendor/model, or 'human' in degraded mode",
+    )
+    job_id: str | None = Field(
+        default=None, description="Adversary run id, when the runtime supplies one"
+    )
+    refuted_claim: str | None = Field(
+        default=None, description="The specific claim the adversary broke, verbatim"
+    )
+    resolution: str | None = Field(
+        default=None, description="How a refutation was closed, and how that was re-verified"
+    )
+
+
 class AirlockInEvent(_EventBase):
     """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate)."""
 
@@ -723,7 +762,8 @@ TypedLedgerEvent = Annotated[
     | DiscoveredFromEvent
     | ValidatesEvent
     | AirlockInEvent
-    | AirlockOutEvent,
+    | AirlockOutEvent
+    | AdversarialValidationEvent,
     Field(discriminator="event"),
 ]
 

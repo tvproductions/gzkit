@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.25.0"
-last_reviewed: 2026-06-29
+skill-version: "6.26.0"
+last_reviewed: 2026-07-09
 model: sonnet
 ---
 
@@ -693,15 +693,20 @@ the reconcile output and ADR status refresh.
    remediation: subdivide labor via `uv run gz task start --seq next` or declare
    `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),
    reconcile divergent TASK ids across channels (Sig c) —
-   `uv run gz task envelope diagnose {OBPI-SLUG}`).
+   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **Step-4b adversarial
+   validation** (GHI #676 — a heavy-lane brief must already carry its
+   `### Step 4b — Independent Adversarial Validation` section; the check reads
+   the brief, not the ledger, because `gz obpi complete` is what writes the
+   `adversarial_validation` event).
    **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
    reported precondition first using the named remediation.** Exit 0 here is
    the gate that prevents the reactive-triage class of failure (the original
    OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).
-   Note: `gz obpi complete` **independently re-enforces** the task-envelope and
-   REQ-coverage gates fail-closed (precomplete is the bypassable pre-flight;
-   the completion command is the chokepoint), so the residue cannot reach `main`
-   even if this step is skipped.
+   Note: `gz obpi complete` **independently re-enforces** the task-envelope,
+   REQ-coverage, and Step-4b gates fail-closed (precomplete is the bypassable
+   pre-flight; the completion command is the chokepoint), so the residue cannot
+   reach `main` even if this step is skipped. `gz check` then re-audits the
+   captured verdict repo-wide via `gz validate --adversarial-validation`.
 
 1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.
 
@@ -752,12 +757,26 @@ the reconcile output and ADR status refresh.
    exits 1. Never hand the invocation back to the operator — they already
    attested in Stage 4.
 
+   **Step 4b's verdict is passed here (GHI #676).** On the heavy lane `gz obpi complete`
+   fails closed without it, and records it as an `adversarial_validation` ledger event
+   emitted BEFORE the completion receipt — so a receipt can never exist without the
+   adversarial finding that gated it. Pass `--adversary-verdict` (one of `refuted` |
+   `not-refuted` | `refuted-with-caveats` | `degraded-human-only`) and `--adversary`
+   (the vendor/model, or `human` in degraded mode). A `refuted` verdict additionally
+   requires `--adversary-resolution` naming what was fixed and how the adversary's own
+   check was re-run — never hand the operator a known refutation dressed as clean.
+
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \
      --attestor '{attestor}' \
      --attestation-text "$(cat /tmp/obpi-attestation.txt)" \
      --implementation-summary "$(cat /tmp/obpi-summary.md)" \
-     --key-proof "$(cat /tmp/obpi-keyproof.md)"
+     --key-proof "$(cat /tmp/obpi-keyproof.md)" \
+     --adversary-verdict {refuted|not-refuted|refuted-with-caveats|degraded-human-only} \
+     --adversary '{vendor/model or human}' \
+     [--adversary-job-id '{job-id}'] \
+     [--refuted-claim "$(cat /tmp/obpi-refuted-claim.txt)"] \
+     [--adversary-resolution "$(cat /tmp/obpi-adversary-resolution.txt)"]
    ```
 
    Write long `--attestation-text` / `--implementation-summary` /

@@ -78,6 +78,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_reqs",
       "baseline_count": 2
+    },
+    {
+      "data_file": "data/adversarial_validation_grandfather.json",
+      "gates_step": "Step-4b adversary verdict (gz validate --adversarial-validation)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_obpis",
+      "baseline_count": 225
     }
   ],
   "excluded": [
