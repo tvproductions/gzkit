@@ -973,5 +973,51 @@ class TestChoreRegistration(unittest.TestCase):
         self.assertEqual(schema["title"], "Documentation Coverage Gap Report")
 
 
+class TestSourceScanMemoization(unittest.TestCase):
+    """The per-source AST scans are memoized, and their results are immutable.
+
+    `_resolve_handler_docstring` runs once per CLI command against the same handful
+    of parser sources. Un-memoized, each call re-parsed and re-walked the whole AST:
+    281 `ast.parse` calls and 3.4M `ast.walk` iterations per `build_gap_report`
+    (2.58s). These assert the cache's semantics, not its speed — a timing assertion
+    would be flaky and would not fail when the cache is silently removed.
+    """
+
+    def test_identical_source_is_parsed_once(self) -> None:
+        from gzkit.doc_coverage.scanner import _build_import_map
+
+        _build_import_map.cache_clear()
+        source = "from a.b import handler_one\n"
+        first = _build_import_map(source)
+        before = _build_import_map.cache_info().hits
+        second = _build_import_map(source)
+        after = _build_import_map.cache_info().hits
+        self.assertEqual(after, before + 1, "identical source must hit the cache")
+        self.assertIs(first, second)
+        self.assertEqual(dict(first), {"handler_one": "a.b"})
+
+    def test_distinct_sources_do_not_collide(self) -> None:
+        from gzkit.doc_coverage.scanner import _build_import_map
+
+        self.assertEqual(dict(_build_import_map("from a.b import x\n")), {"x": "a.b"})
+        self.assertEqual(dict(_build_import_map("from c.d import y\n")), {"y": "c.d"})
+
+    def test_cached_import_map_cannot_be_mutated_by_a_caller(self) -> None:
+        """A shared cached dict would let one caller corrupt every later one."""
+        from gzkit.doc_coverage.scanner import _build_import_map
+
+        mapping = _build_import_map("from a.b import x\n")
+        with self.assertRaises(TypeError):
+            mapping["injected"] = "evil"  # ty: ignore
+
+    def test_cached_docstrings_cannot_be_mutated_by_a_caller(self) -> None:
+        from gzkit.doc_coverage.scanner import _extract_local_docstrings
+
+        docs = _extract_local_docstrings('def f():\n    """D."""\n')
+        self.assertEqual(dict(docs), {"f": "D."})
+        with self.assertRaises(TypeError):
+            docs["injected"] = "evil"  # ty: ignore
+
+
 if __name__ == "__main__":
     unittest.main()

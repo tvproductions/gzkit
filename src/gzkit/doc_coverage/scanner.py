@@ -2,7 +2,10 @@
 
 import ast
 import importlib
+from collections.abc import Mapping
+from functools import lru_cache
 from pathlib import Path
+from types import MappingProxyType
 from typing import NamedTuple
 
 from gzkit.commands.common import get_project_root
@@ -233,13 +236,21 @@ def discover_commands(source: str) -> list[DiscoveredCommand]:
     return state.leaf_commands
 
 
-def _build_import_map(source: str) -> dict[str, str]:
+@lru_cache(maxsize=64)
+def _build_import_map(source: str) -> Mapping[str, str]:
     """Return function_name -> module_path mapping.
 
     Collects bindings from two shapes:
     1. Top-level ``from X import Y`` statements.
     2. ``_LAZY_HANDLERS: dict[str, str] = {"Y": "X", ...}`` dict literals
        used by parser modules that defer handler imports.
+
+    Memoized on the source text, which is what the function is a pure function of.
+    ``_resolve_handler_docstring`` calls this once per CLI command against the same
+    handful of parser sources; without the cache the AST is re-parsed and re-walked
+    per command (measured: 281 ``ast.parse`` calls and 3.4M ``ast.walk`` iterations
+    for one ``build_gap_report``). Returns a read-only mapping so a caller cannot
+    mutate the shared cached value.
     """
     tree = ast.parse(source)
     import_map: dict[str, str] = {}
@@ -263,17 +274,21 @@ def _build_import_map(source: str) -> dict[str, str]:
                     and isinstance(value.value, str)
                 ):
                     import_map[key.value] = value.value
-    return import_map
+    return MappingProxyType(import_map)
 
 
-def _extract_local_docstrings(source: str) -> dict[str, str]:
-    """Extract docstrings from function definitions in source (any nesting depth)."""
+@lru_cache(maxsize=64)
+def _extract_local_docstrings(source: str) -> Mapping[str, str]:
+    """Extract docstrings from function definitions in source (any nesting depth).
+
+    Memoized on the source text for the same reason as ``_build_import_map``.
+    """
     tree = ast.parse(source)
     result: dict[str, str] = {}
     for node in ast.walk(tree):
         if isinstance(node, ast.FunctionDef) and ast.get_docstring(node):
             result[node.name] = ast.get_docstring(node) or ""
-    return result
+    return MappingProxyType(result)
 
 
 def _resolve_handler_docstring(handler_name: str, main_source: str) -> str | None:
