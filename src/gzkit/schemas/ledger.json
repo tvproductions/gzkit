@@ -1509,6 +1509,12 @@
           "min_length": 1
         }
       }
+    },
+    "airlock_in": {
+      "required": []
+    },
+    "airlock_out": {
+      "required": []
     }
   }
 }

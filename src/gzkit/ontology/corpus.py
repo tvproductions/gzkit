@@ -69,6 +69,8 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "adr_annotated",
         "adr_eval_completed",
         "agent_sync_completed",
+        "airlock_in",
+        "airlock_out",
         "artifact_edited",
         "audit_generated",
         # Work-domain L2 edge events (ADR-0.32.0, OBPI-06) — imaged by the work

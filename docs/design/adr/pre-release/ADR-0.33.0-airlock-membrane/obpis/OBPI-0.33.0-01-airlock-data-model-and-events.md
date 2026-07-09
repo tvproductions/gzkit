@@ -3,7 +3,7 @@ id: OBPI-0.33.0-01-airlock-data-model-and-events
 parent: ADR-0.33.0-airlock-membrane
 item: 1
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # Each REQ is one indivisible unit of labor with no sub-step below it —
   # implemented as a single Red-Green-Refactor cycle each: 01 the four frozen
@@ -26,7 +26,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md`
 - **Checklist Item:** #1 - "Data model + ledger events: Pydantic SeamEdge (kind push|pull; provenance LAW|OBSERVED, non-erasable per state-doctrine section-2 guard), SeamMap (two-layer: bodies = declared regions + push/pull edges + unaccounted), Preflight (seam_map, blast_radius=delegation dial, authority captain|delegated, decision), DriftDiff (drift, verdict, resolutions) + airlock_in / airlock_out L2 event schemas under src/gzkit/schemas/. [SUPPORT; MVP spine]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -57,6 +57,9 @@ that OBPI-02 (airlock-IN) and OBPI-03 (airlock-OUT) construct against.
 - `src/gzkit/airlock/model.py` — **CREATE**: `SeamEdge` / `SeamMap` / `Preflight` / `DriftDiff` frozen `extra="forbid"` Pydantic models; closed `enum.StrEnum` vocabularies (`SeamKind` push|pull, `Provenance` LAW|OBSERVED, `Authority` captain|delegated, `Decision` proceed|pause|hold|revert, `Verdict` clean|block|surface|resolve); and a `seam_map_json_schema()` projector
 - `src/gzkit/schemas/seam_map.json` — **CREATE**: committed JSON-schema projection of the `SeamMap` model, loaded name-generically via `gzkit.schemas.load_schema`
 - `src/gzkit/events.py` — additive ONLY: add `AirlockInEvent` / `AirlockOutEvent` (`event: Literal["airlock_in"|"airlock_out"]`) and append them to the `TypedLedgerEvent` union; no existing variant touched
+- `src/gzkit/ontology/corpus.py` — additive ONLY: disposition `airlock_in` / `airlock_out` in `_ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES`. The registry-coupled fence derives its discriminator set from the union and fail-closes on any un-dispositioned name (test_ontology_corpus, test_all_live_discriminators_are_dispositioned)
+- `src/gzkit/schemas/ledger.json` — additive ONLY: add `events` rules for `airlock_in` / `airlock_out`. The `events` map is a closed registry; an absent name is rejected as `Unknown event type` (ledger_check, line 303) at first emit
+- `tests/test_schemas.py` — additive ONLY: add the two class imports + two `_EVENT_MODELS` entries, required by test_all_schema_events_have_models once the ledger schema carries the events
 - `tests/test_airlock_model.py` — **CREATE**: `@covers`-decorated REQ tests for the model layer (frozen/extra-forbid, two-layer SeamMap, non-erasable provenance, Preflight/DriftDiff enum shape)
 - `tests/test_airlock_events.py` — **CREATE**: `@covers` round-trip tests for the two additive event models (`parse_typed_event` discriminator resolution) — advisory coverage supporting the SUPPORT REQ
 - `docs/user/manpages/` — a schema/event-contract manpage MAY be added here if the closeout docs pass warrants one (Gate 3 docs coherence); no other docs surface in scope
@@ -280,6 +283,64 @@ uv run python -c "from gzkit.events import parse_typed_event; ev = parse_typed_e
 # Paste behave output here when Gate 4 applies
 ```
 
+### Step 4b — Independent Adversarial Validation (GHI #643)
+
+**Adversary:** Codex (different vendor — an independent context prompted to REFUTE,
+not confirm; a Claude validating Claude shares failure modes).
+**Job:** `task-mrcrhhaq-dambrd`, status `completed`, workspace `/Users/jeff/Documents/Code/gzkit`,
+created `2026-07-09T00:21:32Z`. Transcript (82 KB, vendor-cache — see GHI on
+repo-bound capture): `~/.claude/plugins/data/codex-openai-codex/state/gzkit-6c7dcdb70ca321f2/jobs/task-mrcrhhaq-dambrd.log`
+
+**Verdict: `REFUTED`** → gap fixed → re-validated against the adversary's own mutation.
+
+**The refutation (Attack 2 — mutation).** REQ-03 claims `Provenance` is closed "of
+exactly `LAW` / `OBSERVED`"; REQ-04 pins four further closed vocabularies. The tests
+asserted only that a *specific* out-of-enum value was rejected — which proves the set
+lacks that value, never that it lacks every other. The adversary added
+`Authority.MATE`, `Decision.DEFER`, `Verdict.REVIEW` and observed:
+
+```text
+Ran 5 tests in 0.002s
+OK
+['captain', 'delegated', 'mate']
+['proceed', 'pause', 'hold', 'revert', 'defer']
+['clean', 'block', 'surface', 'resolve', 'review']
+```
+
+Adversary's closing **Weakest Point**, verbatim: *"The weakest point is exact enum
+closure. The implementation currently has the right values, but the REQ-04 test suite
+lets additional `Authority`/`Decision`/`Verdict` members pass, so the 'closed
+vocabulary' claim is not fail-closed."*
+
+**Fix.** Membership assertions added to the two REQs that make the claim
+(`tests/test_airlock_model.py`, REQ-03 and REQ-04): each vocabulary is pinned to its
+exact member list. Re-running the adversary's identical mutation now yields:
+
+```text
+Ran 5 tests in 0.001s
+FAILED (failures=1)
+```
+
+Two further mutants that previously survived are also killed: a third `Provenance`
+vein (`FABRICATED`) and a third `SeamKind` (`SIDEWAYS`).
+
+**Attacks that failed to break the work** (each with real pasted output in the
+transcript): the `events.py` diff is additive with no existing variant altered; no
+`networkx`/`graspologic`/`tree-sitter` import; no airlock operator verb (gz airlock) registered;
+`seam_map_json_schema()` is a pure projector; `load_schema("seam_map") ==
+seam_map_json_schema()` returned `True`; and an `airlock_in` entry appended to a
+scratch ledger **passed** `uv run gz validate --ledger` — exercising the registry
+entry rather than merely reading the validator. The adversary restored the working
+tree exactly.
+
+**Findings deliberately NOT fixed here (routed, not excused).** Attack 7 surfaced four
+unconstrained states: a `PULL`-kind edge inside `push_edges`; `accounted=True` inside
+`unaccounted`; empty `source`/`target`; negative `blast_radius`. The adversary itself
+judged these *"not explicit OBPI-01 REQ failures."* This OBPI ships shapes, never
+compute (REQ-01). They are enforceable at the point of construction and are routed to
+OBPI-0.33.0-02 (airlock-IN), which owns seam-map construction. Recorded in
+`.gzkit/insights/agent-insights.jsonl` as a `discovery` record.
+
 ### Gate 5 (Human)
 
 ```text
@@ -292,32 +353,79 @@ uv run python -c "from gzkit.events import parse_typed_event; ev = parse_typed_e
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The shape is live in the runtime, not merely declared in a schema file:
+
+```
+$ uv run python -c "from gzkit.events import parse_typed_event; print(type(parse_typed_event({'event':'airlock_in','id':'x','ts':'2026-07-08T00:00:00+00:00'})).__name__)"
+AirlockInEvent
+```
+
+Falsifiability is witnessed, not asserted. Independent adversarial validation (Codex, job `task-mrcrhhaq-dambrd`) returned **REFUTED**: the tests proved a specific out-of-enum value was rejected, but never that the vocabularies were closed to exactly their declared members. Its refuting mutation — `Authority.MATE` + `Decision.DEFER` + `Verdict.REVIEW` — left the suite green:
+
+```
+Ran 5 tests in 0.002s
+OK
+```
+
+Membership assertions were added to REQ-03 and REQ-04. Re-running the adversary's identical mutation now yields:
+
+```
+Ran 5 tests in 0.001s
+FAILED (failures=1)
+```
+
+Three further mutants are killed that previously survived: a third Provenance vein (FABRICATED), a third SeamKind (SIDEWAYS), a third Verdict (FUZZY). Removing `frozen=True` kills REQ-01 and REQ-03; renaming `unaccounted` kills REQ-02.
+
+Green bar (receipts): 6817 tests `arb-step-unittest-47804087a4d54b989f041ff003c74c7b`; ruff `arb-ruff-8f09af87b3cc47e48ff2c000dfb5a69f`; typecheck `arb-step-typecheck-8e43d17394114bdd9de43b37d5551325`; mkdocs --strict `arb-step-mkdocs-7b8824dcecb144179086dbf556ed640f`. `gz validate --documents --req-kind-discipline --cli-alignment`: 3 scopes pass. `gz covers`: behavior_uncovered_reqs 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/airlock/__init__.py`, `src/gzkit/airlock/model.py`, `src/gzkit/schemas/seam_map.json`, `tests/test_airlock_model.py`, `tests/test_airlock_events.py`
+- Files modified (additive only): `src/gzkit/events.py` (AirlockInEvent/AirlockOutEvent + TypedLedgerEvent union append), `src/gzkit/ontology/corpus.py` (registry-coupled fence disposition), `src/gzkit/schemas/ledger.json` (closed events registry), `tests/test_schemas.py` (_EVENT_MODELS coherence)
+- Delivered: the airlock's pure additive data layer — five closed `enum.StrEnum` vocabularies (SeamKind, Provenance, Authority, Decision, Verdict), four frozen `extra="forbid"` Pydantic models (SeamEdge, the two-layer SeamMap, Preflight, DriftDiff), a committed `seam_map.json` projection, and two additive L2 ledger event variants. Shapes only: no behavior, no compute, no CLI verb, no ontology-sonar call, no new runtime dependency.
+- Parent ADR section Decision seated: the seam-map carries BOTH senses of "seam" — seam-as-BODY (`bodies`, the declared footprint) distinct from seam-as-BOUNDARY (`push_edges`/`pull_edges`, the join) — and Provenance is non-erasable by construction (the state-doctrine section-2 guard).
+- Tests added: 4 `@covers` tests (REQ-01..04) plus 1 schema-drift guard; 4 advisory round-trip tests. REQ-05/06 are [SUPPORT]: proof channel is ledger event + structural validator, never `@covers`.
+- Coupled-surface note: registering a TypedLedgerEvent variant is a FOUR-surface operation (union, ledger registry, corpus fence, test _EVENT_MODELS). The brief's allowlist under-declared three; operator approved a surgical amendment matching precedent commit eeda0988.
+- Date completed: 2026-07-09
+- Attestation status: operator-attested (g0); Gate 5 recorded
+- Defects noted: GHI #676 filed; #666 and #652 evidenced; four production-discovery gaps routed to OBPI-0.33.0-02
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **GHI #676** (filed this OBPI) — `gz-obpi-pipeline`: Step-4b adversary verdict has no
+  durable capture; it lives only in a vendor plugin cache, outside the repo, ledger, and
+  brief. The `### Step 4b` evidence section above is the hand-copied stopgap this GHI
+  exists to mechanize. Cross-linked to #643 (parent doctrine) and #642 (sibling: RED
+  falsifiability witness).
+- **GHI #666** (pre-existing; recurrence evidence added this OBPI) — `pipeline-gate`:
+  plan-audit receipt id-form mismatch dead-blocks `src/` writes. Reproduced verbatim here:
+  `gz plan audit OBPI-0.33.0-01` writes a short-form receipt id that can never match the
+  full-slug marker written by `gz obpi pipeline`. Cost an entire `implementer` subagent
+  dispatch, which correctly refused to bypass the hook and returned `BLOCKED`.
+- **GHI #652** (pre-existing; second instance added this OBPI) — module exceeds the
+  600-line limit: `src/gzkit/events.py` is 735 lines (721 before this OBPI's additive
+  14-line append). Pre-existing and additively worsened; a split is out of scope for an
+  additive-only OBPI under the surgical-changes rule.
+- **Routed to OBPI-0.33.0-02** (no GHI; `discovery` insight record) — four unconstrained
+  states the adversary surfaced: a `PULL`-kind edge inside `push_edges`; `accounted=True`
+  inside `unaccounted`; empty `source`/`target`; negative `blast_radius`. Not OBPI-01 REQ
+  failures (this OBPI ships shapes, never compute); enforceable at construction time,
+  which OBPI-02 owns.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Gate 5 recorded by g0 for OBPI-0.33.0-01-airlock-data-model-and-events after independent adversarial validation (Codex, job task-mrcrhhaq-dambrd) returned REFUTED on exact enum closure, the refutation was closed with membership assertions on REQ-03/REQ-04, and the adversary's identical mutation (Authority.MATE + Decision.DEFER + Verdict.REVIEW) was re-run and now FAILS. Green bar: 6817 tests receipt arb-step-unittest-47804087a4d54b989f041ff003c74c7b; ruff receipt arb-ruff-8f09af87b3cc47e48ff2c000dfb5a69f; typecheck receipt arb-step-typecheck-8e43d17394114bdd9de43b37d5551325; mkdocs --strict receipt arb-step-mkdocs-7b8824dcecb144179086dbf556ed640f; gz validate --documents --req-kind-discipline --cli-alignment 3 scopes pass; gz covers behavior_uncovered_reqs 0. Four BEHAVIOR REQs mutation-witnessed; REQ-05/06 [SUPPORT] proven via ledger event + structural validator. Defects tracked: GHI #676 filed, #666 and #652 evidenced; four production-discovery gaps routed to OBPI-0.33.0-02.
+- Date: 2026-07-09
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-09
 
 **Evidence Hash:** -
 </content>

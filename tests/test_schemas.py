@@ -15,6 +15,8 @@ from gzkit.events import (
     AdrEvalCompletedEvent,
     AdrEvaluationEvent,
     AgentSyncCompletedEvent,
+    AirlockInEvent,
+    AirlockOutEvent,
     ArtifactEditedEvent,
     ArtifactRenamedEvent,
     AttestedEvent,
@@ -298,6 +300,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "blocked_by": BlockedByEvent,
     "discovered_from": DiscoveredFromEvent,
     "validates": ValidatesEvent,
+    # Airlock L2 edge events (ADR-0.33.0, OBPI-01)
+    "airlock_in": AirlockInEvent,
+    "airlock_out": AirlockOutEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

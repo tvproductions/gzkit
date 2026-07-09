@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "Provenance": {
+      "description": "The vein a seam edge belongs to: declared LAW or extracted/OBSERVED fact.\n\nNon-erasable by construction (state-doctrine section-2 guard): L2 records what\nwas encountered, so provenance is never rewritable. The closed membership below\nplus ``frozen=True`` on ``SeamEdge`` means provenance can be neither reassigned\nnor blanked after construction \u2014 the guard is enforced, not merely documented.",
+      "enum": [
+        "LAW",
+        "OBSERVED"
+      ],
+      "title": "Provenance",
+      "type": "string"
+    },
+    "SeamEdge": {
+      "additionalProperties": false,
+      "description": "A single directed join between a source and target, tagged by vein and kind.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/SeamKind"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        },
+        "accounted": {
+          "title": "Accounted",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "provenance",
+        "source",
+        "target",
+        "accounted"
+      ],
+      "title": "SeamEdge",
+      "type": "object"
+    },
+    "SeamKind": {
+      "description": "Direction a seam edge crosses the airlock: pushed out or pulled in.",
+      "enum": [
+        "push",
+        "pull"
+      ],
+      "title": "SeamKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Two-layer seam view carrying both senses of \"seam\" (parent ADR \u00a7 Decision).\n\n``bodies`` is seam-as-BODY: contiguous regions of similarity \u2014 the FOOTPRINT.\n``push_edges``/``pull_edges`` are seam-as-BOUNDARY: the join. ``unaccounted``\nholds edges present but undeclared, and is never folded into the joins.",
+  "properties": {
+    "bodies": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Bodies",
+      "type": "array"
+    },
+    "push_edges": {
+      "items": {
+        "$ref": "#/$defs/SeamEdge"
+      },
+      "title": "Push Edges",
+      "type": "array"
+    },
+    "pull_edges": {
+      "items": {
+        "$ref": "#/$defs/SeamEdge"
+      },
+      "title": "Pull Edges",
+      "type": "array"
+    },
+    "unaccounted": {
+      "items": {
+        "$ref": "#/$defs/SeamEdge"
+      },
+      "title": "Unaccounted",
+      "type": "array"
+    }
+  },
+  "required": [
+    "bodies",
+    "push_edges",
+    "pull_edges",
+    "unaccounted"
+  ],
+  "title": "SeamMap",
+  "type": "object"
+}

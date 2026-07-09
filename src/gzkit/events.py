@@ -658,6 +658,18 @@ class ValidatesEvent(_EventBase):
     validated: str = Field(..., description="The id that is validated")
 
 
+class AirlockInEvent(_EventBase):
+    """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate)."""
+
+    event: Literal["airlock_in"]
+
+
+class AirlockOutEvent(_EventBase):
+    """airlock_out event — a transit exited the airlock (drift-diff -> decision -> L2)."""
+
+    event: Literal["airlock_out"]
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -709,7 +721,9 @@ TypedLedgerEvent = Annotated[
     | BlocksEvent
     | BlockedByEvent
     | DiscoveredFromEvent
-    | ValidatesEvent,
+    | ValidatesEvent
+    | AirlockInEvent
+    | AirlockOutEvent,
     Field(discriminator="event"),
 ]
 
