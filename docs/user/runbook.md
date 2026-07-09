@@ -249,6 +249,10 @@ uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run -m unittest -q
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+
+# Witness that a BEHAVIOR REQ's test can actually fail (GHI #642).
+# Runs the covering test against the base tree with the production hunks withheld.
+uv run gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock-data-model-and-events
 uv run gz arb coverage run -m unittest discover -s tests -t .
 uv run gz arb validate --limit 20
 uv run gz arb advise --limit 10       # optional: review frequent-rule advice

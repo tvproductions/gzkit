@@ -57,6 +57,7 @@ from gzkit.events import (
     PipelineMarkerPurgedEvent,
     PrdCreatedEvent,
     ProjectInitEvent,
+    RedReceiptEmittedEvent,
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
     TaskBlockedEvent,
@@ -305,6 +306,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "adversarial_validation": AdversarialValidationEvent,
     "airlock_in": AirlockInEvent,
     "airlock_out": AirlockOutEvent,
+    # Base-tree RED falsifiability witness (GHI #642)
+    "red_receipt_emitted": RedReceiptEmittedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

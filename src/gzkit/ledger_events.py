@@ -840,3 +840,36 @@ def intrinsic_complexity_attestation_event(
             "crossing_value": crossing_value,
         },
     )
+
+
+def red_receipt_emitted_event(
+    *,
+    req_id: str,
+    receipt_id: str,
+    failure_class: str,
+    base_commit: str,
+    obpi_id: str | None = None,
+    test_names: list[str] | None = None,
+) -> LedgerEvent:
+    """Create a RED-witness event for a BEHAVIOR REQ (GHI #642).
+
+    ``failure_class`` is the verdict: ``assertion`` (strong RED), ``error`` (weak
+    RED — failed for the wrong reason), or ``none`` (the test passed without its
+    implementation and therefore cannot fail).
+    """
+    extra: dict[str, object] = {
+        "req_id": req_id,
+        "receipt_id": receipt_id,
+        "failure_class": failure_class,
+        "base_commit": base_commit,
+    }
+    if obpi_id:
+        extra["obpi_id"] = obpi_id
+    if test_names:
+        extra["test_names"] = list(test_names)
+    return LedgerEvent(
+        event="red_receipt_emitted",
+        id=receipt_id,
+        parent=obpi_id,
+        extra=extra,
+    )

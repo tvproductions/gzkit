@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.26.0"
+skill-version: "6.27.0"
 last_reviewed: 2026-07-09
 model: sonnet
 ---
@@ -448,6 +448,28 @@ When parity fails:
 The Stage 4 evidence template requires the `@covers` location for every REQ — the parity gate makes that requirement mechanical instead of aspirational.
 
 **Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate. The table is verified evidence, not author-attestation prose.
+
+#### Phase 1c: RED Falsifiability Witness (GHI #642)
+
+Phase 1b proves every REQ **has** a covering test. It never proves that test **can fail**. A BEHAVIOR test authored after the production code, passing on its first run, is byte-indistinguishable from a genuine RED-first test — `@covers` parity, the two-stage review, and Gate 5 all accept both identically.
+
+For each **BEHAVIOR** REQ in the brief (SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel — they carry no `@covers` test):
+
+```bash
+uv run gz arb red --req {REQ-ID} --obpi {OBPI-SLUG}
+```
+
+This reconstructs the base tree in a throwaway git worktree, copies in **only** the test files, and runs the covering test there. The production hunks are deliberately withheld — that asymmetry is the experiment. It emits an `arb-red-<REQ>` receipt and a `red_receipt_emitted` ledger event.
+
+| `failure_class` | Meaning | Action |
+|---|---|---|
+| `assertion` | Strong RED — the test failed on an assertion | Proceed |
+| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed; **never** report it as an assertion RED |
+| `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |
+
+A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover.
+
+**Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.
 
 #### Phase 2: REQ-Level Verification Dispatch
 

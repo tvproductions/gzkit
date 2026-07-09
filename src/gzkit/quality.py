@@ -618,6 +618,17 @@ def run_adversarial_validation_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adversarial-validation", cwd=project_root)
 
 
+def run_red_parity_audit(project_root: Path) -> QualityResult:
+    """Run the BEHAVIOR-REQ RED falsifiability gate (GHI #642).
+
+    Fails closed when a post-cutover heavy-lane BEHAVIOR REQ carries no
+    `red_receipt_emitted` witness, or carries one whose `failure_class` is `none`
+    (its covering test passed with the production hunks withheld, so it cannot fail).
+    Recovery: `uv run gz arb red --req <REQ> --obpi <OBPI>`.
+    """
+    return run_command("uv run gz validate --red-parity", cwd=project_root)
+
+
 def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
     """Run the rendition-freshness gate (OBPI-0.0.37-22).
 

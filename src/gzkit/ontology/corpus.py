@@ -101,6 +101,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "patch-release",
         "pipeline_marker_purged",
         "project_init",
+        "red_receipt_emitted",
         "rendition_advisor_verdict",
         "rendition_committed",
         "task_blocked",

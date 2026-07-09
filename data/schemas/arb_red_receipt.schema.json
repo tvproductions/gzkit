@@ -1,0 +1,89 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gzkit.arb.red_receipt.schema.json",
+    "title": "ARB RED Witness Receipt",
+    "description": "Evidence that a BEHAVIOR-REQ test was observed failing against the base tree, with the production hunks withheld (GHI #642).",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "red",
+        "run_id",
+        "timestamp_utc",
+        "git",
+        "base_commit",
+        "exit_status",
+        "failure_class",
+        "duration_ms",
+        "output_tail"
+    ],
+    "properties": {
+        "schema": {
+            "type": "string",
+            "const": "gzkit.arb.red_receipt.v1",
+            "description": "Schema identifier for this receipt."
+        },
+        "red": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["req_id", "test_names"],
+            "properties": {
+                "req_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "description": "The BEHAVIOR REQ whose falsifiability this receipt witnesses."
+                },
+                "test_names": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": { "type": "string" },
+                    "description": "unittest-addressable names executed against the base tree."
+                },
+                "obpi_id": {
+                    "type": ["string", "null"],
+                    "description": "Owning OBPI, when the witness ran inside a pipeline."
+                }
+            }
+        },
+        "run_id": {
+            "type": "string",
+            "pattern": "^arb-red-REQ-[0-9]+\\.[0-9]+\\.[0-9]+-[0-9]+-[0-9]+-[a-f0-9]{32}$",
+            "description": "Receipt id: arb-red-<REQ>-<uuid4 hex>."
+        },
+        "timestamp_utc": {
+            "type": "string",
+            "description": "UTC timestamp of the base-tree run."
+        },
+        "git": {
+            "type": "object",
+            "description": "Git context of the working tree that produced the test hunks."
+        },
+        "base_commit": {
+            "type": "string",
+            "minLength": 7,
+            "description": "The commit the test ran against, with production hunks withheld."
+        },
+        "exit_status": {
+            "type": "integer",
+            "description": "Exit code of the base-tree test run. Zero means NO RED."
+        },
+        "failure_class": {
+            "type": "string",
+            "enum": ["assertion", "error", "none"],
+            "description": "assertion = strong RED; error = weak RED (failed for the wrong reason, e.g. ImportError on a not-yet-existing symbol); none = the test passed without its implementation and therefore cannot fail."
+        },
+        "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Wall-clock duration of the base-tree run."
+        },
+        "output_tail": {
+            "type": "string",
+            "description": "Tail of the base-tree run's combined output."
+        },
+        "output_truncated": {
+            "type": "boolean",
+            "description": "Whether output_tail was truncated."
+        }
+    }
+}

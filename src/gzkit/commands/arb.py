@@ -45,6 +45,86 @@ def arb_ruff_cmd(
     return exit_status
 
 
+def arb_red_cmd(
+    *,
+    req: str,
+    base: str | None = None,
+    obpi: str | None = None,
+    quiet: bool = False,
+) -> int:
+    """Witness a BEHAVIOR REQ's test failing against the base tree (GHI #642).
+
+    Exit 0 means a RED was witnessed (``assertion`` or the weaker ``error``). Exit 1
+    means the test PASSED with the production hunks withheld — it cannot fail, so it
+    proves nothing, and that is the defect this command exists to surface.
+    """
+    from gzkit.arb.red_reporter import run_red_via_arb
+    from gzkit.commands.common import get_project_root
+    from gzkit.ledger import Ledger
+    from gzkit.ledger_events import red_receipt_emitted_event
+    from gzkit.red_witness import resolve_covering_test_names
+
+    project_root = get_project_root()
+    test_names = resolve_covering_test_names(project_root, req)
+    if not test_names:
+        print(
+            f"arb red: no @covers test found for {req}. A BEHAVIOR REQ with no covering "
+            "test is a coverage defect, not a falsifiability one — run `uv run gz covers` "
+            "and author the covering test first.",
+            file=sys.stderr,
+        )
+        return 1
+
+    try:
+        witness, receipt_path = run_red_via_arb(
+            project_root=project_root,
+            req_id=req,
+            test_names=test_names,
+            base_commit=base,
+            obpi_id=obpi,
+        )
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"arb red: cannot run base-tree witness: {exc}", file=sys.stderr)
+        return _INTERNAL_ERROR
+
+    Ledger(project_root / ".gzkit" / "ledger.jsonl").append(
+        red_receipt_emitted_event(
+            req_id=req,
+            receipt_id=str(receipt_path.stem),
+            failure_class=witness.failure_class,
+            base_commit=witness.base_commit,
+            obpi_id=obpi,
+            test_names=witness.test_names,
+        )
+    )
+
+    if not quiet:
+        print(
+            f"arb red req={req} base={witness.base_commit[:12]} "
+            f"failure_class={witness.failure_class} receipt={receipt_path}"
+        )
+
+    if witness.failure_class == "none":
+        print(
+            f"RED WITNESS FAILED: {req}'s covering test PASSED against base commit "
+            f"{witness.base_commit[:12]} with the production hunks withheld. A test that "
+            "passes without its implementation cannot fail when the business logic "
+            "changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. Rewrite "
+            "the test to assert the REQ's semantics, then re-run `uv run gz arb red "
+            f"--req {req}`.",
+            file=sys.stderr,
+        )
+        return 1
+    if witness.failure_class == "error" and not quiet:
+        print(
+            f"weak RED: {req}'s test failed with an error, not an assertion — it failed "
+            "for the wrong reason (usually a not-yet-existing symbol). Recorded as "
+            "failure_class=error; never equate this with an assertion RED.",
+            file=sys.stderr,
+        )
+    return 0
+
+
 def arb_step_cmd(
     *,
     name: str,

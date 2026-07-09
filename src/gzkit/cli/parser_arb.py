@@ -1,6 +1,6 @@
 """ARB (Agent Self-Reporting) subparser registrations for gz CLI.
 
-Registers the `gz arb` subcommand group with 7 verbs: ruff, step, ty,
+Registers the `gz arb` subcommand group with 8 verbs: ruff, step, red, ty,
 coverage, validate, advise, patterns.
 
 See `AGENTS.md` § Attestation for the binding rule contract
@@ -18,6 +18,7 @@ from gzkit.cli.helpers import add_json_flag, build_epilog
 # Lazy handler manifest used by doc-coverage scanner to resolve docstrings.
 # Map each arb_*_cmd handler to its source module.
 _LAZY_HANDLERS: dict[str, str] = {
+    "arb_red_cmd": "gzkit.commands.arb",
     "arb_ruff_cmd": "gzkit.commands.arb",
     "arb_step_cmd": "gzkit.commands.arb",
     "arb_ty_cmd": "gzkit.commands.arb",
@@ -30,11 +31,27 @@ _LAZY_HANDLERS: dict[str, str] = {
 
 
 def _arb(name: str) -> Any:
-    """Resolve an ``arb_*_cmd`` handler lazily so ``gz --help`` stays fast."""
+    """Resolve an ``arb_*_cmd`` handler lazily, propagating its exit code.
+
+    ``cli.main`` discards a handler's return value; only ``SystemExit`` reaches the
+    shell. Every ``arb_*_cmd`` returns a meaningful status, so without this wrapper
+    ``gz arb step --name unittest -- <failing suite>`` exits 0 — and that command is
+    AGENTS.md § Attestation's canonical "tests pass" invocation. The ``--soft-fail``
+    flag ("emit a receipt but always return exit 0") is only coherent if the default
+    propagates, which is the tell that the swallow was a defect (GHI #642).
+    """
     from importlib import import_module
 
     module = import_module("gzkit.commands.arb")
-    return getattr(module, name)
+    handler = getattr(module, name)
+
+    def _propagating(**kwargs: Any) -> int:
+        code = handler(**kwargs)
+        if isinstance(code, int) and code != 0:
+            raise SystemExit(code)
+        return 0
+
+    return _propagating
 
 
 def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
@@ -63,6 +80,7 @@ def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
 
     _register_ruff(arb_commands)
     _register_step(arb_commands)
+    _register_red(arb_commands)
     _register_ty(arb_commands)
     _register_typecheck(arb_commands)
     _register_coverage(arb_commands)
@@ -91,6 +109,41 @@ def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
             fix=a.fix,
             quiet=getattr(a, "quiet", False),
             soft_fail=a.soft_fail,
+        )
+    )
+
+
+def _register_red(arb_commands: argparse._SubParsersAction) -> None:
+    p = arb_commands.add_parser(
+        "red",
+        help="Witness a BEHAVIOR REQ's test failing against the base tree",
+        description=(
+            "Reconstruct the base tree in a throwaway git worktree, copy in ONLY the "
+            "test files, and run the REQ's covering test there. Exit 0 when a RED is "
+            "witnessed; exit 1 when the test passes without its implementation and "
+            "therefore cannot fail (GHI #642)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz arb red --req REQ-0.33.0-01-01",
+                "gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock",
+                "gz arb red --req REQ-0.33.0-01-01 --base HEAD~1",
+            ]
+        ),
+    )
+    p.add_argument("--req", required=True, help="BEHAVIOR REQ id to witness.")
+    p.add_argument(
+        "--base",
+        default=None,
+        help="Commit to run the test against (default: HEAD, the pre-change tree).",
+    )
+    p.add_argument("--obpi", default=None, help="Owning OBPI id, recorded on the event.")
+    p.set_defaults(
+        func=lambda a: _arb("arb_red_cmd")(
+            req=a.req,
+            base=a.base,
+            obpi=a.obpi,
+            quiet=getattr(a, "quiet", False),
         )
     )
 

@@ -697,6 +697,38 @@ class AdversarialValidationEvent(_EventBase):
     )
 
 
+class RedReceiptEmittedEvent(_EventBase):
+    """red_receipt_emitted event — a BEHAVIOR test observed failing against the base tree.
+
+    The pipeline instructs Red-Green-Refactor but shipped no mechanical witness that a
+    BEHAVIOR test ever failed before its implementation existed (GHI #642). A test
+    authored after the production code, passing on its first run, was
+    byte-indistinguishable from a genuine RED-first test: ``@covers`` parity proves
+    coverage, never falsifiability.
+
+    ``failure_class`` is the verdict, not decoration:
+
+    * ``assertion`` — strong RED; the test failed on an assertion.
+    * ``error``     — weak RED; it failed for the wrong reason (typically an
+      ImportError on a not-yet-existing symbol). Never silently equated with
+      ``assertion``.
+    * ``none``      — the test PASSED with the production hunks withheld. It cannot
+      fail, which is the ``AGENTS.md`` Rule-6 defect, and the gate rejects it.
+    """
+
+    event: Literal["red_receipt_emitted"]
+    req_id: str = Field(..., min_length=1, description="BEHAVIOR REQ under witness")
+    receipt_id: str = Field(..., min_length=1, description="ARB red receipt run_id")
+    failure_class: Literal["assertion", "error", "none"] = Field(
+        ..., description="How the test failed against the base tree; a closed vocabulary"
+    )
+    base_commit: str = Field(..., min_length=7, description="Commit the test ran against")
+    obpi_id: str | None = Field(default=None, description="Owning OBPI, when run in a pipeline")
+    test_names: list[str] = Field(
+        default_factory=list, description="unittest-addressable names executed"
+    )
+
+
 class AirlockInEvent(_EventBase):
     """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate)."""
 
@@ -763,7 +795,8 @@ TypedLedgerEvent = Annotated[
     | ValidatesEvent
     | AirlockInEvent
     | AirlockOutEvent
-    | AdversarialValidationEvent,
+    | AdversarialValidationEvent
+    | RedReceiptEmittedEvent,
     Field(discriminator="event"),
 ]
 

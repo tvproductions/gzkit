@@ -78,6 +78,9 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # Spans both surfaces by construction (GHI #676): the ledger half reads
     # `.gzkit/ledger.jsonl`, the brief half reads `docs/design/adr/**`.
     "Adversarial validation": ("audit", "all", "bound", "python_function"),
+    # The falsifiability gate is itself falsifiable: its NC builds a completed brief
+    # whose BEHAVIOR REQ has no RED witness, and asserts the audit catches it (GHI #642).
+    "RED parity": ("audit", "all", "bound", "python_function"),
     "Rendition freshness": ("audit", "docs/", "bound", "python_function"),
     "Rendition floor coherence": ("audit", "docs/", "bound", "python_function"),
     "Invariant coherence": ("audit", "docs/", "bound", "python_function"),

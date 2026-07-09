@@ -40,6 +40,7 @@ class TestArbParserRegistration(unittest.TestCase):
         expected = {
             "ruff",
             "step",
+            "red",
             "ty",
             "typecheck",
             "coverage",

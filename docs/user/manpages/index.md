@@ -126,6 +126,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 |---------|-------------|
 | [`gz arb ruff`](arb-ruff.md) | Run ruff via ARB and emit a lint receipt |
 | [`gz arb step`](arb-step.md) | Wrap an arbitrary command and emit a step receipt |
+| [`gz arb red`](arb-red.md) | Witness a BEHAVIOR REQ's test failing against the base tree |
 | [`gz arb ty`](arb-ty.md) | Run `uvx ty` via ARB step wrapper |
 | [`gz arb typecheck`](arb-typecheck.md) | Canonical Heavy-lane type-check receipt — wraps `gz typecheck` scope |
 | [`gz arb coverage`](arb-coverage.md) | Run `coverage` via ARB step wrapper |

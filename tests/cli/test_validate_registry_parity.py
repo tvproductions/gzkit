@@ -73,6 +73,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "agents_md_map_conformance",
         "adr_status_fresh",
         "adversarial_validation",  # GHI #676 — Step-4b verdict capture
+        "red_parity",  # GHI #642 — BEHAVIOR-REQ falsifiability witness
         "session_green_gate",
         "orientation_freshness",
         "brief_headings",

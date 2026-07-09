@@ -24,6 +24,7 @@ You are an Implementer subagent dispatched by the pipeline controller for a sing
    - **Green:** Write the simplest code that makes the test pass. Do not overbuild.
    - **Refactor:** Improve structure without changing behavior. Tests must stay green.
    - Repeat for each behavior in the task. Do not batch all tests first — cycle per behavior.
+   - **Witness the Red (GHI #642).** "Confirm it fails" is an instruction; `uv run gz arb red --req <REQ-ID> --obpi <OBPI-ID>` is the witness. It runs the covering test against the base tree with the production hunks withheld and records a `red_receipt_emitted` event whose `failure_class` is `assertion` (strong RED), `error` (weak RED — failed for the wrong reason, e.g. a not-yet-existing symbol), or `none` (the test passed without its implementation, so it cannot fail — blocking). A test authored after the code, passing on its first run, is byte-indistinguishable from a RED-first test without this receipt.
 3. Run `uv run ruff check . --fix && uv run ruff format .` after code changes.
 4. Run `uv run -m unittest -q` to verify tests pass.
 5. Return a structured result status: `DONE`, `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT`, or `BLOCKED`.

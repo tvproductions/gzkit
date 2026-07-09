@@ -161,6 +161,34 @@ def _build_adversarial_validation() -> Path:
     return root
 
 
+def _build_red_parity() -> Path:
+    """Violation: a completed heavy-lane BEHAVIOR REQ with no RED witness.
+
+    The completion receipt is stamped past the GHI #642 cutover so the brief is in
+    scope; no `red_receipt_emitted` event is written, which is the finding.
+    """
+    root = _mkroot("red-parity")
+    obpi_id = "OBPI-0.0.1-01-example"
+    _write(
+        root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.1-x" / "obpis" / f"{obpi_id}.md",
+        f"---\nid: {obpi_id}\nlane: heavy\nstatus: Completed\n---\n\n"
+        "## Acceptance Criteria\n\n"
+        "- [x] REQ-0.0.1-01-01 [behavior]: the system does X when Y\n",
+    )
+    _write_jsonl(
+        root / ".gzkit" / "ledger.jsonl",
+        [
+            {
+                "event": "obpi_receipt_emitted",
+                "id": obpi_id,
+                "ts": "2030-01-01T00:00:00+00:00",
+                "receipt_event": "completed",
+            }
+        ],
+    )
+    return root
+
+
 def _build_rendition_freshness() -> Path:
     root = _mkroot("rendition-freshness")
     _write(
@@ -538,6 +566,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),
+    ("red-parity", _build_red_parity, _ep._ep_red_parity),
     ("rendition-freshness", _build_rendition_freshness, _ep._ep_rendition_freshness),
     (
         "rendition-floor-coherence",

@@ -97,6 +97,12 @@ def _ep_adversarial_validation(root: Path) -> list[ValidationError]:
     return audit_adversarial_validation(root)
 
 
+def _ep_red_parity(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.red_parity import audit_red_parity  # noqa: PLC0415
+
+    return audit_red_parity(root)
+
+
 def _ep_rendition_freshness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.rendition_freshness import (  # noqa: PLC0415
         validate_rendition_freshness,

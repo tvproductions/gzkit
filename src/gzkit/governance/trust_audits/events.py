@@ -19,6 +19,11 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "red_receipt_emitted": (
+        "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "
+        "that the REQ's covering test fails without its implementation; read by "
+        "`gz validate --red-parity`. Attaches to a REQ, not to an artifact graph node."
+    ),
     "brief_reconciled": (
         "Brief reconciliation summary record (ADR-0.0.37, OBPI-06). Consumed by "
         "`gz brief reconcile` operators and reconciliation audits; does not add or "

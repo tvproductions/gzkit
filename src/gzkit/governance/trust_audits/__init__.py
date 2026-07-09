@@ -114,6 +114,7 @@ from gzkit.governance.trust_audits.pointer_integrity import (
 from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
+from gzkit.governance.trust_audits.red_parity import audit_red_parity
 from gzkit.governance.trust_audits.release import (
     audit_advisory_scorecard,
     audit_version_release,
@@ -191,6 +192,7 @@ __all__ = [
     "audit_pydantic_models",
     "audit_receipt_shape",
     "audit_reconcile_freshness",
+    "audit_red_parity",
     "audit_router_tables",
     "audit_sensitivity_binding",
     "audit_session_green_gate",

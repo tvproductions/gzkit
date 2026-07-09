@@ -1540,6 +1540,38 @@
         }
       }
     },
+    "red_receipt_emitted": {
+      "required": [
+        "req_id",
+        "receipt_id",
+        "failure_class",
+        "base_commit"
+      ],
+      "properties": {
+        "req_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "receipt_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "failure_class": {
+          "type": "string",
+          "min_length": 1
+        },
+        "base_commit": {
+          "type": "string",
+          "min_length": 7
+        },
+        "obpi_id": {
+          "type": "string"
+        },
+        "test_names": {
+          "type": "array"
+        }
+      }
+    },
     "airlock_in": {
       "required": []
     },

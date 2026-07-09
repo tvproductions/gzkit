@@ -15,6 +15,7 @@ from jsonschema.exceptions import ValidationError
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.arb.paths import receipts_root
+from gzkit.arb.red_reporter import SCHEMA_ID as RED_SCHEMA_ID
 from gzkit.arb.ruff_reporter import SCHEMA_ID as LINT_SCHEMA_ID
 from gzkit.arb.step_reporter import SCHEMA_ID as STEP_SCHEMA_ID
 from gzkit.commands.common import get_project_root
@@ -77,6 +78,8 @@ def _schema_path_for_id(schema_id: str) -> Path | None:
         return root / "data" / "schemas" / "arb_lint_receipt.schema.json"
     if schema_id == STEP_SCHEMA_ID:
         return root / "data" / "schemas" / "arb_step_receipt.schema.json"
+    if schema_id == RED_SCHEMA_ID:
+        return root / "data" / "schemas" / "arb_red_receipt.schema.json"
     return None
 
 
