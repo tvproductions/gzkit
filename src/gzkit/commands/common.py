@@ -15,7 +15,17 @@ from gzkit.ledger import (
     Ledger,
     resolve_adr_lane,
 )
+from gzkit.pipeline_markers import find_obpi_brief
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
+
+
+class ObpiAmbiguityError(GzkitError):
+    """A short-form OBPI id expands to more than one real OBPI.
+
+    Raised instead of the generic "OBPI not found" so a caller cannot mistake a
+    resolvable ambiguity for an absent artifact and silently fall back to the
+    un-expanded input (GHI #666).
+    """
 
 
 class GzCliError(GzkitError):
@@ -326,13 +336,42 @@ def resolve_target_adr(
     return resolve_adr_ledger_id(adr_file, resolved_adr_id, ledger)
 
 
-def _prefix_match_obpi(graph: dict[str, dict], canonical_obpi: str) -> str | None:
+def _prefix_match_candidates(
+    graph: dict[str, dict],
+    canonical_obpi: str,
+    docs_root: Path | None = None,
+) -> list[str]:
+    """Return every OBPI in the graph whose ID starts with *canonical_obpi*.
+
+    The ledger is append-only, so an OBPI whose parent ADR was later demoted to
+    pool or renamed keeps its ``obpi_created`` event forever. Because an OBPI id
+    embeds its parent's semver, a reused semver slot leaves the graph holding a
+    phantom sibling under the same short-form prefix. Phantoms have no brief on
+    disk, so ``docs_root`` presence disambiguates them (GHI #666).
+
+    Filtering is applied only when it leaves at least one survivor: two REAL
+    briefs stay ambiguous, and a caller working outside a docs tree keeps the
+    pre-filter behaviour.
+    """
+    prefix = canonical_obpi + "-"
+    hits = [k for k, v in graph.items() if v.get("type") == "obpi" and k.startswith(prefix)]
+    if len(hits) > 1 and docs_root is not None:
+        on_disk = [hit for hit in hits if find_obpi_brief(docs_root, hit) is not None]
+        if on_disk:
+            return on_disk
+    return hits
+
+
+def _prefix_match_obpi(
+    graph: dict[str, dict],
+    canonical_obpi: str,
+    docs_root: Path | None = None,
+) -> str | None:
     """Find a unique OBPI in the graph whose ID starts with *canonical_obpi*.
 
     Returns the full ID if exactly one match, ``None`` otherwise.
     """
-    prefix = canonical_obpi + "-"
-    hits = [k for k, v in graph.items() if v.get("type") == "obpi" and k.startswith(prefix)]
+    hits = _prefix_match_candidates(graph, canonical_obpi, docs_root)
     return hits[0] if len(hits) == 1 else None
 
 
@@ -352,12 +391,20 @@ def resolve_obpi(
     canonical_obpi = ledger.canonicalize_id(obpi_input)
     graph = ledger.get_artifact_graph()
     info = graph.get(canonical_obpi)
+    docs_root = project_root / "docs"
 
     # Prefix match: OBPI-0.0.12-02 → OBPI-0.0.12-02-implementer-agent-persona
     if info is None:
-        expanded = _prefix_match_obpi(graph, canonical_obpi)
-        if expanded:
-            canonical_obpi = expanded
+        candidates = _prefix_match_candidates(graph, canonical_obpi, docs_root)
+        if len(candidates) > 1:
+            named = ", ".join(sorted(candidates))
+            msg = (
+                f"Ambiguous OBPI id {canonical_obpi}: {len(candidates)} candidates "
+                f"have a brief on disk ({named}). Re-run with the full slug."
+            )
+            raise ObpiAmbiguityError(msg)  # noqa: TRY003
+        if candidates:
+            canonical_obpi = candidates[0]
             info = graph.get(canonical_obpi)
 
     if info and info.get("type") != "obpi":

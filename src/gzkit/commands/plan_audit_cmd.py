@@ -41,8 +41,14 @@ def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
     graph (missing brief, uninitialized ledger, etc.) so the surrounding
     gap-check still surfaces a clear "brief not found" message instead of
     an opaque resolver error.
+
+    GHI #666 — an ``ObpiAmbiguityError`` is NOT swallowed. Returning the
+    un-expanded id on ambiguity writes a short-form receipt that can never match
+    the full-slug pipeline marker, and the failure resurfaces three layers away
+    as ``pipeline-gate``'s misleading "Pipeline not invoked". Fail loud here,
+    where the cause is known.
     """
-    from gzkit.commands.common import GzCliError, resolve_obpi
+    from gzkit.commands.common import GzCliError, ObpiAmbiguityError, resolve_obpi
     from gzkit.config import load_config
     from gzkit.ledger import Ledger
 
@@ -50,6 +56,8 @@ def _canonicalize_obpi_id(project_root: Path, obpi_id: str) -> str:
         config = load_config()
         ledger = Ledger(project_root / config.paths.ledger)
         canonical, _ = resolve_obpi(project_root, config, ledger, obpi_id)
+    except ObpiAmbiguityError:
+        raise
     except (GzCliError, OSError, ValueError):
         return obpi_id
     return canonical
@@ -138,7 +146,7 @@ def _emit_result(
 
     receipt_path = pipeline_receipt_path(plans_dir, obpi_id)
     plans_dir.mkdir(parents=True, exist_ok=True)
-    receipt_path.write_text(json.dumps(receipt, indent=2), encoding="utf-8")
+    receipt_path.write_text(json.dumps(receipt, indent=2) + "\n", encoding="utf-8")
 
     if as_json:
         print(json.dumps(receipt, indent=2))

@@ -11,7 +11,7 @@ import unittest.mock
 from pathlib import Path
 from unittest.mock import patch
 
-from gzkit.commands.common import _prefix_match_obpi, resolve_obpi
+from gzkit.commands.common import ObpiAmbiguityError, _prefix_match_obpi, resolve_obpi
 from gzkit.config import GzkitConfig
 
 
@@ -102,6 +102,138 @@ class TestResolveObpiSymmetricExpansion(unittest.TestCase):
 
             self.assertEqual(resolved_id, full_slug)
             self.assertEqual(resolved_path, brief_path)
+
+
+class TestPhantomCandidateDisambiguation(unittest.TestCase):
+    """GHI #666: an append-only ledger keeps ``obpi_created`` events for OBPIs
+    whose parent ADR was later demoted to pool or renamed. The freed semver slot
+    is reused, so a short-form id acquires two expansion candidates — one real,
+    one phantom. Prefix expansion then bails, the caller's bare ``except``
+    swallows the error, and the raw short id is written into the plan-audit
+    receipt, dead-blocking every ``src/`` write at the pipeline gate.
+
+    A phantom has no brief on disk. Disk presence is therefore the disambiguator.
+    """
+
+    def test_phantom_candidate_dropped_when_no_brief_on_disk(self) -> None:
+        real = "OBPI-0.33.0-01-airlock-data-model-and-events"
+        phantom = "OBPI-0.33.0-01-refs-index"
+        graph = {real: {"type": "obpi"}, phantom: {"type": "obpi"}}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            docs_root = Path(tmp) / "docs"
+            brief_dir = docs_root / "design" / "adr" / "pre-release"
+            brief_dir.mkdir(parents=True)
+            (brief_dir / f"{real}.md").write_text("# brief\n", encoding="utf-8")
+            # The phantom deliberately has NO brief on disk.
+
+            result = _prefix_match_obpi(graph, "OBPI-0.33.0-01", docs_root=docs_root)
+
+        self.assertEqual(result, real)
+
+    def test_genuine_ambiguity_survives_disk_check(self) -> None:
+        """Two REAL briefs remain ambiguous — disk presence must not fabricate a winner."""
+        alpha = "OBPI-0.1.0-01-alpha"
+        beta = "OBPI-0.1.0-01-beta"
+        graph = {alpha: {"type": "obpi"}, beta: {"type": "obpi"}}
+
+        with tempfile.TemporaryDirectory() as tmp:
+            docs_root = Path(tmp) / "docs"
+            docs_root.mkdir(parents=True)
+            (docs_root / f"{alpha}.md").write_text("# a\n", encoding="utf-8")
+            (docs_root / f"{beta}.md").write_text("# b\n", encoding="utf-8")
+
+            result = _prefix_match_obpi(graph, "OBPI-0.1.0-01", docs_root=docs_root)
+
+        self.assertIsNone(result)
+
+    def test_no_brief_on_disk_for_any_candidate_stays_ambiguous(self) -> None:
+        """Filtering must never drop every candidate and invent a match."""
+        graph = {
+            "OBPI-0.1.0-01-alpha": {"type": "obpi"},
+            "OBPI-0.1.0-01-beta": {"type": "obpi"},
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            docs_root = Path(tmp) / "docs"
+            docs_root.mkdir(parents=True)
+            result = _prefix_match_obpi(graph, "OBPI-0.1.0-01", docs_root=docs_root)
+        self.assertIsNone(result)
+
+
+class TestResolveObpiAmbiguityIsLoud(unittest.TestCase):
+    """GHI #666: genuine ambiguity must raise a diagnostic naming the candidates,
+    never be reported as the generic 'OBPI not found'. A caller that swallows the
+    error and returns the short id turns a resolvable ambiguity into a silent
+    wrong answer three layers away (.claude/rules/guardrail-feedback-prose.md).
+    """
+
+    def test_ambiguous_short_form_raises_naming_candidates(self) -> None:
+        alpha = "OBPI-0.1.0-01-alpha"
+        beta = "OBPI-0.1.0-01-beta"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            docs.mkdir(parents=True)
+            (docs / f"{alpha}.md").write_text("# a\n", encoding="utf-8")
+            (docs / f"{beta}.md").write_text("# b\n", encoding="utf-8")
+
+            ledger = unittest.mock.MagicMock()
+            ledger.canonicalize_id.side_effect = lambda x: x
+            ledger.get_artifact_graph.return_value = {
+                alpha: {"type": "obpi"},
+                beta: {"type": "obpi"},
+            }
+            config = unittest.mock.MagicMock(spec=GzkitConfig)
+            config.paths = unittest.mock.MagicMock()
+            config.paths.design_root = "design"
+
+            with (
+                patch("gzkit.commands.common.scan_existing_artifacts", return_value={"obpis": []}),
+                self.assertRaises(ObpiAmbiguityError) as ctx,
+            ):
+                resolve_obpi(root, config, ledger, "OBPI-0.1.0-01")
+
+        message = str(ctx.exception)
+        self.assertIn("OBPI-0.1.0-01", message)
+        self.assertIn(alpha, message)
+        self.assertIn(beta, message)
+
+    def test_phantom_sibling_resolves_instead_of_raising(self) -> None:
+        """The real-world GHI #666 shape: one real brief, one phantom ledger id."""
+        real = "OBPI-0.33.0-01-airlock-data-model-and-events"
+        phantom = "OBPI-0.33.0-01-refs-index"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            docs = root / "docs"
+            docs.mkdir(parents=True)
+            brief = docs / f"{real}.md"
+            brief.write_text(f"---\nid: {real}\n---\n", encoding="utf-8")
+
+            ledger = unittest.mock.MagicMock()
+            ledger.canonicalize_id.side_effect = lambda x: x
+            ledger.get_artifact_graph.return_value = {
+                real: {"type": "obpi"},
+                phantom: {"type": "obpi"},
+            }
+            config = unittest.mock.MagicMock(spec=GzkitConfig)
+            config.paths = unittest.mock.MagicMock()
+            config.paths.design_root = "design"
+
+            with (
+                patch(
+                    "gzkit.commands.common.scan_existing_artifacts",
+                    return_value={"obpis": [brief]},
+                ),
+                patch(
+                    "gzkit.commands.common.parse_artifact_metadata",
+                    return_value={"id": real},
+                ),
+            ):
+                resolved_id, _ = resolve_obpi(root, config, ledger, "OBPI-0.33.0-01")
+
+        self.assertEqual(resolved_id, real)
 
 
 if __name__ == "__main__":
