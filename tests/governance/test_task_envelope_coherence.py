@@ -833,6 +833,84 @@ class TestSignatureB(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
     @covers("REQ-0.0.64-04-02")
+    def test_completed_full_slug_sees_short_form_seq02(self) -> None:
+        """Repository-wide validation aggregates historical task ids by OBPI lineage."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            full_slug = "OBPI-0.0.64-04-task-envelope-and-planning-decomposition"
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": full_slug,
+                            "timestamp": "2026-07-10T10:12:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-02",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "timestamp": "2026-07-10T10:13:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "obpi_receipt_emitted",
+                            "receipt_event": "completed",
+                            "id": full_slug,
+                            "timestamp": "2026-07-10T10:20:00Z",
+                        }
+                    ),
+                ],
+            )
+            _write_brief(root, {**_BASE_FM, "id": full_slug, "status": "Completed"})
+
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (b)" in e.message
+            ]
+
+            self.assertEqual(errors, [])
+
+    @covers("REQ-0.0.64-04-02")
+    def test_completed_full_slug_does_not_activate_short_only_legacy_channel(self) -> None:
+        """A historical short-only channel remains outside prospective enforcement."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            full_slug = "OBPI-0.0.64-04-task-envelope-and-planning-decomposition"
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": "OBPI-0.0.64-04",
+                            "timestamp": "2026-06-01T10:00:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "obpi_receipt_emitted",
+                            "receipt_event": "completed",
+                            "id": full_slug,
+                            "timestamp": "2026-06-01T10:10:00Z",
+                        }
+                    ),
+                ],
+            )
+            _write_brief(root, {**_BASE_FM, "id": full_slug, "status": "Completed"})
+
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (b)" in e.message
+            ]
+
+            self.assertEqual(errors, [])
+
+    @covers("REQ-0.0.64-04-02")
     def test_historical_completed_obpi_before_enforcement_epoch_is_clean(self) -> None:
         """Closed pre-recovery default-bucket OBPIs do not block the prospective gate."""
         with tempfile.TemporaryDirectory() as td:

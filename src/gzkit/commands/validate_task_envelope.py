@@ -378,7 +378,7 @@ def _scan_ledger_for_obpi_completions_and_tasks(
             obpi_id = ev.get("obpi_id") or ""
             task_id = ev.get("task_id") or ""
             if obpi_id and task_id:
-                tasks_by_obpi.setdefault(obpi_id, set()).add(task_id)
+                tasks_by_obpi.setdefault(str(obpi_id), set()).add(task_id)
     return completed_obpis, tasks_by_obpi
 
 
@@ -430,9 +430,13 @@ def _sig_b_subdivision_skipped(project_root: Path) -> list[ValidationError]:
     for obpi_id in sorted(completed_obpis):
         if not obpi_id:
             continue
-        tasks = tasks_by_obpi.get(obpi_id, set())
+        tasks = set(tasks_by_obpi.get(obpi_id, set()))
         if not tasks:
             continue
+        lineage = _obpi_lineage_id(obpi_id)
+        for event_obpi_id, event_tasks in tasks_by_obpi.items():
+            if event_obpi_id != obpi_id and _obpi_lineage_id(event_obpi_id) == lineage:
+                tasks.update(event_tasks)
         seqs_by_req = _group_tasks_by_req(tasks)
         err = _sig_b_error_for_obpi(
             obpi_id, seqs_by_req, brief_fms.get(obpi_id, {}).get("req_atomic") or []
