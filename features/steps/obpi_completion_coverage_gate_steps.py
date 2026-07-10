@@ -641,3 +641,25 @@ def step_agents_md_section_mentions(context, section: str, text: str) -> None:  
         f"Expected {text!r} in AGENTS.md section {section!r}.\n"
         f"Section content:\n{section_body[:500]}"
     )
+
+
+@then('the ledger does not contain an "{event_name}" event')
+def step_ledger_event_absent(context, event_name: str) -> None:  # type: ignore[no-untyped-def]
+    """A refused waiver must leave no durable trace (GHI #537).
+
+    The inverse of `step_ledger_event`. Asserting only the exit code would pass even
+    if the command exited 3 *after* appending the waiver event.
+    """
+    ledger_path = Path(".gzkit") / "ledger.jsonl"
+    if not ledger_path.is_file():
+        return
+    events = [
+        json.loads(line)
+        for line in ledger_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    names = [e.get("event") for e in events]
+    assert event_name not in names, (
+        f"Ledger unexpectedly contains {event_name!r} — a refused waiver must leave no trace.\n"
+        f"Events: {names}"
+    )

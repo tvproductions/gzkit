@@ -223,7 +223,7 @@ Right-size implementation units per [OBPI Decomposition Matrix](docs/governance/
 
 **Agent MUST NOT mark an OBPI brief as `Completed` without explicit human attestation. Brief-level human attestation is universal (ADR-0.0.36, GHI #342). Enforced by `_requires_human_obpi_attestation`.**
 
-**REQ-coverage gate (ADR-0.0.25).** Every REQ must have a covering passing test before `gz obpi complete`. Uncovered REQs require `--accept-uncovered <REQ-ID> --accept-uncovered-reason <REASON>`. Failing-cover REQs cannot be waived.
+**REQ-coverage gate (ADR-0.0.25, ADR-0.0.59).** Every **BEHAVIOR** REQ must have a covering passing test before `gz obpi complete`; it cannot be waived — `--accept-uncovered` is refused on every lane, because BEHAVIOR's only proof channel is a `@covers` test (GHI #537). SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel and never reach the waiver path. Failing-cover REQs cannot be waived.
 
 **Pipeline mandate (contract-bearing OBPI only):** For OBPI work that adds or changes a CLI/schema/runtime contract, run `uv run gz obpi pipeline <OBPI-ID>` after plan approval — the runtime owns stage sequencing (verify -> ceremony -> guarded git sync -> completion) with `uv run gz git-sync --apply --lint --test` before final accounting; freeform implementation of such an OBPI without the runtime is a process defect. **Routine, recovery, and defect fixes default to the direct-fix path (§ Defect-fix routing), not the pipeline.**
 

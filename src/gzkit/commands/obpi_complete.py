@@ -484,11 +484,48 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id
     return False
 
 
+def _reject_behavior_waivers(
+    *,
+    waivable: set[str],
+    req_kinds: dict[str, str],
+    obpi_id: str,
+    as_json: bool,
+) -> None:
+    """Refuse to waive a BEHAVIOR REQ at the completion layer (GHI #537).
+
+    ADR-0.0.59 makes the proof-channel mapping closed: BEHAVIOR's *only* channel is a
+    ``@covers``-decorated test. ``gz validate --req-kind-discipline`` enforced that at
+    brief-authoring time; nothing enforced it here, so a brief could tag a REQ
+    ``[behavior]`` and then close it through the SUPPORT-shaped ``--accept-uncovered``
+    channel with a prose rationale. ADR-0.0.59's own OBPI-05 did exactly that.
+
+    An untagged REQ defaults to BEHAVIOR — otherwise omitting the tag would become the
+    bypass that unlocks the waiver.
+    """
+    behavior = sorted(req for req in waivable if req_kinds.get(req, "BEHAVIOR") == "BEHAVIOR")
+    if not behavior:
+        return
+    listed = ", ".join(behavior)
+    _fail(
+        f"Completion blocked: {listed} tagged [BEHAVIOR] and cannot be accepted-uncovered. "
+        "BEHAVIOR's only proof channel is a `@covers`-decorated test (ADR-0.0.59 Decision; "
+        "`.gzkit/rules/tests.md` REQ Scope Discipline) — a prose rationale cannot substitute "
+        "for a test that never ran. SUPPORT and STRUCTURAL-FENCE REQs never reach this path: "
+        "they are exempt from the coverage gate by proof channel, so `--accept-uncovered` has "
+        "no REQ kind it may waive. Recovery: author the covering test and confirm with "
+        "`uv run gz covers <OBPI-ID>`, or retag the REQ if its claim is not a code behavior.",
+        exit_code=3,
+        as_json=as_json,
+        obpi_id=obpi_id,
+    )
+
+
 def _apply_uncovered_waivers(
     *,
     gaps: list[str],
     accept_uncovered: list[str],
     accept_uncovered_reason: list[str],
+    req_kinds: dict[str, str],
     fail_closed: bool,
     obpi_id: str,
     parent_adr: str,
@@ -505,6 +542,11 @@ def _apply_uncovered_waivers(
     waivable = accepted_set & set(gaps)
     if not waivable:
         return [g for g in gaps if g not in accepted_set]
+    # GHI #537: the kind gate precedes the lane gate. Waiving a BEHAVIOR REQ is
+    # forbidden on every lane — it is a proof-channel rule, not a lane policy.
+    _reject_behavior_waivers(
+        waivable=waivable, req_kinds=req_kinds, obpi_id=obpi_id, as_json=as_json
+    )
     if fail_closed:
         try:
             acceptance_type = _enforce_uncovered_acceptance_confirmation(
@@ -612,6 +654,7 @@ def _enforce_req_coverage_gate(
             gaps=gaps,
             accept_uncovered=accept_uncovered,
             accept_uncovered_reason=accept_uncovered_reason or [],
+            req_kinds=req_kinds,
             fail_closed=fail_closed,
             obpi_id=obpi_id or parent_adr,
             parent_adr=parent_adr,

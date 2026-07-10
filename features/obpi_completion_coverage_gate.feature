@@ -70,17 +70,21 @@ Feature: OBPI completion REQ-coverage gate
     Then the exit code is 0
 
   @REQ-0.0.25-02-01
-  Scenario: Override path proceeds and records ledger event via attestor-present
+  Scenario: Override of a BEHAVIOR REQ is refused even with attestor-present
+    # SUPERSEDED by ADR-0.0.59 + GHI #537. The REQ is untagged, so it defaults to
+    # BEHAVIOR, whose only proof channel is a @covers test. Attestor-present is a
+    # confirmation gate, not a kind gate: it asks the operator to mean it, never
+    # whether the REQ is waivable at all.
     Given the workspace is initialized in heavy mode
     And a heavy-feature OBPI "OBPI-FIXTURE-02-01" with REQ "REQ-0.0.98-02-01" exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000007" exists
     And a pipeline marker for "OBPI-FIXTURE-02-01" is active
     When I complete coverage-gate OBPI "OBPI-FIXTURE-02-01" accepting "REQ-0.0.98-02-01" reason "agent-relayed TTY-path proxy" citing "arb-step-unittest-00000000000000000000000000000007" using attestor-present
-    Then the exit code is 0
-    And the ledger contains an "obpi_completion_uncovered_accept" event
+    Then the exit code is 3
+    And the ledger does not contain an "obpi_completion_uncovered_accept" event
 
   @REQ-0.0.25-02-02
-  Scenario: Headless override without pipeline marker proceeds via operator-verbatim path
+  Scenario: Headless override of a BEHAVIOR REQ is refused on kind, never on transport
     # GHI #587 / canon-owner directive 2026-05-14: a headless --accept-uncovered
     # with no pipeline marker is authorized by the operator's CLI-passed
     # --accept-uncovered-reason (operator-verbatim), not refused — no TTY/PTY/
@@ -88,12 +92,18 @@ Feature: OBPI completion REQ-coverage gate
     # v0.3.0). The prior "refused" semantics are superseded; the @covers unit test
     # TestObpiCompleteHeadlessHeavyOverrideAcceptedOperatorVerbatim asserts the same
     # flip. Security-sensitivity scopes still refuse (GHI #412/#434 carve-out).
+    #
+    # GHI #537 does NOT revert that directive. The refusal below fires on the REQ's
+    # KIND, before the TTY/attestor gate is ever consulted -- no transport mechanism
+    # gates it. A headless operator-verbatim override of a SUPPORT REQ would still be
+    # honored; there is simply no SUPPORT REQ that can reach this path, because the
+    # coverage gate filters non-BEHAVIOR kinds out before collecting gaps.
     Given the workspace is initialized in heavy mode
     And a heavy-foundation OBPI "OBPI-FIXTURE-02-02" with REQ "REQ-0.0.98-02-02" exists
     And a valid arb step receipt "arb-step-unittest-00000000000000000000000000000008" exists
     When I complete coverage-gate OBPI "OBPI-FIXTURE-02-02" accepting "REQ-0.0.98-02-02" reason "no-marker" citing "arb-step-unittest-00000000000000000000000000000008" without attestor-present
-    Then the exit code is 0
-    And the ledger contains an "obpi_completion_uncovered_accept" event
+    Then the exit code is 3
+    And the ledger does not contain an "obpi_completion_uncovered_accept" event
 
   @REQ-0.0.25-02-03
   Scenario: Partial accept-uncovered still fails for unwaived REQ

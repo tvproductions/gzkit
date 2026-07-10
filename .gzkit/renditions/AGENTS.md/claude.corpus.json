@@ -2,7 +2,7 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
   "corpus_entry_count": 51,
-  "committed_ts": "2026-06-30T12:56:25.973777+00:00",
+  "committed_ts": "2026-07-10T00:36:08.847019+00:00",
   "attestor": "g0",
-  "attestation_text": "consent to render — recompose AGENTS.md/claude (heavy) to current corpus a862c327: 5 new invariant-tier guardrails (insights-report-2026-06-30) seated verbatim, compose-validated 31,569 B under raised 31,800 budget and ~1,199 B below the 32,768 Codex cap; additive-only, advisor-QC 0.98."
+  "attestation_text": "attest completed — REQ-coverage gate amended for ADR-0.0.59 proof channels (GHI #537): BEHAVIOR cannot be accepted-uncovered on any lane; SUPPORT and STRUCTURAL-FENCE never reach the waiver path. Invariant floor 9612B preserved verbatim, compressible tier +351B, total 31741B. Verified: gz check exit 0, 6915 unittests OK, behave 15/15, mkdocs --strict 0, cli audit 122/122, invariant-coherence + rendition-freshness + rendition-floor-coherence green."
 }

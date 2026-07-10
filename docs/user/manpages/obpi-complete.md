@@ -21,8 +21,8 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |
 | `--attestor-present` | Retained for the `--accept-uncovered` REQ-coverage waiver path only. The prior TTY `ATTEST` human-attestation authenticity gate has been removed: Gate-5 attestation is the operator's verbatim text passed via `--attestation-text` (recorded as `attestation_type: operator-verbatim-conversational`) for every lane / kind / sensitivity. |
-| `--accept-uncovered REQ_ID` | Explicitly waive an uncovered REQ (repeatable; requires `--accept-uncovered-reason`) |
-| `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing) |
+| `--accept-uncovered REQ_ID` | **Cannot waive a BEHAVIOR REQ** (GHI #537). Retained so an existing invocation receives a named refusal and its recovery path, rather than an argparse error. See § The waiver refuses every REQ it can reach. |
+| `--accept-uncovered-reason REASON` | Rationale for the corresponding `--accept-uncovered` entry (repeatable, 1:1 pairing). A rationale cannot substitute for a test that never ran. |
 | `--accept-security-floor REASON` | Override the security-scan canonical-slot fail-closed gate when the auto-detect classified the brief security-sensitive on surface-overlap but the change is structurally defensive/additive (GHI #462). The override is recorded in console output for audit trail. |
 | `--accept-stale-reconciliation` | Override a missing, stale, or drifted reconciliation receipt (OBPI-0.0.37-08). Requires `--reason TEXT` (min 10 chars). Emits `brief_reconcile_drift_overridden` to the ledger before the completion receipt. |
 | `--reason TEXT` | Rationale for `--accept-stale-reconciliation` (min 10 chars). |
@@ -72,6 +72,38 @@ uv run gz obpi complete OBPI-0.0.99-01-example \
 `--adversary-verdict refuted` without `--adversary-resolution` is blocked. The lite
 lane is exempt, matching the lane that already carries fail-closed Gate 3 and Gate 4.
 
+## The waiver refuses every REQ it can reach (GHI #537)
+
+ADR-0.0.59 makes the proof-channel mapping closed. A **BEHAVIOR** REQ's only proof is a
+`@covers`-decorated test; a prose rationale cannot stand in for a test that never ran.
+`gz obpi complete` now refuses to accept-uncovered any BEHAVIOR REQ, on **every lane** —
+it is a proof-channel rule, not a lane policy. An untagged REQ defaults to BEHAVIOR, so
+omitting the `[kind]` tag is not a bypass.
+
+Because `_enforce_req_coverage_gate` filters SUPPORT and STRUCTURAL-FENCE REQs out
+*before* collecting gaps, those kinds never reach the waiver path. The practical
+consequence is that `--accept-uncovered` has no REQ kind it may waive:
+
+```bash
+uv run gz obpi complete OBPI-1.2.3-01 \
+  --accept-uncovered REQ-1.2.3-01-01 \
+  --accept-uncovered-reason "documentation-only; no test surface"
+
+# Error: Completion blocked: REQ-1.2.3-01-01 tagged [BEHAVIOR] and cannot be
+# accepted-uncovered. BEHAVIOR's only proof channel is a `@covers`-decorated
+# test ... Recovery: author the covering test and confirm with
+# `uv run gz covers <OBPI-ID>`, or retag the REQ if its claim is not a code behavior.
+# exit 3
+```
+
+The flag stays registered so that an existing invocation receives this named refusal and
+its recovery path, rather than an `unrecognized arguments` error.
+
+**This is not the TTY refusal.** The kind gate fires *before* the `--attestor-present`
+confirmation gate is consulted. No transport mechanism gates it — the canon-owner
+directive that a headless operator-verbatim override may never be refused on transport
+grounds (GHI #587) stands unchanged.
+
 ## Runtime Behavior
 
 1. Validates brief exists and is not already Completed
@@ -102,7 +134,7 @@ reaping rather than surrendered without one.
 | 0 | OBPI completed successfully |
 | 1 | Validation failure (missing brief, already completed, insufficient evidence, or `--accept-uncovered` without `--accept-uncovered-reason`) |
 | 2 | I/O error |
-| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` override refused (no active pipeline marker / headless invocation); or reconciliation-receipt gate: no fresh `brief_reconciled` receipt for the OBPI (use `gz brief reconcile <OBPI-ID>` or `--accept-stale-reconciliation --reason TEXT` to override) |
+| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` named a BEHAVIOR REQ, which cannot be waived on any lane (GHI #537); or reconciliation-receipt gate: no fresh `brief_reconciled` receipt for the OBPI (use `gz brief reconcile <OBPI-ID>` or `--accept-stale-reconciliation --reason TEXT` to override) |
 
 ## Examples
 

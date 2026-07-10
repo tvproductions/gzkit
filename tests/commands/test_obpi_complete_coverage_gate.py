@@ -279,7 +279,7 @@ def _multi_covering_body(req_id: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# REQ-0.0.25-01-01 — heavy/foundation, all REQs covered → completion proceeds
+# REQ-0.0.25-01-01 — heavy/foundation, all REQs covered → refused (BEHAVIOR proof channel)
 # ---------------------------------------------------------------------------
 
 
@@ -647,7 +647,7 @@ class _OverrideGateWireFixture(_CoverageGateWireFixture):
 
 
 class TestObpiCompleteHeavyOverrideSingleReqAccepted(_OverrideGateWireFixture):
-    """REQ-0.0.25-02-01 — heavy-lane single REQ waived with TTY → completion proceeds."""
+    """REQ-0.0.25-02-01 — heavy-lane single REQ waiver → REFUSED (ADR-0.0.59, GHI #537)."""
 
     @covers("REQ-0.0.25-02-01")
     def test_heavy_single_waiver_tty_proceeds(self) -> None:
@@ -671,14 +671,17 @@ class TestObpiCompleteHeavyOverrideSingleReqAccepted(_OverrideGateWireFixture):
             accept_uncovered_reason=["operator review confirmed; waiving for release"],
             tty_present=True,
         )
-        self.assertIsNone(exc)
-        self.assertIsNone(code)
-        # Waiver event recorded in the ledger.
-        ledger.append.assert_called()
+        # SUPERSEDED by ADR-0.0.59 + GHI #537. A BEHAVIOR REQ -- and an untagged one,
+        # which defaults to BEHAVIOR -- can no longer be accepted-uncovered: its only
+        # proof channel is a @covers test, and a prose rationale cannot stand in for a
+        # test that never ran. ADR-0.0.25's waiver semantics survive only for kinds that
+        # can reach the waiver path, and none can: SUPPORT and STRUCTURAL-FENCE REQs are
+        # filtered out before gaps are collected.
+        self.assertIsNotNone(exc)
+        self.assertEqual(code, 3)
         call_args = [c.args[0] for c in ledger.append.call_args_list]
         waiver_events = [e for e in call_args if e.event == "obpi_completion_uncovered_accept"]
-        self.assertEqual(len(waiver_events), 1)
-        self.assertEqual(waiver_events[0].extra["req_id"], "REQ-9.9.9-99-01")
+        self.assertEqual(waiver_events, [], "a refused waiver must leave no ledger trace")
 
 
 # ---------------------------------------------------------------------------
@@ -724,12 +727,17 @@ class TestObpiCompleteHeadlessHeavyOverrideAcceptedOperatorVerbatim(_OverrideGat
             accept_uncovered_reason=["a reason"],
             tty_present=False,
         )
-        self.assertIsNone(exc)
-        self.assertIsNone(code)
+        # SUPERSEDED by ADR-0.0.59 + GHI #537. A BEHAVIOR REQ -- and an untagged one,
+        # which defaults to BEHAVIOR -- can no longer be accepted-uncovered: its only
+        # proof channel is a @covers test, and a prose rationale cannot stand in for a
+        # test that never ran. ADR-0.0.25's waiver semantics survive only for kinds that
+        # can reach the waiver path, and none can: SUPPORT and STRUCTURAL-FENCE REQs are
+        # filtered out before gaps are collected.
+        self.assertIsNotNone(exc)
+        self.assertEqual(code, 3)
         call_args = [c.args[0] for c in ledger.append.call_args_list]
         waiver_events = [e for e in call_args if e.event == "obpi_completion_uncovered_accept"]
-        self.assertEqual(len(waiver_events), 1)
-        self.assertEqual(waiver_events[0].extra["req_id"], "REQ-9.9.9-99-01")
+        self.assertEqual(waiver_events, [], "a refused waiver must leave no ledger trace")
 
 
 # ---------------------------------------------------------------------------
@@ -834,16 +842,21 @@ class TestObpiCompleteLiteOverrideNoTtyRequired(_OverrideGateWireFixture):
             accept_uncovered_reason=["lite-lane waiver, no TTY needed"],
             tty_present=False,  # TTY gate is NOT called on lite-feature lane
         )
-        self.assertIsNone(exc)
-        self.assertIsNone(code)
+        # SUPERSEDED by ADR-0.0.59 + GHI #537. A BEHAVIOR REQ -- and an untagged one,
+        # which defaults to BEHAVIOR -- can no longer be accepted-uncovered: its only
+        # proof channel is a @covers test, and a prose rationale cannot stand in for a
+        # test that never ran. ADR-0.0.25's waiver semantics survive only for kinds that
+        # can reach the waiver path, and none can: SUPPORT and STRUCTURAL-FENCE REQs are
+        # filtered out before gaps are collected.
+        self.assertIsNotNone(exc)
+        self.assertEqual(code, 3)
         call_args = [c.args[0] for c in ledger.append.call_args_list]
         waiver_events = [e for e in call_args if e.event == "obpi_completion_uncovered_accept"]
-        self.assertEqual(len(waiver_events), 1)
-        self.assertEqual(waiver_events[0].extra["acceptance_type"], "lite-auto")
+        self.assertEqual(waiver_events, [], "a refused waiver must leave no ledger trace")
 
 
 # ---------------------------------------------------------------------------
-# Multi-REQ override: both uncovered REQs waived → no exit, two events
+# Multi-REQ override: both uncovered REQs refused → exit 3, no events
 # ---------------------------------------------------------------------------
 
 
@@ -877,14 +890,17 @@ class TestObpiCompleteMultiReqOverrideAllWaived(_OverrideGateWireFixture):
             accept_uncovered_reason=["reason for first", "reason for second"],
             tty_present=True,
         )
-        self.assertIsNone(exc)
-        self.assertIsNone(code)
+        # SUPERSEDED by ADR-0.0.59 + GHI #537. A BEHAVIOR REQ -- and an untagged one,
+        # which defaults to BEHAVIOR -- can no longer be accepted-uncovered: its only
+        # proof channel is a @covers test, and a prose rationale cannot stand in for a
+        # test that never ran. ADR-0.0.25's waiver semantics survive only for kinds that
+        # can reach the waiver path, and none can: SUPPORT and STRUCTURAL-FENCE REQs are
+        # filtered out before gaps are collected.
+        self.assertIsNotNone(exc)
+        self.assertEqual(code, 3)
         call_args = [c.args[0] for c in ledger.append.call_args_list]
         waiver_events = [e for e in call_args if e.event == "obpi_completion_uncovered_accept"]
-        self.assertEqual(len(waiver_events), 2)
-        waived_reqs = {e.extra["req_id"] for e in waiver_events}
-        self.assertIn("REQ-9.9.9-99-01", waived_reqs)
-        self.assertIn("REQ-9.9.9-99-02", waived_reqs)
+        self.assertEqual(waiver_events, [], "a refused waiver must leave no ledger trace")
 
 
 class TestEnforceUncoveredAcceptanceConfirmationOperatorVerbatim(SilencedConsoleTestCase):
