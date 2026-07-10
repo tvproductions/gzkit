@@ -361,9 +361,9 @@ the tagged operator workflow reports 8 scenarios / 45 steps passed.
 - Build-to-1.0 Movement IV tracks the existing oversized-module census; GHI #652
   is the open module-size precedent.
 - GHI #644 tracks the existing test-suite segmentation/consolidation surface.
-- GHI #653 tracks the task-event canonicalization regression found by completion
-  preflight; the correction is included in this implementation and verified by
-  focused task-envelope tests.
+- GHI #653 was closed by `7b556fab` and `b74657dc`; the correction covers
+  canonical task-event emission plus completion-time and repository-wide
+  lineage accounting, verified by focused task-envelope tests.
 
 ## Human Attestation
 
