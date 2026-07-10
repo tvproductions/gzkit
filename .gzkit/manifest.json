@@ -50,6 +50,7 @@
     "canonical_rules": ".gzkit/rules",
     "canonical_schemas": ".gzkit/schemas",
     "claude_skills": ".claude/skills",
+    "codex_config": ".codex/config.toml",
     "codex_skills": ".agents/skills",
     "copilot_skills": ".github/skills",
     "instructions": ".github/instructions",

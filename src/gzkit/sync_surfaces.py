@@ -17,7 +17,12 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from gzkit.content.models.base import BaseContentModel
 
-from gzkit.config import GzkitConfig
+from gzkit.config import (
+    CODEX_CONFIG_DEFAULT_PATH,
+    CODEX_CONFIG_MARKER,
+    GzkitConfig,
+    resolve_codex_config_path,
+)
 from gzkit.content.render import render as render_content_model
 from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
 from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
@@ -147,6 +152,7 @@ def generate_manifest(
             "canonical_rules": config.paths.canonical_rules,
             "canonical_schemas": config.paths.canonical_schemas,
             "claude_skills": config.paths.claude_skills,
+            "codex_config": config.paths.codex_config,
             "codex_skills": config.paths.codex_skills,
             "copilot_skills": config.paths.copilot_skills,
             "instructions": ".github/instructions",
@@ -464,6 +470,51 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
     with settings_path.open("w") as f:
         json.dump(merged, f, indent=2)
         f.write("\n")
+
+
+def render_codex_config() -> str:
+    """Render the project-local Codex execution baseline."""
+    return f"""{CODEX_CONFIG_MARKER}
+sandbox_mode = "workspace-write"
+[features]
+hooks = true
+
+[sandbox_workspace_write]
+network_access = true
+"""
+
+
+def is_managed_codex_config(content: str | bytes) -> bool:
+    """Return whether Codex config content carries gzkit's ownership marker."""
+    if isinstance(content, bytes):
+        marker = CODEX_CONFIG_MARKER.encode()
+        return content.startswith(marker + b"\n") or content.startswith(marker + b"\r\n")
+    return content.startswith(f"{CODEX_CONFIG_MARKER}\n") or content.startswith(
+        f"{CODEX_CONFIG_MARKER}\r\n"
+    )
+
+
+def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
+    """Create the Codex baseline without replacing operator-owned content."""
+    root = project_root.resolve()
+    config_path = resolve_codex_config_path(root, config.paths.codex_config)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    rendered = render_codex_config()
+    default_path = resolve_codex_config_path(root, CODEX_CONFIG_DEFAULT_PATH)
+    if (
+        config_path != default_path
+        and default_path.is_file()
+        and default_path.read_bytes() in (b"", rendered.encode())
+    ):
+        default_path.unlink()
+    if config_path.exists():
+        if not config_path.is_file():
+            raise ValueError(f"Codex config path is not a regular file: {config_path}")
+        existing = config_path.read_bytes()
+        if existing:
+            return config_path.relative_to(root).as_posix()
+    config_path.write_text(rendered, encoding="utf-8")
+    return config_path.relative_to(root).as_posix()
 
 
 def detect_claude_settings_drift(project_root: Path, config: GzkitConfig) -> list[str]:
@@ -838,6 +889,8 @@ def sync_all(
     manifest = generate_manifest(project_root, config)
     write_manifest(project_root, manifest)
     updated.append(".gzkit/manifest.json")
+
+    updated.append(sync_codex_config(project_root, config))
 
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))

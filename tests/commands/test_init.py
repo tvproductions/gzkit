@@ -1,6 +1,7 @@
 import inspect
 import json
 import tempfile
+import tomllib
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -27,6 +28,20 @@ def tearDownModule() -> None:
 
 class TestInitCommand(unittest.TestCase):
     """Tests for gz init command."""
+
+    @covers("REQ-0.44.0-01-01")
+    def test_init_creates_codex_config_baseline(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init", "--no-skeleton"])
+
+            self.assertEqual(result.exit_code, 0, result.output)
+            config_path = Path(".codex/config.toml")
+            self.assertTrue(config_path.is_file(), "gz init must create Codex config")
+            config = tomllib.loads(config_path.read_text(encoding="utf-8"))
+            self.assertEqual(config["sandbox_mode"], "workspace-write")
+            self.assertIs(config["sandbox_workspace_write"]["network_access"], True)
+            self.assertIs(config["features"]["hooks"], True)
 
     def test_init_creates_gzkit_dir(self) -> None:
         """init creates .gzkit directory."""
@@ -83,6 +98,21 @@ class TestInitCommand(unittest.TestCase):
             result = runner.invoke(main, ["init"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Nothing to repair", result.output)
+
+    @covers("REQ-0.44.0-01-02")
+    def test_init_repair_preserves_operator_codex_config(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            first = runner.invoke(main, ["init", "--no-skeleton"])
+            self.assertEqual(first.exit_code, 0, first.output)
+            config_path = Path(".codex/config.toml")
+            operator_config = b'model = "gpt-5.4"\napproval_policy = "on-request"\n'
+            config_path.write_bytes(operator_config)
+
+            repaired = runner.invoke(main, ["init", "--no-skeleton"])
+
+            self.assertEqual(repaired.exit_code, 0, repaired.output)
+            self.assertEqual(config_path.read_bytes(), operator_config)
 
     def test_init_with_force(self) -> None:
         """init --force reinitializes."""

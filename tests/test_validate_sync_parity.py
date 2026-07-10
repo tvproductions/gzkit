@@ -7,6 +7,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
+from gzkit.traceability import covers
 from gzkit.validate_pkg.sync_parity import check_sync_parity, snapshot_surfaces
 from tests.commands.common import CliRunner
 
@@ -155,6 +156,183 @@ class SyncParityRestoresSnapshotTest(_SyncParityBase):
             agents_md.read_text(encoding="utf-8"),
             "check_sync_parity must restore the pre-check file state",
         )
+
+
+class CodexConfigSyncParityTest(_SyncParityBase):
+    """Managed Codex config participates in non-mutating parity validation."""
+
+    _mutable_paths = (".codex/config.toml",)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_missing_managed_config_is_reported_and_remains_missing(self) -> None:
+        config_path = Path(".codex/config.toml")
+        config_path.unlink()
+
+        errors = check_sync_parity(Path.cwd())
+
+        messages = [error.message for error in errors if error.artifact == ".codex/config.toml"]
+        self.assertTrue(
+            any("missing" in message.lower() for message in messages),
+            f"expected missing Codex config parity error, got {messages}",
+        )
+        self.assertFalse(config_path.exists(), "parity validation must restore missing state")
+
+    @covers("REQ-0.44.0-01-04")
+    def test_marked_config_drift_is_reported_and_restored(self) -> None:
+        config_path = Path(".codex/config.toml")
+        drifted = config_path.read_text(encoding="utf-8").replace(
+            'sandbox_mode = "workspace-write"',
+            'sandbox_mode = "read-only"',
+        )
+        config_path.write_text(drifted, encoding="utf-8")
+
+        errors = check_sync_parity(Path.cwd())
+
+        self.assertIn(".codex/config.toml", [error.artifact for error in errors])
+        self.assertEqual(
+            config_path.read_text(encoding="utf-8"),
+            drifted,
+            "parity validation must restore the caller's drifted bytes",
+        )
+
+    @covers("REQ-0.44.0-01-04")
+    def test_custom_managed_config_path_is_reported_and_restored(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig
+        from gzkit.sync_surfaces import render_codex_config, sync_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig(
+                project_name="demo",
+                paths=PathConfig(codex_config="config/codex.toml"),
+            )
+            config.save(root / ".gzkit.json")
+            sync_all(root, config, emit_event=False)
+            config_path = root / "config" / "codex.toml"
+            drifted = render_codex_config().replace(
+                'sandbox_mode = "workspace-write"',
+                'sandbox_mode = "read-only"',
+            )
+            config_path.write_text(drifted, encoding="utf-8")
+
+            errors = check_sync_parity(root, config)
+
+            self.assertIn("config/codex.toml", [error.artifact for error in errors])
+            self.assertEqual(config_path.read_text(encoding="utf-8"), drifted)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_unmarked_operator_config_is_not_managed_drift(self) -> None:
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig(project_name="demo")
+            config.save(root / ".gzkit.json")
+            sync_all(root, config, emit_event=False)
+            config_path = root / ".codex" / "config.toml"
+            operator_bytes = b'model = "gpt-5.4"\n'
+            config_path.write_bytes(operator_bytes)
+
+            errors = check_sync_parity(root, config)
+
+            self.assertNotIn(".codex/config.toml", [error.artifact for error in errors])
+            self.assertEqual(config_path.read_bytes(), operator_bytes)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_custom_path_reports_preserved_default_duplicate(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig
+        from gzkit.sync_surfaces import render_codex_config, sync_all
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            default_path = root / ".codex" / "config.toml"
+            default_path.parent.mkdir(parents=True)
+            customized = (render_codex_config() + '\nmodel = "gpt-5.4"\n').encode()
+            default_path.write_bytes(customized)
+            config = GzkitConfig(
+                project_name="demo",
+                paths=PathConfig(codex_config="config/codex.toml"),
+            )
+            config.save(root / ".gzkit.json")
+            sync_all(root, config, emit_event=False)
+
+            errors = check_sync_parity(root, config)
+
+            self.assertIn(".codex/config.toml", [error.artifact for error in errors])
+            self.assertEqual(default_path.read_bytes(), customized)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_clean_parity_preserves_codex_config_mtime(self) -> None:
+        config_path = Path(".codex/config.toml")
+        fixed_timestamp = 1_000_000_000
+        os.utime(config_path, ns=(fixed_timestamp, fixed_timestamp))
+
+        errors = check_sync_parity(Path.cwd())
+
+        self.assertNotIn(".codex/config.toml", [error.artifact for error in errors])
+        self.assertEqual(config_path.stat().st_mtime_ns, fixed_timestamp)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_parity_restores_mode_and_removes_created_parent_directories(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig
+        from gzkit.sync_surfaces import render_codex_config
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            default_path = root / ".codex" / "config.toml"
+            default_path.parent.mkdir(parents=True)
+            default_path.write_text(render_codex_config(), encoding="utf-8")
+            default_path.chmod(0o600)
+            config = GzkitConfig(
+                project_name="demo",
+                paths=PathConfig(codex_config="generated/codex.toml"),
+            )
+            config.save(root / ".gzkit.json")
+
+            check_sync_parity(root, config)
+
+            self.assertEqual(default_path.stat().st_mode & 0o777, 0o600)
+            self.assertFalse((root / "generated").exists())
+
+    @covers("REQ-0.44.0-01-04")
+    def test_exact_obsolete_default_reports_one_parity_error(self) -> None:
+        from gzkit.config import GzkitConfig, PathConfig
+        from gzkit.sync_surfaces import render_codex_config
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            default_path = root / ".codex" / "config.toml"
+            default_path.parent.mkdir(parents=True)
+            default_path.write_text(render_codex_config(), encoding="utf-8")
+            custom_path = root / "config" / "codex.toml"
+            custom_path.parent.mkdir(parents=True)
+            custom_path.write_text(render_codex_config(), encoding="utf-8")
+            config = GzkitConfig(
+                project_name="demo",
+                paths=PathConfig(codex_config="config/codex.toml"),
+            )
+            config.save(root / ".gzkit.json")
+
+            errors = check_sync_parity(root, config)
+
+            default_errors = [e for e in errors if e.artifact == ".codex/config.toml"]
+            self.assertEqual(len(default_errors), 1, default_errors)
+
+    @covers("REQ-0.44.0-01-04")
+    def test_directory_config_path_returns_validation_error(self) -> None:
+        from gzkit.config import GzkitConfig
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config_path = root / ".codex" / "config.toml"
+            config_path.mkdir(parents=True)
+            config = GzkitConfig(project_name="demo")
+            config.save(root / ".gzkit.json")
+
+            errors = check_sync_parity(root, config)
+
+            self.assertEqual([error.artifact for error in errors], [".codex/config.toml"])
 
 
 class SyncParityDateNormalizationTest(_SyncParityBase):

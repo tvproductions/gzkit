@@ -1,0 +1,36 @@
+{
+  "obpi_id": "OBPI-0.44.0-01-codex-config-generation",
+  "generated_at": "2026-07-10T10:04:49.647252+00:00",
+  "demos": [
+    {
+      "command": "uv run gz validate --surfaces",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Validated: surfaces\n\n✓ All validations passed (1 scopes)."
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-1beb85b918484a55a2c3862db9700fec.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-8dcc11e27b7a4255966613dcc40abd05.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-e0fd25a6f8a14fb0b0344aba50ed6409.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 4,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
+}

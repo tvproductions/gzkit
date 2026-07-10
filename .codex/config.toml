@@ -1,3 +1,4 @@
+# gzkit-managed-codex-config: v1
 sandbox_mode = "workspace-write"
 [features]
 hooks = true

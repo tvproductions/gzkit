@@ -38,6 +38,51 @@ gz init [OPTIONS]
 
 ---
 
+## Codex Project Configuration
+
+Initialization and `gz agent sync control-surfaces` create the configured
+Codex project file, `.codex/config.toml` by default, when it is missing or
+empty. The managed baseline is:
+
+```toml
+# gzkit-managed-codex-config: v1
+sandbox_mode = "workspace-write"
+[features]
+hooks = true
+
+[sandbox_workspace_write]
+network_access = true
+```
+
+The `paths.codex_config` value in `.gzkit.json` changes both the generated
+location and the path published in `.gzkit/manifest.json`. Sync writes only the
+configured target; transition handling for a prior default is described below.
+
+The marker identifies content that began as the gzkit baseline. Sync never
+overwrites a non-empty Codex config: both unmarked operator files and marked
+baselines with added settings are preserved byte-for-byte across init, repair,
+and sync. `gz validate --surfaces` reports marked content whose bytes drift from
+the baseline so ownership changes remain visible. Remove the complete marker
+line after adding persistent model, approval, MCP, or other local settings to
+accept operator ownership and silence that managed-drift diagnostic.
+
+When `paths.codex_config` moves away from the default, sync removes the old
+default only when its bytes still exactly match the generated baseline. A
+customized old default is preserved and reported as a conflicting duplicate by
+surface and sync-parity validation, preventing silent operator-data loss.
+
+To replace a drifted managed baseline, delete the configured file and run:
+
+```bash
+gz agent sync control-surfaces
+gz validate --surfaces
+```
+
+Hook registration is delivered separately; enabling `[features].hooks` here
+does not make a malformed or untrusted project hook authoritative.
+
+---
+
 ## Re-run (Repair Mode)
 
 Running `gz init` on an already-initialized project enters **repair mode**:

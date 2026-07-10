@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-07-08 (count: 103 ADRs).
+Last regenerated: 2026-07-10 (count: 104 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -114,3 +114,4 @@ Last regenerated: 2026-07-08 (count: 103 ADRs).
 | [ADR-0.31.0-obpi-state-machine](../../design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md) | OBPI State Machine and Runtime Invariant Monitor | feature | heavy | Validated | 2026-07-02 | `design/adr/pre-release/ADR-0.31.0-obpi-state-machine/ADR-0.31.0-obpi-state-machine.md` |
 | [ADR-0.32.0-gzkit-ontology](../../design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md) | gzkit ontology (object/link plane) | feature | heavy | Validated | 2026-07-05 | `design/adr/pre-release/ADR-0.32.0-gzkit-ontology/ADR-0.32.0-gzkit-ontology.md` |
 | [ADR-0.33.0-airlock-membrane](../../design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md) | the airlock — entry/exit membrane for agent sorties | feature | heavy | Draft | 2026-07-08 | `design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` |
+| [ADR-0.44.0-vendor-alignment-codex](../../design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md) | OpenAI Codex Vendor Alignment | feature | heavy | Proposed | 2026-07-10 | `design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md` |

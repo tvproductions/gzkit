@@ -10,6 +10,18 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+CODEX_CONFIG_DEFAULT_PATH = ".codex/config.toml"
+CODEX_CONFIG_MARKER = "# gzkit-managed-codex-config: v1"
+
+
+def resolve_codex_config_path(project_root: Path, configured_path: str) -> Path:
+    """Resolve a configured Codex path and reject escapes from the project root."""
+    root = project_root.resolve()
+    resolved = (root / configured_path).resolve()
+    if not resolved.is_relative_to(root):
+        raise ValueError("Codex config path must stay within the project root")
+    return resolved
+
 
 class VendorConfig(BaseModel):
     """Configuration for a single agent vendor surface."""
@@ -91,6 +103,7 @@ class PathConfig(BaseModel):
     claude_settings: str = ".claude/settings.json"
     claude_rules: str = ".claude/rules"
     claude_skills: str = ".claude/skills"
+    codex_config: str = CODEX_CONFIG_DEFAULT_PATH
     codex_skills: str = ".agents/skills"
     copilot_skills: str = ".github/skills"
     copilot_instructions: str = ".github/copilot-instructions.md"

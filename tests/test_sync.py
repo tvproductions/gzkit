@@ -9,7 +9,10 @@ import unittest
 from datetime import date, timedelta
 from pathlib import Path
 
+from jsonschema import Draft202012Validator
+
 from gzkit.config import GzkitConfig
+from gzkit.schemas import load_schema
 from gzkit.sync import (
     collect_canonical_sync_blockers,
     collect_skills_catalog,
@@ -22,6 +25,7 @@ from gzkit.sync import (
     scan_existing_artifacts,
     sync_all,
 )
+from gzkit.traceability import covers
 
 
 def _skill_markdown(
@@ -142,6 +146,42 @@ class TestDetectProjectName(unittest.TestCase):
 class TestGenerateManifest(unittest.TestCase):
     """Tests for manifest generation."""
 
+    @covers("REQ-0.44.0-01-03")
+    def test_manifest_includes_default_codex_config_path(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest = generate_manifest(Path(tmpdir), GzkitConfig())
+
+            self.assertEqual(
+                manifest["control_surfaces"].get("codex_config"),
+                ".codex/config.toml",
+            )
+
+    @covers("REQ-0.44.0-01-03")
+    def test_shared_schema_keeps_v1_codex_config_optional(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest = generate_manifest(Path(tmpdir), GzkitConfig())
+        manifest["schema"] = "gzkit.manifest.v1"
+        for key in ("canonical_rules", "canonical_schemas", "claude_rules", "instructions"):
+            manifest["control_surfaces"].pop(key)
+        for key in ("bdd", "docs"):
+            manifest["verification"].pop(key)
+        manifest["control_surfaces"].pop("codex_config")
+        schema = load_schema("manifest")
+
+        errors = list(Draft202012Validator(schema).iter_errors(manifest))
+
+        self.assertEqual(errors, [], [error.message for error in errors])
+
+    @covers("REQ-0.44.0-01-03")
+    def test_generated_v2_manifest_matches_shared_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            manifest = generate_manifest(Path(tmpdir), GzkitConfig())
+        schema = load_schema("manifest")
+
+        errors = list(Draft202012Validator(schema).iter_errors(manifest))
+
+        self.assertEqual(errors, [], [error.message for error in errors])
+
     def test_generates_valid_manifest(self) -> None:
         """Generates manifest with all required fields."""
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -216,6 +256,7 @@ class TestGenerateManifest(unittest.TestCase):
                 "canonical_rules",
                 "canonical_schemas",
                 "claude_skills",
+                "codex_config",
                 "codex_skills",
                 "copilot_skills",
                 "instructions",

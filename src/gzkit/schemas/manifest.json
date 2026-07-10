@@ -153,9 +153,21 @@
           "type": "string",
           "description": "Directory for skill definitions"
         },
+        "canonical_rules": {
+          "type": "string",
+          "description": "Directory for canonical rule definitions"
+        },
+        "canonical_schemas": {
+          "type": "string",
+          "description": "Directory for canonical governance schemas"
+        },
         "claude_skills": {
           "type": "string",
           "description": "Directory for Claude skill mirror"
+        },
+        "codex_config": {
+          "type": "string",
+          "description": "Path to project-local Codex configuration"
         },
         "codex_skills": {
           "type": "string",
@@ -164,6 +176,14 @@
         "copilot_skills": {
           "type": "string",
           "description": "Directory for Copilot skill mirror"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Directory for GitHub instruction files"
+        },
+        "claude_rules": {
+          "type": "string",
+          "description": "Directory for Claude rule mirrors"
         },
         "personas": {
           "type": "string",
@@ -192,6 +212,14 @@
         "test": {
           "type": "string",
           "description": "Test execution command"
+        },
+        "docs": {
+          "type": "string",
+          "description": "Documentation verification command"
+        },
+        "bdd": {
+          "type": "string",
+          "description": "Behavior verification command"
         }
       },
       "additionalProperties": false

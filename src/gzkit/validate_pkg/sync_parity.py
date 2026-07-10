@@ -11,12 +11,18 @@ Any transient generated content (e.g. the ``- **Updated**: YYYY-MM-DD`` line in
 surface as false drift.
 """
 
+import os
 import re
 from pathlib import Path
+from typing import NamedTuple
 
-from gzkit.config import GzkitConfig
+from gzkit.config import (
+    CODEX_CONFIG_DEFAULT_PATH,
+    GzkitConfig,
+    resolve_codex_config_path,
+)
 from gzkit.core.validation_rules import ValidationError
-from gzkit.sync_surfaces import sync_all
+from gzkit.sync_surfaces import is_managed_codex_config, render_codex_config, sync_all
 
 SURFACE_ROOTS: tuple[str, ...] = (
     ".gzkit/manifest.json",
@@ -44,13 +50,22 @@ _SYNC_DATE_LINE = re.compile(rb"^- \*\*Updated\*\*: \d{4}-\d{2}-\d{2}", re.MULTI
 _PYTHON_RUNTIME_CACHE_SUFFIXES = frozenset({".pyc", ".pyo"})
 
 
+class _FileSnapshot(NamedTuple):
+    content: bytes
+    mode: int
+    atime_ns: int
+    mtime_ns: int
+
+
 def _is_python_runtime_cache(path: Path) -> bool:
     """Return True for ignored Python bytecode under generated surfaces."""
     return "__pycache__" in path.parts or path.suffix in _PYTHON_RUNTIME_CACHE_SUFFIXES
 
 
-def _collect_files(project_root: Path) -> set[Path]:
+def _collect_files(project_root: Path, config: GzkitConfig | None = None) -> set[Path]:
     """Return every tracked generated file under the configured surface roots."""
+    if config is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
     collected: set[Path] = set()
     candidates: list[str] = [*SURFACE_ROOTS, *_NESTED_AGENTS_MD]
     for rel in candidates:
@@ -62,6 +77,15 @@ def _collect_files(project_root: Path) -> set[Path]:
             for path in abs_path.rglob("*"):
                 if path.is_file() and not _is_python_runtime_cache(path):
                     collected.add(path)
+    try:
+        codex_config = resolve_codex_config_path(project_root, config.paths.codex_config)
+    except ValueError:
+        return collected
+    if codex_config.is_file() and is_managed_codex_config(codex_config.read_bytes()):
+        collected.add(codex_config)
+    default_path = resolve_codex_config_path(project_root, CODEX_CONFIG_DEFAULT_PATH)
+    if codex_config != default_path and default_path.is_file():
+        collected.add(default_path)
     return collected
 
 
@@ -70,26 +94,76 @@ def _normalize(content: bytes) -> bytes:
     return _SYNC_DATE_LINE.sub(b"- **Updated**: <DATE>", content)
 
 
-def _snapshot(files: set[Path]) -> dict[Path, bytes]:
+def _snapshot(files: set[Path]) -> dict[Path, _FileSnapshot]:
     """Read current bytes for each file into an in-memory snapshot."""
-    snapshot: dict[Path, bytes] = {}
+    snapshot: dict[Path, _FileSnapshot] = {}
     for path in files:
         try:
-            snapshot[path] = path.read_bytes()
+            stat = path.stat()
+            snapshot[path] = _FileSnapshot(
+                content=path.read_bytes(),
+                mode=stat.st_mode & 0o7777,
+                atime_ns=stat.st_atime_ns,
+                mtime_ns=stat.st_mtime_ns,
+            )
         except OSError:
             continue
     return snapshot
 
 
-def _restore(project_root: Path, snapshot: dict[Path, bytes], created: set[Path]) -> None:
+def _existing_surface_dirs(project_root: Path, config: GzkitConfig) -> set[Path]:
+    """Capture directories under tracked roots so restore removes only new ones."""
+    project_root = project_root.resolve()
+    roots = [*SURFACE_ROOTS, *_NESTED_AGENTS_MD, config.paths.codex_config]
+    existing = {project_root}
+    for rel in roots:
+        path = project_root / rel
+        parent = path if path.is_dir() else path.parent
+        while parent.is_relative_to(project_root) and parent != project_root:
+            if parent.is_dir():
+                existing.add(parent.resolve())
+            parent = parent.parent
+        if path.is_dir():
+            existing.update(p.resolve() for p in path.rglob("*") if p.is_dir())
+    return existing
+
+
+def _restore(
+    project_root: Path,
+    snapshot: dict[Path, _FileSnapshot],
+    created: set[Path],
+    existing_dirs: set[Path],
+) -> None:
     """Write snapshot content back to disk and remove files sync_all created."""
-    for path, content in snapshot.items():
+    project_root = project_root.resolve()
+    for path, entry in snapshot.items():
+        try:
+            current = path.read_bytes() if path.is_file() else None
+        except OSError:
+            current = None
+        if current == entry.content:
+            continue
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(content)
+        path.write_bytes(entry.content)
+        path.chmod(entry.mode)
+        os.utime(path, ns=(entry.atime_ns, entry.mtime_ns))
     for path in created:
         try:
             path.unlink()
         except FileNotFoundError:
+            continue
+    parents = {parent.resolve() for path in created for parent in path.parents}
+    new_dirs = sorted(
+        parents - existing_dirs,
+        key=lambda path: len(path.parts),
+        reverse=True,
+    )
+    for directory in new_dirs:
+        if directory == project_root or not directory.is_relative_to(project_root):
+            continue
+        try:
+            directory.rmdir()
+        except (FileNotFoundError, OSError):
             continue
 
 
@@ -104,8 +178,9 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    pre_files = _collect_files(project_root)
+    pre_files = _collect_files(project_root, config)
     snapshot = _snapshot(pre_files)
+    existing_dirs = _existing_surface_dirs(project_root, config)
 
     created: set[Path] = set()
     planned: list[str] = []
@@ -120,15 +195,15 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
                     planned.append(candidate.as_posix())
             else:
                 planned.append(candidate.as_posix())
-        post_files = _collect_files(project_root)
+        post_files = _collect_files(project_root, config)
         created = post_files - pre_files
     finally:
-        _restore(project_root, snapshot, created)
+        _restore(project_root, snapshot, created, existing_dirs)
 
     return sorted(set(planned))
 
 
-def snapshot_surfaces(project_root: Path) -> dict[Path, bytes]:
+def snapshot_surfaces(project_root: Path, config: GzkitConfig | None = None) -> dict[Path, bytes]:
     """Capture current surface-file bytes without running ``sync_all()``.
 
     Useful when the caller already knows the tree is in a synced state
@@ -136,8 +211,8 @@ def snapshot_surfaces(project_root: Path) -> dict[Path, bytes]:
     to feed that snapshot to ``check_sync_parity(..., expected=...)``
     without paying a second ``sync_all`` pass.
     """
-    files = _collect_files(project_root)
-    return dict(_snapshot(files).items())
+    files = _collect_files(project_root, config)
+    return {path: entry.content for path, entry in _snapshot(files).items()}
 
 
 def compute_expected_surfaces(
@@ -153,13 +228,14 @@ def compute_expected_surfaces(
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    pre_files = _collect_files(project_root)
+    pre_files = _collect_files(project_root, config)
     snapshot = _snapshot(pre_files)
+    existing_dirs = _existing_surface_dirs(project_root, config)
     created: set[Path] = set()
     expected: dict[Path, bytes] = {}
     try:
         sync_all(project_root, config, emit_event=False)
-        post_files = _collect_files(project_root)
+        post_files = _collect_files(project_root, config)
         created = post_files - pre_files
         for path in post_files:
             try:
@@ -167,7 +243,7 @@ def compute_expected_surfaces(
             except OSError:
                 continue
     finally:
-        _restore(project_root, snapshot, created)
+        _restore(project_root, snapshot, created, existing_dirs)
     return expected
 
 
@@ -234,6 +310,48 @@ def _diff_against_expected(
     return errors
 
 
+def _codex_config_parity_errors(project_root: Path, config: GzkitConfig) -> list[ValidationError]:
+    """Report preserved Codex drift that sync intentionally will not overwrite."""
+    errors: list[ValidationError] = []
+    artifact = Path(config.paths.codex_config).as_posix()
+    try:
+        config_path = resolve_codex_config_path(project_root, artifact)
+    except ValueError as exc:
+        return [ValidationError(type="surface", artifact=artifact, message=str(exc))]
+    if config_path.exists() and not config_path.is_file():
+        return [
+            ValidationError(
+                type="surface",
+                artifact=artifact,
+                message="Configured Codex config path is not a regular file.",
+            )
+        ]
+    if config_path.is_file():
+        content = config_path.read_bytes()
+        if is_managed_codex_config(content) and content != render_codex_config().encode():
+            errors.append(
+                ValidationError(
+                    type="surface",
+                    artifact=artifact,
+                    message="Managed Codex config drift is preserved for operator review.",
+                )
+            )
+    default_path = resolve_codex_config_path(project_root, CODEX_CONFIG_DEFAULT_PATH)
+    rendered = render_codex_config().encode()
+    if config_path != default_path and default_path.is_file():
+        default_content = default_path.read_bytes()
+        if default_content in (b"", rendered):
+            return errors
+        errors.append(
+            ValidationError(
+                type="surface",
+                artifact=CODEX_CONFIG_DEFAULT_PATH,
+                message=f"Obsolete default Codex config conflicts with {artifact}.",
+            )
+        )
+    return errors
+
+
 def check_sync_parity(
     project_root: Path,
     config: GzkitConfig | None = None,
@@ -259,26 +377,45 @@ def check_sync_parity(
     # resolved tree while Path.cwd() can hand back the unresolved prefix.
     project_root = project_root.resolve()
 
-    if config is None and expected is None:
+    if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    pre_files = _collect_files(project_root)
+    pre_files = _collect_files(project_root, config)
     snapshot = _snapshot(pre_files)
+    snapshot_bytes = {path: entry.content for path, entry in snapshot.items()}
+    existing_dirs = _existing_surface_dirs(project_root, config)
+    codex_errors = _codex_config_parity_errors(project_root, config)
+
+    try:
+        codex_config = resolve_codex_config_path(project_root, config.paths.codex_config)
+    except ValueError:
+        return codex_errors
+    if codex_config.exists() and not codex_config.is_file():
+        return codex_errors
 
     if expected is not None:
-        return _diff_against_expected(project_root, snapshot, pre_files, expected)
+        if codex_config.is_file() and not is_managed_codex_config(codex_config.read_bytes()):
+            expected = {
+                path: content
+                for path, content in expected.items()
+                if path.resolve() != codex_config
+            }
+        return [
+            *codex_errors,
+            *_diff_against_expected(project_root, snapshot_bytes, pre_files, expected),
+        ]
 
-    errors: list[ValidationError] = []
+    errors = codex_errors
     created: set[Path] = set()
     try:
         sync_all(project_root, config, emit_event=False)
-        post_files = _collect_files(project_root)
+        post_files = _collect_files(project_root, config)
         created = post_files - pre_files
         removed = pre_files - post_files
         shared = pre_files & post_files
 
         for path in sorted(shared):
-            old = _normalize(snapshot.get(path, b""))
+            old = _normalize(snapshot_bytes.get(path, b""))
             try:
                 new = _normalize(path.read_bytes())
             except OSError as exc:
@@ -326,6 +463,6 @@ def check_sync_parity(
                 )
             )
     finally:
-        _restore(project_root, snapshot, created)
+        _restore(project_root, snapshot, created, existing_dirs)
 
     return errors
