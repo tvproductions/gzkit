@@ -43,6 +43,14 @@ _TASK_WORKLOG_TYPES: frozenset[str] = frozenset(
 # Do not rewrite ledger history; enforce prospectively from this epoch.
 _TASK_ENVELOPE_ENFORCEMENT_EPOCH = datetime.fromisoformat("2026-05-30T14:44:00+00:00")
 
+# GHI #653 regressed through the later ``gz task start --req`` producer, which
+# continued emitting short ids after positional start was repaired. Rows emitted
+# before this second producer repair are append-only history. Same-lineage short/
+# full spellings before this dated cutover remain readable; every later raw
+# spelling divergence still fails Signature (d).
+_OBPI_ID_CANONICAL_CUTOVER = datetime.fromisoformat("2026-07-10T10:14:00+00:00")
+_OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
+
 
 # Signature (d) — obpi_id divergence — grandfathers the divergent task_ids that
 # predate its introduction (GHI #653). The ledger is append-only (history is
@@ -62,14 +70,25 @@ _TASK_LIFECYCLE_TYPES: frozenset[str] = frozenset(
 
 def _task_envelope_event_before_epoch(ev: dict[str, object]) -> bool:
     """Return True when a ledger event predates prospective TASK-envelope enforcement."""
+    observed = _ledger_event_timestamp(ev)
+    return observed is not None and observed <= _TASK_ENVELOPE_ENFORCEMENT_EPOCH
+
+
+def _ledger_event_timestamp(ev: dict[str, object]) -> datetime | None:
+    """Parse one ledger timestamp without turning malformed history into a crash."""
     raw_ts = ev.get("ts") or ev.get("timestamp")
     if not isinstance(raw_ts, str) or not raw_ts:
-        return False
+        return None
     try:
-        observed = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+        return datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
     except ValueError:
-        return False
-    return observed <= _TASK_ENVELOPE_ENFORCEMENT_EPOCH
+        return None
+
+
+def _obpi_lineage_id(obpi_id: str) -> str:
+    """Return the slug-independent OBPI identity encoded by TASK ids."""
+    match = _OBPI_LINEAGE_RE.match(obpi_id)
+    return match.group(1) if match else obpi_id
 
 
 def _event_path(ev: dict[str, object]) -> str:
@@ -523,7 +542,12 @@ def _ledger_channel_for_obpi(ledger_path: Path, obpi_id: str) -> set[str]:
             ev = _json.loads(line)
         except _json.JSONDecodeError:
             continue
-        if ev.get("event") == "task_started" and ev.get("obpi_id") == obpi_id and ev.get("task_id"):
+        event_obpi = str(ev.get("obpi_id") or "")
+        if (
+            ev.get("event") == "task_started"
+            and _obpi_lineage_id(event_obpi) == _obpi_lineage_id(obpi_id)
+            and ev.get("task_id")
+        ):
             result.add(str(ev["task_id"]))
     return result
 
@@ -762,6 +786,7 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
         return []
 
     obpi_by_task: dict[str, set[str]] = {}
+    latest_by_task: dict[str, datetime | None] = {}
     for line in ledger_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -776,6 +801,10 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
         obpi_id = ev.get("obpi_id")
         if isinstance(task_id, str) and task_id and isinstance(obpi_id, str) and obpi_id:
             obpi_by_task.setdefault(task_id, set()).add(obpi_id)
+            observed = _ledger_event_timestamp(ev)
+            previous = latest_by_task.get(task_id)
+            if observed is not None and (previous is None or observed > previous):
+                latest_by_task[task_id] = observed
 
     errors: list[ValidationError] = []
     for task_id in sorted(obpi_by_task):
@@ -783,6 +812,10 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
             continue
         spellings = obpi_by_task[task_id]
         if len(spellings) > 1:
+            lineages = {_obpi_lineage_id(obpi_id) for obpi_id in spellings}
+            latest = latest_by_task.get(task_id)
+            if len(lineages) == 1 and latest is not None and latest <= _OBPI_ID_CANONICAL_CUTOVER:
+                continue
             errors.append(
                 ValidationError(
                     type="task_envelope_coherence",

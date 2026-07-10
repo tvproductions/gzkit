@@ -988,7 +988,7 @@ class TestSignatureD(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.99-01",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-07-01T10:00:00Z",
+                            "timestamp": "2026-07-11T10:00:00Z",
                         }
                     ),
                     json.dumps(
@@ -998,7 +998,7 @@ class TestSignatureD(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.99-01-full-slug-suffix",
                             "id": "evt-2",
                             "schema_": "1.0",
-                            "timestamp": "2026-07-01T11:00:00Z",
+                            "timestamp": "2026-07-11T11:00:00Z",
                         }
                     ),
                 ],
@@ -1007,6 +1007,39 @@ class TestSignatureD(unittest.TestCase):
                 e for e in _validate_task_envelope_coherence(root) if "Signature (d)" in e.message
             ]
             self.assertGreater(len(errors), 0, "Expected Signature (d) divergence violation")
+
+    @covers("REQ-0.0.64-04-01")
+    def test_same_lineage_divergence_before_regression_cutover_passes(self) -> None:
+        """Append-only rows emitted before the repaired producer remain readable."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.44.0-01-01-01",
+                            "obpi_id": "OBPI-0.44.0-01-full-slug",
+                            "timestamp": "2026-07-10T10:13:00Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_completed",
+                            "task_id": "TASK-0.44.0-01-01-01",
+                            "obpi_id": "OBPI-0.44.0-01",
+                            "timestamp": "2026-07-10T10:13:30Z",
+                        }
+                    ),
+                ],
+            )
+
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (d)" in e.message
+            ]
+
+            self.assertEqual(errors, [])
 
     @covers("REQ-0.0.64-04-01")
     def test_consistent_obpi_id_passes(self) -> None:
@@ -1267,6 +1300,37 @@ class TestPendingObpiSigB(unittest.TestCase):
             )
             brief_path = _write_brief(root, {**_BASE_FM, "req_atomic": ["REQ-0.0.64-04-01"]})
             err = validate_task_envelope.pending_obpi_sig_b_error(root, brief_path)
+            self.assertIsNone(err)
+
+    @covers("REQ-0.0.64-04-02")
+    def test_full_slug_brief_sees_short_form_subdivision_events(self) -> None:
+        """seq=02 under the short spelling satisfies the full-slug chokepoint."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            full_slug = "OBPI-0.0.64-04-full-slug"
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-01",
+                            "obpi_id": full_slug,
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.0.64-04-01-02",
+                            "obpi_id": "OBPI-0.0.64-04",
+                        }
+                    ),
+                ],
+            )
+            brief_path = _write_brief(root, {**_BASE_FM, "id": full_slug})
+
+            err = validate_task_envelope.pending_obpi_sig_b_error(root, brief_path)
+
             self.assertIsNone(err)
 
 

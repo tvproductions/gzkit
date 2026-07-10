@@ -19,6 +19,13 @@ from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registr
 from gzkit.triangle import extract_reqs_from_brief
 
 _REQ_PARTS_RE = re.compile(r"^REQ-(\d+\.\d+\.\d+)-(\d+)-(\d+)$")
+_OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
+
+
+def _obpi_lineage_id(obpi_id: str) -> str:
+    """Return the slug-independent OBPI identity used by TASK ids."""
+    match = _OBPI_LINEAGE_RE.match(obpi_id)
+    return match.group(1) if match else obpi_id
 
 
 def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, str]]:
@@ -32,7 +39,7 @@ def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, st
         ev_type = event.event
         ev_obpi = extra.get("obpi_id", "")
         task_id = extra.get("task_id", "")
-        if ev_obpi != obpi_id or not task_id:
+        if _obpi_lineage_id(ev_obpi) != _obpi_lineage_id(obpi_id) or not task_id:
             continue
         if ev_type == "task_started":
             tasks.setdefault(task_id, {"status": "pending", "description": ""})
@@ -430,14 +437,14 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
     if not m:
         raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
     semver, obpi_item, _ = m.groups()
-    obpi_id = f"OBPI-{semver}-{obpi_item}"
+    short_obpi_id = f"OBPI-{semver}-{obpi_item}"
+    obpi_id = _resolve_obpi_id(ledger, short_obpi_id)
     adr_id = f"ADR-{semver}"
 
-    existing_tasks = _load_tasks_for_obpi(ledger, obpi_id)
-    existing_ids = list(existing_tasks.keys())
+    existing_ids = _all_started_task_ids(ledger)
 
     if seq_arg == "next":
-        seq_num = next_seq_for_req(req_id, existing_task_ids=existing_ids)
+        seq_num = next_seq_for_req(req_id, existing_task_ids=list(existing_ids))
     else:
         try:
             seq_num = int(seq_arg)
@@ -448,7 +455,7 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
                 f"--seq must be 'next' or a positive integer, got {seq_arg!r}"
             ) from None
         candidate = derive_req_task_id(req_id, seq=seq_num)
-        if candidate in existing_tasks:
+        if candidate in existing_ids:
             raise GzCliError(  # noqa: TRY003
                 f"TASK {candidate} already exists; use --seq next or a different N"
             )

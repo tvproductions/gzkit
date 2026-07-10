@@ -1193,6 +1193,20 @@ class TestTaskStartCanonicalObpiId(_TaskCliBase):
             "gz task start must write the canonical full slug, not the short form",
         )
 
+    def test_start_by_req_resolves_short_obpi_to_full_slug(self) -> None:
+        """The --req/--seq producer uses the same canonical OBPI id."""
+        full_slug = "OBPI-0.1.0-01-canonical-slug-suffix"
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(obpi_created_event(full_slug, "ADR-0.1.0-f"))
+
+        code, out = _invoke(["task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "2"])
+
+        self.assertEqual(code, 0, out)
+        self.assertEqual(
+            self._last_task_started_obpi("TASK-0.1.0-01-01-02"),
+            full_slug,
+        )
+
 
 class TestTaskEscalate(_TaskCliBase):
     """@covers REQ-0.22.0-04-06."""
