@@ -74,6 +74,14 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "dialogical authoring entry point; no separate wielding skill is in the "
         "eight-component delivery plan — the agent IS the authoring UI per ADR-0.0.34 § Decision."
     ),
+    "airlock in": (
+        "ADR-0.33.0 OBPI-02 landing-keystone tracer: the operator-facing verb is a "
+        "manual diagnostic entry to the airlock-IN primitive, whose PRODUCTION wielder "
+        "is the gz-obpi-pipeline Stage-1 gate (mechanical, no operator skill mediates). "
+        "A dedicated wielding skill awaits the airlock's deferred breadth (mx / "
+        "permitted-entry doors, FC-04/05) and real-entry calibration; per the ADR's "
+        "tracer-first decomposition, the verb lands ahead of that skill (adr-fidelity precedent)."
+    ),
     "governance": (
         "ADR-0.0.37 OBPI-0.0.37-02 delivers the `gz governance render` CLI surface. "
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "

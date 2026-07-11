@@ -452,6 +452,19 @@ uv run gz ontology reach <ID>            # one node's downstream blast-radius (t
 `sense` images STRUCTURAL coverage only and never claims semantic completeness.
 Full reference: [`gz ontology`](manpages/ontology.md).
 
+Before a pipeline phase crosses into a target OBPI's scope, run the airlock-IN
+preflight membrane (ADR-0.33.0). It reconciles the target's observed
+blast-radius and declared parent invariants against what the brief names:
+
+```bash
+uv run gz airlock in --target <OBPI> --dry-run   # preflight, no ledger write
+uv run gz airlock in --target <OBPI> --json       # machine-readable payload
+```
+
+The airlock is a **diagnostic-only tracer**: a NO-GO prints a refusal but still
+exits 0 (it reports, it never hard-blocks). Only an unresolvable brief exits 1.
+Full reference: [`gz airlock in`](manpages/airlock-in.md).
+
 ---
 
 ## Drift Control (Required Before Closeout)

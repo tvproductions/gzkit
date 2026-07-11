@@ -50,6 +50,7 @@ from gzkit.ledger_events import (
     obpi_superseded_event,
 )
 from gzkit.pipeline_runtime import (
+    check_airlock_in_gate,
     check_reconcile_receipt_gate,
     clear_stale_pipeline_markers,
     load_plan_audit_receipt,
@@ -579,6 +580,21 @@ def _run_pipeline_full_launch_task_start(
         console.print(f"  - {task_id}")
 
 
+def _run_airlock_in_diagnostic(obpi_id: str, obpi_file: Path, project_root: Path) -> None:
+    """Reach the airlock-IN primitive at the Stage-1 seam (ADR-0.33.0 tracer).
+
+    DIAGNOSTIC-ONLY, not fail-closed: production reach for an OBPI id yields no
+    push edges (a leaf OBPI has no transitive dependents) and pull edges are not
+    yet wired here, so a real entry currently always PROCEEDs. Real-entry
+    accounting is the deferred WWHTBT-(a) calibration frontier (parent ADR
+    § Consequences/Positive #5). Until it lands, a NO-GO surfaces as a warning —
+    never a 2am hard wall (§ Negative #5). The primitive books the ``airlock_in``
+    L2 encounter regardless of decision.
+    """
+    for blocker in check_airlock_in_gate(obpi_id, obpi_file, project_root):
+        console.print(f"[yellow]airlock-IN (diagnostic):[/yellow] {blocker}")
+
+
 def obpi_pipeline_cmd(
     obpi: str,
     start_from: str | None,
@@ -660,6 +676,8 @@ def obpi_pipeline_cmd(
     if reconcile_blockers:
         _print_pipeline_blockers(obpi_id, reconcile_blockers)
         raise SystemExit(3)
+
+    _run_airlock_in_diagnostic(obpi_id, obpi_file, project_root)
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     requires_human_attestation = _requires_human_obpi_attestation(resolved_parent, lane)

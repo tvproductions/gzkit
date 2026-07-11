@@ -8,6 +8,7 @@ all public symbols are re-exported below for backward compatibility.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -514,6 +515,45 @@ def check_reconcile_receipt_gate(
             f"Run `gz brief reconcile {obpi_id}` to refresh."
         ]
 
+    return []
+
+
+def check_airlock_in_gate(
+    obpi_id: str,
+    brief_path: Path,
+    project_root: Path,
+    *,
+    reach_fn: Callable[[str], list[str] | None] | None = None,
+) -> list[str]:
+    """Reach the airlock-IN primitive at the Stage-1 pre-flight seam (ADR-0.33.0).
+
+    Runs the three-beat airlock (``airlock_enter``) over the brief and books the
+    ``airlock_in`` encounter to L2. Returns an empty list when the crossing
+    PROCEEDs; on a NO-GO returns a single diagnostic refusal naming the
+    un-accounted seam(s). The airlock NEVER writes L1 canon (parent ADR
+    § Boundary Invariants #1).
+
+    DIAGNOSTIC-ONLY at the Stage-1 seam (ADR-0.33.0 tracer): the call site logs a
+    non-empty return as a warning, it does NOT ``raise SystemExit(3)``. Production
+    reach for an OBPI id yields no push edges (a leaf OBPI has no transitive
+    dependents) and pull edges are not yet wired at the call site, so a real entry
+    currently always PROCEEDs — real-entry accounting is the deferred WWHTBT-(a)
+    calibration frontier. The refusal-returning contract here proves the mechanism;
+    fail-closing on it awaits calibration. ``reach_fn`` defaults to the airlock's
+    own ontology-backed reach; tests inject a fake so the seam is exercisable with
+    no projection built (hexagonal rule 6).
+    """
+    from gzkit.airlock.enter import airlock_enter, build_refusal  # noqa: PLC0415
+    from gzkit.airlock.model import Decision  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+    if reach_fn is None:
+        preflight = airlock_enter(obpi_id, brief_path, ledger=ledger)
+    else:
+        preflight = airlock_enter(obpi_id, brief_path, reach_fn=reach_fn, ledger=ledger)
+    if preflight.decision is not Decision.PROCEED:
+        return [build_refusal(preflight.seam_map, obpi_id)]
     return []
 
 

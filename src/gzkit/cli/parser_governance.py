@@ -933,3 +933,46 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             node_id=a.node_id, as_json=a.as_json, as_dot=a.dot
         )
     )
+
+    # gz airlock — operator surface over the airlock-IN membrane (ADR-0.33.0, OBPI-02)
+    p_airlock = commands.add_parser(
+        "airlock",
+        help="Run the airlock-IN preflight membrane (diagnostic-only tracer)",
+        description=(
+            "Operator surface over the airlock-IN three-beat gate: DECLARE -> PING "
+            "-> RECONCILE -> decide. DIAGNOSTIC-ONLY (parent ADR § Negative #5): a "
+            "NO-GO prints a refusal but still exits 0 — it reports, it never blocks."
+        ),
+        epilog=build_epilog(["gz airlock in --target OBPI-0.33.0-01 --phase build --dry-run"]),
+    )
+    airlock_commands = p_airlock.add_subparsers(dest="airlock_command")
+    airlock_commands.required = True
+
+    p_airlock_in = airlock_commands.add_parser(
+        "in",
+        help="Run the airlock-IN preflight for a target OBPI (diagnostic-only)",
+        description=(
+            "Resolve the target OBPI's brief, run the airlock-IN preflight, and "
+            "report the decision plus seam-map counts. A NO-GO prints a refusal "
+            "but still exits 0; only an unresolvable brief exits 1."
+        ),
+        epilog=build_epilog(
+            [
+                "gz airlock in --target OBPI-0.33.0-01 --dry-run",
+                "gz airlock in --target OBPI-0.33.0-01 --json",
+            ]
+        ),
+    )
+    p_airlock_in.add_argument(
+        "--target", required=True, metavar="OBPI", help="Target OBPI id to preflight"
+    )
+    p_airlock_in.add_argument("--phase", help="Optional pipeline phase label (e.g. build)")
+    add_dry_run_flag(
+        p_airlock_in, help_override="Run the preflight without booking an airlock_in event"
+    )
+    add_json_flag(p_airlock_in)
+    p_airlock_in.set_defaults(
+        func=lambda a: _lazy("airlock_in_cmd")(
+            target=a.target, phase=a.phase, dry_run=a.dry_run, as_json=a.as_json
+        )
+    )

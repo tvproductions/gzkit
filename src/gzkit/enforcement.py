@@ -326,6 +326,7 @@ def _ensure_production_claims_registered() -> None:
     OBPI-17/19 incomplete-implementation miss. Lazy imports avoid an import cycle with the
     ``mx`` package, which imports this module.
     """
+    from gzkit.airlock.enter import _ensure_airlock_claims_registered  # noqa: PLC0415
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
     from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
@@ -333,6 +334,7 @@ def _ensure_production_claims_registered() -> None:
     qc_binding._ensure_qc_claims_registered()
     _ensure_gate5_claims_registered()
     _ensure_grader_gaming_registered()
+    _ensure_airlock_claims_registered()
 
 
 def run_meta_validator(
