@@ -20,6 +20,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit import lock_manager
+
+# The mx door CONSUMES the SHARED airlock primitive extracted by OBPI-02/03 — it
+# imports the functions DIRECTLY from the enter/exit submodules and CALLS them,
+# never forking a private variant (ADR-0.33.0 § Decision; BI-3; Negative #3).
+from gzkit.airlock.enter import airlock_enter, build_refusal
+from gzkit.airlock.exit import airlock_exit
+from gzkit.airlock.model import Decision
 from gzkit.commands.common import console, get_project_root
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.lock_manager import LockData
@@ -36,6 +43,101 @@ _DEFAULT_TTL_MINUTES = lock_manager.DEFAULT_LOCK_TTL_MINUTES
 
 # Ledger path relative to project root (parallel to marker.py's _LEDGER_RELPATH).
 _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
+
+# ADR/OBPI artifact tree, relative to project root — the mx airlock reads a
+# DECLARED artifact for its seam-map bodies (§ Allowed Paths). Brief-less DECLARE
+# (no resolvable scope) is the attested deferred calibration frontier (ADR-0.33.0).
+_ADR_RELPATH = ("docs", "design", "adr")
+
+
+def _resolve_mx_airlock_brief(
+    inspection_scope: list[str], project_root: Path
+) -> tuple[str, Path] | None:
+    """Resolve the first inspection-scope id naming an on-disk ADR/OBPI artifact.
+
+    The mx session has no OBPI brief of its own; the airlock reads its seam-map
+    bodies from a DECLARED artifact. When a ``--scope`` id names a brief-bearing
+    artifact on disk, that artifact is the airlock's DECLARE input (mirroring the
+    pipeline door, which hands the primitive the real OBPI brief). When no scope
+    resolves — the brief-less DECLARE case — this returns ``None`` and the mx
+    airlock diagnostic is skipped: brief-less DECLARE is the attested deferred
+    calibration frontier (parent ADR § Consequences), not this increment.
+    """
+    adr_root = project_root.joinpath(*_ADR_RELPATH)
+    if not adr_root.is_dir():
+        return None
+    for scope in inspection_scope:
+        token = scope.strip()
+        if not token:
+            continue
+        matches = sorted(adr_root.glob(f"**/{token}*.md"))
+        if matches:
+            return token, matches[0]
+    return None
+
+
+def _run_mx_airlock_in_diagnostic(
+    inspection_scope: list[str],
+    project_root: Path,
+    *,
+    reach_fn: Callable[[str], list[str] | None] | None = None,
+) -> None:
+    """Reach airlock-IN at the mx-enter seam (ADR-0.33.0, DIAGNOSTIC-ONLY).
+
+    Mirrors the pipeline door's Stage-1 diagnostic but CALLS the SHARED primitive
+    (``gzkit.airlock.enter.airlock_enter``) directly — ``pipeline_runtime`` is out
+    of scope for the mx door. Books the ``airlock_in`` L2 encounter; a NO-GO is
+    surfaced as a diagnostic refusal, never a block (parent ADR § Negative #5).
+    Real-entry reach is the deferred calibration frontier, so production passes an
+    empty reach (the wiring is proven, the meaningful seam-map deferred); tests
+    inject a reach to exercise the NO-GO path.
+    """
+    resolved = _resolve_mx_airlock_brief(inspection_scope, project_root)
+    if resolved is None:
+        console.print(
+            "[yellow]airlock-IN (diagnostic):[/yellow] deferred — no brief-bearing "
+            "scope to account (brief-less DECLARE frontier)."
+        )
+        return
+    target, brief_path = resolved
+    reach = reach_fn if reach_fn is not None else (lambda _node: [])
+    ledger = Ledger(project_root.joinpath(*_LEDGER_RELPATH))
+    preflight = airlock_enter(target, brief_path, reach_fn=reach, ledger=ledger)
+    if preflight.decision is not Decision.PROCEED:
+        console.print(
+            f"[yellow]airlock-IN (diagnostic):[/yellow] {build_refusal(preflight.seam_map, target)}"
+        )
+
+
+def _run_mx_airlock_out_diagnostic(
+    inspection_scope: list[str],
+    project_root: Path,
+    *,
+    reach_fn: Callable[[str], list[str] | None] | None = None,
+) -> None:
+    """Reach airlock-OUT at the mx-exit seam (ADR-0.33.0, DIAGNOSTIC-ONLY, co-equal).
+
+    ADDITIVE to ``mx exit``'s hard guard-gate (never a replacement): the caller
+    fires this only after the guards pass, before ``mx_session_closed``. Books the
+    ``airlock_out`` L2 encounter and surfaces drift findings as warnings; never
+    blocks the close. Real-entry reach is the deferred frontier (empty in production).
+    """
+    resolved = _resolve_mx_airlock_brief(inspection_scope, project_root)
+    if resolved is None:
+        console.print(
+            "[yellow]airlock-OUT (diagnostic):[/yellow] deferred — no brief-bearing "
+            "scope to account (brief-less DECLARE frontier)."
+        )
+        return
+    target, brief_path = resolved
+    reach = reach_fn if reach_fn is not None else (lambda _node: [])
+    ledger = Ledger(project_root.joinpath(*_LEDGER_RELPATH))
+    report = airlock_exit(target, brief_path, reach_fn=reach, ledger=ledger)
+    for finding in report.findings:
+        console.print(
+            f"[yellow]airlock-OUT (diagnostic):[/yellow] {finding.kind.value}: "
+            f"{finding.edge.target} -> {finding.recommendation}"
+        )
 
 
 def _mx_session_opened_event(
@@ -65,6 +167,8 @@ def mx_enter_cmd(
     attestor: str,
     inspection_scope: list[str],
     project_root: Path | None = None,
+    *,
+    _airlock_reach: Callable[[str], list[str] | None] | None = None,
 ) -> None:
     """Open the MX maintenance hangar.
 
@@ -107,6 +211,11 @@ def mx_enter_cmd(
             "[red]ERROR:[/red] Concurrent MX entry detected — another session is opening."
         )
         sys.exit(1)
+
+    # airlock-IN fires BEFORE the hangar marker write (ADR-0.33.0; BI-2): the gate
+    # crosses on EVERY entry regardless of --reason. DIAGNOSTIC-ONLY — a NO-GO logs
+    # a refusal, it never blocks the marker (real-entry accounting is deferred).
+    _run_mx_airlock_in_diagnostic(inspection_scope, root, reach_fn=_airlock_reach)
 
     # Write the marker (sets MX==TRUE).
     now = datetime.now(UTC).isoformat()
@@ -155,6 +264,8 @@ def mx_exit_cmd(
     attestor: str,
     project_root: Path | None = None,
     _run_guards: Callable[[Path], int] | None = None,
+    *,
+    _airlock_reach: Callable[[str], list[str] | None] | None = None,
 ) -> None:
     """Hard gate: re-run every guard at full strength; write mx_session_closed on all-green.
 
@@ -203,6 +314,11 @@ def mx_exit_cmd(
     # derived from the ledger events + commits in the enter→exit window, so it
     # cannot be hand-narrated or forgotten.
     console.print(log.assemble_and_render(root, m.session_id))
+
+    # airlock-OUT fires (co-equal exit membrane, ADR-0.33.0) — ADDITIVE to the hard
+    # guard-gate above, never a replacement: it runs only after the guards pass,
+    # before the close signature. DIAGNOSTIC-ONLY (real-entry accounting deferred).
+    _run_mx_airlock_out_diagnostic(m.inspection_scope, root, reach_fn=_airlock_reach)
 
     # Signature: write mx_session_closed, marker stays removed.
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))

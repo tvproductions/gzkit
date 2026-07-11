@@ -33,11 +33,17 @@ req_atomic:
 Build the third airlock door — a new `permitted-entry` verb for the ad-hoc/spurious
 entry (reconnaissance for comprehension, light repair at most, bracketing action both
 upstream of planning and downstream of action) — that CONSUMES the shared airlock primitive
-(`airlock.enter` / `airlock.exit`) with the lightest, permissive ceremony calibrated to the
-pipeline door, so that the acknowledge-and-decide gate STILL fires on every ad-hoc entry
+(`gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit`) at the lightest,
+PERMISSIVE intent, so that the acknowledge-and-decide gate STILL fires on every ad-hoc entry
 (parent ADR BI-2), the silent-bypass hole finally closes, no private airlock is ever forked,
 and any discovered need beyond light repair TRIPS a fresh transit through the pipeline or mx
-door rather than being smuggled inline.
+door rather than being smuggled inline. NOTE (reconciled to the hull, option c): the delivered
+primitive exposes NO ceremony-profile parameter and is diagnostic-only at the door — per-door
+ceremony calibration (permissive vs. tight) and the brief-less DECLARE input are the attested
+deferred WWHTBT-(a) frontier (OBPI-02/03). This door wires the diagnostic-only tracer at
+permissive intent, with the calibration distinction a NAMED RESIDUAL, never a parameter
+asserted as already-built. The "gate always fires" property is realized now (the door always
+CALLS the primitive); the ceremony-weight distinction matures with the frontier.
 
 ## Lane
 
@@ -58,7 +64,7 @@ covenant, not internal plumbing.
 <!-- First backtick token on each bullet is the path; **CREATE** marks net-new
      files (existence-gate exempt, GHI #419). Disjoint from every sibling OBPI. -->
 
-- `src/gzkit/commands/permitted_entry.py` — **CREATE**: the `permitted-entry` command handler; DECLAREs the ad-hoc entry (target + recon/light-repair intent), CALLS `airlock.enter` on the way in and `airlock.exit` on the way out with the permissive ceremony profile, and TRIPS a fresh-transit recommendation when the declared work exceeds the light-repair ceiling
+- `src/gzkit/commands/permitted_entry.py` — **CREATE**: the `permitted-entry` command handler; DECLAREs the ad-hoc entry (target + recon/light-repair intent), CALLS `gzkit.airlock.enter.airlock_enter` on the way in and `gzkit.airlock.exit.airlock_exit` on the way out at permissive intent (the delivered primitive has no ceremony-profile parameter — calibration deferred to the frontier), and TRIPS a fresh-transit recommendation when the declared work exceeds the light-repair ceiling
 - `src/gzkit/cli/parser_governance.py` — register the additive `permitted-entry` verb ONLY: one `commands.add_parser("permitted-entry", ...)`, its `--target` / `--recon` / `--repair` / `--dry-run` arguments, and a `_permitted_entry_dispatch` that lazy-imports the handler (mirrors the `gz mx` registration in this same file)
 - `tests/test_permitted_entry.py` — **CREATE**: `@covers`-decorated REQ tests for the door (permissive gate always fires, recon-first default, light-repair ceiling, trip-to-fresh-transit, no-private-fork, silent-bypass closure)
 - `docs/user/manpages/permitted-entry.md` — **CREATE**: the `permitted-entry` command manpage (Gate 3 docs coherence; contract + EXAMPLES with real CLI output)
@@ -71,7 +77,7 @@ covenant, not internal plumbing.
      CONSUMES the airlock, it never modifies it, forks it, or touches a sibling
      door's surface. -->
 
-- `src/gzkit/airlock/**` — the shared airlock primitive (`airlock.enter` / `airlock.exit`, the SeamMap/Preflight/DriftDiff models, the gate) is authored by OBPI-01/02/03; this OBPI CONSUMES it only and NEVER modifies or forks it (parent ADR BI-3 — one extracted primitive the doors CALL, never fork)
+- `src/gzkit/airlock/**` — the shared airlock primitive (`gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit`, the SeamMap/Preflight/DriftDiff models, the gate) is authored by OBPI-01/02/03; this OBPI CONSUMES it only and NEVER modifies or forks it (parent ADR BI-3 — one extracted primitive the doors CALL, never fork)
 - `src/gzkit/pipeline_runtime.py`, `src/gzkit/commands/pipeline.py` — the pipeline door (OBPI-02/03) is the calibration reference, read-only here; the permitted-entry door adapts to the primitive, it does not re-open the pipeline wiring
 - `src/gzkit/mx/**`, `src/gzkit/commands/mx_cmd.py` — the mx door is OBPI-04; permitted-entry only NAMES mx as a fresh-transit destination, it never wires the mx door
 - `docs/governance/work-phases-and-airlock.md`, `docs/governance/four-phases-of-work.md` — the doctrine-lawful promotion is OBPI-06 (the one-way door); not touched here
@@ -82,8 +88,8 @@ covenant, not internal plumbing.
 
 <!-- Constraints that MUST hold. NEVER/ALWAYS language. -->
 
-1. REQUIREMENT: Deliver ONLY the permitted-entry door — a net-new `permitted-entry` verb that CONSUMES the shared `airlock.enter` / `airlock.exit` primitive with the permissive ceremony profile. No new airlock mechanism is authored here; the door is a thin adapter over the existing primitive.
-2. ALWAYS: the acknowledge-and-decide gate FIRES on every `permitted-entry` transit. The permissive ceremony is the LIGHTEST profile (calibrated to the pipeline door as reference), but "permissive" scales ceremony WEIGHT — it NEVER sets the gate to "skip" (parent ADR BI-2: the reason selects the door and its ceremony weight, never whether the gate fires; "a gate with a hole is not a gate").
+1. REQUIREMENT: Deliver ONLY the permitted-entry door — a net-new `permitted-entry` verb that CONSUMES the shared `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` primitive at permissive intent (the delivered primitive has NO ceremony-profile parameter; per-door calibration is the deferred frontier). No new airlock mechanism is authored here; the door is a thin adapter over the existing primitive.
+2. ALWAYS: the acknowledge-and-decide gate FIRES on every `permitted-entry` transit — realized now by the door ALWAYS CALLING the shared primitive. "Permissive" is the door's INTENT (lightest ceremony); the delivered primitive has no ceremony-profile parameter, so the permissive-vs-tight WEIGHT distinction is the deferred calibration frontier — but the gate is NEVER set to "skip" regardless (parent ADR BI-2: the reason selects the door and its ceremony weight, never whether the gate fires; "a gate with a hole is not a gate").
 3. NEVER: fork a private airlock. The door MUST call the shared primitive from `src/gzkit/airlock/**`; it MUST NOT define its own enter/exit/gate logic, its own SeamMap, or a parallel airlock variant (parent ADR BI-3 — door-drift is the failure this forbids).
 4. ALWAYS: a permitted-entry that DISCOVERS a need beyond light repair TRIPS a fresh transit through the pipeline door (intentional change) or the mx door (defect repair). The door NEVER absorbs work beyond the light-repair ceiling inline (parent ADR BI-5 — discovered correction routes as a fresh transit; the four-phases cross-phase tripwire — never smuggle real work into a reconnaissance).
 5. ALWAYS: the door DEFAULTS to reconnaissance (inspection for comprehension); action is bracketed, not assumed. Light repair is the CEILING, not the default, and the ad-hoc entry may carry no repair at all.
@@ -123,20 +129,20 @@ covenant, not internal plumbing.
 
 **Context:**
 
-- [ ] Sibling OBPI-0.33.0-02 (airlock-in) + OBPI-0.33.0-03 (airlock-out) — the primitive this door CALLS; read their `airlock.enter` / `airlock.exit` signatures and the permissive ceremony profile hook
+- [ ] Sibling OBPI-0.33.0-02 (airlock-in) + OBPI-0.33.0-03 (airlock-out) — the primitive this door CALLS; read their `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` signatures (brief-path-centric; NO ceremony-profile parameter — per-door calibration is the deferred frontier)
 - [ ] Sibling OBPI-0.33.0-04 (mx door) — the corrective-scoped sibling that NAMES the same primitive; permitted-entry NAMES mx as a fresh-transit destination but never wires it
 - [ ] `src/gzkit/commands/mx_cmd.py` + `src/gzkit/cli/parser_governance.py` (`gz mx enter/exit`) — the closest precedent for a door that calls a shared session primitive and registers a top-level verb with a lazy-import dispatch
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/airlock/**` present with `airlock.enter` / `airlock.exit` and the permissive ceremony profile — the primitive this door consumes (OBPI-01/02/03 landed)
+- [ ] `src/gzkit/airlock/**` present with `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` — the primitive this door consumes (OBPI-01/02/03 landed). NOTE: no ceremony-profile parameter; diagnostic-only at the door (real-entry accounting deferred); consume as-shipped
 - [ ] `uv run gz validate --qc-binding` green (OBPI-02 section-5 live NC bites; the gated-breadth precondition above)
 - [ ] `src/gzkit/cli/parser_governance.py` present with the top-level `commands` subparser registry — the `permitted-entry` verb registers here
 - [ ] Parent ADR `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` present, registered in `gz state`, and carrying a `## Boundary Invariants` section (BI-2/BI-3/BI-5 anchors)
 
 **Existing Code (read; do NOT modify — establishes the conventions this door mirrors):**
 
-- [ ] `src/gzkit/airlock/**` — the enter/exit/gate primitive + ceremony profiles the door consumes (read-only; DENIED for edit)
+- [ ] `src/gzkit/airlock/**` — the enter/exit/gate primitive the door consumes (`airlock_enter` / `airlock_exit`; NO ceremony-profile parameter; diagnostic-only at the door; calibration deferred) (read-only; DENIED for edit)
 - [ ] `src/gzkit/commands/mx_cmd.py` — how a door builds a session over a shared primitive and refuses to narrow its way out of the gate
 - [ ] `src/gzkit/cli/parser_governance.py` (`gz mx` registration, lines ~758–825) — how a new top-level verb registers end-to-end (add_parser + arguments + lazy-import dispatch + `set_defaults(func=…)`)
 
@@ -199,6 +205,13 @@ uv run -m unittest tests.test_permitted_entry -v
      STILL fires. Concrete, runnable invocations (not --help). Harvested by the
      closeout walkthrough. -->
 
+> **Reconciled to the hull (option c, attested 2026-07-11):** the delivered
+> primitive is diagnostic-only at the door, with per-door ceremony calibration
+> and the brief-less DECLARE input deferred to the calibration frontier. The
+> transits below are the TARGET behavior; this increment wires the diagnostic-
+> only tracer at permissive intent — the gate always fires (the door always
+> calls the primitive) and logs its decision; it does not yet block.
+
 <!-- gz-validate-skip: command-shape -->
 ```bash
 # Reconnaissance-first: enter the permitted-entry door to inspect a region for
@@ -223,11 +236,11 @@ uv run gz permitted-entry --target src/gzkit/ledger.py --repair "refactor event 
 <!-- Each REQ carries exactly one [kind] tag (ADR-0.0.59): BEHAVIOR proves via a
      @covers test in tests/**. All six door behaviors are code-behavior REQs. -->
 
-- [ ] REQ-0.33.0-05-01 [BEHAVIOR]: `permitted-entry` ALWAYS fires the acknowledge-and-decide gate on every transit — the permissive ceremony is the lightest profile but the gate is never set to "skip"; a `@covers(REQ-0.33.0-05-01)` test in `tests/test_permitted_entry.py` drives the door and asserts the gate is invoked (a gate event/decision is produced) on a bare recon entry, and asserts there is NO code path by which a permitted-entry transit reaches its exit without the gate firing (parent ADR BI-2 — the reason/door selects ceremony weight, never whether the gate fires).
+- [ ] REQ-0.33.0-05-01 [BEHAVIOR]: `permitted-entry` ALWAYS fires the acknowledge-and-decide gate on every transit — realized by the door ALWAYS CALLING the shared primitive (diagnostic-only posture; the decision is surfaced, not yet fail-closing — the blocking calibration is the deferred frontier); a `@covers(REQ-0.33.0-05-01)` test in `tests/test_permitted_entry.py` drives the door and asserts the primitive is invoked (a gate event/decision is produced) on a bare recon entry, and asserts there is NO code path by which a permitted-entry transit reaches its exit without the gate firing (parent ADR BI-2 — the reason/door selects ceremony weight, never whether the gate fires).
 - [ ] REQ-0.33.0-05-02 [BEHAVIOR]: the door DEFAULTS to reconnaissance (inspection for comprehension) — invoked with `--recon` (or no repair intent), it performs the airlock declare→ping→reconcile→gate beats and yields a comprehension report WITHOUT requiring or performing any change; a `@covers(REQ-0.33.0-05-02)` test asserts a recon-only invocation completes with no file mutation and a non-empty seam/comprehension report.
 - [ ] REQ-0.33.0-05-03 [BEHAVIOR]: light repair is the CEILING — the door admits at most a light-repair intent; a `@covers(REQ-0.33.0-05-03)` test asserts a within-ceiling light-repair intent is accepted and crosses the gate, while an intent exceeding the light-repair ceiling is REFUSED for inline execution (the door does not perform it) — the ceiling is enforced, not advisory.
 - [ ] REQ-0.33.0-05-04 [BEHAVIOR]: a discovered need beyond light repair TRIPS a fresh transit — given an entry whose declared/discovered work exceeds the light-repair ceiling, the door emits a fresh-transit recommendation NAMING the correct destination door (pipeline for intentional change, mx for defect repair) and does NOT absorb the work inline; a `@covers(REQ-0.33.0-05-04)` test asserts the recommendation is produced with the routed door named and asserts no inline mutation occurred (parent ADR BI-5 — discovered correction routes as a fresh transit; never smuggle real work into a recon).
-- [ ] REQ-0.33.0-05-05 [BEHAVIOR]: the door NEVER forks a private airlock — it consumes the shared `airlock.enter` / `airlock.exit` primitive; a `@covers(REQ-0.33.0-05-05)` test asserts the handler calls the shared primitive (e.g. patching `gzkit.airlock.enter` / `gzkit.airlock.exit` observes the door routing through them) and asserts `src/gzkit/commands/permitted_entry.py` defines no parallel enter/exit/gate/SeamMap of its own (parent ADR BI-3 — one extracted primitive the doors CALL, never fork).
+- [ ] REQ-0.33.0-05-05 [BEHAVIOR]: the door NEVER forks a private airlock — it consumes the shared `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` primitive; a `@covers(REQ-0.33.0-05-05)` test asserts the handler calls the shared primitive (e.g. patching `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` observes the door routing through them) and asserts `src/gzkit/commands/permitted_entry.py` defines no parallel enter/exit/gate/SeamMap of its own (parent ADR BI-3 — one extracted primitive the doors CALL, never fork).
 - [ ] REQ-0.33.0-05-06 [BEHAVIOR]: the silent-bypass hole closes — an ad-hoc/spurious entry that formerly crossed no membrane now crosses the airlock via this door; a `@covers(REQ-0.33.0-05-06)` test asserts that the ad-hoc entry path produces an `airlock_in` (and, on exit, `airlock_out`) L2 ledger event, so the previously membrane-less surface now leaves an accountable transit record (parent ADR Consequences #2 — the membrane becomes total rather than mostly).
 
 ## Completion Checklist
@@ -299,6 +312,8 @@ uv run gz permitted-entry --target src/gzkit/ledger.py --repair "refactor event 
 - Defects noted:
 
 ## Tracked Defects
+
+- REQ-count drift: 7 declared vs 6 acceptance criteria (brief reconcile, attestor g0)
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->

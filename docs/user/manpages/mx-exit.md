@@ -24,8 +24,12 @@ gz mx exit --attestor ATTESTOR
   every guard emits at its real `GZ_<LEVEL>` severity (no advisory demotion).
 - Runs every guard at full strength against the project.
 - If any guard is red: restores the marker, exits 3 — hangar stays open.
-- If all guards are green: writes one `mx_session_closed` ledger event (the marker stays removed);
-  the operator's `--attestor` is the airworthiness signature.
+- If all guards are green: fires the airlock-OUT membrane (co-equal with airlock-IN, ADR-0.33.0)
+  **after** the hard guard-gate passes and **before** the close signature — it is **additive** to
+  the hard gate, never a replacement. It books one `airlock_out` L2 event and surfaces any drift
+  findings as warnings; it is **diagnostic-only** and never blocks the close (real-entry accounting
+  deferred). Then writes one `mx_session_closed` ledger event (the marker stays removed); the
+  operator's `--attestor` is the airworthiness signature.
 
 **There is no `--force` flag.** You cannot narrow your way out of a red guard.
 **Exit is the ONLY path that clears the marker.** A marker removed without a matching

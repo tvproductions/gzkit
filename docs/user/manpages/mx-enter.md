@@ -24,6 +24,13 @@ gz mx enter --reason REASON --attestor ATTESTOR [--scope ADR_OR_OBPI ...]
 - Checks the hangar is not already open (`marker.is_active`). Fails closed (exit 1) if it is.
 - Acquires a session lock on the `lock_manager` token rail (`mx-session` key) to serialize
   concurrent entry attempts (ADR-0.0.74 Decision #4 — token-rail/lock_manager).
+- Fires the airlock-IN membrane **before** writing the hangar marker (ADR-0.33.0 — the mx door
+  crosses the SAME airlock the pipeline door does). The gate fires on **every** entry regardless
+  of `--reason` (the reason selects ceremony weight, never whether the gate fires) and books one
+  `airlock_in` L2 event. It is **diagnostic-only** at this tracer increment: a NO-GO is surfaced
+  as a refusal naming the un-accounted seam — it does **not** block the marker write. Fail-closing
+  and real-entry seam accounting (the corrective ceremony weight, brief-less scopes) are the
+  attested deferred calibration frontier.
 - Writes the marker file (`.gzkit/mx.json`) with `session_id`, `opened_at`, `reason`,
   `attestor`, and `inspection_scope`.
 - Writes one `mx_session_opened` ledger event, binding the marker to the ledger

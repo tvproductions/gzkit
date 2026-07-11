@@ -1,0 +1,196 @@
+{
+  "obpi_id": "OBPI-0.33.0-04-airlock-mx-door",
+  "timestamp": "2026-07-11T11:00:26.645034+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.33.0-04-airlock-mx-door.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-04-mx-enter",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-05-mx-exit-hard-gate",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-06-mx-log-auto-assembled",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/commands/mx_cmd.py",
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "docs/user/manpages/mx-enter.md",
+        "docs/user/manpages/mx-exit.md"
+      ]
+    }
+  ]
+}
