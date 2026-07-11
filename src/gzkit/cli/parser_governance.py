@@ -976,3 +976,33 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             target=a.target, phase=a.phase, dry_run=a.dry_run, as_json=a.as_json
         )
     )
+
+    p_airlock_out = airlock_commands.add_parser(
+        "out",
+        help="Run the airlock-OUT exit drift-diff for a target OBPI (diagnostic-only)",
+        description=(
+            "Resolve the target OBPI's brief, run the airlock-OUT exit membrane "
+            "(drift-diff push-minus-pull -> findings + recommendations -> closed "
+            "decision menu -> fresh-transit routing -> log to L2), and report the "
+            "verdict. Surfaced drift prints findings but still exits 0; only an "
+            "unresolvable brief exits 1. NEVER writes L1 canon."
+        ),
+        epilog=build_epilog(
+            [
+                "gz airlock out --target OBPI-0.33.0-01 --dry-run",
+                "gz airlock out --target OBPI-0.33.0-01 --json",
+            ]
+        ),
+    )
+    p_airlock_out.add_argument(
+        "--target", required=True, metavar="OBPI", help="Target OBPI id to exit-account"
+    )
+    add_dry_run_flag(
+        p_airlock_out, help_override="Run the drift-diff without booking an airlock_out event"
+    )
+    add_json_flag(p_airlock_out)
+    p_airlock_out.set_defaults(
+        func=lambda a: _lazy("airlock_out_cmd")(
+            target=a.target, dry_run=a.dry_run, as_json=a.as_json
+        )
+    )

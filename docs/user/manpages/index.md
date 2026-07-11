@@ -75,6 +75,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz ontology seams`](ontology-seams.md) | Fast contacts-only STRUCTURAL seam check |
 | [`gz ontology reach`](ontology-reach.md) | Return one node's downstream blast-radius (transitive dependents) |
 | [`gz airlock in`](airlock-in.md) | Run the airlock-IN preflight membrane for a target OBPI (diagnostic-only) |
+| [`gz airlock out`](airlock-out.md) | Run the airlock-OUT exit drift-diff for a target OBPI (diagnostic-only) |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
 | [`gz task list`](task-list.md) | List tasks for an OBPI with status |
 | [`gz task start`](task-start.md) | Start or resume a task |

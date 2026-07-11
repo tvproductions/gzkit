@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 
 from gzkit.airlock.enter import airlock_enter, build_refusal
+from gzkit.airlock.exit import ExitReport, airlock_exit
 from gzkit.airlock.model import Decision, Preflight
 from gzkit.commands.common import console, get_project_root
 from gzkit.ledger import Ledger
@@ -87,3 +88,71 @@ def airlock_in_cmd(
         print(json.dumps(_preflight_payload(target, phase, preflight), indent=2))  # noqa: T201
         return
     _render_human(target, phase, preflight, dry_run)
+
+
+def _exit_payload(target: str, report: ExitReport) -> dict:
+    """Machine-readable projection of an airlock-OUT report (the ``--json`` shape)."""
+    return {
+        "target": target,
+        "verdict": report.drift_diff.verdict.value,
+        "decision_menu": [decision.value for decision in report.decision_menu],
+        "drift": [edge.target for edge in report.drift_diff.drift],
+        "findings": [
+            {"target": f.edge.target, "kind": f.kind.value, "recommendation": f.recommendation}
+            for f in report.findings
+        ],
+        "routing": [
+            {"door": t.door.value, "correction": t.correction, "smuggled": t.smuggled}
+            for t in report.routing
+        ],
+        "proposals": [{"surface": p.surface, "proposal": p.proposal} for p in report.proposals],
+    }
+
+
+def _render_exit_human(target: str, report: ExitReport, dry_run: bool) -> None:
+    """Human-readable exit report — verdict, findings, fresh-transit routing, proposals."""
+    mode = " (dry-run)" if dry_run else ""
+    console.print(f"[bold]airlock out[/bold]{mode} — {target}")
+    console.print(f"  verdict: {report.drift_diff.verdict.value}")
+    console.print(f"  decision menu: {', '.join(d.value for d in report.decision_menu)}")
+    for finding in report.findings:
+        console.print(f"  finding ({finding.kind.value}): {finding.edge.target}")
+        console.print(f"    -> {finding.recommendation}")
+    for directive in report.routing:
+        console.print(
+            f"  fresh transit -> {directive.door.value}: {directive.correction} "
+            f"(smuggled={directive.smuggled})"
+        )
+    for proposal in report.proposals:
+        console.print(f"  L1 proposal (not written) for {proposal.surface}: {proposal.proposal}")
+
+
+def airlock_out_cmd(
+    *,
+    target: str,
+    dry_run: bool = False,
+    as_json: bool = False,
+) -> None:
+    """Run the airlock-OUT exit membrane for a target OBPI and report the drift-diff.
+
+    Resolves the target's brief, runs ``airlock_exit``, and reports the drift-diff
+    verdict, findings + recommendations, the closed decision menu, and any
+    fresh-transit routing. DIAGNOSTIC-ONLY (co-equal with ``gz airlock in``): a
+    surfaced drift prints findings but still exits 0 — it reports, it never
+    blocks. In ``--dry-run`` no ledger is written (no L2 ``airlock_out`` event);
+    otherwise the transit is booked to the project ledger. NEVER writes L1 canon.
+    """
+    project_root = get_project_root()
+    docs_root = project_root / "docs" / "design" / "adr"
+    brief_path = find_obpi_brief(docs_root, target)
+    if brief_path is None:
+        console.print(f"[red]No OBPI brief found for target:[/red] {target}")
+        raise SystemExit(1)
+
+    ledger = None if dry_run else Ledger(project_root / ".gzkit" / "ledger.jsonl")
+    report = airlock_exit(target, brief_path, ledger=ledger)
+
+    if as_json:
+        print(json.dumps(_exit_payload(target, report), indent=2))  # noqa: T201
+        return
+    _render_exit_human(target, report, dry_run)

@@ -1,0 +1,934 @@
+{
+  "obpi_id": "OBPI-0.33.0-03-airlock-out-pipeline-tracer",
+  "timestamp": "2026-07-11T09:07:41.368002+00:00",
+  "verdict": "PASS",
+  "plan_file": "airlock-out-pipeline-tracer-OBPI-0.33.0-03.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-05-progressive-disclosure-path-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-06-content-boundary-doctrine",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-05-parity-scan-path-hardening",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-02-divergent-skill-reconciliation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-03-two-stage-review-protocol",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-02-implementer-subagent-dispatch",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-04-req-verification-dispatch",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-08-wire-req-verification-dispatch",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-06-wire-implementer-dispatch",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-05-pipeline-runtime-integration",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-07-wire-two-stage-review",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.44.0",
+      "sibling_obpi": "OBPI-0.44.0-04-harness-aware-pipeline-runtime",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.44.0",
+      "sibling_obpi": "OBPI-0.44.0-06-codex-instruction-budget-and-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-05-advisory-gate-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-01-runtime-command-contract",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-05-operator-docs-and-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/governance/trust_audits/cli.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-03-gz-ontology-interface",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/index.md",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-withdraw-supersede-transitions",
+      "contested_paths": [
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.8",
+      "sibling_obpi": "OBPI-0.0.8-08-operator-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-03-state-repair-command",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-12-documentation-cross-coverage",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-05-justify-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-01-complexity-guide-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.68",
+      "sibling_obpi": "OBPI-0.0.68-01-pre-push-gz-check-hook",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-04-obpi-complete-defect-accounting",
+      "contested_paths": [
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-06-prime-directive-scorecard-reclassification",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.62",
+      "sibling_obpi": "OBPI-0.0.62-08-afk-routines-docs-and-attestation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-05-audit-check-covers-backfill-heuristic",
+      "contested_paths": [
+        "docs/user/manpages/index.md",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-04-cross-repo-defect-filing",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-02-composition-renderer",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-14-wire-sync-retire-monolith",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-08-obpi-complete-gate",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-07-pipeline-stage1-gate",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "docs/user/manpages/index.md",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-08-status-surfacing-and-tripwire-receipt",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-10-docs-and-runbook-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-04-mx-enter",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-02-judge-leakage-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-04-meta-eval-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.40",
+      "sibling_obpi": "OBPI-0.0.40-03-judge-output-discipline-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-03-pipeline-skill-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.38",
+      "sibling_obpi": "OBPI-0.0.38-02-surface-axis-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/commands/obpi_stages.py",
+        "src/gzkit/governance/trust_audits/cli.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-05-init-update-flag",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-10-personas-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-12-templates-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-04-rules-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-14-gz-upgrade-subcommand",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.63",
+      "sibling_obpi": "OBPI-0.0.63-07-verify-stage-command-shape-gate",
+      "contested_paths": [
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.44",
+      "sibling_obpi": "OBPI-0.0.44-01-local-repo-routing",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-03-complexity-advise-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-05-auto-chain-hook",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-09-advisor-timeout-fallback",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-01-cli-command-scaffold",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-03-doc-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-03-validate-receipt-shape-scope",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-05-session-handoff-surface-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.67",
+      "sibling_obpi": "OBPI-0.0.67-02-wire-orphan-verbs-into-skills",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.67",
+      "sibling_obpi": "OBPI-0.0.67-01-recursive-verb-path-enumeration",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.67",
+      "sibling_obpi": "OBPI-0.0.67-03-delete-deprecated-lock-aliases",
+      "contested_paths": [
+        "docs/user/manpages/index.md",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.48",
+      "sibling_obpi": "OBPI-0.0.48-06-docs-validation-fixtures",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-06-rule-and-doc-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-06-dispatch-integration",
+      "contested_paths": [
+        "src/gzkit/pipeline_runtime.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-04-closeout-audit-fidelity-repoint",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-03-bdd-and-doc",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-02-runbook-prd-to-adr",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-03-pool-curation-policy",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-04-apply-doctrine-claude-md-rules",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-05-docs-runbook-fixtures",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.39",
+      "sibling_obpi": "OBPI-0.0.39-01-rule-and-doctrine",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-05-persona-drift-monitoring",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/commands/airlock.py",
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "src/gzkit/commands/obpi_stages.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-01-doctrine-and-canon",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/cli/parser_handler_manifest.py",
+        "docs/user/manpages/airlock-out.md",
+        "docs/user/manpages/index.md",
+        "src/gzkit/governance/trust_audits/cli.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "src/gzkit/pipeline_runtime.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-03-why-foundation-tier-convention",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-04-kind-invariance-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-01-concept-page",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    }
+  ]
+}

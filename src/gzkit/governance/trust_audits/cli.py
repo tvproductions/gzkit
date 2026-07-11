@@ -82,6 +82,14 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "permitted-entry doors, FC-04/05) and real-entry calibration; per the ADR's "
         "tracer-first decomposition, the verb lands ahead of that skill (adr-fidelity precedent)."
     ),
+    "airlock out": (
+        "ADR-0.33.0 OBPI-03 co-equal exit tracer: the operator-facing verb is a "
+        "manual diagnostic entry to the airlock-OUT primitive, whose PRODUCTION wielder "
+        "is the gz-obpi-pipeline Stage-5 exit seam (mechanical, no operator skill mediates). "
+        "A dedicated wielding skill awaits the airlock's deferred breadth (mx / "
+        "permitted-entry doors, FC-04/05) and real-exit calibration; per the ADR's "
+        "tracer-first decomposition, the verb lands ahead of that skill (adr-fidelity precedent)."
+    ),
     "governance": (
         "ADR-0.0.37 OBPI-0.0.37-02 delivers the `gz governance render` CLI surface. "
         "A dedicated gz-governance-render skill is deferred to a subsequent feature ADR "

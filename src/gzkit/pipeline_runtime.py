@@ -557,6 +557,42 @@ def check_airlock_in_gate(
     return []
 
 
+def check_airlock_out_gate(
+    obpi_id: str,
+    brief_path: Path,
+    project_root: Path,
+    *,
+    reach_fn: Callable[[str], list[str] | None] | None = None,
+) -> list[str]:
+    """Reach the airlock-OUT primitive at the Stage-5 exit membrane (ADR-0.33.0).
+
+    Runs ``airlock_exit`` over the completed transit's brief and books the
+    ``airlock_out`` encounter to L2. Returns an empty list when the exit is CLEAN;
+    on surfaced drift returns one diagnostic line per finding naming the
+    recommended fresh-transit door. The airlock NEVER writes L1 canon (parent ADR
+    § Boundary Invariants #1); the primitive returns proposals only.
+
+    DIAGNOSTIC-ONLY at the Stage-5 seam (ADR-0.33.0 tracer, co-equal with the
+    Stage-1 seam): the call site logs a non-empty return as a warning, it does
+    NOT ``raise SystemExit``. Real-exit accounting is the same deferred WWHTBT-(a)
+    calibration frontier as airlock-IN. ``reach_fn`` defaults to the airlock's own
+    ontology-backed reach; tests inject a fake so the seam is exercisable with no
+    projection built (hexagonal rule 6).
+    """
+    from gzkit.airlock.exit import airlock_exit  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+
+    ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+    if reach_fn is None:
+        report = airlock_exit(obpi_id, brief_path, ledger=ledger)
+    else:
+        report = airlock_exit(obpi_id, brief_path, reach_fn=reach_fn, ledger=ledger)
+    return [
+        f"airlock-OUT finding ({f.kind.value}): {f.edge.target} -> {f.recommendation}"
+        for f in report.findings
+    ]
+
+
 def validate_agent_files(project_root: Path) -> list[str]:
     """Validate that all pipeline agent files exist with required frontmatter.
 

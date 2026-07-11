@@ -56,6 +56,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "ontology_reach_cmd": "gzkit.commands.ontology",
     # --- airlock group (parser_governance) ---
     "airlock_in_cmd": "gzkit.commands.airlock",
+    "airlock_out_cmd": "gzkit.commands.airlock",
     # --- maintenance group (parser_maintenance) ---
     "chores_advise": "gzkit.commands.chores",
     "chores_audit": "gzkit.commands.chores",

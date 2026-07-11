@@ -465,6 +465,20 @@ The airlock is a **diagnostic-only tracer**: a NO-GO prints a refusal but still
 exits 0 (it reports, it never hard-blocks). Only an unresolvable brief exits 1.
 Full reference: [`gz airlock in`](manpages/airlock-in.md).
 
+On the way OUT, the co-equal exit membrane accounts for what the transit
+disturbed (ADR-0.33.0). It computes a drift-diff (observed reach vs declared
+invariants), surfaces findings behind a closed decision menu, and routes any
+discovered correction as a FRESH transit — never smuggled inline:
+
+```bash
+uv run gz airlock out --target <OBPI> --dry-run   # drift-diff, no ledger write
+uv run gz airlock out --target <OBPI> --json       # machine-readable payload
+```
+
+Like `airlock in`, `gz airlock out` is diagnostic-only (surfaced drift exits 0)
+and NEVER writes L1 canon — it proposes governed amendments only. Full
+reference: [`gz airlock out`](manpages/airlock-out.md).
+
 ---
 
 ## Drift Control (Required Before Closeout)

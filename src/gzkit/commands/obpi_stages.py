@@ -17,7 +17,9 @@ from typing import Any
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
+from gzkit.pipeline_markers import find_obpi_brief
 from gzkit.pipeline_runtime import (
+    check_airlock_out_gate,
     pipeline_command,
     pipeline_git_sync_command,
     refresh_pipeline_markers,
@@ -482,6 +484,30 @@ def _build_sync_stage_steps(
     ]
 
 
+def _run_airlock_out_diagnostic(
+    project_root: Path,
+    obpi_id: str,
+    *,
+    reach_fn: Callable[[str], list[str] | None] | None = None,
+) -> None:
+    """Airlock-OUT exit membrane (ADR-0.33.0, diagnostic-only).
+
+    Co-equal with the Stage-1 airlock-IN diagnostic seam: accounts for what the
+    completed transit disturbed by running the drift-diff and booking the
+    ``airlock_out`` L2 encounter. A surfaced finding logs as a warning; it NEVER
+    blocks the exit (parent ADR § Negative #5) and the airlock NEVER writes L1
+    canon (§ Boundary Invariants #1). No-op when the brief cannot be resolved.
+    ``reach_fn`` defaults to the airlock's own ontology-backed reach; tests inject
+    a fake so the seam is exercisable with no projection built (hexagonal rule 6).
+    """
+    docs_root = project_root / "docs" / "design" / "adr"
+    brief_path = find_obpi_brief(docs_root, obpi_id)
+    if brief_path is None:
+        return
+    for finding in check_airlock_out_gate(obpi_id, brief_path, project_root, reach_fn=reach_fn):
+        console.print(f"  [yellow]airlock-OUT (diagnostic):[/yellow] {finding}")
+
+
 def _run_pipeline_sync_stage(
     *,
     project_root: Path,
@@ -515,6 +541,12 @@ def _run_pipeline_sync_stage(
                     console.print(f"    {line}")
             console.print(f"Stage 5 failed at: {label}")
             raise SystemExit(1)
+
+    # Airlock-OUT exit membrane (ADR-0.33.0): account for what the transit
+    # disturbed and book the airlock_out L2 encounter BEFORE the accounting commit
+    # sweeps the ledger — so the event is committed, never left dangling in the
+    # working tree. Diagnostic-only: a surfaced finding warns, it never blocks.
+    _run_airlock_out_diagnostic(project_root, obpi_id)
 
     # Lightweight accounting commit — ledger + frontmatter only, no lint/test.
     # Failure is non-fatal: the receipt is sealed and implementation is synced.

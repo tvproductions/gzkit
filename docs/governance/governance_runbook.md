@@ -51,6 +51,7 @@ uv run gz ontology resense                # Diff the shape vs the last sweep —
 uv run gz ontology seams                  # Fast contacts-only STRUCTURAL seam check (read-only)
 uv run gz ontology reach <ID>             # One node's downstream blast-radius / transitive dependents (read-only)
 uv run gz airlock in --target <OBPI> --dry-run # Airlock-IN preflight membrane (diagnostic-only; NO-GO reports but exits 0)
+uv run gz airlock out --target <OBPI> --dry-run # Airlock-OUT exit drift-diff membrane (diagnostic-only; surfaced drift reports but exits 0; never writes L1)
 uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>" # Repudiate fraudulent/erroneous completion (reverse-and-keep; OBPI stays live)
 uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>" # Withdraw OBPI from counts (permanent retirement; witnessed transition)
 uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>" # Supersede one OBPI by another (witnessed transition; superseded node marked in graph)
