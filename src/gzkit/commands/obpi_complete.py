@@ -13,7 +13,7 @@ import secrets
 import subprocess
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 from gzkit.arb.paths import receipts_root
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
@@ -236,9 +236,9 @@ def _enforce_security_review_gate(
             obpi_id=obpi_id,
         )
     if fresh is None:
-        # newest is non-None here but Path | None narrows are flow-sensitive;
-        # cast to Path so type checkers do not complain about ``newest.name``.
-        stale_path = cast(Path, newest)
+        # newest is narrowed to Path by the `if newest is None: _fail(...)` guard
+        # above (_fail is NoReturn).
+        stale_path = newest
         try:
             stale_payload = json.loads(stale_path.read_text(encoding="utf-8"))
             stale_ts = stale_payload.get("timestamp_utc", "<unknown>")
@@ -1017,6 +1017,7 @@ def obpi_complete_cmd(
     adversary_job_id: str | None = None,
     refuted_claim: str | None = None,
     adversary_resolution: str | None = None,
+    adversary_fallback_reason: str | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -1272,6 +1273,7 @@ def obpi_complete_cmd(
         adversary=adversary,
         resolution=adversary_resolution,
         as_json=as_json,
+        fallback_reason=adversary_fallback_reason,
     )
 
     # 6-8. Execute atomic transaction
@@ -1829,6 +1831,38 @@ ADVERSARY_VERDICTS: tuple[str, ...] = (
     "degraded-human-only",
 )
 
+# Step-4b tier order (GHI #678). Codex (a different vendor) is REQUIRED first
+# because a Claude validating Claude shares this agent's blind spots — the exact
+# failure 4b exists to break. A named non-Claude vendor is proof of the cross-vendor
+# tier-1 property; the set is an explicit allowlist so an unrecognized adversary
+# fails CLOSED (must justify the fallback) rather than passing by ambiguity.
+_CROSS_VENDOR_ADVERSARY_PREFIXES: tuple[str, ...] = (
+    "codex",
+    "gpt",
+    "openai",
+    "gemini",
+    "google",
+    "grok",
+    "xai",
+    "llama",
+    "meta",
+    "mistral",
+    "deepseek",
+    "qwen",
+)
+
+
+def _is_cross_vendor_adversary(adversary: str) -> bool:
+    """True when the adversary names a different-vendor (non-Claude) model.
+
+    Cross-vendor is the tier-1 property Step 4b requires: it shares none of this
+    agent's blind spots. Detection is an explicit allowlist of vendor prefixes —
+    an unrecognized name is treated as NOT cross-vendor so the gate fails closed
+    (the caller must justify why Codex was unavailable), never open by ambiguity.
+    """
+    name = adversary.strip().lower()
+    return any(name.startswith(prefix) for prefix in _CROSS_VENDOR_ADVERSARY_PREFIXES)
+
 
 def _build_adversarial_event(
     *,
@@ -1875,6 +1909,7 @@ def _enforce_adversarial_validation(
     adversary: str | None,
     resolution: str | None,
     as_json: bool,
+    fallback_reason: str | None = None,
 ) -> None:
     """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
 
@@ -1919,8 +1954,33 @@ def _enforce_adversarial_validation(
             obpi_id=obpi_id,
         )
 
+    # Tier order (GHI #678): Codex (tier 1, different vendor) is REQUIRED first. A
+    # Claude-family adversary shares this agent's blind spots — the exact failure 4b
+    # exists to break — so it is admissible only when Codex was genuinely unavailable,
+    # and that reason must be recorded. The human degraded floor is exempt (its verdict
+    # already flags it); a proven cross-vendor adversary needs no justification.
+    is_human_floor = verdict == "degraded-human-only" or adversary.strip().lower() == "human"
+    if (
+        not is_human_floor
+        and not _is_cross_vendor_adversary(adversary)
+        and not (fallback_reason and fallback_reason.strip())
+    ):
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} used a non-cross-vendor "
+            f"(tier-2 Claude-family) adversary '{adversary}' with no recorded reason "
+            "Codex was unavailable. Codex (tier 1) shares none of this agent's blind "
+            "spots and is REQUIRED first (a Claude validating Claude shares failure "
+            "modes). Run codex:setup: if it reports ready=true, re-run Step 4b through "
+            "Codex. If Codex is genuinely unavailable, record why with "
+            "--adversary-fallback-reason '<observed Codex unavailability, e.g. setup "
+            'ready=false / not authenticated>\'. "It was convenient" is not a reason.',
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
 
-def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> None:
+
+def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> NoReturn:
     """Report an error and exit.
 
     Always raises SystemExit; never returns normally.

@@ -26,6 +26,7 @@ def _enforce(**overrides: object) -> None:
         "adversary": "codex/gpt-5.4",
         "resolution": None,
         "as_json": False,
+        "fallback_reason": None,
     }
     kwargs.update(overrides)
     _enforce_adversarial_validation(**kwargs)  # ty: ignore
@@ -86,6 +87,48 @@ class TestAdversarialValidationGate(unittest.TestCase):
         error = json.loads(buffer.getvalue())["error"]
         self.assertIn("refuted", error)
         self.assertIn("--adversary-resolution", error)
+
+
+class TestStep4bTierBindingGate(unittest.TestCase):
+    """GHI #678: a tier-2 (Claude-family) adversary verdict must justify the fallback.
+
+    Codex (tier 1, a different vendor) is REQUIRED first — a Claude validating Claude
+    shares this agent's blind spots. A Claude-family adversary is admissible only when
+    Codex was genuinely unavailable, and that reason must be recorded, not assumed.
+    """
+
+    def test_cross_vendor_adversary_needs_no_fallback_reason(self) -> None:
+        # codex/... is the tier-1 cross-vendor adversary — always admissible.
+        _enforce(adversary="codex/gpt-5.4", fallback_reason=None)
+
+    def test_human_floor_needs_no_fallback_reason(self) -> None:
+        # The degraded floor is already explicit via its verdict — no reason demanded.
+        _enforce(verdict="degraded-human-only", adversary="human", fallback_reason=None)
+
+    def test_claude_family_adversary_without_fallback_reason_blocks(self) -> None:
+        # A Claude subagent that ran because it was convenient — not because Codex was
+        # unavailable — is the exact GHI #678 bypass. Fail closed.
+        with self.assertRaises(SystemExit):
+            _enforce(adversary="claude/general-purpose", fallback_reason=None)
+
+    def test_claude_family_adversary_with_fallback_reason_passes(self) -> None:
+        _enforce(
+            adversary="claude/general-purpose",
+            fallback_reason="codex setup reported ready=false (not authenticated)",
+        )
+
+    def test_unrecognized_adversary_fails_closed_without_reason(self) -> None:
+        # An unrecognized vendor is treated as NOT cross-vendor — must justify.
+        with self.assertRaises(SystemExit):
+            _enforce(adversary="mystery-model-x", fallback_reason=None)
+
+    def test_claude_block_message_names_codex_and_next_step(self) -> None:
+        buffer = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(buffer):
+            _enforce(adversary="claude/general-purpose", fallback_reason=None, as_json=True)
+        error = json.loads(buffer.getvalue())["error"].lower()
+        self.assertIn("codex", error)
+        self.assertIn("--adversary-fallback-reason", error)
 
 
 class TestGateIsWiredIntoCompletion(unittest.TestCase):

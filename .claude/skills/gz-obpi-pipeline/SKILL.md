@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.28.0"
-last_reviewed: 2026-07-09
+skill-version: "6.29.0"
+last_reviewed: 2026-07-11
 model: sonnet
 ---
 
@@ -64,6 +64,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT print "Awaiting attestation" until the independent adversary's verdict is in this same turn. Confidence from the authoring agent is worth zero at this gate. |
 | "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | There is no size, lane, or kind exception to Step 4b. "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
 | "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch 4b in the same turn as 4a. |
+| "An independent Claude subagent is fine for 4b — I don't need Codex" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. "It was convenient" is not a fallback reason. |
 
 ### The Plan-Mode Gate
 
@@ -676,11 +677,15 @@ are the precise descriptors that precede a skipped check.
 
 Step 4a is authored by the same agent that may have fabricated it. Step 4b adds an **independent adversary** that does not trust Step 4a: it RE-DERIVES the completion claim from the REQs and the repository, prompted to **refute**, and must paste observed command output. The operator attests holding **both** outcomes.
 
-**The adversary is an interface, not a vendor.** Required properties: *independent context + adversarial (refute-not-confirm) framing + evidence-backed (pastes real command output).* Implementation ladder, preference order:
+**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + adversarial (refute-not-confirm) framing + evidence-backed (pastes real command output)* — are necessary but NOT sufficient: "independent context" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.
 
-1. **Codex** (`codex:rescue` / `codex:codex-rescue`) — PREFERRED: a different-vendor model shares none of this agent's blind spots (a Claude validating Claude shares failure modes). Job the validation out through the Codex runtime; poll its job state to completion and read its verdict.
-2. **Independent Claude subagent** — fallback when Codex is unavailable: dispatch a fresh `general-purpose` agent (separate context) with the same refute-framed prompt.
+**Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**
+
+1. **Codex** (`codex:rescue` / `codex:codex-rescue`) — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**. Job the validation out through the Codex runtime; poll its job state to completion and read its verdict.
+2. **Independent Claude subagent** — permitted ONLY when the tier-1 availability check returned `ready: false` (Codex not installed / not authenticated / unreachable). Dispatch a fresh `general-purpose` agent (separate context) with the same refute-framed prompt. Using this tier without a checked, genuine tier-1 unavailability is a Step 4b bypass of the same class as skipping 4b entirely (GHI #678).
 3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly ("adversarial validation ran in degraded human-only mode") so the operator knows the independent check did not run.
+
+**Record the tier and why.** The `SubagentDispatchRecord` (`role="Adversary"`) MUST record `adversary_tier` (1/2/3), `codex_availability_checked` (bool), and — for tier 2/3 — a `fallback_reason` naming the observed unavailability. `gz obpi complete` fail-closes on a tier-2/3 verdict whose `fallback_reason` does not name a genuine Codex unavailability (GHI #678). "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
 
 **Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to REFUTE — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real. Require a verdict — `REFUTED` | `NOT-REFUTED` | `REFUTED-WITH-CAVEATS` — with pasted output per check and a "Weakest point" section. Record the dispatch via `SubagentDispatchRecord` (`role="Adversary"`).
 

@@ -1502,6 +1502,13 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="How a refutation was closed and re-verified. Required when verdict is 'refuted'.",
     )
+    p_obpi_complete.add_argument(
+        "--adversary-fallback-reason",
+        dest="adversary_fallback_reason",
+        metavar="TEXT",
+        default=None,
+        help="Why Codex was unavailable, if a Claude-family adversary ran (GHI #678).",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -1522,6 +1529,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             adversary_job_id=a.adversary_job_id,
             refuted_claim=a.refuted_claim,
             adversary_resolution=a.adversary_resolution,
+            adversary_fallback_reason=a.adversary_fallback_reason,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )
