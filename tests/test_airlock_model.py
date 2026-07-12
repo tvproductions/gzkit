@@ -152,7 +152,9 @@ class TestAirlockModel(unittest.TestCase):
         self.assertEqual([k.value for k in SeamKind], ["push", "pull"])
         self.assertEqual([a.value for a in Authority], ["captain", "delegated"])
         self.assertEqual([d.value for d in Decision], ["proceed", "pause", "hold", "revert"])
-        self.assertEqual([v.value for v in Verdict], ["clean", "block", "surface", "resolve"])
+        self.assertEqual(
+            [v.value for v in Verdict], ["clean", "block", "surface", "resolve", "aborted"]
+        )
 
         seam_map = SeamMap(bodies=(), push_edges=(), pull_edges=(), unaccounted=())
         # Valid instances construct.

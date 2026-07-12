@@ -173,6 +173,41 @@ class TestAlwaysLogsL2(_AirlockExitCase):
         )
 
     @covers("REQ-0.33.0-03-04")
+    def test_failed_exit_still_books_paired_aborted_airlock_out(self) -> None:
+        # GHI #679: the drift-diff (reach/brief I/O) runs BEFORE the L2 booking, so
+        # an exception in that window would leave the transit UNPAIRED — airlock_in
+        # booked on entry, no airlock_out. The parent ADR's both-edges accounting
+        # invariant must hold even on failure: a paired terminal airlock_out
+        # (ABORTED verdict) is booked, and the original error still propagates
+        # (the exit is failure-atomic, not failure-swallowing).
+        brief = self._brief()
+        ledger = self._ledger()
+
+        def _reach_explodes(_node: str) -> list[str]:
+            raise RuntimeError("reach adapter failed mid-transit")
+
+        with self.assertRaises(RuntimeError):
+            airlock_exit("OBPI-X", brief, reach_fn=_reach_explodes, ledger=ledger)
+
+        out_events = [e for e in ledger.read_all() if e.event == "airlock_out"]
+        self.assertEqual(
+            len(out_events),
+            1,
+            "a failed exit must still book exactly one paired airlock_out so no "
+            "transit is left half-recorded (GHI #679 failure-atomic accounting)",
+        )
+        self.assertEqual(
+            out_events[0].extra.get("verdict"),
+            Verdict.ABORTED.value,
+            "the terminal event carries an ABORTED verdict, distinct from a "
+            "clean/surface completion",
+        )
+        self.assertTrue(
+            out_events[0].extra.get("aborted"),
+            "the aborted marker flags the terminal event as a failure pairing",
+        )
+
+    @covers("REQ-0.33.0-03-04")
     def test_stage5_gate_reaches_primitive_and_books_l2(self) -> None:
         from gzkit.pipeline_runtime import check_airlock_out_gate
 

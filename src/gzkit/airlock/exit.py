@@ -27,6 +27,7 @@ drift-diff, it never gates (state-doctrine Rule 5, BI #6).
 from __future__ import annotations
 
 import enum
+import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -248,25 +249,37 @@ def airlock_exit(
     event. NEVER writes L1 canon (parent ADR § Boundary Invariants #1); the L3
     reach INFORMS the drift-diff, it never gates (BI #6, state-doctrine Rule 5).
     """
-    bodies = tuple(extract_allowed_paths(brief_path) or ())  # DECLARE: the footprint
-    reach = reach_fn(target) or []  # PING: FACT (OBSERVED), advisory input
-    drift = compute_drift_diff(tuple(reach), tuple(parent_invariants))
-    findings = build_findings(drift)
-    routing = tuple(
-        route_fresh_transit(f) for f in findings if f.kind is FindingKind.WRECKED_SOMETHING
-    )
-    proposals = tuple(
-        _propose_amendment(f) for f in findings if f.kind is FindingKind.BROKEN_CONTRACT
-    )
-    if ledger is not None:
-        _book_exit(ledger, target, drift, routing, extra={"bodies": len(bodies)})
-    return ExitReport(
-        drift_diff=drift,
-        findings=findings,
-        decision_menu=EXIT_DECISION_MENU,
-        routing=routing,
-        proposals=proposals,
-    )
+    booked = False
+    try:
+        bodies = tuple(extract_allowed_paths(brief_path) or ())  # DECLARE: the footprint
+        reach = reach_fn(target) or []  # PING: FACT (OBSERVED), advisory input
+        drift = compute_drift_diff(tuple(reach), tuple(parent_invariants))
+        findings = build_findings(drift)
+        routing = tuple(
+            route_fresh_transit(f) for f in findings if f.kind is FindingKind.WRECKED_SOMETHING
+        )
+        proposals = tuple(
+            _propose_amendment(f) for f in findings if f.kind is FindingKind.BROKEN_CONTRACT
+        )
+        if ledger is not None:
+            _book_exit(ledger, target, drift, routing, extra={"bodies": len(bodies)})
+            booked = True
+        return ExitReport(
+            drift_diff=drift,
+            findings=findings,
+            decision_menu=EXIT_DECISION_MENU,
+            routing=routing,
+            proposals=proposals,
+        )
+    finally:
+        # Failure-atomic accounting (GHI #679): the fallible drift-diff work
+        # (reach / brief I/O) runs BEFORE the L2 booking, so any exception in that
+        # window would otherwise leave the transit unpaired — airlock_in booked on
+        # entry, no airlock_out. If the success booking above did not run, pair the
+        # transit with a terminal ABORTED airlock_out; the original exception then
+        # continues to propagate (this exit is failure-atomic, not failure-swallowing).
+        if ledger is not None and not booked:
+            _book_aborted_exit(ledger, target, sys.exc_info()[1])
 
 
 def _book_exit(
@@ -290,3 +303,27 @@ def _book_exit(
     if extra:
         payload.update(extra)
     ledger.append(LedgerEvent(event="airlock_out", id=target, extra=payload))
+
+
+def _book_aborted_exit(ledger: Ledger, target: str, exc: BaseException | None) -> None:
+    """Book a paired terminal ``airlock_out`` when the exit's fallible work raised.
+
+    Failure-atomic accounting (GHI #679): keeps a transit accountable on BOTH edges
+    even when the drift-diff never completed — the terminal event carries an ABORTED
+    verdict (never a Gate-5 completion attestation, BI #3) and names the error class
+    for diagnosis. The airlock still writes ONLY L2 (BI #1); this is the exit half of
+    the parent ADR's both-edges accounting, held under failure. All three doors call
+    this one primitive (BI #3 — one primitive, never fork), so the pairing guarantee
+    holds for the pipeline, mx, and permitted-entry doors alike.
+    """
+    ledger.append(
+        LedgerEvent(
+            event="airlock_out",
+            id=target,
+            extra={
+                "verdict": Verdict.ABORTED.value,
+                "aborted": True,
+                "error": type(exc).__name__ if exc is not None else "unknown",
+            },
+        )
+    )

@@ -50,12 +50,19 @@ class Decision(enum.StrEnum):
 
 
 class Verdict(enum.StrEnum):
-    """The drift adjudication for a crossing measured against its declared seam."""
+    """The drift adjudication for a crossing measured against its declared seam.
+
+    ``ABORTED`` is the terminal verdict for an exit whose fallible work raised
+    before the drift-diff could be measured: the transit is still paired on both
+    edges (an ``airlock_out`` is booked so it matches its ``airlock_in``), but the
+    adjudication never ran (GHI #679 failure-atomic accounting).
+    """
 
     CLEAN = "clean"
     BLOCK = "block"
     SURFACE = "surface"
     RESOLVE = "resolve"
+    ABORTED = "aborted"
 
 
 class SeamEdge(BaseModel):
