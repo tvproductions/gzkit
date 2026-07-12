@@ -330,7 +330,7 @@ registered through Movement I's enforcement-claim surface, not a second framewor
 - [ ] **[deferred] Phase 4 — RECALL: governance retrieval** *(promote `ADR-pool.rag-anything-governance-retrieval` → feature; heavy; severable, post-first-airlock)* — LightRAG-bones (dual-level retrieval + incremental + citation; local model; file-store; `gz` verb), strictly **L3-advisory** (never gates, state-doctrine Rule 5), adding semantic-seam *recall* the deterministic floor can't express. The airlock ships and gates on the floor (Phases 1–3) alone; this is enrichment.
 
 **Movement IV — Reduce the accretion** *(parity-proven; Sanity-Reduction track)*
-- [ ] **Taxonomy migration (pre-1.0; refined 2026-07-05 — partition, not flatten):** completed/Validated foundations **stay** as a **frozen-historic** `kind: foundation` set; **unstarted/pending** foundations **drop to pool**; `foundation` becomes a **closed kind**. Mechanize: schema enum keeps `foundation` (closed), `gz validate --taxonomy` **grandfathers** the existing set and **rejects new `foundation`**, retire ADR-0.0.18's choose-foundation guidance — parity-proven, behavior-preserving
+- [ ] **Taxonomy migration (pre-1.0; refined 2026-07-05 — partition, not flatten):** completed/Validated foundations **stay** as a **frozen-historic** `kind: foundation` set; **unstarted/pending** foundations **drop to pool**; `foundation` becomes a **closed kind**. Mechanize: schema enum keeps `foundation` (closed), `gz validate --taxonomy` **grandfathers** the existing set and **rejects new `foundation`**, retire ADR-0.0.18's choose-foundation guidance — parity-proven, behavior-preserving. **Realized (2026-07-12, operator-ratified) as the Foundation Sunset movement, capstoned by [`ADR-0.34.0-foundation-sunset`](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md)** (authored + 5 OBPIs; three-class partition from Layer-2 ledger truth; committed grandfather manifest; `foundation_grandfathered` backfill; ontology re-sense). Box stays open until the capstone's implementation lands (sequences last, after the Class-2 closeouts make the tree terminal). See § Amendments 2026-07-12
 - [ ] Collapse the 70-scope / 162-param `validate()` surface to the registry (#618 residual)
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof
 
@@ -498,3 +498,33 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   - Campaign-edit scope this session: **Append § Amendments entry** (no checkbox,
     no Topmost-note change, no §8 gate change) — matching the prior hexagonal
     amendment's scope. Ratified: g0, 2026-07-06.
+- **2026-07-12 (operator-ratified) — the Movement IV taxonomy migration is realized
+  as the Foundation Sunset movement, capstoned by `ADR-0.34.0-foundation-sunset`.**
+  The 2026-07-05 partition amendment (above) is now realized in a governed ADR after
+  a design dialogue + mandatory forcing-function review. Refinements the review
+  surfaced: **(1)** the partition is computed from **Layer-2 ledger truth, not
+  frontmatter** (the ADR-0.0.37 investigation proved frontmatter lies about repudiated
+  OBPIs), and it resolves to **three** classes, not two: ~46 already-Validated/Completed
+  foundations **stay** frozen-historic; **5 Class-2** foundations holding attested-but-
+  unclosed work (`0.0.37` 15/19, `0.0.54` 4/4, `0.0.64` 5/5, `0.0.65` 1/5, `0.0.72` 1/4)
+  are **finished-then-frozen** rather than pooled (pooling would discard attested work);
+  **23 genuinely-unstarted** (0/N OBPIs, incl. storybook `0.0.42` and `0.0.1`) **drop to
+  pool**, re-promotable later as features. **(2)** The capstone is a **`feature`** ADR
+  (`0.34.0`) — by its own rule it cannot be `foundation`; closing the kind must reach
+  through the feature track. **(3)** A committed **grandfather manifest**
+  (`data/foundation_grandfather.json`, identity-only, golden-file-guarded) is the
+  closed-set enforcement; `gz validate --taxonomy` gains **closed-kind** and
+  **terminal-partition** assertions, the latter reading a **backfilled
+  `foundation_grandfathered` ledger event** (ledger made complete-by-construction; old
+  pre-ledger foundations witnessed by the migration's Gate-5 attestation), never
+  frontmatter. **(4)** An **ontology re-sense** (`gz ontology resense` + diff) is a
+  Sunset step guarding the 23-node `ADR-0.0.X`→`ADR-pool.slug` rename. **Sunset
+  sequence:** finish `0.0.65`/`0.0.72` → closeout `0.0.54`/`0.0.64` → closeout `0.0.37`
+  (withdraw the 4 fabricated composition OBPIs → 15/15; re-home the real registry→
+  AGENTS.md composition as a **feature**, closing GHI #623) → `ADR-0.34.0` capstone
+  (demote 23 · populate · backfill · resense; then reconcile + wire the **permanent**
+  `--taxonomy` gate into `gz check`). The Movement IV taxonomy item (§7) is realized by
+  this movement; the checkbox stays open until the capstone's implementation lands
+  (it sequences last, after the closeouts make the tree terminal). Campaign-edit scope:
+  **Append § Amendments entry + annotate the Movement IV taxonomy checkbox** with the
+  realizing ADR. Ratified: g0, 2026-07-12.
