@@ -115,6 +115,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-constitute`](gz-constitute.md) | Create constitution artifacts |
 | [`/gz-gates`](gz-gates.md) | Run lane-required gates or specific gate checks |
 | [`/gz-implement`](gz-implement.md) | Run Gate 2 verification and record result events |
+| [`/gz-airlock`](gz-airlock.md) | Cross the airlock entry/exit membrane — inspect a seam-map, account for drift, or make a governed ad-hoc reconnaissance entry |
 | [`/gz-init`](gz-init.md) | Initialize gzkit governance scaffolding for a repository |
 | [`/gz-interview`](gz-interview.md) | Run interactive governance interviews |
 | [`/gz-ontology`](gz-ontology.md) | Image the governance shape with the read-only ontology sonar |
