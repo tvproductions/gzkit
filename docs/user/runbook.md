@@ -1543,6 +1543,29 @@ See `gz mx enter --help` and [`docs/user/manpages/mx-enter.md`](manpages/mx-ente
 See `gz mx exit --help` and [`docs/user/manpages/mx-exit.md`](manpages/mx-exit.md) for exit gate details.
 The marker file (`.gzkit/mx.json`) and the `mx_session_opened` ledger event are the two
 truth-sources. A hand-created marker without a matching ledger event is void (anti-contrivance).
+
+## Permitted-Entry — the ad-hoc airlock door
+
+For an ad-hoc/spurious entry that is neither planned pipeline work nor an mx/ghi defect
+repair — a reconnaissance for comprehension with light repair at most — cross the airlock's
+third door. The acknowledge-and-decide gate fires on every transit (permissive ceremony,
+never skipped), closing the silent-bypass hole; a discovered need beyond light repair trips
+a fresh transit through the pipeline door (intentional change) or the mx door (defect repair).
+
+```bash
+# Reconnaissance-first (the default): inspect a region for comprehension, no change
+uv run gz permitted-entry --target src/gzkit/quality.py --recon
+
+# Light repair (within the ceiling): the intent is admitted and crosses the gate
+uv run gz permitted-entry --target README.md --repair "fix typo in badge line" --dry-run
+
+# Beyond the ceiling: the door refuses inline and names the door to route through
+uv run gz permitted-entry --target src/gzkit/ledger.py --repair "refactor event schema" --dry-run
+```
+
+See `gz permitted-entry --help` and [`docs/user/manpages/permitted-entry.md`](manpages/permitted-entry.md)
+for full options. The door consumes the shared airlock primitive (never forks it) and books
+`airlock_in`/`airlock_out` L2 encounter events — never a completion attestation (ADR-0.33.0).
 Exit is the ONLY path that clears the marker; a cleared marker without `mx_session_closed` is a
 detected dangling state (ADR-0.0.74 Boundary Invariant #4).
 

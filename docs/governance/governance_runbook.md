@@ -65,6 +65,7 @@ uv run gz mx enter --reason "<text>" --attestor "<operator>"  # Open the MX hang
 uv run gz mx exit --attestor "<operator>"                    # Close the MX hangar (hard gate; operator signs)
 # While the hangar is open, normal releases are refused (exit 3): gz patch release and
 # gz closeout block until you gz mx exit (ADR-0.0.74 hardening). Dry-run preview is unaffected.
+uv run gz permitted-entry --target <path> --recon  # Airlock ad-hoc door (recon; light repair at most)
 uv run gz flags                       # Display feature flags
 uv run gz flag explain <flag>         # Inspect one flag
 uv run gz migrate-semver              # Record SemVer rename events

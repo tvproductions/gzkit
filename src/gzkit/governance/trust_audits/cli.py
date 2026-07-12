@@ -64,6 +64,12 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "not a recurring agent workflow. The `gz-obpi-reconcile` skill covers "
         "post-repudiation verification."
     ),
+    "permitted-entry": (
+        "Operator-invoked ad-hoc airlock door (ADR-0.33.0-airlock-membrane). "
+        "Not a recurring agent workflow — the operator crosses the door directly "
+        "for reconnaissance with light repair at most; the airlock membrane wields "
+        "the shared enter/exit primitive. Mirrors the obpi repudiate waiver."
+    ),
     "upgrade": (
         "Surface-only refresh verb (ADR-0.0.32 OBPI-14); the gz-deps-upgrade "
         "skill covers dependency upgrades; a dedicated gz-upgrade skill for "

@@ -24,6 +24,41 @@ from gzkit.cli.helpers import (
 from gzkit.cli.parser_handler_manifest import _lazy
 
 
+def _nonblank_target(value: str) -> str:
+    """argparse type: reject a blank/whitespace ``--target`` at the parse boundary.
+
+    ``required=True`` only requires the option to be present, not non-empty; an empty
+    target books an anonymous, unaccountable airlock transit and glob-selects an
+    unrelated ADR (Codex Step-4b, GHI #678). The handler re-checks defensively.
+    """
+    if not value.strip():
+        raise argparse.ArgumentTypeError("must name a non-empty file or region")
+    return value
+
+
+class _SingleValueAction(argparse.Action):
+    """Reject a repeated option at parse time instead of silently keeping the last.
+
+    argparse's default scalar action collapses repeated occurrences to the final
+    value, which lets an earlier value be silently overwritten. For ``permitted-entry
+    --repair`` that is a smuggling bypass — ``--repair <BEYOND> --repair ""`` would
+    drop the beyond-ceiling intent past classification (GHI #678, Codex Step-4b). This
+    action fails fast (``parser.error`` → exit 2) on the second occurrence so exactly
+    one intent reaches the handler.
+    """
+
+    def __call__(
+        self,
+        parser: argparse.ArgumentParser,
+        namespace: argparse.Namespace,
+        values: object,
+        option_string: str | None = None,
+    ) -> None:
+        if getattr(namespace, self.dest, None) is not None:
+            parser.error(f"{option_string or self.dest} may be given at most once")
+        setattr(namespace, self.dest, values)
+
+
 def _state_handler(a: argparse.Namespace) -> None:
     """Route gz state to repair or query mode."""
     if a.repair:
@@ -841,6 +876,64 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         help="Operator identity who signs airworthiness (required; never an agent)",
     )
     p_mx_exit.set_defaults(func=_mx_dispatch)
+
+    # gz permitted-entry — the airlock's third door (ADR-0.33.0, OBPI-05) ---------
+    def _permitted_entry_dispatch(a: argparse.Namespace) -> None:
+        """Route gz permitted-entry to its handler (local import for lazy loading)."""
+        from gzkit.commands.permitted_entry import permitted_entry_cmd  # noqa: PLC0415
+
+        permitted_entry_cmd(
+            target=a.target,
+            recon=a.recon,
+            repair=a.repair,
+            dry_run=a.dry_run,
+        )
+
+    p_permitted_entry = commands.add_parser(
+        "permitted-entry",
+        help="Airlock permitted-entry door — ad-hoc reconnaissance, light repair at most",
+        description=(
+            "Cross the airlock for an ad-hoc/spurious entry: reconnaissance for "
+            "comprehension with light repair at most. The acknowledge-and-decide gate "
+            "fires on EVERY transit (permissive ceremony, never skipped). A discovered "
+            "need beyond light repair trips a fresh transit through the pipeline door "
+            "(intentional change) or the mx door (defect repair) — never smuggled inline."
+        ),
+        epilog=build_epilog(
+            [
+                "gz permitted-entry --target src/gzkit/quality.py --recon",
+                'gz permitted-entry --target README.md --repair "fix typo" --dry-run',
+            ]
+        ),
+    )
+    p_permitted_entry.add_argument(
+        "--target",
+        required=True,
+        type=_nonblank_target,
+        help="The file or region the ad-hoc entry reconnoiters",
+    )
+    # --recon and --repair are contradictory (recon = no change; repair = a change
+    # intent) and MUTUALLY EXCLUSIVE — argparse rejects them together so a repair
+    # intent can never be silently dropped by adding --recon (GHI #678).
+    _pe_intent = p_permitted_entry.add_mutually_exclusive_group()
+    _pe_intent.add_argument(
+        "--recon",
+        action="store_true",
+        help="Reconnaissance-only (the default posture): inspect for comprehension, no change",
+    )
+    _pe_intent.add_argument(
+        "--repair",
+        default=None,
+        metavar="INTENT",
+        action=_SingleValueAction,
+        help="A light-repair intent (at most); beyond the ceiling trips a fresh transit",
+    )
+    p_permitted_entry.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview the transit (fire the gate) without booking the L2 encounter events",
+    )
+    p_permitted_entry.set_defaults(func=_permitted_entry_dispatch)
 
     # gz ontology — read-only sonar over the corpus projection (ADR-0.32.0, OBPI-03)
     p_ontology = commands.add_parser(

@@ -1,0 +1,269 @@
+{
+  "obpi_id": "OBPI-0.33.0-05-airlock-permitted-entry-door",
+  "timestamp": "2026-07-11T22:20:50.002584+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.33.0-05-airlock-permitted-entry-door.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-03-gz-ontology-interface",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.52",
+      "sibling_obpi": "OBPI-0.0.52-08-status-surfacing-and-tripwire-receipt",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-04-mx-enter",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-05-init-update-flag",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-14-gz-upgrade-subcommand",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.44",
+      "sibling_obpi": "OBPI-0.0.44-01-local-repo-routing",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-01-cli-command-scaffold",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-05-persona-drift-monitoring",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "src/gzkit/commands/permitted_entry.py",
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py",
+        "docs/user/manpages/permitted-entry.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    }
+  ]
+}

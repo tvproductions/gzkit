@@ -3,20 +3,22 @@ id: OBPI-0.33.0-05-airlock-permitted-entry-door
 parent: ADR-0.33.0-airlock-membrane
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
-  # Each REQ is one indivisible unit of labor with no sub-step below it —
-  # implemented as a single Red-Green-Refactor cycle each: 01 the permissive
+  # REQ-01..06 are BEHAVIOR — each one indivisible unit of labor with no sub-step
+  # below it, implemented as a single Red-Green-Refactor cycle: 01 the permissive
   # gate that ALWAYS fires, 02 reconnaissance-first default, 03 the light-repair
   # ceiling, 04 the trip-to-fresh-transit tripwire, 05 no-private-fork (consume
-  # the shared primitive), 06 the silent-bypass closure. No labor subdivided
-  # below any REQ.
+  # the shared primitive), 06 the silent-bypass closure. REQ-07 is STRUCTURAL-FENCE
+  # (no code labor — proven by parent-ADR BI-3, audited at ADR closeout). No labor
+  # subdivided below any REQ.
   - REQ-0.33.0-05-01
   - REQ-0.33.0-05-02
   - REQ-0.33.0-05-03
   - REQ-0.33.0-05-04
   - REQ-0.33.0-05-05
   - REQ-0.33.0-05-06
+  - REQ-0.33.0-05-07
 ---
 
 # OBPI-0.33.0-05-airlock-permitted-entry-door: Airlock Permitted Entry Door
@@ -26,7 +28,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md`
 - **Checklist Item:** #5 - "permitted-entry door (new surface): the ad-hoc/spurious entry -- reconnaissance-first, light-repair-at-most, permissive ceremony; closes the silent-bypass hole; a discovered need beyond light repair trips a fresh transit through pipeline/mx. [BEHAVIOR; gated-breadth]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -67,7 +69,17 @@ covenant, not internal plumbing.
 - `src/gzkit/commands/permitted_entry.py` — **CREATE**: the `permitted-entry` command handler; DECLAREs the ad-hoc entry (target + recon/light-repair intent), CALLS `gzkit.airlock.enter.airlock_enter` on the way in and `gzkit.airlock.exit.airlock_exit` on the way out at permissive intent (the delivered primitive has no ceremony-profile parameter — calibration deferred to the frontier), and TRIPS a fresh-transit recommendation when the declared work exceeds the light-repair ceiling
 - `src/gzkit/cli/parser_governance.py` — register the additive `permitted-entry` verb ONLY: one `commands.add_parser("permitted-entry", ...)`, its `--target` / `--recon` / `--repair` / `--dry-run` arguments, and a `_permitted_entry_dispatch` that lazy-imports the handler (mirrors the `gz mx` registration in this same file)
 - `tests/test_permitted_entry.py` — **CREATE**: `@covers`-decorated REQ tests for the door (permissive gate always fires, recon-first default, light-repair ceiling, trip-to-fresh-transit, no-private-fork, silent-bypass closure)
+- `src/gzkit/cli/main.py` — read-only reference: the CLI-parser tests import `_build_parser` from here to exercise the assembled `permitted-entry` subparser (argparse mutual-exclusion + single-`--repair` smuggling fences, GHI #678). NOT edited by this OBPI
 - `docs/user/manpages/permitted-entry.md` — **CREATE**: the `permitted-entry` command manpage (Gate 3 docs coherence; contract + EXAMPLES with real CLI output)
+<!-- Coupled coherence surfaces a NET-NEW heavy-lane CLI verb mandates (AGENTS.md
+     Rule 1a coupled-surface coherence + .claude/rules/cli.md § New Subcommand;
+     operator-ratified allowlist amendment 2026-07-11). Each is a consumer that a
+     new verb must satisfy in the same change or a coherence test fails closed. -->
+- `docs/user/manpages/index.md` — add the `permitted-entry` index row (doc-coverage `index_entry` surface; `test_doc_coverage`)
+- `docs/user/runbook.md` — add the operator-runbook `permitted-entry` block (`gz cli audit` operator_runbook cross-coverage)
+- `docs/governance/governance_runbook.md` — add the `gz permitted-entry` reference (`gz cli audit` governance_runbook cross-coverage)
+- `config/doc-coverage.json` — declare the `permitted-entry` command's documentation obligations (`test_real_manifest_covers_all_discovered_commands`)
+- `src/gzkit/governance/trust_audits/cli.py` — add the `_NO_SKILL_VERBS` waiver for `permitted-entry` (operator-invoked ad-hoc door, not a recurring agent workflow; Invariant 1 skill-alignment, mirrors the `obpi repudiate` precedent)
 - `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` — parent ADR `## Decision` + `## Boundary Invariants` (read-only reference; NOT edited by this OBPI)
 - `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/obpis/OBPI-0.33.0-05-airlock-permitted-entry-door.md` — this brief (evidence)
 
@@ -124,7 +136,7 @@ covenant, not internal plumbing.
 **Governance (read once, cache):**
 
 - [ ] `.github/discovery-index.json` — repo structure
-- [ ] `AGENTS.md` § "Every REQ … [kind]" (ADR-0.0.59) — REQ-kind discipline the Acceptance Criteria below obey (all six REQs are BEHAVIOR → `@covers` test proof channel)
+- [ ] `AGENTS.md` § "Every REQ … [kind]" (ADR-0.0.59) — REQ-kind discipline the Acceptance Criteria below obey (REQ-01..06 BEHAVIOR → `@covers` test proof channel; REQ-07 STRUCTURAL-FENCE → parent-ADR `## Boundary Invariants` anchor, no `@covers` test)
 - [ ] `.claude/rules/hexagonal-architecture.md` — the door is an adapter over the airlock port; it consumes domain-typed enter/exit, never a private mechanism
 
 **Context:**
@@ -234,14 +246,18 @@ uv run gz permitted-entry --target src/gzkit/ledger.py --repair "refactor event 
 ## Acceptance Criteria
 
 <!-- Each REQ carries exactly one [kind] tag (ADR-0.0.59): BEHAVIOR proves via a
-     @covers test in tests/**. All six door behaviors are code-behavior REQs. -->
+     @covers test in tests/**; STRUCTURAL-FENCE proves via a parent-ADR Boundary
+     Invariants anchor (audited at ADR closeout). The six door behaviors (items
+     01 through 06) are BEHAVIOR; the attestation-distinction fence (item 07) is
+     STRUCTURAL-FENCE. -->
 
 - [ ] REQ-0.33.0-05-01 [BEHAVIOR]: `permitted-entry` ALWAYS fires the acknowledge-and-decide gate on every transit — realized by the door ALWAYS CALLING the shared primitive (diagnostic-only posture; the decision is surfaced, not yet fail-closing — the blocking calibration is the deferred frontier); a `@covers(REQ-0.33.0-05-01)` test in `tests/test_permitted_entry.py` drives the door and asserts the primitive is invoked (a gate event/decision is produced) on a bare recon entry, and asserts there is NO code path by which a permitted-entry transit reaches its exit without the gate firing (parent ADR BI-2 — the reason/door selects ceremony weight, never whether the gate fires).
 - [ ] REQ-0.33.0-05-02 [BEHAVIOR]: the door DEFAULTS to reconnaissance (inspection for comprehension) — invoked with `--recon` (or no repair intent), it performs the airlock declare→ping→reconcile→gate beats and yields a comprehension report WITHOUT requiring or performing any change; a `@covers(REQ-0.33.0-05-02)` test asserts a recon-only invocation completes with no file mutation and a non-empty seam/comprehension report.
-- [ ] REQ-0.33.0-05-03 [BEHAVIOR]: light repair is the CEILING — the door admits at most a light-repair intent; a `@covers(REQ-0.33.0-05-03)` test asserts a within-ceiling light-repair intent is accepted and crosses the gate, while an intent exceeding the light-repair ceiling is REFUSED for inline execution (the door does not perform it) — the ceiling is enforced, not advisory.
-- [ ] REQ-0.33.0-05-04 [BEHAVIOR]: a discovered need beyond light repair TRIPS a fresh transit — given an entry whose declared/discovered work exceeds the light-repair ceiling, the door emits a fresh-transit recommendation NAMING the correct destination door (pipeline for intentional change, mx for defect repair) and does NOT absorb the work inline; a `@covers(REQ-0.33.0-05-04)` test asserts the recommendation is produced with the routed door named and asserts no inline mutation occurred (parent ADR BI-5 — discovered correction routes as a fresh transit; never smuggle real work into a recon).
+- [ ] REQ-0.33.0-05-03 [BEHAVIOR]: light repair is the CEILING — the door admits at most a light-repair intent; a `@covers(REQ-0.33.0-05-03)` test asserts a within-ceiling light-repair intent is admitted (crosses the gate, surfaced as admitted) while an intent exceeding the light-repair ceiling is NOT admitted for inline handling and instead SURFACES a fresh-transit recommendation. Consistent with the door's diagnostic-only posture (REQ-0.33.0-05-01, option-c reconcile): the door is a membrane, not an editor — it never performs the repair inline regardless, so the ceiling SURFACES its verdict diagnostically rather than fail-closing. The classifier is a best-effort heuristic tripwire, NOT a semantic guarantee; reliable free-text scope-classification (and any fail-closing on it) is the deferred calibration frontier.
+- [ ] REQ-0.33.0-05-04 [BEHAVIOR]: a discovered need beyond light repair TRIPS a fresh transit — given an entry whose declared/discovered work exceeds the light-repair ceiling, the door PRESENTS BOTH fresh-transit doors with their selection criteria (pipeline = intentional change, mx = defect repair) and does NOT absorb the work inline. The door does NOT authoritatively guess which door: defect-vs-intentional cannot be reliably inferred from free text, and an open-ended keyword list always misroutes some corrective phrasing (Codex Step-4b refutation, GHI #678) — so the captain chooses. This satisfies the parent ADR's binding requirement (BI-5: discovered correction routes as a fresh transit, never smuggled inline), which is about ROUTING as a fresh transit, not auto-selecting the door. A `@covers(REQ-0.33.0-05-04)` test asserts that both doors are presented across intentional AND corrective phrasings, that no authoritative primary is emitted, and that no inline mutation occurred.
 - [ ] REQ-0.33.0-05-05 [BEHAVIOR]: the door NEVER forks a private airlock — it consumes the shared `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` primitive; a `@covers(REQ-0.33.0-05-05)` test asserts the handler calls the shared primitive (e.g. patching `gzkit.airlock.enter.airlock_enter` / `gzkit.airlock.exit.airlock_exit` observes the door routing through them) and asserts `src/gzkit/commands/permitted_entry.py` defines no parallel enter/exit/gate/SeamMap of its own (parent ADR BI-3 — one extracted primitive the doors CALL, never fork).
 - [ ] REQ-0.33.0-05-06 [BEHAVIOR]: the silent-bypass hole closes — an ad-hoc/spurious entry that formerly crossed no membrane now crosses the airlock via this door; a `@covers(REQ-0.33.0-05-06)` test asserts that the ad-hoc entry path produces an `airlock_in` (and, on exit, `airlock_out`) L2 ledger event, so the previously membrane-less surface now leaves an accountable transit record (parent ADR Consequences #2 — the membrane becomes total rather than mostly).
+- [ ] REQ-0.33.0-05-07 [STRUCTURAL-FENCE]: the door NEVER emits or records the permitted-entry acknowledge-and-decide gate as a Gate-5 completion attestation — the airlock books `airlock_in`/`airlock_out` L2 encounter events only, never a completion-attestation event; proven by the parent ADR `## Boundary Invariants` #3 ("The airlock gate is acknowledge-and-decide, never completion attestation"), audited at ADR closeout (STRUCTURAL-FENCE proof channel, ADR-0.0.59 — no `@covers` test; the every-transit gate never spends the sacred word).
 
 ## Completion Checklist
 
@@ -295,25 +311,68 @@ uv run gz permitted-entry --target src/gzkit/ledger.py --repair "refactor event 
 # Record attestation text here when required by parent lane
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary:** Codex (`codex` / codex-cli 0.144.1) — a different-vendor model (tier 1,
+cross-vendor), so it shares none of this agent's blind spots. Dispatched via
+`codex-companion adversarial-review`, prompted to REFUTE the completion claim.
+
+**Final verdict:** NOT-REFUTED (Codex `approve`, "No material findings"). Reached after
+NINE refute→fix cycles — the cross-vendor adversary drove out every concrete defect a
+same-vendor (Claude) adversary had passed:
+
+1. REQ-04 keyword misroute → removed authoritative routing; door presents BOTH doors, captain chooses
+2. `airlock_exit` unpaired transit → tracked out-of-scope **GHI #679** (shared primitive `src/gzkit/airlock/exit.py`, DENIED path, affects all doors)
+3. `--recon` silent-drops repair → `--recon`/`--repair` mutually exclusive, fail-fast
+4. repeated `--repair` collapse → `_SingleValueAction` rejects duplicates
+5. punctuation evades ceiling → `_intent_tokens` normalizes to alphanumeric core
+6. Rich markup injection/crash → operator text escaped via `rich.markup.escape`
+7. empty target → anonymous transit → rejected at argparse + handler
+8. vague-prefix misbind + Markdown injection → exact-id-only resolution + intent sanitize
+9. sanitize-as-identity collision → lossless target identity; unrepresentable targets rejected
+
+**Claims broken and resolved:** the REQ-02 (footprint accuracy) and REQ-06 (transit
+accountability) claims were broken repeatedly (misbinding, injection, identity collision)
+and each was resolved in-scope; the REQ-04 routing claim was broken (keyword misroute) and
+resolved by removing the heuristic pick entirely. Two items are accepted as tracked/deferred
+per operator ruling: **GHI #679** (shared-primitive exit atomicity, out of this OBPI's scope)
+and the ceiling classifier's **semantic precision** (the operator-attested deferred
+calibration frontier — this door is diagnostic-only and never edits, so a misclassification
+smuggles no work).
+
 ### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+A beyond-ceiling intent presents both fresh-transit doors (no misroute), and a non-dry-run books a paired, lossless-identity L2 transit:
+
+```
+$ uv run gz permitted-entry --target src/gzkit/ledger.py --repair "rewrite the module to eliminate the deadlock" --dry-run
+permitted-entry recon: permitted-entry:src/gzkit/ledger.py
+  footprint (declared bodies): src/gzkit/ledger.py
+permitted-entry: intent exceeds the light-repair ceiling — not admitted inline (the door never edits). Route a fresh transit and choose the door — pipeline (intentional change) or mx (defect repair): rewrite the module to eliminate the deadlock
+```
+
+Full suite 7013/7013 green (receipt `arb-step-unittest-f5002c6659c34c8bade14edeb1575610`); Step-4b independent adversarial validation via Codex (cross-vendor tier 1) returned NOT-REFUTED ("No material findings") after nine refute-fix cycles.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/commands/permitted_entry.py` (door handler, thin adapter over the shared airlock primitive); `tests/test_permitted_entry.py` (21 tests); `docs/user/manpages/permitted-entry.md`
+- Files modified: `src/gzkit/cli/parser_governance.py` (permitted-entry verb + `_SingleValueAction` + `_nonblank_target`); `src/gzkit/governance/trust_audits/cli.py` (`_NO_SKILL_VERBS` waiver); `config/doc-coverage.json`; `docs/user/manpages/index.md`; `docs/user/runbook.md`; `docs/governance/governance_runbook.md`
+- Behavior: consumes the shared `airlock_enter`/`airlock_exit` primitive (never forks, BI-3); the acknowledge-and-decide gate fires on every transit (BI-2); a beyond-ceiling intent presents BOTH fresh-transit doors (no authoritative heuristic guess); blank/backtick/newline targets rejected; lossless-identity paired `airlock_in`/`airlock_out` L2 transits (REQ-06)
+- Tests added: 21 (@covers for 6 BEHAVIOR REQs + CLI-parser smuggling fences + accountability regressions)
+- Date completed: 2026-07-12
+- Attestation status: operator-verbatim "attest completed" (g0)
+- Defects noted: GHI #679 (shared-primitive airlock_exit atomicity, out of scope); ceiling semantic-precision = operator-attested deferred calibration frontier
 
 ## Tracked Defects
 
-- REQ-count drift: 7 declared vs 6 acceptance criteria (brief reconcile, attestor g0)
+- RESOLVED (2026-07-11, attestor g0): REQ-count drift (7 declared vs 6 acceptance criteria) fixed by adding REQ-0.33.0-05-07 [STRUCTURAL-FENCE] — the attestation-distinction constraint, proven by parent-ADR BI-3, restoring the 1:1 requirements↔acceptance convention held by sibling OBPI-02/03/04.
+- TRACKED → GHI #679 (2026-07-11): the SHARED airlock primitive (`src/gzkit/airlock/exit.py`) books its `airlock_out` L2 event after its reach/drift/brief work, so an exit-side I/O failure can leave an unpaired transit (`airlock_in` with no `airlock_out`). Surfaced by the Codex (tier-1) Step-4b adversary. Out of scope for THIS door (DENIED path `src/gzkit/airlock/**`; forking a private compensation violates BI-3) — the fix belongs to the airlock-primitive surface (OBPI-01/02/03) and affects all three doors. Mitigated here: `airlock_exit` is called from a nested `finally` so it is always attempted once `airlock_enter` fired. Operator-ratified route (GHI + complete, 2026-07-11).
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
@@ -322,13 +381,13 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — permitted-entry airlock door (OBPI-0.33.0-05): 6 BEHAVIOR REQs covered (behavior_uncovered=0); full suite green — receipts arb-step-unittest-f5002c6659c34c8bade14edeb1575610, arb-ruff-f9cc5a1336d24dd6916472eba07acee3, arb-step-typecheck-9954ecb4a44e458e820f28c898416558, arb-step-mkdocs-b7332d22c81242f1a45a2d00a3270ece; Step-4b independent adversarial validation via Codex (cross-vendor tier 1) returned NOT-REFUTED after nine refute-fix cycles that drove out every concrete defect (routing misroute, flag-smuggling, markup injection, target accountability, identity collision); airlock_exit atomicity tracked out-of-scope GHI #679; ceiling semantic-precision the attested deferred calibration frontier.
+- Date: 2026-07-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-12
 
 **Evidence Hash:** -
 </content>
