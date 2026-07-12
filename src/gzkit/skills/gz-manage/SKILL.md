@@ -4,8 +4,8 @@ description: Namespace router → repo and release management skills (git-sync, 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-27
-skill-version: 0.4.0
+last_reviewed: 2026-07-12
+skill-version: 0.5.0
 model: haiku
 ---
 
@@ -21,6 +21,7 @@ model: haiku
 | patch release | `gz-patch-release` |
 | agent sync | `gz-agent-sync` |
 | mx hangar | `gz-mx` |
+| airlock (cross / inspect the entry membrane) | `gz-airlock` |
 | tidy | `gz-tidy` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
