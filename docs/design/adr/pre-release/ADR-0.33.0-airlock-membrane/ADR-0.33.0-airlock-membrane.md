@@ -1,6 +1,6 @@
 ---
 id: ADR-0.33.0-airlock-membrane
-status: Completed
+status: Validated
 kind: feature
 semver: 0.33.0
 lane: heavy
