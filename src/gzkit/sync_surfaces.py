@@ -513,7 +513,7 @@ def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
         existing = config_path.read_bytes()
         if existing:
             return config_path.relative_to(root).as_posix()
-    config_path.write_text(rendered, encoding="utf-8")
+    config_path.write_text(rendered, encoding="utf-8", newline="\n")
     return config_path.relative_to(root).as_posix()
 
 

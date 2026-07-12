@@ -220,6 +220,27 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertIs(config["sandbox_workspace_write"]["network_access"], True)
             self.assertIs(config["features"]["hooks"], True)
 
+    @covers("REQ-0.44.0-01-01")
+    def test_sync_writes_codex_config_lf_byte_identical_to_render(self) -> None:
+        """Synced .codex/config.toml is byte-identical to render_codex_config().
+
+        The parity check in validate_pkg/sync_parity.py compares RAW bytes
+        (read_bytes() vs render().encode()), so a text-mode write that
+        translates \\n->\\r\\n on Windows produces spurious drift. read_text()
+        normalizes newlines and would mask this; the contract is a raw-byte
+        match on every platform (LF). GHI #681.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sync_all(root, GzkitConfig(project_name="demo"), emit_event=False)
+            written = (root / ".codex" / "config.toml").read_bytes()
+            self.assertEqual(
+                written,
+                render_codex_config().encode(),
+                "written codex config must be byte-identical to the render (LF), "
+                "not CRLF-translated by text-mode write on Windows",
+            )
+
     @covers("REQ-0.44.0-01-02")
     def test_sync_preserves_nonempty_operator_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
