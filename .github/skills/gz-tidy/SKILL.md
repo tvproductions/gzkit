@@ -5,7 +5,7 @@ description: Run maintenance checks and cleanup routines. Use for repository hyg
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-07-12
 model: haiku
 metadata:
   skill-version: "1.1.1"

@@ -5,7 +5,7 @@ description: Run full quality checks in one pass. Use for pre-merge or pre-attes
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-07-12
 model: haiku
 metadata:
   skill-version: "1.4.0"

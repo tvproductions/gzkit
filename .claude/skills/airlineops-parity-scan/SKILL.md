@@ -5,7 +5,7 @@ description: Run a repeatable governance parity scan between ../airlineops (cano
 category: cross-repository
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-12
+last_reviewed: 2026-07-12
 metadata:
   skill-version: "1.1.1"
 model: haiku
