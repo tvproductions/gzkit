@@ -1,5 +1,26 @@
 # gzkit Release Notes
 
+## v0.33.0 (2026-07-12)
+
+**ADR:** ADR-0.33.0-airlock-membrane — the airlock: an entry/exit membrane every agent sortie crosses. An agent cannot hold a model of the project resident across sorties, so it patches locally, perturbs laterally, and discovers the damage late. gzkit governed artifacts (vertical traceability) and execution (the OBPI pipeline) well, but had no membrane on *entry* into the project ecosystem. The airlock is that membrane, built as prosthetic memory: on the way IN it pings the shape (HULL sonar) and reconciles the agent's expectation against reality; on the way OUT it accounts for what was disturbed and updates the maps — so map-maintenance becomes an unavoidable byproduct of any work rather than a separate chore (closes Architectural Boundary #4 structurally). One symmetric primitive extracted FROM the pipeline's proven Stage-1/Stage-5 geometry; three doors (pipeline, mx, permitted-entry) adapt to it and never fork it. Tracer-first (KEEL discipline): the pipeline door is the first slice, the gated-breadth doors follow behind the live negative control biting.
+
+### Delivered
+
+- **Airlock data model + L2 events (OBPI-01)** — frozen Pydantic `SeamEdge` (kind push|pull; provenance LAW|OBSERVED, non-erasable per state-doctrine §2 guard), two-layer `SeamMap` (bodies = declared regions + push/pull edges + unaccounted), `Preflight` (seam_map, blast_radius as delegation dial, authority captain|delegated, decision), and `DriftDiff`, plus `airlock_in`/`airlock_out` L2 event schemas. The MVP spine every door reads.
+- **Airlock-IN pipeline tracer + live NC (OBPI-02)** — the three-beat entry: DECLARE(intent+expectation) → PING(`gz ontology sense/reach`, L3 informs never decides) → RECONCILE(L1↔L3 vs plan assumptions) → acknowledge-and-decide gate; two-layer seam-map (bodies = declared Allowed Paths, push from reach, pull from brief + parent-ADR invariants); the §5 `@enforces` live negative control (an un-accounted seam makes GO structurally unreachable, un-forced production) as the landing keystone; diagnostic refusal names the seam + provenance + a one-command re-sense; wired into pipeline Stage 1.
+- **Airlock-OUT pipeline tracer (OBPI-03)** — co-equal exit: drift-diff push-minus-pull → findings + recommendations → decision menu (leave-it-be | modify | repair | adjust-maps) → fresh-transit routing for discovered correction (never smuggled inline) → log to L2; wired into pipeline Stage 5.
+- **mx door (OBPI-04)** — airlock enter/exit wired into `gz mx enter`/`exit` at corrective-scoped ceremony weight; the door calls the one primitive, never a fork.
+- **permitted-entry door (OBPI-05)** — the new ad-hoc/spurious entry surface: reconnaissance-first, light-repair-at-most, permissive ceremony. Closes the silent-bypass hole — ad-hoc entry finally crosses a membrane; a discovered need beyond light repair trips a fresh transit through the pipeline/mx door.
+- **Doctrine made lawful (OBPI-06)** — the §8 1.0 gate: promoted `work-phases-and-airlock.md` + `four-phases-of-work.md` from Draft North Star to binding, including the §2 seam = BODY-and-BOUNDARY widening; registered the §5 `@enforces` claim binding. The one one-way door, sequenced last behind the proven live NC.
+
+### Gate Evidence
+
+All 5 GovZero gates satisfied (Heavy lane); 6/6 OBPIs `attested_completed`. Human attestation: `Completed` (g0, 2026-07-12). Bound fidelity gate: **4 assertions pass, 0 fail** (`gz adr fidelity ADR-0.33.0-airlock-membrane`) — the airlock-IN ping consumes the HULL reach, the seam-map reaches a go/no-go at the pipeline door, the §5 live NC is verified among the passing claim set (`gz validate --qc-binding`), and airlock-OUT emits the drift-diff to L2. Full suite 7014 tests pass; ruff/ty/mkdocs-strict clean.
+
+### Stats
+
+- 6 OBPIs attested; NO new runtime dependency (the tracer stands on the already-attested `gz ontology reach` HULL floor + declared Allowed Paths + brief/ADR invariants). Known tracked follow-up: **GHI #679** (exit-side L2 booking not failure-atomic) surfaced in-flight during OBPI-05 Step-4b adversarial validation, left OPEN as honest corrective follow-up on the airlock primitive rather than dead-lettered. Calibration frontier (FC-2, operator-attested): the primitive's decision logic bites (live NC PASSES un-forced), but the wired Stage-1 gate is **diagnostic-only** pending seam-map calibration on real entries — a named successor increment, not a shipped production wall.
+
 ## v0.32.0 (2026-07-07)
 
 **ADR:** ADR-0.32.0-gzkit-ontology — the object/link plane of the gzkit ontology: a typed, queryable substrate that images the *actual* shape of governance so ratified facts become queryable nodes and silent reversals light up instead of slipping through as "corrections." Answers a live drift incident where a GO-attested substrate decision was silently reversed from a handoff paraphrase because nothing imaged the real decided shape. Corpus-first MVP tracer (KEEL/ADR-0.31.0 discipline); work/source/OKF breadth gated behind the rebuild-fidelity fence proven live.
