@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.33.0-airlock-membrane",
-  "current_step": 5,
+  "current_step": 8,
   "is_foundation": false,
   "started_at": "2026-07-12T11:50:52Z",
-  "updated_at": "2026-07-12T11:57:31Z",
+  "updated_at": "2026-07-12T16:38:23Z",
   "step_history": [
     {
       "step": 1,
@@ -28,6 +28,21 @@
     {
       "step": 5,
       "presented_at": "2026-07-12T11:53:58Z",
+      "acknowledged_at": "2026-07-12T16:02:07Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-07-12T16:02:07Z",
+      "acknowledged_at": "2026-07-12T16:35:45Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-07-12T16:35:45Z",
+      "acknowledged_at": "2026-07-12T16:38:23Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-07-12T16:38:23Z",
       "acknowledged_at": null
     }
   ],
@@ -44,8 +59,8 @@
     "uv run gz permitted-entry --target src/gzkit/ledger.py --repair \"refactor event schema\" --dry-run",
     "uv run gz validate --qc-binding"
   ],
-  "walkthrough_index": 1,
-  "attestation": null,
+  "walkthrough_index": 10,
+  "attestation": "Completed",
   "completed_at": null,
   "attempt": 1,
   "paused_at": null

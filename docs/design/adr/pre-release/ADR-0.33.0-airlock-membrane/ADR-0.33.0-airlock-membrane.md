@@ -1,6 +1,6 @@
 ---
 id: ADR-0.33.0-airlock-membrane
-status: Draft
+status: Completed
 kind: feature
 semver: 0.33.0
 lane: heavy
@@ -200,4 +200,4 @@ Generic 'gz airlock' verb as the primary surface (REJECTED): the airlock was des
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.33.0 | Pending | | | |
+| 0.33.0 | Completed | g0 | 2026-07-12 | Completed |
