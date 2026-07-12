@@ -153,12 +153,12 @@ uv run gz check
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.54-03-01: Given parent ADR § Decision item 3, when `gz validate --agents-md-map-conformance` runs, then it asserts the four criteria (paragraph length, prohibited titles, link resolution, budget) against AGENTS.md.
-- [ ] REQ-0.0.54-03-02: Given a deliberately non-conforming AGENTS.md fixture for each of the four rejection paths, when the validator runs, then each path is flagged; given the lifted AGENTS.md, then the validator passes.
-- [ ] REQ-0.0.54-03-03: Given a conformance failure, when the validator fails closed, then it emits a `RemediationPayload` (or forward-compatible shape) whose `recovery` field is `/gz-context-diet`.
-- [ ] REQ-0.0.54-03-04: Given the `gz check` default pipeline, when `gz check` runs, then `--agents-md-map-conformance` executes as a fail-closed step.
-- [ ] REQ-0.0.54-03-05: Given a binding-rule bullet exceeding 3 lines, when the validator runs, then it emits a WARNING, not a hard rejection — hard rejection is reserved for the prohibited-subsection-title set.
-- [ ] REQ-0.0.54-03-06: Given the scope boundary, when this OBPI's diff is reviewed, then AGENTS.md, the OBPI-01 rule file, and the OBPI-02 lift targets are unmodified.
+- [ ] REQ-0.0.54-03-01 [BEHAVIOR]: Given parent ADR § Decision item 3, when `gz validate --agents-md-map-conformance` runs, then it asserts the four criteria (paragraph length, prohibited titles, link resolution, budget) against AGENTS.md.
+- [ ] REQ-0.0.54-03-02 [BEHAVIOR]: Given a deliberately non-conforming AGENTS.md fixture for each of the four rejection paths, when the validator runs, then each path is flagged; given the lifted AGENTS.md, then the validator passes.
+- [ ] REQ-0.0.54-03-03 [BEHAVIOR]: Given a conformance failure, when the validator fails closed, then it emits a `RemediationPayload` (or forward-compatible shape) whose `recovery` field is `/gz-context-diet`.
+- [ ] REQ-0.0.54-03-04 [BEHAVIOR]: Given the `gz check` default pipeline, when `gz check` runs, then `--agents-md-map-conformance` executes as a fail-closed step.
+- [ ] REQ-0.0.54-03-05 [BEHAVIOR]: Given a binding-rule bullet exceeding 3 lines, when the validator runs, then it emits a WARNING, not a hard rejection — hard rejection is reserved for the prohibited-subsection-title set.
+- [ ] REQ-0.0.54-03-06 [STRUCTURAL-FENCE]: Given the scope boundary, when this OBPI's diff is reviewed, then AGENTS.md, the OBPI-01 rule file, and the OBPI-02 lift targets are unmodified.
 
 ## Completion Checklist
 

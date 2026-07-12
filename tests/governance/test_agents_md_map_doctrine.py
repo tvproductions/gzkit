@@ -72,7 +72,6 @@ def _budget_within_ceiling(char_budget: int) -> bool:
     return char_budget <= _PROJECT_DOC_BUDGET_CEILING_BYTES
 
 
-_RULE_VERSION = "0.1.0"
 _PATHS_SCOPE = ("AGENTS.md", "CLAUDE.md", ".claude/rules/*.md")
 _PROHIBITED_SHAPES = (
     "Multi-paragraph rationale prose",
@@ -105,15 +104,26 @@ class MapDoctrineRuleAuthorship(unittest.TestCase):
         self.assertEqual(frontmatter.id, "agents-md-map-doctrine")
         self.assertEqual(tuple(frontmatter.paths), _PATHS_SCOPE)
 
-        self.assertIn(
-            f"<!-- rule-version: {_RULE_VERSION} -->",
-            body,
-            "body-level rule-version marker missing or wrong version",
+        # De-pinned from the literal 0.1.0 (GHI #531 content-test anti-pattern;
+        # reclassification to the SUPPORT proof channel is deferred to the
+        # ADR-0.0.59 Move 6 sweep). skill-surface-sync bumps the rule-version on
+        # every rule edit, so REQ-01-01's durable semantic is "authored with a
+        # coherent rule-version marker in both required forms that agree" — not
+        # "frozen at the authoring version". A pinned literal can only pass at the
+        # rule's first moment of life (it broke on the 0.2.0 closeout correction).
+        comment_marker = "<!-- rule-version: "
+        quote_marker = "**Rule version:** `"
+        self.assertIn(comment_marker, body, "body-level rule-version HTML-comment marker missing")
+        self.assertIn(quote_marker, body, "visible block-quote rule-version marker missing")
+        comment_version = body.split(comment_marker, 1)[1].split(" -->", 1)[0].strip()
+        quote_version = body.split(quote_marker, 1)[1].split("`", 1)[0].strip()
+        self.assertRegex(
+            comment_version, r"^\d+\.\d+\.\d+$", "HTML-comment rule-version is not semver"
         )
-        self.assertIn(
-            f"**Rule version:** `{_RULE_VERSION}`",
-            body,
-            "visible block-quote rule-version missing or wrong version",
+        self.assertEqual(
+            comment_version,
+            quote_version,
+            "rule-version markers disagree between HTML comment and block quote",
         )
 
         for shape in _PROHIBITED_SHAPES:

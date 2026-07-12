@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.54
 lane: heavy
@@ -121,6 +121,19 @@ Canonize AGENTS.md (and by extension, the analogous map-not-encyclopedia shape f
 | AGENTS.md conforms to the map-not-encyclopedia shape — the exact mechanical invariant this ADR ships via gz validate --agents-md-map-conformance. | uv run gz validate --agents-md-map-conformance | 0 |
 | The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine --check | 0 |
 
+## Boundary Invariants
+
+Structural fences this ADR's OBPIs must not cross — the proof channel for
+`STRUCTURAL-FENCE` REQs per ADR-0.0.59:
+
+- **The conformance validator is additive-only (REQ-0.0.54-03-06).** Shipping
+  `gz validate --agents-md-map-conformance` (OBPI-03) MUST NOT modify the
+  surfaces it audits: `AGENTS.md`, the OBPI-01 rule file
+  (`.gzkit/rules/agents-md-map-doctrine.md`), and the OBPI-02 lift targets under
+  `docs/governance/` are read-only to the validator increment. A validator that
+  rewrites its own audit surface to make itself pass is the failure this fence
+  forecloses.
+
 ## Consequences
 
 ### Positive
@@ -226,4 +239,4 @@ Canonize AGENTS.md (and by extension, the analogous map-not-encyclopedia shape f
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.54 | Pending | | | |
+| 0.0.54 | Completed - Partial: Completed - Partial: map-shape enforcement (validator + prohibited-shape/paragraph/link/budget checks) delivered and wired into gz check; the 15k weight-halving is deferred to GHI #533 / ADR-0.0.37. Truthfulness corrections applied at closeout (false enforced-budget surfaces repointed to live JSON; false OBPI-02 under-budget attestation line annotated). Receipts: arb-ruff-c75d8372eca94746a2719ccda00a461a, arb-step-typecheck-b160b00c929045c7bff98ee27a2f3794, arb-step-unittest-48a0ef68f210402a8bb79c98c99cb279, arb-step-mkdocs-703e8f80b8e143eeab9954ee936eb790 | g0 | 2026-07-12 | Completed - Partial: map-shape enforcement (validator + prohibited-shape/paragraph/link/budget checks) delivered and wired into gz check; the 15k weight-halving is deferred to GHI #533 / ADR-0.0.37. Truthfulness corrections applied at closeout (false enforced-budget surfaces repointed to live JSON; false OBPI-02 under-budget attestation line annotated). Receipts: arb-ruff-c75d8372eca94746a2719ccda00a461a, arb-step-typecheck-b160b00c929045c7bff98ee27a2f3794, arb-step-unittest-48a0ef68f210402a8bb79c98c99cb279, arb-step-mkdocs-703e8f80b8e143eeab9954ee936eb790 |

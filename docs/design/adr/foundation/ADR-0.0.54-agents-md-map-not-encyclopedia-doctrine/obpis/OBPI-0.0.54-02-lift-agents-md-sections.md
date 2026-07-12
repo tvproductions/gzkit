@@ -197,11 +197,22 @@ Attestor: g0
 Date: 2026-05-25
 ```
 
+> **Correction (recorded at ADR-0.0.54 closeout, 2026-07-12, g0):** the
+> "15,079 bytes (under the 15,000-char budget)" figure in the attestation block
+> above was a transient measurement from a mid-session aggressive-trim that was
+> subsequently **reverted** (the trim violated REQ-02's binding-bullet
+> preservation — see § Squawks / Implementation Summary). The true final state
+> is **AGENTS.md over the 15,000-char target under the REQ-05 escape** (31,534
+> bytes at OBPI-02 completion; 31,741 today), with the weight-halving **deferred
+> to GHI #533 / ADR-0.0.37**. The recorded attestation stands; only the stale
+> byte figure is corrected. ADR-0.0.54 closed **Completed-Partial** on exactly
+> this shape-delivered / weight-deferred split.
+
 ### Value Narrative
 
 **Before:** Encyclopedia-style AGENTS.md at ~30,900 chars — 6× the 15,000-char target. Fail-closed under OBPI-01's budget. Layer 3 (composed view) was being edited directly by agents, drifting from Layer 1 (template + local content) and violating the state-doctrine boundary. The 5:1 governance-to-output ratio (ANTI-VIBING operative claim #1) was paying overhead without mechanical inertness, because the per-turn context surface every agent reads first was over budget.
 
-**After:** Map-shaped AGENTS.md at 15,079 bytes (under budget). Rationale prose, worked examples, anti-pattern catalogs, and operative-claims expansions live at stable URLs under `docs/governance/`. Composition restored: `.gzkit/templates/agents.md` + `.gzkit/agents.local.md` are the canonical source of truth, rendered to AGENTS.md by `gz governance render --target agents-md`. The OpenAI Harness Engineering "map, not encyclopedia" pattern is now mechanically enforced on the file every agent reads first.
+**After:** Map-shaped AGENTS.md — rationale prose, worked examples, anti-pattern catalogs, and operative-claims expansions lifted to stable URLs under `docs/governance/`. (The file remains **above** the 15,000-char target — 31,741 bytes today — under the REQ-05 escape; the weight-halving is deferred to GHI #533 / ADR-0.0.37. The *shape* transformation landed; the *weight* target is tracked-elsewhere.) Composition restored: `.gzkit/templates/agents.md` + `.gzkit/agents.local.md` are the canonical source of truth, rendered to AGENTS.md by `gz governance render --target agents-md`. The OpenAI Harness Engineering "map, not encyclopedia" pattern is now mechanically enforced on the file every agent reads first.
 
 ### Key Proof
 

@@ -29,6 +29,7 @@ Author the map-not-encyclopedia port: the `.gzkit/rules/agents-md-map-doctrine.m
 - `docs/governance/` — OBPI creates `docs/governance/agents-md-doctrine.md` (the canonical expansion)
 - `data/instructions_files_budget.json` — AGENTS.md budget `40000 → 15000`; CLAUDE.md budget `40000 → 4000`
 - `docs/governance/advisory-rules-audit.md` — scorecard entry classifying the new rule
+- `tests/governance/` — OBPI creates `test_agents_md_map_doctrine_obpi01.py` covering the five BEHAVIOR REQs (retroactively documented at ADR-0.0.54 closeout: closes the known GHI #530 Allowed-Paths gap. The test *shape* is the separately-tracked GHI #531 anti-pattern, queued for the ADR-0.0.59 Move 6 decommissioning sweep — that reclassification is out of this closeout's scope)
 - `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/**` — parent ADR package scope
 
 ## Denied Paths
@@ -140,11 +141,11 @@ head -20 docs/governance/agents-md-doctrine.md
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.54-01-01: Given parent ADR § Decision item 1, when this OBPI completes, then `.gzkit/rules/agents-md-map-doctrine.md` exists at body version `0.1.0` with `paths:` scoping `AGENTS.md`, `CLAUDE.md`, and `.claude/rules/*.md`, and a body naming the invariant and the five prohibited shapes.
-- [ ] REQ-0.0.54-01-02: Given the doctrine-expansion requirement, when the repo is inspected, then `docs/governance/agents-md-doctrine.md` exists as the canonical encyclopedia entry.
-- [ ] REQ-0.0.54-01-03: Given `data/instructions_files_budget.json`, when it is read, then the AGENTS.md budget is `15000`, the CLAUDE.md budget is `4000`, and the per-rule-file budget remains `16000`.
-- [ ] REQ-0.0.54-01-04: Given the scorecard requirement, when `docs/governance/advisory-rules-audit.md` is inspected, then it carries a Mechanical-classified entry for the new rule noting that per-section size targets remain Judgment-class.
-- [ ] REQ-0.0.54-01-05: Given the scope boundary, when this OBPI's diff is reviewed, then zero content is moved out of `AGENTS.md` and no lift-target governance doc is written — those are OBPI-02.
+- [ ] REQ-0.0.54-01-01 [BEHAVIOR]: Given parent ADR § Decision item 1, when this OBPI completes, then `.gzkit/rules/agents-md-map-doctrine.md` exists at body version `0.1.0` with `paths:` scoping `AGENTS.md`, `CLAUDE.md`, and `.claude/rules/*.md`, and a body naming the invariant and the five prohibited shapes.
+- [ ] REQ-0.0.54-01-02 [BEHAVIOR]: Given the doctrine-expansion requirement, when the repo is inspected, then `docs/governance/agents-md-doctrine.md` exists as the canonical encyclopedia entry.
+- [ ] REQ-0.0.54-01-03 [BEHAVIOR]: Given `data/instructions_files_budget.json`, when it is read, then the AGENTS.md budget is `15000`, the CLAUDE.md budget is `4000`, and the per-rule-file budget remains `16000`.
+- [ ] REQ-0.0.54-01-04 [BEHAVIOR]: Given the scorecard requirement, when `docs/governance/advisory-rules-audit.md` is inspected, then it carries a Mechanical-classified entry for the new rule noting that per-section size targets remain Judgment-class.
+- [ ] REQ-0.0.54-01-05 [BEHAVIOR]: Given the scope boundary, when this OBPI's diff is reviewed, then zero content is moved out of `AGENTS.md` and no lift-target governance doc is written — those are OBPI-02.
 
 ## Completion Checklist
 
