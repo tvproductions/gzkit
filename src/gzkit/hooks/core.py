@@ -487,7 +487,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
 
     script_path = hooks_path / "ledger-writer.py"
     script_content = generate_hook_script(hook_type, project_root)
-    script_path.write_text(script_content, encoding="utf-8")
+    script_path.write_text(script_content, encoding="utf-8", newline="\n")
 
     # Make executable on Unix
     script_path.chmod(0o755)

@@ -101,7 +101,7 @@ def _claude_hooks_readme() -> str:
 
 def _write_hook_file(path: Path, content: str, executable: bool = False) -> None:
     """Write a generated Claude hook artifact."""
-    path.write_text(content, encoding="utf-8")
+    path.write_text(content, encoding="utf-8", newline="\n")
     if executable:
         path.chmod(0o755)
 
@@ -449,7 +449,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
-    with settings_path.open("w") as f:
+    with settings_path.open("w", newline="\n") as f:
         json.dump(merged, f, indent=2)
         f.write("\n")
 
