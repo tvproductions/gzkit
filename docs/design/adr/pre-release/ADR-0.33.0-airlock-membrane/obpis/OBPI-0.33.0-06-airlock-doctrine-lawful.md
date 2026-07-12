@@ -44,18 +44,20 @@ BINDING governance doctrine — a governance-contract surface that later
 validators and skills ground against, and an irreversible-costly transition
 (un-drafting a lawful North Star). No runtime code is registered here (the
 section-5 claim and its floor-wiring are owned by OBPI-02, the landing keystone
-that lands FIRST); this OBPI's surface is the two docs, the campaign checkbox,
-and a one-way-door regression test.
+that lands FIRST); this OBPI's surface is the two docs and the campaign checkbox.
+The STRUCTURAL-FENCE regression concern (docs stay BINDING) is proven by the
+parent ADR `## Boundary Invariants` #2/#4, audited at ADR closeout — not by a
+doc-content-grep unit test, which the tautological-test audit correctly rejects
+as a content echo rather than a behavior proof (tests.md discriminator).
 
 ## Allowed Paths
 
 <!-- First backtick token on each bullet is the path; **CREATE** marks net-new
      files (existence-gate exempt, GHI #419). -->
 
-- `docs/governance/work-phases-and-airlock.md` — promote the `**Status:** Completed line from "Draft North Star" to binding AND apply the section-2 seam widening (the single "a seam is therefore not a node-type but an **edge**" line becomes the BODY-and-BOUNDARY statement)
-- `docs/governance/four-phases-of-work.md` — promote the `**Status:** Completed line from "Draft theory" to binding (companion doctrine; no body change beyond status)
+- `docs/governance/work-phases-and-airlock.md` — promote the `**Status:**` line from "Draft North Star" to binding AND apply the section-2 seam widening (the single "a seam is therefore not a node-type but an **edge**" line becomes the BODY-and-BOUNDARY statement)
+- `docs/governance/four-phases-of-work.md` — promote the `**Status:**` line from "Draft theory" to binding (companion doctrine; no body change beyond status)
 - `docs/governance/build-to-1.0-campaign-2026-06-30.md` — check the section-7 Phase 3 (HATCH) checklist checkbox `- [ ]` -> `- [x]` as the section-8-gate lawful-making evidence
-- `tests/test_airlock_doctrine_lawful.py` — **CREATE**: the one-way-door regression guard — asserts neither doc carries a "Draft North Star" / "Draft theory" status line, the section-2 BODY-and-BOUNDARY widening string is present, and the Phase 3 campaign checkbox is checked; a tripwire against silent un-drafting of the lawful North Star
 - `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` — parent ADR `## Boundary Invariants` #2 and #4 are the STRUCTURAL-FENCE anchors (read-only reference, no edit)
 - `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/obpis/OBPI-0.33.0-06-airlock-doctrine-lawful.md` — this brief (evidence)
 
@@ -178,7 +180,6 @@ uv run gz test
 # Specific verification for this OBPI (the one-way door — runs only after
 # OBPI-02's section-5 NC bites live in production)
 uv run gz validate --qc-binding
-uv run -m unittest tests.test_airlock_doctrine_lawful -v
 ```
 
 ## Demo
@@ -303,6 +304,14 @@ Date: 2026-07-12
   That prose describes OBPI-02/03/04/05's delivery, not this doctrine-promotion
   OBPI; it is deliberately left untouched here (surgical-change discipline) and
   belongs to the ADR-0.33.0 closeout narrative pass, not FC-6.
+- **Post-attestation correction (pre-push):** the `gz check` tautological-test
+  audit flagged `tests/test_airlock_doctrine_lawful.py` as a doc-content-grep
+  echo (content, not behavior — tests.md discriminator). Per operator direction,
+  the test was **removed**: the STRUCTURAL-FENCE REQs (01/02) are proven by the
+  parent ADR `## Boundary Invariants` #2/#4 at closeout and the SUPPORT REQs
+  (03/04) by ledger + validator — none needed the redundant tripwire. Codex's
+  falsification (above) confirmed the test bit while it existed; its removal
+  changes no proof channel.
 
 ### Value Narrative
 
@@ -312,7 +321,8 @@ membrane is built (OBPI-01–05 landed, the `airlock-in-unaccounted-seam` floor
 claim verifies live), this one-way door promotes both to **BINDING** doctrine,
 carries the operator's §2 seam widening (a seam is both a BODY and a BOUNDARY,
 not edge-only), and discharges the campaign's §8 "work-phase theories lawful"
-1.0 gate — with a regression tripwire guarding against silent un-drafting.
+1.0 gate. The STRUCTURAL-FENCE guard against silent un-drafting is the parent ADR
+`## Boundary Invariants` #2/#4, audited at ADR closeout.
 
 ### Key Proof
 
@@ -322,7 +332,7 @@ $ grep -c "Draft North Star" docs/governance/work-phases-and-airlock.md   # 0
 $ grep -c "Draft theory"     docs/governance/four-phases-of-work.md       # 0
 $ grep -n  "a seam is both a BODY" docs/governance/work-phases-and-airlock.md   # present (§2, line 27)
 $ uv run gz validate --qc-binding        # exit 0 — airlock-in-unaccounted-seam among verified floor
-$ uv run -m unittest tests.test_airlock_doctrine_lawful   # Ran 5 tests, OK
+$ uv run gz validate --documents         # exit 0 — both promoted docs render clean
 ```
 
 Receipts: `arb-step-unittest-1f0624dc`, `arb-ruff-12cf4c57`,
@@ -336,8 +346,11 @@ Receipts: `arb-step-unittest-1f0624dc`, `arb-ruff-12cf4c57`,
   (status → BINDING doctrine), `docs/governance/build-to-1.0-campaign-2026-06-30.md`
   (Phase 3 HATCH box `- [x]` + coherent 6/6 progress note; line-22 summary), and
   this brief (FAIL-CLOSED list reconciled 6→4 to the sibling 1:1 convention).
-- Tests added: `tests/test_airlock_doctrine_lawful.py` — 5 assertions (one-way-door
-  regression tripwire + campaign-coherence guard).
+- Tests: a `tests/test_airlock_doctrine_lawful.py` tripwire was authored and
+  used for the Step-4b falsification, then REMOVED before push — the `gz check`
+  tautological-test audit correctly flagged it as a doc-content-grep echo. The
+  REQs' real proof channels (STRUCTURAL-FENCE parent-ADR invariants; SUPPORT
+  ledger+validator) stand without it.
 - Date completed: 2026-07-12
 - Attestation status: g0 attested "attest completed" (Gate 5, Heavy).
 - Adversary: Codex tier-1 (`gpt-5.6-sol`), REFUTED-WITH-CAVEATS; in-scope defects
