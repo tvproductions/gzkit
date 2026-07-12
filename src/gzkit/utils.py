@@ -29,6 +29,11 @@ def run_exec(cmd: list[str], cwd: Path, timeout: int | None = None) -> tuple[int
         return 124, "", f"TIMEOUT after {timeout}s"
     except FileNotFoundError:
         return 127, "", f"Command not found: {cmd[0]}"
+    except OSError as exc:
+        # A bad cwd or other exec-time OS failure (e.g. NotADirectoryError /
+        # WinError 267 on Windows) must not crash the caller — report it as a
+        # non-zero rc so callers like resolve_git_head_commit degrade to None.
+        return 126, "", f"Exec failed: {exc}"
 
 
 def git_cmd(project_root: Path, *args: str) -> tuple[int, str, str]:

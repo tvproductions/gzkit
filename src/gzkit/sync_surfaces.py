@@ -200,7 +200,7 @@ def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
     manifest_path = project_root / ".gzkit" / "manifest.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with manifest_path.open("w") as f:
+    with manifest_path.open("w", newline="\n") as f:
         json.dump(manifest, f, indent=2)
         f.write("\n")
 
@@ -347,7 +347,7 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
     discovery_path = project_root / config.paths.discovery_index
     discovery_path.parent.mkdir(parents=True, exist_ok=True)
     payload = _discovery_index_payload(project_root, config)
-    discovery_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+    discovery_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 # ---------------------------------------------------------------------------
@@ -421,7 +421,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     content = render_template("claude", **context)
 
     claude_path = project_root / config.paths.claude_md
-    claude_path.write_text(content, encoding="utf-8")
+    claude_path.write_text(content, encoding="utf-8", newline="\n")
 
 
 def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
@@ -437,7 +437,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
 
     copilot_path = project_root / config.paths.copilot_instructions
     copilot_path.parent.mkdir(parents=True, exist_ok=True)
-    copilot_path.write_text(content, encoding="utf-8")
+    copilot_path.write_text(content, encoding="utf-8", newline="\n")
 
 
 # ---------------------------------------------------------------------------
@@ -467,7 +467,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
-    with settings_path.open("w") as f:
+    with settings_path.open("w", newline="\n") as f:
         json.dump(merged, f, indent=2)
         f.write("\n")
 
@@ -590,7 +590,9 @@ def sync_copilotignore(project_root: Path) -> None:
 
     """
     copilotignore_path = project_root / ".copilotignore"
-    copilotignore_path.write_text(generate_copilotignore(project_root), encoding="utf-8")
+    copilotignore_path.write_text(
+        generate_copilotignore(project_root), encoding="utf-8", newline="\n"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -838,7 +840,7 @@ def sync_persona_mirrors(
                 continue
             rendered = render_persona_for_vendor(vendor_name, fm, body)
             out_path = target_dir / persona_path.name
-            out_path.write_text(rendered, encoding="utf-8")
+            out_path.write_text(rendered, encoding="utf-8", newline="\n")
             updated.append(str(Path(target_dir_rel) / persona_path.name))
 
     return updated

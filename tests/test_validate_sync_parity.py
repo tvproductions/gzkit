@@ -64,15 +64,18 @@ class _SyncParityBase(unittest.TestCase):
         assert _project_dir is not None
         if Path.cwd() != _project_dir:
             os.chdir(_project_dir)
-        self._snapshots: dict[Path, str] = {}
+        self._snapshots: dict[Path, bytes] = {}
         for rel in self._mutable_paths:
             p = Path(rel)
             if p.exists():
-                self._snapshots[p] = p.read_text(encoding="utf-8")
+                # Preserve exact bytes: a read_text/write_text round-trip
+                # translates LF->CRLF on Windows, corrupting the shared module
+                # tree's line endings and polluting sibling tests.
+                self._snapshots[p] = p.read_bytes()
 
     def tearDown(self) -> None:
         for p, content in self._snapshots.items():
-            p.write_text(content, encoding="utf-8")
+            p.write_bytes(content)
 
 
 class SyncParityCleanTreeTest(_SyncParityBase):
@@ -124,7 +127,7 @@ class SyncParityContentDriftTest(_SyncParityBase):
         assert hook_file is not None
         # Snapshot this specific hook so tearDown restores it even though the
         # class-level _mutable_paths doesn't know which hook file we picked.
-        self._snapshots[hook_file] = hook_file.read_text(encoding="utf-8")
+        self._snapshots[hook_file] = hook_file.read_bytes()
         hook_file.write_text(
             hook_file.read_text(encoding="utf-8") + "\n# rogue hand-edit\n",
             encoding="utf-8",
@@ -282,8 +285,12 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             root = Path(tmp)
             default_path = root / ".codex" / "config.toml"
             default_path.parent.mkdir(parents=True)
-            default_path.write_text(render_codex_config(), encoding="utf-8")
+            default_path.write_text(render_codex_config(), encoding="utf-8", newline="\n")
             default_path.chmod(0o600)
+            # Windows cannot represent 0o600 — chmod only toggles the write bit,
+            # so stat reports 0o666. Assert the mode is PRESERVED by the
+            # write-compare-restore, not equal to a POSIX-only literal.
+            mode_before = default_path.stat().st_mode & 0o777
             config = GzkitConfig(
                 project_name="demo",
                 paths=PathConfig(codex_config="generated/codex.toml"),
@@ -292,7 +299,7 @@ class CodexConfigSyncParityTest(_SyncParityBase):
 
             check_sync_parity(root, config)
 
-            self.assertEqual(default_path.stat().st_mode & 0o777, 0o600)
+            self.assertEqual(default_path.stat().st_mode & 0o777, mode_before)
             self.assertFalse((root / "generated").exists())
 
     @covers("REQ-0.44.0-01-04")
