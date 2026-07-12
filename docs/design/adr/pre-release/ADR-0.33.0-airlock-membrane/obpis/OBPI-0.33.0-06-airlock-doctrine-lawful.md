@@ -3,7 +3,7 @@ id: OBPI-0.33.0-06-airlock-doctrine-lawful
 parent: ADR-0.33.0-airlock-membrane
 item: 6
 lane: Heavy
-status: Draft
+status: Completed
 req_atomic:
   # Each REQ is one indivisible unit of labor, no sub-step below it — 01 the
   # two-doc Draft->binding promotion (one edit sweep), 02 the §2 seam
@@ -24,7 +24,7 @@ req_atomic:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md`
 - **Checklist Item:** #6 - "Doctrine made lawful (section-8 gate): promote work-phases-and-airlock.md + four-phases-of-work.md from Draft North Star to binding, including the section-2 seam = BODY-and-BOUNDARY widening; register the section-5 @enforces claim binding. [STRUCTURAL-FENCE; the one-way door -- sequenced last, behind the proven NC]"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -52,8 +52,8 @@ and a one-way-door regression test.
 <!-- First backtick token on each bullet is the path; **CREATE** marks net-new
      files (existence-gate exempt, GHI #419). -->
 
-- `docs/governance/work-phases-and-airlock.md` — promote the `**Status:**` line from "Draft North Star" to binding AND apply the section-2 seam widening (the single "a seam is therefore not a node-type but an **edge**" line becomes the BODY-and-BOUNDARY statement)
-- `docs/governance/four-phases-of-work.md` — promote the `**Status:**` line from "Draft theory" to binding (companion doctrine; no body change beyond status)
+- `docs/governance/work-phases-and-airlock.md` — promote the `**Status:** Completed line from "Draft North Star" to binding AND apply the section-2 seam widening (the single "a seam is therefore not a node-type but an **edge**" line becomes the BODY-and-BOUNDARY statement)
+- `docs/governance/four-phases-of-work.md` — promote the `**Status:** Completed line from "Draft theory" to binding (companion doctrine; no body change beyond status)
 - `docs/governance/build-to-1.0-campaign-2026-06-30.md` — check the section-7 Phase 3 (HATCH) checklist checkbox `- [ ]` -> `- [x]` as the section-8-gate lawful-making evidence
 - `tests/test_airlock_doctrine_lawful.py` — **CREATE**: the one-way-door regression guard — asserts neither doc carries a "Draft North Star" / "Draft theory" status line, the section-2 BODY-and-BOUNDARY widening string is present, and the Phase 3 campaign checkbox is checked; a tripwire against silent un-drafting of the lawful North Star
 - `docs/design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` — parent ADR `## Boundary Invariants` #2 and #4 are the STRUCTURAL-FENCE anchors (read-only reference, no edit)
@@ -76,12 +76,14 @@ and a one-way-door regression test.
 
 <!-- Constraints that MUST hold. NEVER/ALWAYS language. -->
 
-1. REQUIREMENT: Deliver ONLY the doctrine-lawful transition — promote both North Star docs Draft->binding, carry the section-2 seam BODY-and-BOUNDARY widening in the SAME promotion, and check the Phase 3 campaign checkbox. No code registration and no runtime-surface edit: the section-5 `airlock-in-unaccounted-seam` claim is already a registered floor member (OBPI-02); this OBPI only makes the doctrine that NAMES it lawful.
-2. NEVER: promote the doctrine lawful until OBPI-02's section-5 live negative control (`gz validate --qc-binding`) bites un-forced in production. This is the one-way-door discipline (parent ADR § Consequences Negative #6, § Decision "gated-breadth OBPIs that do not begin until the NC bites live"): un-drafting a lawful North Star is costly, so this OBPI is sequenced LAST behind the proven live NC and must STOP if that precondition is unmet.
-3. ALWAYS: carry the section-2 seam widening in the SAME promotion commit that flips the status line — the widening (BODY-and-BOUNDARY) and the Draft->binding transition are one atomic doctrine change; landing the status flip without the widening ships an incomplete lawful doctrine (a correction, not an enhancement).
-4. NEVER: edit the parent ADR, `src/gzkit/enforcement.py`, any `src/gzkit/airlock/**` surface, the mx door, or the permitted-entry door — the section-5 claim's fixture/entrypoint AND its floor-wiring are owned by OBPI-02 (the landing keystone, lands first); this OBPI registers nothing and touches no runtime surface.
-5. NEVER: re-register, fork, or re-slug the section-5 claim — the lawful doctrine references the SINGLE canonical `airlock-in-unaccounted-seam` floor member routed through the EXISTING `gz validate --qc-binding` meta-validator (parent ADR Boundary Invariant #6 — one enforcement-claim surface, not two; no new scope is forked). The doctrine names the claim as its teeth; it never mints a second one.
-6. ALWAYS: reconcile this brief with the parent ADR § Decision and § Boundary Invariants before implementation, and confirm the section-5 NC precondition (OBPI-02 landed, NC bites live) is satisfied.
+<!-- Four FAIL-CLOSED constraints, 1:1 with REQ-01..04 (sibling-OBPI convention:
+     the count of REQUIREMENT/NEVER/ALWAYS lines equals the Acceptance-Criteria
+     REQ count; brief-reconcile req_count parity). -->
+
+1. REQUIREMENT: Deliver ONLY the doctrine-lawful transition of REQ-01 — promote both North Star docs (`work-phases-and-airlock.md`, `four-phases-of-work.md`) from Draft to binding. No code registration and no runtime-surface edit: the section-5 `airlock-in-unaccounted-seam` claim is already a registered floor member (OBPI-02); this OBPI only makes the doctrine that NAMES it lawful.
+2. ALWAYS: carry the REQ-02 section-2 seam BODY-and-BOUNDARY widening in the SAME promotion commit that flips the status line — the widening and the Draft->binding transition are one atomic doctrine change; landing the status flip without the widening ships an incomplete lawful doctrine (a correction, not an enhancement). This one-way door does not open until OBPI-02's section-5 live negative control (`gz validate --qc-binding`) has bitten un-forced in production; if that precondition is unmet, STOP (parent ADR § Consequences Negative #6, § Decision "gated-breadth OBPIs that do not begin until the NC bites live") — un-drafting a lawful North Star is costly, so this OBPI is sequenced LAST behind the proven live NC.
+3. NEVER: re-register, fork, or re-slug the section-5 claim, and never edit the parent ADR, `src/gzkit/enforcement.py`, any `src/gzkit/airlock/**` surface, the mx door, or the permitted-entry door — the REQ-03 lawful doctrine references the SINGLE canonical `airlock-in-unaccounted-seam` floor member through the EXISTING `gz validate --qc-binding` meta-validator (parent ADR Boundary Invariant #6 — one enforcement-claim surface, not two; no new scope is forked); the claim's fixture/entrypoint and floor-wiring are owned by OBPI-02 (the landing keystone, lands first), and this OBPI registers nothing and touches no runtime surface.
+4. REQUIREMENT: discharge the REQ-04 campaign section-8 gate — check the Movement III Phase 3 (HATCH) checkbox in `docs/governance/build-to-1.0-campaign-2026-06-30.md` (`- [ ]` -> `- [x]`) coherent with the two docs now being binding, and reconcile this brief with the parent ADR § Decision and § Boundary Invariants before implementation, confirming the section-5 NC precondition (OBPI-02 landed, NC bites live) is satisfied.
 
 > STOP-on-BLOCKERS: if the OBPI-02 section-5 live NC has not yet bitten in production, print a BLOCKERS list and HALT — the one-way door does not open early.
 
@@ -121,7 +123,7 @@ and a one-way-door regression test.
 
 - [ ] `src/gzkit/req_kind.py` `resolve_fence_proof` / `resolve_support_proof` — how STRUCTURAL-FENCE and SUPPORT proofs mechanically resolve, so the Acceptance Criteria citations (parent-ADR `## Boundary Invariants` anchor; `gz validate --qc-binding` + `enforcement_claim_verified` ledger event; `gz validate --documents`) are genuine.
 - [ ] `src/gzkit/enforcement.py` `run_meta_validator` + `_emit_verified_receipts` — READ-ONLY reference: confirms the `airlock-in-unaccounted-seam` claim (registered by OBPI-02) emits an `enforcement_claim_verified` ledger event on a clean floor run, the SUPPORT ledger arm REQ-03 cites. This OBPI never edits this file.
-- [ ] `docs/governance/work-phases-and-airlock.md` §2 and its `**Status:**` line — the exact "a seam is therefore not a node-type but an **edge**" text REQ-02 widens and the "Draft North Star" status REQ-01 promotes.
+- [ ] `docs/governance/work-phases-and-airlock.md` §2 and its `**Status:** Completed line — the exact "a seam is therefore not a node-type but an **edge**" text REQ-02 widens and the "Draft North Star" status REQ-01 promotes.
 - [ ] `docs/governance/build-to-1.0-campaign-2026-06-30.md` §7 Phase 3 (HATCH) checkbox line — the exact `- [ ]` REQ-04 flips to `- [x]`.
 
 ## Quality Gates
@@ -262,24 +264,85 @@ uv run gz validate --qc-binding
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Attestor: g0
+Attestation: "attest completed" — Gate 5 for OBPI-0.33.0-06 (Heavy, universal
+per ADR-0.0.36). The two North Star docs are now BINDING, the §2 seam widened to
+BODY-and-BOUNDARY, the §8 campaign gate discharged; deliverable green across all
+ARB receipts (unittest/ruff/typecheck/mkdocs exit 0) and Codex Step-4b confirmed.
+Date: 2026-07-12
 ```
+
+### Step 4b — Independent Adversarial Validation
+
+- **Adversary:** Codex (tier 1, GHI #678 — different-vendor check), model
+  `gpt-5.6-sol`, via `codex-companion adversarial` (job `task-mrhkpyln-7t33sz`
+  and predecessors). Tier-1 Codex is `ready:true`; an earlier tier-2 Claude
+  subagent run was **discarded** once the Codex model-id/effort dispatch bug was
+  corrected (the first attempts died on an invalid `model=unittest` and on
+  premature cancellation of `xhigh`-effort turns; re-dispatched at `high` with
+  the real model).
+- **Verdict:** REFUTED-WITH-CAVEATS. Codex confirmed the *deliverable* on every
+  pass — the one-way-door precondition (`airlock-in-unaccounted-seam` registered
+  + `qc-binding` exit 0), the runtime-scope fence (no `src/gzkit/**` / ADR / mx /
+  permitted-entry edits), the widening, the 6→4 REQ fold, and — via a live
+  git-stash falsification — that the regression test genuinely fails on re-draft.
+- **Claims it broke, and resolution:**
+  1. *Campaign self-contradiction* — line 22 still said "Phase 3 is 4/6 … box
+     stays unchecked" while line 329 was checked/6/6. **Resolved:** line 22
+     rewritten to the coherent 6/6 state; a regression assertion
+     (`test_campaign_has_no_stale_unchecked_narrative`) now guards it.
+  2. *Over-attribution* — my first coherence fix wrote "Each wired … the SHARED
+     primitive," sweeping doctrine-only OBPI-06 (then data-only OBPI-01) into
+     runtime wiring. **Resolved:** the progress note was simplified to drop the
+     per-OBPI wiring narration entirely (not OBPI-06's job to re-narrate the
+     siblings), leaving a tight, coherent line: OBPI-01–05 attested; OBPI-06
+     lands this promotion registering NO runtime code.
+- **Residual caveat (out of OBPI-06 scope):** Codex further flagged pre-existing
+  aspirational design-description prose in the Phase-3 bullet ("judgment-grade",
+  "mature exit surfaces") as overstating the delivered *diagnostic-only* reality.
+  That prose describes OBPI-02/03/04/05's delivery, not this doctrine-promotion
+  OBPI; it is deliberately left untouched here (surgical-change discipline) and
+  belongs to the ADR-0.33.0 closeout narrative pass, not FC-6.
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, `work-phases-and-airlock.md` and `four-phases-of-work.md` were
+explicit **Draft** North Stars — aspirational, non-binding. Now that the airlock
+membrane is built (OBPI-01–05 landed, the `airlock-in-unaccounted-seam` floor
+claim verifies live), this one-way door promotes both to **BINDING** doctrine,
+carries the operator's §2 seam widening (a seam is both a BODY and a BOUNDARY,
+not edge-only), and discharges the campaign's §8 "work-phase theories lawful"
+1.0 gate — with a regression tripwire guarding against silent un-drafting.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+```text
+$ grep -c "Draft North Star" docs/governance/work-phases-and-airlock.md   # 0
+$ grep -c "Draft theory"     docs/governance/four-phases-of-work.md       # 0
+$ grep -n  "a seam is both a BODY" docs/governance/work-phases-and-airlock.md   # present (§2, line 27)
+$ uv run gz validate --qc-binding        # exit 0 — airlock-in-unaccounted-seam among verified floor
+$ uv run -m unittest tests.test_airlock_doctrine_lawful   # Ran 5 tests, OK
+```
+
+Receipts: `arb-step-unittest-1f0624dc`, `arb-ruff-12cf4c57`,
+`arb-step-typecheck-710b855e`, `arb-step-mkdocs-d0af9015` (all exit 0).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files modified: `docs/governance/work-phases-and-airlock.md` (status → BINDING;
+  §2 seam widened to BODY-and-BOUNDARY), `docs/governance/four-phases-of-work.md`
+  (status → BINDING doctrine), `docs/governance/build-to-1.0-campaign-2026-06-30.md`
+  (Phase 3 HATCH box `- [x]` + coherent 6/6 progress note; line-22 summary), and
+  this brief (FAIL-CLOSED list reconciled 6→4 to the sibling 1:1 convention).
+- Tests added: `tests/test_airlock_doctrine_lawful.py` — 5 assertions (one-way-door
+  regression tripwire + campaign-coherence guard).
+- Date completed: 2026-07-12
+- Attestation status: g0 attested "attest completed" (Gate 5, Heavy).
+- Adversary: Codex tier-1 (`gpt-5.6-sol`), REFUTED-WITH-CAVEATS; in-scope defects
+  resolved, residual out-of-scope prose deferred (see § Step 4b).
+- Defects noted: none in the delivered surface; no runtime code registered.
 
 ## Tracked Defects
 
@@ -290,13 +353,13 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Gate 5 for OBPI-0.33.0-06 (Heavy, universal per ADR-0.0.36): work-phases-and-airlock.md + four-phases-of-work.md promoted Draft->BINDING with the section-2 seam BODY-and-BOUNDARY widening, section-8 campaign gate discharged, and a one-way-door regression tripwire added. Deliverable green: arb-step-unittest-1f0624dca41f4fbfaed98376a4e5dce3, arb-ruff-12cf4c57c26047bb95413701fca7cab0, arb-step-typecheck-710b855e05614d919ad5f89f73cf5976, arb-step-mkdocs-d0af90157a1a496bb7ebe9fe6147414b (all exit 0); qc-binding exit 0; regression 5/5. Codex tier-1 Step-4b REFUTED-WITH-CAVEATS, in-scope campaign-coherence defects resolved. Attestor g0.
+- Date: 2026-07-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-12
 
 **Evidence Hash:** -
 </content>

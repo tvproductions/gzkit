@@ -2,7 +2,7 @@
 
 # Work Phases and the Airlock — a North Star Model
 
-**Status:** Draft North Star. Captured from the operator design dialogue of 2026-06-16, **apparatus-scanned the same day** (5-pass skill scan; findings in §7), and **ratified into the Build-to-1.0 campaign (Magna Carta) as item E.7**. Still *a thing to align the apparatus to, revised as the apparatus tells* — the adopting foundation ADR is sequenced behind the campaign's current topmost work (no queue-jump). Alignment, tuning, and the entry-airlock build are the constructive follow-on; renaming defers to Phase I (completion-before-reduction). The *theory of the four phases* now lives in its sibling doc [`four-phases-of-work.md`](four-phases-of-work.md); §4 here references it. Per operator ruling 2026-06-17, Magna Carta is **not complete** until these theories are realized, substantiated, and made lawful — a 1.0 goal-state gate.
+**Status:** **BINDING** — the airlock's lawful North Star, made binding 2026-07-12 by ADR-0.33.0-airlock-membrane / OBPI-0.33.0-06 (the campaign's Movement III section-8 "1.0 gate"), promoted from its prior draft. The membrane described here is realized: the `gzkit.airlock` primitive is extracted and wired at pipeline Stage 1 (in) / Stage 5 (out), and its enforcement teeth are the registered floor claim `airlock-in-unaccounted-seam`, routed through the `gz validate --qc-binding` meta-validator. Captured from the operator design dialogue of 2026-06-16, apparatus-scanned the same day (5-pass skill scan; findings in §7), and ratified into the Build-to-1.0 campaign (Magna Carta) as item E.7. The *theory of the four phases* lives in its sibling doc [`four-phases-of-work.md`](four-phases-of-work.md); §4 here references it. Working-name terminology (see **Naming** below) still defers to Phase I (completion-before-reduction).
 
 **Naming:** "airlock", "seam", "two-graph", "push/pull" are working names. Final terminology is the operator's to set — the operator has flagged that the five-gate vocabulary "came from one session ten or eleven months ago and stuck" and wants less cryptic terms.
 
@@ -24,7 +24,7 @@ gzkit's essence is not "five gates." It is **model-in / model-out through a grap
 
 ## 2. The two-graph: what a seam is
 
-gzkit exists to make **code and design artifacts that either enable or constrain.** A *seam* is therefore not a node-type but an **edge** — a typed relationship between any two artifacts (code or design). Two edge-types, two origins, two layers, two directions:
+gzkit exists to make **code and design artifacts that either enable or constrain** — and a seam is both a BODY (a contiguous region of similarity) and a BOUNDARY (the join between regions); the airlock reasons about both. The **body** is the FOOTPRINT (at the pipeline door, the OBPI brief's declared Allowed Paths); the **boundary** is the push/pull edges — a typed relationship between any two artifacts (code or design). Two edge-types, two origins, two layers, two directions:
 
 | edge | origin | provenance | direction | the airlock asks |
 |---|---|---|---|---|
