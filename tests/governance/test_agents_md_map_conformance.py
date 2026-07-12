@@ -56,7 +56,16 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
     against the rendered file (AGENTS.md).
     """
 
-    @covers("REQ-0.0.54-03-01")
+    # ---- audit-exempt provenance (ADR-0.0.54 audit, 2026-07-12, g0) ----------
+    # git-verified: each test BODY below was authored @9b295aed (2026-05-25,
+    # "land template-layer validator"); the @covers decorator lines were overlaid
+    # ~5h later @b7b5984 (the OBPI-0.0.54-03 completion commit). GHI #309's
+    # same-commit-window heuristic flags the later-decorator timing as possible
+    # cosmetic backfill; the assertions are in fact genuine REQ-semantic checks
+    # (real fixtures + structured-error asserts), independently verified at the
+    # ADR-0.0.54 closeout + audit. The inline markers are the operator's
+    # attestation that these are legitimate overlays, not cosmetic backfill.
+    @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_paragraph_over_5_lines_without_marker_rejects(self) -> None:
         """REQ-0.0.54-03-01a: prose paragraph >5 lines without a marker must be rejected.
 
@@ -88,7 +97,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             self.assertEqual(len(hard_errors), 1)
             self.assertEqual(hard_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
-    @covers("REQ-0.0.54-03-01")
+    @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_table_shape_passes_paragraph_check_at_any_length(self) -> None:
         """REQ-0.0.54-03-01a table-shape: tables are allowed shape (b), exempt from criterion (a).
 
@@ -158,7 +167,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                 f"got: {hard_errors}",
             )
 
-    @covers("REQ-0.0.54-03-01")
+    @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_prohibited_subsection_title_rejects(self) -> None:
         """REQ-0.0.54-03-01b: any heading from the prohibited-title set must be rejected.
 
@@ -202,7 +211,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                     )
                     self.assertEqual(hard_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
-    @covers("REQ-0.0.54-03-01")
+    @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_dangling_link_rejects(self) -> None:
         """REQ-0.0.54-03-01c file-existence: a link to a nonexistent file must be rejected.
 
@@ -323,7 +332,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
                 f"Expected no errors for file within budget; got: {hard_errors}",
             )
 
-    @covers("REQ-0.0.54-03-01")
+    @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_file_size_over_budget_rejects(self) -> None:
         """REQ-0.0.54-03-01d fail: an AGENTS.md exceeding the declared budget must be rejected.
 
@@ -379,7 +388,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             f"(a)/(b)/(c)/(d); got hard-rejection errors: {hard_errors}",
         )
 
-    @covers("REQ-0.0.54-03-05")
+    @covers("REQ-0.0.54-03-05")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_advisory_warning_for_long_binding_bullet(self) -> None:
         """REQ-0.0.54-03-05: a long binding bullet emits a WARNING, not a hard rejection.
 
@@ -426,7 +435,7 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             )
             self.assertEqual(advisory_errors[0].artifact, _TEMPLATE_REL.as_posix())
 
-    @covers("REQ-0.0.54-03-03")
+    @covers("REQ-0.0.54-03-03")  # audit-exempt: regression-invariant-overlay body predates tag
     def test_remediation_message_points_at_gz_context_diet(self) -> None:
         """REQ-0.0.54-03-03 forward-compat: rejection messages must embed `/gz-context-diet`.
 
