@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.31.0",
+  "gzkit_version": "0.32.0",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -55,6 +55,7 @@
       "gz-adr-sync/SKILL.md",
       "gz-advisor-qc/SKILL.md",
       "gz-agent-sync/SKILL.md",
+      "gz-airlock/SKILL.md",
       "gz-arb/SKILL.md",
       "gz-brief-reconcile/SKILL.md",
       "gz-check/SKILL.md",
