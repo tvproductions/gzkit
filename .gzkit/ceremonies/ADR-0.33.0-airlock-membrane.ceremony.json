@@ -1,0 +1,52 @@
+{
+  "adr_id": "ADR-0.33.0-airlock-membrane",
+  "current_step": 5,
+  "is_foundation": false,
+  "started_at": "2026-07-12T11:50:52Z",
+  "updated_at": "2026-07-12T11:57:31Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-07-12T11:50:52Z",
+      "acknowledged_at": "2026-07-12T11:51:00Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-07-12T11:51:00Z",
+      "acknowledged_at": "2026-07-12T11:53:21Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-07-12T11:53:21Z",
+      "acknowledged_at": "2026-07-12T11:53:36Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-07-12T11:53:36Z",
+      "acknowledged_at": "2026-07-12T11:53:58Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-07-12T11:53:58Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz airlock in --target OBPI-0.33.0-01 --phase build --dry-run",
+    "uv run gz validate --qc-binding",
+    "uv run gz airlock out --target OBPI-0.33.0-01 --dry-run",
+    "uv run gz airlock out --target OBPI-0.33.0-01 --json",
+    "uv run gz airlock out --target OBPI-0.33.0-01",
+    "uv run gz airlock out --target OBPI-0.33.0-01 --json",
+    "uv run gz permitted-entry --target src/gzkit/quality.py --recon",
+    "uv run gz permitted-entry --target docs/governance/state-doctrine.md --recon --dry-run",
+    "uv run gz permitted-entry --target README.md --repair \"fix typo in badge line\" --dry-run",
+    "uv run gz permitted-entry --target src/gzkit/ledger.py --repair \"refactor event schema\" --dry-run",
+    "uv run gz validate --qc-binding"
+  ],
+  "walkthrough_index": 1,
+  "attestation": null,
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}

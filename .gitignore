@@ -72,3 +72,7 @@ site/
 
 # Ontology last-sweep diff-baseline cache (ADR-0.32.0 — Tier-B derived, regenerable, never authority)
 .gzkit/ontology/last_sweep.json
+
+# Closeout ceremony turn-lock (transient per-turn step-lock; the sibling
+# .ceremony.json is the tracked ceremony state, the .turn-lock is not)
+.gzkit/ceremonies/*.turn-lock
