@@ -102,6 +102,28 @@ class TestCreateHandoff(unittest.TestCase):
             after = len(list(handoff_dir.glob("*.md")))
             self.assertEqual(before, after, "invalid document must NOT be written")
 
+    @covers("REQ-0.0.65-02-01")
+    def test_written_document_has_single_trailing_newline(self) -> None:
+        # The repo EOF policy (end-of-file-fixer pre-commit hook) requires exactly
+        # one trailing newline; a create_handoff-authored file must be commit-clean
+        # on the first pass, not tripped by the hook on every write (GHI #684).
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            path = create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="eof-check",
+                sections=_SEVEN_SECTIONS,
+                base_path=base,
+                timestamp="2026-07-12T10:00:00Z",
+            )
+            text = path.read_text(encoding="utf-8")
+            self.assertTrue(text.endswith("\n"), "document must end with a newline")
+            self.assertFalse(
+                text.endswith("\n\n"), "document must not end with a trailing blank line"
+            )
+
 
 class TestScaffoldHandoff(unittest.TestCase):
     @covers("REQ-0.0.65-02-02")

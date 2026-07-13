@@ -154,7 +154,9 @@ def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
         content = sections.get(section, "").strip()
         if content:
             parts.append(content + "\n\n")
-    return "".join(parts)
+    # Normalize to a single trailing newline so the authored file satisfies the
+    # repo EOF policy (end-of-file-fixer hook) on the first commit pass (GHI #684).
+    return "".join(parts).rstrip("\n") + "\n"
 
 
 def _extract_first_next_step(content: str) -> str:
