@@ -1299,6 +1299,9 @@ uv run gz task start TASK-<id>             # Start a pending task
 uv run gz task complete TASK-<id>          # Complete an in-progress task
 uv run gz task block TASK-<id> --reason "..." # Block with reason
 uv run gz task escalate TASK-<id> --reason "..." # Escalate with reason
+uv run gz task start --req REQ-<id> --seq next  # Subdivide a REQ into a new per-labor-unit TASK (ADR-0.0.64)
+uv run gz task fanout REQ-<id>             # Per-REQ TASK fan-out readback (ADR-0.0.64)
+uv run gz task envelope diagnose OBPI-<id> # Per-channel TASK declarations side-by-side; four-channel layer-drift diagnosis (ADR-0.0.64)
 ```
 
 ---

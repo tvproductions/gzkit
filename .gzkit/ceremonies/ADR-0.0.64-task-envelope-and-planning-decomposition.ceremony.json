@@ -1,9 +1,9 @@
 {
   "adr_id": "ADR-0.0.64-task-envelope-and-planning-decomposition",
-  "current_step": 2,
+  "current_step": 11,
   "is_foundation": true,
   "started_at": "2026-07-12T23:44:06Z",
-  "updated_at": "2026-07-12T23:51:27Z",
+  "updated_at": "2026-07-13T00:16:58Z",
   "step_history": [
     {
       "step": 1,
@@ -13,6 +13,41 @@
     {
       "step": 2,
       "presented_at": "2026-07-12T23:44:56Z",
+      "acknowledged_at": "2026-07-13T00:10:35Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-07-13T00:10:35Z",
+      "acknowledged_at": "2026-07-13T00:11:33Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-07-13T00:11:33Z",
+      "acknowledged_at": "2026-07-13T00:11:58Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-07-13T00:11:58Z",
+      "acknowledged_at": "2026-07-13T00:13:40Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-07-13T00:13:40Z",
+      "acknowledged_at": "2026-07-13T00:14:57Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-07-13T00:14:57Z",
+      "acknowledged_at": "2026-07-13T00:15:54Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-07-13T00:15:54Z",
+      "acknowledged_at": "2026-07-13T00:16:58Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-07-13T00:16:58Z",
       "acknowledged_at": null
     }
   ],
@@ -22,9 +57,9 @@
     "uv run gz task envelope diagnose --help",
     "uv run gz task fanout --help"
   ],
-  "walkthrough_index": 0,
-  "attestation": null,
-  "completed_at": null,
+  "walkthrough_index": 3,
+  "attestation": "Completed — TASK-envelope capability delivered and honestly decomposed. Hollow-gate integrity findings corrected in-place (not deferred): OBPI-02/03 scaffold-default REQs re-authored with [kind] tags over 11 genuine tests, cosmetic .is_file() tests deleted, gz task envelope diagnose fixed to read all four channels (+ genuine REQ-04-05 test), 8->12 event / 3->4 signature drifts reconciled (task-discovery.md v0.3.0 + ADR reconciliation note), runbook gap closed. Receipts: arb-ruff-f1becc372d8a4ec6af4045343e0a1e69, arb-step-typecheck-db354d379e884aea98161f4bbbc26658, arb-step-unittest-da4d07dd5042422b882c2026122f2431, arb-step-mkdocs-ce2a7565e2b64da5bd64bba2dc425684.",
+  "completed_at": "2026-07-13T00:16:58Z",
   "attempt": 1,
   "paused_at": "2026-07-12T23:51:27Z"
 }

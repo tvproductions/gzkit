@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.64-task-envelope-and-planning-decomposition
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.64
 lane: heavy
@@ -332,4 +332,4 @@ Lane: heavy (new validator scope; new ledger schema field; new CLI surfaces; new
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.64 | Pending | | | |
+| 0.0.64 | Completed | g0 | 2026-07-12 | Completed — TASK-envelope capability delivered and honestly decomposed. Hollow-gate integrity findings corrected in-place (not deferred): OBPI-02/03 scaffold-default REQs re-authored with [kind] tags over 11 genuine tests, cosmetic .is_file() tests deleted, gz task envelope diagnose fixed to read all four channels (+ genuine REQ-04-05 test), 8->12 event / 3->4 signature drifts reconciled (task-discovery.md v0.3.0 + ADR reconciliation note), runbook gap closed. Receipts: arb-ruff-f1becc372d8a4ec6af4045343e0a1e69, arb-step-typecheck-db354d379e884aea98161f4bbbc26658, arb-step-unittest-da4d07dd5042422b882c2026122f2431, arb-step-mkdocs-ce2a7565e2b64da5bd64bba2dc425684. |
