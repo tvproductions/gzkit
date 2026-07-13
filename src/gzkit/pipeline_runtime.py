@@ -429,6 +429,31 @@ def _find_drifted_path(
     return "(missing)"
 
 
+def _stage2_drift_blocker(
+    obpi_id: str,
+    has_drift: bool,
+    drifted_dims: list[str],
+) -> list[str]:
+    """Blocking message for meaningful reconcile drift, or ``[]`` when clear.
+
+    req_count is the known-crude heuristic (GHI #581) — advisory, never a
+    Stage-2 blocker. It compares fail-closed Requirements-section bullets
+    against Acceptance-criteria checkboxes, which are legitimately different
+    counts. Block only on the meaningful drift dimensions
+    (allowlist/discovery/verification/citation), or fail-closed on an
+    unattributable has_drift signal.
+    """
+    blocking_dims = [d for d in drifted_dims if d != "req_count"]
+    if has_drift and (blocking_dims or not drifted_dims):
+        dims_str = ", ".join(blocking_dims) if blocking_dims else "unknown"
+        return [
+            f"Stage 2 entry blocked: receipt for {obpi_id} has_drift=True "
+            f"(drifted dimensions: {dims_str}). "
+            f"Run `gz brief reconcile {obpi_id}` to refresh."
+        ]
+    return []
+
+
 def check_reconcile_receipt_gate(
     obpi_id: str,
     brief_path: Path,
@@ -507,15 +532,7 @@ def check_reconcile_receipt_gate(
             f"Run `gz brief reconcile {obpi_id}` to refresh."
         ]
 
-    if has_drift:
-        dims_str = ", ".join(drifted_dims) if drifted_dims else "unknown"
-        return [
-            f"Stage 2 entry blocked: receipt for {obpi_id} has_drift=True "
-            f"(drifted dimensions: {dims_str}). "
-            f"Run `gz brief reconcile {obpi_id}` to refresh."
-        ]
-
-    return []
+    return _stage2_drift_blocker(obpi_id, has_drift, drifted_dims)
 
 
 def check_airlock_in_gate(

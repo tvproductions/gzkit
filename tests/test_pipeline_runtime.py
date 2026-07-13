@@ -1079,6 +1079,50 @@ class TestCheckReconcileReceiptGate(unittest.TestCase):
             self.assertIn("has_drift=True", blockers[0])
             self.assertIn("allowlist", blockers[0])
 
+    def test_gate_does_not_block_on_req_count_only_drift(self) -> None:
+        """req_count-only drift is advisory, not a Stage-2 blocker (GHI #581).
+
+        The req_count heuristic compares fail-closed Requirements-section
+        bullets against Acceptance-criteria checkboxes — legitimately
+        different counts (every real brief in ADR-0.0.72 has a non-zero
+        delta). Blocking on it fail-closes valid work, so req_count is
+        excluded from the blocking dimensions; meaningful drift dimensions
+        (allowlist/discovery/verification/citation) still block.
+        """
+        import os
+        import time
+
+        from gzkit.pipeline_runtime import check_reconcile_receipt_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "foo.py"
+            src.parent.mkdir(parents=True)
+            src.write_text("x", encoding="utf-8")
+            old_mtime = time.time() - 200
+            os.utime(src, (old_mtime, old_mtime))
+
+            fresh_ts = datetime.fromtimestamp(time.time(), tz=UTC)
+            events = [
+                {
+                    "event": "brief_reconciled",
+                    "id": "OBPI-0.0.37-07-test",
+                    "brief_id": "OBPI-0.0.37-07-test",
+                    "ts": fresh_ts.isoformat(),
+                    "has_drift": True,
+                    "allowlist_delta_count": 0,
+                    "discovery_delta_count": 0,
+                    "verification_delta_count": 0,
+                    "req_count_delta": 4,
+                    "citation_delta_count": 0,
+                }
+            ]
+            self._write_ledger(root, events)
+            brief = self._write_legacy_brief(root, "OBPI-0.0.37-07-test", ["src/foo.py"])
+
+            blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
+            self.assertEqual(blockers, [])
+
     @covers("REQ-0.0.37-07-05")
     def test_gate_passes_when_receipt_fresh_and_clean(self) -> None:
         """Fresh receipt with has_drift=False → empty list (gate passes)."""
