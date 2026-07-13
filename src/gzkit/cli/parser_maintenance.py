@@ -665,6 +665,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="T0 static distribution audit — three drift classes, exit 3 (ADR-0.0.32-07).",
     )
     p_validate.add_argument(
+        "--changelog",
+        dest="check_changelog",
+        action="store_true",
+        help="Hermetic CHANGELOG.md structural audit — shape + citations (GHI #685).",
+    )
+    p_validate.add_argument(
         "--bullet-retention",
         dest="check_bullet_retention",
         action="store_true",
@@ -866,6 +872,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_okf_conformance=a.check_okf_conformance,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
+            check_changelog=a.check_changelog,
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,
             check_pointer_anchors=a.check_pointer_anchors,

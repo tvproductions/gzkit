@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -248,6 +248,12 @@ Stamp the accumulated `## [Unreleased]` block in `CHANGELOG.md` with
 `## vX.Y.Z (YYYY-MM-DD)` and open a fresh empty `## [Unreleased]`. The changelog
 is the *exhaustive, developer-facing* projection of the closed-since-tag GHIs,
 conforming to `.gzkit/templates/changelog.md`, one `GHI #N` per entry.
+
+Run the hermetic structural check on the stamped file:
+
+```bash
+uv run gz validate --changelog
+```
 
 **Coverage cross-check (release-time teeth):** every closed-since-tag user-visible
 GHI surfaced by `gz patch release --dry-run` MUST appear as a changelog entry

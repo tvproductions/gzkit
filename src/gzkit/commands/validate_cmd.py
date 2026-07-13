@@ -194,6 +194,13 @@ def _collect_errors(
     )
 
 
+def _changelog_runner(project_root: Path) -> list[ValidationError]:
+    """Run the hermetic changelog structural validator (GHI #685)."""
+    from gzkit.validate_pkg.changelog import validate_changelog  # noqa: PLC0415
+
+    return validate_changelog(project_root)
+
+
 # Single source of validate dispatch (Sanity-Reduction #618). Order is load-bearing:
 # default-tier order is the no-flag error-collection order; the step-1 fence
 # (tests/cli/test_validate_dispatch_consistency.py) pins signature/runner/parser
@@ -357,6 +364,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _ta().validate_lock_handoff_coupling(r),
     ),
     _ScopeEntry("distribution", "explicit", True, lambda r, _f: _ta().audit_distribution(r)),
+    _ScopeEntry("changelog", "explicit", True, lambda r, _f: _changelog_runner(r)),
     _ScopeEntry(
         "bullet_retention", "explicit", True, lambda r, _f: _ta().validate_bullet_retention(r)
     ),
@@ -1285,6 +1293,7 @@ def validate(
     check_lock_handoff_coupling: bool = False,
     check_distribution: bool = False,
     check_distribution_regenerate: bool = False,
+    check_changelog: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
     check_pointer_anchors: bool = False,
@@ -1386,6 +1395,7 @@ def validate(
         "advisor_proof_binding": check_advisor_proof_binding,
         "lock_handoff_coupling": check_lock_handoff_coupling,
         "distribution": check_distribution,
+        "changelog": check_changelog,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
         "pointer_anchors": check_pointer_anchors,

@@ -6,11 +6,11 @@ paths:
 description: Release-documentation files follow the Good Docs Project templates, adapted to gzkit's GHI-tracked, commit-to-main reality
 ---
 
-<!-- rule-version: 1.0.0 -->
+<!-- rule-version: 1.1.0 -->
 
 # Changelog & Release Notes Discipline
 
-> **Rule version:** `1.0.0` — initial adoption of the Good Docs Project changelog + release-notes template discipline, adapted to GHI citations and gzkit's provenance sections (GHI #685).
+> **Rule version:** `1.1.0` — the hermetic `gz validate --changelog` structural scope landed; corrected the release-notes enforcement wording (no mechanical release-notes validator exists) (GHI #685).
 
 > **Source of authority:** Good Docs Project templates —
 > [changelog](https://www.thegooddocsproject.dev/template/changelog),
@@ -47,9 +47,9 @@ coverage lives where the network access already is:
 
 - **Structure (hermetic, offline):** `gz validate --changelog` fails closed on changelog shape — SemVer versions, ISO `YYYY-MM-DD` dates, category set, and one `GHI #N` citation per entry.
 - **Coverage (release-time, networked):** `gz-patch-release` cross-checks that every closed-since-tag user-visible GHI appears before publish.
-- **Release-notes:** structure validated structurally; tone and curation are judgment-class, attested at Gate 5.
+- **Release-notes:** conform to the template and are reviewed at release; structure and tone are judgment-class, attested at Gate 5 (no mechanical release-notes validator — the curated narrative is not machine-checkable).
 - **Authoring procedure:** `.gzkit/skills/gz-patch-release/SKILL.md`.
 
-> Mechanization landing under GHI #685: the `gz validate --changelog` scope and
-> the `gz-patch-release` coverage cross-check are being adopted incrementally
-> from this rule.
+> The `gz validate --changelog` structural scope is landed and runs standalone
+> and at release-time (operator-chosen: not in the default `gz check`). The
+> `gz-patch-release` coverage cross-check is the networked half.

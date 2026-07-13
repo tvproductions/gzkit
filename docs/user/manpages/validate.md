@@ -9,7 +9,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
-            [--taxonomy] [--chores-layout] [--distribution]
+            [--taxonomy] [--chores-layout] [--distribution] [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--scenario-reachability] [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
@@ -758,6 +758,35 @@ uv run gz validate --distribution
 
 # Machine-readable output
 uv run gz validate --distribution --json
+```
+
+### `--changelog`
+
+Hermetic structural audit of `CHANGELOG.md` (GHI #685). Verifies the changelog
+conforms to `.gzkit/templates/changelog.md`: version headers are `## [Unreleased]`
+or `## vX.Y.Z (YYYY-MM-DD)` (Semantic Versioning + ISO date), section headings are
+drawn from the closed Good-Docs category set (Release highlights, Added, Changed,
+Deprecated, Fixed, Security, Breaking changes), and every entry cites `GHI #N`
+(Release highlights are prose summaries and are exempt).
+
+The check is **offline and deterministic** by contract. The complementary
+*coverage* half — that every closed-since-tag GHI actually appears — is networked
+and lives in the `gz-patch-release` ceremony, not this scope (hermeticity split;
+see `.gzkit/rules/changelog-release-notes.md` § Enforcement). It runs standalone
+and at release-time; it is **not** part of the default `gz check`.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | `CHANGELOG.md` conforms | — |
+| 1 | One or more structural violations (bad version header, disallowed category, or an entry missing its `GHI #N` citation) | Fix the flagged line(s) to match `.gzkit/templates/changelog.md` |
+
+#### Examples
+
+```bash
+# Run the changelog structural audit
+uv run gz validate --changelog
 ```
 
 Clean state:

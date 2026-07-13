@@ -289,6 +289,12 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 |---|------|-------|-------|
 | 64 | **Dependencies live in adapters, never in the core.** Any third-party import (networkx, tree-sitter, future deps) is confined to an adapter module behind a port. Core domain logic imports **stdlib + Pydantic ONLY** | **Promotable** | Core-purity ("no third-party import in a core/domain module outside adapter packages") is a tractable `gz validate` scope; `tests/policy/test_import_boundaries.py` already gives partial AST enforcement of the ports/core boundary. The Protocol-over-ABC, composition-over-inheritance, and encapsulate-first (formalize the port only when a second adapter is real) guidance stays Judgment. Full Cockburn reference enshrined in `docs/governance/hexagonal-architecture.md`; rule at `.gzkit/rules/hexagonal-architecture.md`; operator ruling 2026-07-06. |
 
+### Changelog & Release Notes (`.gzkit/rules/changelog-release-notes.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 65 | `CHANGELOG.md` and `RELEASE_NOTES.md` follow the Good Docs Project templates adapted to gzkit — changelog is the exhaustive developer-facing projection of closed GHIs (SemVer/ISO version headers, closed category set, one `GHI #N` citation per entry); release notes are the curated reader-facing narrative retaining the `### Gate Evidence` provenance section | **Mechanical** (changelog structure) / **Judgment** (release-notes curation) | Changelog structure enforced by `gz validate --changelog` (GHI #685, `src/gzkit/validate_pkg/changelog.py`) — hermetic, fail-closed on a non-SemVer/non-ISO version header, a disallowed category, or an entry missing its `GHI #N` citation; validated by `tests/test_validate_changelog.py`. The closed-GHI *coverage* half (every closed-since-tag GHI appears) is networked and runs release-time in `gz-patch-release`, not in `gz check` (hermeticity split). Release-notes tone and curation stay Judgment — attested at Gate 5; no mechanical release-notes validator exists (the curated narrative is not machine-checkable). Rule at `.gzkit/rules/changelog-release-notes.md`; canonical shapes at `.gzkit/templates/{changelog,release_notes}.md`. |
+
 ---
 
 ## Summary

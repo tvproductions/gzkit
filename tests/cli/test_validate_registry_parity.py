@@ -90,6 +90,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "advisor_proof_binding",
         "lock_handoff_coupling",
         "distribution",
+        "changelog",
         "bullet_retention",
         "surface_weight",
         "pointer_anchors",
