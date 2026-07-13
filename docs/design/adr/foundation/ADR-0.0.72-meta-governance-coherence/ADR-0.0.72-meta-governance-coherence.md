@@ -10,26 +10,31 @@ date: 2026-06-13
 
 # ADR-0.0.72-meta-governance-coherence: Meta-Governance Validator Round-Trip Coherence
 
-> **⚠️ COLLAPSED — DO NOT IMPLEMENT (2026-06-13).** This foundation ADR was
-> collapsed as over-construction. It answered *"our validators contradict their
-> own artifacts"* by proposing **another** always-on validator
-> (`gz validate --writer-model-roundtrip`, OBPI-01) — which a pipeline run on
-> 2026-06-13 proved is the disease, not the cure: landing the meta-validator
-> tripped four *more* incoherences it does not address (brief-reconcile,
-> InsightRecord, plan-audit, lock-release coupling). You cannot audit your way
-> out of over-auditing. The real bugs (C1–C4) are re-routed to lightweight GHIs;
-> the architectural remedy goes to the existing SSOT workstream:
+> **⚠️ COLLAPSED 2026-06-13 → PARTIALLY REVERSED 2026-07-13 (operator-ratified, g0).**
 >
-> - **C1/C2/C3** — HandoffFrontmatter rejects fields its own writers emit → **GHI #612** (new)
-> - **C4** — InsightRecord ↔ Behavior Rule 11 field drift → **GHI #575** (evidence added)
-> - **brief-reconcile crudeness** — glob-blindness + `req_count` magic-string heuristic → **GHI #581** (evidence added)
-> - **OBPI-04** — `security_floor_overridden` event → dropped (additive observability, not a bug)
-> - **Architectural remedy** — coherence by *construction* (one declaration →
->   deterministic projection), never by another validator → return-to-health
->   Tier-2 §2.5 (Config-first SSOT).
+> **2026-06-13 collapse (preserved as history):** this foundation ADR was
+> collapsed as over-construction. Its PORT (OBPI-01,
+> `gz validate --writer-model-roundtrip`, an always-on meta-validator) was proven
+> by a 2026-06-13 pipeline run to be the disease, not the cure: landing it tripped
+> four *more* incoherences it does not address (brief-reconcile, InsightRecord,
+> plan-audit, lock-release coupling) — you cannot audit your way out of
+> over-auditing. C1–C4 were re-routed to GHIs (**#612** closed via OBPI-02;
+> **#575** open — InsightRecord ↔ Behavior Rule 11 drift; **#581** open —
+> brief-reconcile crudeness) and the architectural remedy sent to the Config-first
+> SSOT workstream (coherence by *construction*, never another validator).
 >
-> Kept as a Draft tombstone (not deleted) so the decision and routing survive.
-> OBPIs 01–04 are not to be implemented. The text below is the original ADR as authored.
+> **2026-07-13 partial reversal (Foundation Sunset prerequisite, operator-ratified):**
+> the Foundation Sunset (ADR-0.34.0) requires this ADR terminal. This is a
+> **re-scope, NOT a wholesale un-collapse**: OBPI-01's **global** meta-validator
+> stays **withdrawn** (`gz obpi withdraw` — the 2026-06-13 hydra finding stands);
+> its coherence intent is re-homed to **localized per-writer round-trip tests**
+> inside the adapters (construction-coherence at the point-fix, no fifth global
+> gate). The two adapters that close live defects are **built**: **OBPI-03**
+> (InsightRecord append helper + Rule-11 prose reconcile, closes C4 / GHI #575) and
+> **OBPI-04** (`security_floor_overridden` event, closes the override-audit hole).
+> **OBPI-02** (HandoffFrontmatter) was already complete. Terminal set: 02+03+04
+> (01 excluded via withdraw). The original ADR text below is preserved as authored;
+> Decision item #1 and Checklist item #1 carry inline WITHDRAWN annotations.
 
 ## Persona
 
@@ -66,21 +71,28 @@ gzkit's governance machinery validates governance artifacts (handoffs, insights,
 
 ## Decision
 
+> **Re-scoped 2026-07-13 (operator-ratified — see reversal note at top).** The
+> original four-item decision is preserved below with inline annotations: item #1
+> (the global PORT validator) is **WITHDRAWN**, and items #3/#4 realize their
+> coherence check as **localized per-writer round-trip tests** rather than through
+> that global validator. The invariant itself stands — only its enforcement moves
+> from one global gate to point-fix tests.
+
 Establish meta-governance self-coherence as a foundation-attested invariant with a structural validator (the PORT) and reconcile the confirmed instances (the ADAPTERS), decomposed into four OBPIs 1:1 with the Feature Checklist.
 
 **The invariant (canonical statement):** Every registered governance-artifact writer's emitted output MUST validate cleanly against that artifact's own authoring model, and that authoring model MUST accept everything its downstream consumers require. An authoring model that rejects what its writers produce or its consumers require is a fail-closed defect.
 
 **Decision items (1:1 with Feature Checklist):**
 
-1. **PORT — `gz validate --writer-model-roundtrip` coherence validator.** A new validate scope with an explicit registry of meta-governance artifact writers (handoff writers, the insight append path, ledger-event factories, brief authoring). For each, it round-trips the writer's ACTUAL emitted output (captured from a real emission or a golden fixture derived from the writer, never a hand-built happy-path stub) back through that artifact's own authoring model, and fails closed (exit 3) on any divergence. An exhaustiveness test asserts every `*_handoff`/`*_event`/`*_record` writer in the meta-governance layer is registered, so a new writer cannot silently escape the round-trip. Wired into the `gz check` default bundle. This is the structural catcher for the entire C1–C4 class and any future sibling.
+1. **PORT — `gz validate --writer-model-roundtrip` coherence validator.** **[WITHDRAWN 2026-07-13 — the global always-on meta-validator stays withdrawn per the 2026-06-13 hydra evidence; its coherence intent is re-homed to localized per-writer round-trip tests in OBPI-03/04.]** A new validate scope with an explicit registry of meta-governance artifact writers (handoff writers, the insight append path, ledger-event factories, brief authoring). For each, it round-trips the writer's ACTUAL emitted output (captured from a real emission or a golden fixture derived from the writer, never a hand-built happy-path stub) back through that artifact's own authoring model, and fails closed (exit 3) on any divergence. An exhaustiveness test asserts every `*_handoff`/`*_event`/`*_record` writer in the meta-governance layer is registered, so a new writer cannot silently escape the round-trip. Wired into the `gz check` default bundle. This is the structural catcher for the entire C1–C4 class and any future sibling.
 
 2. **ADAPTER — reconcile `HandoffFrontmatter` to its writers and consumers (closes C1/C2/C3).** Widen `obpi_id` to the canonical `obpi.json` pattern (slug-optional). Replace the bare `extra=forbid` with an EXPLICIT SUPERSET model that declares every field the module actually writes — the min-info fields (`last_lock_event_timestamp`, `last_commit_sha`, `branch`) and the degenerate/reaping fields (`abandoned`, `category`, `abandoned_by`, `abandoned_at`, `previous_agent`, `reason`) — so typo-defense is preserved (unknown keys still fail) while legitimate fields pass. Wire `validate_handoff_document` into a gate so the model can no longer drift un-noticed. Acceptance: the reconciled model round-trips clean against `write_degenerate_handoff`, `_write_reaping_handoff`, and a normal-release handoff, and a slug-bearing `obpi_id` both validates and exact-matches `find_handoff_for_release`.
 
-3. **ADAPTER — reconcile `InsightRecord` ↔ authoring contract (closes C4).** Provide an `InsightRecord`-backed append helper (a mechanical writer) so the authoring path cannot drift from the model, AND align the AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add `ts`/`type`; specify `evidence` as a list). Acceptance: an append produced by the helper round-trips clean through the new validator, and the AGENTS.md prose names exactly the model's required fields.
+3. **ADAPTER — reconcile `InsightRecord` ↔ authoring contract (closes C4).** Provide an `InsightRecord`-backed append helper (a mechanical writer) so the authoring path cannot drift from the model, AND align the AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add `ts`/`type`; specify `evidence` as a list). Acceptance: an append produced by the helper round-trips clean via a localized round-trip test (the helper's real emitted output re-validated against `InsightRecord` directly, never a happy-path stub), and the AGENTS.md prose names exactly the model's required fields.
 
-4. **ADAPTER — `security_floor_overridden` ledger event.** New Pydantic event model + factory + `ledger.json` schema entry, emitted whenever `gz obpi complete --accept-security-floor` fires, recording `obpi_id`, overridden surface(s), `reason`, `attestor`, and `ts`. Makes overrides of a completion-state-editing gate auditable via ledger census, closing the hole the OBPI-0.0.71-01 override exposed. Acceptance: emitting the event then running the census surfaces the override; the event round-trips clean through OBPI-01's validator.
+4. **ADAPTER — `security_floor_overridden` ledger event.** New Pydantic event model + factory + `ledger.json` schema entry, emitted whenever `gz obpi complete --accept-security-floor` fires, recording `obpi_id`, overridden surface(s), `reason`, `attestor`, and `ts`. Makes overrides of a completion-state-editing gate auditable via ledger census, closing the hole the OBPI-0.0.71-01 override exposed. Acceptance: emitting the event then running the census surfaces the override; the event round-trips clean through the existing `_EVENT_MODELS` model↔schema alignment (localized writer-model coherence).
 
-**Sequencing:** OBPI-02, -03, -04 (the adapters) can land in parallel — independent surfaces. OBPI-01 (the port/validator) depends on the adapters existing as its first registered round-trip targets, OR lands first as a failing-then-green gate that the adapters satisfy; either ordering is acceptable provided the adapters round-trip clean before OBPI-01 is wired into `gz check`.
+**Sequencing (revised 2026-07-13):** OBPI-01 (the global port/validator) is WITHDRAWN — see reversal note. OBPI-02 is complete. OBPI-03 and -04 (the adapters) land independently, each carrying its OWN localized round-trip test (the writer's real emitted output re-validated against its authoring model); there is no global gate to wire into `gz check`. Terminal set is 02+03+04.
 
 **Lane: Heavy.** New `gz validate` scope (CLI/contract), schema + ledger-event change, and a gated authoring model all trigger heavy-lane rigor. Foundation-kind brief-level Gate 5 stacks per ADR-0.0.36.
 
@@ -97,7 +109,7 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| WEAK: this ADR was collapsed as a Draft tombstone (DO NOT IMPLEMENT); its proposed `gz validate --writer-model-roundtrip` validator was never built, so no genuine thesis command exists. The closest green proxy is the advisory-scorecard machinery whose over-auditing this collapse rationale concerns. | uv run gz validate --advisory-scorecard | 0 |
+| Re-scoped (2026-07-13): the coherence thesis is realized as localized writer-model checks, not a global validator. The insights writer surface (OBPI-03's `InsightRecord` adapter target, closing C4/GHI #575) is shape-coherent against its own authoring model. | uv run gz validate --insights-shape | 0 |
 | The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.72-meta-governance-coherence --check | 0 |
 
 ## Consequences
@@ -145,21 +157,22 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 - Dimension Total: 5
 - Baseline Range: 3
 - Baseline Selected: 3
+<!-- Re-scored 2026-07-13: OBPI-01 (the PORT) withdrawn per the reversal note; the port↔adapter surface-boundary split collapses (the 3 survivors 02/03/04 are all adapters), so Split Surface Boundary 1→0, Split Total 1→0, Final 4→3. Active target now equals the 3 non-withdrawn OBPIs. -->
 - Split Single-Narrative: 0
-- Split Surface Boundary: 1
+- Split Surface Boundary: 0
 - Split State Anchor: 0
 - Split Testability Ceiling: 0
-- Split Total: 1
-- Final Target OBPI Count: 4
+- Split Total: 0
+- Final Target OBPI Count: 3
 
 ## Checklist
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] PORT: `gz validate --writer-model-roundtrip` coherence validator — explicit registry of meta-governance artifact writers (handoff writers, insight append path, ledger-event factories, brief authoring); round-trips each writer's ACTUAL emitted output (real emission or writer-derived golden fixture, not a happy-path stub) through that artifact's own authoring model; fails closed (exit 3) on divergence; wired into `gz check`; exhaustiveness test asserts every meta-governance `*_handoff`/`*_event`/`*_record` writer is registered.
+- [ ] PORT: `gz validate --writer-model-roundtrip` coherence validator [withdrawn; the global always-on meta-validator per the 2026-06-13 hydra evidence (landing it tripped four more incoherences it does not address); coherence intent re-homed to localized per-writer round-trip tests in OBPI-03/04; excluded from the terminal partition; `obpi_withdrawn` 2026-07-13, operator-ratified]
 - [ ] ADAPTER (C1/C2/C3): reconcile `HandoffFrontmatter` — widen `obpi_id` to the canonical `obpi.json` slug-optional pattern; replace bare `extra=forbid` with an explicit SUPERSET model declaring the min-info fields (last_lock_event_timestamp, last_commit_sha, branch) and degenerate/reaping fields (abandoned, category, abandoned_by, abandoned_at, previous_agent, reason); wire `validate_handoff_document` into a gate; verify the model round-trips clean against write_degenerate_handoff, _write_reaping_handoff, a normal-release handoff, and that a slug-bearing obpi_id both validates and exact-matches find_handoff_for_release.
-- [ ] ADAPTER (C4): reconcile `InsightRecord` ↔ authoring contract — provide an InsightRecord-backed append helper (mechanical writer); align AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add ts/type; evidence as list[str]); verify a helper-produced append round-trips clean through the OBPI-01 validator.
-- [ ] ADAPTER: `security_floor_overridden` ledger event — Pydantic event model + factory + ledger.json schema entry; emitted from `gz obpi complete --accept-security-floor` recording obpi_id, overridden surface(s), reason, attestor, ts; unit tests; round-trips clean through the OBPI-01 validator; census query surfaces the override.
+- [ ] ADAPTER (C4): reconcile `InsightRecord` ↔ authoring contract — provide an InsightRecord-backed append helper (mechanical writer); align AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add ts/type; evidence as list[str]); verify a helper-produced append round-trips clean via a localized round-trip test (real emitted output re-validated against InsightRecord).
+- [ ] ADAPTER: `security_floor_overridden` ledger event — Pydantic event model + factory + ledger.json schema entry; emitted from `gz obpi complete --accept-security-floor` recording obpi_id, overridden surface(s), reason, attestor, ts; unit tests; round-trips clean through the existing `_EVENT_MODELS` model↔schema alignment; census query surfaces the override.
 
 ## Q&A Transcript
 

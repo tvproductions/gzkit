@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md`
-- **Checklist Item:** #3 - "ADAPTER (C4): reconcile `InsightRecord` ↔ authoring contract — provide an InsightRecord-backed append helper (mechanical writer); align AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add ts/type; evidence as list[str]); verify a helper-produced append round-trips clean through the OBPI-01 validator."
+- **Checklist Item:** #3 - "ADAPTER (C4): reconcile `InsightRecord` ↔ authoring contract — provide an InsightRecord-backed append helper (mechanical writer); align AGENTS.md Behavior Rule 11 + agent-contract-rationale 'required fields' prose with the model envelope (add ts/type; evidence as list[str]); verify a helper-produced append round-trips clean via a localized round-trip test (real emitted output re-validated against InsightRecord). [OBPI-01 global validator WITHDRAWN 2026-07-13 — coherence realized locally.]"
 
 **Status:** Draft
 
@@ -193,7 +193,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
 - [ ] REQ-0.0.72-03-01 [behavior]: Given the `InsightRecord`-backed append helper invoked with a `defect` (or `improvement`) payload, when it writes a line to `.gzkit/insights/agent-insights.jsonl`, then the emitted line parses as JSON and validates against `InsightRecord` — `ts` (ISO8601+tz), `type`, `scope`, `summary` present and `evidence` a `list[str]`. (@covers test)
-- [ ] REQ-0.0.72-03-02 [behavior]: Given a record produced by the append helper, when it is round-tripped through the OBPI-0.0.72-01 `gz validate --writer-model-roundtrip` validator's registered insight-append target, then the writer's actual emitted output re-validates against `InsightRecord` with no divergence (exit 0). (@covers test)
+- [ ] REQ-0.0.72-03-02 [behavior]: Given a record produced by the append helper, when the helper's ACTUAL emitted line is round-tripped through `InsightRecord` directly (a localized per-writer round-trip test capturing a real emission, never a hand-built happy-path stub), then it re-validates with no divergence — and an emitted line missing a required field (`ts`/`type`/`scope`/`summary`) fails closed with a `ValidationError`. (@covers test)
 - [ ] REQ-0.0.72-03-03 [support]: AGENTS.md Behavior Rule 11 — edited at its composition source `.gzkit/templates/agents.md` (mirrored to `src/gzkit/templates/agents.md`) and re-rendered — names the model's required fields (`ts`, `type`, `scope`, `summary`) and specifies `evidence` as a list. Proof: the `artifact_edited` ledger event for `.gzkit/templates/agents.md` plus `gz validate --invariant-coherence` exit 0.
 - [ ] REQ-0.0.72-03-04 [support]: The `docs/governance/agent-contract-rationale.md` 'Required fields' prose (Behavior Rule 11 rationale) is aligned with the `InsightRecord` envelope — adds `ts`/`type` and specifies `evidence` as a list. Proof: the `artifact_edited` ledger event for `agent-contract-rationale.md` plus `gz validate --documents` exit 0.
 

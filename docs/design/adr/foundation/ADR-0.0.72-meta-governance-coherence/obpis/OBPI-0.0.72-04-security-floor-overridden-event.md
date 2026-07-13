@@ -11,7 +11,7 @@ status: Draft
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md`
-- **Checklist Item:** #4 - "ADAPTER: `security_floor_overridden` ledger event — Pydantic event model + factory + ledger.json schema entry; emitted from `gz obpi complete --accept-security-floor` recording obpi_id, overridden surface(s), reason, attestor, ts; unit tests; round-trips clean through the OBPI-01 validator; census query surfaces the override."
+- **Checklist Item:** #4 - "ADAPTER: `security_floor_overridden` ledger event — Pydantic event model + factory + ledger.json schema entry; emitted from `gz obpi complete --accept-security-floor` recording obpi_id, overridden surface(s), reason, attestor, ts; unit tests; round-trips clean through the existing `_EVENT_MODELS` model↔schema alignment; census query surfaces the override." [OBPI-01 global validator WITHDRAWN 2026-07-13 — coherence realized via the existing `_EVENT_MODELS` alignment test.]
 
 **Status:** Draft
 
@@ -23,7 +23,8 @@ overridden security surface(s), the operator `reason`, the `attestor`, and a
 `ts`. This makes an operator override of the completion-state-editing security
 floor auditable via ledger census — closing the invisible-override hole the
 OBPI-0.0.71-01 override exposed — and the new event round-trips clean through
-the model↔schema alignment surface the OBPI-01 round-trip validator consumes.
+the existing `_EVENT_MODELS` model↔schema alignment surface (localized
+writer-model coherence; the OBPI-01 global validator was withdrawn 2026-07-13).
 
 ## Lane
 
@@ -194,7 +195,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.72-04-02 [BEHAVIOR]: Given a security-floor brief, when `gz obpi complete --accept-security-floor` fires, then exactly one `security_floor_overridden` ledger event is emitted recording the override `reason`, `attestor`, and overridden `surfaces`, and no such event is emitted on a normal completion. (@covers test)
 - [ ] REQ-0.0.72-04-03 [BEHAVIOR]: Given the event has been emitted, when a ledger census counts `security_floor_overridden` events, then the override surfaces (lifetime count increments from 0 to 1). (@covers test)
 - [ ] REQ-0.0.72-04-04 [SUPPORT]: Given `src/gzkit/schemas/ledger.json`, when the `security_floor_overridden` entry is added under `events` with its required fields and `min_length`/enum constraints, then the change is proven by an `artifact_edited` ledger event plus `gz validate --documents`.
-- [ ] REQ-0.0.72-04-05 [BEHAVIOR]: Given the new model and schema entry, when the `tests/test_schemas.py` `_EVENT_MODELS` model↔schema alignment test runs, then the `security_floor_overridden` event round-trips clean — the same surface the OBPI-01 round-trip validator consumes. (@covers test)
+- [ ] REQ-0.0.72-04-05 [BEHAVIOR]: Given the new model and schema entry, when the `tests/test_schemas.py` `_EVENT_MODELS` model↔schema alignment test runs, then the `security_floor_overridden` event round-trips clean via the existing `_EVENT_MODELS` model↔schema alignment (localized writer-model coherence). (@covers test)
 
 ## Completion Checklist
 
