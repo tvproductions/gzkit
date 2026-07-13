@@ -43,7 +43,7 @@ Behavioral framing via `.gzkit/personas/` (YAML-frontmatter markdown). Every age
    - "Not in scope" → flag and expand, or file GHI
    - "Template has drifted" → drift is a defect
    - "Evidence unavailable" → missing evidence is a verification-chain defect
-6. **EVERY DEFECT MUST BE TRACKABLE.** In-scope → fix immediately. Out-of-scope → use one of these in **priority order**: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), record an insight via `gz insights remember` (never hand-append the jsonl), or note in the brief's evidence section. Untrackable defect = nonexistent defect.
+6. **EVERY DEFECT MUST BE TRACKABLE.** In-scope → fix immediately. Out-of-scope → use one of these in **priority order**: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section. Untrackable defect = nonexistent defect.
 
 ## DO IT RIGHT (CRAFTSMANSHIP MAXIM)
 
