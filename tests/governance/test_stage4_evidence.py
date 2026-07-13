@@ -14,12 +14,36 @@ from pathlib import Path
 
 from gzkit.governance.stage4_evidence import (
     EvidencePacket,
+    _counts_from_covers_summary,
     extract_demo_commands,
     generate_evidence_packet,
     load_packet,
     validate_stage4_evidence,
     write_packet,
 )
+
+
+class TestCoversCountsSummary(unittest.TestCase):
+    def test_uncovered_count_is_behavior_only_not_total(self) -> None:
+        # A SUPPORT-carrying OBPI: 2 REQs lack a covering test (both proven
+        # SUPPORT), but 0 BEHAVIOR REQs are uncovered. The attestability blocker
+        # must use behavior_uncovered_reqs — SUPPORT/STRUCTURAL-FENCE REQs are
+        # proven by ledger+validator, never a @covers test (ADR-0.0.59), so
+        # counting them as "uncovered by a test" is a false blocker (GHI #683).
+        payload = {
+            "summary": {
+                "total_reqs": 9,
+                "covered_reqs": 7,
+                "uncovered_reqs": 2,
+                "behavior_uncovered_reqs": 0,
+            }
+        }
+        self.assertEqual(_counts_from_covers_summary(payload), (9, 0))
+
+    def test_behavior_uncovered_is_a_real_blocker(self) -> None:
+        # A genuinely uncovered BEHAVIOR REQ must still surface as uncovered.
+        payload = {"summary": {"total_reqs": 4, "uncovered_reqs": 3, "behavior_uncovered_reqs": 1}}
+        self.assertEqual(_counts_from_covers_summary(payload), (4, 1))
 
 
 def _brief(tmp: Path, demo_body: str | None) -> Path:

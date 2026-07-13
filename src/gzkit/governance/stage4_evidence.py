@@ -161,8 +161,21 @@ def _collect_receipts(project_root: Path) -> list[ReceiptResult]:
     return results
 
 
+def _counts_from_covers_summary(data: dict) -> tuple[int, int]:
+    """Return (total_reqs, behavior_uncovered_count) from a ``gz covers --json`` payload.
+
+    Uses ``behavior_uncovered_reqs``, NOT ``uncovered_reqs`` (GHI #683). SUPPORT and
+    STRUCTURAL-FENCE REQs are proven by ledger+validator / parent-ADR invariant, never a
+    ``@covers`` test (ADR-0.0.59), so they always appear in ``uncovered_reqs``; counting
+    them as an attestability blocker is a category error that reports NOT-ATTESTABLE for
+    every SUPPORT-carrying OBPI. Only an uncovered BEHAVIOR REQ is a real Stage-4 blocker.
+    """
+    summary = data.get("summary", {})
+    return int(summary.get("total_reqs", 0)), int(summary.get("behavior_uncovered_reqs", 0))
+
+
 def _covers_counts(project_root: Path, obpi_id: str) -> tuple[int, int]:
-    """Return (total_reqs, uncovered_reqs) from ``gz covers <obpi> --json``."""
+    """Return (total_reqs, uncovered_count) from ``gz covers <obpi> --json``."""
     proc = subprocess.run(  # noqa: S603
         ["uv", "run", "gz", "covers", obpi_id, "--json"],
         cwd=project_root,
@@ -172,9 +185,7 @@ def _covers_counts(project_root: Path, obpi_id: str) -> tuple[int, int]:
         check=False,
     )
     try:
-        data = json.loads(proc.stdout)
-        summary = data.get("summary", {})
-        return int(summary.get("total_reqs", 0)), int(summary.get("uncovered_reqs", 0))
+        return _counts_from_covers_summary(json.loads(proc.stdout))
     except (json.JSONDecodeError, ValueError):
         return 0, -1  # -1 uncovered signals a covers failure → blocker
 
@@ -208,7 +219,7 @@ def _compute_blockers(
     if covers_uncovered < 0:
         blockers.append("gz covers did not resolve — REQ coverage could not be verified.")
     elif covers_uncovered > 0:
-        blockers.append(f"{covers_uncovered} REQ(s) uncovered by any test.")
+        blockers.append(f"{covers_uncovered} BEHAVIOR REQ(s) uncovered by a covering test.")
     return blockers
 
 

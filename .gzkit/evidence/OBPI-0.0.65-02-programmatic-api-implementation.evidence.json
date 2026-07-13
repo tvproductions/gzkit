@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.0.65-02-programmatic-api-implementation",
-  "generated_at": "2026-07-13T01:32:22.640369+00:00",
+  "generated_at": "2026-07-13T07:40:18.299626+00:00",
   "demos": [
     {
       "command": "uv run python -c \"from gzkit.handoff_api import scaffold_handoff; help(scaffold_handoff)\"",
@@ -19,26 +19,24 @@
     {
       "step": "ruff",
       "found": true,
-      "receipt_id": "arb-ruff-454865ff48134bd281638deb281ceead.json",
+      "receipt_id": "arb-ruff-9125fe3fe12b417092b92470abe591eb.json",
       "exit_status": 0
     },
     {
       "step": "typecheck",
       "found": true,
-      "receipt_id": "arb-step-typecheck-1c128d8a6c724a3bbc74508cbf6f48ca.json",
+      "receipt_id": "arb-step-typecheck-acddc5c282b640c8b62d1b81ec970d6e.json",
       "exit_status": 0
     },
     {
       "step": "unittest",
       "found": true,
-      "receipt_id": "arb-step-unittest-105768590abf486994d8eedcb0eb7995.json",
+      "receipt_id": "arb-step-unittest-33444134ff37458b9a118f50080cdd94.json",
       "exit_status": 0
     }
   ],
   "covers_total": 9,
-  "covers_uncovered": 2,
-  "attestable": false,
-  "blockers": [
-    "2 REQ(s) uncovered by any test."
-  ]
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
 }
