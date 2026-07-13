@@ -35,6 +35,7 @@ Add the `@advances(TASK-...)` decorator to `src/gzkit/tasks.py` as a substantive
 - `src/gzkit/tasks.py` — explicitly referenced by the checklist item
 - **CREATE** `.gzkit/rules/task-discovery.md` — net-new rule authored by this OBPI; codifies the four-channel TASK-discovery taxonomy
 - `.gzkit/rules/skill-surface-sync.md` — canonical surface referenced by the checklist item (vendor mirror at `.claude/rules/` is generated; edit canonical only)
+- `tests/governance/` — OBPI creates `test_advances_decorator.py` covering the `@advances` BEHAVIOR REQs (validation fail-close + registry/model)
 
 ## Denied Paths
 
@@ -157,7 +158,10 @@ uv run -m unittest tests/test_persona_schema.py -v
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# The four-channel TASK-discovery rule this OBPI authored validates cleanly:
+uv run gz validate --documents
+# The @advances channel this OBPI ships participates in envelope coherence:
+uv run gz validate --task-envelope-coherence
 ```
 
 ## Acceptance Criteria
@@ -168,9 +172,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.64-02-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.64-02-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.64-02-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.64-02-01 [BEHAVIOR]: The `@advances(TASK-...)` decorator in `src/gzkit/tasks.py` validates at decoration (import) time — a malformed TASK ID, an empty string, and an unknown parent REQ each raise `ValueError`, while a valid canonical TASK ID is accepted; a `@covers`-decorated test in `tests/governance/test_advances_decorator.py::TestAdvancesFormatValidation` asserts each path.
+- [ ] REQ-0.0.64-02-02 [BEHAVIOR]: Decoration registers a frozen `TaskAttributionRecord` (`ConfigDict(frozen=True, extra="forbid")`, capturing the callsite `.as_posix()` filename + firstlineno) into a module-level registry exposed via `get_task_registry()` that returns a copy; the decorated function's behavior is unchanged and multiple decorations register separately; `@covers`-decorated tests in `tests/governance/test_advances_decorator.py::TestAdvancesRegistry` and `::TestAdvancesMultipleDecorations` assert each property.
+- [ ] REQ-0.0.64-02-03 [SUPPORT]: `.gzkit/rules/task-discovery.md` exists at body `rule-version 0.1.0` codifying the four-channel TASK-discovery taxonomy (Python `@advances`, frontmatter `tasks:`, commit trailer, ledger `task_id`) including the `tasks: list[str]` structured-artifact channel — `gz validate --documents` + an `artifact_edited` event citing the rule path proves the file is present and structurally valid.
 
 ## Completion Checklist
 

@@ -86,11 +86,11 @@ class TestAdvancesRegistry(unittest.TestCase):
     def tearDown(self):
         reset_task_registry()
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_registry_initially_empty(self):
         self.assertEqual(get_task_registry(), [])
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_decoration_registers_record(self):
         @advances("TASK-0.0.64-02-01-01")
         def my_task_fn():
@@ -109,7 +109,7 @@ class TestAdvancesRegistry(unittest.TestCase):
         self.assertIsNotNone(record.source_line)
         self.assertGreater(record.source_line or 0, 0)
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_record_is_frozen(self):
         from pydantic import ValidationError
 
@@ -121,7 +121,7 @@ class TestAdvancesRegistry(unittest.TestCase):
         with self.assertRaises(ValidationError):
             record.task_id = "TASK-other"
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_record_extra_forbid(self):
         from pydantic import ValidationError
 
@@ -134,7 +134,7 @@ class TestAdvancesRegistry(unittest.TestCase):
                 bogus_field="x",
             )
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_get_registry_returns_copy(self):
         @advances("TASK-0.0.64-02-01-01")
         def my_task_fn():
@@ -145,7 +145,7 @@ class TestAdvancesRegistry(unittest.TestCase):
         # Original registry unaffected
         self.assertEqual(len(get_task_registry()), 1)
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_decorated_function_behavior_unchanged(self):
         @advances("TASK-0.0.64-02-01-01")
         def my_task_fn(x, y):
@@ -164,7 +164,7 @@ class TestAdvancesMultipleDecorations(unittest.TestCase):
     def tearDown(self):
         reset_task_registry()
 
-    @covers("REQ-0.0.64-02-01")
+    @covers("REQ-0.0.64-02-02")
     def test_multiple_functions_register_separately(self):
         @advances("TASK-0.0.64-02-01-01")
         def fn_a():
@@ -178,33 +178,6 @@ class TestAdvancesMultipleDecorations(unittest.TestCase):
         self.assertEqual(len(registry), 2)
         task_ids = {r.task_id for r in registry}
         self.assertEqual(task_ids, {"TASK-0.0.64-02-01-01", "TASK-0.0.64-02-02-01"})
-
-
-class TestObpiScopeAndEvidence(unittest.TestCase):
-    """Structural REQs: scope adherence (REQ-02) and verification evidence (REQ-03)."""
-
-    @covers("REQ-0.0.64-02-02")
-    def test_scope_changes_only_in_allowed_paths(self):
-        """Brief Allowed Paths: src/gzkit/tasks.py, .gzkit/rules/task-discovery.md, tests/.
-
-        Structural assertion: the artifacts this OBPI yielded live at the
-        allowed paths and nowhere else.
-        """
-        from pathlib import Path
-
-        repo_root = Path(__file__).resolve().parents[2]
-        self.assertTrue((repo_root / "src" / "gzkit" / "tasks.py").is_file())
-        self.assertTrue((repo_root / ".gzkit" / "rules" / "task-discovery.md").is_file())
-
-    @covers("REQ-0.0.64-02-03")
-    def test_verification_evidence_is_runnable(self):
-        """The brief's verification commands point at real files this OBPI yields."""
-        from pathlib import Path
-
-        repo_root = Path(__file__).resolve().parents[2]
-        # The brief's Verification section asserts each of these:
-        self.assertTrue((repo_root / "src" / "gzkit" / "tasks.py").is_file())
-        self.assertTrue((repo_root / ".gzkit" / "rules" / "task-discovery.md").is_file())
 
 
 if __name__ == "__main__":

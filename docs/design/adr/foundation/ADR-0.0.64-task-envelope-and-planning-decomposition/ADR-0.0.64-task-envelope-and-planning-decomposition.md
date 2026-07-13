@@ -117,6 +117,27 @@ in the child briefs cite this section as their proof channel
    amending this invariant; the surface is the GHI #552-pattern bypass
    risk OBPI-04 names explicitly.
 
+## Post-authoring reconciliation (ADR-0.0.64 closeout, 2026-07-12)
+
+The § Decision text records this ADR's design as authored. Two surfaces grew
+additively after authoring; recorded here so the historical design and the
+shipped state are both legible (state-doctrine: the code + `task-discovery.md`
+rule are source-of-truth, this note is the trace):
+
+- **Signatures: three → four.** § Decision item (4) names three Heavy-fail
+  signatures (a)/(b)/(c). The validator ships a fourth — signature (d)
+  `_sig_d_obpi_id_divergence` — added later under **GHI #653** (producer
+  canonicalization drift). Additive and covered; the three-signature design is
+  unchanged, (d) is a hardening peer.
+- **Ledger `task_id`: eight enforced, additively broader.** § Decision item (1)
+  adds `task_id` to the eight named worklog event types this ADR scoped — the
+  set `gz validate --task-envelope-coherence` signature (a) still enforces.
+  The optional field was later extended additively to further telemetry/ceremony
+  event types (`composition_candidate_emitted`, `rendition_committed`,
+  `rendition_advisor_verdict`, `brief_reconciled`); those are not signature-(a)
+  enforced. `.gzkit/rules/task-discovery.md` v0.3.0 carries the authoritative
+  current statement.
+
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->

@@ -1203,14 +1203,55 @@ class TestCheckPipelineIntegration(unittest.TestCase):
 
 
 class TestDiagnoseCmd(unittest.TestCase):
-    """REQ-0.0.64-04-05: gz task envelope diagnose is callable."""
+    """REQ-0.0.64-04-05: gz task envelope diagnose renders all four channels."""
 
     @covers("REQ-0.0.64-04-05")
-    def test_diagnose_cmd_is_callable(self) -> None:
-        """task_envelope_diagnose_cmd is importable and callable."""
-        from gzkit.commands.task import task_envelope_diagnose_cmd
+    def test_diagnose_renders_all_four_channels(self) -> None:
+        """The diagnose readback reads and renders ALL FOUR discovery channels.
 
-        self.assertTrue(callable(task_envelope_diagnose_cmd))
+        Regression guard for the 2-of-4 bug: `@advances` (ch1) and commit
+        trailers (ch3) were previously hardcoded empty, so the ADR's named
+        layer-drift recovery surface was blind to the exact channels the
+        validator's signature (c) evaluates. The command must delegate to the
+        validator's four-channel collector so a declaration in ANY channel
+        surfaces in the readback and participates in drift. If the command
+        regressed to a 2-channel subset, ch1/ch3 would render empty and this
+        test fails.
+        """
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        from gzkit.commands import task as task_cmd  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(root, {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-02"]})
+            # Distinct declarations in each of the four channels: the fix must
+            # surface all four, the old 2-channel version rendered ch1/ch3 empty.
+            fake_decls = {
+                "advances": {"TASK-0.0.64-04-01-01"},
+                "frontmatter": {"TASK-0.0.64-04-01-02"},
+                "commit_trailer": {"TASK-0.0.64-04-01-03"},
+                "ledger": {"TASK-0.0.64-04-01-04"},
+            }
+            buf = io.StringIO()
+            with (
+                mock.patch.object(task_cmd, "get_project_root", return_value=root),
+                mock.patch.object(
+                    validate_task_envelope,
+                    "_channel_declarations_for_obpi",
+                    return_value=fake_decls,
+                ),
+                contextlib.redirect_stdout(buf),
+            ):
+                task_cmd.task_envelope_diagnose_cmd("OBPI-0.0.64-04", as_json=True)
+
+            channels = json.loads(buf.getvalue())["channels"]
+            self.assertEqual(channels["@advances (ch1)"], ["TASK-0.0.64-04-01-01"])
+            self.assertEqual(channels["frontmatter tasks: (ch2)"], ["TASK-0.0.64-04-01-02"])
+            self.assertEqual(channels["commit trailers (ch3)"], ["TASK-0.0.64-04-01-03"])
+            self.assertEqual(channels["ledger task_id (ch4)"], ["TASK-0.0.64-04-01-04"])
+            self.assertTrue(json.loads(buf.getvalue())["drift"])
 
 
 class TestSignatureCCommitTrailerChannel(unittest.TestCase):

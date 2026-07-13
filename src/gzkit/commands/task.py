@@ -544,6 +544,9 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
     import json as _json  # noqa: PLC0415
     import sys  # noqa: PLC0415
 
+    from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
+        _channel_declarations_for_obpi,
+    )
     from gzkit.governance.brief_structure import LegacyBriefShape, parse_brief  # noqa: PLC0415
 
     project_root = get_project_root()
@@ -557,20 +560,22 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
         print("Brief is legacy shape; structured frontmatter required.", file=sys.stderr)
         raise SystemExit(1)
 
-    ch2: set[str] = set(brief.tasks)
-    m = re.match(r"^OBPI-([\d.]+?-\d{2})", brief.id)
-    obpi_prefix = m.group(1) if m else ""
-    ch4 = _collect_ledger_task_ids_for_obpi_prefix(
-        project_root / ".gzkit" / "ledger.jsonl", obpi_prefix
-    )
+    # Collect ALL FOUR discovery channels — the diagnose surface is the ADR-0.0.64
+    # named layer-drift recovery view, so it MUST read the same @advances (ch1) and
+    # commit-trailer (ch3) channels the validator's signature (c) evaluates, not just
+    # frontmatter + ledger. Routes through the validator's own four-channel collector
+    # (single source of truth) rather than re-deriving a 2-channel subset.
+    m = re.match(r"^(OBPI-[\d.]+-\d{2})", brief.id)
+    bare_obpi_id = m.group(1) if m else brief.id
+    decls = _channel_declarations_for_obpi(project_root, bare_obpi_id)
 
     channels: dict[str, list[str]] = {
-        "@advances (ch1)": [],
-        "frontmatter tasks: (ch2)": sorted(ch2),
-        "commit trailers (ch3)": [],
-        "ledger task_id (ch4)": sorted(ch4),
+        "@advances (ch1)": sorted(decls["advances"]),
+        "frontmatter tasks: (ch2)": sorted(decls["frontmatter"]),
+        "commit trailers (ch3)": sorted(decls["commit_trailer"]),
+        "ledger task_id (ch4)": sorted(decls["ledger"]),
     }
-    populated = [s for s in [ch2, ch4] if s]
+    populated = [s for s in decls.values() if s]
     drift = len(populated) > 1 and len({frozenset(s) for s in populated}) > 1
 
     if as_json:

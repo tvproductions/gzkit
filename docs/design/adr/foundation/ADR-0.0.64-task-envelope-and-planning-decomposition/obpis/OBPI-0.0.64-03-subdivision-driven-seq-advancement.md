@@ -34,6 +34,7 @@ Add `next_seq_for_req(req_id: str) -> int` to `src/gzkit/tasks.py` (queries the 
 - `docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/ADR-0.0.64-task-envelope-and-planning-decomposition.md` — parent ADR for intent and scope
 - `src/gzkit/tasks.py` — explicitly referenced by the checklist item
 - **CREATE** `.gzkit/rules/task-discovery.md` — extended by this OBPI with the subdivision sub-invariant (file is OBPI-02's serial deliverable; from OBPI-03's validation perspective the path is still net-new because OBPI-02 has not landed)
+- `tests/` — OBPI creates `tests/test_tasks.py::TestNextSeqForReq` and the `gz task start --seq` CLI tests covering the BEHAVIOR REQ
 
 ## Denied Paths
 
@@ -154,7 +155,8 @@ test -f .gzkit/rules/task-discovery.md
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# The subdivision baseline this OBPI preserves feeds the coherence gate:
+uv run gz validate --task-envelope-coherence
 ```
 
 ## Acceptance Criteria
@@ -165,9 +167,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.0.64-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.0.64-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.0.64-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.64-03-01 [BEHAVIOR]: `next_seq_for_req(req_id)` in `src/gzkit/tasks.py` returns `1` when no TASK exists under `(req_id, current_obpi_id)` and `max(seq)+1` otherwise (ignoring TASKs under a different req_index), and `gz task start --req REQ-X --seq next|N` mints a distinct per-labor-unit TASK ID and rejects an explicit `--seq` that collides with an existing TASK; `@covers`-decorated tests in `tests/test_tasks.py::TestNextSeqForReq` and the `gz task start --seq` CLI tests assert each path.
+- [ ] REQ-0.0.64-03-02 [SUPPORT]: `.gzkit/rules/task-discovery.md` is extended with the subdivision sub-invariant (each labor unit gets its own TASK ID via `seq`) and its body `rule-version` is bumped — `gz validate --documents` + an `artifact_edited` event citing the rule path proves the extension is present and structurally valid.
+- [ ] REQ-0.0.64-03-03 [STRUCTURAL-FENCE]: the `d70793c4` `seq=01` auto-coordination baseline (`auto_start_obpi_tasks` / `auto_complete_obpi_tasks`) is preserved additively — this OBPI removes or reverses none of it; parent ADR-0.0.64 § Boundary Invariants invariant 1 (restoration-is-additive) names this invariant.
 
 ## Completion Checklist
 
