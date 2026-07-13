@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.32.0",
+  "gzkit_version": "0.33.0",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -16,6 +16,7 @@
       "agent-failure-modes.md",
       "agents-md-map-doctrine.md",
       "brief-heading-conventions.md",
+      "changelog-release-notes.md",
       "chores.md",
       "cli.md",
       "complexity-doctrine.md",
@@ -114,12 +115,14 @@
       "agents.md",
       "audit.md",
       "audit_plan.md",
+      "changelog.md",
       "claude.md",
       "closeout.md",
       "constitution.md",
       "copilot.md",
       "obpi.md",
-      "prd.md"
+      "prd.md",
+      "release_notes.md"
     ]
   }
 }

@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-21
+last_reviewed: 2026-07-13
 model: sonnet
 ---
 
@@ -33,7 +33,7 @@ pipeline.
 using GHI evidence and CLI outputs.
 
 - **Reads:** GHI discovery output, cross-validation results, RELEASE_NOTES.md
-- **Writes:** Narrative release notes, RELEASE_NOTES.md entry, GitHub release
+- **Writes:** Narrative release notes, RELEASE_NOTES.md entry, CHANGELOG.md entry, GitHub release
 - **Does NOT re-verify:** GHI qualification (trusts `gz patch release` CLI)
 - **Requires:** Operator approval before any publish action
 
@@ -237,7 +237,23 @@ This atomically:
 #### 4b. Update RELEASE_NOTES.md
 
 Insert the approved narrative release notes at the top of `RELEASE_NOTES.md`,
-below the document header and above the most recent existing entry.
+below the document header and above the most recent existing entry. Conform to
+`.gzkit/templates/release_notes.md` — the *curated, reader-facing* narrative,
+retaining the `### Gate Evidence` provenance section
+(`.gzkit/rules/changelog-release-notes.md`).
+
+#### 4b-bis. Update CHANGELOG.md (distinct artifact — not the same as release notes)
+
+Stamp the accumulated `## [Unreleased]` block in `CHANGELOG.md` with
+`## vX.Y.Z (YYYY-MM-DD)` and open a fresh empty `## [Unreleased]`. The changelog
+is the *exhaustive, developer-facing* projection of the closed-since-tag GHIs,
+conforming to `.gzkit/templates/changelog.md`, one `GHI #N` per entry.
+
+**Coverage cross-check (release-time teeth):** every closed-since-tag user-visible
+GHI surfaced by `gz patch release --dry-run` MUST appear as a changelog entry
+before publish. A discovered GHI with no changelog entry blocks the release — this
+is the networked half of the enforcement the hermetic `gz validate --changelog`
+structural check cannot perform.
 
 #### 4c. Git-sync
 
