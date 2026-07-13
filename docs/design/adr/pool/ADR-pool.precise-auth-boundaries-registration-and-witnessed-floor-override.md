@@ -1,15 +1,12 @@
 ---
-id: ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override
-status: Proposed
-kind: feature
-semver: 0.29.0
+id: ADR-pool.precise-auth-boundaries-registration-and-witnessed-floor-override
+status: Pool
 lane: heavy
 sensitivity: security
 parent: PRD-GZKIT-1.0.0
-date: 2026-06-06
 ---
 
-# ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override: Precise auth_boundaries registration and witnessed floor override
+# ADR-pool.precise-auth-boundaries-registration-and-witnessed-floor-override: Precise auth_boundaries registration and witnessed floor override
 
 ## Persona
 
