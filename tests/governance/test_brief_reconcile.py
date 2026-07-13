@@ -101,6 +101,19 @@ class TestReconcileBriefResult(unittest.TestCase):
         result = reconcile_brief(FIXTURES / "passing.md", PROJECT_ROOT)
         self.assertFalse(result.has_drift)
 
+    def test_req_count_drift_alone_does_not_set_has_drift(self):
+        """GHI #581: req_count is the advisory crude heuristic — Requirements-section
+        bullets vs Acceptance checkboxes are legitimately different counts (every
+        real brief in ADR-0.0.72 tripped it). A req_count-only delta must NOT set
+        has_drift: it fail-closed valid completions and broke reconcile idempotency
+        (appending a duplicate drift note per run). Meaningful dimensions still drift."""
+        result = reconcile_brief(FIXTURES / "req_count_drift.md", PROJECT_ROOT)
+        self.assertNotEqual(result.req_count_delta.delta, 0)  # the advisory drift exists
+        self.assertFalse(result.allowlist_delta.missing_on_disk)  # no meaningful drift
+        self.assertFalse(result.allowlist_delta.missing_in_brief)
+        self.assertFalse(result.discovery_delta.unresolved_paths)
+        self.assertFalse(result.has_drift)  # but req_count alone must not block
+
     @covers("REQ-0.0.37-05-01")
     def test_discovery_checklist_unresolved_path_reported(self):
         # ReconcileResult.discovery_delta (REQ-01 shape) reports discovery-checklist
@@ -221,7 +234,9 @@ class TestReqCountDimension(unittest.TestCase):
     def test_delta_non_zero_on_mismatch(self):
         result = reconcile_brief(FIXTURES / "req_count_drift.md", PROJECT_ROOT)
         self.assertNotEqual(result.req_count_delta.delta, 0)
-        self.assertTrue(result.has_drift)
+        # GHI #581: the delta is reported (advisory) but req_count alone no longer
+        # sets has_drift — it is the crude heuristic that fail-closed valid work.
+        self.assertFalse(result.has_drift)
 
     @covers("REQ-0.0.37-05-04")
     def test_delta_zero_on_match(self):

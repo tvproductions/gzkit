@@ -161,12 +161,18 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
     )
     citation_delta = _compute_citation_delta(citations, project_root)
 
+    # req_count is the advisory crude heuristic (GHI #581): it compares
+    # Requirements-section bullets against Acceptance-criteria checkboxes, which
+    # are legitimately different counts — every real brief trips a non-zero delta.
+    # It is reported on req_count_delta for information but must NOT set has_drift:
+    # a req_count-only delta fail-closed valid completions and broke reconcile
+    # idempotency (a duplicate drift note appended per run). Meaningful drift
+    # dimensions (allowlist/discovery/verification/citation) still set has_drift.
     has_drift = (
         bool(allowlist_delta.missing_on_disk)
         or bool(allowlist_delta.missing_in_brief)
         or bool(discovery_delta.unresolved_paths)
         or bool(verification_delta.unresolved_verbs)
-        or req_count_delta.delta != 0
         or bool(citation_delta.stale_citations)
     )
 
