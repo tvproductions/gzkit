@@ -1,0 +1,44 @@
+{
+  "obpi_id": "OBPI-0.0.65-02-programmatic-api-implementation",
+  "generated_at": "2026-07-13T01:32:22.640369+00:00",
+  "demos": [
+    {
+      "command": "uv run python -c \"from gzkit.handoff_api import scaffold_handoff; help(scaffold_handoff)\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Help on function scaffold_handoff in module gzkit.handoff_api:\n\nscaffold_handoff(\n    *,\n    adr_id: 'str',\n    observed: 'ObservedState',\n    now: 'str',\n    obpi_id: 'str | None' = None\n) -> 'dict[str, str]'\n    Deterministically pre-fill the factual sections from observed state.\n\n    A pure function of its parameters — no ledger, git, or socket read. The\n    factual sections (Current State Summary, Evidence / Artifacts, Verification\n    Checklist) are rendered from the injected ``observed`` state; collections\n    are sorted so identical inputs yield byte-identical output. The judgment\n    sections (Decisions Made, Important Context) are intentionally NOT pre-filled.\n"
+    },
+    {
+      "command": "uv run python -c \"from gzkit.handoff_api import create_handoff; help(create_handoff)\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Help on function create_handoff in module gzkit.handoff_api:\n\ncreate_handoff(\n    *,\n    adr_id: 'str',\n    branch: 'str',\n    agent: 'str',\n    slug: 'str',\n    sections: 'dict[str, str]',\n    obpi_id: 'str | None' = None,\n    continues_from: 'str | None' = None,\n    session_id: 'str | None' = None,\n    base_path: 'Path' = PosixPath('.'),\n    timestamp: 'str | None' = None,\n    mode: 'str' = 'CREATE'\n) -> 'Path'\n    Author a handoff document, routing it through the validation gate.\n\n    Builds frontmatter plus the seven required sections (missing sections\n    render empty), then runs :func:`validate_handoff_document`. When validation\n    reports violations the document is NOT written — a :class:`HandoffValidationError`\n    carrying the violation list is raised (fail-closed). A clean document is\n    written to ``<base_path>/.gzkit/handoffs/<fs-ts>-<slug>.md`` and its path returned.\n"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-454865ff48134bd281638deb281ceead.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-1c128d8a6c724a3bbc74508cbf6f48ca.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-105768590abf486994d8eedcb0eb7995.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 9,
+  "covers_uncovered": 2,
+  "attestable": false,
+  "blockers": [
+    "2 REQ(s) uncovered by any test."
+  ]
+}

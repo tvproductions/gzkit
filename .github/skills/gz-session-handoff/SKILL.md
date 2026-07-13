@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.7.0"
+  skill-version: "6.8.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-22
+last_reviewed: 2026-07-13
 model: sonnet
 ---
 
-# gz-session-handoff (v6.7.0)
+# gz-session-handoff (v6.8.0)
 
 ## Purpose
 
@@ -107,39 +107,32 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    - Validation result (pass or list of errors)
    - First item from "Immediate Next Steps" (for quick resumption context)
 
-### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
+### Programmatic API (`gzkit.handoff_api`)
 
-> **NOT IMPLEMENTED.** `create_handoff` / `scaffold_handoff` /
-> `resolve_handoff_dir` / `generate_handoff_filename` / `CreateResult` do **not**
-> exist — `tests.governance.test_session_handoff` is not a real module
-> (`ModuleNotFoundError` on import). Building this API is **OBPI-02 of
-> `ADR-pool.handoff-system-consolidation`** (GHI #529). Until it lands, do CREATE
-> by following the manual procedure above and gating the result through the
-> validator that **does** exist:
->
-> ```python
-> from pathlib import Path
-> from gzkit.handoff_validation import validate_handoff_document
->
-> errors = validate_handoff_document(handoff_text, Path("."))  # [] == valid
-> ```
->
-> Author with the canonical short-form frontmatter the `HandoffFrontmatter`
-> model requires (`adr_id: ADR-X.Y.Z`, `obpi_id: OBPI-X.Y.Z-NN`), then run the
-> validator BEFORE committing.
-
-Target signature, to be built under OBPI-02:
+The handoff authoring/resume API is a real runtime module (OBPI-0.0.65-02):
+`create_handoff`, `scaffold_handoff`, `list_handoffs`, `load_handoff_chain`, and
+`resume_handoff`. Every authoring path routes the produced document through
+`gzkit.handoff_validation.validate_handoff_document`, so a handoff that fails the
+gate is **never written** (fail-closed — `create_handoff` raises
+`HandoffValidationError` carrying the violation list). `scaffold_handoff`
+deterministically pre-fills the factual sections (Current State Summary, Evidence /
+Artifacts, Verification Checklist) from injected observed state with **no LLM or
+network call**; only the judgment sections (Decisions Made, Important Context) are
+author-supplied.
 
 ```python
-result = create_handoff(
-    adr_id="ADR-0.0.25",
-    branch="feature/handoff",
+from pathlib import Path
+from gzkit.handoff_api import create_handoff
+
+path = create_handoff(
+    adr_id="ADR-0.0.65",
+    branch="main",
     agent="claude-code",
     slug="session-end",
     sections={"Current State Summary": "All tests passing.", ...},
-    obpi_id="OBPI-0.0.25-03",
+    obpi_id="OBPI-0.0.65-02-programmatic-api-implementation",
     base_path=Path("."),
-)
+)  # HandoffValidationError (nothing written) if the document fails the gate
 ```
 
 ---
@@ -266,28 +259,22 @@ claim that was false at read-time. The completion claim in the same handoff
 verified TRUE (`gz obpi status` → `ATTESTED COMPLETED`); claims are verified
 **individually**, never trusted as a block.
 
-### Programmatic API (DESIGN TARGET — NOT YET IMPLEMENTED)
+### Programmatic RESUME API (`gzkit.handoff_api`)
 
-> **NOT IMPLEMENTED.** `resume_handoff` / `classify_staleness` /
-> `extract_first_next_step` / `list_handoffs` / `load_handoff_chain` /
-> `verify_context` / `HandoffInfo` / `ResumeResult` / `StalenessLevel` do **not**
-> exist — `tests.governance.test_session_handoff` is not a real module. Building
-> this API is **OBPI-02 of `ADR-pool.handoff-system-consolidation`** (GHI #529).
-> Until it lands, RESUME by reading the newest handoff under `.gzkit/handoffs/`
-> directly (filter by `adr_id:` frontmatter) and following its `continues_from` chain by
-> hand; the SessionStart orientation (`scripts/session_orientation.py`) already
-> surfaces the newest valid handoff with its freshness bucket and first next step.
-
-Target signature, to be built under OBPI-02:
+`resume_handoff`, `list_handoffs`, `load_handoff_chain`, and the `HandoffInfo` /
+`ResumeResult` / `StalenessLevel` models are real (OBPI-0.0.65-02). `resume_handoff`
+selects the newest handoff for an ADR, classifies staleness
+(Fresh / Slightly-Stale / Stale / Very-Stale), flags `requires_human_verification`
+for Stale / Very-Stale, and extracts the first next step. Staleness is derived from
+an injected `now` timestamp so the classification is deterministic and testable.
 
 ```python
-result = resume_handoff(
-    adr_id="ADR-0.0.25",
-    expected_branch="feature/handoff",
-    base_path=Path("."),
-)
+from pathlib import Path
+from gzkit.handoff_api import resume_handoff
+
+result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-13T00:00:00Z")
 # → result.staleness, result.requires_human_verification,
-#   result.first_next_step, result.chain, result.is_valid
+#   result.first_next_step, result.chain (oldest-first paths)
 ```
 
 ---

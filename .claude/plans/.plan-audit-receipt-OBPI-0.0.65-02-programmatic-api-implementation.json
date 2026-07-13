@@ -1,17 +1,10 @@
 {
   "obpi_id": "OBPI-0.0.65-02-programmatic-api-implementation",
-  "timestamp": "2026-06-14T20:39:50.006976+00:00",
+  "timestamp": "2026-07-13T00:38:50.204925+00:00",
   "verdict": "PASS",
   "plan_file": "OBPI-0.0.65-02-programmatic-api-implementation.md",
   "gaps_found": 0,
   "scope_collisions": [
-    {
-      "sibling_adr": "ADR-0.0.41",
-      "sibling_obpi": "OBPI-0.0.41-02-claim-release-safety-primitives",
-      "contested_paths": [
-        "src/gzkit/handoff_validation.py"
-      ]
-    },
     {
       "sibling_adr": "ADR-0.0.41",
       "sibling_obpi": "OBPI-0.0.41-03-release-fail-closed-and-reaping",
@@ -27,11 +20,17 @@
       ]
     },
     {
-      "sibling_adr": "ADR-0.0.42",
-      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-02-claim-release-safety-primitives",
       "contested_paths": [
-        "docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/obpis/OBPI-0.0.65-02-programmatic-api-implementation.md",
-        "docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md"
+        "src/gzkit/handoff_validation.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-02-handoff-frontmatter-reconcile",
+      "contested_paths": [
+        "src/gzkit/handoff_validation.py"
       ]
     },
     {
@@ -42,10 +41,11 @@
       ]
     },
     {
-      "sibling_adr": "ADR-0.0.72",
-      "sibling_obpi": "OBPI-0.0.72-02-handoff-frontmatter-reconcile",
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
       "contested_paths": [
-        "src/gzkit/handoff_validation.py"
+        "docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/obpis/OBPI-0.0.65-02-programmatic-api-implementation.md",
+        "docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md"
       ]
     }
   ]

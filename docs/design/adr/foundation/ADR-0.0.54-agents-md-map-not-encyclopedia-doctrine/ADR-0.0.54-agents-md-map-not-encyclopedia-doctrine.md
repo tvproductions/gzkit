@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.54
 lane: heavy

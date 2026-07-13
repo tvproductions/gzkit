@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.64-task-envelope-and-planning-decomposition
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.64
 lane: heavy

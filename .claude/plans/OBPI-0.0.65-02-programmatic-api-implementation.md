@@ -27,12 +27,16 @@ the validation gate. This OBPI ships the real API wrapping the validator, with
 
 ## Steps
 
-### Step 1 — Widen `_OBPI_ID_RE` (REQ-07)
+### Step 1 — Prove REQ-07 with a covering test (regex already widened)
 
-In `src/gzkit/handoff_validation.py`, change `_OBPI_ID_RE` from
-`^OBPI-\d+\.\d+\.\d+-\d{2}$` to also accept an optional `-<slug>` suffix:
-`^OBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9][a-z0-9-]*)?$`. This lets `find_handoff_for_release`'s
-full-slug pairing handoffs validate.
+**Correction (2026-07-13):** `_OBPI_ID_RE` at `handoff_validation.py:66` **already**
+accepts the full slug form (`^OBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9-]+)?$`) — it was
+widened by OBPI-0.0.72-02 (Jul 6), after this plan was first authored. The brief's
+"widen the regex" instruction is therefore stale drift. REQ-07 is code-satisfied;
+it needs a **covering test** proving a `create_handoff`-produced full-slug
+release-pairing handoff validates AND is found by `find_handoff_for_release` — not
+a redundant regex edit. If (and only if) that test fails against the current regex,
+widen as a contingency. Brief-reconcile note to be recorded during Stage 5.
 
 ### Step 2 — CREATE `src/gzkit/handoff_api.py` (REQ-01..05)
 
@@ -94,4 +98,5 @@ uv run gz test
 - `scaffold_handoff` is the anti-vibe core: factual sections deterministic from observed
   state; only Decisions Made / Important Context remain author-supplied.
 - The SKILL.md edit is a coupled surface requiring `gz agent sync control-surfaces`.
-- `_OBPI_ID_RE` widening (Step 1) fixes the friction that shipped invalid handoffs this session.
+- `_OBPI_ID_RE` is already widened (OBPI-0.0.72-02); REQ-07 is proven by a covering test, not a code edit (Step 1 correction 2026-07-13).
+- Plan-before-exploration disclosure: destination-in-mind was a thin wrapper over `validate_handoff_document` mirroring the two existing writers (`write_completion_handoff`/`write_degenerate_handoff`); rejected alternatives — (a) re-widening the already-correct regex, (b) `scaffold_handoff` reaching for ledger/git internally (breaks determinism + hexagonal core-purity; observed state is injected as parameters instead).
