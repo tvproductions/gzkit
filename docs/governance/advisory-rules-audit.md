@@ -59,7 +59,7 @@ This audit scores every rule by:
 | 15 | Bypass Gate 5 (human attestation) | **Mechanical** | `gz closeout` pipeline enforces attestation before `Completed` lifecycle event |
 | 16 | Do not edit `.gzkit/ledger.jsonl` manually | **Mechanical** | Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) — rejects staged ledger edits that are not strict appends from a registered `gz` command |
 | 17 | Every defect must be trackable (GHI or agent-insights.jsonl) | **Judgment** | Enforcement is cultural; no reliable mechanical signal for "defect noticed but not tracked" |
-| 17a | `improvement` record to `.gzkit/insights/agent-insights.jsonl` | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
+| 17a | record an `improvement` via `gz insights remember` | **Mechanical** | Enforced by `gz validate --insights-shape` (GHI #358) — every record validates against `gzkit.insights.InsightRecord` (`extra="forbid"`, ISO8601 `ts`, `type` enum, `evidence: list[str]`). Pre-lock entries waived by content hash in `_INSIGHTS_SHAPE_WAIVERS`; new writes must conform. Wired into `gz check`. |
 | 17b | Per-file char budget for AGENTS.md / CLAUDE.md | **Mechanical** | Enforced by `gz validate --instructions-files-budget` (GHI #373) — each tracked file checked against budget in `data/instructions_files_budget.json` (defaults: 40k chars AGENTS.md/CLAUDE.md, 16k per rule file). Fail-closed (exit 3) on overrun with remediation pointer to `/gz-context-diet`. Wired into `gz check`. |
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
@@ -172,7 +172,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 - "Read AGENTS.md before starting work" — judgment
 - "If <90% sure, ask the human" — judgment
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
-- "When the operator course-corrects in flight, append an `improvement` record to `.gzkit/insights/agent-insights.jsonl` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); the schema-lock side is now mechanical via `gz validate --insights-shape` (GHI #358; see scorecard row 17a)
+- "When the operator course-corrects in flight, record an `improvement` via `gz insights remember` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); the schema-lock side is now mechanical via `gz validate --insights-shape` (GHI #358; see scorecard row 17a), and the governed author verb `gz insights remember` (GHI #575) constructs the record so it cannot drift from the schema
 
 **Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
 

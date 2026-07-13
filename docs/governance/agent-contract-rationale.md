@@ -201,16 +201,20 @@ redirecting an interpretation, or calling out drift in flight. Without
 a trackable trace, the lesson is unwitnessed and the loop depends on
 agent recall turn-by-turn — exactly the failure shape `Correction fails`
 in `.gzkit/rules/agent-failure-modes.md` names. The improvement record
-under `.gzkit/insights/agent-insights.jsonl` is the mechanical floor:
-the correction lands at T2 (ledger-adjacent insight stream) where it
-can be reviewed, surfaced in subsequent sessions, and audited against
-recurrence.
+under `.gzkit/insights/agent-insights.jsonl`, recorded via `gz insights
+remember`, is the mechanical floor: the correction lands at T2
+(ledger-adjacent insight stream) where it can be reviewed, surfaced in
+subsequent sessions, and audited against recurrence. Use the governed
+verb — never hand-append the jsonl — so the line is constructed against
+the `InsightRecord` schema and cannot drift from it.
 
-**Required fields:**
+**The `InsightRecord` envelope** (what `gz insights remember` constructs):
 
+- `ts` — ISO8601 timestamp with timezone; stamped by the verb (date-only is rejected)
+- `type` — `improvement` for a course-correction (also `defect`, `defect-resolution`, `discovery`)
 - `scope` — skill / rule / surface that drifted
 - `summary` — one sentence on what the correction was
-- `evidence` — file paths or commands proving the drift
+- `evidence` — a **list** of file paths or commands proving the drift
 - `next_action` — what changes structurally to prevent recurrence
 
 The `next_action` field is load-bearing: a correction without a

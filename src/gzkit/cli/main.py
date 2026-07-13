@@ -16,6 +16,7 @@ from gzkit.cli.parser_artifacts import register_artifact_parsers
 from gzkit.cli.parser_governance import register_governance_parsers
 from gzkit.cli.parser_maintenance import register_maintenance_parsers
 from gzkit.commands.content import register_content_parsers
+from gzkit.commands.insights import register_insights_parsers
 from gzkit.core.exceptions import GzkitError
 
 # Lazy re-exports preserved for ``@patch("gzkit.cli.main.X")`` compatibility in
@@ -75,6 +76,7 @@ def _build_parser() -> argparse.ArgumentParser:
     register_maintenance_parsers(commands)
     register_arb_parsers(commands)
     register_content_parsers(commands)
+    register_insights_parsers(commands)
 
     # Register common flags on every subcommand so users can write
     # ``gz status --verbose`` (not only ``gz --verbose status``).

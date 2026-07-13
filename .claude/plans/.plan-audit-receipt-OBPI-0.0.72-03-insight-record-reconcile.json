@@ -1,0 +1,412 @@
+{
+  "obpi_id": "OBPI-0.0.72-03-insight-record-reconcile",
+  "timestamp": "2026-07-13T10:41:01.586767+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.72-03-insight-record-reconcile.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-02-native-path-scoped-rules",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-03-root-surface-slimming-and-workflow-relocation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.14.0",
+      "sibling_obpi": "OBPI-0.14.0-01-canon-shared-instruction-model",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.19.0",
+      "sibling_obpi": "OBPI-0.19.0-06-audit-templates-and-evidence-aggregation-from-ledger",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.4.0",
+      "sibling_obpi": "OBPI-0.4.0-01-skill-source-centralization",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
+      "contested_paths": [
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-05-airlock-permitted-entry-door",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.29.0",
+      "sibling_obpi": "OBPI-0.29.0-03-auth-surface-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-12-documentation-cross-coverage",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-17-agents-md-density-classification",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-14-wire-sync-retire-monolith",
+      "contested_paths": [
+        ".gzkit/templates/agents.md",
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-09-agents-md-migration",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-04-requires-security-review-attestation",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-03-artifact-creation-skill-step-zero",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.58",
+      "sibling_obpi": "OBPI-0.0.58-01-prior-art-invariant-doctrine",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-02-gz-obpi-repudiate-cli",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-02-argparse-dispatcher-migration",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-01-cli-command-surface-inventory",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.2",
+      "sibling_obpi": "OBPI-0.0.2-04-runtime-test-click-removal",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-02-fold-agent-contract",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.61",
+      "sibling_obpi": "OBPI-0.0.61-03-gz-harness-install-command",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-02-parser-infrastructure",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-05-epilog-templates",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-04-help-text-completeness",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-01-agents-md-matrix-collapse",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-07-agents-md-persona-reference",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+      "contested_paths": [
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-02-lift-agents-md-sections",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-01-tdd-receipt-stream-hub",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-06-subsume-pool-management-into-gz-next",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-03-gz-metrics-read-view",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-04-queryability-search-and-insights-query",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.66",
+      "sibling_obpi": "OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md",
+        "src/gzkit/templates/agents.md",
+        "src/gzkit/commands/insights.py",
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-02-storybook-cli",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/cli/main.py",
+        "docs/user/manpages/gz-insights.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.49",
+      "sibling_obpi": "OBPI-0.0.49-03-agents-md-integration",
+      "contested_paths": [
+        "docs/governance/agent-contract-rationale.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "src/gzkit/templates/agents.md"
+      ]
+    }
+  ]
+}
