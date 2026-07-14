@@ -957,6 +957,39 @@ class TestCheckReconcileReceiptGate(unittest.TestCase):
                 fh.write(json.dumps(ev) + "\n")
         return ledger
 
+    def test_extract_brief_allowlist_ignores_description_code_literal(self) -> None:
+        # GHI #626 (second instance) — _extract_brief_allowlist's legacy-shape
+        # fallback inlines the same `/`-and-`.` heuristic as brief_reconcile and
+        # so admitted a `Path(".gzkit/handoffs")` code literal from an Allowed
+        # Paths bullet DESCRIPTION as a filesystem path, forcing is_receipt_fresh
+        # to glob a non-existent literal and fail the Stage-2 gate on a
+        # convention-correct brief. Only the first backtick token (the path) counts.
+        from gzkit.pipeline_runtime import _extract_brief_allowlist
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.65" / "obpis"
+            brief_dir.mkdir(parents=True, exist_ok=True)
+            brief = brief_dir / "OBPI-0.0.65-04-x.md"
+            brief.write_text(
+                "---\n"
+                "id: OBPI-0.0.65-04-x\n"
+                "parent: ADR-0.0.65-test\n"
+                "lane: Heavy\n"
+                "status: Draft\n"
+                "---\n\n"
+                "# Test Brief\n\n"
+                "## Allowed Paths\n\n"
+                '- `scripts/session_orientation.py` — collapse to `Path(".gzkit/handoffs")`\n'
+                "- `tests/scripts/test_session_orientation.py` — extend the module\n",
+                encoding="utf-8",
+            )
+            allowlist = _extract_brief_allowlist(brief)
+            self.assertEqual(
+                allowlist,
+                ["scripts/session_orientation.py", "tests/scripts/test_session_orientation.py"],
+            )
+
     def _write_legacy_brief(
         self,
         root: Path,

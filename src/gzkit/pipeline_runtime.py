@@ -382,6 +382,11 @@ def _extract_brief_allowlist(brief_path: Path) -> list[str]:
     _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
     _SECTION_HEADING_RE = re.compile(r"^##\s+")
     _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
+    # Markers that flag a backtick token as code, not a filesystem path:
+    # `Path("...")` call literals and `module.py::symbol` references satisfy the
+    # `/`-and-`.` heuristic yet are never real paths (GHI #626, mirrors
+    # brief_reconcile._looks_like_path — the shared duplication both fix).
+    _NON_PATH_MARKERS = ("(", ")", '"', "'", "::")
 
     body: str = parsed.raw_body
     paths: list[str] = []
@@ -394,6 +399,8 @@ def _extract_brief_allowlist(brief_path: Path) -> list[str]:
             break
         if collecting:
             for token in _BACKTICK_PATH_RE.findall(line):
+                if any(marker in token for marker in _NON_PATH_MARKERS):
+                    continue
                 if token.startswith(_PATH_PREFIXES) or ("/" in token and "." in token):
                     paths.append(token)
     return paths
