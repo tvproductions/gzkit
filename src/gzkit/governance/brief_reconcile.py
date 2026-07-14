@@ -117,6 +117,10 @@ _ACCEPTANCE_HEADING_RE = re.compile(r"^##\s+ACCEPTANCE\s+CRITERIA\s*$", re.IGNOR
 _SECTION_HEADING_RE = re.compile(r"^##\s+")
 
 _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
+# Markers that flag a backtick token as code, not a filesystem path: call/string
+# literals (`Path("...")`) and `module.py::symbol` references. A real
+# project-relative path never contains these (GHI #626).
+_NON_PATH_MARKERS = ("(", ")", '"', "'", "::")
 
 
 # --- Engine ---
@@ -232,7 +236,19 @@ def _extract_section_paths(body: str, heading_re: re.Pattern[str]) -> list[str]:
 
 
 def _looks_like_path(token: str) -> bool:
-    """Return True if a token looks like a project-relative file path."""
+    """Return True if a token looks like a project-relative file path.
+
+    A backtick token in a bullet DESCRIPTION can satisfy the crude
+    ``/``-and-``.`` heuristic yet be code, not a path: a ``Path("...")`` call
+    literal (allowlist-description FP) or a ``module.py::symbol`` reference
+    (discovery Existing-Code FP). Neither is a real project-relative path, and
+    existence-checking them deadlocks the Stage-2 reconcile gate on a
+    convention-correct brief. Reject any token carrying a code-literal /
+    symbol-reference marker (GHI #626, sibling of the glob-prerequisite and
+    CREATE-marker variants).
+    """
+    if any(marker in token for marker in _NON_PATH_MARKERS):
+        return False
     if token.startswith(_PATH_PREFIXES):
         return True
     return "/" in token and "." in token

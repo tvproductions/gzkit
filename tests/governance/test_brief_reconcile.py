@@ -216,6 +216,66 @@ class TestAllowlistDimension(unittest.TestCase):
             self.assertFalse(result.has_drift)
 
 
+class TestNonPathTokenRejection(unittest.TestCase):
+    """GHI #626 sibling — reconcile existence-checks must reject backtick tokens
+    that satisfy the crude `/`-and-`.` heuristic but are code, not filesystem
+    paths: `Path("...")` call literals (allowlist-description FP) and
+    `module.py::symbol` references (discovery Existing-Code FP). Both deadlock
+    the Stage-2 reconcile gate on a convention-correct brief."""
+
+    def test_looks_like_path_rejects_code_and_symbol_tokens(self):
+        from gzkit.governance.brief_reconcile import _looks_like_path
+
+        self.assertFalse(_looks_like_path('Path(".gzkit/handoffs")'))
+        self.assertFalse(
+            _looks_like_path("scripts/session_orientation.py::_candidate_handoff_dirs")
+        )
+        self.assertFalse(_looks_like_path("collect_handoff('x')"))
+        # Regression guard: real project-relative paths still admitted.
+        self.assertTrue(_looks_like_path("scripts/session_orientation.py"))
+        self.assertTrue(_looks_like_path("src/gzkit/governance/brief_reconcile.py"))
+        self.assertTrue(_looks_like_path("tests/scripts/test_session_orientation.py"))
+
+    @covers("REQ-0.0.37-05-02")
+    def test_allowlist_code_literal_in_description_not_extracted(self):
+        # The Allowed Paths convention is "first backtick token is the path";
+        # a `Path(".gzkit/handoffs")` code literal in the bullet DESCRIPTION must
+        # not be extracted and existence-checked as a second allowlist path.
+        from gzkit.governance.brief_reconcile import _ALLOWED_HEADING_RE, _extract_section_paths
+
+        body = textwrap.dedent(
+            """\
+            ## Allowed Paths
+
+            - `scripts/session_orientation.py` — collapse to `Path(".gzkit/handoffs")`
+            - `tests/scripts/test_session_orientation.py` — extend the test module
+            """
+        )
+        paths = _extract_section_paths(body, _ALLOWED_HEADING_RE)
+        self.assertEqual(
+            paths,
+            ["scripts/session_orientation.py", "tests/scripts/test_session_orientation.py"],
+        )
+
+    @covers("REQ-0.0.37-05-01")
+    def test_discovery_symbol_reference_not_existence_checked(self):
+        # `module.py::symbol` in the Existing-Code discovery sub-section is a code
+        # symbol, not a path; `(root / "x.py::func").exists()` is always False, so
+        # it must not be reported as unresolved discovery drift.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] Read `scripts/session_orientation.py::_candidate_handoff_dirs`
+            - [ ] Read `scripts/session_orientation.py::collect_handoff`
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, [])
+
+
 class TestVerificationVerbDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-03")
     def test_unregistered_verb_reported(self):
