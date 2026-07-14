@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest import mock
 
 from gzkit.ledger import (
     Ledger,
@@ -27,6 +28,39 @@ from gzkit.ledger import (
     project_init_event,
 )
 from gzkit.traceability import covers  # noqa: F401
+
+
+class _PartialWriteHandle:
+    """A file-handle proxy that writes half the bytes then raises ``OSError``.
+
+    Reproduces the disk-full / interrupted-write failure the Codex Step-4b
+    adversary forced against ``Ledger.append`` (GHI #687): real bytes reach
+    disk before the failure, so a non-atomic append leaves a truncated JSONL
+    line. Forwards ``truncate``/``flush``/context-manager to the real handle so
+    the append's rollback path can restore the file to its pre-append length.
+    """
+
+    def __init__(self, real: Any) -> None:
+        self._real = real
+
+    def write(self, data: str) -> int:
+        half = max(1, len(data) // 2)
+        self._real.write(data[:half])
+        self._real.flush()
+        raise OSError("simulated disk-full mid-write")
+
+    def truncate(self, size: int | None = None) -> int:
+        return self._real.truncate(size)
+
+    def flush(self) -> None:
+        self._real.flush()
+
+    def __enter__(self) -> "_PartialWriteHandle":
+        self._real.__enter__()
+        return self
+
+    def __exit__(self, *exc: Any) -> Any:
+        return self._real.__exit__(*exc)
 
 
 class TestLedgerEvent(unittest.TestCase):
@@ -203,6 +237,82 @@ class TestLedger(unittest.TestCase):
             self.assertEqual(len(events), 2)
             self.assertEqual(events[0].id, "PRD-1")
             self.assertEqual(events[1].id, "OBPI-1")
+
+    @staticmethod
+    def _fail_mid_write_open(real_open: Any) -> Any:
+        """Return a ``Path.open`` replacement that fails mid-write on the ledger.
+
+        Only ``ledger.jsonl`` opened for append is proxied through
+        :class:`_PartialWriteHandle`; every other open delegates unchanged so
+        ``create()``/``read_all()`` still work under the patch.
+        """
+
+        def opener(self_path: Path, *args: Any, **kwargs: Any) -> Any:
+            mode = args[0] if args else kwargs.get("mode", "r")
+            handle = real_open(self_path, *args, **kwargs)
+            if self_path.name == "ledger.jsonl" and "a" in mode:
+                return _PartialWriteHandle(handle)
+            return handle
+
+        return opener
+
+    def test_append_failure_atomic_preserves_prior_records(self) -> None:
+        """A mid-write OSError rolls the file back to its pre-append length so
+        prior records survive and the ledger still replays cleanly (GHI #687)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            ledger.append(prd_created_event("PRD-1"))
+            pre_len = ledger_path.stat().st_size
+
+            opener = self._fail_mid_write_open(Path.open)
+            with mock.patch.object(Path, "open", opener), self.assertRaises(OSError):
+                ledger.append(obpi_created_event("OBPI-1", "ADR-0.1.0"))
+
+            # No partial record persisted: file is back at its pre-append length.
+            self.assertEqual(ledger_path.stat().st_size, pre_len)
+            # Fresh on-disk replay succeeds — the prior record is intact and
+            # the failed append left nothing parseable-breaking behind.
+            replayed = Ledger(ledger_path).read_all()
+            self.assertEqual([e.id for e in replayed], ["PRD-1"])
+
+    def test_append_failure_atomic_on_empty_ledger(self) -> None:
+        """The exact Step-4b scenario: a first-append failure on an empty ledger
+        leaves it empty (size 0) and replayable as ``[]`` — no bare ``{`` tail
+        that raises JSONDecodeError on replay (GHI #687)."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            ledger.create()
+
+            opener = self._fail_mid_write_open(Path.open)
+            with mock.patch.object(Path, "open", opener), self.assertRaises(OSError):
+                ledger.append(prd_created_event("PRD-1"))
+
+            self.assertEqual(ledger_path.stat().st_size, 0)
+            self.assertEqual(Ledger(ledger_path).read_all(), [])
+
+    def test_append_opens_ledger_with_utf8_encoding(self) -> None:
+        """append() opens the ledger with encoding='utf-8' so a non-UTF-8
+        default locale (Windows cp1252) cannot mis-encode governance events
+        (GHI #687; .claude/rules/cross-platform.md — all file I/O specifies
+        encoding='utf-8')."""
+        captured: list[str | None] = []
+        real_open = Path.open
+
+        def spy_open(self_path: Path, *args: Any, **kwargs: Any) -> Any:
+            mode = args[0] if args else kwargs.get("mode", "r")
+            if self_path.name == "ledger.jsonl" and "a" in mode:
+                captured.append(kwargs.get("encoding"))
+            return real_open(self_path, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            ledger_path = Path(tmpdir) / "ledger.jsonl"
+            ledger = Ledger(ledger_path)
+            with mock.patch.object(Path, "open", spy_open):
+                ledger.append(prd_created_event("PRD-1"))
+
+        self.assertEqual(captured, ["utf-8"])
 
     def test_query_by_type(self) -> None:
         """Ledger queries events by type."""

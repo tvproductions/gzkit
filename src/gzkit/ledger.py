@@ -232,10 +232,25 @@ class Ledger:
         if not self.path.exists():
             self.create()
 
-        with self.path.open("a") as f:
-            json.dump(event.model_dump(), f, separators=(",", ":"))
-            f.write("\n")
-            f.flush()
+        # Serialize fully BEFORE touching the file so a serialization error
+        # cannot leave a partial JSONL line on disk (failure-atomic, GHI #687).
+        line = json.dumps(event.model_dump(), separators=(",", ":")) + "\n"
+
+        # Record the pre-append length so a mid-write failure (disk full, I/O
+        # error, interrupted write) can be rolled back to a clean record
+        # boundary — the ledger is the system-of-record and MUST always replay.
+        start = self.path.stat().st_size
+
+        with self.path.open("a", encoding="utf-8") as f:
+            try:
+                f.write(line)
+                f.flush()
+            except OSError:
+                # Truncate away any partial bytes: restore the file to its
+                # pre-append length so read_all() never hits a truncated line.
+                f.truncate(start)
+                f.flush()
+                raise
 
         self._invalidate_cache()
 
