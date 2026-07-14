@@ -3,7 +3,7 @@ id: OBPI-0.0.72-01-writer-model-roundtrip-validator
 parent: ADR-0.0.72-meta-governance-coherence
 item: 1
 lane: Heavy
-status: Abandoned
+status: Withdrawn
 ---
 
 # OBPI-0.0.72-01-writer-model-roundtrip-validator: Writer Model Roundtrip Validator
@@ -13,7 +13,7 @@ status: Abandoned
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md`
 - **Checklist Item:** #1 - "PORT: `gz validate --writer-model-roundtrip` coherence validator — explicit registry of meta-governance artifact writers (handoff writers, insight append path, ledger-event factories, brief authoring); round-trips each writer's ACTUAL emitted output (real emission or writer-derived golden fixture, not a happy-path stub) through that artifact's own authoring model; fails closed (exit 3) on divergence; wired into `gz check`; exhaustiveness test asserts every meta-governance `*_handoff`/`*_event`/`*_record` writer is registered."
 
-**Status:** Draft
+**Status:** Withdrawn — `obpi_withdrawn` (`.gzkit/ledger.jsonl`, attestor g0, 2026-07-13, operator-ratified). The global always-on meta-validator stays withdrawn per the 2026-06-13 hydra evidence; its coherence intent is re-homed to localized per-writer round-trip tests in OBPI-03/04. See the ADR reversal note.
 
 ## Objective
 

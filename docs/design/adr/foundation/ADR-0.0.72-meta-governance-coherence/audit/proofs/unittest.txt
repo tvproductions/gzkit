@@ -1,0 +1,88 @@
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-01 **[BEHAVIOR]**: `gz adr demote` moves a genuinely-unstarted
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-02 **[SUPPORT]**: each grandfathered foundation receives one
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-03 **[BEHAVIOR]**: after the migration, `gz ontology resense`
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-01 **[BEHAVIOR]**: after the migration, `gz validate --adr-status-fresh`
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-02 **[BEHAVIOR]**: the `"ADR taxonomy"` step is present in the
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-03 **[BEHAVIOR]**: no hand-set staging or fail-closed flag
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:377: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:377: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:131: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+WARNING [rendition-floor-coherence, staged warn]: Committed rendition 'AGENTS.md/claude' omits 1 invariant-tier corpus entry (corpus-tty); the rendition does not satisfy canon's invariant floor (the canon->rendition seam ADR-0.0.37 requires). Recompose with a candidate that includes every invariant-tier entry verbatim: `gz content compose AGENTS.md`, attest the candidate, then recommit the rendition.
+WARNING [rendition-freshness, staged warn]: No provenance sidecar (claude.corpus.json) for 'AGENTS.md'/'claude': the committed rendition can no longer be proven to derive from the current corpus (ADR-0.0.37 § Re-Alignment; rendition-freshness gate, OBPI-0.0.37-22 REQ-03). Recompose and re-attest: `gz content compose AGENTS.md --consumer claude` then `gz content commit AGENTS.md --consumer claude --attestor <you> --attestation-text <verbatim>`.
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+Error: Completion blocked: Step 4b independent adversarial validation is not
+recorded for OBPI-0.33.0-01-airlock-data-model-and-events. The heavy lane
+forbids attestation on evidence the authoring agent produced alone (GHI
+#643/#676) — an adversary prompted to REFUTE must re-derive the completion
+claim, and its verdict must land in the ledger, not a transcript. Re-run with
+--adversary-verdict
+<refuted|not-refuted|refuted-with-caveats|degraded-human-only> --adversary
+<vendor/model>. If neither a different-vendor adversary nor an independent
+subagent could run, record the degraded floor explicitly: --adversary-verdict
+degraded-human-only --adversary human.
+Error: Completion blocked: Step 4b independent adversarial validation is not
+recorded for OBPI-0.33.0-01-airlock-data-model-and-events. The heavy lane
+forbids attestation on evidence the authoring agent produced alone (GHI
+#643/#676) — an adversary prompted to REFUTE must re-derive the completion
+claim, and its verdict must land in the ledger, not a transcript. Re-run with
+--adversary-verdict
+<refuted|not-refuted|refuted-with-caveats|degraded-human-only> --adversary
+<vendor/model>. If neither a different-vendor adversary nor an independent
+subagent could run, record the degraded floor explicitly: --adversary-verdict
+degraded-human-only --adversary human.
+Error: Completion blocked: the adversary refuted
+OBPI-0.33.0-01-airlock-data-model-and-events and no resolution is recorded. A
+known refutation must never be handed to the operator dressed as clean. Fix the
+refuted claim, re-verify against the adversary's own check, then re-run with
+--adversary-resolution '<what was fixed and how the adversary's check was
+re-run>'.
+Error: Completion blocked: Step 4b for
+OBPI-0.33.0-01-airlock-data-model-and-events used a non-cross-vendor (tier-2
+Claude-family) adversary 'claude/general-purpose' with no recorded reason Codex
+was unavailable. Codex (tier 1) shares none of this agent's blind spots and is
+REQUIRED first (a Claude validating Claude shares failure modes). Run
+codex:setup: if it reports ready=true, re-run Step 4b through Codex. If Codex is
+genuinely unavailable, record why with --adversary-fallback-reason '<observed
+Codex unavailability, e.g. setup ready=false / not authenticated>'. "It was
+convenient" is not a reason.
+Error: Completion blocked: Step 4b for
+OBPI-0.33.0-01-airlock-data-model-and-events used a non-cross-vendor (tier-2
+Claude-family) adversary 'mystery-model-x' with no recorded reason Codex was
+unavailable. Codex (tier 1) shares none of this agent's blind spots and is
+REQUIRED first (a Claude validating Claude shares failure modes). Run
+codex:setup: if it reports ready=true, re-run Step 4b through Codex. If Codex is
+genuinely unavailable, record why with --adversary-fallback-reason '<observed
+Codex unavailability, e.g. setup ready=false / not authenticated>'. "It was
+convenient" is not a reason.
+  airlock-OUT (diagnostic): airlock-OUT finding (wrecked_something): DEP-WRECKED
+-> route a fresh transit (pipeline door) to account for DEP-WRECKED
+scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
+refused: OBPI-test.md carries terminal OBPI status 'abandoned' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: argument --repair: not allowed with argument --recon
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:377: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+----------------------------------------------------------------------
+Ran 7049 tests in 92.717s
+
+OK
+UNITTEST_EXIT=0

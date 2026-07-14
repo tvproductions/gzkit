@@ -114,6 +114,8 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 
 ## Consequences
 
+> **Re-scoped 2026-07-13 (see reversal note at top).** Positive Consequences #1, #2, and #6 below describe the **withdrawn** global `gz validate --writer-model-roundtrip` validator (OBPI-01) as the structural catcher. Per the operator-ratified re-scope, that class-level catcher role is **re-homed to localized per-writer round-trip tests** inside the surviving adapters (OBPI-02/03/04) — the handoff path is gate-wired into `gz check` (`run_handoff_document_audit`) and the insights path is coherence-by-construction (`append_insight_record` constructs before writing). The global exhaustiveness mechanism these consequences promised for future writers is deliberately narrowed out of scope, not silently dropped. The original consequence text is preserved as authored below.
+
 ### Positive
 
 1. **The C1–C4 contradiction class gains a structural catcher.** The round-trip validator fails closed on any writer-model divergence, so the next HandoffFrontmatter-class defect is caught at `gz check` time, not at pipeline-trip time. This is the fix-the-class remedy (DO IT RIGHT §1), not instance-patching.
