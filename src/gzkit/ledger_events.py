@@ -94,6 +94,32 @@ def obpi_completion_repudiated_event(
     )
 
 
+def security_floor_overridden_event(
+    *,
+    obpi_id: str,
+    surfaces: str,
+    reason: str,
+    attestor: str,
+) -> LedgerEvent:
+    """Create a security_floor_overridden event (ADR-0.0.72-04).
+
+    Witnesses an operator override of the completion security floor
+    (``gz obpi complete --accept-security-floor``) so the override is
+    auditable via ledger census rather than a console-only line.
+    """
+    return LedgerEvent(
+        event="security_floor_overridden",
+        id=obpi_id,
+        parent=obpi_id,
+        extra={
+            "obpi_id": obpi_id,
+            "surfaces": surfaces,
+            "reason": reason,
+            "attestor": attestor,
+        },
+    )
+
+
 def obpi_superseded_event(
     obpi_id: str,
     parent: str,

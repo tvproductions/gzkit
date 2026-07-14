@@ -7,6 +7,7 @@ transaction.  If any step fails, no files or ledger entries are modified.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import re
 import secrets
@@ -44,7 +45,10 @@ from gzkit.governance.trust_audits.attestation_receipts import (
     AttestationReceiptValidationResult,
     validate_attestation_receipts,
 )
-from gzkit.governance.trust_audits.sensitivity import detect_brief_security_floor
+from gzkit.governance.trust_audits.sensitivity import (
+    detect_brief_security_floor,
+    detect_brief_security_surfaces,
+)
 from gzkit.hooks.obpi import section_body
 from gzkit.ledger import (
     LEDGER_SCHEMA,
@@ -60,6 +64,7 @@ from gzkit.ledger_events import (
     brief_reconcile_drift_overridden_event,
     obpi_completion_uncovered_accept_event,
     obpi_receipt_emitted_event,
+    security_floor_overridden_event,
 )
 from gzkit.utils import capture_validation_anchor
 
@@ -1100,7 +1105,24 @@ def obpi_complete_cmd(
     # attestor-present co-presence proxy is no longer refused, the security
     # walkthrough is skipped, and the receipt records sensitivity:absent.
     # The override is already recorded in console output by _enforce_security_review_gate.
+    security_floor_override_event: LedgerEvent | None = None
     if accept_security_floor and effective_sensitivity == "security":
+        # ADR-0.0.72-04: BUILD the override witness now (surfaces are computed
+        # from the pre-downgrade brief); it is emitted AFTER the atomic
+        # completion transaction commits — best-effort and structurally OUTSIDE
+        # the rollback boundary — by _emit_security_floor_override_best_effort
+        # below. Emitting here (or inside the transaction) would risk a phantom
+        # record on a failed completion, a double-emit on retry, or gating an
+        # already-committed completion; coupling the witness to the committed
+        # receipt post-transaction avoids all three (brief REQ-04
+        # "best-effort-after-completion ... NEVER a new gate"; Step-4b, Codex).
+        overridden_surfaces = detect_brief_security_surfaces(original_content, project_root)
+        security_floor_override_event = security_floor_overridden_event(
+            obpi_id=obpi_id,
+            surfaces=", ".join(overridden_surfaces) or "declared:security",
+            reason=accept_security_floor,
+            attestor=attestor,
+        )
         effective_sensitivity = None
         # Recompute requires_human now that sensitivity is downgraded; the
         # caller's brief_frontmatter no longer carries security, so
@@ -1299,6 +1321,15 @@ def obpi_complete_cmd(
     except OSError as exc:
         _fail(f"I/O error during completion: {exc}", exit_code=2, as_json=as_json, obpi_id=obpi_id)
 
+    # ADR-0.0.72-04 / Step-4b (Codex, rounds 1-4): emit the override witness
+    # AFTER the atomic transaction has committed — structurally OUTSIDE its
+    # rollback boundary (like _surrender_lock_at_completion below). Only reached
+    # on a committed completion (a failed transaction _fail-exits above), so it
+    # can never be a phantom record; and being fully best-effort it can never
+    # gate the completion nor revert a committed receipt (brief REQ-04 "NEVER a
+    # new gate"). Under-records on failure, never over-records.
+    _emit_security_floor_override_best_effort(ledger, security_floor_override_event)
+
     # Token-block exit edge (GHI #619): completion mechanically surrenders the
     # work lock and writes its register entry — no manual `gz obpi lock release`.
     _surrender_lock_at_completion(
@@ -1455,6 +1486,36 @@ def _print_success(
 # ---------------------------------------------------------------------------
 # Transaction execution with rollback
 # ---------------------------------------------------------------------------
+
+
+def _emit_security_floor_override_best_effort(
+    ledger: Ledger,
+    event: LedgerEvent | None,
+) -> None:
+    """Append the ``security_floor_overridden`` witness (ADR-0.0.72-04), best-effort.
+
+    Runs AFTER the atomic completion transaction has committed and OUTSIDE its
+    rollback boundary, so — mirroring :func:`_surrender_lock_at_completion` — it
+    can never affect completion's all-or-nothing guarantee. Both the append AND
+    its failure-warning are non-throwing: a failed emission is swallowed so it can
+    NEVER gate the completion or revert a committed receipt (brief REQ-04 "a
+    failed emission is a defect to fix, NEVER a new gate"; Step-4b rounds 1-4,
+    Codex). It under-records on failure, never over-records or leaves a phantom.
+    """
+    if event is None:
+        return
+    try:
+        ledger.append(event)
+    except (OSError, ValueError):
+        # The warning path must itself be non-throwing (a console backed by a
+        # closed stream raises ValueError) — Step-4b round 4, Codex.
+        with contextlib.suppress(OSError, ValueError):
+            console.print(
+                "[yellow]warning: security_floor_overridden ledger emission failed "
+                "(best-effort; the --accept-security-floor override still applied and "
+                "the completion committed). Re-run a ledger census if you need the "
+                "override record.[/yellow]"
+            )
 
 
 def _execute_transaction(

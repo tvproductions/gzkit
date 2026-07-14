@@ -273,6 +273,37 @@ def detect_brief_security_floor(
     return "security" if matching else None
 
 
+def detect_brief_security_surfaces(
+    brief_text: str,
+    project_root: Path,
+) -> tuple[str, ...]:
+    """Return the registered security-surface categories a brief's paths overlap.
+
+    Companion to :func:`detect_brief_security_floor`: where that returns only
+    *whether* the floor fires, this returns *which* registered categories the
+    brief's allowed paths intersect, so ``gz obpi complete
+    --accept-security-floor`` can record the overridden surfaces in the
+    ``security_floor_overridden`` ledger event (ADR-0.0.72-04). Reuses the same
+    canonical allowed-paths extraction + registry load — no duplicate parser.
+    Returns an empty tuple when the registry is missing/unparseable or no path
+    intersects, mirroring the floor's fall-through behavior.
+    """
+    from gzkit.models.security_surfaces import match_globs
+
+    registry, registry_error = _load_sensitivity_registry(project_root)
+    if registry_error is not None or registry is None:
+        return ()
+
+    allowed_paths = _extract_sensitivity_allowed_paths(brief_text)
+    if not allowed_paths:
+        return ()
+
+    try:
+        return tuple(match_globs(allowed_paths, registry))
+    except (ValueError, TypeError):
+        return ()
+
+
 def explain_sensitivity_for_paths(
     candidate_globs: Sequence[str],
     project_root: Path,

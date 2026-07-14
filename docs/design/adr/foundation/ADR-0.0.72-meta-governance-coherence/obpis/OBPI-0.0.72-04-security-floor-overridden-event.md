@@ -3,7 +3,20 @@ id: OBPI-0.0.72-04-security-floor-overridden-event
 parent: ADR-0.0.72-meta-governance-coherence
 item: 4
 lane: Heavy
-status: Draft
+status: Completed
+# req_atomic (GHI #590): each REQ's labor was one indivisible unit — no sub-REQ
+# subdivision. REQ-01 (event model + min_length fail-closed fields), REQ-02
+# (emission from the --accept-security-floor branch), REQ-03 (ledger census
+# counts the override 0->1), REQ-04 (SUPPORT — ledger.json schema entry), and
+# REQ-05 (localized _EVENT_MODELS model<->schema round-trip) each landed as one
+# coherent edit to a single surface; none was subdivided into seq=02+, so the
+# pipeline-minted seq=01-per-REQ buckets are the true labor shape.
+req_atomic:
+  - REQ-0.0.72-04-01
+  - REQ-0.0.72-04-02
+  - REQ-0.0.72-04-03
+  - REQ-0.0.72-04-04
+  - REQ-0.0.72-04-05
 ---
 
 # OBPI-0.0.72-04-security-floor-overridden-event: Security Floor Overridden Event
@@ -13,7 +26,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md`
 - **Checklist Item:** #4 - "ADAPTER: `security_floor_overridden` ledger event — Pydantic event model + factory + ledger.json schema entry; emitted from `gz obpi complete --accept-security-floor` recording obpi_id, overridden surface(s), reason, attestor, ts; unit tests; round-trips clean through the existing `_EVENT_MODELS` model↔schema alignment; census query surfaces the override." [OBPI-01 global validator WITHDRAWN 2026-07-13 — coherence realized via the existing `_EVENT_MODELS` alignment test.]
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -41,7 +54,10 @@ writer-model coherence; the OBPI-01 global validator was withdrawn 2026-07-13).
 - `src/gzkit/events.py` — new `SecurityFloorOverriddenEvent` Pydantic model (subclass `_EventBase`, `event: Literal["security_floor_overridden"]`, required string fields via `Field(..., min_length=1)`); add it to the `TypedLedgerEvent` discriminated union
 - `src/gzkit/ledger_events.py` — new `security_floor_overridden_event(...)` factory mirroring `obpi_completion_repudiated_event`
 - `src/gzkit/schemas/ledger.json` — new `security_floor_overridden` entry under `events` (required list + properties with `min_length`/enum constraints)
-- `src/gzkit/commands/obpi_complete.py` — emit the event from the `--accept-security-floor` override branch (the `if accept_security_floor and effective_sensitivity == "security":` block, ~line 1031)
+- `src/gzkit/commands/obpi_complete.py` — emit the event from the `--accept-security-floor` override branch (the `if accept_security_floor and effective_sensitivity == "security":` block, ~line 1103)
+- `src/gzkit/governance/trust_audits/sensitivity.py` — add a public `detect_brief_security_surfaces(brief_text, project_root) -> tuple[str, ...]` helper (mirrors `detect_brief_security_floor`, reuses the canonical allowed-paths extractor + registry load, returns `match_globs(...)` categories) so the emission records the overridden `surfaces` without duplicating extraction logic. Operator-approved Allowed-Paths amendment (2026-07-13): the brief under-declared this coupled surface; recording `surfaces` cleanly is a correction to fulfill the declared intent, not scope creep. `sensitivity.py` is not itself a registered security surface.
+- `src/gzkit/governance/trust_audits/events.py` — add the `security_floor_overridden` entry to `_NO_GRAPH_IMPACT` (audit-only event, no artifact-graph handler). Mechanically forced coupled fence: `audit_event_handlers` fails closed on any emitted event type lacking a handler-or-waiver. Operator-approved Allowed-Paths amendment (2026-07-13).
+- `src/gzkit/ontology/corpus.py` — add `security_floor_overridden` to `_ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES`. Mechanically forced coupled fence (ADR-0.32.0 BI#1, registry-coupled): the ontology projection fails closed on any un-dispositioned live discriminator. Operator-approved Allowed-Paths amendment (2026-07-13).
 - `tests/test_schemas.py` — register the model in the `_EVENT_MODELS` model↔schema alignment map
 - `tests/test_security_floor_overridden.py` — **CREATE** new unit test for the model, factory, emission, and census
 - `docs/design/adr/foundation/ADR-0.0.72-meta-governance-coherence/ADR-0.0.72-meta-governance-coherence.md` — parent ADR package line (checklist item #4 reconciliation)
@@ -245,9 +261,32 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Gate 5 (Human)
 
-```text
-# Record attestation text here when required by parent lane
-```
+Operator `g0` attested "attest completed" (2026-07-13), holding the Step-4b
+verdict below.
+
+### Step 4b — Independent Adversarial Validation
+
+- **Adversary:** Codex (tier-1; codex-cli 0.144.1, authenticated) — 5 rounds.
+  Claude subagent forbidden per GHI #678 (tier-1 available).
+- **Verdict:** REFUTED-WITH-CAVEATS.
+- **Rounds 1–4 (real OBPI defects, all fixed + regression-tested):** (1) override
+  emitted ~193 lines BEFORE the atomic transaction → phantom record + double-emit
+  on retry; (2) appended BEFORE the receipt inside the transaction → a
+  receipt-append failure orphaned it; (3) a HARD append after the receipt GATED
+  completion and tripped the rollback when it failed (violating REQ-04 "NEVER a
+  gate"); (4) the best-effort warning path could itself throw (`ValueError` on a
+  closed stream) and re-enter the rollback. Resolution: the witness is emitted by
+  a post-transaction, fully best-effort helper
+  (`_emit_security_floor_override_best_effort`) structurally OUTSIDE the rollback
+  boundary; 11 regression tests in `tests/test_security_floor_overridden.py`
+  encode every failure mode.
+- **Round 5 (confirmation + surviving caveat):** the emission is phantom-free,
+  double-emit-free, never gates completion, and never reverts committed state
+  ("cannot invoke transaction rollback, create a phantom, or revert the
+  receipt"). Surviving caveat = a PRE-EXISTING, system-wide `Ledger.append`
+  non-atomicity (a partial mid-write corrupts any append; `ledger_integrity`
+  security surface) — Codex's own distinction places it OUTSIDE this OBPI.
+  Operator-ruled out-of-scope; tracked in **GHI #687**.
 
 ### Value Narrative
 
@@ -255,31 +294,43 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Self-dogfooding: obpi_complete.py is a registered auth_boundaries security surface, so completing this OBPI itself requires --accept-security-floor, which fires the new emission. Ledger census (event=='security_floor_overridden') goes 0 -> 1 at this OBPI's own Gate 5. Round-trip coherence: security_floor_overridden_event(...).model_dump() -> parse_typed_event() -> SecurityFloorOverriddenEvent (test_schemas _EVENT_MODELS alignment, 25/25). Step-4b Codex refuted-with-caveats after 5 adversarial rounds.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Model: SecurityFloorOverriddenEvent (src/gzkit/events.py) + TypedLedgerEvent union — obpi_id/surfaces/reason/attestor Field(min_length=1); ts inherited from _EventBase
+- Factory: security_floor_overridden_event (src/gzkit/ledger_events.py) mirroring obpi_completion_uncovered_accept_event
+- Schema: security_floor_overridden entry (src/gzkit/schemas/ledger.json), required 4 fields min_length:1
+- Emission: post-transaction best-effort helper _emit_security_floor_override_best_effort (src/gzkit/commands/obpi_complete.py), structurally OUTSIDE the transaction rollback boundary (Step-4b rounds 1-4)
+- Helper: public detect_brief_security_surfaces (src/gzkit/governance/trust_audits/sensitivity.py) — matched categories via match_globs, no duplicated extraction
+- Coupled event-type fences: _NO_GRAPH_IMPACT (trust_audits/events.py), _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES (ontology/corpus.py)
+- Registration: _EVENT_MODELS (tests/test_schemas.py)
+- Tests: tests/test_security_floor_overridden.py (11 tests; 5-round Codex-adversary-hardened)
+- Date completed: 2026-07-13
+- Attestation status: operator g0 attested "attest completed"
+- Defects noted: GHI #687 (pre-existing Ledger.append non-atomicity, out-of-scope)
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **GHI #687** — `Ledger.append` is not failure-atomic (a partial mid-write
+  corrupts the JSONL ledger). Pre-existing, system-wide `ledger_integrity`
+  primitive defect surfaced by this OBPI's Step-4b round 5; NOT this OBPI's
+  emission defect (operator-ruled out-of-scope, 2026-07-13). Routed for its own
+  scoped fix.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.72-04 security_floor_overridden ledger event (Pydantic model + factory + ledger.json schema entry + post-transaction best-effort emission + census + localized round-trip) closes the invisible-override audit hole OBPI-0.0.71-01 exposed. Unit tests green (arb-step-unittest-14ebd83141db47aaa34e1d4038e91b28), lint clean (arb-ruff-6dfb8d7b8a414fcfb72fda2944967416), typecheck clean (arb-step-typecheck-57c3e773fed1472cac1942ac31daefae), mkdocs --strict clean (arb-step-mkdocs-cde8a081c7154eddaa59ed42f8b59715); 4 BEHAVIOR REQs @covers + RED-witnessed; schema alignment 25/25. Step-4b Codex tier-1, 5 rounds, refuted-with-caveats — rounds 1-4 emission defects all fixed, round-5 caveat is the pre-existing system-wide Ledger.append non-atomicity tracked in GHI #687.
+- Date: 2026-07-14
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-14
 
 **Evidence Hash:** -

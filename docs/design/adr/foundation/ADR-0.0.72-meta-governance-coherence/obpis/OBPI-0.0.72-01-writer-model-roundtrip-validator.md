@@ -3,7 +3,7 @@ id: OBPI-0.0.72-01-writer-model-roundtrip-validator
 parent: ADR-0.0.72-meta-governance-coherence
 item: 1
 lane: Heavy
-status: Draft
+status: Abandoned
 ---
 
 # OBPI-0.0.72-01-writer-model-roundtrip-validator: Writer Model Roundtrip Validator

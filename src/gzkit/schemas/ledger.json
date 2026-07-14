@@ -1381,6 +1381,32 @@
         }
       }
     },
+    "security_floor_overridden": {
+      "required": [
+        "obpi_id",
+        "surfaces",
+        "reason",
+        "attestor"
+      ],
+      "properties": {
+        "obpi_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "surfaces": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "enforcement_claim_verified": {
       "required": [
         "claim_id",

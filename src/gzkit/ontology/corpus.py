@@ -104,6 +104,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "red_receipt_emitted",
         "rendition_advisor_verdict",
         "rendition_committed",
+        "security_floor_overridden",
         "task_blocked",
         "task_completed",
         "task_escalated",

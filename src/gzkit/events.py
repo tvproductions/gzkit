@@ -301,6 +301,16 @@ class ObpiCompletionRepudiatedEvent(_EventBase):
     reason: str = Field(..., min_length=1)
 
 
+class SecurityFloorOverriddenEvent(_EventBase):
+    """security_floor_overridden — witnessed --accept-security-floor override (ADR-0.0.72-04)."""
+
+    event: Literal["security_floor_overridden"]
+    obpi_id: str = Field(..., min_length=1)
+    surfaces: str = Field(..., min_length=1)
+    reason: str = Field(..., min_length=1)
+    attestor: str = Field(..., min_length=1)
+
+
 class ObpiCompletionUncoveredAcceptEvent(_EventBase):
     """obpi_completion_uncovered_accept event — records one REQ-coverage waiver (ADR-0.0.25-02)."""
 
@@ -766,6 +776,7 @@ TypedLedgerEvent = Annotated[
     | ObpiWithdrawnEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
+    | SecurityFloorOverriddenEvent
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent
     | PipelineMarkerPurgedEvent

@@ -37,6 +37,11 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "Override receipt for --accept-stale-reconciliation (OBPI-0.0.37-08). "
         "Audit-trail event recording the operator's reason; not an artifact graph node."
     ),
+    "security_floor_overridden": (
+        "Override receipt for --accept-security-floor (ADR-0.0.72-04). Audit-trail "
+        "event recording the overridden security surfaces, operator reason, and "
+        "attestor so the override is census-visible; not an artifact graph node."
+    ),
     "project_init": "Bootstrap sentinel; no artifact nodes emit from it.",
     "artifact_edited": "Session activity log; consumed by anchor analysis, not graph.",
     "obpi_lock_claimed": "L3 ephemeral lock file; consumed by gz obpi lock, not graph.",
