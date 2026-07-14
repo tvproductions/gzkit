@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.72-meta-governance-coherence
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.72
 lane: heavy
@@ -311,4 +311,4 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.72 | Pending | | | |
+| 0.0.72 | Completed | g0 | 2026-07-14 | Completed |
