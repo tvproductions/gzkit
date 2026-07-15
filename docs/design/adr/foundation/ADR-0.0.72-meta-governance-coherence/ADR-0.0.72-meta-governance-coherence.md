@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.72-meta-governance-coherence
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.72
 lane: heavy

@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.0.65-04-orientation-single-location-scan",
+  "timestamp": "2026-07-14T13:05:03.615877+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.65-04-orientation-single-location-scan.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-05-session-handoff-surface-updates",
+      "contested_paths": [
+        "tests/scripts/test_session_orientation.py"
+      ]
+    }
+  ]
+}

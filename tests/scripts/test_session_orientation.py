@@ -18,12 +18,15 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest import mock
+
+from gzkit.traceability import covers
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -232,9 +235,24 @@ class TestCollectHandoff(unittest.TestCase):
             self.assertIn("real-handoff.md", result["path"])
             self.assertNotIn("AGENTS.md", result["path"])
 
-    def test_discovers_adr_package_handoffs_and_unions_with_gzkit(self):
-        """Newest-wins across both `.gzkit/handoffs/` and `{ADR-package}/handoffs/`
-        (the read/write split-brain, GHI #529)."""
+    @covers("REQ-0.0.65-04-01")
+    def test_candidate_handoff_dirs_is_single_gzkit_location(self):
+        """`_candidate_handoff_dirs()` scans ONLY `.gzkit/handoffs/` — the GHI #529
+        dual-scan union with per-ADR `handoffs/` dirs is removed (OBPI-0.0.65-01
+        migrated all per-ADR handoffs into the canonical store)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # An ADR-package handoffs/ dir exists — it must NOT be scanned.
+            (root / "docs" / "design" / "adr" / "foundation" / "ADR-x" / "handoffs").mkdir(
+                parents=True
+            )
+            dirs = self.mod._candidate_handoff_dirs(root)
+            self.assertEqual(dirs, [root / ".gzkit" / "handoffs"])
+
+    @covers("REQ-0.0.65-04-02")
+    def test_ignores_adr_package_handoffs_single_scan(self):
+        """A newer handoff in a per-ADR `handoffs/` dir is NOT surfaced; the
+        newest `.gzkit/handoffs/` entry is reported (single-location scan)."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             gzkit_handoffs = root / ".gzkit" / "handoffs"
@@ -243,20 +261,56 @@ class TestCollectHandoff(unittest.TestCase):
                 root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.63-x" / "handoffs"
             )
             adr_handoffs.mkdir(parents=True)
-            older = (self.now - timedelta(hours=10)).isoformat()
-            newer = (self.now - timedelta(hours=1)).isoformat()
+            gzkit_ts = (self.now - timedelta(hours=10)).isoformat()
+            adr_ts = (self.now - timedelta(hours=1)).isoformat()  # newer, but off-surface
             (gzkit_handoffs / "gzkit-handoff.md").write_text(
-                self._handoff(older, "Old gzkit-dir action"), encoding="utf-8"
+                self._handoff(gzkit_ts, "Canonical gzkit-dir action"), encoding="utf-8"
             )
             (adr_handoffs / "adr-handoff.md").write_text(
-                self._handoff(newer, "Latest ADR-package action", adr_id="ADR-0.0.63"),
+                self._handoff(adr_ts, "Off-surface ADR-package action", adr_id="ADR-0.0.63"),
                 encoding="utf-8",
             )
             result = self.mod.collect_handoff(root, self.now)
             self.assertIsNotNone(result)
             assert result is not None
-            self.assertIn("adr-handoff.md", result["path"])
-            self.assertEqual(result["first_action"], "Latest ADR-package action")
+            self.assertIn("gzkit-handoff.md", result["path"])
+            self.assertEqual(result["first_action"], "Canonical gzkit-dir action")
+            # REQ-0.0.65-04-02 names the *rendered* "Most-recent handoff" section,
+            # not just collect_handoff's dict — drive render() and prove the
+            # single-surface entry is reported and the newer off-surface ADR
+            # handoff is absent from the operator-visible output.
+            # output-contract: the rendered handoff section IS the REQ-02 behavior.
+            state = {
+                "remote_state": None,
+                "handoff": result,
+                "session_handoff_ghis": [],
+                "obpi_locks": [],
+                "adr_pipeline": [],
+                "recent_events": [],
+                "blockers": [],
+            }
+            rendered = self.mod.render(state, self.now)
+            self.assertIn("## Most-recent handoff", rendered)
+            self.assertIn("gzkit-handoff.md", rendered)
+            self.assertIn("Canonical gzkit-dir action", rendered)
+            self.assertNotIn("adr-handoff.md", rendered)
+            self.assertNotIn("Off-surface ADR-package action", rendered)
+
+    @covers("REQ-0.0.65-04-03")
+    def test_orientation_source_has_no_dual_scan_markers(self):
+        """The GHI #529 dual-scan workaround is fully removed: the production
+        source references neither `docs/design/adr` nor the `GHI #529` marker."""
+        source = Path(self.mod.__file__).read_text(encoding="utf-8")
+        self.assertNotIn("docs/design/adr", source)
+        self.assertNotIn("GHI #529", source)
+        # The removed dual-scan built the path segment-by-segment
+        # (`repo_root / "docs" / "design" / "adr"`) and globbed `**/handoffs`;
+        # the contiguous check above misses the segmented form. Squeeze out
+        # quotes/whitespace/slashes so both the contiguous and segmented
+        # reconstructions collapse to the same fingerprint.
+        squeezed = re.sub(r'["\s/]', "", source)
+        self.assertNotIn("docsdesignadr", squeezed)
+        self.assertNotIn("**/handoffs", source)
 
 
 class TestCollectRemoteState(unittest.TestCase):

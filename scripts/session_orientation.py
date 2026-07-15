@@ -140,7 +140,7 @@ def _looks_like_handoff(text: str) -> bool:
     Excludes non-handoff ``*.md`` that share a handoffs directory — notably
     the generated ``.gzkit/handoffs/AGENTS.md`` subtree-rules file, which has
     no frontmatter and would otherwise win the newest-by-mtime race and be
-    surfaced as "the most-recent handoff" (GHI #529).
+    surfaced as "the most-recent handoff".
     """
     match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if match is None:
@@ -149,18 +149,13 @@ def _looks_like_handoff(text: str) -> bool:
 
 
 def _candidate_handoff_dirs(repo_root: Path) -> list[Path]:
-    """Both canonical handoff locations (the read/write split-brain, GHI #529).
+    """The single canonical handoff location — ``.gzkit/handoffs/``.
 
-    Token-block doctrine names ``.gzkit/handoffs/`` canonical; the
-    gz-session-handoff skill writes to ``{ADR-package}/handoffs/``. Until an
-    ADR resolves that conflict, orientation scans both so no handoff is
-    invisible at session start regardless of where it was written.
+    Token-block doctrine (ADR-0.0.41 / OBPI-0.0.41-03) names ``.gzkit/handoffs/``
+    the canonical store, and OBPI-0.0.65-01 migrated every per-ADR handoff into
+    it, so orientation scans that one location.
     """
-    dirs = [repo_root / ".gzkit" / "handoffs"]
-    adr_root = repo_root / "docs" / "design" / "adr"
-    if adr_root.is_dir():
-        dirs.extend(sorted(p for p in adr_root.glob("**/handoffs") if p.is_dir()))
-    return dirs
+    return [repo_root / ".gzkit" / "handoffs"]
 
 
 def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:

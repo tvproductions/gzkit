@@ -3,7 +3,11 @@ id: OBPI-0.0.65-04-orientation-single-location-scan
 parent: ADR-0.0.65-handoff-system-consolidation
 item: 4
 lane: Heavy
-status: Active
+status: Completed
+req_atomic:
+  - REQ-0.0.65-04-01  # The single ~5-line collapse of `_candidate_handoff_dirs()` to one path is one indivisible edit — no labor unit below the REQ.
+  - REQ-0.0.65-04-02  # Proven by that same collapse via the existing `render(...)` harness (newest-wins over the single surface) — no separate labor.
+  - REQ-0.0.65-04-03  # The GHI #529 workaround block + comment deletion IS the same single edit — the absence assertion carries no independent labor.
 ---
 
 # OBPI-0.0.65-04-orientation-single-location-scan: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
@@ -13,7 +17,7 @@ status: Active
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
 - **Checklist Item:** #4 - "OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)"
 
-**Status:** Active
+**Status:** Completed
 
 ## Objective
 
@@ -185,8 +189,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 - [ ] REQ-0.0.65-04-01 [BEHAVIOR]: `_candidate_handoff_dirs()` returns a sequence of length 1 containing exactly `Path(".gzkit/handoffs")` resolved against the project root, regardless of whether `docs/design/adr/**/handoffs/` directories exist. Asserted by `@covers("REQ-0.0.65-04-01")` in `tests/scripts/test_session_orientation.py`.
 - [ ] REQ-0.0.65-04-02 [BEHAVIOR]: When the orientation script runs against a project state where `.gzkit/handoffs/` contains valid handoffs and `docs/design/adr/**/handoffs/` is empty, the rendered "Most-recent handoff" section correctly reports the newest `.gzkit/handoffs/` entry. Asserted by `@covers("REQ-0.0.65-04-02")` in `tests/scripts/test_session_orientation.py` via the existing `render(...)` test harness.
-- [ ] REQ-0.0.65-04-03 [BEHAVIOR]: `scripts/session_orientation.py` contains zero references to `docs/design/adr` and zero references to the literal string `GHI #529` (the workaround marker comment). Asserted by `@covers("REQ-0.0.65-04-03")` in `tests/scripts/test_session_orientation.py` via file-read + substring check.
-- [ ] REQ-0.0.65-04-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.0.65-04-03 [BEHAVIOR]: `scripts/session_orientation.py` contains zero references to `docs/design/adr` and zero references to the literal string `GHI #529` (the workaround marker comment). Asserted by `@covers("REQ-0.0.65-04-03")` in `tests/scripts/test_session_orientation.py` via file-read + substring check, robust to both the contiguous literal and the segmented `repo_root / "docs" / "design" / "adr"` reconstruction.
 
 ## Completion Checklist
 
@@ -246,17 +249,59 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Single-location scan proven three ways:
+
+    $ grep -n "docs/design/adr\|GHI #529" scripts/session_orientation.py
+    # (no output, exit 1 — both dual-scan markers removed)
+
+    $ uv run gz covers OBPI-0.0.65-04-orientation-single-location-scan --json
+    # by_obpi: total_reqs=3 covered=3 uncovered=0 behavior_uncovered=0
+
+    $ uv run -m unittest tests.scripts.test_session_orientation
+    # Ran 36 tests ... OK
+
+Receipts: arb-step-unittest-cbbffaf182da4295a0b12cc64990b9f1, arb-ruff-4855a3166f4540f2b4e84fcc7ffe8715, arb-step-typecheck-acff906fbe8d4eb8886411ed0da1df3c, arb-step-mkdocs-1846f1dd5b4f4ad9b0dfdf408894f318.
+
+### Step 4b — Independent Adversarial Validation
+
+- **Adversary:** Codex (tier 1, `codex-cli 0.144.4`, different vendor) — availability
+  checked `ready: true`, so the tier-2 Claude subagent was forbidden (GHI #678).
+- **Verdict:** `REFUTED-WITH-CAVEATS`. The adversary confirmed the production behavior
+  is correct (`_candidate_handoff_dirs()` returns only `.gzkit/handoffs/`;
+  `collect_handoff()` has no alternate discovery route; both semantic tests are
+  falsifiable; the real orientation run renders the single-surface handoff), but named
+  three evidence holes, each fixed before attestation:
+  1. **REQ-02 coverage overstated** — the covering test asserted on `collect_handoff()`'s
+     dict but never called `render()`, though the REQ names the *rendered* "Most-recent
+     handoff" section. **Resolved:** `test_ignores_adr_package_handoffs_single_scan` now
+     drives `render()` and asserts the rendered section reports the `.gzkit/handoffs/`
+     entry and omits the newer off-surface ADR handoff.
+  2. **REQ-03 assertion weak** — the grep caught the contiguous literal `docs/design/adr`
+     but missed the *segmented* form `repo_root / "docs" / "design" / "adr"` that the
+     removed code actually used. **Resolved:** the test now squeezes out quotes/whitespace/
+     slashes and asserts `docsdesignadr` absent, plus the `**/handoffs` glob fingerprint.
+  3. **Duplicate `REQ-0.0.65-04-03`** in the brief made `gz covers` report `total_reqs: 4`
+     with a duplicated entry. **Resolved:** the stray untyped duplicate line was removed;
+     parity is now honest `total_reqs: 3`.
+- **Re-validation:** all three strengthened tests re-witnessed at
+  `failure_class=assertion` via `gz arb red`; scoped suite 36/36 green; lint + typecheck
+  clean; `gz covers` now `3/3` covered, `0` uncovered.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Change: collapsed `scripts/session_orientation.py::_candidate_handoff_dirs()` to return a single-element list `[repo_root / ".gzkit" / "handoffs"]`, deleting the GHI #529 dual-scan union with per-ADR `docs/design/adr/**/handoffs/` directories (OBPI-0.0.65-01 had migrated all handoffs into the canonical store).
+- Tests: replaced the dual-scan union test with three `@covers`-decorated single-scan tests in `tests/scripts/test_session_orientation.py`; REQ-02's test drives `render()` and asserts the rendered "Most-recent handoff" section; REQ-03's test is robust to the segmented path reconstruction and the `**/handoffs` glob.
+- Files modified: `scripts/session_orientation.py`, `tests/scripts/test_session_orientation.py`.
+- REQ coverage: REQ-0.0.65-04-01/-02/-03 (all BEHAVIOR), 3/3 covered, each RED-witnessed at `failure_class=assertion`.
+- Date completed: 2026-07-14.
+- Attestation: g0 (operator-verbatim "attest completed"), Heavy lane Gate 5.
+- Defects: the duplicate `REQ-0.0.65-04-03` acceptance-criteria line was removed during closeout (Step-4b Codex adversary caveat); parity now honest 3/3.
 
 ## Tracked Defects
+
+- REQ-count drift (RESOLVED 2026-07-14): the duplicate `REQ-0.0.65-04-03` acceptance-criteria line (an untyped "evidence is recorded" boilerplate reusing the ID) was removed during closeout after the Step-4b Codex adversary flagged it as blocking honest 3-REQ parity. Acceptance Criteria now carries exactly three BEHAVIOR REQs, consistent with `req_atomic:`.
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
@@ -265,12 +310,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.0.65-04 orientation single-location scan: `_candidate_handoff_dirs()` collapsed to `.gzkit/handoffs/` only (GHI #529 dual-scan deleted); 3/3 BEHAVIOR REQs covered and RED assertion-class, scoped suite 36/36 green, mkdocs --strict clean; Step-4b Codex tier-1 adversary returned REFUTED-WITH-CAVEATS, all three caveats fixed and re-validated before attestation. Receipts arb-step-unittest-cbbffaf182da4295a0b12cc64990b9f1, arb-ruff-4855a3166f4540f2b4e84fcc7ffe8715, arb-step-typecheck-acff906fbe8d4eb8886411ed0da1df3c, arb-step-mkdocs-1846f1dd5b4f4ad9b0dfdf408894f318.
+- Date: 2026-07-15
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-15
 
 **Evidence Hash:** -
