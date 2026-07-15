@@ -22,14 +22,17 @@ req_atomic:
 
 **Status:** Completed
 
-> **Build sequencing (Magna Carta coupling).** This brief is **booked now,
-> built in Phase C** per the Build-to-1.0 campaign
-> (`docs/governance/build-to-1.0-campaign-2026-06-10.md`), which homes GHI #585
-> to Phase C (MOTD / C.4 continuity-hybrid) and explicitly fences ADR-0.0.65
-> against a standalone build. Do NOT pull this OBPI into a pipeline ahead of
-> Phase C without an operator-ratified campaign amendment. It also has a hard
-> code dependency on **OBPI-0.0.65-03** (the `gz handoff` verb must exist
-> before the `archive` subcommand can attach).
+> **Build sequencing (Magna Carta coupling) — DISCHARGED.** This brief was
+> originally booked-now / built-in-Phase-C: the Build-to-1.0 campaign
+> `docs/governance/build-to-1.0-campaign-2026-06-10.md` homed GHI #585 to Phase C
+> (MOTD / C.4 continuity-hybrid) and fenced ADR-0.0.65 against a standalone build.
+> That fence was **discharged** when the operator-ratified **Foundation Sunset**
+> amendment (2026-07-12) in the current Magna Carta
+> `docs/governance/build-to-1.0-campaign-2026-06-30.md` — successor to the
+> `docs/governance/build-to-1.0-campaign-2026-06-20.md` Magna Carta — directed
+> *finishing ADR-0.0.65* as the first step of the Sunset sequence. Under that
+> amendment this OBPI was built and attested (g0, 2026-07-15); the hard code
+> dependency on **OBPI-0.0.65-03** (the `gz handoff` verb) was satisfied.
 
 ## Objective
 
