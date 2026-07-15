@@ -1,0 +1,67 @@
+{
+  "adr_id": "ADR-0.0.65-handoff-system-consolidation",
+  "current_step": 11,
+  "is_foundation": true,
+  "started_at": "2026-07-15T21:51:56Z",
+  "updated_at": "2026-07-15T23:10:10Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-07-15T21:51:56Z",
+      "acknowledged_at": "2026-07-15T21:52:10Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-07-15T21:52:10Z",
+      "acknowledged_at": "2026-07-15T21:53:24Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-07-15T21:53:24Z",
+      "acknowledged_at": "2026-07-15T21:53:29Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-07-15T21:53:29Z",
+      "acknowledged_at": "2026-07-15T21:53:40Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-07-15T21:53:40Z",
+      "acknowledged_at": "2026-07-15T22:22:32Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-07-15T22:22:32Z",
+      "acknowledged_at": "2026-07-15T22:34:32Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-07-15T22:34:32Z",
+      "acknowledged_at": "2026-07-15T22:35:37Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-07-15T22:35:37Z",
+      "acknowledged_at": "2026-07-15T23:10:10Z"
+    },
+    {
+      "step": 11,
+      "presented_at": "2026-07-15T23:10:10Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz handoff archive --older-than 30d --dry-run",
+    "uv run gz handoff archive --older-than 30d",
+    "uv run gz handoff list --json",
+    "uv run gz handoff list --adr ADR-0.0.65",
+    "uv run gz handoff resume --adr ADR-0.0.65",
+    "uv run gz handoff create --adr ADR-0.0.65 --slug demo-gz-handoff-create --agent g0 --decisions \"Demonstrate that gz handoff create routes authoring through validate_handoff_document.\""
+  ],
+  "walkthrough_index": 5,
+  "attestation": "Completed — attest completed (g0): 5/5 OBPIs attested; 6 live demos verified (archive dry-run/live parity, list --json/--adr, resume, gated create); ARB green — arb-ruff-d510f84, arb-step-typecheck-c615ea4, arb-step-unittest-ab54fac6, arb-step-mkdocs-5447c487; bound fidelity gate passed; validate --documents clean.",
+  "completed_at": "2026-07-15T23:10:10Z",
+  "attempt": 1,
+  "paused_at": null
+}

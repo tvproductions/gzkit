@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.65-handoff-system-consolidation
-status: Proposed
+status: Completed
 kind: foundation
 semver: 0.0.65
 lane: heavy
@@ -189,4 +189,4 @@ Promotion derived from `ADR-pool.handoff-system-consolidation` on 2026-05-29; ex
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.65 | Pending | | | |
+| 0.0.65 | Completed | g0 | 2026-07-15 | Completed — attest completed (g0): 5/5 OBPIs attested; 6 live demos verified (archive dry-run/live parity, list --json/--adr, resume, gated create); ARB green — arb-ruff-d510f84, arb-step-typecheck-c615ea4, arb-step-unittest-ab54fac6, arb-step-mkdocs-5447c487; bound fidelity gate passed; validate --documents clean. |
