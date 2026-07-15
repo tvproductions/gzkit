@@ -5,7 +5,7 @@ category: governance-infrastructure
 lifecycle_state: active
 skill-version: 6.0.1
 owner: gzkit-governance
-last_reviewed: 2026-04-15
+last_reviewed: 2026-07-15
 gz_command: init
 model: sonnet
 ---
