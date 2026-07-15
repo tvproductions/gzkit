@@ -5,7 +5,7 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.30.0"
+skill-version: "6.31.0"
 last_reviewed: 2026-07-15
 model: sonnet
 ---
@@ -681,7 +681,7 @@ Step 4a is authored by the same agent that may have fabricated it. Step 4b adds 
 
 **Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**
 
-1. **Codex** (`codex:rescue` / `codex:codex-rescue`) — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**. Job the validation out through the Codex runtime; poll its job state to completion and read its verdict.
+1. **Codex** — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. **Dispatch through the purpose-built `/codex:adversarial-review` command**, not the general rescue agent — it carries the canned adversarial (challenge-the-approach) prompt and manages dispatch + result retrieval for you. Pass `--wait` to run it in the **foreground** (a single blocking call that returns Codex's verdict inline — no polling; use `timeout: 600000`, reviews run ~7–8 min), or `--background` to detach and then read progress via the **`/codex:status <task-id>`** slash command. Do NOT hand-roll a `node codex-companion.mjs status` poll loop — that is the low-level plumbing, not the published surface (operator-flagged, 2026-07-15). The general `codex:rescue` / `codex:codex-rescue` agent is an acceptable fallback dispatch path when you need a bespoke refute prompt. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**.
 2. **Independent Claude subagent** — permitted ONLY when the tier-1 availability check returned `ready: false` (Codex not installed / not authenticated / unreachable). Dispatch a fresh `general-purpose` agent (separate context) with the same refute-framed prompt. Using this tier without a checked, genuine tier-1 unavailability is a Step 4b bypass of the same class as skipping 4b entirely (GHI #678).
 3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly ("adversarial validation ran in degraded human-only mode") so the operator knows the independent check did not run.
 
