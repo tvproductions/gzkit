@@ -1,0 +1,54 @@
+{
+  "obpi_id": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+  "generated_at": "2026-07-15T08:49:27.127083+00:00",
+  "demos": [
+    {
+      "command": "uv run gz handoff list --json",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "    \"obpi_id\": \"OBPI-0.18.0-01\",\n    \"timestamp\": \"2026-03-20T12:03:00Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260320T000000Z-pause-for-task-governance.md\",\n    \"adr_id\": \"ADR-0.18.0\",\n    \"obpi_id\": \"OBPI-0.18.0-01\",\n    \"timestamp\": \"2026-03-20T00:00:00Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260312T101836Z-obpi-06-completed-next-closeout.md\",\n    \"adr_id\": \"ADR-0.11.0-airlineops-obpi-completion-pipeline-parity\",\n    \"obpi_id\": \"OBPI-0.11.0-06-template-closeout-and-migration-alignment\",\n    \"timestamp\": \"2026-03-12T10:18:36Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260312T084121Z-obpi-05-completed-next-obpis.md\",\n    \"adr_id\": \"ADR-0.11.0-airlineops-obpi-completion-pipeline-parity\",\n    \"obpi_id\": \"OBPI-0.11.0-05-gz-obpi-pipeline-skill-and-mirror-surface\",\n    \"timestamp\": \"2026-03-12T08:41:21Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260312T073935Z-obpi-04-completed-next-obpis.md\",\n    \"adr_id\": \"ADR-0.11.0-airlineops-obpi-completion-pipeline-parity\",\n    \"obpi_id\": \"OBPI-0.11.0-04-anchor-aware-obpi-drift-and-reconciliation\",\n    \"timestamp\": \"2026-03-12T07:39:35Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260312T070240Z-obpi-03-completed-next-obpis.md\",\n    \"adr_id\": \"ADR-0.11.0-airlineops-obpi-completion-pipeline-parity\",\n    \"obpi_id\": \"OBPI-0.11.0-03-obpi-completion-recorder-and-anchor-receipts\",\n    \"timestamp\": \"2026-03-12T07:02:40Z\"\n  },\n  {\n    \"path\": \".gzkit/handoffs/20260311T105251Z-obpi-02-completed-next-obpis.md\",\n    \"adr_id\": \"ADR-0.11.0-airlineops-obpi-completion-pipeline-parity\",\n    \"obpi_id\": \"OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate\",\n    \"timestamp\": \"2026-03-11T10:52:50Z\"\n  }\n]"
+    },
+    {
+      "command": "uv run gz handoff list --adr ADR-0.0.65",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "2026-07-15T08:41:59Z  ADR-0.0.65  OBPI-0.0.65-03-gz-handoff-cli-verb  \n.gzkit/handoffs/20260715T084159Z-OBPI-0.0.65-03-gz-handoff-cli-verb-abandoned.md\n2026-07-15T00:35:24Z  ADR-0.0.65  \nOBPI-0.0.65-04-orientation-single-location-scan  \n.gzkit/handoffs/20260715T003524Z-OBPI-0.0.65-04-orientation-single-location-scan\n-complete.md\n2026-07-14T23:53:03Z  ADR-0.0.65  \nOBPI-0.0.65-04-orientation-single-location-scan  \n.gzkit/handoffs/20260714T235303Z-OBPI-0.0.65-04-orientation-single-location-scan\n-abandoned.md\n2026-07-14T13:13:37Z  ADR-0.0.65  \nOBPI-0.0.65-04-orientation-single-location-scan  \n.gzkit/handoffs/20260714T131337Z-OBPI-0.0.65-04-orientation-single-location-scan\n-abandoned.md\n2026-07-13T07:18:31Z  ADR-0.0.65  OBPI-0.0.65-02-programmatic-api-implementation\n.gzkit/handoffs/20260713T071831Z-obpi-0.0.65-02-synced-final.md\n2026-07-13T06:58:52Z  ADR-0.0.65  OBPI-0.0.65-02-programmatic-api-implementation\n.gzkit/handoffs/20260713T065852Z-obpi-0.0.65-02-programmatic-api-complete.md\n2026-07-13T06:56:31Z  ADR-0.0.65  OBPI-0.0.65-02-programmatic-api-implementation\n.gzkit/handoffs/20260713T065631Z-OBPI-0.0.65-02-programmatic-api-implementation-\ncomplete.md\n2026-05-30T00:26:31Z  ADR-0.0.65  OBPI-0.0.65-01  \n.gzkit/handoffs/20260530T002631Z-adr-0.0.65-promoted-obpi01-obpi04-authored-pipe\nline-pending.md"
+    },
+    {
+      "command": "uv run gz handoff resume --adr ADR-0.0.65",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "resume — \n.gzkit/handoffs/20260715T084159Z-OBPI-0.0.65-03-gz-handoff-cli-verb-abandoned.md\n  staleness: Fresh\n  requires human verification: False\n  next step: Operator review of the abandonment reason."
+    },
+    {
+      "command": "uv run gz handoff create --adr ADR-0.0.65 --slug demo-gz-handoff-create --agent g0 --decisions \"Demonstrate that gz handoff create routes authoring through validate_handoff_document.\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": ".gzkit/handoffs/20260715T084925Z-demo-gz-handoff-create.md"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-48a4c097894141f782aa4af00b4bd4e7.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-aec03b95fc344fe3ab6b7b8db5e847d7.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-c1e7a2feee21427591d403d3c0ba33c2.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 5,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
+}

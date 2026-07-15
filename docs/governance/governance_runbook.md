@@ -755,6 +755,15 @@ See [`/gz-session-handoff`](../user/skills/gz-session-handoff.md) for full detai
 /gz-session-handoff RESUME
 ```
 
+The skill wields the `gz handoff` verb, which routes handoff authoring through
+the fail-closed validation gate (ADR-0.0.65):
+
+```bash
+uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first
+uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + next step
+uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+```
+
 Staleness handling:
 
 - `Fresh` (<24h) resume directly.

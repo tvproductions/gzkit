@@ -716,6 +716,16 @@ uv run gz obpi reconcile OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test
 ```
 
+Session handoffs (the register entries that preserve intent across sessions) are
+authored and inspected with the `gz handoff` verb, which routes authoring through
+the fail-closed validation gate (ADR-0.0.65):
+
+```bash
+uv run gz handoff list --adr ADR-0.5.0-skill-lifecycle-governance
+uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
+uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
+```
+
 ### Flow 2: ADR Closeout (OBPIs Completed)
 
 Use an ADR whose OBPIs are completed:

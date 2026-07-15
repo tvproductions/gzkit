@@ -32,6 +32,97 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_agent_parsers(commands)
     _register_flag_parsers(commands)
     _register_frontmatter_parsers(commands)
+    _register_handoff_parsers(commands)
+
+
+def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register the ``gz handoff`` sub-command group (ADR-0.0.65 OBPI-03)."""
+    p_handoff = commands.add_parser(
+        "handoff",
+        help="Author and resume session handoffs through the validation gate",
+        description=(
+            "Create, list, and resume session handoffs. `create` routes authoring "
+            "through the fail-closed validate_handoff_document gate; `list` and "
+            "`resume` are read-only projections over .gzkit/handoffs/."
+        ),
+        epilog=build_epilog(
+            [
+                "gz handoff list",
+                "gz handoff list --adr ADR-0.0.65 --json",
+                "gz handoff resume --adr ADR-0.0.65",
+                "gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 "
+                '--decisions "Chose X over Y"',
+            ]
+        ),
+    )
+    handoff_sub = p_handoff.add_subparsers(dest="handoff_command")
+    handoff_sub.required = True
+
+    p_list = handoff_sub.add_parser(
+        "list",
+        help="List handoffs newest-first (optionally scoped by ADR)",
+        description="List frontmatter-filtered handoffs newest-first.",
+        epilog=build_epilog(["gz handoff list", "gz handoff list --adr ADR-0.0.65 --json"]),
+    )
+    p_list.add_argument("--adr", default=None, help="Scope the listing to one ADR id")
+    add_json_flag(p_list)
+    p_list.set_defaults(func=lambda a: _lazy("handoff_list_cmd")(adr=a.adr, as_json=a.as_json))
+
+    p_resume = handoff_sub.add_parser(
+        "resume",
+        help="Resume the newest handoff for an ADR with staleness classification",
+        description="Report the newest handoff for an ADR, its staleness, and first next step.",
+        epilog=build_epilog(
+            [
+                "gz handoff resume --adr ADR-0.0.65",
+                "gz handoff resume --adr ADR-0.0.65 --json",
+            ]
+        ),
+    )
+    p_resume.add_argument("--adr", required=True, help="ADR id to resume the newest handoff for")
+    add_json_flag(p_resume)
+    p_resume.set_defaults(func=lambda a: _lazy("handoff_resume_cmd")(adr=a.adr, as_json=a.as_json))
+
+    p_create = handoff_sub.add_parser(
+        "create",
+        help="Author a handoff, fail-closed through the validation gate",
+        description=(
+            "Author a handoff document. The document is validated before it is "
+            "written; on any violation nothing is written and the verb exits 1."
+        ),
+        epilog=build_epilog(
+            [
+                "gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 "
+                '--decisions "Chose X over Y"',
+            ]
+        ),
+    )
+    p_create.add_argument("--adr", required=True, help="Parent ADR id (ADR-X.Y.Z)")
+    p_create.add_argument("--slug", required=True, help="Filename slug for the handoff")
+    p_create.add_argument("--agent", required=True, help="Authoring agent identity")
+    p_create.add_argument("--decisions", required=True, help="Decisions Made section body")
+    p_create.add_argument("--branch", default=None, help="Branch (default: current git branch)")
+    p_create.add_argument("--summary", default=None, help="Current State Summary section body")
+    p_create.add_argument("--obpi", default=None, help="OBPI id this handoff scopes to")
+    p_create.add_argument(
+        "--continues-from", dest="continues_from", default=None, help="Prior handoff reference"
+    )
+    p_create.add_argument("--session-id", dest="session_id", default=None, help="Session id")
+    add_json_flag(p_create)
+    p_create.set_defaults(
+        func=lambda a: _lazy("handoff_create_cmd")(
+            adr=a.adr,
+            slug=a.slug,
+            agent=a.agent,
+            decisions=a.decisions,
+            branch=a.branch,
+            summary=a.summary,
+            obpi=a.obpi,
+            continues_from=a.continues_from,
+            session_id=a.session_id,
+            as_json=a.as_json,
+        )
+    )
 
 
 def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:

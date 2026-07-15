@@ -5,22 +5,39 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.8.0"
+  skill-version: "6.9.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-13
+last_reviewed: 2026-07-15
 model: sonnet
 ---
 
-# gz-session-handoff (v6.8.0)
+# gz-session-handoff (v6.9.0)
 
 ## Purpose
 
 Create and resume session handoff documents that preserve agent context across engineering sessions. When an agent pauses work on an ADR or OBPI, a handoff document captures the full state — what was done, what decisions were made, and what comes next — so that a resuming agent (or the same agent in a new session) can continue without losing context.
+
+---
+
+## CLI surface: `gz handoff` (ADR-0.0.65)
+
+This skill wields the `gz handoff` verb — the governed CLI surface over the
+handoff authoring API. Authoring routes through the fail-closed
+`validate_handoff_document` gate rather than hand-written markdown:
+
+```bash
+uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first (read-only)
+uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + first next step (read-only)
+uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+```
+
+`create` is fail-closed: on any validation violation nothing is written and the
+verb exits 1. See the manpages under `docs/user/manpages/handoff*.md`.
 
 ---
 
