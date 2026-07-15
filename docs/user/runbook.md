@@ -726,6 +726,17 @@ uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
 ```
 
+When the store accretes, declutter it with the governed move-not-delete
+retention verb — `gz handoff archive` relocates handoffs older than the
+threshold into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled or
+are the `continues_from:` target of a still-canonical handoff. Preview first with
+`--dry-run`:
+
+```bash
+uv run gz handoff archive --older-than 30d --dry-run
+uv run gz handoff archive --older-than 30d
+```
+
 ### Flow 2: ADR Closeout (OBPIs Completed)
 
 Use an ADR whose OBPIs are completed:

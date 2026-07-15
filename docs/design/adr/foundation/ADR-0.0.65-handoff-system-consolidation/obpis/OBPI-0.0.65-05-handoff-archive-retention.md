@@ -3,7 +3,14 @@ id: OBPI-0.0.65-05-handoff-archive-retention
 parent: ADR-0.0.65-handoff-system-consolidation
 item: 5
 lane: Heavy
-status: Draft
+status: Completed
+req_atomic:
+  - REQ-0.0.65-05-01  # one indivisible move-not-delete behavior; atomic no-clobber hardening was corrective, not sub-labor
+  - REQ-0.0.65-05-02  # one indivisible lock-coupling skip behavior
+  - REQ-0.0.65-05-03  # one indivisible chain-integrity behavior; adversary-driven normalization/identity fixes were corrections to the same behavior
+  - REQ-0.0.65-05-04  # one indivisible floor-preservation behavior
+  - REQ-0.0.65-05-05  # one indivisible dry-run behavior; plan-time conflict classification was corrective
+  - REQ-0.0.65-05-06  # one indivisible SUPPORT doc-authoring unit
 ---
 
 # OBPI-0.0.65-05-handoff-archive-retention: Handoff Archive Retention
@@ -13,7 +20,7 @@ status: Draft
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md`
 - **Checklist Item:** #5 - "OBPI-0.0.65-05: **handoff-archive-retention** — Add a governed `gz handoff archive` subcommand that moves handoffs older than a threshold from `.gzkit/handoffs/` to `.gzkit/handoffs/archive/` (move-not-delete; audit trail preserved), honoring three mechanical guards: the migration-floor test (count canonical + archive ≥ floor), `continues_from:` chain integrity (chains may cross into the archive subdir), and lock-handoff coupling (never archive a handoff referenced by an `obpi_lock_released` ledger event). Extend `tests/governance/test_handoff_migration.py` to count the archive subdir. Add manpage + behave coverage. Surface-boundary split from OBPI-03 (distinct retention semantics + guard coupling). Depends on OBPI-03 (the `gz handoff` verb must exist). Closes GHI #585."
 
-**Status:** Draft
+**Status:** Completed
 
 > **Build sequencing (Magna Carta coupling).** This brief is **booked now,
 > built in Phase C** per the Build-to-1.0 campaign
@@ -25,8 +32,6 @@ status: Draft
 > before the `archive` subcommand can attach).
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 **handoff-archive-retention** — Add a governed `gz handoff archive` subcommand that moves handoffs older than a threshold from `.gzkit/handoffs/` to `.gzkit/handoffs/archive/` (move-not-delete; audit trail preserved), honoring three mechanical guards: the migration-floor test (count canonical + archive ≥ floor), `continues_from:` chain integrity (chains may cross into the archive subdir), and lock-handoff coupling (never archive a handoff referenced by an `obpi_lock_released` ledger event). Extend `tests/governance/test_handoff_migration.py` to count the archive subdir. Add manpage + behave coverage. Surface-boundary split from OBPI-03 (distinct retention semantics + guard coupling). Depends on OBPI-03 (the `gz handoff` verb must exist). Closes GHI #585.
 
@@ -43,14 +48,22 @@ status: Draft
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
 - `docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md` — parent ADR for intent and scope
-- `src/gzkit/handoff_archive.py` — **new** runtime module: archive-eligibility selection honoring the three guards (sibling to `src/gzkit/handoff_validation.py`)
-- `src/gzkit/commands/handoff_archive.py` — **new** command wrapper backing `gz handoff archive` (sibling `.py` command modules under `src/gzkit/commands/`)
+- `src/gzkit/handoff_archive.py` — **CREATE** **new** runtime module: archive-eligibility selection honoring the three guards (sibling to `src/gzkit/handoff_validation.py`)
+- `src/gzkit/commands/handoff_archive.py` — **CREATE** **new** command wrapper backing `gz handoff archive` (sibling `.py` command modules under `src/gzkit/commands/`)
 - `src/gzkit/cli/parser_maintenance.py` — register the `archive` subcommand under the `gz handoff` verb established by OBPI-0.0.65-03
-- `tests/governance/test_handoff_archive.py` — **new** BEHAVIOR tests for the archive verb and its three guards
+- `src/gzkit/cli/parser_handler_manifest.py` — coupled surface (DO IT RIGHT §1a): the `_LAZY_HANDLERS` map `_lazy` reads to resolve `handoff_archive_cmd`; a subcommand registration in `parser_maintenance.py` is inert without its handler-manifest entry. Additive one-line entry only.
+- `src/gzkit/handoff_api.py` — coupled surface, **read-only test import only** (never edited): `test_chain_survives_real_resolver_after_archive` calls `load_handoff_chain` to prove the conservative chain guard preserves the production resolver's semantics (Step 4b finding #3). Not a security surface; the resolver itself is OBPI-03's and is left untouched.
+- `tests/governance/test_handoff_archive.py` — **CREATE** **new** BEHAVIOR tests for the archive verb and its three guards
 - `tests/governance/test_handoff_migration.py` — extend the migration floor to count the `archive/` subdir (canonical + archive ≥ floor)
-- `docs/user/manpages/handoff-archive.md` — **new** manpage for the verb (sibling `.md` manpages)
-- `features/handoff_archive.feature` — **new** behave coverage (sibling `.feature` files)
-- `.gzkit/handoffs/archive/` — runtime archive destination (created by the verb)
+- `docs/user/manpages/handoff-archive.md` — **CREATE** **new** manpage for the verb (sibling `.md` manpages)
+- `docs/user/manpages/index.md` — coupled doc surface (`gz cli audit` index_entry): register the new verb in the manpage index. Additive one-line entry.
+- `docs/user/manpages/handoff.md` — coupled doc surface (docs-first-class covenant): extend the parent `gz handoff` verb table with the `archive` subcommand. Additive one-line entry.
+- `docs/user/runbook.md` — coupled doc surface (`gz cli audit` operator_runbook): mention `gz handoff archive` in the operator handoff workflow. Additive.
+- `docs/governance/governance_runbook.md` — coupled doc surface (`gz cli audit` governance_runbook): mention `gz handoff archive` in the governance handoff workflow. Additive.
+- `config/doc-coverage.json` — coupled surface (`tests/test_doc_coverage.py` real-manifest gate): declare the `handoff archive` subcommand's doc-coverage row. Additive.
+- `.gzkit/skills/gz-session-handoff/SKILL.md` — coupled surface (tool-skill-runbook Invariant 1: every CLI verb must be wielded by a skill): add `gz handoff archive` to the skill's CLI surface. Bumps `skill-version`; `gz agent sync control-surfaces` regenerates the vendor/pkg skill mirrors.
+- `features/handoff_archive.feature` — **CREATE** **new** behave coverage (sibling `.feature` files)
+- `.gzkit/handoffs/archive/` — **CREATE** runtime archive destination (created by the verb)
 
 ## Denied Paths
 
@@ -261,6 +274,19 @@ Each REQ carries exactly one kind tag [BEHAVIOR|SUPPORT|STRUCTURAL-FENCE] (ADR-0
 # Record attestation text here when required by parent lane
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary:** Codex (tier-1, cross-vendor) via `/codex:adversarial-review`, three rounds.
+**Availability:** `codex:setup` reported `ready: true`; tier-2/3 forbidden.
+
+| Round | Verdict | Claim broken → Resolution |
+|-------|---------|---------------------------|
+| 1 | **REFUTED** | `shutil.move` could silently overwrite an existing archived handoff (destroying an audit artifact, dropping the floor); chain integrity broke across repeated runs. **Fixed** — atomic `os.link` no-clobber + conservative both-direction chain guard; regression tests reproduce both counterexamples. |
+| 2 | NOT-REFUTED | TOCTOU collision, raw-string pointer comparison, production-resolver mismatch (test reimplemented resolution), dry-run/execute drift. **Fixed** — plan-time conflict classification, `_resolve_pointer_key` mirroring `_resolve_continues_from`, `test_chain_survives_real_resolver_after_archive` exercising the real `load_handoff_chain`. |
+| 3 | NOT-REFUTED | (#3) case-insensitive-FS pointer alias; (#4) dangling-symlink dry-run drift — **fixed** (inode-identity keying, `os.path.lexists`-equivalent). (#1/#2) concurrent-writer races — **operator-ruled out-of-scope** (single-operator, lock-serialized model) and **documented** as an exclusive-access boundary in the module docstring and manpage. |
+
+**Overall verdict recorded:** `refuted` (round 1 found genuine defects). **Resolution:** every in-scope finding fixed with a reproducing regression test and re-verified against the adversary's own checks (unittest + behave green); the two concurrency findings were operator-attested out-of-scope and documented rather than fixed. The cross-vendor adversary caught real move-not-delete and chain-integrity defects that same-vendor quality/spec review missed.
+
 ### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
@@ -271,19 +297,20 @@ Each REQ carries exactly one kind tag [BEHAVIOR|SUPPORT|STRUCTURAL-FENCE] (ADR-0
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
 
-`uv run gz handoff archive --older-than 30d --dry-run` lists the would-move set with lock-coupled and chain-referenced handoffs marked SKIPPED; the non-dry run moves the eligible set and the migration-floor test still passes (canonical + archive ≥ floor).
+`uv run gz handoff archive --older-than 30d --dry-run` reports 24 would-move on the real store with lock-coupled, chained, recent, and undatable handoffs skipped, and creates no archive/ dir (mutates nothing). The non-dry run relocates the eligible set via atomic os.link no-clobber; the migration-floor test stays green (canonical + archive >= _MIGRATION_BASELINE_FLOOR). Receipts: arb-step-unittest-3a93fa2dd10d47a9ba2c83f7012d507e, arb-step-mkdocs-38d767f96412426193673ec186feee94, arb-step-behave-b57e6a13cc3740269b7950b810a52e9b.
 
 ### Implementation Summary
 
-**Parent ADR § Decision item this OBPI implements (GHI #321 pin):** ADR-0.0.65 § Decision #3 — *"Add a `gz handoff` CLI verb (the original GHI #529 ask) exposing create/resume/list, so handoff authoring routes through the validation gate instead of hand-authored markdown."* This OBPI extends that verb with an `archive` subcommand (surface-boundary split — retention semantics + guard coupling are distinct from authoring), the booked Checklist item #5.
 
-- Files created/modified: _[build-time]_
-- Tests added: _[build-time]_
-- Date completed: _[build-time]_
-- Attestation status: _[build-time]_
-- Defects noted: _[build-time]_
+- Runtime: src/gzkit/handoff_archive.py — plan_archive/execute_archive, stdlib+Pydantic core; guards: lock-coupling, conservative both-direction chain-integrity, atomic no-clobber move (os.link), inode-identity pointer matching, plan-time conflict classification
+- CLI: thin commands/handoff_archive.py adapter + gz handoff archive subparser (--older-than/--dry-run/--json), handler-manifest entry
+- Tests: 13 in test_handoff_archive.py (REQ-01..05 BEHAVIOR @covers + RED witnesses) plus test_handoff_migration.py floor extended to count canonical + archive
+- Docs: docs/user/manpages/handoff-archive.md (REQ-06 SUPPORT) + index/runbooks/doc-coverage/gz-session-handoff skill coupled surfaces
+- Adversary: Codex cross-vendor, 3 rounds; refuted round 1; all in-scope findings fixed with reproducing regression tests; concurrency findings operator-ruled out-of-scope and documented
+- Security surfaces (lock_manager/handoff_validation/ledger*): none edited — import/read-only only
+- Date completed: 2026-07-15
+- Attestation: operator g0 "attest completed"
 
 ## Tracked Defects
 
@@ -294,12 +321,12 @@ Each REQ carries exactly one kind tag [BEHAVIOR|SUPPORT|STRUCTURAL-FENCE] (ADR-0
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — gz handoff archive delivers governed move-not-delete retention (lock-coupling, conservative both-direction chain-integrity, atomic no-clobber move, migration-floor guards, plus --dry-run); 18 OBPI tests green (arb-step-unittest-3a93fa2dd10d47a9ba2c83f7012d507e), lint (arb-ruff-5bf08449ff0944df8f1bd3e74af948c9), typecheck (arb-step-typecheck-3d9bd86b21b64d618e577b2590176461), mkdocs (arb-step-mkdocs-38d767f96412426193673ec186feee94), and behave (arb-step-behave-b57e6a13cc3740269b7950b810a52e9b) all clean; cross-vendor Codex adversary ran three rounds via /codex:adversarial-review, refuted round 1 (move-not-delete + chain-integrity), and every in-scope finding was fixed with a reproducing regression test — the two concurrency findings were operator-ruled out-of-scope for the single-operator model and documented as an exclusive-access boundary.
+- Date: 2026-07-15
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-15
 
 **Evidence Hash:** -

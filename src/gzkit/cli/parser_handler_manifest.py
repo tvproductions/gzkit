@@ -58,6 +58,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "airlock_in_cmd": "gzkit.commands.airlock",
     "airlock_out_cmd": "gzkit.commands.airlock",
     # --- handoff group (parser_maintenance) ---
+    "handoff_archive_cmd": "gzkit.commands.handoff_archive",
     "handoff_create_cmd": "gzkit.commands.handoff",
     "handoff_list_cmd": "gzkit.commands.handoff",
     "handoff_resume_cmd": "gzkit.commands.handoff",

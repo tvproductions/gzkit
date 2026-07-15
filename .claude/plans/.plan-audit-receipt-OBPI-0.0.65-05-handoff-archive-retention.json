@@ -1,0 +1,19 @@
+{
+  "obpi_id": "OBPI-0.0.65-05-handoff-archive-retention",
+  "timestamp": "2026-07-15T14:53:30Z",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.0.65-05-handoff-archive-retention.md",
+  "gaps_found": 0,
+  "authored_by": "gz-plan-audit skill Step 7 (semantic alignment verdict)",
+  "notes": "Semantic ADR<->OBPI<->Plan alignment: PASS. All alignment checks aligned (see report). The CLI structural check (gz plan audit) reported 6 'allowed path does not exist' gaps and 57 advisory scope-collisions; both are non-defects for this greenfield brief and are recorded verbatim below rather than suppressed.",
+  "cli_structural_gaps_resolved_as_greenfield": [
+    "src/gzkit/handoff_archive.py",
+    "src/gzkit/commands/handoff_archive.py",
+    "tests/governance/test_handoff_archive.py",
+    "docs/user/manpages/handoff-archive.md",
+    "features/handoff_archive.feature",
+    ".gzkit/handoffs/archive/"
+  ],
+  "gap_disposition": "Each path above is a NEW file this OBPI is chartered to create; every one is declared in the brief's Allowed Paths. 'Path does not exist pre-implementation' is the expected state of a create-new OBPI and is not an alignment defect. The 57 scope-collisions are advisory overlaps on the shared parser registry (src/gzkit/cli/parser_maintenance.py) and shared command/manpage namespaces.",
+  "scope_collisions_advisory": true
+}

@@ -124,6 +124,43 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    p_archive = handoff_sub.add_parser(
+        "archive",
+        help="Move handoffs older than a threshold into .gzkit/handoffs/archive/",
+        description=(
+            "Relocate (move-not-delete) handoffs older than --older-than into "
+            ".gzkit/handoffs/archive/, honoring the lock-coupling, chain-integrity, "
+            "and migration-floor guards. --dry-run reports the would-move set and "
+            "mutates nothing."
+        ),
+        epilog=build_epilog(
+            [
+                "gz handoff archive --older-than 30d --dry-run",
+                "gz handoff archive --older-than 30d",
+            ]
+        ),
+    )
+    p_archive.add_argument(
+        "--older-than",
+        dest="older_than",
+        required=True,
+        help="Age threshold, e.g. 30d — handoffs older than this are eligible",
+    )
+    p_archive.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Report the would-move set without moving anything",
+    )
+    add_json_flag(p_archive)
+    p_archive.set_defaults(
+        func=lambda a: _lazy("handoff_archive_cmd")(
+            older_than=a.older_than,
+            dry_run=a.dry_run,
+            as_json=a.as_json,
+        )
+    )
+
 
 def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:
     """Register ``gz frontmatter`` sub-command group (ADR-0.0.16 OBPI-03)."""

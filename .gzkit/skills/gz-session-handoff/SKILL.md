@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.9.0"
+  skill-version: "6.10.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -34,10 +34,16 @@ handoff authoring API. Authoring routes through the fail-closed
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first (read-only)
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + first next step (read-only)
 uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention (read-only)
+uv run gz handoff archive --older-than 30d            # move handoffs older than the threshold into archive/
 ```
 
 `create` is fail-closed: on any validation violation nothing is written and the
-verb exits 1. See the manpages under `docs/user/manpages/handoff*.md`.
+verb exits 1. `archive` is move-not-delete: it relocates handoffs older than
+`--older-than` into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled
+or are the `continues_from:` target of a still-canonical handoff, so the audit
+trail is preserved and no resume chain is orphaned. See the manpages under
+`docs/user/manpages/handoff*.md`.
 
 ---
 

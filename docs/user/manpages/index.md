@@ -80,6 +80,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz handoff list`](handoff-list.md) | List session handoffs newest-first, optionally scoped by ADR |
 | [`gz handoff resume`](handoff-resume.md) | Report the newest handoff for an ADR, its staleness, and first next step |
 | [`gz handoff create`](handoff-create.md) | Author a handoff, fail-closed through the validation gate |
+| [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |
 | [`gz task list`](task-list.md) | List tasks for an OBPI with status |
 | [`gz task start`](task-start.md) | Start or resume a task |

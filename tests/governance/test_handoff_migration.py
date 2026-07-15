@@ -22,6 +22,7 @@ from gzkit.traceability import covers
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _CANONICAL_DIR = _REPO_ROOT / ".gzkit" / "handoffs"
+_ARCHIVE_DIR = _CANONICAL_DIR / "archive"
 _ADR_ROOT = _REPO_ROOT / "docs" / "design" / "adr"
 _SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-session-handoff" / "SKILL.md"
 
@@ -42,8 +43,29 @@ _MIGRATION_BASELINE_FLOOR = 34
 
 
 def _canonical_handoffs() -> list[Path]:
-    """Markdown handoffs in the canonical store, excluding the subtree-rules file."""
+    """Markdown handoffs in the canonical store, excluding the subtree-rules file.
+
+    Non-recursive: the ``archive/`` subdir (OBPI-0.0.65-05) is excluded here and
+    counted separately by :func:`_archived_handoffs`.
+    """
     return [p for p in _CANONICAL_DIR.glob("*.md") if p.name != "AGENTS.md"]
+
+
+def _archived_handoffs() -> list[Path]:
+    """Markdown handoffs relocated into ``.gzkit/handoffs/archive/`` (OBPI-0.0.65-05).
+
+    Archiving MOVES handoffs (never deletes), so an archived handoff still counts
+    toward the migration floor — the store is canonical + archive, not canonical
+    alone.
+    """
+    if not _ARCHIVE_DIR.is_dir():
+        return []
+    return [p for p in _ARCHIVE_DIR.glob("*.md") if p.name != "AGENTS.md"]
+
+
+def _all_stored_handoffs() -> list[Path]:
+    """Every handoff still held by the store: canonical + archive."""
+    return _canonical_handoffs() + _archived_handoffs()
 
 
 class HandoffMigrationStateTests(unittest.TestCase):
@@ -65,23 +87,35 @@ class HandoffMigrationStateTests(unittest.TestCase):
 
     @covers("REQ-0.0.65-01-02")
     def test_canonical_store_holds_migration_baseline(self) -> None:
-        """The canonical store never shrinks below the post-migration baseline.
+        """The store never shrinks below the post-migration baseline.
 
         A floor, not an equality: migrated handoffs must all survive (loss is the
         regression), while additive session handoffs grow the store freely.
+
+        Counts canonical + archive (OBPI-0.0.65-05): archiving MOVES a handoff
+        into ``archive/`` rather than deleting it, so a relocated handoff still
+        counts toward the floor. Counting canonical alone would false-trip the
+        floor the moment ``gz handoff archive`` runs.
         """
-        handoffs = _canonical_handoffs()
+        handoffs = _all_stored_handoffs()
         self.assertGreaterEqual(
             len(handoffs),
             _MIGRATION_BASELINE_FLOOR,
-            f"canonical store dropped below the migration baseline "
-            f"({_MIGRATION_BASELINE_FLOOR}); a migrated handoff may have been lost. "
-            f"found {len(handoffs)}: {sorted(p.name for p in handoffs)}",
+            f"handoff store (canonical + archive) dropped below the migration "
+            f"baseline ({_MIGRATION_BASELINE_FLOOR}); a migrated handoff may have "
+            f"been lost. found {len(handoffs)}: {sorted(p.name for p in handoffs)}",
         )
 
     @covers("REQ-0.0.65-01-03")
     def test_continues_from_chains_resolve(self) -> None:
-        """Every non-empty continues_from pointer resolves to an existing file."""
+        """Every non-empty continues_from pointer resolves to an existing file.
+
+        Canonical-store resolution (OBPI-0.0.65-01 semantics, unchanged). The
+        archive verb (OBPI-0.0.65-05) never archives a chained handoff, so chains
+        stay wholly canonical and this invariant is not affected by archiving;
+        the production resolver is exercised directly in
+        ``test_handoff_archive.py::test_chain_survives_real_resolver_after_archive``.
+        """
         broken: list[str] = []
         for path in _canonical_handoffs():
             try:
