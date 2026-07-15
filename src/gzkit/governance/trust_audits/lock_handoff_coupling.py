@@ -92,7 +92,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
                 )
             )
             continue
-        claim_ts = claims.get((obpi_id, agent))
+        claim_ts = _concluded_claim_ts(claims.get(obpi_id, []), ev_ts)
         errors.extend(_check_timestamp(obpi_id, agent, ev.ts, handoff_content, claim_ts))
         errors.extend(_check_min_info(obpi_id, agent, ev.ts, handoff_content))
 
@@ -113,19 +113,36 @@ def _find_cutover_ts(events: list) -> datetime | None:
     return cutover
 
 
-def _index_claims(events: list) -> dict[tuple[str, str], datetime]:
-    """Build index of latest claim timestamp keyed by (obpi_id, agent)."""
-    index: dict[tuple[str, str], datetime] = {}
+def _index_claims(events: list) -> dict[str, list[datetime]]:
+    """Build per-OBPI ascending-sorted claim timestamps for concluded-claim matching.
+
+    Keyed by ``obpi_id`` only (not ``(obpi_id, agent)``): a release concludes the
+    active claim regardless of which agent claimed it, so a cross-agent force-reap
+    must pair against the reaped claim, not the reaper's own later claim.
+    """
+    index: dict[str, list[datetime]] = {}
     for ev in events:
         if ev.event != "obpi_lock_claimed":
             continue
         ts = _parse_ts(ev.ts)
         if ts is None:
             continue
-        key = (ev.id, str(ev.extra.get("agent", "")))
-        if key not in index or ts > index[key]:
-            index[key] = ts
+        index.setdefault(ev.id, []).append(ts)
+    for claim_tss in index.values():
+        claim_tss.sort()
     return index
+
+
+def _concluded_claim_ts(claim_tss: list[datetime], release_ts: datetime) -> datetime | None:
+    """The claim a release concludes: the latest claim for the OBPI at or before the
+    release timestamp.
+
+    Pairing by concluded claim (not the releasing agent's newest claim) keeps
+    abandon-then-reclaim and cross-agent force-reap sequences valid, while still
+    flagging a handoff that genuinely predates the claim it concluded.
+    """
+    prior = [ts for ts in claim_tss if ts <= release_ts]
+    return prior[-1] if prior else None
 
 
 def _check_timestamp(

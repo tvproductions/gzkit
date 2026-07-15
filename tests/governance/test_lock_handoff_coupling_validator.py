@@ -370,6 +370,95 @@ class TestLockHandoffCouplingValidatorPreCutover(unittest.TestCase):
         self.assertEqual([], errors)
 
 
+class TestLockHandoffCouplingReclaimAndReap(unittest.TestCase):
+    """A release must pair with the claim it CONCLUDED — the latest claim for
+    the OBPI that predates the release — not the releasing agent's most-recent
+    claim. Regression: the old `(obpi_id, agent) -> latest claim` index mispaired
+    abandon-then-reclaim and cross-agent force-reap sequences, producing false
+    'handoff predates the matching claim' errors on an honest ledger.
+    """
+
+    def test_abandon_then_reclaim_same_agent_no_false_error(self) -> None:
+        """claim -> abandon(release+handoff) -> re-claim (same agent): the abandon
+        release pairs with the concluded first claim, not the later re-claim."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(
+                root,
+                [
+                    _cutover_event(),
+                    _claim_event(ts="2026-06-07T12:00:00+00:00"),  # concluded claim
+                    _release_event(
+                        ts="2026-06-07T12:30:00+00:00",
+                        handoff_path=".gzkit/handoffs/abandon.md",
+                    ),
+                    _claim_event(ts="2026-06-07T13:00:00+00:00"),  # later re-claim
+                ],
+            )
+            _write_handoff(
+                root,
+                relative_path=".gzkit/handoffs/abandon.md",
+                timestamp="2026-06-07T12:30:00+00:00",
+                last_lock_event_timestamp="2026-06-07T12:00:00+00:00",
+            )
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)
+
+    def test_cross_agent_reap_no_false_error(self) -> None:
+        """A force-reap release (agent B) that concludes agent A's claim pairs with
+        A's reaped claim, not reaper B's own later claim."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(
+                root,
+                [
+                    _cutover_event(),
+                    _claim_event(agent="agent-A", ts="2026-06-07T12:00:00+00:00"),  # reaped
+                    _release_event(
+                        agent="agent-B",
+                        ts="2026-06-07T12:30:00+00:00",
+                        handoff_path=".gzkit/handoffs/reap.md",
+                    ),
+                    _claim_event(agent="agent-B", ts="2026-06-07T13:00:00+00:00"),  # reaper's own
+                ],
+            )
+            _write_handoff(
+                root,
+                relative_path=".gzkit/handoffs/reap.md",
+                timestamp="2026-06-07T12:30:00+00:00",
+                last_lock_event_timestamp="2026-06-07T12:00:00+00:00",
+            )
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)
+
+    def test_genuine_predate_still_caught_amid_churn(self) -> None:
+        """The fix must not mask a real violation: a handoff predating the claim it
+        concludes is still flagged even when a later re-claim exists."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(
+                root,
+                [
+                    _cutover_event(),
+                    _claim_event(ts="2026-06-07T12:00:00+00:00"),  # concluded claim
+                    _release_event(
+                        ts="2026-06-07T12:30:00+00:00",
+                        handoff_path=".gzkit/handoffs/stale.md",
+                    ),
+                    _claim_event(ts="2026-06-07T13:00:00+00:00"),
+                ],
+            )
+            _write_handoff(
+                root,
+                relative_path=".gzkit/handoffs/stale.md",
+                timestamp="2026-06-07T11:30:00+00:00",  # predates the concluded claim
+                last_lock_event_timestamp="2026-06-07T11:00:00+00:00",
+            )
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual(1, len(errors))
+        self.assertIn("predates the matching claim", errors[0].message)
+
+
 class TestLockHandoffCouplingDefaultPipeline(unittest.TestCase):
     @covers("REQ-0.0.41-04-07")
     def test_lock_handoff_coupling_in_default_check_pipeline(self) -> None:
