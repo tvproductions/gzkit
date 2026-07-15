@@ -5,8 +5,8 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "6.29.0"
-last_reviewed: 2026-07-11
+skill-version: "6.30.0"
+last_reviewed: 2026-07-15
 model: sonnet
 ---
 
@@ -684,6 +684,8 @@ Step 4a is authored by the same agent that may have fabricated it. Step 4b adds 
 1. **Codex** (`codex:rescue` / `codex:codex-rescue`) — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**. Job the validation out through the Codex runtime; poll its job state to completion and read its verdict.
 2. **Independent Claude subagent** — permitted ONLY when the tier-1 availability check returned `ready: false` (Codex not installed / not authenticated / unreachable). Dispatch a fresh `general-purpose` agent (separate context) with the same refute-framed prompt. Using this tier without a checked, genuine tier-1 unavailability is a Step 4b bypass of the same class as skipping 4b entirely (GHI #678).
 3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly ("adversarial validation ran in degraded human-only mode") so the operator knows the independent check did not run.
+
+> **⚠ Clear prop before firing up the tier-1 Codex adversary.** The Codex runtime (`openai/codex-plugin-cc`) routes every rescue through a long-lived, shared broker process that can silently wedge — a stale/hung broker is reused without a health check, and the adversarial job then **hangs indefinitely with no output** (the job log reaches "Turn started" and never completes; upstream `openai/codex-plugin-cc` #509). Before dispatching, *clear prop*: if a prior run may have left one wedged, reset it — `rm -f ~/.claude/plugins/data/codex-openai-codex/state/<workspace-slug>/broker.json` and kill any stray `app-server-broker` / `codex app-server` processes — then run `codex:setup` and confirm `ready: true`. **A wedged broker is NOT a genuine tier-1 unavailability.** `codex:setup` checks only the binary + auth, so it reports `ready: true` even when the broker is hung; the true signature is `ready: true` but a `task` that emits nothing within ~30s. In that case clear prop and retry tier 1 — do **not** record it as `ready: false` and drop to tier 2, which would be a tier-order bypass (GHI #678).
 
 **Record the tier and why.** The `SubagentDispatchRecord` (`role="Adversary"`) MUST record `adversary_tier` (1/2/3), `codex_availability_checked` (bool), and — for tier 2/3 — a `fallback_reason` naming the observed unavailability. `gz obpi complete` fail-closes on a tier-2/3 verdict whose `fallback_reason` does not name a genuine Codex unavailability (GHI #678). "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
 
