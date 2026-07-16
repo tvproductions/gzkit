@@ -5,9 +5,19 @@ applyTo: "docs/**, src/gzkit/**"
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
-> **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
+> **Rule version:** `0.2.0` — reconciled to ADR-0.0.24 and ADR-0.0.36 (Pass A
+> conflict-matrix rows 15 and 19, run 2026-07-16). § Do Not scoped attestation
+> to "heavy/foundation scope", describing lane branching collapsed at
+> ADR-0.0.36 — an agent on a Lite+feature OBPI read it as permission to
+> self-close. § Validation bundle prescribed bare commands that emit no ARB
+> receipt, making the sequence mechanically unrunnable on the foundation ADRs
+> this rule governs (`gz adr emit-receipt` exits 3 on zero receipt citations).
+> The same drift was caught and fixed on the skill side at
+> `gz-adr-closeout-ceremony/SKILL.md:317`; the rule side was never reconciled.
+> Prior `0.1.0` — initial shape conformance pass; renamed prohibited heading
+> (OBPI-0.0.54-04).
 
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 
@@ -27,14 +37,17 @@ Documentation is a first-class deliverable and must track behavior changes in th
 
 ## Validation bundle
 
+Cite the **ARB-wrapped canonical invocations** — they emit the receipt IDs attestation requires. Bare (non-ARB) commands emit no receipt and **do not satisfy** the Gate-5 evidence requirement; on Heavy lane and `foundation` kind, missing receipt IDs are fail-closed (`gz adr emit-receipt` exits 3 before attestation is recorded). Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; see `AGENTS.md` § Attestation.
+
 ```bash
-uv run gz lint
+uv run gz arb ruff
 uv run gz validate --documents --surfaces
-uv run mkdocs build --strict
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ```
 
 ## Do Not
 
 - Do not leave placeholder output examples.
 - Do not update code without docs when command output changes.
-- Do not declare completion without explicit human attestation for heavy/foundation scope.
+- Do not declare completion without explicit human attestation. Attestation is **universal** — required for every OBPI completion regardless of kind, lane, or sensitivity (ADR-0.0.36). The prior "for heavy/foundation scope" qualifier described branching collapsed at ADR-0.0.36 and is retired.
+- Do not cite bare `uv run gz lint` / `uv run mkdocs build --strict` as attestation evidence — they produce no `arb-*` receipt.

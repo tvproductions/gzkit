@@ -5,11 +5,19 @@ paths:
 description: Non-negotiable governance workflow rules
 ---
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
 # Governance Core (gzkit)
 
-> **Rule version:** `0.4.0` — added withdraw-vs-repudiate disambiguation
+> **Rule version:** `0.5.0` — reconciled two bullets that contradicted
+> AGENTS.md (Pass A conflict-matrix rows 14 and 16, run 2026-07-16). The
+> defect-tracking bullet named `gh issue create` and the raw insights jsonl
+> path — the exact invocations Always #13 and Always #11 forbid — in a
+> section headed "Non-negotiable", on the only rule with `paths: "**/*"`,
+> i.e. loaded on every edit in every session. The Gate-5 bullet carried a
+> stale lane conditional ("when lane requirements require") describing
+> branching collapsed at ADR-0.0.36, contradicting the very next bullet in
+> the same list. Prior `0.4.0` — added withdraw-vs-repudiate disambiguation
 > (ADR-0.0.71, OBPI-0.0.71-02): `gz obpi repudiate` reverses a completion
 > without retiring the OBPI; `gz obpi withdraw` is permanent one-way
 > retirement. Prior `0.3.0` enshrined the canon-owner human-attestation
@@ -19,10 +27,10 @@ description: Non-negotiable governance workflow rules
 
 - Read `AGENTS.md` before implementation work.
 - Use `uv run` for Python command execution.
-- Do not bypass Gate 5 when lane requirements require human attestation.
+- Do not bypass Gate 5. Human attestation is **universal** for every OBPI completion, regardless of kind, lane, or sensitivity (ADR-0.0.36; `_requires_human_obpi_attestation` returns `True` unconditionally). There is no lane in which Gate 5 is optional.
 - **Human attestation is sacrosanct and gold (canon-owner directive, verbatim).** "Never, ever again give me that TTY or PTY bullshit." When the operator says "attest completed," it IS complete; the operator's verbatim attestation relayed via `--attestation-text` IS Gate 5 for every lane/kind/sensitivity. No TTY, PTY, interactive-terminal, or transport mechanism may EVER be cited as a reason an agent "cannot" record human attestation — the mechanism serves the attestation, never gates it.
 - Do not edit `.gzkit/ledger.jsonl` manually.
-- Every defect must be fixed now or tracked (`gh issue create --label defect` or `.gzkit/insights/agent-insights.jsonl`).
+- Every defect must be fixed now or tracked — via `/ghi-author` (**never** `gh issue create` directly; AGENTS.md § Behavior Rules — Always #13) or `gz insights remember` (**never** hand-append `.gzkit/insights/agent-insights.jsonl`; Always #11).
 
 ## Required workflow order (OBPI implementation path)
 
