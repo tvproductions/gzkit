@@ -245,6 +245,14 @@
       "timeoutSeconds": 120
     },
     {
+      "slug": "control-surface-permission-consent-drift",
+      "title": "Control Surface Audit \u2014 Rule Prose vs. Permission Standing Consent (Pass D)",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift",
+      "lane": "lite",
+      "timeoutSeconds": 120
+    },
+    {
       "slug": "dependency-currency",
       "title": "Dependency Currency (Tooling Stack Drift Scan)",
       "version": "1.0.0",

@@ -1,0 +1,34 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/doctrine-map.md",
+      "expected": 0,
+      "description": "Doctrine map artifact present (re-derived, context-free vs context-dependent split)"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/permission-inventory.md",
+      "expected": 0,
+      "description": "Permission surface inventory artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/consent-drift.md",
+      "expected": 0,
+      "description": "Consent drift ledger artifact present"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/unwitnessable.md",
+      "expected": 0,
+      "description": "Coverage-limits ledger present — required, not optional; a drift ledger without it overstates coverage (GHI #690)"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md",
+      "expected": 0,
+      "description": "Summary artifact present with coverage limits restated verbatim"
+    }
+  ]
+}
