@@ -1,4 +1,12 @@
 {
+  "permissions": {
+    "deny": [
+      "Bash(git *--no-verify*)",
+      "Bash(git *--no-verify)",
+      "Bash(git commit -n *)",
+      "Bash(git commit -n)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
