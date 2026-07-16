@@ -42,6 +42,20 @@ _GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
     "invariant_coherence",
 )
 
+# Default-tier scopes ADDED after the "before" snapshot was taken.
+#
+# The golden above is evidence: it is the measured pre-collapse dispatch, and its
+# value as a migration proof depends on staying pristine. Appending new scopes to
+# it would erase the boundary between "what the collapse had to reproduce" and
+# "what was added later" — the snapshot would silently stop being a snapshot.
+# Legitimate post-snapshot growth is recorded here instead, so the assertion can
+# still prove the collapse dropped nothing while the registry keeps growing.
+#
+#   rule_version_markers — enforces the rule-version-marker invariant declared by
+#   skill-surface-sync.md § Non-negotiable rules #2 but never mechanized
+#   (Pass A conflict-matrix re-run, 2026-07-16).
+_POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = ("rule_version_markers",)
+
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the
 # dispatch contract pins; the order is unified onto registry order (no test pins
 # the multi-scope output order, confirmed pre-cut).
@@ -144,12 +158,25 @@ class TestValidatorRegistryParity(unittest.TestCase):
         return validate_cmd.VALIDATOR_REGISTRY
 
     def test_default_tier_order_preserved(self) -> None:
+        """The collapse reproduced the snapshot; later additions append after it.
+
+        Asserts the golden is a *prefix* of the live order, so the migration
+        proof still holds (nothing dropped, nothing re-ordered) while genuinely
+        new scopes are admitted through `_POST_SNAPSHOT_DEFAULT_ADDITIONS`
+        rather than by mutating the evidence.
+        """
         order = tuple(e.stem for e in self._registry() if e.tier == "default")
         self.assertEqual(
-            order,
+            order[: len(_GOLDEN_DEFAULT_ORDER)],
             _GOLDEN_DEFAULT_ORDER,
             "default-tier stems (and their collection order) must match the "
             "pre-collapse `_default_scope_runners` exactly",
+        )
+        self.assertEqual(
+            order[len(_GOLDEN_DEFAULT_ORDER) :],
+            _POST_SNAPSHOT_DEFAULT_ADDITIONS,
+            "a default-tier scope added after the snapshot must be declared in "
+            "`_POST_SNAPSHOT_DEFAULT_ADDITIONS` — an undeclared one is drift",
         )
 
     def test_explicit_tier_set_preserved(self) -> None:

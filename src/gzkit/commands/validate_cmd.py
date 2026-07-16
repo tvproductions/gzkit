@@ -323,6 +323,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     ),
     _ScopeEntry("chores_layout", "explicit", True, lambda r, _f: _ta().audit_chores_layout(r)),
     _ScopeEntry("unscoped_rules", "explicit", False, lambda r, _f: _unscoped_rules_runner(r)),
+    _ScopeEntry(
+        "rule_version_markers", "default", True, lambda r, _f: _rule_version_markers_runner(r)
+    ),
     _ScopeEntry("sensitivity", "explicit", False, lambda r, _f: _sensitivity_umbrella_runner(r)),
     _ScopeEntry(
         "doc_surface_parity", "explicit", True, lambda r, _f: _ta().audit_doc_surface_parity(r)
@@ -852,6 +855,15 @@ def _run_sensitivity_scope(
     raise SystemExit(0)
 
 
+def _rule_version_markers_runner(project_root: Path) -> list[ValidationError]:
+    """Run the rule-version-marker validator (skill-surface-sync #2)."""
+    from gzkit.validators.rule_version_markers import (  # noqa: PLC0415
+        audit_rule_version_markers_errors,
+    )
+
+    return audit_rule_version_markers_errors(project_root)
+
+
 def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
     """Run the unscoped-rules validator and map violations to ValidationError."""
     from gzkit.validators.unscoped_rules import run_unscoped_rules  # noqa: PLC0415
@@ -1281,6 +1293,7 @@ def validate(
     check_brief_demo_section: bool = False,
     check_chores_layout: bool = False,
     check_unscoped_rules: bool = False,
+    check_rule_version_markers: bool = False,
     unscoped_rules_allowlist_only: bool = False,
     check_sensitivity: bool = False,
     sensitivity_explain: str | None = None,

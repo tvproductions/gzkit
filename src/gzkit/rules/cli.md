@@ -7,6 +7,17 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
+<!-- rule-version: 0.2.0 -->
+
+> **Rule version:** `0.2.0` — resolved a self-contradiction and a release-notes
+> conflict (Pass A conflict-matrix rows 17 and 25, run 2026-07-16); adds the
+> body-level version marker this file never carried. § Adding CLI Features
+> declared "New Flag (Additive = Lite Lane)" while § Heavy Lane Trigger, 65
+> lines above, named *flags* explicitly as Heavy — and `AGENTS.md` § Lane
+> Rules agrees with the latter. Step 5 prescribed hand-authoring release
+> notes, the one artifact `changelog-release-notes.md` forbids hand-editing.
+> Prior: unversioned since authoring.
+
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Mechanical check:** `uv run gz cli audit` (see § Core Principles — Consistency).
 **Heavy Lane Trigger:** Any CLI contract change (subcommands, flags, exit codes, output schemas).
@@ -74,11 +85,16 @@ Every command must:
 
 ## Adding CLI Features
 
-### New Flag (Additive = Lite Lane)
+**Lane authority is `AGENTS.md` § Gate Covenant — Lane Rules, not this file.** Both a new flag and a new subcommand are CLI-contract changes used by humans, so both are **Heavy**, consistent with this rule's own § Heavy Lane Trigger above (*"Any CLI contract change (subcommands, flags, exit codes, output schemas)"*). `AGENTS.md` § Defect-fix routing adds: *"Adds/changes CLI surface … OBPI ceremony is required"* — so contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix.
+
+> `gz cli audit` does **not** adjudicate this: it audits verbs, not flags, and exits 0 with full cross-coverage regardless of a new flag's lane. Its green is not evidence of correct lane assignment.
+
+### New Flag (Heavy Lane)
 
 1. Follow naming conventions
 2. Check for equivalent in other CLI
 3. Update help text with example
+4. Manpage flag row in `docs/user/manpages/`
 
 ### New Subcommand (Heavy Lane)
 
@@ -86,4 +102,4 @@ Every command must:
 2. Help text with examples
 3. Behave smoke test
 4. Manpage in `docs/user/manpages/`
-5. Release notes
+5. GHI cited in the commit — **do not hand-write release notes.** `RELEASE_NOTES.md` and `CHANGELOG.md` are authored at release time by the `gz-patch-release` ceremony, never by hand (`.gzkit/rules/changelog-release-notes.md` § Release-notes rules).

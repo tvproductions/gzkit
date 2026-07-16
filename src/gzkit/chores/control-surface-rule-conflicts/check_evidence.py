@@ -68,10 +68,17 @@ class Ref(NamedTuple):
 
 
 class Table(NamedTuple):
-    """Parsed markdown table from the conflict matrix."""
+    """Parsed markdown table from the conflict matrix.
+
+    ``malformed`` carries rows the parser could not read as data (cell count
+    disagreeing with the header). They are reported rather than skipped: a
+    truncated parse that validates clean is indistinguishable from a healthy
+    one, which is the failure this field exists to make loud.
+    """
 
     headers: list[str]
     rows: list[list[str]]
+    malformed: list[str] = []
 
 
 class ValidationResult(NamedTuple):
@@ -106,16 +113,24 @@ def parse_table(text: str) -> Table | None:
         if not _is_separator(separator) or len(header) != len(separator):
             continue
         rows: list[list[str]] = []
-        for row_line in lines[idx + 2 :]:
+        malformed: list[str] = []
+        for offset, row_line in enumerate(lines[idx + 2 :], start=idx + 3):
             if "|" not in row_line or not row_line.strip().startswith("|"):
                 break
             cells = _split_row(row_line)
             if _is_separator(cells):
                 continue
             if len(cells) != len(header):
-                break
+                # Do NOT break: a silent truncation here yields a partial table
+                # that validates clean, so a 25-row matrix reports "8 rows, all
+                # evidence resolves". Record and keep reading.
+                malformed.append(
+                    f"line {offset}: {len(cells)} cells, header has {len(header)} "
+                    f"(unescaped `|` in a cell? use `&#124;`)"
+                )
+                continue
             rows.append(cells)
-        return Table(headers=header, rows=rows)
+        return Table(headers=header, rows=rows, malformed=malformed)
     return None
 
 
@@ -251,6 +266,15 @@ def validate_matrix_text(
     header_issues = validate_header(table.headers)
     if header_issues:
         return ValidationResult(exit_code=1, messages=header_issues)
+    if table.malformed:
+        return ValidationResult(
+            exit_code=1,
+            messages=[
+                "matrix has unparseable rows — validating the remainder would "
+                "report a clean partial read:",
+                *table.malformed,
+            ],
+        )
     if not table.rows:
         return ValidationResult(
             exit_code=1,
@@ -296,6 +320,12 @@ def _fixture_matrix(rows: str) -> str:
     return "# Conflict Matrix\n\n" + _FIXTURE_HEADER + rows
 
 
+# A row carrying an unescaped `|` inside a cell: 9 cells against an 8-cell header.
+_MALFORMED_ROW = (
+    '| 2 | `a.md` § A — *"one | two"* | `b.md` § B | Worked | GHI #1 | a.md '
+    "| reconcile-in-A | blocking |\n"
+)
+
 _VALID_ROW = (
     "| 1 | `tests.md` § A | `arb.md` § B | Worked | GHI #1 | tests.md "
     "| reconcile-in-A | blocking |\n"
@@ -311,8 +341,10 @@ _NO_REF_ROW = (
 def run_self_test() -> int:
     """Run embedded fixtures and return non-zero on any regression."""
     errors: list[str] = []
+    ran: list[str] = []
 
     def expect(label: str, result: ValidationResult, want_zero: bool) -> None:
+        ran.append(label)
         ok = (result.exit_code == 0) if want_zero else (result.exit_code != 0)
         if not ok:
             errors.append(
@@ -346,6 +378,14 @@ def run_self_test() -> int:
         validate_matrix_text(_fixture_matrix(_EMPTY_EVIDENCE_ROW), gh_authenticated=False),
         want_zero=False,
     )
+    # Regression: a row with an unescaped `|` used to `break` the parser, so the
+    # remainder went unread and the partial table validated clean — a 25-row
+    # matrix reported "8 rows, all evidence resolves". Truncation must fail loud.
+    expect(
+        "malformed_row_does_not_truncate_silently",
+        validate_matrix_text(_fixture_matrix(_VALID_ROW + _MALFORMED_ROW), gh_authenticated=False),
+        want_zero=False,
+    )
     expect(
         "evidence_with_no_refs",
         validate_matrix_text(_fixture_matrix(_NO_REF_ROW), gh_authenticated=False),
@@ -373,7 +413,9 @@ def run_self_test() -> int:
         for err in errors:
             print(err, file=sys.stderr)
         return 2
-    print("OK (7 matrix fixtures + 3 parser checks)")
+    # Counts are derived, never literals: a hardcoded tally silently stops
+    # tracking the fixtures it claims to describe the moment one is added.
+    print(f"OK ({len(ran)} matrix fixtures + {len(parser_checks)} parser checks)")
     return 0
 
 

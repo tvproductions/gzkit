@@ -892,6 +892,26 @@ No `--fix` variant: recovery is a judgment call (narrow vs. fold vs. allow-list)
 
 Included in `gz validate --audits` and `gz check` aggregate passes — future unscoped rules cannot silently accrete.
 
+### `--rule-version-markers`
+
+Enforces the rule-version-marker invariant declared by [`.gzkit/rules/skill-surface-sync.md`](../../../.gzkit/rules/skill-surface-sync.md) § Non-negotiable rules #2: every canonical rule under `.gzkit/rules/` carries a body-level `<!-- rule-version: X.Y.Z -->` comment **and** a visible `> **Rule version:** \`X.Y.Z\`` block quote naming the same version.
+
+The clause was binding but unenforced. Four rules shipped with no marker at all, and three of those four (`adr-audit.md`, `cli.md`, `pythonic.md`) were among the worst-drifted files surfaced by the Pass A conflict-matrix re-run (2026-07-16) — a rule with no version marker has no staleness signal, so nothing prompts a re-read when the code it describes moves.
+
+```bash
+# Check the canonical rule surface (also runs inside `gz check`)
+gz validate --rule-version-markers
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every canonical rule carries an agreeing marker + block quote | — |
+| 1 | One or more rules missing a marker, or marker/block quote naming different versions | Add or reconcile the marker per `skill-surface-sync.md` § Version discipline, then `uv run gz agent sync control-surfaces` |
+
+`.gzkit/rules/AGENTS.md` is exempt — it is a generated concatenation, not an authored rule.
+
+Runs in the default (no-flag) `gz validate` scope set and in `gz check`.
+
 ### `--doc-surface-parity`
 
 Fail-closed if any `.md` file exists under `docs/user/commands/`.

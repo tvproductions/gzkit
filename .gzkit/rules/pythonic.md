@@ -7,6 +7,16 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
+<!-- rule-version: 0.2.0 -->
+
+> **Rule version:** `0.2.0` — names the unreconciled three-way threshold conflict
+> in § Size Limits & Refactoring (Pass A conflict-matrix row 11, run 2026-07-16);
+> adds the body-level version marker this file never carried, which is how a
+> competing threshold authority survived `complexity-thresholds.md` § Invariant's
+> explicit prohibition on exactly that. No number changed — resolution needs a
+> class-size corpus band that does not exist yet, and is routed for operator
+> decision rather than guessed. Prior: unversioned since authoring.
+
 ## Core Principles
 
 1. **Clarity over cleverness** — explicit, readable, consistent code
@@ -23,6 +33,33 @@ description: Pythonic standards and idiomatic code contract
 ## Size Limits & Refactoring
 
 **Limits:** Functions <=50 lines | Modules <=600 lines | Classes <=300 lines
+
+> **Unreconciled with the canonical threshold table — read before citing these numbers.**
+> `complexity-thresholds.md` § Invariant declares one canonical threshold table and that
+> *"a new threshold authority appearing anywhere else is doctrine drift by another name."*
+> These three numbers are such an authority, and they **disagree with the table in both
+> directions**: `lizard_nloc` blocks at **37.0** (p95) where this rule permits 50;
+> `radon_raw_nloc` blocks at **1031.9** (p95) where this rule flags 600 (the table's *warn*
+> band is 733.2, so a 700-line module is merely `advise` there and a violation here).
+>
+> What is actually enforced today:
+>
+> | Limit | Enforced by | Status |
+> |---|---|---|
+> | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
+> | Functions <=50 | nothing | authoring-time guidance only |
+> | Modules <=600 | nothing | authoring-time guidance only |
+> | *(cyclomatic)* | `.pre-commit-config.yaml` `uvx xenon --max-absolute C` (CC 11–20) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes xenon while `block` per the table |
+>
+> The table's function/module bands have **no consumer**: `complexity_advise.py` is
+> `METRIC_KEY = "radon_cc"` with `metrics_checked = 1  # currently only radon_cc`.
+> `docs/governance/advisory-rules-audit.md` miscodes this as *"Mechanical | xenon complexity"* —
+> xenon measures cyclomatic rank, never line count; that Mechanical claim is unbacked.
+>
+> Resolving this requires a class-size band the corpus does not yet carry (a distillation pass,
+> per `gz-complexity-distill`), so it is **not** a prose fix. Surfaced as Pass A conflict-matrix
+> row 11; routed for operator decision. Until then: treat <=300 as binding (it gates), <=50 and
+> <=600 as guidance, and cite the table — not this rule — for any threshold claim.
 
 ## Imports (PEP 8)
 

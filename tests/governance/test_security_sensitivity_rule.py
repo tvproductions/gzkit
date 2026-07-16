@@ -60,16 +60,37 @@ class SecuritySensitivityRuleAuthorship(unittest.TestCase):
 
     @covers("REQ-0.0.22-06-01")
     def test_rule_body_carries_version_marker_and_block_quote(self) -> None:
+        """REQ-0.0.22-06-01: the body carries a marker AND an agreeing block quote.
+
+        Asserts the shape, not a literal version. The REQ's `0.1.0` was the
+        version at authoring time, not a requirement that the rule never be
+        bumped — a pinned literal fails on every legitimate edit (it had already
+        drifted to `0.4.0` while the REQ still said `0.1.0`) and would pass if
+        marker and block quote disagreed at the pinned value. Re-derived per
+        `.gzkit/rules/tests.md` § "Tests assert semantics, not strings".
+        """
         _, body = _parse_canonical_frontmatter(_RULE_PATH)
-        self.assertIn(
-            "<!-- rule-version: 0.4.0 -->",
-            body,
+        marker = re.search(r"<!--\s*rule-version:\s*(\d+\.\d+\.\d+)\s*-->", body)
+        self.assertIsNotNone(
+            marker,
             "body must carry the canonical body-level rule-version HTML comment",
         )
-        self.assertRegex(
-            body,
-            r">\s+\*\*Rule version:\*\*\s+`0\.4\.0`",
+        assert marker is not None  # narrowing for the type checker
+        quote = re.search(r">\s*\*\*Rule version:\*\*\s*`(\d+\.\d+\.\d+)`", body)
+        self.assertIsNotNone(
+            quote,
             "body must carry the visible rule-version block quote",
+        )
+        assert quote is not None
+        self.assertEqual(
+            marker.group(1),
+            quote.group(1),
+            "the HTML marker and the visible block quote must name the same version",
+        )
+        rationale = body[quote.end() : quote.end() + 400].strip()
+        self.assertTrue(
+            rationale.startswith("—") or rationale.startswith("-"),
+            "the block quote must carry a rationale after the version",
         )
 
     @covers("REQ-0.0.22-06-02")
@@ -164,6 +185,23 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
 
     @covers("REQ-0.0.22-06-05")
     def test_vendor_mirrors_carry_rule_version_marker(self) -> None:
+        """REQ-0.0.22-06-05: mirrors carry the marker — i.e. sync propagated it.
+
+        Asserts parity with canonical, not a literal version. The semantic the
+        REQ is protecting is that `gz agent sync control-surfaces` propagated
+        the marker; a pinned literal cannot express that (it passes a stale
+        mirror whenever canonical happens to sit at the pinned value, and fails
+        every legitimate bump). Re-derived per `.gzkit/rules/tests.md`
+        § "Tests assert semantics, not strings".
+        """
+        _, canonical_body = _parse_canonical_frontmatter(_RULE_PATH)
+        canonical_marker = re.search(
+            r"<!--\s*rule-version:\s*(\d+\.\d+\.\d+)\s*-->", canonical_body
+        )
+        self.assertIsNotNone(canonical_marker, "canonical rule must carry a rule-version marker")
+        assert canonical_marker is not None
+        expected = canonical_marker.group(0)
+
         mirrors = (
             _PROJECT_ROOT / ".claude" / "rules" / "security-sensitivity.md",
             _PROJECT_ROOT / ".github" / "instructions" / "security_sensitivity.instructions.md",
@@ -175,9 +213,10 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
                     f"vendor mirror missing: {mirror.relative_to(_PROJECT_ROOT)}",
                 )
                 self.assertIn(
-                    "<!-- rule-version: 0.4.0 -->",
+                    expected,
                     mirror.read_text(encoding="utf-8"),
-                    "vendor mirror must carry the body-level rule-version marker",
+                    f"vendor mirror must carry canonical's marker ({expected}) — "
+                    "run `uv run gz agent sync control-surfaces`",
                 )
 
     @covers("REQ-0.0.22-06-06")

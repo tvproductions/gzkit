@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import re
 import sys
 import unittest
 from pathlib import Path
@@ -207,9 +208,21 @@ class SelfTestEntrypointTests(unittest.TestCase):
     """The --self-test mode is what acceptance.json invokes; it must be deterministic."""
 
     def test_self_test_exits_zero(self) -> None:
+        """Self-test passes and reports how much it ran.
+
+        Asserts the summary's shape and that the counts are non-zero — not the
+        literal tally. Pinning the count made adding a fixture a test failure,
+        which penalizes exactly the thing the suite wants (the counts are now
+        derived in ``run_self_test`` for the same reason).
+        """
         with patch("sys.stdout", new_callable=io.StringIO) as stdout:
             self.assertEqual(CE.run_self_test(), 0)
-        self.assertIn("OK (7 matrix fixtures + 3 parser checks)", stdout.getvalue())
+        summary = stdout.getvalue()
+        match = re.search(r"OK \((\d+) matrix fixtures \+ (\d+) parser checks\)", summary)
+        self.assertIsNotNone(match, f"self-test must print its summary; got: {summary!r}")
+        assert match is not None
+        self.assertGreater(int(match.group(1)), 0, "self-test ran zero matrix fixtures")
+        self.assertGreater(int(match.group(2)), 0, "self-test ran zero parser checks")
 
 
 if __name__ == "__main__":

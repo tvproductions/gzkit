@@ -675,6 +675,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail on .gzkit/rules/*.md with paths: '**' or missing paths: (ADR-0.0.20)",
     )
     p_validate.add_argument(
+        "--rule-version-markers",
+        dest="check_rule_version_markers",
+        action="store_true",
+        help="Fail on .gzkit/rules/*.md missing or drifting the rule-version marker",
+    )
+    p_validate.add_argument(
         "--sensitivity",
         dest="check_sensitivity",
         action="store_true",
@@ -975,6 +981,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_demo_section=a.check_brief_demo_section,
             check_chores_layout=a.check_chores_layout,
             check_unscoped_rules=a.check_unscoped_rules or a.check_audits,
+            check_rule_version_markers=a.check_rule_version_markers,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,
             check_sensitivity=a.check_sensitivity or a.check_audits,
             sensitivity_explain=(a.frontmatter_explain if a.check_sensitivity else None),

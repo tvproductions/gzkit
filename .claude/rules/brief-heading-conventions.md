@@ -6,6 +6,13 @@ paths:
 
 # Brief Heading Conventions (gzkit)
 
+<!-- rule-version: 0.1.0 -->
+
+> **Rule version:** `0.1.0` — adds the body-level version marker required by
+> `skill-surface-sync.md` § Non-negotiable rules #2, which this file never
+> carried (Pass A run 2026-07-16 marker sweep). Content unchanged; no conflict
+> row was raised against this rule.
+
 OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`).
 
 ## Canonical evidence sections (H3)
