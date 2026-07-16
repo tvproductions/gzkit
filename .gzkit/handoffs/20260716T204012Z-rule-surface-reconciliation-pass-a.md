@@ -27,7 +27,32 @@ FINAL STATE: tree clean, main synced with origin, `gz check` exit 0 (41 checks),
 
 ## Important Context
 
-**The one thing to carry forward:** every layer inspected this session trusted a *description* instead of checking the *thing*, and every one of them looked green. Permission rules described commands they did not match (`Write(docs/**)` was inert; only `Edit(path)` rules are consulted). Rules described code that was deleted (ADR-0.0.36 collapsed attestation branching; three rule surfaces still described the branches). The Pass A audit described enforcement it never read (three mechanical-winner cells were wrong; one was dangerously wrong). The audit's own gate described a matrix it had stopped parsing at row 9 (`break` on a cell-count mismatch, reporting "8 rows, all evidence resolves" about a 25-row matrix). The handoff gate that wrote this document checks that sections are PRESENT, not populated — five of seven were empty headings and passed. Expect this shape; it is the house failure mode.
+### READ FIRST — the handoff tool is a governance facade, and this document is evidence
+
+**`gz handoff create` wrote this document with FIVE of its SEVEN required sections as empty headings, and `validate_handoff_document` — the gate the skill describes as "fail-closed" — PASSED it.** The sections you are reading were filled by hand afterward. Nothing in the tool required that.
+
+The mechanism, verified:
+
+- `gz handoff create` accepts content for exactly two sections: `--summary` and `--decisions`. There is no parameter for the other five.
+- `validate_sections_present` (`src/gzkit/handoff_validation.py:234-250`) regex-matches `^##\s+{section}\s*$` — **the heading, and nothing else.** An empty section satisfies it.
+- `.gzkit/skills/gz-session-handoff/SKILL.md` § Acceptance Rules declares the opposite: *"All 7 required sections populated with session-specific content (no HTML comments or placeholders remaining)."* Declared, unenforced. The same shape as every rule this session reconciled.
+
+**This has already produced hollow handoffs, including the ones attesting the handoff feature's own completion.** Four session handoffs on disk (of 212) have empty required sections:
+
+- `20260715T100727Z-OBPI-0.0.65-03-gz-handoff-cli-verb-complete.md` — **6 of 7 empty**. The handoff marking the `gz handoff` CLI verb complete.
+- `20260715T185443Z-obpi-0.0.65-05-handoff-archive-retention-complete.md` — 5 of 7 empty.
+- `20260715T191515Z-session-end-0.0.65-05-plus-followups.md` — 5 of 7 empty.
+- `20260715T222217Z-demo-gz-handoff-create.md` — 6 of 7 empty.
+
+**ADR-0.0.65 was Validated on completion evidence that preserves no context.** The tool built to carry truth across the session boundary certified its own emptiness. This is the governance-facade failure class named in `tests/cli/test_validate_dispatch_consistency.py` — *"a scope accepted at the CLI but never dispatched … the #394 self-include class; the governance-facade failure ADR-0.0.73 exists to kill"* — reproduced in the handoff surface.
+
+Tracked as **GHI #692**. NOT fixed in this session, and the reason matters: tightening `validate_sections_present` to require populated bodies fail-closes those four existing handoffs, which breaks `gz check` — and the obvious remedy (a grandfather snapshot) collides with ADR-0.0.73 BI#8's shrink-only waiver ratchet, which forbids *growing* a waiver file. That is a real routing decision with a real constraint, not a deferral of convenience. It is the same trap shape as GHI #682 and Pass A row 22: the obvious fix locks the repair path.
+
+**Do not read a handoff's completeness as evidence it preserved anything. Check the sections.**
+
+### The one thing to carry forward
+
+Every layer inspected this session trusted a *description* instead of checking the *thing*, and every one of them looked green. Permission rules described commands they did not match (`Write(docs/**)` was inert; only `Edit(path)` rules are consulted). Rules described code that was deleted (ADR-0.0.36 collapsed attestation branching; three rule surfaces still described the branches). The Pass A audit described enforcement it never read (three mechanical-winner cells were wrong; one was dangerously wrong). The audit's own gate described a matrix it had stopped parsing at row 9 (`break` on a cell-count mismatch, reporting "8 rows, all evidence resolves" about a 25-row matrix). The handoff gate that wrote this document checks that sections are PRESENT, not populated — five of seven were empty headings and passed. Expect this shape; it is the house failure mode.
 
 **Do not re-derive Pass A row 10.** It is retained in the matrix in `refuted` state specifically so a future reader does not re-discover the claim from the same misreading. There is no "Lane x Kind x Sensitivity matrix". `_requires_human_obpi_attestation` (`src/gzkit/commands/adr_audit.py:393-406`) is `return True`, unconditional. Its remediation was queued as a ready-to-apply direct fix that would have edited AGENTS.md Never #1 to make Gate 5 conditional.
 
@@ -93,7 +118,7 @@ A handoff ADVISES; it does not authorize. Present these and obtain explicit oper
 - **Pass A row 12's code half.** `chores.md` prose was corrected, but `_repair_damaged_doctor_slug` (`src/gzkit/commands/chores.py`) still copies package to `.gzkit/`, the opposite direction from `sync_pkg_surfaces`. The prose no longer misleads; the two mechanisms still oppose each other.
 - **Known permission-surface gaps (accepted, documented).** A commit message containing the literal `--no-verify` is refused (glob substring matching cannot distinguish mention from use); `git -C <path> commit -n` is not caught; `Bash(git *)` still permits `git checkout -b`.
 - **`gz validate --rule-version-markers` exits 1, not 3** on violation. That is the generic registry-scope path; dedicated-runner scopes like `--unscoped-rules` return 3. Consistent with its registry siblings; noted, not chased.
-- **This handoff's own gate is shallow.** `gz handoff create` accepts only `--summary` and `--decisions`; the other five required sections were written as empty headings and passed validation, because the gate checks section PRESENCE, not population. These sections were filled by hand afterward. That is the same defect class this whole session catalogued.
+- **GHI #692 — OPEN. The handoff tool is a governance facade.** See § Important Context — READ FIRST. `gz handoff create` writes five of seven required sections empty and `validate_handoff_document` passes it; four handoffs on disk are already hollow, including ADR-0.0.65's own OBPI-completion evidence at 6/7 empty. Blocker posted with four routing options. Agent preference: close the *production* path first (option 4 — no blast radius, and every hour the hollow default stands produces another certified-empty artifact), then grandfather once the ADR-0.0.73 BI#8 ratchet collision is ruled on. Cross-linked to #574, the same skill's other declared-but-unenforced clause.
 
 ## Verification Checklist
 
