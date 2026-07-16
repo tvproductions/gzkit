@@ -5,7 +5,8 @@
       "Bash(git *--no-verify)",
       "Bash(git *commit -n *)",
       "Bash(git *commit -n)",
-      "Bash(git *hooksPath*)"
+      "Bash(git *hooksPath=*)",
+      "Bash(git *config *hooksPath *)"
     ]
   },
   "hooks": {
