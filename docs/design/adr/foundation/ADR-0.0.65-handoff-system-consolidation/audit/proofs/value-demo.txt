@@ -1,0 +1,28 @@
+# Live Value Demonstration — ADR-0.0.65 (2026-07-15)
+
+## gz handoff list
+2026-07-15T22:22:17Z  ADR-0.0.65  -
+.gzkit/handoffs/20260715T222217Z-demo-gz-handoff-create.md
+2026-07-15T19:15:15Z  ADR-0.0.65  OBPI-0.0.65-05-handoff-archive-retention
+.gzkit/handoffs/20260715T191515Z-session-end-0.0.65-05-plus-followups.md
+2026-07-15T18:54:43Z  ADR-0.0.65  OBPI-0.0.65-05-handoff-archive-retention
+.gzkit/handoffs/20260715T185443Z-obpi-0.0.65-05-handoff-archive-retention-comple
+
+## gz handoff archive --dry-run (30d)
+would move: 0
+SKIPPED (locked): 19
+  .gzkit/handoffs/20260612T002345Z-obpi-0.0.41-04-lock-handoff-coupling-validato
+r-complete.md
+  .gzkit/handoffs/20260612T094433Z-OBPI-0.0.70-01-reaped.md
+  .gzkit/handoffs/20260612T104201Z-OBPI-0.0.70-01-completed.md
+  .gzkit/handoffs/20260612T112116Z-OBPI-0.0.70-02-completed.md
+  .gzkit/handoffs/20260613T070047Z-OBPI-0.0.71-01-completed.md
+  .gzkit/handoffs/20260613T084823Z-OBPI-0.0.71-02-completed.md
+  .gzkit/handoffs/20260613T123754Z-recomplete-obpi-0070-02-and-corrective-action
+-defect.md
+  .gzkit/handoffs/20260613T143354Z-OBPI-0.0.72-01-writer-model-roundtrip-validat
+
+## lock-handoff coupling guard
+Validated: lock_handoff_coupling
+
+✓ All validations passed (1 scopes).

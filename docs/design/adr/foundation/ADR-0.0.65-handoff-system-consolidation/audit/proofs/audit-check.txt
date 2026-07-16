@@ -1,0 +1,34 @@
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-01 **[BEHAVIOR]**: `gz adr demote` moves a genuinely-unstarted
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-02 **[SUPPORT]**: each grandfathered foundation receives one
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-04-03 **[BEHAVIOR]**: after the migration, `gz ontology resense`
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-01 **[BEHAVIOR]**: after the migration, `gz validate --adr-status-fresh`
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-02 **[BEHAVIOR]**: the `"ADR taxonomy"` step is present in the
+Malformed REQ line (skipped): - [ ] REQ-0.34.0-05-03 **[BEHAVIOR]**: no hand-set staging or fail-closed flag
+ADR audit-check: ADR-0.0.65-handoff-system-consolidation
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.0.65-01-canonical-location-migration
+  - OBPI-0.0.65-02-programmatic-api-implementation
+  - OBPI-0.0.65-03-gz-handoff-cli-verb
+  - OBPI-0.0.65-04-orientation-single-location-scan
+  - OBPI-0.0.65-05-handoff-archive-retention
+Advisory 6 REQ(s) without @covers traceability (non-blocking):
+  - REQ-0.0.65-01-05
+  - REQ-0.0.65-02-06
+  - REQ-0.0.65-02-09
+  - REQ-0.0.65-03-04
+  - REQ-0.0.65-03-05
+  - REQ-0.0.65-05-06
+
+Coverage: 22/28 REQs covered (78.6%)
+  OBPI-0.0.65-01: 4/5 (80.0%)
+  OBPI-0.0.65-02: 7/9 (77.8%)
+  OBPI-0.0.65-03: 3/5 (60.0%)
+  OBPI-0.0.65-04: 3/3 (100.0%)
+  OBPI-0.0.65-05: 5/6 (83.3%)
+Uncovered REQs (6):
+  - REQ-0.0.65-01-05
+  - REQ-0.0.65-02-06
+  - REQ-0.0.65-02-09
+  - REQ-0.0.65-03-04
+  - REQ-0.0.65-03-05
+  - REQ-0.0.65-05-06

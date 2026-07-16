@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.65-handoff-system-consolidation
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.65
 lane: heavy
@@ -99,7 +99,8 @@ skill, code, and CLI:
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| WEAK: the gz handoff verb is unbuilt (Proposed); the lock-handoff coupling guard this ADR's archive-retention OBPI honors validates green. | uv run gz validate --lock-handoff-coupling | 0 |
+| The `gz handoff` CLI verb ships and its read projection over `.gzkit/handoffs/` works (OBPI-02/-03). | uv run gz handoff list --json | 0 |
+| The archive lock-handoff coupling guard the retention OBPI honors validates green (OBPI-05). | uv run gz validate --lock-handoff-coupling | 0 |
 | The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.65-handoff-system-consolidation --check | 0 |
 
 ## Consequences
@@ -137,11 +138,11 @@ skill, code, and CLI:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [ ] OBPI-0.0.65-01: **canonical-location-migration** — Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41 / OBPI-0.0.41-03. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`.
-- [ ] OBPI-0.0.65-02: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
-- [ ] OBPI-0.0.65-03: **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows.
-- [ ] OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
-- [ ] OBPI-0.0.65-05: **handoff-archive-retention** — Add a governed `gz handoff archive` subcommand that moves handoffs older than a threshold from `.gzkit/handoffs/` to `.gzkit/handoffs/archive/` (move-not-delete; audit trail preserved), honoring three mechanical guards: the migration-floor test (count canonical + archive ≥ floor), `continues_from:` chain integrity (chains may cross into the archive subdir), and lock-handoff coupling (never archive a handoff referenced by an `obpi_lock_released` ledger event). Extend `tests/governance/test_handoff_migration.py` to count the archive subdir. Add manpage + behave coverage. Surface-boundary split from OBPI-03 (distinct retention semantics + guard coupling). Depends on OBPI-03 (the `gz handoff` verb must exist). Closes GHI #585.
+- [x] OBPI-0.0.65-01: **canonical-location-migration** — Canonize `.gzkit/handoffs/` as the single handoff write location per ADR-0.0.41 / OBPI-0.0.41-03. Migrate the 24 per-ADR handoff files (across 10 ADR packages) into `.gzkit/handoffs/`, preserving `continues_from:` chains and frontmatter timestamps. Amend `gz-session-handoff/SKILL.md` output-path doctrine from `{ADR-package}/handoffs/` to `.gzkit/handoffs/`. Bump `skill-version` and `last_reviewed`; run `gz agent sync control-surfaces`.
+- [x] OBPI-0.0.65-02: **programmatic-api-implementation** — Ship real `create_handoff`, `scaffold_handoff`, `list_handoffs`, `resume_handoff`, `load_handoff_chain` in `src/gzkit/handoff_api.py` (or equivalent runtime module) wrapping `handoff_validation.py`. Replace the `gz-session-handoff/SKILL.md` import references from `tests.governance.test_session_handoff` to the real runtime module. Remove the `NOT IMPLEMENTED` disclaimers.
+- [x] OBPI-0.0.65-03: **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows.
+- [x] OBPI-0.0.65-04: **orientation-single-location-scan** — Collapse `_candidate_handoff_dirs()` in `scripts/session_orientation.py` to a single-surface scan of `.gzkit/handoffs/`. Delete the GHI #529 dual-scan workaround. Update orientation tests. (Depends on OBPI-01 completion: cannot collapse the scan until the per-ADR sources are empty.)
+- [x] OBPI-0.0.65-05: **handoff-archive-retention** — Add a governed `gz handoff archive` subcommand that moves handoffs older than a threshold from `.gzkit/handoffs/` to `.gzkit/handoffs/archive/` (move-not-delete; audit trail preserved), honoring three mechanical guards: the migration-floor test (count canonical + archive ≥ floor), `continues_from:` chain integrity (chains may cross into the archive subdir), and lock-handoff coupling (never archive a handoff referenced by an `obpi_lock_released` ledger event). Extend `tests/governance/test_handoff_migration.py` to count the archive subdir. Add manpage + behave coverage. Surface-boundary split from OBPI-03 (distinct retention semantics + guard coupling). Depends on OBPI-03 (the `gz handoff` verb must exist). Closes GHI #585.
 
 ## Target Scope
 
@@ -190,3 +191,4 @@ Promotion derived from `ADR-pool.handoff-system-consolidation` on 2026-05-29; ex
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
 | 0.0.65 | Completed | g0 | 2026-07-15 | Completed — attest completed (g0): 5/5 OBPIs attested; 6 live demos verified (archive dry-run/live parity, list --json/--adr, resume, gated create); ARB green — arb-ruff-d510f84, arb-step-typecheck-c615ea4, arb-step-unittest-ab54fac6, arb-step-mkdocs-5447c487; bound fidelity gate passed; validate --documents clean. |
+| 0.0.65 | Validated | g0 | 2026-07-15 | Validated — accept audit (g0): L2 ledger proof 5/5 OBPIs PASS; bound fidelity gate 3/3 (rewritten to exercise the shipped gz handoff verb); spec-reviewer PASS-WITH-CONCERNS + quality-reviewer COHERENT-WITH-CONCERNS concur no blocking defect; split-brain closed; S1 doc drift remediated in-audit; S2/S3 filed GHI #688/#689. ARB green — arb-ruff-7d3c75c0, arb-step-typecheck-a8a076b2, arb-step-unittest-8db5e4cf, arb-step-mkdocs-a49646b0. |

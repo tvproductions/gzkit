@@ -528,3 +528,26 @@ interleaved into the body. The campaign rules sequencing; handoffs and triage
   (it sequences last, after the closeouts make the tree terminal). Campaign-edit scope:
   **Append § Amendments entry + annotate the Movement IV taxonomy checkbox** with the
   realizing ADR. Ratified: g0, 2026-07-12.
+- **2026-07-15 — Foundation Sunset sequence advances: `ADR-0.0.65-handoff-system-
+  consolidation` reaches `Validated`.** The Class-2 "finish `0.0.65`/`0.0.72`" step
+  (§ Amendments 2026-07-12, line 522) is now **half-discharged**: `0.0.65` moved from the
+  stale `1/5` recorded in that amendment to **5/5 OBPIs `attested_completed` + ADR
+  `Validated`** via `/gz-adr-audit`. (The `1/5` at line 509 is the historical
+  2026-07-12 reading and stays as-authored — append-only amendment discipline; this
+  entry is the live correction.) Audit evidence: bound fidelity gate **3/3** (rewritten
+  to exercise the shipped `gz handoff` verb rather than the pre-audit `WEAK`/"unbuilt
+  (Proposed)" placeholder); two independent persona reviews concur no blocking defect
+  (spec-reviewer PASS-WITH-CONCERNS — every BEHAVIOR REQ carries a genuine semantic
+  `@covers` test, all 6 uncovered REQs legitimately `[SUPPORT]`; quality-reviewer
+  COHERENT-WITH-CONCERNS — the GHI #529 split-brain is genuinely *closed*, all four
+  surfaces agree on `.gzkit/handoffs/`). In-audit doc drift (stale fidelity prose +
+  unchecked checklist boxes) remediated; two non-blocking direct-fix work orders filed —
+  **GHI #688** (orientation boot-hook non-UTF-8 read crash, sibling-cut of #582) and
+  **GHI #689** (`continues_from` resolver duplicated across the OBPI-02/-05 boundary, no
+  coherence test — Invariant 1a). Validated receipt: attestor `g0`,
+  `attestation_type=operator-verbatim-conversational`, ARB receipts
+  `arb-ruff-7d3c75c0` / `arb-step-typecheck-a8a076b2` / `arb-step-unittest-8db5e4cf` /
+  `arb-step-mkdocs-a49646b0`. **Remaining Sunset step-1 work:** finish `0.0.72` (1/4),
+  then closeout `0.0.54`/`0.0.64` → closeout `0.0.37` → `ADR-0.34.0` capstone. Campaign-
+  edit scope: **Append § Amendments entry** (no checkbox change, no Topmost-note change,
+  no §8 gate change). Ratified: g0, 2026-07-15 (directive: "update handoff and campaign").

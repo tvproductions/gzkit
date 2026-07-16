@@ -1,0 +1,19 @@
+gz adr fidelity: ADR-0.0.65-handoff-system-consolidation
+  Assertions: 3
+
+  PASS  The `gz handoff` CLI verb ships and its read projection over
+`.gzkit/handoffs/` works (OBPI-02/-03).
+        command:  uv run gz handoff list --json
+        expected: 0  observed: 0
+
+  PASS  The archive lock-handoff coupling guard the retention OBPI honors
+validates green (OBPI-05).
+        command:  uv run gz validate --lock-handoff-coupling
+        expected: 0  observed: 0
+
+  PASS  The Fidelity Assertions block is parseable by the fidelity gate.
+        command:  uv run gz adr fidelity ADR-0.0.65-handoff-system-consolidation
+--check
+        expected: 0  observed: 0
+
+  Summary: 3 pass, 0 fail
