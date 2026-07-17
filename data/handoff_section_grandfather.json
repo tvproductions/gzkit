@@ -1,0 +1,11 @@
+{
+  "_doc": "GHI #692 cutover snapshot (shrink-ratchet; never add to silence a fresh violation). `.gzkit/skills/gz-session-handoff/SKILL.md` § Acceptance Rules always declared 'all 7 required sections populated with session-specific content', but `validate_sections_present` only ever matched the HEADING — so `gz handoff create`, which accepts content for two of the seven sections and renders the rest as empty headings, produced hollow handoffs that the gate then certified. These four register entries were authored on 2026-07-15 through that hollow default path. Their sessions are gone: the context they were supposed to preserve was never written down, and reconstructing a body now would invent a record of work nobody witnessed — precisely the fabrication class gzkit exists to prevent. They are tolerated (population waived, every other contract still enforced), never laundered as complete. The set is closed: `validate_handoff_document` is fail-closed on section population from this commit forward, and `gz handoff create` gained the five missing section parameters, so no new handoff can ever need an entry here. Entries drain as handoffs are archived, superseded, or honestly rewritten by someone who was there; the count may only decrease. Do NOT read a listed handoff as evidence of preserved context — it is evidence of the opposite.",
+  "cutover": "2026-07-16T00:00:00+00:00",
+  "added_under": "GHI-692",
+  "grandfathered_handoffs": [
+    ".gzkit/handoffs/20260715T100727Z-OBPI-0.0.65-03-gz-handoff-cli-verb-complete.md",
+    ".gzkit/handoffs/20260715T185443Z-obpi-0.0.65-05-handoff-archive-retention-complete.md",
+    ".gzkit/handoffs/20260715T191515Z-session-end-0.0.65-05-plus-followups.md",
+    ".gzkit/handoffs/20260715T222217Z-demo-gz-handoff-create.md"
+  ]
+}

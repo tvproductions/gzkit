@@ -11,11 +11,18 @@ fail-closed `validate_handoff_document` gate (`gzkit.handoff_api.create_handoff`
 before it is written. This is the ADR-0.0.65 § Decision #3 contract: handoff
 authoring goes through the validation gate instead of hand-written markdown.
 
-The `--decisions` text becomes the mandatory `## Decisions Made` section;
-`--summary`, when given, becomes `## Current State Summary`. On **any** validation
-violation nothing is written and the verb exits 1 — the refusal is the correct
-behavior. On success the document is written to `.gzkit/handoffs/` and its path
-is reported.
+Each of the seven required sections is filled by its own flag. **All seven must be
+populated**: a section left unsupplied renders as an empty heading, and the gate
+refuses an empty required section (GHI #692). On **any** validation violation
+nothing is written and the verb exits 1 — the refusal is the correct behavior. On
+success the document is written to `.gzkit/handoffs/` and its path is reported.
+
+Until GHI #692, only `--decisions` and `--summary` existed while seven sections
+were required, so the default invocation emitted five empty headings — and
+`validate_handoff_document` checked that each heading was *present*, never that it
+carried a body. The result passed. Four handoffs authored that way are frozen in
+`data/handoff_section_grandfather.json` (shrink-only); they preserve no context
+despite having passed the gate.
 
 ---
 
@@ -23,7 +30,9 @@ is reported.
 
 ```
 gz handoff create --adr ADR --slug SLUG --agent AGENT --decisions TEXT
-                  [--branch BRANCH] [--summary TEXT] [--obpi OBPI]
+                  [--summary TEXT] [--context TEXT] [--next-steps TEXT]
+                  [--pending TEXT] [--verification TEXT] [--evidence TEXT]
+                  [--branch BRANCH] [--obpi OBPI]
                   [--continues-from REF] [--session-id ID] [--json]
 ```
 
@@ -35,29 +44,62 @@ gz handoff create --adr ADR --slug SLUG --agent AGENT --decisions TEXT
 | `--slug SLUG` | Filename slug for the handoff (required). |
 | `--agent AGENT` | Authoring agent identity (required). |
 | `--decisions TEXT` | `Decisions Made` section body (required). |
-| `--branch BRANCH` | Branch name (default: current git branch). |
 | `--summary TEXT` | `Current State Summary` section body. |
+| `--context TEXT` | `Important Context` section body. |
+| `--next-steps TEXT` | `Immediate Next Steps` section body. |
+| `--pending TEXT` | `Pending Work / Open Loops` section body. |
+| `--verification TEXT` | `Verification Checklist` section body. |
+| `--evidence TEXT` | `Evidence / Artifacts` section body. Backtick-quoted paths must exist in committed state. |
+| `--branch BRANCH` | Branch name (default: current git branch). |
 | `--obpi OBPI` | OBPI id this handoff scopes to. |
 | `--continues-from REF` | Prior handoff reference (chain link). |
 | `--session-id ID` | Session id. |
 | `--json` | Emit `{"path": "..."}` instead of the human path line. |
 
+Only `--decisions` is argparse-required; the other six section flags are enforced
+by the validation gate, so their absence is a refusal with every empty section
+named at once rather than one error at a time.
+
 ---
 
 ## Example
 
+All seven sections supplied — the document is written under the canonical store:
+
 ```bash
 uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 \
-  --decisions "Chose the adapter approach over re-implementing handoff logic."
+  --summary "Landed the create-side section flags." \
+  --context "The gate refuses empty sections as of GHI #692." \
+  --decisions "Chose the adapter approach over re-implementing handoff logic." \
+  --next-steps "1. Run uv run gz check." \
+  --pending "None." \
+  --verification "uv run gz check" \
+  --evidence "The ledger completion receipt."
 ```
 
-Observed output (a document was written under the canonical store):
+Observed output:
 
 ```
-.gzkit/handoffs/20260715T030000Z-my-work.md
+.gzkit/handoffs/20260717T003013Z-my-work.md
 ```
 
-A validation violation is fail-closed — nothing is written and the verb exits 1:
+Omitting the six non-required section flags is fail-closed — nothing is written,
+the verb exits 1, and every empty section is named at once:
+
+```bash
+uv run gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 \
+  --decisions "Chose the adapter approach."
+```
+
+```
+Refusing to write handoff: Refusing to write invalid handoff; violations: Empty
+required section: Current State Summary; Empty required section: Important
+Context; Empty required section: Immediate Next Steps; Empty required section:
+Pending Work / Open Loops; Empty required section: Verification Checklist; Empty
+required section: Evidence / Artifacts
+```
+
+A malformed frontmatter value is refused the same way:
 
 ```bash
 uv run gz handoff create --adr ADR-BOGUS --slug x --agent g0 --decisions "d"

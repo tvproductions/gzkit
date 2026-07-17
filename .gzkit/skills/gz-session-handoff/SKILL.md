@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.10.0"
+  skill-version: "6.11.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-16
 model: sonnet
 ---
 
@@ -53,7 +53,7 @@ trail is preserved and no resume chain is orphaned. See the manpages under
 
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
-- **Validates:** No placeholders, no secrets, all sections present, referenced files exist
+- **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
 - **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate)
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
@@ -322,9 +322,9 @@ result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-1
 ## Acceptance Rules
 
 ### CREATE
-- All 7 required sections populated with session-specific content (no HTML comments or placeholders remaining)
+- All 7 required sections populated with session-specific content (no HTML comments or placeholders remaining) — **mechanized** by `validate_sections_populated` since GHI #692; an empty required section is a refusal, not a warning
 - Frontmatter validates against `HandoffFrontmatter` Pydantic model
-- Full validation pipeline passes (no placeholders, no secrets, sections present, references exist)
+- Full validation pipeline passes (no placeholders, no secrets, sections present **and populated**, references exist)
 - File written to correct path: `.gzkit/handoffs/{timestamp}-{slug}.md`
 
 ### RESUME

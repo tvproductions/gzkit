@@ -34,6 +34,7 @@ __all__ = [
     "validate_no_placeholders",
     "validate_no_secrets",
     "validate_referenced_files",
+    "validate_sections_populated",
     "validate_sections_present",
     "write_completion_handoff",
     "write_degenerate_handoff",
@@ -250,6 +251,42 @@ def validate_sections_present(content: str) -> list[str]:
     return missing
 
 
+def validate_sections_populated(content: str) -> list[str]:
+    """Check that every present required section carries a body.
+
+    Presence and population are independent contracts. A required section that
+    is absent entirely is :func:`validate_sections_present`'s finding, so only
+    *present* headings are judged here — otherwise one missing section would be
+    reported twice.
+
+    A section's body runs to the next ``##`` heading or end-of-document. HTML
+    comments are stripped before the emptiness test: the skill's acceptance rule
+    requires "session-specific content (no HTML comments or placeholders
+    remaining)", so a leftover scaffold comment must not satisfy the very
+    contract it exists to prompt. Whitespace is likewise not content.
+
+    Args:
+        content: Full Markdown document text.
+
+    Returns:
+        List of present-but-empty section names (empty = all populated).
+
+    """
+    body = _strip_frontmatter(content.replace("\r\n", "\n"))
+    empty: list[str] = []
+    for section in REQUIRED_SECTIONS:
+        heading = re.search(rf"^##\s+{re.escape(section)}\s*$", body, re.MULTILINE)
+        if heading is None:
+            continue
+        rest = body[heading.end() :]
+        nxt = re.search(r"^##\s+", rest, re.MULTILINE)
+        section_body = rest[: nxt.start()] if nxt else rest
+        section_body = re.sub(r"<!--.*?-->", "", section_body, flags=re.DOTALL)
+        if not section_body.strip():
+            empty.append(section)
+    return empty
+
+
 def validate_referenced_files(content: str, base_path: Path) -> list[str]:
     """Verify that file paths referenced in Evidence section exist on disk.
 
@@ -311,12 +348,24 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
     return missing
 
 
-def validate_handoff_document(content: str, base_path: Path) -> list[str]:
+def validate_handoff_document(
+    content: str,
+    base_path: Path,
+    *,
+    allow_empty_sections: bool = False,
+) -> list[str]:
     """Run all validation checks on a handoff document.
 
     Args:
         content: Full Markdown document text.
         base_path: Repository root for file reference checks.
+        allow_empty_sections: Waive the section-population contract ONLY (GHI
+            #692). Reserved for the four pre-cutover hollow handoffs snapshotted
+            in ``data/handoff_section_grandfather.json``, whose sessions are gone
+            and whose bodies cannot be honestly reconstructed. Every other
+            contract — frontmatter, placeholders, secrets, section presence,
+            referenced files — still applies, so this can never become a blanket
+            pass. Default ``False``: authoring is fail-closed.
 
     Returns:
         List of all violation messages (empty = valid).
@@ -353,6 +402,14 @@ def validate_handoff_document(content: str, base_path: Path) -> list[str]:
     # 4. Required sections (session handoffs only)
     for section in validate_sections_present(content):
         errors.append(f"Missing required section: {section}")
+
+    # 4b. ...and populated, not merely present (GHI #692). The skill's § Acceptance
+    # Rules always declared "all 7 required sections populated"; only presence was
+    # implemented, so a document of seven empty headings passed the gate — a
+    # handoff that preserved nothing while certifying that it had.
+    if not allow_empty_sections:
+        for section in validate_sections_populated(content):
+            errors.append(f"Empty required section: {section}")
 
     # 5. Referenced files exist (session handoffs only)
     for path in validate_referenced_files(content, base_path):

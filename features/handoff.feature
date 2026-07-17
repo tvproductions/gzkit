@@ -37,6 +37,14 @@ Feature: gz handoff verb (list, resume, create)
   Scenario: handoff create authors a valid handoff document
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
-    When I run "gz handoff create --adr ADR-0.0.65 --slug bdd-test --agent g0 --decisions test-decision --json" as a subprocess
+    When I run "gz handoff create --adr ADR-0.0.65 --slug bdd-test --agent g0 --decisions test-decision --summary test-summary --context test-context --next-steps test-next-steps --pending test-pending --verification test-verification --evidence test-evidence --json" as a subprocess
     Then the subprocess exits with code 0
     And the subprocess output contains "path"
+
+  @REQ-0.0.65-03-03
+  Scenario: handoff create is fail-closed on an unpopulated required section
+    Given a fresh empty project directory
+    And the workspace has been initialized via gz init
+    When I run "gz handoff create --adr ADR-0.0.65 --slug hollow --agent g0 --decisions test-decision" as a subprocess
+    Then the subprocess exits with code 1
+    And the subprocess output contains "Empty required section"

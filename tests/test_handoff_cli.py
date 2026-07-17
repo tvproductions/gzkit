@@ -12,6 +12,7 @@ domain-object fields), never as rendered substrings — the discriminator per
 
 from __future__ import annotations
 
+import inspect
 import io
 import json
 import tempfile
@@ -20,11 +21,13 @@ from contextlib import redirect_stdout
 from pathlib import Path
 
 from gzkit.commands.handoff import (
+    SECTION_PARAMS,
     handoff_create_cmd,
     handoff_list_cmd,
     handoff_resume_cmd,
 )
 from gzkit.handoff_api import create_handoff, validate_handoff_document
+from gzkit.handoff_validation import REQUIRED_SECTIONS
 from gzkit.traceability import covers
 
 _NEXT_STEPS = "## Immediate Next Steps\n\n1. Land the adapter and its unit tests.\n"
@@ -43,8 +46,14 @@ class _HandoffCliCase(unittest.TestCase):
         obpi_id: str | None = None,
         next_steps: str = "",
     ) -> Path:
-        """Author a valid handoff on disk through the real API (OBPI-02)."""
-        sections = {"Decisions Made": "Chose the thin-adapter shape."}
+        """Author a valid handoff on disk through the real API (OBPI-02).
+
+        Every required section carries a body: a handoff with empty sections is
+        refused at authoring (GHI #692), so a seed that supplied only Decisions
+        Made would no longer reach disk.
+        """
+        sections: dict[str, str] = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = "Chose the thin-adapter shape."
         if next_steps:
             sections["Immediate Next Steps"] = next_steps
         return create_handoff(
@@ -176,6 +185,28 @@ class TestHandoffCreate(_HandoffCliCase):
     def _handoff_files(self) -> list[Path]:
         return list((self.base / ".gzkit" / "handoffs").glob("*.md"))
 
+    def test_every_required_section_is_reachable_from_the_cli(self) -> None:
+        """Coupled-surface coherence: a section with no flag is an unfillable hollow.
+
+        GHI #692's root was this coupling breaking silently — REQUIRED_SECTIONS
+        grew to seven while `gz handoff create` kept parameters for two, so the
+        default invocation could only ever emit empty headings. Now that the
+        validator refuses those, an unmapped section would make the verb unusable
+        rather than merely hollow. Bind the surfaces so the regression is a
+        failing test, not a discovery (AGENTS.md § DO IT RIGHT 1a).
+        """
+        self.assertEqual(
+            set(SECTION_PARAMS),
+            set(REQUIRED_SECTIONS),
+            "SECTION_PARAMS must map exactly the required sections",
+        )
+        params = set(inspect.signature(handoff_create_cmd).parameters)
+        self.assertEqual(
+            [p for p in SECTION_PARAMS.values() if p not in params],
+            [],
+            "every mapped section parameter must exist on handoff_create_cmd",
+        )
+
     @covers("REQ-0.0.65-03-03")
     def test_create_invalid_input_fails_closed_writes_no_file(self) -> None:
         # A malformed ADR id fails the frontmatter gate; the API must refuse to
@@ -203,7 +234,13 @@ class TestHandoffCreate(_HandoffCliCase):
             adr="ADR-0.0.65",
             slug="my-work",
             agent="g0",
+            summary="Landed the thin adapter over the OBPI-02 API.",
+            context="The API is the only writer; the adapter carries no domain logic.",
             decisions="Chose the thin-adapter shape over new domain logic.",
+            next_steps="1. Land the adapter unit tests.",
+            pending="None; the adapter surface is complete.",
+            verification="uv run -m unittest tests.test_handoff_cli",
+            evidence="The ledger completion receipt for this adapter.",
             branch="main",
             base_path=self.base,
         )

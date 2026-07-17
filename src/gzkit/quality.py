@@ -4,6 +4,7 @@ Provides unified interface to linting, formatting, testing, and type checking.
 """
 
 import ast
+import json
 import os
 import re
 import shlex
@@ -894,6 +895,34 @@ def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
 # cleanup is tracked separately (see OBPI-0.0.72-02 evidence/concerns).
 _HANDOFF_ENFORCEMENT_CUTOVER = "2026-06-15T00:00:00Z"
 
+# Section-population grandfather (GHI #692). Path-scoped, NOT date-scoped: the
+# four hollow entries were authored 2026-07-15, a month AFTER the cutover above,
+# so moving that date forward to cover them would also re-open every other
+# post-cutover contract. Registered as a `shrink-ratchet` honesty surface in
+# data/waiver_ratchet_registry.json; the file's _doc carries the rationale.
+_HANDOFF_SECTION_GRANDFATHER_REL = "data/handoff_section_grandfather.json"
+_HANDOFF_SECTION_ENTRIES_KEY = "grandfathered_handoffs"
+
+
+def _handoff_section_grandfather(project_root: Path) -> frozenset[str]:
+    """Return the repo-relative handoff paths whose empty sections are tolerated.
+
+    Fails OPEN to the empty set (enforce everything) when the manifest is absent
+    or unreadable: a missing waiver file must never silently widen the gate. The
+    waiver-ratchet audit is what fail-closes on an unregistered or grown file.
+    """
+    path = project_root / _HANDOFF_SECTION_GRANDFATHER_REL
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return frozenset()
+    if not isinstance(payload, dict):
+        return frozenset()
+    entries = payload.get(_HANDOFF_SECTION_ENTRIES_KEY)
+    if not isinstance(entries, list):
+        return frozenset()
+    return frozenset(str(entry) for entry in entries)
+
 
 def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:
     """Return True when a handoff is grandfathered (pre-cutover or undatable).
@@ -939,20 +968,27 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
         )
 
     cutover = datetime.fromisoformat(_HANDOFF_ENFORCEMENT_CUTOVER.replace("Z", "+00:00"))
+    section_waived = _handoff_section_grandfather(project_root)
     blocking: list[str] = []
     grandfathered = 0
+    hollow = 0
     for path in sorted(handoff_dir.glob("*.md")):
         try:
             content = path.read_text(encoding="utf-8")
         except OSError:
             continue
-        violations = validate_handoff_document(content, project_root)
+        rel = path.relative_to(project_root).as_posix()
+        allow_empty = rel in section_waived
+        violations = validate_handoff_document(
+            content, project_root, allow_empty_sections=allow_empty
+        )
+        if allow_empty:
+            hollow += 1
         if not violations:
             continue
         if _handoff_predates_cutover(content, cutover):
             grandfathered += 1
             continue
-        rel = path.relative_to(project_root).as_posix()
         blocking.extend(f"{rel}: {violation}" for violation in violations)
 
     if blocking:
@@ -978,6 +1014,14 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
     if grandfathered:
         plural = "entry" if grandfathered == 1 else "entries"
         summary += f" ({grandfathered} pre-cutover legacy {plural} grandfathered.)"
+    if hollow:
+        # State the waived set in the PASS line, not only in the manifest. A green
+        # that hides what it did not check is the GHI #692 facade one level up.
+        plural = "entry" if hollow == 1 else "entries"
+        summary += (
+            f" ({hollow} hollow {plural} tolerated per {_HANDOFF_SECTION_GRANDFATHER_REL}"
+            " — sections empty, context NOT preserved; shrink-only.)"
+        )
     return QualityResult(
         success=True,
         command="handoff-document audit",

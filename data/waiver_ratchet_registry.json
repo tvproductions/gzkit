@@ -85,6 +85,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_obpis",
       "baseline_count": 225
+    },
+    {
+      "data_file": "data/handoff_section_grandfather.json",
+      "gates_step": "handoff section population (gz check: Handoff documents)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_handoffs",
+      "baseline_count": 4
     }
   ],
   "excluded": [

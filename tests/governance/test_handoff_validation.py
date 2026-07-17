@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 from pydantic import ValidationError
 
+from gzkit.handoff_api import create_handoff
 from gzkit.handoff_validation import (
     HANDOFF_SCHEMA_VERSION,
     REQUIRED_SECTIONS,
@@ -24,6 +25,7 @@ from gzkit.handoff_validation import (
     validate_no_placeholders,
     validate_no_secrets,
     validate_referenced_files,
+    validate_sections_populated,
     validate_sections_present,
 )
 from gzkit.traceability import covers
@@ -647,6 +649,143 @@ class TestHandoffAbsorptionBrief(unittest.TestCase):
             r"(?i)library function|no operator-visible|no cli surface|no external-surface change",
             "Gate 4 N/A must have an explicit rationale phrase.",
         )
+
+
+# ---------------------------------------------------------------------------
+# Section POPULATION — the declared-but-unenforced half (GHI #692)
+#
+# `.gzkit/skills/gz-session-handoff/SKILL.md` § Acceptance Rules declares "All 7
+# required sections populated with session-specific content". Only *presence*
+# was implemented, so `## Important Context\n\n## Decisions Made` satisfied the
+# gate: a handoff preserving nothing while certifying that it did.
+# ---------------------------------------------------------------------------
+
+
+def _hollow_handoff_doc(empty: tuple[str, ...]) -> str:
+    """Return a handoff whose ``empty`` sections are present but bodyless."""
+    body = "\n\n".join(
+        f"## {section}\n" if section in empty else f"## {section}\n\nContent for section."
+        for section in REQUIRED_SECTIONS
+    )
+    frontmatter_yaml = (
+        "mode: CREATE\n"
+        "adr_id: ADR-0.25.0\n"
+        "branch: feature/handoff\n"
+        "timestamp: '2026-04-14T12:00:00'\n"
+        "agent: claude-code\n"
+    )
+    return f"---\n{frontmatter_yaml}---\n\n{body}\n"
+
+
+class TestValidateSectionsPopulated(unittest.TestCase):
+    """A required section satisfies the contract only when it carries a body."""
+
+    def test_all_sections_populated_returns_empty(self) -> None:
+        self.assertEqual(validate_sections_populated(_clean_handoff_doc()), [])
+
+    def test_empty_section_is_reported(self) -> None:
+        doc = _hollow_handoff_doc(("Important Context",))
+        self.assertEqual(validate_sections_populated(doc), ["Important Context"])
+
+    def test_heading_only_document_reports_every_section(self) -> None:
+        """The exact #692 shape: every heading present, every body empty."""
+        doc = _hollow_handoff_doc(REQUIRED_SECTIONS)
+        self.assertEqual(set(validate_sections_populated(doc)), set(REQUIRED_SECTIONS))
+        # Presence and population are independent contracts: presence still passes.
+        self.assertEqual(validate_sections_present(doc), [])
+
+    def test_whitespace_only_body_is_not_populated(self) -> None:
+        """Whitespace is not content — otherwise the gate is trivially defeated."""
+        doc = _clean_handoff_doc().replace(
+            "## Decisions Made\n\nContent for section.",
+            "## Decisions Made\n\n   \n\t\n",
+        )
+        self.assertEqual(validate_sections_populated(doc), ["Decisions Made"])
+
+    def test_missing_section_is_not_double_reported(self) -> None:
+        """An absent section is `validate_sections_present`'s finding, not this one."""
+        body = "\n\n".join(
+            f"## {section}\n\nbody" for section in REQUIRED_SECTIONS if section != "Decisions Made"
+        )
+        doc = f"---\nkey: value\n---\n\n{body}\n"
+        self.assertEqual(validate_sections_populated(doc), [])
+
+
+class TestHandoffDocumentRejectsHollow(unittest.TestCase):
+    """The aggregate gate fail-closes on a hollow handoff (GHI #692)."""
+
+    def test_hollow_document_produces_violations(self) -> None:
+        doc = _hollow_handoff_doc(("Important Context", "Verification Checklist"))
+        errors = validate_handoff_document(doc, Path("."))
+        self.assertIn("Empty required section: Important Context", errors)
+        self.assertIn("Empty required section: Verification Checklist", errors)
+
+    def test_clean_document_still_passes(self) -> None:
+        self.assertEqual(validate_handoff_document(_clean_handoff_doc(), Path(".")), [])
+
+    def test_grandfathered_caller_tolerates_empty_sections(self) -> None:
+        """`allow_empty_sections` waives ONLY population, never another contract."""
+        doc = _hollow_handoff_doc(("Important Context",))
+        self.assertEqual(validate_handoff_document(doc, Path("."), allow_empty_sections=True), [])
+
+    def test_grandfathered_caller_still_fails_other_contracts(self) -> None:
+        """The waiver is scoped: a secret in a grandfathered handoff still blocks."""
+        doc = _hollow_handoff_doc(("Important Context",)).replace(
+            "## Decisions Made\n\nContent for section.",
+            "## Decisions Made\n\npassword=hunter2",
+        )
+        errors = validate_handoff_document(doc, Path("."), allow_empty_sections=True)
+        self.assertTrue(any("Potential secret" in e for e in errors), errors)
+
+    def test_register_entry_remains_exempt(self) -> None:
+        """`abandoned: true` entries are a distinct document class (OBPI-0.0.72-02)."""
+        doc = _hollow_handoff_doc(REQUIRED_SECTIONS).replace(
+            "agent: claude-code\n",
+            "agent: claude-code\nabandoned: true\ncategory: tool_failure\nreason: crash\n",
+        )
+        errors = validate_handoff_document(doc, Path("."))
+        self.assertEqual([e for e in errors if "Empty required section" in e], [])
+
+
+class TestCreateHandoffRefusesHollowLiveNC(unittest.TestCase):
+    """Live negative control: the PRODUCTION authoring path refuses a hollow doc.
+
+    This is the GHI #692 reproduction. `gz handoff create` accepted content for
+    two of the seven required sections and `_render_document` wrote the other
+    five as empty headings; the gate then blessed the result. The class of
+    failure is a governance facade — the green certifies emptiness — so the
+    binding assertion is that the real writer refuses AND leaves no artifact.
+    """
+
+    def test_create_handoff_refuses_and_writes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            with self.assertRaises(HandoffValidationError) as ctx:
+                create_handoff(
+                    adr_id="ADR-0.0.65",
+                    branch="main",
+                    agent="claude-code",
+                    slug="hollow-repro",
+                    sections={"Decisions Made": "Chose X over Y."},
+                    base_path=root,
+                )
+            self.assertIn("Empty required section", str(ctx.exception))
+            written = list((root / ".gzkit" / "handoffs").glob("*.md"))
+            self.assertEqual(written, [], "a refused handoff must leave no artifact")
+
+    def test_create_handoff_writes_when_every_section_is_populated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="claude-code",
+                slug="complete",
+                sections={section: f"Body for {section}." for section in REQUIRED_SECTIONS},
+                base_path=root,
+            )
+            self.assertTrue(path.is_file())
+            self.assertEqual(validate_handoff_document(path.read_text(encoding="utf-8"), root), [])
 
 
 if __name__ == "__main__":

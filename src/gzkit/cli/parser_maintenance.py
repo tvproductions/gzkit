@@ -88,12 +88,17 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         help="Author a handoff, fail-closed through the validation gate",
         description=(
             "Author a handoff document. The document is validated before it is "
-            "written; on any violation nothing is written and the verb exits 1."
+            "written; on any violation nothing is written and the verb exits 1. "
+            "All seven required sections must be populated: an unsupplied "
+            "section is a refusal, not an empty heading (GHI #692)."
         ),
         epilog=build_epilog(
             [
                 "gz handoff create --adr ADR-0.0.65 --slug my-work --agent g0 "
-                '--decisions "Chose X over Y"',
+                '--summary "Landed X" --context "Y constrains Z" '
+                '--decisions "Chose X over Y" --next-steps "1. Review W" '
+                '--pending "GHI #123 open" --verification "uv run gz check" '
+                '--evidence "`src/gzkit/x.py`"',
             ]
         ),
     )
@@ -103,6 +108,15 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
     p_create.add_argument("--decisions", required=True, help="Decisions Made section body")
     p_create.add_argument("--branch", default=None, help="Branch (default: current git branch)")
     p_create.add_argument("--summary", default=None, help="Current State Summary section body")
+    p_create.add_argument("--context", default=None, help="Important Context section body")
+    p_create.add_argument(
+        "--next-steps", dest="next_steps", default=None, help="Immediate Next Steps section body"
+    )
+    p_create.add_argument("--pending", default=None, help="Pending Work / Open Loops section body")
+    p_create.add_argument(
+        "--verification", default=None, help="Verification Checklist section body"
+    )
+    p_create.add_argument("--evidence", default=None, help="Evidence / Artifacts section body")
     p_create.add_argument("--obpi", default=None, help="OBPI id this handoff scopes to")
     p_create.add_argument(
         "--continues-from", dest="continues_from", default=None, help="Prior handoff reference"
@@ -117,6 +131,11 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             decisions=a.decisions,
             branch=a.branch,
             summary=a.summary,
+            context=a.context,
+            next_steps=a.next_steps,
+            pending=a.pending,
+            verification=a.verification,
+            evidence=a.evidence,
             obpi=a.obpi,
             continues_from=a.continues_from,
             session_id=a.session_id,

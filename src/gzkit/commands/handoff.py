@@ -31,6 +31,21 @@ from gzkit.handoff_api import (
 from gzkit.handoff_validation import HandoffValidationError
 from gzkit.utils import git_cmd
 
+# Required section -> the handoff_create_cmd parameter that fills it. Every
+# REQUIRED_SECTIONS entry MUST appear here: a section with no parameter cannot be
+# filled from the CLI, which is exactly how GHI #692 happened — the map had two
+# entries for seven sections, so the default invocation emitted five empty
+# headings. Bound to REQUIRED_SECTIONS by a coherence test.
+SECTION_PARAMS: dict[str, str] = {
+    "Current State Summary": "summary",
+    "Important Context": "context",
+    "Decisions Made": "decisions",
+    "Immediate Next Steps": "next_steps",
+    "Pending Work / Open Loops": "pending",
+    "Verification Checklist": "verification",
+    "Evidence / Artifacts": "evidence",
+}
+
 
 def _list_payload(infos: list[HandoffInfo]) -> list[dict]:
     """Machine-readable projection of a handoff listing (the ``--json`` shape)."""
@@ -109,6 +124,11 @@ def handoff_create_cmd(
     decisions: str,
     branch: str | None = None,
     summary: str | None = None,
+    context: str | None = None,
+    next_steps: str | None = None,
+    pending: str | None = None,
+    verification: str | None = None,
+    evidence: str | None = None,
     obpi: str | None = None,
     continues_from: str | None = None,
     session_id: str | None = None,
@@ -117,13 +137,29 @@ def handoff_create_cmd(
 ) -> None:
     """Author a handoff through the fail-closed gate (REQ-0.0.65-03-03).
 
-    Builds the Decisions Made (and optional Current State Summary) sections and
-    routes them through :func:`create_handoff`. On a validation refusal NOTHING
-    is written and the verb exits 1; on success the written path is reported.
+    Builds all seven required sections from their flags and routes them through
+    :func:`create_handoff`. On a validation refusal NOTHING is written and the
+    verb exits 1; on success the written path is reported.
+
+    Every required section has a flag (GHI #692). Previously only Decisions Made
+    and Current State Summary did, so the default invocation emitted five empty
+    headings and the gate — which checked presence, not population — blessed the
+    result. An unsupplied section is now a refusal, not a silent hollow.
     """
-    sections = {"Decisions Made": decisions}
-    if summary is not None:
-        sections["Current State Summary"] = summary
+    supplied = {
+        "summary": summary,
+        "context": context,
+        "decisions": decisions,
+        "next_steps": next_steps,
+        "pending": pending,
+        "verification": verification,
+        "evidence": evidence,
+    }
+    sections = {
+        section: body
+        for section, param in SECTION_PARAMS.items()
+        if (body := supplied[param]) is not None
+    }
     try:
         path = create_handoff(
             adr_id=adr,
