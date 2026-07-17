@@ -20,6 +20,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.commands.handoff_archive import handoff_archive_cmd
+from gzkit.handoff_api import resolve_continues_from
 from gzkit.handoff_archive import execute_archive, plan_archive
 from gzkit.traceability import covers
 
@@ -372,6 +373,97 @@ class HandoffArchiveBehaviorTests(unittest.TestCase):
                 0,
                 "archived handoffs must land in the archive subdir",
             )
+
+
+# ---------------------------------------------------------------------------
+# continues_from resolver — ONE implementation, two consumers (GHI #689)
+#
+# The chain-integrity guard's correctness depends on the archive side resolving
+# every pointer form exactly as the production CREATE/RESUME path does. That
+# dependency used to be asserted in a docstring and mirrored by hand across a
+# brief boundary, with no test binding the copies. These tests bind the contract
+# to behavior instead of to prose.
+# ---------------------------------------------------------------------------
+
+
+class ResolveContinuesFromSemanticsTests(unittest.TestCase):
+    """Pin the pointer-form resolution contract the archive guard depends on."""
+
+    def test_absolute_pointer_resolves_as_is(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            target = _write_handoff(base, "target.md", timestamp=_OLD_TS)
+            referrer = _handoffs_dir(base) / "referrer.md"
+            resolved = resolve_continues_from(str(target), referrer, base)
+            self.assertEqual(resolved, target)
+
+    def test_bare_sibling_pointer_resolves_against_the_referrer(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            target = _write_handoff(base, "target.md", timestamp=_OLD_TS)
+            referrer = _handoffs_dir(base) / "referrer.md"
+            self.assertEqual(resolve_continues_from("target.md", referrer, base), target)
+
+    def test_project_relative_pointer_resolves_against_base(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            target = _write_handoff(base, "target.md", timestamp=_OLD_TS)
+            referrer = _handoffs_dir(base) / "referrer.md"
+            resolved = resolve_continues_from(".gzkit/handoffs/target.md", referrer, base)
+            self.assertEqual(resolved.resolve(), target.resolve())
+
+    def test_nonexistent_pointer_falls_back_to_sibling(self) -> None:
+        """The else-branch: an unresolvable pointer keys to the sibling candidate.
+
+        Load-bearing for the archive guard — a dangling pointer must still yield a
+        stable key rather than raising, so a broken chain link cannot crash a scan.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            referrer = _handoffs_dir(base) / "referrer.md"
+            resolved = resolve_continues_from("gone.md", referrer, base)
+            self.assertEqual(resolved, referrer.parent / "gone.md")
+
+
+class ArchiveGuardUsesTheProductionResolverTests(unittest.TestCase):
+    """The chain guard protects a target named by ANY form the resolver accepts.
+
+    This is the GHI #689 class fix's proof. It does not compare two functions —
+    it asserts the BEHAVIOR that can only hold if the archive guard resolves
+    through the same resolver the CREATE/RESUME path uses. Re-duplicating the
+    resolver and letting it diverge on any of these forms fails this test.
+    """
+
+    def _assert_target_protected(self, pointer_form: str) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _write_handoff(base, "target.md", timestamp=_OLD_TS)
+            _write_handoff(base, "referrer.md", timestamp=_OLD_TS, continues_from=pointer_form)
+            _write_handoff(base, "loose.md", timestamp=_OLD_TS)
+
+            plan = plan_archive(base_path=base, older_than_days=30, now=_NOW)
+
+            self.assertNotIn(
+                ".gzkit/handoffs/target.md",
+                plan.eligible,
+                f"a chain target named as {pointer_form!r} must never be archived",
+            )
+            # Negative control: a no-op planner would trivially pass the guard
+            # above, so prove an uncoupled handoff IS still eligible.
+            self.assertIn(
+                ".gzkit/handoffs/loose.md",
+                plan.eligible,
+                "an uncoupled old handoff must remain eligible",
+            )
+
+    def test_bare_pointer_protects_target(self) -> None:
+        self._assert_target_protected("target.md")
+
+    def test_dot_slash_pointer_protects_target(self) -> None:
+        self._assert_target_protected("./target.md")
+
+    def test_project_relative_pointer_protects_target(self) -> None:
+        self._assert_target_protected(".gzkit/handoffs/target.md")
 
 
 if __name__ == "__main__":

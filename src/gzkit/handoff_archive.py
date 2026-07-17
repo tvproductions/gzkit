@@ -15,9 +15,11 @@ audit trail is preserved by relocation, never removal:
   a same-name file already in ``archive/`` is NEVER overwritten, so the migration
   floor (canonical + archive) is preserved by construction, even under a race.
 
-Target resolution mirrors ``_resolve_continues_from`` (sibling-then-rooted) so
-pointer forms the production resolver accepts — bare, project-relative,
-``./``/``..``-bearing, absolute — all normalize to the same protected target.
+Target resolution DELEGATES to the production resolver
+(:func:`gzkit.handoff_api.resolve_continues_from`), so pointer forms it accepts —
+bare, project-relative, ``./``/``..``-bearing, absolute — all normalize to the
+same protected target by construction rather than by a hand-mirrored copy that
+could drift (GHI #689). This module owns the inode-identity keying only.
 
 Domain core: stdlib + Pydantic only; the ledger and handoff frontmatter are read
 through existing read-only helpers. No registered security surface is edited
@@ -44,6 +46,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.handoff_api import resolve_continues_from
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
 
 _ARCHIVE_NAME = "archive"
@@ -179,22 +182,16 @@ def _locked_paths(base_path: Path) -> set[str]:
 def _resolve_pointer_key(ref: str, referrer: Path, base_path: Path) -> str:
     """Resolve a continues_from pointer to a comparison key.
 
-    Mirrors ``gzkit.handoff_api._resolve_continues_from`` (sibling-then-rooted)
-    so every pointer form the production resolver accepts — absolute,
-    ``./``/``..``-bearing, project-relative, or bare — maps to the same key as the
-    real target handoff. (Replicated, not imported: the resolver lives in
-    OBPI-03's handoff_api.py, outside this brief's surface.)
+    Delegates resolution to the production resolver
+    (:func:`gzkit.handoff_api.resolve_continues_from`) and applies this module's
+    inode-identity key. This module owns the KEYING; it does not own the pointer
+    semantics, and must never re-implement them: the guard is only correct while
+    it resolves every pointer form exactly as the CREATE/RESUME path does.
+
+    The branching was previously hand-mirrored here across an OBPI brief boundary
+    with the coupling asserted in a docstring and enforced by nothing (GHI #689).
     """
-    candidate = Path(ref)
-    if candidate.is_absolute():
-        return _key(candidate)
-    sibling = referrer.parent / ref
-    if sibling.exists():
-        return _key(sibling)
-    rooted = base_path / ref
-    if rooted.exists():
-        return _key(rooted)
-    return _key(sibling)
+    return _key(resolve_continues_from(ref, referrer, base_path))
 
 
 def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:

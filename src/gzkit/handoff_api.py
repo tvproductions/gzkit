@@ -39,6 +39,7 @@ __all__ = [
     "create_handoff",
     "list_handoffs",
     "load_handoff_chain",
+    "resolve_continues_from",
     "resume_handoff",
     "scaffold_handoff",
 ]
@@ -185,7 +186,22 @@ def _classify_staleness(now: str, timestamp: str) -> StalenessLevel:
     return StalenessLevel.VERY_STALE
 
 
-def _resolve_continues_from(ref: str, current: Path, base_path: Path) -> Path:
+def resolve_continues_from(ref: str, current: Path, base_path: Path) -> Path:
+    """Resolve a ``continues_from`` pointer to the handoff it names.
+
+    Sibling-then-rooted: an absolute pointer is taken as-is; otherwise a sibling
+    of the referrer wins if it exists, then a project-rooted path, else the
+    sibling candidate is returned unresolved (a dangling pointer yields a stable
+    path rather than raising, so a broken chain link cannot abort a scan).
+
+    Public because two surfaces share this contract and must not drift: the
+    CREATE/RESUME chain walk (:func:`load_handoff_chain`) and the archive
+    chain-integrity guard (``gzkit.handoff_archive``), which keys the result to
+    decide what is protected from relocation. It was previously private and
+    hand-mirrored into the archive module across an OBPI brief boundary, with the
+    coupling asserted in a docstring and enforced by nothing — any divergence
+    would have silently let a live chain link be archived (GHI #689).
+    """
     candidate = Path(ref)
     if candidate.is_absolute():
         return candidate
@@ -353,7 +369,7 @@ def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path(".")) -> li
         ref = fm.get("continues_from") if isinstance(fm, dict) else None
         if not ref:
             break
-        current = _resolve_continues_from(str(ref), current, base_path)
+        current = resolve_continues_from(str(ref), current, base_path)
         depth += 1
     chain.reverse()
     return chain
