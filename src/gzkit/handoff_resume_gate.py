@@ -63,7 +63,6 @@ __all__ = [
 ]
 
 _LEDGER_REL = ".gzkit/ledger.jsonl"
-_HANDOFFS_REL = ".gzkit/handoffs"
 _AUTHORIZED_EVENT = "handoff_resume_authorized"
 
 #: Tools whose use is "execution" under the § RESUME contract's "no file

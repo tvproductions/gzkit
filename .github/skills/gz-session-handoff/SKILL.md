@@ -269,9 +269,18 @@ did not say: that is fabrication, the same failure as fabricating a receipt id.
 
 **What stays permitted while unauthorized:** the § Trust Model reads this skill
 requires *before* presenting — `gz state`, `gz gates`, `gz obpi status`,
-`gz obpi lock list`, `gz handoff list|resume` — plus `gz handoff authorize`
-itself. The gate blocks execution, never the verification that precedes it, and
-never its own recovery path.
+`gz obpi lock list`, `gz handoff list|resume` — **plus plain shell reads**
+(`git status|log|diff|show`, `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `find`,
+`jq`) — plus `gz handoff authorize` itself. The shell reads are load-bearing, not
+convenience: the § Claim Verification Gate below MANDATES verifying claims against
+Layer-2 before presenting, and the harness does not always expose `Grep`/`Glob`
+tools, so Bash is the read path. A gate that forbids the verification its own
+skill requires cannot be complied with.
+
+Everything else fails closed — including compound commands (`gz state && rm -rf x`
+is not a read of `gz state`) and write-capable flags on a read's name (`find
+-delete`, `sed -i`). The gate blocks execution, never the verification that
+precedes it, and never its own recovery path.
 
 Staleness escalates *re-verification depth*, not the authorization requirement:
 when staleness is **Stale** or **Very Stale**, the `requires_human_verification`
