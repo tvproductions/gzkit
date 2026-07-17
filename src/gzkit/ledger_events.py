@@ -899,3 +899,29 @@ def red_receipt_emitted_event(
         parent=obpi_id,
         extra=extra,
     )
+
+
+def handoff_resume_authorized_event(
+    *,
+    session_id: str,
+    handoff_path: str,
+    operator_text: str,
+) -> LedgerEvent:
+    """Create a handoff resume authorization event (GHI #574).
+
+    The Layer-2 record that discharges the Operator Authorization Gate. Booking
+    it is what lifts ``gzkit.handoff_resume_gate``'s block for this session.
+
+    ``operator_text`` carries the operator's VERBATIM words, unmodified — the
+    same relay model as Gate 5 attestation (AGENTS.md § Attestation): the agent
+    seats the operator's words, it never rewrites or summarizes them.
+    """
+    return LedgerEvent(
+        event="handoff_resume_authorized",
+        id=handoff_path,
+        extra={
+            "session_id": session_id,
+            "handoff_path": handoff_path,
+            "operator_text": operator_text,
+        },
+    )

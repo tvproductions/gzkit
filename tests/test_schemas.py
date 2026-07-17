@@ -39,6 +39,7 @@ from gzkit.events import (
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
     GateCheckedEvent,
+    HandoffResumeAuthorizedEvent,
     IntrinsicComplexityAttestationEvent,
     LifecycleTransitionEvent,
     MxSessionClosedEvent,
@@ -310,6 +311,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "airlock_out": AirlockOutEvent,
     # Base-tree RED falsifiability witness (GHI #642)
     "red_receipt_emitted": RedReceiptEmittedEvent,
+    # Operator ruling lifting the handoff resume gate (GHI #574)
+    "handoff_resume_authorized": HandoffResumeAuthorizedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

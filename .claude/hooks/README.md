@@ -2,6 +2,12 @@
 
 Current hook surface in gzkit:
 
+- `handoff-resume-gate.py`
+  PreToolUse (`Write|Edit|NotebookEdit` and `Bash`) hook that
+  refuses execution while this session has resumed a handoff the
+  operator has not ruled on. Mechanizes the universal Operator
+  Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);
+  lifted by `gz handoff authorize` (GHI #574).
 - `session-staleness-check.py`
   PreToolUse (`Write|Edit`) hook that detects stale pipeline
   artifacts from previous sessions and emits warnings.
@@ -47,10 +53,11 @@ Current hook surface in gzkit:
 
 - `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`
 - `PostToolUse` `ExitPlanMode`: `pipeline-router.py`
-- `PreToolUse` `Write|Edit`: `session-staleness-check.py`,
-  then `pipeline-gate.py`, then `obpi-completion-validator.py`,
-  then `instruction-router.py`
-- `PreToolUse` `Bash`: `pipeline-completion-reminder.py`
+- `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,
+  then `session-staleness-check.py`, then `pipeline-gate.py`,
+  then `obpi-completion-validator.py`, then `instruction-router.py`
+- `PreToolUse` `Bash`: `handoff-resume-gate.py`,
+  then `pipeline-completion-reminder.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`

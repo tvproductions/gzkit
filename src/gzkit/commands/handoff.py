@@ -180,3 +180,77 @@ def handoff_create_cmd(
         print(json.dumps({"path": path.as_posix()}))  # noqa: T201
         return
     console.print(path.as_posix())
+
+
+def handoff_authorize_cmd(
+    *,
+    handoff: str,
+    operator_text: str,
+    session_id: str,
+    as_json: bool = False,
+    base_path: Path = Path("."),
+) -> None:
+    """Book the operator's ruling on a resumed handoff (GHI #574).
+
+    Discharges the Operator Authorization Gate (`gz-session-handoff` SKILL.md
+    § RESUME) for this session: until this event is on the ledger, the resume
+    gate refuses every mutating tool call. The gate reads Layer-2, so the ruling
+    must be BOOKED — presenting the steps and being told "go" in conversation
+    leaves no record, which is the state that let the gate hold by goodwill alone.
+
+    ``--operator-text`` is the operator's VERBATIM words. Do not paraphrase,
+    summarize, or improve them (AGENTS.md § Attestation; § OPERATOR ECONOMY OF
+    EFFORT #3 — the agent seats the operator's words, never rewrites them).
+    Authorizing without a ruling actually given is fabrication, the same failure
+    as fabricating a receipt id.
+
+    ``session_id`` is passed explicitly rather than read from a harness env var:
+    `commands/` is fenced to a two-entry env allowlist (NO_COLOR / FORCE_COLOR)
+    precisely so vendor coupling cannot leak into the command layer. The gate's
+    block prose interpolates the id, so the caller never has to discover it.
+    """
+    from gzkit.commands.common import ensure_initialized  # noqa: PLC0415
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.ledger_events import handoff_resume_authorized_event  # noqa: PLC0415
+
+    resolved_session = session_id.strip()
+    if not resolved_session:
+        console.print(
+            "[red]Refusing to authorize:[/red] empty --session-id.\n"
+            "WHY: authorization is session-scoped so a prior session's ruling cannot "
+            "silently license this one (GHI #574). An empty id would authorize nothing "
+            "and read as consent.\n"
+            "NEXT STEP: copy the command from the resume gate's block message — it "
+            "interpolates the session id the harness reported.",
+            style="red",
+        )
+        raise SystemExit(1)
+
+    root = get_project_root() if base_path == Path(".") else base_path
+    handoff_path = Path(handoff)
+    resolved = handoff_path if handoff_path.is_absolute() else root / handoff
+    if not resolved.is_file():
+        console.print(
+            f"[red]Refusing to authorize:[/red] no handoff at {handoff}.\n"
+            "WHY: an authorization must name the handoff it rules on, or the audit "
+            "trail records consent to nothing.\n"
+            "NEXT STEP: run `uv run gz handoff list` and authorize a real path.",
+            style="red",
+        )
+        raise SystemExit(1)
+
+    rel = resolved.relative_to(root).as_posix() if resolved.is_relative_to(root) else handoff
+    config = ensure_initialized()
+    Ledger(root / config.paths.ledger).append(
+        handoff_resume_authorized_event(
+            session_id=resolved_session,
+            handoff_path=rel,
+            operator_text=operator_text,
+        )
+    )
+
+    payload = {"status": "authorized", "handoff_path": rel, "session_id": resolved_session}
+    if as_json:
+        print(json.dumps(payload))  # noqa: T201
+        return
+    console.print(f"authorized — {rel} (session {resolved_session})")

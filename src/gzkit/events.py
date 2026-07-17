@@ -751,6 +751,30 @@ class AirlockOutEvent(_EventBase):
     event: Literal["airlock_out"]
 
 
+class HandoffResumeAuthorizedEvent(_EventBase):
+    """handoff_resume_authorized event — the operator ruled on a resumed handoff.
+
+    The Layer-2 record that discharges the Operator Authorization Gate
+    (`gz-session-handoff` SKILL.md § RESUME): a resuming agent presents the
+    handoff's advised steps and may not mutate anything until the operator rules
+    and that ruling is booked here (GHI #574).
+
+    ``operator_text`` is the operator's VERBATIM words, passed through unchanged
+    per AGENTS.md § Attestation — the same relay model as Gate 5, where the
+    mechanism serves the attestation and never gates it. Session-scoped:
+    authorization is per ``session_id``, so it cannot leak across sessions and a
+    mechanically-written completion handoff (GHI #619) cannot re-arm the gate
+    mid-session.
+    """
+
+    event: Literal["handoff_resume_authorized"]
+    session_id: str = Field(..., min_length=1, description="Harness session the ruling binds to")
+    handoff_path: str = Field(..., min_length=1, description="Resumed handoff the ruling covers")
+    operator_text: str = Field(
+        ..., min_length=1, description="Operator's verbatim authorization words"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -806,6 +830,7 @@ TypedLedgerEvent = Annotated[
     | ValidatesEvent
     | AirlockInEvent
     | AirlockOutEvent
+    | HandoffResumeAuthorizedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent,
     Field(discriminator="event"),

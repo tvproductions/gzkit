@@ -9,6 +9,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
+from gzkit.hooks.scripts.handoff import _handoff_resume_gate_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
@@ -36,6 +37,12 @@ def _claude_hooks_readme() -> str:
             "",
             "Current hook surface in gzkit:",
             "",
+            "- `handoff-resume-gate.py`",
+            "  PreToolUse (`Write|Edit|NotebookEdit` and `Bash`) hook that",
+            "  refuses execution while this session has resumed a handoff the",
+            "  operator has not ruled on. Mechanizes the universal Operator",
+            "  Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);",
+            "  lifted by `gz handoff authorize` (GHI #574).",
             "- `session-staleness-check.py`",
             "  PreToolUse (`Write|Edit`) hook that detects stale pipeline",
             "  artifacts from previous sessions and emits warnings.",
@@ -81,10 +88,11 @@ def _claude_hooks_readme() -> str:
             "",
             "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
             "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
-            "- `PreToolUse` `Write|Edit`: `session-staleness-check.py`,",
-            "  then `pipeline-gate.py`, then `obpi-completion-validator.py`,",
-            "  then `instruction-router.py`",
-            "- `PreToolUse` `Bash`: `pipeline-completion-reminder.py`",
+            "- `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,",
+            "  then `session-staleness-check.py`, then `pipeline-gate.py`,",
+            "  then `obpi-completion-validator.py`, then `instruction-router.py`",
+            "- `PreToolUse` `Bash`: `handoff-resume-gate.py`,",
+            "  then `pipeline-completion-reminder.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
@@ -167,8 +175,16 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
                 {
-                    "matcher": "Write|Edit",
+                    # NotebookEdit is included for the resume gate: it mutates
+                    # files, so the § RESUME "no file mutation" clause covers it
+                    # (GHI #574). The other hooks in this chain are path-scoped to
+                    # src/tests and no-op on a notebook edit.
+                    "matcher": "Write|Edit|NotebookEdit",
                     "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "handoff-resume-gate.py"),
+                        },
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "session-staleness-check.py"),
@@ -190,6 +206,14 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                 {
                     "matcher": "Bash",
                     "hooks": [
+                        {
+                            # First in the chain: the § RESUME contract names
+                            # "gz ceremony / migration", which only reach the
+                            # harness through Bash. A Write|Edit-only resume gate
+                            # would enforce one third of the declared clause.
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "handoff-resume-gate.py"),
+                        },
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "pipeline-completion-reminder.py"),
@@ -413,6 +437,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         executable=True,
     )
     created.append(ghi_triage_chat_silence_path.relative_to(project_root).as_posix())
+
+    handoff_resume_gate_path = hooks_path / "handoff-resume-gate.py"
+    _write_hook_file(handoff_resume_gate_path, _handoff_resume_gate_script(), executable=True)
+    created.append(handoff_resume_gate_path.relative_to(project_root).as_posix())
 
     session_staleness_path = hooks_path / "session-staleness-check.py"
     _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)

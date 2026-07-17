@@ -143,6 +143,46 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    p_authorize = handoff_sub.add_parser(
+        "authorize",
+        help="Book the operator's ruling on a resumed handoff (lifts the resume gate)",
+        description=(
+            "Record the operator's authorization to act on a resumed handoff. "
+            "Until this is booked, the resume gate refuses every mutating tool "
+            "call for this session (gz-session-handoff SKILL.md § RESUME). "
+            "--operator-text carries the operator's VERBATIM words — never a "
+            "paraphrase, and never words they did not say."
+        ),
+        epilog=build_epilog(
+            [
+                "gz handoff authorize --handoff .gzkit/handoffs/20260716T204012Z-work.md "
+                '--operator-text "focus on handoff first"',
+            ]
+        ),
+    )
+    p_authorize.add_argument("--handoff", required=True, help="Resumed handoff the ruling covers")
+    p_authorize.add_argument(
+        "--operator-text",
+        dest="operator_text",
+        required=True,
+        help="The operator's verbatim authorization words (never paraphrased)",
+    )
+    p_authorize.add_argument(
+        "--session-id",
+        dest="session_id",
+        required=True,
+        help="Harness session the ruling binds to (the gate's block message interpolates it)",
+    )
+    add_json_flag(p_authorize)
+    p_authorize.set_defaults(
+        func=lambda a: _lazy("handoff_authorize_cmd")(
+            handoff=a.handoff,
+            operator_text=a.operator_text,
+            session_id=a.session_id,
+            as_json=a.as_json,
+        )
+    )
+
     p_archive = handoff_sub.add_parser(
         "archive",
         help="Move handoffs older than a threshold into .gzkit/handoffs/archive/",

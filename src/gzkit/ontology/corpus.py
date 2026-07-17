@@ -90,6 +90,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "distribution_baseline_regenerated",
         "enforcement_claim_verified",
         "gate_checked",
+        # Session-scoped operator consent lifting the handoff resume gate (GHI
+        # #574). Not corpus lineage: it binds to a harness session id, and the
+        # handoff it names is already a node via its own frontmatter.
+        "handoff_resume_authorized",
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
         "mx_session_closed",

@@ -726,6 +726,15 @@ uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
 ```
 
+Resuming a handoff does **not** authorize acting on it. The resume gate refuses
+every mutating tool call until you rule and the agent books your verbatim words
+(GHI #574); the block message carries the exact command, session id filled in:
+
+```bash
+uv run gz handoff authorize --handoff .gzkit/handoffs/<file>.md \
+  --session-id <id> --operator-text "<your exact words>"
+```
+
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the
 threshold into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled or

@@ -762,13 +762,18 @@ the fail-closed validation gate (ADR-0.0.65):
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + next step
 uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+uv run gz handoff authorize --handoff <path> --session-id <id> --operator-text "<verbatim>"
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention
 uv run gz handoff archive --older-than 30d            # move eligible handoffs into archive/
 ```
 
-Staleness handling:
+**Resuming requires an operator ruling, at every freshness level (GHI #574).**
+The resume gate (`.claude/hooks/handoff-resume-gate.py`) refuses every mutating
+tool call until the ruling is booked with `gz handoff authorize`. Staleness
+escalates *re-verification depth*, never the authorization requirement:
 
-- `Fresh` (<24h) resume directly.
+- `Fresh` (<24h) — present the advised steps, obtain the ruling, book it. Fresh
+  shortens verification; it never converts an advisory into a license.
 - `Slightly stale` (24-72h) resume with explicit verification.
 - `Stale` (>72h) or `Very stale` (>7d) require human re-validation before proceeding.
 

@@ -320,6 +320,12 @@ def _ensure_production_claims_registered() -> None:
         honest-negative named-not-enforced members and are deliberately NOT registered.
       * ``mx.proxy_reality`` — ``grader-gaming``, the floor member's live proxy-reality NC
         (OBPI-0.0.74-13).
+      * ``handoff_resume_gate`` — ``handoff-resume-unauthorized-write`` and
+        ``-bash``, one per clause of the § RESUME Operator Authorization Gate
+        ("no file mutation / gz ceremony / migration"). Split deliberately: a gate
+        hooking only Write|Edit leaves the bash claim undischargeable, so a
+        partial mechanism fails ``gz check`` instead of shipping with a caveat
+        (GHI #574).
 
     The gate5 + grader-gaming sources were authored Completed but left un-wired here (the
     docstring formerly named them "future work" that never landed); GHI tracks the
@@ -328,6 +334,7 @@ def _ensure_production_claims_registered() -> None:
     """
     from gzkit.airlock.enter import _ensure_airlock_claims_registered  # noqa: PLC0415
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
+    from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
     from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
 
@@ -335,6 +342,7 @@ def _ensure_production_claims_registered() -> None:
     _ensure_gate5_claims_registered()
     _ensure_grader_gaming_registered()
     _ensure_airlock_claims_registered()
+    _ensure_resume_gate_claims_registered()
 
 
 def run_meta_validator(

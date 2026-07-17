@@ -1603,6 +1603,27 @@
     },
     "airlock_out": {
       "required": []
+    },
+    "handoff_resume_authorized": {
+      "required": [
+        "session_id",
+        "handoff_path",
+        "operator_text"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "handoff_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator_text": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

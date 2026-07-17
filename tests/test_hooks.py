@@ -234,8 +234,15 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     ],
                 },
                 {
-                    "matcher": "Write|Edit",
+                    # NotebookEdit joined the mutating matcher with the resume
+                    # gate: it writes files, so § RESUME's "no file mutation"
+                    # covers it (GHI #574).
+                    "matcher": "Write|Edit|NotebookEdit",
                     "hooks": [
+                        {
+                            "type": "command",
+                            "command": _expected_hook_command("handoff-resume-gate.py"),
+                        },
                         {
                             "type": "command",
                             "command": _expected_hook_command("session-staleness-check.py"),
@@ -257,6 +264,12 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                 {
                     "matcher": "Bash",
                     "hooks": [
+                        {
+                            # First: § RESUME names "gz ceremony / migration",
+                            # which only reach the harness through Bash.
+                            "type": "command",
+                            "command": _expected_hook_command("handoff-resume-gate.py"),
+                        },
                         {
                             "type": "command",
                             "command": _expected_hook_command("pipeline-completion-reminder.py"),
@@ -317,7 +330,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        self.assertEqual(len(commands), 11, commands)
+        # 13 = 11 + the resume gate registered on BOTH mutating matchers
+        # (`Write|Edit|NotebookEdit` and `Bash`), since the § RESUME contract
+        # names "no file mutation / gz ceremony / migration" and ceremony only
+        # reaches the harness through Bash (GHI #574).
+        self.assertEqual(len(commands), 13, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -530,6 +547,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             obpi_completion_validator = hooks_dir / "obpi-completion-validator.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             control_surface_sync = hooks_dir / "control-surface-sync.py"
+            handoff_resume_gate = hooks_dir / "handoff-resume-gate.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
 
@@ -544,6 +562,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 obpi_completion_validator,
                 ledger_writer,
                 control_surface_sync,
+                handoff_resume_gate,
                 readme,
                 settings_path,
             ):
@@ -559,6 +578,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/obpi-completion-validator.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/control-surface-sync.py", created)
+            self.assertIn(".claude/hooks/handoff-resume-gate.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
 
@@ -577,8 +597,12 @@ class TestSetupClaudeHooks(unittest.TestCase):
                         ],
                     },
                     {
-                        "matcher": "Write|Edit",
+                        "matcher": "Write|Edit|NotebookEdit",
                         "hooks": [
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("handoff-resume-gate.py"),
+                            },
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("session-staleness-check.py"),
@@ -600,6 +624,10 @@ class TestSetupClaudeHooks(unittest.TestCase):
                     {
                         "matcher": "Bash",
                         "hooks": [
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("handoff-resume-gate.py"),
+                            },
                             {
                                 "type": "command",
                                 "command": _expected_hook_command(

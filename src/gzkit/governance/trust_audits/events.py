@@ -19,6 +19,14 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "handoff_resume_authorized": (
+        "Operator ruling on a resumed handoff (GHI #574), read by "
+        "`gzkit.handoff_resume_gate` to lift the Operator Authorization Gate for one "
+        "harness session. Session-scoped consent, not artifact lineage: it attaches to "
+        "a session id, and the handoff it names is already a graph node via its own "
+        "frontmatter. Adding an edge would model a transient permission as a durable "
+        "relationship."
+    ),
     "red_receipt_emitted": (
         "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "
         "that the REQ's covering test fails without its implementation; read by "

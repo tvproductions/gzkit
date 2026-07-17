@@ -68,11 +68,40 @@
         "hooks": [
           {
             "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/handoff-resume-gate.py\""
+          },
+          {
+            "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-completion-reminder.py\""
           },
           {
             "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/ghi-triage-chat-silence.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/handoff-resume-gate.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-staleness-check.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-gate.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/obpi-completion-validator.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/instruction-router.py\""
           }
         ]
       }

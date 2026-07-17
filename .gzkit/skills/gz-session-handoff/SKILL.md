@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.11.0"
+  skill-version: "6.12.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -33,17 +33,23 @@ handoff authoring API. Authoring routes through the fail-closed
 ```bash
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first (read-only)
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + first next step (read-only)
-uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> \
+  --summary "<text>" --context "<text>" --decisions "<text>" --next-steps "<text>" \
+  --pending "<text>" --verification "<text>" --evidence "<text>"
+uv run gz handoff authorize --handoff <path> --operator-text "<operator's exact words>"
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention (read-only)
 uv run gz handoff archive --older-than 30d            # move handoffs older than the threshold into archive/
 ```
 
-`create` is fail-closed: on any validation violation nothing is written and the
-verb exits 1. `archive` is move-not-delete: it relocates handoffs older than
-`--older-than` into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled
-or are the `continues_from:` target of a still-canonical handoff, so the audit
-trail is preserved and no resume chain is orphaned. See the manpages under
-`docs/user/manpages/handoff*.md`.
+`create` is fail-closed and requires **all seven** sections populated — each has
+its own flag, and an unsupplied section is a refusal, not an empty heading
+(GHI #692). `authorize` books the operator's ruling on a resumed handoff and is
+what lifts the § Operator Authorization Gate for the session (GHI #574); until it
+is booked, every mutating tool call is refused. `archive` is move-not-delete: it
+relocates handoffs older than `--older-than` into `.gzkit/handoffs/archive/`,
+skipping any that are lock-coupled or are the `continues_from:` target of a
+still-canonical handoff, so the audit trail is preserved and no resume chain is
+orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 
 ---
 
@@ -54,6 +60,7 @@ trail is preserved and no resume chain is orphaned. See the manpages under
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
+- **Blocks (RESUME):** every mutating tool call until the operator's ruling is booked via `gz handoff authorize` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
 - **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate)
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
@@ -233,13 +240,38 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
    - Validation errors and context warnings
    - Chain of predecessor handoffs
 
-### Operator Authorization Gate (universal)
+### Operator Authorization Gate (universal) — MECHANIZED
 
 **Every resume requires explicit operator authorization before any execution, at
 every freshness level — Fresh included.** The agent presents the advised next
 steps and current state, then waits for the operator to rule. This is the
 human-as-final-witness doctrine applied to session resumption: the agent advises,
 the operator rules, the agent notes variance and stops.
+
+**This gate binds mechanically (GHI #574).** It was prose plus a template banner
+until 2026-07-16 — an agent could read the banner and proceed, and nothing
+stopped it. `.claude/hooks/handoff-resume-gate.py` (PreToolUse on
+`Write|Edit|NotebookEdit` **and** `Bash`) now refuses every mutating tool call
+while this session has resumed a handoff with no operator ruling on the ledger.
+The decision is `gzkit.handoff_resume_gate.decide`; two live negative controls
+(`handoff-resume-unauthorized-write` / `-bash`) fail `gz check` if it stops
+refusing.
+
+**Booking the ruling.** When the operator rules, record their VERBATIM words:
+
+```bash
+uv run gz handoff authorize --handoff <path> --operator-text "<their exact words>"
+```
+
+The gate reads Layer-2, so a ruling given in conversation and never booked leaves
+the gate armed — by design. Never author `--operator-text` for words the operator
+did not say: that is fabrication, the same failure as fabricating a receipt id.
+
+**What stays permitted while unauthorized:** the § Trust Model reads this skill
+requires *before* presenting — `gz state`, `gz gates`, `gz obpi status`,
+`gz obpi lock list`, `gz handoff list|resume` — plus `gz handoff authorize`
+itself. The gate blocks execution, never the verification that precedes it, and
+never its own recovery path.
 
 Staleness escalates *re-verification depth*, not the authorization requirement:
 when staleness is **Stale** or **Very Stale**, the `requires_human_verification`
