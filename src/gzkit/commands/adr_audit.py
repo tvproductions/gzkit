@@ -3,7 +3,7 @@
 import json
 import re
 import sys
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -190,6 +190,7 @@ def _render_backfill_section(backfill: BackfillResult) -> None:
 def _collect_covers_locations_for_adr(
     project_root: Path,
     adr_id: str,
+    active_obpi_ids: Iterable[str] = (),
 ) -> list[tuple[str, str, int]]:
     """Return (target, rel_file, line_no) triples for REQs matching this ADR.
 
@@ -200,6 +201,12 @@ def _collect_covers_locations_for_adr(
     The semver is extracted via the canonical ``_extract_adr_semver`` helper
     so ``ADR-0.1.0-f`` resolves to ``0.1.0`` (not ``0.1.0-f``) and the
     REQ-prefix filter correctly accepts ``REQ-0.1.0-NN-MM`` decorators.
+
+    REQs whose owning OBPI is absent from *active_obpi_ids* are dropped (GHI #695):
+    a withdrawn OBPI is excluded from the ADR's audit scope, so the covers-backfill
+    scan must stay consistent with the completion check (``_collect_obpi_files_for_adr``
+    already excludes withdrawn OBPIs). An empty *active_obpi_ids* is a no-op — the
+    caller is not scoping to a known active set.
     """
     from gzkit.commands.adr_coverage import _extract_adr_semver
 
@@ -207,6 +214,12 @@ def _collect_covers_locations_for_adr(
     if semver is None:
         return []
     req_prefix = f"REQ-{semver}-"
+    obpi_prefix = f"OBPI-{semver}-"
+    active_obpi_numbers = {
+        oid[len(obpi_prefix) :].split("-", 1)[0]
+        for oid in active_obpi_ids
+        if oid.startswith(obpi_prefix)
+    }
     tests_dir = project_root / "tests"
     if not tests_dir.exists():
         return []
@@ -215,8 +228,13 @@ def _collect_covers_locations_for_adr(
         content = test_file.read_text(encoding="utf-8")
         rel_path = test_file.relative_to(project_root).as_posix()
         for req_id, line_no in find_covers_in_source(content):
-            if req_id.startswith(req_prefix):
-                locations.append((req_id, rel_path, line_no))
+            if not req_id.startswith(req_prefix):
+                continue
+            if active_obpi_numbers:
+                obpi_number = req_id[len(req_prefix) :].split("-", 1)[0]
+                if obpi_number not in active_obpi_numbers:
+                    continue
+            locations.append((req_id, rel_path, line_no))
     return locations
 
 
@@ -264,7 +282,7 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
     adr_kind = "foundation" if _is_foundation_adr(adr_id) else "feature"
 
     # Collect covers locations and OBPI completion events for the heuristic.
-    covers_locations = _collect_covers_locations_for_adr(project_root, adr_id)
+    covers_locations = _collect_covers_locations_for_adr(project_root, adr_id, obpi_files.keys())
     all_obpi_ids = sorted(obpi_files.keys())
     obpi_completion_events = _collect_obpi_completion_events_for_adr(ledger, all_obpi_ids)
 
