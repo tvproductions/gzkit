@@ -27,6 +27,7 @@ from gzkit.content.rendition_store import (
     RenditionProvenance,
     corpus_fingerprint,
     fingerprint_path,
+    rendition_fingerprint,
     rendition_path,
     save_fingerprint,
     save_rendition,
@@ -86,9 +87,10 @@ def content_commit_cmd(
 
     corpus = load_corpus(root, surface)
     fingerprint = corpus_fingerprint(corpus)
+    rendition_bytes = candidate_text.encode("utf-8")
 
     try:
-        save_rendition(root, surface, consumer, candidate_text.encode("utf-8"))
+        save_rendition(root, surface, consumer, rendition_bytes)
         save_fingerprint(
             root,
             surface,
@@ -96,6 +98,7 @@ def content_commit_cmd(
             RenditionProvenance(
                 corpus_fingerprint=fingerprint,
                 corpus_entry_count=len(corpus.entries),
+                rendition_fingerprint=rendition_fingerprint(rendition_bytes),
                 committed_ts=datetime.now(UTC).isoformat(),
                 attestor=attestor,
                 attestation_text=attestation_text,

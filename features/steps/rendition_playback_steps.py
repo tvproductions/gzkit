@@ -23,6 +23,7 @@ from gzkit.content.rendition_store import (
     corpus_fingerprint,
     fingerprint_path,
     load_rendition,
+    rendition_fingerprint,
     rendition_path,
     save_fingerprint,
     save_rendition,
@@ -75,7 +76,8 @@ def step_given_corpus_one_entry(context, surface):
 def step_given_committed_rendition_with_provenance(context, surface, consumer):
     root = Path(context.root)
     corpus = load_corpus(root, surface)
-    save_rendition(root, surface, consumer, b"# Rendition\n")
+    rendition_bytes = b"# Rendition\n"
+    save_rendition(root, surface, consumer, rendition_bytes)
     save_fingerprint(
         root,
         surface,
@@ -83,6 +85,7 @@ def step_given_committed_rendition_with_provenance(context, surface, consumer):
         RenditionProvenance(
             corpus_fingerprint=corpus_fingerprint(corpus),
             corpus_entry_count=len(corpus.entries),
+            rendition_fingerprint=rendition_fingerprint(rendition_bytes),
             committed_ts="2026-06-19T00:00:00+00:00",
             attestor="bdd",
             attestation_text="done",

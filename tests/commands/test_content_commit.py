@@ -21,6 +21,7 @@ from gzkit.content.rendition_store import (
     corpus_fingerprint,
     fingerprint_path,
     load_fingerprint,
+    rendition_fingerprint,
     rendition_path,
 )
 from gzkit.traceability import covers
@@ -92,6 +93,14 @@ class TestContentCommitCmd(unittest.TestCase):
             expected_fp = corpus_fingerprint(load_corpus(root, "AGENTS.md"))
             self.assertEqual(prov.corpus_fingerprint, expected_fp)
             self.assertEqual(prov.attestor, "g0")
+            # GHI #694: commit also freezes a digest of the bytes it wrote, so a
+            # later out-of-seam edit to the rendition is detectable. The digest
+            # must be the digest OF the committed bytes, not merely present.
+            self.assertEqual(
+                prov.rendition_fingerprint,
+                rendition_fingerprint(committed.read_bytes()),
+                "commit must freeze a digest of the committed rendition bytes",
+            )
 
     @covers("REQ-0.0.37-22-07")
     def test_commit_is_byte_lossless_for_crlf_candidate(self) -> None:

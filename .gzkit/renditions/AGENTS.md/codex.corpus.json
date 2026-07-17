@@ -2,7 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
   "corpus_entry_count": 51,
-  "committed_ts": "2026-06-30T12:56:25.843510+00:00",
+  "rendition_fingerprint": "85cb2c974a3788cfb4c9924cc32f6f588d5e2e8fd8866959fd0821f6320e8040",
+  "committed_ts": "2026-07-17T15:01:21.670334+00:00",
   "attestor": "g0",
-  "attestation_text": "consent to render — recompose AGENTS.md/codex (lite) to current corpus a862c327: 5 new invariant-tier guardrails (insights-report-2026-06-30) seated verbatim, compose-validated 13,606 B; additive-only, advisor-QC 0.98 (no compressible loss)."
+  "attestation_text": "attest completed — rendition integrity reconciliation, content-preserving, digest frozen"
 }

@@ -22,6 +22,8 @@ from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.rendition_store import (
     RenditionProvenance,
     corpus_fingerprint,
+    rendition_fingerprint,
+    rendition_path,
     save_fingerprint,
     save_rendition,
 )
@@ -73,6 +75,7 @@ class _TempProjectMixin(unittest.TestCase):
             RenditionProvenance(
                 corpus_fingerprint=corpus_fingerprint(corpus),
                 corpus_entry_count=len(corpus.entries),
+                rendition_fingerprint=rendition_fingerprint(content),
                 committed_ts="2026-06-19T00:00:00+00:00",
                 attestor="test",
                 attestation_text="attest completed",
@@ -220,6 +223,86 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
         save_rendition(self.root, "AGENTS.md", "codex", b"codex no sidecar\n")  # codex drifts
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1, "only codex (missing sidecar) drifts")
+
+
+class TestRenditionIntegrity(_TempProjectMixin):
+    """GHI #694: committed rendition bytes are tamper-evident against a frozen digest.
+
+    The corpus arm proves ``corpus → rendition`` derivation. This arm proves the
+    committed bytes are still the bytes an operator attested. ``gz content commit``
+    is a byte copy (``commands/content/commit.py``), so a committed rendition whose
+    bytes no longer match its frozen ``rendition_fingerprint`` was written outside
+    the promotion seam.
+
+    Observed live 2026-07-13: ``claude.md`` was 31,990 B under a sidecar attesting
+    ``total 31741B``; every rendition gate passed green because the corpus arm
+    compares corpus digests (unchanged by a rendition edit) and the floor arm only
+    asserts corpus ⊆ rendition (blind to prose with no corpus entry).
+    """
+
+    def test_post_commit_byte_edit_is_drift(self) -> None:
+        """A rendition edited after commit no longer matches its frozen digest → drift."""
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        errors = validate_rendition_freshness(self.root, fail_closed=True)
+        self.assertEqual(len(errors), 1, f"post-commit byte edit must be drift, got: {errors}")
+
+    def test_integrity_drift_error_type_is_distinct(self) -> None:
+        """Byte drift is attributed as 'rendition_integrity', not corpus staleness."""
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        errors = validate_rendition_freshness(self.root, fail_closed=True)
+        self.assertEqual(errors[0].type, "rendition_integrity")
+
+    def test_untampered_rendition_is_clean(self) -> None:
+        """Committed bytes that still match their frozen digest are not drift."""
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        self.assertEqual(validate_rendition_freshness(self.root, fail_closed=True), [])
+
+    def test_absent_rendition_fingerprint_is_drift(self) -> None:
+        """A sidecar with no frozen digest cannot prove integrity → drift, never a skip.
+
+        Treating an absent digest as "nothing to check" would make the gate
+        bypassable by deleting one JSON field.
+        """
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        save_rendition(self.root, "AGENTS.md", "claude", b"body\n")
+        save_fingerprint(
+            self.root,
+            "AGENTS.md",
+            "claude",
+            RenditionProvenance(
+                corpus_fingerprint=corpus_fingerprint(corpus),
+                corpus_entry_count=len(corpus.entries),
+                committed_ts="2026-06-19T00:00:00+00:00",
+                attestor="test",
+                attestation_text="attest completed",
+            ),
+        )
+        errors = validate_rendition_freshness(self.root, fail_closed=True)
+        self.assertEqual(
+            len(errors), 1, f"absent rendition_fingerprint must be drift, got: {errors}"
+        )
+
+    def test_integrity_message_names_the_attestation_and_recovery(self) -> None:
+        """Three-part recovery prose: what drifted, why it is forbidden, the next step."""
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        message = validate_rendition_freshness(self.root, fail_closed=True)[0].message.lower()
+        self.assertIn("attest", message)
+        self.assertIn("commit", message)
+
+    def test_integrity_drift_warns_in_warn_mode(self) -> None:
+        """Warn mode reports no errors and mutates no ledger (mirrors the corpus arm)."""
+        corpus = self._seed_corpus("AGENTS.md", "x")
+        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        self.assertEqual(validate_rendition_freshness(self.root, fail_closed=False), [])
+        self.assertEqual(self._ledger_events(), [])
 
 
 class TestCheckpointWiringFreshness(_TempProjectMixin):

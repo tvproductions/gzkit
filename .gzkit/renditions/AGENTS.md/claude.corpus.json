@@ -2,7 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
   "corpus_entry_count": 51,
-  "committed_ts": "2026-07-10T00:36:08.847019+00:00",
+  "rendition_fingerprint": "e7379eeb059b432ac5701486e0ff2e92c409a0cf2d8a9f4b36fcca6b2c02042c",
+  "committed_ts": "2026-07-17T15:01:13.776239+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — REQ-coverage gate amended for ADR-0.0.59 proof channels (GHI #537): BEHAVIOR cannot be accepted-uncovered on any lane; SUPPORT and STRUCTURAL-FENCE never reach the waiver path. Invariant floor 9612B preserved verbatim, compressible tier +351B, total 31741B. Verified: gz check exit 0, 6915 unittests OK, behave 15/15, mkdocs --strict 0, cli audit 122/122, invariant-coherence + rendition-freshness + rendition-floor-coherence green."
+  "attestation_text": "attest completed — rendition integrity reconciliation, content-preserving, digest frozen"
 }

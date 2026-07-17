@@ -40,6 +40,14 @@ class RenditionProvenance(BaseModel):
     algorithm: str = Field("sha256", description="Fingerprint hash algorithm.")
     corpus_fingerprint: str = Field(..., description="Hex digest of the corpus at commit time.")
     corpus_entry_count: int = Field(..., description="Entry count of the corpus at commit time.")
+    rendition_fingerprint: str | None = Field(
+        None,
+        description=(
+            "Hex digest of the committed rendition bytes at commit time (GHI #694). "
+            "Optional ONLY so sidecars frozen before the field existed still load; the "
+            "integrity gate reads None as drift, never as a skip."
+        ),
+    )
     committed_ts: str = Field(..., description="ISO-8601 commit timestamp.")
     attestor: str = Field(..., description="Operator who attested the commit (Gate 5).")
     attestation_text: str = Field(..., description="Operator's verbatim attestation token.")
@@ -54,6 +62,17 @@ def corpus_fingerprint(corpus: Corpus) -> str:
     produce the identical digest, because ``Corpus.loads`` absorbs the line ending on read.
     """
     return hashlib.sha256(corpus.dumps().encode("utf-8")).hexdigest()
+
+
+def rendition_fingerprint(content: bytes) -> str:
+    """Return the SHA-256 hex digest of committed rendition *content*.
+
+    Hashes the bytes exactly as ``save_rendition`` writes them and ``load_rendition``
+    replays them, so the digest witnesses what playback will emit. Line endings need
+    no normalization here: ``gz content commit`` already re-encodes the candidate to
+    LF bytes before the write, and playback is verbatim.
+    """
+    return hashlib.sha256(content).hexdigest()
 
 
 def rendition_path(root: Path, surface: str, consumer: str) -> Path:
