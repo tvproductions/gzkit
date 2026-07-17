@@ -26,12 +26,14 @@ Design notes that are load-bearing:
   written completion handoff (GHI #619) re-arm the gate mid-session, blocking the
   operator right after a completion they just attested.
 
-* **The allowlist is skill-derived, not taste-derived.** § Trust Model declares
-  what RESUME must read before presenting — "Ledger and `gz` state surfaces
-  (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`) to verify a
-  handoff's claims against Layer-2". Blocking those would make the skill's own
-  Claim Verification Gate unexecutable, so they are permitted while unauthorized.
-  Everything else fails CLOSED.
+* **The allowlist is OBLIGATION-derived, not example-derived.** What RESUME may
+  read while unauthorized is fixed by the § Claim Verification Gate's duty —
+  "verify every completion / lock / gate / readiness claim before presenting it" —
+  NOT by the § Trust Model's illustrative list of `gz` verbs. Deriving it from the
+  examples under-covered the duty twice (see :data:`_PERMITTED_BASH`), most
+  recently leaving a resume unable to check the GHI claims its own advised steps
+  turned on. Blocking a mandated read makes the skill un-compliable; everything
+  that is not a mandated read fails CLOSED.
 
 * **The gate never blocks its own recovery.** `gz handoff authorize` is always
   permitted. A rule that forbids the command that lifts it is worse than the hole
@@ -43,7 +45,6 @@ Coverage limits are declared, not hidden — see :data:`UNWITNESSABLE`.
 from __future__ import annotations
 
 import json
-import re
 import shlex
 import tempfile
 from pathlib import Path
@@ -74,16 +75,24 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #: Read-only Bash prefixes permitted while unauthorized. Matched against the
 #: command's leading tokens after `uv run` is stripped.
 #:
-#: Scoped from the skill's § Trust Model "Reads (RESUME only, read-only)" plus the
-#: gate's own recovery path — and then WIDENED to plain shell reads on observed
-#: evidence. The first version permitted only `gz` verbs, on the stated premise
-#: that "Read, Grep, Glob are never gated, so Bash is not the read path". That was
-#: false in the harness this skill actually runs in: `Grep`/`Glob` are not always
-#: present, which makes Bash `grep`/`cat`/`git log` the ONLY way to satisfy the
-#: § Claim Verification Gate this same skill mandates BEFORE presenting. A gate
-#: that forbids the verification its own skill requires cannot be complied with,
-#: and an un-compliable gate gets worked around — the failure mode gzkit exists to
-#: close. Reads are not execution; the contract forbids MUTATION.
+#: Derived from the OBLIGATION, not from a list of examples. Twice now this
+#: allowlist has been too narrow, and both times the root was the same: it was
+#: scoped by enumerating the § Trust Model's example surfaces instead of asking
+#: what the § Claim Verification Gate REQUIRES — "verify every completion / lock /
+#: gate / readiness claim before presenting it". Enumerate-the-examples always
+#: under-covers the rule it serves.
+#:
+#: * First miss: only `gz` verbs, on the premise that "Read/Grep/Glob are never
+#:   gated, so Bash is not the read path". False in this harness — `Grep`/`Glob`
+#:   may be absent, making Bash `grep`/`cat`/`git log` the only instrument.
+#: * Second miss: no `gh`, because the § Trust Model table has no row for a
+#:   GHI-state claim — while handoffs routinely assert "GHI #N CLOSED" and advise
+#:   "rule on GHI #M" as next steps. Those claims had NO verifiable surface
+#:   (operator ruling, 2026-07-17: "this is essential").
+#:
+#: A gate that forbids the verification its own skill mandates cannot be complied
+#: with, and an un-compliable gate gets worked around — the failure mode gzkit
+#: exists to close. Reads are not execution; the contract forbids MUTATION.
 _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     # The recovery path — must never be blocked by the gate it lifts.
     ("gz", "handoff", "authorize"),
@@ -98,6 +107,21 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     # Reading the handoff corpus itself in order to present it.
     ("gz", "handoff", "list"),
     ("gz", "handoff", "resume"),
+    # § Claim Verification Gate: the Layer-2 surface for a GHI / PR / release
+    # claim is GitHub, and `gh` is the only instrument that reaches it. READ
+    # verbs ONLY — `gh issue create` is independently forbidden by AGENTS.md
+    # § Behavior Rules — Always #13 (author GHIs through `/ghi-author`), so
+    # admitting it would put this gate in conflict with the contract it serves.
+    # `gh api` is deliberately absent: it mutates via `-X POST`.
+    ("gh", "issue", "view"),
+    ("gh", "issue", "list"),
+    ("gh", "issue", "status"),
+    ("gh", "pr", "view"),
+    ("gh", "pr", "list"),
+    ("gh", "pr", "diff"),
+    ("gh", "pr", "status"),
+    ("gh", "release", "view"),
+    ("gh", "release", "list"),
     # Plain shell reads — the § Claim Verification Gate's actual instrument when
     # the harness exposes no Grep/Glob tool. Each is read-only in these forms;
     # write-capable flags are rejected below (see _MUTATING_FLAGS).
@@ -124,6 +148,11 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
 #: `sed`/`find` are deliberately absent from the allowlist head where they are
 #: write-capable; these catch the in-place forms of what IS allowlisted.
 _MUTATING_FLAGS: frozenset[str] = frozenset({"-i", "--in-place", "-delete", "-exec", "--fix"})
+
+#: Shell control operators that make a command compound. `shlex` with
+#: ``punctuation_chars=True`` emits each as its own token, so a metacharacter
+#: inside a quoted argument is never mistaken for one (see :func:`_is_compound`).
+_SHELL_OPERATOR_CHARS: frozenset[str] = frozenset(";|&<>()")
 
 #: Coverage this gate structurally cannot provide. Stated so a green is never
 #: read as total (the Pass D `unwitnessable.md` precedent: a gate that reports a
@@ -224,6 +253,58 @@ def _tokens(command: str) -> list[str]:
     return parts
 
 
+def _is_shell_operator(token: str) -> bool:
+    """True when a token is a bare control operator (``&&``, ``;``, ``|``, ``>``…)."""
+    return bool(token) and set(token) <= _SHELL_OPERATOR_CHARS
+
+
+def _can_expand(token: str) -> bool:
+    """True when a token carries command substitution.
+
+    Checked in EVERY quoting form, deliberately. Double quotes do not make
+    substitution inert (bash expands ``"$(rm -rf x)"`` and ``"`rm -rf x`"`` just
+    as it would bare), and posix-mode tokenization — required by
+    :func:`_is_compound` — strips quotes, so the inert single-quoted form is
+    indistinguishable from the live double-quoted one by the time we see a token.
+    Facing that ambiguity the gate refuses both: a false refusal costs a literal
+    ``$(``-in-a-pattern search that no claim verification needs; a false permit
+    costs a subshell.
+    """
+    return "`" in token or "$(" in token
+
+
+def _is_compound(command: str) -> bool:
+    """True when the command chains, redirects, or substitutes.
+
+    Quote-aware by construction. The first implementation ran a regex over the RAW
+    string, which cannot tell a pipe from the ``|`` inside ``grep "A\\|B"`` — so it
+    refused alternation patterns and `jq` filters, the most ordinary instruments
+    the § Claim Verification Gate has (dogfooded 2026-07-17: three of the first
+    four verification calls of a resume died on it). `shlex` knows quoting and,
+    with ``punctuation_chars``, emits real operators as standalone tokens.
+
+    Two lexer facts are load-bearing here and were established by probing the real
+    lexer, not by reasoning about it:
+
+    * ``posix=True`` is REQUIRED. In non-posix mode a quote that opens mid-token
+      raises ``No closing quotation`` — which would fail closed on
+      ``git log --since='60 days ago' --grep='^fix('``, the precedent-check command
+      AGENTS.md § Defect-fix routing *mandates*, leaving the agent stuck between
+      two binding rules.
+    * Tokenization ALONE is not sufficient. Backticks are not punctuation to
+      `shlex`, so ``gz state `rm -rf x``` yields an allowlisted head and NO
+      operator token — it would have ridden straight in. :func:`_can_expand`
+      covers what the split cannot see.
+    """
+    try:
+        lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+        lexer.whitespace_split = True
+        tokens = list(lexer)
+    except ValueError:
+        return True  # unbalanced quotes → unparseable → fail closed
+    return any(_is_shell_operator(token) or _can_expand(token) for token in tokens)
+
+
 def _bash_is_read_only(command: str) -> bool:
     """True only when the command is an allowlisted read-only invocation.
 
@@ -232,7 +313,7 @@ def _bash_is_read_only(command: str) -> bool:
     read-only regardless of its head — ``gz state && rm -rf x`` must not ride in
     on its prefix.
     """
-    if re.search(r"[;&|><`]|\$\(", command):
+    if _is_compound(command):
         return False
     tokens = _tokens(command)
     if not any(tuple(tokens[: len(allowed)]) == allowed for allowed in _PERMITTED_BASH):
@@ -275,8 +356,9 @@ def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: 
         "Run it BARE — a `cd ...;` prefix makes it a compound command, which this "
         "gate correctly refuses.\n"
         "Reading is permitted while unauthorized (gz state / gz gates / gz obpi status, "
-        "and git/grep/cat reads) — the gate blocks execution, never the verification "
-        "that precedes it, and never its own recovery."
+        "gh issue|pr read verbs, and git/grep/cat reads; quoted metacharacters like "
+        'grep "A\\|B" are data, not pipes) — the gate blocks execution, never the '
+        "verification that precedes it, and never its own recovery."
     )
 
 

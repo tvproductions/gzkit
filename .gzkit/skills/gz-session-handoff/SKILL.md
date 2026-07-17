@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.12.0"
+  skill-version: "6.13.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-16
+last_reviewed: 2026-07-17
 model: sonnet
 ---
 
-# gz-session-handoff (v6.9.0)
+# gz-session-handoff (v6.13.0)
 
 ## Purpose
 
@@ -61,7 +61,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
 - **Blocks (RESUME):** every mutating tool call until the operator's ruling is booked via `gz handoff authorize` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
-- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate)
+- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`), GitHub issue/PR/release state via `gh` read verbs (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`), and plain shell reads (`git`, `grep`, `rg`, `cat`, …) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate). **This list is illustrative, not the allowlist's authority** — the allowlist derives from the § Claim Verification Gate's *obligation* to verify every claim. Enumerating examples here is what under-covered it twice (GHI #574 follow-ups).
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
 ---
@@ -269,18 +269,29 @@ did not say: that is fabrication, the same failure as fabricating a receipt id.
 
 **What stays permitted while unauthorized:** the § Trust Model reads this skill
 requires *before* presenting — `gz state`, `gz gates`, `gz obpi status`,
-`gz obpi lock list`, `gz handoff list|resume` — **plus plain shell reads**
-(`git status|log|diff|show`, `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `find`,
-`jq`) — plus `gz handoff authorize` itself. The shell reads are load-bearing, not
-convenience: the § Claim Verification Gate below MANDATES verifying claims against
-Layer-2 before presenting, and the harness does not always expose `Grep`/`Glob`
-tools, so Bash is the read path. A gate that forbids the verification its own
-skill requires cannot be complied with.
+`gz obpi lock list`, `gz handoff list|resume` — **plus `gh` read verbs**
+(`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`) — **plus
+plain shell reads** (`git status|log|diff|show`, `grep`, `rg`, `cat`, `ls`,
+`head`, `tail`, `find`, `jq`) — plus `gz handoff authorize` itself. These are
+load-bearing, not convenience: the § Claim Verification Gate below MANDATES
+verifying claims against Layer-2 before presenting. The harness does not always
+expose `Grep`/`Glob`, so Bash is the read path; and a handoff's GHI-state claims
+("GHI #N CLOSED", "rule on GHI #M") have **no** Layer-2 surface except `gh`. A
+gate that forbids the verification its own skill requires cannot be complied
+with, and an un-compliable gate gets worked around.
+
+`gh` is admitted as a **read** surface only. `gh issue create` is independently
+forbidden by AGENTS.md § Behavior Rules — Always #13 (author GHIs through
+`/ghi-author`), and `gh api` is excluded because `-X POST` mutates.
 
 Everything else fails closed — including compound commands (`gz state && rm -rf x`
-is not a read of `gz state`) and write-capable flags on a read's name (`find
--delete`, `sed -i`). The gate blocks execution, never the verification that
-precedes it, and never its own recovery path.
+is not a read of `gz state`), command substitution in **any** quoting form
+(`"$(…)"` expands under bash, and posix tokenization cannot tell it from the
+inert `'$(…)'`, so both are refused), and write-capable flags on a read's name
+(`find -delete`, `sed -i`). Shell metacharacters *inside quotes* are data, not
+operators: `grep "A\|B"` and `gh issue list -q '.[] | select(…)'` are reads and
+are permitted. The gate blocks execution, never the verification that precedes
+it, and never its own recovery path.
 
 Staleness escalates *re-verification depth*, not the authorization requirement:
 when staleness is **Stale** or **Very Stale**, the `requires_human_verification`
@@ -312,6 +323,16 @@ holds:
 | "Gate N passed" / "gates green" | `uv run gz gates --adr <ID>` / `uv run gz status` | ledger |
 | any artifact-state / readiness claim | `uv run gz state` | artifact graph |
 | "tests were green" / coverage claim | re-run the canonical step (see Verification Checklist) | observed output |
+| "GHI #N CLOSED / OPEN" / advises "rule on GHI #M" | `gh issue view <N> --json state,title` | GitHub issue state |
+| "PR #N merged" / "released vX.Y.Z" | `gh pr view <N>` / `gh release view vX.Y.Z` | GitHub |
+
+**This table is the allowlist's authority.** The gate's permitted-read set is
+derived from the claim shapes named here — so a claim shape MISSING from this
+table becomes a claim the gate structurally forbids you to verify. That is not
+hypothetical: the GHI-state rows above were absent until 2026-07-17, `gh` was
+therefore never derived into `_PERMITTED_BASH`, and a resume whose advised steps
+were both GHI rulings could not check either one. When you add a claim shape,
+add its instrument to the allowlist in the same commit.
 
 **Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
 A STALE claim voids any advised step that depends on it: surface the variance and

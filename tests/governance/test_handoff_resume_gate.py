@@ -186,6 +186,41 @@ class ResumeGateCannotBeDefeatedTests(unittest.TestCase):
                     )
                     self.assertTrue(verdict.blocked, f"{command!r} must not pass as read-only")
 
+    def test_command_substitution_is_blocked_regardless_of_quoting(self) -> None:
+        """`$(...)` and backticks are refused in EVERY quoting form — deliberately.
+
+        Paired with `test_quoted_metacharacters_are_not_compound_operators`: quote
+        awareness must not decay into "anything quoted is a read". Two facts force
+        the conservative line, both observed against the real lexer:
+
+        * Double quotes do NOT make substitution inert — bash expands
+          `"$(rm -rf x)"` and ``"`rm -rf x`"`` exactly as it would bare.
+        * `shlex` in posix mode (required, so that a quote opening mid-token like
+          `--grep='^fix('` parses at all) STRIPS quotes, so the single- and
+          double-quoted forms are indistinguishable by the time we see tokens.
+
+        Given that ambiguity the gate refuses both. The cost is a false refusal on
+        a literal `$(`-in-a-search-pattern — which no claim verification needs. A
+        false PERMIT on a live subshell is the strictly worse trade.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                'grep "$(rm -rf src)" f',
+                "grep '$(rm -rf src)' f",
+                'grep "`rm -rf src`" f',
+                "gz state `rm -rf src`",
+            ):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertTrue(verdict.blocked, f"{command!r} can spawn a subshell")
+
     def test_unparseable_command_fails_closed(self) -> None:
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -261,6 +296,71 @@ class ResumeGatePermitsTheMandatedVerificationTests(unittest.TestCase):
                         tool_input={"command": command},
                     )
                     self.assertFalse(verdict.blocked, f"{command!r} is a declared RESUME read")
+
+    def test_github_issue_state_reads_are_permitted(self) -> None:
+        """A GHI-state claim is verifiable through `gh` and nothing else.
+
+        The § Claim Verification Gate mandates verifying EVERY completion claim a
+        handoff makes before presenting it. Handoffs routinely claim "GHI #N
+        CLOSED" and advise "rule on GHI #M" as a next step — claims whose only
+        Layer-2 surface is GitHub. The first allowlist was derived from the
+        § Trust Model's four example `gz` verbs rather than from that obligation,
+        so `gh` was refused and those claims were structurally unverifiable
+        (operator ruling, 2026-07-17: "this is essential").
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "gh issue view 693",
+                "gh issue view 693 --json state,title",
+                "gh issue list --state open --limit 200",
+                "gh pr view 42",
+                "gh pr list",
+                "gh pr diff 42",
+                # The jq filter's `|` is single-quoted: inert, and the canonical
+                # form of the very query that verifies a batch of GHI claims.
+                "gh issue list --json number,state -q '.[] | select(.state == \"OPEN\")'",
+            ):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertFalse(verdict.blocked, f"{command!r} is a GHI-state read")
+
+    def test_github_mutating_verbs_are_still_blocked(self) -> None:
+        """Paired with the read case: `gh` is admitted as a READ surface only.
+
+        `gh issue create` is independently forbidden by AGENTS.md § Behavior Rules
+        — Always #13 (author GHIs through `/ghi-author`, never `gh` directly), so
+        an allowlist that admitted it would put the gate in conflict with the
+        contract it serves.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "gh issue create --title x --body y",
+                "gh issue close 693",
+                "gh issue comment 693 --body x",
+                "gh issue edit 693 --add-label x",
+                "gh pr merge 42",
+                "gh pr create --fill",
+                "gh release create v1.0.0",
+                # `gh api` is write-capable via `-X POST`; it is not an admitted head.
+                "gh api -X POST /repos/x/y/issues",
+            ):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertTrue(verdict.blocked, f"{command!r} is not a read")
 
     def test_a_gz_ceremony_verb_is_still_blocked(self) -> None:
         """The allowlist is reads only — `gz` ceremony is named in the contract."""
@@ -395,6 +495,35 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
                 "cat src/gzkit/handoff_api.py",
                 "ls -la",
                 "head -20 file.md",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_quoted_metacharacters_are_not_compound_operators(self) -> None:
+        """A `|` inside a quoted search pattern is data, not a pipe.
+
+        Dogfooding regression (2026-07-17): compound detection ran a regex over the
+        RAW command string before any tokenization, so `grep -n "A\\|B" file` — an
+        alternation pattern, the most ordinary instrument the § Claim Verification
+        Gate has — was refused as a compound command. Three of the first four
+        verification calls of a resume died on it. A gate whose read path forbids
+        ordinary reads gets worked around; `shlex` was already imported one
+        function away and knows quoting.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                'grep -n "READ_ONLY\\|ALLOW\\|MUTATING" src/gzkit/handoff_resume_gate.py',
+                "grep -rn 'a|b' src/",
+                'rg "foo|bar" src/',
+                'git log --grep="^fix(\\|^feat(" --oneline',
+                # AGENTS.md § Defect-fix routing MANDATES running exactly this to
+                # compute the precedent count. A gate that refuses it puts the
+                # agent in an unsatisfiable position between two binding rules.
+                "git log --since='60 days ago' --oneline --grep='^fix('",
+                # The canonical batch GHI-state query: `|` inside a jq filter.
+                "gh issue list --json number,state -q '.[] | select(.state == \"OPEN\")'",
             ):
                 with self.subTest(command=command):
                     self.assertFalse(self._verdict(base, command).blocked, command)
