@@ -84,7 +84,7 @@ NEXT STEP: present the handoff's advised next steps to the operator and wait for
     --session-id abc123 --operator-text "<their exact words>"
 
 Run it BARE — a `cd ...;` prefix makes it a compound command, which this gate correctly refuses.
-Reading is permitted while unauthorized (gz state / gz gates / gz obpi status, and git/grep/cat reads) — the gate blocks execution, never the verification that precedes it, and never its own recovery.
+Reading is permitted while unauthorized (gz state / gz gates / gz obpi status, gh issue|pr read verbs, and git/grep/cat reads; quoted metacharacters like grep "A\|B" are data, not pipes) — the gate blocks execution, never the verification that precedes it, and never its own recovery.
 ```
 
 The session id is interpolated because the blocked party cannot look it up — it
@@ -119,21 +119,38 @@ its own recovery path. Permitted while unauthorized:
   `gz gates`, `gz obpi status`, `gz obpi lock list`, `gz status`,
   `gz adr status`, `gz context`
 - `gz handoff list` / `gz handoff resume`
+- `gh` **read** verbs: `gh issue view|list|status`, `gh pr view|list|diff|status`,
+  `gh release view|list`
 - Plain shell reads: `git status|log|diff|show|branch|rev-parse|ls-files`,
   `grep`, `rg`, `ls`, `cat`, `head`, `tail`, `wc`, `find`, `jq`, `pwd`
 
-The shell reads are not a convenience. The § Claim Verification Gate **mandates**
+The reads are not a convenience. The § Claim Verification Gate **mandates**
 verifying a handoff's claims against Layer-2 *before* presenting, and the harness
 does not always expose `Grep`/`Glob` tools — so Bash is the read path. A gate that
 forbids the verification its own skill requires cannot be complied with, and an
-un-compliable gate gets worked around. (The first cut of this gate permitted only
-`gz` verbs on the stated premise that "Read/Grep/Glob are never gated"; that
-premise was false, and it was defect #3.)
+un-compliable gate gets worked around.
+
+This allowlist is derived from the § Claim Verification Gate's **obligation**, not
+from the § Trust Model's example verbs. Deriving it from the examples under-covered
+the duty twice: the first cut permitted only `gz` verbs on the stated premise that
+"Read/Grep/Glob are never gated" (false in this harness — defect #3); the second
+omitted `gh`, leaving a resume unable to check the GHI-state claims its own advised
+steps turned on, since GitHub is the only Layer-2 surface for them.
+
+`gh` is admitted as a **read** surface only. `gh issue create` is independently
+forbidden by `AGENTS.md` § Behavior Rules — Always #13 (author GHIs through
+`/ghi-author`), and `gh api` is excluded because `-X POST` mutates.
 
 Everything else fails **closed**:
 
 - Compound commands, regardless of head — `gz state && rm -rf x` is not a read of
-  `gz state`. Any of `;` `&` `|` `>` `<` `` ` `` `$(` disqualifies.
+  `gz state`. Detection is quote-aware (`shlex`, `punctuation_chars=True`): a real
+  `;` `&` `|` `>` `<` operator disqualifies, while the same character *inside
+  quotes* is data — `grep "A\|B"` and `gh issue list -q '.[] | select(…)'` are
+  reads and are permitted.
+- Command substitution in **any** quoting form — `` ` `` and `$(`. Double quotes do
+  not make substitution inert, and posix tokenization cannot distinguish the live
+  `"$(…)"` from the inert `'$(…)'`, so both are refused.
 - Write-capable flags on an allowlisted head — `find . -delete`, `find . -exec`,
   `sed -i`, `--fix`, `--in-place`.
 - Unparseable commands (unbalanced quotes).

@@ -7,9 +7,20 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
-> **Rule version:** `0.2.0` — resolved a self-contradiction and a release-notes
+> **Rule version:** `0.3.0` — reconciled § Core Principles — Consistency to the
+> mechanism it names (GHI #693, operator ruling 2026-07-17: this is a
+> *correction*, not an enhancement — the rule's promise WAS the audit's declared
+> intent). "The audit is the mechanical check" read as a promise that the
+> documented flag contract is verified; the audit mechanized *presence* only, so
+> a manpage could contradict its parser and ship green — observed live on
+> `gz handoff authorize --session-id`, which documented a required flag as
+> optional under a fully green `gz check`. The audit now checks usage-line
+> agreement (required-ness, value-taking) and the rule says so. The § Adding CLI
+> Features caveat also claimed the audit "audits verbs, not flags", which stopped
+> being true at GHI #350; scoped it to the lane claim it was actually making.
+> Prior `0.2.0` — resolved a self-contradiction and a release-notes
 > conflict (Pass A conflict-matrix rows 17 and 25, run 2026-07-16); adds the
 > body-level version marker this file never carried. § Adding CLI Features
 > declared "New Flag (Additive = Lite Lane)" while § Heavy Lane Trigger, 65
@@ -29,7 +40,7 @@ description: CLI contract doctrine and design principles
 | Principle | Rule |
 |-----------|------|
 | Human-first | Optimize for humans; add `--json`/`--plain` for machines |
-| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0 with the new verb covered across manpage, command doc, and index. If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
+| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0 with the new verb covered across manpage, command doc, and index, **and the new flag's usage line agreeing with its parser** (required-ness and value-taking; GHI #693). If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
 | Discovery | Comprehensive help with examples; no web docs needed |
 | Robustness | Validate early; fail fast; provide progress indicators |
 
@@ -87,7 +98,7 @@ Every command must:
 
 **Lane authority is `AGENTS.md` § Gate Covenant — Lane Rules, not this file.** Both a new flag and a new subcommand are CLI-contract changes used by humans, so both are **Heavy**, consistent with this rule's own § Heavy Lane Trigger above (*"Any CLI contract change (subcommands, flags, exit codes, output schemas)"*). `AGENTS.md` § Defect-fix routing adds: *"Adds/changes CLI surface … OBPI ceremony is required"* — so contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix.
 
-> `gz cli audit` does **not** adjudicate this: it audits verbs, not flags, and exits 0 with full cross-coverage regardless of a new flag's lane. Its green is not evidence of correct lane assignment.
+> `gz cli audit` does **not** adjudicate this. It audits a flag's *documentation* — that the flag is named in its manpage (GHI #350) and that the usage line's required/value-taking claims match the parser (GHI #693) — and exits 0 with full cross-coverage regardless of a new flag's **lane**. Its green is evidence about docs, never about lane assignment. Its green is not evidence of correct lane assignment.
 
 ### New Flag (Heavy Lane)
 

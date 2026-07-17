@@ -21,7 +21,7 @@ gz cli audit [--json]
 
 ### Cross-Coverage (AST-driven)
 
-Discovers all CLI commands by parsing `cli/main.py` and verifies six documentation
+Discovers all CLI commands by parsing `cli/main.py` and verifies five documentation
 surfaces per command:
 
 | Surface | Verification |
@@ -33,6 +33,29 @@ surfaces per command:
 | Docstring | Handler function has non-empty docstring |
 
 Also detects orphaned documentation referencing removed commands.
+
+### Per-flag coverage: presence AND truth
+
+Command-grained checks never see a flag, so the audit also walks every
+`add_argument` call and checks its manpage two ways:
+
+| Check | Assertion | Origin |
+|-------|-----------|--------|
+| Presence | The long flag is named somewhere in its command's manpage | GHI #350 |
+| Truth | The manpage's **usage line** agrees with the parser: a `required=True` flag is not bracketed `[--flag]`, and an `action="store_true"` flag is not shown taking a value | GHI #693 |
+
+Presence alone is not enough: a doc that *mentions* every flag while *lying*
+about one passes the presence half and is believed. A missing row fails loudly;
+a wrong row ships green — `gz handoff authorize` documented a required
+`--session-id` as optional under a fully green `gz check` (2026-07-16).
+
+The truth check reads only the fenced block under `## Usage` / `## Synopsis` —
+the region that *declares* the contract. Prose elsewhere may discuss or quote a
+bracket form without claiming it. It checks only what argparse can adjudicate
+without inference (required-ness, value-taking); stated defaults and env
+fallbacks are prose (`"defaults to the current branch"` is true with an argparse
+default of `None`), and grading prose produces the false positives that keep a
+check from being trusted.
 
 ---
 

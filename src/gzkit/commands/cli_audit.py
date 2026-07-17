@@ -212,12 +212,20 @@ def cli_audit_cmd(as_json: bool) -> None:
 
     from gzkit.doc_coverage.flag_scanner import (  # noqa: PLC0415
         check_flag_doc_coverage,
-        scan_command_flags,
+        check_flag_doc_truth,
+        scan_command_flag_specs,
     )
 
-    flags_by_command = scan_command_flags(project_root)
+    # Presence and truth are one pair, deliberately co-located: a doc that
+    # MENTIONS every flag while LYING about one passes the presence half and is
+    # believed (GHI #693). Both read the same spec scan — one AST walk.
+    specs_by_command = scan_command_flag_specs(project_root)
+    flags_by_command = {
+        command: [spec.flag for spec in specs] for command, specs in specs_by_command.items()
+    }
     commands_dir = project_root / MANPAGE_DIR
     issues.extend(check_flag_doc_coverage(commands_dir, flags_by_command))
+    issues.extend(check_flag_doc_truth(commands_dir, specs_by_command))
 
     result = {"valid": not issues, "issues": issues, "cross_coverage": coverage_report.model_dump()}
     if as_json:
