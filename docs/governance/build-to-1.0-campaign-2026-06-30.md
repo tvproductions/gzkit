@@ -2,7 +2,13 @@
 
 # Build-to-1.0 Campaign — 2026-06-30 (Magna Carta)
 
-Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-06-30).
+> **SUPERSEDED 2026-07-18.** This file **no longer steers**. The active plan is
+> [`build-to-1.0-campaign-2026-07-18.md`](build-to-1.0-campaign-2026-07-18.md).
+> All 10 of this edition's amendment blocks are dispositioned in the successor's
+> § Rulings Register (§9), and the 06-10 edition's 17 amendments + 4 scope
+> decisions are recovered in § 9a. No ruling is orphaned. Retained for audit.
+
+Status: **SUPERSEDED** (was: ACTIVE — the one canonical plan, operator-ratified 2026-06-30).
 Supersedes [`build-to-1.0-campaign-2026-06-20.md`](build-to-1.0-campaign-2026-06-20.md)
 and the earlier [`build-to-1.0-campaign-2026-06-10.md`](build-to-1.0-campaign-2026-06-10.md);
 priors are retained for audit and no longer steer. **This edition commits the

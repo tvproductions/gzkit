@@ -44,8 +44,9 @@ CAMPAIGN_AUTHORITY_NOTE = (
     "governed path — ADR, OBPI, and GHI repair remain the primary propellants; "
     "the campaign refines and facilitates that machinery, never substitutes "
     "for it. Handoffs and triage ADVISE; the campaign governs what is pulled "
-    "next. Amendments are operator-ratified; reductive moves wait for the "
-    "post-1.0 phase."
+    "next. Amendments are operator-ratified. Reduction is PRE-1.0 (Movement C) "
+    "— the 'reductive moves wait for post-1.0' ruling was WITHDRAWN 2026-07-18 "
+    "as deadlocked: accretion was what blocked 1.0."
 )
 
 POST_COMPACTION_NOTE = (

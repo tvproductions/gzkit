@@ -1,6 +1,6 @@
 ---
 description: 'Knowledge concept: active-campaign'
-resource: docs/governance/build-to-1.0-campaign-2026-06-30.md
+resource: docs/governance/build-to-1.0-campaign-2026-07-18.md
 title: Active Campaign
 type: doctrine
 ---
@@ -9,4 +9,4 @@ type: doctrine
 
 Knowledge concept: active-campaign
 
-Canonical source: [build-to-1.0-campaign-2026-06-30.md](../../../docs/governance/build-to-1.0-campaign-2026-06-30.md)
+Canonical source: [build-to-1.0-campaign-2026-07-18.md](../../../docs/governance/build-to-1.0-campaign-2026-07-18.md)
