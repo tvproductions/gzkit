@@ -125,13 +125,13 @@ uv run gz validate --brief-reconcile && echo "REQ-07 OK on clean tree"
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-05-01: `reconcile_brief(brief_path, project_root)` returns `ReconcileResult` with `brief_id`, all five dimension-delta fields, and `has_drift: bool`
-- [ ] REQ-0.0.37-05-02: Allowlist dimension reports `missing_on_disk` for an allowlisted path that does not exist; reports `missing_in_brief` for a src/ file imported by REQ tests but absent from allowlist
-- [ ] REQ-0.0.37-05-03: Verification-verb dimension resolves `gz <verb>` references against `parser_artifacts.py`; reports `unresolved_verbs` for unregistered verbs
-- [ ] REQ-0.0.37-05-04: REQ count dimension compares declared REQs vs Acceptance Criteria checkbox count and reports delta
-- [ ] REQ-0.0.37-05-05: Citation-tuple dimension verifies (artifact_path, anchor) pairs and reports stale citations
-- [ ] REQ-0.0.37-05-06: `gz validate --brief-reconcile` exits 0 when no brief has drift; exits 3 when any brief has drift; reports per-brief delta in output
-- [ ] REQ-0.0.37-05-07: Engine is pure — emits no ledger events, writes no files (ledger emission belongs to OBPI-06)
+- [ ] REQ-0.0.37-05-01 [behavior]: `reconcile_brief(brief_path, project_root)` returns `ReconcileResult` with `brief_id`, all five dimension-delta fields, and `has_drift: bool`
+- [ ] REQ-0.0.37-05-02 [behavior]: Allowlist dimension reports `missing_on_disk` for an allowlisted path that does not exist; reports `missing_in_brief` for a src/ file imported by REQ tests but absent from allowlist
+- [ ] REQ-0.0.37-05-03 [behavior]: Verification-verb dimension resolves `gz <verb>` references against `parser_artifacts.py`; reports `unresolved_verbs` for unregistered verbs
+- [ ] REQ-0.0.37-05-04 [behavior]: REQ count dimension compares declared REQs vs Acceptance Criteria checkbox count and reports delta
+- [ ] REQ-0.0.37-05-05 [behavior]: Citation-tuple dimension verifies (artifact_path, anchor) pairs and reports stale citations
+- [ ] REQ-0.0.37-05-06 [behavior]: `gz validate --brief-reconcile` exits 0 when no brief has drift; exits 3 when any brief has drift; reports per-brief delta in output
+- [ ] REQ-0.0.37-05-07 [behavior]: Engine is pure — emits no ledger events, writes no files (ledger emission belongs to OBPI-06)
 
 ## Completion Checklist
 

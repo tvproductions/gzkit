@@ -3,7 +3,7 @@ id: OBPI-0.0.37-03-composition-drift-validator
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 3
 lane: Heavy
-status: Completed
+status: Abandoned
 ---
 
 <!-- gz-validate-skip: brief-demo-section -->

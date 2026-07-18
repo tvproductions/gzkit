@@ -168,11 +168,11 @@ print('REQ-03 OK: permissive path exercised')
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-04-01: `BriefStructure` is frozen, has all fields named above with stated types; rejects construction with empty `allowlist`, empty `reqs`, or empty `verification`
-- [ ] REQ-0.0.37-04-02: `src/gzkit/schemas/obpi_brief_structure.json` has `additionalProperties: false`; validates a known-good brief; rejects a brief missing `reqs`
-- [ ] REQ-0.0.37-04-03: `parse_brief(path)` (permissive default) returns `BriefStructure` on compliant briefs and `LegacyBriefShape` with `DeprecationWarning` on briefs lacking structured fields
-- [ ] REQ-0.0.37-04-04: `parse_brief(path, strict=True)` raises `ValueError` on a brief missing any required field
-- [ ] REQ-0.0.37-04-05: Round-trip: this brief itself (OBPI-0.0.37-04) parses as `BriefStructure` (no deprecation warning) — the authored briefs from GHI #495 are the first compliance test
+- [ ] REQ-0.0.37-04-01 [behavior]: `BriefStructure` is frozen, has all fields named above with stated types; rejects construction with empty `allowlist`, empty `reqs`, or empty `verification`
+- [ ] REQ-0.0.37-04-02 [behavior]: `src/gzkit/schemas/obpi_brief_structure.json` has `additionalProperties: false`; validates a known-good brief; rejects a brief missing `reqs`
+- [ ] REQ-0.0.37-04-03 [behavior]: `parse_brief(path)` (permissive default) returns `BriefStructure` on compliant briefs and `LegacyBriefShape` with `DeprecationWarning` on briefs lacking structured fields
+- [ ] REQ-0.0.37-04-04 [behavior]: `parse_brief(path, strict=True)` raises `ValueError` on a brief missing any required field
+- [ ] REQ-0.0.37-04-05 [behavior]: Round-trip: this brief itself (OBPI-0.0.37-04) parses as `BriefStructure` (no deprecation warning) — the authored briefs from GHI #495 are the first compliance test
 
 ## Completion Checklist
 

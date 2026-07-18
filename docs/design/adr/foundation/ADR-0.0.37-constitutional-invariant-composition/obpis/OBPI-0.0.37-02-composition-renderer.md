@@ -3,7 +3,7 @@ id: OBPI-0.0.37-02-composition-renderer
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 2
 lane: Heavy
-status: Completed
+status: Abandoned
 ---
 
 <!-- gz-validate-skip: brief-demo-section -->

@@ -121,12 +121,12 @@ git status --porcelain
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-10-01: ADR-0.0.18 contains a dated amendment H2 section that names ADR-0.0.37 as the structural anchor and explicitly distinguishes structural-witness foundation from prose-asserted claims; the amendment text includes the words "structural witness" and a pointer to `.gzkit/invariants/`
-- [ ] REQ-0.0.37-10-02: `ADR-pool.brief-authoring-evidence-checks*` contains a "Re-routing note (post-ADR-0.0.37)" block referencing CIC-2 as the prerequisite foundation and reclassifying the stub as feature-kind once CIC-2 lands
-- [ ] REQ-0.0.37-10-03: `ADR-pool.obpi-pipeline-dispatch-attestation*` contains the same shape of re-routing note
-- [ ] REQ-0.0.37-10-04: The canonical contributing doc contains a "Before proposing a foundation-kind ADR" section with the three-step algorithm (identify invariant; propose invariant first if missing; then promote to ADR)
-- [ ] REQ-0.0.37-10-05: No `src/` files modified by this OBPI; AGENTS.md untouched; verified by `git diff --name-only` post-implementation
-- [ ] REQ-0.0.37-10-06: All four edits include cross-references to ADR-0.0.37 by full path so they survive ADR renumbering
+- [ ] REQ-0.0.37-10-01 [support]: ADR-0.0.18 contains a dated amendment H2 section that names ADR-0.0.37 as the structural anchor and explicitly distinguishes structural-witness foundation from prose-asserted claims; the amendment text includes the words "structural witness" and a pointer to the invariants registry. Proof: `artifact_edited` for `docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md` (present on disk); structural validator `gz validate --documents` admits its shape.
+- [ ] REQ-0.0.37-10-02 [support]: `ADR-pool.brief-authoring-evidence-checks*` contains a "Re-routing note (post-ADR-0.0.37)" block referencing CIC-2 as the prerequisite foundation and reclassifying the stub as feature-kind once CIC-2 lands. Proof: `artifact_edited` for `docs/design/adr/pool/ADR-pool.brief-authoring-evidence-checks.md` (present on disk); structural validator `gz validate --documents` admits its shape.
+- [ ] REQ-0.0.37-10-03 [support]: `ADR-pool.obpi-pipeline-dispatch-attestation*` contains the same shape of re-routing note. Proof: `artifact_edited` for `docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md` (present on disk); structural validator `gz validate --documents` admits its shape.
+- [ ] REQ-0.0.37-10-04 [support]: The canonical contributing doc contains a "Before proposing a foundation-kind ADR" section with the three-step algorithm (identify invariant; propose invariant first if missing; then promote to ADR). Proof: `artifact_edited` for `docs/governance/governance_runbook.md` (present on disk); structural validator `gz validate --documents` admits its shape.
+- [ ] REQ-0.0.37-10-05 [structural-fence]: No `src/` files modified by this OBPI; AGENTS.md untouched; verified by `git diff --name-only` post-implementation. Scope-boundary state property audited at ADR closeout (see parent ADR § Boundary Invariants, BI-1).
+- [ ] REQ-0.0.37-10-06 [support]: All four edits include cross-references to ADR-0.0.37 by full path so they survive ADR renumbering. Proof: `artifact_edited` for `docs/governance/governance_runbook.md` (present on disk); structural validator `gz validate --documents` admits the cross-referenced docs.
 
 ## Completion Checklist
 

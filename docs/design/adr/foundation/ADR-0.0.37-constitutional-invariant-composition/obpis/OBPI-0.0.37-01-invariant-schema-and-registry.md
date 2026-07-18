@@ -169,10 +169,10 @@ print('REQ-03/04 OK — three seed invariants loaded')
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-01-01: `ConstitutionalInvariant` Pydantic model is frozen (raises on post-construction mutation) and rejects empty `structural_witness` at instantiation
-- [ ] REQ-0.0.37-01-02: `src/gzkit/schemas/constitutional_invariant.json` has `additionalProperties: false` and `structural_witness.minItems = 1`; validates a known-good invariant and rejects an invariant missing `id`
-- [ ] REQ-0.0.37-01-03: `.gzkit/invariants/CIC-1.json`, `.gzkit/invariants/CIC-2.json`, and `.gzkit/invariants/foundation-adr-registers-invariant.json` exist; `load_invariants` returns all three; each validates against the schema
-- [ ] REQ-0.0.37-01-04: `load_invariants` raises (does not silently skip) on a JSON file that fails schema validation
+- [ ] REQ-0.0.37-01-01 [behavior]: `ConstitutionalInvariant` Pydantic model is frozen (raises on post-construction mutation) and rejects empty `structural_witness` at instantiation
+- [ ] REQ-0.0.37-01-02 [behavior]: `src/gzkit/schemas/constitutional_invariant.json` has `additionalProperties: false` and `structural_witness.minItems = 1`; validates a known-good invariant and rejects an invariant missing `id`
+- [ ] REQ-0.0.37-01-03 [behavior]: `.gzkit/invariants/CIC-1.json`, `.gzkit/invariants/CIC-2.json`, and `.gzkit/invariants/foundation-adr-registers-invariant.json` exist; `load_invariants` returns all three; each validates against the schema
+- [ ] REQ-0.0.37-01-04 [behavior]: `load_invariants` raises (does not silently skip) on a JSON file that fails schema validation
 
 ## Completion Checklist
 

@@ -1,8 +1,9 @@
 {
   "id": "CIC-1",
-  "claim": "Every claim that AGENTS.md asserts as foundational MUST originate from an addressable, schema-validated, ledger-witnessed entry in the constitutional invariant registry at .gzkit/invariants/. AGENTS.md is rendered from the registry; drift between rendered view and committed AGENTS.md is fail-closed at gz validate --invariant-coherence (and gz check). Hand-authoring foundational claims directly into AGENTS.md is the same class of failure as hand-writing ledger entries (AGENTS.md § Behavior Rules — Never #2 applied at the canon layer).",
+  "claim": "Every claim that AGENTS.md asserts as foundational MUST be witnessed, not hand-authored as primary canon. As delivered (ADR-0.0.37, Completed-Partial): foundational operator doctrine is captured as invariant-tier entries in the append-only corpus at .gzkit/corpus/ and emitted verbatim into a committed rendition; AGENTS.md is a deterministic playback of that rendition. Hand-edits to the rendered surface are fail-closed at gz validate --invariant-coherence (playback must byte-match the committed surface); corpus-to-rendition drift and rendition-byte tampering are fail-closed at gz validate --rendition-freshness; invariant-tier presence is enforced by the rendition-floor gate. NOT delivered here, and severed to GHI #623 as a post-1.0 successor feature: full corpus-derivation of compressible prose (a candidate-is-subset-of-corpus superset-lineage gate) and any registry-to-AGENTS.md renderer. Hand-authoring foundational claims directly into the rendered surface is the same class of failure as hand-writing ledger entries (AGENTS.md Behavior Rules Never #2 applied at the canon layer).",
   "structural_witness": [
-    "gz validate --invariant-coherence"
+    "gz validate --invariant-coherence",
+    "gz validate --rendition-freshness"
   ],
   "composition_targets": [
     "AGENTS.md"

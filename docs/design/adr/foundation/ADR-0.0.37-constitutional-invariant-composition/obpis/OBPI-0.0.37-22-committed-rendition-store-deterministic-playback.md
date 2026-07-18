@@ -3,7 +3,7 @@ id: OBPI-0.0.37-22-committed-rendition-store-deterministic-playback
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 22
 lane: Heavy
-status: Completed
+status: Abandoned
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (store, playback, freshness gate, coherence-diff, build-wiring,
 # docs); none decomposes into parallel seq=02+ sub-tasks (ADR-0.0.64 exemption).

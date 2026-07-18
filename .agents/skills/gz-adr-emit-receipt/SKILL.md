@@ -4,9 +4,9 @@ description: Emit ADR receipt events with scoped evidence payloads. Use when rec
 category: adr-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-18
+last_reviewed: 2026-07-18
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
 model: haiku
 ---
 
@@ -33,8 +33,14 @@ Operate the gz adr emit-receipt command surface as a reusable governance workflo
 uv run gz adr emit-receipt ADR-X.Y.Z \
   --event validated \
   --attestor "human:Jane Doe" \
-  --evidence-json '{"gate": 5, "tests_passed": true, "coverage_pct": 48.5}'
+  --evidence-json '{"scope": "ADR-X.Y.Z", "date": "YYYY-MM-DD", "receipts": ["arb-ruff-<id>", "arb-step-typecheck-<id>", "arb-step-unittest-<id>", "arb-step-mkdocs-<id>"]}'
 ```
+
+On **Heavy** lane / **foundation** kind, the `--evidence-json` payload MUST carry the
+`arb-*` receipt IDs emitted by the canonical ARB steps (`gz arb ruff`, `gz arb typecheck`,
+`gz arb step --name unittest ...`, `gz arb step --name mkdocs ...`). A zero-receipt payload
+fail-closes at exit 3 before the receipt is recorded (locked by `CANONICAL_STEP_COMMANDS`;
+see AGENTS.md § Attestation).
 
 The `$gz-adr-emit-receipt` token used in some agent integrations
 (e.g. `agents/openai.yaml`) is a slash-command alias that resolves to

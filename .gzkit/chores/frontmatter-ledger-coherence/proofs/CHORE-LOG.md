@@ -105,3 +105,35 @@ sha256:dbb1a1a85aa0e41e0b946dbde224ffe5098aa6b9648d463898a07f45ce3ed270
   pool ADRs skipped: 171
   no drift detected
 ```
+## 2026-07-17T17:14:01-04:00
+- Status: PASS
+- Chore: frontmatter-ledger-coherence
+- Title: Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz frontmatter reconcile --dry-run` => rc=0 (1.22s) -- exit 0 == 0
+
+```text
+[uv run gz frontmatter reconcile --dry-run] stdout:
+Frontmatter-ledger reconciliation DRY-RUN
+  ledger cursor:
+sha256:608c711cd7c9d20ee77f8a39da70eb4f6b649ef098d6d6758c4bfc24add16374
+  started / ended:   2026-07-17T21:13:59.908429+00:00 /
+2026-07-17T21:14:00.974873+00:00
+  files rewritten:   4
+  refused rewrites:  0
+  pool ADRs skipped: 172
+    docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/o
+bpis/OBPI-0.0.37-02-composition-renderer.md
+      status: 'Completed' -> 'Abandoned'
+    docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/o
+bpis/OBPI-0.0.37-03-composition-drift-validator.md
+      status: 'Completed' -> 'Abandoned'
+    docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/o
+bpis/OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill.md
+      status: 'Completed' -> 'Abandoned'
+    docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/o
+bpis/OBPI-0.0.37-22-committed-rendition-store-deterministic-playback.md
+      status: 'Completed' -> 'Abandoned'
+```

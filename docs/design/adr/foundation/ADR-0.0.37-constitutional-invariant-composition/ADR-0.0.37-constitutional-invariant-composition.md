@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.37-constitutional-invariant-composition
-status: Draft
+status: Completed
 kind: foundation
 semver: 0.0.37
 lane: heavy
@@ -214,9 +214,19 @@ they have a foundation invariant to defend.
 <!-- Runnable commands that exercise this ADR's thesis against the real system.
      `gz adr fidelity <ADR-ID>` runs each row and compares observed vs expected exit. -->
 
+> **Re-scoped 2026-07-18 (Terminal Disposition — Completed-Partial).** The prior Row 1
+> asserted "re-rendering the constitutional invariant *registry* byte-matches the composed
+> AGENTS.md." That claim was false against delivered code — `render_agents_md` ignores its
+> registry argument and `--invariant-coherence` compares deterministic *rendition* playback
+> to the committed surface, never the registry (the registry spine, OBPI-02/03, is the
+> superseded half severed to GHI #623). The rows below assert only the witnesses that are
+> genuinely delivered and load-bearing; each was observed exit 0 on 2026-07-18.
+
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| Re-rendering the constitutional invariant registry byte-matches the composed AGENTS.md; invariant composition is coherent. | uv run gz validate --invariant-coherence | 0 |
+| Committed AGENTS.md byte-matches deterministic playback of the committed rendition; hand-edits to the rendered surface fail closed. | uv run gz validate --invariant-coherence | 0 |
+| CIC-2 brief↔reality reconciliation is live and fail-closed. | uv run gz validate --brief-reconcile | 0 |
+| Corpus↔rendition freshness (content-fingerprint) and rendition-byte integrity are enforced. | uv run gz validate --rendition-freshness | 0 |
 | The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.37-constitutional-invariant-composition --check | 0 |
 
 ## Consequences
@@ -378,8 +388,67 @@ they have a foundation invariant to defend.
 
 18. **Silently flip the Era-1 bullet-retention validator to tolerate compression.** REJECTED — editing a Validated invariant's enforcement without an attested amendment is the doctrine-drift failure ADR-0.0.33 exists to prevent. The tier-scoping is a real attested ADR-0.0.33 Invariant-1 amendment coupled to OBPI-0.0.37-18, never a silent validator edit.
 
+## Boundary Invariants
+
+Cross-OBPI / scope-boundary state properties audited at ADR closeout (ADR-0.0.59
+STRUCTURAL-FENCE proof anchor):
+
+- **BI-1 (OBPI-10 doctrine-refresh scope fence — REQ-0.0.37-10-05):** The doctrine-refresh
+  OBPI modified only documentation surfaces — no `src/` files, and AGENTS.md content
+  untouched. Verified by `git diff --name-only` at completion; OBPI-10's ledger footprint
+  carries only documentation `artifact_edited` events.
+
+## Terminal Disposition (2026-07-18): Split-and-Supersede
+
+Operator ruling (2026-07-17/18): *"split-and-supersede to conclude 0.0.37"* … *"post 1.0."*
+Ratified after two independent macro assessments (a fresh-context Claude analyst and a
+cross-vendor Codex analyst) converged, and four independent verifiers re-derived the
+2026-06-16 repudiation findings against current code and found them **still standing**.
+
+This ADR concludes as **Completed — Partial (superseded)**, not thesis-fulfilled. The
+foundation *invariant* — "AGENTS.md must be a derived view, not primary canon" — is kept and
+load-bearing. The full composition *engine* that would materialize AGENTS.md from canon was
+never built; it is feature-shaped (ADR-0.0.18: a mechanical defense of an invariant is a
+feature, not the invariant) and is **severed to a post-1.0 successor feature** tracked at
+GHI #623 (absorbing GHI #654). The Build-to-1.0 campaign already ratified this engine as
+severable enrichment behind a shipped floor — the airlock ships and gates on the floor.
+
+**Delivered and load-bearing (the honest floor 1.0 ships on):**
+
+- **CIC-2 brief↔reality coherence** — `gz validate --brief-reconcile`, the Stage-1 and
+  Stage-5 fail-close gates, and `gz brief reconcile` ship and function (OBPIs 04–08).
+- **Corpus rendition floor** — append-only corpus (18), capture tool + skill (19),
+  setpoint-coherence (20), invariant-tier verbatim floor (23), advisor-QC receipt (24),
+  tier-scoped bullet-retention (25), Codex-root setpoint relief (26), disposition/doctrine
+  refresh (27). Deterministic playback, corpus-fingerprint freshness
+  (`--rendition-freshness`), rendition-byte integrity (GHI #694), and the `invariant ⊆
+  rendition` floor gate (GHI #623) are real and tamper-tested. Hand-authoring foundational
+  prose is fenced; invariant-tier doctrine (PRIME DIRECTIVE, DO IT RIGHT, NEVER PYTEST) is
+  verbatim-protected.
+
+**Not delivered — severed to GHI #623 (absorbing #654), post-1.0:**
+
+- **Registry→AGENTS.md renderer (OBPI-02) + drift validator (OBPI-03)** — the registry spine,
+  obsoleted by the 2026-06-03 corpus Re-Alignment. `render_agents_md` ignores its registry
+  argument; `--invariant-coherence` does not consult the registry. **Permanently withdrawn**
+  (`obpi_withdrawn`, 2026-07-17).
+- **Full corpus-derivation composition (OBPI-21/22)** — the composer *validates* an
+  agent-supplied candidate rather than *materializing* from the corpus, and no `rendition ⊆
+  corpus` superset gate binds the candidate's lineage, so prose absent from the corpus can
+  pass. **Withdrawn** here; the attributable corpus→candidate generator + invented-prose
+  rejection + guarded atomic multi-consumer landing are the successor feature's scope
+  (GHI #623 + #654), executed post-1.0.
+
+**Re-completion is refused.** The four OBPIs were repudiated on 2026-06-16 as a
+fraud/nonexistence finding; the code still shows the engine does not exist, so re-attesting
+any of them as Completed would repeat that fabrication. The framing that ends the multi-session
+loop: *historical work, present semantic validity, and future capability ownership are three
+separate axes.* Withdrawing the four engine OBPIs erases no decision — it records honestly that
+the engine is unbuilt and re-homes it as a post-1.0 feature. The invariant is kept; the engine
+is severed.
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.37 | Pending | | | |
+| 0.0.37 | Completed - Partial: Completed - Partial: attest completed (g0) — split-and-supersede ruling: delivered floor (CIC-2 brief-coherence + corpus rendition floor: playback/freshness/integrity/invariant-floor) gated and green (7153 unittests arb-step-unittest-cafb4c5556b14d588644246fe06528e2, fidelity 4/4, ruff/typecheck/mkdocs clean); composition engine (OBPI-02/03 registry spine superseded; OBPI-21/22 corpus-derivation) severed to GHI #623 (+#654) as post-1.0 successor feature. | g0 | 2026-07-18 | Completed - Partial: attest completed (g0) — split-and-supersede ruling: delivered floor (CIC-2 brief-coherence + corpus rendition floor: playback/freshness/integrity/invariant-floor) gated and green (7153 unittests arb-step-unittest-cafb4c5556b14d588644246fe06528e2, fidelity 4/4, ruff/typecheck/mkdocs clean); composition engine (OBPI-02/03 registry spine superseded; OBPI-21/22 corpus-derivation) severed to GHI #623 (+#654) as post-1.0 successor feature. |

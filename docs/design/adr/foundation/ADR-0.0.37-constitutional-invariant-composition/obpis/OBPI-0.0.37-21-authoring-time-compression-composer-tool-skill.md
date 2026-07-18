@@ -3,7 +3,7 @@ id: OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill
 parent: ADR-0.0.37-constitutional-invariant-composition
 item: 21
 lane: Heavy
-status: Completed
+status: Abandoned
 # req_atomic: each REQ is a single indivisible labor unit — one behavior/support
 # surface apiece (emit, determinism, invariant-verbatim, fail-closed, no-rendered-
 # write, ledger event, skill, docs); none decomposes into parallel seq=02+ sub-tasks

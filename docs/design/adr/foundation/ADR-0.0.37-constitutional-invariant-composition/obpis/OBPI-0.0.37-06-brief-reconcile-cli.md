@@ -152,18 +152,18 @@ print('REQ-07 OK')
 ## Acceptance Criteria
 
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-01: `gz brief reconcile <OBPI-ID>` resolves the brief, runs the engine, prints delta summary, emits `brief_reconciled` ledger event; exits 0 on no-drift, 3 on drift
-- [ ] REQ-0.0.37-06-02: When drift is detected, a `brief_reconcile_drift_detected` event is emitted with full per-dimension delta payload
+- [ ] REQ-0.0.37-06-01 [behavior]: `gz brief reconcile <OBPI-ID>` resolves the brief, runs the engine, prints delta summary, emits `brief_reconciled` ledger event; exits 0 on no-drift, 3 on drift
+- [ ] REQ-0.0.37-06-02 [behavior]: When drift is detected, a `brief_reconcile_drift_detected` event is emitted with full per-dimension delta payload
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-03: `gz brief reconcile <OBPI-ID> --apply` without `--attestor` exits with error message containing `--apply requires --attestor`
+- [ ] REQ-0.0.37-06-03 [behavior]: `gz brief reconcile <OBPI-ID> --apply` without `--attestor` exits with error message containing `--apply requires --attestor`
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-04: `gz brief reconcile <OBPI-ID> --apply --attestor "<name>"` writes allowlist/REQ-count amendments to the brief and emits a `brief_reconciled` event with `applied: true` and the attestor name
-- [ ] REQ-0.0.37-06-05: `--apply --dry-run` prints the would-be diff without writing the brief
+- [ ] REQ-0.0.37-06-04 [behavior]: `gz brief reconcile <OBPI-ID> --apply --attestor "<name>"` writes allowlist/REQ-count amendments to the brief and emits a `brief_reconciled` event with `applied: true` and the attestor name
+- [ ] REQ-0.0.37-06-05 [behavior]: `--apply --dry-run` prints the would-be diff without writing the brief
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-06: `brief reconcile` verb resolves via `gz brief reconcile --help`; verb is registered in `parser_artifacts.py`
-- [ ] REQ-0.0.37-06-07: `brief_reconciled` and `brief_reconcile_drift_detected` event type schemas are present in the enforced `src/gzkit/schemas/ledger.json` (and the documentary `.gzkit/schemas/ledger_events.json`) and pass the events-schema validator
+- [ ] REQ-0.0.37-06-06 [behavior]: `brief reconcile` verb resolves via `gz brief reconcile --help`; verb is registered in `parser_artifacts.py`
+- [ ] REQ-0.0.37-06-07 [behavior]: `brief_reconciled` and `brief_reconcile_drift_detected` event type schemas are present in the enforced `src/gzkit/schemas/ledger.json` (and the documentary `.gzkit/schemas/ledger_events.json`) and pass the events-schema validator
 <!-- gz-validate-skip: command-shape -->
-- [ ] REQ-0.0.37-06-08: `docs/user/manpages/brief-reconcile.md` exists with all required manpage sections; EXAMPLES contains real CLI output (not placeholder)
+- [ ] REQ-0.0.37-06-08 [behavior]: `docs/user/manpages/brief-reconcile.md` exists with all required manpage sections; EXAMPLES contains real CLI output (not placeholder)
 
 ## Completion Checklist
 

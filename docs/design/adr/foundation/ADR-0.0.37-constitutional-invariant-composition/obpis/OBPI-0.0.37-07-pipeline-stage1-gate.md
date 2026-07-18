@@ -109,12 +109,12 @@ uv run gz obpi pipeline OBPI-0.0.37-07-pipeline-stage1-gate --stage 1 --dry-run
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.37-07-01: `is_receipt_fresh(ts, allowed_paths, root)` is a pure function returning True iff `ts > max(getmtime(p))` over expanded allowed_paths; returns False if any allowed path is missing
-- [ ] REQ-0.0.37-07-02: Stage 1 fail-closes (exit 3) with explicit message when no `brief_reconciled` receipt exists for the active OBPI
-- [ ] REQ-0.0.37-07-03: Stage 1 fail-closes (exit 3) when the most recent `brief_reconciled` receipt's timestamp is older than the max mtime of any Allowed Path; error names the drifted path
-- [ ] REQ-0.0.37-07-04: Stage 1 fail-closes (exit 3) when a fresh receipt's `has_drift` payload is True; error names the drifted dimensions
-- [ ] REQ-0.0.37-07-05: Stage 1 admits Stage 2 only when a `brief_reconciled` receipt is both fresh (per REQ-01) AND drift-free
-- [ ] REQ-0.0.37-07-06: Existing Stage 1 behaviors (REQ-coverage gate, brief schema validation) are preserved — additive check, not replacement
+- [ ] REQ-0.0.37-07-01 [behavior]: `is_receipt_fresh(ts, allowed_paths, root)` is a pure function returning True iff `ts > max(getmtime(p))` over expanded allowed_paths; returns False if any allowed path is missing
+- [ ] REQ-0.0.37-07-02 [behavior]: Stage 1 fail-closes (exit 3) with explicit message when no `brief_reconciled` receipt exists for the active OBPI
+- [ ] REQ-0.0.37-07-03 [behavior]: Stage 1 fail-closes (exit 3) when the most recent `brief_reconciled` receipt's timestamp is older than the max mtime of any Allowed Path; error names the drifted path
+- [ ] REQ-0.0.37-07-04 [behavior]: Stage 1 fail-closes (exit 3) when a fresh receipt's `has_drift` payload is True; error names the drifted dimensions
+- [ ] REQ-0.0.37-07-05 [behavior]: Stage 1 admits Stage 2 only when a `brief_reconciled` receipt is both fresh (per REQ-0.0.37-07-01) AND drift-free
+- [ ] REQ-0.0.37-07-06 [behavior]: Existing Stage 1 behaviors (REQ-coverage gate, brief schema validation) are preserved — additive check, not replacement
 
 ## Completion Checklist
 
