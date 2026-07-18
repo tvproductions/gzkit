@@ -75,11 +75,21 @@ def handoff_list_cmd(
 
 
 def _render_resume(result: ResumeResult) -> None:
-    """Human-readable resume report — path, staleness, and first next step."""
+    """Human-readable resume report — path, staleness, and EVERY next step.
+
+    All authored steps are rendered, not just the head: surfacing one is what
+    let items 2-N fall out of the advisory channel and be re-adjudicated as
+    open loops in the successor session (GHI #696).
+    """
     console.print(f"resume — {result.path}")
     console.print(f"  staleness: {result.staleness.value}")
     console.print(f"  requires human verification: {result.requires_human_verification}")
-    console.print(f"  next step: {result.first_next_step or '(none extracted)'}")
+    if not result.next_steps:
+        console.print("  next steps: (none extracted)")
+        return
+    console.print(f"  next steps ({len(result.next_steps)}):")
+    for index, step in enumerate(result.next_steps, start=1):
+        console.print(f"    {index}. {step}")
 
 
 def handoff_resume_cmd(

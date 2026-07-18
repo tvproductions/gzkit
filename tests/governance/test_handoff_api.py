@@ -22,7 +22,11 @@ from gzkit.handoff_api import (
     resume_handoff,
     scaffold_handoff,
 )
-from gzkit.handoff_validation import HandoffValidationError, find_handoff_for_release
+from gzkit.handoff_validation import (
+    HandoffValidationError,
+    find_handoff_for_release,
+    parse_frontmatter,
+)
 from gzkit.traceability import covers
 
 _SEVEN_SECTIONS = {
@@ -297,6 +301,145 @@ class TestResumeHandoff(unittest.TestCase):
                 self.assertEqual(result.staleness, expected_level)
                 self.assertEqual(result.requires_human_verification, expected_flag)
                 self.assertEqual(result.first_next_step, "Resume the traversal.")
+
+
+class TestResumeCarriesEveryNextStep(unittest.TestCase):
+    """Every authored next step must survive the resume (GHI #696).
+
+    The authoring contract (`gz-session-handoff/SKILL.md`) mandates an "Ordered
+    list of 3-5 concrete next actions". A resume that surfaces only the first
+    discards items 2-N, which then migrate into the successor handoff's open-loop
+    section and are met by the next session as undecided work — the observed
+    decay of GHI #691 from next-step #1 to a #4 sub-bullet across three sessions.
+    """
+
+    _FOUR_STEPS = (
+        "Rule on GHI #691 (rules have no aging clock).",
+        "Re-verify Pass A rows 1-8.",
+        "Close out ADR-0.0.37.",
+        "Author the ADR-0.34.0 capstone.",
+    )
+
+    def _handoff_with_steps(self, directory: Path, steps: tuple[str, ...]) -> None:
+        numbered = "\n".join(f"{i}. {step}" for i, step in enumerate(steps, start=1))
+        body = (
+            "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+            f"## Immediate Next Steps\n\n{numbered}\n"
+        )
+        (directory / "h.md").write_text(body, encoding="utf-8", newline="\n")
+
+    def test_resume_surfaces_every_authored_next_step(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_steps(handoff_dir, self._FOUR_STEPS)
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(
+                list(result.next_steps),
+                list(self._FOUR_STEPS),
+                "every authored next step must survive the resume, in authored order",
+            )
+
+    def test_first_next_step_remains_the_head_of_next_steps(self) -> None:
+        """The scalar stays a derived head, so the ``--json`` payload is unbroken."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_steps(handoff_dir, self._FOUR_STEPS)
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(result.first_next_step, self._FOUR_STEPS[0])
+            self.assertEqual(result.model_dump()["first_next_step"], self._FOUR_STEPS[0])
+
+    def test_empty_next_steps_section_yields_empty_list_not_crash(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_steps(handoff_dir, ())
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(list(result.next_steps), [])
+            self.assertEqual(result.first_next_step, "")
+
+
+class TestChainLinkIsCorrectByConstruction(unittest.TestCase):
+    """A successor handoff links to its predecessor without the author's help.
+
+    ``continues_from`` was optional and mostly unpopulated — 7 of the 12 most
+    recent handoffs omitted it, so walking the chain backward hit a dead end
+    four hops in and carryover could not be traced mechanically (GHI #696). An
+    optional field in a chain structure is not optional; the fix is to make the
+    link correct by construction rather than to fail closed on the author.
+    """
+
+    def _create(self, base: Path, slug: str, ts: str, **kwargs: object) -> Path:
+        return create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="test-agent",
+            slug=slug,
+            sections=_SEVEN_SECTIONS,
+            base_path=base,
+            timestamp=ts,
+            **kwargs,  # type: ignore
+        )
+
+    def test_successor_auto_links_to_newest_predecessor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            first = self._create(base, "first", "2026-07-18T10:00:00Z")
+            second = self._create(base, "second", "2026-07-18T11:00:00Z")
+
+            fm = parse_frontmatter(second.read_text(encoding="utf-8"))
+            self.assertEqual(
+                fm.get("continues_from"),
+                first.name,
+                "a successor must link to its predecessor without author action",
+            )
+
+    def test_chain_root_carries_no_link(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            root = self._create(base, "root", "2026-07-18T10:00:00Z")
+
+            fm = parse_frontmatter(root.read_text(encoding="utf-8"))
+            self.assertIsNone(
+                fm.get("continues_from"),
+                "the first handoff for an ADR has no predecessor to link",
+            )
+
+    def test_explicit_link_is_never_overridden(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "2026-07-18T10:00:00Z")
+            chosen = self._create(base, "chosen", "2026-07-18T10:30:00Z")
+            third = self._create(base, "third", "2026-07-18T11:00:00Z", continues_from=chosen.name)
+
+            fm = parse_frontmatter(third.read_text(encoding="utf-8"))
+            self.assertEqual(fm.get("continues_from"), chosen.name)
+
+    def test_auto_linked_chain_walks_back_unbroken(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "one", "2026-07-18T10:00:00Z")
+            self._create(base, "two", "2026-07-18T11:00:00Z")
+            newest = self._create(base, "three", "2026-07-18T12:00:00Z")
+
+            chain = load_handoff_chain(newest, base_path=base)
+
+            self.assertEqual(
+                [p.name.split("-", 1)[1] for p in chain],
+                ["one.md", "two.md", "three.md"],
+                "the auto-linked chain must walk back to the root, oldest-first",
+            )
 
 
 class TestFullSlugReleasePairing(unittest.TestCase):

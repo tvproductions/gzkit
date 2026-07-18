@@ -22,7 +22,7 @@ from enum import StrEnum
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 
 from gzkit.handoff_validation import (
     REQUIRED_SECTIONS,
@@ -88,15 +88,29 @@ class HandoffInfo(BaseModel):
 
 
 class ResumeResult(BaseModel):
-    """Outcome of resuming the newest handoff for an ADR."""
+    """Outcome of resuming the newest handoff for an ADR.
+
+    ``next_steps`` carries EVERY authored next step, in authored order. The
+    authoring contract mandates 3-5 concrete actions; a resume that surfaced
+    only the head silently discarded items 2-N, which then reappeared in the
+    successor handoff's open-loop section and were re-adjudicated as undecided
+    work (GHI #696). ``first_next_step`` remains as a derived head so the
+    ``--json`` payload and its consumers are unbroken.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     path: str
     staleness: StalenessLevel
     requires_human_verification: bool
-    first_next_step: str
+    next_steps: list[str]
     chain: list[str]
+
+    @computed_field
+    @property
+    def first_next_step(self) -> str:
+        """The head of ``next_steps`` — derived, never separately stored."""
+        return self.next_steps[0] if self.next_steps else ""
 
 
 # ---------------------------------------------------------------------------
@@ -160,19 +174,39 @@ def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
     return "".join(parts).rstrip("\n") + "\n"
 
 
-def _extract_first_next_step(content: str) -> str:
-    """Return the first numbered/bulleted line of the Immediate Next Steps section."""
+def _extract_next_steps(content: str) -> list[str]:
+    """Return EVERY numbered/bulleted item of the Immediate Next Steps section.
+
+    Returns them in authored order. The authoring contract mandates 3-5 concrete
+    actions; returning only the head is what let items 2-N fall out of the
+    advisory channel and be re-adjudicated as open loops (GHI #696).
+    """
     heading = re.search(r"^##\s+Immediate Next Steps\s*$", content, re.MULTILINE)
     if heading is None:
-        return ""
+        return []
     rest = content[heading.end() :]
     nxt = re.search(r"^##\s+", rest, re.MULTILINE)
     section = rest[: nxt.start()] if nxt else rest
+    steps: list[str] = []
     for line in section.splitlines():
         match = re.match(r"^(?:\d+\.\s+|[-*]\s+)(.*)$", line.strip())
         if match and match.group(1).strip():
-            return match.group(1).strip()
-    return ""
+            steps.append(match.group(1).strip())
+    return steps
+
+
+def _newest_predecessor(adr_id: str, base_path: Path) -> str | None:
+    """Return the newest existing handoff filename for ``adr_id``, if any.
+
+    Makes the ``continues_from`` link correct by construction. The field was
+    optional and mostly unpopulated (7 of the 12 most recent handoffs omitted
+    it), so the chain died mid-walk and carryover could not be traced across
+    sessions (GHI #696). An author has no reason to withhold the link, so the
+    cure is to supply it rather than to fail closed on its absence. Returns
+    ``None`` when no predecessor exists — that handoff is a genuine chain root.
+    """
+    prior = list_handoffs(adr_id=adr_id, base_path=base_path)
+    return Path(prior[0].path).name if prior else None
 
 
 def _classify_staleness(now: str, timestamp: str) -> StalenessLevel:
@@ -242,6 +276,7 @@ def create_handoff(
     written to ``<base_path>/.gzkit/handoffs/<fs-ts>-<slug>.md`` and its path returned.
     """
     ts = timestamp or _now_iso()
+    link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
     frontmatter: dict = {
         "mode": mode,
         "adr_id": adr_id,
@@ -253,8 +288,8 @@ def create_handoff(
         frontmatter["obpi_id"] = obpi_id
     if session_id is not None:
         frontmatter["session_id"] = session_id
-    if continues_from is not None:
-        frontmatter["continues_from"] = continues_from
+    if link is not None:
+        frontmatter["continues_from"] = link
 
     document = _render_document(frontmatter, sections)
     violations = validate_handoff_document(document, base_path)
@@ -380,8 +415,8 @@ def resume_handoff(*, adr_id: str, base_path: Path = Path("."), now: str) -> Res
 
     Selects the newest handoff for the ADR, classifies staleness from its age
     (``now`` minus its frontmatter timestamp), flags
-    ``requires_human_verification`` for Stale / Very-Stale, and extracts the
-    first next step from the Immediate Next Steps section.
+    ``requires_human_verification`` for Stale / Very-Stale, and extracts every
+    authored next step from the Immediate Next Steps section.
     """
     infos = list_handoffs(adr_id=adr_id, base_path=base_path)
     if not infos:
@@ -397,6 +432,6 @@ def resume_handoff(*, adr_id: str, base_path: Path = Path("."), now: str) -> Res
         path=path.as_posix(),
         staleness=staleness,
         requires_human_verification=requires,
-        first_next_step=_extract_first_next_step(content),
+        next_steps=_extract_next_steps(content),
         chain=chain,
     )
