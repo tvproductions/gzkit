@@ -266,4 +266,111 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-*(none yet — this edition is fresh as of 2026-07-18)*
+### 2026-07-18 — Disposition change: TSP routing, not a rush to 1.0 (operator-ratified)
+
+Operator, verbatim: *"we need to change the disposition of the campaign, it is not
+'rush to 1.0 now.' it is, what is the best 'traveling salesman' path through the backlog
+to 1.0. I think there is a tone and temperament misalignment here."*
+
+**CARRIED — binding on this and every successor edition.** The plan optimizes the *route*,
+not the *finish date*. Consequences:
+
+1. **The set is taken as given; the win is in the ordering.** Set-shrinking moves
+   (bounding gates by dated census, declaring items "explicitly NOT 1.0 gates",
+   deferral rulings) are no longer the instrument of progress. Items are *sequenced*,
+   not *excluded*. This is why they kept resurfacing as re-adjudication.
+2. **Re-entry cost is the metric being minimized.** Measured this session: ~40 orphaned
+   governance docs, agents re-deriving structure from source each session and getting it
+   wrong. That is a re-entry-cost failure, and it is gzkit's actual disease — not
+   accretion volume.
+3. **Adjacency is the primary object.** Items that share setup cost are visited together.
+4. **The pool is visited as we inch forward** (operator, 2026-07-18) — not a post-1.0
+   wall. This **AMENDS §7**: the pool is a far cluster routed to late, not a category
+   ruled out. Nothing gets orphaned; nothing resurfaces as *"but we booked that for 1.0."*
+5. **Tone is not cosmetic — it selected the plan.** The frustration register of this
+   edition ("the road to 1.0 was dragging", "largest single line item on the board")
+   produced Movement C item 1, which proposed deleting shipped product to reduce a commit
+   count. Temperament defects become correctness defects.
+
+### 2026-07-18 — The rhythm: four mechanisms, four jobs (operator-ratified)
+
+Operator, verbatim: *"AGENTS.md -> how we work; magna carta -> what we are working on.
+handoff -> what we were doing last. airlock -> a sortie into the environment. handoff ->
+a market [marker] for when we leave the session. That should be our rhythm."*
+
+Also: *"much of agents is there to remind you how I'd like for our working partnership to
+exist. the magna carta should help tell the 'story of gzkit' so we stay focused on
+emerging priorities AND the executive summary of what gzkit is. It is there to help you."*
+And: *"the airlock and magna carta gives us a sense of connectedness/cohesion among the
+items."*
+
+| Mechanism | Job |
+|---|---|
+| `AGENTS.md` | **how we work** — the working partnership, behavioral contract |
+| Magna Carta | **what we are working on** — the story of gzkit, the executive summary of what gzkit *is*, and emerging priorities |
+| handoff (entry) | **what we were doing last** — informs the airlock entry |
+| airlock | **a sortie into the environment** |
+| handoff (exit) | **a marker for when we leave the session** |
+
+**Binding consequence: the Magna Carta MUST carry the story and the executive summary.**
+This edition does not — §1 is three lines and the remaining ~24KB is movements, rulings,
+and census tables. The story half atrophied, which is why each session re-derives what
+gzkit is from source. Restoring it is not decoration; it is the orientation organ, and it
+lives here rather than in a hook. Airlock + Magna Carta together supply
+*connectedness/cohesion among the items* — the route is not a flat list.
+
+### 2026-07-18 — Movement C item 1 retires: install-time assembly already ships
+
+Evidence, this session: `gz init` (`src/gzkit/commands/init_cmd.py:894`) copies only
+*canonical inputs* from the wheel via `importlib.resources`, then calls `sync_all()`,
+which **generates** every vendor surface in the adopter tree. No pre-rendered `AGENTS.md`
+or `CLAUDE.md` ships in the wheel; adopters have never received one. The surviving
+file-copy (`sync_pkg_surfaces`, `sync_surfaces.py:701`) is wheel-payload staging, hard
+no-op'd for adopters by `_pkg_surface_exists` (`:626`).
+
+- **"Generate at install, not at commit" is already true for the product.** Item retires
+  as delivered, not as wrong.
+- **Operator ruling: gzkit keeps committing its own mirrors while dogfooding** — verbatim:
+  *"we are dogfooding, so we have to keep on generating/mirroring until the product settles
+  a bit more."* The 703 `gz git-sync` commits are the dogfooding artifact, an accepted
+  cost, and **not** a reduction target.
+- **The control surfaces are integral product** (operator, verbatim: *"five copies are
+  wheel-borne. the control surfaces are an integral part of the product"*). Already
+  mechanized at `.gzkit/manifest.json:45-59` + `gz validate --distribution` (ADR-0.0.31);
+  the prose surfaces contradict it by calling them "mirrors / generated / do not edit",
+  which misled an agent twice this session.
+
+### 2026-07-18 — Findings booked this session (route inputs, not yet sequenced)
+
+- **~40 orphaned governance docs** (~450KB) under `docs/governance/`: 2 DELIVERED,
+  ~24 POINTER-ONLY, ~40 ORPHANED. Includes `agent-control-surface-rendering-substrate.md`
+  (26KB, foundation-tier) whose own `## Agent Orientation Index` opens *"Do not re-derive
+  the rendering architecture from source each session"* — and which has **zero referrers**
+  anywhere in the per-turn surface.
+- **The repo diagnosed this on 2026-05-30** (`.gzkit/insights/agent-insights.jsonl:146`):
+  *"nothing loads relevant prior learning at decision time … Capture without re-injection
+  does not bind."* Prescribed fix: a hook. Shipped (OBPI-0.0.37-27, attested 2026-06-15):
+  a markdown section inside the unread document. **Correction, not enhancement — routes
+  under ADR-0.0.37.**
+- **`instructions-files-diet` chore acceptance criterion #9** treats *the existence of a
+  hyperlink* as proof pedagogy is reachable (`CHORE.md:152`); all six evidence commands
+  measure weight reduction, none measures retrieval.
+- **Two CMS facades** (§4 class): `validate_render` fires only when `project_root` is
+  passed, and `sync_agents_md` (`sync_surfaces.py:407`) does not pass it — the one render
+  that ships a surface skips fidelity validation. Temperature is inert —
+  `pipeline.py:96-101` documents output is byte-identical across all valid temperatures.
+- **`render_content_surface()` (`sync_surfaces.py:637`)** — the doctrine-conformant
+  render bridge — has zero production callers; one test keeps it alive.
+- **Still no `Corpus → str` materializer**; `compose()` validates a hand-authored
+  candidate. Prior session's finding stands unrefuted.
+
+### 2026-07-18 — Re-adjudication is the named disease, and it fired again
+
+Operator, verbatim: *"I swear we've covered this before."* Movement D already diagnoses
+exactly this — *"nothing in gzkit represents the state 'settled'"* — and its fix
+(`ruling_issued` / `ruling_superseded` typed events, a `gz ruling` verb) is unbuilt, with
+this register as the manual stand-in. The pattern across all three of this session's
+findings: **the diagnosis was correct, written down, and terminated in prose instead of a
+mechanism.** Orphaned maps (authored, not retrieved) · orientation index (prescribed as a
+hook, shipped as a paragraph) · rulings (diagnosed as needing typed events, shipped as a
+table someone must remember to fill).
