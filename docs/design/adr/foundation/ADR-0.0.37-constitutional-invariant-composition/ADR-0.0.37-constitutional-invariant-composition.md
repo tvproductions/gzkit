@@ -413,6 +413,17 @@ feature, not the invariant) and is **severed to a post-1.0 successor feature** t
 GHI #623 (absorbing GHI #654). The Build-to-1.0 campaign already ratified this engine as
 severable enrichment behind a shipped floor — the airlock ships and gates on the floor.
 
+> **Tracker reconciliation (2026-07-19, pointer-only — the ruling above is unchanged).**
+> GHI #623 is **closed**; the surviving tracker for the severed engine is **GHI #654**.
+> The absorption direction recorded above is backwards relative to what survived: #623
+> was the audit finding and its findings are discharged (claims 3/4 fixed by later work;
+> corrective scope A landed as `--rendition-floor-coherence`; the discarded registry
+> parameters removed at `4f9c7d2b`; a witness-resolution gate added at `e409bb08`).
+> #654 states the same unbuilt capability from the operator side, with a reproduction —
+> *"there is no generator that renders the corpus delta into a candidate."* Recorded here
+> because this section is the canon a future reader consults, and it would otherwise
+> point them at a closed issue for work that is still open.
+
 **Delivered and load-bearing (the honest floor 1.0 ships on):**
 
 - **CIC-2 brief↔reality coherence** — `gz validate --brief-reconcile`, the Stage-1 and
