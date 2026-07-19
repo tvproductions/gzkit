@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import difflib
 import sys
-from pathlib import Path
 
 from gzkit.commands.common import get_project_root
 from gzkit.governance.compose import render_agents_md
-from gzkit.governance.invariants import load_invariants
 
 _SUPPORTED_TARGETS = frozenset({"agents-md"})
-_TEMPLATE_ROOT = Path(__file__).parent.parent / "templates"
 
 
 def governance_render_cmd(
@@ -37,8 +34,7 @@ def governance_render_cmd(
         raise SystemExit(1)
 
     root = get_project_root()
-    invariants = load_invariants(root)
-    rendered = render_agents_md(invariants, _TEMPLATE_ROOT, root)
+    rendered = render_agents_md(root)
 
     if stdout:
         stdout_dest = getattr(sys.stdout, "buffer", None)

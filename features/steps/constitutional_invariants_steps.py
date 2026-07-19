@@ -76,14 +76,11 @@ def _seed_registry(root: Path) -> None:
 
 
 def _render_bytes(root: Path) -> bytes:
-    """Render agents-md to bytes without writing file, patching project root."""
+    """Play back the committed AGENTS.md rendition to bytes without writing the file."""
 
     from gzkit.governance.compose import render_agents_md
-    from gzkit.governance.invariants import load_invariants
 
-    template_root = Path(__file__).parent.parent.parent / "src" / "gzkit" / "templates"
-    invariants = load_invariants(root)
-    return render_agents_md(invariants, template_root, root)
+    return render_agents_md(root)
 
 
 # The invariant-coherence validator was repointed (OBPI-0.0.37-22) from

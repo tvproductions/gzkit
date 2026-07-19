@@ -20,8 +20,6 @@ from unittest.mock import patch
 from gzkit.cli import main
 from gzkit.traceability import covers
 
-_FIXTURE_ROOT = Path(__file__).parent.parent / "fixtures" / "compose"
-
 
 def _invoke_cli(*args: str) -> tuple[int, str, str]:
     """Invoke the gz CLI; return (exit_code, stdout, stderr).
@@ -87,7 +85,6 @@ class TestGovernanceRenderStdout(unittest.TestCase):
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md", "--stdout"
@@ -100,7 +97,6 @@ class TestGovernanceRenderStdout(unittest.TestCase):
     def test_stdout_mode_produces_bytes(self) -> None:
         with (
             patch("gzkit.commands.governance_render.get_project_root", return_value=Path(".")),
-            patch("gzkit.commands.governance_render.load_invariants", return_value={}),
         ):
             exit_code, stdout, stderr = _invoke_cli(
                 "governance", "render", "--target", "agents-md", "--stdout"
@@ -119,7 +115,6 @@ class TestGovernanceRenderWriteMode(unittest.TestCase):
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md"
@@ -134,7 +129,6 @@ class TestGovernanceRenderWriteMode(unittest.TestCase):
             root = Path(tmp)
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md"
@@ -152,14 +146,12 @@ class TestGovernanceRenderCheckMode(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            rendered = render_agents_md({}, _FIXTURE_ROOT, root)
+            rendered = render_agents_md(root)
             agents_path = root / "AGENTS.md"
             agents_path.write_bytes(rendered)
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
-                patch("gzkit.commands.governance_render._TEMPLATE_ROOT", _FIXTURE_ROOT),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md", "--check"
@@ -177,8 +169,6 @@ class TestGovernanceRenderCheckMode(unittest.TestCase):
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
-                patch("gzkit.commands.governance_render._TEMPLATE_ROOT", _FIXTURE_ROOT),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md", "--check"
@@ -195,8 +185,6 @@ class TestGovernanceRenderCheckMode(unittest.TestCase):
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
-                patch("gzkit.commands.governance_render._TEMPLATE_ROOT", _FIXTURE_ROOT),
             ):
                 exit_code, stdout, stderr = _invoke_cli(
                     "governance", "render", "--target", "agents-md", "--check"
@@ -221,7 +209,6 @@ class TestGovernanceRenderNoLedgerEvent(unittest.TestCase):
 
             with (
                 patch("gzkit.commands.governance_render.get_project_root", return_value=root),
-                patch("gzkit.commands.governance_render.load_invariants", return_value={}),
             ):
                 _invoke_cli("governance", "render", "--target", "agents-md")
 
