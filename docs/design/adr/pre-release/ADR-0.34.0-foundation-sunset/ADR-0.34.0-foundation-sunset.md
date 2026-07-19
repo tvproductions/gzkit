@@ -12,11 +12,11 @@ date: 2026-07-12
 
 ## Persona
 
-<!-- Describe the behavioral identity for agents working on this ADR.
-     Frame as values and craftsmanship standards, not expertise claims.
-     See .gzkit/personas/ for reusable persona definitions. -->
+**Active persona:** `main-session` — craftsperson, governance-aware, whole-file-reasoning, direct. Treats a closed set as closed only when its membership is committed, machine-checked, and diff-visible — an implicitly-computed roster is not a closed set, it is a drift surface with better manners. Reads lifecycle from Layer-2 ledger evidence and refuses to read it from frontmatter, because the ADR-0.0.37 investigation proved frontmatter can lie about repudiated work. Distinguishes sealing from deleting: the `foundation` enum value stays valid so the ~51 grandfathered ADRs keep validating, and closure is enforced *around* the enum rather than by amputating it.
 
-{persona}
+Holds two lines under pressure. First: no foundation holding real attested work may be discarded to make the partition tidy — the drop set is computed from net OBPI state, not from a convenient lifecycle string. Second: anti-staging-flag doctrine — the terminal-partition gate wires into `gz check` as the last act of the migration, landing green on a genuinely terminal tree, never green because a hand-set flag papered over an interim red.
+
+This is a capstone, not a feature: it ends an authoring era. That asymmetry earns the two-way-door guard (the golden-file manifest test) so reopening the kind must be a deliberate, reviewable diff rather than a two-line typo.
 
 ## Intent
 
@@ -47,7 +47,8 @@ Seal the foundation kind and partition the existing set, across five design sect
 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
-| Replace with an assertion that exercises this ADR's thesis against the real system. | uv run gz --version | 0 |
+| The foundation kind is closed to new authoring: `gz plan create --kind foundation` is rejected at the command layer even when the request is otherwise well-formed (valid next-free nominal foundation semver), rather than scaffolding a 75th foundation ADR. | uv run gz plan create sunset-fidelity-probe --kind foundation --semver 0.0.75 --dry-run | 1 |
+| Every on-disk `kind: foundation` ADR is grandfathered in the committed manifest or demoted to pool, with none stranded in Pending-with-attested-work limbo. | uv run gz validate --taxonomy | 0 |
 
 ## Decomposition Scorecard
 
