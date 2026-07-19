@@ -6,7 +6,7 @@ Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-07-18).
 Supersedes [`build-to-1.0-campaign-2026-06-30.md`](build-to-1.0-campaign-2026-06-30.md);
 priors are retained for audit and no longer steer.
 
-> **Topmost (sequenced):** **Movement A — close the Foundation Sunset.** `ADR-0.0.37` audit → re-home the composition engine as a feature (GHI #623) → `ADR-0.34.0` capstone. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
+> **Topmost (sequenced):** **Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → **NEXT: re-home the composition engine as a feature (GHI #623)** → `ADR-0.34.0` capstone. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
 
 > **Why this edition exists.** The road to 1.0 was dragging. Measured 2026-07-18 over
 > the prior 90 days: **1,508 commits, 43 of them `feat` (2.9%)**; 703 were `gz git-sync`
@@ -125,7 +125,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > opens while `uv run gz check` is red.
 
 **Movement A — Close the Foundation Sunset** *(TOPMOST; forward engine; closes a kind — reductive)*
-- [ ] `ADR-0.0.37` → `Validated` via `/gz-adr-audit`. Live state: `Completed` · attested · 15/15 · Closeout **READY** · QC **READY**. The 4 repudiated composition OBPIs were withdrawn in `d03ce98f`.
+- [x] `ADR-0.0.37` → `Validated` via `/gz-adr-audit`. Attribution drift found by independent review and remediated pre-receipt. `b40a8026` · receipt `arb-step-unittest-753d3dda` · detail in § Amendments 2026-07-18 (later session).
 - [ ] Re-home the registry→AGENTS.md composition engine as a **feature** ADR (closes GHI #623).
 - [ ] `ADR-0.34.0-foundation-sunset` capstone — 5 authored OBPIs, currently `Pending` 0/5: demote the ~23 unstarted foundations to pool · populate the grandfather manifest · backfill `foundation_grandfathered` · `gz ontology resense` · wire the permanent `--taxonomy` gate into `gz check`.
 
@@ -374,3 +374,51 @@ findings: **the diagnosis was correct, written down, and terminated in prose ins
 mechanism.** Orphaned maps (authored, not retrieved) · orientation index (prescribed as a
 hook, shipped as a paragraph) · rulings (diagnosed as needing typed events, shipped as a
 table someone must remember to fill).
+
+### 2026-07-18 (later session) — Movement A item 1 closed; audit route inputs booked
+
+**Recording under § 8 "living: items check off with command evidence" — not a sequencing
+amendment.** Movement A item 1 is checked off with the evidence inline; the queue order is
+untouched and no ruling is carried or withdrawn here. Anything below that would change
+sequencing is marked as needing operator ratification.
+
+`ADR-0.0.37` is `Validated` (`b40a8026`). The `/gz-adr-audit` ceremony ran with the
+independent persona dispatches the skill mandates, and they disagreed — which is the point:
+
+- `spec-reviewer` **PASS** — every BEHAVIOR REQ on all 15 linked OBPIs is `@covers`-covered.
+  The 57-REQ advisory is honest: of the 27 belonging to linked briefs, 26 are `[SUPPORT]`
+  and 1 is `[structural-fence]`, exempt by proof channel under `ADR-0.0.59`.
+- `quality-reviewer` **CONCERNS** — Layer-1 attribution drift, remediated before the receipt
+  was emitted. The driver independently verified each claim and **refuted one** (`F3`:
+  `tier_policy` does have live consumers at `composer.py:20`,
+  `rendition_floor_coherence.py:24`).
+
+**Route inputs (not yet sequenced):**
+
+- **GHI #700 — FIXED, `77ad9d70`.** `_AC_LINE_PATTERN` tolerated markdown emphasis around
+  the REQ id but not around the kind tag, so `**[BEHAVIOR]**` lines fell to a *warn-only*
+  skip branch. `ADR-0.34.0-foundation-sunset` — the Movement A item 3 capstone — was
+  silently losing **6 REQs, 5 of them BEHAVIOR**, while `audit-check` reported exit 0.
+  Repo-wide scan after the fix: **0 remaining unparseable REQ lines.** Item 3's coverage
+  arithmetic could not have been trusted before this landed.
+- **GHI #701** — the uncovered-REQ advisory is REQ-kind-agnostic, reporting SUPPORT and
+  STRUCTURAL-FENCE REQs as owing `@covers`. Steers agents directly into the
+  `.claude/rules/adr-audit.md` Rules (c) anti-pattern. Same limitation already documented
+  for the sibling behave gate at `data/behave_coverage_waivers.json:79,80,82`.
+- **GHI #702** — a fidelity assertion row can name the fidelity gate as its own command.
+  `ADR-0.0.37` row 4 asserted *"the block is parseable by the fidelity gate"*, verified by
+  running that gate; it cannot fail while being evaluated. **This is §4's failure class
+  inside the mechanism ADR-0.0.73 built to enforce §4** — cross-linked to GHI #699 as a
+  sibling cut (#699 audits the 47 enforcement claims; #702 is the same shape on the
+  fidelity-assertion surface, which #699's audit did not cover). A sweep of existing
+  `## Fidelity Assertions` blocks for the same row is unscoped.
+- **GHI #703** — `REQ-0.0.37-15-05/-06` are `[SUPPORT]` yet `@covers`-decorated: the
+  inverted proof channel, inflating apparent coverage. Non-blocking (withdrawn brief).
+
+**Observation for Movement A item 2 (GHI #623), needs no ratification but changes what the
+successor inherits.** The audit's Attribution repair is now the honest inventory: the
+composition engine's *shipped* half — `rendition_store.py`, `rendition_freshness.py`,
+`composer.py`, `tier_policy.py` — originates in the **withdrawn** briefs 21/22 and is
+load-bearing. What is genuinely absent is the attributable corpus→candidate generator and
+the `rendition ⊆ corpus` lineage gate. The feature ADR re-homing this should scope to the
+absent half, not re-declare the shipped half as new work.
