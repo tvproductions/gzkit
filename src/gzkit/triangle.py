@@ -164,7 +164,11 @@ class LinkageRecord(BaseModel):
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
     r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
-    r"(?:\s+\[(?P<taxonomy_kind>BEHAVIOR|SUPPORT|STRUCTURAL-FENCE|behavior|support|structural-fence)\])?"
+    # Emphasis is tolerated around the kind tag as it already is around the
+    # REQ id: ADR-0.0.59 mandates the tag, not its typographic weight, and an
+    # unmatched line is only warned about — so a `**[BEHAVIOR]**` brief would
+    # silently under-count its REQ set (GHI #700).
+    r"(?:\s+\*{0,2}\[(?P<taxonomy_kind>BEHAVIOR|SUPPORT|STRUCTURAL-FENCE|behavior|support|structural-fence)\]\*{0,2})?"
     r":\*{0,2}\s*(?:\[(?P<kind>doc)\]\s+)?(?P<description>.+)$"
 )
 

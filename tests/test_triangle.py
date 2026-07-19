@@ -368,6 +368,60 @@ class TestExtractReqsFromBrief(unittest.TestCase):
         reqs = extract_reqs_from_brief(content, "OBPI-0.1.0-01")
         self.assertEqual(reqs, [])
 
+
+class TestExtractEmphasizedTaxonomyKind(unittest.TestCase):
+    """Kind tags survive markdown emphasis (GHI #700).
+
+    ADR-0.0.59 mandates an inline ``[kind]`` tag on every REQ but does not
+    constrain its typographic weight, and the acceptance-criteria pattern
+    already tolerates emphasis around the REQ id. A brief that emphasizes the
+    kind tag must therefore still yield its REQs, with the declared kind
+    intact -- a dropped line silently under-counts the REQ set, and the skip
+    branch only warns, so the undercount presents as a clean run.
+    """
+
+    BOLD_BRIEF = """## Acceptance Criteria
+
+- [ ] REQ-0.34.0-04-01 **[BEHAVIOR]**: `gz adr demote` moves an unstarted foundation to pool.
+- [ ] REQ-0.34.0-04-02 **[SUPPORT]**: each grandfathered foundation receives one manifest entry.
+- [x] REQ-0.34.0-04-03 **[STRUCTURAL-FENCE]**: the taxonomy gate is wired into `gz check`.
+"""
+
+    def test_emphasized_kind_tag_still_yields_reqs(self) -> None:
+        reqs = extract_reqs_from_brief(self.BOLD_BRIEF, "OBPI-0.34.0-04")
+        self.assertEqual(
+            [str(r.id) for r in reqs],
+            ["REQ-0.34.0-04-01", "REQ-0.34.0-04-02", "REQ-0.34.0-04-03"],
+        )
+
+    def test_emphasized_kind_tag_preserves_declared_kind(self) -> None:
+        reqs = extract_reqs_from_brief(self.BOLD_BRIEF, "OBPI-0.34.0-04")
+        self.assertEqual(
+            {str(r.id): r.taxonomy_kind for r in reqs},
+            {
+                "REQ-0.34.0-04-01": "BEHAVIOR",
+                "REQ-0.34.0-04-02": "SUPPORT",
+                "REQ-0.34.0-04-03": "STRUCTURAL-FENCE",
+            },
+        )
+
+    def test_emphasized_kind_tag_preserves_status_and_description(self) -> None:
+        reqs = extract_reqs_from_brief(self.BOLD_BRIEF, "OBPI-0.34.0-04")
+        by_id = {str(r.id): r for r in reqs}
+        self.assertEqual(by_id["REQ-0.34.0-04-01"].status, ReqStatus.UNCHECKED)
+        self.assertEqual(by_id["REQ-0.34.0-04-03"].status, ReqStatus.CHECKED)
+        self.assertEqual(
+            by_id["REQ-0.34.0-04-02"].description,
+            "each grandfathered foundation receives one manifest entry.",
+        )
+
+    def test_unemphasized_kind_tag_still_parses(self) -> None:
+        """The fix widens the accepted forms; it must not narrow them."""
+        plain = "## Acceptance Criteria\n\n- [ ] REQ-0.34.0-04-01 [behavior]: plain tag.\n"
+        reqs = extract_reqs_from_brief(plain, "OBPI-0.34.0-04")
+        self.assertEqual(len(reqs), 1)
+        self.assertEqual(reqs[0].taxonomy_kind, "BEHAVIOR")
+
     def test_stops_at_next_section(self) -> None:
         content = """\
 ## Acceptance Criteria
