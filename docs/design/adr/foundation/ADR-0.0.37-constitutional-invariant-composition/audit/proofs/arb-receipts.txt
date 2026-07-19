@@ -1,0 +1,15 @@
+=== ARB RUFF ===
+arb ruff exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-ruff-0864e223064745a69725fd348217f296.json
+=== ARB TYPECHECK ===
+All checks passed!
+arb step name=typecheck exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-typecheck-997ab50e851c42cb851d042a915ecb8f.json
+=== ARB UNITTEST ===
+Evidence / Artifacts
+/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmp3g0tvy1z/.gzkit/handoffs/202
+60718T234251Z-my-work.md
+arb step name=unittest exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-unittest-753d3dda7252450da406703b9045b696.json
+=== ARB MKDOCS ===
+  - user/skills/gz-workflow.md
+  - user/storybook/from-init-to-first-attested-release.md
+INFO    -  Documentation built in 3.16 seconds
+arb step name=mkdocs exit_status=0 receipt=/Users/jeff/Documents/Code/gzkit/artifacts/receipts/arb-step-mkdocs-b3861e3c6db34d8282a625f6f10119d1.json

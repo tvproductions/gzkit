@@ -1,0 +1,23 @@
+gz adr fidelity: ADR-0.0.37-constitutional-invariant-composition
+  Assertions: 4
+
+  PASS  Committed AGENTS.md byte-matches deterministic playback of the committed
+rendition; hand-edits to the rendered surface fail closed.
+        command:  uv run gz validate --invariant-coherence
+        expected: 0  observed: 0
+
+  PASS  CIC-2 brief↔reality reconciliation is live and fail-closed.
+        command:  uv run gz validate --brief-reconcile
+        expected: 0  observed: 0
+
+  PASS  Corpus↔rendition freshness (content-fingerprint) and rendition-byte
+integrity are enforced.
+        command:  uv run gz validate --rendition-freshness
+        expected: 0  observed: 0
+
+  PASS  The Fidelity Assertions block is parseable by the fidelity gate.
+        command:  uv run gz adr fidelity
+ADR-0.0.37-constitutional-invariant-composition --check
+        expected: 0  observed: 0
+
+  Summary: 4 pass, 0 fail

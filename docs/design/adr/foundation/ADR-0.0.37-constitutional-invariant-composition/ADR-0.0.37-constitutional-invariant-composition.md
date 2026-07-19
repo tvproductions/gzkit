@@ -1,6 +1,6 @@
 ---
 id: ADR-0.0.37-constitutional-invariant-composition
-status: Completed
+status: Validated
 kind: foundation
 semver: 0.0.37
 lane: heavy
@@ -293,10 +293,10 @@ they have a foundation invariant to defend.
 - Split State Anchor: 1
 - Split Testability Ceiling: 1
 - Split Total: 4
-- Final Target OBPI Count: 19
+- Final Target OBPI Count: 15
 <!-- Baseline Selected 12→16 (2026-06-03 Re-Alignment): split flags are 0/1 booleans (Split Total max 4), so the re-decomposition's added separable units (append-only corpus store, capture tool+skill, setpoint config, compression composer, committed-rendition store + deterministic playback, invariant tier, advisor-QC loop, tier-scoped retention validator, #519 setpoint, migration) raise the baseline from 12 to 16. Baseline 16 + Split 4 = 20. (2026-06-04: 16→15 after OBPI-09 withdrawn — a never-built base migration unit, superseded by the corpus track; Baseline 15 + Split 4 = 19.) -->
 <!-- 16→17 (operator-directed, 2026-06-03): OBPI-17 added after the Codex-loader finding ruled out per-vendor emission as the #519 relief and the dial was found inert (every Bullet.density_min=None → identical bytes at every temperature). The "locked 16" was a design-dialogue calibration ("calibrated over time from project evidence"); the emergency-relief increment is the evidence. OBPI-17 is the AgentContract-path density classification; distinct from OBPI-09's superseded invariant-registry migration. -->
-<!-- 17→20 active / 27 mechanical (operator-directed 2026-06-03; renumbered to 18–27 on 2026-06-04): the § Decision Re-Alignment supersedes the 2026-05-30 density-dial mechanism (inert per-bullet density_min filter + three static templates) with the corpus → setpoint-compression → committed-rendition → deterministic-playback + invariant-tier model. The 10 re-aligned items are numbered 18–27 (clean of every minted ID; ledger-verified — old 11–15 are attested-complete, 16/17 created-only). The scorecard target is 27 so `gz validate --documents` and `gz specify --item 18..27` operate on the actual checklist identities; the active non-withdrawn target is 19 = 9 base (01–08, 10) + 10 re-aligned (18–27) after 09 and 11–17 are withdrawn from active status. 09 withdrawn 2026-06-04 (operator-directed; never built; invariant-registry migration superseded by the corpus track — items 18/22/27 own AGENTS.md authoring; coherence lock preserved via OBPI-22 rendition playback). 11/13/14 substrate re-homed, 15 retires, 16 folds into item 27, 17 retires. Per SKILLS-FIRST, each new capability is delivered as tool(s) + the skill that wields them. -->
+<!-- 17→20 active / 27 mechanical (operator-directed 2026-06-03; renumbered to 18–27 on 2026-06-04): the § Decision Re-Alignment supersedes the 2026-05-30 density-dial mechanism (inert per-bullet density_min filter + three static templates) with the corpus → setpoint-compression → committed-rendition → deterministic-playback + invariant-tier model. The 10 re-aligned items are numbered 18–27 (clean of every minted ID; ledger-verified — old 11–15 are attested-complete, 16/17 created-only). The scorecard target is 27 so `gz validate --documents` and `gz specify --item 18..27` operate on the actual checklist identities; the active non-withdrawn target is 19 = 9 base (01–08, 10) + 10 re-aligned (18–27) after 09 and 11–17 are withdrawn from active status. (2026-07-18 audit reconciliation: 19→15 after the Foundation-Sunset split-and-supersede withdrew 02/03/21/22 in `d03ce98f` — active target is now 7 base (01, 04–08, 10) + 8 re-aligned (18–20, 23–27), matching `gz adr status` 15/15.) 09 withdrawn 2026-06-04 (operator-directed; never built; invariant-registry migration superseded by the corpus track — items 18/22/27 own AGENTS.md authoring; coherence lock preserved via OBPI-22 rendition playback). 11/13/14 substrate re-homed, 15 retires, 16 folds into item 27, 17 retires. Per SKILLS-FIRST, each new capability is delivered as tool(s) + the skill that wields them. -->
 
 
 ## Checklist
@@ -304,8 +304,8 @@ they have a foundation invariant to defend.
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
 - [ ] OBPI-0.0.37-01 — Constitutional invariant schema + registry primitive (frozen Pydantic ConstitutionalInvariant + JSON Schema mirror + first three seed invariants: CIC-1, CIC-2, foundation-ADR-registers-invariant)
-- [ ] OBPI-0.0.37-02 — Composition renderer (`gz governance render --target agents-md`; deterministic byte output; `--check` mode)
-- [ ] OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event)
+- [ ] OBPI-0.0.37-02 — Composition renderer (`gz governance render --target agents-md`; deterministic byte output; `--check` mode) [withdrawn; repudiated 2026-06-16, permanently withdrawn `obpi_withdrawn` 2026-07-17 (`d03ce98f`); registry spine obsoleted by the 2026-06-03 corpus Re-Alignment — `render_agents_md` ignores its registry argument; severed to GHI #623, post-1.0]
+- [ ] OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event) [withdrawn; repudiated 2026-06-16, permanently withdrawn `obpi_withdrawn` 2026-07-17 (`d03ce98f`); `--invariant-coherence` ships but diffs rendition playback vs committed surface, never the registry — re-pointed by item 22; severed to GHI #623, post-1.0]
 - [ ] OBPI-0.0.37-04 — OBPI brief structural schema (`BriefStructure` Pydantic + JSON Schema mirror; structured allowlist + REQs + Verification + citations; permissive mode with deprecation window)
 - [ ] OBPI-0.0.37-05 — Brief reconciliation engine (project-tree walker; per-dimension delta computation across the five drift classes)
 - [ ] OBPI-0.0.37-06 — `gz brief reconcile <OBPI-ID> [--apply]` CLI verb (operator-runnable; `brief_reconciled` ledger event; `--apply` writes operator-attested amendments)
@@ -325,8 +325,8 @@ they have a foundation invariant to defend.
 - [ ] OBPI-0.0.37-18 — Append-only corpus model + addressed-entry schema (reuse AgentContract/Pillar substrate from prior 11/13; entry = id/surface/section/anchor/tier{invariant|compressible}/classification/witness/text/origin/ts; sections are TEMPLATE-defined, Pydantic enforces conformance; append-only contract)
 - [ ] OBPI-0.0.37-19 — Corpus capture tool + skill (`gz content remember <surface> --section <id> [--tier]` tool appends an entry + `corpus_entry_appended` ledger event, never edits a rendered surface; wielding capture skill; replaces prior OBPI-12 renderer)
 - [ ] OBPI-0.0.37-20 — Setpoint declaration + coherence validator (compression target per surface×consumer in `data/vendor-manifest.json` `content_type_temperatures`; `gz validate` scope asserts every (surface×consumer) has a declared setpoint; re-homes prior 13/15 substrate)
-- [ ] OBPI-0.0.37-21 — Authoring-time compression composer tool + skill (LLM compresses compressible-tier corpus toward the setpoint — drop/combine/rewrite; emits candidate rendition + per-tier byte evidence; wielded by a compose skill; NO LLM in the render path)
-- [ ] OBPI-0.0.37-22 — Committed-rendition store + deterministic playback + freshness gate (durable rendition artifact per surface×consumer; `sync_agents_md` plays it back deterministically; build fail-closes on corpus↔rendition drift; `--invariant-coherence` diffs playback vs committed surface; re-homes prior OBPI-14 sync/compose plumbing)
+- [ ] OBPI-0.0.37-21 — Authoring-time compression composer tool + skill (LLM compresses compressible-tier corpus toward the setpoint — drop/combine/rewrite; emits candidate rendition + per-tier byte evidence; wielded by a compose skill; NO LLM in the render path) [withdrawn; repudiated 2026-06-16, permanently withdrawn `obpi_withdrawn` 2026-07-17 (`d03ce98f`); the composer *validates* an agent-supplied candidate rather than *materializing* from the corpus — the attributable generator is severed to GHI #623 (+#654), post-1.0. NOTE: `src/gzkit/content/composer.py` and `tier_policy.py` ship from this brief's work and are load-bearing for the delivered floor — see § Terminal Disposition]
+- [ ] OBPI-0.0.37-22 — Committed-rendition store + deterministic playback + freshness gate (durable rendition artifact per surface×consumer; `sync_agents_md` plays it back deterministically; build fail-closes on corpus↔rendition drift; `--invariant-coherence` diffs playback vs committed surface; re-homes prior OBPI-14 sync/compose plumbing) [withdrawn; repudiated 2026-06-16, permanently withdrawn `obpi_withdrawn` 2026-07-17 (`d03ce98f`); the `rendition ⊆ corpus` superset gate binding candidate lineage is severed to GHI #623 (+#654), post-1.0. NOTE: `src/gzkit/content/rendition_store.py` and `governance/trust_audits/rendition_freshness.py` ship from this brief's work and ARE the delivered playback floor — see § Terminal Disposition]
 - [ ] OBPI-0.0.37-23 — Invariant tier (verbatim, never condense) (`tier: invariant` entries emit verbatim at every setpoint; test asserts PRIME DIRECTIVE / DO IT RIGHT / NEVER PYTEST survive at the leanest setpoint; the 0-Kelvin floor made first-class)
 - [ ] OBPI-0.0.37-24 — Advisor-panel info-retention QC loop (per ADR-0.0.39 llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)
 - [ ] OBPI-0.0.37-25 — ADR-0.0.33 bullet-retention tier-scoped validator (flip `--bullet-retention` from whole-surface verbatim grep to tier-aware: verbatim on invariant tier; advisor-QC receipt + attestation on compressed tiers; lands in the same commit-window as the coupled ADR-0.0.33 Invariant-1 amendment)
@@ -425,6 +425,16 @@ severable enrichment behind a shipped floor — the airlock ships and gates on t
   rendition` floor gate (GHI #623) are real and tamper-tested. Hand-authoring foundational
   prose is fenced; invariant-tier doctrine (PRIME DIRECTIVE, DO IT RIGHT, NEVER PYTEST) is
   verbatim-protected.
+
+  **Attribution (2026-07-18 audit reconciliation).** The playback half of this floor was
+  *built under the withdrawn briefs 21/22*, not by 18–20/23–27. `rendition_store.py`,
+  `rendition_freshness.py`, `composer.py`, and `tier_policy.py` originate in that work and
+  remain load-bearing and gated. Withdrawal severed the **unbuilt** half — the attributable
+  corpus→candidate generator and the `rendition ⊆ corpus` lineage gate — not the shipped
+  code. Recording this explicitly because an ADR whose thesis is *"canon must not diverge
+  from delivered reality"* cannot itself credit shipped deliverables to briefs that did not
+  produce them. Re-completion of 21/22 stays refused (the severed half genuinely does not
+  exist); the surviving code's provenance is now stated rather than silently reassigned.
 
 **Not delivered — severed to GHI #623 (absorbing #654), post-1.0:**
 
