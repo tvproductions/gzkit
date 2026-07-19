@@ -92,6 +92,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_handoffs",
       "baseline_count": 4
+    },
+    {
+      "data_file": "data/foundation_grandfather.json",
+      "gates_step": "foundation closure (gz validate --taxonomy)",
+      "mechanism": "closed-set-lock",
+      "entries_path": "",
+      "lock_field": "frozen_at"
     }
   ],
   "excluded": [

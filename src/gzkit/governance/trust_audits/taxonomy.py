@@ -177,6 +177,88 @@ def _audit_one_adr_taxonomy(adr_md: Path, project_root: Path) -> list[Validation
     return [consistency_err] if consistency_err else []
 
 
+_GRANDFATHER_MANIFEST = ("data", "foundation_grandfather.json")
+
+
+def _on_disk_foundation_ids(project_root: Path) -> dict[str, str]:
+    """Map ``adr_id -> repo-relative path`` for every on-disk ``kind: foundation`` ADR."""
+    adr_root = project_root / "docs" / "design" / "adr"
+    found: dict[str, str] = {}
+    if not adr_root.is_dir():
+        return found
+    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
+        if _is_nested_adr_artifact(adr_md):
+            continue
+        frontmatter = _parse_adr_frontmatter(adr_md)
+        if frontmatter is None or frontmatter.get("kind") != "foundation":
+            continue
+        adr_id = frontmatter.get("id", "")
+        if adr_id:
+            found[adr_id] = adr_md.relative_to(project_root).as_posix()
+    return found
+
+
+def _manifest_ids(project_root: Path) -> set[str]:
+    """Return the ids declared in the committed grandfather manifest."""
+    from gzkit.models.foundation_grandfather import load_manifest  # noqa: PLC0415
+
+    path = project_root.joinpath(*_GRANDFATHER_MANIFEST)
+    if not path.is_file():
+        return set()
+    return {entry.id for entry in load_manifest(path)}
+
+
+def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
+    """Fail on foundation-kind membership drift against the closed manifest.
+
+    Enforces ADR-0.34.0 § Decision (INTERFACE): the foundation kind is SEALED,
+    and ``data/foundation_grandfather.json`` is its committed closed membership
+    set. Containment is asserted in both directions — an on-disk foundation
+    absent from the manifest (``foundation_kind_closed``) means the kind was
+    reopened without editing the reviewed list; a manifest entry with no
+    on-disk package (``grandfather_dangling``) means the manifest names a
+    foundation that does not exist. Never mutates files.
+    """
+    on_disk = _on_disk_foundation_ids(project_root)
+    declared = _manifest_ids(project_root)
+    manifest_rel = "/".join(_GRANDFATHER_MANIFEST)
+
+    errors: list[ValidationError] = [
+        ValidationError(
+            type="foundation_kind_closed",
+            artifact=on_disk[adr_id],
+            message=(
+                f"Foundation ADR `{adr_id}` is not declared in `{manifest_rel}`. "
+                "The `foundation` kind is CLOSED to new authoring (ADR-0.34.0 "
+                "Foundation Sunset); the on-disk foundation set must be a subset "
+                "of the committed grandfather manifest, so a foundation absent "
+                "from it is a silently-reopened kind. Next: author the ADR as "
+                "`--kind feature` instead, or demote it with `uv run gz adr "
+                f"demote {adr_id}`. Reopening the kind deliberately means adding "
+                f"the entry to `{manifest_rel}` and its golden fixture together."
+            ),
+        )
+        for adr_id in sorted(set(on_disk) - declared)
+    ]
+    errors.extend(
+        ValidationError(
+            type="grandfather_dangling",
+            artifact=manifest_rel,
+            message=(
+                f"Grandfather manifest declares `{adr_id}`, but no on-disk "
+                "`kind: foundation` ADR package carries that id. The manifest is "
+                "the closed membership set for a kind sealed by ADR-0.34.0; an "
+                "entry with no package makes the set unfalsifiable in one "
+                f"direction. Next: remove the stale entry from `{manifest_rel}` "
+                "and its golden fixture together, or restore the missing ADR "
+                "package. Verify with `uv run gz validate --taxonomy`."
+            ),
+        )
+        for adr_id in sorted(declared - set(on_disk))
+    )
+    return errors
+
+
 def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
     """Fail on ADRs that violate the pool/foundation/feature taxonomy.
 
@@ -184,6 +266,12 @@ def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
     ``ADR-pool.*`` id prefix; non-pool ADRs carry ``kind: foundation`` or
     ``kind: feature`` in frontmatter; ``foundation`` requires semver
     ``0.0.x``; ``feature`` requires any other semver. Never mutates files.
+
+    Scope-mates, not callees: the ADR-0.34.0 closure assertions
+    (``audit_foundation_closure``) run under the same ``--taxonomy`` scope but
+    are deliberately NOT folded in here. This function's contract is the
+    ADR-0.0.17 decision tree alone; merging the two would make every existing
+    caller's result depend on the grandfather manifest's population state.
     """
     adr_root = project_root / "docs" / "design" / "adr"
     if not adr_root.is_dir():

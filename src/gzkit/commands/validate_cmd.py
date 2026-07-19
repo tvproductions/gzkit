@@ -442,10 +442,19 @@ def _default_scope_runners(
 
 
 def _taxonomy_runner(project_root: Path) -> list[ValidationError]:
-    """Import trust_audits lazily (avoids circular-import risk at module load)."""
-    from gzkit.governance import trust_audits  # noqa: PLC0415
+    """Import trust_audits lazily (avoids circular-import risk at module load).
 
-    return trust_audits.audit_adr_taxonomy(project_root)
+    Runs two independent assertion families under one scope: the ADR-0.0.17
+    kind/semver decision tree, and the ADR-0.34.0 foundation-closure
+    containment checks. They stay separate functions so the former's contract
+    does not depend on the grandfather manifest's population state.
+    """
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+    from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+        audit_foundation_closure,
+    )
+
+    return trust_audits.audit_adr_taxonomy(project_root) + audit_foundation_closure(project_root)
 
 
 def _invariant_coherence_runner(project_root: Path) -> list[ValidationError]:
@@ -1048,6 +1057,8 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "req_kind_discipline",
         "ontology_purity",
         "brief_command_shape",
+        "foundation_kind_closed",
+        "grandfather_dangling",
         "tautological_test_audit",
         "task_envelope_coherence",
         "closeout_proof",
