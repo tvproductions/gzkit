@@ -5,7 +5,7 @@ category: governance-infrastructure
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-04-19
+last_reviewed: 2026-07-19
 metadata:
   skill-version: "1.0.0"
 model: haiku

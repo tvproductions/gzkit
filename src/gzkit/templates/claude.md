@@ -16,7 +16,7 @@ Default effort: `xhigh` for gzkit agentic work; `high`/`medium` for lookups; res
 
 When compacting context (`/compact`), preserve:
 
-- Active pipeline ID and current stage (from `uv run gz obpi pipeline status`)
+- Active pipeline ID and current stage (from `uv run gz obpi status <OBPI-ID>`)
 - Active OBPI ID and brief status (lane, gates passed, attestation state)
 - Gate pass/fail state for the current ADR (from `uv run gz gates --adr <ID>`)
 - Pending attestation requirements (which Gate 5 awaits human witness)
