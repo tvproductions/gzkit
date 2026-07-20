@@ -15,12 +15,14 @@ from __future__ import annotations
 
 import enum
 import json
-import os
 import sys
+from collections.abc import Mapping
 from typing import Any
 
 from rich.console import Console
 from rich.table import Table
+
+from gzkit.color_env import should_disable_color, should_force_terminal
 
 
 class OutputMode(enum.StrEnum):
@@ -48,9 +50,17 @@ class OutputFormatter:
     """
 
     def __init__(
-        self, mode: OutputMode | str = OutputMode.HUMAN, *, console: Console | None = None
+        self,
+        mode: OutputMode | str = OutputMode.HUMAN,
+        *,
+        console: Console | None = None,
+        env: Mapping[str, str] | None = None,
     ) -> None:
-        """Initialize the formatter with the given output mode."""
+        """Initialize the formatter with the given output mode.
+
+        ``env`` overrides the process environment for the colour decision
+        (GHI #663); ``None`` reads ``os.environ`` as before.
+        """
         if isinstance(mode, str) and not isinstance(mode, OutputMode):
             try:
                 mode = OutputMode(mode)
@@ -63,10 +73,9 @@ class OutputFormatter:
             self._console = console
         else:
             self._console = Console(
-                no_color=os.environ.get("NO_COLOR") is not None or mode != OutputMode.HUMAN,
+                no_color=should_disable_color(env) or mode != OutputMode.HUMAN,
                 stderr=mode == OutputMode.JSON,
-                force_terminal=os.environ.get("FORCE_COLOR") is not None
-                and mode == OutputMode.HUMAN,
+                force_terminal=should_force_terminal(env) and mode == OutputMode.HUMAN,
             )
         self._stdout_console = Console(
             no_color=True,

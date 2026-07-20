@@ -1,7 +1,6 @@
 """Common utilities and error types for CLI commands."""
 
 import json
-import os
 import re
 import subprocess
 from pathlib import Path
@@ -9,6 +8,7 @@ from typing import Any, cast
 
 from rich.console import Console
 
+from gzkit.color_env import should_disable_color, should_force_terminal
 from gzkit.config import GzkitConfig
 from gzkit.core.exceptions import GzkitError
 from gzkit.ledger import (
@@ -38,8 +38,8 @@ class GzCliError(GzkitError):
 
 
 console = Console(
-    no_color=os.environ.get("NO_COLOR") is not None,
-    force_terminal=os.environ.get("FORCE_COLOR") is not None,
+    no_color=should_disable_color(),
+    force_terminal=should_force_terminal(),
 )
 
 
