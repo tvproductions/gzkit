@@ -1177,6 +1177,31 @@ def _run_attestation_receipts_scope(
         raise SystemExit(result.exit_code)
 
 
+def _refuse_combined_solo_scopes(combined: list[str]) -> None:
+    """Fail closed when a solo-only scope is requested alongside another scope.
+
+    GHI #704: these scopes previously carried an ``and not other_scopes_active``
+    guard, so combining one with any other scope skipped its branch silently and
+    the run still reported ``✓ All validations passed`` — a false green for a
+    gate that never executed, contradicting ``AGENTS.md`` § Architectural
+    Boundaries #6 (derived views must not misreport what actually ran).
+
+    Three-part recovery prose per ``.gzkit/rules/guardrail-feedback-prose.md``.
+    """
+    flags = ", ".join(combined)
+    many = len(combined) > 1
+    console.print(
+        f"[red]Error:[/red] {flags} cannot be combined with other validate scopes.\n"
+        "  Why: a solo-only scope owns the full 0/2/3 exit lifecycle and "
+        "short-circuits the aggregate run. Combining one used to drop it "
+        "silently while still reporting success — a false green for a gate that "
+        "never ran (GHI #704).\n"
+        f"  Next step: run {'each one' if many else 'it'} alone — "
+        f"`uv run gz validate {combined[0]}`."
+    )
+    raise SystemExit(1)
+
+
 def _dispatch_early_return_scopes(
     project_root: Path,
     *,
@@ -1227,17 +1252,36 @@ def _dispatch_early_return_scopes(
             as_json=as_json,
         )
         return True
-    if check_evaluation_justify_binding is not None and not other_scopes_active:
+    # GHI #704: a solo-only scope combined with any other scope is refused, not
+    # dropped. One fence for the whole family — the per-scope
+    # `and not other_scopes_active` guards this replaces were copied forward on
+    # every new addition, so each new scope silently inherited the false green.
+    if other_scopes_active:
+        combined = [
+            flag
+            for flag, requested in (
+                ("--evaluation-justify-binding", check_evaluation_justify_binding is not None),
+                ("--unscoped-rules", check_unscoped_rules),
+                ("--sensitivity", check_sensitivity),
+                ("--qc-binding", check_qc_binding),
+                ("--fidelity-presence", check_fidelity_presence),
+                ("--waiver-ratchet", check_waiver_ratchet),
+            )
+            if requested
+        ]
+        if combined:
+            _refuse_combined_solo_scopes(combined)
+    if check_evaluation_justify_binding is not None:
         _run_evaluation_justify_binding_solo(
             project_root, check_evaluation_justify_binding, as_json=as_json
         )
         return True
-    if check_unscoped_rules and not other_scopes_active:
+    if check_unscoped_rules:
         _run_unscoped_rules_scope(
             project_root, as_json=as_json, allowlist_only=unscoped_rules_allowlist_only
         )
         return True
-    if check_sensitivity and not other_scopes_active:
+    if check_sensitivity:
         _run_sensitivity_scope(project_root, as_json=as_json, explain=sensitivity_explain)
         return True
     if sensitivity_explain and not check_sensitivity:
@@ -1248,13 +1292,13 @@ def _dispatch_early_return_scopes(
         # --allowlist-only without --unscoped-rules still prints the listing.
         _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
         return True
-    if check_qc_binding and not other_scopes_active:
+    if check_qc_binding:
         _run_qc_binding_scope(project_root, as_json=as_json)
         return True
-    if check_fidelity_presence and not other_scopes_active:
+    if check_fidelity_presence:
         _run_fidelity_presence_scope(project_root, as_json=as_json)
         return True
-    if check_waiver_ratchet and not other_scopes_active:
+    if check_waiver_ratchet:
         _run_waiver_ratchet_scope(project_root, as_json=as_json)
         return True
     return False
