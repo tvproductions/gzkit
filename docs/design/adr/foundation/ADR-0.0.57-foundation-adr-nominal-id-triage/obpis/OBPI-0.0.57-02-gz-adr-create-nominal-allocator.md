@@ -203,6 +203,39 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
+> **REQ-0.0.57-02-01 through -02-04 are SUPERSEDED by
+> [ADR-0.34.0 (Foundation Sunset)](../../../../pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md),
+> discharged under OBPI-0.34.0-02 (2026-07-20, operator-ruled).** ADR-0.34.0
+> closed the `foundation` kind to new authoring at every door, so
+> `_next_free_nominal_foundation_id` — the allocator these REQs specify — was
+> deleted along with the authoring path it served. Their subject no longer
+> exists, so no honest test can cover them; authoring one would be the
+> filesystem-grep anti-pattern named in `.gzkit/rules/tests.md` § REQ Scope
+> Discipline. The attested record below is preserved unchanged — this is a
+> supersession note, not a retraction. `gz covers` will report these as
+> uncovered; that gap is explained here rather than papered over.
+>
+> **The REQ ids below are left plain and uncovered on purpose.** A first pass
+> struck them through, which silences `gz covers` (it skips struck lines as
+> malformed) while `gz adr covers-check` still counts them as live obligations —
+> two consumers disagreeing, with the cleaner-looking one hiding a real gap.
+> gzkit has no modeled supersession state, so the honest representation is an
+> uncovered REQ plus this note. `gz adr covers-check ADR-0.0.57` already exited
+> non-zero before ADR-0.34.0 — REQ-0.0.57-01-05, -02-07 **and -05-03** were
+> already missing at HEAD `1c0f5251`; these four add to that list rather than
+> newly breaking it. (The `-05-03` entry was omitted from a first draft of this
+> note and restored after Step-4b round-3 replayed the baseline from HEAD
+> objects. `gz covers` and `gz adr covers-check` legitimately report different
+> coverage for the same 32 REQs: the former counts BDD tags, the latter only
+> Python `@covers` annotations.)
+>
+> Observed while annotating (pre-existing, NOT caused by ADR-0.34.0): the
+> REQ-0.0.57-02-06 text below specifies a *manpage* claim, while its covering
+> test (`tests/test_plan_command.py::test_claude_mirror_is_byte_equivalent_to_canonical`)
+> asserts *skill-mirror byte-equivalence*. The REQ and its proof describe
+> different subjects — and ADR-0.34.0 has now retired the manpage clause it
+> names. Flagged for ADR-0.0.57's owner; not repaired here.
+
 - [ ] REQ-0.0.57-02-01: Given a foundation tree with IDs {1,2,5,7}, when `_next_free_nominal_foundation_id` is called, then it returns `"0.0.3"` — the lowest non-allocated integer, not `max+1`.
 - [ ] REQ-0.0.57-02-02: Given an empty foundation tree, when the allocator is called, then it returns `"0.0.1"` (or `"0.0.0"` if the doctrine treats zero as valid — pin in the test fixture).
 - [ ] REQ-0.0.57-02-03: Given a contiguous tree {1,2,3}, when the allocator is called, then it returns `"0.0.4"` — gap-tolerant behavior degenerates to odometer behavior in the gap-free case.

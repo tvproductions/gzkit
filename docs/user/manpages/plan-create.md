@@ -24,7 +24,7 @@ gz plan <name> [OPTIONS]
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `--kind` | `pool` \| `foundation` \| `feature` | — (**required**) | ADR taxonomy: `foundation` requires `--semver 0.0.x`; foundation IDs are allocated nominally (next-free-integer, not sequential — gap-filling when IDs have been retired); `feature` requires non-`0.0.x` semver; `pool` writes a flat backlog ADR with no `kind:`/`semver:` frontmatter. |
+| `--kind` | `pool` \| `feature` | — (**required**) | ADR taxonomy: `feature` requires non-`0.0.x` semver; `pool` writes a flat backlog ADR with no `kind:`/`semver:` frontmatter. **`foundation` is closed to new authoring by [ADR-0.34.0](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md) and is rejected here — see [Closed kind: `foundation`](#closed-kind-foundation).** It remains a valid `choices` value and a valid schema enum value so the grandfathered on-disk foundation ADRs keep validating. |
 | `--obpi` | string | — | Optional parent OBPI ID |
 | `--semver` | string | `0.1.0` | Semantic version (ignored for `--kind pool`) |
 | `--lane` | `lite` \| `heavy` | `lite` | Governance lane |
@@ -45,23 +45,19 @@ gz plan <name> [OPTIONS]
 
 ## What It Does
 
-1. Validates `--kind` / `--semver` compatibility **before** any file or ledger write.
-2. Creates an ADR document from the taxonomy-appropriate template.
-3. Routes output by kind:
-   - `foundation` → `design/adr/foundation/<id>/<id>.md` (per-ADR folder)
+1. Rejects `--kind foundation` **before** any file or ledger write (see [Closed kind: `foundation`](#closed-kind-foundation)).
+2. Validates `--kind` / `--semver` compatibility **before** any file or ledger write.
+3. Creates an ADR document from the taxonomy-appropriate template.
+4. Routes output by kind:
    - `feature` → `design/adr/pre-release/<id>/<id>.md` (per-ADR folder)
    - `pool` → `design/adr/pool/ADR-pool.<slug>.md` (flat)
-4. For `foundation`/`feature`, computes and writes a deterministic `## Decomposition Scorecard`, seeds `## Checklist`, and records ADR creation in the ledger. Pool ADRs are backlog stubs and are only registered after promotion via `gz adr promote`.
-5. For `foundation` kind specifically, scaffolds a `## Why foundation tier?` section between `## Persona` and `## Intent`, pre-populated with two author prompts: the invariance-test answer and the port-vs-adapter framing (ADR-0.0.35 § Decision item #6). Feature- and pool-kind ADRs do not scaffold this section. See the [convention docs](../concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention).
+5. For `feature`, computes and writes a deterministic `## Decomposition Scorecard`, seeds `## Checklist`, and records ADR creation in the ledger. Pool ADRs are backlog stubs and are only registered after promotion via `gz adr promote`.
 
 ---
 
 ## Example
 
 ```bash
-# Foundation ADR (0.0.x infrastructure)
-gz plan create identity-surfaces --kind foundation --semver 0.0.20 --lane heavy
-
 # Feature ADR (release-carrying capability)
 gz plan create login-impl --kind feature --semver 0.2.0 --lane heavy \
   --title "Login Implementation" \
@@ -76,42 +72,40 @@ gz plan create login-impl --kind feature --semver 0.2.0 --dry-run
 
 ---
 
-## Nominal Allocator — Gap-Filling Example
+## Closed kind: `foundation`
 
-Foundation ADR IDs (0.0.x) are **nominal integers** — the allocator assigns
-the next-free integer rather than the next sequential one. If IDs 0.0.1, 0.0.2,
-and 0.0.4 exist, the next-free slot is 0.0.3 (gap-filling), not 0.0.5.
-
-Passing a semver that doesn't match the `0.0.x` pattern triggers a validation
-error with a gap-fill hint:
+[ADR-0.34.0 (Foundation Sunset)](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md)
+closed the `foundation` kind to new authoring. `gz plan create --kind foundation`
+is rejected at the command handler, before any file or ledger write:
 
 ```bash
-# With IDs 0.0.1, 0.0.2, 0.0.4 present (gap at 0.0.3):
-$ gz plan create my-adr --kind foundation --semver 99.0.0
+$ gz plan create identity-surfaces --kind foundation --semver 0.0.20 --lane heavy
 ```
 
 ```
-ERROR: --kind foundation requires --semver matching 0.0.x (got '99.0.0'). Next
-free nominal foundation ID: 0.0.3.
+ERROR: --kind foundation was requested, but the foundation kind is closed to new
+authoring by ADR-0.34.0 (Foundation Sunset). It remains a valid schema value only
+for the existing grandfathered kind: foundation ADRs already on disk.
+Re-run with --kind feature (release-carrying work) or --kind pool (backlog).
 ```
 
-Use the suggested ID to fill the gap:
+The kind is **sealed, not deleted**: `foundation` stays in the `--kind` argparse
+choices and in the `kind` schema enum precisely so the grandfathered on-disk
+foundation ADRs keep validating. The rejection is seated at the command handler
+rather than in argparse so it can carry this recovery prose — argparse's bare
+`invalid choice` cannot.
 
-```bash
-gz plan create my-adr --kind foundation --semver 0.0.3
-```
-
-Foundation ID sequence no longer reflects work order — use
-[`/gz-foundation-triage`](../skills/gz-foundation-triage.md) to rank in-flight
-foundations by impact before choosing the next increment.
+Route new work with `--kind feature` (release-carrying capability) or
+`--kind pool` (backlog). Existing foundations remain readable and validatable;
+use [`/gz-foundation-triage`](../skills/gz-foundation-triage.md) to rank the
+in-flight ones.
 
 ---
 
 ## Output
 
 ```
-Created ADR: design/adr/foundation/ADR-0.0.20/ADR-0.0.20.md
-Created ADR: design/adr/pre-release/ADR-0.2.0/ADR-0.2.0.md
+Created ADR: design/adr/pre-release/ADR-0.2.0-login-impl/ADR-0.2.0-login-impl.md
 Created pool ADR: design/adr/pool/ADR-pool.exotic-idea.md
 ```
 

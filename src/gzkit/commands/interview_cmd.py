@@ -16,7 +16,6 @@ from gzkit.commands.common import (
 from gzkit.commands.plan import (
     CANONICAL_ADR_ID_RE,
     FOUNDATION_SEMVER_RE,
-    WHY_FOUNDATION_TIER_SECTION,
     register_adr_in_ledger,
 )
 from gzkit.interview import (
@@ -159,12 +158,23 @@ def _resolve_adr_doc(
     # for kind and directory routing. foundation <=> 0.0.x is the ADR-0.0.17
     # taxonomy binding enforced by `gz validate --taxonomy`.
     embedded_semver = doc_id.split("-")[1]
-    is_foundation = bool(FOUNDATION_SEMVER_RE.match(embedded_semver))
-    sub = "foundation" if is_foundation else "pre-release"
+    if FOUNDATION_SEMVER_RE.match(embedded_semver):
+        msg = (
+            f"--kind foundation was requested (ADR id {doc_id!r} embeds semver "
+            f"{embedded_semver!r}, which routes to the foundation kind), but the "
+            "foundation kind is closed to new authoring by ADR-0.34.0 (Foundation "
+            "Sunset). It remains a valid schema value only for the existing "
+            "grandfathered kind: foundation ADRs already on disk.\n"
+            "Re-run `gz interview adr` with a release-carrying semver embedded in "
+            "the id (e.g. ADR-0.36.0-<slug>, which routes to the feature kind), or "
+            "author via `gz plan create <slug> --kind feature` (release-carrying "
+            "work) or `gz plan create <slug> --kind pool` (backlog)."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
     template_vars["semver"] = embedded_semver
-    template_vars["kind"] = "foundation" if is_foundation else "feature"
-    template_vars["why_foundation_tier"] = WHY_FOUNDATION_TIER_SECTION if is_foundation else ""
-    return adrs_root / sub / doc_id, doc_id
+    template_vars["kind"] = "feature"
+    template_vars["why_foundation_tier"] = ""
+    return adrs_root / "pre-release" / doc_id, doc_id
 
 
 def interview(document_type: str, from_file: str | None = None) -> None:

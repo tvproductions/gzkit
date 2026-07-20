@@ -54,42 +54,10 @@ class TestRubricScoringE2E(unittest.TestCase):
         )
 
 
-class TestNominalAllocatorE2E(unittest.TestCase):
-    """REQ-0.0.57-05-04: E2E nominal allocator — gap suggestion (exercises OBPI-02 surface)."""
-
-    @covers("REQ-0.0.57-05-04")
-    def test_gap_fill_suggests_0_0_3(self) -> None:
-        """When foundations 1, 2, 4 exist, plan create must suggest 0.0.3."""
-        from gzkit.cli import main
-        from tests.commands.common import CliRunner, _quick_init
-
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init(mode="heavy")
-            # Stub foundation ADRs for IDs 1, 2, 4 — gap at 3
-            foundation_root = Path("design/adr/foundation")
-            for n in (1, 2, 4):
-                adr_dir = foundation_root / f"ADR-0.0.{n}-fixture-{n}"
-                adr_dir.mkdir(parents=True, exist_ok=True)
-                (adr_dir / ".gitkeep").write_text("", encoding="utf-8")
-
-            args = [
-                "plan",
-                "create",
-                "gap-test",
-                "--kind",
-                "foundation",
-                "--semver",
-                "99.0.0",
-                "--dry-run",
-            ]
-            result = runner.invoke(main, args)
-            self.assertEqual(result.exit_code, 1, msg=result.output)
-            self.assertIn(
-                "0.0.3",
-                result.output,
-                msg=f"Expected gap suggestion '0.0.3' in output: {result.output!r}",
-            )
+# TestNominalAllocatorE2E (gap-fill suggestion) retired by ADR-0.34.0 — the
+# foundation kind is closed to new authoring, so no ID is allocated. Closure is
+# proven by tests/commands/test_foundation_kind_closed.py; REQ-0.0.57-05-04
+# retains coverage from TestRubricScoringE2E and TestTriageScriptE2E.
 
 
 class TestTriageScriptE2E(unittest.TestCase):
@@ -186,13 +154,20 @@ class TestDocsFixturesCoverageE2E(unittest.TestCase):
         self.assertIn("insight_count", content, "Triage output example fields missing")
 
     @covers("REQ-0.0.57-05-05")
-    def test_nominal_example_in_plan_create_manpage(self) -> None:
-        """plan-create.md must have nominal allocator section with real CLI output."""
+    def test_foundation_kind_example_in_plan_create_manpage(self) -> None:
+        """plan-create.md documents the foundation kind with real, current CLI output.
+
+        REQ-0.0.57-05-05 requires the manpage to carry real CLI output rather than
+        placeholder prose. ADR-0.34.0 closed the foundation kind, retiring the
+        nominal-allocator gap-fill hint this originally asserted; the truthful
+        current output for `--kind foundation` is the closure rejection, so the
+        REQ's proof re-points to it rather than pinning a now-unreachable string.
+        """
         manpage = _REPO_ROOT / "docs" / "user" / "manpages" / "plan-create.md"
         content = manpage.read_text(encoding="utf-8")
-        self.assertIn("Nominal Allocator", content, "Nominal Allocator section missing")
+        self.assertIn("Closed kind: `foundation`", content, "closed-kind section missing")
         self.assertIn(
-            "Next\nfree nominal foundation ID:",
+            "the foundation kind is closed to new\nauthoring by ADR-0.34.0",
             content,
             "Real CLI output missing from plan-create.md",
         )

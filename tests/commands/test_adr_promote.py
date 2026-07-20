@@ -331,28 +331,12 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             self.assertIn("source", result.output.lower())
 
     # --- REQ-0.0.17-03-02 / 03: kind/semver binding ---
-
-    def test_foundation_rejects_non_zero_zero_semver(self) -> None:
-        """@covers REQ-0.0.17-03-02 — foundation requires 0.0.x semver."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_for_promote()
-            result = runner.invoke(
-                main,
-                [
-                    "adr",
-                    "promote",
-                    "ADR-pool.sample-work",
-                    "--semver",
-                    "0.6.0",
-                    "--kind",
-                    "foundation",
-                ],
-            )
-            self.assertEqual(result.exit_code, 1, msg=result.output)
-            self.assertIn("0.0.", result.output)
-            target = Path("design/adr/foundation/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md")
-            self.assertFalse(target.exists())
+    #
+    # test_foundation_rejects_non_zero_zero_semver retired (ADR-0.34.0
+    # Foundation Sunset closes --kind foundation before the semver-binding
+    # check ever runs); superseded by
+    # tests/commands/test_foundation_kind_closed.py::
+    # test_adr_promote_foundation_kind_rejected_before_semver_binding_check.
 
     def test_feature_rejects_zero_zero_semver(self) -> None:
         """@covers REQ-0.0.17-03-03 — feature rejects 0.0.x semver."""
@@ -376,25 +360,10 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
             target = Path("design/adr/pre-release/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md")
             self.assertFalse(target.exists())
 
-    def test_foundation_accepts_0_0_x_semver_dryrun(self) -> None:
-        """@covers REQ-0.0.17-03-02 — foundation + 0.0.x dry-run succeeds."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_for_promote()
-            result = runner.invoke(
-                main,
-                [
-                    "adr",
-                    "promote",
-                    "ADR-pool.sample-work",
-                    "--semver",
-                    "0.0.18",
-                    "--kind",
-                    "foundation",
-                    "--dry-run",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
+    # test_foundation_accepts_0_0_x_semver_dryrun retired (asserted
+    # successful --kind foundation promotion, which ADR-0.34.0 Foundation
+    # Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     def test_feature_accepts_non_0_0_x_semver_dryrun(self) -> None:
         """@covers REQ-0.0.17-03-03 — feature + non-0.0.x dry-run succeeds."""
@@ -466,30 +435,10 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
 
     # --- REQ-0.0.17-03-05: frontmatter kind: stamped ---
 
-    def test_promoted_frontmatter_carries_kind_foundation(self) -> None:
-        """@covers REQ-0.0.17-03-05 — foundation promotion stamps kind: foundation."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_for_promote()
-            result = runner.invoke(
-                main,
-                [
-                    "adr",
-                    "promote",
-                    "ADR-pool.sample-work",
-                    "--semver",
-                    "0.0.18",
-                    "--kind",
-                    "foundation",
-                    "--force",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            target = Path("design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md")
-            self.assertTrue(target.exists(), msg=result.output)
-            frontmatter = target.read_text(encoding="utf-8").split("---", 2)[1]
-            self.assertIn("kind: foundation", frontmatter)
-            self.assertIn("id: ADR-0.0.18-sample-work", frontmatter)
+    # test_promoted_frontmatter_carries_kind_foundation retired (asserted
+    # successful --kind foundation promotion, which ADR-0.34.0 Foundation
+    # Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     def test_promoted_frontmatter_carries_kind_feature(self) -> None:
         """@covers REQ-0.0.17-03-05 — feature promotion stamps kind: feature."""
@@ -542,30 +491,10 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
 
     # --- REQ-0.0.17-03-06: kind-driven bucket routing ---
 
-    def test_foundation_lands_in_foundation_bucket(self) -> None:
-        """@covers REQ-0.0.17-03-06 — --kind foundation routes to foundation/."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_for_promote()
-            result = runner.invoke(
-                main,
-                [
-                    "adr",
-                    "promote",
-                    "ADR-pool.sample-work",
-                    "--semver",
-                    "0.0.18",
-                    "--kind",
-                    "foundation",
-                    "--force",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            self.assertTrue(
-                Path(
-                    "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md"
-                ).exists()
-            )
+    # test_foundation_lands_in_foundation_bucket retired (asserted
+    # successful --kind foundation promotion, which ADR-0.34.0 Foundation
+    # Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     def test_feature_lands_in_pre_release_bucket(self) -> None:
         """@covers REQ-0.0.17-03-06 — --kind feature routes to pre-release/."""
@@ -673,33 +602,9 @@ class TestAdrPromoteTaxonomyRoundtrip(unittest.TestCase):
         ledger.append(adr_created_event("ADR-pool.sample-work", "", "heavy"))
         return config
 
-    def test_promote_to_foundation_passes_taxonomy_validator(self) -> None:
-        """@covers REQ-0.0.17-05-06 — foundation promotion validates clean."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            self._seed_for_promote()
-            result = runner.invoke(
-                main,
-                [
-                    "adr",
-                    "promote",
-                    "ADR-pool.sample-work",
-                    "--semver",
-                    "0.0.18",
-                    "--kind",
-                    "foundation",
-                    "--force",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            target = Path("design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md")
-            self.assertTrue(target.exists(), msg=result.output)
-            errors = validate_document(target, "adr")
-            self.assertEqual(
-                [e.message for e in errors],
-                [],
-                msg="validator rejected freshly-promoted foundation ADR",
-            )
+    # Foundation promotion round-trip retired by ADR-0.34.0 (kind closed to new
+    # authoring); rejection proven by tests/commands/test_foundation_kind_closed.py.
+    # REQ-0.0.17-05-06 retains coverage from the feature round-trip below.
 
     def test_promote_to_feature_passes_taxonomy_validator(self) -> None:
         """@covers REQ-0.0.17-05-06 — feature promotion validates clean."""

@@ -66,17 +66,23 @@ def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
             "requires --semver NOT matching 0.0.x"
         )
         raise SystemExit(1)
+    if kind == "foundation":
+        console.print(
+            "[red]ERROR:[/red] --kind foundation was requested, but the foundation "
+            "kind is closed to new authoring by ADR-0.34.0 (Foundation Sunset). It "
+            "remains a valid schema value only for the existing grandfathered "
+            "kind: foundation ADRs already on disk."
+        )
+        console.print(
+            "Re-run with [bold]--kind feature[/bold] (release-carrying work) or "
+            "[bold]--kind pool[/bold] (backlog)."
+        )
+        raise SystemExit(1)
     if kind == "pool":
         console.print(
             "[red]ERROR:[/red] --kind pool is not a valid promotion target. "
             "Pool is the [bold]source[/bold] kind being promoted from. "
             "Use --kind foundation (for 0.0.x) or --kind feature (for 0.y.z and up)."
-        )
-        raise SystemExit(1)
-    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
-        console.print(
-            f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
-            f"(got {semver!r}). If this is release-carrying work, use --kind feature."
         )
         raise SystemExit(1)
     if kind == "feature" and _FOUNDATION_SEMVER_RE.match(semver):
@@ -104,7 +110,21 @@ def _build_adr_promotion_plan(
     kind: str,
     target_status: str,
 ) -> dict[str, Any]:
-    """Construct validated promotion plan and rendered file content."""
+    """Construct validated promotion plan and rendered file content.
+
+    Re-validates the closed `foundation` kind rather than trusting the CLI
+    caller's guard. ADR-0.34.0 closed the kind; a check that lives only in the
+    command handler is reopened by the next caller that builds a plan directly
+    (AGENTS.md § DO IT RIGHT 1 — fix the class of failure, not the instance).
+    """
+    if kind == "foundation":
+        msg = (
+            "kind='foundation' was requested, but the foundation kind is closed "
+            "to new authoring by ADR-0.34.0 (Foundation Sunset). It remains a "
+            "valid schema value only for the existing grandfathered kind: "
+            "foundation ADRs already on disk. Promote with kind='feature'."
+        )
+        raise GzCliError(msg)  # noqa: TRY003
     _parse_semver_triplet(semver)
     target_slug = _resolve_promotion_slug(pool_adr_id, slug)
     target_adr_id = f"ADR-{semver}-{target_slug}"

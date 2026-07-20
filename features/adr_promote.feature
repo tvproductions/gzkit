@@ -22,11 +22,17 @@ Feature: gz adr promote --kind taxonomy enforcement (ADR-0.0.17 / OBPI-0.0.17-03
     Then the command exits with code 1
     And the output contains "source"
 
-  @REQ-0.0.17-03-02
-  Scenario: --kind foundation rejects non-0.0.x semver
+  # REQ-0.0.17-03-02's semver-binding branch for --kind foundation is superseded
+  # by ADR-0.34.0: the closed-kind guard now refuses the kind outright, before
+  # the semver check runs. The no-artifact guarantee is retained below.
+  @REQ-0.34.0-02-02
+  Scenario: --kind foundation is refused with recovery prose
     When I run the gz command "adr promote ADR-pool.sample-work --semver 0.6.0 --kind foundation"
     Then the command exits with code 1
-    And the output contains "0.0."
+    And the output contains "closed to new"
+    And the output contains "ADR-0.34.0"
+    And the output contains "--kind feature"
+    And the output contains "--kind pool"
     And the file "design/adr/foundation/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md" does not exist
 
   @REQ-0.0.17-03-03
@@ -42,12 +48,15 @@ Feature: gz adr promote --kind taxonomy enforcement (ADR-0.0.17 / OBPI-0.0.17-03
     And the file "design/adr/foundation/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md" does not exist
     And the file "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md" does not exist
 
+  # Exercised on --kind feature: REQ-0.0.17-03-05's claim (a promoted ADR carries
+  # kind: in its frontmatter) is kind-agnostic, and ADR-0.34.0 closed the
+  # foundation route this scenario originally used.
   @REQ-0.0.17-03-05
   Scenario: promoted ADR carries kind: in frontmatter
-    When I run the gz command "adr promote ADR-pool.sample-work --semver 0.0.18 --kind foundation --force"
+    When I run the gz command "adr promote ADR-pool.sample-work --semver 0.6.0 --kind feature --force"
     Then the command exits with code 0
-    And the file "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md" contains "kind: foundation"
-    And the file "design/adr/foundation/ADR-0.0.18-sample-work/ADR-0.0.18-sample-work.md" contains "id: ADR-0.0.18-sample-work"
+    And the file "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md" contains "kind: feature"
+    And the file "design/adr/pre-release/ADR-0.6.0-sample-work/ADR-0.6.0-sample-work.md" contains "id: ADR-0.6.0-sample-work"
 
   @REQ-0.0.17-03-06
   Scenario: --kind feature lands the promoted ADR in pre-release/

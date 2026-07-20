@@ -3,13 +3,11 @@ Feature: Foundation Triage and Nominal Allocator (ADR-0.0.57 / OBPI-0.0.57-05)
   I want foundation triage and nominal ID gap-allocation to work correctly,
   So that I can prioritize foundations by impact and allocate IDs without gaps.
 
-  @REQ-0.0.57-05-03
-  Scenario: nominal-allocator gap-allocation suggests lowest free integer
-    Given the workspace is initialized in heavy mode
-    And foundation ADRs exist for IDs "1,2,4"
-    When I run the gz command "plan create gap-test --kind foundation --semver 99.0.0 --dry-run"
-    Then the command exits with code 1
-    And the output contains "0.0.3"
+  # The nominal-allocator gap-allocation scenario is superseded by ADR-0.34.0
+  # (Foundation Sunset): --kind foundation is refused before any ID is
+  # allocated, and the allocator itself was deleted. REQ-0.0.57-05-03 keeps
+  # its coverage from the foundation-triage scenario below; the refusal is
+  # covered by features/foundation_kind_closed.feature.
 
   @REQ-0.0.57-05-03
   Scenario: foundation-triage script produces structured JSON from in-flight foundations

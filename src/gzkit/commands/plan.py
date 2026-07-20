@@ -110,28 +110,6 @@ def _reject_noncanonical_name(name: str, kind: str) -> None:
     sys.exit(1)
 
 
-def _next_free_nominal_foundation_id(foundation_root: Path) -> str:
-    """Scan foundation/<id>/ dirs and return the lowest unused 0.0.N (N >= 1).
-
-    Nominal allocation: returns the smallest integer N >= 1 not present in
-    the existing directory set, tolerating gaps.
-    E.g. {0.0.1, 0.0.2, 0.0.5, 0.0.7} -> "0.0.3" (not "0.0.8").
-    """
-    if not foundation_root.exists():
-        return "0.0.1"
-    used: set[int] = set()
-    for entry in foundation_root.iterdir():
-        if not entry.is_dir():
-            continue
-        m = re.match(r"^ADR-0\.0\.(\d+)(?:-.*)?$", entry.name)
-        if m:
-            used.add(int(m.group(1)))
-    n = 1
-    while n in used:
-        n += 1
-    return f"0.0.{n}"
-
-
 def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[str, str, str]:
     """Render a pool ADR. Returns (adr_id, relative_dir, content)."""
     slug = name if name.startswith("ADR-pool.") else f"ADR-pool.{name}"
@@ -148,7 +126,7 @@ def _render_pool_adr(*, name: str, title: str, parent: str, lane: str) -> tuple[
     return slug, "pool", content
 
 
-def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) -> None:
+def _validate_kind_and_semver(kind: str | None, semver: str) -> None:
     """Enforce --kind required + kind/semver consistency. Exit 1 on violation.
 
     Covers REQ-0.0.17-02-01 (kind required), -02/-03/-06 (kind/semver binding).
@@ -163,14 +141,19 @@ def _validate_kind_and_semver(kind: str | None, semver: str, adrs_root: Path) ->
         console.print("  [bold]pool[/bold]       — backlog ADR; no semver required")
         sys.exit(1)
 
-    if kind == "foundation" and not FOUNDATION_SEMVER_RE.match(semver):
-        next_free = _next_free_nominal_foundation_id(adrs_root / "foundation")
+    if kind == "foundation":
         console.print(
-            f"[red]ERROR:[/red] --kind foundation requires --semver matching 0.0.x "
-            f"(got {semver!r}). Next free nominal foundation ID: "
-            f"[bold]{next_free}[/bold]."
+            "[red]ERROR:[/red] --kind foundation was requested, but the foundation "
+            "kind is closed to new authoring by ADR-0.34.0 (Foundation Sunset). It "
+            "remains a valid schema value only for the existing grandfathered "
+            "kind: foundation ADRs already on disk."
+        )
+        console.print(
+            "Re-run with [bold]--kind feature[/bold] (release-carrying work) or "
+            "[bold]--kind pool[/bold] (backlog)."
         )
         sys.exit(1)
+
     if kind == "feature" and FOUNDATION_SEMVER_RE.match(semver):
         console.print(
             f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
@@ -230,7 +213,22 @@ def _render_adr_by_kind(
     checklist_seed: str,
     adrs_root: Path,
 ) -> tuple[str, Path]:
-    """Render the ADR markdown and resolve its on-disk path. Returns (adr_id, adr_file)."""
+    """Render the ADR markdown and resolve its on-disk path. Returns (adr_id, adr_file).
+
+    Refuses `kind="foundation"` at the render layer, not only at the command
+    handlers. ADR-0.34.0 closed the kind; a guard on each authoring verb is a
+    per-instance fix that the next new caller reopens, so the write path itself
+    is the choke point (AGENTS.md § DO IT RIGHT 1 — fix the class of failure).
+    """
+    if kind == "foundation":
+        msg = (
+            "kind='foundation' was requested, but the foundation kind is closed "
+            "to new authoring by ADR-0.34.0 (Foundation Sunset). It remains a "
+            "valid schema value only for the existing grandfathered kind: "
+            "foundation ADRs already on disk. Render with kind='feature' "
+            "(release-carrying work) or kind='pool' (backlog)."
+        )
+        raise ValueError(msg)
     if kind == "pool":
         adr_id, rel_dir, content = _render_pool_adr(
             name=name, title=adr_title, parent=canonical_parent, lane=lane
@@ -351,7 +349,7 @@ def plan_cmd(
     project_root = get_project_root()
     adrs_root = project_root / config.paths.adrs
 
-    _validate_kind_and_semver(kind, semver, adrs_root)
+    _validate_kind_and_semver(kind, semver)
     # After _validate_kind_and_semver, kind is guaranteed non-None.
     assert kind is not None
     _reject_noncanonical_name(name, kind)

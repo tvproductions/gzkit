@@ -101,27 +101,11 @@ class TestInterviewAdrCanonicalScaffolding(unittest.TestCase):
             body = expected.read_text(encoding="utf-8")
             self.assertIn("kind: feature", body)
 
-    def test_foundation_adr_routes_to_foundation_slug_package(self) -> None:
-        """A ``0.0.x`` ADR lands in ``foundation/<id>/<id>.md`` as foundation kind.
-
-        ``foundation`` <=> ``0.0.x`` is the ADR-0.0.17 taxonomy binding; the
-        interview derives kind and routing from the semver embedded in the
-        canonical id. Foundation ADRs scaffold the ``## Why foundation tier?``
-        section that ``kind_invariance`` validation requires.
-        """
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            _write_answers("answers.json", doc_id="ADR-0.0.5-token-discipline", semver="0.0.5")
-            result = runner.invoke(main, ["interview", "adr", "--from", "answers.json"])
-
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_id = "ADR-0.0.5-token-discipline"
-            expected = Path(f"design/adr/foundation/{adr_id}/{adr_id}.md")
-            self.assertTrue(expected.is_file(), msg=f"expected slug-package at {expected}")
-            body = expected.read_text(encoding="utf-8")
-            self.assertIn("kind: foundation", body)
-            self.assertIn("## Why foundation tier?", body)
+    # test_foundation_adr_routes_to_foundation_slug_package retired by ADR-0.34.0
+    # (Foundation Sunset): a 0.0.x embedded semver no longer routes to a
+    # foundation ADR — it is refused at `_resolve_adr_doc` before any write.
+    # Closure is proven by tests/commands/test_foundation_kind_closed.py::
+    # test_interview_adr_foundation_semver_rejected_with_three_part_prose.
 
     def test_adr_created_event_id_derives_from_on_disk_directory(self) -> None:
         """The emitted ``adr_created`` id equals the on-disk slug-package dir.
@@ -156,19 +140,21 @@ class TestInterviewAdrCanonicalScaffolding(unittest.TestCase):
 
         The flat-path interview never passed ``kind`` to the template, so the
         ADR frontmatter rendered the literal placeholder ``kind: {kind}`` —
-        which fails the ``adr.json`` schema ``kind`` enum.
+        which fails the ``adr.json`` schema ``kind`` enum. Exercised on a
+        feature semver: ADR-0.34.0 closed the foundation route, and the
+        placeholder-substitution defect this pins is kind-independent.
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            _write_answers("answers.json", doc_id="ADR-0.0.7-density-bands", semver="0.0.7")
+            _write_answers("answers.json", doc_id="ADR-0.7.0-density-bands", semver="0.7.0")
             result = runner.invoke(main, ["interview", "adr", "--from", "answers.json"])
 
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_id = "ADR-0.0.7-density-bands"
-            body = Path(f"design/adr/foundation/{adr_id}/{adr_id}.md").read_text(encoding="utf-8")
+            adr_id = "ADR-0.7.0-density-bands"
+            body = Path(f"design/adr/pre-release/{adr_id}/{adr_id}.md").read_text(encoding="utf-8")
             self.assertNotIn("{kind}", body)
-            self.assertIn("kind: foundation", body)
+            self.assertIn("kind: feature", body)
 
 
 if __name__ == "__main__":

@@ -31,7 +31,7 @@ CLI verb. For the narrative account of why these stages compose this way
 |---|-------|-------------------|-----------|
 | 1 | Scaffolding | `/gz-init` | `uv tool install py-gzkit`; `gz init` |
 | 2 | Intent (PRD → Constitution → Design) | `/gz-prd`, `/gz-constitute`, `/gz-design` | `uv run gz prd`; `uv run gz constitute` |
-| 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
+| 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --kind feature --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
 | 4 | Pre-execution reasoning | `/gz-justify`, `/gz-plan-audit` | `uv run gz justify <anchor> --save`; `uv run gz justify validate <path>` |
 | 5 | Implementation | `/gz-obpi-pipeline`, `/gz-arb` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
 | 6 | Verification (Gates 1–5) | `/gz-check`, `/gz-implement`, `/gz-gates` | `uv run gz check`; `uv run gz gates --adr ADR-<X.Y.Z>` |
@@ -895,7 +895,7 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz adr covers-check ADR-<X.Y.Z>`
 - `uv run gz adr report`
 - `uv run gz adr status ADR-<X.Y.Z> --json`
-- `uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z`
+- `uv run gz adr promote ADR-pool.<slug> --kind feature --semver X.Y.Z`
 - `uv run gz adr demote ADR-<X.Y.Z>-<slug> --ghi <N>` (inverse of promote; demotes a feature/foundation ADR back to pool)
 - `uv run gz status --json`
 - `uv run gz status --show-gates --full` (every linked OBPI rendered as a Rich-table row, no `... and N more` truncation — use for attestation evidence and bug reports per GHI #319)
@@ -914,7 +914,7 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz obpi lock release OBPI-<X.Y.Z-NN>` (release an OBPI work lock)
 - `uv run gz obpi lock check OBPI-<X.Y.Z-NN>` (check if an OBPI is locked)
 - `uv run gz obpi lock list` (list active OBPI work locks)
-- `uv run gz plan create <name> --semver X.Y.Z` (create a new ADR)
+- `uv run gz plan create <name> --kind feature --semver X.Y.Z` (create a new ADR)
 - `uv run gz plan audit OBPI-<X.Y.Z-NN>` (structural prerequisite check for plan-OBPI alignment; scans both `<project>/.claude/plans/` and `~/.claude/plans/` — see #128)
 - `uv run gz patch release` (GHI-driven patch release ceremony; writes manifest and bumps version)
 - `uv run gz patch release --dry-run` (preview GHI discovery and proposed version without modifying state)
@@ -951,11 +951,20 @@ semver binding. For edge cases where the heuristic leaves classification
 ambiguous — substrate-vs-port or doctrine-vs-tooling decisions — apply the
 one-line invariance test in
 [`concepts/foundation-feature-invariance-test.md`](concepts/foundation-feature-invariance-test.md).
-When you classify a decision as foundation and run `gz plan create --kind foundation`,
-the scaffolded ADR includes a `## Why foundation tier?` section (between `## Persona`
-and `## Intent`) pre-populated with author prompts for the invariance-test answer and
-port-vs-adapter framing. See [Why foundation tier? (the convention)](concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention)
-for the exact heading and a filled-in example.
+**The `foundation` kind is closed to new authoring** by
+[ADR-0.34.0 (Foundation Sunset)](../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md):
+`gz plan create --kind foundation` and `gz adr promote --kind foundation` are
+rejected at the command handler and point you at `--kind feature` or `--kind pool`.
+The kind is sealed, not deleted — it stays a valid schema value so the existing
+grandfathered foundation ADRs keep validating, and the heuristic below remains
+useful for *reading* the existing corpus. Route new work to `feature` or `pool`.
+
+Existing foundation ADRs carry a `## Why foundation tier?` section (between
+`## Persona` and `## Intent`) recording the invariance-test answer and the
+port-vs-adapter framing. See
+[Why foundation tier? (the convention)](concepts/foundation-feature-invariance-test.md#why-foundation-tier-the-convention)
+for the exact heading and a filled-in example — the convention still governs how
+you *read* the grandfathered set, even though no new ADR will be scaffolded with it.
 
 ### Heuristic
 
@@ -1426,9 +1435,11 @@ Foundation triage ranks in-flight foundation ADRs by priority — cross-referenc
 agent-insights.jsonl signal count, GHI occurrence count, and declared feature
 dependencies — to help operators pull highest-impact foundations first.
 
-Foundation IDs (0.0.x) are nominal integers, not sequential work orders. The
-allocator in `gz plan create` finds the next-free integer rather than the
-next-sequential one; triage decouples the priority decision from the ID.
+Foundation IDs (0.0.x) are nominal integers, not sequential work orders — sparse
+sets are valid and the IDs must never be compared as semver. ADR-0.34.0
+(Foundation Sunset) closed the kind to new authoring, so no new 0.0.x ID is
+allocated and the gap-filling allocator has been retired; triage now ranks the
+existing in-flight foundations only.
 
 **When to run:** Before committing to the next foundation increment, especially
 when several Draft/Proposed foundations are in flight.

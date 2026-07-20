@@ -1,11 +1,15 @@
-"""Tests for gz plan create nominal allocator (OBPI-0.0.57-02).
+"""Skill-surface-sync invariants from OBPI-0.0.57-02.
 
-REQ-0.0.57-02-01: sparse tree {1,2,5,7} → returns "0.0.3" (lowest gap)
-REQ-0.0.57-02-02: empty tree → returns "0.0.1"
-REQ-0.0.57-02-03: contiguous {1,2,3} → returns "0.0.4" (degenerate)
-REQ-0.0.57-02-04: old function absent; new function present
 REQ-0.0.57-02-05: skill-version + last_reviewed advanced for gz-adr-create
 REQ-0.0.57-02-06: vendor mirror is byte-equivalent to canonical skill
+
+The allocator REQs this module once covered (REQ-0.0.57-02-01 through -02-04)
+are superseded by ADR-0.34.0 (Foundation Sunset): `_next_free_nominal_
+foundation_id` was deleted with the foundation authoring path it served, so
+no honest test can cover them. They are annotated as superseded in the
+OBPI-0.0.57-02 brief. They are deliberately NOT listed above — a REQ id left
+in this docstring is read as coverage by the `gz covers` scanner, which would
+report a deleted allocator as proven.
 """
 
 from __future__ import annotations
@@ -15,53 +19,11 @@ import unittest
 from datetime import date
 from pathlib import Path
 
-from gzkit.commands.plan import _next_free_nominal_foundation_id
 from gzkit.traceability import covers
 
-FIXTURES_ROOT = Path(__file__).parent / "fixtures" / "foundation_nominal_allocator"
 _PROJECT_ROOT = Path(__file__).parent.parent
 _SKILL_CANONICAL = _PROJECT_ROOT / ".gzkit" / "skills" / "gz-adr-create" / "SKILL.md"
 _SKILL_MIRROR_CLAUDE = _PROJECT_ROOT / ".claude" / "skills" / "gz-adr-create" / "SKILL.md"
-
-
-class TestNextFreeNominalFoundationId(unittest.TestCase):
-    @covers("REQ-0.0.57-02-01")
-    def test_sparse_tree_returns_lowest_gap(self) -> None:
-        """Given {1,2,5,7}, returns "0.0.3" — lowest unused integer."""
-        result = _next_free_nominal_foundation_id(FIXTURES_ROOT / "sparse_with_gap")
-        self.assertEqual(result, "0.0.3")
-
-    @covers("REQ-0.0.57-02-02")
-    def test_empty_tree_returns_0_0_1(self) -> None:
-        """Given empty foundation tree, returns "0.0.1"."""
-        result = _next_free_nominal_foundation_id(FIXTURES_ROOT / "empty")
-        self.assertEqual(result, "0.0.1")
-
-    @covers("REQ-0.0.57-02-03")
-    def test_contiguous_tree_returns_next_after_max(self) -> None:
-        """Given {1,2,3}, returns "0.0.4" — no gaps, degenerate case."""
-        result = _next_free_nominal_foundation_id(FIXTURES_ROOT / "contiguous")
-        self.assertEqual(result, "0.0.4")
-
-    @covers("REQ-0.0.57-02-04")
-    def test_old_odometer_name_absent(self) -> None:
-        """_next_available_foundation_semver must not exist in plan module."""
-        import gzkit.commands.plan as plan_module
-
-        self.assertFalse(
-            hasattr(plan_module, "_next_available_foundation_semver"),
-            "_next_available_foundation_semver must be absent after rename",
-        )
-
-    @covers("REQ-0.0.57-02-04")
-    def test_new_allocator_name_present(self) -> None:
-        """_next_free_nominal_foundation_id must be importable from plan module."""
-        import gzkit.commands.plan as plan_module
-
-        self.assertTrue(
-            hasattr(plan_module, "_next_free_nominal_foundation_id"),
-            "_next_free_nominal_foundation_id must be present in plan module",
-        )
 
 
 class TestGzAdrCreateSkillEnrichment(unittest.TestCase):

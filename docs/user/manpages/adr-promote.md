@@ -7,7 +7,7 @@ Promote a pool ADR into an executable canonical ADR package and record promotion
 ## Usage
 
 ```bash
-gz adr promote <POOL-ADR> --semver X.Y.Z --kind {foundation,feature} [OPTIONS]
+gz adr promote <POOL-ADR> --semver X.Y.Z --kind feature [OPTIONS]
 ```
 
 ---
@@ -17,7 +17,7 @@ gz adr promote <POOL-ADR> --semver X.Y.Z --kind {foundation,feature} [OPTIONS]
 | Option | Type | Description |
 |--------|------|-------------|
 | `--semver` | string | Target ADR semantic version (`X.Y.Z`) |
-| `--kind` | `foundation`/`feature` | Required. Target ADR taxonomy. `pool` is rejected (pool is the source kind, not a promotion target). |
+| `--kind` | `feature` | Required. Target ADR taxonomy. `pool` is rejected (pool is the source kind, not a promotion target). **`foundation` is closed to new authoring by [ADR-0.34.0](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md) and is rejected here — see [Closed kind: `foundation`](#closed-kind-foundation).** |
 | `--slug` | string | Target ADR slug override (kebab-case) |
 | `--title` | string | Target ADR title override |
 | `--parent` | string | Target ADR parent override |
@@ -29,14 +29,33 @@ gz adr promote <POOL-ADR> --semver X.Y.Z --kind {foundation,feature} [OPTIONS]
 
 ---
 
+## Closed kind: `foundation`
+
+[ADR-0.34.0 (Foundation Sunset)](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md)
+closed the `foundation` kind to new authoring. `gz adr promote --kind foundation`
+is rejected at the command handler, before any promotion I/O:
+
+```
+ERROR: --kind foundation was requested, but the foundation kind is closed to new
+authoring by ADR-0.34.0 (Foundation Sunset). It remains a valid schema value only
+for the existing grandfathered kind: foundation ADRs already on disk.
+Re-run with --kind feature (release-carrying work) or --kind pool (backlog).
+```
+
+The kind is **sealed, not deleted**: `foundation` stays in the `--kind` argparse
+choices and in the `kind` schema enum so the grandfathered on-disk foundation
+ADRs keep validating. Promote new work with `--kind feature`.
+
+---
+
 ## Kind/Semver Binding (FAIL-CLOSED)
 
 `--kind` and `--semver` are validated together before any file is moved or any ledger event written:
 
-- `--kind foundation` requires `--semver` matching `^0\.0\.\d+$`. Mismatch -> exit 1.
+- `--kind foundation` is rejected outright (closed kind, see above). Exit 1.
 - `--kind feature` requires `--semver` to NOT match `^0\.0\.\d+$`. Mismatch -> exit 1.
 - `--kind pool` is rejected (pool is the source). Exit 1.
-- Missing `--kind` is rejected with a recovery message naming both valid choices. Exit 1.
+- Missing `--kind` is rejected with a recovery message naming the valid choices. Exit 1.
 
 Validation runs before pool resolution, so a rejected promotion leaves the pool ADR, ledger, and target tree untouched.
 
@@ -47,8 +66,7 @@ Validation runs before pool resolution, so a rejected promotion leaves the pool 
 1. Source must be a pool ADR (`ADR-pool.*` or legacy `ADR-*.pool.*`).
 2. Target ADR ID is derived as `ADR-{semver}-{slug}`.
 3. Target ADR package path is selected by **kind**:
-   - `--kind foundation` -> `docs/design/adr/foundation/ADR-X.Y.Z-<slug>/`
-   - `--kind feature`    -> `docs/design/adr/pre-release/ADR-X.Y.Z-<slug>/`
+   - `--kind feature` -> `docs/design/adr/pre-release/ADR-X.Y.Z-<slug>/`
 4. Pool ADR must already contain actionable `## Target Scope` bullets.
 5. Promotion derives a concrete ADR checklist from that scope and creates matching OBPI briefs immediately.
 6. Promoted ADR frontmatter carries `kind: <value>` (per ADR-0.0.17 schema).
@@ -64,8 +82,8 @@ Validation runs before pool resolution, so a rejected promotion leaves the pool 
 ## Examples
 
 ```bash
-# Preview promotion (foundation, infrastructure ADR)
-gz adr promote ADR-pool.adr-taxonomy --semver 0.0.18 --kind foundation --dry-run
+# Preview promotion (feature, release-carrying ADR)
+gz adr promote ADR-pool.adr-amendment-tracking --semver 0.7.0 --kind feature --dry-run
 
 # Apply promotion (feature, release-carrying ADR)
 gz adr promote ADR-pool.gz-chores-system --semver 0.6.0 --kind feature

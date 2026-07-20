@@ -38,7 +38,7 @@ uv run gz init                        # Initialize governance scaffolding
 uv run gz upgrade                     # Surface-only refresh from installed wheel (no manifest mutation)
 uv run gz prd                         # Create Product Requirements Document
 uv run gz constitute                  # Create constitution artifact
-uv run gz plan create <name> --semver X.Y.Z  # Create an ADR
+uv run gz plan create <name> --kind feature --semver X.Y.Z  # Create an ADR
 uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignment
 uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
@@ -373,9 +373,11 @@ Foundation kind requires a structural witness — a registry entry in
    is named.
 
 3. **Only then promote to ADR.** With the invariant registered and the structural
-   witness named, the ADR can be authored as a foundation-kind proposal — its Decision
-   section will reference the registry entry, and `gz validate --taxonomy` will accept
-   it.
+   witness named, the ADR can be authored — its Decision section will reference the
+   registry entry. **Author it as `--kind feature`:** ADR-0.34.0 (Foundation Sunset)
+   closed the `foundation` kind to new authoring, so a foundation-kind proposal is
+   refused at the command handler. The grandfathered foundation ADRs already on disk
+   continue to validate.
 
 **Reference:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 
@@ -388,7 +390,7 @@ uv run gz status --table
 2. If promoting from pool, use deterministic promotion.
 
 ```bash
-uv run gz adr promote ADR-pool.<slug> --semver X.Y.Z --status proposed
+uv run gz adr promote ADR-pool.<slug> --kind feature --semver X.Y.Z --status proposed
 ```
 
 3. If reversing a promotion (e.g., the get-out-of-jail prequel sweep, or any
@@ -405,21 +407,22 @@ directory (briefs + closeout form per Q1=b of the 2026-05-23 prequel), and
 emits an `artifact_renamed` ledger event with `reason="pool_demotion"`. The
 `--ghi` flag is mandatory for auditability. See `docs/user/manpages/adr-demote.md`.
 
-#### Nominal ID allocation for foundation ADRs
+#### Foundation ADR IDs (closed kind)
 
-Foundation ADR IDs (0.0.x) are **nominal integers** — the allocator assigns
-the next-free integer (gap-filling), not the next sequential one. This means
-you can create ADR-0.0.57 after ADR-0.0.55 without filling 0.0.56 first.
+Foundation ADR IDs (0.0.x) are **nominal integers**, not sequence positions —
+sparse sets (`0.0.54`, `0.0.56`, no `0.0.55`) are valid, and the IDs must never
+be sorted or compared as semver (ADR-0.0.57).
 
-If `gz plan create` reports an error hint like `"suggest: 0.0.3"`, that means
-0.0.3 is a gap in the foundation tree. Use the suggested ID to fill the gap:
+**The kind is closed to new authoring** by ADR-0.34.0 (Foundation Sunset): both
+`gz plan create --kind foundation` and `gz adr promote --kind foundation` are
+rejected at the command handler, so no new 0.0.x ID is allocated and the
+gap-filling allocator has been retired. The kind is sealed, not deleted —
+`foundation` remains a valid schema enum value so the grandfathered on-disk
+foundation ADRs keep validating. Route new work with `--kind feature` or
+`--kind pool`.
 
-```bash
-gz plan create my-adr --kind foundation --semver 0.0.3 --lane lite
-```
-
-Foundation ID sequence no longer reflects work order. Use `/gz-foundation-triage`
-to rank in-flight foundations by priority before picking the next increment.
+Use `/gz-foundation-triage` to rank the existing in-flight foundations by
+priority.
 
 3. Create or update OBPI briefs for checklist items.
 
@@ -879,7 +882,7 @@ when multiple Draft/Proposed foundations compete for the next sprint.
 
 **Constraints:**
 - The skill output is diagnosis only — it does NOT modify any ADR or ledger
-- Promotion remains a manual decision: `gz adr promote --kind foundation <slug>`
+- Promotion remains a manual decision: `gz adr promote --kind feature <slug>` (the `foundation` kind is closed to new authoring by ADR-0.34.0)
 - Do not run foundation triage as a commit gate; it is on-demand
 
 **Cross-reference:** Operator runbook `§ Foundation Triage`, manpage `foundation-triage.md`

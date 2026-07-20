@@ -2,7 +2,9 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.plan import WHY_FOUNDATION_TIER_SECTION
 from gzkit.ledger import Ledger
+from gzkit.templates import render_template
 from gzkit.traceability import covers
 from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
@@ -34,32 +36,12 @@ class TestPlanCommand(unittest.TestCase):
             self.assertIn("feature", result.output)
 
     # --- REQ-0.0.17-02-02: foundation requires 0.0.x semver ---
-
-    def test_plan_create_foundation_rejects_non_0_0_x_semver(self) -> None:
-        """@covers REQ-0.0.17-02-02 — foundation + non-0.0.x exits 1 with recovery."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            result = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "scratch",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.5.0",
-                    "--dry-run",
-                ],
-            )
-            self.assertEqual(result.exit_code, 1, msg=result.output)
-            self.assertIn("0.0.", result.output)
-            foundation_root = Path("design/adr/foundation")
-            self.assertFalse(
-                foundation_root.exists() and any(foundation_root.rglob("*.md")),
-                msg="foundation tree must remain untouched on rejection",
-            )
+    #
+    # test_plan_create_foundation_rejects_non_0_0_x_semver retired (ADR-0.34.0
+    # Foundation Sunset closes --kind foundation before the semver-binding
+    # check ever runs); superseded by
+    # tests/commands/test_foundation_kind_closed.py::
+    # test_plan_create_foundation_kind_rejected_before_semver_binding_check.
 
     # --- REQ-0.0.17-02-03: feature rejects 0.0.x semver ---
 
@@ -112,36 +94,10 @@ class TestPlanCommand(unittest.TestCase):
 
     # --- REQ-0.0.17-02-05: template places kind after status ---
 
-    def test_plan_create_foundation_template_places_kind_after_status(self) -> None:
-        """@covers REQ-0.0.17-02-05 — rendered frontmatter: kind: immediately after status:."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            result = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "new-foundation",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.0.99",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path(
-                "design/adr/foundation/ADR-0.0.99-new-foundation/ADR-0.0.99-new-foundation.md"
-            )
-            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
-            content = adr_path.read_text(encoding="utf-8")
-            lines = content.splitlines()
-            status_idx = next(i for i, line in enumerate(lines) if line.startswith("status:"))
-            self.assertTrue(
-                lines[status_idx + 1].startswith("kind:"),
-                msg=f"expected kind: on line after status:, got: {lines[status_idx + 1]!r}",
-            )
-            self.assertIn("kind: foundation", lines[status_idx + 1])
+    # test_plan_create_foundation_template_places_kind_after_status retired
+    # (asserted successful --kind foundation authoring, which ADR-0.34.0
+    # Foundation Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     # --- REQ-0.0.17-02-06: validate-before-write atomicity ---
 
@@ -178,29 +134,11 @@ class TestPlanCommand(unittest.TestCase):
             self.assertEqual(events_after, events_before, msg="no new ledger events on rejection")
 
     # --- REQ-0.0.17-02-07: foundation/feature per-ADR folder routing ---
-
-    def test_plan_create_foundation_routes_to_foundation_dir_per_adr_folder(self) -> None:
-        """@covers REQ-0.0.17-02-07 — foundation ADRs land at foundation/<id>/<id>.md."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            result = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "infra-thing",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.0.42",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path(
-                "design/adr/foundation/ADR-0.0.42-infra-thing/ADR-0.0.42-infra-thing.md"
-            )
-            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
+    #
+    # test_plan_create_foundation_routes_to_foundation_dir_per_adr_folder
+    # retired (asserted successful --kind foundation authoring, which
+    # ADR-0.34.0 Foundation Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     def test_plan_create_feature_routes_to_pre_release_dir_per_adr_folder(self) -> None:
         """@covers REQ-0.0.17-02-07 — feature ADRs land at pre-release/<id>/<id>.md."""
@@ -333,20 +271,20 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
                     "create",
                     "agent-rule-placement-invariant",
                     "--kind",
-                    "foundation",
+                    "feature",
                     "--semver",
-                    "0.0.77",
+                    "0.35.0",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
 
-            adr_id = "ADR-0.0.77-agent-rule-placement-invariant"
-            adr_path = Path(f"design/adr/foundation/{adr_id}/{adr_id}.md")
+            adr_id = "ADR-0.35.0-agent-rule-placement-invariant"
+            adr_path = Path(f"design/adr/pre-release/{adr_id}/{adr_id}.md")
             self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             adr_events = [
-                e for e in ledger.read_all() if e.event == "adr_created" and "0.0.77" in e.id
+                e for e in ledger.read_all() if e.event == "adr_created" and "0.35.0" in e.id
             ]
             self.assertEqual(len(adr_events), 1)
             self.assertEqual(adr_events[0].id, adr_id)
@@ -373,7 +311,7 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
 
             result = runner.invoke(
                 main,
-                ["plan", "create", "0.0.22", "--kind", "foundation", "--semver", "0.0.22"],
+                ["plan", "create", "0.0.22", "--kind", "feature", "--semver", "0.35.0"],
             )
 
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -381,9 +319,9 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
             self.assertIn("descriptive slug", unwrapped)
             self.assertIn("0.0.22", unwrapped)
 
-            foundation_root = Path("design/adr/foundation")
+            pre_release_root = Path("design/adr/pre-release")
             self.assertFalse(
-                foundation_root.exists() and any(foundation_root.rglob("ADR-0.0.22*")),
+                pre_release_root.exists() and any(pre_release_root.rglob("ADR-0.0.22*")),
                 msg="no ADR directory may be scaffolded on rejection",
             )
             events_after = [e.id for e in Ledger(ledger_path).read_all()]
@@ -398,8 +336,8 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
 
         Closes the regression-#4 sibling of the GHI #279 class: the prior
         contract returned an ``ADR-`` prefixed name verbatim, so
-        ``gz plan create ADR-0.0.49 --kind foundation --semver 0.0.49``
-        scaffolded ``foundation/ADR-0.0.49/`` and emitted a bare-id
+        ``gz plan create ADR-0.0.49 --kind feature --semver 0.35.0``
+        scaffolded ``pre-release/ADR-0.0.49/`` and emitted a bare-id
         ``adr_created`` event that diverged from the canonical slug-form
         on-disk directory once renamed. A bare ``ADR-`` id carries no slug
         suffix and fails the schema ``id`` pattern (GHI #346). The CLI must:
@@ -417,7 +355,7 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
 
             result = runner.invoke(
                 main,
-                ["plan", "create", "ADR-0.0.49", "--kind", "foundation", "--semver", "0.0.49"],
+                ["plan", "create", "ADR-0.0.49", "--kind", "feature", "--semver", "0.35.0"],
             )
 
             self.assertEqual(result.exit_code, 1, msg=result.output)
@@ -425,9 +363,9 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
             self.assertIn("slug", unwrapped)
             self.assertIn("ADR-0.0.49", unwrapped)
 
-            foundation_root = Path("design/adr/foundation")
+            pre_release_root = Path("design/adr/pre-release")
             self.assertFalse(
-                foundation_root.exists() and any(foundation_root.rglob("ADR-0.0.49*")),
+                pre_release_root.exists() and any(pre_release_root.rglob("ADR-0.0.49*")),
                 msg="no ADR directory may be scaffolded on bare-ADR-id rejection",
             )
             events_after = [e.id for e in Ledger(ledger_path).read_all()]
@@ -456,20 +394,20 @@ class TestPlanCanonicalIdComposition(unittest.TestCase):
                     "create",
                     "emission-time-canonical-form",
                     "--kind",
-                    "foundation",
+                    "feature",
                     "--semver",
-                    "0.0.81",
+                    "0.35.0",
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
 
-            adr_id = "ADR-0.0.81-emission-time-canonical-form"
-            adr_dir = Path(f"design/adr/foundation/{adr_id}")
+            adr_id = "ADR-0.35.0-emission-time-canonical-form"
+            adr_dir = Path(f"design/adr/pre-release/{adr_id}")
             self.assertTrue(adr_dir.is_dir(), msg=f"expected directory {adr_dir}")
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             adr_events = [
-                e for e in ledger.read_all() if e.event == "adr_created" and "0.0.81" in e.id
+                e for e in ledger.read_all() if e.event == "adr_created" and "0.35.0" in e.id
             ]
             self.assertEqual(len(adr_events), 1, msg=str([e.id for e in adr_events]))
             self.assertEqual(
@@ -525,35 +463,10 @@ class TestPlanTaxonomyRoundtrip(unittest.TestCase):
     @covers REQ-0.0.17-05-05
     """
 
-    def test_plan_create_foundation_kind_passes_taxonomy_validator(self) -> None:
-        """@covers REQ-0.0.17-05-05 — foundation scaffolder output validates clean."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            result = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "round-trip-foundation",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.0.99",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            scaffolded = Path(
-                "design/adr/foundation/ADR-0.0.99-round-trip-foundation/"
-                "ADR-0.0.99-round-trip-foundation.md"
-            )
-            self.assertTrue(scaffolded.exists(), msg=f"missing {scaffolded}")
-            errors = validate_document(scaffolded, "adr")
-            self.assertEqual(
-                [e.message for e in errors],
-                [],
-                msg="validator rejected freshly-scaffolded foundation ADR",
-            )
+    # test_plan_create_foundation_kind_passes_taxonomy_validator retired
+    # (asserted successful --kind foundation authoring, which ADR-0.34.0
+    # Foundation Sunset closes at the CLI); closure is proven by
+    # tests/commands/test_foundation_kind_closed.py.
 
     def test_plan_create_feature_kind_passes_taxonomy_validator(self) -> None:
         """@covers REQ-0.0.17-05-05 — feature scaffolder output validates clean."""
@@ -589,10 +502,10 @@ class TestPlanTaxonomyRoundtrip(unittest.TestCase):
 class TestPlanCreateKindFoundation(unittest.TestCase):
     """OBPI-0.0.35-03 — `## Why foundation tier?` section convention.
 
-    Foundation-kind ADRs scaffolded by `gz plan create --kind foundation`
-    must carry the `## Why foundation tier?` heading between `## Persona`
-    and `## Intent`, pre-populated with two author prompts (invariance-test
-    answer + port-vs-adapter framing). Feature-kind ADRs must not.
+    Foundation-kind ADRs must carry the `## Why foundation tier?` heading
+    between `## Persona` and `## Intent`, pre-populated with two author
+    prompts (invariance-test answer + port-vs-adapter framing). Feature-kind
+    ADRs must not.
 
     @covers REQ-0.0.35-03-02 (foundation scaffolds the section)
     @covers REQ-0.0.35-03-03 (feature does NOT scaffold the section)
@@ -605,71 +518,72 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
     @covers("REQ-0.0.35-03-04")
     @covers("REQ-0.0.35-03-07")
     def test_foundation_adr_scaffolds_why_foundation_tier_section(self) -> None:
-        """Foundation scaffolding: exact heading, position, and two prompts."""
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            result = runner.invoke(
-                main,
-                [
-                    "plan",
-                    "create",
-                    "why-foundation-tier-scaffold",
-                    "--kind",
-                    "foundation",
-                    "--semver",
-                    "0.0.99",
-                ],
-            )
-            self.assertEqual(result.exit_code, 0, msg=result.output)
-            adr_path = Path(
-                "design/adr/foundation/"
-                "ADR-0.0.99-why-foundation-tier-scaffold/"
-                "ADR-0.0.99-why-foundation-tier-scaffold.md"
-            )
-            self.assertTrue(adr_path.exists(), msg=f"expected {adr_path}")
-            content = adr_path.read_text(encoding="utf-8")
+        """Foundation scaffolding: exact heading, position, and two prompts.
 
-            # REQ-0.0.35-03-02 — section heading present, byte-identical
-            self.assertIn(
-                "## Why foundation tier?",
-                content,
-                msg="foundation ADR must scaffold `## Why foundation tier?` heading",
-            )
+        ADR-0.34.0 (Foundation Sunset) closed foundation authoring at every
+        door — `gz plan create`, `gz adr promote`, `gz interview adr`, and
+        `_render_adr_by_kind` itself. Retirement of the `## Why foundation
+        tier?` scaffolding is routed to OBPI-0.34.0-03, so until then the
+        ADR template that carries the section is still production code (the
+        grandfathered foundation ADRs on disk are rendered from it). This
+        test therefore asserts the template's scaffolding contract directly
+        rather than through any authoring path, all of which now refuse the
+        foundation kind.
+        """
+        content = render_template(
+            "adr",
+            id="ADR-0.0.99-why-foundation-tier-scaffold",
+            title="Why Foundation Tier Scaffold",
+            semver="0.0.99",
+            lane="lite",
+            parent="",
+            kind="foundation",
+            status="Draft",
+            date="2026-01-01",
+            decomposition_scorecard="",
+            checklist="",
+            why_foundation_tier=WHY_FOUNDATION_TIER_SECTION,
+        )
+        # REQ-0.0.35-03-02 — section heading present, byte-identical
+        self.assertIn(
+            "## Why foundation tier?",
+            content,
+            msg="foundation ADR must scaffold `## Why foundation tier?` heading",
+        )
 
-            # REQ-0.0.35-03-09 (positioning) — heading sits between Persona and Intent
-            persona_idx = content.index("## Persona")
-            why_idx = content.index("## Why foundation tier?")
-            intent_idx = content.index("## Intent")
-            self.assertLess(
-                persona_idx,
-                why_idx,
-                msg="`## Why foundation tier?` must appear after `## Persona`",
-            )
-            self.assertLess(
-                why_idx,
-                intent_idx,
-                msg="`## Why foundation tier?` must appear before `## Intent`",
-            )
+        # REQ-0.0.35-03-09 (positioning) — heading sits between Persona and Intent
+        persona_idx = content.index("## Persona")
+        why_idx = content.index("## Why foundation tier?")
+        intent_idx = content.index("## Intent")
+        self.assertLess(
+            persona_idx,
+            why_idx,
+            msg="`## Why foundation tier?` must appear after `## Persona`",
+        )
+        self.assertLess(
+            why_idx,
+            intent_idx,
+            msg="`## Why foundation tier?` must appear before `## Intent`",
+        )
 
-            # REQ-0.0.35-03-04 — two prompts present (invariance-test + port-vs-adapter)
-            # Section body extracted between its heading and the next H2.
-            section_body = content[why_idx:intent_idx]
-            self.assertIn(
-                "invariance test",
-                section_body.lower(),
-                msg="section must include invariance-test answer prompt",
-            )
-            self.assertIn(
-                "port",
-                section_body.lower(),
-                msg="section must include port-vs-adapter framing prompt",
-            )
-            self.assertIn(
-                "adapter",
-                section_body.lower(),
-                msg="section must include port-vs-adapter framing prompt",
-            )
+        # REQ-0.0.35-03-04 — two prompts present (invariance-test + port-vs-adapter)
+        # Section body extracted between its heading and the next H2.
+        section_body = content[why_idx:intent_idx]
+        self.assertIn(
+            "invariance test",
+            section_body.lower(),
+            msg="section must include invariance-test answer prompt",
+        )
+        self.assertIn(
+            "port",
+            section_body.lower(),
+            msg="section must include port-vs-adapter framing prompt",
+        )
+        self.assertIn(
+            "adapter",
+            section_body.lower(),
+            msg="section must include port-vs-adapter framing prompt",
+        )
 
     @covers("REQ-0.0.35-03-03")
     def test_feature_adr_does_not_scaffold_why_foundation_tier_section(self) -> None:
