@@ -110,7 +110,7 @@ class TestSubprocessEntrypointsExerciseTheWorkingTree(unittest.TestCase):
 
         from gzkit.governance.trust_audits import _qc_negative_controls as ncs
 
-        table = {claim: ep for claim, _fx, ep in ncs._QC_NEGATIVE_CONTROL_TABLE}
+        table = {entry[0]: entry[2] for entry in ncs._QC_NEGATIVE_CONTROL_TABLE}
 
         offenders: list[str] = []
         for claim in self.GZ_OWNED_CLAIMS:
@@ -127,6 +127,132 @@ class TestSubprocessEntrypointsExerciseTheWorkingTree(unittest.TestCase):
             "leaves them green (GHI #699 generator #5). Invoke the production "
             f"Python callable directly instead. Offenders: {offenders}",
         )
+
+
+class TestExpectedFindingDiscriminatesTheReason(unittest.TestCase):
+    """§5 clause (c): the control must fail *for the reason the claim names*.
+
+    The runner previously reduced every entrypoint result to ``bool()``, so a
+    validator that bailed on configuration, crashed, or flagged an unrelated
+    artifact was indistinguishable from one that caught the planted violation
+    (GHI #699 generator #3). ``EnforcementClaimRecord.expect`` pins the reason.
+    """
+
+    @staticmethod
+    def _record(expect: str | None, findings: list[object]):
+        from gzkit.enforcement import EnforcementClaimRecord
+
+        return EnforcementClaimRecord(
+            claim_id="line-endings",
+            fixture=lambda: None,
+            entrypoint=lambda _fx: findings,
+            source_fn="test.entrypoint",
+            expect=expect,
+        )
+
+    def test_finding_matching_expect_passes(self) -> None:
+        """A finding that names the claim's reason is a genuine catch."""
+        from gzkit.core.validation_rules import ValidationError
+        from gzkit.enforcement import _run_single_claim
+
+        finding = ValidationError(
+            type="line_endings", artifact="x", message="lacks the LF-normalization directive"
+        )
+        result = _run_single_claim(self._record("LF-normalization", [finding]))
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+
+    def test_finding_not_matching_expect_is_a_facade(self) -> None:
+        """A failure for an unrelated reason must NOT be scored as a catch.
+
+        This is the mutation the whole repair exists to catch: the fixture stops
+        planting the violation, the validator still fails (missing artifact), and
+        the old ``bool()`` signal reported PASS.
+        """
+        from gzkit.core.validation_rules import ValidationError
+        from gzkit.enforcement import _run_single_claim
+
+        unrelated = ValidationError(
+            type="line_endings", artifact="x", message="Missing `.gitattributes`"
+        )
+        result = _run_single_claim(self._record("LF-normalization", [unrelated]))
+
+        self.assertEqual(
+            result.outcome,
+            "FACADE",
+            "A validator that failed for a DIFFERENT reason than the claim names "
+            "must surface as FACADE, not PASS (GHI #699 generator #3).",
+        )
+        self.assertIn("NOT for the reason the claim names", result.message)
+
+    def test_exit_code_result_cannot_satisfy_an_expect(self) -> None:
+        """A bare int carries no reason, so it can never satisfy ``expect``.
+
+        Deliberate: an exit code is precisely the signal that cannot distinguish
+        catching the violation from crashing.
+        """
+        from gzkit.enforcement import _run_single_claim
+
+        result = _run_single_claim(self._record("LF-normalization", 1))  # type: ignore
+
+        self.assertEqual(result.outcome, "FACADE", result.message)
+
+
+class TestRewrittenFixturesPlantExactlyOneViolation(unittest.TestCase):
+    """Generator #2: a fixture must be a valid project with ONE planted violation.
+
+    A bare temp dir violates every claim at once, so the validator's *missing
+    artifact* branch answers — never the branch the claim names. Each fixture
+    below must yield exactly one finding, and it must be the claim's own.
+    """
+
+    CLAIMS = (
+        "session-green-gate",
+        "orientation-freshness",
+        "complexity-thresholds",
+        "line-endings",
+    )
+
+    def test_each_rewritten_fixture_yields_only_its_own_finding(self) -> None:
+        import shutil
+        from pathlib import Path
+
+        from gzkit.governance.trust_audits import _qc_negative_controls as ncs
+
+        table = {entry[0]: entry for entry in ncs._QC_NEGATIVE_CONTROL_TABLE}
+
+        for claim in self.CLAIMS:
+            with self.subTest(claim=claim):
+                _cid, fixture, entrypoint, expect = table[claim]
+                root = fixture()
+                try:
+                    findings = entrypoint(root)
+                finally:
+                    shutil.rmtree(Path(root), ignore_errors=True)
+
+                self.assertEqual(
+                    len(findings),
+                    1,
+                    f"{claim}: expected exactly one planted violation, got "
+                    f"{[getattr(f, 'message', f) for f in findings]}. More than one "
+                    "means the fixture is degenerate rather than minimal-valid.",
+                )
+                self.assertIn(expect, findings[0].message)
+
+    def test_no_claim_uses_the_deprecated_empty_fixture_for_a_repaired_claim(self) -> None:
+        """The four repaired claims must no longer route through ``_build_empty``."""
+        import inspect
+
+        from gzkit.governance.trust_audits import _qc_negative_controls as ncs
+
+        table = {entry[0]: entry[1] for entry in ncs._QC_NEGATIVE_CONTROL_TABLE}
+        for claim in self.CLAIMS:
+            with self.subTest(claim=claim):
+                self.assertNotIn(
+                    "_build_empty",
+                    inspect.getsource(table[claim]),
+                    f"{claim} still builds its violation by absence (GHI #699 generator #2).",
+                )
 
 
 if __name__ == "__main__":

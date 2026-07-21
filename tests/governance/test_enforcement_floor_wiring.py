@@ -191,7 +191,9 @@ class TestEnforcementFloorOwnQcNc(unittest.TestCase):
             _QC_NEGATIVE_CONTROL_TABLE,
         )
 
-        claim_ids = {claim_id for claim_id, _f, _e in _QC_NEGATIVE_CONTROL_TABLE}
+        # Entries are (claim_id, fixture, entrypoint[, expect]) — the optional 4th
+        # element pins the expected finding (GHI #699), so index rather than unpack.
+        claim_ids = {entry[0] for entry in _QC_NEGATIVE_CONTROL_TABLE}
         self.assertIn(
             "enforcement-floor",
             claim_ids,

@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import json
 import tempfile
-from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -56,8 +55,140 @@ def _minimal_pyproject(root: Path) -> None:
 
 
 def _build_empty(slug: str = "empty") -> Path:
-    """Violation-by-absence: an empty project where the validator flags a missing artifact."""
+    """Violation-by-absence: an empty project where the validator flags a missing artifact.
+
+    DEPRECATED as a violation fixture (GHI #699 generator #2). A bare directory
+    violates every claim at once, so the finding it produces is the validator's
+    "missing artifact" branch — never the branch the claim actually names. Each
+    remaining caller is being replaced by a minimal VALID project carrying exactly
+    one planted violation; do not add new callers.
+    """
     return _mkroot(slug)
+
+
+def _build_session_green_gate() -> Path:
+    """Plant a pre-push hook whose entry is `gz check-config-paths`, not `gz check`.
+
+    The claim is token-adjacency: a hook naming a *different* verb that merely starts
+    with "gz check" does not run the session green gate. An absent config file proves
+    only the existence branch and leaves that logic uncovered.
+    """
+    root = _mkroot("session-green-gate")
+    _write(
+        root / ".pre-commit-config.yaml",
+        "repos:\n"
+        "  - repo: local\n"
+        "    hooks:\n"
+        "      - id: gz-check\n"
+        "        name: gz check\n"
+        "        entry: gz check-config-paths\n"
+        "        language: system\n"
+        "        stages: [pre-push]\n",
+    )
+    return root
+
+
+def _build_orientation_freshness() -> Path:
+    """Wire both SessionStart hooks correctly, then omit one required section heading.
+
+    Everything the audit checks except the heading set is satisfied, so the single
+    finding is the heading regression (GHI #338) rather than three missing-file
+    findings that never reach the heading or collector-wiring checks.
+    """
+    root = _mkroot("orientation")
+    _write(
+        root / ".claude" / "settings.json",
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": "uv run python scripts/session_orientation.py",
+                                }
+                            ]
+                        }
+                    ]
+                }
+            }
+        ),
+    )
+    _write(
+        root / ".codex" / "hooks.json",
+        json.dumps(
+            {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "command": (
+                                'uv run --cache-dir "$(git rev-parse --show-toplevel)'
+                                '/.gzkit/cache/uv" python scripts/session_orientation.py'
+                            )
+                        }
+                    ]
+                }
+            }
+        ),
+    )
+    _write(
+        root / "scripts" / "session_orientation.py",
+        '"""Orientation stub."""\n\n'
+        # The violation: "Git remote state" is absent from the heading set.
+        'SECTION_HEADINGS = ("Repo state",)\n\n\n'
+        "def collect_remote_state() -> dict:\n"
+        '    """Collect remote state."""\n'
+        "    return {}\n\n\n"
+        "def collect_state() -> dict:\n"
+        '    """Collect state."""\n'
+        "    return collect_remote_state()\n",
+    )
+    return root
+
+
+def _build_complexity_thresholds() -> Path:
+    """Ship the real threshold table with one canonical metric's bands removed.
+
+    Exercises the loader, the Pydantic contract, and the canonical-metric coverage
+    check. An absent data file short-circuits before any of the three.
+    """
+    root = _mkroot("complexity-thresholds")
+    source = Path(__file__).resolve().parents[2] / "rules" / "complexity-thresholds.json"
+    table = json.loads(source.read_text(encoding="utf-8"))
+    table["bands"] = [b for b in table.get("bands", []) if b.get("metric") != "cohesion_lcom4"]
+    _write(
+        root / ".gzkit" / "rules" / "complexity-thresholds.json",
+        json.dumps(table, indent=2) + "\n",
+    )
+    return root
+
+
+def _build_line_endings() -> Path:
+    """Present a .gitattributes whose directive is too weak to normalize line endings.
+
+    `*.py text` exists but does not pin `eol=lf`, so the audit must flag the weak
+    directive — a branch an absent file never reaches.
+    """
+    root = _mkroot("line-endings")
+    _write(root / ".gitattributes", "*.py text\n")
+    return root
+
+
+def _build_dispatch_attestation() -> Path:
+    """Present the pool ADR WITHOUT its absorption marker.
+
+    The claim is that the ADR records `absorbed_into: ADR-0.0.73`. A missing file
+    proves only that the path is checked, never that the marker is.
+    """
+    root = _mkroot("dispatch-attestation")
+    pool = root / "docs" / "design" / "adr" / "pool"
+    _write(
+        pool / "ADR-pool.obpi-pipeline-dispatch-attestation.md",
+        "---\nid: ADR-pool.obpi-pipeline-dispatch-attestation\n---\n\n"
+        "# OBPI pipeline dispatch attestation\n",
+    )
+    return root
 
 
 # ---------------------------------------------------------------------------
@@ -553,7 +684,7 @@ def _build_theater_signature_scan() -> Path:
 # Each tuple registers one enforcement claim through the single @enforces primitive
 # (Boundary Invariant #6). "qc-binding" is registered separately in qc_binding.py
 # (its entrypoint is the theater-signature detector that lives there).
-_QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., Any]], ...] = (
+_QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("lint", _build_lint, _ep._ep_lint),
     ("format", _build_format, _ep._ep_format),
     ("typecheck", _build_typecheck, _ep._ep_typecheck),
@@ -574,12 +705,22 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
         _ep._ep_rendition_floor_coherence,
     ),
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
-    ("session-green-gate", lambda: _build_empty("session-green-gate"), _ep._ep_session_green_gate),
+    (
+        "session-green-gate",
+        _build_session_green_gate,
+        _ep._ep_session_green_gate,
+        "No stages: [pre-push] hook running 'gz check' declared",
+    ),
     ("closeout-proof", _build_closeout_proof, _ep._ep_closeout_proof),
     ("kind-invariance", _build_kind_invariance, _ep._ep_kind_invariance),
     ("interview-transcripts", _build_interview_transcripts, _ep._ep_interview_transcripts),
     ("receipt-shape", _build_receipt_shape, _ep._ep_receipt_shape),
-    ("orientation-freshness", lambda: _build_empty("orientation"), _ep._ep_orientation_freshness),
+    (
+        "orientation-freshness",
+        _build_orientation_freshness,
+        _ep._ep_orientation_freshness,
+        "SECTION_HEADINGS does not contain `Git remote state`",
+    ),
     ("insights-shape", _build_insights_shape, _ep._ep_insights_shape),
     (
         "instructions-files-budget",
@@ -598,8 +739,9 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ),
     (
         "complexity-thresholds",
-        lambda: _build_empty("complexity-thresholds"),
+        _build_complexity_thresholds,
         _ep._ep_complexity_thresholds,
+        "missing per-metric bands for canonical metric(s): cohesion_lcom4",
     ),
     ("req-kind-discipline", _build_req_kind_discipline, _ep._ep_req_kind_discipline),
     ("tautological-test-audit", _build_tautological_test_audit, _ep._ep_tautological_test_audit),
@@ -608,10 +750,15 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
     ("handoff-documents", _build_handoff_documents, _ep._ep_handoff_documents),
     ("preflight", _build_preflight, _ep._ep_preflight),
     ("surface-fidelity", _build_surface_fidelity, _ep._ep_surface_fidelity),
-    ("line-endings", lambda: _build_empty("line-endings"), _ep._ep_line_endings),
+    (
+        "line-endings",
+        _build_line_endings,
+        _ep._ep_line_endings,
+        "lacks the `* text=auto eol=lf` LF-normalization directive",
+    ),
     (
         "dispatch-attestation",
-        lambda: _build_empty("dispatch-attestation"),
+        _build_dispatch_attestation,
         _ep._ep_dispatch_attestation,
     ),
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
@@ -628,7 +775,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[str, Callable[[], Any], Callable[..., An
 # Includes the 36 NC ids above + "qc-binding" (registered in qc_binding.py). Defined
 # BEFORE the registration loop so the re-entrant _load_known_claims() lookup resolves.
 _KNOWN_QC_CLAIM_IDS: frozenset[str] = frozenset(
-    {claim_id for claim_id, _f, _e in _QC_NEGATIVE_CONTROL_TABLE} | {"qc-binding"}
+    {entry[0] for entry in _QC_NEGATIVE_CONTROL_TABLE} | {"qc-binding"}
 )
 
 
@@ -643,10 +790,12 @@ def register_qc_negative_controls() -> None:
     production claims survive test resets. Skips any claim already registered.
     """
     existing = {r.claim_id for r in get_enforcement_registry()}
-    for claim_id, fixture, entrypoint in _QC_NEGATIVE_CONTROL_TABLE:
+    for entry in _QC_NEGATIVE_CONTROL_TABLE:
+        claim_id, fixture, entrypoint = entry[0], entry[1], entry[2]
+        expect = entry[3] if len(entry) > 3 else None
         if claim_id in existing:
             continue
-        enforces(claim_id, fixture, entrypoint)(_register_marker)
+        enforces(claim_id, fixture, entrypoint, expect)(_register_marker)
 
 
 register_qc_negative_controls()

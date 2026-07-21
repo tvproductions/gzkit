@@ -57,6 +57,13 @@ class EnforcementClaimRecord(BaseModel):
     source_line: int | None = Field(
         None, description="First source line of the entrypoint (1-indexed)"
     )
+    expect: str | None = Field(
+        None,
+        description=(
+            "Substring the caught finding MUST contain. When set, the runner requires "
+            "the entrypoint to fail for THIS reason, not merely to fail (GHI #699)."
+        ),
+    )
 
 
 def _qualified_fn_name(fn: object) -> str:
@@ -98,6 +105,7 @@ def enforces(
     claim: str,
     fixture: Callable[[], Any],
     entrypoint: Callable[..., Any],
+    expect: str | None = None,
 ) -> Callable[[_EF], _EF]:
     """Declare that a production callable enforces an enforcement claim.
 
@@ -140,6 +148,7 @@ def enforces(
             source_fn=source_fn,
             source_file=source_file,
             source_line=source_line,
+            expect=expect,
         )
         _ENFORCEMENT_REGISTRY.append(record)
         return fn
@@ -207,6 +216,21 @@ class RunnerResult(BaseModel):
     )
 
 
+def _render_findings(result: Any) -> str:
+    """Flatten an entrypoint result to searchable text for ``expect`` matching.
+
+    Entrypoints return either a ``list[ValidationError]`` or an exit-style ``int``.
+    Only the list form carries a reason, so an ``int``-returning entrypoint cannot
+    satisfy an ``expect`` — which is deliberate: a bare exit code is exactly the
+    signal that cannot distinguish catching the violation from crashing.
+    """
+    if isinstance(result, list):
+        return " | ".join(
+            f"{getattr(item, 'type', '')}:{getattr(item, 'message', item)}" for item in result
+        )
+    return ""
+
+
 def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     """Run one enforcement claim's NC: fixture() → path, entrypoint(path) → result.
 
@@ -248,6 +272,25 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     finally:
         if fixture_path is not None:
             shutil.rmtree(fixture_path, ignore_errors=True)
+
+    if caught and record.expect is not None:
+        rendered = _render_findings(ep_result)
+        if record.expect not in rendered:
+            return ClaimRunResult(
+                claim_id=record.claim_id,
+                outcome="FACADE",
+                source_fn=record.source_fn,
+                message=(
+                    f"FACADE: claim {record.claim_id!r} entrypoint failed, but NOT for the "
+                    f"reason the claim names. Expected a finding containing "
+                    f"{record.expect!r}; got: {rendered[:400]!r}. "
+                    f"A control that accepts any failure cannot tell 'caught the violation' "
+                    f"from 'bailed on configuration' or 'crashed' — the §5 clause (c) defect "
+                    f"(GHI #699). Either the fixture stopped planting the violation, or the "
+                    f"enforcement now fails earlier for an unrelated reason. "
+                    f"Repro: call {record.source_fn!r}(fixture()) and read the finding."
+                ),
+            )
 
     if caught:
         return ClaimRunResult(
