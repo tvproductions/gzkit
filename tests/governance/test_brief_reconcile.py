@@ -199,6 +199,54 @@ class TestReconcileBriefResult(unittest.TestCase):
         self.assertTrue(_looks_like_path("docs/design/adr/real.md"))
 
 
+class TestTerminalStatusScoping(unittest.TestCase):
+    """A sealed brief is a historical record, not a live claim (GHI #707)."""
+
+    _BODY = textwrap.dedent("""\
+        ---
+        id: OBPI-0.1.0-77-sealed
+        parent: ADR-0.1.0-f
+        item: 77
+        lane: Lite
+        status: {status}
+        ---
+
+        # OBPI-0.1.0-77-sealed: Sealed
+
+        ## Allowed Paths
+
+        - `src/gzkit/renamed_away_zzz.py` (modify)
+
+        **Brief Status:** {status}
+        """)
+
+    def _reconcile(self, status: str):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = root / "brief.md"
+            brief.write_text(self._BODY.format(status=status), encoding="utf-8")
+            return reconcile_brief(brief, root)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_terminal_brief_reports_deltas_but_does_not_gate(self):
+        # The path is genuinely absent — the brief cited it before a rename. The
+        # delta is still computed (archaeology is preserved), but a completed
+        # brief cannot drift: there is no future work for the Stage-1 gate to
+        # block, and the only "repair" would rewrite a sealed governance record
+        # under an attestation no operator can honestly give.
+        result = self._reconcile("attested_completed")
+        self.assertEqual(result.allowlist_delta.missing_on_disk, ["src/gzkit/renamed_away_zzz.py"])
+        self.assertFalse(result.has_drift)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_live_brief_with_the_same_body_still_drifts(self):
+        # Negative control: the scoping must key on status, not on the path. An
+        # identical Draft brief is a live prerequisite claim and must fail closed.
+        result = self._reconcile("Draft")
+        self.assertEqual(result.allowlist_delta.missing_on_disk, ["src/gzkit/renamed_away_zzz.py"])
+        self.assertTrue(result.has_drift)
+
+
 class TestAllowlistDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-02")
     def test_missing_on_disk_reported(self):

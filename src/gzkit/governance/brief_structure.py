@@ -20,6 +20,25 @@ _ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-[a-z0-9-]+$")
 _REQ_ID_RE = re.compile(r"^REQ-\d+\.\d+\.\d+-\d{2}-\d{2}$")
 
 
+# Terminal statuses: a brief in one of these states is a historical record, not an
+# active authoring surface. Consumers scope on this to avoid asking a sealed brief
+# a question about the present tree — `--brief-command-shape` skips authoring-time
+# gating on them (GHI #550), and the reconcile engine reports deltas without
+# gating on them (GHI #707). Seated here rather than in a validator module because
+# it is brief-lifecycle vocabulary, and because importing it from `trust_audits`
+# into the engine closed an import cycle.
+BRIEF_TERMINAL_STATUSES: frozenset[str] = frozenset(
+    {
+        "Completed",
+        "attested_completed",
+        "Validated",
+        "Superseded",
+        "archived",
+        "Promoted",
+    }
+)
+
+
 class LegacyBriefShape(BaseModel):
     """Container for an OBPI brief that lacks structured frontmatter fields."""
 

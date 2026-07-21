@@ -21,6 +21,7 @@ from typing import Any
 
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.decomposition import extract_markdown_section
+from gzkit.governance.brief_structure import BRIEF_TERMINAL_STATUSES
 from gzkit.validate import ValidationError
 
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
@@ -626,21 +627,6 @@ def audit_behave_req_tags(project_root: Path) -> list[ValidationError]:
 
 _BRIEF_STATUS_IN_FRONTMATTER = re.compile(r"^status:\s*(\S+)", re.MULTILINE)
 
-# Terminal statuses: briefs in these states are historical records, not active
-# authoring surfaces. The --brief-command-shape validator only gates at
-# authoring time (GHI #550 objective: "fails closed at authoring time"), so
-# pre-existing compound commands in completed/superseded briefs are not flagged.
-_BRIEF_TERMINAL_STATUSES: frozenset[str] = frozenset(
-    {
-        "Completed",
-        "attested_completed",
-        "Validated",
-        "Superseded",
-        "archived",
-        "Promoted",
-    }
-)
-
 
 def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
     """Fail closed (exit 3) on a brief Verification block with a non-shell-less command.
@@ -661,7 +647,7 @@ def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
         text = brief.read_text(encoding="utf-8")
         status_match = _BRIEF_STATUS_IN_FRONTMATTER.search(text)
-        if status_match and status_match.group(1) in _BRIEF_TERMINAL_STATUSES:
+        if status_match and status_match.group(1) in BRIEF_TERMINAL_STATUSES:
             continue
         section = extract_markdown_section(text, "Verification") or ""
         for cmd in extract_fenced_commands(section):
