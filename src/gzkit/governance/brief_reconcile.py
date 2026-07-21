@@ -120,7 +120,10 @@ _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
 # Markers that flag a backtick token as code, not a filesystem path: call/string
 # literals (`Path("...")`) and `module.py::symbol` references. A real
 # project-relative path never contains these (GHI #626).
-_NON_PATH_MARKERS = ("(", ")", '"', "'", "::")
+_NON_PATH_MARKERS = ("(", ")", '"', "'", "::", "{", "}")
+# `path.py:36-66` cites a *region* of a file, not a file. Anchored on a trailing
+# colon-digits so a real path is never rejected for containing a colon (GHI #626).
+_LINE_RANGE_SUFFIX_RE = re.compile(r":\d+(?:-\d+)?$")
 
 
 # --- Engine ---
@@ -155,7 +158,7 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
 
     creates_paths = extract_brief_creates_paths(brief_path)
     allowlist_delta = _compute_allowlist_delta(allowlist, req_ids, project_root, creates_paths)
-    discovery_delta = _compute_discovery_delta(body, project_root)
+    discovery_delta = _compute_discovery_delta(body, project_root, creates_paths)
     verification_delta = _compute_verb_delta(verbs_to_check)
     acceptance_count = _count_acceptance_criteria(body)
     req_count_delta = ReqCountDelta(
@@ -245,9 +248,14 @@ def _looks_like_path(token: str) -> bool:
     existence-checking them deadlocks the Stage-2 reconcile gate on a
     convention-correct brief. Reject any token carrying a code-literal /
     symbol-reference marker (GHI #626, sibling of the glob-prerequisite and
-    CREATE-marker variants).
+    CREATE-marker variants). Two further spellings in the same family: a
+    ``path.py:36-66`` line-range citation names a region rather than a file, and a
+    ``{adrs}/{adr_id}.md`` template placeholder is a config substitution that can
+    never exist on disk under that spelling.
     """
     if any(marker in token for marker in _NON_PATH_MARKERS):
+        return False
+    if _LINE_RANGE_SUFFIX_RE.search(token):
         return False
     if token.startswith(_PATH_PREFIXES):
         return True
@@ -401,17 +409,30 @@ def _compute_allowlist_delta(
     return AllowlistDelta(missing_in_brief=missing_in_brief, missing_on_disk=missing_on_disk)
 
 
-def _compute_discovery_delta(body: str, project_root: Path) -> DiscoveryDelta:
+def _compute_discovery_delta(
+    body: str, project_root: Path, creates_paths: set[str] | None = None
+) -> DiscoveryDelta:
     """Report discovery-checklist paths that do not exist on disk.
 
-    Glob prerequisites (``.../**``) are patterns, not literal paths:
-    ``(project_root / "dir/**").exists()`` is always False, so existence-checking
-    them as literals false-positives on every brief that carries one (GHI #626).
-    A path containing a glob metacharacter is skipped.
+    Two classes of path are not literal existence claims and are skipped:
+
+    * **Glob prerequisites** (``.../**``) are patterns, not paths:
+      ``(project_root / "dir/**").exists()`` is always False, so existence-checking
+      them as literals false-positives on every brief that carries one (GHI #626).
+    * **Declared creates** (``**CREATE**``) exist in contract before they exist on
+      disk. ``_compute_allowlist_delta`` has honored this since GHI #419; this
+      dimension did not, so the same declaration in the same brief resolved
+      differently depending on which section named it, and every
+      first-implementation OBPI drifted by construction (GHI #626).
     """
+    creates = creates_paths or set()
     paths = _extract_section_paths(body, _DISCOVERY_HEADING_RE)
     unresolved = [
-        path for path in paths if not has_glob_chars(path) and not (project_root / path).exists()
+        path
+        for path in paths
+        if not has_glob_chars(path)
+        and path.removeprefix("./").rstrip("/") not in creates
+        and not (project_root / path).exists()
     ]
     return DiscoveryDelta(unresolved_paths=unresolved)
 

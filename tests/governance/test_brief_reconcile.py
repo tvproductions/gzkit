@@ -140,6 +140,64 @@ class TestReconcileBriefResult(unittest.TestCase):
         delta = _compute_discovery_delta(body, PROJECT_ROOT)
         self.assertEqual(delta.unresolved_paths, [])
 
+    @covers("REQ-0.0.37-05-01")
+    def test_discovery_create_declared_path_exempt_from_unresolved(self):
+        # GHI #626 remaining variant — the CREATE exemption is asymmetric between
+        # the two existence-checking dimensions. `_compute_allowlist_delta` takes
+        # `creates_paths` and exempts a `**CREATE**`-declared path; the discovery
+        # dimension never received the parameter, so the *same* declaration in the
+        # *same* brief resolves differently depending on which section names it.
+        # A first-implementation OBPI drifts by construction.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent("""\
+            ## Discovery Checklist
+
+            - [ ] Required path exists or is created: `src/gzkit/net_new_zzz.py` **CREATE**
+            """)
+        delta = _compute_discovery_delta(
+            body, PROJECT_ROOT, creates_paths={"src/gzkit/net_new_zzz.py"}
+        )
+        self.assertEqual(delta.unresolved_paths, [])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_discovery_undeclared_missing_path_still_reported(self):
+        # The exemption is scoped to declared creates — an undeclared missing path
+        # must still drift, or the fix would blind the dimension entirely.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent("""\
+            ## Discovery Checklist
+
+            - [ ] Required path exists or is created: `src/gzkit/undeclared_zzz.py`
+            """)
+        delta = _compute_discovery_delta(
+            body, PROJECT_ROOT, creates_paths={"src/gzkit/net_new_zzz.py"}
+        )
+        self.assertEqual(delta.unresolved_paths, ["src/gzkit/undeclared_zzz.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_line_range_citation_is_not_a_path(self):
+        # GHI #626 class — `path.py:36-66` cites a region of a file, not a file.
+        # `(root / "common.py:36-66").exists()` is always False, so the citation
+        # convention the briefs already use drifts by construction. Same family as
+        # the `module.py::symbol` marker already rejected on the line above.
+        from gzkit.governance.brief_reconcile import _looks_like_path
+
+        self.assertFalse(_looks_like_path("src/gzkit/commands/common.py:36-66"))
+        self.assertFalse(_looks_like_path("src/gzkit/core/models.py:19"))
+        # The same file without the region suffix is a real path and must resolve.
+        self.assertTrue(_looks_like_path("src/gzkit/core/models.py"))
+
+    @covers("REQ-0.0.37-05-01")
+    def test_template_placeholder_is_not_a_path(self):
+        # GHI #626 class — `{adrs}/{adr_id}.md` is a config-substitution template,
+        # not a literal path; it can never exist on disk under that spelling.
+        from gzkit.governance.brief_reconcile import _looks_like_path
+
+        self.assertFalse(_looks_like_path("{adrs}/{adr_id}.md"))
+        self.assertTrue(_looks_like_path("docs/design/adr/real.md"))
+
 
 class TestAllowlistDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-02")
