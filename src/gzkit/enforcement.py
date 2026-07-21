@@ -388,6 +388,44 @@ def _ensure_production_claims_registered() -> None:
     _ensure_resume_gate_claims_registered()
 
 
+def _gate5_enrollment_results(records: list[EnforcementClaimRecord]) -> list[ClaimRunResult]:
+    """Enumerate gate5 floor enrollment completeness (ADR-0.0.74 § Boundary Invariants #9).
+
+    Running the discovered records can only ever verify what is PRESENT; it cannot
+    notice a floor member whose claim source was never wired into
+    ``_ensure_production_claims_registered`` — the orphan class GHI #648 named,
+    which shipped three floor members as facades. This enumerates
+    ``GATE5_INVARIANTS`` membership instead and yields one FACADE result per
+    member whose enforcement is not live, so the floor audit fails closed rather
+    than passing with the member silently absent.
+
+    Runs only on the production-discovery path (``registry is None``): a caller
+    passing an explicit registry is exercising a subset, not auditing the floor.
+    """
+    from gzkit.mx.invariants import unenrolled_gate5_members  # noqa: PLC0415
+
+    registered = {r.claim_id for r in records}
+    return [
+        ClaimRunResult(
+            claim_id=f"gate5-enrollment:{member}",
+            outcome="FACADE",
+            message=(
+                f"gate5 floor member {member!r} is named in GATE5_INVARIANTS but its "
+                f"enforcement is not live: {reason}. ADR-0.0.74 § Boundary Invariants #9 "
+                f"requires every member to carry an @enforces entry with a passing "
+                f"un-forced NC. Fix: wire its claim source into "
+                f"_ensure_production_claims_registered() (src/gzkit/enforcement.py) and "
+                f"map the member in _GATE5_MEMBER_CLAIMS (src/gzkit/mx/invariants.py). If "
+                f"no genuine production entrypoint exists, surface it via "
+                f"_GATE5_NAMED_NOT_ENFORCED — binding a narrower proxy to fake coverage "
+                f"is forbidden (§ Consequences/Negative #7)."
+            ),
+            source_fn="gzkit.mx.invariants.unenrolled_gate5_members",
+        )
+        for member, reason in unenrolled_gate5_members(registered)
+    ]
+
+
 def run_meta_validator(
     registry: list[EnforcementClaimRecord] | None = None,
     root: Path | None = None,
@@ -408,6 +446,8 @@ def run_meta_validator(
         _ensure_production_claims_registered()
     records = registry if registry is not None else get_enforcement_registry()
     claim_results: list[ClaimRunResult] = [_run_single_claim(r) for r in records]
+    if registry is None:
+        claim_results.extend(_gate5_enrollment_results(records))
 
     verified = sum(1 for r in claim_results if r.outcome == "PASS")
     facades = sum(1 for r in claim_results if r.outcome == "FACADE")

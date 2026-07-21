@@ -14,7 +14,7 @@ OBPI-0.0.74-13's proxy-reality detector per the §5 enforcement-claim rule.
 from __future__ import annotations
 
 import tempfile
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
@@ -164,3 +164,54 @@ def _ensure_gate5_claims_registered() -> None:
         if claim_id in existing:
             continue
         enforces(claim_id, fixture, entrypoint)(_gate5_marker)
+
+
+# ---------------------------------------------------------------------------
+# Enrollment-completeness enumeration (ADR-0.0.74 § Boundary Invariants #9)
+# ---------------------------------------------------------------------------
+#
+# Maps each ENFORCED floor member to the claim id that carries its live NC.
+# ``secrets`` / ``operator-pii`` are deliberately absent — they are the
+# honest-negative named-not-enforced members, and binding a narrower proxy to
+# give them a mapping is forbidden (§ Consequences/Negative #7).
+
+_GATE5_MEMBER_CLAIMS: dict[str, str] = {
+    "gate5-attestation": "gate5-attestation-absence",  # mx.invariants (OBPI-0.0.74-17)
+    "ledger": "gate5-ledger",  # mx.invariants (OBPI-0.0.74-17)
+    "grader-gaming": "grader-gaming",  # mx.proxy_reality (OBPI-0.0.74-13)
+}
+
+
+def unenrolled_gate5_members(registered_claim_ids: Iterable[str]) -> list[tuple[str, str]]:
+    """Return ``(member, reason)`` for every gate5 floor member whose enforcement is not live.
+
+    Boundary Invariant #9 requires the floor to enumerate ``GATE5_INVARIANTS``
+    *membership* rather than verify whichever claims happen to be registered —
+    the latter is structurally incapable of noticing an absence, which is how
+    three floor members shipped as facades (GHI #648).
+
+    Two absence shapes are caught:
+
+      * **no entry** — the member has no ``@enforces`` mapping at all (the future
+        sixth member the invariant names);
+      * **orphaned entry** — the member maps to a claim that never reaches
+        ``_ensure_production_claims_registered``, so the runner never sees it.
+
+    ``_GATE5_NAMED_NOT_ENFORCED`` members are exempt by design: no unified gate5
+    entrypoint exists for them, and faking one is forbidden.
+    """
+    registered = set(registered_claim_ids)
+    unenrolled: list[tuple[str, str]] = []
+    for member in sorted(GATE5_INVARIANTS - _GATE5_NAMED_NOT_ENFORCED):
+        claim_id = _GATE5_MEMBER_CLAIMS.get(member)
+        if claim_id is None:
+            unenrolled.append((member, "no @enforces entry is declared for this floor member"))
+        elif claim_id not in registered:
+            unenrolled.append(
+                (
+                    member,
+                    f"its claim {claim_id!r} is declared but never reaches "
+                    "production discovery (orphaned claim source)",
+                )
+            )
+    return unenrolled
