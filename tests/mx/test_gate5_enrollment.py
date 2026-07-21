@@ -20,9 +20,13 @@ absence shapes:
 
 from __future__ import annotations
 
+import inspect
+import re
 import unittest
+from pathlib import Path
 from unittest import mock
 
+from gzkit import enforcement
 from gzkit.enforcement import (
     _ensure_production_claims_registered,
     registered_claims,
@@ -133,6 +137,52 @@ class TestGate5EnrollmentCompleteness(unittest.TestCase):
             set(),
             set(invariants._GATE5_MEMBER_CLAIMS) & invariants._GATE5_NAMED_NOT_ENFORCED,
             "an honest-negative member must not also carry a bound claim mapping",
+        )
+
+
+class TestClaimSourceWiringCompleteness(unittest.TestCase):
+    """No claim source may be authored without reaching the production seam.
+
+    The gate5 enumeration above closes the orphan class *for floor members*,
+    because ``GATE5_INVARIANTS`` supplies a membership set to enumerate against.
+    Claim sources outside the floor (airlock, handoff-resume-gate, qc_binding)
+    have no such set — their wiring is honored only by prose. ``airlock/enter.py``
+    states the obligation in a docstring ("a registration authored but un-wired
+    there is an ORPHAN") and nothing checks it, which is the same
+    verification-by-good-faith that let GHI #648's three members ship as facades.
+
+    This enumerates the sources themselves: every ``_ensure_*_claims_registered``
+    function under ``src/gzkit/`` must be called by
+    ``_ensure_production_claims_registered``.
+    """
+
+    _SOURCE_FN_RE = re.compile(r"^def (_ensure_\w*claims_registered)\(", re.MULTILINE)
+
+    def test_every_claim_source_is_reachable_from_the_production_seam(self) -> None:
+        seam = inspect.getsource(_ensure_production_claims_registered)
+        src_root = Path(inspect.getfile(enforcement)).parent
+
+        authored: dict[str, Path] = {}
+        for path in sorted(src_root.rglob("*.py")):
+            for name in self._SOURCE_FN_RE.findall(path.read_text(encoding="utf-8")):
+                authored[name] = path
+
+        # The seam itself matches the pattern; it cannot call itself.
+        authored.pop("_ensure_production_claims_registered", None)
+        self.assertNotEqual({}, authored, "discovery regex found no claim sources at all")
+
+        orphans = {
+            name: path.relative_to(src_root).as_posix()
+            for name, path in authored.items()
+            if f"{name}()" not in seam
+        }
+        self.assertEqual(
+            {},
+            orphans,
+            "claim source(s) authored but never called by "
+            "_ensure_production_claims_registered — an unwired source is an ORPHAN "
+            "whose claim is never discovered, making its enforcement a facade "
+            f"(GHI #648; ADR-0.0.74 §5): {orphans}",
         )
 
 
