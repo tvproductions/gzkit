@@ -21,7 +21,7 @@ from typing import Any
 
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.decomposition import extract_markdown_section
-from gzkit.governance.brief_structure import BRIEF_TERMINAL_STATUSES
+from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.validate import ValidationError
 
 _REQ_ID_IN_BRIEF = re.compile(r"\bREQ-\d+\.\d+\.\d+-\d+-\d+\b")
@@ -647,7 +647,7 @@ def audit_brief_command_shape(project_root: Path) -> list[ValidationError]:
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
         text = brief.read_text(encoding="utf-8")
         status_match = _BRIEF_STATUS_IN_FRONTMATTER.search(text)
-        if status_match and status_match.group(1) in BRIEF_TERMINAL_STATUSES:
+        if status_match and is_terminal_brief_status(status_match.group(1)):
             continue
         section = extract_markdown_section(text, "Verification") or ""
         for cmd in extract_fenced_commands(section):

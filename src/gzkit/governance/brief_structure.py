@@ -35,8 +35,31 @@ BRIEF_TERMINAL_STATUSES: frozenset[str] = frozenset(
         "Superseded",
         "archived",
         "Promoted",
+        # No future work is done on an abandoned or withdrawn brief either, so the
+        # sealed-record logic applies identically: its Verification commands will
+        # never run and its declared paths describe a tree that has moved on. Added
+        # under GHI #707 after the reconcile engine's terminal scoping made the
+        # omission visible.
+        "Abandoned",
+        "Withdrawn",
     }
 )
+
+_TERMINAL_STATUSES_FOLDED: frozenset[str] = frozenset(
+    status.casefold() for status in BRIEF_TERMINAL_STATUSES
+)
+
+
+def is_terminal_brief_status(status: str) -> bool:
+    """Return True when ``status`` names a sealed brief lifecycle state.
+
+    The single predicate both consumers call. `--brief-command-shape` previously
+    tested frozenset membership by exact string while the reconcile engine
+    casefolded, so the corpus's two spellings of ``withdrawn`` resolved
+    differently depending on which validator asked. Surrounding whitespace and
+    YAML quoting are tolerated because callers pass raw frontmatter values.
+    """
+    return status.strip().strip('"').strip("'").casefold() in _TERMINAL_STATUSES_FOLDED
 
 
 class LegacyBriefShape(BaseModel):

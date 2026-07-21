@@ -41,8 +41,8 @@ citations are recorded rather than repaired (GHI #677).
 ### Terminal-status briefs report but never gate
 
 A brief whose `status:` is terminal — `Completed`, `attested_completed`,
-`Validated`, `Superseded`, `archived`, or `Promoted` (matched
-case-insensitively) — is a **sealed historical record**. Its Allowed Paths and
+`Validated`, `Superseded`, `archived`, `Promoted`, `Abandoned`, or `Withdrawn`
+(matched case-insensitively) — is a **sealed historical record**. Its Allowed Paths and
 Discovery Checklist described the tree at implementation time, so resolving them
 against a codebase that has since renamed or absorbed those files asks a question
 the brief never claimed to answer.

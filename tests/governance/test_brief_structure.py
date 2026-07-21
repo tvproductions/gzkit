@@ -18,7 +18,12 @@ from pathlib import Path
 import jsonschema
 from pydantic import ValidationError
 
-from gzkit.governance.brief_structure import BriefStructure, LegacyBriefShape, parse_brief
+from gzkit.governance.brief_structure import (
+    BriefStructure,
+    LegacyBriefShape,
+    is_terminal_brief_status,
+    parse_brief,
+)
 from gzkit.traceability import covers
 
 FIXTURES = Path(__file__).parent.parent / "fixtures" / "brief_structure"
@@ -252,3 +257,44 @@ class TestParseBriefRoundTrip(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestTerminalBriefStatus(unittest.TestCase):
+    """One predicate both consumers share (GHI #707 follow-up).
+
+    `--brief-command-shape` matched the frozenset by exact string while the
+    reconcile engine casefolded, so the corpus's two spellings of `withdrawn`
+    resolved differently depending on which validator asked. A single predicate
+    removes the divergence rather than duplicating the casefold.
+    """
+
+    def test_sealed_lifecycle_statuses_are_terminal(self) -> None:
+        for status in (
+            "Completed",
+            "attested_completed",
+            "Validated",
+            "Superseded",
+            "archived",
+            "Promoted",
+        ):
+            with self.subTest(status=status):
+                self.assertTrue(is_terminal_brief_status(status))
+
+    def test_abandoned_and_withdrawn_are_terminal(self) -> None:
+        """No future work is done on either — the sealed-record logic applies."""
+        for status in ("Abandoned", "Withdrawn"):
+            with self.subTest(status=status):
+                self.assertTrue(is_terminal_brief_status(status))
+
+    def test_matching_is_case_insensitive(self) -> None:
+        """The corpus carries both `Withdrawn` and `withdrawn`."""
+        self.assertTrue(is_terminal_brief_status("withdrawn"))
+        self.assertTrue(is_terminal_brief_status("COMPLETED"))
+
+    def test_quoted_and_padded_values_resolve(self) -> None:
+        self.assertTrue(is_terminal_brief_status('  "Completed"  '))
+
+    def test_live_statuses_are_not_terminal(self) -> None:
+        for status in ("Draft", "Active", "in_progress", ""):
+            with self.subTest(status=status):
+                self.assertFalse(is_terminal_brief_status(status))

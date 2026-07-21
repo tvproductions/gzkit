@@ -17,9 +17,9 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.governance.brief_path_validity import extract_brief_creates_paths, has_glob_chars
 from gzkit.governance.brief_structure import (
-    BRIEF_TERMINAL_STATUSES,
     BriefStructure,
     LegacyBriefShape,
+    is_terminal_brief_status,
     parse_brief,
 )
 
@@ -443,17 +443,15 @@ def _compute_allowlist_delta(
 def _is_terminal_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
     """Return True when the brief has reached a sealed lifecycle status.
 
-    Reuses the frozenset `--brief-command-shape` already scopes on (GHI #565)
-    rather than authoring a fourth copy of the terminal-status vocabulary.
-    Matching is case-insensitive because the corpus carries both `Completed` and
-    `attested_completed` spellings.
+    Adapts a parsed brief onto ``is_terminal_brief_status``, the single predicate
+    `--brief-command-shape` also calls — one vocabulary, one matching rule, so the
+    two validators cannot disagree about what "sealed" means (GHI #707).
     """
     if isinstance(parsed, BriefStructure):
         status = parsed.status
     else:
         status = str(parsed.raw_frontmatter.get("status", ""))
-    folded = {s.casefold() for s in BRIEF_TERMINAL_STATUSES}
-    return status.strip().strip('"').casefold() in folded
+    return is_terminal_brief_status(status)
 
 
 def _compute_discovery_delta(
