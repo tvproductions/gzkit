@@ -85,7 +85,15 @@ def _delta_counts(result: ReconcileResult) -> dict[str, int]:
 
 def _render_report(result: ReconcileResult, *, do_write: bool, dry_run: bool) -> None:
     counts = _delta_counts(result)
-    status = "[red]DRIFT[/red]" if result.has_drift else "[green]clean[/green]"
+    if result.terminal:
+        # `has_drift` is false here because a sealed brief cannot gate, not
+        # because nothing moved. Rendering that as "clean" next to a non-zero
+        # delta line states the opposite of the line below it (GHI #707).
+        status = "[cyan]sealed[/cyan] (deltas reported, not gating)"
+    elif result.has_drift:
+        status = "[red]DRIFT[/red]"
+    else:
+        status = "[green]clean[/green]"
     console.print(f"[bold]Brief reconcile:[/bold] {result.brief_id} — {status}")
     console.print(
         "  deltas: "

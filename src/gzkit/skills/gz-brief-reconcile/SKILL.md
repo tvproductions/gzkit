@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-21
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.2.0"
 model: haiku
 gz_command: gz brief reconcile
 ---
@@ -29,9 +29,15 @@ records the result to the ledger (invariant CIC-2, brief↔reality coherence).
 
 ## Workflow
 
-1. Confirm the target OBPI id and that its brief file exists.
+1. Confirm the target OBPI id and that its brief file exists. **Check its
+   `status:` first** — a terminal brief (`Completed`, `attested_completed`,
+   `Validated`, `Superseded`, `archived`, `Promoted`) reports deltas but never
+   gates: `has_drift` is always false and the run exits 0. Its deltas read as
+   *"what moved since this shipped"*, never as a repair worklist. Do not run
+   `--apply` on one — the amendment would rewrite a sealed record under an
+   attestation no operator can honestly give (GHI #707).
 2. Run `uv run gz brief reconcile <OBPI-ID>` to report per-dimension deltas.
-   Exit 0 means clean; exit 3 means drift.
+   Exit 0 means clean; exit 3 means drift. On a live (non-terminal) brief only.
 3. If drift is real and the amendments are correct, preview with
    `uv run gz brief reconcile <OBPI-ID> --apply --attestor "<name>" --dry-run`.
 4. Apply with `uv run gz brief reconcile <OBPI-ID> --apply --attestor "<name>"`.

@@ -38,6 +38,25 @@ cleared every dimension, and **3** when drift survives it — `--apply` repairs
 the allowlist dimension alone, and unresolved verbs, discovery paths, and stale
 citations are recorded rather than repaired (GHI #677).
 
+### Terminal-status briefs report but never gate
+
+A brief whose `status:` is terminal — `Completed`, `attested_completed`,
+`Validated`, `Superseded`, `archived`, or `Promoted` (matched
+case-insensitively) — is a **sealed historical record**. Its Allowed Paths and
+Discovery Checklist described the tree at implementation time, so resolving them
+against a codebase that has since renamed or absorbed those files asks a question
+the brief never claimed to answer.
+
+Every delta is still computed and rendered for such a brief — the archaeology is
+real and stays visible — but `has_drift` is always **false**, so the run exits
+**0** and the emitted receipt does not block the Stage-1 pipeline gate. There is
+no future work for that gate to hold, and the only `--apply` repair available
+would rewrite a sealed governance artifact under an attestation no operator can
+honestly give (GHI #707).
+
+Read the deltas on a terminal brief as *"here is what moved since this shipped"*,
+never as *"here is what you must fix"*. Drift that gates is drift on a live brief.
+
 The engine is consumed read-only; this command owns the CLI surface, ledger
 emission, and the amendment-write path only.
 

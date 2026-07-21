@@ -103,6 +103,13 @@ class ReconcileResult(BaseModel):
     req_count_delta: ReqCountDelta = Field(..., description="REQ count dimension")
     citation_delta: CitationDelta = Field(..., description="Citation-tuple dimension")
     has_drift: bool = Field(..., description="True if any dimension reports drift")
+    terminal: bool = Field(
+        default=False,
+        description=(
+            "True when the brief's status is sealed, so deltas are reported but "
+            "never gate — distinguishes 'nothing moved' from 'cannot gate'"
+        ),
+    )
 
 
 # --- Parsing patterns ---
@@ -189,6 +196,7 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
             req_count_delta=req_count_delta,
             citation_delta=citation_delta,
             has_drift=False,
+            terminal=True,
         )
 
     # req_count is the advisory crude heuristic (GHI #581): it compares

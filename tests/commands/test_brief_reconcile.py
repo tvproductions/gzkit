@@ -308,6 +308,37 @@ class TestBriefReconcileCommand(unittest.TestCase):
             self.assertEqual(len(applied), 1)
             self.assertTrue(applied[0].extra["has_drift"])
 
+    @covers("REQ-0.0.37-06-01")
+    def test_terminal_brief_verdict_is_not_rendered_as_clean(self) -> None:
+        """A sealed brief carrying deltas must not report the word `clean`.
+
+        `has_drift` is false for a terminal brief because it cannot gate, not
+        because nothing moved. Rendering that as `clean` alongside a non-zero
+        delta count states the opposite of the delta line directly above it —
+        the operator has to read the manpage to resolve their own CLI output
+        (GHI #707 coupled-surface follow-up).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            brief_path = self._adrs_dir() / "OBPI-0.1.0-02-drift.md"
+            _write_brief(brief_path, _DRIFT_BRIEF.replace("status: Draft", "status: Completed"))
+            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-02-drift"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("clean", result.output)
+            self.assertIn("sealed", result.output.lower())
+
+    @covers("REQ-0.0.37-06-01")
+    def test_live_clean_brief_still_reports_clean(self) -> None:
+        """Negative control: the ordinary no-drift verdict is unchanged."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _write_brief(self._adrs_dir() / "OBPI-0.1.0-01-clean.md", _CLEAN_BRIEF)
+            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-01-clean"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertIn("clean", result.output)
+
     @covers("REQ-0.0.37-06-07")
     def test_new_event_types_are_registered_and_parse(self) -> None:
         """REQ-07: both event types are registered (typed union + factory round-trip)."""
