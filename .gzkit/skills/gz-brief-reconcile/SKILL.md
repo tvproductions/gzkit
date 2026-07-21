@@ -4,7 +4,7 @@ description: Reconcile an OBPI brief against current project state and optionall
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-06
+last_reviewed: 2026-07-21
 model: haiku
 gz_command: gz brief reconcile
 ---
@@ -34,11 +34,16 @@ records the result to the ledger (invariant CIC-2, brief↔reality coherence).
    `uv run gz brief reconcile <OBPI-ID> --apply --attestor "<name>" --dry-run`.
 4. Apply with `uv run gz brief reconcile <OBPI-ID> --apply --attestor "<name>"`.
    Unresolved verbs are recorded as tracked defects, never silently rewritten.
+   `--apply` re-measures the brief after writing and reports that second
+   measurement, so the exit contract in step 2 binds here too: exit 3 means
+   drift survived the amendment (`--apply` repairs the allowlist dimension
+   only), not that the write failed.
 
 ## Validation
 
-- Re-run `uv run gz brief reconcile <OBPI-ID>` after `--apply`; confirm the
-  expected dimensions now report zero (or the residual is intentional).
+- The exit code already reflects the post-amendment brief — a re-run is a
+  confirmation, not the measurement. Confirm the expected dimensions now
+  report zero (or the residual is intentional and tracked).
 - Confirm the `brief_reconciled` ledger event was emitted (and
   `brief_reconcile_drift_detected` when drift was present).
 

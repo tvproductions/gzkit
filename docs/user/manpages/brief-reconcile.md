@@ -30,8 +30,13 @@ additionally emits a `brief_reconcile_drift_detected` event carrying the full
 per-dimension payload.
 
 Exit code follows the `gz validate --*` convention: **0** when the brief is
-clean, **3** when drift is detected (report mode). Under `--apply` the command
-writes amendments and exits **0**.
+clean, **3** when drift is detected. This is unconditional — `--apply` does not
+suppress it. `--apply` writes its amendments, re-measures the brief as amended,
+and reports that second measurement in the ledger receipt, the rendered deltas,
+and the exit code. So `--apply` exits **0** only when the amendment actually
+cleared every dimension, and **3** when drift survives it — `--apply` repairs
+the allowlist dimension alone, and unresolved verbs, discovery paths, and stale
+citations are recorded rather than repaired (GHI #677).
 
 The engine is consumed read-only; this command owns the CLI surface, ledger
 emission, and the amendment-write path only.

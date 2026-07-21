@@ -78,6 +78,57 @@ gz totally-not-a-real-verb-xyz
 **Brief Status:** Draft
 """
 
+# Drift that `--apply` can actually repair: `src/gzkit/beta.py` is imported by
+# the REQ's covering test but absent from the allowlist, so it lands in
+# `allowlist_delta.missing_in_brief` — the one dimension `_compute_amendments`
+# writes back. After the amendment the brief declares it, so a re-measurement
+# reports no drift (GHI #677).
+_REPAIRABLE_BRIEF = """\
+---
+id: OBPI-0.1.0-03-repairable
+parent: ADR-0.1.0-f
+item: 3
+lane: Lite
+status: Draft
+---
+
+# OBPI-0.1.0-03-repairable: Repairable
+
+## Allowed Paths
+
+- `src/gzkit/alpha.py` (modify)
+
+## Requirements (FAIL-CLOSED)
+
+1. REQUIREMENT: the system does the repairable thing
+
+## Acceptance Criteria
+
+- [ ] REQ-0.1.0-03-01: the system does the repairable thing
+
+**Brief Status:** Draft
+"""
+
+_REPAIRABLE_TEST = """\
+from gzkit.beta import BETA
+
+
+def test_thing() -> None:
+    \"\"\"REQ-0.1.0-03-01: covering test importing a non-allowlisted sibling.\"\"\"
+    assert BETA == 1
+"""
+
+
+def _seed_repairable_project() -> None:
+    """Lay down the src/ siblings and covering test the repairable brief needs."""
+    src = Path("src") / "gzkit"
+    src.mkdir(parents=True, exist_ok=True)
+    (src / "alpha.py").write_text("ALPHA = 1\n", encoding="utf-8")
+    (src / "beta.py").write_text("BETA = 1\n", encoding="utf-8")
+    tests_dir = Path("tests")
+    tests_dir.mkdir(parents=True, exist_ok=True)
+    (tests_dir / "test_repairable.py").write_text(_REPAIRABLE_TEST, encoding="utf-8")
+
 
 class TestBriefReconcileCommand(unittest.TestCase):
     """gz brief reconcile CLI contract (OBPI-0.0.37-06)."""
@@ -163,7 +214,10 @@ class TestBriefReconcileCommand(unittest.TestCase):
                     "g0",
                 ],
             )
-            self.assertEqual(result.exit_code, 0)
+            # REQ-01 ("3 on drift") binds under --apply too: the verb drift this
+            # fixture carries is recorded as a tracked defect, never repaired, so
+            # drift survives the amendment and the run still fails closed (#677).
+            self.assertEqual(result.exit_code, 3)
             written = brief_path.read_text(encoding="utf-8")
             self.assertIn("## Tracked Defects", written)
             self.assertIn("totally-not-a-real-verb-xyz", written)
@@ -196,6 +250,63 @@ class TestBriefReconcileCommand(unittest.TestCase):
             applied = [e for e in self._events("brief_reconciled") if e.extra.get("applied")]
             self.assertEqual(applied, [])
             self.assertIn("dry", result.output.lower())
+
+    @covers("REQ-0.0.37-06-04")
+    def test_apply_receipt_describes_the_amended_brief_not_the_pre_write_state(self) -> None:
+        """REQ-04: the applied receipt is measured after the amendment, not before.
+
+        A repair verb that emits a receipt computed before its own mutation
+        certifies the pre-mutation world — the Stage-1 gate then blocks on drift
+        the amendment already cleared (GHI #677).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_repairable_project()
+            brief_path = self._adrs_dir() / "OBPI-0.1.0-03-repairable.md"
+            _write_brief(brief_path, _REPAIRABLE_BRIEF)
+            result = runner.invoke(
+                main,
+                [
+                    "brief",
+                    "reconcile",
+                    "OBPI-0.1.0-03-repairable",
+                    "--apply",
+                    "--attestor",
+                    "g0",
+                ],
+            )
+            # The amendment declared the sibling, so the re-measured brief is clean.
+            self.assertIn("src/gzkit/beta.py", brief_path.read_text(encoding="utf-8"))
+            applied = [e for e in self._events("brief_reconciled") if e.extra.get("applied")]
+            self.assertEqual(len(applied), 1)
+            self.assertFalse(
+                applied[0].extra["has_drift"],
+                "receipt still reports the pre-amendment world",
+            )
+            self.assertEqual(result.exit_code, 0)
+
+    @covers("REQ-0.0.37-06-01")
+    def test_apply_with_residual_drift_still_exits_three(self) -> None:
+        """REQ-01: exit 3 on drift is unconditional — --apply does not suppress it.
+
+        `--apply` repairs only the allowlist dimension; unresolved verbs survive
+        as tracked defects. A green exit over a drifted receipt tells the operator
+        the gate is open when it is not (GHI #677).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            brief_path = self._adrs_dir() / "OBPI-0.1.0-02-drift.md"
+            _write_brief(brief_path, _DRIFT_BRIEF)
+            result = runner.invoke(
+                main,
+                ["brief", "reconcile", "OBPI-0.1.0-02-drift", "--apply", "--attestor", "g0"],
+            )
+            self.assertEqual(result.exit_code, 3)
+            applied = [e for e in self._events("brief_reconciled") if e.extra.get("applied")]
+            self.assertEqual(len(applied), 1)
+            self.assertTrue(applied[0].extra["has_drift"])
 
     @covers("REQ-0.0.37-06-07")
     def test_new_event_types_are_registered_and_parse(self) -> None:

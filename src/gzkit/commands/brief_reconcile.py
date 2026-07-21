@@ -119,6 +119,15 @@ def brief_reconcile_cmd(
     result = reconcile_brief(brief_path, root)
     do_write = bool(apply and not dry_run)
 
+    if do_write:
+        _apply_amendments(brief_path, result, attestor or "")
+        # Re-measure against the brief as amended. A repair verb that reports the
+        # result it computed *before* its own mutation certifies the pre-mutation
+        # world, so the Stage-1 gate blocks on drift the amendment already cleared
+        # (GHI #677). The report, the receipt, and the exit code all read from this
+        # second measurement.
+        result = reconcile_brief(brief_path, root)
+
     if as_json:
         print(  # noqa: T201 — machine-consumption payload
             json.dumps(
@@ -136,13 +145,14 @@ def brief_reconcile_cmd(
         _render_report(result, do_write=do_write, dry_run=dry_run)
 
     if do_write:
-        _apply_amendments(brief_path, result, attestor or "")
         emit_brief_reconciled(root, result, applied=True, attestor=attestor)
     else:
         emit_brief_reconciled(root, result, applied=False)
 
     if result.has_drift:
         emit_brief_reconcile_drift_detected(root, result)
-
-    if not do_write and result.has_drift:
+        # REQ-0.0.37-06-01 ("exits 0 on no-drift, 3 on drift") is unconditional:
+        # --apply repairs the allowlist dimension only, so residual drift must
+        # still fail closed rather than hand the operator a green exit over a
+        # receipt the Stage-1 gate will reject (GHI #677).
         raise SystemExit(3)
