@@ -11,6 +11,7 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gzkit.governance.deprecations import find_deprecated_verb
 from gzkit.validate import ValidationError
 
 _DOC_PROSE_VERBS: frozenset[str] = frozenset()
@@ -246,6 +247,29 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
 
     errors: list[ValidationError] = []
     for path in sorted(verb_paths):
+        # A deprecated verb INVERTS Invariant 1: wrapping a retired verb in a
+        # skill routes agents onto it, which is the defect GHI #705 recorded.
+        # Absence of a wielding skill is the passing state; presence is the
+        # failure. Without this inversion Invariant 1 and
+        # `gz validate --deprecated-verb-prescription` contradict each other.
+        deprecated = find_deprecated_verb(path)
+        if deprecated is not None:
+            if verb_refs[path]:
+                errors.append(
+                    ValidationError(
+                        type="skill_alignment",
+                        artifact=f"gz {path}",
+                        message=(
+                            f"CLI verb `gz {path}` is deprecated but is still wrapped by a "
+                            f"skill under .gzkit/skills/**. A skill wrapping a retired verb "
+                            f"routes agents onto it (GHI {deprecated.ghi}). Retire the skill "
+                            f"per .gzkit/rules/skill-surface-sync.md § Retirement policy "
+                            f"(delete from every surface root) and point callers at "
+                            f"`{deprecated.successor}`."
+                        ),
+                    )
+                )
+            continue
         if _verb_path_waived(path) or verb_refs[path]:
             continue
         errors.append(

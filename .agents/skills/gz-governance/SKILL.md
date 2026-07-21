@@ -4,8 +4,8 @@ description: Namespace router → ADR/OBPI/ledger governance skills. Use to pick
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-06
-skill-version: 0.4.0
+last_reviewed: 2026-07-21
+skill-version: 0.5.0
 model: haiku
 ---
 
@@ -25,7 +25,6 @@ model: haiku
 | brief reconcile | `gz-brief-reconcile` |
 | obpi lock | `gz-obpi-lock` |
 | semver migrate | `gz-migrate-semver` |
-| gates | `gz-gates` |
 | ledger receipt | `gz-adr-emit-receipt` |
 | validate | `gz-validate` |
 | ontology | `gz-ontology` |

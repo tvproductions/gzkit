@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.11.0"
+  skill-version: "6.12.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-17
+last_reviewed: 2026-07-21
 model: opus
 ---
 
@@ -167,7 +167,7 @@ placeholder below):
 ```bash
 uv run -m unittest -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/unittest.txt 2>&1
 uv run mkdocs build -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/mkdocs.txt 2>&1
-uv run gz gates --adr <adr-id> > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/gates.txt 2>&1
+uv run gz closeout <adr-id> --dry-run > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/gates.txt 2>&1
 ```
 
 Record ✓/✗/⚠ outcomes for each check.
@@ -335,7 +335,7 @@ report success to the operator until the report command confirms the change.
 | Docs build | `uv run mkdocs build -q` | L1 |
 | Governance | `uv run gz cli audit` | L1 |
 | Config paths | `uv run gz check-config-paths` | L1 |
-| Heavy gates | `uv run gz gates --adr <adr-id>` | L1 |
+| Heavy gates | `uv run gz closeout <adr-id> --dry-run` | L1 |
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
 | Coverage discovery | `rg -n '@covers("ADR-' tests` | L1 |
 | **Open audit ceremony** | `uv run gz adr audit-begin <adr-id>` — writes per-ADR co-presence marker. | L1 |

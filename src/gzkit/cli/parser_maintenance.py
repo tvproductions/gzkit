@@ -825,6 +825,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Derived closeout-proof view (ADR-0.0.69). Exit 0: all proven; 3: unproven.",
     )
     p_validate.add_argument(
+        "--deprecated-verb-prescription",
+        dest="check_deprecated_verb_prescription",
+        action="store_true",
+        default=False,
+        help="Governed surfaces must not prescribe a deprecated verb. Exit 3 on any (#705).",
+    )
+    p_validate.add_argument(
         "--okf-conformance",
         dest="check_okf_conformance",
         action="store_true",
@@ -1064,6 +1071,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_task_envelope_coherence=a.check_task_envelope_coherence,
             check_closeout_proof=a.check_closeout_proof,
             check_okf_conformance=a.check_okf_conformance,
+            check_deprecated_verb_prescription=a.check_deprecated_verb_prescription,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
             check_changelog=a.check_changelog,

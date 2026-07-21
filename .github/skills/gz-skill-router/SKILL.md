@@ -5,9 +5,9 @@ description: Route agents to the correct skill for a given task type. Use when s
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-07
+last_reviewed: 2026-07-21
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.2.0"
   govzero-framework-version: "v6"
 model: haiku
 ---
@@ -67,7 +67,7 @@ Task arrives
     │
     ├── Running checks or validation?
     │   ├── Full quality checks (lint+test+type) ───→ gz-check
-    │   ├── Gate compliance for an ADR ─────────────→ gz-gates
+    │   ├── Gate compliance for an ADR ─────────────→ gz-check
     │   ├── Gate 2 implementation verification ─────→ gz-implement
     │   ├── Validate governance artifacts ──────────→ gz-validate
     │   ├── Query artifact relationships ───────────→ gz-state
@@ -112,7 +112,7 @@ Task arrives
 | closeout, ceremony, attest | `gz-adr-closeout-ceremony` |
 | patch release, cut release | `gz-patch-release` |
 | check, lint, test, quality | `gz-check` |
-| gates, gate compliance | `gz-gates` |
+| gates, gate compliance | `gz-check` |
 | status, blockers, next actions | `gz-status` |
 | state, artifact graph, lineage | `gz-state` |
 | validate, schema, surfaces | `gz-validate` |

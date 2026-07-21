@@ -16,6 +16,7 @@ from gzkit.commands.validate_frontmatter import (
     validate_frontmatter_coherence,
 )
 from gzkit.config import GzkitConfig
+from gzkit.governance.deprecations import deprecation_notice
 from gzkit.governance.status_vocab import canonicalize_status
 from gzkit.ledger import Ledger, gate_checked_event
 from gzkit.validate import ValidationError
@@ -364,10 +365,7 @@ def gates_cmd(gate_number: int | None, adr: str | None) -> None:
     _m = _cli_main()
     import sys
 
-    print(  # noqa: T201
-        "⚠ Deprecated: `gz gates` will be removed in a future release. Use `gz closeout` instead.",
-        file=sys.stderr,
-    )
+    print(deprecation_notice("gates"), file=sys.stderr)  # noqa: T201
     config = _m.ensure_initialized()
     project_root = _m.get_project_root()
 

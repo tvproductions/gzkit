@@ -24,7 +24,7 @@ uv run gz state --json
 uv run gz adr audit-check ADR-<X.Y.Z>
 uv run gz adr fidelity ADR-<X.Y.Z>   # bound gate; closeout + audit invoke it (ADR-0.0.73)
 uv run gz adr covers-check ADR-<X.Y.Z>
-uv run gz gates --adr ADR-<X.Y.Z>
+uv run gz closeout ADR-<X.Y.Z> --dry-run
 uv run gz obpi status OBPI-<X.Y.Z-NN>
 uv run gz roles
 uv run gz personas list               # List agent personas
@@ -191,7 +191,7 @@ See [State Doctrine](state-doctrine.md) for the full three-layer model, five aut
 
 | Layer | Trust source | Typical tooling |
 |---|---|---|
-| 1 | Runtime evidence generation | `gz implement`, `gz gates`, `gz adr audit-check` |
+| 1 | Runtime evidence generation | `gz implement`, `gz check`, `gz adr audit-check` |
 | 2 | Ledger-driven reconciliation | `/gz-obpi-reconcile`, `gz audit` |
 | 3 | File sync and indexing | `/gz-obpi-sync`, `/gz-adr-sync`, `gz agent sync control-surfaces` |
 
@@ -555,7 +555,7 @@ exists:
 
 ```bash
 uv run gz implement --adr ADR-<X.Y.Z>
-uv run gz gates --adr ADR-<X.Y.Z>
+uv run gz closeout ADR-<X.Y.Z> --dry-run
 uv run gz lint
 ```
 

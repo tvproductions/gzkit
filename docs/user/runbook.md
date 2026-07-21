@@ -34,7 +34,7 @@ CLI verb. For the narrative account of why these stages compose this way
 | 3 | Decomposition (ADR → OBPI) | `/gz-plan`, `/gz-adr-create`, `/gz-obpi-specify` | `uv run gz plan create <name> --kind feature --semver X.Y.Z`; `uv run gz specify <slug> --parent ADR-<X.Y.Z> --item <N>` |
 | 4 | Pre-execution reasoning | `/gz-justify`, `/gz-plan-audit` | `uv run gz justify <anchor> --save`; `uv run gz justify validate <path>` |
 | 5 | Implementation | `/gz-obpi-pipeline`, `/gz-arb` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |
-| 6 | Verification (Gates 1–5) | `/gz-check`, `/gz-implement`, `/gz-gates` | `uv run gz check`; `uv run gz gates --adr ADR-<X.Y.Z>` |
+| 6 | Verification (Gates 1–5) | `/gz-check`, `/gz-implement` | `uv run gz check`; `uv run gz closeout ADR-<X.Y.Z> --dry-run` |
 | 7 | Closeout | `/gz-adr-closeout-ceremony`, `/gz-adr-audit`, `/gz-adr-emit-receipt` | `uv run gz closeout ADR-<X.Y.Z>`; `uv run gz attest ADR-<X.Y.Z> --status completed`; `uv run gz audit ADR-<X.Y.Z>`; `uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Name>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'` |
 | 8 | Release (GHI-driven patch) | `/gz-patch-release` | `uv run gz patch release --full` |
 
@@ -204,10 +204,10 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    | /gz-check | uv run gz check |
 #    | /gz-arb | uv run gz arb ruff; uv run gz arb step ... |
 #    | /gz-implement | uv run gz implement --adr ADR-<X.Y.Z> |
-#    | /gz-gates ADR-<X.Y.Z> | uv run gz gates --adr ADR-<X.Y.Z> |
+#    | /gz-check | uv run gz closeout ADR-<X.Y.Z> --dry-run |
 #
 uv run gz implement --adr ADR-<X.Y.Z>
-uv run gz gates --gate 3 --adr ADR-<X.Y.Z>   # when docs changed
+uv run mkdocs build --strict   # when docs changed
 uv run gz lint
 #
 # 3b) REQ-level parallel verification dispatch (Stage 3 Phase 2)
@@ -701,7 +701,7 @@ Run implementation and verification for one increment:
 
 ```bash
 uv run gz implement --adr ADR-0.5.0-skill-lifecycle-governance
-uv run gz gates --gate 3 --adr ADR-0.5.0-skill-lifecycle-governance
+uv run mkdocs build --strict
 uv run gz lint
 ```
 

@@ -88,7 +88,6 @@ nav:
     - Execution:
       - /gz-obpi-pipeline: user/skills/gz-obpi-pipeline.md
       - /gz-implement: user/skills/gz-implement.md
-      - /gz-gates: user/skills/gz-gates.md
       - /gz-check: user/skills/gz-check.md
       - /gz-arb: user/skills/gz-arb.md
       - /gz-complexity-advisor: user/skills/gz-complexity-advisor.md

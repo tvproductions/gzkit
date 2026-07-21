@@ -11,6 +11,7 @@ from typing import NamedTuple
 from gzkit.commands.common import get_project_root
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.doc_coverage.models import CommandCoverage, CoverageReport, OrphanedDoc, SurfaceResult
+from gzkit.governance.deprecations import find_deprecated_verb
 
 _SURFACE_NAMES = (
     "manpage",
@@ -375,17 +376,29 @@ def check_surfaces(
                 )
             )
 
-        # 3. Operator runbook
-        op_passed, op_detail = _check_runbook(operator_runbook, cmd.name)
-        surfaces.append(
-            SurfaceResult(surface="operator_runbook", passed=op_passed, detail=op_detail)
-        )
-
-        # 4. Governance runbook
-        gov_passed, gov_detail = _check_runbook(governance_runbook, cmd.name)
-        surfaces.append(
-            SurfaceResult(surface="governance_runbook", passed=gov_passed, detail=gov_detail)
-        )
+        # 3-4. Runbooks. A deprecated verb INVERTS this contract: the runbooks
+        # must not prescribe it (`gz validate --deprecated-verb-prescription`,
+        # GHI #705), so absence is the passing state. Without this inversion the
+        # two checks contradict — cross-coverage would demand the very reference
+        # the prescription scope fails closed on.
+        deprecated = find_deprecated_verb(cmd.name)
+        for surface_name, runbook_path in (
+            ("operator_runbook", operator_runbook),
+            ("governance_runbook", governance_runbook),
+        ):
+            passed, detail = _check_runbook(runbook_path, cmd.name)
+            if deprecated is not None:
+                present = passed
+                passed = not present
+                detail = (
+                    f"deprecated verb correctly absent (successor: `{deprecated.successor}`)"
+                    if passed
+                    else (
+                        f"deprecated verb still prescribed here; repoint to "
+                        f"`{deprecated.successor}` (GHI {deprecated.ghi})"
+                    )
+                )
+            surfaces.append(SurfaceResult(surface=surface_name, passed=passed, detail=detail))
 
         # 5. Docstring
         if cmd.handler_name:

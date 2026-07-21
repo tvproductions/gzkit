@@ -25,7 +25,7 @@ For details on any individual skill, read its `SKILL.md` under
 `gz-justify`, `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit`
 
 #### Governance Infrastructure
-`gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
+`gz-constitute`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`
 
 #### Agent & Repository Operations
 `ghi-author`, `ghi-close`, `ghi-triage`, `git-sync`, `gz-agent-sync`, `gz-arb`, `gz-check-config-paths`, `gz-chores`, `gz-competitor-radar`, `gz-context`, `gz-governance`, `gz-issue-file`, `gz-manage`, `gz-migrate-semver`, `gz-project`, `gz-quality`, `gz-session-handoff`, `gz-skill-router`, `gz-tidy`, `gz-workflow`

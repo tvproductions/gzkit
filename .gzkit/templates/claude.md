@@ -18,7 +18,7 @@ When compacting context (`/compact`), preserve:
 
 - Active pipeline ID and current stage (from `uv run gz obpi status <OBPI-ID>`)
 - Active OBPI ID and brief status (lane, gates passed, attestation state)
-- Gate pass/fail state for the current ADR (from `uv run gz gates --adr <ID>`)
+- Gate pass/fail state for the current ADR (from `uv run gz status`)
 - Pending attestation requirements (which Gate 5 awaits human witness)
 - Any unresolved defects or blockers (GHIs in scope, insights logged)
 - The current TASK ID if one is open (`uv run gz task list --active`)

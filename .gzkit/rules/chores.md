@@ -6,11 +6,16 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.2.0` — bumped under OBPI-0.0.21-06 to capture the
+> **Rule version:** `0.3.0` — § Correct Evidence prescribed `gz gates`, which <!-- deprecated-verb-ok: version history records the repoint, does not prescribe it -->
+> announces its own deprecation at runtime; repointed to `gz check` (GHI #705).
+> Evidence commands are the one place a retired verb is most costly — the
+> operator runs them to *produce* attestation evidence. Enforced going forward
+> by `gz validate --deprecated-verb-prescription`. Prior `0.2.0` — bumped under
+> OBPI-0.0.21-06 to capture the
 > two-surface layout, project-first → package-fallback resolution, and the
 > `--explain` / `doctor` / `--chores-layout` surfaces. Prior unversioned
 > content treated as `0.1.0`.
@@ -104,7 +109,7 @@ project-local-only slugs (REQ-0.0.21-09-06).
 ### Correct Evidence (CLI commands only)
 
 ```bash
-uv run gz gates
+uv run gz check
 uv run behave features/<feature>.feature --tags=@schema
 ```
 

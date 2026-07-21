@@ -426,6 +426,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     ),
     _ScopeEntry("closeout_proof", "explicit", True, lambda r, _f: _ta().validate_closeout_proof(r)),
     _ScopeEntry("okf_conformance", "explicit", True, lambda r, _f: _ta().audit_okf_conformance(r)),
+    _ScopeEntry(
+        "deprecated_verb_prescription",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_deprecated_verb_prescription(r),
+    ),
 )
 
 
@@ -1064,6 +1070,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "closeout_proof",
         "lock_handoff_coupling",
         "okf_conformance",
+        "deprecated_verb_prescription",
     }
 )
 
@@ -1383,6 +1390,7 @@ def validate(
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
     check_okf_conformance: bool = False,
+    check_deprecated_verb_prescription: bool = False,
     check_qc_binding: bool = False,
     check_fidelity_presence: bool = False,
     check_waiver_ratchet: bool = False,
@@ -1485,6 +1493,7 @@ def validate(
         "task_envelope_coherence": check_task_envelope_coherence,
         "closeout_proof": check_closeout_proof,
         "okf_conformance": check_okf_conformance,
+        "deprecated_verb_prescription": check_deprecated_verb_prescription,
     }
     # A solo early-return scope (--sensitivity, --evaluation-justify-binding, ...)
     # runs solo only when no *other* aggregate scope is active.

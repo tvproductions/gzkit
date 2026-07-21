@@ -76,6 +76,9 @@ from gzkit.governance.trust_audits.cross_platform import (
     audit_subprocess_errors,
     audit_utf8_prefix,
 )
+from gzkit.governance.trust_audits.deprecated_verb_prescription import (
+    audit_deprecated_verb_prescription,
+)
 from gzkit.governance.trust_audits.distribution import audit_distribution
 from gzkit.governance.trust_audits.doc_surface_parity import (
     audit_doc_surface_parity,
@@ -186,6 +189,7 @@ __all__ = [
     "audit_instructions_files_budget",
     "audit_orientation_freshness",
     "audit_qc_binding",
+    "audit_deprecated_verb_prescription",
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
     "audit_okf_conformance",

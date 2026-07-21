@@ -125,6 +125,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "task_envelope_coherence",
         "closeout_proof",
         "okf_conformance",
+        "deprecated_verb_prescription",
     }
 )
 

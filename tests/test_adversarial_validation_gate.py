@@ -2,6 +2,13 @@
 
 Assertions derive from the requirement — `gz obpi complete` must fail closed on a
 missing or unresolved adversary verdict — not from a run of the implementation.
+
+Every block assertion captures stdout, even when it asserts only the exit (GHI
+#705). ``_fail``'s non-JSON branch renders through the shared Rich console, which
+resolves ``sys.stdout`` at print time, so an uncaptured block writes its full
+recovery prose into the suite's own stdout. Any wrapper that echoes a subordinate
+command's output — ``gz gates`` via ``_print_command_output`` — then replays that
+prose as its own error, making a passing Gate 2 read as a hard block.
 """
 
 from __future__ import annotations
@@ -40,17 +47,17 @@ class TestAdversarialValidationGate(unittest.TestCase):
         )
 
     def test_heavy_lane_blocks_when_verdict_absent(self) -> None:
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(verdict=None)
 
     def test_heavy_lane_blocks_when_adversary_absent(self) -> None:
         # A verdict with no named adversary cannot be audited: "who refuted it?"
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(adversary=None)
 
     def test_refuted_without_resolution_blocks(self) -> None:
         # Never hand the operator a known refutation dressed as clean.
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(verdict="refuted", resolution=None)
 
     def test_refuted_with_resolution_passes(self) -> None:
@@ -108,7 +115,7 @@ class TestStep4bTierBindingGate(unittest.TestCase):
     def test_claude_family_adversary_without_fallback_reason_blocks(self) -> None:
         # A Claude subagent that ran because it was convenient — not because Codex was
         # unavailable — is the exact GHI #678 bypass. Fail closed.
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(adversary="claude/general-purpose", fallback_reason=None)
 
     def test_claude_family_adversary_with_fallback_reason_passes(self) -> None:
@@ -119,7 +126,7 @@ class TestStep4bTierBindingGate(unittest.TestCase):
 
     def test_unrecognized_adversary_fails_closed_without_reason(self) -> None:
         # An unrecognized vendor is treated as NOT cross-vendor — must justify.
-        with self.assertRaises(SystemExit):
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(adversary="mystery-model-x", fallback_reason=None)
 
     def test_claude_block_message_names_codex_and_next_step(self) -> None:

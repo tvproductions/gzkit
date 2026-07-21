@@ -918,7 +918,7 @@ def init(
     console.print("  /gz-prd                    gz prd <name>")
     console.print("  /gz-plan                   gz plan create <name>")
     console.print("  /gz-status                 gz status")
-    console.print("  /gz-gates                  gz gates --adr ADR-<X.Y.Z>")
+    console.print("  /gz-check                  gz check")
     console.print(
         "\nSkills add interview logic, forcing functions, and governance"
         "\nvalidation that bare CLI commands do not. Use them when available."

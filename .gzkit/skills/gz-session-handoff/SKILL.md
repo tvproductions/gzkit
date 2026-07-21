@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.13.0"
+  skill-version: "6.14.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-17
+last_reviewed: 2026-07-21
 model: sonnet
 ---
 
@@ -61,7 +61,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
 - **Blocks (RESUME):** every mutating tool call until the operator's ruling is booked via `gz handoff authorize` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
-- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`), GitHub issue/PR/release state via `gh` read verbs (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`), and plain shell reads (`git`, `grep`, `rg`, `cat`, …) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate). **This list is illustrative, not the allowlist's authority** — the allowlist derives from the § Claim Verification Gate's *obligation* to verify every claim. Enumerating examples here is what under-covered it twice (GHI #574 follow-ups).
+- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz status`, `gz state`), GitHub issue/PR/release state via `gh` read verbs (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`), and plain shell reads (`git`, `grep`, `rg`, `cat`, …) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate). **This list is illustrative, not the allowlist's authority** — the allowlist derives from the § Claim Verification Gate's *obligation* to verify every claim. Enumerating examples here is what under-covered it twice (GHI #574 follow-ups).
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
 ---
@@ -268,7 +268,7 @@ the gate armed — by design. Never author `--operator-text` for words the opera
 did not say: that is fabrication, the same failure as fabricating a receipt id.
 
 **What stays permitted while unauthorized:** the § Trust Model reads this skill
-requires *before* presenting — `gz state`, `gz gates`, `gz obpi status`,
+requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
 `gz obpi lock list`, `gz handoff list|resume` — **plus `gh` read verbs**
 (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`) — **plus
 plain shell reads** (`git status|log|diff|show`, `grep`, `rg`, `cat`, `ls`,
@@ -320,7 +320,7 @@ holds:
 |---------------------|---------------|-----------------|
 | "OBPI complete" / "attested-complete" | `uv run gz obpi status <OBPI-ID>` → `Runtime State` / `Completion` | ledger |
 | "lock still held" / advises "release the lock" | `uv run gz obpi lock list` | lock registry |
-| "Gate N passed" / "gates green" | `uv run gz gates --adr <ID>` / `uv run gz status` | ledger |
+| "Gate N passed" / "gates green" | `uv run gz status` | ledger |
 | any artifact-state / readiness claim | `uv run gz state` | artifact graph |
 | "tests were green" / coverage claim | re-run the canonical step (see Verification Checklist) | observed output |
 | "GHI #N CLOSED / OPEN" / advises "rule on GHI #M" | `gh issue view <N> --json state,title` | GitHub issue state |
@@ -421,7 +421,7 @@ These thoughts mean STOP — you are about to lose context across the session bo
 ## Red Flags
 
 - Writing a handoff with HTML-comment placeholders still present in any section
-- Relaying a handoff's completion / lock / gate claim as fact without a Layer-2 check (`gz obpi status`, `gz obpi lock list`, `gz gates`, `gz state`)
+- Relaying a handoff's completion / lock / gate claim as fact without a Layer-2 check (`gz obpi status`, `gz obpi lock list`, `gz status`, `gz state`)
 - Suggesting an advised step whose precondition you have not re-verified at read-time (the lock-already-released trap)
 - Executing a handoff's next steps without explicit operator authorization — at any freshness level (the Operator Authorization Gate is universal)
 - Resuming a Stale or Very Stale handoff without presenting it to the human first
