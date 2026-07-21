@@ -3,6 +3,7 @@
 import json
 import os
 import re
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
@@ -466,6 +467,55 @@ def _run_post_sync_lint(
         warnings.append("Post-sync lint failed.")
 
 
+# Scope the sweep guard to exactly the paths `.gzkit/rules/tests.md`
+# § TASK-Driven Workflow requires a real `Task:` trailer on. Generated mirrors,
+# `.gzkit/` state, docs and config are what the ceremony exists to sweep, so
+# guarding those would disarm the verb rather than defend it (GHI #708).
+_SWEEP_GUARDED_PREFIXES = ("src/", "tests/")
+
+
+def _filter_governed_staged(names: Iterable[str]) -> list[str]:
+    """Return the staged names that sit in trailer-governed scope."""
+    return sorted(
+        stripped
+        for name in names
+        if (stripped := name.strip()) and stripped.startswith(_SWEEP_GUARDED_PREFIXES)
+    )
+
+
+def _staged_governed_paths(project_root: Path) -> list[str]:
+    """Return `src/`/`tests/` paths already staged in the index.
+
+    Fails **open** on a git error: this guard defends against an uncommon
+    interrupted-commit state, and failing closed on an unreadable index would
+    strand every sync in a repo it cannot inspect.
+    """
+    rc, out, _err = git_cmd(project_root, "diff", "--cached", "--name-only")
+    if rc != 0:
+        return []
+    return _filter_governed_staged(out.splitlines())
+
+
+def _sweep_guard_message(staged: list[str]) -> str:
+    """Three-part recovery prose per `.gzkit/rules/guardrail-feedback-prose.md`."""
+    listed = "\n".join(f"    {path}" for path in staged)
+    return (
+        "Refusing `git add -A`: the index already holds staged changes in "
+        f"trailer-governed scope:\n{listed}\n"
+        "This is the signature of a commit that aborted — a non-zero pre-commit "
+        "hook is the usual cause — leaving its work staged. Sweeping it now would "
+        "record it under the sync ceremony's `Task: TASK-gz-git-sync` trailer, but "
+        "`.gzkit/rules/tests.md` § TASK-Driven Workflow scopes the mandatory `Task:` "
+        "trailer to exactly `src/**` and `tests/**`: 'Ceremony: and "
+        "Eval-feedback-source: no longer substitute for Task: on src/tests scope'. "
+        "`gz validate --commit-trailers` would still exit 0, so the mis-attribution "
+        "is invisible to enforcement (GHI #708).\n"
+        "Next step: commit the staged work under its own message — "
+        "`git commit -m 'fix(<scope>): <summary> (GHI #N)'` with a `Task:` trailer, "
+        "confirming it succeeded — then re-run `gz git-sync --apply`."
+    )
+
+
 def _execute_git_sync(
     project_root: Path,
     dirty: bool,
@@ -486,6 +536,10 @@ def _execute_git_sync(
         return executed
 
     if dirty and auto_add:
+        staged_governed = _staged_governed_paths(project_root)
+        if staged_governed:
+            blockers.append(_sweep_guard_message(staged_governed))
+            return executed
         rc_add, _out_add, err_add = git_cmd(project_root, "add", "-A")
         if rc_add == 0:
             executed.append("git add -A")
