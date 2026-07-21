@@ -255,5 +255,60 @@ class TestRewrittenFixturesPlantExactlyOneViolation(unittest.TestCase):
                 )
 
 
+class TestQcBindingCertifiesABehavioralChannel(unittest.TestCase):
+    """The claim certifying the theater detector must exercise a real channel.
+
+    `qc-binding` registered ``_check_theater_signatures`` as its entrypoint against
+    a fixture that self-declared ``theater_flags=["copy-vs-self"]`` — a set-membership
+    test between two literals in the same module. Both of the audit's real channels
+    could be deleted and the control stayed green (GHI #699).
+    """
+
+    @staticmethod
+    def _record():
+        from gzkit.enforcement import (
+            _ensure_production_claims_registered,
+            get_enforcement_registry,
+        )
+
+        _ensure_production_claims_registered()
+        return next(r for r in get_enforcement_registry() if r.claim_id == "qc-binding")
+
+    def test_entrypoint_is_not_the_self_declared_flag_renderer(self) -> None:
+        """The entrypoint must not be the tautological ``theater_flags`` renderer."""
+        self.assertNotIn(
+            "_check_theater_signatures",
+            self._record().source_fn,
+            "qc-binding must certify a behavioral channel, not a membership test "
+            "between two literals in its own module (GHI #699).",
+        )
+
+    def test_claim_passes_against_a_planted_facade(self) -> None:
+        """The real analyzer must catch the planted copy-vs-self facade."""
+        from gzkit.enforcement import _run_single_claim
+
+        result = _run_single_claim(self._record())
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+
+    def test_claim_goes_facade_when_the_facade_is_not_planted(self) -> None:
+        """Mutation: a fixture that plants nothing must NOT keep the control green."""
+        import tempfile
+        from pathlib import Path
+
+        from gzkit.enforcement import _run_single_claim
+
+        gutted = self._record().model_copy(
+            update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mutation-"))}
+        )
+
+        self.assertEqual(
+            _run_single_claim(gutted).outcome,
+            "FACADE",
+            "With nothing planted the analyzer has nothing to catch; scoring that "
+            "as PASS is the self-certifying defect this claim exists to prevent.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -21,6 +21,7 @@ Usage::
 
 from __future__ import annotations
 
+import tempfile
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
@@ -232,23 +233,34 @@ def _scan_validator_source(project_root: Path) -> list[ValidationError]:
 # ---------------------------------------------------------------------------
 
 
-def _build_qc_binding_violation() -> QCStep:
-    """Plant a step that IS theater (carries a canonical signature).
+def _build_qc_binding_violation() -> Path:
+    """Plant a real ``copy-vs-self`` facade in the validator tree this audit scans.
 
-    The runner invokes ``_check_theater_signatures(fixture())`` and PASSes when the
-    detector fires (non-empty errors). If ``_check_theater_signatures`` were ever gutted
-    so it stopped flagging known signatures, this claim surfaces as a FACADE.
+    Previously this fixture returned a ``QCStep`` self-declaring
+    ``theater_flags=["copy-vs-self"]`` and the entrypoint was
+    ``_check_theater_signatures`` — which merely tests membership of that literal in
+    ``THEATER_SIGNATURES``, two literals in this same module. Both of the audit's
+    real channels (the behavioral NC-execution loop and the live source scan) could
+    be deleted outright and the control stayed green, on the one claim that
+    certifies the theater detector itself (GHI #699).
+
+    ADR-0.0.73's own pre-mortem named this outcome — *"detection stayed
+    declarative... Mitigation baked in: detection is behavioral, not static-shape
+    matching."* The fixture now plants the facade in real source layout so the AST
+    analyzer must actually catch it; the tautological assertion is exactly the
+    ``copy-vs-self`` shape ``THEATER_SIGNATURES`` names, planted rather than
+    declared.
     """
-    return QCStep(
-        id="nc-planted-theater",
-        name="NC Planted Theater",
-        kind="audit",
-        subject="src/",
-        binding="bound",
-        wired_into=["gz check"],
-        theater_flags=["copy-vs-self"],
-        enforcement_locus="python_function",
+    root = Path(tempfile.mkdtemp(prefix="gzkit-qc-nc-qc-binding-"))
+    planted = root / "src" / "gzkit" / "governance" / "trust_audits" / "planted_facade.py"
+    planted.parent.mkdir(parents=True, exist_ok=True)
+    planted.write_text(
+        "def check_rendition(candidate):\n"
+        "    # Tautological: the assertion can never fail.\n"
+        "    return candidate == candidate\n",
+        encoding="utf-8",
     )
+    return root
 
 
 def _qc_binding_registration_marker() -> None:
@@ -259,9 +271,12 @@ def register_qc_binding_claim() -> None:
     """Register the qc-binding self-NC claim via @enforces (idempotent)."""
     if any(r.claim_id == "qc-binding" for r in get_enforcement_registry()):
         return
-    enforces("qc-binding", _build_qc_binding_violation, _check_theater_signatures)(
-        _qc_binding_registration_marker
-    )
+    enforces(
+        "qc-binding",
+        _build_qc_binding_violation,
+        _scan_validator_source,
+        "Theater signature 'copy-vs-self'",
+    )(_qc_binding_registration_marker)
 
 
 def _ensure_qc_claims_registered() -> None:
