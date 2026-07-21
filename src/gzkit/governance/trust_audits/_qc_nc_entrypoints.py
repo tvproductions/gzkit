@@ -117,7 +117,20 @@ def _ep_test(root: Path) -> int:
 
 
 def _ep_behave(root: Path) -> int:
-    return _command_fails("uv run -m behave", root, expected_exit=1)
+    """Run behave from THIS interpreter, so the installed behave is the one used.
+
+    ``uv run -m behave`` in a scratch dir resolves an ephemeral environment with no
+    behave at all, exiting 1 on ``ModuleNotFoundError`` — a launch failure scored
+    as a caught violation (GHI #699).
+    """
+    import sys  # noqa: PLC0415
+
+    return _command_fails_argv(
+        [sys.executable, "-m", "behave"],
+        root,
+        expected_exit=1,
+        expect_output="planted negative-control failure",
+    )
 
 
 def _ep_skill_audit(root: Path) -> int:
@@ -130,11 +143,43 @@ def _ep_skill_audit(root: Path) -> int:
 
 
 def _ep_parity_check(root: Path) -> int:
-    return _gz_command_fails(("parity", "check"), root, expected_exit=1)
+    return _gz_command_fails(
+        ("parity", "check"),
+        root,
+        expected_exit=1,
+        expect_output="required parity surface missing",
+    )
 
 
 def _ep_readiness_audit(root: Path) -> int:
-    return _gz_command_fails(("readiness", "audit"), root, expected_exit=1)
+    """Require EXACTLY ONE required-surface failure, naming the planted omission.
+
+    Every other gz-backed control can pin a distinctive message, but readiness
+    fails every check identically on an empty project — the issue string for a
+    missing file and for a file lacking its markers is the same literal. So a
+    substring match cannot separate "one planted omission" from "nothing exists",
+    and the discriminator has to be the COUNT (GHI #699).
+
+    Reads `--json` rather than the rendered table: grading a control on table
+    geometry would be the `shape-graded-not-substance` signature this tree's own
+    theater scanner names.
+    """
+    import json  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    result = run_command([sys.executable, "-m", "gzkit", "readiness", "audit", "--json"], cwd=root)
+    if result.returncode != 1:
+        return 0
+    try:
+        report = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        return 0
+    failures = report.get("required_failures") or []
+    if len(failures) != 1:
+        return 0
+    return 1 if failures[0].get("path") == "CLAUDE.md" else 0
 
 
 def _ep_cli_audit(root: Path) -> int:
@@ -147,7 +192,12 @@ def _ep_cli_audit(root: Path) -> int:
 
 
 def _ep_preflight(root: Path) -> int:
-    return _gz_command_fails(("preflight",), root, expected_exit=1)
+    return _gz_command_fails(
+        ("preflight",),
+        root,
+        expected_exit=1,
+        expect_output="OBPI-0.0.1-01-demo",
+    )
 
 
 # --- validator-backed entrypoints ------------------------------------------

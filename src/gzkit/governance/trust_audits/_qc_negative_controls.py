@@ -142,6 +142,27 @@ def _build_skill_audit() -> Path:
     return root
 
 
+def _build_readiness_audit() -> Path:
+    """Every REQUIRED readiness surface present except one.
+
+    `required_failures` is evaluated independently of the score and eval conjuncts,
+    so omitting exactly one required surface isolates that check: the required list
+    has a single entry naming CLAUDE.md. An empty project failed all six at once
+    and proved only that *something* was missing (GHI #699).
+    """
+    root = _mkroot("readiness-audit")
+    _write(root / "AGENTS.md", "# Agents\n")
+    # The violation: CLAUDE.md — the one required surface deliberately absent.
+    _write(root / ".github" / "copilot-instructions.md", "# Copilot\n")
+    _write(root / ".github" / "discovery-index.json", "{}\n")
+    _write(root / "docs" / "user" / "reference" / "agent-input-disciplines.md", "# Disciplines\n")
+    _write(
+        root / "src" / "gzkit" / "templates" / "obpi.md",
+        "## Objective\n\n## Allowed Paths\n\n## Denied Paths\n\n## Discovery Checklist\n",
+    )
+    return root
+
+
 def _build_session_green_gate() -> Path:
     """Plant a pre-push hook whose entry is `gz check-config-paths`, not `gz check`.
 
@@ -304,10 +325,25 @@ def _build_test() -> Path:
 
 
 def _build_behave() -> Path:
+    """A scenario whose step FAILS — not one whose step is merely undefined.
+
+    The bare feature file made behave exit 1 with
+    ``ConfigError: No steps directory``: a configuration bail before any scenario
+    was evaluated, indistinguishable from a real failure at exit 1 (GHI #699). A
+    steps module makes behave run the scenario and fail it on the assertion, which
+    is the outcome the claim actually names.
+    """
     root = _mkroot("behave")
     _write(
-        root / "features" / "missing_step.feature",
-        "Feature: missing step\n  Scenario: undefined\n    Given this step has no implementation\n",
+        root / "features" / "failing.feature",
+        "Feature: failing\n  Scenario: fails\n    Given the step asserts false\n",
+    )
+    _write(
+        root / "features" / "steps" / "demo_steps.py",
+        "from behave import given\n\n\n"
+        '@given("the step asserts false")\n'
+        "def step_impl(context):\n"
+        '    raise AssertionError("planted negative-control failure")\n',
     )
     return root
 
@@ -662,7 +698,15 @@ def _build_handoff_documents() -> Path:
 
 
 def _build_preflight() -> Path:
+    """A stale pipeline marker in an INITIALIZED project.
+
+    The marker was always planted, but without `.gzkit.json` the command bailed at
+    `ensure_initialized` with "gzkit not initialized" — exit 1, same as a real
+    finding, so the marker was never inspected (GHI #699).
+    """
     root = _mkroot("preflight")
+    _write(root / ".gzkit.json", "{}\n")
+    _write(root / ".gzkit" / "ledger.jsonl", "")
     marker = {
         "obpi_id": "OBPI-0.0.1-01-demo",
         "updated_at": "2000-01-01T00:00:00+00:00",
@@ -768,7 +812,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("behave", _build_behave, _ep._ep_behave),
     ("skill-audit", _build_skill_audit, _ep._ep_skill_audit),
     ("parity-check", _build_parity_check, _ep._ep_parity_check),
-    ("readiness-audit", lambda: _build_empty("readiness-audit"), _ep._ep_readiness_audit),
+    ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),

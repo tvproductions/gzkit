@@ -394,5 +394,102 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
                 )
 
 
+class TestRemainingClaimsBite(unittest.TestCase):
+    """The claims whose fixtures previously bailed before reaching their verdict.
+
+    Each was green for a reason unrelated to its claim: `behave` died on
+    `ConfigError: No steps directory`, `preflight` on "gzkit not initialized",
+    `readiness-audit` on an empty project failing all six required surfaces at
+    once (GHI #699).
+    """
+
+    CLAIMS = ("behave", "preflight", "parity-check", "readiness-audit")
+
+    @staticmethod
+    def _registry() -> dict:
+        from gzkit.enforcement import (
+            _ensure_production_claims_registered,
+            get_enforcement_registry,
+        )
+
+        _ensure_production_claims_registered()
+        return {r.claim_id: r for r in get_enforcement_registry()}
+
+    def test_each_claim_passes_on_its_planted_violation(self) -> None:
+        from gzkit.enforcement import _run_single_claim
+
+        registry = self._registry()
+        for claim in self.CLAIMS:
+            with self.subTest(claim=claim):
+                result = _run_single_claim(registry[claim])
+                self.assertEqual(result.outcome, "PASS", result.message)
+
+    def test_each_claim_goes_facade_on_a_bare_directory(self) -> None:
+        """A bare dir is the shape every one of these previously accepted."""
+        import tempfile
+        from pathlib import Path
+
+        from gzkit.enforcement import _run_single_claim
+
+        registry = self._registry()
+        for claim in self.CLAIMS:
+            with self.subTest(claim=claim):
+                gutted = registry[claim].model_copy(
+                    update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mut-"))}
+                )
+                self.assertEqual(
+                    _run_single_claim(gutted).outcome,
+                    "FACADE",
+                    f"{claim} still passes against an empty project — it is "
+                    "certifying its own bail-out path, not its claim.",
+                )
+
+    def test_no_fixture_builds_its_violation_by_absence(self) -> None:
+        """`_build_empty` must have no remaining callers in the claim table."""
+        import inspect
+
+        from gzkit.governance.trust_audits import _qc_negative_controls as ncs
+
+        offenders = [
+            entry[0]
+            for entry in ncs._QC_NEGATIVE_CONTROL_TABLE
+            if "_build_empty" in inspect.getsource(entry[1])
+        ]
+
+        self.assertEqual(
+            offenders,
+            [],
+            "Violation-by-absence fixtures answer from the validator's "
+            f"missing-artifact branch, never the claim's own: {offenders}",
+        )
+
+
+class TestFloorDiscoversProductionClaims(unittest.TestCase):
+    """The floor's own control must not exclude production discovery.
+
+    `_ep_enforcement_floor` passes `registry=` explicitly, which skips
+    `_ensure_production_claims_registered()`. That is correct for testing FACADE
+    detection against a synthetic registry, but it means the discovery seam has
+    no coverage from the control that certifies the floor (GHI #699). Enumerating
+    unregistered floor members — the ORPHAN class — is #648's cut; this pins only
+    that the seam is still wired.
+    """
+
+    def test_default_run_registers_production_claims(self) -> None:
+        from unittest.mock import patch
+
+        import gzkit.enforcement as enforcement
+
+        with patch.object(enforcement, "_ensure_production_claims_registered") as ensure:
+            enforcement.run_meta_validator(registry=[], root=None)
+
+        ensure.assert_not_called()  # explicit registry -> discovery deliberately skipped
+
+        with patch.object(enforcement, "_ensure_production_claims_registered") as ensure:
+            enforcement.run_meta_validator(registry=None, root=None)
+
+        ensure.assert_called_once_with()
+
+
 if __name__ == "__main__":
     unittest.main()
