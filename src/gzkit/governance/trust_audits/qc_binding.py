@@ -7,7 +7,7 @@ Detects theater in bound QC steps via two channels:
 
 ADR-0.0.74 (OBPI-0.0.74-16) lifted the run-NC-in-production engine into
 ``gzkit.enforcement`` so qc_binding and the meta-validator runner share ONE engine
-(Boundary Invariant #6). The 36 qc negative controls are registered through the single
+(Boundary Invariant #6). The qc negative controls are registered through the single
 ``@enforces`` primitive in ``_qc_negative_controls``; ``audit_qc_binding`` discovers each
 bound step's claim from the enforcement registry and runs it via ``_run_single_claim``.
 There is no ``_NEGATIVE_CONTROL_DEBT`` escape (Boundary Invariant #8 — strict no-debt).
@@ -283,7 +283,7 @@ def _ensure_qc_claims_registered() -> None:
     """(Re)register every qc enforcement claim — robust against registry resets.
 
     Idempotent: re-callable after ``reset_enforcement_registry()`` so the production
-    claims survive test resets. Registers the 36 qc NCs and the qc-binding self-NC.
+    claims survive test resets. Registers every qc NC and the qc-binding self-NC.
     """
     _qc_negative_controls.register_qc_negative_controls()
     register_qc_binding_claim()

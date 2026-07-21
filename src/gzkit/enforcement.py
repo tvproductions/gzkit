@@ -77,7 +77,7 @@ def _load_known_claims() -> frozenset[str]:
     """Load and cache the set of known enforcement claim ids.
 
     Production source: ``_KNOWN_QC_CLAIM_IDS`` from the qc_binding negative-control
-    module (the 36 qc NCs + ``qc-binding``). Tests inject via ``set_known_claims()``.
+    module (every qc NC + ``qc-binding``). Tests inject via ``set_known_claims()``.
     Mirrors the lazy-load pattern of ``_load_known_reqs()`` in traceability and
     ``_load_known_task_reqs()`` in tasks. The lazy import tolerates the re-entrant
     case where ``_qc_negative_controls`` is mid-import and calling ``enforces`` in its
@@ -357,7 +357,7 @@ def _ensure_production_claims_registered() -> None:
     claim is never discovered and its floor membership is a facade (the §5 failure class).
 
     Claim sources wired here:
-      * ``qc_binding`` — the 36 qc NCs + ``qc-binding`` (OBPI-0.0.74-16).
+      * ``qc_binding`` — every qc NC + ``qc-binding`` (OBPI-0.0.74-16).
       * ``mx.invariants`` — the bound ``gate5_invariants`` floor members ``gate5-ledger`` and
         ``gate5-attestation-absence`` (OBPI-0.0.74-17). ``secrets`` / ``operator-pii`` are the
         honest-negative named-not-enforced members and are deliberately NOT registered.

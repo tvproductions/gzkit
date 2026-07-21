@@ -251,7 +251,9 @@ def _build_complexity_thresholds() -> Path:
     check. An absent data file short-circuits before any of the three.
     """
     root = _mkroot("complexity-thresholds")
-    source = Path(__file__).resolve().parents[2] / "rules" / "complexity-thresholds.json"
+    import importlib.resources  # noqa: PLC0415
+
+    source = importlib.resources.files("gzkit.rules").joinpath("complexity-thresholds.json")
     table = json.loads(source.read_text(encoding="utf-8"))
     table["bands"] = [b for b in table.get("bands", []) if b.get("metric") != "cohesion_lcom4"]
     _write(
@@ -949,7 +951,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
 )
 
 # The known-claims set the @enforces decorator validates against at decoration time.
-# Includes the 36 NC ids above + "qc-binding" (registered in qc_binding.py). Defined
+# Includes every NC id above + "qc-binding" (registered in qc_binding.py). Defined
 # BEFORE the registration loop so the re-entrant _load_known_claims() lookup resolves.
 _KNOWN_QC_CLAIM_IDS: frozenset[str] = frozenset(
     {entry[0] for entry in _QC_NEGATIVE_CONTROL_TABLE} | {"qc-binding"}
@@ -961,7 +963,7 @@ def _register_marker() -> None:
 
 
 def register_qc_negative_controls() -> None:
-    """Register the 36 qc negative-control claims via the @enforces primitive (idempotent).
+    """Register the qc negative-control claims via the @enforces primitive (idempotent).
 
     Called at import time and re-callable after ``reset_enforcement_registry()`` so the
     production claims survive test resets. Skips any claim already registered.
