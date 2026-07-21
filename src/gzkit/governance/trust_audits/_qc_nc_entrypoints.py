@@ -24,54 +24,93 @@ from pathlib import Path
 from gzkit.core.validation_rules import ValidationError
 
 
-def _command_fails(command: str, root: Path) -> int:
-    """Exit-style signal: 1 if the command fails in ``root`` (caught), else 0."""
+def _command_fails(command: str, root: Path, *, expected_exit: int) -> int:
+    """Exit-style signal: 1 only if the command exits with ``expected_exit`` in ``root``.
+
+    ``expected_exit`` is the exit code the tool documents for "I ran, and the
+    subject violated the claim". Any OTHER non-zero exit means the tool did not
+    reach that verdict — it failed to launch (``returncode -1``), bailed on
+    configuration, or crashed. Scoring those as "caught" is what let a negative
+    control stay green after its enforcement was deleted entirely: the claim's
+    §5 clause (c) obligation is to assert the production path fails *for the
+    reason the claim names*, and a bare ``not success`` cannot express that
+    (GHI #699 generator #1).
+    """
     from gzkit.quality import run_command  # noqa: PLC0415
 
-    return 1 if not run_command(command, cwd=root).success else 0
+    return 1 if run_command(command, cwd=root).returncode == expected_exit else 0
+
+
+def _gz_command_fails(verb: tuple[str, ...], root: Path, *, expected_exit: int) -> int:
+    """``_command_fails`` for a gz-owned verb, pinned to the WORKING TREE.
+
+    ``uv run gz <verb>`` resolves ``gz`` from PATH. Under a bare (non-``uv run``)
+    invocation that is the installed wheel — observed at ``~/.local/bin/gz`` —
+    so gutting ``src/gzkit/`` leaves every gz-backed negative control green. §5
+    clause (b) requires the control run the real path in its **production**
+    configuration, and the wheel is not the tree under test (GHI #699
+    generator #5).
+
+    ``sys.executable -m gzkit`` re-enters the interpreter that already imported
+    this module, so the code under test is definitionally the working tree.
+    Argv is passed as a sequence — never a shell string — per
+    `.claude/rules/cross-platform.md`.
+    """
+    import sys  # noqa: PLC0415
+
+    return _command_fails_argv(
+        [sys.executable, "-m", "gzkit", *verb], root, expected_exit=expected_exit
+    )
+
+
+def _command_fails_argv(argv: list[str], root: Path, *, expected_exit: int) -> int:
+    """Sequence-form companion to ``_command_fails`` (same discrimination contract)."""
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    return 1 if run_command(argv, cwd=root).returncode == expected_exit else 0
 
 
 # --- subprocess-backed entrypoints -----------------------------------------
 
 
 def _ep_lint(root: Path) -> int:
-    return _command_fails("uv run ruff check .", root)
+    return _command_fails("uv run ruff check .", root, expected_exit=1)
 
 
 def _ep_format(root: Path) -> int:
-    return _command_fails("uv run ruff format --check .", root)
+    return _command_fails("uv run ruff format --check .", root, expected_exit=1)
 
 
 def _ep_typecheck(root: Path) -> int:
-    return _command_fails("uv run ty check .", root)
+    return _command_fails("uv run ty check .", root, expected_exit=1)
 
 
 def _ep_test(root: Path) -> int:
-    return _command_fails("uv run -m unittest discover tests", root)
+    return _command_fails("uv run -m unittest discover tests", root, expected_exit=1)
 
 
 def _ep_behave(root: Path) -> int:
-    return _command_fails("uv run -m behave", root)
+    return _command_fails("uv run -m behave", root, expected_exit=1)
 
 
 def _ep_skill_audit(root: Path) -> int:
-    return _command_fails("uv run gz skill audit", root)
+    return _gz_command_fails(("skill", "audit"), root, expected_exit=1)
 
 
 def _ep_parity_check(root: Path) -> int:
-    return _command_fails("uv run gz parity check", root)
+    return _gz_command_fails(("parity", "check"), root, expected_exit=1)
 
 
 def _ep_readiness_audit(root: Path) -> int:
-    return _command_fails("uv run gz readiness audit", root)
+    return _gz_command_fails(("readiness", "audit"), root, expected_exit=1)
 
 
 def _ep_cli_audit(root: Path) -> int:
-    return _command_fails("uv run gz cli audit", root)
+    return _gz_command_fails(("cli", "audit"), root, expected_exit=1)
 
 
 def _ep_preflight(root: Path) -> int:
-    return _command_fails("uv run gz preflight", root)
+    return _gz_command_fails(("preflight",), root, expected_exit=1)
 
 
 # --- validator-backed entrypoints ------------------------------------------
