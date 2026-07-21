@@ -17,9 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.governance.brief_path_validity import extract_brief_creates_paths, has_glob_chars
 from gzkit.governance.brief_structure import (
-    BRIEF_TERMINAL_STATUSES,
     BriefStructure,
-    LegacyBriefShape,
     parse_brief,
 )
 
@@ -169,27 +167,6 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
         delta=declared_reqs - acceptance_count,
     )
     citation_delta = _compute_citation_delta(citations, project_root)
-
-    # A terminal-status brief is a sealed historical record. Its Allowed Paths and
-    # Discovery Checklist described the tree at implementation time; re-resolving
-    # them against a codebase that has since renamed or absorbed those files asks a
-    # question the brief never claimed to answer. Deltas are still computed and
-    # reported (the archaeology is real), but they must not gate: there is no future
-    # work for the Stage-1 gate to block, and the only `--apply` "repair" available
-    # would rewrite a sealed governance artifact under an attestation no operator can
-    # honestly give. Same compute-report-but-do-not-gate shape as req_count below.
-    # Sibling precedent: red_parity.py and adversarial_validation.py both scope on
-    # terminal status; this engine read `status:` not at all (GHI #707).
-    if _is_terminal_status(parsed):
-        return ReconcileResult(
-            brief_id=brief_id,
-            allowlist_delta=allowlist_delta,
-            discovery_delta=discovery_delta,
-            verification_delta=verification_delta,
-            req_count_delta=req_count_delta,
-            citation_delta=citation_delta,
-            has_drift=False,
-        )
 
     # req_count is the advisory crude heuristic (GHI #581): it compares
     # Requirements-section bullets against Acceptance-criteria checkboxes, which
@@ -430,22 +407,6 @@ def _compute_allowlist_delta(
     ]
     missing_in_brief = _compute_missing_in_brief(req_ids, allowlist, project_root)
     return AllowlistDelta(missing_in_brief=missing_in_brief, missing_on_disk=missing_on_disk)
-
-
-def _is_terminal_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
-    """Return True when the brief has reached a sealed lifecycle status.
-
-    Reuses the frozenset `--brief-command-shape` already scopes on (GHI #565)
-    rather than authoring a fourth copy of the terminal-status vocabulary.
-    Matching is case-insensitive because the corpus carries both `Completed` and
-    `attested_completed` spellings.
-    """
-    if isinstance(parsed, BriefStructure):
-        status = parsed.status
-    else:
-        status = str(parsed.raw_frontmatter.get("status", ""))
-    folded = {s.casefold() for s in BRIEF_TERMINAL_STATUSES}
-    return status.strip().strip('"').casefold() in folded
 
 
 def _compute_discovery_delta(
