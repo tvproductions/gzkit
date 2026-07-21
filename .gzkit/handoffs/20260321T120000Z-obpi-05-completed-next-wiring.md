@@ -1,3 +1,17 @@
+---
+mode: CREATE
+branch: main
+timestamp: "2026-03-21T12:00:00Z"
+agent: claude-code
+---
+
+<!-- Frontmatter added under GHI #709. This handoff predates the YAML
+     frontmatter convention; its metadata lived in the bold body lines and
+     the filename, so the validator that governs it could not parse it.
+     Every field below is derived from this document or its filename —
+     `adr_id` is omitted where the parent is not named, which is legal now.
+     Body content is unchanged. -->
+
 # Session Handoff: OBPI-05 Completed — Wiring OBPIs Next
 
 **Date:** 2026-03-21

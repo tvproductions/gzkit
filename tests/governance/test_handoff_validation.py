@@ -185,6 +185,49 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
         with self.assertRaisesRegex(ValidationError, "Invalid ADR ID format"):
             HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="not-an-adr"))
 
+    def test_slug_bearing_adr_id_is_accepted(self) -> None:
+        """The canonical `adr.json` id form carries a slug; handoffs use it.
+
+        Six committed handoffs name their ADR in the slug-bearing form the ADR
+        schema itself mandates (``^ADR-\\d+\\.\\d+\\.\\d+-[a-z0-9-]+$``) and were
+        rejected by the bare-semver-only regex. This is the same defect already
+        fixed on the sibling field: ``_OBPI_ID_RE`` was widened to the
+        slug-optional form under OBPI-0.0.72-02 and the ADR one was not.
+        """
+        fm = HandoffFrontmatter(
+            **_valid_frontmatter_dict(adr_id="ADR-0.0.41-token-block-lock-discipline")
+        )
+        self.assertEqual(fm.adr_id, "ADR-0.0.41-token-block-lock-discipline")
+
+    def test_bare_semver_adr_id_still_accepted(self) -> None:
+        """Widening is additive — the bare form 168 handoffs use must survive."""
+        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="ADR-0.0.65"))
+        self.assertEqual(fm.adr_id, "ADR-0.0.65")
+
+    def test_pool_adr_id_is_accepted(self) -> None:
+        """`ADR-pool.<slug>` is a registered id form in `adr.json`."""
+        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="ADR-pool.some-backlog-item"))
+        self.assertEqual(fm.adr_id, "ADR-pool.some-backlog-item")
+
+    def test_every_committed_handoff_parses(self) -> None:
+        """No committed handoff may fail the schema that governs it.
+
+        A corpus the validator rejects is a gate that cannot detect a NEW
+        malformed document in that class — the failures mask each other.
+        """
+        handoffs = Path(".gzkit/handoffs")
+        if not handoffs.is_dir():  # pragma: no cover - repo-shape guard
+            self.skipTest("handoffs directory absent")
+        rejected: list[str] = []
+        for path in sorted(handoffs.glob("*.md")):
+            if path.name == "AGENTS.md":
+                continue
+            try:
+                HandoffFrontmatter(**parse_frontmatter(path.read_text(encoding="utf-8")))
+            except (ValidationError, HandoffValidationError) as exc:
+                rejected.append(f"{path.name}: {str(exc).splitlines()[1:2]}")
+        self.assertEqual(rejected, [], f"{len(rejected)} committed handoffs fail their schema")
+
     def test_completion_handoff_does_not_synthesize_a_sentinel_adr(self) -> None:
         """No ``ADR-0.0.0`` placeholder — an absent ADR is recorded as absent.
 

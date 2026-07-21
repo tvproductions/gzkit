@@ -60,7 +60,13 @@ REQUIRED_SECTIONS = (
 # Compiled patterns
 # ---------------------------------------------------------------------------
 
-_ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+$")
+# Widened to the canonical adr.json id forms (additive: the bare
+# ADR-X.Y.Z form 168 committed handoffs use still matches). The bare-only form
+# rejected every slug-bearing id — the form `src/gzkit/schemas/adr.json`
+# actually mandates — and `ADR-pool.<slug>` entirely. Exactly the defect already
+# fixed on the sibling field below under OBPI-0.0.72-02, left unfixed here
+# (GHI #709).
+_ADR_ID_RE = re.compile(r"^(?:ADR-pool\.[a-z0-9-]+|ADR-\d+\.\d+\.\d+(?:-[a-z0-9-]+)?)$")
 # Widened to the canonical obpi.json slug-optional pattern (additive: the
 # short OBPI-X.Y.Z-NN form still matches). The strict NN-only form rejected
 # every slug-bearing id its own writers emit (OBPI-0.0.72-02).
@@ -571,7 +577,7 @@ def write_degenerate_handoff(
     project_root: Path,
     *,
     obpi_id: str,
-    adr_id: str,
+    adr_id: str | None = None,
     agent: str,
     spec: AbandonSpec,
     last_claim_timestamp: str | None,

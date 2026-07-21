@@ -1,5 +1,5 @@
 ---
-mode: DESIGN
+mode: CREATE
 adr_id:
 branch: main
 timestamp: "2026-04-26T00:00:00Z"
@@ -8,6 +8,13 @@ obpi_id:
 session_id: harness-engineering-improvement-plan
 continues_from: 2026-04-25-complexity-doctrine-cluster.md
 ---
+
+<!-- Frontmatter `mode:` was authored as DESIGN, a work-type label reaching for
+     a field that did not exist; the vocabulary is exactly CREATE|RESUME (the
+     authoring operation), and this document is a creation. Normalized to CREATE
+     under GHI #709 so it parses against its own schema. `adr_id` is empty and
+     now legitimately so — a design session has no parent ADR, which is the
+     defect GHI #709 fixed and which this document was the evidence for. -->
 
 <!-- Handoff for the harness-engineering improvement plan.
      Originating session: 2026-04-26, evaluation of gzkit against

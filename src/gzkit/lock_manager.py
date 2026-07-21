@@ -243,7 +243,11 @@ def _write_reaping_handoff(project_root: Path, lock: LockData, reaper_agent: str
     path = handoff_dir / filename
 
     # Derive the parent ADR id from the OBPI semver triplet (GHI #622 helper).
-    adr_id = _adr_id_from_obpi(lock.obpi_id) or lock.obpi_id
+    # On failure record absence, never a stand-in: the previous fallback wrote the
+    # OBPI id into `adr_id`, a value `_ADR_ID_RE` rejects outright, so the reaping
+    # register entry this function exists to guarantee could not itself validate.
+    # `adr_id` is optional (GHI #709), so absence is now representable.
+    adr_id = _adr_id_from_obpi(lock.obpi_id)
     frontmatter = {
         "mode": "CREATE",
         "adr_id": adr_id,

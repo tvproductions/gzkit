@@ -7,10 +7,17 @@ agent: claude-code
 obpi_id: OBPI-0.0.37-11
 session_id:
 continues_from: 20260531T000357Z-adr-0.0.37-density-dial-cms-extension.md
-last_lock_event: "2026-05-31T07:10:41Z (OBPI-0.0.37-11 claim; released this session at completion)"
 last_commit_sha: c3d875903607cbcefb55c3ab4ee143af612cce60
-branch_state: "main, 0 ahead / 0 behind origin/main, clean"
 ---
+
+<!-- Frontmatter migrated under GHI #709: pre-schema fields removed
+     because `HandoffFrontmatter` is extra="forbid" and rejected them,
+     making this handoff unparseable by its own validator. Their values
+     are preserved verbatim here rather than discarded:
+       last_lock_event: "2026-05-31T07:10:41Z (OBPI-0.0.37-11 claim; released this session at completion)"
+       branch_state: "main, 0 ahead / 0 behind origin/main, clean"
+     Body content is unchanged. -->
+
 
 <!-- Handoff for the Canon Foundation design thread — created by claude-code at 2026-05-31T10:56:41Z -->
 

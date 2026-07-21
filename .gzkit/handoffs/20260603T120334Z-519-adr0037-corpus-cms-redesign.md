@@ -1,3 +1,18 @@
+---
+mode: CREATE
+adr_id: ADR-0.0.37
+branch: main
+timestamp: "2026-06-03T12:03:34Z"
+agent: claude-code
+---
+
+<!-- Frontmatter added under GHI #709. This handoff predates the YAML
+     frontmatter convention; its metadata lived in the bold body lines and
+     the filename, so the validator that governs it could not parse it.
+     Every field below is derived from this document or its filename —
+     `adr_id` is omitted where the parent is not named, which is legal now.
+     Body content is unchanged. -->
+
 # Session Handoff — 2026-06-03T12:03:34Z
 
 **Topic:** ADR-0.0.37 density-dial REDESIGN (corpus → setpoint-compression → invariant tier) + #519 re-anchor
