@@ -5,6 +5,8 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-13
+metadata:
+  skill-version: "0.1.0"
 model: haiku
 gz_command: gz insights remember
 ---

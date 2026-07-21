@@ -5,9 +5,10 @@ category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-06-14
+metadata:
+  skill-version: "1.0.0"
 model: sonnet
 gz_command: gz content compose
-skill-version: 1.0.0
 ---
 
 # gz-content-compose

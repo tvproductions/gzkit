@@ -457,7 +457,20 @@ def _validate_known_metadata_fields(
 ) -> None:
     """Validate known metadata.* keys when present."""
     skill_version = frontmatter.get("metadata.skill-version")
-    if skill_version == "":
+    if skill_version is None:
+        # Presence, not just format. `.gzkit/rules/skill-surface-sync.md` #2 makes
+        # the marker non-negotiable and #6 couples `last_reviewed` to it; the same
+        # rule's conflict-resolution procedure names the version as "the primary
+        # signal". Validating format-when-present left that signal absent on any
+        # skill that never declared one — a rule asserting a check nothing ran.
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-METADATA-SKILL-VERSION-MISSING",
+            skill_file,
+            "Missing frontmatter field: metadata.skill-version.",
+        )
+    elif skill_version == "":
         _append_audit_issue(
             issues,
             project_root,

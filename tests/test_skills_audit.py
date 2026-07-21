@@ -19,6 +19,7 @@ def _skill_frontmatter(
         "lifecycle_state": "active",
         "owner": "gzkit-governance",
         "last_reviewed": date.today().isoformat(),
+        "metadata": {"skill-version": "0.1.0"},
     }
     fields.update(overrides)
     return fields
@@ -239,7 +240,10 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
 
+            # skill-version is retained: this test asserts that *unknown* keys are
+            # tolerated alongside the known ones, not that the version is optional.
             metadata = {
+                "skill-version": "0.1.0",
                 "govzero_layer": "Layer 1 - Evidence Gathering",
                 "custom-key": "custom-value",
             }
@@ -370,6 +374,53 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
             self.assertTrue(any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues))
+
+    def test_missing_skill_version_is_blocking(self) -> None:
+        """A skill with no metadata.skill-version fails the audit.
+
+        `.gzkit/rules/skill-surface-sync.md` #2 makes the version marker
+        non-negotiable ("Bump the version on every edit") and #6 couples
+        `last_reviewed` to it. The audit validated the marker's *format* when
+        present but never its *presence*, so a skill carrying no version at all
+        passed silently — and the same rule's conflict-resolution procedure
+        ("Version is the primary signal") then had no signal to read.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            versionless = _skill_frontmatter("demo-skill")
+            del versionless["metadata"]
+
+            for root_rel in (
+                config.paths.skills,
+                config.paths.claude_skills,
+                config.paths.copilot_skills,
+            ):
+                _write_skill(project_root, root_rel, "demo-skill", frontmatter=versionless)
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(report.valid)
+            self.assertTrue(
+                any(issue.code == "SKA-METADATA-SKILL-VERSION-MISSING" for issue in report.issues)
+            )
+
+    def test_present_skill_version_does_not_trip_the_missing_check(self) -> None:
+        """Negative control: the presence check must not fire on a versioned skill."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            for root_rel in (
+                config.paths.skills,
+                config.paths.claude_skills,
+                config.paths.copilot_skills,
+            ):
+                _write_skill(project_root, root_rel, "demo-skill")
+
+            report = audit_skills(project_root, config)
+            self.assertFalse(
+                any(issue.code == "SKA-METADATA-SKILL-VERSION-MISSING" for issue in report.issues)
+            )
 
     def test_max_review_age_override_allows_older_review_dates(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -5,8 +5,9 @@ description: Drive one flight-test sortie against a target substrate to prove a 
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-skill-version: "0.1.0"
 last_reviewed: 2026-07-05
+metadata:
+  skill-version: "0.1.0"
 model: sonnet
 ---
 
