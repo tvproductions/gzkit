@@ -94,7 +94,7 @@ def _render_resume(result: ResumeResult) -> None:
 
 def handoff_resume_cmd(
     *,
-    adr: str,
+    adr: str | None = None,
     as_json: bool = False,
     now: str | None = None,
     base_path: Path = Path("."),
@@ -128,7 +128,7 @@ def _current_branch(base_path: Path) -> str:
 
 def handoff_create_cmd(
     *,
-    adr: str,
+    adr: str | None = None,
     slug: str,
     agent: str,
     decisions: str,

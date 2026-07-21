@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.14.0"
+  skill-version: "6.15.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -33,7 +33,7 @@ handoff authoring API. Authoring routes through the fail-closed
 ```bash
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first (read-only)
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + first next step (read-only)
-uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> \
+uv run gz handoff create [--adr ADR-<X.Y.Z>] --slug <slug> --agent <id> \
   --summary "<text>" --context "<text>" --decisions "<text>" --next-steps "<text>" \
   --pending "<text>" --verification "<text>" --evidence "<text>"
 uv run gz handoff authorize --handoff <path> --operator-text "<operator's exact words>"
@@ -70,7 +70,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 
 | Parameter | Required | Description |
 |-----------|----------|-------------|
-| `adr_id` | Yes | ADR identifier (e.g. `ADR-0.0.25`) |
+| `adr_id` | No | ADR identifier (e.g. `ADR-0.0.25`). Omit for work with no parent ADR — a handoff carries continuity for **any** work, not only ADR-scoped work (GHI #709). `mode`, not `adr_id`, is the is-this-a-handoff discriminator. |
 | `branch` | Yes | Current git branch (or use `git branch --show-current`) |
 | `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`, `copilot`) |
 | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |

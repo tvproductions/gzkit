@@ -99,7 +99,10 @@ class HandoffFrontmatter(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     mode: Literal["CREATE", "RESUME"]
-    adr_id: str
+    # Optional: a handoff carries continuity for any work, not only ADR-scoped
+    # work (GHI #709). Design sessions, triage passes, and GHI burndowns have no
+    # parent ADR. `mode` — not `adr_id` — is the is-this-a-handoff discriminator.
+    adr_id: str | None = None
     branch: str
     timestamp: str
     agent: str
@@ -121,7 +124,10 @@ class HandoffFrontmatter(BaseModel):
 
     @field_validator("adr_id")
     @classmethod
-    def _validate_adr_id(cls, v: str) -> str:
+    def _validate_adr_id(cls, v: str | None) -> str | None:
+        # An absent ADR is a valid state; a malformed one never is.
+        if v is None:
+            return None
         if not _ADR_ID_RE.match(v):
             msg = f"Invalid ADR ID format: {v!r} (expected ADR-X.Y.Z)"
             raise ValueError(msg)
@@ -680,7 +686,8 @@ def write_completion_handoff(
     non-abandoned ``CREATE`` handoff carrying all seven required sections, so
     :func:`find_handoff_for_release` accepts it as the completion-surrender register
     entry and ``gz validate --lock-handoff-coupling`` passes. The parent ADR id is
-    derived from the OBPI semver (bare ``ADR-X.Y.Z``) so the frontmatter validates.
+    derived from the OBPI semver (bare ``ADR-X.Y.Z``) when the id is semver-shaped,
+    and recorded as absent otherwise — ``adr_id`` is optional (GHI #709).
     Auto-drafted from completion evidence and written mechanically at every
     ``gz obpi complete`` (token-block exit edge, GHI #619); it may be terse. Written
     with explicit ``\n`` newlines so the committed artifact is LF on every platform.
@@ -691,8 +698,18 @@ def write_completion_handoff(
     now = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     path = handoff_dir / f"{_filesystem_safe_timestamp(now)}-{obpi_id}-complete.md"
 
+    # An OBPI always has a parent ADR, so derivation normally succeeds. When the
+    # id is not semver-shaped the parent is genuinely unknown — record that as
+    # absent rather than synthesizing `ADR-0.0.0`, an id naming no real artifact
+    # (GHI #709).
     semver_match = re.match(r"OBPI-(\d+\.\d+\.\d+)", obpi_id)
-    adr_id = f"ADR-{semver_match.group(1)}" if semver_match else "ADR-0.0.0"
+    adr_id = f"ADR-{semver_match.group(1)}" if semver_match else None
+    parent_phrase = f" under {adr_id}" if adr_id else ""
+    next_step = (
+        f"1. Continue the parent {adr_id} checklist, or open the next OBPI.\n\n"
+        if adr_id
+        else "1. Open the next OBPI, or continue the parent ADR checklist.\n\n"
+    )
 
     frontmatter = {
         "mode": "CREATE",
@@ -715,7 +732,7 @@ def write_completion_handoff(
         + "---\n\n"
         + f"<!-- Completion handoff for {obpi_id} — mechanical register entry (GHI #619) -->\n\n"
         + "## Current State Summary\n\n"
-        + f"OBPI {obpi_id} completed and attested by `{attestor}` under {adr_id}. The work "
+        + f"OBPI {obpi_id} completed and attested by `{attestor}`{parent_phrase}. The work "
         + "lock (if held) was surrendered mechanically at completion; the "
         + "`obpi_lock_released` ledger event is the surrender audit.\n\n"
         + "## Important Context\n\n"
@@ -726,7 +743,7 @@ def write_completion_handoff(
         + "## Decisions Made\n\n"
         + f"- {decision}\n\n"
         + "## Immediate Next Steps\n\n"
-        + f"1. Continue the parent {adr_id} checklist, or open the next OBPI.\n\n"
+        + next_step
         + "## Pending Work / Open Loops\n\n"
         + f"- Implementation summary: {summary}\n\n"
         + "## Verification Checklist\n\n"

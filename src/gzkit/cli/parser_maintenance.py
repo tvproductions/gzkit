@@ -79,7 +79,11 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             ]
         ),
     )
-    p_resume.add_argument("--adr", required=True, help="ADR id to resume the newest handoff for")
+    p_resume.add_argument(
+        "--adr",
+        default=None,
+        help="ADR id to resume the newest handoff for (omit for newest overall)",
+    )
     add_json_flag(p_resume)
     p_resume.set_defaults(func=lambda a: _lazy("handoff_resume_cmd")(adr=a.adr, as_json=a.as_json))
 
@@ -102,7 +106,11 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             ]
         ),
     )
-    p_create.add_argument("--adr", required=True, help="Parent ADR id (ADR-X.Y.Z)")
+    p_create.add_argument(
+        "--adr",
+        default=None,
+        help="Parent ADR id (ADR-X.Y.Z); omit for work with no parent ADR",
+    )
     p_create.add_argument("--slug", required=True, help="Filename slug for the handoff")
     p_create.add_argument("--agent", required=True, help="Authoring agent identity")
     p_create.add_argument("--decisions", required=True, help="Decisions Made section body")

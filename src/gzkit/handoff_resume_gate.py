@@ -180,9 +180,11 @@ def newest_handoff(project_root: Path) -> Path | None:
     Delegates selection to :func:`gzkit.handoff_api.list_handoffs` — the existing
     production newest-first projection — rather than re-deriving it. Recency is a
     frontmatter-``timestamp`` property, and ``list_handoffs`` already parses it,
-    sorts by instant (offset-aware), and admits only documents carrying an
-    ``adr_id``, which excludes the generated ``.gzkit/handoffs/AGENTS.md``
-    subtree-rules file.
+    sorts by instant (offset-aware), and admits only documents carrying a
+    ``mode``, which excludes the generated ``.gzkit/handoffs/AGENTS.md``
+    subtree-rules file (it has no frontmatter at all). ``mode`` — not ``adr_id``
+    — is the discriminator, so an ADR-less handoff still arms the gate
+    (GHI #709).
 
     A newest-by-FILENAME sort is wrong and was the first implementation's bug: 14
     of the 205 on-disk handoffs are not timestamp-prefixed, and ``OBPI-…`` sorts
@@ -420,13 +422,16 @@ def _build_unauthorized_resume_violation() -> Path:
     root = Path(tempfile.mkdtemp(prefix="gzkit-resume-nc-"))
     handoffs = root / ".gzkit" / "handoffs"
     handoffs.mkdir(parents=True, exist_ok=True)
-    # `adr_id` and `timestamp` are REQUIRED for this to be a handoff at all —
-    # recency is a frontmatter property and `adr_id` is what distinguishes a
-    # handoff from the generated AGENTS.md. A fixture lacking them arms nothing,
-    # so the control would report FACADE against a working gate (caught live
-    # 2026-07-16 when this fixture omitted them).
+    # `mode` and `timestamp` are REQUIRED for this to be a handoff at all —
+    # recency is a frontmatter property and `mode` is what distinguishes a
+    # handoff from the generated AGENTS.md (GHI #709 moved the discriminator off
+    # `adr_id`, which is now optional). A fixture lacking them arms nothing, so
+    # the control would report FACADE against a working gate (caught live
+    # 2026-07-16 when this fixture omitted them, and again 2026-07-21 when the
+    # discriminator moved).
     (handoffs / "20260716T000000Z-nc.md").write_text(
         "---\n"
+        "mode: CREATE\n"
         "adr_id: ADR-0.0.65\n"
         "branch: main\n"
         "timestamp: '2026-07-16T00:00:00Z'\n"

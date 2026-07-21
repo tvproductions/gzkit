@@ -176,7 +176,14 @@ class TestScaffoldHandoff(unittest.TestCase):
 
 class TestListHandoffs(unittest.TestCase):
     @covers("REQ-0.0.65-02-03")
-    def test_filters_to_adr_bearing_and_sorts_newest_first(self) -> None:
+    def test_lists_adr_less_handoffs_and_sorts_newest_first(self) -> None:
+        """An ADR-less handoff is listed unscoped and omitted when ADR-scoped.
+
+        GHI #709: a handoff carries continuity for any work, so ``adr_id`` is
+        optional and cannot be the is-this-a-handoff discriminator. Scoping to
+        an ADR still excludes ADR-less handoffs — that is the filter doing its
+        job, not the discriminator rejecting a non-handoff.
+        """
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
             hd = base / ".gzkit" / "handoffs"
@@ -190,16 +197,18 @@ class TestListHandoffs(unittest.TestCase):
             _write_frontmatter_handoff(
                 hd, name="c.md", adr_id="ADR-0.0.99", timestamp="2026-07-11T10:00:00Z"
             )
-            # No adr_id → must be excluded even though it is a .md file.
+            # No adr_id — a design/triage session. Newest, so it heads the
+            # unscoped listing and is absent from the ADR-scoped one.
             _write_frontmatter_handoff(
                 hd, name="noadr.md", adr_id=None, timestamp="2026-07-13T10:00:00Z"
             )
 
             unscoped = list_handoffs(base_path=base)
             self.assertEqual(
-                [i.path for i in unscoped],
-                [(hd / "b.md").as_posix(), (hd / "c.md").as_posix(), (hd / "a.md").as_posix()],
+                [Path(i.path).name for i in unscoped],
+                ["noadr.md", "b.md", "c.md", "a.md"],
             )
+            self.assertIsNone(unscoped[0].adr_id)
 
             scoped = list_handoffs(adr_id="ADR-0.0.65", base_path=base)
             self.assertEqual([Path(i.path).name for i in scoped], ["b.md", "a.md"])

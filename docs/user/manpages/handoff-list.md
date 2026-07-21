@@ -8,7 +8,7 @@ List session handoffs newest-first (ADR-0.0.65).
 
 `gz handoff list` is a read-only projection over the canonical handoff store
 `.gzkit/handoffs/`. It returns the frontmatter-filtered handoffs (only files
-carrying an `adr_id`) sorted newest-first by timestamp. Pass `--adr` to scope
+carrying a `mode`) sorted newest-first by timestamp. Pass `--adr` to scope
 the listing to a single ADR. It never writes, moves, or deletes anything.
 
 ---

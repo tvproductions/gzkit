@@ -82,7 +82,8 @@ class HandoffInfo(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     path: str
-    adr_id: str
+    # None for handoffs that carry no parent ADR (GHI #709).
+    adr_id: str | None = None
     obpi_id: str | None = None
     timestamp: str
 
@@ -195,7 +196,7 @@ def _extract_next_steps(content: str) -> list[str]:
     return steps
 
 
-def _newest_predecessor(adr_id: str, base_path: Path) -> str | None:
+def _newest_predecessor(adr_id: str | None, base_path: Path) -> str | None:
     """Return the newest existing handoff filename for ``adr_id``, if any.
 
     Makes the ``continues_from`` link correct by construction. The field was
@@ -204,7 +205,14 @@ def _newest_predecessor(adr_id: str, base_path: Path) -> str | None:
     sessions (GHI #696). An author has no reason to withhold the link, so the
     cure is to supply it rather than to fail closed on its absence. Returns
     ``None`` when no predecessor exists — that handoff is a genuine chain root.
+
+    An ADR-less handoff (GHI #709) gets no inferred predecessor: the newest
+    handoff overall is not its lineage, and linking to it would assert a
+    continuity that does not exist. Pass ``continues_from`` explicitly to chain
+    ADR-less handoffs.
     """
+    if adr_id is None:
+        return None
     prior = list_handoffs(adr_id=adr_id, base_path=base_path)
     return Path(prior[0].path).name if prior else None
 
@@ -255,7 +263,7 @@ def resolve_continues_from(ref: str, current: Path, base_path: Path) -> Path:
 
 def create_handoff(
     *,
-    adr_id: str,
+    adr_id: str | None = None,
     branch: str,
     agent: str,
     slug: str,
@@ -305,9 +313,24 @@ def create_handoff(
     return path
 
 
+def _render_scope(adr_id: str | None, obpi_id: str | None) -> str:
+    """Render the handoff's work scope for prose, tolerating an absent ADR.
+
+    An ADR-less handoff (GHI #709) still has a scope — the work itself — so the
+    scaffold names what it knows rather than emitting a bare ``None``.
+    """
+    if adr_id and obpi_id:
+        return f"{adr_id} ({obpi_id})"
+    if adr_id:
+        return adr_id
+    if obpi_id:
+        return obpi_id
+    return "this session's work"
+
+
 def scaffold_handoff(
     *,
-    adr_id: str,
+    adr_id: str | None = None,
     observed: ObservedState,
     now: str,
     obpi_id: str | None = None,
@@ -320,7 +343,7 @@ def scaffold_handoff(
     are sorted so identical inputs yield byte-identical output. The judgment
     sections (Decisions Made, Important Context) are intentionally NOT pre-filled.
     """
-    scope = f"{adr_id} ({obpi_id})" if obpi_id else adr_id
+    scope = _render_scope(adr_id, obpi_id)
     events = sorted(observed.ledger_events)
     receipts = sorted(observed.receipts)
     files = sorted(observed.changed_files)
@@ -345,8 +368,13 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path(".")) -> 
     """Return frontmatter-filtered handoffs, newest-first, optionally scoped by ADR.
 
     Scans ``<base_path>/.gzkit/handoffs/*.md``, keeps only files whose
-    frontmatter carries an ``adr_id``, optionally filters to a specific
-    ``adr_id``, and sorts newest-first by frontmatter timestamp.
+    frontmatter carries a ``mode``, optionally filters to a specific ``adr_id``,
+    and sorts newest-first by frontmatter timestamp.
+
+    ``mode`` is the is-this-a-handoff discriminator, not ``adr_id`` (GHI #709):
+    a handoff carries continuity for any work, and ADR-less handoffs (design
+    sessions, triage passes, GHI burndowns) must remain discoverable. Passing
+    ``adr_id`` still scopes to one ADR, which necessarily excludes them.
     """
     handoff_dir = _handoffs_dir(base_path)
     if not handoff_dir.is_dir():
@@ -363,15 +391,15 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path(".")) -> 
             continue
         if not isinstance(fm, dict):
             continue
-        fm_adr = fm.get("adr_id")
-        if not fm_adr:
+        if not fm.get("mode"):
             continue
+        fm_adr = fm.get("adr_id")
         if adr_id is not None and fm_adr != adr_id:
             continue
         infos.append(
             HandoffInfo(
                 path=path.as_posix(),
-                adr_id=str(fm_adr),
+                adr_id=str(fm_adr) if fm_adr else None,
                 obpi_id=fm.get("obpi_id"),
                 timestamp=str(fm.get("timestamp", "")),
             )
@@ -410,17 +438,24 @@ def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path(".")) -> li
     return chain
 
 
-def resume_handoff(*, adr_id: str, base_path: Path = Path("."), now: str) -> ResumeResult:
+def resume_handoff(
+    *, adr_id: str | None = None, base_path: Path = Path("."), now: str
+) -> ResumeResult:
     """Resume the newest handoff for ``adr_id`` with staleness classification.
 
     Selects the newest handoff for the ADR, classifies staleness from its age
     (``now`` minus its frontmatter timestamp), flags
     ``requires_human_verification`` for Stale / Very-Stale, and extracts every
     authored next step from the Immediate Next Steps section.
+
+    ``adr_id=None`` resumes the newest handoff regardless of scope, which is the
+    only way to reach an ADR-less handoff (GHI #709) — authoring one that could
+    never be resumed would leave the surface half-built.
     """
     infos = list_handoffs(adr_id=adr_id, base_path=base_path)
     if not infos:
-        raise HandoffValidationError(f"No handoff found for {adr_id}")
+        scope = adr_id or "this repository"
+        raise HandoffValidationError(f"No handoff found for {scope}")
 
     newest = infos[0]
     path = Path(newest.path)

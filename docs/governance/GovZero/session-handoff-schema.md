@@ -55,7 +55,7 @@ Every handoff document begins with YAML frontmatter between `---` delimiters.
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `mode` | `CREATE` \| `RESUME` | Yes | Handoff mode — CREATE for new documents, RESUME for continuation |
-| `adr_id` | string | Yes | Parent ADR identifier (format: `ADR-X.Y.Z`) |
+| `adr_id` | string | No | Parent ADR identifier (format: `ADR-X.Y.Z`). Omit for work with no parent ADR — a handoff carries continuity for any work, not only ADR-scoped work (GHI #709). When present it must match the format. |
 | `branch` | string | Yes | Git branch at time of handoff |
 | `timestamp` | string | Yes | ISO 8601 UTC timestamp (Z-suffix or offset) |
 | `agent` | string | Yes | Agent that created the document (e.g., `claude-code`) |
@@ -80,7 +80,7 @@ continues_from: handoffs/2026-02-10T09-00-00Z-schema-draft.md
 
 ### Field Validation Rules
 
-- **`adr_id`**: Must match pattern `ADR-\d+\.\d+\.\d+` (three-part SemVer)
+- **`adr_id`**: If present, must match pattern `ADR-\d+\.\d+\.\d+` (three-part SemVer). Optional — an absent parent ADR is a valid state; a malformed one never is.
 - **`timestamp`**: Must parse as valid ISO 8601 via `datetime.fromisoformat()`
 - **`obpi_id`**: If present, must match pattern `OBPI-\d+\.\d+\.\d+-\d{2}` (SemVer + 2-digit sequence)
 - **`mode`**: Exactly `CREATE` or `RESUME` (case-sensitive)

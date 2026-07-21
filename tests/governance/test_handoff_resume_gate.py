@@ -36,15 +36,22 @@ def _seed_handoff(
 ) -> Path:
     """Write a resumable handoff.
 
-    Carries `adr_id` and `timestamp`: recency is a frontmatter property, and a
-    document without `adr_id` is not a handoff at all (it is how the generated
-    `.gzkit/handoffs/AGENTS.md` is excluded). A fixture missing them would not
-    arm the gate, so the tests would pass while proving nothing.
+    Carries `mode` and `timestamp`: recency is a frontmatter property, and a
+    document without `mode` is not a handoff at all (it is how the generated
+    `.gzkit/handoffs/AGENTS.md`, which has no frontmatter, is excluded). A
+    fixture missing them would not arm the gate, so the tests would pass while
+    proving nothing.
+
+    `mode` — not `adr_id` — is the discriminator (GHI #709): `adr_id` is
+    optional because a handoff carries continuity for any work, so an ADR-less
+    handoff must still arm the gate. `mode` is required by `HandoffFrontmatter`,
+    so a fixture omitting it was never a document the schema would admit.
     """
     d = base / ".gzkit" / "handoffs"
     d.mkdir(parents=True, exist_ok=True)
     lines = [
         "---",
+        "mode: CREATE",
         "adr_id: ADR-0.0.65",
         "branch: main",
         "timestamp: '2026-07-16T00:00:00Z'",
@@ -425,7 +432,13 @@ class ResumeGateNewestHandoffSelectionTests(unittest.TestCase):
     def _write(base: Path, name: str, *, timestamp: str, abandoned: bool = False) -> Path:
         d = base / ".gzkit" / "handoffs"
         d.mkdir(parents=True, exist_ok=True)
-        lines = ["---", "adr_id: ADR-0.0.65", "branch: main", f"timestamp: '{timestamp}'"]
+        lines = [
+            "---",
+            "mode: CREATE",
+            "adr_id: ADR-0.0.65",
+            "branch: main",
+            f"timestamp: '{timestamp}'",
+        ]
         lines.append("agent: g0")
         if abandoned:
             lines.append("abandoned: true")

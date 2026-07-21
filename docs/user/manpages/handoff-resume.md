@@ -20,14 +20,14 @@ action for the operator to ratify — resuming is not a Gate-5 attestation.
 ## Usage
 
 ```
-gz handoff resume --adr ADR [--json]
+gz handoff resume [--adr ADR] [--json]
 ```
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
-| `--adr ADR` | ADR id to resume the newest handoff for (required). |
+| `--adr ADR` | ADR id to resume the newest handoff for. Omit to resume the newest handoff overall — the only way to reach a handoff with no parent ADR (GHI #709). |
 | `--json` | Emit the machine-readable `ResumeResult`. |
 
 ---

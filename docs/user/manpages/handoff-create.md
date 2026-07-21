@@ -29,7 +29,7 @@ despite having passed the gate.
 ## Usage
 
 ```
-gz handoff create --adr ADR --slug SLUG --agent AGENT --decisions TEXT
+gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
                   [--summary TEXT] [--context TEXT] [--next-steps TEXT]
                   [--pending TEXT] [--verification TEXT] [--evidence TEXT]
                   [--branch BRANCH] [--obpi OBPI]
@@ -40,7 +40,7 @@ gz handoff create --adr ADR --slug SLUG --agent AGENT --decisions TEXT
 
 | Option | Description |
 |--------|-------------|
-| `--adr ADR` | Parent ADR id, `ADR-X.Y.Z` (required). |
+| `--adr ADR` | Parent ADR id, `ADR-X.Y.Z`. Omit for work with no parent ADR — a design session, triage pass, or GHI burndown (GHI #709). When supplied it must match the format. |
 | `--slug SLUG` | Filename slug for the handoff (required). |
 | `--agent AGENT` | Authoring agent identity (required). |
 | `--decisions TEXT` | `Decisions Made` section body (required). |

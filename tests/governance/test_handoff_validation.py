@@ -27,6 +27,7 @@ from gzkit.handoff_validation import (
     validate_referenced_files,
     validate_sections_populated,
     validate_sections_present,
+    write_completion_handoff,
 )
 from gzkit.traceability import covers
 
@@ -150,6 +151,65 @@ class TestHandoffFrontmatter(unittest.TestCase):
     @covers("REQ-0.25.0-32-03")
     def test_schema_version_constant(self) -> None:
         self.assertEqual(HANDOFF_SCHEMA_VERSION, "govzero.handoff.v1")
+
+
+# ---------------------------------------------------------------------------
+# Work-continuity scope — GHI #709
+# ---------------------------------------------------------------------------
+
+
+class HandoffWorkContinuityScopeTests(unittest.TestCase):
+    """A handoff carries continuity for any work, not only ADR-scoped work.
+
+    GHI #709. ``adr_id`` was mandatory by parity inheritance from AirlineOps,
+    never by a gzkit decision — ADR-0.0.65 § Decision does not scope handoffs
+    to ADRs. The field also did double duty as the *is-this-a-handoff*
+    discriminator, which is why relaxing it needs a separate discriminator
+    (``mode``) rather than simply loosening the type.
+    """
+
+    def test_adr_id_may_be_omitted(self) -> None:
+        """A design/triage/burndown session has no parent ADR to name."""
+        payload = _valid_frontmatter_dict()
+        del payload["adr_id"]
+        fm = HandoffFrontmatter(**payload)
+        self.assertIsNone(fm.adr_id)
+
+    def test_adr_id_may_be_explicitly_none(self) -> None:
+        """Hand-authored frontmatter renders an empty key as ``None``."""
+        fm = HandoffFrontmatter(**_valid_frontmatter_dict(adr_id=None))
+        self.assertIsNone(fm.adr_id)
+
+    def test_malformed_adr_id_still_raises_when_supplied(self) -> None:
+        """Relaxing to optional must not weaken the format gate when present."""
+        with self.assertRaisesRegex(ValidationError, "Invalid ADR ID format"):
+            HandoffFrontmatter(**_valid_frontmatter_dict(adr_id="not-an-adr"))
+
+    def test_completion_handoff_does_not_synthesize_a_sentinel_adr(self) -> None:
+        """No ``ADR-0.0.0`` placeholder — an absent ADR is recorded as absent.
+
+        ``write_completion_handoff`` wrote ``ADR-0.0.0`` when it could not
+        derive an ADR from the OBPI id, satisfying the required field with an
+        identifier that names no real artifact. Its own docstring named the
+        motive: *"so the frontmatter validates."*
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = write_completion_handoff(
+                Path(tmp),
+                obpi_id="OBPI-not-semver-shaped",
+                agent="claude-code",
+                attestor="g0",
+                attestation_text="attest completed",
+                implementation_summary="Summary.",
+                key_proof="Proof.",
+                last_lock_event_timestamp=None,
+                commit_sha="abc1234",
+                branch="main",
+                brief_rel_path="docs/design/adr/x/obpis/y.md",
+            )
+            written = path.read_text(encoding="utf-8")
+
+        self.assertNotIn("ADR-0.0.0", written)
 
 
 # ---------------------------------------------------------------------------

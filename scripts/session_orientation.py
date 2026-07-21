@@ -136,17 +136,23 @@ def extract_first_next_step(text: str) -> str | None:
 
 
 def _looks_like_handoff(text: str) -> bool:
-    """True only for markdown carrying handoff frontmatter (an ``adr_id:`` key).
+    """True only for markdown carrying handoff frontmatter (a ``mode:`` key).
 
     Excludes non-handoff ``*.md`` that share a handoffs directory — notably
     the generated ``.gzkit/handoffs/AGENTS.md`` subtree-rules file, which has
     no frontmatter and would otherwise win the newest-by-mtime race and be
     surfaced as "the most-recent handoff".
+
+    Discriminates on ``mode``, not ``adr_id`` (GHI #709): ``adr_id`` is optional
+    because a handoff carries continuity for any work, so keying discovery to it
+    would make ADR-less handoffs invisible to session orientation. ``mode`` is
+    required by ``HandoffFrontmatter`` and absent from the AGENTS.md file this
+    check exists to exclude.
     """
     match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
     if match is None:
         return False
-    return re.search(r"^adr_id:\s*\S", match.group(1), re.MULTILINE) is not None
+    return re.search(r"^mode:\s*\S", match.group(1), re.MULTILINE) is not None
 
 
 def _candidate_handoff_dirs(repo_root: Path) -> list[Path]:
