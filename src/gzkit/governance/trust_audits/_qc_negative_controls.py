@@ -30,6 +30,7 @@ from typing import Any
 
 from gzkit.enforcement import enforces, get_enforcement_registry
 
+from . import _qc_nc_composite as _cx
 from . import _qc_nc_entrypoints as _ep
 
 # ---------------------------------------------------------------------------
@@ -843,6 +844,63 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "theater-signature-scan",
         _build_theater_signature_scan,
         _ep._ep_theater_signature_scan,
+    ),
+    # --- composite-claim decomposition (GHI #699 generator #4) -------------
+    # Same production entrypoint as the parent claim; each row plants ONE of the
+    # invariants the parent's single fixture never reached, pinned by `expect`.
+    (
+        "surface-fidelity-bullet-retention",
+        _cx.build_bullet_retention,
+        _ep._ep_surface_fidelity,
+        "Bullet-retention violation: invariant-tier",
+    ),
+    (
+        "surface-fidelity-surface-weight",
+        _cx.build_surface_weight,
+        _ep._ep_surface_fidelity,
+        "Surface weight in red band",
+    ),
+    (
+        "surface-fidelity-scenario-reachability",
+        _cx.build_scenario_reachability,
+        _ep._ep_surface_fidelity,
+        "scenario-reachability: registry schema invalid:",
+    ),
+    (
+        "task-envelope-subdivision",
+        _cx.build_task_envelope_subdivision,
+        _ep._ep_task_envelope_coherence,
+        "closed with only seq=01 TASKs",
+    ),
+    (
+        "task-envelope-layer-drift",
+        _cx.build_task_envelope_layer_drift,
+        _ep._ep_task_envelope_coherence,
+        "Signature (c): layer-drift across discovery channels",
+    ),
+    (
+        "task-envelope-obpi-divergence",
+        _cx.build_task_envelope_obpi_divergence,
+        _ep._ep_task_envelope_coherence,
+        "carries divergent obpi_id across lifecycle events",
+    ),
+    (
+        "waiver-ratchet-closed-set-lock",
+        _cx.build_waiver_closed_set_lock,
+        _ep._ep_waiver_ratchet,
+        "entries lack a non-empty 'added_under'",
+    ),
+    (
+        "waiver-ratchet-dated-cutover",
+        _cx.build_waiver_dated_cutover,
+        _ep._ep_waiver_ratchet,
+        "which is in the future (",
+    ),
+    (
+        "waiver-ratchet-silent-bypass",
+        _cx.build_waiver_silent_bypass,
+        _ep._ep_waiver_ratchet,
+        "exists on disk but is not declared in data/waiver_ratchet_registry.json",
     ),
 )
 

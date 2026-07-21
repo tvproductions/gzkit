@@ -310,5 +310,89 @@ class TestQcBindingCertifiesABehavioralChannel(unittest.TestCase):
         )
 
 
+class TestCompositeClaimsAreDecomposed(unittest.TestCase):
+    """Generator #4: one claim per independently-deletable invariant.
+
+    `surface-fidelity` fans out to four sub-validators, `task-envelope-coherence`
+    to four signatures, `waiver-ratchet` to three mechanisms — but each carried a
+    single negative control, so every invariant its one fixture did not happen to
+    violate could be deleted and the control stayed green (GHI #699).
+    """
+
+    #: claim id -> the invariant its fixture plants
+    SIBLINGS = {
+        "surface-fidelity-bullet-retention": "bullet retention",
+        "surface-fidelity-surface-weight": "surface weight band",
+        "surface-fidelity-scenario-reachability": "scenario registry schema",
+        "task-envelope-subdivision": "signature (b)",
+        "task-envelope-layer-drift": "signature (c)",
+        "task-envelope-obpi-divergence": "signature (d)",
+        "waiver-ratchet-closed-set-lock": "closed-set-lock mechanism",
+        "waiver-ratchet-dated-cutover": "dated-cutover mechanism",
+        "waiver-ratchet-silent-bypass": "unregistered waiver surface",
+    }
+
+    @staticmethod
+    def _registry() -> dict:
+        from gzkit.enforcement import (
+            _ensure_production_claims_registered,
+            get_enforcement_registry,
+        )
+
+        _ensure_production_claims_registered()
+        return {r.claim_id: r for r in get_enforcement_registry()}
+
+    def test_every_sibling_claim_is_registered(self) -> None:
+        """Each decomposed invariant must have its own claim."""
+        registered = self._registry()
+        missing = [c for c in self.SIBLINGS if c not in registered]
+
+        self.assertEqual(
+            missing,
+            [],
+            f"Composite claims must decompose one-per-invariant; missing: {missing}",
+        )
+
+    def test_every_sibling_pins_its_own_reason(self) -> None:
+        """A sibling without an ``expect`` would collapse back into the parent."""
+        registry = self._registry()
+        for claim in self.SIBLINGS:
+            with self.subTest(claim=claim):
+                self.assertIsNotNone(
+                    registry[claim].expect,
+                    f"{claim} must pin the finding it certifies, otherwise any "
+                    "sibling's failure would satisfy it.",
+                )
+
+    def test_every_sibling_passes_on_its_planted_violation(self) -> None:
+        from gzkit.enforcement import _run_single_claim
+
+        registry = self._registry()
+        for claim, invariant in self.SIBLINGS.items():
+            with self.subTest(claim=claim):
+                result = _run_single_claim(registry[claim])
+                self.assertEqual(result.outcome, "PASS", f"{claim} ({invariant}): {result.message}")
+
+    def test_every_sibling_goes_facade_when_nothing_is_planted(self) -> None:
+        """The mutation that matters: a fixture that stops planting must redden."""
+        import tempfile
+        from pathlib import Path
+
+        from gzkit.enforcement import _run_single_claim
+
+        registry = self._registry()
+        for claim in self.SIBLINGS:
+            with self.subTest(claim=claim):
+                gutted = registry[claim].model_copy(
+                    update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mut-"))}
+                )
+                self.assertEqual(
+                    _run_single_claim(gutted).outcome,
+                    "FACADE",
+                    f"{claim} still passes with nothing planted — it is not "
+                    "actually certifying its invariant.",
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
