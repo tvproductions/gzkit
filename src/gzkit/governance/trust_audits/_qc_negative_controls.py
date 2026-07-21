@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import json
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -64,6 +65,80 @@ def _build_empty(slug: str = "empty") -> Path:
     one planted violation; do not add new callers.
     """
     return _mkroot(slug)
+
+
+def _build_cli_audit() -> Path:
+    """A valid doc-coverage manifest whose one command has a mismatched manpage heading.
+
+    `.gzkit.json` clears `ensure_initialized`; the manifest, index, and README Quick
+    Start are all well-formed. The single violation is the manpage's H1 naming a
+    different command. Without the manifest the command raises an uncaught
+    FileNotFoundError, which also exits 1 — so the old empty fixture scored a crash
+    as enforcement (GHI #699).
+    """
+    root = _mkroot("cli-audit")
+    _write(root / ".gzkit.json", "{}\n")
+    _write(
+        root / "config" / "doc-coverage.json",
+        json.dumps(
+            {
+                "version": "1.0.0",
+                "description": "NC fixture manifest",
+                "commands": {
+                    "demo": {
+                        "surfaces": {
+                            "manpage": True,
+                            "index_entry": True,
+                            "operator_runbook": False,
+                            "governance_runbook": False,
+                            "docstring": False,
+                        },
+                        "governance_relevant": False,
+                    }
+                },
+            },
+            indent=2,
+        )
+        + "\n",
+    )
+    from gzkit.doc_coverage.manifest import MANPAGE_DIR, MANPAGE_INDEX  # noqa: PLC0415
+
+    _write(root / MANPAGE_INDEX, "# Index\n\n- [demo](demo.md)\n")
+    # The violation: the manpage documents a different command than it is named for.
+    _write(root / MANPAGE_DIR / "demo.md", "# gz wrong-name\n")
+    # A registered verb — `gz --help` is rejected by the Quick Start validator and
+    # would add a second finding, defeating the one-violation isolation.
+    _write(root / "README.md", "## Quick Start\n\n```bash\nuv run gz init\n```\n")
+    return root
+
+
+def _build_skill_audit() -> Path:
+    """A mirrored skill whose SKILL.md omits the required `owner` field.
+
+    All four mirror roots carry byte-identical copies so mirror drift does not add a
+    second finding, and the canonical root is non-empty so the CANONICAL-ROOT-EMPTY
+    branch does not fire. The one violation is the missing required field.
+    """
+    root = _mkroot("skill-audit")
+    _write(root / ".gzkit.json", "{}\n")
+    # Computed, not hardcoded: a literal date would silently drift past the
+    # staleness window and add a second finding, re-degenerating the fixture.
+    reviewed = datetime.now(tz=UTC).date().isoformat()
+    skill = (
+        "---\n"
+        "name: demo-skill\n"
+        "description: Demo skill for the negative control.\n"
+        "lifecycle_state: active\n"
+        f"last_reviewed: {reviewed}\n"
+        "metadata:\n"
+        "  skill-version: 0.1.0\n"
+        # The violation: no `owner:` key.
+        "---\n\n"
+        "# demo-skill\n"
+    )
+    for mirror in (".gzkit/skills", ".agents/skills", ".claude/skills", ".github/skills"):
+        _write(root / mirror / "demo-skill" / "SKILL.md", skill)
+    return root
 
 
 def _build_session_green_gate() -> Path:
@@ -690,10 +765,10 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("typecheck", _build_typecheck, _ep._ep_typecheck),
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
-    ("skill-audit", lambda: _build_empty("skill-audit"), _ep._ep_skill_audit),
+    ("skill-audit", _build_skill_audit, _ep._ep_skill_audit),
     ("parity-check", _build_parity_check, _ep._ep_parity_check),
     ("readiness-audit", lambda: _build_empty("readiness-audit"), _ep._ep_readiness_audit),
-    ("cli-audit", lambda: _build_empty("cli-audit"), _ep._ep_cli_audit),
+    ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),

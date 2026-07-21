@@ -41,7 +41,13 @@ def _command_fails(command: str, root: Path, *, expected_exit: int) -> int:
     return 1 if run_command(command, cwd=root).returncode == expected_exit else 0
 
 
-def _gz_command_fails(verb: tuple[str, ...], root: Path, *, expected_exit: int) -> int:
+def _gz_command_fails(
+    verb: tuple[str, ...],
+    root: Path,
+    *,
+    expected_exit: int,
+    expect_output: str | None = None,
+) -> int:
     """``_command_fails`` for a gz-owned verb, pinned to the WORKING TREE.
 
     ``uv run gz <verb>`` resolves ``gz`` from PATH. Under a bare (non-``uv run``)
@@ -55,19 +61,40 @@ def _gz_command_fails(verb: tuple[str, ...], root: Path, *, expected_exit: int) 
     this module, so the code under test is definitionally the working tree.
     Argv is passed as a sequence — never a shell string — per
     `.claude/rules/cross-platform.md`.
+
+    ``expect_output`` is required wherever the CLI cannot express the difference in
+    its exit code. ``GzCliError`` ("gzkit not initialized"), an uncaught exception,
+    and a genuine audit finding ALL exit 1 (``core/exceptions.py`` default, mapped in
+    ``cli/helpers/exit_codes.py``, plus the generic handler in ``cli/main.py``), so on
+    a gz verb ``expected_exit`` alone cannot discriminate. The output substring is the
+    only channel that can.
     """
     import sys  # noqa: PLC0415
 
     return _command_fails_argv(
-        [sys.executable, "-m", "gzkit", *verb], root, expected_exit=expected_exit
+        [sys.executable, "-m", "gzkit", *verb],
+        root,
+        expected_exit=expected_exit,
+        expect_output=expect_output,
     )
 
 
-def _command_fails_argv(argv: list[str], root: Path, *, expected_exit: int) -> int:
+def _command_fails_argv(
+    argv: list[str],
+    root: Path,
+    *,
+    expected_exit: int,
+    expect_output: str | None = None,
+) -> int:
     """Sequence-form companion to ``_command_fails`` (same discrimination contract)."""
     from gzkit.quality import run_command  # noqa: PLC0415
 
-    return 1 if run_command(argv, cwd=root).returncode == expected_exit else 0
+    result = run_command(argv, cwd=root)
+    if result.returncode != expected_exit:
+        return 0
+    if expect_output is not None and expect_output not in (result.stdout + result.stderr):
+        return 0
+    return 1
 
 
 # --- subprocess-backed entrypoints -----------------------------------------
@@ -94,7 +121,12 @@ def _ep_behave(root: Path) -> int:
 
 
 def _ep_skill_audit(root: Path) -> int:
-    return _gz_command_fails(("skill", "audit"), root, expected_exit=1)
+    return _gz_command_fails(
+        ("skill", "audit"),
+        root,
+        expected_exit=1,
+        expect_output="SKA-REQUIRED-FIELD-MISSING",
+    )
 
 
 def _ep_parity_check(root: Path) -> int:
@@ -106,7 +138,12 @@ def _ep_readiness_audit(root: Path) -> int:
 
 
 def _ep_cli_audit(root: Path) -> int:
-    return _gz_command_fails(("cli", "audit"), root, expected_exit=1)
+    return _gz_command_fails(
+        ("cli", "audit"),
+        root,
+        expected_exit=1,
+        expect_output="expected heading `# gz demo`",
+    )
 
 
 def _ep_preflight(root: Path) -> int:
