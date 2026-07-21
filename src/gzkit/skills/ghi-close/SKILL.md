@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-27
+last_reviewed: 2026-07-21
 metadata:
-  skill-version: "2.4.0"
+  skill-version: "2.5.0"
 model: opus
 ---
 
@@ -165,6 +165,28 @@ to produce one. Fix that instinct.
    ```bash
    gh issue view <N> --json number,title,body,state,labels,comments,url
    ```
+
+1a. **Re-derive every stated precondition against the current tree before
+   accepting it.** A blocker comment, a "sequence this after #M" note, or a
+   "blocked on the in-flight OBPI-X" caveat is a **claim about the tree as it
+   stood on the day it was written** — not a standing fact. Code moves; the
+   comment does not. For each precondition the GHI records, read the surface it
+   names and confirm it still holds, then say so in the close comment with the
+   file:line you checked.
+
+   Observed instance (GHI #677, 2026-07-21): the blocker said *"sequence after
+   #664 settles what `req_count` should compare, since re-measuring a wrong
+   metric still yields a wrong receipt."* True when written. By the time the
+   issue was worked, `req_count` had been excluded from `has_drift` upstream
+   (`brief_reconcile.py:175-181`), so the metric could not reach the receipt and
+   the precondition was moot. Its companion caveat — a path conflict with an
+   in-flight OBPI — had also cleared (no active locks). Both were disproved by
+   reading, and neither would have been caught by trusting the comment.
+
+   This is the GHI-surface cut of the decay #696 names on the handoff surface:
+   a decision recorded in session N, still shaping work in session N+M, with no
+   freshness signal attached. Treat a stale precondition as a finding worth
+   stating, not merely an obstacle that turned out to be absent.
 
 2. **Classify the GHI's prescriptive shape.** The body almost always fits one of:
 
@@ -345,6 +367,8 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 | Thought | Reality |
 |---------|---------|
 | "No fix commit exists yet, so I should stop and report" | Wrong. The skill's job is to *produce* the fix commit. Route per AGENTS.md § Defect-fix routing and execute. |
+| "The GHI carries a blocker comment, so it's blocked" | A blocker describes the tree on the day it was written. Re-derive it (Phase 1 step 1a) before honoring it — GHI #677's blocker had been moot for days and nothing said so. A blocker you did not re-check is hearsay, not a gate. |
+| "The blocker was written by the operator, so it still binds" | Authorship makes it *authoritative about intent*, not *current about code*. The operator ruled on the tree they saw. Re-deriving honors that ruling; treating it as timeless outsources judgment to a stale snapshot. |
 | "The GHI has two proposed resolutions and I should ask which one" | Only if the options are genuinely balanced. Usually one option preserves reconciliation intent and the other discards it — pick the preserving one per DO IT RIGHT #3 and note the rationale in the close comment. |
 | "The commit clearly fixes it; I don't need to verify tests" | Verification is the point of Phase 3. If tests assert strings instead of semantics, the class is still open. |
 | "I'll close it now and add the evidence later" | The close comment is the evidence. "Later" never comes. |
@@ -365,6 +389,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 
 - **Close comment cites a destination that doesn't exist yet** — "the eventual ADR for this", "should become an OBPI", "operator will route to /gz-design next", "re-route to design pipeline" — these are dead-letter signatures. The destination must be a registered ADR ID, OBPI brief ID, commit SHA, or higher-numbered open GHI; if it's not, the close is invalid (DEAD-LETTER PROHIBITION, § Doctrine — NEVER, EVER, EVER dead-letter a GHI)
 - **`withdrawn` disposition without a same-session destination authoring** — `withdrawn` is for premise-evaporated GHIs, not for "this should be an ADR but I haven't authored one yet"
+- **A recorded precondition is honored without being re-derived** — the GHI says "blocked on X" / "sequence after #M" and the agent accepts it rather than reading the surface it names. The blocker describes a past tree (Phase 1 step 1a)
 - Agent posts a long analysis comment and does not close, when no escalation blocker holds
 - Close comment is "Done" or "Fixed" with no artifact reference
 - Close happens before verification steps 7a–7e run
