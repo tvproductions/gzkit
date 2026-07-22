@@ -51,6 +51,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_render(content_commands)
     _register_edit(content_commands)
     _register_remember(content_commands)
+    _register_retire(content_commands)
     _register_compose(content_commands)
     _register_commit(content_commands)
     _register_advise_rendition(content_commands)
@@ -309,6 +310,47 @@ def _register_remember(content_commands: argparse._SubParsersAction) -> None:
             text=a.text,
             tier=a.tier,
             classification=a.classification,
+            origin=a.origin,
+        )
+    )
+
+
+def _register_retire(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "retire",
+        help="Retire a superseded corpus entry via an append-only retraction",
+        description=(
+            "Append a retraction row naming a superseded entry id, and emit a "
+            "corpus_entry_retired ledger event. Nothing is deleted — the retired entry "
+            "stays on disk with its provenance — but it stops binding the invariant "
+            "floor, so a rendition no longer has to carry its text verbatim. Retirement "
+            "only ever shrinks the floor, so committed renditions stay valid and no "
+            "recomposition is implied. Fails closed on an unknown or already-retired id."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content retire AGENTS.md --entry corpus-prime-directive-2026-06-13T12:34:39 "
+                '--reason "superseded by the 2026-06-19 single-quote canon entry"',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface the entry belongs to (e.g. AGENTS.md).")
+    p.add_argument("--entry", required=True, help="Id of the corpus entry to retire.")
+    p.add_argument(
+        "--reason",
+        required=True,
+        help="Why the entry is superseded; stored as the retraction row's text.",
+    )
+    p.add_argument(
+        "--origin",
+        default="cli:content-retire",
+        help="Provenance of the retirement, e.g. a GHI or session id.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("retire", "content_retire_cmd")(
+            surface=a.surface,
+            entry_id=a.entry,
+            reason=a.reason,
             origin=a.origin,
         )
     )

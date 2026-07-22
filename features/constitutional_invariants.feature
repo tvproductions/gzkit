@@ -197,9 +197,9 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
   # OBPI-0.0.37-18 — Append-only corpus model
 
   @REQ-0.0.37-18-01
-  Scenario: A corpus entry carries exactly the ten addressed fields
+  Scenario: A corpus entry carries exactly its declared fields
     Given a corpus entry with all ten addressed fields populated
-    Then the corpus entry model has exactly the ten addressed fields
+    Then the corpus entry model carries exactly its declared fields
     And constructing a corpus entry with an unknown field fails closed
 
   @REQ-0.0.37-18-02

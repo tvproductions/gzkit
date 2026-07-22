@@ -81,9 +81,37 @@ class TestCorpusEntryModel(unittest.TestCase):
             ),
         )
 
+    def test_none_retires_is_omitted_so_the_derivation_identity_is_stable(self) -> None:
+        """A no-op ``retires`` must not appear in ``dumps()`` (GHI #635).
+
+        ``rendition_store.corpus_fingerprint`` hashes ``Corpus.dumps()``, so that
+        string IS the corpus derivation identity. Emitting ``"retires":null`` on
+        rows that retire nothing would change every surface's fingerprint the
+        moment the field was added — invalidating the provenance of every
+        committed rendition and demanding a Gate-5 recompose for a schema change
+        that carries no information. This is what makes additive evolution of
+        CorpusEntry possible at all.
+        """
+        self.assertNotIn("retires", Corpus(entries=(_entry(),)).dumps())
+
+    def test_a_real_retirement_does_perturb_the_derivation_identity(self) -> None:
+        """The converse: a row that genuinely retires something IS visible.
+
+        Canon changed, so the freshness gate should fire — that is the drift it
+        exists to catch, and the exemption above must not swallow it.
+        """
+        retraction = _entry(id="c2", retires="c1")
+        self.assertIn("retires", Corpus(entries=(retraction,)).dumps())
+
     @covers("REQ-0.0.37-18-01")
-    def test_model_has_exactly_ten_fields(self) -> None:
-        """The entry is exactly the ten ADR-named fields — no inherited 11th field."""
+    def test_model_field_set_is_exactly_the_declared_fields(self) -> None:
+        """The entry carries exactly its declared fields — nothing inherited.
+
+        The ten ADR-0.0.37-18 address/provenance fields, plus ``retires`` (the
+        GHI #635 append-only retirement pointer). The fence is against fields
+        arriving by inheritance, which is why it asserts set equality rather
+        than a count.
+        """
         self.assertEqual(
             set(CorpusEntry.model_fields),
             {
@@ -97,6 +125,7 @@ class TestCorpusEntryModel(unittest.TestCase):
                 "text",
                 "origin",
                 "ts",
+                "retires",
             },
         )
 

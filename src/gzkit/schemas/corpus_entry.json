@@ -47,6 +47,10 @@
     "ts": {
       "type": "string",
       "description": "ISO 8601 append timestamp."
+    },
+    "retires": {
+      "type": ["string", "null"],
+      "description": "Id of an earlier entry this row supersedes (GHI #635). The retired row stays on disk; it simply stops binding the invariant floor, so retirement only ever shrinks the floor and never invalidates a committed rendition."
     }
   }
 }

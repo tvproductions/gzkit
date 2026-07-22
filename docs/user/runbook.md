@@ -1115,6 +1115,19 @@ ledger event; `remember` fails closed if the surface is unknown or `--section` r
 no template-defined section. See the `gz-content-remember` skill and
 [`gz content`](manpages/content.md) § remember.
 
+**To retire a superseded corpus entry (GHI #635):**
+The corpus appends and never deletes, so a superseded directive would otherwise bind the
+invariant floor forever. Retirement is the governed exit — never hand-edit the JSONL:
+```bash
+# Append a retraction row naming the superseded entry; nothing is deleted
+uv run gz content retire AGENTS.md --entry corpus-prime-directive-2026-06-13T12:34:39 \
+  --reason "superseded by the 2026-06-19 canon entry"
+```
+The retired row stays on disk with its provenance; it simply stops binding the invariant
+floor. Retirement only ever **shrinks** the floor, so committed renditions stay valid and
+no recomposition is implied. Fails closed on an unknown or already-retired id. Emits a
+`corpus_entry_retired` ledger event. See [`gz content`](manpages/content.md) § retire.
+
 **To compose a candidate rendition (compress stage — OBPI-0.0.37-21):**
 After the corpus is seeded, the agent wielding the `gz-content-compose` skill reads the
 corpus, decides which compressible entries to drop/combine/rewrite toward the declared

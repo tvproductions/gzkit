@@ -88,6 +88,11 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "composition_drift_detected",
         "composition_rendered",
         "corpus_entry_appended",
+        # Retirement of a superseded corpus entry (GHI #635). Sibling of
+        # corpus_entry_appended and dispositioned with it: it records which canon
+        # is current within a per-surface content store, never a lineage edge
+        # between artifacts.
+        "corpus_entry_retired",
         "discovered_from",
         "distribution_baseline_regenerated",
         "enforcement_claim_verified",

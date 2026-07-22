@@ -512,6 +512,23 @@ class CorpusEntryAppendedEvent(_EventBase):
     tier: str
 
 
+class CorpusEntryRetiredEvent(_EventBase):
+    """corpus_entry_retired event — append-only corpus retirement (GHI #635).
+
+    Layer-2 witness that ``gz content retire`` appended a retraction row superseding
+    an earlier entry. Distinct from ``corpus_entry_appended`` because it changes what
+    canon *currently* requires — the surface's invariant floor shrinks — which is the
+    fact an auditor looks for, not merely that a row was added. Nothing is deleted;
+    the retired entry keeps its provenance on disk.
+    """
+
+    event: Literal["corpus_entry_retired"]
+    surface: str
+    retired_entry_id: str
+    retraction_entry_id: str
+    reason: str
+
+
 class CompositionCandidateEmittedEvent(_EventBase):
     """composition_candidate_emitted event — authoring-time candidate (OBPI-0.0.37-21).
 
@@ -845,6 +862,7 @@ TypedLedgerEvent = Annotated[
     | CompositionDriftDetectedEvent
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
+    | CorpusEntryRetiredEvent
     | CompositionCandidateEmittedEvent
     | RenditionCommittedEvent
     | RenditionAdvisorVerdictEvent

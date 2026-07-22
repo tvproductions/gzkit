@@ -261,7 +261,9 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         """
         # Expected subcommands for `gz content` (remember added by OBPI-0.0.37-19;
         # compose by OBPI-0.0.37-21; commit by OBPI-0.0.37-22; advise-rendition by
-        # OBPI-0.0.37-24)
+        # OBPI-0.0.37-24; retire by GHI #635 — the append-only corpus had no
+        # governed retirement path, so a superseded entry bound the invariant
+        # floor permanently)
         expected_subcommands = {
             "import",
             "list",
@@ -269,6 +271,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "render",
             "edit",
             "remember",
+            "retire",
             "compose",
             "commit",
             "advise-rendition",

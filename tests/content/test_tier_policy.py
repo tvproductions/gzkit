@@ -97,6 +97,77 @@ class TestInvariantEntries(unittest.TestCase):
         self.assertEqual(invariant_entries(corpus), [])
 
 
+def _retraction(target_id: str, *, reason: str = "superseded") -> CorpusEntry:
+    """Build the append-only retraction row that retires *target_id*."""
+    return CorpusEntry(
+        id=f"corpus-retraction-{target_id}",
+        surface="AGENTS.md",
+        section="prime-directive",
+        tier="compressible",
+        classification="Mechanical",
+        text=reason,
+        origin="test",
+        ts="2026-07-22T00:00:00Z",
+        retires=target_id,
+    )
+
+
+class TestRetirementLeavesTheFloor(unittest.TestCase):
+    """GHI #635: a retired entry stops binding the invariant floor.
+
+    The corpus is append-only and has no delete, so a superseded operator
+    directive was permanent — two invariant entries carrying the same doctrine
+    could not both be satisfied by a deduplicating rendition. Retirement is the
+    governed exit: a retraction row names the id it retires, and the floor
+    shrinks. It never grows, so committed renditions stay valid.
+    """
+
+    def test_retired_invariant_is_excluded_from_the_floor(self) -> None:
+        inv = _entry("inv-old", "superseded doctrine", tier="invariant")
+        corpus = Corpus(entries=(inv, _retraction("inv-old")))
+        self.assertEqual(invariant_entries(corpus), [])
+
+    def test_retirement_relaxes_a_previously_unsatisfiable_floor(self) -> None:
+        """The GHI's exact shape: two invariant entries for one directive.
+
+        Before retirement a rendition carrying only the current wording fails
+        the floor. After retirement it passes -- without the rendition changing.
+        """
+        old = _entry("inv-old", "doctrine, verbatim: 'x'", tier="invariant")
+        new = _entry("inv-new", 'doctrine, verbatim: "x"', tier="invariant")
+        rendition = 'doctrine, verbatim: "x"'
+
+        before = Corpus(entries=(old, new))
+        with self.assertRaises(ValueError):
+            assert_invariant_verbatim(before, rendition)
+
+        after = Corpus(entries=(old, new, _retraction("inv-old")))
+        assert_invariant_verbatim(after, rendition)  # must not raise
+
+    def test_unretired_invariants_still_bind(self) -> None:
+        """Retiring one entry does not weaken the floor for its siblings."""
+        retired = _entry("inv-old", "gone", tier="invariant")
+        live = _entry("inv-live", "still binding", tier="invariant")
+        corpus = Corpus(entries=(retired, live, _retraction("inv-old")))
+        self.assertEqual([e.id for e in invariant_entries(corpus)], ["inv-live"])
+        with self.assertRaises(ValueError):
+            assert_invariant_verbatim(corpus, "rendition omitting the live entry")
+
+    def test_retraction_row_does_not_itself_join_the_floor(self) -> None:
+        """The retraction is compressible bookkeeping, never a new invariant."""
+        corpus = Corpus(
+            entries=(_entry("inv-old", "gone", tier="invariant"), _retraction("inv-old"))
+        )
+        assert_invariant_verbatim(corpus, "a rendition mentioning neither")  # must not raise
+
+    def test_retirement_preserves_the_retired_row(self) -> None:
+        """Append-only: retirement adds a row, it never removes the original."""
+        inv = _entry("inv-old", "superseded doctrine", tier="invariant")
+        corpus = Corpus(entries=(inv, _retraction("inv-old")))
+        self.assertIn("inv-old", [e.id for e in corpus.entries])
+        self.assertEqual(corpus.retired_ids(), frozenset({"inv-old"}))
+
+
 class TestAssertInvariantVerbatim(unittest.TestCase):
     @covers("REQ-0.0.37-23-01")
     def test_passes_when_all_invariants_present(self) -> None:

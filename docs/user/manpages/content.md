@@ -124,6 +124,32 @@ section resolves to no template-defined section of that surface — an
 unaddressable entry is never stored. `--tier invariant` marks entries emitted
 verbatim at every compression setpoint; `--tier` defaults to `compressible`.
 
+### retire
+
+Retire a superseded corpus entry by appending a **retraction row** whose
+`retires` field names the id it supersedes, and emit a `corpus_entry_retired`
+ledger event. The corpus has exactly one mutation — append — and no delete, so
+before this verb a superseded operator directive bound the invariant floor
+permanently and the only escape was hand-editing the append-only store.
+
+```bash
+gz content retire <surface> --entry <id> --reason <text> [--origin <provenance>]
+```
+
+**Nothing is deleted.** The retired row stays on disk with its provenance
+intact; `tier_policy.invariant_entries` simply stops returning it, so a
+rendition no longer has to carry its text verbatim.
+
+**Retirement only ever shrinks the invariant floor.** A rendition that
+satisfied the floor before a retirement still satisfies it after — retirement
+removes requirements, never adds them — so **committed renditions stay valid
+and no recomposition is implied**. `retire` never touches a rendered surface.
+
+The command **fails closed** (exit 1, nothing written) when `--entry` names no
+row in the surface's corpus, or when that row is already retired. Double
+retirement refuses rather than appending a second retraction, so the ledger
+carries exactly one witness per retirement.
+
 ### compose
 
 Validate and stage a **candidate rendition** from the corpus. This is the

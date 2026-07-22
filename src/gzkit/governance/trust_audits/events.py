@@ -32,6 +32,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "that the REQ's covering test fails without its implementation; read by "
         "`gz validate --red-parity`. Attaches to a REQ, not to an artifact graph node."
     ),
+    "corpus_entry_retired": (
+        "Append-only corpus retirement receipt (GHI #635) — a retraction row superseded "
+        "an earlier entry, shrinking the surface's invariant floor. Consumed by "
+        "`gzkit.content.tier_policy` when resolving which entries still bind, and by "
+        "corpus audits. It records which canon is *current*, not a relationship between "
+        "artifacts: the corpus is a per-surface content store, not an artifact graph node."
+    ),
     "brief_reconciled": (
         "Brief reconciliation summary record (ADR-0.0.37, OBPI-06). Consumed by "
         "`gz brief reconcile` operators and reconciliation audits; does not add or "

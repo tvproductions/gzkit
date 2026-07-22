@@ -792,6 +792,33 @@ def corpus_entry_appended_event(
     )
 
 
+def corpus_entry_retired_event(
+    surface: str,
+    retired_entry_id: str,
+    retraction_entry_id: str,
+    reason: str,
+) -> LedgerEvent:
+    """Create a corpus_entry_retired event (GHI #635).
+
+    Layer-2 witness for a ``gz content retire`` append. Distinct from
+    ``corpus_entry_appended`` because retirement mutates what canon *currently*
+    requires — the invariant floor shrinks — and that is the fact an auditor
+    needs to find, not merely that a row was added.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="corpus_entry_retired",
+        id=f"corpus-entry-retired-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surface": surface,
+            "retired_entry_id": retired_entry_id,
+            "retraction_entry_id": retraction_entry_id,
+            "reason": reason,
+        },
+    )
+
+
 def brief_reconciled_event(
     brief_id: str,
     has_drift: bool,

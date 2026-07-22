@@ -10,8 +10,15 @@ from gzkit.content.models import Corpus, CorpusEntry
 
 
 def invariant_entries(corpus: Corpus) -> list[CorpusEntry]:
-    """Return corpus entries whose tier == 'invariant'."""
-    return [e for e in corpus.entries if e.tier == "invariant"]
+    """Return corpus entries whose tier == 'invariant' and which are not retired.
+
+    A row named by a later entry's ``retires`` pointer has been superseded and no
+    longer binds the floor (GHI #635). Retirement only ever removes entries from
+    this set, so a rendition that satisfied the floor before a retirement still
+    satisfies it after — no recomposition is implied by retiring an entry.
+    """
+    retired = corpus.retired_ids()
+    return [e for e in corpus.entries if e.tier == "invariant" and e.id not in retired]
 
 
 def assert_invariant_verbatim(corpus: Corpus, rendered_text: str) -> None:

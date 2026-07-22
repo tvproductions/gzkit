@@ -747,8 +747,13 @@ def step_corpus_entry_full(context) -> None:  # type: ignore[no-untyped-def]
     context.corpus_entry = _corpus_entry(anchor="a1", witness="gz validate --foo")
 
 
-@then("the corpus entry model has exactly the ten addressed fields")
-def step_corpus_entry_ten_fields(context) -> None:  # type: ignore[no-untyped-def]
+@then("the corpus entry model carries exactly its declared fields")
+def step_corpus_entry_declared_fields(context) -> None:  # type: ignore[no-untyped-def]
+    """The ten ADR-0.0.37-18 fields plus ``retires`` (GHI #635 retirement pointer).
+
+    Set equality, not a count: the fence is against fields arriving by
+    inheritance, so admitting a deliberate addition is the correct update.
+    """
     from gzkit.content.models import CorpusEntry  # noqa: PLC0415
 
     assert set(CorpusEntry.model_fields) == {
@@ -762,6 +767,7 @@ def step_corpus_entry_ten_fields(context) -> None:  # type: ignore[no-untyped-de
         "text",
         "origin",
         "ts",
+        "retires",
     }
 
 
