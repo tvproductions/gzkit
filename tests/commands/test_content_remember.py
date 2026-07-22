@@ -14,6 +14,11 @@ from pathlib import Path
 
 from gzkit.cli.main import main
 from gzkit.content.models import Corpus
+from gzkit.content.rendition_store import (
+    RenditionProvenance,
+    save_fingerprint,
+    save_rendition,
+)
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
 
@@ -48,6 +53,25 @@ def _ledger_events() -> list[dict]:
         for line in ledger_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+
+
+def _seed_committed_rendition(consumer: str, *, corpus_fingerprint: str) -> None:
+    """Commit a rendition + provenance sidecar for AGENTS.md/<consumer> in the cwd."""
+    root = Path()
+    save_rendition(root, "AGENTS.md", consumer, _SURFACE.encode("utf-8"))
+    save_fingerprint(
+        root,
+        "AGENTS.md",
+        consumer,
+        RenditionProvenance(
+            corpus_fingerprint=corpus_fingerprint,
+            corpus_entry_count=0,
+            rendition_fingerprint=None,
+            committed_ts="2026-07-22T00:00:00+00:00",
+            attestor="g0",
+            attestation_text="seeded for test",
+        ),
+    )
 
 
 class TestContentRemember(unittest.TestCase):
@@ -157,6 +181,70 @@ class TestContentRemember(unittest.TestCase):
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertFalse((Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").exists())
+
+
+class TestContentRememberDriftWarning(unittest.TestCase):
+    """Capture must announce the rendition drift it causes (GHI #654 gap 1).
+
+    Behavior contract: appending to the corpus invalidates every committed rendition's
+    derivation proof, so the next `gz check` fails on Rendition freshness. `remember`
+    reported success and said nothing, making a silent red tree the normal outcome of
+    capturing one line of canon. The warning is advisory — it never changes the exit
+    code, because the append itself succeeded and IS the intended effect.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _remember(self, *extra: str) -> object:
+        return self._runner.invoke(
+            main,
+            [
+                "content",
+                "remember",
+                "AGENTS.md",
+                "--section",
+                "behavior-rules",
+                "--text",
+                "x",
+                *extra,
+            ],
+        )
+
+    def test_warns_naming_every_drifted_consumer(self) -> None:
+        """Each committed rendition whose provenance no longer matches the corpus is named."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
+            _seed_committed_rendition("codex", corpus_fingerprint="0" * 64)
+            result = self._remember()
+            # output-contract: the warning IS the deliverable — GHI #654 gap 1 is that
+            # remember produced no operator-visible signal at all.
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("claude", result.output)
+            self.assertIn("codex", result.output)
+            self.assertIn("gz content compose", result.output)
+
+    def test_invariant_tier_append_also_warns_about_the_floor(self) -> None:
+        """An invariant-tier entry additionally breaks floor coherence; the warning says so."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
+            result = self._remember("--tier", "invariant")
+            # output-contract: floor coherence is a distinct gate from freshness; an
+            # operator told only about freshness under-recovers.
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("floor", result.output.lower())
+
+    def test_silent_when_no_rendition_has_been_committed(self) -> None:
+        """No committed rendition means the append drifted nothing — no false alarm."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            result = self._remember()
+            # output-contract: a warning with no drifted rendition trains operators to
+            # ignore the warning, which is the failure this fix exists to prevent.
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertNotIn("gz content compose", result.output)
 
 
 if __name__ == "__main__":
