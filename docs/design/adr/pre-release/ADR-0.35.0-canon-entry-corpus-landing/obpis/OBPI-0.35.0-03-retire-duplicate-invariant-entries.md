@@ -21,6 +21,37 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the withdraw verb). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
 
+> **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22).**
+> ONE of this brief's eight retirements landed ahead of the chain as a direct fix:
+> commit `42ba6c25` retired the divergent-pair loser under GHI #635, using the
+> already-landed `gz content retire` verb (`852e8a25`) rather than the
+> `gz content withdraw` verb this brief's Prerequisites name. Measured
+> 2026-07-22 at HEAD `9393b750`:
+>
+> | Requirement | Target | Observed | State |
+> |-------------|--------|----------|-------|
+> | REQ-0.35.0-03-01 | 8 `corpus_entry_retired` events | 1 | **1/8 landed** |
+> | REQ-0.35.0-03-02 | operator ruling on the divergent pair recorded in this brief | Requirement 10 plus this note | **landed** |
+> | REQ-0.35.0-03-03 | 59 raw corpus rows | 52 | **open** |
+> | REQ-0.35.0-03-04 | no two live invariant entries byte-identical | 7 duplicate texts remain | **open (structural-fence)** — audited at ADR closeout |
+>
+> **The landed retirement is Requirement 10's target only** — the divergent pair,
+> `corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00` retired,
+> `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00`
+> retained, matching the ruling recorded there. Requirements 3-9 (the seven
+> byte-identical groups) are UNTOUCHED.
+>
+> **This brief is correctly `PENDING` and must not be completed.** Its
+> Prerequisites are not met: `gz content withdraw` does not exist
+> (`gz content` admits `retire` but not `withdraw`), so OBPI-0.35.0-02 has not
+> landed, and the tombstone fold of OBPI-0.35.0-01 is unproven here. Re-measure
+> per Requirement 2 before appending anything — the corpus has moved since this
+> brief was authored (51 rows at authoring, 52 now), so the enumerated ids must
+> be re-derived, not trusted.
+>
+> Note: as on OBPI-0.35.0-08, `gz brief reconcile` cannot see pre-landed REQ
+> satisfaction, so this note is authored rather than computed.
+
 ## Lane
 
 **Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
