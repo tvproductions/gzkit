@@ -30,6 +30,6 @@ Feature: gz justify complexity hints integration (ADR-0.0.30 / OBPI-0.0.30-05)
   @REQ-0.0.30-05-06
   Scenario: skill amendment artifact exists with bumped version and synced mirrors
     Given the canonical gz-justify skill amendment is in place
-    Then the gz-justify skill version is "6.1.0"
+    Then the gz-justify skill version is at least "6.1.0"
     And the gz-justify skill body contains "Authoring-time complexity hints"
     And the gz-justify vendor mirrors are byte-identical to the canonical

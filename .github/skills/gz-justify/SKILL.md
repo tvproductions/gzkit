@@ -5,10 +5,10 @@ description: Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. In
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: "2026-04-22"
+last_reviewed: "2026-07-21"
 gz_command: justify
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.1.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -166,7 +166,7 @@ appended to `.gzkit/insights/justify-failures.jsonl`. The failure never blocks
 the walkthrough.
 
 **Closed forward reference:** This integration closes the ADR-0.0.19 ↔ ADR-0.0.30
-cross-reference. Operators no longer need to run `gz justify` and `gz complexity-guide`
+cross-reference. Operators no longer need to run `gz justify` and `gz complexity guide`
 separately and stitch the outputs together — the hints surface inline within the
 pre-execution reasoning scaffold.
 

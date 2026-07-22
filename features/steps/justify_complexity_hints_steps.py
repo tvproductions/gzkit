@@ -159,11 +159,26 @@ def step_skill_amendment_in_place(context) -> None:  # type: ignore[no-untyped-d
     context._skill_frontmatter = frontmatter
 
 
-@then('the gz-justify skill version is "{version}"')
-def step_skill_version_is(context, version: str) -> None:  # type: ignore[no-untyped-def]
+@then('the gz-justify skill version is at least "{version}"')
+def step_skill_version_at_least(context, version: str) -> None:  # type: ignore[no-untyped-def]
+    """Assert the amendment baseline has not regressed.
+
+    The REQ requires the amendment to have landed with a *bumped* version, not
+    to sit at one exact string forever: pinning equality made every later edit
+    to the skill break this scenario (observed 2026-07-21, when a staleness
+    repair bumped 6.1.0 -> 6.1.1). Compare semver order so the assertion
+    tracks the requirement instead of a snapshot.
+    """
     metadata = context._skill_frontmatter.get("metadata", {})
     actual = metadata.get("skill-version")
-    assert actual == version, f"skill-version expected {version!r}, got {actual!r}"
+    assert actual is not None, "canonical gz-justify SKILL.md declares no metadata.skill-version"
+
+    def parse(value: str) -> tuple[int, ...]:
+        return tuple(int(part) for part in str(value).split("."))
+
+    assert parse(actual) >= parse(version), (
+        f"skill-version {actual!r} is below the amendment baseline {version!r}"
+    )
 
 
 @then('the gz-justify skill body contains "{token}"')

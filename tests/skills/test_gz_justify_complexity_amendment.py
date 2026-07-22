@@ -51,9 +51,14 @@ class TestGzJustifyComplexityAmendment(unittest.TestCase):
 
     @covers("REQ-0.0.30-05-05")
     def test_skill_version_bumped(self) -> None:
-        """skill-version must be "6.1.0" after the additive amendment.
+        """skill-version must be at or above the "6.1.0" amendment baseline.
 
-        Expected RED: SKILL.md currently has skill-version "6.0.1".
+        The REQ requires the amendment to have landed with a *bumped* version,
+        not to sit at one exact string forever. Pinning equality made every
+        later edit to the skill fail this test (observed 2026-07-21, when a
+        90-day staleness repair bumped 6.1.0 -> 6.1.1), so the assertion
+        tracked a snapshot rather than the requirement (`.gzkit/rules/tests.md`
+        § "Tests assert semantics, not strings").
         """
         text = _read_skill_text()
         fm = _parse_frontmatter(text)
@@ -61,10 +66,15 @@ class TestGzJustifyComplexityAmendment(unittest.TestCase):
         self.assertIsInstance(metadata, dict, "frontmatter must have a 'metadata' dict")
         assert isinstance(metadata, dict)
         skill_version = metadata.get("skill-version")
-        self.assertEqual(
-            skill_version,
-            "6.1.0",
-            f"skill-version must be '6.1.0' after amendment; got {skill_version!r}",
+        self.assertIsNotNone(skill_version, "frontmatter must declare metadata.skill-version")
+
+        def parse(value: str) -> tuple[int, ...]:
+            return tuple(int(part) for part in str(value).split("."))
+
+        self.assertGreaterEqual(
+            parse(skill_version),
+            parse("6.1.0"),
+            f"skill-version {skill_version!r} is below the amendment baseline '6.1.0'",
         )
 
     @covers("REQ-0.0.30-05-01")

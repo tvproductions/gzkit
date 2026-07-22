@@ -5,18 +5,18 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.4.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-22
+last_reviewed: 2026-07-21
 model: sonnet
 ---
 
-# gz-adr-evaluate (v6.0.0)
+# gz-adr-evaluate
 
 ## Purpose
 
@@ -182,7 +182,7 @@ review, work through all 10 structured challenges from the framework.
 
 Every challenge must be engaged. `N/A` is not acceptable.
 
-### Step 5: Determine Verdict
+### Step 6: Determine Verdict
 
 Apply the framework thresholds:
 
@@ -197,7 +197,7 @@ dimension must be revised.
 
 **Red-team threshold:** <= 2 failures = GO, 3-4 = CONDITIONAL GO, >= 5 = NO GO.
 
-### Step 6: Record Scorecard
+### Step 7: Record Scorecard
 
 Write `EVALUATION_SCORECARD.md` in the ADR directory using the summary template
 from the framework. This scorecard supersedes the CLI-generated pre-screen.
@@ -234,7 +234,7 @@ OBPI. The pre-execution walkthrough (`gz-justify` skill) surfaces the hidden
 ambiguity before promotion. Skipping this footer on a `< 3.0` ADR is the
 adjacent rationalization pattern the walkthrough exists to close.
 
-### Step 7: Gate Decision
+### Step 8: Gate Decision
 
 - **GO:** proceed to human proposal/defense review
 - **CONDITIONAL GO:** revise the ADR or OBPIs, then re-run evaluation
@@ -291,8 +291,6 @@ For adversarial review by a separate model:
 | Skill | Relationship |
 |-------|--------------|
 | `gz-adr-create` | Authoring workflow that should invoke evaluation before proposal |
-| `gz-adr-manager` | Compatibility alias that inherits `gz-adr-create` behavior |
-| `gz-adr-check` | Evidence/coverage checks; different concern |
 | `gz-adr-audit` | Post-completion audit; downstream phase |
 | `gz-adr-closeout-ceremony` | Closeout occurs after implementation, not authoring |
 
