@@ -64,7 +64,14 @@ def _warn_on_rendition_drift(root: Path, surface: str, tier: _Tier) -> None:
     intended effect; what the operator lacked was any signal that ``gz check`` would
     now fail on gates the capture command never mentioned (GHI #654).
     """
-    drifted = _drifted_consumers(root, surface)
+    # The append is already durable. Drift detection is best-effort reporting ON TOP of
+    # it, so no fault here may cost the operator their words or their exit code: a
+    # malformed sidecar makes `RenditionProvenance.model_validate_json` raise, and an
+    # unreadable corpus makes `load_corpus` raise. Capture must stay unblockable.
+    try:
+        drifted = _drifted_consumers(root, surface)
+    except (OSError, ValueError):
+        return
     if not drifted:
         return
 

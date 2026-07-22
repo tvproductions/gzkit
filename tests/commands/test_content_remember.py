@@ -236,6 +236,25 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertIn("floor", result.output.lower())
 
+    def test_malformed_sidecar_never_costs_the_append_or_the_exit_code(self) -> None:
+        """Drift detection is best-effort: a corrupt sidecar must not break capture.
+
+        The append is durable before the advisory is computed, so a fault in the
+        reporting path may cost the warning but never the operator's words.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
+            (Path(".gzkit") / "renditions" / "AGENTS.md" / "claude.corpus.json").write_text(
+                "{ not json at all", encoding="utf-8"
+            )
+            result = self._remember()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(corpus.entries), 1)
+
     def test_silent_when_no_rendition_has_been_committed(self) -> None:
         """No committed rendition means the append drifted nothing — no false alarm."""
         with self._runner.isolated_filesystem():
