@@ -40,10 +40,11 @@ def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[st
         f"Unresolved verb `gz {verb}` (brief reconcile, attestor {attestor})"
         for verb in result.verification_delta.unresolved_verbs
     ]
-    if result.req_count_delta.delta != 0:
+    if result.req_count_delta.measurable and result.req_count_delta.delta != 0:
         defects.append(
-            f"REQ-count drift: {result.req_count_delta.declared_reqs} declared vs "
-            f"{result.req_count_delta.acceptance_criteria_count} acceptance criteria "
+            "REQ identity drift: "
+            f"missing from Acceptance Criteria {result.req_count_delta.missing_reqs}, "
+            f"undeclared in frontmatter {result.req_count_delta.unexpected_reqs} "
             f"(brief reconcile, attestor {attestor})"
         )
     return allowlist_adds, defects

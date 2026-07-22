@@ -64,19 +64,43 @@ class VerificationDelta(BaseModel):
 
 
 class ReqCountDelta(BaseModel):
-    """Drift between declared REQs and acceptance-criteria checkboxes."""
+    """Drift between a brief's declared REQ ids and its acceptance-criteria REQ ids.
+
+    The dimension compares REQ *identity*, never line counts (GHI #664). A brief's
+    ``## Requirements (FAIL-CLOSED)`` section is prose fences — ``REQUIREMENT:`` /
+    ``NEVER:`` / ``ALWAYS:`` — and a fence is not a declared REQ, so counting fence
+    lines against checkboxes compares two different things and drifts by
+    construction. Identity is only available when the brief carries an independent
+    declaration of it: structured frontmatter ``reqs:``. When it does not, the
+    dimension reports ``measurable=False`` rather than fabricating a numeric proxy.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    declared_reqs: int = Field(
-        default=0, description="Count of REQUIREMENT: lines in the brief body"
+    measurable: bool = Field(
+        default=False,
+        description=(
+            "True when the brief declares REQ identity independently of its "
+            "Acceptance Criteria (structured frontmatter `reqs:`). When False, the "
+            "remaining fields are zero/empty: there is nothing to compare against, "
+            "which is distinct from 'compared and found equal'."
+        ),
     )
+    declared_reqs: int = Field(default=0, description="Count of REQ ids declared in frontmatter")
     acceptance_criteria_count: int = Field(
-        default=0, description="Count of `- [ ]` lines in Acceptance Criteria"
+        default=0, description="Count of distinct REQ ids tagged in Acceptance Criteria"
+    )
+    missing_reqs: list[str] = Field(
+        default_factory=list,
+        description="Declared REQ ids with no acceptance-criteria checkbox",
+    )
+    unexpected_reqs: list[str] = Field(
+        default_factory=list,
+        description="Acceptance-criteria REQ ids not declared in frontmatter",
     )
     delta: int = Field(
         default=0,
-        description="declared_reqs minus acceptance_criteria_count",
+        description="Total identity mismatches (len(missing_reqs) + len(unexpected_reqs))",
     )
 
 
@@ -116,7 +140,6 @@ class ReconcileResult(BaseModel):
 
 _GZ_VERB_RE = re.compile(r"gz\s+([a-z][a-z0-9-]*)")
 _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
-_REQ_LINE_RE = re.compile(r"(?:REQUIREMENT|NEVER|ALWAYS)\s*(?:\[\w+\])?\s*:")
 _REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[[ xX]\]")
 _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS\s*$", re.IGNORECASE)
@@ -150,7 +173,7 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
         brief_id = parsed.id
         allowlist = list(parsed.allowlist)
         verbs_to_check = _extract_verbs(" ".join(parsed.verification))
-        declared_reqs = len(parsed.reqs)
+        declared_req_ids: list[str] | None = list(parsed.reqs)
         req_ids = list(parsed.reqs)
         citations = list(parsed.citations)
     else:
@@ -159,7 +182,11 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
         verbs_to_check = _extract_verbs(
             _extract_section_text(parsed.raw_body, _VERIFICATION_HEADING_RE)
         )
-        declared_reqs = len(_REQ_LINE_RE.findall(parsed.raw_body))
+        # A legacy brief declares REQ identity nowhere: its Requirements section is
+        # prose fences carrying no REQ ids, and any id appearing there is an
+        # incidental citation, not a declaration (measured across the corpus under
+        # GHI #664). `None` marks the dimension unmeasurable for this brief.
+        declared_req_ids = None
         req_ids = _extract_req_ids(parsed.raw_body)
         citations = []
 
@@ -169,12 +196,7 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
     allowlist_delta = _compute_allowlist_delta(allowlist, req_ids, project_root, creates_paths)
     discovery_delta = _compute_discovery_delta(body, project_root, creates_paths)
     verification_delta = _compute_verb_delta(verbs_to_check)
-    acceptance_count = _count_acceptance_criteria(body)
-    req_count_delta = ReqCountDelta(
-        declared_reqs=declared_reqs,
-        acceptance_criteria_count=acceptance_count,
-        delta=declared_reqs - acceptance_count,
-    )
+    req_count_delta = _compute_req_count_delta(declared_req_ids, body)
     citation_delta = _compute_citation_delta(citations, project_root)
 
     # A terminal-status brief is a sealed historical record. Its Allowed Paths and
@@ -494,10 +516,39 @@ def _compute_verb_delta(verbs: list[str]) -> VerificationDelta:
     return VerificationDelta(unresolved_verbs=unresolved)
 
 
-def _count_acceptance_criteria(body: str) -> int:
-    """Count `- [ ]` checkbox lines in the Acceptance Criteria section."""
-    return sum(
-        1 for line in _section_lines(body, _ACCEPTANCE_HEADING_RE) if _CHECKBOX_RE.match(line)
+def _acceptance_req_ids(body: str) -> list[str]:
+    """Return REQ ids tagged on Acceptance Criteria checkbox lines, in order."""
+    seen: list[str] = []
+    for line in _section_lines(body, _ACCEPTANCE_HEADING_RE):
+        if not _CHECKBOX_RE.match(line):
+            continue
+        for req_id in _REQ_ID_RE.findall(line):
+            if req_id not in seen:
+                seen.append(req_id)
+    return seen
+
+
+def _compute_req_count_delta(declared_req_ids: list[str] | None, body: str) -> ReqCountDelta:
+    """Compare declared REQ identity against acceptance-criteria REQ identity.
+
+    ``declared_req_ids`` is ``None`` for briefs that declare REQ identity nowhere
+    (legacy shape). Those are reported unmeasurable rather than compared against a
+    fence-line count, which measures a different thing entirely (GHI #664).
+    """
+    if declared_req_ids is None:
+        return ReqCountDelta(measurable=False)
+
+    declared = set(declared_req_ids)
+    accepted = set(_acceptance_req_ids(body))
+    missing = sorted(declared - accepted)
+    unexpected = sorted(accepted - declared)
+    return ReqCountDelta(
+        measurable=True,
+        declared_reqs=len(declared),
+        acceptance_criteria_count=len(accepted),
+        missing_reqs=missing,
+        unexpected_reqs=unexpected,
+        delta=len(missing) + len(unexpected),
     )
 
 

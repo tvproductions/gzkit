@@ -490,6 +490,80 @@ class TestReqCountDimension(unittest.TestCase):
             result = reconcile_brief(brief, PROJECT_ROOT)
             self.assertEqual(result.req_count_delta.delta, 0)
 
+    @covers("REQ-0.0.37-05-04")
+    def test_legacy_brief_is_unmeasurable_not_drifted(self):
+        # GHI #664 round 2: a legacy brief declares REQ identity nowhere — its
+        # Requirements section carries prose fences with no REQ-IDs (635 of 668
+        # corpus briefs). Counting fence lines against checkboxes is a category
+        # error: a `NEVER:` fence is not a declared REQ. With no independent
+        # declaration to compare against, the dimension must report itself
+        # unmeasurable rather than fabricate a numeric proxy.
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-07-legacy-fences
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    status: Draft
+                    ---
+                    # Test Brief: Legacy Fences Outnumber REQs
+                    ## Requirements (FAIL-CLOSED)
+                    1. REQUIREMENT: positive requirement
+                    2. NEVER: scope fence that maps to no REQ
+                    3. NEVER: sibling-denial fence that maps to no REQ
+                    4. ALWAYS: process fence that maps to no REQ
+                    ## Acceptance Criteria
+                    - [ ] REQ-0.0.99-07-01: the only real criterion
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, PROJECT_ROOT)
+            self.assertFalse(result.req_count_delta.measurable)
+            self.assertEqual(result.req_count_delta.delta, 0)
+            self.assertEqual(result.req_count_delta.missing_reqs, [])
+            self.assertEqual(result.req_count_delta.unexpected_reqs, [])
+
+    @covers("REQ-0.0.37-05-04")
+    def test_structured_brief_reports_req_identity_not_line_counts(self):
+        # GHI #664 round 2: for a structured brief, frontmatter `reqs:` IS an
+        # independent declaration of REQ identity, so the dimension compares
+        # id SETS. Counts alone cannot distinguish "declared A, accepted B"
+        # from a correct 1:1 brief — identity can.
+        with tempfile.TemporaryDirectory() as tmp:
+            brief = Path(tmp) / "brief.md"
+            brief.write_text(
+                textwrap.dedent("""\
+                    ---
+                    id: OBPI-0.0.99-08-identity
+                    parent: ADR-0.0.37-constitutional-invariant-composition
+                    lane: Heavy
+                    status: Draft
+                    allowlist:
+                      - src/gzkit/governance/brief_reconcile.py
+                    reqs:
+                      - REQ-0.0.99-08-01
+                      - REQ-0.0.99-08-02
+                    verification:
+                      - uv run gz validate
+                    citations: []
+                    ---
+                    # Test Brief: REQ Identity
+                    ## Requirements (FAIL-CLOSED)
+                    1. REQUIREMENT: declared two, accepted two — but not the same two
+                    ## Acceptance Criteria
+                    - [ ] REQ-0.0.99-08-01: matches a declared REQ
+                    - [ ] REQ-0.0.99-08-99: was never declared
+                    """),
+                encoding="utf-8",
+            )
+            result = reconcile_brief(brief, PROJECT_ROOT)
+            self.assertTrue(result.req_count_delta.measurable)
+            # Counts are equal (2 vs 2) — only identity comparison catches this.
+            self.assertEqual(result.req_count_delta.missing_reqs, ["REQ-0.0.99-08-02"])
+            self.assertEqual(result.req_count_delta.unexpected_reqs, ["REQ-0.0.99-08-99"])
+            self.assertNotEqual(result.req_count_delta.delta, 0)
+
 
 class TestCitationDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-05")

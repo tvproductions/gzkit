@@ -127,15 +127,16 @@ def validate_brief_reconcile(root: Path) -> list[ValidationError]:
                     ),
                 )
             )
-        if result.req_count_delta.delta != 0:
+        if result.req_count_delta.measurable and result.req_count_delta.delta != 0:
             errors.append(
                 ValidationError(
                     type="brief_reconcile",
                     artifact=rel,
                     message=(
-                        f"REQ count drift — declared={result.req_count_delta.declared_reqs}, "
-                        f"acceptance_criteria={result.req_count_delta.acceptance_criteria_count}, "
-                        f"delta={result.req_count_delta.delta}"
+                        "REQ identity drift — declared but not accepted: "
+                        f"{result.req_count_delta.missing_reqs}; "
+                        "accepted but not declared: "
+                        f"{result.req_count_delta.unexpected_reqs}"
                     ),
                 )
             )
