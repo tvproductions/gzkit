@@ -70,7 +70,13 @@ def collect_campaign(repo_root: Path) -> dict | None:
         return None
     for path in sorted(gov_dir.glob("*-campaign-*.md")):
         try:
-            text = path.read_text(encoding="utf-8")
+            # errors="replace" rather than widening the guard: a mojibake
+            # campaign line still parses for Status:/checkboxes, whereas
+            # skipping the file loses the ACTIVE campaign entirely. Bare
+            # encoding="utf-8" raises UnicodeDecodeError -- a ValueError, so
+            # `except OSError` misses it and the boot hook dies (GHI #688,
+            # file-read side of the GHI #582 class).
+            text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
         if re.search(r"^Status:\s*\*\*ACTIVE", text, re.MULTILINE) is None:
@@ -173,7 +179,10 @@ def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
         for path in handoffs_dir.glob("*.md"):
             if not path.is_file():
                 continue
-            text = path.read_text(encoding="utf-8")
+            try:
+                text = path.read_text(encoding="utf-8", errors="replace")
+            except OSError:
+                continue
             if not _looks_like_handoff(text):
                 continue
             ts = parse_frontmatter_timestamp(text)
@@ -243,7 +252,7 @@ def collect_recent_events(ledger_path: Path, now: datetime) -> list[dict]:
         return []
     cutoff = now - timedelta(hours=24)
     out: list[dict] = []
-    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+    for line in ledger_path.read_text(encoding="utf-8", errors="replace").splitlines():
         line = line.strip()
         if not line:
             continue

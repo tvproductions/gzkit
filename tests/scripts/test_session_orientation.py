@@ -235,6 +235,28 @@ class TestCollectHandoff(unittest.TestCase):
             self.assertIn("real-handoff.md", result["path"])
             self.assertNotIn("AGENTS.md", result["path"])
 
+    def test_non_utf8_sibling_does_not_abort_handoff_scan(self):
+        """A single non-UTF-8 `.md` in the handoffs dir cannot abort the scan.
+
+        File-read side of the GHI #582 class (GHI #688): `UnicodeDecodeError`
+        is a `ValueError`, so it escapes `except OSError` and propagates out
+        of `collect_handoff`, crashing the SessionStart boot hook. The valid
+        handoff must still be surfaced.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            handoffs = Path(tmp) / ".gzkit" / "handoffs"
+            handoffs.mkdir(parents=True)
+            ts = (self.now - timedelta(hours=2)).isoformat()
+            (handoffs / "real-handoff.md").write_text(
+                self._handoff(ts, "Resume work"), encoding="utf-8"
+            )
+            # 0xE9 is 'é' in cp1252 and an illegal UTF-8 continuation byte.
+            (handoffs / "cp1252-note.md").write_bytes(b"# Caf\xe9 notes\n")
+            result = self.mod.collect_handoff(Path(tmp), self.now)
+            self.assertIsNotNone(result)
+            assert result is not None
+            self.assertIn("real-handoff.md", result["path"])
+
     @covers("REQ-0.0.65-04-01")
     def test_candidate_handoff_dirs_is_single_gzkit_location(self):
         """`_candidate_handoff_dirs()` scans ONLY `.gzkit/handoffs/` — the GHI #529
@@ -527,6 +549,25 @@ class TestCollectCampaign(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._repo_with_campaign(tmp, superseded)
             self.assertIsNone(self.mod.collect_campaign(root))
+
+    def test_non_utf8_sibling_does_not_abort_campaign_scan(self):
+        """A non-UTF-8 `*-campaign-*.md` sibling cannot abort the scan.
+
+        The site guards with `except OSError`, which does not catch
+        `UnicodeDecodeError` (a `ValueError`) — so a single undecodable
+        campaign file crashes the boot hook the docstring promises never to
+        crash (GHI #688). The ACTIVE campaign must still resolve.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE)
+            # Sorts before "build-to-1.0-..." so it is read first.
+            (root / "docs" / "governance" / "archived-campaign-2020-01-01.md").write_bytes(
+                b"Status: **SUPERSEDED 2020-06-01**\n# Caf\xe9 retrospective\n"
+            )
+            campaign = self.mod.collect_campaign(root)
+        self.assertIsNotNone(campaign)
+        assert campaign is not None
+        self.assertIn("build-to-1.0-campaign-2026-06-10.md", campaign["path"])
 
     def test_extracts_progress_and_topmost_unchecked_items(self):
         with tempfile.TemporaryDirectory() as tmp:
