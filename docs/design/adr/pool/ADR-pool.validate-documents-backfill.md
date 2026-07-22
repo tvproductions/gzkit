@@ -69,6 +69,18 @@ GHI #480 reopened 2026-05-24 with the regression evidence and the Cohort C
 discovery. The reopen does not invalidate this ADR's prior framing — it
 provides a sharper lens for the eventual promotion decision.
 
+**Update — 2026-07-22 (GHI #480 closed `superseded` into this ADR).**
+`uv run gz validate --documents` now exits 0 (3536 → 1825 → 1643 → 0). The
+`--documents`-scope *symptom* is fully resolved by the two narrow scope
+guards in `src/gzkit/validate_pkg/document.py` (kind-aware pool skip +
+lifecycle-aware Completed/Validated grandfather), not by backfill. Those
+guards shipped untested in OBPI-0.0.54-03; commit `53078405` pins both
+predicates with paired negative controls and a narrowness assertion
+(mutation-verified). The substantive Alt #2/#3/#4/#5 decision for Cohort A
+remains this ADR's promotion work, and Alt #5's pool-kind schema artifact
+remains the authoritative home for the fact that pool ADRs currently
+receive *zero* validation rather than pool-shape validation.
+
 ## Decision
 
 This ADR is **pool** — backlog awaiting promotion. The substantive decision (whether to backfill artifacts, adjust validator scope, or both) is reserved for the promotion ceremony when this ADR is lifted to `feature` lane. Promotion criteria below.
