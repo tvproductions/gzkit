@@ -1,12 +1,31 @@
 """Rendition floor-coherence gate (GHI #623 — corrective to ADR-0.0.37).
 
-The REAL content witness that repudiated OBPI-0.0.37-22 only simulated. The
-"freshness" gate it shipped compares ``corpus.st_mtime <= rendition.st_mtime``
-(timestamps), and ``--invariant-coherence`` diffs the rendition against its own
-committed twin — neither asserts that the committed rendition actually reflects
-canon. This gate closes that seam: every ``tier: invariant`` corpus entry MUST
-appear verbatim in the committed rendition for its surface. A rendition that
-drops an invariant entry is fail-closed outside the MX hangar.
+Every ``tier: invariant`` corpus entry MUST appear verbatim in the committed
+rendition for its surface. A rendition that drops an invariant entry is
+fail-closed outside the MX hangar. Authored because ``--invariant-coherence``
+diffs a rendition against its own committed twin, which never asserts that the
+rendition reflects canon at all.
+
+SIBLING GATE — read both before changing the corpus or its model (GHI #635).
+``--rendition-freshness`` guards the same seam and asks a DIFFERENT question,
+so a change can satisfy one and trip the other:
+
+    this gate   SEMANTIC  — "is every invariant text present in the rendition?"
+    freshness   IDENTITY  — "does this rendition provably derive from THIS corpus?"
+                            (SHA-256 over ``Corpus.dumps()``, the model
+                            serialization — so the corpus FIELD SET is part of
+                            the answer, not just the values)
+
+Consequence: relaxing the floor (retiring an entry) leaves this gate green
+while freshness fires, because canon changed. Adding an optional model field
+leaves this gate green while freshness fires for every surface, even with the
+.jsonl byte-identical on disk — the trap ``BASELINE_IDENTITY_FIELDS`` /
+``POST_BASELINE_IDENTITY_FIELDS`` in ``gzkit.content.models.corpus`` now close.
+
+(Prior text here described freshness as comparing ``corpus.st_mtime <=
+rendition.st_mtime``. That mtime tautology was repudiated 2026-06-16 and
+replaced by the content-fingerprint comparison above; the description outlived
+the behavior it described and read as "the sibling is inert.")
 
 Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): advisory
 inside the hangar (marker present), fail-closed at full strength outside.

@@ -28,6 +28,48 @@ from .agent_contract import AgentContract
 _Tier = Literal["invariant", "compressible"]
 _Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
 
+# -- Corpus derivation identity (GHI #635) -----------------------------------
+#
+# `rendition_store.corpus_fingerprint` hashes `Corpus.dumps()`, so that string
+# IS the corpus derivation identity: the committed renditions' provenance is
+# proven against it, and any change red-flags every surface and demands a
+# Gate-5 recompose (`gz content compose` + `gz content commit --attestor ...`).
+#
+# That makes the *field set* part of the identity, not just the values. Adding
+# `retires` alone changed every surface's fingerprint while the .jsonl on disk
+# stayed byte-identical, because every row began emitting `"retires":null`.
+# A semantically empty schema change should never cost an operator attestation.
+#
+# The two tuples below classify every field explicitly, so the next field
+# addition is a decision rather than a silent trap. `gz validate` has no scope
+# for this; the fence is `tests/content/test_corpus_model.py::
+# TestDerivationIdentity::test_every_field_is_classified`, which fails closed
+# when a field appears in neither tuple.
+
+#: Fields fixed at the fingerprint baseline (digest `a862c327d6d9`). These are
+#: always serialized, including when they hold `None` (`anchor`, `witness`
+#: predate the identity rule and are emitted as `null`). NEVER reorder or
+#: remove: doing so re-fingerprints every committed rendition.
+BASELINE_IDENTITY_FIELDS: tuple[str, ...] = (
+    "id",
+    "surface",
+    "section",
+    "anchor",
+    "tier",
+    "classification",
+    "witness",
+    "text",
+    "origin",
+    "ts",
+)
+
+#: Fields added after the baseline. Omitted from the identity serialization
+#: while they hold their default, so a row that predates the field fingerprints
+#: exactly as it did before the field existed. A row that USES the field does
+#: perturb the digest — that is real canon drift, and the freshness gate should
+#: fire on it. New fields belong here, not in BASELINE_IDENTITY_FIELDS.
+POST_BASELINE_IDENTITY_FIELDS: tuple[str, ...] = ("retires",)
+
 
 class CorpusEntry(BaseModel):
     """A single addressed, provenanced corpus entry — one append-only source-of-truth row.
@@ -58,6 +100,21 @@ class CorpusEntry(BaseModel):
     retires: str | None = None
 
 
+def _inert_fields(entry: CorpusEntry) -> set[str]:
+    """Return the post-baseline fields *entry* leaves at their default.
+
+    These carry no information for this row, so they are excluded from the
+    identity serialization — a row that predates a field fingerprints exactly
+    as it did before the field existed (GHI #635).
+    """
+    defaults = type(entry).model_fields
+    return {
+        name
+        for name in POST_BASELINE_IDENTITY_FIELDS
+        if getattr(entry, name) == defaults[name].default
+    }
+
+
 class Corpus(BaseModel):
     """Append-only aggregate of :class:`CorpusEntry` rows. The ONLY mutation is ``append``."""
 
@@ -80,19 +137,16 @@ class Corpus(BaseModel):
     def dumps(self) -> str:
         """Serialize to JSONL — one ``CorpusEntry`` JSON object per line.
 
-        A ``retires`` of ``None`` is omitted rather than emitted as ``null``
-        (GHI #635). This serialization IS the corpus derivation identity —
-        ``rendition_store.corpus_fingerprint`` hashes exactly this string — so
-        emitting a key that carries no information would have changed every
-        surface's fingerprint the moment the field was added, invalidating the
-        provenance of every committed rendition and demanding a Gate-5
-        recompose for a no-op schema change. Rows that genuinely retire
-        something still perturb the digest, which is the drift the freshness
-        gate exists to catch.
+        This string IS the corpus derivation identity (see the module-level
+        ``BASELINE_IDENTITY_FIELDS`` / ``POST_BASELINE_IDENTITY_FIELDS`` note):
+        a post-baseline field holding its default is omitted, so adding a field
+        cannot re-fingerprint rows that predate it and cost an operator a
+        Gate-5 recompose for a semantically empty change. A row that actually
+        uses the field is serialized with it — real canon drift, which the
+        freshness gate should catch.
         """
         return "\n".join(
-            entry.model_dump_json(exclude={"retires"} if entry.retires is None else set())
-            for entry in self.entries
+            entry.model_dump_json(exclude=_inert_fields(entry)) for entry in self.entries
         )
 
     @classmethod

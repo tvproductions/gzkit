@@ -8,6 +8,24 @@ a corpus fingerprint frozen in the provenance sidecar at commit time
 replaces the prior mtime tautology (repudiated 2026-06-16: "compares st_mtime
 not content (a zero-byte content-restore flips it red)").
 
+Because the fingerprint is taken over ``Corpus.dumps()`` — the canonical model
+serialization, not the file bytes, for cross-platform CRLF/LF stability — the
+corpus FIELD SET is part of the identity, not merely the values. Adding an
+optional field to ``CorpusEntry`` therefore re-fingerprints every surface even
+when the .jsonl is byte-identical on disk. ``BASELINE_IDENTITY_FIELDS`` /
+``POST_BASELINE_IDENTITY_FIELDS`` in ``gzkit.content.models.corpus`` classify
+each field so additive evolution stays inert here; a field left unclassified
+fails closed in that module's fence rather than silently demanding a Gate-5
+recompose (GHI #635).
+
+SIBLING GATE — read both before changing the corpus or its model.
+``--rendition-floor-coherence`` guards the same seam and asks a DIFFERENT
+question: it is SEMANTIC ("is every invariant text present in the rendition?")
+where this gate is IDENTITY ("does this rendition provably derive from THIS
+corpus?"). A change can satisfy one and trip the other — retiring a corpus
+entry relaxes the floor (that gate stays green) while changing what canon
+requires (this gate fires, correctly).
+
 Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): advisory
 inside the hangar (marker present), fail-closed at full strength outside.
 

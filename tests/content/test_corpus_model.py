@@ -15,6 +15,10 @@ import jsonschema
 from pydantic import ValidationError
 
 from gzkit.content.models import AgentContract, Corpus, CorpusEntry, Pillar
+from gzkit.content.models.corpus import (
+    BASELINE_IDENTITY_FIELDS,
+    POST_BASELINE_IDENTITY_FIELDS,
+)
 from gzkit.traceability import covers
 
 _SCHEMA_PATH = (
@@ -80,28 +84,6 @@ class TestCorpusEntryModel(unittest.TestCase):
                 "2026-06-05T00:00:00Z",
             ),
         )
-
-    def test_none_retires_is_omitted_so_the_derivation_identity_is_stable(self) -> None:
-        """A no-op ``retires`` must not appear in ``dumps()`` (GHI #635).
-
-        ``rendition_store.corpus_fingerprint`` hashes ``Corpus.dumps()``, so that
-        string IS the corpus derivation identity. Emitting ``"retires":null`` on
-        rows that retire nothing would change every surface's fingerprint the
-        moment the field was added — invalidating the provenance of every
-        committed rendition and demanding a Gate-5 recompose for a schema change
-        that carries no information. This is what makes additive evolution of
-        CorpusEntry possible at all.
-        """
-        self.assertNotIn("retires", Corpus(entries=(_entry(),)).dumps())
-
-    def test_a_real_retirement_does_perturb_the_derivation_identity(self) -> None:
-        """The converse: a row that genuinely retires something IS visible.
-
-        Canon changed, so the freshness gate should fire — that is the drift it
-        exists to catch, and the exemption above must not swallow it.
-        """
-        retraction = _entry(id="c2", retires="c1")
-        self.assertIn("retires", Corpus(entries=(retraction,)).dumps())
 
     @covers("REQ-0.0.37-18-01")
     def test_model_field_set_is_exactly_the_declared_fields(self) -> None:
@@ -251,6 +233,83 @@ class TestCorpusEntrySchemaMirror(unittest.TestCase):
             set(self._schema()["properties"]),
             set(CorpusEntry.model_fields),
         )
+
+
+class TestDerivationIdentity(unittest.TestCase):
+    """The corpus derivation identity must survive additive schema evolution (GHI #635).
+
+    ``rendition_store.corpus_fingerprint`` hashes ``Corpus.dumps()``, so that
+    string IS the identity the committed renditions' provenance is proven
+    against. Adding ``retires`` alone re-fingerprinted every surface while the
+    .jsonl on disk stayed byte-identical, because every row began emitting
+    ``"retires":null`` — costing a Gate-5 recompose for a semantically empty
+    change. These tests pin the rule that makes additive evolution possible,
+    and the fence that stops the next field from re-opening the trap silently.
+    """
+
+    def test_every_field_is_classified(self) -> None:
+        """Adding a field to CorpusEntry must be a decision, not a silent re-fingerprint.
+
+        This is the fence. A new field that is in neither tuple fails here, which
+        is the prompt to choose: POST_BASELINE (inert at default, the safe
+        default for anything additive) or BASELINE (identity-bearing always —
+        which re-fingerprints every committed rendition and needs an operator
+        recompose, so it is almost never right after the baseline).
+        """
+        classified = set(BASELINE_IDENTITY_FIELDS) | set(POST_BASELINE_IDENTITY_FIELDS)
+        self.assertEqual(
+            set(CorpusEntry.model_fields),
+            classified,
+            "unclassified CorpusEntry field(s): "
+            f"{sorted(set(CorpusEntry.model_fields) - classified)}. Add to "
+            "POST_BASELINE_IDENTITY_FIELDS (inert while default) unless the field "
+            "genuinely belongs to the derivation identity for every row.",
+        )
+
+    def test_baseline_field_order_is_frozen(self) -> None:
+        """Reordering baseline fields would re-fingerprint every committed rendition.
+
+        The digest is over a JSON serialization whose key order follows field
+        declaration order, so this tuple is a wire format, not a preference.
+        """
+        self.assertEqual(
+            BASELINE_IDENTITY_FIELDS,
+            (
+                "id",
+                "surface",
+                "section",
+                "anchor",
+                "tier",
+                "classification",
+                "witness",
+                "text",
+                "origin",
+                "ts",
+            ),
+        )
+
+    def test_post_baseline_field_at_default_is_inert(self) -> None:
+        """A row that predates a post-baseline field serializes as if it never existed."""
+        self.assertNotIn("retires", Corpus(entries=(_entry(),)).dumps())
+
+    def test_post_baseline_field_in_use_is_identity_bearing(self) -> None:
+        """The converse — the inertness rule must not swallow real canon drift.
+
+        A row that actually retires something changed what canon requires, so it
+        SHOULD perturb the digest and fire the freshness gate.
+        """
+        self.assertIn("retires", Corpus(entries=(_entry(id="c2", retires="c1"),)).dumps())
+
+    def test_baseline_optional_fields_still_serialize_when_none(self) -> None:
+        """`anchor`/`witness` predate the rule and are emitted as null.
+
+        They are baseline-identity fields, so the inertness rule must NOT reach
+        them — doing so would re-fingerprint every existing row, the exact
+        failure this whole mechanism exists to prevent.
+        """
+        dumped = Corpus(entries=(_entry(),)).dumps()
+        self.assertIn('"anchor":null', dumped)
+        self.assertIn('"witness":null', dumped)
 
 
 if __name__ == "__main__":
