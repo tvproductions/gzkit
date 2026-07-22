@@ -296,6 +296,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "adr_status_fresh", "explicit", True, lambda r, _f: _ta().audit_adr_status_fresh(r)
     ),
     _ScopeEntry(
+        "obpi_lifecycle_coherence",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_obpi_lifecycle_coherence(r),
+    ),
+    _ScopeEntry(
         "adversarial_validation",
         "explicit",
         True,
@@ -1345,6 +1351,7 @@ def validate(
     check_instructions_files_budget: bool = False,
     check_agents_md_map_conformance: bool = False,
     check_adr_status_fresh: bool = False,
+    check_obpi_lifecycle_coherence: bool = False,
     check_adversarial_validation: bool = False,
     check_red_parity: bool = False,
     check_session_green_gate: bool = False,
@@ -1452,6 +1459,7 @@ def validate(
         "instructions_files_budget": check_instructions_files_budget,
         "agents_md_map_conformance": check_agents_md_map_conformance,
         "adr_status_fresh": check_adr_status_fresh,
+        "obpi_lifecycle_coherence": check_obpi_lifecycle_coherence,
         "adversarial_validation": check_adversarial_validation,
         "red_parity": check_red_parity,
         "session_green_gate": check_session_green_gate,

@@ -682,6 +682,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="adr-status.md must agree with on-disk ADR canon (GHI #322)",
     )
     p_validate.add_argument(
+        "--obpi-lifecycle-coherence",
+        dest="check_obpi_lifecycle_coherence",
+        action="store_true",
+        help="every obpi_created must be terminal, parked, or parented (GHI #584)",
+    )
+    p_validate.add_argument(
         "--adversarial-validation",
         dest="check_adversarial_validation",
         action="store_true",
@@ -1045,6 +1051,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_instructions_files_budget=a.check_instructions_files_budget,
             check_agents_md_map_conformance=a.check_agents_md_map_conformance,
             check_adr_status_fresh=a.check_adr_status_fresh,
+            check_obpi_lifecycle_coherence=a.check_obpi_lifecycle_coherence,
             check_adversarial_validation=a.check_adversarial_validation,
             check_red_parity=a.check_red_parity,
             check_session_green_gate=a.check_session_green_gate,

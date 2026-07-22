@@ -322,6 +322,70 @@ def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     return fields
 
 
+_BARE_ADR_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)-.+$")
+
+
+def _live_adr_ids(project_root: Path) -> set[str]:
+    """Return every ADR id present on disk (any bucket), in both id forms.
+
+    An ``obpi_created`` record may name its parent in the bare-semver form
+    (``ADR-0.0.43``) while the ADR is on disk under its slugged id
+    (``ADR-0.0.43-ddd-domain-cascade``). Both forms are registered so a
+    resolvable parent is never reported as an orphan — a gate that false-fires
+    is worse than no gate, because it teaches operators to skip the finding.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return set()
+    live: set[str] = set()
+    for adr_file in adr_root.rglob("ADR-*.md"):
+        meta = _parse_adr_frontmatter(adr_file) or {}
+        adr_id = str(meta.get("id") or adr_file.stem)
+        live.add(adr_id)
+        bare = _BARE_ADR_ID_RE.match(adr_id)
+        if bare:
+            live.add(bare.group(1))
+    return live
+
+
+def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
+    """Flag ``obpi_created`` records with no disposition and no resolvable parent.
+
+    An ``obpi_created`` event asserts a brief artifact exists. When its parent
+    ADR is renamed away (pool demotion) without a corresponding child event, the
+    assertion survives with nothing behind it — Layer-2 claiming what Layer-1
+    cannot show, the incoherence ``docs/governance/state-doctrine.md`` forbids
+    and Architectural Boundary 6 names.
+
+    GHI #584: 237 such records accumulated from the GHI #520 Day-0 demotion
+    because the demote path transacted over the ADR node but not its children.
+    Demotion now parks children in the same ceremony; this audit fail-closes so
+    the class cannot recur silently on the next bulk transition.
+    """
+    from gzkit.ledger import Ledger  # noqa: PLC0415
+    from gzkit.obpi_lifecycle import orphaned_obpi_ids  # noqa: PLC0415
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger_path.exists():
+        return []
+    events = [event.model_dump() for event in Ledger(ledger_path).read_all()]
+    orphans = orphaned_obpi_ids(events, _live_adr_ids(project_root))
+    return [
+        ValidationError(
+            type="obpi_lifecycle_coherence",
+            artifact=f".gzkit/ledger.jsonl::{obpi_id}",
+            message=(
+                "obpi_created asserts a brief that has no disposition and whose parent "
+                "ADR no longer resolves. Forbidden by docs/governance/state-doctrine.md "
+                "(Layer-2 facts must trace to Layer-1) and Architectural Boundary 6. "
+                "Recovery: `uv run python -m gzkit.governance.obpi_park_backfill "
+                "--dry-run` to review, then `--apply --attestor <name>` to park it."
+            ),
+        )
+        for obpi_id in orphans
+    ]
+
+
 def audit_adr_status_fresh(project_root: Path) -> list[ValidationError]:
     """Flag drift between on-disk ADR canon and ``adr-status.md``.
 

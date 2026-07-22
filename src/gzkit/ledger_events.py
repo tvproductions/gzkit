@@ -72,6 +72,42 @@ def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str =
     )
 
 
+def obpi_parked_event(
+    obpi_id: str,
+    parent: str,
+    parked_to: str,
+    reason: str = "pool_demotion",
+) -> LedgerEvent:
+    """Create an OBPI parked event (GHI #584).
+
+    Park is the reversible counterpart to withdraw. ``parked_to`` names the pool
+    id the parent ADR became, so a parked OBPI's lineage still resolves after the
+    rename — the property the GHI #520 demotion destroyed by emitting no child
+    event at all.
+    """
+    return LedgerEvent(
+        event="obpi_parked",
+        id=obpi_id,
+        parent=parent,
+        extra={"parked_to": parked_to, "reason": reason},
+    )
+
+
+def obpi_unparked_event(
+    obpi_id: str,
+    parent: str,
+    unparked_from: str,
+    reason: str = "pool_promotion",
+) -> LedgerEvent:
+    """Create an OBPI unparked event — release on parent re-promotion (GHI #584)."""
+    return LedgerEvent(
+        event="obpi_unparked",
+        id=obpi_id,
+        parent=parent,
+        extra={"unparked_from": unparked_from, "reason": reason},
+    )
+
+
 def obpi_completion_repudiated_event(
     obpi_id: str,
     parent: str,

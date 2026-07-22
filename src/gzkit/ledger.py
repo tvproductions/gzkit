@@ -736,6 +736,29 @@ class Ledger:
         graph[canonical_id]["withdrawn_reason"] = event.extra.get("reason")
 
     @staticmethod
+    def _apply_obpi_parked_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        """Set/clear the reversible ``parked`` flag (GHI #584).
+
+        Unlike ``withdrawn``, park is two-way: ``obpi_unparked`` clears it when
+        the parent ADR is re-promoted, so the graph reflects the net of the
+        append-only sequence rather than a one-way latch.
+        """
+        if event.event not in {"obpi_parked", "obpi_unparked"} or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "obpi":
+            return
+        if event.event == "obpi_parked":
+            graph[canonical_id]["parked"] = True
+            graph[canonical_id]["parked_to"] = event.extra.get("parked_to")
+        else:
+            graph[canonical_id]["parked"] = False
+            graph[canonical_id]["parked_to"] = None
+
+    @staticmethod
     def _apply_obpi_superseded_metadata(
         graph: dict[str, dict[str, Any]],
         canonical_id: str,
@@ -777,6 +800,7 @@ class Ledger:
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
         cls._apply_pipeline_launched_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
+        cls._apply_obpi_parked_metadata(graph, canonical_id, event)
         cls._apply_obpi_superseded_metadata(graph, canonical_id, event)
         cls._apply_obpi_completion_repudiated_metadata(graph, canonical_id, event)
 

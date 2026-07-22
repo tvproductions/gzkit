@@ -86,6 +86,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "instructions_files_budget",
         "agents_md_map_conformance",
         "adr_status_fresh",
+        "obpi_lifecycle_coherence",  # GHI #584 — orphaned obpi_created census
         "adversarial_validation",  # GHI #676 — Step-4b verdict capture
         "red_parity",  # GHI #642 — BEHAVIOR-REQ falsifiability witness
         "session_green_gate",

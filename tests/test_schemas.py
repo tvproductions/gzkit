@@ -50,8 +50,10 @@ from gzkit.events import (
     ObpiLockClaimedEvent,
     ObpiLockReleasedEvent,
     ObpiLockTtlWarningEvent,
+    ObpiParkedEvent,
     ObpiReceiptEmittedEvent,
     ObpiSupersededEvent,
+    ObpiUnparkedEvent,
     ObpiWithdrawnEvent,
     PatchReleaseEvent,
     PipelineLaunchedEvent,
@@ -313,6 +315,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "red_receipt_emitted": RedReceiptEmittedEvent,
     # Operator ruling lifting the handoff resume gate (GHI #574)
     "handoff_resume_authorized": HandoffResumeAuthorizedEvent,
+    # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
+    "obpi_parked": ObpiParkedEvent,
+    "obpi_unparked": ObpiUnparkedEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

@@ -30,7 +30,8 @@ from gzkit.commands.common import (
     resolve_adr_file,
 )
 from gzkit.ledger import Ledger, parse_frontmatter_value
-from gzkit.ledger_events import artifact_renamed_event
+from gzkit.ledger_events import artifact_renamed_event, obpi_parked_event
+from gzkit.obpi_lifecycle import parkable_children
 from gzkit.sync import parse_artifact_metadata
 
 _DEMOTABLE_KINDS = {"feature", "foundation"}
@@ -190,6 +191,7 @@ def _build_demote_plan(
     note: str | None,
     operator: str | None,
     on_collision: str = "fail",
+    ledger: Ledger | None = None,
 ) -> dict[str, Any]:
     """Compute every action and target path before any write."""
     if on_collision not in _ON_COLLISION_CHOICES:
@@ -222,6 +224,13 @@ def _build_demote_plan(
     pool_content = _set_frontmatter_value(pool_content, "id", new_id)
     pool_content = _set_frontmatter_value(pool_content, "status", "Pool")
     children = _find_dependent_children(project_root, config, source_id)
+    # Demoting a parent must transact over its OBPI children too: renaming the
+    # ADR without disposing of them is what stranded 237 records at GHI #520.
+    parked_obpis = (
+        parkable_children([event.model_dump() for event in ledger.read_all()], source_id)
+        if ledger is not None
+        else []
+    )
     extras: dict[str, Any] = {
         "prior_kind": metadata.get("kind", ""),
         "prior_semver": metadata.get("semver", ""),
@@ -244,6 +253,7 @@ def _build_demote_plan(
         "pool_content": pool_content,
         "extras": extras,
         "children": children,
+        "parked_obpis": parked_obpis,
         "collision_keep_pool": collision_keep_pool,
         "reversed_pool_content": reversed_pool_content,
     }
@@ -262,6 +272,7 @@ def _demote_result_payload(
         "target_file": target_file.relative_to(project_root).as_posix(),
         "extras": plan["extras"],
         "children": plan["children"],
+        "parked_obpis": plan.get("parked_obpis", []),
         "dry_run": dry_run,
     }
 
@@ -297,6 +308,10 @@ def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
         f"{plan['source_id']} -> {plan['new_id']} "
         f"(reason: pool_demotion, ghi: {extras['ghi']})"
     )
+    parked_obpis = cast(list[str], plan.get("parked_obpis", []))
+    if parked_obpis:
+        noun = "OBPI" if len(parked_obpis) == 1 else "OBPIs"
+        console.print(f"  Would park {len(parked_obpis)} child {noun}: {', '.join(parked_obpis)}")
     children = cast(list[str], plan["children"])
     if children:
         console.print(f"  [red]Dependent children:[/red] {', '.join(children)}")
@@ -327,6 +342,16 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any]) -> None:
     for key, value in cast(dict[str, Any], plan["extras"]).items():
         event.extra[key] = value
     ledger.append(event)
+    new_id = cast(str, plan["new_id"])
+    for obpi_id in cast(list[str], plan.get("parked_obpis", [])):
+        ledger.append(
+            obpi_parked_event(
+                obpi_id,
+                parent=cast(str, plan["source_id"]),
+                parked_to=new_id,
+                reason="pool_demotion",
+            )
+        )
 
 
 def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
@@ -345,6 +370,10 @@ def _print_demote_applied(project_root: Path, plan: dict[str, Any]) -> None:
         console.print(f"  Removed dir: {source_dir.relative_to(project_root).as_posix()}")
     extras = cast(dict[str, Any], plan["extras"])
     console.print(f"  Ledger event: artifact_renamed (reason=pool_demotion, ghi={extras['ghi']})")
+    parked_obpis = cast(list[str], plan.get("parked_obpis", []))
+    if parked_obpis:
+        noun = "OBPI" if len(parked_obpis) == 1 else "OBPIs"
+        console.print(f"  Parked {len(parked_obpis)} child {noun} (reversible on re-promotion)")
 
 
 def adr_demote_cmd(
@@ -369,6 +398,7 @@ def adr_demote_cmd(
         note=note,
         operator=operator,
         on_collision=on_collision,
+        ledger=ledger,
     )
     children = cast(list[str], plan["children"])
     if children and not force:

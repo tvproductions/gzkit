@@ -36,6 +36,8 @@ from gzkit.ledger import (
     artifact_renamed_event,
     obpi_created_event,
 )
+from gzkit.ledger_events import obpi_unparked_event
+from gzkit.obpi_lifecycle import parked_at
 
 # REQ-0.0.17-03-02 / -03 — kind/semver binding regex.
 # Duplicated from gzkit.commands.plan (denied path); follow-up GHI to extract
@@ -273,6 +275,20 @@ def _apply_adr_promotion(ledger: Ledger, promotion_plan: dict[str, Any]) -> None
             obpi_created_event(
                 cast(str, plan["obpi_id"]),
                 cast(str, promotion_plan["target_adr_id"]),
+            )
+        )
+    # Re-promotion releases whatever the inverse demotion parked (GHI #584):
+    # park is reversible by construction, which is why it is not withdraw.
+    pool_adr_id = cast(str, promotion_plan["pool_adr_id"])
+    for obpi_id, origin_parent in parked_at(
+        [event.model_dump() for event in ledger.read_all()], pool_adr_id
+    ):
+        ledger.append(
+            obpi_unparked_event(
+                obpi_id,
+                parent=origin_parent,
+                unparked_from=pool_adr_id,
+                reason="pool_promotion",
             )
         )
 

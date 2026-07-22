@@ -1624,6 +1624,44 @@
           "min_length": 1
         }
       }
+    },
+    "obpi_parked": {
+      "required": [
+        "parked_to",
+        "reason"
+      ],
+      "properties": {
+        "parked_to": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "backfill": {
+          "type": "string"
+        },
+        "attestor": {
+          "type": "string"
+        }
+      }
+    },
+    "obpi_unparked": {
+      "required": [
+        "unparked_from",
+        "reason"
+      ],
+      "properties": {
+        "unparked_from": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

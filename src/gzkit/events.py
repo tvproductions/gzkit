@@ -276,6 +276,34 @@ class ObpiWithdrawnEvent(_EventBase):
     attestor: str = ""
 
 
+class ObpiParkedEvent(_EventBase):
+    """obpi_parked event — reversible retirement of an OBPI whose parent left active status.
+
+    Distinct from ``obpi_withdrawn`` (permanent, one-way, not re-completable) and
+    from ``obpi_completion_repudiated`` (reverses a Gate-5). A parked OBPI is its
+    parent's decomposition, still valid at authoring time, held against a parent
+    that moved to pool — it becomes live again when the parent is re-promoted.
+
+    Authored under GHI #584: the GHI #520 Day-0 demotion renamed 28 ADRs without
+    transacting over their children, stranding 237 ``obpi_created`` records with
+    no terminal event and no resolvable parent.
+    """
+
+    event: Literal["obpi_parked"]
+    parked_to: str = Field(..., min_length=1, description="Pool id the parent ADR became")
+    reason: str = Field(..., min_length=1, description="Transition that caused the park")
+    backfill: str | None = Field(default=None, description="GHI tag when parked retroactively")
+    attestor: str | None = Field(default=None, description="Human witness for a bulk backfill")
+
+
+class ObpiUnparkedEvent(_EventBase):
+    """obpi_unparked event — a parked OBPI released when its parent is re-promoted (GHI #584)."""
+
+    event: Literal["obpi_unparked"]
+    unparked_from: str = Field(..., min_length=1, description="Pool id the parent promoted from")
+    reason: str = Field(..., min_length=1, description="Transition that released the park")
+
+
 class ObpiSupersededEvent(_EventBase):
     """obpi_superseded event — one OBPI superseded by another (OBPI-0.31.0-02).
 
@@ -798,6 +826,8 @@ TypedLedgerEvent = Annotated[
     | ObpiLockReleasedEvent
     | ObpiLockTtlWarningEvent
     | ObpiWithdrawnEvent
+    | ObpiParkedEvent
+    | ObpiUnparkedEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
     | SecurityFloorOverriddenEvent

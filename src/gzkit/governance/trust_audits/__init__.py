@@ -140,6 +140,7 @@ from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
 from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_status_fresh,
     audit_adr_taxonomy,
+    audit_obpi_lifecycle_coherence,
     audit_pool_adr_isolation,
 )
 from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manifest
@@ -167,6 +168,7 @@ __all__ = [
     "AttestationReceiptValidationResult",
     "audit_absorption_duplicates",
     "audit_adr_status_fresh",
+    "audit_obpi_lifecycle_coherence",
     "audit_adr_taxonomy",
     "audit_adversarial_validation",
     "audit_advisory_scorecard",
