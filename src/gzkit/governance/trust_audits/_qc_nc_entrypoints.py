@@ -215,6 +215,14 @@ def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     return audit_adr_status_fresh(root)
 
 
+def _ep_obpi_lifecycle_coherence(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+        audit_obpi_lifecycle_coherence,
+    )
+
+    return audit_obpi_lifecycle_coherence(root)
+
+
 def _ep_adversarial_validation(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.adversarial_validation import (  # noqa: PLC0415
         audit_adversarial_validation,

@@ -363,6 +363,29 @@ def _build_unscoped_rules() -> Path:
     return root
 
 
+def _build_obpi_lifecycle_coherence() -> Path:
+    """Seed one undisposed OBPI whose parent does not resolve and whose brief is absent.
+
+    Proves the census can fail — a gate that cannot go red on a known-bad tree
+    is green-by-emptiness, not evidence (GHI #584).
+    """
+    root = _mkroot("obpi-lifecycle-coherence")
+    _write(
+        root / ".gzkit" / "ledger.jsonl",
+        json.dumps(
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "obpi_created",
+                "id": "OBPI-9.9.9-01-phantom",
+                "ts": "2026-01-01T00:00:00+00:00",
+                "parent": "ADR-9.9.9-vanished",
+            }
+        )
+        + "\n",
+    )
+    return root
+
+
 def _build_adr_status_freshness() -> Path:
     root = _mkroot("adr-status")
     _write(root / "docs" / "governance" / "GovZero" / "adr-status.md", "stale\n")
@@ -818,6 +841,11 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
+    (
+        "obpi-lifecycle-coherence",
+        _build_obpi_lifecycle_coherence,
+        _ep._ep_obpi_lifecycle_coherence,
+    ),
     ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),
     ("red-parity", _build_red_parity, _ep._ep_red_parity),
     ("rendition-freshness", _build_rendition_freshness, _ep._ep_rendition_freshness),

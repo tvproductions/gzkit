@@ -75,6 +75,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "CLI audit": ("audit", "docs/", "bound", "python_function"),
     "Unscoped rules": ("audit", ".gzkit/rules/", "bound", "python_function"),
     "ADR status freshness": ("audit", "docs/", "bound", "python_function"),
+    "OBPI lifecycle coherence": ("audit", ".gzkit/", "bound", "python_function"),
     # Spans both surfaces by construction (GHI #676): the ledger half reads
     # `.gzkit/ledger.jsonl`, the brief half reads `docs/design/adr/**`.
     "Adversarial validation": ("audit", "all", "bound", "python_function"),

@@ -606,6 +606,17 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_obpi_lifecycle_coherence_audit(project_root: Path) -> QualityResult:
+    """Run the OBPI lifecycle-coherence census (GHI #584 / Architectural Boundary 6).
+
+    Fails closed when an `obpi_created` event carries no disposition and either
+    its parent ADR does not resolve or its brief is absent from disk — Layer-2
+    asserting an artifact Layer-1 cannot show. Recovery:
+    `uv run python -m gzkit.governance.obpi_park_backfill --dry-run`.
+    """
+    return run_command("uv run gz validate --obpi-lifecycle-coherence", cwd=project_root)
+
+
 def run_adversarial_validation_audit(project_root: Path) -> QualityResult:
     """Run the Step-4b adversary-verdict capture gate (GHI #676).
 

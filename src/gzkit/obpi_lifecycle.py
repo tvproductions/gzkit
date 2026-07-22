@@ -131,12 +131,54 @@ def parked_at(events: Iterable[Mapping[str, Any]], pool_id: str) -> list[tuple[s
     return [(obpi_id, parent) for obpi_id, parent in origins.items() if parked.get(obpi_id, False)]
 
 
-def orphaned_obpi_ids(events: Iterable[Mapping[str, Any]], live_parent_ids: set[str]) -> list[str]:
-    """Return created OBPIs that are neither terminal, parked, completed, nor parented.
+def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -> str:
+    """Follow ``artifact_renamed`` events to the terminal id for ``artifact_id``.
 
-    This is the census GHI #584 named: an ``obpi_created`` assertion whose parent
-    id no longer resolves to a live ADR and which carries no disposition of any
-    kind. Layer-2 asserts the artifact exists; Layer-1 has nothing to show.
+    An ``obpi_created`` record names whatever its parent was called that day.
+    Promotion, demotion, and slug corrections all rename ADRs, so a parent id
+    that looks absent is usually just historical. Resolving the chain is what
+    separates *renamed* from *missing* — conflating the two is what made 20 of
+    this census's findings false.
+
+    Cycle-safe: a malformed chain resolves to its last unvisited id rather than
+    looping (a validator that hangs is a validator nobody runs).
+    """
+    renames: dict[str, str] = {}
+    for event in events:
+        if _event_type(event) != "artifact_renamed":
+            continue
+        new_id = _field(event, "new_id")
+        old_id = str(event.get("id", ""))
+        if old_id and new_id:
+            renames[old_id] = new_id
+    current = artifact_id
+    seen = {current}
+    while current in renames and renames[current] not in seen:
+        current = renames[current]
+        seen.add(current)
+    return current
+
+
+def orphaned_obpi_ids(
+    events: Iterable[Mapping[str, Any]],
+    live_parent_ids: set[str],
+    brief_ids: set[str] | None = None,
+) -> list[str]:
+    """Return created OBPIs that carry no disposition and nothing in Layer-1.
+
+    This is the census GHI #584 named. An OBPI is flagged when it has no
+    disposition (terminal / completed / parked) **and** either arm fails:
+
+    * its parent id does not resolve to a live ADR, or
+    * no brief for it exists on disk (``brief_ids``).
+
+    Both arms matter. Parent-resolution alone is a proxy — an OBPI under a
+    perfectly live ADR whose brief was deleted is still Layer-2 asserting an
+    artifact Layer-1 cannot show, which is the incoherence the GHI's title
+    names. Passing ``brief_ids=None`` checks the parent arm only.
+
+    A parent is resolved through its ``artifact_renamed`` chain first — an ADR
+    that was renamed is not an ADR that vanished.
     """
     materialized = list(events)
     terminal = terminal_obpi_ids(materialized)
@@ -156,7 +198,11 @@ def orphaned_obpi_ids(events: Iterable[Mapping[str, Any]], live_parent_ids: set[
             continue
         if obpi_id in terminal or obpi_id in completed or parked.get(obpi_id, False):
             continue
-        if parent in live_parent_ids:
+        parent_resolves = parent in live_parent_ids or (
+            rename_chain_target(materialized, parent) in live_parent_ids
+        )
+        brief_exists = brief_ids is None or obpi_id in brief_ids
+        if parent_resolves and brief_exists:
             continue
         orphans.setdefault(obpi_id, None)
     return list(orphans)

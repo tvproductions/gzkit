@@ -369,7 +369,8 @@ def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
     if not ledger_path.exists():
         return []
     events = [event.model_dump() for event in Ledger(ledger_path).read_all()]
-    orphans = orphaned_obpi_ids(events, _live_adr_ids(project_root))
+    brief_ids = {p.stem for p in (project_root / "docs" / "design" / "adr").rglob("OBPI-*.md")}
+    orphans = orphaned_obpi_ids(events, _live_adr_ids(project_root), brief_ids=brief_ids)
     return [
         ValidationError(
             type="obpi_lifecycle_coherence",

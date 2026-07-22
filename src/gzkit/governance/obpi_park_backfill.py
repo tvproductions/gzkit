@@ -20,9 +20,14 @@ import argparse
 import sys
 from pathlib import Path
 
+from gzkit.governance.trust_audits.taxonomy import _live_adr_ids
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import obpi_parked_event
-from gzkit.obpi_lifecycle import parkable_children
+from gzkit.obpi_lifecycle import (
+    orphaned_obpi_ids,
+    parkable_children,
+    rename_chain_target,
+)
 
 _DEMOTION_REASON = "pool_demotion"
 
@@ -48,8 +53,17 @@ def _demotion_cohort(events: list[dict[str, object]]) -> list[tuple[str, str]]:
     return cohort
 
 
-def plan_backfill(ledger: Ledger) -> list[tuple[str, str, str]]:
-    """Return ``(obpi_id, original_parent, parked_to)`` for every orphan to park."""
+def plan_backfill(ledger: Ledger, project_root: Path | None = None) -> list[tuple[str, str, str]]:
+    """Return ``(obpi_id, original_parent, parked_to)`` for every orphan to park.
+
+    Two cohorts, one disposition:
+
+    1. **Demotion cohort** — children of a ``pool_demotion`` rename that never
+       received an event (the GHI #520 wound).
+    2. **Brief-absent cohort** — undisposed OBPIs whose brief is not on disk,
+       regardless of how the brief went away. This is the arm the GHI's title
+       actually names ("no on-disk briefs"); parent-resolution alone misses it.
+    """
     events = [event.model_dump() for event in ledger.read_all()]
     planned: list[tuple[str, str, str]] = []
     already: set[str] = set()
@@ -59,7 +73,26 @@ def plan_backfill(ledger: Ledger) -> list[tuple[str, str, str]]:
                 continue
             already.add(obpi_id)
             planned.append((obpi_id, old_id, new_id))
+
+    root = project_root or Path()
+    adr_root = root / "docs" / "design" / "adr"
+    brief_ids = {p.stem for p in adr_root.rglob("OBPI-*.md")} if adr_root.is_dir() else set()
+    live_adr_ids = _live_adr_ids(root)
+    for obpi_id in orphaned_obpi_ids(events, live_adr_ids, brief_ids=brief_ids):
+        if obpi_id in already:
+            continue
+        parent = _created_parent(events, obpi_id)
+        already.add(obpi_id)
+        planned.append((obpi_id, parent, rename_chain_target(events, parent)))
     return planned
+
+
+def _created_parent(events: list[dict[str, object]], obpi_id: str) -> str:
+    """Return the parent named on an OBPI's ``obpi_created`` record."""
+    for event in events:
+        if event.get("event") == "obpi_created" and str(event.get("id", "")) == obpi_id:
+            return str(event.get("parent", ""))
+    return ""
 
 
 def apply_backfill(ledger: Ledger, planned: list[tuple[str, str, str]], attestor: str) -> int:
@@ -108,7 +141,7 @@ def main(argv: list[str] | None = None) -> int:
     by_parent: dict[str, int] = {}
     for _obpi_id, original_parent, _parked_to in planned:
         by_parent[original_parent] = by_parent.get(original_parent, 0) + 1
-    print(f"Orphans to park: {len(planned)} across {len(by_parent)} demoted ADRs")  # noqa: T201
+    print(f"Orphans to park: {len(planned)} across {len(by_parent)} parent ADRs")  # noqa: T201
     for parent, count in sorted(by_parent.items()):
         print(f"  {parent}: {count}")  # noqa: T201
 

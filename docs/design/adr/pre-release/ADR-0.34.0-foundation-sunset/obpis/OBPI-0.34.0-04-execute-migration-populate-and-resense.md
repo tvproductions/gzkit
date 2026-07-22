@@ -19,8 +19,9 @@ status: Draft
 ## Objective
 
 Execute the migration DATA + graph-integrity half of the sunset as one atomic
-action: demote the 23 genuinely-unstarted foundations (0/N OBPIs, including
-`ADR-0.0.42` storybook and `ADR-0.0.1`) to pool (body-preserving), populate
+action: demote the 23 genuinely-unstarted foundations (0-COMPLETED-of-N OBPIs — they
+have authored OBPIs, none completed; including `ADR-0.0.42` storybook and
+`ADR-0.0.1`) to pool (body-preserving), populate
 `data/foundation_grandfather.json` with the ~51 grandfathered foundations, emit
 one **attested** `foundation_grandfathered` ledger event per manifest entry
 (backfill-at-populate, so the ledger is complete-by-construction), and confirm

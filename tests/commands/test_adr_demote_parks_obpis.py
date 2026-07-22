@@ -272,3 +272,121 @@ class TestOrphanCensusIdForms(unittest.TestCase):
 
             self.assertIn("ADR-0.0.43-ddd-domain-cascade", live)
             self.assertIn("ADR-0.0.43", live)
+
+
+class TestOrphanCensusFollowsRenames(unittest.TestCase):
+    """The census resolves parents through rename chains (GHI #584)."""
+
+    def test_parent_renamed_once_is_not_an_orphan(self) -> None:
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-0.41.0-01-x", "parent": "ADR-0.41.0"},
+            {
+                "event": "artifact_renamed",
+                "id": "ADR-0.41.0",
+                "extra": {"new_id": "ADR-0.41.0-tdd-emission"},
+            },
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-0.41.0-tdd-emission"})
+
+        self.assertEqual(orphans, [], "a parent that was renamed still resolves")
+
+    def test_parent_renamed_transitively_is_not_an_orphan(self) -> None:
+        """Rename chains are followed to their terminal id, not just one hop."""
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-0.2.1-01-x", "parent": "ADR-0.2.1-pool.chores"},
+            {
+                "event": "artifact_renamed",
+                "id": "ADR-0.2.1-pool.chores",
+                "extra": {"new_id": "ADR-pool.chores"},
+            },
+            {
+                "event": "artifact_renamed",
+                "id": "ADR-pool.chores",
+                "extra": {"new_id": "ADR-0.8.0-chores"},
+            },
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-0.8.0-chores"})
+
+        self.assertEqual(orphans, [], "the census must follow the chain to its terminal id")
+
+    def test_rename_cycle_terminates(self) -> None:
+        """A malformed rename cycle must not hang the census."""
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-9.9.9-01-x", "parent": "ADR-A"},
+            {"event": "artifact_renamed", "id": "ADR-A", "extra": {"new_id": "ADR-B"}},
+            {"event": "artifact_renamed", "id": "ADR-B", "extra": {"new_id": "ADR-A"}},
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-LIVE"})
+
+        self.assertEqual(orphans, ["OBPI-9.9.9-01-x"], "cycle resolves to absent, not a hang")
+
+    def test_parent_absent_after_following_renames_is_still_an_orphan(self) -> None:
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-9.9.9-02-y", "parent": "ADR-GONE"},
+            {"event": "artifact_renamed", "id": "ADR-GONE", "extra": {"new_id": "ADR-ALSO-GONE"}},
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-LIVE"})
+
+        self.assertEqual(orphans, ["OBPI-9.9.9-02-y"])
+
+
+class TestOrphanCensusBriefArm(unittest.TestCase):
+    """The census asserts Layer-1 presence, not only parent resolution (GHI #584)."""
+
+    def test_undisposed_obpi_with_no_brief_on_disk_is_flagged(self) -> None:
+        """The GHI's actual title: `obpi_created` events with no on-disk briefs.
+
+        Parent resolution alone is a proxy. An OBPI whose parent is perfectly
+        live but whose brief was deleted is still Layer-2 asserting an artifact
+        Layer-1 cannot show.
+        """
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-0.20.0-01-x", "parent": "ADR-0.20.0-live"},
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-0.20.0-live"}, brief_ids=set())
+
+        self.assertEqual(orphans, ["OBPI-0.20.0-01-x"])
+
+    def test_brief_on_disk_clears_the_finding(self) -> None:
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-0.20.0-01-x", "parent": "ADR-0.20.0-live"},
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-0.20.0-live"}, brief_ids={"OBPI-0.20.0-01-x"})
+
+        self.assertEqual(orphans, [], "an OBPI with a brief on disk is not an orphan")
+
+    def test_parked_obpi_without_brief_is_not_flagged(self) -> None:
+        """Park IS the disposition — a parked OBPI's deleted brief is accounted for."""
+        from gzkit.obpi_lifecycle import orphaned_obpi_ids
+
+        events = [
+            {"event": "obpi_created", "id": "OBPI-0.27.0-01-x", "parent": "ADR-0.27.0-old"},
+            {
+                "event": "obpi_parked",
+                "id": "OBPI-0.27.0-01-x",
+                "parent": "ADR-0.27.0-old",
+                "extra": {"parked_to": "ADR-pool.old", "reason": "pool_demotion"},
+            },
+        ]
+
+        orphans = orphaned_obpi_ids(events, {"ADR-pool.old"}, brief_ids=set())
+
+        self.assertEqual(orphans, [])
