@@ -21,6 +21,35 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 08 is independent of the 01 -> 02 -> 03 chain and of 04 -> 05 -> 06 -> 07; it may land at any point. Its advisory text names the OBPI-0.35.0-07 verb as the governed next step, so the prose is authored against that verb's final shape.
 
+> **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22, operator-ruled).**
+> GHI #654's capture-silence gap was direct-fixed ahead of this brief because it was
+> a live footgun (it red-treed the repo once already; see `dc2bc605`) and this brief
+> cannot fully land until OBPI-0.35.0-07 makes `gz content land` runnable — its own
+> Prerequisites say so. The landed commits are `48a5f799` (advisory) and `dcf29b95`
+> (regression repair: `load_fingerprint` raises on a malformed sidecar, which was
+> costing `remember` its exit code).
+>
+> | REQ | State | Where |
+> |-----|-------|-------|
+> | REQ-0.35.0-08-01 | **landed** | `test_warns_naming_every_drifted_consumer` asserts exit 0 with the append intact |
+> | REQ-0.35.0-08-02 | **landed** | `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`; RED observed before `dcf29b95` |
+> | REQ-0.35.0-08-03 | **landed** | same test as 08-01 — names the count and both consumers |
+> | REQ-0.35.0-08-04 | **OPEN** | advisory currently cites the failing gates and points at `compose` + `commit`; it does NOT cite the ADR-0.0.37 seam, and its next step is not yet `gz content land` |
+> | REQ-0.35.0-08-05 | **landed** | `test_silent_when_no_rendition_has_been_committed` |
+> | REQ-0.35.0-08-06 | **landed** | advisory writes to stderr; stdout success line unchanged |
+> | REQ-0.35.0-08-07 | **open (structural-fence)** | audited at ADR closeout, not here |
+>
+> **Remaining scope is REQ-04 only:** retarget the three-part prose in
+> `_warn_on_rendition_drift()` to cite the ADR-0.0.37 corpus->rendition seam
+> explicitly and to name `gz content land <surface>` once OBPI-0.35.0-07 lands.
+> Do not re-implement the landed REQs; re-derive their assertions if you change
+> the advisory's shape.
+>
+> Note: `gz brief reconcile` reported this brief **clean** on all five dimensions
+> (allowlist / discovery / verification / req_count / citation) while four of its
+> REQs were already satisfied — the reconciler cannot see pre-landed REQ
+> satisfaction, so this note is authored rather than computed.
+
 ## Lane
 
 **Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
