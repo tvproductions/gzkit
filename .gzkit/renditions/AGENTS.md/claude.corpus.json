@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919",
-  "corpus_entry_count": 51,
+  "corpus_fingerprint": "0fc08f17e38ac4def1041d5ae1e74e32dad87bcfe7d7841f1d248425a55f0822",
+  "corpus_entry_count": 52,
   "rendition_fingerprint": "e7379eeb059b432ac5701486e0ff2e92c409a0cf2d8a9f4b36fcca6b2c02042c",
-  "committed_ts": "2026-07-17T15:01:13.776239+00:00",
+  "committed_ts": "2026-07-22T10:32:22.526439+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — rendition integrity reconciliation, content-preserving, digest frozen"
+  "attestation_text": "i don't attest to ghi fixes. — GHI #635 direct repair under operator canon (AGENTS.md § Operator Doctrine: 'GHIs are AUTHORIZED for direct repair, always... the GHI is the work order and the receipt'). Rendition text is byte-identical to the prior committed rendition (cmp clean); only the corpus provenance fingerprint advances, re-attesting derivation after the duplicate invariant entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 was retired. Invariant floor 9039B, total 31990B, setpoint heavy — all unchanged."
 }
