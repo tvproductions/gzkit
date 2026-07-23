@@ -153,6 +153,29 @@ proof channel.
 | SUPPORT | — | **required** | **required** | — |
 | STRUCTURAL-FENCE | — | — | — | **required** |
 
+### Boundary case: suite-level post-conditions (GHI #547)
+
+A *suite-level post-condition* — "`gz test` exits 0 after the decommission sweep",
+"the suite still passes after operation X" — is **STRUCTURAL-FENCE**, not SUPPORT.
+
+| Pattern | Kind | Why |
+|---------|------|-----|
+| "the suite passes after operation X" | **STRUCTURAL-FENCE** | Asserts a suite-integrity *boundary* the operation must not breach — proven by a parent-ADR `## Boundary Invariants` entry, not by a produced ledger event |
+| "validator `gz validate --<scope>` exits 0 citing REQ-level evidence" | **SUPPORT** | Asserts a specific validator *dispatch* that produces a ledger event |
+
+The discriminator is **produces-evidence vs. names-a-boundary**: SUPPORT names the
+proof artifact that *produces* evidence (a validator run that emits a ledger event);
+STRUCTURAL-FENCE names the *boundary* the operation must not breach (the suite
+staying green). A suite-pass post-condition is a boundary claim — the suite itself
+is the architectural fence — so its proof channel is the parent-ADR `## Boundary
+Invariants` entry, never a validator dispatch.
+
+> **Historical note.** `OBPI-0.0.59-05` REQ-05-04 ("gz test exits 0 after the
+> decommission sweep") shipped retagged `[BEHAVIOR]→[SUPPORT]`; under this ruling the
+> doctrinally-correct kind is STRUCTURAL-FENCE. That attested completion stands — its
+> proof was discharged at the time — but this ruling binds *future* suite-invariance
+> REQs, closing the gray zone the ADR-0.0.59 closeout spec-reviewer flagged.
+
 ---
 
 ## Lift targets: what migrates from @covers to ledger+validator
