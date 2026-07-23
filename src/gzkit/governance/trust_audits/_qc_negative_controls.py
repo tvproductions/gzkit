@@ -976,6 +976,15 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_waiver_ratchet,
         "exists on disk but is not declared in data/waiver_ratchet_registry.json",
     ),
+    # handoff-documents composite: the parent fixture plants missing-sections;
+    # this sibling plants the present-but-empty invariant validate_sections_populated
+    # enforces, pinned so a missing-section failure cannot stand in for it (GHI #698).
+    (
+        "handoff-documents-populated-sections",
+        _cx.build_handoff_populated_sections,
+        _ep._ep_handoff_documents_populated,
+        "Empty required section",
+    ),
 )
 
 # The known-claims set the @enforces decorator validates against at decoration time.

@@ -375,6 +375,22 @@ def _ep_handoff_documents(root: Path) -> int:
     return 1 if not run_handoff_document_audit(root).success else 0
 
 
+def _ep_handoff_documents_populated(root: Path) -> list[str]:
+    """Production path for the present-but-empty handoff invariant (GHI #698).
+
+    Returns the audit's blocking finding lines (not a bare ``int``) so the
+    control can pin the specific ``Empty required section`` reason via
+    ``expect`` — an ``int`` return collapses to ``bool`` and ``_render_findings``
+    yields ``""``, which no ``expect`` can match.
+    """
+    from gzkit.quality import run_handoff_document_audit  # noqa: PLC0415
+
+    result = run_handoff_document_audit(root)
+    if result.success:
+        return []
+    return [line for line in result.stdout.splitlines() if line.strip()]
+
+
 def _ep_surface_fidelity(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits import validate_surface_fidelity  # noqa: PLC0415
 

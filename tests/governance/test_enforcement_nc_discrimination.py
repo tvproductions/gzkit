@@ -330,6 +330,7 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
         "waiver-ratchet-closed-set-lock": "closed-set-lock mechanism",
         "waiver-ratchet-dated-cutover": "dated-cutover mechanism",
         "waiver-ratchet-silent-bypass": "unregistered waiver surface",
+        "handoff-documents-populated-sections": "present-but-empty required section",
     }
 
     @staticmethod
@@ -392,6 +393,38 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
                     f"{claim} still passes with nothing planted — it is not "
                     "actually certifying its invariant.",
                 )
+
+
+class TestHandoffPopulatedSectionsFixtureIsolation(unittest.TestCase):
+    """GHI #698: the present-but-empty fixture must fail ONLY on the empty-section check.
+
+    If it also failed for another reason (bad frontmatter, a missing heading),
+    deleting ``validate_sections_populated`` would leave it red for that other
+    reason and the control would never notice the deletion — the exact
+    under-scoping this GHI names. Every blocking finding must be an
+    ``Empty required section`` finding.
+    """
+
+    def test_fixture_isolates_the_empty_section_finding(self) -> None:
+        from gzkit.governance.trust_audits._qc_nc_composite import (
+            build_handoff_populated_sections,
+        )
+        from gzkit.quality import run_handoff_document_audit
+
+        root = build_handoff_populated_sections()
+        result = run_handoff_document_audit(root)
+
+        self.assertFalse(result.success, "a present-but-empty handoff must fail the audit")
+        finding_lines = [
+            line for line in result.stdout.splitlines() if line.startswith(".gzkit/handoffs/")
+        ]
+        self.assertTrue(finding_lines, f"expected blocking findings; got: {result.stdout!r}")
+        for line in finding_lines:
+            self.assertIn(
+                "Empty required section",
+                line,
+                f"fixture fails for a non-empty-section reason (breaks isolation): {line}",
+            )
 
 
 class TestRemainingClaimsBite(unittest.TestCase):

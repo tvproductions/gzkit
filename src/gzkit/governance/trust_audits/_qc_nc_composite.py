@@ -230,3 +230,51 @@ def build_waiver_silent_bypass() -> Path:
     _registry(root, [])
     _put(root / "data" / "rogue_waivers.json", "{}\n")
     return root
+
+
+def build_handoff_populated_sections() -> Path:
+    """A post-cutover handoff with every required section PRESENT but one empty.
+
+    Isolates the ``validate_sections_populated`` invariant (GHI #698). The parent
+    ``handoff-documents`` fixture omits six of the seven headings, so its findings
+    are all *missing-section* — delete the populated check and it stays red for
+    the same missing-section reason, so the control never notices. This fixture
+    plants the *present-but-empty* violation the parent never reached: all seven
+    headings present, six carrying session-specific body text, one heading with an
+    empty body, so the ONLY blocking finding the production audit can raise is
+    "Empty required section". Delete ``validate_sections_populated`` and this
+    document validates clean — which reddens the control.
+
+    Frontmatter mirrors the parent fixture (proven to satisfy HandoffFrontmatter
+    — the parent fails only on missing sections) and the timestamp is post-cutover
+    so ``run_handoff_document_audit`` does not grandfather it.
+    """
+    root = _root("handoff-populated-sections")
+    sections = (
+        "Current State Summary",
+        "Important Context",
+        "Decisions Made",
+        "Immediate Next Steps",
+        "Pending Work / Open Loops",
+        "Verification Checklist",
+        "Evidence / Artifacts",
+    )
+    empty_section = "Verification Checklist"
+    lines = [
+        "---",
+        "mode: CREATE",
+        "adr_id: ADR-0.0.72",
+        "branch: main",
+        "timestamp: '2026-07-16T00:00:00+00:00'",
+        "agent: agent:test",
+        "---",
+        "",
+    ]
+    for section in sections:
+        lines.append(f"## {section}")
+        lines.append("")
+        if section != empty_section:
+            lines.append(f"Session-specific content for the {section} section.")
+            lines.append("")
+    _put(root / ".gzkit" / "handoffs" / "populated.md", "\n".join(lines) + "\n")
+    return root
