@@ -324,7 +324,6 @@ class TestLedgerSchemaTaskIdProperty(unittest.TestCase):
         self._schema = load_schema("ledger")
         self._event_rules: dict = self._schema.get("events", {})
 
-    @covers("REQ-0.0.64-01-05")
     def test_task_id_in_properties_and_not_in_required_for_all_8_events(self) -> None:
         """task_id property present in all 8 event schemas; absent from required."""
         for event_key in _SCHEMA_EVENT_KEYS:
@@ -352,7 +351,6 @@ class TestLedgerSchemaTaskIdProperty(unittest.TestCase):
 class TestAutoCoordinationCallSitesUnchanged(unittest.TestCase):
     """REQ-0.0.64-01-06: auto_start_obpi_tasks / auto_complete_obpi_tasks exist in task.py."""
 
-    @covers("REQ-0.0.64-01-06")
     def test_auto_start_obpi_tasks_defined(self) -> None:
         """auto_start_obpi_tasks is importable from gzkit.commands.task."""
         import gzkit.commands.task as task_mod
@@ -366,7 +364,6 @@ class TestAutoCoordinationCallSitesUnchanged(unittest.TestCase):
             "auto_start_obpi_tasks is not callable",
         )
 
-    @covers("REQ-0.0.64-01-06")
     def test_auto_complete_obpi_tasks_defined(self) -> None:
         """auto_complete_obpi_tasks is importable from gzkit.commands.task."""
         import gzkit.commands.task as task_mod

@@ -121,13 +121,11 @@ class TestBriefStructureModel(unittest.TestCase):
         b = BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
         self.assertEqual(b.tasks, ["TASK-0.0.64-04-01-01"])
 
-    @covers("REQ-0.0.64-04-04")
     def test_req_atomic_optional_defaults_empty(self) -> None:
         """req_atomic field is optional and defaults to empty list (OBPI-0.0.64-04)."""
         b = BriefStructure(**_VALID_FIELDS)
         self.assertEqual(b.req_atomic, [])
 
-    @covers("REQ-0.0.64-04-04")
     def test_req_atomic_accepts_list_of_strings(self) -> None:
         """req_atomic accepts a list of REQ ID strings (OBPI-0.0.64-04)."""
         b = BriefStructure(**{**_VALID_FIELDS, "req_atomic": ["REQ-0.0.64-04-01"]})

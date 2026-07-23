@@ -176,7 +176,6 @@ class TestMechanismViolationsFailClosed(unittest.TestCase):
 class TestSilentBypassGuard(unittest.TestCase):
     """REQ-0.0.73-09-06: an unregistered waiver data file fails closed (green-by-emptiness)."""
 
-    @covers("REQ-0.0.73-09-06")
     def test_unregistered_waiver_file_flagged(self) -> None:
         reg = {"surfaces": []}
         with _project(reg, {"sneaky_waivers.json": {"waivers": ["a"]}}) as d:
@@ -184,7 +183,6 @@ class TestSilentBypassGuard(unittest.TestCase):
         self.assertTrue(errs)
         self.assertIn("sneaky_waivers.json", errs[0].artifact)
 
-    @covers("REQ-0.0.73-09-06")
     def test_excluded_waiver_file_not_flagged(self) -> None:
         reg = {"surfaces": [], "excluded": ["data/sneaky_waivers.json"]}
         with _project(reg, {"sneaky_waivers.json": {"waivers": ["a"]}}) as d:

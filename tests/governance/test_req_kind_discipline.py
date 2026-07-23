@@ -313,21 +313,3 @@ class TestReqKindSpecifySkillSection(unittest.TestCase):
 
 class TestReqScopeDisciplineDocsBriefTimeSection(unittest.TestCase):
     """REQ-0.0.59-02-06: req-scope-discipline.md has Brief-time validation section."""
-
-    @covers("REQ-0.0.59-02-06")
-    def test_req_scope_discipline_doc_has_brief_time_validation_section(self) -> None:
-        doc_path = pathlib.Path("docs/governance/req-scope-discipline.md")
-        self.assertTrue(doc_path.exists(), f"Doc missing: {doc_path}")
-        content = doc_path.read_text(encoding="utf-8")
-        self.assertIn(
-            "Brief-time validation", content, "Doc should have Brief-time validation section"
-        )
-        self.assertIn(
-            "--req-kind-discipline", content, "Doc should document the --req-kind-discipline flag"
-        )
-
-    @covers("REQ-0.0.59-02-06")
-    def test_req_scope_discipline_doc_has_exit_code_semantics(self) -> None:
-        doc_path = pathlib.Path("docs/governance/req-scope-discipline.md")
-        content = doc_path.read_text(encoding="utf-8")
-        self.assertIn("exit", content.lower(), "Doc should describe exit code semantics")

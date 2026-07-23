@@ -33,7 +33,6 @@ _ADR_ID = "ADR-0.0.73-verification-layer-binding-audit"
 class TestQCBindingSelfCheck(unittest.TestCase):
     """Self-check: OBPI-02 repaired; recovery complete; the ADR passes its own check."""
 
-    @covers("REQ-0.0.73-02-07")
     @covers("REQ-0.0.73-06-01")  # audit-exempt: regression-invariant-overlay reanchor-not-backfill
     def test_audit_qc_binding_passes_with_no_negative_control_debt(self) -> None:
         errors = audit_qc_binding(_PROJECT_ROOT)
@@ -67,7 +66,6 @@ class TestNegativeControlHonestAccounting(unittest.TestCase):
     debt set carries no stale ids.
     """
 
-    @covers("REQ-0.0.73-02-07")
     def test_no_debt_escape_exists(self) -> None:
         # ADR-0.0.74 BI#8 (strict no-debt): the _NEGATIVE_CONTROL_DEBT escape no
         # longer exists in the lifted engine.

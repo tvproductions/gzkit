@@ -190,14 +190,12 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
 class TestHandoffDocumentAuditGate(unittest.TestCase):
     """validate_handoff_document is gate-wired and grandfathers legacy entries."""
 
-    @covers("REQ-0.0.72-02-06")
     def test_audit_importable_and_registered_in_gz_check(self) -> None:
         # Closes the enforcement asymmetry: the strict consumer now has an
         # authoring-time gate registered in the gz check bundle.
         runners = [runner for _, runner in _build_check_steps()]
         self.assertIn(run_handoff_document_audit, runners)
 
-    @covers("REQ-0.0.72-02-06")
     def test_audit_grandfathers_pre_cutover_enforces_post_cutover(self) -> None:
         cutover = datetime.fromisoformat(_HANDOFF_ENFORCEMENT_CUTOVER.replace("Z", "+00:00"))
         before = (cutover - timedelta(days=1)).isoformat().replace("+00:00", "Z")

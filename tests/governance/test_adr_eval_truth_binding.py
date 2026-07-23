@@ -264,7 +264,6 @@ class TestEvaluatorOutputNeverPresentsShapeAsSubstance(unittest.TestCase):
         # The honest verdict label, never a bare authoritative quality GO.
         self.assertIn("STRUCTURALLY COMPLETE", md)
 
-    @covers("REQ-0.0.73-07-06")
     def test_scorecard_substance_is_ungraded_not_derived_from_score(self) -> None:
         md = self._render()
         # A 3.55 structural score must NOT manufacture a substance grade.

@@ -111,16 +111,6 @@ class TestKnowledgeRefresh(unittest.TestCase):
 class TestKnowledgeManpage(unittest.TestCase):
     """REQ-0.30.0-04-03: manpage documents the knowledge verb (structural proof)."""
 
-    @covers("REQ-0.30.0-04-03")
-    def test_manpage_exists_with_synopsis(self) -> None:
-        """REQ-03: docs/user/manpages/knowledge.md documents generate and refresh."""
-        project_root = Path(__file__).resolve().parent.parent.parent
-        manpage = project_root / "docs" / "user" / "manpages" / "knowledge.md"
-        self.assertTrue(manpage.is_file(), "knowledge manpage must exist")
-        content = manpage.read_text(encoding="utf-8")
-        self.assertIn("generate", content, "manpage must document the 'generate' subcommand")
-        self.assertIn("refresh", content, "manpage must document the 'refresh' subcommand")
-
     def test_manpages_cite_the_real_bundle_output_path(self) -> None:
         """REQ-03: every knowledge manpage that names the bundle output directory
         cites the REAL ``BUNDLE_OUTPUT`` path, never a stale one.

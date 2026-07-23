@@ -107,7 +107,6 @@ class TestRunSingleClaim(unittest.TestCase):
         self.assertEqual(result.claim_id, "lint")
 
     @covers("REQ-0.0.74-16-01")
-    @covers("REQ-0.0.74-16-05")
     def test_pass_when_entrypoint_returns_nonzero_int(self) -> None:
         """Runner invokes entrypoint(fixture()) — fixture and entrypoint are structurally separate.
 
@@ -453,7 +452,6 @@ class TestQcBindingBehaviorPreserved(unittest.TestCase):
 class TestNoNegativeControlDebt(unittest.TestCase):
     """No _NEGATIVE_CONTROL_DEBT-style escape exists in enforcement (REQ-16-06)."""
 
-    @covers("REQ-0.0.74-16-06")
     def test_enforcement_module_has_no_debt_escape(self) -> None:
         import gzkit.enforcement as enforcement_mod
 
@@ -462,7 +460,6 @@ class TestNoNegativeControlDebt(unittest.TestCase):
             "_NEGATIVE_CONTROL_DEBT must not exist in enforcement.py (strict no-debt BI#8)",
         )
 
-    @covers("REQ-0.0.74-16-06")
     def test_run_meta_validator_fails_on_facade(self) -> None:
         """A FACADE claim in the registry causes runner to report failure — no debt escape."""
         reset_enforcement_registry()

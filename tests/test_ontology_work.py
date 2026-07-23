@@ -126,11 +126,9 @@ class TestWorkEdgeEventTypes(unittest.TestCase):
 class TestWorkEdgeSchemaCoherence(unittest.TestCase):
     """REQ-0.32.0-06-01: committed work_edges.json == model projection (schema coherence)."""
 
-    @covers("REQ-0.32.0-06-01")
     def test_committed_schema_equals_model_projection(self) -> None:
         self.assertEqual(load_schema("work_edges"), work_edge_json_schema())
 
-    @covers("REQ-0.32.0-06-01")
     def test_projection_is_nontrivial_and_names_the_frozen_vocabulary(self) -> None:
         projection = work_edge_json_schema()
         self.assertNotEqual(projection, {})
@@ -219,7 +217,6 @@ class TestDerivedNeverAuthority(unittest.TestCase):
     the queue images the block, it does not enforce against it.
     """
 
-    @covers("REQ-0.32.0-06-05")
     def test_unsatisfied_block_yields_advisory_data_never_a_gate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             ledger = _queue_ledger(tmp, _edge("blocks", blocker="UP", blocked="DOWN"))
@@ -233,7 +230,6 @@ class TestDerivedNeverAuthority(unittest.TestCase):
 class TestTorqueUpMilestone(unittest.TestCase):
     """REQ-0.32.0-06-04: fail-closed torque-up milestone DECLARED, not shipped."""
 
-    @covers("REQ-0.32.0-06-04")
     def test_milestone_is_declared_but_not_enforced(self) -> None:
         self.assertFalse(TORQUE_UP_MILESTONE.enforced)
         self.assertIn("torque-up", TORQUE_UP_MILESTONE.summary.lower())

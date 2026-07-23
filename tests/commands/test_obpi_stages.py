@@ -68,9 +68,6 @@ class TestVerifyStageCommandShapeClassification(unittest.TestCase):
             ["uv run gz check", "uv run gz validate --documents"],
         )
 
-    @covers(
-        "REQ-0.0.63-07-04"
-    )  # audit-exempt: regression-invariant-overlay bi1-shared-classifier-fence
     def test_bi1_classifier_is_used(self) -> None:
         """BI-1: the same is_shell_less_executable from brief_commands drives classification.
 

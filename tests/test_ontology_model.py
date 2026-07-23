@@ -177,7 +177,6 @@ class TestObjectTypeRegistryPartition(unittest.TestCase):
 class TestOntologyNodeSchemaProjection(unittest.TestCase):
     """REQ-0.32.0-01-05: committed schema is the model projection."""
 
-    @covers("REQ-0.32.0-01-05")
     def test_committed_schema_equals_model_projection(self) -> None:
         self.assertEqual(load_schema("ontology_node"), ontology_node_json_schema())
 

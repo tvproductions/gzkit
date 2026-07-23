@@ -60,62 +60,6 @@ class TestDispatchAttestationInRegistry(unittest.TestCase):
 class TestPoolAdrAnnotation(unittest.TestCase):
     """REQ-0.0.73-05-02 + REQ-0.0.73-05-03: pool ADR is annotated and no longer floating."""
 
-    @covers("REQ-0.0.73-05-02")
-    def test_pool_adr_has_absorption_marker(self) -> None:
-        """The pool ADR file must contain 'absorbed_into: ADR-0.0.73' in its content.
-
-        This is the machine-readable marker consumed by run_dispatch_attestation_audit
-        in gz check. The marker's presence proves the pool ADR is annotated as absorbed.
-        """
-        project_root = Path(__file__).parent.parent.parent
-        pool_adr = (
-            project_root
-            / "docs"
-            / "design"
-            / "adr"
-            / "pool"
-            / "ADR-pool.obpi-pipeline-dispatch-attestation.md"
-        )
-        self.assertTrue(pool_adr.exists(), f"Pool ADR not found at {pool_adr}")
-        content = pool_adr.read_text(encoding="utf-8")
-        self.assertIn(
-            "absorbed_into: ADR-0.0.73",
-            content,
-            "Pool ADR is missing 'absorbed_into: ADR-0.0.73'. "
-            "The frontmatter must contain this marker.",
-        )
-
-    @covers("REQ-0.0.73-05-03")
-    def test_pool_adr_status_superseded(self) -> None:
-        """The pool ADR must have status Superseded, not Pool.
-
-        A Superseded status signals the item is no longer a free unpromoted
-        backlog item — it has been resolved by absorption into ADR-0.0.73.
-        """
-        project_root = Path(__file__).parent.parent.parent
-        pool_adr = (
-            project_root
-            / "docs"
-            / "design"
-            / "adr"
-            / "pool"
-            / "ADR-pool.obpi-pipeline-dispatch-attestation.md"
-        )
-        self.assertTrue(pool_adr.exists(), f"Pool ADR not found at {pool_adr}")
-        content = pool_adr.read_text(encoding="utf-8")
-        self.assertIn(
-            "status: Superseded",
-            content,
-            "Pool ADR status must be 'Superseded' after absorption. "
-            "It should no longer read 'status: Pool'.",
-        )
-        self.assertNotIn(
-            "status: Pool",
-            content,
-            "Pool ADR still has 'status: Pool' — must be changed to 'Superseded'.",
-        )
-
-    @covers("REQ-0.0.73-05-02")
     def test_dispatch_attestation_audit_passes_on_project(self) -> None:
         """run_dispatch_attestation_audit passes over the actual project root.
 

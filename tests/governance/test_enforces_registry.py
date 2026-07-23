@@ -261,7 +261,6 @@ class TestEnforcesStructuralFence(unittest.TestCase):
     def tearDown(self) -> None:
         reset_enforcement_registry()
 
-    @covers("REQ-0.0.74-15-04")
     def test_enforcement_module_has_single_registry(self) -> None:
         import gzkit.enforcement as enforcement_mod
 
@@ -269,7 +268,6 @@ class TestEnforcesStructuralFence(unittest.TestCase):
         # No parallel PRODUCTION_NEGATIVE_CONTROLS-style mapping
         self.assertFalse(hasattr(enforcement_mod, "_PRODUCTION_NEGATIVE_CONTROLS"))
 
-    @covers("REQ-0.0.74-15-04")
     def test_registered_claims_match_registry_exactly(self) -> None:
         def _fixture() -> str:
             return "v"

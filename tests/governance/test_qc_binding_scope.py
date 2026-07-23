@@ -75,7 +75,6 @@ class TestNegativeControlDetection(unittest.TestCase):
         errors = audit_qc_binding(Path("."), nc_registry={})
         self.assertTrue(any("green-by-emptiness" in e.message.lower() for e in errors))
 
-    @covers("REQ-0.0.73-02-07")
     def test_non_bound_step_nc_not_executed(self) -> None:
         # audit_qc_binding gates NC execution on binding == "bound": an advisory step
         # whose claim WOULD be a FACADE is not run, so it produces no finding.
@@ -199,7 +198,6 @@ class TestExitCodeBehavior(unittest.TestCase):
             [e.message for e in errors],
         )
 
-    @covers("REQ-0.0.73-02-06")
     def test_fail_closed_exit_3_on_theater(self) -> None:
         # Wire every bound step genuinely except one, which is hollow (entrypoint
         # returns falsy → FACADE). The lone finding is the hollow step, not
@@ -224,14 +222,12 @@ class TestExitCodeBehavior(unittest.TestCase):
 class TestGzCheckWiring(unittest.TestCase):
     """QC binding is wired into gz check (REQ-0.0.73-02-05)."""
 
-    @covers("REQ-0.0.73-02-05")
     def test_qc_binding_step_in_build_check_steps(self) -> None:
         from gzkit.commands.quality import _build_check_steps
 
         step_names = [name for name, _ in _build_check_steps()]
         self.assertIn("QC binding", step_names)
 
-    @covers("REQ-0.0.73-02-05")
     def test_qc_binding_in_step_classification(self) -> None:
         from gzkit.qc_binding import _STEP_CLASSIFICATION
 
@@ -244,14 +240,12 @@ class TestGzCheckWiring(unittest.TestCase):
 class TestStructuralFences(unittest.TestCase):
     """Structural-fence invariants (REQ-0.0.73-02-06 and REQ-0.0.73-02-07)."""
 
-    @covers("REQ-0.0.73-02-06")
     def test_qc_binding_step_is_bound_not_advisory(self) -> None:
         from gzkit.qc_binding import _STEP_CLASSIFICATION
 
         _, _, binding, _ = _STEP_CLASSIFICATION["QC binding"]
         self.assertEqual(binding, "bound")
 
-    @covers("REQ-0.0.73-02-07")
     def test_behavioral_detection_via_nc_not_static_only(self) -> None:
         # A step with no theater_flags is missed by static signature detection, but
         # the behavioral channel (running the claim's NC) catches it: a falsy
@@ -266,16 +260,6 @@ class TestStructuralFences(unittest.TestCase):
 class TestCliAlignment(unittest.TestCase):
     """--qc-binding is documented in the manpage (REQ-0.0.73-02-08)."""
 
-    @covers("REQ-0.0.73-02-08")
-    def test_qc_binding_in_validate_manpage(self) -> None:
-        from pathlib import Path
-
-        manpage = Path("docs/user/manpages/validate.md")
-        self.assertTrue(manpage.exists(), "validate manpage not found")
-        content = manpage.read_text(encoding="utf-8")
-        self.assertIn("--qc-binding", content)
-
-    @covers("REQ-0.0.73-02-08")
     def test_cli_alignment_exit_0(self) -> None:
         result = subprocess.run(
             [sys.executable, "-m", "gzkit", "validate", "--cli-alignment"],

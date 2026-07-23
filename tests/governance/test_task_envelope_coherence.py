@@ -716,7 +716,6 @@ class TestSignatureB(unittest.TestCase):
     """Signature (b): OBPI with all-seq=01 TASKs and no req_atomic exemption."""
 
     @covers("REQ-0.0.64-04-02")
-    @covers("REQ-0.0.64-04-07")
     def test_obpi_all_seq01_no_req_atomic_fails(self) -> None:
         """All-seq=01 TASKs no req_atomic → signature (b); no other bypass exists."""
         with tempfile.TemporaryDirectory() as td:
@@ -1193,7 +1192,6 @@ class TestSignatureD(unittest.TestCase):
 class TestCheckPipelineIntegration(unittest.TestCase):
     """REQ-0.0.64-04-06: validator is registered in the gz check pipeline."""
 
-    @covers("REQ-0.0.64-04-06")
     def test_task_envelope_coherence_in_gz_check_steps(self) -> None:
         """gz check pipeline includes 'Task envelope coherence' step."""
         from gzkit.commands.quality import _build_check_steps

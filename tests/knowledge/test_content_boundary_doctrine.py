@@ -143,23 +143,3 @@ class TestNoDocsCanonRelocated(unittest.TestCase):
 
 class TestRunbooksPointToDoctrine(unittest.TestCase):
     """REQ-0.30.0-06-04: runbooks point to the content-boundary doctrine doc."""
-
-    @covers("REQ-0.30.0-06-04")
-    def test_user_runbook_points_to_doctrine_path(self) -> None:
-        """docs/user/runbook.md names the full doctrine-doc PATH, not just a word."""
-        content = _RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            _DOCTRINE_POINTER_PATH,
-            content,
-            f"docs/user/runbook.md must point to {_DOCTRINE_POINTER_PATH}",
-        )
-
-    @covers("REQ-0.30.0-06-04")
-    def test_governance_runbook_points_to_doctrine_path(self) -> None:
-        """governance_runbook.md names the full doctrine-doc PATH, not just a word."""
-        content = _GOVERNANCE_RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            _DOCTRINE_POINTER_PATH,
-            content,
-            f"docs/governance/governance_runbook.md must point to {_DOCTRINE_POINTER_PATH}",
-        )

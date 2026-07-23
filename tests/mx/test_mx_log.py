@@ -68,7 +68,6 @@ def _commit(root: Path, filename: str, message: str) -> None:
 # REQ-06-04 [support]: typed event classes carry the session window.
 # ---------------------------------------------------------------------------
 class TestMxSessionEventTypes(unittest.TestCase):
-    @covers("REQ-0.0.74-06-04")
     def test_opened_event_roundtrips_through_typed_parser(self) -> None:
         from gzkit.events import MxSessionOpenedEvent, parse_typed_event
 
@@ -87,7 +86,6 @@ class TestMxSessionEventTypes(unittest.TestCase):
         self.assertEqual(parsed.inspection_scope, ["ADR-0.0.74"])
         self.assertTrue(parsed.ts)  # enter anchor present
 
-    @covers("REQ-0.0.74-06-04")
     def test_closed_event_roundtrips_through_typed_parser(self) -> None:
         from gzkit.events import MxSessionClosedEvent, parse_typed_event
 
