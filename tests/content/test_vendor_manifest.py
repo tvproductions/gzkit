@@ -308,7 +308,10 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                 "routed temperature must no longer alter the rendered bytes",
             )
 
-    @covers("REQ-0.0.37-15-05")
+    # REQ-0.0.37-15-05 is [SUPPORT] (OBPI-15 abandoned): its proof channel is
+    # `gz validate --vendor-manifest` + an artifact_edited ledger event, NOT a
+    # @covers test. This structural regression check stays but is not decorated —
+    # decorating a SUPPORT REQ inflates the @covers census (GHI #703).
     def test_manifest_declares_temperatures(self) -> None:
         """Canonical data/vendor-manifest.json contains content_type_temperatures key."""
         project_root = Path(__file__).resolve().parents[2]
@@ -318,22 +321,13 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
         errors = validate_vendor_manifest(project_root)
         self.assertEqual(errors, [], f"Canonical manifest should validate clean, got: {errors}")
 
-    @covers("REQ-0.0.37-15-06")
-    def test_content_type_routes_shape_unchanged(self) -> None:
-        """content_type_routes shape is preserved; content_type_temperatures is a sibling key."""
-        project_root = Path(__file__).resolve().parents[2]
-        manifest_path = project_root / "data" / "vendor-manifest.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        routes = manifest["content_type_routes"]
-        self.assertIsInstance(routes, dict)
-        for key, val in routes.items():
-            with self.subTest(content_type=key):
-                self.assertIsInstance(val, list)
-                for item in val:
-                    self.assertIsInstance(item, str)
-        self.assertIn("content_type_temperatures", manifest)
-
-    @covers("REQ-0.0.37-15-06")
+    # REQ-0.0.37-15-06 is [SUPPORT] (OBPI-15 abandoned): proven by
+    # `gz validate --vendor-manifest` + a schema-file artifact_edited event, not
+    # @covers. The schema admit/reject tests below exercise validate_vendor_manifest
+    # (behavioral), undecorated (GHI #703). The former test_content_type_routes_shape
+    # _unchanged was decommissioned — its assertIsInstance-on-static-data assertions
+    # were a tautological echo of the JSON schema (enforced by the validator), adding
+    # no behavioral proof.
     def test_schema_admits_valid_content_type_temperatures(self) -> None:
         """Manifest with content_type_temperatures using valid enum values validates clean.
 
@@ -360,7 +354,6 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                 f"Valid per-vendor temperatures should validate clean, got: {errors}",
             )
 
-    @covers("REQ-0.0.37-15-06")
     def test_schema_rejects_out_of_enum_temperature(self) -> None:
         """Schema rejects a manifest with an out-of-enum temperature value."""
         with tempfile.TemporaryDirectory() as tmp:
