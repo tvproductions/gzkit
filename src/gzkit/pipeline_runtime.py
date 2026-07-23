@@ -15,6 +15,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.lock_manager import list_locks, resolve_agent
 from gzkit.models.persona import load_persona
 
 # ---------------------------------------------------------------------------
@@ -114,6 +115,21 @@ from gzkit.pipeline_verification import (
     prepare_stage3_verification,
     should_fallback_to_sequential,
 )
+
+
+def agent_held_obpi_ids(project_root: Path, agent: str | None = None) -> list[str]:
+    """Return OBPI ids currently locked by *agent* (default: the resolved agent).
+
+    Supports the pipeline gate's lock-keyed arm (GHI #606): holding an OBPI
+    lock means the agent is expected to be inside ``gz obpi pipeline``. A
+    ``src/``/``tests/`` write within that OBPI's scope with no active pipeline
+    marker is freeform implementation of a locked OBPI, which the gate must
+    block. Resolving the current agent the same way locks are claimed
+    (``resolve_agent``) keeps arming symmetric with the claim.
+    """
+    who = resolve_agent(agent)
+    return [lock.obpi_id for lock in list_locks(project_root) if lock.agent == who]
+
 
 # ---------------------------------------------------------------------------
 # Subagent dispatch tracking and integration (OBPI-0.18.0-05)

@@ -8,6 +8,7 @@ import sys
 import tempfile
 import textwrap
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
@@ -17,6 +18,7 @@ from gzkit.hooks.core import (
     is_governance_artifact,
     write_hook_script,
 )
+from gzkit.lock_manager import LockData, write_lock
 from gzkit.traceability import covers
 
 
@@ -1527,6 +1529,118 @@ class TestPipelineGateHook(unittest.TestCase):
 
             self.assertEqual(result.returncode, 2)
             self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-04.", result.stderr)
+
+
+class TestPipelineGateHookLockArm(unittest.TestCase):
+    """GHI #606: the pipeline gate's lock-keyed arm.
+
+    An agent that holds an OBPI lock is expected to be inside
+    ``gz obpi pipeline``. A ``src/``/``tests/`` write within that OBPI's
+    declared scope, with no active pipeline marker and *no plan-audit receipt
+    at all*, is freeform implementation of a locked OBPI — the
+    contract-literate bypass the receipt-keyed arm never armed on. The block
+    is scoped to the locked OBPI's ``## Allowed Paths`` so unrelated
+    direct-fix writes are not caught.
+    """
+
+    # resolve_agent() -> "claude-code-" + CLAUDE_CODE_SESSION_ID[:8].
+    _AGENT_ENV = {"CLAUDECODE": "1", "CLAUDE_CODE_SESSION_ID": "testsession-606"}
+    _AGENT = "claude-code-testsess"
+
+    def _create_hook(self, project_root: Path) -> Path:
+        _install_hooks(project_root)
+        return project_root / ".claude" / "hooks" / "pipeline-gate.py"
+
+    def _run_hook(self, script_path: Path, cwd: Path, *, file_path: str) -> _HookResult:
+        return _run_hook_inprocess(
+            script_path,
+            {"cwd": str(cwd), "tool_input": {"file_path": file_path}},
+            env_overrides=self._AGENT_ENV,
+        )
+
+    def _hold_lock(self, project_root: Path, *, obpi_id: str, agent: str) -> None:
+        write_lock(
+            project_root,
+            LockData(
+                obpi_id=obpi_id,
+                agent=agent,
+                pid=4321,
+                session_id="testsession-606",
+                claimed_at=datetime.now(UTC).isoformat(),
+                branch="main",
+                ttl_minutes=120,
+            ),
+        )
+
+    def _write_brief(self, project_root: Path, *, obpi_id: str, allowed: list[str]) -> None:
+        docs = project_root / "docs"
+        docs.mkdir(parents=True, exist_ok=True)
+        body = f"# {obpi_id}\n\n## Allowed Paths\n\n" + "".join(f"- `{p}`\n" for p in allowed)
+        (docs / f"{obpi_id}-demo.md").write_text(body, encoding="utf-8")
+
+    def _write_marker(self, project_root: Path, *, obpi_id: str) -> None:
+        plans_dir = project_root / ".claude" / "plans"
+        plans_dir.mkdir(parents=True, exist_ok=True)
+        (plans_dir / f".pipeline-active-{obpi_id}.json").write_text(
+            json.dumps({"obpi_id": obpi_id, "started_at": "2026-07-23T12:00:00Z"}) + "\n",
+            encoding="utf-8",
+        )
+
+    def test_blocks_lock_held_no_marker_in_scope_without_receipt(self) -> None:
+        """Held lock + in-scope src write + no marker + no receipt -> block."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_brief(project_root, obpi_id="OBPI-0.12.0-09", allowed=["src/**"])
+            self._hold_lock(project_root, obpi_id="OBPI-0.12.0-09", agent=self._AGENT)
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 2)
+            self.assertIn("BLOCKED: Pipeline not invoked for OBPI-0.12.0-09.", result.stderr)
+            self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-09", result.stderr)
+
+    def test_allows_lock_write_out_of_scope(self) -> None:
+        """A write outside the locked OBPI's Allowed Paths is not caught."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_brief(
+                project_root, obpi_id="OBPI-0.12.0-09", allowed=["src/gzkit/hooks/**"]
+            )
+            self._hold_lock(project_root, obpi_id="OBPI-0.12.0-09", agent=self._AGENT)
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_lock_held_by_other_agent(self) -> None:
+        """A lock held by a different agent does not arm this session's gate."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_brief(project_root, obpi_id="OBPI-0.12.0-09", allowed=["src/**"])
+            self._hold_lock(project_root, obpi_id="OBPI-0.12.0-09", agent="claude-code-otheragt")
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_allows_when_lock_has_active_marker(self) -> None:
+        """An active pipeline marker means the runtime is engaged -> allow."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            script_path = self._create_hook(project_root)
+            self._write_brief(project_root, obpi_id="OBPI-0.12.0-09", allowed=["src/**"])
+            self._hold_lock(project_root, obpi_id="OBPI-0.12.0-09", agent=self._AGENT)
+            self._write_marker(project_root, obpi_id="OBPI-0.12.0-09")
+
+            result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
 
 
 class TestPipelineCompletionReminderHook(unittest.TestCase):

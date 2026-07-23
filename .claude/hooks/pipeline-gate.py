@@ -2,8 +2,11 @@
 """Pipeline Gate Hook.
 
 PreToolUse hook on Write|Edit that blocks implementation file writes
-under `src/` and `tests/` when an OBPI plan-audit receipt exists but
-the governance pipeline has not been activated.
+under `src/` and `tests/` for a governed OBPI whose pipeline is not
+active. The OBPI is identified by either a passing plan-audit
+receipt (plan-mode path) or an OBPI lock held by the current agent
+(GHI #606 — closes the never-entered-plan bypass). Blocking is
+scoped to the OBPI's `## Allowed Paths`.
 
 Exit codes:
   0 - Allow operation
@@ -100,6 +103,7 @@ def main() -> None:
 
     try:
         from gzkit.pipeline_runtime import (
+            agent_held_obpi_ids,
             extract_brief_status,
             find_obpi_brief,
             load_plan_audit_receipt,
@@ -112,39 +116,50 @@ def main() -> None:
         sys.exit(0)
 
     plans_dir = pipeline_plans_dir(project_root)
-    if not plans_dir.is_dir():
-        sys.exit(0)
-
-    receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")
-    if receipt is None or receipt_state != "pass":
-        sys.exit(0)
-
-    obpi_id = str(receipt.get("obpi_id") or "")
-    if not obpi_id:
-        sys.exit(0)
-
-    # GHI-127: Skip gate if the OBPI brief is already Completed (stale receipt).
     docs_root = project_root / "docs"
-    brief_path = find_obpi_brief(docs_root, obpi_id)
-    if brief_path is not None:
-        brief_status = extract_brief_status(brief_path)
-        if brief_status and brief_status.lower() == "completed":
-            sys.exit(0)
 
-        # GHI-127: Scope enforcement to the OBPI's allowed paths.
-        allowed_paths = _extract_allowed_paths_from_brief(brief_path)
-        if allowed_paths and not _is_path_within_scope(rel_path, allowed_paths):
-            sys.exit(0)
+    # Collect governing OBPI ids from both arming paths.
+    candidates: list[str] = []
 
-    obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
-    if marker_matches(obpi_marker, obpi_id):
-        sys.exit(0)
+    # Arm A (GHI-127): a passing plan-audit receipt names the OBPI.
+    if plans_dir.is_dir():
+        receipt_state, _warnings, receipt = load_plan_audit_receipt(plans_dir, "")
+        if receipt is not None and receipt_state == "pass":
+            receipt_obpi = str(receipt.get("obpi_id") or "")
+            if receipt_obpi:
+                candidates.append(receipt_obpi)
 
-    if marker_matches(legacy_marker, obpi_id):
-        sys.exit(0)
+    # Arm B (GHI #606): an OBPI lock held by THIS agent, whether or
+    # not plan mode was ever entered — closes the never-entered-plan
+    # bypass the receipt-keyed arm cannot see.
+    for locked_obpi in agent_held_obpi_ids(project_root):
+        if locked_obpi and locked_obpi not in candidates:
+            candidates.append(locked_obpi)
 
-    print(pipeline_gate_message(obpi_id), file=sys.stderr)
-    sys.exit(2)
+    for obpi_id in candidates:
+        brief_path = find_obpi_brief(docs_root, obpi_id)
+        if brief_path is not None:
+            brief_status = extract_brief_status(brief_path)
+            if brief_status and brief_status.lower() == "completed":
+                continue
+
+            # Scope enforcement to the OBPI's allowed paths.
+            allowed_paths = _extract_allowed_paths_from_brief(brief_path)
+            if allowed_paths and not _is_path_within_scope(rel_path, allowed_paths):
+                continue
+
+        obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
+        if marker_matches(obpi_marker, obpi_id):
+            continue
+        if marker_matches(legacy_marker, obpi_id):
+            continue
+
+        # In scope, not completed, no active marker: freeform
+        # implementation of a governed OBPI. Block with recovery prose.
+        print(pipeline_gate_message(obpi_id), file=sys.stderr)
+        sys.exit(2)
+
+    sys.exit(0)
 
 
 if __name__ == "__main__":
