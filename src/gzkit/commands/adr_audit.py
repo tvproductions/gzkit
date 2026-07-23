@@ -38,6 +38,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.status import _collect_obpi_files_for_adr, _inspect_obpi_brief
 from gzkit.event_evidence import EventAnchor
+from gzkit.governance.req_coverage import parse_brief_req_kinds
 from gzkit.hooks.core import enrich_completed_receipt_evidence
 from gzkit.hooks.obpi import normalize_git_sync_state, normalize_scope_audit
 from gzkit.ledger import (
@@ -126,6 +127,38 @@ def _partition_coverage_findings(
     return findings, blocking, advisory
 
 
+def _collect_req_kinds(obpi_files: dict[str, Path]) -> dict[str, str]:
+    """Merge declared ADR-0.0.59 ``[kind]`` tags across an ADR's OBPI briefs."""
+    kinds: dict[str, str] = {}
+    for brief_path in obpi_files.values():
+        kinds.update(parse_brief_req_kinds(brief_path))
+    return kinds
+
+
+def _partition_advisory_by_kind(
+    coverage_advisory: list[dict[str, Any]],
+    req_kinds: dict[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Split advisory uncovered REQs into (behavior-owed, proof-exempt) by kind.
+
+    Declared ADR-0.0.59 kind determines the proof channel: BEHAVIOR is the ONLY
+    kind whose channel is a ``@covers`` test, so only BEHAVIOR REQs owe one.
+    SUPPORT (ledger event + structural validator) and STRUCTURAL-FENCE
+    (parent-ADR ``## Boundary Invariants`` entry) are proof-exempt — surfacing
+    them under a "missing @covers" heading steers agents into the rule-(c)
+    anti-pattern (GHI #701). Untagged/legacy REQs default to BEHAVIOR (the
+    conservative channel that owes proof), matching ``parse_brief_req_kinds``'s
+    documented caller contract. Each returned entry is stamped with ``kind``.
+    """
+    behavior: list[dict[str, Any]] = []
+    exempt: list[dict[str, Any]] = []
+    for cf in coverage_advisory:
+        kind = req_kinds.get(cf["id"], "BEHAVIOR")
+        entry = {**cf, "kind": kind}
+        (behavior if kind == "BEHAVIOR" else exempt).append(entry)
+    return behavior, exempt
+
+
 def _render_audit_check_result(
     adr_id: str,
     passed: bool,
@@ -133,7 +166,8 @@ def _render_audit_check_result(
     complete: list[str],
     coverage: dict[str, Any],
     coverage_blocking: list[dict[str, Any]],
-    coverage_advisory: list[dict[str, Any]],
+    advisory_behavior: list[dict[str, Any]],
+    advisory_exempt: list[dict[str, Any]],
     backfill: BackfillResult | None = None,
 ) -> None:
     """Print the human-readable audit-check summary."""
@@ -154,13 +188,21 @@ def _render_audit_check_result(
             )
             for cf in coverage_blocking:
                 console.print(f"  - {cf['id']}")
-    if coverage_advisory:
+    if advisory_behavior:
         console.print(
-            f"[yellow]Advisory[/yellow] {len(coverage_advisory)} REQ(s) without "
-            "@covers traceability (non-blocking):"
+            f"[yellow]Advisory[/yellow] {len(advisory_behavior)} BEHAVIOR REQ(s) "
+            "without @covers traceability (non-blocking):"
         )
-        for cf in coverage_advisory:
+        for cf in advisory_behavior:
             console.print(f"  - {cf['id']}")
+    if advisory_exempt:
+        console.print(
+            f"[dim]Info[/dim] {len(advisory_exempt)} proof-exempt REQ(s) owe no "
+            "@covers by design (SUPPORT → ledger + validator; STRUCTURAL-FENCE → "
+            "parent-ADR boundary invariant):"
+        )
+        for cf in advisory_exempt:
+            console.print(f"  - {cf['id']} [{cf['kind']}]")
     _print_coverage_section(coverage, [])
     if backfill is not None:
         _render_backfill_section(backfill)
@@ -272,6 +314,12 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
     coverage = _compute_adr_coverage(project_root, adr_id, adr_dir)
     coverage_findings, coverage_blocking, coverage_advisory = _partition_coverage_findings(coverage)
 
+    # Partition the advisory by declared REQ kind: only BEHAVIOR owes a @covers
+    # test, so SUPPORT / STRUCTURAL-FENCE REQs must not be reported as missing it
+    # (GHI #701). Untagged REQs default to BEHAVIOR via _partition_advisory_by_kind.
+    req_kinds = _collect_req_kinds(obpi_files)
+    advisory_behavior, advisory_exempt = _partition_advisory_by_kind(coverage_advisory, req_kinds)
+
     passed = not findings and not coverage_blocking
 
     # Derive lane and kind from the ADR's frontmatter.
@@ -306,6 +354,8 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
         "coverage_findings": coverage_findings,
         "coverage_blocking": coverage_blocking,
         "coverage_advisory": coverage_advisory,
+        "coverage_advisory_behavior": advisory_behavior,
+        "coverage_advisory_exempt": advisory_exempt,
         "covers_backfill_findings": [f.model_dump() for f in backfill.findings],
         "covers_backfill_unresolvable": list(backfill.unresolvable),
     }
@@ -320,7 +370,8 @@ def adr_audit_check(adr: str, as_json: bool, strict: bool = False) -> None:
             complete,
             coverage,
             coverage_blocking,
-            coverage_advisory,
+            advisory_behavior,
+            advisory_exempt,
             backfill=backfill,
         )
 
