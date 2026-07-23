@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.8.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-13
+last_reviewed: 2026-07-23
 model: sonnet
 ---
 
@@ -179,24 +179,43 @@ Rules for narrative drafting:
    shorthand, not user-facing communication.
 2. **Read each qualifying GHI's description** to understand the actual change,
    not just the title.
-3. **Group changes by functional area** (e.g., "CLI Fixes", "Governance
-   Improvements", "Infrastructure") following the pattern in RELEASE_NOTES.md.
-4. **Write in past tense** — "Fixed X", "Added Y", "Improved Z".
+3. **Group changes into the Good Docs sections** the adopted template
+   (`.gzkit/templates/release_notes.md`, GHI #685) prescribes — Highlights /
+   New features / Improvements / Bug fixes / Known issues / Deprecated — ordered
+   by reader impact. Functional-area / subsystem grouping is CHANGELOG altitude;
+   it does not belong in the curated release notes.
+4. **Tense follows Good Docs:** present tense for features and improvements
+   ("Adds X", "Improves Y"); past tense for bug fixes ("Fixed X"). **Do not
+   describe HOW a bug was fixed** — mechanism and internals are CHANGELOG.md's
+   job (`.gzkit/rules/changelog-release-notes.md`: the two artifacts never
+   collapse into each other). Release notes headline reader-facing impact.
 5. **Reference GHI numbers** as anchors: `- **#42** — Fixed version drift
    between pyproject.toml and __init__.py`.
 6. **Include a one-line summary** at the top describing the release scope.
 
-Draft format:
+Draft format (Good Docs shape; omit any section with no content, but
+`### Gate Evidence` is RETAINED per `.gzkit/templates/release_notes.md`):
 
 ```markdown
 ## vX.Y.Z (YYYY-MM-DD)
 
-<One-line summary of the release scope.>
+<One-to-two-sentence highlights summary of the release scope.>
 
-### <Functional Area>
+### New features
 
-- **#NN** — Description of change
-- **#NN** — Description of change
+- **#NN** — Reader-facing capability, present tense.
+
+### Improvements
+
+- **#NN** — Reader-facing enhancement, present tense.
+
+### Bug fixes
+
+- **#NN** — Reader-facing effect of the fix, past tense; no mechanism.
+
+### Gate Evidence
+
+<Qualifiers, version sync, operator approval, git-sync gates.>
 
 ### Stats
 
@@ -276,10 +295,16 @@ closeout ceremony.
 to patch releases the same way it applies to minor releases in the closeout
 ceremony.
 
-For non-Foundation releases:
+For non-Foundation releases, publish ONLY the newest version block as the
+release body — `RELEASE_NOTES.md` is cumulative, so `--notes-file` on the whole
+file would dump every historical version into the release (GHI #710). Slice the
+top block (a new release is always prepended, so the newest entry is the first
+`## v…` block):
 
 ```bash
-gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
+BODY="$(mktemp)"
+awk '/^## v/{c++} c==2{exit} c==1' RELEASE_NOTES.md > "$BODY"
+gh release create vX.Y.Z --target main --latest --title "vX.Y.Z" --notes-file "$BODY"
 ```
 
 For Foundation releases, log:
