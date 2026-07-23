@@ -57,13 +57,16 @@ These are the structural fences this ADR establishes. They are audited at ADR cl
    the gate fires.** No entry-reason, blast radius, or door may set the gate to "skip." (The
    structural parallel to the Gate Covenant: kind/lane select *which* gates fire, never
    *whether* Gate 5 fires.)
+   (OBPI-06)
 3. **The airlock gate is acknowledge-and-decide, never completion attestation.** Gate-5
    completion attestation fires only where completed planned work exists to certify (the
    pipeline's Stage 4/5). The airlock's every-transit gate is never emitted or recorded as a
    completion attestation — this preserves the force of the sacrosanct word.
+   (OBPI-05)
 4. **An un-accounted seam makes GO structurally unreachable.** With a real push/pull edge
    present and absent from the declared seam-set, no path reaches GO (the section-5 live
    negative control, un-forced production; its behavioral proof lands in FC-2).
+   (OBPI-06)
 5. **Discovered correction routes as a fresh transit.** Work discovered mid-sortie is never
    smuggled into the current transit; airlock-OUT recommends a fresh transit through the
    appropriate door ("better housekeeping/bookkeeping").

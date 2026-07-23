@@ -122,12 +122,14 @@ Adopt the Buetow practices as four surfaces, decomposed 1:1 into four OBPIs:
    `.gzkit/chores/session-correction-mining/proofs/`; emitted proposals quote at
    most one line of operator text and scrub email addresses (the operator-PII
    rule binds every artifact).
+   (REQ-0.0.70-02-07: STRUCTURAL-FENCE — verified at ADR closeout via this invariant; OBPI-02)
 3. **Both scripts are stdlib-only.** Neither the Stop hook nor the miner imports
    any third-party package (Stdlib-First doctrine); ruff is invoked as a
    subprocess of the existing toolchain, not imported.
 4. **Mining output is candidates, never canon.** No proposal record mutates the
    ledger, a rule, or a validator scope; promotion always passes the
    advisory-scorecard ladder with human review.
+   (REQ-0.0.70-02-07: STRUCTURAL-FENCE — verified at ADR closeout via this invariant; OBPI-02)
 
 ## Decomposition Scorecard
 

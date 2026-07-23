@@ -10,7 +10,12 @@ import re
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
-from gzkit.req_kind import parse_support_citation
+from gzkit.req_kind import (
+    _boundary_invariants_section,
+    _fence_obpi_anchored,
+    _is_enforcement_asserting,
+    parse_support_citation,
+)
 from gzkit.validate import ValidationError
 
 _REQ_KIND_TAG_RE = re.compile(
@@ -95,7 +100,7 @@ def _check_support_req(req_id: str, ac_section: str, artifact: str) -> list[Vali
 
 
 def _check_structural_fence_req(
-    req_id: str, brief_path: Path, project_root: Path, artifact: str
+    req_id: str, brief_path: Path, project_root: Path, artifact: str, req_text: str = ""
 ) -> list[ValidationError]:
     parent_adr = _find_parent_adr_path(brief_path, project_root)
     if parent_adr is None or not parent_adr.exists():
@@ -107,14 +112,32 @@ def _check_structural_fence_req(
             )
         ]
     adr_content = parent_adr.read_text(encoding="utf-8")
-    if _BOUNDARY_INVARIANTS_HEADING_RE.search(adr_content):
+    section = _boundary_invariants_section(adr_content)
+    if section is None:
+        return [
+            _req_kind_error(
+                artifact,
+                f"STRUCTURAL-FENCE REQ {req_id!r}: parent ADR "
+                f"{parent_adr.name!r} has no '## Boundary Invariants' "
+                "section — add it before completing this OBPI.",
+            )
+        ]
+    # Enforcement-asserting fences prove via their @enforces claim registry at
+    # closeout (resolve_fence_proof), not via an OBPI anchor — the brief-time gate
+    # stays lenient (heading presence) for them. State-property fences require the
+    # OBPI-combination anchor naming this REQ's OBPI (GHI #538).
+    if _is_enforcement_asserting(req_text):
+        return []
+    if _fence_obpi_anchored(section, req_id):
         return []
     return [
         _req_kind_error(
             artifact,
             f"STRUCTURAL-FENCE REQ {req_id!r}: parent ADR "
-            f"{parent_adr.name!r} has no '## Boundary Invariants' "
-            "section — add it before completing this OBPI.",
+            f"{parent_adr.name!r} has a '## Boundary Invariants' section but no "
+            "invariant anchors this REQ's OBPI — append the '(OBPI-NN)' token to "
+            "the invariant that establishes the claim (GHI #538; "
+            "docs/governance/req-scope-discipline.md § STRUCTURAL-FENCE).",
         )
     ]
 
@@ -142,8 +165,23 @@ def _check_tagged_req(
     if kind_upper == "SUPPORT":
         return _check_support_req(req_id, ac_section, artifact)
     if kind_upper == "STRUCTURAL-FENCE":
-        return _check_structural_fence_req(req_id, brief_path, project_root, artifact)
+        return _check_structural_fence_req(
+            req_id, brief_path, project_root, artifact, _req_line_text(ac_section, req_id)
+        )
     return []
+
+
+def _req_line_text(ac_section: str, req_id: str) -> str:
+    """Return the acceptance-criteria line text for ``req_id`` (empty if absent).
+
+    Feeds the enforcement/state-property split in ``_check_structural_fence_req``:
+    an enforcement-asserting fence proves via its claim registry, a state-property
+    fence via the OBPI anchor.
+    """
+    for line in ac_section.splitlines():
+        if req_id in line:
+            return line
+    return ""
 
 
 def _validate_req_kind_discipline_for_brief(

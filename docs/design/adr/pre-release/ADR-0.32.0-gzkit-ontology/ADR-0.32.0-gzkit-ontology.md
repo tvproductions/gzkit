@@ -60,19 +60,24 @@ These are the structural fences this ADR establishes. They are audited at ADR cl
    (work / source / OKF) do not begin until this fence is proven live against the registry
    (the breadth-gating landing falsifier; KEEL / ADR-0.31.0 BI#3 precedent — *no deferred
    domain begins until the keystone monitor refuses a live drift*).
+   (OBPI-04)
 2. **Derived-never-authority.** The ontology graph is a Tier-B projection: it NEVER gates,
    and no `gz validate` scope, gate, or closeout step consumes it as enforcement evidence.
    Truth lives in L1 canon and L2 ledger; the graph is an imaging/navigation aid
    (state-doctrine Rule 5). Writeback reaches the graph only by rebuild, never by direct edit.
+   (OBPI-02, OBPI-03, OBPI-04, OBPI-06)
 3. **`sense` images structure only.** The sweep enumerates STRUCTURAL seams and never claims
    semantic completeness; the pre-registered falsifier is *"no un-accounted STRUCTURAL seam."*
    Semantic-seam recall is out of scope (RECALL / Phase-4, strictly L3-advisory).
+   (OBPI-03, OBPI-04)
 4. **Harness purity.** `ownership:harness` admits only GovZero-universal object types; gzkit's
    own product objects (CliVerb/Validator/Skill/Chore) are `ownership:product` and never appear
    in the harness subgraph.
+   (OBPI-01, OBPI-04)
 5. **OKF absorption stays open.** Doc `subtype` = OKF `type` verbatim; no consumer rejects a
    Doc for an unknown `type`, and no OKF frontmatter or link is consumed as enforcement evidence
    — preserving OKF (ADR-0.30.0) Boundary Invariants BI-1 and BI-3.
+   (OBPI-04, OBPI-05)
 
 ## Target Scope
 

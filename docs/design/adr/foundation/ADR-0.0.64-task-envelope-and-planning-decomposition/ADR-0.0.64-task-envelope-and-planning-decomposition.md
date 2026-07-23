@@ -94,6 +94,7 @@ in the child briefs cite this section as their proof channel
    reverse-direction the auto-coordination behavior. Audited at closeout by
    `git log --reverse 9b74d573..HEAD -- src/gzkit/commands/task.py` showing
    only additive diffs to `auto_start_obpi_tasks` / `auto_complete_obpi_tasks`.
+   (OBPI-01, OBPI-03)
 
 2. **Four-channel discovery coherence is the unit of envelope correctness.**
    TASK attribution spans four channels — Python `@advances` decorator

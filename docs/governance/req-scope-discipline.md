@@ -121,6 +121,20 @@ invariant and the OBPI combination whose completion jointly satisfies it. The pa
 gate reports STRUCTURAL-FENCE REQs as `grandfathered` (advisory) at the OBPI layer;
 the binding audit runs at ADR closeout.
 
+**Anchor-token syntax (binding — GHI #538).** The entry MUST carry the OBPI-combination
+anchor as an explicit token so the binding is mechanical, not merely prose: append
+`(OBPI-NN)` — or `(OBPI-NN, OBPI-MM, …)` when the invariant spans several OBPIs — to the
+invariant that establishes the claim. The number is the OBPI's own index under its
+parent ADR (short form; `OBPI-0.32.0-04` and `OBPI-04` are both accepted). A fence REQ
+`REQ-X.Y.Z-NN-MM` resolves `pass` only when its OBPI (`NN`) appears in some invariant's
+anchor token — heading presence alone is not proof, because an invariant list that names
+no OBPI cannot say *which* invariant proves *which* fence. The exemplar is ADR-0.0.74
+(every invariant closes with its `(OBPI-…)` combination). A per-REQ token
+(`(REQ-X.Y.Z-NN-MM STRUCTURAL-FENCE — verified at ADR closeout via this invariant)`, the
+ADR-0.0.71 form) is an accepted **stricter** variant — it names the exact REQ, which
+implies the OBPI. Enforced by `resolve_fence_proof` (`src/gzkit/req_kind.py`) and
+`gz validate --req-kind-discipline`.
+
 **Examples:**
 - `REQ-0.0.59-NN-NN [structural-fence]: after OBPI-02 and OBPI-03 both complete, gz covers OBPI-X --json correctly routes per-kind proof channels for all three kinds`
 - `REQ-0.0.3-NN-NN [structural-fence]: all adapters in gzkit/adapters/ import only from gzkit/core/ports/, never from gzkit/commands/`

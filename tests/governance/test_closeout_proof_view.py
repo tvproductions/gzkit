@@ -636,10 +636,16 @@ class TestCloseoutProofEnforcementFence(unittest.TestCase):
         self._tmp.cleanup()
 
     def _write_adr_with_anchor(self, adr_id: str) -> Path:
-        """ADR package whose file carries the ## Boundary Invariants anchor."""
+        """ADR package whose Boundary Invariants entry carries the OBPI anchor token.
+
+        The invariant names OBPI-01 and OBPI-02 — the OBPIs this class's fences
+        belong to — so a state-property fence resolves on the anchor (GHI #538).
+        Enforcement fences here still fail-close on their unregistered @enforces
+        claim; the OBPI token does not rescue them.
+        """
         adr_dir = _make_adr_dir(self.root, adr_id)
         (adr_dir / f"{adr_id}.md").write_text(
-            f"# {adr_id}\n\n## Boundary Invariants\n\n- Invariant 1\n",
+            f"# {adr_id}\n\n## Boundary Invariants\n\n- Invariant 1 (OBPI-01, OBPI-02)\n",
             encoding="utf-8",
         )
         return adr_dir

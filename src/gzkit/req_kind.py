@@ -74,8 +74,53 @@ _SUPPORT_TRIGGERS: tuple[str, ...] = (
 # Regex to parse the ADR semver from a REQ id (e.g. "REQ-0.0.69-02-04" → "0.0.69").
 _REQ_SEMVER_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-")
 
+# Regex to parse semver + OBPI index from a REQ id
+# (e.g. "REQ-0.0.69-02-04" → ("0.0.69", "02")).
+_REQ_SEMVER_OBPI_RE: re.Pattern[str] = re.compile(r"REQ-(\d+\.\d+\.\d+)-(\d+)-\d+")
+
 # Heading that marks the STRUCTURAL-FENCE proof anchor in a parent ADR.
 _BOUNDARY_INVARIANTS_HEADING: str = "## Boundary Invariants"
+
+
+def _boundary_invariants_section(content: str) -> str | None:
+    """Return the ``## Boundary Invariants`` section body, or None when absent.
+
+    Spans from the heading to the next H2 (``## ``) or end-of-file.
+    """
+    m = re.search(
+        r"^##\s+Boundary Invariants\b(.*?)(?=^##\s|\Z)",
+        content,
+        re.DOTALL | re.MULTILINE,
+    )
+    return m.group(1) if m else None
+
+
+def _fence_obpi_anchored(section: str, req_id: str) -> bool:
+    """Return True when the Boundary Invariants ``section`` anchors ``req_id``'s OBPI.
+
+    Per ``docs/governance/req-scope-discipline.md`` § STRUCTURAL-FENCE (GHI #538)
+    a state-property fence's proof is an invariant naming the OBPI combination
+    whose completion satisfies it. The canonical anchor is the OBPI-combination
+    token ``(OBPI-NN[, OBPI-MM, …])``; the ADR-0.0.71 per-REQ token
+    (``REQ-X.Y.Z-NN-MM …``) is an accepted stricter form. Heading presence alone
+    is NOT proof — an invariant list naming no OBPI cannot say which invariant
+    proves which fence.
+    """
+    m = _REQ_SEMVER_OBPI_RE.match(req_id)
+    if m is None:
+        return False
+    semver, obpi = m.group(1), m.group(2)
+    obpi_int = int(obpi)
+    obpi_prefix = f"REQ-{semver}-{obpi}"
+    patterns = (
+        rf"OBPI-0*{obpi_int}\b",  # short form: (OBPI-04) / (OBPI-4)
+        rf"OBPI-{re.escape(semver)}-{obpi}\b",  # full form: (OBPI-0.32.0-04)
+    )
+    if any(re.search(p, section) for p in patterns):
+        return True
+    # Stricter per-REQ token (ADR-0.0.71 form): the exact REQ id or its OBPI prefix.
+    return req_id in section or obpi_prefix in section
+
 
 # Keywords that mark a [structural-fence] REQ as enforcement-asserting.
 # An enforcement-asserting fence requires a live @enforces NC in the registry
@@ -208,9 +253,10 @@ def resolve_fence_proof(req_id: str, project_root: Path, req_text: str = "") -> 
     adr_path = _find_parent_adr_file(semver, project_root)
     if adr_path is None:
         return "unproven-fence"
-    if _BOUNDARY_INVARIANTS_HEADING in adr_path.read_text(encoding="utf-8"):
-        return "pass"
-    return "unproven-fence"
+    section = _boundary_invariants_section(adr_path.read_text(encoding="utf-8"))
+    if section is None:
+        return "unproven-fence"
+    return "pass" if _fence_obpi_anchored(section, req_id) else "unproven-fence"
 
 
 # ---------------------------------------------------------------------------

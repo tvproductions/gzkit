@@ -22,7 +22,9 @@ def _make_fake_adr(project_root: Path, semver: str, *, has_boundary_invariants: 
     adr_dir.mkdir(parents=True)
     content = f"# ADR-{semver}-test\n"
     if has_boundary_invariants:
-        content += "\n## Boundary Invariants\n\n- Invariant 1\n"
+        # (OBPI-01) anchors the state-property fences these tests resolve
+        # (REQ-0.0.74-01-03); heading presence alone is no longer proof (GHI #538).
+        content += "\n## Boundary Invariants\n\n- Invariant 1 (OBPI-01)\n"
     (adr_dir / f"ADR-{semver}-test.md").write_text(content, encoding="utf-8")
 
 

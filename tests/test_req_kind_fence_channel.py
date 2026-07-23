@@ -15,13 +15,27 @@ from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 
 
-def _make_adr_package(project_root: Path, semver: str, *, with_boundary_invariants: bool) -> None:
-    """Create a minimal fake ADR package under project_root/docs/design/adr/foundation/."""
+def _make_adr_package(
+    project_root: Path,
+    semver: str,
+    *,
+    with_boundary_invariants: bool,
+    anchor_obpi: str | None = None,
+) -> None:
+    """Create a minimal fake ADR package under project_root/docs/design/adr/foundation/.
+
+    ``anchor_obpi`` — when given (e.g. ``"02"``), the Boundary Invariants entry
+    carries the ``(OBPI-NN)`` anchor token a state-property FENCE REQ requires
+    (GHI #538). When ``None`` but ``with_boundary_invariants`` is True, the
+    section has the heading but NO OBPI anchor — the exact hollow-proof case the
+    tightened resolver must fail-close.
+    """
     adr_dir = project_root / "docs" / "design" / "adr" / "foundation" / f"ADR-{semver}-fake"
     adr_dir.mkdir(parents=True)
     content = f"# ADR-{semver}-fake\n\n## Intent\n\nTest fixture only.\n"
     if with_boundary_invariants:
-        content += "\n## Boundary Invariants\n\n1. Test structural invariant.\n"
+        anchor = f" (OBPI-{anchor_obpi})" if anchor_obpi else ""
+        content += f"\n## Boundary Invariants\n\n1. Test structural invariant.{anchor}\n"
     (adr_dir / f"ADR-{semver}-fake.md").write_text(content, encoding="utf-8")
 
 
@@ -100,7 +114,10 @@ class TestFenceChannelWithAnchor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
-            _make_adr_package(project_root, "0.0.69", with_boundary_invariants=True)
+            # OBPI-02 anchor token present — matches REQ-0.0.69-02-02's OBPI (GHI #538).
+            _make_adr_package(
+                project_root, "0.0.69", with_boundary_invariants=True, anchor_obpi="02"
+            )
 
             report, known_reqs = _make_fence_report("REQ-0.0.69-02-02")
             enriched = compute_three_channel_coverage(report, known_reqs, project_root=project_root)
@@ -109,8 +126,57 @@ class TestFenceChannelWithAnchor(unittest.TestCase):
         self.assertEqual(
             entry.proof_status,
             "pass",
-            "FENCE arm MUST report 'pass' when parent ADR has ## Boundary Invariants",
+            "FENCE arm MUST report 'pass' when the invariant carries this REQ's OBPI anchor",
         )
+
+
+class TestFenceChannelHeadingButNoObpiAnchor(unittest.TestCase):
+    """GHI #538 Phase 2: a state-property fence needs its OBPI anchored, not just the heading.
+
+    Semantics (not strings): the FENCE proof channel is a `## Boundary Invariants`
+    entry that names the OBPI combination whose completion satisfies it
+    (`docs/governance/req-scope-discipline.md` § STRUCTURAL-FENCE). A section that
+    has the heading but no invariant naming this REQ's OBPI cannot say *which*
+    invariant proves *which* fence — so the proof is hollow and must fail-close.
+    """
+
+    @covers("REQ-0.0.69-02-01")
+    def test_heading_present_but_no_obpi_anchor_is_unproven(self) -> None:
+        from gzkit.req_kind import resolve_fence_proof
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            # Heading present, but the invariant names NO OBPI token.
+            _make_adr_package(project_root, "0.0.99", with_boundary_invariants=True)
+            # State-property fence text (non-enforcement), OBPI-03.
+            status = resolve_fence_proof(
+                "REQ-0.0.99-03-05",
+                project_root,
+                "the derived view is Layer-3 and never source-of-truth",
+            )
+
+        self.assertEqual(
+            status,
+            "unproven-fence",
+            "heading present but no (OBPI-NN) anchor for this REQ's OBPI must fail-close",
+        )
+
+    @covers("REQ-0.0.69-02-02")
+    def test_obpi_anchor_present_is_pass(self) -> None:
+        from gzkit.req_kind import resolve_fence_proof
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            _make_adr_package(
+                project_root, "0.0.99", with_boundary_invariants=True, anchor_obpi="03"
+            )
+            status = resolve_fence_proof(
+                "REQ-0.0.99-03-05",
+                project_root,
+                "the derived view is Layer-3 and never source-of-truth",
+            )
+
+        self.assertEqual(status, "pass", "invariant carrying (OBPI-03) anchors REQ-...-03-05")
 
 
 class TestFenceChannelNoProjectRoot(unittest.TestCase):

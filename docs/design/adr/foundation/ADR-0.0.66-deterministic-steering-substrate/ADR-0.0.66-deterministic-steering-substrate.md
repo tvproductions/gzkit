@@ -75,6 +75,7 @@ in the child briefs cite this section as their proof channel
    fail-close, or an attestation requirement. The substrate orients; it does
    not enforce. Enforcement over the same hub is the Harness Hardening spine's
    job, not this ADR's.
+   (OBPI-02, OBPI-03, OBPI-05)
 
 2. **No LLM inference in the deterministic routing/ranking path.** `gz next`'s
    next-best-action selection and any ranking it performs MUST be a
@@ -83,6 +84,7 @@ in the child briefs cite this section as their proof channel
    an LLM call into the routing or ranking path. If the deterministic table
    proves insufficient, the only sanctioned degrade is to advisory output —
    never to LLM-inferred routing.
+   (OBPI-02)
 
 3. **The ledger remains system-of-record; every read-view is Layer-3 derived
    and never source-of-truth.** The `tdd-receipt-stream` hub is append-only and
@@ -91,12 +93,14 @@ in the child briefs cite this section as their proof channel
    derived views, each fully rebuildable from Layer-1/Layer-2 sources and each
    guarded by a freshness drift validator. No OBPI may let a derived view
    become a write target or a source-of-truth.
+   (OBPI-01, OBPI-03, OBPI-04, OBPI-05)
 
 4. **The queryability surfaces do not depend on the `gz next` engine.**
    `gz search`, `gz insights query`, and raw ledger reads MUST function when
    the next-best-action engine is unavailable (the 2am-operator invariant). No
    OBPI may introduce a code path that makes the queryability layer call into,
    import-cycle with, or hard-depend on the `gz next` decision engine.
+   (OBPI-04)
 
 5. **This ADR DECLARES supersession; it does not demote.** The supersession of
    ADR-0.0.46/0.0.47/0.0.48 and the six coalesced pool ADRs
@@ -107,6 +111,7 @@ in the child briefs cite this section as their proof channel
    in this ADR's body. No OBPI in this ADR may edit those superseded ADRs'
    frontmatter or status; the verified demotions are a separate follow-up the
    main session discharges under its own routing.
+   (OBPI-06)
 
 ## Architectural Alignment
 
