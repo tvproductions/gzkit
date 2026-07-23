@@ -183,7 +183,6 @@ Source: Architecture Planning Memo Section 2, Decision Record 2026-03-29.
 |-------|---------|---------------|
 | Ledger-first state authority and the three-layer hierarchy are enforced by the state-doctrine tests. | uv run -m unittest tests.adr.test_state_doctrine | 0 |
 | Layer 3 derived state reconstructs from L1+L2 via gz state (rebuildable, never source-of-truth). | uv run gz state --json | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.9-state-doctrine-source-of-truth --check | 0 |
 
 ## Consequences
 

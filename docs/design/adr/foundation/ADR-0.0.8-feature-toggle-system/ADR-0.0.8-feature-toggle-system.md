@@ -497,7 +497,6 @@ command are unrelated to feature flags and must not be confused with them.
 |-------|---------|---------------|
 | The source-controlled flag registry loads and the inventory renders (Option C, transition-control registry). | uv run gz flags | 0 |
 | Registry validity and category-specific lifecycle rules (remove_by/review_by) are enforced. | uv run -m unittest tests.test_flag_registry | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.8-feature-toggle-system --check | 0 |
 
 ## 8. Consequences
 

@@ -38,7 +38,6 @@ Adopt a tranche-based breadth parity execution protocol:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the canonical ../airlineops breadth-parity source is absent in this repo; closest green proof — gzkit's canonical `.claude`/`.gzkit` surfaces match authored canon (the breadth-parity floor each tranche must hold). | uv run gz validate --surface-fidelity | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.9.0-airlineops-surface-breadth-parity --check | 0 |
 
 ## Consequences
 

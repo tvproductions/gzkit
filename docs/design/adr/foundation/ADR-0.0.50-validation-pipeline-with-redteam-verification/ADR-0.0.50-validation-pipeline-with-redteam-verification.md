@@ -104,7 +104,6 @@ gzkit designs optimally for Claude Code as the primary vendor harness. Codex and
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Red-team prompt composition and result parsing pass — the cross-model adversarial-check surface this validation pipeline's redteam-verify terminal stage depends on. | uv run -m unittest tests.test_adr_eval_redteam | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.50-validation-pipeline-with-redteam-verification --check | 0 |
 
 ## Consequences
 

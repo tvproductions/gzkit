@@ -110,7 +110,6 @@ Same posture as ADR-0.0.50 § Stage 5 (Claude Code as primary vendor harness):
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The skill catalog and its mirrors are aligned — the review-skill surface this maintenance pipeline's sweep manifest dispatches. | uv run gz validate --skill-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.51-milestone-maintenance-pipeline-with-goal --check | 0 |
 
 ## Consequences
 

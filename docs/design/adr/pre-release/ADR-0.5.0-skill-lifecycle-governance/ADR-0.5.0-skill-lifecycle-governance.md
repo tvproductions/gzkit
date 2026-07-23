@@ -34,7 +34,6 @@ Execution is decomposed into five OBPIs:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Skill lifecycle parity between the canonical source and its mirrors is verified at runtime (capability parity is maintainable and auditable). | uv run gz validate --skill-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.5.0-skill-lifecycle-governance --check | 0 |
 
 ## Consequences
 

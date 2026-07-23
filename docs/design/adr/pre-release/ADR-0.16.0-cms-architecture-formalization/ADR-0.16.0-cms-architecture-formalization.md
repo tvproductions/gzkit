@@ -146,7 +146,6 @@ you never edit rendered output (vendor surfaces).
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Vendor control surfaces are rendered from canonical content and stay byte-faithful — never hand-edited (the CMS rendered-frontend thesis). | uv run gz validate --surface-fidelity | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.16.0-cms-architecture-formalization --check | 0 |
 
 ## Consequences
 

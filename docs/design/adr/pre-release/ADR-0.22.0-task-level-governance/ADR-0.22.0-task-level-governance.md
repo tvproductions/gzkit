@@ -225,7 +225,6 @@ become a workflow engine.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | TASK-level governance is mechanically coherent across its four discovery channels — the task-envelope thesis completing the four-tier hierarchy. | uv run gz validate --task-envelope-coherence | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.22.0-task-level-governance --check | 0 |
 
 ## Consequences
 

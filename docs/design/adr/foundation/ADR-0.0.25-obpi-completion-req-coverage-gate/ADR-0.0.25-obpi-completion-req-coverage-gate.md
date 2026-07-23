@@ -73,7 +73,6 @@ explicit, ledger-recorded waiver).
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Every REQ in an OBPI's Acceptance Criteria declares exactly one kind with its single proof channel, the discipline the coverage gate rests on. | uv run gz validate --req-kind-discipline | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.25-obpi-completion-req-coverage-gate --check | 0 |
 
 ## Consequences
 

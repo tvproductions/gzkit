@@ -259,7 +259,6 @@ commands are views.
 |-------|---------|---------------|
 | gz obpi lock is a deterministic coordination primitive that lists held locks. | uv run gz obpi lock list | 0 |
 | The all-or-nothing gz obpi complete transaction is exercised by its deterministic unit suite. | uv run -m unittest tests.test_obpi_complete_cmd | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.14-deterministic-obpi-commands --check | 0 |
 
 ## Consequences
 

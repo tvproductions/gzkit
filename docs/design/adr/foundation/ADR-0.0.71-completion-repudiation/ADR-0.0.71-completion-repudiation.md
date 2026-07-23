@@ -63,7 +63,6 @@ Add a first-class, operator-gated repudiation transition that reverses an errone
 |-------|---------|---------------|
 | Completion repudiation reverses-without-retiring: it flips ledger_completed and sets repudiated without the sticky withdrawn semantics, and a genuine re-completion clears it. | uv run -m unittest tests.test_completion_repudiation | 0 |
 | The `gz obpi repudiate` verb is operator-gated and fails closed on empty attestor/reason, mirroring that only a human may revoke a Gate-5. | uv run -m unittest tests.test_obpi_repudiate_cli | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.71-completion-repudiation --check | 0 |
 
 ## Consequences
 

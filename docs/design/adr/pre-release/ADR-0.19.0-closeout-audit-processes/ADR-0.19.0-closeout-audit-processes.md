@@ -109,7 +109,6 @@ and lint checks are wired into the pipeline.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Closeout proof is recomputed from the live evidence surface for every in-closeout ADR — the consolidated closeout/audit pipeline thesis. | uv run gz validate --closeout-proof | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.19.0-closeout-audit-processes --check | 0 |
 
 ## Consequences
 

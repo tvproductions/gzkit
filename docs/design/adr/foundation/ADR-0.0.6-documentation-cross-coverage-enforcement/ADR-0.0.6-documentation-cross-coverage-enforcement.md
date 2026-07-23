@@ -227,7 +227,6 @@ OBPI-0.0.3-09 (AST policy tests).
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | CLI documentation cross-coverage (manpage, index, command-doc mapping) is mechanically audited per command. | uv run gz cli audit | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.6-documentation-cross-coverage-enforcement --check | 0 |
 
 ## Consequences
 

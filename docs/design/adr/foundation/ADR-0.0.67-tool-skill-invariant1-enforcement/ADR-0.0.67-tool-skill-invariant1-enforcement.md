@@ -104,7 +104,6 @@ floor.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Tool-skill Invariant 1 is enforced across the full multi-word CLI surface; no orphan verb passes the skill-alignment gate by invisibility. | uv run gz validate --skill-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.67-tool-skill-invariant1-enforcement --check | 0 |
 
 ## Consequences
 

@@ -71,7 +71,6 @@ Establish closeout defect-accounting as a foundation-attested invariant with a s
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: this ADR's own --closeout-defect-accounting scope is unbuilt (Draft); the closest extant closeout-family completion gate runs green. | uv run gz validate --closeout-proof | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.56-closeout-defect-accounting-invariant --check | 0 |
 
 ## Consequences
 

@@ -34,7 +34,6 @@ Execution is decomposed into distribution workstreams:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Canonical skills in `.gzkit/skills` mirror into the Claude/Codex/Copilot control surfaces with enforced parity. | uv run gz validate --skill-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.4.0-skill-capability-mirroring --check | 0 |
 
 ## Consequences
 

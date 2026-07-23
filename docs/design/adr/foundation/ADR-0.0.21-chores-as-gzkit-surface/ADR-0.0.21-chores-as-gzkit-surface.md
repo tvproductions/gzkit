@@ -180,7 +180,6 @@ mechanical backstops, not documentation.
 |-------|---------|---------------|
 | No CHORE.md or acceptance.json lives outside the canonical src/gzkit/chores or project .gzkit/chores surfaces. | uv run gz validate --chores-layout | 0 |
 | The canonical chore set resolves and enumerates through the gz CLI. | uv run gz chores list | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.21-chores-as-gzkit-surface --check | 0 |
 
 ## Consequences
 

@@ -143,7 +143,6 @@ The cache surfaces this ADR creates (status profile indicator, manifest profile 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: gz init --minimal and gz harness install are unbuilt (Draft); the canonical-surface distribution byte-parity contract this ADR factors validates green. | uv run gz validate --distribution | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.61-harness-factoring-minimal-init --check | 0 |
 
 ## Consequences
 

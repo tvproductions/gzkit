@@ -163,7 +163,6 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | No vendor-surface rules directory carries an unscoped (paths "**" or missing-paths) agent rule. | uv run gz validate --unscoped-rules | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.20-agent-rule-placement-invariant --check | 0 |
 
 ## Consequences
 

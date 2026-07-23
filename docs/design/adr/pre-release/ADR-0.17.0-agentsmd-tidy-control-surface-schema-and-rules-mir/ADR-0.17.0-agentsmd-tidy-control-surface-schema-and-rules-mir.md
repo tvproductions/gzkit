@@ -66,7 +66,6 @@ Canonical (gzkit-owned)          ->  Vendor Mirror (generated)
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | AGENTS.md holds only binding bullets, tables, and resolvable canonical links — the map-not-encyclopedia control-surface schema this ADR establishes. | uv run gz validate --agents-md-map-conformance | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.17.0-agentsmd-tidy-control-surface-schema-and-rules-mir --check | 0 |
 
 ## Consequences
 

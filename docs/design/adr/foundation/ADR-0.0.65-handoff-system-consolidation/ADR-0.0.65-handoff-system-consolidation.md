@@ -101,7 +101,6 @@ skill, code, and CLI:
 |-------|---------|---------------|
 | The `gz handoff` CLI verb ships and its read projection over `.gzkit/handoffs/` works (OBPI-02/-03). | uv run gz handoff list --json | 0 |
 | The archive lock-handoff coupling guard the retention OBPI honors validates green (OBPI-05). | uv run gz validate --lock-handoff-coupling | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.65-handoff-system-consolidation --check | 0 |
 
 ## Consequences
 

@@ -107,7 +107,6 @@ A metric MUST have a `block` band (a metric that cannot fail the gate is not a r
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The canonical threshold table validates: every metric carries a block band with percentile + absolute pairing and an in-enum trigger semantic. | uv run gz validate --complexity-thresholds | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.28-complexity-threshold-doctrine --check | 0 |
 
 ## Consequences
 

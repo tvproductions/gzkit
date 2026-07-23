@@ -59,7 +59,6 @@ The target architecture is:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The canonical-shared `AGENTS.md` composition is drift-free — re-rendering the invariant registry byte-matches the committed surface, so the canonical-shared + thin-adapter architecture holds. | uv run gz validate --invariant-coherence | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.14.0-multi-agent-instruction-architecture-unification --check | 0 |
 
 ## Consequences
 

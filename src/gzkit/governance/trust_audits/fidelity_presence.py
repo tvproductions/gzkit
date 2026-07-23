@@ -30,6 +30,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from gzkit.core.exceptions import PolicyBreachError
 from gzkit.core.validation_rules import ValidationError
 from gzkit.fidelity import parse_fidelity_assertions
 
@@ -100,6 +101,23 @@ def audit_fidelity_presence(
             continue
         try:
             parse_fidelity_assertions(adr_file)
+        except PolicyBreachError as exc:
+            # A self-referential row parses cleanly but is a policy breach
+            # (GHI #702): the parse chokepoint raises PolicyBreachError, which is
+            # NOT a ValueError, so it flows here — surface it as a fail-closed
+            # finding rather than crashing the walk. `gz check` fails closed on
+            # any ADR that re-introduces the tautological `gz adr fidelity` row.
+            rel = adr_file.relative_to(project_root).as_posix()
+            errors.append(
+                ValidationError(
+                    type="fidelity-self-reference",
+                    artifact=adr_id,
+                    message=(
+                        f"ADR Decision {adr_id} ({rel}) carries a self-referential "
+                        f"Fidelity Assertion. {exc}"
+                    ),
+                )
+            )
         except ValueError:
             rel = adr_file.relative_to(project_root).as_posix()
             errors.append(

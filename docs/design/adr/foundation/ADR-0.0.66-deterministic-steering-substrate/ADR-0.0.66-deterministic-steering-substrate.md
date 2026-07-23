@@ -36,7 +36,6 @@ Establish ONE foundation ADR: the Deterministic Steering Substrate. It coalesces
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: gz next and gz search are unbuilt (Draft); the Layer-3 read-view freshness drift validation the substrate's read-views mandate runs green. | uv run gz validate --reconcile-freshness | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.66-deterministic-steering-substrate --check | 0 |
 
 ## Consequences
 

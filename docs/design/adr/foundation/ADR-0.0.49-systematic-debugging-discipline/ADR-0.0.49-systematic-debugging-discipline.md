@@ -70,7 +70,6 @@ Promote systematic debugging from an unnamed principle inside PRIME DIRECTIVE / 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The advisory-rules scorecard is internally self-consistent — the doctrine-registration surface this systematic-debugging rule binds its coupling-point doctrine to. | uv run gz validate --advisory-scorecard | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.49-systematic-debugging-discipline --check | 0 |
 
 ## Consequences
 

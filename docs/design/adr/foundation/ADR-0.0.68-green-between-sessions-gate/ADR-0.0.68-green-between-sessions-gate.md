@@ -81,7 +81,6 @@ These are the structural fences this ADR establishes. They are audited at ADR cl
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The fail-closed session-green gate confirms a pre-push gz-check hook is declared, so the green-between-sessions floor cannot be silently removed. | uv run gz validate --session-green-gate | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.68-green-between-sessions-gate --check | 0 |
 
 ## Consequences
 

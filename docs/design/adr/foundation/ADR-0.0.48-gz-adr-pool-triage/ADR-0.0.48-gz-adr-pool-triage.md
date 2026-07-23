@@ -95,7 +95,6 @@ binding decisions:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Pool ADR isolation holds — the governed pool-state surface this triage skill composes its ranked recommendation over. | uv run gz validate --pool-adr-isolation | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.48-gz-adr-pool-triage --check | 0 |
 
 ## Consequences
 

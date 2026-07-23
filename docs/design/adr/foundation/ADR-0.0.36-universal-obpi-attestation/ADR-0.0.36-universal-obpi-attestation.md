@@ -94,7 +94,6 @@ keeps ergonomic front doors from becoming self-close paths.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | No post-cutoff receipt carries a deprecated self-close shape; the universal-attestation receipt-shape gate holds. | uv run gz validate --receipt-shape | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.36-universal-obpi-attestation --check | 0 |
 
 ## Consequences
 

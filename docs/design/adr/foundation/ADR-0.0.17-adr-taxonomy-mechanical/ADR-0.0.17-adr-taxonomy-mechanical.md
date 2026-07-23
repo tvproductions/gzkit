@@ -96,7 +96,6 @@ Registered as both a default-scope check (runs under `gz validate` with no flags
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | kind/semver/id-prefix taxonomy consistency (foundation⇒0.0.x, feature⇒non-0.0.x, pool⇒id-prefix) is mechanically enforced across every ADR. | uv run gz validate --taxonomy | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.17-adr-taxonomy-mechanical --check | 0 |
 
 ## Consequences
 

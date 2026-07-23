@@ -79,7 +79,6 @@ Build a hybrid CLI + skill shape with a tool/agent split: the CLI (Pydantic + Ji
 |-------|---------|---------------|
 | The gz justify pre-execution walkthrough command (anchor resolution, scaffold render, validate) is exercised by its test suite. | uv run -m unittest tests.commands.test_justify_cmd | 0 |
 | The gz justify manpage/CLI contract holds. | uv run -m unittest tests.cli.test_justify_manpage | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.19-pre-execution-reasoning-walkthrough --check | 0 |
 
 ## Consequences
 

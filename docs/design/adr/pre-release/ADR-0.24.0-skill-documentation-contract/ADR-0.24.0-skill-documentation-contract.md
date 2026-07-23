@@ -242,7 +242,6 @@ Skills are the most acute gap: 52 SKILL.md files exist but are agent-facing inst
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Operator-invocable skills satisfy the skill documentation contract (manpage/runbook/docstring linkage) this ADR establishes. | uv run gz validate --skill-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.24.0-skill-documentation-contract --check | 0 |
 
 ## Consequences
 

@@ -139,7 +139,6 @@ enforcement and documentation.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Every structured governance data type is a Pydantic BaseModel enforcing validation at runtime — JSON Schema defines shape, Pydantic enforces (no dataclass drift). | uv run gz validate --pydantic-models | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.15.0-pydantic-schema-enforcement --check | 0 |
 
 ## Consequences
 

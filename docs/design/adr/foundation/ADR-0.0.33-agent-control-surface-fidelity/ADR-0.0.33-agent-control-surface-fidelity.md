@@ -179,7 +179,6 @@ shortcuts:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | All four agent-control-surface fidelity invariants pass via the composite scope wired into gz check. | uv run gz validate --surface-fidelity | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.33-agent-control-surface-fidelity --check | 0 |
 
 ## Consequences
 

@@ -48,7 +48,6 @@ Lane: heavy (new validator scope; new ledger schema field; new CLI surfaces; new
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | TASK is the per-labor-unit envelope: the task-envelope coherence gate enforces worklog attribution, subdivision discipline, and four-channel coherence. | uv run gz validate --task-envelope-coherence | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.64-task-envelope-and-planning-decomposition --check | 0 |
 
 ## Consequences
 

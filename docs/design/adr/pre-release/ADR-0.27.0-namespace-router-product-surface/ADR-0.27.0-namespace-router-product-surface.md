@@ -68,7 +68,6 @@ skill); the original ≤500-byte aspiration was unbacked.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The namespace-router tables route every declared intent to a directly-invocable concrete skill — the router product-surface thesis. | uv run gz validate --router-tables | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.27.0-namespace-router-product-surface --check | 0 |
 
 ## Consequences
 

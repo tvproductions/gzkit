@@ -185,7 +185,6 @@ Source: Architecture Planning Memo Section 3, Decision Record 2026-03-29.
 |-------|---------|---------------|
 | Three-tier storage classification and identity-surface portability hold. | uv run -m unittest tests.adr.test_storage_tiers | 0 |
 | Tier A canonical surfaces and documents validate (git-recoverable canon, no external dependency). | uv run gz validate --documents --surfaces | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.10-storage-tiers-simplicity-profile --check | 0 |
 
 ## Consequences
 

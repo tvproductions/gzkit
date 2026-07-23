@@ -237,7 +237,6 @@ The routine-results derived view (`gz routine results <name>`, `gz status` integ
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the gz routine substrate is unbuilt (Draft); the inaugural R-3 trust-audit-suite's exec scope (--cli-alignment, one of its four steps) runs green headlessly. | uv run gz validate --cli-alignment | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.62-afk-diagnosis-cloud-routines --check | 0 |
 
 ## Consequences
 

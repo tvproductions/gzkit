@@ -257,7 +257,6 @@ opsdev's `lib/` package represents ~6,200 lines of domain-agnostic governance pr
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Absorbed governance-library modules introduce no duplicate implementations upstream — the subtraction-test thesis. | uv run gz validate --absorption-duplicates | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.26.0-governance-library-module-absorption --check | 0 |
 
 ## Consequences
 

@@ -50,7 +50,6 @@ Target state: A foundation-tier invariant — prior-art lookup is mandatory befo
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: this ADR's own --prior-art-coverage scope is unbuilt (Draft); the advisory-rules-audit scorecard it promotes prior-art-sensitivity onto validates green. | uv run gz validate --advisory-scorecard | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.58-prior-art-sensitivity-invariant --check | 0 |
 
 ## Consequences
 

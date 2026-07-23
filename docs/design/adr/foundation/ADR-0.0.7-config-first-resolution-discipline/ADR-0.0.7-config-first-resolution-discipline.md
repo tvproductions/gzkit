@@ -234,7 +234,6 @@ following the pattern established in AirlineOps.
 |-------|---------|---------------|
 | Manifest-driven path resolution at the call site is exercised by the resolution-helper tests. | uv run -m unittest tests.test_manifest_resolution | 0 |
 | Config model and manifest v2 schema load and validate (the single resolved config layer). | uv run -m unittest tests.test_config | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.7-config-first-resolution-discipline --check | 0 |
 
 ## Consequences
 

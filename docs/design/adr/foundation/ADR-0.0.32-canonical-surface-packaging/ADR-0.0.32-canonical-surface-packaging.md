@@ -378,7 +378,6 @@ future context packages so portability never means hand-copied markdown.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Canonical surfaces are byte-equivalently packaged into the wheel, satisfying T0 mechanical enforcement. | uv run gz validate --distribution | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.32-canonical-surface-packaging --check | 0 |
 
 ## Consequences
 

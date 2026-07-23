@@ -47,7 +47,6 @@ Target state: the third component of foundation ADR IDs is a nominal integer —
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Foundation ADR IDs are nominal 0.0.x integers; the taxonomy gate enforces foundation kind implies a 0.0.x semver. | uv run gz validate --taxonomy | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.57-foundation-adr-nominal-id-triage --check | 0 |
 
 ## Consequences
 

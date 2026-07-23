@@ -222,7 +222,6 @@ authority; receipt-bound judge discipline is the only acceptable absorption.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the judge-doctrine enforcement validators are unlanded (ADR is Proposed); the advisory-rules-audit scorecard that tracks this LLM-as-judge doctrine as a classified rule holds green. | uv run gz validate --advisory-scorecard | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.39-llm-as-judge-doctrine --check | 0 |
 
 ## Consequences
 

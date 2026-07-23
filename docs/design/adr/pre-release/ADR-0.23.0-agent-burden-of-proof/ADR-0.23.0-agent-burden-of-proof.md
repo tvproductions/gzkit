@@ -150,7 +150,6 @@ This ADR applies to **both** Lite and Heavy lanes, with proportional rigor:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Closeout validates product proof for every OBPI before attestation — the burden-of-proof defense this ADR establishes. | uv run gz validate --closeout-proof | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.23.0-agent-burden-of-proof --check | 0 |
 
 ## Consequences
 

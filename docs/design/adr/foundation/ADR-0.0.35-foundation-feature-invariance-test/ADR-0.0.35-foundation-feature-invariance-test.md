@@ -85,7 +85,6 @@ or pool. "Other tools do this" is never a kind argument.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The foundation/feature kind-invariance test holds across the ADR corpus (foundation implies 0.0.x; feature implies non-0.0.x). | uv run gz validate --kind-invariance | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.35-foundation-feature-invariance-test --check | 0 |
 
 ## Consequences
 

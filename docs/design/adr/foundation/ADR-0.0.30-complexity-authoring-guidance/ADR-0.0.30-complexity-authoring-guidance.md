@@ -110,7 +110,6 @@ become plausible but unwitnessed planning prose.
 |-------|---------|---------------|
 | The authoring-guidance hint engine projects AdvisorDiagnosis to the lighter AuthoringHint shape as specified. | uv run -m unittest tests.complexity.authoring.test_engine | 0 |
 | The editor/IDE authoring-guide protocol envelope validates against its declared schema. | uv run -m unittest tests.complexity.authoring.test_protocol | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.30-complexity-authoring-guidance --check | 0 |
 
 ## Consequences
 

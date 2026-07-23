@@ -31,7 +31,6 @@ Implement the Chores System as a config-first subsystem with dedicated lifecycle
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The chore registry/runner/log layout conforms to the config-first chores-system contract. | uv run gz validate --chores-layout | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.8.0-gz-chores-system --check | 0 |
 
 ## Consequences
 

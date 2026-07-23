@@ -133,7 +133,6 @@ The clearance ceremony's `gz-adr-evaluate` re-run produces a fresh `adr-evaluati
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The artifact relationship graph reconstructs from L1+L2 canon via gz state — the cross-artifact surface staleness flags propagate across. | uv run gz state --json | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.52-artifact-staleness-propagation --check | 0 |
 
 ## Consequences
 

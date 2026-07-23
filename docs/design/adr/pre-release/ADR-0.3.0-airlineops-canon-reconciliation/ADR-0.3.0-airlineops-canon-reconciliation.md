@@ -42,7 +42,6 @@ Scope constraints:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: canonical source ../airlineops is absent in this repo; closest green proof — ported canonical surfaces match their authored canon (extraction fidelity, the reconciliation target). | uv run gz validate --surface-fidelity | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.3.0-airlineops-canon-reconciliation --check | 0 |
 
 ## Consequences
 

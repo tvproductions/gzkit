@@ -86,7 +86,6 @@ This ADR extends existing gzkit work rather than replacing it:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The ported OBPI completion pipeline (validate evidence/scope, write receipt, flip status) executes as a bounded transaction. | uv run -m unittest tests.test_obpi_complete_cmd | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --check | 0 |
 
 ## Consequences
 

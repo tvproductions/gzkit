@@ -36,7 +36,6 @@ Execution is decomposed into OBPI briefs under this ADR package.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | OBPI `Completed` transitions are gated by the pre-completion validator lifecycle (completion cannot be represented without the validator). | uv run -m unittest tests.test_obpi_validator | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.7.0-obpi-first-operations --check | 0 |
 
 ## Consequences
 

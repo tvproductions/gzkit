@@ -53,6 +53,31 @@ _TABLE_ROW_RE = re.compile(r"^\s*\|(.+)\|\s*$")
 _SEPARATOR_RE = re.compile(r"^\s*\|[-| :]+\|\s*$")
 
 
+_SELF_REF_VERB = ("gz", "adr", "fidelity")
+
+
+def is_self_referential_command(command: str) -> bool:
+    """True when the command invokes the fidelity gate itself (``gz adr fidelity``).
+
+    A fidelity assertion whose command runs the gate that evaluates it is
+    tautological: the gate must reach the row to run it, so the row can never be
+    red while it is being evaluated (GHI #702). Its subject is the parser, not
+    the ADR's thesis — it inflates the witness count without exercising the
+    delivered surface (#699's ``copy-vs-self`` theater signature).
+
+    Detection is a contiguous ``gz adr fidelity`` token run anywhere in the
+    command (a leading ``uv run`` wrapper is transparent), which is the only
+    shape that re-enters the gate. A command we cannot tokenize is not
+    self-referential — the gate runner already reports it as unrunnable.
+    """
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return False
+    run = _SELF_REF_VERB
+    return any(tuple(tokens[i : i + len(run)]) == run for i in range(len(tokens) - len(run) + 1))
+
+
 def _strip_inline_code(cell: str) -> str:
     """Strip surrounding markdown inline-code backticks from a command cell.
 
@@ -137,6 +162,25 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
         raise ValueError(
             f"'## Fidelity Assertions' block in {adr_path} contains no data rows. "
             "The table must have at least one claim/command/expected-exit row."
+        )
+
+    # Self-referential rows are a policy breach, NOT a structural (ValueError)
+    # defect: they parse cleanly. Raise PolicyBreachError (exit 3) so every
+    # consumer hard-blocks — the absence handlers in assert_fidelity_for_ceremony
+    # and adr_fidelity_cmd catch ValueError only, and must never downgrade a
+    # tautological block to a silent "no block" warning (GHI #702).
+    self_referential = [a for a in assertions if is_self_referential_command(a.command)]
+    if self_referential:
+        from gzkit.core.exceptions import PolicyBreachError  # noqa: PLC0415
+
+        rows = "\n".join(f"  - {a.claim!r} (command={a.command!r})" for a in self_referential)
+        raise PolicyBreachError(
+            f"Fidelity gate: {len(self_referential)} self-referential assertion(s) "
+            f"in {adr_path.name}:\n{rows}\n"
+            "A row whose command invokes `gz adr fidelity` asserts the gate that "
+            "evaluates it — it cannot fail while being evaluated and exercises no "
+            "part of the ADR's thesis (GHI #702). Remove the row; keep only "
+            "assertions that run the ADR's delivered surface."
         )
     return assertions
 

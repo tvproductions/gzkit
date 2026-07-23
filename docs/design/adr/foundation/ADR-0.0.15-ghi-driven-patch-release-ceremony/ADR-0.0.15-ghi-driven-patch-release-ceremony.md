@@ -230,7 +230,6 @@ unlabeled runtime changes.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The GHI-driven patch-release ceremony (discovery, label/diff cross-validation, shared version sync) is exercised by its test suite. | uv run -m unittest tests.adr.test_patch_release | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.15-ghi-driven-patch-release-ceremony --check | 0 |
 
 ## Consequences
 

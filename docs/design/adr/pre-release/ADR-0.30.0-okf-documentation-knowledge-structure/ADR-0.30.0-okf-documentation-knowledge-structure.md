@@ -355,7 +355,6 @@ corpus is not.
 |-------|---------|---------------|
 | The generated OKF bundle is conformant: every non-reserved concept doc has parseable frontmatter and a non-empty `type`, and reserved `index.md`/`log.md` follow OKF structure — the generated-bundle-only validator scope landed by OBPI-03. | uv run gz validate --okf-conformance | 0 |
 | The OKF bundle generator (OBPI-02/04) refreshes idempotently from the current tracer-slice sources without error, leaving the bundle byte-stable. | uv run gz knowledge refresh --quiet | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.30.0-okf-documentation-knowledge-structure --check | 0 |
 
 ## Decomposition Scorecard
 

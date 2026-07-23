@@ -121,7 +121,6 @@ points at `gz issue file` instead.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the named gz validate --runtime-label-coverage validator and the runtime-label predicate enforcement are unlanded (ADR is Proposed); the gz issue file wrapper this ADR extends is exercised green by its test module. | uv run -m unittest tests.commands.test_issue_cmd | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.44-ghi-authoring-mechanical-label-enforcement --check | 0 |
 
 ## Consequences
 

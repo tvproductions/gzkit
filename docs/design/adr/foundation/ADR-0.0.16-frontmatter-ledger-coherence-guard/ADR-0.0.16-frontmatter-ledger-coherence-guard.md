@@ -76,7 +76,6 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 |-------|---------|---------------|
 | The frontmatter-ledger coherence guard logic over the four governed fields is exercised by its unit suite. | uv run -m unittest tests.commands.test_validate_frontmatter | 0 |
 | Ledger-wins reconciliation of derived frontmatter is exercised by the coherence-chore suite. | uv run -m unittest tests.governance.test_frontmatter_coherence | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.16-frontmatter-ledger-coherence-guard --check | 0 |
 
 ## Consequences
 

@@ -93,7 +93,6 @@ One mechanism, four parts, currently decomposed 1:1 into nine OBPIs. The origina
 |-------|---------|---------------|
 | The QC-binding scope exists and is wired into `gz check`, fail-closed. | uv run gz validate --qc-binding | 0 |
 | This ADR passes its own QC-binding check (self-check, OBPI-06). | uv run gz validate --qc-binding | 0 |
-| The fidelity gate exists and the Fidelity Assertions block is parseable by the gate. | uv run gz adr fidelity ADR-0.0.73-verification-layer-binding-audit --check | 0 |
 | The dispatch-attestation pool concern is no longer a free-floating unpromoted item. | uv run gz state | 0 |
 | The ADR evaluator is a registered QC step bound to substance — `--qc-binding` finds no shape-graded-as-authoritative mismatch (OBPI-07, GHI #624). | uv run gz validate --qc-binding | 0 |
 | Every bound QC step has a genuine negative control with no debt escape. The engine lifted into the single `@enforces` runner (ADR-0.0.74 BI#8 strict no-debt) removed the `_NEGATIVE_CONTROL_DEBT` escape outright — its absence is the strongest form of "debt is empty". | uv run python -c "import gzkit.governance.trust_audits.qc_binding as m; raise SystemExit(0 if not hasattr(m, '_NEGATIVE_CONTROL_DEBT') else 3)" | 0 |

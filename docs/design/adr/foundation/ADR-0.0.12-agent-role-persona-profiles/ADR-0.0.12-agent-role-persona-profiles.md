@@ -285,7 +285,6 @@ cluster: "plan-first, whole-file, deeply-compliant."
 |-------|---------|---------------|
 | Every per-role persona frame validates against the persona control-surface schema. | uv run gz validate --personas | 0 |
 | Each agent-role persona is enumerable through the persona control surface. | uv run gz personas list | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.12-agent-role-persona-profiles --check | 0 |
 
 ## Consequences
 

@@ -68,7 +68,6 @@ Introduce a Storybook doctrine — a hybrid Layer-3-derived / Layer-1-authored n
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the named gz validate --storybook-fresh validator and the gz storybook verb are unlanded (ADR is Draft); the sibling Layer-3 derived-view freshness gate this doctrine parallels holds green. | uv run gz validate --adr-status-fresh | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.42-storybook-doctrine --check | 0 |
 
 ## Consequences
 

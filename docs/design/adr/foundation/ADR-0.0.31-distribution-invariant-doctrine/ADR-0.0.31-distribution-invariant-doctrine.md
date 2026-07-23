@@ -138,7 +138,6 @@ workflow files that lack that proof are distribution drift, not parity.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The T0 distribution invariant holds: every canonical surface is reproducibly shipped by the wheel. | uv run gz validate --distribution | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.31-distribution-invariant-doctrine --check | 0 |
 
 ## Consequences
 

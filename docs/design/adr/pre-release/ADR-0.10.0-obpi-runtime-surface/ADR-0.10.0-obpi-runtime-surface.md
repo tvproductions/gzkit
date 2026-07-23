@@ -48,7 +48,6 @@ compatibility seams rather than replaced with ad hoc runtime state.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The OBPI-native runtime surface answers per-OBPI status queries directly against ledger-first repository-local state. | uv run gz obpi status OBPI-0.10.0-01 | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.10.0-obpi-runtime-surface --check | 0 |
 
 ## Consequences
 

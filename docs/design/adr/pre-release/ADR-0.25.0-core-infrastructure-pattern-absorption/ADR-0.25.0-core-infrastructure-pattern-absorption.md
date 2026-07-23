@@ -340,7 +340,6 @@ gzkit is becoming a spec-driven development toolkit that will replace most of op
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Absorbed core-infrastructure patterns introduce no duplicate implementations upstream — the subtraction-test thesis. | uv run gz validate --absorption-duplicates | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.25.0-core-infrastructure-pattern-absorption --check | 0 |
 
 ## Consequences
 

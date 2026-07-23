@@ -119,7 +119,6 @@ Canonize AGENTS.md (and by extension, the analogous map-not-encyclopedia shape f
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | AGENTS.md conforms to the map-not-encyclopedia shape — the exact mechanical invariant this ADR ships via gz validate --agents-md-map-conformance. | uv run gz validate --agents-md-map-conformance | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine --check | 0 |
 
 ## Boundary Invariants
 

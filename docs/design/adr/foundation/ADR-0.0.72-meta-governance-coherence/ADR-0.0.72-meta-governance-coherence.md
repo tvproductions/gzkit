@@ -110,7 +110,6 @@ Establish meta-governance self-coherence as a foundation-attested invariant with
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Re-scoped (2026-07-13): the coherence thesis is realized as localized writer-model checks, not a global validator. The insights writer surface (OBPI-03's `InsightRecord` adapter target, closing C4/GHI #575) is shape-coherent against its own authoring model. | uv run gz validate --insights-shape | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.72-meta-governance-coherence --check | 0 |
 
 ## Consequences
 

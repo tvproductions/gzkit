@@ -82,7 +82,6 @@ The target patterns are drawn from:
 |-------|---------|---------------|
 | Every CLI command carries documented help and index/manpage parity (presentation contract honored). | uv run gz cli audit | 0 |
 | CLI presentation conventions hold across all parsers (recursive consistency policy test). | uv run -m unittest tests.policy.test_cli_consistency | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.4-cli-standards-presentation-foundation --check | 0 |
 
 ## Consequences
 

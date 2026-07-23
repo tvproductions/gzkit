@@ -227,7 +227,6 @@ they have a foundation invariant to defend.
 | Committed AGENTS.md byte-matches deterministic playback of the committed rendition; hand-edits to the rendered surface fail closed. | uv run gz validate --invariant-coherence | 0 |
 | CIC-2 brief↔reality reconciliation is live and fail-closed. | uv run gz validate --brief-reconcile | 0 |
 | Corpus↔rendition freshness (content-fingerprint) and rendition-byte integrity are enforced. | uv run gz validate --rendition-freshness | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.37-constitutional-invariant-composition --check | 0 |
 
 ## Consequences
 

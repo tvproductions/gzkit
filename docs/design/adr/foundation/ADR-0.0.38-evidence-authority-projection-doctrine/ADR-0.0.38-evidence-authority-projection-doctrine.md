@@ -252,7 +252,6 @@ pattern becomes authoritative only through local evidence projection.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the named gz validate --surface-axis deliverable is unlanded (ADR is Draft); the advisory-rules-audit scorecard, the registered surface that classifies advisory-vs-authoritative function-axis rules, holds green. | uv run gz validate --advisory-scorecard | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.38-evidence-authority-projection-doctrine --check | 0 |
 
 ## Consequences
 

@@ -207,7 +207,6 @@ The `@covers` pattern — already informally used in gzkit — makes this explic
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The gz covers surface scans the test tree and reports test-to-REQ linkage — the Test-to-Spec edge this ADR formalizes. | uv run gz covers | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.21.0-tests-for-spec --check | 0 |
 
 ## Consequences
 

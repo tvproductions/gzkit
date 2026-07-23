@@ -120,7 +120,6 @@ ceremony; it recommends the smallest vibing surface with a receiptable route.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Every advisor diagnosis carries a non-empty proof binding (the verdict-to-proof contract). | uv run gz validate --advisor-proof-binding | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.29-complexity-advisor --check | 0 |
 
 ## Consequences
 

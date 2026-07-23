@@ -146,7 +146,6 @@ Aggregate per-project, then aggregate across projects: per-metric percentiles (p
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Downstream complexity ADRs cite an existing, current distilled-characteristics document, enforcing the corpus citation contract. | uv run gz validate --complexity-doctrine-links | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.27-exemplar-corpus-doctrine --check | 0 |
 
 ## Consequences
 

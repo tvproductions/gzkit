@@ -93,7 +93,6 @@ Promote `ADR-pool.pool-management` into active implementation and execute the fo
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Pool ADRs stay isolated from active-track contamination — the managed-pool-state invariant this pool-management ADR governs. | uv run gz validate --pool-adr-isolation | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.46-pool-management --check | 0 |
 
 ## Consequences
 

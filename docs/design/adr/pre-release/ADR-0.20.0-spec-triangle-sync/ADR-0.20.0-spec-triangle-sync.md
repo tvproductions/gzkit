@@ -194,7 +194,6 @@ The triangle-sync framework makes drift visible early — during implementation,
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The spec-test-code triangle data model and drift engine deterministically extract linkage from existing artifacts. | uv run -m unittest tests.test_triangle | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.20.0-spec-triangle-sync --check | 0 |
 
 ## Consequences
 

@@ -119,7 +119,6 @@ Author the canonical `src/gzkit/` subpackage layer order, declare it as invarian
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The src/gzkit package import-boundary policy holds — the import-direction invariant this ADR enforces across the subpackage graph. | uv run -m unittest tests.policy.test_import_boundaries | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.55-package-import-direction-invariant --check | 0 |
 
 ## Consequences
 

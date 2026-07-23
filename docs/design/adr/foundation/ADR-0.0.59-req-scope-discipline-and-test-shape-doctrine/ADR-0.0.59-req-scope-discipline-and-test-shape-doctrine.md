@@ -40,7 +40,6 @@ Canonical statement: every REQ in an OBPI brief's Acceptance Criteria carries ex
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Every REQ declares exactly one kind (BEHAVIOR, SUPPORT, STRUCTURAL-FENCE) paired to its single proof channel; the req-kind discipline gate enforces it. | uv run gz validate --req-kind-discipline | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine --check | 0 |
 
 ## Consequences
 

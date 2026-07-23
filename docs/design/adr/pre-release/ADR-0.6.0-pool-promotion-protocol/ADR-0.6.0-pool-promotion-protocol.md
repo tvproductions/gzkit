@@ -33,7 +33,6 @@ Adopt a canonical promotion workflow centered on `uv run gz adr promote`:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Promotion keeps pool ADRs isolated from the active runtime track — no pool entry leaks into active work without losing lineage. | uv run gz validate --pool-adr-isolation | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.6.0-pool-promotion-protocol --check | 0 |
 
 ## Consequences
 

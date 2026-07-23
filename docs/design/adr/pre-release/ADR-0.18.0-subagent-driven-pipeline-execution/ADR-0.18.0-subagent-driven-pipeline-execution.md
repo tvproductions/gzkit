@@ -226,7 +226,6 @@ The [superpowers](https://github.com/obra/superpowers) methodology (92k+ stars) 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The agent role taxonomy this ADR defines is queryable, and unassigned work is detectable, via the gz roles surface. | uv run gz roles | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.18.0-subagent-driven-pipeline-execution --check | 0 |
 
 ## Consequences
 

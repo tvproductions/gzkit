@@ -61,7 +61,6 @@ Surfaced by cross-analyst diagnosis in GHI #517 (`artifacts/reports/ghi-517-cros
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Every closeout-bound REQ binds to a ledger-present receipt-ID; the closeout proof-binding gate fails closed on an unbound REQ. | uv run gz validate --closeout-proof | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.63-closeout-ceremony-runtime-engine-parity --check | 0 |
 
 ## Consequences
 

@@ -74,7 +74,6 @@ Adopt the Buetow practices as four surfaces, decomposed 1:1 into four OBPIs:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The turn-end Stop-hook deterministic-feedback sensor behaves per spec (loop guard via stop_hook_active, fail-open on its own errors, documented off-switch). | uv run -m unittest tests.hooks.test_stop_turn_feedback | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.70-turn-end-feedback-and-correction-mining --check | 0 |
 
 ## Consequences
 

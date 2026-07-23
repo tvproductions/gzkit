@@ -40,7 +40,6 @@ execute the following tracked scope:
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The OBPI pipeline runtime engine drives stage launch/progression/resume through one canonical command contract instead of prose. | uv run -m unittest tests.test_pipeline_runtime | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.13.0-obpi-pipeline-runtime-surface --check | 0 |
 
 ## Consequences
 

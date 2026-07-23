@@ -89,7 +89,6 @@ observational and gate rule promotion on human approval.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The Eval-feedback-source commit-trailer provenance contract is mechanically enforced. | uv run gz validate --commit-trailers | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.26-evaluation-feedback-loop-doctrine --check | 0 |
 
 ## Consequences
 

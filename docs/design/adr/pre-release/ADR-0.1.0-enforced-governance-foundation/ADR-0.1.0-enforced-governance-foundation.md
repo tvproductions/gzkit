@@ -187,7 +187,6 @@ SQLite cache can be added in future if query performance becomes an issue.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | The append-only JSONL ledger system-of-record is structurally valid — governance state is tracked and enforced, not merely scaffolded. | uv run gz validate --ledger | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.1.0-enforced-governance-foundation --check | 0 |
 
 ## Consequences
 

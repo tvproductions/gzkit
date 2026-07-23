@@ -284,7 +284,6 @@ persona → monitor adherence → refine persona.
 |-------|---------|---------------|
 | Personas are a portable control surface enumerable through the gz CLI. | uv run gz personas list | 0 |
 | All persona files conform to the portable persona schema. | uv run gz validate --personas | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.13-portable-persona-control-surface --check | 0 |
 
 ## Consequences
 

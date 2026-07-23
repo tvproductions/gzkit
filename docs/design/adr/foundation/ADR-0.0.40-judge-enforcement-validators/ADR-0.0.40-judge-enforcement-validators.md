@@ -89,7 +89,6 @@ completion.
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the named gz validate --judge-leakage and --judge-output-discipline validators are unlanded (ADR is Draft; Decision unfilled); the advisory-rules-audit scorecard that tracks the judge-doctrine promotion this ADR would close holds green. | uv run gz validate --advisory-scorecard | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.40-judge-enforcement-validators --check | 0 |
 
 ## Consequences
 

@@ -98,7 +98,6 @@ Promote `ADR-pool.pool-dag-promotion-routing` into active implementation and exe
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Pool ADRs stay isolated from the active DAG — the pool-graph boundary this promotion-routing ADR depends on. | uv run gz validate --pool-adr-isolation | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.47-pool-dag-promotion-routing --check | 0 |
 
 ## Consequences
 

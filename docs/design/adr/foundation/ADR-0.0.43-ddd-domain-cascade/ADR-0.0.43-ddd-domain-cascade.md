@@ -127,7 +127,6 @@ Block-after-backfill: legacy ADRs run through hybrid migration (frontmatter for 
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | WEAK: the named gz validate --domain-views-fresh validator is unlanded (ADR is Draft); the sibling Layer-3 derived-view freshness gate this ADR explicitly parallels holds green. | uv run gz validate --adr-status-fresh | 0 |
-| The Fidelity Assertions block is parseable by the fidelity gate. | uv run gz adr fidelity ADR-0.0.43-ddd-domain-cascade --check | 0 |
 
 ## Consequences
 
