@@ -1,5 +1,78 @@
 # gzkit Release Notes
 
+## v0.33.1 (2026-07-23)
+
+Hardening release: makes governance doctrine mechanically enforced rather than prose-honored — failure-atomic ledger, airlock, and rendition writes; validators that check semantics over presence; and five foundation-ADR closeouts codifying the composition, handoff, task-envelope, and meta-governance invariants.
+
+### Ledger & Rendition Integrity
+
+- **#584** — Reconciled 233 orphaned `obpi_created` events across 24 feature ADRs (0.27.0–0.51.0) that asserted briefs never authored on disk, restoring Layer-2↔Layer-1 coherence.
+- **#687** — Made `Ledger.append` failure-atomic (serialize-then-single-write, truncate-on-failure) with pinned UTF-8, so an interrupted write can no longer corrupt the JSONL ledger.
+- **#694** — Added a `rendition_fingerprint` provenance gate so hand-edits to committed renditions can no longer drift past their Gate-5 attestation into the agent control surface.
+
+### Handoff System
+
+- **#574** — Mechanized the resume "advise-not-execute" gate: a resuming agent must obtain explicit operator authorization before its first mutating action.
+- **#684** — Fixed handoff rendering to end in a single trailing newline, eliminating the redundant git-sync retry the `end-of-file-fixer` hook forced.
+- **#689** — Bound the two `continues_from` resolvers so they can no longer silently desync and wrongly archive a live chain link.
+- **#692** — Fixed the handoff validator to require section *population*, not just heading presence, rejecting hollow handoffs.
+- **#696** — Reworked the handoff format so every authored next step and operator ruling survives the session boundary with durable attribution.
+- **#709** — Relaxed handoff `adr_id` to optional, so handoffs carry continuity for any unit of work, not only ADR-scoped work.
+
+### Brief Reconciliation
+
+- **#581** — Documented the existence-vs-liveness blind spot and routed its cure to the event-registry collapse rather than entrenching a new validator dimension.
+- **#664** — Fixed the `req_count` dimension to recognize the REQ taxonomy and checked acceptance-criteria boxes, ending false-positive drift that blocked Stage 1→2 entry.
+- **#677** — Fixed `gz brief reconcile --apply` to re-measure drift after writing amendments, so a successful apply actually clears the gate instead of certifying pre-mutation state.
+- **#707** — Stopped existence-checking terminal (completed/attested) briefs against the current tree, so sealed records no longer inflate the drift figure.
+
+### Validators & CLI Correctness
+
+- **#538** — Added enforcement firing when children declare a `[STRUCTURAL-FENCE]` REQ but the parent ADR lacks the required `## Boundary Invariants` section.
+- **#663** — Fixed CLI color to honor `FORCE_COLOR=0`/`NO_COLOR`, so `gz test` passes regardless of ambient `FORCE_COLOR`.
+- **#693** — Added a check that manpage flag *descriptions* agree with the parser (required/optional, defaults, choices), not merely that a flag is mentioned.
+- **#700** — Fixed the REQ parser to tolerate bold kind tags (`**[BEHAVIOR]**`), so decorated REQs are no longer dropped from coverage.
+- **#704** — Fixed `gz validate` so six solo-only scopes can no longer be silently dropped when combined under a false "all passed".
+- **#705** — Repointed the `governance-core` workflow order off the deprecated `gz gates` verb onto `gz closeout`, and stopped false completion-block reports.
+- **#706** — Added a `kind` guard at the `register-adrs`/`init` ledger ingress so a hand-placed `kind: foundation` ADR can't be booked without a closure guard.
+
+### Governance Spine & Corpus
+
+- **#623** — Replaced the ADR-0.0.37 canon→AGENTS.md derivation facade with a real content-coherence gate that fails closed unless every corpus invariant-tier entry appears verbatim; repudiated the four theater OBPIs.
+- **#635** — Resolved duplicate invariant-tier corpus entries for the "Correction vs enhancement" directive that made AGENTS.md recomposition unsatisfiable.
+- **#654** — Closed the `gz content remember` footgun with a guarded, orchestrated capture→compose→commit canon-landing flow across all consumers.
+
+### Enforcement Floor & Audit
+
+- **#648** — Wired the gate5-floor and grader-gaming enforcement-claim sources into the single production-discovery seam with enrollment-completeness enumeration.
+- **#683** — Fixed `gz obpi present-evidence` to drive attestability off BEHAVIOR coverage, so proven SUPPORT/STRUCTURAL-FENCE REQs aren't miscounted as blockers.
+- **#695** — Fixed `gz adr audit-check` so the covers-backfill scan excludes withdrawn OBPIs' REQs, unblocking closeout.
+- **#699** — Hardened enforcement-floor negative controls (exact exit codes, no empty-directory fixtures, decomposed composite claims) so claims prove what they assert.
+
+### Airlock, Plan-Audit, Git-Sync & Templates
+
+- **#679** — Made airlock exit-side L2 accounting failure-atomic, preventing unpaired transits across all three doors.
+- **#626** — Fixed `gz plan audit`/`gz brief reconcile` to honor `**CREATE**` markers and skip glob prerequisites, so first-implementation OBPIs no longer deadlock.
+- **#708** — Added a pre-staging guard refusing `git add -A` when the index already holds `src/**`/`tests/**`, so staged runtime work can't be laundered into a chore commit.
+- **#685** — Adopted Good Docs changelog/release-notes discipline: new templates, a scoped rule, and a fail-closed `gz validate --changelog`.
+
+### Foundation Closeouts
+
+- **ADR-0.0.37** — Codified the constitutional-invariant registry as primary canon with AGENTS.md as a rendered derived view, and mandatory brief↔project reconciliation before Stage 2 and completion.
+- **ADR-0.0.54** — Codified the map-not-encyclopedia doctrine (binding bullets + links in AGENTS.md, rationale at stable `docs/governance/` URLs; 40k→15k char budget).
+- **ADR-0.0.64** — Codified TASK as the per-labor-unit envelope with `@advances`, worklog attribution, and the `--task-envelope-coherence` gate.
+- **ADR-0.0.65** — Consolidated the handoff system to a single source of truth across doctrine, skill, code, and CLI.
+- **ADR-0.0.72** — Codified meta-governance self-coherence: every governance writer's output must validate against its own authoring model.
+
+### Gate Evidence
+
+GHI-driven patch release (ADR-0.0.15 ceremony). Qualifiers: **31 runtime-qualified closed GHIs** (`runtime` label ∩ `src/gzkit/` diff, cross-validated by `gz patch release --dry-run`) plus **5 foundation-ADR closeouts** — ADR-0.0.37, -0.0.54, -0.0.64, -0.0.65, -0.0.72, each `Validated` with a Gate-5 `validated` receipt in the ledger since `v0.33.0`. Version synced across `pyproject.toml`, `src/gzkit/__init__.py`, and the README badge via `sync_project_version`. Operator-approved narrative (g0, 2026-07-23). git-sync quality gates (ruff, ty, unittest, xenon) enforced at commit.
+
+### Stats
+
+- 31 GHIs closed (runtime-qualified)
+- 5 foundation-ADR closeouts
+
 ## v0.33.0 (2026-07-12)
 
 **ADR:** ADR-0.33.0-airlock-membrane — the airlock: an entry/exit membrane every agent sortie crosses. An agent cannot hold a model of the project resident across sorties, so it patches locally, perturbs laterally, and discovers the damage late. gzkit governed artifacts (vertical traceability) and execution (the OBPI pipeline) well, but had no membrane on *entry* into the project ecosystem. The airlock is that membrane, built as prosthetic memory: on the way IN it pings the shape (HULL sonar) and reconciles the agent's expectation against reality; on the way OUT it accounts for what was disturbed and updates the maps — so map-maintenance becomes an unavoidable byproduct of any work rather than a separate chore (closes Architectural Boundary #4 structurally). One symmetric primitive extracted FROM the pipeline's proven Stage-1/Stage-5 geometry; three doors (pipeline, mx, permitted-entry) adapt to it and never fork it. Tracer-first (KEEL discipline): the pipeline door is the first slice, the gated-breadth doors follow behind the live negative control biting.
