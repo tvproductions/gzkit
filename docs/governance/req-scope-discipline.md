@@ -312,6 +312,24 @@ gz covers OBPI-X.Y.Z-NN --json \
 Skips the three-channel parity fail-close for the run and emits a `bypass_used`
 ledger event with the mandatory reason string. `--bypass-reason` is required.
 
+**The bypass is deliberately asymmetric — it lives on `gz covers` only, not on
+`gz validate --req-kind-discipline` (GHI #546).** The two surfaces enforce the same
+discipline at different operator moments, and only one gets an escape hatch by
+design:
+
+- `gz covers OBPI-X --json` is the **completion-flow** surface — it gates whether
+  work can proceed, so an operator who hits a deferred-SUPPORT-query false-positive
+  in CI needs an auditable, ledger-recorded way through. Hence the bypass, which
+  *writes* a `bypass_used` event.
+- `gz validate --req-kind-discipline` is a **read-only CI/check gate**. It has no
+  ledger-write side effect and is intentionally kept that way: a validator that can
+  be told to pass is no longer a validator. Adding a bypass would give a pure check
+  command a state-mutating escape hatch and a second, redundant place to record
+  bypasses. The strict, bypass-free gate is the feature, not a gap.
+
+An operator who genuinely needs to unblock uses the `gz covers` bypass (the
+completion-flow surface); `gz validate` stays absolute.
+
 ### SUPPORT advisory note
 
 SUPPORT proof-channel verification (ledger-event query at scan time) is advisory

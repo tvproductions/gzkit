@@ -1552,6 +1552,16 @@ A STRUCTURAL-FENCE REQ proves only when the parent ADR carries a
 (advisory-only REQs). Unlike `"advisory-support"` (legacy SUPPORT callers without
 `project_root`), there is no advisory fallback for STRUCTURAL-FENCE.
 
+**No bypass — by design (GHI #546).** Unlike `gz covers`, which carries
+`--bypass-req-kind-discipline-once` for the completion flow, this validator has no
+bypass flag. `gz validate --req-kind-discipline` is a read-only CI/check gate with
+no ledger-write side effect, and is kept strict on purpose: a validator that can be
+told to pass is no longer a validator. An operator who must unblock uses the
+completion-flow escape hatch (`gz covers … --bypass-req-kind-discipline-once
+--bypass-reason "…"`), which records an auditable `bypass_used` ledger event; the
+pure check stays absolute. See `docs/governance/req-scope-discipline.md`
+§ Emergency bypass.
+
 **Related:** ADR-0.0.59 / OBPI-0.0.59-02 (req-kind-discipline validator).
 See `docs/governance/req-scope-discipline.md` for the full three-kind taxonomy doctrine.
 
