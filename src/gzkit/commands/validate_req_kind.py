@@ -10,12 +10,12 @@ import re
 from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
-from gzkit.req_kind import (
+from gzkit.req_kind_fence import (
     _boundary_invariants_section,
     _fence_obpi_anchored,
     _is_enforcement_asserting,
-    parse_support_citation,
 )
+from gzkit.req_kind_support import parse_support_citation
 from gzkit.validate import ValidationError
 
 _REQ_KIND_TAG_RE = re.compile(

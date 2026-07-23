@@ -54,7 +54,7 @@ class TestEnforcementAssertingFencePath(unittest.TestCase):
         weakness the registry-global check had is closed. ``req-kind-discipline``
         is a real qc enforcement claim covered by that entrypoint.
         """
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             result = resolve_fence_proof(
@@ -71,7 +71,7 @@ class TestEnforcementAssertingFencePath(unittest.TestCase):
         This is the claim-binding teeth: a non-empty registry does NOT make every
         enforcement fence pass — only the fence whose own claim is live.
         """
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             result = resolve_fence_proof(
@@ -89,7 +89,7 @@ class TestEnforcementAssertingFencePath(unittest.TestCase):
         are not per-claim bindable; they prove via the OBPI-19 floor at ADR closeout,
         not via this resolver.
         """
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             result = resolve_fence_proof(
@@ -102,7 +102,7 @@ class TestEnforcementAssertingFencePath(unittest.TestCase):
     @covers("REQ-0.0.74-18-01")
     def test_enforcement_asserting_keywords_detected(self) -> None:
         """Each enforcement keyword triggers the claim-bound path."""
-        from gzkit.req_kind import _is_enforcement_asserting
+        from gzkit.req_kind_fence import _is_enforcement_asserting
 
         enforcement_texts = [
             "the @enforces registry is live",
@@ -123,7 +123,7 @@ class TestStatePropertyFencePath(unittest.TestCase):
     @covers("REQ-0.0.74-18-02")
     def test_state_property_with_anchor_resolves_pass(self) -> None:
         """State-property fence resolves 'pass' when parent ADR has Boundary Invariants."""
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -138,7 +138,7 @@ class TestStatePropertyFencePath(unittest.TestCase):
     @covers("REQ-0.0.74-18-02")
     def test_state_property_without_anchor_resolves_unproven_fence(self) -> None:
         """State-property fence resolves 'unproven-fence' when anchor is absent."""
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -157,7 +157,7 @@ class TestStatePropertyFencePath(unittest.TestCase):
         This pins the no-regression guarantee for the 2-arg closeout_proof.py
         consumer, which never passes req_text.
         """
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -168,7 +168,7 @@ class TestStatePropertyFencePath(unittest.TestCase):
     @covers("REQ-0.0.74-18-02")
     def test_non_enforcement_keywords_do_not_trigger_claim_path(self) -> None:
         """State-property text (no enforcement keyword) does not trigger the claim-bound path."""
-        from gzkit.req_kind import _is_enforcement_asserting
+        from gzkit.req_kind_fence import _is_enforcement_asserting
 
         state_property_texts = [
             "Every fail-closed funnel consults the shared checkpoint",
@@ -188,7 +188,7 @@ class TestMetaPropertyFenceClassification(unittest.TestCase):
     fence (no enforcement vocabulary)."""
 
     def test_meta_property_texts_classify_as_meta(self) -> None:
-        from gzkit.req_kind import is_meta_property_enforcement_fence
+        from gzkit.req_kind_fence import is_meta_property_enforcement_fence
 
         meta_texts = [
             "The enforcement-claim registry has no `_NEGATIVE_CONTROL_DEBT`-style "
@@ -203,7 +203,7 @@ class TestMetaPropertyFenceClassification(unittest.TestCase):
                 self.assertTrue(is_meta_property_enforcement_fence(text))
 
     def test_single_claim_fence_is_not_meta(self) -> None:
-        from gzkit.req_kind import is_meta_property_enforcement_fence
+        from gzkit.req_kind_fence import is_meta_property_enforcement_fence
 
         # Names a hyphenated claim-id-shaped slug → single-claim, keeps the teeth.
         self.assertFalse(
@@ -216,7 +216,7 @@ class TestMetaPropertyFenceClassification(unittest.TestCase):
         )
 
     def test_state_property_text_is_not_meta(self) -> None:
-        from gzkit.req_kind import is_meta_property_enforcement_fence
+        from gzkit.req_kind_fence import is_meta_property_enforcement_fence
 
         # No enforcement keyword at all → not enforcement-asserting → not meta.
         self.assertFalse(

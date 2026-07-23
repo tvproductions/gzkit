@@ -132,7 +132,7 @@ no OBPI cannot say *which* invariant proves *which* fence. The exemplar is ADR-0
 (every invariant closes with its `(OBPI-…)` combination). A per-REQ token
 (`(REQ-X.Y.Z-NN-MM STRUCTURAL-FENCE — verified at ADR closeout via this invariant)`, the
 ADR-0.0.71 form) is an accepted **stricter** variant — it names the exact REQ, which
-implies the OBPI. Enforced by `resolve_fence_proof` (`src/gzkit/req_kind.py`) and
+implies the OBPI. Enforced by `resolve_fence_proof` (`src/gzkit/req_kind_fence.py`) and
 `gz validate --req-kind-discipline`.
 
 **Examples:**

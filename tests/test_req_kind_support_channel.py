@@ -37,7 +37,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
     @covers("REQ-0.0.69-01-01")
     def test_pass_when_event_found_and_scope_exits_zero(self) -> None:
         """Cited event in ledger AND scope exits 0 → "pass"; never "advisory-support"."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = (
             "manpage updated — artifact_edited ledger event "
@@ -48,7 +48,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
             with patch(
-                "gzkit.req_kind._dispatch_validator_scope", return_value=True
+                "gzkit.req_kind_support._dispatch_validator_scope", return_value=True
             ) as mock_dispatch:
                 result = resolve_support_proof(req_text, project_root)
                 mock_dispatch.assert_called_once_with("documents", project_root)
@@ -88,7 +88,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
             with patch(
-                "gzkit.req_kind._dispatch_validator_scope", return_value=True
+                "gzkit.req_kind_support._dispatch_validator_scope", return_value=True
             ) as mock_dispatch:
                 enriched = compute_three_channel_coverage(report, [dreq], project_root=project_root)
                 mock_dispatch.assert_called_once_with("documents", project_root)
@@ -115,7 +115,7 @@ def _ev(event: str, path: str | None) -> dict:
     return rec
 
 
-_PATCH_SCOPE = "gzkit.req_kind._dispatch_validator_scope"
+_PATCH_SCOPE = "gzkit.req_kind_support._dispatch_validator_scope"
 
 
 class TestSupportProofPathAware(unittest.TestCase):
@@ -130,7 +130,7 @@ class TestSupportProofPathAware(unittest.TestCase):
 
     def test_path_cited_but_no_event_cites_path_is_unproven(self) -> None:
         """Facade regression: artifact_edited exists for a DIFFERENT path → must NOT pass."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -140,7 +140,7 @@ class TestSupportProofPathAware(unittest.TestCase):
             self.assertEqual(result, "unproven-support")
 
     def test_path_cited_and_event_cites_path_passes(self) -> None:
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -152,7 +152,7 @@ class TestSupportProofPathAware(unittest.TestCase):
     def test_grandfathered_req_with_no_event_is_tolerated(self) -> None:
         """A pre-cutover hollow proof named in the grandfather file resolves to a
         distinct 'grandfathered-support' (tolerated, not laundered as 'pass')."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -169,7 +169,7 @@ class TestSupportProofPathAware(unittest.TestCase):
         """Live negative control (closes the #642/#647 'no NC' class): a SUPPORT
         proof citing an event TYPE that was never emitted at all MUST fail. A
         stub gate that auto-passes would pass this; the real gate refuses."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req = (
             "rule shipped — corpus_entry_appended ledger event for "
@@ -188,7 +188,7 @@ class TestSupportProofPathAware(unittest.TestCase):
         is the cited artifact EXISTING on disk (+ structural validator), not a
         historical edit-event that is never emitted for most artifacts. A cited
         file that exists, with NO ledger event citing it, proves."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -204,7 +204,7 @@ class TestSupportProofPathAware(unittest.TestCase):
         satisfied by an unrelated artifact_edited event or a bare file — the
         operation's OWN event type must be present (it is specific, not the
         generic artifact_edited facade)."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req = (
             "composer staged — composition_candidate_emitted ledger event for "
@@ -224,7 +224,7 @@ class TestSupportProofPathAware(unittest.TestCase):
         the event IS the record that the operation ran. Unlike generic
         artifact_edited (4295 events), operation events are specific, so
         type-presence is genuine proof, not the closed facade."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req = (
             "composer staged — composition_candidate_emitted ledger event for "
@@ -243,7 +243,7 @@ class TestSupportProofPathAware(unittest.TestCase):
         proof validator ('`gz validate --documents` passes'), the parser binds
         the proof to the non-fence scope — not the first-mentioned fence scope
         (which would wrongly resolve unproven-recursion-fence). GHI #647."""
-        from gzkit.req_kind import parse_support_citation
+        from gzkit.req_kind_support import parse_support_citation
 
         req = (
             "`docs/governance/x.md` documents `gz validate --req-kind-discipline` — "
@@ -257,7 +257,7 @@ class TestSupportProofPathAware(unittest.TestCase):
     def test_no_path_citation_falls_back_to_type_only(self) -> None:
         """A SUPPORT REQ that cites NO path keeps the type-only ledger check —
         path-aware enforcement only fires when a path is actually cited."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req = "manpage updated — artifact_edited ledger event + gz validate --documents"
         with tempfile.TemporaryDirectory() as tmp:
@@ -274,7 +274,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
     @covers("REQ-0.0.69-01-02")
     def test_unproven_when_cited_event_absent(self) -> None:
         """Cited event NOT in ledger → unproven; never "advisory-support"."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
 
@@ -290,7 +290,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
     @covers("REQ-0.0.69-01-02")
     def test_unproven_when_ledger_missing(self) -> None:
         """No ledger at all → unproven; never "advisory-support"."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
 
@@ -353,7 +353,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
     @covers("REQ-0.0.69-01-02")
     def test_unproven_when_citation_unparseable(self) -> None:
         """Unparseable citation in resolve_support_proof → unproven; never pass."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         # No gz validate scope and no recognized event type
         req_text = "rule file exists and is correct"
@@ -369,7 +369,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
     @covers("REQ-0.0.69-01-03")
     def test_unproven_when_validator_exits_nonzero(self) -> None:
         """Cited validator dispatch non-zero → unproven; never "advisory-support"."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
 
@@ -378,7 +378,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
             _make_ledger(project_root, "artifact_edited")
 
             # Patch the in-process dispatch to simulate a failing scope
-            with patch("gzkit.req_kind._dispatch_validator_scope", return_value=False):
+            with patch("gzkit.req_kind_support._dispatch_validator_scope", return_value=False):
                 result = resolve_support_proof(req_text, project_root)
 
         self.assertNotEqual(result, "pass", "Non-zero exit must not resolve to pass")
@@ -431,7 +431,7 @@ class TestRecursionFence(unittest.TestCase):
     @covers("REQ-0.0.69-01-01")
     def test_recursion_fence_for_req_kind_discipline_scope(self) -> None:
         """Citing gz validate --req-kind-discipline resolves unproven (not dispatched)."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = (
             "discipline enforced — artifact_edited ledger event + gz validate --req-kind-discipline"
@@ -448,7 +448,7 @@ class TestRecursionFence(unittest.TestCase):
     @covers("REQ-0.0.69-01-01")
     def test_recursion_fence_for_closeout_proof_scope(self) -> None:
         """Citing gz validate --closeout-proof resolves unproven (not dispatched)."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         req_text = "proof computed — artifact_edited ledger event + gz validate --closeout-proof"
 
@@ -477,7 +477,7 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
     @covers("REQ-0.0.69-01-01")
     def test_qc_binding_support_proof_passes_when_scope_clean(self) -> None:
         """Cited event present + qc-binding audit clean → "pass" (not unproven)."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -494,7 +494,7 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
     def test_qc_binding_support_proof_unproven_when_scope_errors(self) -> None:
         """The fix can still fail for the right reason: a qc-binding audit that
         returns errors resolves unproven, never pass (ADR-0.0.73 thesis)."""
-        from gzkit.req_kind import resolve_support_proof
+        from gzkit.req_kind_support import resolve_support_proof
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -537,14 +537,14 @@ class TestKnownLedgerEventTypesCoherence(unittest.TestCase):
 
     def test_derived_set_is_nonempty_and_contains_known_type(self) -> None:
         """Introspection works: the set is non-empty and contains artifact_edited."""
-        from gzkit.req_kind import _KNOWN_LEDGER_EVENT_TYPES
+        from gzkit.req_kind_support import _KNOWN_LEDGER_EVENT_TYPES
 
         self.assertGreater(len(_KNOWN_LEDGER_EVENT_TYPES), 0, "Set must be non-empty")
         self.assertIn("artifact_edited", _KNOWN_LEDGER_EVENT_TYPES)
 
     def test_ghost_types_absent(self) -> None:
         """Ghost event types (not in TypedLedgerEvent union and not observed) must be absent."""
-        from gzkit.req_kind import _KNOWN_LEDGER_EVENT_TYPES
+        from gzkit.req_kind_support import _KNOWN_LEDGER_EVENT_TYPES
 
         # obpi_completed was hand-maintained and is not in the TypedLedgerEvent union
         self.assertNotIn(
@@ -555,7 +555,7 @@ class TestKnownLedgerEventTypesCoherence(unittest.TestCase):
 
     def test_all_typed_events_present(self) -> None:
         """Every event type from TypedLedgerEvent union must be in _KNOWN_LEDGER_EVENT_TYPES."""
-        from gzkit.req_kind import _KNOWN_LEDGER_EVENT_TYPES
+        from gzkit.req_kind_support import _KNOWN_LEDGER_EVENT_TYPES
 
         derived = self._derive_union_types()
         self.assertGreater(len(derived), 0, "Introspection must find at least one typed event")
@@ -568,7 +568,7 @@ class TestKnownLedgerEventTypesCoherence(unittest.TestCase):
 
     def test_extras_not_in_union(self) -> None:
         """Every extra in _UNTYPED_LEDGER_EVENT_EXTRAS must NOT be in the TypedLedgerEvent union."""
-        from gzkit.req_kind import _UNTYPED_LEDGER_EVENT_EXTRAS
+        from gzkit.req_kind_support import _UNTYPED_LEDGER_EVENT_EXTRAS
 
         derived = self._derive_union_types()
         for extra in _UNTYPED_LEDGER_EVENT_EXTRAS:

@@ -220,11 +220,11 @@ def _check_req(
     floor_green: Callable[[], bool],
 ) -> ValidationError | None:
     """Recompute one REQ's proof over its channel; return an error if unproven."""
-    from gzkit.req_kind import (
+    from gzkit.req_kind_fence import (
         is_meta_property_enforcement_fence,
         resolve_fence_proof,
-        resolve_support_proof,
     )
+    from gzkit.req_kind_support import resolve_support_proof
 
     if req_id in waived_reqs:
         return None

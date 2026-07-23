@@ -17,7 +17,7 @@ from pydantic import ValidationError
 
 class TestSupportProofGrandfather(unittest.TestCase):
     def test_missing_file_returns_empty_frozenset(self) -> None:
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -27,7 +27,7 @@ class TestSupportProofGrandfather(unittest.TestCase):
         self.assertEqual(result, frozenset())
 
     def test_valid_file_returns_grandfathered_reqs(self) -> None:
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -44,7 +44,7 @@ class TestSupportProofGrandfather(unittest.TestCase):
         self.assertEqual(result, frozenset({"REQ-0.0.1-01-01", "REQ-0.0.1-01-02"}))
 
     def test_malformed_json_raises_instead_of_silently_emptying(self) -> None:
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -60,7 +60,7 @@ class TestSupportProofGrandfather(unittest.TestCase):
     def test_missing_doc_rationale_is_tolerated(self) -> None:
         """``_doc`` is present on the real snapshot but not schema-mandated —
         a file without it still loads (only shape/type drift fails closed)."""
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -76,7 +76,7 @@ class TestSupportProofGrandfather(unittest.TestCase):
 
     def test_unknown_top_level_key_raises(self) -> None:
         """extra='forbid' catches drift/typos in the fixed two-key shape."""
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -91,7 +91,7 @@ class TestSupportProofGrandfather(unittest.TestCase):
                 _support_proof_grandfather(project_root)
 
     def test_non_string_list_item_raises(self) -> None:
-        from gzkit.req_kind import _support_proof_grandfather
+        from gzkit.req_kind_support import _support_proof_grandfather
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)

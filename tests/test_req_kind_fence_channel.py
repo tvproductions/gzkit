@@ -142,7 +142,7 @@ class TestFenceChannelHeadingButNoObpiAnchor(unittest.TestCase):
 
     @covers("REQ-0.0.69-02-01")
     def test_heading_present_but_no_obpi_anchor_is_unproven(self) -> None:
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
@@ -163,7 +163,7 @@ class TestFenceChannelHeadingButNoObpiAnchor(unittest.TestCase):
 
     @covers("REQ-0.0.69-02-02")
     def test_obpi_anchor_present_is_pass(self) -> None:
-        from gzkit.req_kind import resolve_fence_proof
+        from gzkit.req_kind_fence import resolve_fence_proof
 
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
