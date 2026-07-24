@@ -13,6 +13,7 @@ from gzkit.commands.common import (
     console,
     ensure_initialized,
     get_project_root,
+    project_lane_gates,
     resolve_adr_file,
     resolve_adr_ledger_id,
     resolve_obpi,
@@ -189,12 +190,13 @@ def _build_adr_status_entry(
     lane = resolve_adr_lane(entry, config.mode)
     gate_statuses = ledger.get_effective_gate_statuses(adr_id)
     gate4_na = _gate4_na_reason(project_root, lane)
+    projected = project_lane_gates(lane, gate_statuses, gate4_na)
     entry["lane"] = lane
     entry["gates"] = {
         "1": "pass",
-        "2": gate_statuses.get(2, "pending"),
-        "3": gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
-        "4": "n/a" if gate4_na is not None else gate_statuses.get(4, "pending"),
+        "2": projected[2],
+        "3": projected[3],
+        "4": projected[4],
         "5": "pass" if entry.get("attested") else "pending",
     }
     entry["observed_post_validation_gate_failures"] = ledger.get_post_validation_failed_gates(

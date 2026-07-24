@@ -174,6 +174,28 @@ def _gate4_na_reason(project_root: Path, lane: str) -> str | None:
     return None
 
 
+def project_lane_gates(
+    lane: str,
+    gate_statuses: dict[int, str],
+    gate4_na_reason: str | None,
+) -> dict[int, str]:
+    """Project ledger gate statuses through lane-aware n/a masking (GHI #577).
+
+    Returns the effective status of the lane-dependent gates (2, 3, 4): Gate 3
+    is ``n/a`` off the heavy lane, and Gate 4 is ``n/a`` when a Gate-4-n/a
+    reason applies. This is the single projection both ``gz status`` and
+    ``gz context`` read, so neither surface can report a gate the other masks
+    (coupled-surface coherence, AGENTS.md § DO IT RIGHT 1a). Gates 1 (always the
+    entry gate) and 5 (human attestation) are not lane-masked and stay with
+    their owning surfaces.
+    """
+    return {
+        2: gate_statuses.get(2, "pending"),
+        3: gate_statuses.get(3, "pending") if lane == "heavy" else "n/a",
+        4: "n/a" if gate4_na_reason is not None else gate_statuses.get(4, "pending"),
+    }
+
+
 def _attestation_gate_snapshot(
     project_root: Path,
     config: GzkitConfig,

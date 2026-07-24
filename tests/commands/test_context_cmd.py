@@ -14,6 +14,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.common import project_lane_gates
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, gate_checked_event
 from gzkit.traceability import covers
@@ -205,6 +206,46 @@ class TestContextCmdCore(unittest.TestCase):
             self.assertIn("Gate 2", result.output)
             self.assertNotIn("Gate 5", result.output)
 
+    def test_current_gate_masks_lane_na_gates_coherent_with_status(self) -> None:
+        # output-contract: GHI #577 — the gz context current-gate line is the
+        # named surface; it must not report a gate gz status masks as n/a.
+        """GHI #577 (coupled-surface coherence, AGENTS.md § DO IT RIGHT 1a).
+
+        A lite-lane ADR can carry a recorded ``gate_checked(gate=3, pass)``
+        event (reachable via ``gz gates --gate 3``). ``gz status`` masks Gate 3
+        to ``n/a`` for the lite lane, but ``gz context``'s raw ``max(cleared)``
+        reported "Gate 3" as the current gate — two surfaces, one ledger, two
+        answers. Both now read one lane-aware projection, so the current gate is
+        the furthest APPLICABLE gate cleared: Gate 2, never the lane-n/a Gate 3.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            body = (
+                "---\nid: ADR-0.0.99\nkind: foundation\nlane: lite\n"
+                "status: Accepted\n---\n\n# ADR-0.0.99: seeded\n"
+            )
+            adr_file = _seed_adr(_adr_root(), "ADR-0.0.99", body=body)
+            _seed_obpi(adr_file, 1, "seeded-unit")
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            ledger = Ledger(Path(config.paths.ledger))
+            for gate in (2, 3):
+                ledger.append(
+                    gate_checked_event(
+                        adr_id="ADR-0.0.99",
+                        gate=gate,
+                        status="pass",
+                        command=f"uv run gz gates --gate {gate}",
+                        returncode=0,
+                    )
+                )
+            result = runner.invoke(main, ["context", "ADR-0.0.99"])
+            self.assertEqual(result.exit_code, 0)
+            # Lite lane skips Gate 3 (gz status renders it n/a); the current gate
+            # is the furthest APPLICABLE gate cleared, so Gate 2 — not Gate 3.
+            self.assertIn("Gate 2", result.output)
+            self.assertNotIn("Gate 3", result.output)
+
     @covers("REQ-0.28.0-01-07")
     def test_unresolvable_adr_id_exits_nonzero_with_blockers(self) -> None:
         """REQ-07: Unresolvable ADR ID exits non-zero with BLOCKERS: stderr message."""
@@ -330,6 +371,37 @@ class TestContextCmdSlim(unittest.TestCase):
             self.assertIn("governance rules", lower)
             self.assertIn("lane", lower)
             self.assertIn("lifecycle", lower)
+
+
+class TestLaneGateProjection(unittest.TestCase):
+    """The shared lane-aware gate projection both surfaces read (GHI #577).
+
+    Pins the masking truth table directly, independent of any CLI rendering:
+    Gate 3 is n/a off the heavy lane, Gate 4 is n/a when a Gate-4-n/a reason
+    applies, and heavy passes ledger status through untouched.
+    """
+
+    def test_lite_lane_masks_gate_3_regardless_of_ledger(self) -> None:
+        # A recorded gate-3 pass on a lite ADR must project to n/a, so no
+        # consumer can count it as cleared.
+        projected = project_lane_gates(
+            "lite", {2: "pass", 3: "pass"}, "Gate 4 applies to heavy lane only."
+        )
+        self.assertEqual(projected[2], "pass")
+        self.assertEqual(projected[3], "n/a")
+        self.assertEqual(projected[4], "n/a")
+
+    def test_heavy_lane_passes_ledger_status_through(self) -> None:
+        projected = project_lane_gates("heavy", {2: "pass", 3: "pass", 4: "pass"}, None)
+        self.assertEqual(projected, {2: "pass", 3: "pass", 4: "pass"})
+
+    def test_missing_ledger_entries_default_to_pending(self) -> None:
+        projected = project_lane_gates("heavy", {}, None)
+        self.assertEqual(projected, {2: "pending", 3: "pending", 4: "pending"})
+
+    def test_gate4_na_reason_masks_gate_4_on_heavy(self) -> None:
+        projected = project_lane_gates("heavy", {4: "pass"}, "Gate 4 not applicable here.")
+        self.assertEqual(projected[4], "n/a")
 
 
 if __name__ == "__main__":

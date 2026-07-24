@@ -19,8 +19,10 @@ from pathlib import Path
 
 from gzkit.commands.common import (
     GzCliError,
+    _gate4_na_reason,
     ensure_initialized,
     get_project_root,
+    project_lane_gates,
     resolve_adr_file,
 )
 from gzkit.config import GzkitConfig
@@ -81,22 +83,32 @@ def _render_covering_tests(adr_stem: str, project_root: Path) -> str:
     return "".join(lines)
 
 
-def _ledger_current_gate(adr_id: str, project_root: Path, config: GzkitConfig) -> str:
-    """Return the current gate as the highest gate cleared in the ledger.
+def _ledger_current_gate(
+    adr_id: str,
+    project_root: Path,
+    config: GzkitConfig,
+    lane: str,
+    gate4_na_reason: str | None,
+) -> str:
+    """Return the current gate as the furthest APPLICABLE gate cleared.
 
     REQ-0.28.0-01-06 mandates the gate derive from *ledger* state (Layer-2
     truth), never the frontmatter ``status:`` field — see AGENTS.md Never-rule
     #7 and Architectural Boundary 6. ``get_effective_gate_statuses`` honors
     lifecycle authority for display surfaces (state-doctrine; GHI #392). The
-    current gate is the furthest-cleared gate; when the ledger records none it
-    is Gate 1 (the entry gate).
+    projection is lane-aware and shared with ``gz status`` via
+    ``project_lane_gates`` (GHI #577): a gate the lane marks ``n/a`` never
+    counts as cleared, so both surfaces report the same gate for the same ADR.
+    When the ledger records no applicable cleared gate it is Gate 1 (the entry
+    gate).
     """
     ledger = Ledger(project_root / config.paths.ledger)
     statuses = ledger.get_effective_gate_statuses(adr_id)
-    cleared = [gate for gate, status in statuses.items() if status == "pass"]
+    projected = project_lane_gates(lane, statuses, gate4_na_reason)
+    cleared = [gate for gate in (2, 3, 4) if projected[gate] == "pass"]
     if cleared:
-        return f"Gate {max(cleared)} (latest cleared per ledger)"
-    return "Gate 1 (no gates recorded in ledger)"
+        return f"Gate {max(cleared)} (latest applicable gate cleared)"
+    return "Gate 1 (no applicable gates recorded in ledger)"
 
 
 def _render_governance_rules(adr_file: Path, project_root: Path, config: GzkitConfig) -> str:
@@ -119,7 +131,13 @@ def _render_governance_rules(adr_file: Path, project_root: Path, config: GzkitCo
                     lane = stripped.split(":", 1)[1].strip() or lane
                 elif stripped.startswith("status:"):
                     lifecycle = stripped.split(":", 1)[1].strip() or lifecycle
-    current_gate = _ledger_current_gate(adr_file.stem, project_root, config)
+    # Normalize the lane for the shared gate projection; the display line above
+    # keeps the frontmatter value verbatim.
+    lane_normalized = lane.strip().lower()
+    gate4_na_reason = _gate4_na_reason(project_root, lane_normalized)
+    current_gate = _ledger_current_gate(
+        adr_file.stem, project_root, config, lane_normalized, gate4_na_reason
+    )
     next_action = (
         "Run `gz obpi pipeline <OBPI-ID>` to drive the next OBPI through implement -> verify."
         if lifecycle.lower() in {"proposed", "draft", "accepted"}
