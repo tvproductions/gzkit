@@ -19,6 +19,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from unittest import mock
 
 from gzkit.commands.handoff import (
     SECTION_PARAMS,
@@ -26,7 +27,7 @@ from gzkit.commands.handoff import (
     handoff_list_cmd,
     handoff_resume_cmd,
 )
-from gzkit.handoff_api import create_handoff, validate_handoff_document
+from gzkit.handoff_api import ReferenceState, create_handoff, validate_handoff_document
 from gzkit.handoff_validation import REQUIRED_SECTIONS
 from gzkit.traceability import covers
 
@@ -179,6 +180,69 @@ class TestHandoffResume(_HandoffCliCase):
             payload["requires_human_verification"],
             "a Very-Stale handoff flags requires_human_verification",
         )
+
+
+class TestHandoffResumeReferenceRendering(_HandoffCliCase):
+    """The resume report marks a step whose cited precondition is settled.
+
+    Output-form assertions are the named contract here: the operator reads this
+    rendering to decide what is still actionable, so the VOID marker and the
+    per-step ``refs:`` line ARE the behavior (GHI #696 defect 2). The ``gh``
+    boundary is mocked per the unit-tier contract — no network, no live issue.
+    """
+
+    def _capture_console(self, fn) -> str:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            fn()
+        return buf.getvalue()
+
+    def _resume_with_states(self, next_steps: str, states: dict[str, ReferenceState]) -> str:
+        self._seed(
+            adr_id="ADR-0.0.65",
+            slug="refs",
+            timestamp="2026-07-14T09:00:00Z",
+            next_steps=next_steps,
+        )
+        with mock.patch(
+            "gzkit.commands.handoff._gh_issue_state",
+            side_effect=lambda number, _root: states.get(number, ReferenceState.UNKNOWN),
+        ):
+            return self._capture_console(
+                lambda: handoff_resume_cmd(
+                    adr="ADR-0.0.65", now="2026-07-14T11:00:00Z", base_path=self.base
+                )
+            )
+
+    def test_step_citing_a_closed_ghi_renders_void(self) -> None:
+        # output-contract: the VOID marker is what tells the operator the step is
+        # not actionable; its absence is the GHI #693 re-adjudication.
+        out = self._resume_with_states(
+            "1. Rule on GHI #693 (cli audit presence-vs-truth).",
+            {"693": ReferenceState.SETTLED},
+        )
+
+        self.assertIn("VOID", out)
+        self.assertIn("settled", out)
+        self.assertIn("cite a SETTLED precondition", out)
+
+    def test_step_citing_an_open_ghi_renders_live_without_void(self) -> None:
+        # output-contract: a live precondition must not be decorated as void.
+        out = self._resume_with_states(
+            "1. Rule on GHI #691 (rules have no aging clock).",
+            {"691": ReferenceState.LIVE},
+        )
+
+        self.assertIn("live", out)
+        self.assertNotIn("VOID", out)
+
+    def test_unreachable_gh_renders_unknown_not_live(self) -> None:
+        # output-contract: an unresolvable reference must read as unknown, never
+        # as verified — the operator must be able to see the check did not run.
+        out = self._resume_with_states("1. Rule on GHI #693.", {})
+
+        self.assertIn("unknown", out)
+        self.assertNotIn("VOID", out)
 
 
 class TestHandoffCreate(_HandoffCliCase):

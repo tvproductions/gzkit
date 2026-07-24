@@ -15,7 +15,10 @@ from unittest import mock
 
 from gzkit.handoff_api import (
     ObservedState,
+    ReferenceKind,
+    ReferenceState,
     StalenessLevel,
+    StepReference,
     create_handoff,
     list_handoffs,
     load_handoff_chain,
@@ -366,6 +369,59 @@ class TestResumeCarriesEveryNextStep(unittest.TestCase):
             self.assertEqual(result.first_next_step, self._FOUR_STEPS[0])
             self.assertEqual(result.model_dump()["first_next_step"], self._FOUR_STEPS[0])
 
+    def test_enumeration_collapsed_onto_one_line_still_yields_every_step(self) -> None:
+        """A run of ``1. … 2. … 3. …`` in one paragraph is still N steps.
+
+        ``gz handoff create --next-steps`` takes the section as a single string,
+        so an author who numbers inline authors one LINE holding four STEPS.
+        Matching enumeration only at line start consumed the first and dropped
+        the rest — the identical "authored 3-5, consumed 1" outcome GHI #696
+        names, reached through authoring shape rather than through the scalar
+        return. Observed on `20260724T114926Z`, whose four advised steps
+        rendered as `next steps (1)`.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            collapsed = (
+                "Resume the degrading tier in rank order. 2. VERIFY reproduction "
+                "before fixing each item. 3. #607 is GOVERNANCE-PARKED; surface it. "
+                "4. Obtain operator authorization before executing any of them."
+            )
+            self._handoff_with_steps(handoff_dir, (collapsed,))
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(
+                list(result.next_steps),
+                [
+                    "Resume the degrading tier in rank order.",
+                    "VERIFY reproduction before fixing each item.",
+                    "#607 is GOVERNANCE-PARKED; surface it.",
+                    "Obtain operator authorization before executing any of them.",
+                ],
+                "an inline-numbered run must split into one entry per authored step",
+            )
+
+    def test_decimal_bearing_prose_is_not_split_into_bogus_steps(self) -> None:
+        """Splitting keys on ``N. `` — a version or ratio must not trigger it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_steps(
+                handoff_dir,
+                ("Bump to 0.33.1 and re-verify ADR-0.0.65; coverage held at 40.00%.",),
+            )
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(
+                list(result.next_steps),
+                ["Bump to 0.33.1 and re-verify ADR-0.0.65; coverage held at 40.00%."],
+            )
+
     def test_empty_next_steps_section_yields_empty_list_not_crash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -377,6 +433,126 @@ class TestResumeCarriesEveryNextStep(unittest.TestCase):
 
             self.assertEqual(list(result.next_steps), [])
             self.assertEqual(result.first_next_step, "")
+
+
+class TestResumeVerifiesStepReferences(unittest.TestCase):
+    """An advised next step is checked against live state before it is relayed.
+
+    The resume contract (`gz-session-handoff/SKILL.md` § Claim Verification Gate)
+    requires verifying "the precondition of each advised step ... a step whose
+    precondition is STALE is void". Nothing mechanized that: ``resume_handoff``
+    returned authored strings, so a step could advise work that was already done.
+
+    Observed instance (GHI #696 defect 2): the `20260717T015912Z` handoff advised
+    as its #1 action "RULE ON GHI #693 ... the only NEEDED FIX this session leaves
+    open". GHI #693 had been closed by commit `8aa9b887` BEFORE that handoff was
+    written. The advisory was authored from session working memory and never
+    checked, so the successor session re-adjudicated a settled question.
+    """
+
+    def _handoff_with_steps(self, directory: Path, steps: tuple[str, ...]) -> None:
+        numbered = "\n".join(f"{i}. {step}" for i, step in enumerate(steps, start=1))
+        body = (
+            "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+            f"## Immediate Next Steps\n\n{numbered}\n"
+        )
+        (directory / "h.md").write_text(body, encoding="utf-8", newline="\n")
+
+    def _resume(
+        self,
+        steps: tuple[str, ...],
+        checker: object = None,
+        tmp: str | None = None,
+    ) -> object:
+        with tempfile.TemporaryDirectory() as made:
+            base = Path(tmp or made)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True, exist_ok=True)
+            self._handoff_with_steps(handoff_dir, steps)
+            return resume_handoff(
+                adr_id="ADR-0.0.65",
+                base_path=base,
+                now="2026-07-18T11:00:00Z",
+                reference_checker=checker,
+            )
+
+    def test_settled_reference_voids_the_step_that_depends_on_it(self) -> None:
+        """A step whose cited precondition is settled is not actionable."""
+
+        def checker(reference: StepReference) -> ReferenceState:
+            return ReferenceState.SETTLED if reference.identifier == "693" else ReferenceState.LIVE
+
+        result = self._resume(
+            ("Rule on GHI #693 (cli audit presence-vs-truth).", "Close out ADR-0.0.37."),
+            checker=checker,
+        )
+
+        self.assertTrue(
+            result.steps[0].is_void,
+            "a step citing a settled reference must be marked void, not relayed as actionable",
+        )
+        self.assertFalse(result.steps[1].is_void)
+
+    def test_live_reference_leaves_the_step_actionable(self) -> None:
+        result = self._resume(
+            ("Rule on GHI #691 (rules have no aging clock).",),
+            checker=lambda _reference: ReferenceState.LIVE,
+        )
+
+        self.assertFalse(result.steps[0].is_void)
+
+    def test_every_governance_reference_kind_is_extracted(self) -> None:
+        """GHI, ADR, and OBPI tokens all reach the checker as domain references."""
+        result = self._resume(
+            ("Finish OBPI-0.0.65-02 under ADR-0.0.65, then rule on #691.",),
+            checker=lambda _reference: ReferenceState.LIVE,
+        )
+
+        found = {(ref.kind, ref.identifier) for ref in result.steps[0].references}
+        self.assertEqual(
+            found,
+            {
+                (ReferenceKind.OBPI, "OBPI-0.0.65-02"),
+                (ReferenceKind.ADR, "ADR-0.0.65"),
+                (ReferenceKind.GHI, "691"),
+            },
+        )
+
+    def test_absent_checker_yields_unknown_never_live(self) -> None:
+        """With no adapter injected the core resolves nothing — and says so.
+
+        UNKNOWN must not collapse into LIVE. A resume that cannot reach live
+        state has not verified the step; rendering that as verified is the
+        failure this seam exists to prevent.
+        """
+        result = self._resume(("Rule on GHI #693.",))
+
+        states = [ref.state for ref in result.steps[0].references]
+        self.assertEqual(states, [ReferenceState.UNKNOWN])
+        self.assertFalse(
+            result.steps[0].is_void,
+            "unknown is not settled — an unresolvable reference must not void a step",
+        )
+
+    def test_step_without_references_is_never_void(self) -> None:
+        result = self._resume(
+            ("Verify reproduction before fixing each item.",),
+            checker=lambda _reference: ReferenceState.SETTLED,
+        )
+
+        self.assertEqual(result.steps[0].references, ())
+        self.assertFalse(result.steps[0].is_void)
+
+    def test_next_steps_stays_the_derived_text_projection(self) -> None:
+        """Defect 1's contract survives: every authored step, in authored order."""
+        authored = ("Rule on GHI #691.", "Re-verify Pass A rows 1-8.", "Close ADR-0.0.37.")
+
+        result = self._resume(authored, checker=lambda _reference: ReferenceState.LIVE)
+
+        self.assertEqual(list(result.next_steps), list(authored))
+        self.assertEqual(result.first_next_step, authored[0])
+        self.assertEqual(result.model_dump()["next_steps"], list(authored))
 
 
 class TestChainLinkIsCorrectByConstruction(unittest.TestCase):

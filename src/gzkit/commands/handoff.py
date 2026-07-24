@@ -23,13 +23,18 @@ from pathlib import Path
 from gzkit.commands.common import console, get_project_root
 from gzkit.handoff_api import (
     HandoffInfo,
+    NextStep,
+    ReferenceChecker,
+    ReferenceKind,
+    ReferenceState,
     ResumeResult,
+    StepReference,
     create_handoff,
     list_handoffs,
     resume_handoff,
 )
 from gzkit.handoff_validation import HandoffValidationError
-from gzkit.utils import git_cmd
+from gzkit.utils import git_cmd, run_exec
 
 # Required section -> the handoff_create_cmd parameter that fills it. Every
 # REQUIRED_SECTIONS entry MUST appear here: a section with no parameter cannot be
@@ -74,22 +79,98 @@ def handoff_list_cmd(
         console.print(f"{info.timestamp}  {info.adr_id}  {info.obpi_id or '-'}  {info.path}")
 
 
+def _gh_issue_state(number: str, project_root: Path) -> ReferenceState:
+    """Resolve one GHI number to a live/settled verdict via the ``gh`` read verb.
+
+    Any failure — ``gh`` absent, unauthenticated, offline, malformed payload —
+    resolves to ``UNKNOWN`` rather than to ``LIVE``. Degrading to "verified"
+    when the check could not run would reintroduce exactly the unverified
+    advisory this adapter exists to catch.
+    """
+    rc, out, _ = run_exec(
+        ["gh", "issue", "view", number, "--json", "state"], project_root, timeout=10
+    )
+    if rc != 0:
+        return ReferenceState.UNKNOWN
+    try:
+        payload = json.loads(out)
+    except json.JSONDecodeError:
+        return ReferenceState.UNKNOWN
+    state = str(payload.get("state", "")).upper() if isinstance(payload, dict) else ""
+    if state == "CLOSED":
+        return ReferenceState.SETTLED
+    if state == "OPEN":
+        return ReferenceState.LIVE
+    return ReferenceState.UNKNOWN
+
+
+def _live_reference_checker(project_root: Path) -> ReferenceChecker:
+    """Adapter: resolve a step's cited references against live state (GHI #696).
+
+    GHI state is read through ``gh``, which is its only Layer-2 surface. OBPI and
+    ADR references resolve to ``UNKNOWN``: their only repo-local index
+    (``adr-status.md``) is a **Layer-3 derived view**, and
+    ``docs/governance/state-doctrine.md`` forbids reading one as truth — an
+    honest UNKNOWN beats a confident answer sourced from a non-authority.
+
+    Results are memoized per reference, and a missing/failing ``gh`` latches the
+    adapter off so an offline resume costs one failed call, not one per citation.
+    """
+    cache: dict[str, ReferenceState] = {}
+    reachable = True
+
+    def check(reference: StepReference) -> ReferenceState:
+        nonlocal reachable
+        if reference.kind is not ReferenceKind.GHI or not reachable:
+            return ReferenceState.UNKNOWN
+        if reference.identifier not in cache:
+            state = _gh_issue_state(reference.identifier, project_root)
+            if state is ReferenceState.UNKNOWN:
+                reachable = False
+            cache[reference.identifier] = state
+        return cache[reference.identifier]
+
+    return check
+
+
+def _render_step_references(step: NextStep) -> None:
+    """Render one step's citations and their live state, indented under it."""
+    if not step.references:
+        return
+    rendered = " · ".join(
+        f"{ref.kind.value} {ref.identifier}: {ref.state.value}" for ref in step.references
+    )
+    console.print(f"       refs: {rendered}")
+
+
 def _render_resume(result: ResumeResult) -> None:
     """Human-readable resume report — path, staleness, and EVERY next step.
 
     All authored steps are rendered, not just the head: surfacing one is what
     let items 2-N fall out of the advisory channel and be re-adjudicated as
     open loops in the successor session (GHI #696).
+
+    Each step also carries the live state of what it cites. A step whose
+    precondition is settled is marked VOID, because relaying it as actionable is
+    how a closed GHI got re-adjudicated three sessions running (GHI #696
+    defect 2).
     """
     console.print(f"resume — {result.path}")
     console.print(f"  staleness: {result.staleness.value}")
     console.print(f"  requires human verification: {result.requires_human_verification}")
-    if not result.next_steps:
+    if not result.steps:
         console.print("  next steps: (none extracted)")
         return
-    console.print(f"  next steps ({len(result.next_steps)}):")
-    for index, step in enumerate(result.next_steps, start=1):
-        console.print(f"    {index}. {step}")
+    console.print(f"  next steps ({len(result.steps)}):")
+    for index, step in enumerate(result.steps, start=1):
+        marker = "VOID — " if step.is_void else ""
+        console.print(f"    {index}. {marker}{step.text}")
+        _render_step_references(step)
+    void_count = sum(1 for step in result.steps if step.is_void)
+    if void_count:
+        console.print(
+            f"  {void_count} step(s) cite a SETTLED precondition — re-verify before relaying."
+        )
 
 
 def handoff_resume_cmd(
@@ -104,11 +185,17 @@ def handoff_resume_cmd(
     Read-only projection of :func:`resume_handoff`. ``now`` is computed here when
     not supplied (the API takes it as a required parameter); it is injectable so
     staleness classification can be asserted deterministically. ``--json`` emits
-    the ``ResumeResult`` dump; the human form shows path, staleness, and the
-    extracted next step.
+    the ``ResumeResult`` dump; the human form shows path, staleness, and every
+    extracted next step with the live state of the references it cites.
     """
     resolved_now = now if now is not None else datetime.now(UTC).isoformat()
-    result = resume_handoff(adr_id=adr, base_path=base_path, now=resolved_now)
+    root = get_project_root() if base_path == Path(".") else base_path
+    result = resume_handoff(
+        adr_id=adr,
+        base_path=base_path,
+        now=resolved_now,
+        reference_checker=_live_reference_checker(root),
+    )
     if as_json:
         print(json.dumps(result.model_dump(), indent=2))  # noqa: T201
         return

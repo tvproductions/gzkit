@@ -20,6 +20,7 @@ import re
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
 from pathlib import Path
+from typing import Protocol
 
 import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
@@ -33,9 +34,14 @@ from gzkit.handoff_validation import (
 
 __all__ = [
     "HandoffInfo",
+    "NextStep",
     "ObservedState",
+    "ReferenceChecker",
+    "ReferenceKind",
+    "ReferenceState",
     "ResumeResult",
     "StalenessLevel",
+    "StepReference",
     "create_handoff",
     "list_handoffs",
     "load_handoff_chain",
@@ -59,6 +65,69 @@ class StalenessLevel(StrEnum):
     SLIGHTLY_STALE = "Slightly-Stale"
     STALE = "Stale"
     VERY_STALE = "Very-Stale"
+
+
+class ReferenceKind(StrEnum):
+    """The governance artifact kinds an authored next step can cite."""
+
+    GHI = "GHI"
+    ADR = "ADR"
+    OBPI = "OBPI"
+
+
+class ReferenceState(StrEnum):
+    """Live-state verdict for one cited reference.
+
+    ``UNKNOWN`` is a first-class outcome, never a synonym for ``LIVE``: a
+    reference the checker could not resolve has NOT been verified, and
+    rendering it as verified is the failure this seam exists to prevent.
+    """
+
+    LIVE = "live"
+    SETTLED = "settled"
+    UNKNOWN = "unknown"
+
+
+class StepReference(BaseModel):
+    """A governance identifier cited by an authored next step."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    kind: ReferenceKind
+    identifier: str
+    state: ReferenceState = ReferenceState.UNKNOWN
+
+
+class NextStep(BaseModel):
+    """One authored next step with the live state of everything it cites."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    text: str
+    references: tuple[StepReference, ...] = ()
+
+    @computed_field
+    @property
+    def is_void(self) -> bool:
+        """True when a cited precondition is settled — the step is not actionable.
+
+        Only ``SETTLED`` voids. ``UNKNOWN`` does not: an unresolvable reference
+        is missing evidence, not evidence of a closed precondition.
+        """
+        return any(ref.state is ReferenceState.SETTLED for ref in self.references)
+
+
+class ReferenceChecker(Protocol):
+    """Port: resolves one cited reference against live state.
+
+    Domain-typed in both directions (a ``StepReference`` in, a
+    ``ReferenceState`` out) so no adapter's native type — a ``gh`` JSON payload,
+    a ledger event mapping — crosses the boundary. The core takes this as a
+    parameter and never names the technology behind it, per
+    ``.claude/rules/hexagonal-architecture.md`` § Operative rules 3 and 4.
+    """
+
+    def __call__(self, reference: StepReference) -> ReferenceState: ...
 
 
 class ObservedState(BaseModel):
@@ -91,12 +160,15 @@ class HandoffInfo(BaseModel):
 class ResumeResult(BaseModel):
     """Outcome of resuming the newest handoff for an ADR.
 
-    ``next_steps`` carries EVERY authored next step, in authored order. The
-    authoring contract mandates 3-5 concrete actions; a resume that surfaced
-    only the head silently discarded items 2-N, which then reappeared in the
-    successor handoff's open-loop section and were re-adjudicated as undecided
-    work (GHI #696). ``first_next_step`` remains as a derived head so the
-    ``--json`` payload and its consumers are unbroken.
+    ``steps`` carries EVERY authored next step, in authored order, each paired
+    with the live state of the governance references it cites. The authoring
+    contract mandates 3-5 concrete actions; a resume that surfaced only the head
+    silently discarded items 2-N, which then reappeared in the successor
+    handoff's open-loop section and were re-adjudicated as undecided work
+    (GHI #696 defect 1) — and a resume that surfaced them unverified advised work
+    that was already done (defect 2). ``next_steps`` and ``first_next_step``
+    remain as derived projections so the ``--json`` payload and its consumers are
+    unbroken.
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
@@ -104,8 +176,20 @@ class ResumeResult(BaseModel):
     path: str
     staleness: StalenessLevel
     requires_human_verification: bool
-    next_steps: list[str]
+    steps: list[NextStep]
     chain: list[str]
+
+    @computed_field
+    @property
+    def next_steps(self) -> list[str]:
+        """The authored text of every step — derived, never separately stored.
+
+        ``steps`` is the single source; the text projection is computed from it.
+        Storing both would be two representations of one fact, which is the
+        parallel-model drift ``.claude/rules/hexagonal-architecture.md``
+        § Operative rule 8 forbids.
+        """
+        return [step.text for step in self.steps]
 
     @computed_field
     @property
@@ -175,12 +259,28 @@ def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
     return "".join(parts).rstrip("\n") + "\n"
 
 
+_ITEM_MARKER_RE = re.compile(r"^(?:\d+\.\s+|[-*]\s+)(.*)$")
+
+# Split a collapsed enumeration: sentence end, whitespace, then ``N. `` + content.
+# Anchored on the preceding ``.;:`` and on a space after the ordinal so a version
+# ("0.33.1"), a ratio, or a percentage cannot masquerade as a step boundary.
+_INLINE_ENUMERATION_RE = re.compile(r"(?<=[.;:])\s+(?=\d+\.\s+\S)")
+
+
 def _extract_next_steps(content: str) -> list[str]:
     """Return EVERY numbered/bulleted item of the Immediate Next Steps section.
 
     Returns them in authored order. The authoring contract mandates 3-5 concrete
     actions; returning only the head is what let items 2-N fall out of the
     advisory channel and be re-adjudicated as open loops (GHI #696).
+
+    An enumeration collapsed onto one line counts as N steps, not one.
+    ``gz handoff create --next-steps`` takes the whole section as a single
+    string, so an author numbering inline writes one LINE holding four STEPS —
+    and line-anchored matching then consumed the first and dropped the rest,
+    reaching the same "authored 3-5, consumed 1" outcome through authoring shape.
+    Splitting is attempted only on lines that already carry an item marker, which
+    confines the heuristic to text that is enumerated by construction.
     """
     heading = re.search(r"^##\s+Immediate Next Steps\s*$", content, re.MULTILINE)
     if heading is None:
@@ -190,9 +290,65 @@ def _extract_next_steps(content: str) -> list[str]:
     section = rest[: nxt.start()] if nxt else rest
     steps: list[str] = []
     for line in section.splitlines():
-        match = re.match(r"^(?:\d+\.\s+|[-*]\s+)(.*)$", line.strip())
-        if match and match.group(1).strip():
-            steps.append(match.group(1).strip())
+        stripped = line.strip()
+        if _ITEM_MARKER_RE.match(stripped) is None:
+            continue
+        for chunk in _INLINE_ENUMERATION_RE.split(stripped):
+            marked = _ITEM_MARKER_RE.match(chunk.strip())
+            text = (marked.group(1) if marked else chunk).strip()
+            if text:
+                steps.append(text)
+    return steps
+
+
+_REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
+    # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR
+    # first would strand the OBPI suffix as a second, bogus reference.
+    (ReferenceKind.OBPI, re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d+")),
+    (ReferenceKind.ADR, re.compile(r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)")),
+    # Bare ``#123`` counts: handoff authors write "#696" far more often than
+    # "GHI #696", and the bare form is the one that decayed unchecked.
+    (ReferenceKind.GHI, re.compile(r"(?:\bGHI\s*)?#(\d+)\b")),
+)
+
+
+def _extract_references(text: str) -> tuple[StepReference, ...]:
+    """Return every governance identifier cited by one authored next step.
+
+    Pure and stdlib-only — no adapter, no network. Deduplicated on
+    (kind, identifier) with first-seen order preserved so a step naming the
+    same GHI twice yields one reference.
+    """
+    seen: set[tuple[ReferenceKind, str]] = set()
+    found: list[StepReference] = []
+    remaining = text
+    for kind, pattern in _REFERENCE_PATTERNS:
+        for match in pattern.finditer(remaining):
+            identifier = match.group(1) if kind is ReferenceKind.GHI else match.group(0)
+            key = (kind, identifier)
+            if key in seen:
+                continue
+            seen.add(key)
+            found.append(StepReference(kind=kind, identifier=identifier))
+        # Consume what this kind claimed so a later, looser pattern cannot
+        # re-read the same span (``ADR-0.0.65`` inside ``OBPI-0.0.65-02``).
+        remaining = pattern.sub(" ", remaining)
+    return tuple(found)
+
+
+def _build_steps(content: str, checker: ReferenceChecker | None) -> list[NextStep]:
+    """Pair every authored next step with the live state of what it cites.
+
+    With no ``checker`` injected every reference stays ``UNKNOWN`` — the core is
+    fully exercisable without an adapter (hexagonal § Operative rule 6), and an
+    unreachable live state never renders as verified.
+    """
+    steps: list[NextStep] = []
+    for text in _extract_next_steps(content):
+        references = _extract_references(text)
+        if checker is not None:
+            references = tuple(ref.model_copy(update={"state": checker(ref)}) for ref in references)
+        steps.append(NextStep(text=text, references=references))
     return steps
 
 
@@ -439,7 +595,11 @@ def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path(".")) -> li
 
 
 def resume_handoff(
-    *, adr_id: str | None = None, base_path: Path = Path("."), now: str
+    *,
+    adr_id: str | None = None,
+    base_path: Path = Path("."),
+    now: str,
+    reference_checker: ReferenceChecker | None = None,
 ) -> ResumeResult:
     """Resume the newest handoff for ``adr_id`` with staleness classification.
 
@@ -447,6 +607,13 @@ def resume_handoff(
     (``now`` minus its frontmatter timestamp), flags
     ``requires_human_verification`` for Stale / Very-Stale, and extracts every
     authored next step from the Immediate Next Steps section.
+
+    ``reference_checker`` resolves each cited GHI / ADR / OBPI against live
+    state, so a step whose precondition is already settled is marked void rather
+    than relayed as actionable (GHI #696 defect 2). It is a parameter, never a
+    named technology: the ``gh`` adapter is wired at the CLI boundary. Omitted,
+    every reference stays ``UNKNOWN`` — unverified, and never mistaken for
+    verified.
 
     ``adr_id=None`` resumes the newest handoff regardless of scope, which is the
     only way to reach an ADR-less handoff (GHI #709) — authoring one that could
@@ -467,6 +634,6 @@ def resume_handoff(
         path=path.as_posix(),
         staleness=staleness,
         requires_human_verification=requires,
-        next_steps=_extract_next_steps(content),
+        steps=_build_steps(content, reference_checker),
         chain=chain,
     )

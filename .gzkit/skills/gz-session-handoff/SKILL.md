@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.15.0"
+  skill-version: "6.16.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-24
 model: sonnet
 ---
 
-# gz-session-handoff (v6.13.0)
+# gz-session-handoff (v6.16.0)
 
 ## Purpose
 
@@ -230,7 +230,16 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
    step whose precondition is STALE is void. Never relay a handoff claim as fact
    without this check.
 
-8. **Extract first next step** from the "Immediate Next Steps" section using `extract_first_next_step(content)` — returns the text of the first numbered or bulleted item for quick resumption.
+   **`uv run gz handoff resume` runs the advised-step arm of this gate for you**
+   (GHI #696 defect 2). It extracts every governance reference each step cites and
+   resolves GHI state through `gh`, rendering `live` / `settled` / `unknown` per
+   reference and marking a step **VOID** when a citation is `settled`. Start there
+   rather than hand-rolling the `gh` calls — then hand-verify what it reports as
+   `unknown` (ADR and OBPI references always resolve `unknown`, because their only
+   repo-local index is a Layer-3 derived view). A `VOID` step is a STALE claim: do
+   not relay it as actionable.
+
+8. **Extract the next steps** from the "Immediate Next Steps" section — `resume_handoff` returns `ResumeResult.steps`, one entry per authored step (with its references), and `next_steps` / `first_next_step` as derived text projections. An enumeration collapsed onto one line still yields one entry per step.
 
 9. **Report** the result, then **stop and await operator authorization** (do not begin executing):
    - File path of the resumed handoff
@@ -323,7 +332,7 @@ holds:
 | "Gate N passed" / "gates green" | `uv run gz status` | ledger |
 | any artifact-state / readiness claim | `uv run gz state` | artifact graph |
 | "tests were green" / coverage claim | re-run the canonical step (see Verification Checklist) | observed output |
-| "GHI #N CLOSED / OPEN" / advises "rule on GHI #M" | `gh issue view <N> --json state,title` | GitHub issue state |
+| "GHI #N CLOSED / OPEN" / advises "rule on GHI #M" | `uv run gz handoff resume` (**mechanized** for advised steps — GHI #696), else `gh issue view <N> --json state,title` | GitHub issue state |
 | "PR #N merged" / "released vX.Y.Z" | `gh pr view <N>` / `gh release view vX.Y.Z` | GitHub |
 
 **This table is the allowlist's authority.** The gate's permitted-read set is
