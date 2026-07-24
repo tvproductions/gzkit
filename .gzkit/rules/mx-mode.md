@@ -9,7 +9,7 @@ paths:
   - ".claude/hooks/mx-awareness.py"
   - "src/gzkit/mx/awareness.py"
 ---
-<!-- rule-version: 1.0.0 -->
+<!-- rule-version: 1.0.1 -->
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
@@ -20,9 +20,9 @@ paths:
 
 ### Honor the marker
 
-- Honor the marker: when `.gzkit/mx-active` exists, most guards drop to advisory
+- Honor the marker: when `.gzkit/mx.json` exists, most guards drop to advisory
 
-Before every action in a session where `.gzkit/mx-active` exists, confirm the
+Before every action in a session where `.gzkit/mx.json` exists, confirm the
 hangar is open. When the marker is present:
 
 - `gate5_invariants` remain **fail-closed**. Gate 5 is never advisory.

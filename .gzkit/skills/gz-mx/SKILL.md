@@ -9,11 +9,11 @@ description: >
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-27
+last_reviewed: 2026-07-24
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 ---
 
 # gz mx
@@ -43,7 +43,7 @@ out to `gz mx enter` or `gz mx exit` directly.
    ```bash
    uv run gz mx enter
    ```
-   Creates `.gzkit/mx-active` marker. Most governance guards drop to advisory.
+   Creates `.gzkit/mx.json` marker. Most governance guards drop to advisory.
 
 2. **Perform the repair**
    Work on the governance surfaces that needed fixing. Gate 5 invariants and
@@ -54,7 +54,7 @@ out to `gz mx enter` or `gz mx exit` directly.
    ```bash
    uv run gz mx exit
    ```
-   Removes `.gzkit/mx-active` marker. Every guard re-runs at full strength;
+   Removes `.gzkit/mx.json` marker. Every guard re-runs at full strength;
    exit is a hard gate (all guards must pass before exit succeeds).
 
 ## Example

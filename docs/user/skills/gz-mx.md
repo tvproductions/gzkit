@@ -29,7 +29,7 @@ The skill is the correct interface. Nobody shells out to `gz mx enter` or
    uv run gz mx enter
    ```
 
-   Creates `.gzkit/mx-active`. Most governance guards drop to advisory.
+   Creates `.gzkit/mx.json`. Most governance guards drop to advisory.
 
 2. **Perform the repair**
 
@@ -42,7 +42,7 @@ The skill is the correct interface. Nobody shells out to `gz mx enter` or
    uv run gz mx exit
    ```
 
-   Removes `.gzkit/mx-active`. Every guard re-runs at full strength; exit
+   Removes `.gzkit/mx.json`. Every guard re-runs at full strength; exit
    is a hard gate (all guards must pass before exit succeeds).
 
 ## Invocation
@@ -61,7 +61,7 @@ The skill is the correct interface. Nobody shells out to `gz mx enter` or
 |------|------|------------|
 | `.gzkit/skills/gz-mx/SKILL.md` | Agent execution instructions | Read |
 | `.gzkit/rules/mx-mode.md` | Binding rule for hangar sessions | Read |
-| `.gzkit/mx-active` | Marker file indicating open hangar | Read/Write (by `gz mx enter/exit`) |
+| `.gzkit/mx.json` | Marker file indicating open hangar | Read/Write (by `gz mx enter/exit`) |
 
 ## Related Skills and Commands
 

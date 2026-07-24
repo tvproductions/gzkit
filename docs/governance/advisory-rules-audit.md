@@ -280,7 +280,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 62 | Honor the marker: when `.gzkit/mx-active` exists, most guards drop to advisory | **Promotable** | The marker-check is structural (file exists/not); the awareness hook (`src/gzkit/mx/awareness.py`) fires per-turn but liveness is advisory. Could promote to fail-closed via a `gz validate --mx-marker-coherence` scope that confirms guard fatality state is consistent with marker presence. Parent ADR-0.0.74. |
+| 62 | Honor the marker: when `.gzkit/mx.json` exists, most guards drop to advisory | **Promotable** | The marker-check is structural (file exists/not); the awareness hook (`src/gzkit/mx/awareness.py`) fires per-turn but liveness is advisory. Could promote to fail-closed via a `gz validate --mx-marker-coherence` scope that confirms guard fatality state is consistent with marker presence. Parent ADR-0.0.74. |
 | 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. |
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
