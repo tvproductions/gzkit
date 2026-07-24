@@ -236,8 +236,10 @@ of parent ADR kind or lane. There is NO self-close path.**
 fire* — they NEVER determine whether Gate 5 brief-level attestation fires. Gate 5 is universal:
 
 - **`foundation` kind** — determines whether Gate 3 (docs scope) and Gate 4 (BDD scope)
-  apply the foundation-tier bar.
-- **`heavy` lane** — determines whether Gate 3 (docs) and Gate 4 (BDD) are required.
+  apply the foundation-tier bar, and (with `heavy` lane) fail-closes the OBPI-completion
+  REQ-coverage gate: an uncovered/failing BEHAVIOR REQ exits 3 (REQ-0.0.25-01-02..04).
+- **`heavy` lane** — determines whether Gate 3 (docs) and Gate 4 (BDD) are required, and
+  fail-closes the OBPI-completion REQ-coverage gate on the same terms.
 - **`security` sensitivity** — adds security-scan requirements to Gate 5.
 
 Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/security-sensitivity.md).

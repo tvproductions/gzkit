@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "0fc08f17e38ac4def1041d5ae1e74e32dad87bcfe7d7841f1d248425a55f0822",
   "corpus_entry_count": 52,
-  "rendition_fingerprint": "e7379eeb059b432ac5701486e0ff2e92c409a0cf2d8a9f4b36fcca6b2c02042c",
-  "committed_ts": "2026-07-22T10:32:22.526439+00:00",
+  "rendition_fingerprint": "409c70e60238e30a89622428741308431bd0ee30972822e6104e78ad9fb54b49",
+  "committed_ts": "2026-07-24T00:27:30.952914+00:00",
   "attestor": "g0",
-  "attestation_text": "i don't attest to ghi fixes. — GHI #635 direct repair under operator canon (AGENTS.md § Operator Doctrine: 'GHIs are AUTHORIZED for direct repair, always... the GHI is the work order and the receipt'). Rendition text is byte-identical to the prior committed rendition (cmp clean); only the corpus provenance fingerprint advances, re-attesting derivation after the duplicate invariant entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 was retired. Invariant floor 9039B, total 31990B, setpoint heavy — all unchanged."
+  "attestation_text": "of course i attest — the tool is deterministic, we obey it. GHI #551: documents foundation-kind + heavy-lane REQ-coverage fail-close in AGENTS.md § Universal OBPI Attestation (REQ-0.0.25-01-02..04); candidate staged via gz content compose, invariant floor byte-preserved (9039 B), 32208 B < 32768 Codex cap."
 }
