@@ -172,10 +172,22 @@ def _has_more_demos(state: CeremonyState) -> bool:
 def _classify_attestation_verdict(text: str) -> tuple[str, str | None]:
     """Map a ceremony attestation string to ``(status, reason)`` for the ledger.
 
-    Mirrors ``closeout.py``'s canonical ``_parse_ceremony_attestation_text``; kept
-    inline because ``closeout.py`` imports from this module (importing back is
-    circular) and is outside this OBPI's scope. OBPI-0.0.63-05 (dual-runtime
-    collapse) unifies these emission paths under BI-2.
+    The single-source verdict classifier for both attestation-emitting paths:
+    ``closeout_ceremony`` calls it directly and ``closeout`` imports it through
+    the ``closeout_ceremony`` facade (GHI #573 collapsed the former byte-identical
+    ``closeout._parse_ceremony_attestation_text`` fork; BI-2, ADR-0.0.63 audit).
+    Single-sourcing is the structural guard against the ``attested`` ledger
+    event ``status`` silently diverging from the ``lifecycle_transition``
+    ``to_state``.
+
+    The ceremony's ``--attest "..."`` argument is freeform but conventionally
+    leads with one of the canonical tokens prescribed by Step 6
+    (``Completed`` / ``Completed - Partial: <reason>`` / ``Dropped - <reason>``)
+    or the AGENTS.md § Attestation pattern (``attest <token> - <enrichment>``).
+    The ``partial`` and ``dropped`` keywords are matched case-insensitively in
+    the leading 120-char window; the full stripped text is returned as the
+    reason for non-completed verdicts so the operator's verbatim attestation
+    flows through to the ledger and closeout form unchanged.
     """
     head = text.strip().lower()[:120]
     if "dropped" in head:
