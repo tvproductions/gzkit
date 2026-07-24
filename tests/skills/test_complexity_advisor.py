@@ -190,9 +190,9 @@ class TestCrossReferences(unittest.TestCase):
     def test_manpage_cross_reference_present(self) -> None:
         text = _read_skill_text()
         self.assertIn(
-            "docs/user/manpages/gz-complexity-advise.md",
+            "docs/user/manpages/complexity-advise.md",
             text,
-            "Skill body must cross-reference the manpage",
+            "Skill body must cross-reference the manpage (GHI #532: <verb>.md, no gz- prefix)",
         )
 
 

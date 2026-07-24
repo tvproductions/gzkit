@@ -158,7 +158,7 @@ Canonize the **`RemediationPayload`** invariant: every fail-closed exit from a g
 - [ ] Tests: `tests/core/test_remediation_payload.py`, `tests/governance/test_validator_remediation_meta.py`, `tests/arb/test_remediation_payload.py`, `tests/hooks/test_remediation_payload.py`
 - [ ] Rule file: `.gzkit/rules/validator-remediation.md` (body version `0.1.0`)
 - [ ] Scorecard: `docs/governance/advisory-rules-audit.md` entry (Mechanical for shape; Judgment for content)
-- [ ] Docs: `docs/governance/governance_runbook.md` § Hook outputs, `docs/user/runbook.md` § Recovery flows, `docs/user/manpages/gz-validate.md` (new `--remediation-payload-binding` scope)
+- [ ] Docs: `docs/governance/governance_runbook.md` § Hook outputs, `docs/user/runbook.md` § Recovery flows, `docs/user/manpages/validate.md` (new `--remediation-payload-binding` scope)
 - [ ] Baseline: `data/validator_remediation_baseline.json` (shrinks monotonically; empty at OBPI-04 completion)
 
 ## Alternatives Considered

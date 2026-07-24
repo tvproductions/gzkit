@@ -11,10 +11,19 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
+from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.governance.deprecations import find_deprecated_verb
 from gzkit.validate import ValidationError
 
 _DOC_PROSE_VERBS: frozenset[str] = frozenset()
+
+# Manpages live at docs/user/manpages/<verb>.md — never with a gz- prefix. A
+# reference to manpages/gz-<verb>.md is a dead operator-doc pointer using a
+# convention no manpage file uses (GHI #532).
+_MANPAGE_GZ_PREFIX_REF = re.compile(r"manpages/(gz-[a-z0-9-]+\.md)")
+_BRIEF_STATUS_RE = re.compile(r"^status:\s*(.+)$", re.MULTILINE)
+_ADR_PACKAGE_MARKER = "design/adr"
 
 _BACKTICKED_INVOCATION = re.compile(r"`gz\s+([a-z][a-z0-9-]*)[^`]*`")
 _QUOTED_INVOCATION = re.compile(r'"gz\s+([a-z][a-z0-9-]*)[^"]*"')
@@ -141,6 +150,71 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
                 ),
             )
         )
+    return errors
+
+
+def _manpage_alignment_sources(project_root: Path) -> list[Path]:
+    """Operator-doc surfaces that may carry ``manpages/<verb>.md`` references.
+
+    Matches ``.gzkit/rules/governance-core.md`` § Operator-doc verb resolution
+    scope: every ``docs/**/*.md`` (user docs AND ADR/OBPI briefs), every
+    ``features/**/*.feature``, and every ``.gzkit/skills/**/SKILL.md``. Briefs
+    are included here (unlike :func:`_cli_alignment_sources`, which predates the
+    manpage-reference check) because that is where the gz-<verb>.md convention
+    drift accumulated; terminal briefs are filtered by the caller.
+    """
+    sources: list[Path] = []
+    docs_root = project_root / "docs"
+    if docs_root.is_dir():
+        sources.extend(sorted(docs_root.rglob("*.md")))
+    features_root = project_root / "features"
+    if features_root.is_dir():
+        sources.extend(sorted(features_root.rglob("*.feature")))
+    skills_root = project_root / ".gzkit" / "skills"
+    if skills_root.is_dir():
+        sources.extend(sorted(skills_root.rglob("SKILL.md")))
+    return sources
+
+
+def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
+    """Fail closed on operator-doc references to the non-existent ``manpages/gz-<verb>.md``.
+
+    Manpages live at ``docs/user/manpages/<verb>.md``; no manpage file uses a
+    ``gz-`` prefix. A ``manpages/gz-<verb>.md`` reference is therefore always a
+    dead pointer — the same class of defect as an unresolvable ``gz <verb>``
+    reference (``.gzkit/rules/governance-core.md`` § Operator-doc verb
+    resolution). The recovery is unconditional: drop the ``gz-`` prefix (a
+    planned-but-unlanded manpage still uses ``<verb>.md``), so the check needs no
+    speculative-marker escape. Terminal OBPI briefs are exempt — their
+    references are sealed historical records (GHI #532), scoped via the same
+    :func:`is_terminal_brief_status` predicate ``--brief-command-shape`` and the
+    ``--sensitivity`` floor use.
+    """
+    errors: list[ValidationError] = []
+    for source in _manpage_alignment_sources(project_root):
+        try:
+            text = source.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        if _ADR_PACKAGE_MARKER in source.as_posix():
+            status_match = _BRIEF_STATUS_RE.search(text)
+            if status_match and is_terminal_brief_status(status_match.group(1)):
+                continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for match in _MANPAGE_GZ_PREFIX_REF.finditer(line):
+                bad = match.group(1)
+                errors.append(
+                    ValidationError(
+                        type="manpage_alignment",
+                        artifact=f"{source.relative_to(project_root).as_posix()}:{lineno}",
+                        message=(
+                            f"`manpages/{bad}` uses the non-existent gz- prefixed manpage "
+                            f"convention; manpages live at {MANPAGE_DIR.as_posix()}/<verb>.md. "
+                            f"Drop the gz- prefix (-> manpages/{bad[3:]}). "
+                            f"(governance-core § Operator-doc verb resolution; GHI #532.)"
+                        ),
+                    )
+                )
     return errors
 
 

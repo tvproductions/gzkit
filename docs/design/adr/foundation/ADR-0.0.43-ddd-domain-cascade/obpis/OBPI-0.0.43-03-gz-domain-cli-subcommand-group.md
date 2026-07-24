@@ -31,11 +31,11 @@ Land the `gz domain` CLI subcommand group: `init` (scaffold a DM), `list` (enume
 - `src/gzkit/domain/regenerator.py` — NEW; rebuilds Layer-3 views
 - `src/gzkit/domain/init.py` — NEW; scaffolds a DM
 - `src/gzkit/domain/renderers.py` — NEW; table + JSON renderers
-- `docs/user/manpages/gz-domain-init.md` — NEW
-- `docs/user/manpages/gz-domain-list.md` — NEW
-- `docs/user/manpages/gz-domain-status.md` — NEW
-- `docs/user/manpages/gz-domain-show.md` — NEW
-- `docs/user/manpages/gz-domain-regenerate.md` — NEW
+- `docs/user/manpages/domain-init.md` — NEW
+- `docs/user/manpages/domain-list.md` — NEW
+- `docs/user/manpages/domain-status.md` — NEW
+- `docs/user/manpages/domain-show.md` — NEW
+- `docs/user/manpages/domain-regenerate.md` — NEW
 - `tests/cli/test_domain_*.py` — NEW (one per verb)
 
 ## Denied Paths

@@ -5,11 +5,17 @@ paths:
 description: Non-negotiable governance workflow rules
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.7.0 -->
 
 # Governance Core (gzkit)
 
-> **Rule version:** `0.6.0` — repointed § Required workflow order step 5 off
+> **Rule version:** `0.7.0` — extended § Operator-doc verb resolution to bind
+> `docs/user/manpages/<verb>.md` filename references, not only `gz <verb>`
+> strings (GHI #532). 174 references to a non-existent `gz-<verb>.md` manpage
+> convention had accumulated across 60 briefs/skills/docs with no gate catching
+> them; `audit_manpage_alignment` (under the same `--cli-alignment` flag) now
+> fail-closes on the `gz-` prefix, terminal briefs exempt. Prior `0.6.0` —
+> repointed § Required workflow order step 5 off
 > `gz gates`, which announces its own deprecation at runtime, onto <!-- deprecated-verb-ok: version history records the repoint, does not prescribe it -->
 > `gz closeout --dry-run` (GHI #705). The rule prescribed a retired verb on the
 > only rule scoped `paths: "**/*"` — loaded on every edit in every session — so
@@ -72,7 +78,9 @@ A `gz <verb>` reference that points at an unregistered or renamed CLI verb is th
 
 Enforced by `gz validate --cli-alignment`. Exit 3 on any unresolvable reference. Recovery: either register the verb, rename the reference to an existing verb, or file a GHI if the doc is describing a planned-but-unlanded CLI surface (and mark the reference as speculative so the check skips it — see the validator for the exact escape marker).
 
-This section is the canonical rule home; the validator implementation in `src/gzkit/trust_audits.py` (or wherever the scope function lives) is an enforcement artifact of this rule, not the rule itself.
+**Manpage filename references (GHI #532).** The same binding covers `docs/user/manpages/<verb>.md` references. Manpages use the `<verb>.md` convention — never a `gz-` prefix — so a `manpages/gz-<verb>.md` reference is an unresolvable operator-doc pointer of the same class as an unregistered verb. Enforced by the same `--cli-alignment` flag (`audit_manpage_alignment`). Recovery is unconditional: drop the `gz-` prefix (a planned-but-unlanded manpage still uses `<verb>.md`, so no speculative marker is needed). Terminal OBPI briefs are exempt — their references are sealed historical records (scoped via `is_terminal_brief_status`, the predicate `--brief-command-shape` and the `--sensitivity` floor also use).
+
+This section is the canonical rule home; the validator implementation in `src/gzkit/governance/trust_audits/cli.py` is an enforcement artifact of this rule, not the rule itself.
 
 ## ADR status index regeneration (binding)
 

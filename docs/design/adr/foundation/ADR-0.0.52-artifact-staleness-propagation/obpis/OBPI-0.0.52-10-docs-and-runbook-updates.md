@@ -25,10 +25,10 @@ Author the heavy-lane Gate 3 documentation deliverables: manpages for the five n
 
 ## Allowed Paths
 
-- `docs/user/manpages/gz-adr-clear-stale.md` — **PRIMARY:** manpage for the new resolution verb
-- `docs/user/manpages/gz-adr-explain-stale.md` — **PRIMARY:** manpage for the new explain verb
-- `docs/user/manpages/gz-adr-propagation.md` — **PRIMARY:** manpage for the new parent verb (covers `retry-tier2`)
-- `docs/user/manpages/gz-validate.md` — extend with `--adr-eval-fresh` and `--staleness-coherence` scopes
+- `docs/user/manpages/adr-clear-stale.md` — **PRIMARY:** manpage for the new resolution verb
+- `docs/user/manpages/adr-explain-stale.md` — **PRIMARY:** manpage for the new explain verb
+- `docs/user/manpages/adr-propagation.md` — **PRIMARY:** manpage for the new parent verb (covers `retry-tier2`)
+- `docs/user/manpages/validate.md` — extend with `--adr-eval-fresh` and `--staleness-coherence` scopes
 - `docs/user/runbook.md` — **PRIMARY:** new § "Staleness propagation" section (operator workflow)
 - `docs/governance/governance_runbook.md` — **PRIMARY:** new § "Cross-artifact coherence" section (governance maintainer workflow)
 - `AGENTS.md` — new § Behavior Rules entry naming the staleness-flag-resolution discipline
@@ -47,10 +47,10 @@ Author the heavy-lane Gate 3 documentation deliverables: manpages for the five n
 
 ## Creates These Files
 
-- `docs/user/manpages/gz-adr-clear-stale.md` — **CREATE** manpage for the resolution verb
-- `docs/user/manpages/gz-adr-explain-stale.md` — **CREATE** manpage for the explain verb
-- `docs/user/manpages/gz-adr-propagation.md` — **CREATE** manpage for the parent verb (covers `retry-tier2`)
-- `docs/user/manpages/gz-validate.md` — **CREATE** (or extend existing) — add `--adr-eval-fresh` and `--staleness-coherence` scopes
+- `docs/user/manpages/adr-clear-stale.md` — **CREATE** manpage for the resolution verb
+- `docs/user/manpages/adr-explain-stale.md` — **CREATE** manpage for the explain verb
+- `docs/user/manpages/adr-propagation.md` — **CREATE** manpage for the parent verb (covers `retry-tier2`)
+- `docs/user/manpages/validate.md` — **CREATE** (or extend existing) — add `--adr-eval-fresh` and `--staleness-coherence` scopes
 - `tests/governance/test_manpage_coverage_staleness.py` — **CREATE** manpage-coverage verification
 
 Existing files modified: `docs/user/runbook.md`, `docs/governance/governance_runbook.md`, `AGENTS.md`, `docs/governance/state-doctrine.md`, `docs/user/index.md`.
@@ -89,7 +89,7 @@ Existing files modified: `docs/user/runbook.md`, `docs/governance/governance_run
 
 **Existing Code:**
 
-- [ ] An existing manpage (e.g., `docs/user/manpages/gz-attest.md`) reviewed for structure conventions.
+- [ ] An existing manpage (e.g., `docs/user/manpages/attest.md`) reviewed for structure conventions.
 - [ ] Existing runbook sections in `docs/user/runbook.md` reviewed for tone and depth.
 - [ ] AGENTS.md § Behavior Rules existing entries reviewed for shape and length.
 
@@ -139,8 +139,8 @@ uv run -m unittest tests.governance.test_manpage_coverage_staleness -v
 
 ```bash
 # Manpages render and include examples
-ls docs/user/manpages/gz-adr-clear-stale.md docs/user/manpages/gz-adr-explain-stale.md docs/user/manpages/gz-adr-propagation.md
-grep -c "^## Examples" docs/user/manpages/gz-adr-clear-stale.md docs/user/manpages/gz-adr-explain-stale.md docs/user/manpages/gz-adr-propagation.md
+ls docs/user/manpages/adr-clear-stale.md docs/user/manpages/adr-explain-stale.md docs/user/manpages/adr-propagation.md
+grep -c "^## Examples" docs/user/manpages/adr-clear-stale.md docs/user/manpages/adr-explain-stale.md docs/user/manpages/adr-propagation.md
 
 # Runbook sections present
 grep -E "^##\s+(Staleness propagation|Cross-artifact coherence)" docs/user/runbook.md docs/governance/governance_runbook.md

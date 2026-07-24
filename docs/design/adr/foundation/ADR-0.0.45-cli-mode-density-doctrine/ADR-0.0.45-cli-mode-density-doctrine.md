@@ -343,8 +343,8 @@ a New Verb is unchanged Heavy procedure.
   `tests/governance/test_cli_density_validators.py` (anticipated path);
   `gz arb step --name unittest -- uv run -m unittest -q`.
 - **Gate 3 (Docs updated):** pending OBPI-0.0.45-04 manpage
-  (`docs/user/manpages/gz-validate-suite.md`,
-  `docs/user/manpages/gz-validate-audit.md`); OBPI-0.0.45-05 doctrine
+  (`docs/user/manpages/validate-suite.md`,
+  `docs/user/manpages/validate-audit.md`); OBPI-0.0.45-05 doctrine
   (`.claude/rules/cli.md`, `docs/governance/advisory-rules-audit.md`).
 - **Gate 4 (BDD verified):** pending OBPI-0.0.45-05 Heavy-lane behave smoke
   (`features/cli_mode_density.feature`).
@@ -408,8 +408,8 @@ Each OBPI brief records its acceptance note with:
 
 ### Docs
 
-- Anticipated manpages: `docs/user/manpages/gz-validate-suite.md`,
-  `docs/user/manpages/gz-validate-audit.md`.
+- Anticipated manpages: `docs/user/manpages/validate-suite.md`,
+  `docs/user/manpages/validate-audit.md`.
 - Anticipated rule update: `.claude/rules/cli.md` (three-lane amendment via
   canonical `.gzkit/rules/cli.md` + sync).
 - Anticipated scorecard promotion: `docs/governance/advisory-rules-audit.md`.

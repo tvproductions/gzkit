@@ -47,7 +47,7 @@ scanner against itself before any consumer adopts it.
 - Default exit codes: `0` (no critical/high), `1` (critical or high
   finding present), `2` (config/IO error), `3` (policy breach,
   e.g., heavy-lane gate with unresolved critical/high).
-- Manpage at `docs/user/manpages/gz-scan-owasp.md` with EXAMPLES section
+- Manpage at `docs/user/manpages/scan-owasp.md` with EXAMPLES section
   showing real CLI output (Gate 5 runbook-code covenant).
 
 ### Analyzer floor (stdlib-first, no third-party security tools)
@@ -239,7 +239,7 @@ mode (`all`), and the routing of `ADR-pool.agentic-security-review`
 <!-- Links to tests, documentation, and other artifacts that prove completion -->
 
 - [ ] Tests: `tests/scan/test_owasp_models.py`, `tests/scan/test_owasp_chore_runner.py`, `tests/scan/test_gz_scan_owasp_cli.py`, `tests/skills/test_gz_owasp_scan_skill.py`
-- [ ] Docs: `docs/user/manpages/gz-scan-owasp.md`, `docs/user/runbook.md` (scan section), `docs/governance/governance_runbook.md` (scan-as-gate section)
+- [ ] Docs: `docs/user/manpages/scan-owasp.md`, `docs/user/runbook.md` (scan section), `docs/governance/governance_runbook.md` (scan-as-gate section)
 - [ ] Chore: `.gzkit/chores/owasp-top10-2025-scan/CHORE.md`, `.gzkit/chores/owasp-top10-2025-scan/proofs/baseline-2026-05-10.json`
 - [ ] Skill: `.gzkit/skills/gz-owasp-scan/SKILL.md` (canonical) + vendor mirrors via `gz agent sync control-surfaces`
 - [ ] Receipt: `arb-step-` receipts for unittest + ruff + typecheck + mkdocs; `gz adr emit-receipt` for completed/validated events

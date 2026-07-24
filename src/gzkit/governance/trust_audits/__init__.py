@@ -56,6 +56,7 @@ from gzkit.governance.trust_audits.bullet_retention import validate_bullet_reten
 from gzkit.governance.trust_audits.chores import audit_chores_layout
 from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
+    audit_manpage_alignment,
     audit_skill_alignment,
 )
 from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
@@ -183,6 +184,7 @@ __all__ = [
     "audit_class_size",
     "audit_distribution",
     "audit_cli_alignment",
+    "audit_manpage_alignment",
     "audit_doc_surface_parity",
     "audit_event_handlers",
     "audit_event_schemas",

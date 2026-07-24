@@ -31,7 +31,7 @@ Land two new validator scopes on `gz validate`: `--domain-cascade` (structural c
 - `src/gzkit/cli/check.py` — EXTEND `gz check` default pipeline to include both new scopes
 - `tests/governance/test_domain_cascade_validator.py` — NEW
 - `tests/governance/test_domain_views_fresh.py` — NEW
-- `docs/user/manpages/gz-validate.md` — EXTEND with new scope documentation
+- `docs/user/manpages/validate.md` — EXTEND with new scope documentation
 
 ## Denied Paths
 

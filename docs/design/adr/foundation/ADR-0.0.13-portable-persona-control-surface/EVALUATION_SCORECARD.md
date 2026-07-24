@@ -502,7 +502,7 @@ Section 2 — OBPI Evidence Map
   - `docs/user/commands/personas.md` — NOT FOUND. Nearest existing:
     `docs/user/commands/personas-list.md` (EXISTS). Implementer may need to
     create new file or extend existing.
-  - `docs/user/manpages/gz-personas.md` — EXPECTED-NEW (manpage)
+  - `docs/user/manpages/personas.md` — EXPECTED-NEW (manpage)
 - Denied paths (brief lines 44-48):
   - `src/gzkit/sync_surfaces.py` — sync is OBPI-03
   - `src/gzkit/schemas/` — schema is OBPI-01
@@ -814,7 +814,7 @@ CODEBASE VERIFICATION SUMMARY:
 | `tests/test_persona_drift.py` | EXPECTED-NEW | OBPI-05 |
 | `features/persona.feature` | EXISTS | OBPI-05 |
 | `docs/user/commands/personas-list.md` | EXISTS | OBPI-05 (brief has wrong name) |
-| `docs/user/manpages/gz-personas.md` | EXPECTED-NEW | OBPI-05 |
+| `docs/user/manpages/personas.md` | EXPECTED-NEW | OBPI-05 |
 | `tests/test_persona_portability.py` | EXPECTED-NEW | OBPI-06 |
 | `artifacts/receipts/` | NOT FOUND | OBPI-05 (drift data source) |
 | `.gzkit/insights/agent-insights.jsonl` | EXISTS | OBPI-05 (drift data source) |

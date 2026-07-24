@@ -131,7 +131,7 @@ self-reported confidence is low; this section documents the same
 operator move outside the pipeline.
 
 See [`commands/justify.md`](commands/justify.md) for the full command
-contract and [manpages/gz-justify.md](manpages/gz-justify.md) for the
+contract and [manpages/justify.md](manpages/justify.md) for the
 exit-code matrix and option reference.
 
 ### Step 2: Execute the OBPI through the staged pipeline
@@ -316,7 +316,7 @@ own tracker via plain `gh issue create`. The asymmetry is intentional: consumer
 repos own their remediation surface; gzkit owns its.
 
 Authoritative routing table: `.gzkit/rules/gh-cli.md` § Cross-repo filing.
-Manpage: `docs/user/manpages/gz-issue.md`.
+Manpage: `docs/user/manpages/issue.md`.
 
 ---
 
@@ -561,7 +561,7 @@ exit 3 / exit 0 respectively):
    project's evidence for the divergence.
 5. Re-run `uv run gz adr audit-check ADR-<X.Y.Z> [--strict]` until PASS.
 
-See `docs/user/manpages/gz-adr-audit-check.md` for the severity matrix and
+See `docs/user/manpages/adr-audit-check.md` for the severity matrix and
 exit-code semantics.
 
 Tracked automation defect: `https://github.com/tvproductions/gzkit/issues/3`.
@@ -1255,7 +1255,7 @@ Chores resolve project-first → package-fallback (ADR-0.0.21): each slug is
 sought under `<project_root>/.gzkit/chores/<slug>/` first, then falls back to
 the canonical package resource at `importlib.resources.files("gzkit.chores")`.
 Project-local execution evidence is written to `.gzkit/chores/<slug>/proofs/`.
-See [`gz-chores`](manpages/gz-chores.md) for the full manpage.
+See [`gz-chores`](manpages/chores.md) for the full manpage.
 
 ```bash
 uv run gz chores list                # List declared chores
@@ -1316,7 +1316,7 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 
 `gz complexity guide --server` (ADR-0.0.30, OBPI-0.0.30-04) starts the JSON-over-stdio protocol server for editor/IDE integration. Editors communicate via LSP-style Content-Length–framed JSON envelopes (`initialize` → `analyze*` → `shutdown`). Protocol specification: [`docs/governance/complexity/authoring-guide-protocol.md`](governance/complexity/authoring-guide-protocol.md).
 
-`gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time advisor surface. It runs the OBPI-0.0.29-02 diagnosis engine against `<path>`, measures per-function `radon_cc` via radon's Python API, and emits an `AdvisorDiagnosis` (canonical refactor archetype, doctrinal authority, non-empty proof tuple linking to AST nodes, recommended-move excerpt) for every band crossing in the threshold table at `.gzkit/rules/complexity-thresholds.json`. Operator moment: preview advisor diagnosis on a file before commit. Default output is structured prose; `--json` emits the canonical Pydantic serialization. Exit codes follow the four-code map: `0` clean or warn-band, `3` block-band crossing. See [`gz-complexity-advise`](manpages/gz-complexity-advise.md) for the full manpage.
+`gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time advisor surface. It runs the OBPI-0.0.29-02 diagnosis engine against `<path>`, measures per-function `radon_cc` via radon's Python API, and emits an `AdvisorDiagnosis` (canonical refactor archetype, doctrinal authority, non-empty proof tuple linking to AST nodes, recommended-move excerpt) for every band crossing in the threshold table at `.gzkit/rules/complexity-thresholds.json`. Operator moment: preview advisor diagnosis on a file before commit. Default output is structured prose; `--json` emits the canonical Pydantic serialization. Exit codes follow the four-code map: `0` clean or warn-band, `3` block-band crossing. See [`gz-complexity-advise`](manpages/complexity-advise.md) for the full manpage.
 
 **Verdict <-> proof binding audit** (ADR-0.0.29, OBPI-0.0.29-08): `gz validate --advisor-proof-binding` is the gate-time defense-in-depth backstop for the verdict <-> proof binding. Model-layer enforcement (OBPI-01: `Field(min_length=1)` on `AdvisorDiagnosis.proof`) and engine-layer enforcement (OBPI-02: `EngineError` raised before model instantiation when proof is unavailable) prevent empty-proof diagnoses at runtime; this validator catches any regression of either lower layer by scanning `tests/fixtures/advisor/*.json`, `intrinsic-complexity-attestation` ledger events that cite a diagnosis id, and `src/gzkit/schemas/advisor_diagnosis.json` (must require `properties.proof.minItems >= 1`). Negative-case fixtures (the OBPI-01 model test that asserts `ValidationError` on empty proof) are skipped via the `"_negative_case": true` speculative-marker escape. Included in `gz validate --all` and `gz check`. See [`gz validate --advisor-proof-binding`](commands/validate.md#-advisor-proof-binding) for the full surface.
 

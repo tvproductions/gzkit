@@ -35,12 +35,12 @@ GHI #380 surfaced this during OBPI-0.0.23-05 plan-audit (2026-05-02):
   implementation time.
 - `ls docs/user/manpages/` shows `arb.md`, `closeout.md`, `gz-chores.md`,
   `gz-issue.md`, `gz-justify.md`, `gz-personas.md`, `patch-release.md` — no
-  `docs/user/manpages/gz-adr.md` exists despite `gz adr` carrying ~10
+  `docs/user/manpages/adr.md` exists despite `gz adr` carrying ~10
   subcommands. Each ADR-touching brief that names a manpage update reinvents
   the path because no convention is canonical.
 - `uv run gz plan audit OBPI-0.0.23-05` reports 249 sibling-OBPI scope
   collisions on `src/gzkit/commands/adr_audit.py`, `tests/commands/test_adr_audit.py`,
-  `tests/fixtures/adr_audit_covers_backfill/`, `docs/user/manpages/gz-adr.md`.
+  `tests/fixtures/adr_audit_covers_backfill/`, `docs/user/manpages/adr.md`.
   The advisory channel was added precisely for this pattern and nothing has
   been clearing it.
 

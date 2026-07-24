@@ -39,8 +39,8 @@ status: Draft
 - `data/validate_audits.json` — register `cli-flag-density` and `suite-density` audit entries
 - `data/validate_suites.json` — wire `default`/`surface-fidelity`/`cheap-fidelity` suites pending perf measurement
 - `src/gzkit/ledger.py` — add `cli_flag_density_recalibrated` and `suite_density_recalibrated` receipt schemas to the existing ledger event registry
-- `docs/user/manpages/gz-validate-suite.md` — net-new manpage created by this OBPI
-- `docs/user/manpages/gz-validate-audit.md` — net-new manpage created by this OBPI
+- `docs/user/manpages/validate-suite.md` — net-new manpage created by this OBPI
+- `docs/user/manpages/validate-audit.md` — net-new manpage created by this OBPI
 - `tests/cli/test_validate_suite_audit.py` — net-new CLI unit tests created by this OBPI
 
 ## Denied Paths
@@ -51,8 +51,8 @@ status: Draft
 
 ## OBPI creates these files
 
-- `docs/user/manpages/gz-validate-suite.md`
-- `docs/user/manpages/gz-validate-audit.md`
+- `docs/user/manpages/validate-suite.md`
+- `docs/user/manpages/validate-audit.md`
 - `tests/cli/test_validate_suite_audit.py`
 - `src/gzkit/cli/parser_validate.py`
 - `data/validate_suites.json`
@@ -65,7 +65,7 @@ status: Draft
 1. REQ-0.0.45-04-03: Wall-clock perf of `cli-flag-density` + `suite-density` on the current gzkit corpus is measured and recorded in the OBPI evidence. If combined runtime exceeds 100ms, both audits are wired into `default` and `surface-fidelity` only — not `cheap-fidelity` — and the perf measurement justifies the routing decision.
 1. REQ-0.0.45-04-04: Noun-verb refactor (folded from GHI #471): every `--<scope>` reference across the codebase (~99 occurrences across ~481 files) is rewritten to the noun-verb form in the same commit; `.pre-commit-config.yaml` changes from `gz validate --bullet-retention --surface-weight --pointer-anchors` to `gz validate suite cheap-fidelity` atomically.
 1. REQ-0.0.45-04-05: Recalibration receipts `cli_flag_density_recalibrated` and `suite_density_recalibrated` have Pydantic models with `extra="forbid"`; emission path lives in the validator runners; read path lives in the audit functions and is the only consumer.
-1. REQ-0.0.45-04-06: Manpages at `docs/user/manpages/gz-validate-suite.md` and `docs/user/manpages/gz-validate-audit.md` exist with description, usage, options, exit codes, and at least one example each per `.claude/rules/cli.md` § Help Text Requirements.
+1. REQ-0.0.45-04-06: Manpages at `docs/user/manpages/validate-suite.md` and `docs/user/manpages/validate-audit.md` exist with description, usage, options, exit codes, and at least one example each per `.claude/rules/cli.md` § Help Text Requirements.
 1. REQ-0.0.45-04-07: CLI unit tests at `tests/cli/test_validate_suite_audit.py` cover `--help`, audit invocation, suite invocation, exit codes (0 / 1 / 2 / 3), and the perf-measurement assertion against the 100ms budget.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
@@ -166,7 +166,7 @@ test -f features/steps/cli_mode_density_steps.py
 - [ ] REQ-0.0.45-04-03: Given the gzkit corpus, when the perf measurement runs, then wall-clock is recorded in OBPI evidence and the suite-wiring decision (cheap-fidelity inclusion or exclusion) is justified against the 100ms budget.
 - [ ] REQ-0.0.45-04-04: Given the noun-verb cutover commit, when applied, then no remaining `--<scope>` references survive (verified by `rg`); `.pre-commit-config.yaml` calls `gz validate suite cheap-fidelity`.
 - [ ] REQ-0.0.45-04-05: Given a recalibration event, when emitted, then the receipt validates against the Pydantic `extra="forbid"` model; the read path consumes only that schema.
-- [ ] REQ-0.0.45-04-06: Given `docs/user/manpages/gz-validate-suite.md` and `gz-validate-audit.md`, when reviewed, then both contain description, usage, options, exit codes, and at least one example.
+- [ ] REQ-0.0.45-04-06: Given `docs/user/manpages/validate-suite.md` and `gz-validate-audit.md`, when reviewed, then both contain description, usage, options, exit codes, and at least one example.
 - [ ] REQ-0.0.45-04-07: Given the CLI unit tests, when run under unittest, then they assert `--help` exit 0, audit / suite invocation behavior, exit code mapping (0/1/2/3), and the perf assertion against the 100ms budget.
 
 ## Completion Checklist

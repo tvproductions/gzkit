@@ -191,7 +191,7 @@ Promotion derived from `ADR-pool.judge-enforcement-validators` on 2026-05-06; ex
 - [ ] Pool ADR frontmatter: `governed_by: ADR-0.0.40-judge-enforcement-validators` on `attestation-advisory-agent` and `lightweight-pre-implementation-challenger` (OBPI-0.0.40-05)
 - [ ] BDD scenarios: `features/governance/judge_leakage.feature`, `judge_output_discipline.feature`, `judge_meta_eval.feature` (Heavy lane Gate 4)
 - [ ] Tests: `tests/governance/test_judge_leakage_validator.py`, `test_judge_output_discipline_validator.py`, `tests/commands/test_judge_meta_eval.py`, `tests/governance/test_judge_retrofit.py`
-- [ ] Manpage: `docs/user/manpages/gz-validate.md` — `--judge-leakage` and `--judge-output-discipline` documented; `docs/user/manpages/gz-judge.md` (new) — `meta-eval` verb documented
+- [ ] Manpage: `docs/user/manpages/validate.md` — `--judge-leakage` and `--judge-output-discipline` documented; `docs/user/manpages/judge.md` (new) — `meta-eval` verb documented
 - [ ] Operator runbook: `docs/user/runbook.md` — judge enforcement workflow added
 - [ ] Governance runbook: `docs/governance/governance_runbook.md` — judge enforcement maintainer protocol added
 - [ ] OBPI briefs: OBPI-0.0.40-01, -02, -03, -04, -05

@@ -162,7 +162,7 @@ Origin: design conversation traces from operator framing of "three separate orch
 ## Evidence
 
 - [ ] Tests: `tests/test_validation_pipeline_runtime.py`, `tests/test_redteam_verifier_persona.py`, `tests/test_validation_pipeline_validators.py`, `tests/test_gz_status_next_action.py`
-- [ ] Docs: `docs/user/runbook.md` § Validation pipeline, `docs/governance/governance_runbook.md` § Redteam terminal doctrine, `docs/user/manpages/gz-adr-validation-pipeline.md`
+- [ ] Docs: `docs/user/runbook.md` § Validation pipeline, `docs/governance/governance_runbook.md` § Redteam terminal doctrine, `docs/user/manpages/adr-validation-pipeline.md`
 
 ## Alternatives Considered
 

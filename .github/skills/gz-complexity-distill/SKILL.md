@@ -129,7 +129,7 @@ leaves intact (REQ-0.0.27-04-10 — the OEE seam, the agent never
 fabricates that block).
 
 Common invocations (full options + exit codes in the
-[`gz-complexity-distill` manpage](../../docs/user/manpages/gz-complexity-distill.md)):
+[`gz-complexity-distill` manpage](../../docs/user/manpages/complexity-distill.md)):
 
 ```bash
 uv run gz complexity distill                    # default run against canonical corpus

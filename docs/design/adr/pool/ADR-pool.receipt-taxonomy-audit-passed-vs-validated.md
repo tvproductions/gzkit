@@ -114,7 +114,7 @@ These are the key architectural questions to resolve at promotion time:
 - `_HUMAN_ATTESTATION_RECEIPT_EVENTS` membership remains unchanged for `validated`; `audit-passed` is explicitly excluded.
 - Lifecycle resolver gains a cross-reference check; ledger queries grow a new evidence-field traversal.
 - `/gz-adr-audit` skill step count increases by one (Step 8 + Step 8b).
-- Documentation: `docs/user/manpages/gz-adr.md`, runbook entries for the audit ceremony, and `.gzkit/rules/adr-audit.md` § Audit sequence updates.
+- Documentation: `docs/user/manpages/adr.md`, runbook entries for the audit ceremony, and `.gzkit/rules/adr-audit.md` § Audit sequence updates.
 - Operator typing burden reduced: the agent owns the audit-pass receipt; the operator's `validated` invocation references the receipt ID rather than re-typing the audit-pass evidence.
 
 ---

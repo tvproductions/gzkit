@@ -245,7 +245,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _validate_commit_trailers(r) + _validate_eval_feedback_trailer(r),
     ),
     _ScopeEntry("type_ignores", "explicit", True, lambda r, _f: _ta().audit_type_ignores(r)),
-    _ScopeEntry("cli_alignment", "explicit", True, lambda r, _f: _ta().audit_cli_alignment(r)),
+    _ScopeEntry(
+        "cli_alignment",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_cli_alignment(r) + _ta().audit_manpage_alignment(r),
+    ),
     _ScopeEntry("event_handlers", "explicit", True, lambda r, _f: _ta().audit_event_handlers(r)),
     _ScopeEntry(
         "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)

@@ -82,7 +82,7 @@ gz issue file \
 
 ## Related
 
-- Manpage: `docs/user/manpages/gz-issue.md`
+- Manpage: `docs/user/manpages/issue.md`
 - Doctrine: `.gzkit/rules/gh-cli.md` § Cross-repo filing
 - Failure shape: `.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention
 - Parent ADR: ADR-0.0.23-agent-failure-mode-taxonomy

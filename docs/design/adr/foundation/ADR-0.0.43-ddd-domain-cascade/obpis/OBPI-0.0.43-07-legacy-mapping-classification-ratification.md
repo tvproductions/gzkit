@@ -30,8 +30,8 @@ Walk the existing corpus (canonical ADRs + pool ADRs + completed OBPIs), agent-c
 - `src/gzkit/cli/legacy.py` — NEW; `gz legacy classify` and `gz legacy ratify` verbs (or fold into `gz domain legacy` — implementation choice; documented in OBPI-12)
 - `docs/design/domain/legacy-adr-bc-mapping.yaml.draft` — NEW (eventual, agent-produced)
 - `docs/design/domain/legacy-adr-bc-mapping.yaml` — NEW (eventual, operator-ratified)
-- `docs/user/manpages/gz-legacy-classify.md` — NEW (or `gz-domain-legacy-classify.md`)
-- `docs/user/manpages/gz-legacy-ratify.md` — NEW
+- `docs/user/manpages/legacy-classify.md` — NEW (or `gz-domain-legacy-classify.md`)
+- `docs/user/manpages/legacy-ratify.md` — NEW
 - `tests/governance/test_legacy_mapping.py` — NEW
 - `tests/cli/test_legacy_classify.py` — NEW
 

@@ -38,7 +38,7 @@ Implement `gz validate --judge-output-discipline` as an Authoritative-axis valid
 - `src/gzkit/commands/validate.py` — wire scope into validate dispatcher; add to default `gz check` scope set
 - `tests/governance/test_judge_output_discipline_validator.py` (new) — REQ-derived assertions
 - `features/governance/judge_output_discipline.feature` (new) — BDD scenarios tagged `@REQ-0.0.40-03-NN`
-- `docs/user/manpages/gz-validate.md` — document `--judge-output-discipline` scope
+- `docs/user/manpages/validate.md` — document `--judge-output-discipline` scope
 - `docs/user/runbook.md` — operator workflow entry
 - `docs/governance/governance_runbook.md` — governance-maintainer workflow entry
 
@@ -74,7 +74,7 @@ Implement `gz validate --judge-output-discipline` as an Authoritative-axis valid
 6. REQUIREMENT: The validator integrates with the OBPI-0.0.40-01 receipt-emit floor — receipts emitted with output-discipline failures are *also* rejected at emit time by the schema validator. The corpus-scan validator here catches receipts that may have been waived through emit-time validation OR receipts created before the emit-time floor landed.
 7. REQUIREMENT: `tests/governance/test_judge_output_discipline_validator.py` asserts each of the six failure classes (a)–(f) is detected, each diagnostic names the relevant field and ADR-0.0.39 invariant, and clean fixtures pass.
 8. REQUIREMENT: `features/governance/judge_output_discipline.feature` covers: clean corpus pass, each named drift case fails-closed, JSON output shape matches documented schema. Tags `@REQ-0.0.40-03-NN`.
-9. REQUIREMENT: `docs/user/manpages/gz-validate.md` documents `--judge-output-discipline` with EXAMPLES section showing real CLI output. Runbook entries added per gate5-runbook-code-covenant.
+9. REQUIREMENT: `docs/user/manpages/validate.md` documents `--judge-output-discipline` with EXAMPLES section showing real CLI output. Runbook entries added per gate5-runbook-code-covenant.
 10. REQUIREMENT: The validator emits `arb-step-judge-output-discipline-*` receipts per the canonical-step slot reserved in OBPI-0.0.40-01.
 11. REQUIREMENT: `gz cli audit` and `gz validate --cli-alignment` exit 0 with the new scope appearing in manpage + command doc index + SKILL coverage roster.
 12. REQUIREMENT: Pythonic size limits per `.gzkit/rules/pythonic.md` — `audit_judge_output_discipline` and each per-failure-class checker fit within ≤50 lines.
@@ -188,7 +188,7 @@ uv run gz arb step --name judge-output-discipline -- uv run gz validate --judge-
 test -f src/gzkit/governance/judge_output_discipline.py
 test -f features/governance/judge_output_discipline.feature
 grep -q "judge-output-discipline" docs/user/runbook.md
-grep -q "judge-output-discipline" docs/user/manpages/gz-validate.md
+grep -q "judge-output-discipline" docs/user/manpages/validate.md
 ```
 
 ## Demo

@@ -41,7 +41,7 @@ Implement `gz validate --judge-leakage` as an Authoritative-axis validator scope
 - `tests/governance/test_judge_leakage_validator.py` (new) — REQ-derived assertions
 - `tests/governance/test_judge_model_families.py` (new) — registry shape assertions
 - `features/governance/judge_leakage.feature` (new) — BDD scenarios tagged `@REQ-0.0.40-02-NN`
-- `docs/user/manpages/gz-validate.md` — document `--judge-leakage` scope
+- `docs/user/manpages/validate.md` — document `--judge-leakage` scope
 - `docs/user/runbook.md` — operator workflow entry
 - `docs/governance/governance_runbook.md` — governance-maintainer workflow entry
 
@@ -74,7 +74,7 @@ Implement `gz validate --judge-leakage` as an Authoritative-axis validator scope
 8. REQUIREMENT: `tests/governance/test_judge_leakage_validator.py` asserts: (a) leakage-free corpus passes; (b) same-family pair without waiver fails-closed; (c) same-family pair with valid waiver passes; (d) same-family pair with expired waiver fails-closed naming the expired waiver; (e) malformed waiver registry fails-closed with diagnostic; (f) `--json` output schema matches documented shape.
 9. REQUIREMENT: `tests/governance/test_judge_model_families.py` asserts: (a) registry validates against Pydantic schema; (b) registry edits require explicit cited authority; (c) `detect_leakage` returns expected values for each registered family pair.
 10. REQUIREMENT: `features/governance/judge_leakage.feature` covers: clean corpus pass; leakage detected; waiver applied; expired waiver flagged; unknown model family handled gracefully (warns, does not crash). Tags `@REQ-0.0.40-02-NN`.
-11. REQUIREMENT: `docs/user/manpages/gz-validate.md` documents `--judge-leakage` with EXAMPLES section showing real CLI output (per `.gzkit/rules/cli.md`). Runbook entries added per gate5-runbook-code-covenant.
+11. REQUIREMENT: `docs/user/manpages/validate.md` documents `--judge-leakage` with EXAMPLES section showing real CLI output (per `.gzkit/rules/cli.md`). Runbook entries added per gate5-runbook-code-covenant.
 12. REQUIREMENT: The validator emits `arb-step-judge-leakage-*` receipts per the canonical-step slot reserved in OBPI-0.0.40-01.
 13. REQUIREMENT: `gz cli audit` and `gz validate --cli-alignment` exit 0 with the new scope appearing in manpage + command doc index + SKILL coverage roster.
 14. REQUIREMENT: Pythonic size limits per `.gzkit/rules/pythonic.md` — `audit_judge_leakage` and `detect_leakage` each fit within ≤50 lines.
@@ -186,7 +186,7 @@ test -f data/judge_leakage_waivers.json
 test -f data/judge_model_families.json
 test -f src/gzkit/governance/judge_leakage.py
 test -f features/governance/judge_leakage.feature
-grep -q "preference leakage" docs/user/manpages/gz-validate.md
+grep -q "preference leakage" docs/user/manpages/validate.md
 grep -q "judge-leakage" docs/user/runbook.md
 ```
 

@@ -93,7 +93,7 @@ gz complexity advise src/gzkit/commands/engine.py:QueryOptimizer.plan \
 
 - `docs/user/runbook.md` § "Governance Doctrine Surfaces" — operator
   workflow for previewing advisor diagnoses before commit.
-- `docs/user/manpages/gz-complexity-advise.md` — manpage form of this
+- `docs/user/manpages/complexity-advise.md` — manpage form of this
   documentation.
 - ADR-0.0.29 — the trigger-time response surface invariant.
 - ADR-0.0.28 — the threshold table this verb consumes.

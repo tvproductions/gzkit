@@ -41,7 +41,7 @@ Implement `gz judge meta-eval` as a new top-level CLI verb classified Evidentiar
 - `tests/commands/test_judge_meta_eval.py` (new) — REQ-derived assertions
 - `tests/governance/test_judge_metrics.py` (new) — metric-computation correctness assertions
 - `features/governance/judge_meta_eval.feature` (new) — BDD scenarios tagged `@REQ-0.0.40-04-NN`
-- `docs/user/manpages/gz-judge.md` (new) — manpage for `gz judge meta-eval`
+- `docs/user/manpages/judge.md` (new) — manpage for `gz judge meta-eval`
 - `docs/user/runbook.md` — operator workflow entry
 - `docs/governance/governance_runbook.md` — governance-maintainer workflow entry
 
@@ -75,7 +75,7 @@ Implement `gz judge meta-eval` as a new top-level CLI verb classified Evidentiar
 10. REQUIREMENT: `tests/governance/test_judge_metrics.py` asserts each metric function returns published reference values for at least three documented test cases per metric (e.g., Cohen's 1960 paper's worked examples). Numerical tolerance ≤ 1e-6.
 11. REQUIREMENT: `tests/commands/test_judge_meta_eval.py` asserts: (a) clean run produces the documented output and ledger event; (b) missing required flags fail with usage error; (c) malformed human-attestations file fails with schema diagnostic; (d) below-floor case marks `below_floor=True` and exits 0; (e) sample-too-small case warns but completes; (f) `--metric` switch selects alternative metrics correctly.
 12. REQUIREMENT: `features/governance/judge_meta_eval.feature` covers the cases above. Tags `@REQ-0.0.40-04-NN`.
-13. REQUIREMENT: `docs/user/manpages/gz-judge.md` is authored with EXAMPLES section showing real CLI output for both above-floor and below-floor cases. Runbook entries added per gate5-runbook-code-covenant.
+13. REQUIREMENT: `docs/user/manpages/judge.md` is authored with EXAMPLES section showing real CLI output for both above-floor and below-floor cases. Runbook entries added per gate5-runbook-code-covenant.
 14. REQUIREMENT: `gz cli audit` and `gz validate --cli-alignment` exit 0 with `gz judge meta-eval` appearing in manpage + command doc index + SKILL coverage roster.
 15. REQUIREMENT: Pythonic size limits per `.gzkit/rules/pythonic.md` — each metric function and each command branch fits within ≤50 lines.
 16. REQUIREMENT: NEVER let the metric become a fail-closed gate. Adding an `--enforce-floor` flag that exits 3 when below floor is a doctrine violation per ADR-0.0.39 § Invariant 9 — the metric is **NEVER** itself a gate.
@@ -183,7 +183,7 @@ uv run gz arb step --name judge-meta-eval -- uv run gz judge meta-eval --window 
 test -f src/gzkit/commands/judge_meta_eval.py
 test -f src/gzkit/governance/judge_metrics.py
 test -f data/judge_meta_eval_floor.json
-test -f docs/user/manpages/gz-judge.md
+test -f docs/user/manpages/judge.md
 test -f features/governance/judge_meta_eval.feature
 grep -q "judge_meta_eval" .gzkit/schemas/ledger_events.json
 grep -q "gz judge meta-eval" docs/user/runbook.md

@@ -64,7 +64,7 @@ workflow context.
 | `.gzkit/skills/gz-complexity-advisor/SKILL.md` | Agent execution instructions | Read |
 | `.gzkit/rules/complexity-thresholds.json` | Canonical threshold table (ADR-0.0.28) | Read |
 | `data/exemplar_corpus.json` | Exemplar corpus for distillation | Read |
-| `docs/user/manpages/gz-complexity-advise.md` | CLI verb manpage | Read |
+| `docs/user/manpages/complexity-advise.md` | CLI verb manpage | Read |
 | `.gzkit/ledger.jsonl` | Attestation events (with `--attest-intrinsic`) | Write |
 
 ## Related Skills and Commands
@@ -72,4 +72,4 @@ workflow context.
 | Related | Relationship |
 |---------|-------------|
 | [`/gz-complexity-distill`](gz-complexity-distill.md) | Companion skill for refreshing distilled-characteristics doctrine |
-| [`gz complexity advise`](../manpages/gz-complexity-advise.md) | Underlying CLI verb this skill wraps |
+| [`gz complexity advise`](../manpages/complexity-advise.md) | Underlying CLI verb this skill wraps |

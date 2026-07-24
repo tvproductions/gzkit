@@ -168,7 +168,7 @@ Origin: operator's invocation of Matt Pocock's `improve-codebase-architecture` a
 ## Evidence
 
 - [ ] Tests: `tests/test_milestone_maintenance_runtime.py`, `tests/test_milestone_maintenance_manifest_validator.py`, `tests/test_goal_first_class_convergence.py`, `tests/test_milestone_maintenance_fail_closed_gates.py`
-- [ ] Docs: `docs/user/runbook.md` § Milestone maintenance pipeline, `docs/governance/governance_runbook.md` § Sweep manifest doctrine, `docs/user/manpages/gz-adr-milestone-maintenance.md`
+- [ ] Docs: `docs/user/runbook.md` § Milestone maintenance pipeline, `docs/governance/governance_runbook.md` § Sweep manifest doctrine, `docs/user/manpages/adr-milestone-maintenance.md`
 
 ## Alternatives Considered
 

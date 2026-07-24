@@ -271,7 +271,7 @@ All proofs in `audit/proofs/`:
 |------|--------|----------|
 | **Completeness** | ✓ COMPLETE | 8/8 OBPIs attested_completed; 39/39 REQs covered (100%); audit-check JSON `passed=true` |
 | **Integrity** | ✓ INTACT | No `findings`, no `coverage_blocking`, no `covers_backfill_findings`, no `covers_backfill_unresolvable` |
-| **Alignment (code ⇄ docs ⇄ tests)** | ✓ ALIGNED | All eight feature demonstrations resolved against live `gz` CLI; manpages live (`docs/user/manpages/gz-content.md` per OBPI-04 brief); 44-test sweep OK |
+| **Alignment (code ⇄ docs ⇄ tests)** | ✓ ALIGNED | All eight feature demonstrations resolved against live `gz` CLI; manpages live (`docs/user/manpages/content.md` per OBPI-04 brief); 44-test sweep OK |
 | **Value demonstration** | ✓ DEMONSTRATED | Eight capabilities (A–H) demonstrated via live `gz`/Python invocations with captured output |
 | **Lifecycle precondition** | ✓ READY | `gz adr report` shows Closeout READY, QC READY, Lifecycle=Completed (ready for Validated promotion) |
 | **Shortfalls** | 1 non-blocking, 1 out-of-scope | Documented above |
