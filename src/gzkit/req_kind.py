@@ -81,53 +81,6 @@ class ReqClassification(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Three-channel coverage models (ADR-0.0.59 Decision item 3)
-# ---------------------------------------------------------------------------
-
-
-class ReqCoverageRecord(BaseModel):
-    """Three-channel coverage record for a single REQ (ADR-0.0.59-03)."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    req_id: str = Field(..., description="REQ identifier")
-    kind: ReqKind | None = Field(None, description="Taxonomy kind or None if unresolved")
-    proof_channel: str | None = Field(None, description="Proof channel for this kind")
-    proof_status: str = Field(
-        ...,
-        description="pass/fail/advisory-support/unproven-fence/unproven-support/"
-        "inferred-behavior/inferred-support/inferred-structural-fence",
-    )
-    covering_tests: list[str] = Field(default_factory=list, description="@covers test paths")
-    ledger_event_ids: list[str] = Field(
-        default_factory=list, description="Ledger event IDs (advisory; SUPPORT channel)"
-    )
-    parent_adr_anchor: str | None = Field(
-        None, description="Parent ADR invariant anchor (STRUCTURAL-FENCE channel)"
-    )
-    grandfathered: bool = Field(
-        ..., description="True when this REQ is advisory-only (not fail-closed)"
-    )
-
-
-class ReqCoverageSummary(BaseModel):
-    """Three-channel coverage summary for an OBPI (ADR-0.0.59-03)."""
-
-    model_config = ConfigDict(frozen=True, extra="forbid")
-
-    obpi_id: str = Field(..., description="OBPI identifier")
-    total_reqs: int = Field(..., description="Total REQ count")
-    covered_reqs: int = Field(..., description="REQs with at least one @covers test")
-    behavior_uncovered_reqs: int = Field(
-        ..., description="BEHAVIOR-kind REQs without @covers (fail-close count)"
-    )
-    grandfathered_reqs: int = Field(
-        ..., description="Advisory-only REQs (SUPPORT without project_root + inferred)"
-    )
-    entries: list[ReqCoverageRecord] = Field(..., description="Per-REQ records")
-
-
-# ---------------------------------------------------------------------------
 # Inference heuristic (ADR-0.0.59 Decision item 3)
 # ---------------------------------------------------------------------------
 

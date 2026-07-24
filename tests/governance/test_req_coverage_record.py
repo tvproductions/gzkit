@@ -1,5 +1,8 @@
-"""Tests for ReqCoverageRecord, ReqCoverageSummary, infer_req_kind, and
-compute_three_channel_coverage (OBPI-0.0.59-03).
+"""Tests for infer_req_kind and compute_three_channel_coverage (OBPI-0.0.59-03).
+
+The ReqCoverageRecord/ReqCoverageSummary contract tests were retired with the
+models (GHI #545): CoverageEntry/CoverageReport are the surviving three-channel
+coverage record — a complete superset already wired into `gz covers --json`.
 
 All tests derive semantics from brief REQs, not from implementation output.
 """
@@ -8,8 +11,6 @@ import json
 import unittest
 import unittest.mock
 from pathlib import Path
-
-from pydantic import ValidationError
 
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
@@ -139,115 +140,6 @@ class TestCoverageEntryExtendedFields(unittest.TestCase):
             coverage_percent=66.7,
         )
         self.assertEqual(rollup.grandfathered_reqs, 0)
-
-
-class TestReqCoverageRecordModelContract(unittest.TestCase):
-    """REQ-0.0.59-03-03 (BEHAVIOR): ReqCoverageRecord and ReqCoverageSummary Pydantic contracts."""
-
-    def _make_record(self, **kwargs) -> object:
-        from gzkit.req_kind import ReqCoverageRecord, ReqKind
-
-        defaults = {
-            "req_id": "REQ-0.0.59-03-01",
-            "kind": ReqKind.BEHAVIOR,
-            "proof_channel": "TEST_COVERS",
-            "proof_status": "pass",
-            "covering_tests": ["tests/governance/test_foo.py::TestFoo::test_bar"],
-            "ledger_event_ids": [],
-            "parent_adr_anchor": None,
-            "grandfathered": False,
-        }
-        defaults.update(kwargs)
-        return ReqCoverageRecord(**defaults)
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_record_constructs_with_valid_inputs(self) -> None:
-        """ReqCoverageRecord accepts all required fields."""
-        record = self._make_record()
-        self.assertEqual(record.req_id, "REQ-0.0.59-03-01")
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_record_is_frozen(self) -> None:
-        """ReqCoverageRecord is immutable (frozen=True)."""
-        record = self._make_record()
-        with self.assertRaises((TypeError, ValidationError)):
-            record.req_id = "changed"  # type: ignore
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_record_rejects_extra_fields(self) -> None:
-        """ReqCoverageRecord rejects unknown fields (extra='forbid')."""
-        from gzkit.req_kind import ReqCoverageRecord, ReqKind
-
-        with self.assertRaises(ValidationError):
-            ReqCoverageRecord(
-                req_id="REQ-0.0.59-03-01",
-                kind=ReqKind.BEHAVIOR,
-                proof_channel="TEST_COVERS",
-                proof_status="pass",
-                covering_tests=[],
-                ledger_event_ids=[],
-                parent_adr_anchor=None,
-                grandfathered=False,
-                unexpected_field="boom",
-            )
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_record_serializes_to_json(self) -> None:
-        """ReqCoverageRecord.model_dump_json() produces valid JSON."""
-        record = self._make_record()
-        from gzkit.req_kind import ReqCoverageRecord
-
-        dumped = json.loads(ReqCoverageRecord.model_validate(record.model_dump()).model_dump_json())
-        self.assertIn("req_id", dumped)
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_summary_constructs_with_valid_inputs(self) -> None:
-        """ReqCoverageSummary accepts all required fields."""
-        from gzkit.req_kind import ReqCoverageSummary
-
-        record = self._make_record()
-        summary = ReqCoverageSummary(
-            obpi_id="OBPI-0.0.59-03",
-            total_reqs=1,
-            covered_reqs=1,
-            behavior_uncovered_reqs=0,
-            grandfathered_reqs=0,
-            entries=[record],  # type: ignore[arg-type]
-        )
-        self.assertEqual(summary.obpi_id, "OBPI-0.0.59-03")
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_summary_is_frozen(self) -> None:
-        """ReqCoverageSummary is immutable (frozen=True)."""
-        from gzkit.req_kind import ReqCoverageSummary
-
-        record = self._make_record()
-        summary = ReqCoverageSummary(
-            obpi_id="OBPI-0.0.59-03",
-            total_reqs=1,
-            covered_reqs=1,
-            behavior_uncovered_reqs=0,
-            grandfathered_reqs=0,
-            entries=[record],  # type: ignore[arg-type]
-        )
-        with self.assertRaises((TypeError, ValidationError)):
-            summary.obpi_id = "changed"  # type: ignore
-
-    @covers("REQ-0.0.59-03-03")
-    def test_req_coverage_summary_rejects_extra_fields(self) -> None:
-        """ReqCoverageSummary rejects unknown fields (extra='forbid')."""
-        from gzkit.req_kind import ReqCoverageSummary
-
-        with self.assertRaises(ValidationError):
-            ReqCoverageSummary(
-                obpi_id="OBPI-0.0.59-03",
-                total_reqs=0,
-                covered_reqs=0,
-                behavior_uncovered_reqs=0,
-                grandfathered_reqs=0,
-                entries=[],
-                unexpected="boom",
-            )
 
 
 class TestInferReqKind(unittest.TestCase):
