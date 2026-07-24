@@ -25,6 +25,7 @@ def _write_brief(
     allowed_paths: list[str],
     declared_sensitivity: str | None = None,
     parent_adr: str = "ADR-test-fixture",
+    status: str = "Draft",
 ) -> Path:
     obpi_dir = project_root / "docs" / "design" / "adr" / "foundation" / parent_adr / "obpis"
     obpi_dir.mkdir(parents=True, exist_ok=True)
@@ -37,7 +38,7 @@ id: {obpi_id}
 parent: {parent_adr}
 item: 1
 lane: Heavy
-status: Draft
+status: {status}
 {sensitivity_line}---
 
 # {obpi_id}
@@ -253,6 +254,86 @@ class TestSensitivityFloorViolation(unittest.TestCase):
 
         violations = [f for f in findings if f.type == "sensitivity-floor-violation"]
         self.assertEqual(violations, [], "CLI path must waive grandfathered briefs")
+
+
+class TestSensitivityTerminalBriefExemption(unittest.TestCase):
+    """GHI #682: the auto-detect floor does not gate terminal-status briefs.
+
+    A terminal brief (Completed/Validated/Abandoned/Withdrawn/...) is a sealed
+    historical record whose Allowed Paths describe a tree that has moved on;
+    re-gating it on the security floor asks a frozen brief a question about the
+    present. Consistent with the same shared-predicate scoping applied to
+    `--brief-command-shape` (GHI #550) and the reconcile engine (GHI #707).
+    The exemption is status-scoped, not blanket: active briefs still fail closed.
+    """
+
+    def test_terminal_brief_over_overlap_is_not_gated(self):
+        from gzkit.governance import trust_audits as ta
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_registry(root, _SAFE_REGISTRY)
+            _write_brief(
+                root,
+                obpi_id="OBPI-terminal-01",
+                allowed_paths=["src/gzkit/ledger.py"],
+                declared_sensitivity=None,
+                status="Completed",
+            )
+            findings = ta.audit_sensitivity_binding(root)
+
+        gated = [f for f in findings if "OBPI-terminal-01" in f.artifact]
+        self.assertEqual(
+            gated,
+            [],
+            f"A terminal (Completed) brief must not be gated by the floor, got {gated}",
+        )
+
+    def test_active_brief_over_same_overlap_still_gated(self):
+        """Control: the exemption is status-scoped — Draft briefs still fail closed."""
+        from gzkit.governance import trust_audits as ta
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_registry(root, _SAFE_REGISTRY)
+            _write_brief(
+                root,
+                obpi_id="OBPI-active-01",
+                allowed_paths=["src/gzkit/ledger.py"],
+                declared_sensitivity=None,
+                status="Draft",
+            )
+            findings = ta.audit_sensitivity_binding(root)
+
+        violations = [
+            f
+            for f in findings
+            if f.type == "sensitivity-floor-violation" and "OBPI-active-01" in f.artifact
+        ]
+        self.assertEqual(
+            len(violations),
+            1,
+            f"An active (Draft) brief over the same overlap must still fail closed, got {findings}",
+        )
+
+    def test_cli_path_terminal_brief_not_gated(self):
+        """Coupled-surface coherence: the gz validate --sensitivity path exempts terminal too."""
+        from gzkit.commands.validate_cmd import _sensitivity_records
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_registry(root, _SAFE_REGISTRY)
+            _write_brief(
+                root,
+                obpi_id="OBPI-cli-terminal-01",
+                allowed_paths=["src/gzkit/ledger.py"],
+                declared_sensitivity=None,
+                status="Completed",
+            )
+            _records, findings = _sensitivity_records(root)
+
+        gated = [f for f in findings if "OBPI-cli-terminal-01" in f.artifact]
+        self.assertEqual(gated, [], f"CLI path must exempt terminal briefs too, got {gated}")
 
 
 class TestSensitivityRegistry(unittest.TestCase):

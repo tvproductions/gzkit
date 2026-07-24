@@ -4,6 +4,7 @@ parent: ADR-0.44.0-vendor-alignment-codex
 item: 4
 lane: Heavy
 status: Draft
+sensitivity: security
 ---
 
 # OBPI-0.44.0-04-harness-aware-pipeline-runtime: Harness Aware Pipeline Runtime

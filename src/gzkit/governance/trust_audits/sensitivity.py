@@ -15,6 +15,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.governance.trust_audits.taxonomy import _parse_adr_frontmatter
 from gzkit.validate import ValidationError
 
@@ -144,6 +145,16 @@ def _classify_brief_sensitivity(
 
     rel = brief_path.relative_to(project_root).as_posix()
     frontmatter = _parse_adr_frontmatter(brief_path) or {}
+
+    # A terminal brief is a sealed historical record whose Allowed Paths describe
+    # a tree that has moved on; the auto-detect floor must not re-gate it (GHI
+    # #682). Scoped to the audit path only — the completion runtime
+    # (detect_brief_security_floor) checks the one brief being completed, which is
+    # not yet terminal during its own completion, so it deliberately does NOT skip.
+    status = frontmatter.get("status")
+    if isinstance(status, str) and is_terminal_brief_status(status):
+        return None
+
     declared_norm = _normalize_declared_sensitivity(frontmatter.get("sensitivity"))
 
     allowed_paths = _extract_sensitivity_allowed_paths(brief_text)

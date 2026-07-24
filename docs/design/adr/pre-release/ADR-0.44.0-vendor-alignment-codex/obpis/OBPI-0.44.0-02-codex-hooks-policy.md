@@ -4,6 +4,7 @@ parent: ADR-0.44.0-vendor-alignment-codex
 item: 2
 lane: Heavy
 status: Draft
+sensitivity: security
 ---
 
 # OBPI-0.44.0-02-codex-hooks-policy: Codex Hooks Policy

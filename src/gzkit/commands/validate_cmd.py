@@ -716,6 +716,7 @@ def _sensitivity_records(
     project_root: Path,
 ) -> tuple[list[dict[str, object]], list[ValidationError]]:
     """Walk briefs once and produce per-brief records + companion findings."""
+    from gzkit.governance.brief_structure import is_terminal_brief_status  # noqa: PLC0415
     from gzkit.governance.trust_audits.sensitivity import (  # noqa: PLC0415
         _SENSITIVITY_REGISTRY_REL,
         _extract_sensitivity_allowed_paths,
@@ -746,6 +747,14 @@ def _sensitivity_records(
             continue
         rel = brief_path.relative_to(project_root).as_posix()
         frontmatter = _parse_adr_frontmatter(brief_path) or {}
+
+        # Terminal briefs are sealed historical records; the floor does not
+        # re-gate them (GHI #682). Mirrors _classify_brief_sensitivity's skip so
+        # the CLI --sensitivity path and audit_sensitivity_binding stay coherent.
+        status = frontmatter.get("status")
+        if isinstance(status, str) and is_terminal_brief_status(status):
+            continue
+
         declared = frontmatter.get("sensitivity")
         declared_norm = declared.strip() or None if isinstance(declared, str) else None
         if declared_norm in {"None", "null", "~"}:
