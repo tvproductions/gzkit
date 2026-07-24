@@ -2,12 +2,16 @@
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
+from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.ledger import (
     derive_obpi_semantics,
     parse_frontmatter_value,
 )
+
+if TYPE_CHECKING:
+    from gzkit.hooks.obpi import ObpiValidator
 
 # ---------------------------------------------------------------------------
 # Markdown parsing helpers
@@ -260,11 +264,49 @@ def _issue_details(issues: list[str], tracked_defects: list[dict[str, Any]]) -> 
 # ---------------------------------------------------------------------------
 
 
+def _compute_brief_authored(
+    content: str,
+    *,
+    frontmatter_status: str,
+    brief_status: str,
+    file_completed: bool,
+    project_root: Path,
+    validator: "ObpiValidator | None" = None,
+) -> bool | None:
+    """Whether a non-terminal brief passes ``gz obpi validate --authored``.
+
+    GHI #665: ``gz adr status`` could not tell an unauthored ``gz specify``
+    scaffold from an authored, not-yet-implemented brief — both render the same
+    free-text ``**Brief Status:**`` label. Authored-readiness is the
+    ``--authored`` verdict; for a non-completed brief
+    ``ObpiValidator.validate_content(require_authored=True)`` returns only
+    scaffold + authored-readiness findings and never reaches the ledger graph
+    (``gzkit.hooks.obpi`` early-returns), so an empty result means
+    "authored-ready". The verdict is computed fresh here and never persisted,
+    keeping the Layer-3 status view derived from Layer-1 content
+    (AGENTS.md Architectural Boundary #6).
+
+    Returns ``None`` for terminal briefs, where authored-readiness is moot.
+    """
+    if (
+        file_completed
+        or is_terminal_brief_status(frontmatter_status)
+        or is_terminal_brief_status(brief_status)
+    ):
+        return None
+
+    from gzkit.hooks.obpi import ObpiValidator
+
+    checker = validator or ObpiValidator(project_root)
+    return not checker.validate_content(content, require_authored=True)
+
+
 def _inspect_obpi_brief(
     project_root: Path,
     obpi_file: Path,
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
+    validator: "ObpiValidator | None" = None,
 ) -> dict[str, Any]:
     content = obpi_file.read_text(encoding="utf-8")
     frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
@@ -278,6 +320,14 @@ def _inspect_obpi_brief(
         .lower()
     )
     file_completed = frontmatter_status == "completed" or brief_status == "completed"
+    brief_authored = _compute_brief_authored(
+        content,
+        frontmatter_status=frontmatter_status,
+        brief_status=brief_status,
+        file_completed=file_completed,
+        project_root=project_root,
+        validator=validator,
+    )
     implementation_evidence_ok = _has_substantive_implementation_summary(content)
     key_proof_body = _resolved_key_proof_body(content)
     key_proof_ok = key_proof_body is not None
@@ -304,6 +354,7 @@ def _inspect_obpi_brief(
         "human_attestation": human_attestation,
         "frontmatter_status": frontmatter_status or None,
         "brief_status": brief_status or None,
+        "brief_authored": brief_authored,
         "reflection_issues": list(semantics["reflection_issues"]),
         "tracked_defects": tracked_defects,
         "issue_details": _issue_details(list(semantics["issues"]), tracked_defects),

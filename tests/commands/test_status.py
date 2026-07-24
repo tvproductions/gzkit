@@ -1868,6 +1868,120 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertIn("OBPI-0.1.0-01-demo", result.output)
             self.assertIn("draft", result.output)
 
+    def test_adr_status_json_flags_brief_authored_readiness(self) -> None:
+        """gz adr status distinguishes scaffold, authored, and terminal briefs.
+
+        GHI #665: the free-text ``Brief`` label conflated an unauthored
+        ``gz specify`` scaffold with an authored, not-yet-implemented brief.
+        The computed ``brief_authored`` field reflects the
+        ``gz obpi validate --authored`` verdict (derived fresh from content,
+        never persisted) so the Layer-3 status view can carry the Layer-1
+        distinction without caching it (Architectural Boundary #6).
+        """
+        authored_brief = (
+            "---\n"
+            "id: OBPI-0.1.0-02-authored\n"
+            "parent: ADR-0.1.0-f\n"
+            "item: 2\n"
+            "lane: Lite\n"
+            "status: Draft\n"
+            "---\n\n"
+            "# OBPI-0.1.0-02-authored\n\n"
+            "**Brief Status:** draft\n\n"
+            "## ADR Item\n- **Source ADR:** ADR-0.1.0-f\n- **Checklist Item:** #2\n\n"
+            "## Objective\nDefine typed port interfaces.\n\n"
+            "## Lane\n**Lite** - Internal Python contract.\n\n"
+            "## Allowed Paths\n- `src/gzkit/ports/` - in scope\n\n"
+            "## Creates these files\n- `src/gzkit/ports/`\n\n"
+            "## Denied Paths\n- `docs/user/manpages/` - docs stay unchanged\n\n"
+            "## Requirements (FAIL-CLOSED)\n1. REQUIREMENT: Use Protocols.\n\n"
+            "## Quality Gates\n### Gate 1: ADR\n- [ ] Intent recorded\n\n"
+            "## Discovery Checklist\n"
+            "**Prerequisites (check existence, STOP if missing):**\n"
+            "- [ ] `src/gzkit/runtime.py` - runtime entry point\n\n"
+            "**Existing Code (understand current state):**\n"
+            "- [ ] `src/gzkit/ports.py` - current patterns\n\n"
+            "## Verification\n```bash\n"
+            "uv run gz validate --documents\n"
+            "uv run gz lint\n"
+            "uv run gz typecheck\n"
+            "uv run gz test\n"
+            "uv run -m unittest tests.test_ports\n"
+            "```\n\n"
+            "## Acceptance Criteria\n"
+            "- [ ] REQ-0.1.0-02-01: Ports are defined.\n"
+        )
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_dir = Path(config.paths.adrs) / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+
+            # (1) Unauthored scaffold — minimal body, no authored sections.
+            _write_obpi(
+                path=obpi_dir / "OBPI-0.1.0-01-scaffold.md",
+                status="Draft",
+                brief_status="draft",
+                implementation_line="Not started",
+            )
+            # (2) Authored, not-yet-implemented — passes obpi validate --authored.
+            (obpi_dir / "OBPI-0.1.0-02-authored.md").write_text(authored_brief, encoding="utf-8")
+            # (3) Terminal — authored-readiness is moot for a completed brief.
+            _write_obpi(
+                path=obpi_dir / "OBPI-0.1.0-03-done.md",
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/module.py",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            for slug in ("01-scaffold", "02-authored", "03-done"):
+                ledger.append(obpi_created_event(f"OBPI-0.1.0-{slug}", "ADR-0.1.0-f"))
+
+            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            payload = json.loads(result.output)
+            authored_by_id = {row["id"]: row.get("brief_authored") for row in payload["obpis"]}
+            self.assertIs(authored_by_id["OBPI-0.1.0-01-scaffold"], False)
+            self.assertIs(authored_by_id["OBPI-0.1.0-02-authored"], True)
+            self.assertIsNone(authored_by_id["OBPI-0.1.0-03-done"])
+
+    def test_adr_status_marks_scaffold_brief_in_table(self) -> None:
+        # output-contract: GHI #665 — the Brief column must visibly mark an
+        # unauthored scaffold; "(scaffold)" is the named human-readable signal
+        # distinguishing it from an authored draft.
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_dir = Path(config.paths.adrs) / "obpis"
+            obpi_dir.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_dir / "OBPI-0.1.0-01-scaffold.md",
+                status="Draft",
+                brief_status="draft",
+                implementation_line="Not started",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-scaffold", "ADR-0.1.0-f"))
+
+            # Widen the Rich console so the no_wrap Brief cell is not truncated.
+            prev_columns = os.environ.get("COLUMNS")
+            os.environ["COLUMNS"] = "200"
+            try:
+                result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f"])
+            finally:
+                if prev_columns is None:
+                    os.environ.pop("COLUMNS", None)
+                else:
+                    os.environ["COLUMNS"] = prev_columns
+            self.assertEqual(result.exit_code, 0)
+            # The Brief column cell itself carries the marker beside its label —
+            # a contiguous token the pre-fix render never produced.
+            self.assertIn("draft (scaffold)", result.output)
+
     def test_adr_report_shows_issues_section(self) -> None:
         """gz adr report prints issues when OBPIs have problems."""
         runner = CliRunner()

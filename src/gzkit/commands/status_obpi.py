@@ -169,6 +169,7 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
+                "brief_authored": None,
                 "reflection_issues": list(semantics["reflection_issues"]),
                 "tracked_defects": [],
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],
@@ -179,8 +180,15 @@ def _adr_obpi_status_rows(
             }
         )
 
+    # One validator instance serves the whole loop: the authored-readiness check
+    # per OBPI reuses its cached config/parser rather than reloading each pass.
+    from gzkit.hooks.obpi import ObpiValidator
+
+    authored_validator = ObpiValidator(project_root)
     for obpi_id, obpi_file in sorted(obpi_files.items()):
-        inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id=obpi_id, graph=graph)
+        inspection = _inspect_obpi_brief(
+            project_root, obpi_file, obpi_id=obpi_id, graph=graph, validator=authored_validator
+        )
         rows.append(
             {
                 "id": obpi_id,
@@ -208,6 +216,7 @@ def _adr_obpi_status_rows(
                 "anchor_drift_files": list(inspection["anchor_drift_files"]),
                 "frontmatter_status": inspection["frontmatter_status"],
                 "brief_status": inspection["brief_status"],
+                "brief_authored": inspection["brief_authored"],
                 "reflection_issues": list(inspection["reflection_issues"]),
                 "tracked_defects": list(inspection["tracked_defects"]),
                 "issues": list(inspection["issues"]),
@@ -373,6 +382,7 @@ def _build_obpi_status_entry(
                 "anchor_drift_files": list(semantics["anchor_drift_files"]),
                 "frontmatter_status": None,
                 "brief_status": None,
+                "brief_authored": None,
                 "reflection_issues": list(semantics["reflection_issues"]),
                 "tracked_defects": [],
                 "issues": ["linked in ledger but no OBPI file found", *list(semantics["issues"])],

@@ -333,6 +333,19 @@ def _render_adr_table(
 # ---------------------------------------------------------------------------
 
 
+def _brief_cell(row: dict[str, Any]) -> str:
+    """Render the Brief column, marking an unauthored scaffold (GHI #665).
+
+    An authored, not-yet-implemented brief and a raw ``gz specify`` scaffold
+    both carry a ``draft`` label; the ``(scaffold)`` suffix surfaces the
+    ``brief_authored`` verdict so the two are distinguishable at a glance.
+    """
+    if row.get("brief_authored") is False:
+        label = cast(str, row.get("brief_status") or "draft")
+        return f"{label} (scaffold)"
+    return cast(str, row.get("brief_status", "draft"))
+
+
 def _render_adr_report(result: dict[str, Any]) -> None:
     """Render deterministic ASCII table report for a single ADR."""
     from gzkit.commands.status import ADR_SEMVER_STATUS_ID_RE  # noqa: PLC0415
@@ -388,7 +401,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
             f"{idx:02d}",
             cast(str, row.get("id", "")),
             cast(str, row.get("runtime_state", "pending")),
-            cast(str, row.get("brief_status", "draft")),
+            _brief_cell(row),
             "yes" if row.get("completed") else "no",
         )
     console.print(obpi_table)
