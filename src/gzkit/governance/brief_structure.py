@@ -78,6 +78,27 @@ def is_terminal_brief_status(status: str) -> bool:
     return status.strip().strip('"').strip("'").casefold() in _TERMINAL_STATUSES_FOLDED
 
 
+# A brief in one of these states has not begun. Its Allowed Paths and its
+# `gz` verbs name what the OBPI will CREATE, so their absence is the brief's
+# expected state rather than divergence from an agreed one. Distinct from
+# BRIEF_TERMINAL_STATUSES because "not yet" and "no longer" are different facts,
+# and only some dimensions are scoped by it (see `brief_reconcile`).
+BRIEF_UNSTARTED_STATUSES: frozenset[str] = frozenset({"Draft"})
+
+_UNSTARTED_STATUSES_FOLDED: frozenset[str] = frozenset(
+    status.casefold() for status in BRIEF_UNSTARTED_STATUSES
+)
+
+
+def is_unstarted_brief_status(status: str) -> bool:
+    """Return True when ``status`` names a brief whose work has not begun.
+
+    Whitespace and YAML quoting are tolerated for the same reason
+    ``is_terminal_brief_status`` tolerates them: callers pass raw frontmatter.
+    """
+    return status.strip().strip('"').strip("'").casefold() in _UNSTARTED_STATUSES_FOLDED
+
+
 class LegacyBriefShape(BaseModel):
     """Container for an OBPI brief that lacks structured frontmatter fields."""
 

@@ -2,7 +2,7 @@
 id: OBPI-0.0.99-03-verb-drift
 parent: ADR-0.0.37-constitutional-invariant-composition
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
   - src/gzkit/governance/brief_reconcile.py
 reqs:

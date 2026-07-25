@@ -20,6 +20,7 @@ from gzkit.governance.brief_structure import (
     BriefStructure,
     LegacyBriefShape,
     is_terminal_brief_status,
+    is_unstarted_brief_status,
     parse_brief,
 )
 
@@ -134,6 +135,15 @@ class ReconcileResult(BaseModel):
             "never gate — distinguishes 'nothing moved' from 'cannot gate'"
         ),
     )
+    unstarted: bool = Field(
+        default=False,
+        description=(
+            "True when the brief's work has not begun. Unlike `terminal` this is "
+            "dimension-scoped: deliverable dimensions (allowlist existence, `gz` "
+            "verbs) do not gate, while prerequisite dimensions (discovery, "
+            "citations) still do"
+        ),
+    )
 
 
 # --- Parsing patterns ---
@@ -228,11 +238,29 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
     # a req_count-only delta fail-closed valid completions and broke reconcile
     # idempotency (a duplicate drift note appended per run). Meaningful drift
     # dimensions (allowlist/discovery/verification/citation) still set has_drift.
+    # An unstarted brief's Allowed Paths and `gz` verbs name what the OBPI will
+    # CREATE, so their absence is the brief's expected state, not divergence
+    # from an agreed one: `OBPI-0.0.42-02-storybook-cli` cites `gz storybook`
+    # precisely because it is the OBPI that lands that verb. Gating there blocks
+    # a brief for not yet having been implemented.
+    #
+    # This is dimension-scoped, NOT a blanket exemption like `terminal` above.
+    # The Discovery Checklist is a genuine prerequisite claim — those paths must
+    # exist BEFORE work starts — and citations anchor to artifacts that already
+    # exist. Both still gate on a Draft brief. REQ-0.0.37-05-02's negative
+    # control was right that a Draft brief makes live claims and wrong only in
+    # applying that to deliverable dimensions; it is narrowed here, not retired,
+    # and its covering test now draws the contrast on Discovery.
+    unstarted = _is_unstarted_status(parsed)
+
+    gating_allowlist_absence = not unstarted and bool(allowlist_delta.missing_on_disk)
+    gating_unresolved_verbs = not unstarted and bool(verification_delta.unresolved_verbs)
+
     has_drift = (
-        bool(allowlist_delta.missing_on_disk)
+        gating_allowlist_absence
         or bool(allowlist_delta.missing_in_brief)
         or bool(discovery_delta.unresolved_paths)
-        or bool(verification_delta.unresolved_verbs)
+        or gating_unresolved_verbs
         or bool(citation_delta.stale_citations)
     )
 
@@ -244,6 +272,7 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
         req_count_delta=req_count_delta,
         citation_delta=citation_delta,
         has_drift=has_drift,
+        unstarted=unstarted,
     )
 
 
@@ -474,6 +503,19 @@ def _is_terminal_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
     else:
         status = str(parsed.raw_frontmatter.get("status", ""))
     return is_terminal_brief_status(status)
+
+
+def _is_unstarted_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
+    """Return True when the brief's work has not begun.
+
+    Adapts a parsed brief onto ``is_unstarted_brief_status``, the same
+    one-vocabulary-one-matching-rule shape ``_is_terminal_status`` uses.
+    """
+    if isinstance(parsed, BriefStructure):
+        status = parsed.status
+    else:
+        status = str(parsed.raw_frontmatter.get("status", ""))
+    return is_unstarted_brief_status(status)
 
 
 def _compute_discovery_delta(

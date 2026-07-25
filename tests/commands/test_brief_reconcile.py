@@ -46,13 +46,17 @@ status: Draft
 """
 
 # Drift via an allowlist path that cannot exist on disk + an unknown gz verb.
+# `Active`, not `Draft`: both of those dimensions are DELIVERABLE dimensions, and
+# a Draft brief deliberately does not gate on its own deliverables (GHI #615).
+# Keeping the fixture Draft would confound "does this dimension detect drift"
+# with "does this lifecycle state gate on it".
 _DRIFT_BRIEF = """\
 ---
 id: OBPI-0.1.0-02-drift
 parent: ADR-0.1.0-f
 item: 2
 lane: Lite
-status: Draft
+status: Active
 ---
 
 # OBPI-0.1.0-02-drift: Drift
@@ -322,7 +326,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             brief_path = self._adrs_dir() / "OBPI-0.1.0-02-drift.md"
-            _write_brief(brief_path, _DRIFT_BRIEF.replace("status: Draft", "status: Completed"))
+            _write_brief(brief_path, _DRIFT_BRIEF.replace("status: Active", "status: Completed"))
             result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-02-drift"])
             self.assertEqual(result.exit_code, 0)
             self.assertNotIn("clean", result.output)

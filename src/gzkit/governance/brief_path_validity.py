@@ -134,6 +134,18 @@ def extract_allowed_paths(brief_path: Path) -> list[str] | None:
     return paths if paths else None
 
 
+# `gz specify` scaffolds every Discovery Checklist row as "Required path exists
+# **or is intentionally created in this OBPI**" (`specify_cmd.py:419`) — a line
+# that declares its own path may be net-new. The creates-extractor only knew
+# `**CREATE**` and "creates these files", so the producer and the consumer
+# disagreed about a marker the producer emits on every scaffolded brief, and 53
+# Draft briefs reported Discovery drift for files their own OBPI exists to
+# create. Same one-document-many-parsers class as GHI #615 itself; the two
+# surfaces are matched here rather than the phrasing being changed, because the
+# corpus already carries it.
+_SCAFFOLDED_CREATES_HINT = "intentionally created in this OBPI"
+
+
 def _extract_creates_paths_from_text(content: str) -> set[str]:
     """Mine path-shaped tokens from CREATE markers and Creates-these-files sections.
 
@@ -147,7 +159,7 @@ def _extract_creates_paths_from_text(content: str) -> set[str]:
     for line in content.splitlines():
         if line.lstrip().startswith("#"):
             in_creates_section = "creates these files" in line.lower()
-        if not (in_creates_section or "**CREATE**" in line):
+        if not (in_creates_section or "**CREATE**" in line or _SCAFFOLDED_CREATES_HINT in line):
             continue
         for token in line.split():
             cleaned = _normalize_for_creates(token.strip("`*,()[]<>"))

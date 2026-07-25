@@ -33,8 +33,15 @@ def _write_structured_brief(
     reqs: list[str],
     allowlist: list[str],
     acceptance_count: int | None = None,
+    status: str = "Active",
 ) -> None:
-    """Write a structured-frontmatter OBPI brief (parses as BriefStructure)."""
+    """Write a structured-frontmatter OBPI brief (parses as BriefStructure).
+
+    Defaults to ``Active`` rather than ``Draft`` so drift-dimension tests are not
+    confounded by lifecycle scoping: a Draft brief's Allowed Paths name its
+    deliverables and deliberately do not gate (GHI #615). Tests about the Draft
+    scoping itself pass ``status`` explicitly.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     n_acc = len(reqs) if acceptance_count is None else acceptance_count
     fm_allowlist = "\n".join(f"  - {p}" for p in allowlist)
@@ -46,7 +53,7 @@ def _write_structured_brief(
             id: {brief_id}
             parent: {parent}
             lane: Heavy
-            status: Draft
+            status: {status}
             allowlist:
             {fm_allowlist}
             reqs:
@@ -63,15 +70,20 @@ def _write_structured_brief(
     )
 
 
-def _write_legacy_brief(path: Path, *, brief_id: str, allowlist: list[str]) -> None:
-    """Write a legacy-frontmatter OBPI brief (parses as LegacyBriefShape)."""
+def _write_legacy_brief(
+    path: Path, *, brief_id: str, allowlist: list[str], status: str = "Active"
+) -> None:
+    """Write a legacy-frontmatter OBPI brief (parses as LegacyBriefShape).
+
+    Same ``Active`` default and same reason as ``_write_structured_brief``.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     bullets = "\n".join(f"- `{p}`" for p in allowlist)
     path.write_text(
         textwrap.dedent(f"""\
             ---
             id: {brief_id}
-            status: Draft
+            status: {status}
             ---
             # {brief_id}: Legacy Test Brief
             ## Allowed Paths
@@ -241,9 +253,58 @@ class TestTerminalStatusScoping(unittest.TestCase):
     @covers("REQ-0.0.37-05-02")
     def test_live_brief_with_the_same_body_still_drifts(self):
         # Negative control: the scoping must key on status, not on the path. An
-        # identical Draft brief is a live prerequisite claim and must fail closed.
+        # identical Active brief is a live claim and must fail closed.
+        #
+        # This drew its contrast on `Draft` until GHI #615. That over-reached:
+        # a Draft brief's Allowed Paths name what the OBPI will CREATE, so their
+        # absence is its expected state -- `OBPI-0.0.42-02-storybook-cli` cites
+        # `gz storybook` because it is the OBPI that lands that verb. Measured
+        # across the corpus, all 68 drifting briefs were Draft and every finding
+        # was a brief naming its own unbuilt deliverable; none was drift.
+        # `Active` carries the "work has begun, paths should now exist" claim
+        # this control is actually about.
+        result = self._reconcile("Active")
+        self.assertEqual(result.allowlist_delta.missing_on_disk, ["src/gzkit/renamed_away_zzz.py"])
+        self.assertTrue(result.has_drift)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_unstarted_brief_does_not_gate_on_deliverable_paths(self):
+        # The narrowing, stated positively: a Draft brief's missing Allowed Path
+        # is still REPORTED (the delta is real information) but does not gate.
         result = self._reconcile("Draft")
         self.assertEqual(result.allowlist_delta.missing_on_disk, ["src/gzkit/renamed_away_zzz.py"])
+        self.assertTrue(result.unstarted)
+        self.assertFalse(result.has_drift)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_unstarted_brief_still_gates_on_prerequisite_paths(self):
+        # The fence on that narrowing: Discovery Checklist entries are genuine
+        # prerequisites -- they must exist BEFORE work starts -- so a Draft brief
+        # gates on them. Without this, "unstarted" would become the blanket
+        # exemption `terminal` is, and the dimension distinction would be prose.
+        body = textwrap.dedent("""\
+            ---
+            id: OBPI-0.1.0-78-unstarted
+            parent: ADR-0.1.0-f
+            item: 78
+            lane: Lite
+            status: Draft
+            ---
+
+            # OBPI-0.1.0-78-unstarted: Unstarted
+
+            ## Discovery Checklist
+
+            - [ ] Required path exists: `src/gzkit/absent_prerequisite_zzz.py`
+            """)
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = root / "brief.md"
+            brief.write_text(body, encoding="utf-8")
+            result = reconcile_brief(brief, root)
+        self.assertEqual(
+            result.discovery_delta.unresolved_paths, ["src/gzkit/absent_prerequisite_zzz.py"]
+        )
         self.assertTrue(result.has_drift)
 
 
