@@ -93,8 +93,10 @@ Out of scope, with owners:
 
 1. **Fold into `ADR-0.35.0-canon-entry-corpus-landing` as a tenth OBPI.**
    Rejected: that ADR's § Intent scopes the corpus→candidate generator and
-   `gz content land`, **not** render-order policy. Asserting it absorbs this
-   scope without an operator ruling would be inventing a destination.
+   the `content land` orchestrator (its OBPI-07 deliverable, unlanded as of
+   this writing — `gz content` currently exposes no such subcommand),
+   **not** render-order policy. Asserting it absorbs this scope without an
+   operator ruling would be inventing a destination.
 2. **Author a separate feature ADR pre-1.0.** Rejected: it adds an ADR to
    the pre-1.0 board that campaign Movement C is trying to reduce, and buys
    nothing until the cap actually binds.
