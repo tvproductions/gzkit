@@ -49,6 +49,15 @@ DEFAULT_RECURRENCE_THRESHOLD = 3
 QUOTE_MAX_CHARS = 200
 CLUSTER_KEY_WORDS = 8
 
+# Negative-signal run log (GHI #614). Lives in the proofs directory, NOT
+# `.gzkit/sensors/`: ADR-0.0.70 Boundary Invariant 2 fences the miner to write
+# only under `.gzkit/chores/session-correction-mining/proofs/`, and that fence is
+# attested (REQ-0.0.70-02-07). Bounded the same way as the sibling Stop-hook
+# sensor so an unattended schedule cannot grow it without limit.
+RUN_LOG_NAME = "run-log.jsonl"
+RUN_LOG_MAX_BYTES = 1_048_576
+RUN_LOG_KEEP_LINES = 500
+
 _EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+\.[\w.-]+")
 _WORD_RE = re.compile(r"[a-z0-9']+")
 
@@ -149,6 +158,49 @@ def _iter_corrections(path: Path) -> list[str]:
     return corrections
 
 
+def scan_corrections(
+    transcripts_dir: Path,
+    *,
+    threshold: int = DEFAULT_RECURRENCE_THRESHOLD,
+) -> dict:
+    """Mine transcripts and return ONE run record: what was scanned + what it found.
+
+    The record carries counts and config only — never operator text — so it can be
+    logged verbatim under Boundary Invariant 2's PII arm.
+
+    ``corrections_matched`` and ``clusters_total`` are the negative-signal fields
+    (GHI #614). Proposals alone cannot distinguish a healthy null result from a
+    silently-decayed detector: a below-threshold run and a run whose
+    ``CORRECTIVE_MARKERS`` lexicon matched nothing both emit zero proposals. With
+    these counts, the first reads ``corrections_matched > 0`` and the second reads
+    ``0`` — the decay is visible instead of inferred.
+
+    Fails soft: an absent directory yields a zero-count run, never an exception.
+    """
+    occurrences: dict[str, list[tuple[str, str]]] = defaultdict(list)
+    transcripts_scanned = 0
+    if transcripts_dir.is_dir():
+        for path in sorted(transcripts_dir.glob("*.jsonl")):
+            transcripts_scanned += 1
+            session_id = path.stem
+            for text in _iter_corrections(path):
+                key = _cluster_key(text)
+                if key:
+                    occurrences[key].append((session_id, text))
+
+    proposals = _proposals_from(occurrences, threshold)
+    matched = sum(len(hits) for hits in occurrences.values())
+    sessions = {session_id for hits in occurrences.values() for session_id, _ in hits}
+    return {
+        "threshold": threshold,
+        "transcripts_scanned": transcripts_scanned,
+        "sessions_with_corrections": len(sessions),
+        "corrections_matched": matched,
+        "clusters_total": len(occurrences),
+        "proposals": proposals,
+    }
+
+
 def mine_corrections(
     transcripts_dir: Path,
     *,
@@ -159,18 +211,16 @@ def mine_corrections(
     Returns one proposal record (plain dict) per cluster whose distinct
     session count meets the threshold. Fails soft: absent directories and
     malformed files yield zero proposals, never an exception.
+
+    The narrow projection of :func:`scan_corrections` — one scan implementation,
+    never a second traversal, so the proposal list and the run counts can never
+    disagree about the same pass.
     """
-    if not transcripts_dir.is_dir():
-        return []
+    return scan_corrections(transcripts_dir, threshold=threshold)["proposals"]
 
-    occurrences: dict[str, list[tuple[str, str]]] = defaultdict(list)
-    for path in sorted(transcripts_dir.glob("*.jsonl")):
-        session_id = path.stem
-        for text in _iter_corrections(path):
-            key = _cluster_key(text)
-            if key:
-                occurrences[key].append((session_id, text))
 
+def _proposals_from(occurrences: dict[str, list[tuple[str, str]]], threshold: int) -> list[dict]:
+    """Build proposal records for clusters meeting the distinct-session threshold."""
     proposals: list[dict] = []
     for key, hits in sorted(occurrences.items()):
         session_ids = sorted({session_id for session_id, _ in hits})
@@ -216,6 +266,38 @@ def write_proposals(proposals: list[dict], proofs_dir: Path) -> list[Path]:
     return written
 
 
+def write_run_log(run: dict, proofs_dir: Path) -> Path:
+    """Append one counts-only JSON line recording that the miner ran.
+
+    This is the negative-signal surface (GHI #614): a run that produced no
+    proposals still leaves a trace of how many transcripts it read and how many
+    corrections its lexicon matched, so a silently-decayed detector is
+    distinguishable from a genuine zero-find.
+
+    Writes into ``proofs_dir`` — the only location Boundary Invariant 2 permits
+    the miner to write. Counts and config only; the run record carries no
+    operator text, so no scrubbing is needed and none is implied. An over-cap log
+    is rewritten keeping the newest lines, mirroring the sibling Stop-hook sensor.
+    """
+    proofs_dir.mkdir(parents=True, exist_ok=True)
+    log = proofs_dir / RUN_LOG_NAME
+    if log.is_file() and log.stat().st_size > RUN_LOG_MAX_BYTES:
+        kept = log.read_text(encoding="utf-8").splitlines()[-RUN_LOG_KEEP_LINES:]
+        log.write_text("\n".join(kept) + "\n", encoding="utf-8")
+    record = {
+        "ts": datetime.now(UTC).isoformat(),
+        "threshold": run["threshold"],
+        "transcripts_scanned": run["transcripts_scanned"],
+        "sessions_with_corrections": run["sessions_with_corrections"],
+        "corrections_matched": run["corrections_matched"],
+        "clusters_total": run["clusters_total"],
+        "proposals_emitted": len(run["proposals"]),
+    }
+    with log.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record) + "\n")
+    return log
+
+
 def _default_transcripts_dir() -> Path:
     """Resolve the Claude Code transcript directory for the current project."""
     munged = str(Path.cwd().resolve()).replace("/", "-").replace("\\", "-")
@@ -242,10 +324,21 @@ def main(argv: list[str] | None = None) -> int:
     transcripts_dir = args.transcripts_dir or _default_transcripts_dir()
     proofs_dir = args.proofs_dir or _default_proofs_dir()
 
-    proposals = mine_corrections(transcripts_dir, threshold=args.threshold)
+    run = scan_corrections(transcripts_dir, threshold=args.threshold)
+    proposals = run["proposals"]
     sys.stdout.write(
         f"session-correction-mining: {len(proposals)} cluster(s) at "
         f"threshold {args.threshold} from {transcripts_dir}\n"
+    )
+    # Always report the scan counts, so even a dry run distinguishes "read N
+    # transcripts, matched M corrections, none recurred" from "matched nothing"
+    # (GHI #614). --dry-run may not WRITE anything (REQ-0.0.70-02-08), so stdout
+    # is the only negative-signal channel available to it.
+    sys.stdout.write(
+        f"  scanned {run['transcripts_scanned']} transcript(s), "
+        f"matched {run['corrections_matched']} correction(s) in "
+        f"{run['sessions_with_corrections']} session(s), "
+        f"{run['clusters_total']} distinct cluster(s)\n"
     )
     for proposal in proposals:
         sys.stdout.write(
@@ -256,7 +349,9 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     written = write_proposals(proposals, proofs_dir)
+    log = write_run_log(run, proofs_dir)
     sys.stdout.write(f"  wrote {len(written)} new proposal record(s) to {proofs_dir}\n")
+    sys.stdout.write(f"  recorded run telemetry to {log}\n")
     return 0
 
 

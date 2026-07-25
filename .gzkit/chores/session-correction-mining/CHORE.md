@@ -62,6 +62,36 @@ Proposals are JSON files `proposal-<id>.json` with schema: `proposal_id`,
 `cluster_key`, `marker`, `recurrence_count`, `session_ids`, `quote`
 (scrubbed, <=1 line), `mined_at`, `proposed_action`.
 
+### 3a. Read the run telemetry when a run finds nothing (GHI #614)
+
+A zero-proposal run is not self-explanatory: a stale `CORRECTIVE_MARKERS`
+lexicon that no longer matches how the operator phrases corrections reports
+`0 cluster(s)` exactly like a healthy run in which nothing recurred. Every run
+therefore reports what it scanned, and a **write** run appends one counts-only
+line to `proofs/run-log.jsonl` (gitignored; counts and config only, never
+operator text, per ADR-0.0.70 Boundary Invariant 2):
+
+```bash
+tail -n 1 .gzkit/chores/session-correction-mining/proofs/run-log.jsonl
+```
+
+```json
+{"ts": "...", "threshold": 3, "transcripts_scanned": 206,
+ "sessions_with_corrections": 8, "corrections_matched": 9,
+ "clusters_total": 9, "proposals_emitted": 0}
+```
+
+Read it as follows:
+
+| Signal | Reading |
+|--------|---------|
+| `corrections_matched` > 0, `proposals_emitted` == 0 | Healthy null — the lexicon works; nothing recurred across `threshold` distinct sessions |
+| `corrections_matched` == 0 across consecutive runs | **Suspect lexicon decay** — markers no longer match operator phrasing; refine `CORRECTIVE_MARKERS` (itself a candidate this chore mines) |
+| `transcripts_scanned` == 0 | Wrong transcripts directory, not a mining result |
+
+`--dry-run` reports the same counts on stdout but writes **nothing**, including
+no run log — REQ-0.0.70-02-08 fences it read-only.
+
 ### 4. Route accepted candidates
 
 Accepted candidates enter the advisory scorecard

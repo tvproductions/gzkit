@@ -70,6 +70,11 @@ site/
 # Test-health profiler runtime output (regenerated each run; CHORE-LOG.md is the tracked evidence)
 .gzkit/chores/*/proofs/health-report.json
 
+# Miner run telemetry (GHI #614 — per-run counts; runtime_state, never committed).
+# Lives under proofs/ rather than .gzkit/sensors/ because ADR-0.0.70 Boundary
+# Invariant 2 fences the miner to write only to its proofs directory.
+.gzkit/chores/*/proofs/run-log.jsonl
+
 # Ontology last-sweep diff-baseline cache (ADR-0.32.0 — Tier-B derived, regenerable, never authority)
 .gzkit/ontology/last_sweep.json
 
