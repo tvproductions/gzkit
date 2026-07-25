@@ -65,6 +65,40 @@ class ManpageAlignmentBehavior(unittest.TestCase):
             )
             self.assertEqual(audit_manpage_alignment(root), [])
 
+    def test_generated_release_manifest_is_exempt(self) -> None:
+        """A release manifest quotes GHI titles verbatim; it is a sealed record.
+
+        ``gz patch release`` renders one row per discovered GHI from the issue's
+        title. When a GHI is *about* the gz- prefix drift, its title contains the
+        forbidden string as quoted evidence — not as a pointer telling a reader
+        where to go. Rewriting it would falsify what the issue was called, the
+        same reason terminal briefs are exempt.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            releases = root / "docs" / "releases"
+            releases.mkdir(parents=True, exist_ok=True)
+            (releases / "PATCH-v0.33.2.md").write_text(
+                "| # | Title |\n|---|-------|\n"
+                "| 532 | manpages: 4 briefs reference docs/user/manpages/gz-validate.md |\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_manpage_alignment(root), [])
+
+    def test_live_operator_doc_outside_releases_still_gates(self) -> None:
+        """The exemption is scoped to docs/releases/, not to docs/ generally."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            user_docs = root / "docs" / "user"
+            user_docs.mkdir(parents=True, exist_ok=True)
+            (user_docs / "runbook.md").write_text(
+                "See `docs/user/manpages/gz-validate.md`\n", encoding="utf-8"
+            )
+            errors = audit_manpage_alignment(root)
+
+        self.assertEqual(len(errors), 1, f"live operator docs must still gate, got {errors}")
+        self.assertIn("gz-validate.md", errors[0].message)
+
     def test_skill_surface_is_scanned(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -162,11 +162,20 @@ def _manpage_alignment_sources(project_root: Path) -> list[Path]:
     are included here (unlike :func:`_cli_alignment_sources`, which predates the
     manpage-reference check) because that is where the gz-<verb>.md convention
     drift accumulated; terminal briefs are filtered by the caller.
+
+    ``docs/releases/`` is excluded: ``gz patch release`` renders one manifest row
+    per discovered GHI from that issue's title, so a GHI *about* the gz- prefix
+    drift carries the forbidden string as quoted evidence rather than as a
+    pointer. Rewriting it would falsify what the issue was called — the sealed-
+    record doctrine that exempts terminal briefs, applied to generated manifests.
     """
     sources: list[Path] = []
     docs_root = project_root / "docs"
     if docs_root.is_dir():
-        sources.extend(sorted(docs_root.rglob("*.md")))
+        releases_root = docs_root / "releases"
+        sources.extend(
+            path for path in sorted(docs_root.rglob("*.md")) if releases_root not in path.parents
+        )
     features_root = project_root / "features"
     if features_root.is_dir():
         sources.extend(sorted(features_root.rglob("*.feature")))
