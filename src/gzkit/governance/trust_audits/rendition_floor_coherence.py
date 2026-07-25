@@ -36,9 +36,9 @@ Registered as ``gz validate --rendition-floor-coherence``; also runs in
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
+from gzkit.advisory import emit_advisory
 from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.tier_policy import invariant_entries
 from gzkit.core.validation_rules import ValidationError
@@ -104,9 +104,7 @@ def validate_rendition_floor_coherence(
                 "attest the candidate, then recommit the rendition."
             )
             if not closed:
-                print(
-                    f"WARNING [rendition-floor-coherence, staged warn]: {message}", file=sys.stderr
-                )
+                emit_advisory(f"WARNING [rendition-floor-coherence, staged warn]: {message}")
                 continue
             emit_composition_drift_detected(
                 root=root,

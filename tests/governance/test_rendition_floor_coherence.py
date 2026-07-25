@@ -22,6 +22,7 @@ from gzkit.governance.trust_audits.rendition_floor_coherence import (
 from gzkit.mx import marker as _marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
+from tests.governance.common import QuietAdvisoriesMixin
 
 _INV = "Never, ever again give me that TTY or PTY bullshit — attestation is sacrosanct."
 _INV2 = "There is no such thing as a headless OBPI: every OBPI traces to a parent ADR."
@@ -40,8 +41,9 @@ def _entry(text: str, *, tier: str = "invariant", entry_id: str = "corpus-x") ->
     )
 
 
-class _TempProject(unittest.TestCase):
+class _TempProject(QuietAdvisoriesMixin):
     def setUp(self) -> None:
+        super().setUp()
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         (self.root / ".gzkit").mkdir()

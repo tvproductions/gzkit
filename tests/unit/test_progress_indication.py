@@ -11,6 +11,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from gzkit.cli.formatters import OutputFormatter, OutputMode, ProgressContext
+from gzkit.quality import QualityResult
 
 
 class _ProgressSpy:
@@ -41,8 +42,22 @@ class _FormatterSpy:
         return self.progress
 
 
-def _result(success: bool) -> SimpleNamespace:
-    return SimpleNamespace(success=success)
+def _result(success: bool) -> QualityResult:
+    """Build a faithful step result.
+
+    Previously a ``SimpleNamespace(success=...)`` partial fake. ``check()``
+    consumes more of ``QualityResult`` than ``.success`` — the advisory renderer
+    reads the captured streams (GHI #713) — and a stub that models only the
+    field today's assertions touch fails whenever the consumer grows. Using the
+    real model makes that class of drift impossible.
+    """
+    return QualityResult(
+        success=success,
+        command="uv run gz stub",
+        stdout="",
+        stderr="",
+        returncode=0 if success else 1,
+    )
 
 
 class TestProgressContextExists(unittest.TestCase):

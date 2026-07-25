@@ -34,9 +34,9 @@ surface.
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 
+from gzkit.advisory import emit_advisory
 from gzkit.content.parse import section_id
 from gzkit.content.vendors import delivery_cap_for, routes_for
 from gzkit.validate import ValidationError
@@ -117,7 +117,7 @@ def _declaration_errors(
 
 
 def _warn(message: str) -> None:
-    print(f"WARNING {_PREFIX} {message}", file=sys.stderr)
+    emit_advisory(f"WARNING {_PREFIX} {message}")
 
 
 def _observe_delivery(
@@ -134,10 +134,9 @@ def _observe_delivery(
         if cap is None:
             continue
         if surface_bytes <= cap:
-            print(
+            emit_advisory(
                 f"NOTE {_PREFIX} {relpath}: {surface_bytes} B rendered against the "
-                f"{vendor} delivery cap {cap} B — {cap - surface_bytes} B of headroom.",
-                file=sys.stderr,
+                f"{vendor} delivery cap {cap} B — {cap - surface_bytes} B of headroom."
             )
         else:
             _warn(

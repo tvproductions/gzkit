@@ -11,6 +11,8 @@ import subprocess
 from collections.abc import Callable
 from typing import Any
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, get_project_root
 from gzkit.quality import (
     DriftAdvisoryResult,
@@ -522,6 +524,8 @@ def check(as_json: bool = False) -> None:
     for name, result in results:
         console.print(f"  {_sym(result.success)} [bold]{name}[/bold]")
 
+    _render_step_advisories(results)
+
     all_passed = all(r.success for _, r in results)
     if all_passed:
         console.print("\n[green]✓ All checks passed.[/green]")
@@ -545,6 +549,48 @@ def check(as_json: bool = False) -> None:
 
     if not all_passed:
         raise SystemExit(1)
+
+
+def _bears_advisories(result: QualityResult) -> bool:
+    """Whether a step's captured output can carry findings about THIS project.
+
+    An advisory is a claim a validator makes about the repository. The test step
+    also emits advisory-marked lines — its fixtures exercise the very audits that
+    emit them — but those are claims about temp directories, so surfacing them
+    would misattribute simulated findings to the real tree. The discriminator is
+    the command the step actually ran, recorded on the result, rather than a
+    hand-kept list of step names that would drift as steps are added.
+    """
+    return "gz validate" in result.command
+
+
+def _render_step_advisories(results: list[tuple[str, QualityResult]]) -> None:
+    """Surface advisory lines emitted by validator steps that PASSED (GHI #713).
+
+    The failure branch already dumps a failing step's whole output, so drawing
+    from passing steps only both closes the hole and avoids double-printing.
+    Without this, a finding that must not change the exit code — the vendor
+    delivery-cap distance, a staged-warn rendition check, an orphan bullet — is
+    reachable only by running its scope directly, which is not the surface
+    operators run.
+    """
+    from gzkit.advisory import ADVISORY_MARKER, advisory_lines  # noqa: PLC0415 — import cycle
+
+    found = [
+        (name, line.removeprefix(ADVISORY_MARKER).strip())
+        for name, result in results
+        if result.success and _bears_advisories(result)
+        for line in advisory_lines(result.stdout, result.stderr)
+    ]
+    if not found:
+        return
+    console.print("\n[yellow]⚠ Advisory (does not affect exit code):[/yellow]")
+    for name, prose in found:
+        # escape=True: advisory prose is audit-authored text, not markup. The
+        # marker itself looks like a Rich tag, and so can arbitrary quoted
+        # content inside a finding — rendering it as markup would drop or
+        # corrupt the prose the operator is meant to read.
+        console.print(f"  [dim]{name}[/dim] {escape(prose)}")
 
 
 def _render_drift_advisory(drift: DriftAdvisoryResult) -> None:

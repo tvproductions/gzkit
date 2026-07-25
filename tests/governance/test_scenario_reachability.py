@@ -23,6 +23,7 @@ from gzkit.governance.trust_audits.scenario_reachability import (
     validate_scenario_reachability,
 )
 from gzkit.traceability import covers
+from tests.governance.common import QuietAdvisoriesMixin
 
 # ---------------------------------------------------------------------------
 # Minimal synthetic scorecard content
@@ -68,7 +69,7 @@ def _make_tree(
     return root
 
 
-class TestREQ01_RegistryAbsent(unittest.TestCase):
+class TestREQ01_RegistryAbsent(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-01: Registry absent → exit 0, advisory to stderr."""
 
     @covers("REQ-0.0.33-04-01")
@@ -86,7 +87,7 @@ class TestREQ01_RegistryAbsent(unittest.TestCase):
             )
 
 
-class TestREQ02_RegistryPresentNoOrphans(unittest.TestCase):
+class TestREQ02_RegistryPresentNoOrphans(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-02: Registry present, all bullets covered → exit 0, no orphan warnings."""
 
     @covers("REQ-0.0.33-04-02")
@@ -109,7 +110,7 @@ class TestREQ02_RegistryPresentNoOrphans(unittest.TestCase):
             )
 
 
-class TestREQ03_RegistryPresentWithOrphans(unittest.TestCase):
+class TestREQ03_RegistryPresentWithOrphans(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-03: Registry present, orphan bullets → exit 0, stderr orphan warnings."""
 
     @covers("REQ-0.0.33-04-03")
@@ -137,7 +138,7 @@ class TestREQ03_RegistryPresentWithOrphans(unittest.TestCase):
             )
 
 
-class TestREQ04_RegistryMalformed(unittest.TestCase):
+class TestREQ04_RegistryMalformed(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-04: Registry malformed → ValidationError(type="scenario_reachability")."""
 
     @covers("REQ-0.0.33-04-04")
@@ -179,7 +180,7 @@ class TestREQ04_RegistryMalformed(unittest.TestCase):
             self.assertEqual(errors[0].type, "scenario_reachability")
 
 
-class TestREQ05_PackageReExport(unittest.TestCase):
+class TestREQ05_PackageReExport(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-05: validate_scenario_reachability resolves from trust_audits re-export."""
 
     @covers("REQ-0.0.33-04-05")
@@ -196,7 +197,7 @@ class TestREQ05_PackageReExport(unittest.TestCase):
             self.assertIsInstance(result, list, "Function must return a list")
 
 
-class TestScenarioReachabilityRoutesToExit3(unittest.TestCase):
+class TestScenarioReachabilityRoutesToExit3(QuietAdvisoriesMixin):
     """REQ-0.0.33-04-04: schema-malformed registry breach exits 3, not 1.
 
     The REQ explicitly prescribes ``exit 3 with a ValidationError of

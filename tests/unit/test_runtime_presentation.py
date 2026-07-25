@@ -12,6 +12,7 @@ from unittest.mock import patch
 from rich import box
 from rich.table import Table
 
+from gzkit.quality import QualityResult
 from gzkit.traceability import covers
 
 
@@ -35,8 +36,22 @@ class _FakeLedger:
         self.events.append(event)
 
 
-def _result(success: bool, returncode: int = 0) -> SimpleNamespace:
-    return SimpleNamespace(success=success, returncode=returncode, stdout="", stderr="")
+def _result(success: bool, returncode: int = 0) -> QualityResult:
+    """Build a faithful step result.
+
+    Previously a partial ``SimpleNamespace``. ``check()`` consumes more of
+    ``QualityResult`` than the fields any one assertion touches — the advisory
+    renderer reads ``.command`` and the captured streams (GHI #713) — so a stub
+    modelling only today's fields breaks whenever the consumer grows. Using the
+    real model makes that class of drift impossible.
+    """
+    return QualityResult(
+        success=success,
+        command="uv run gz stub",
+        stdout="",
+        stderr="",
+        returncode=returncode,
+    )
 
 
 class _SilentProgress:

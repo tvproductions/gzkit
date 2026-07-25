@@ -34,9 +34,9 @@ Registered as ``gz validate --rendition-freshness``; also runs in ``gz check``.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
+from gzkit.advisory import emit_advisory
 from gzkit.content.corpus_store import corpus_path as _corpus_path
 from gzkit.content.corpus_store import load_corpus
 from gzkit.content.rendition_store import (
@@ -192,6 +192,6 @@ def validate_rendition_freshness(
                     )
                     errors.append(ValidationError(type=kind, artifact=target, message=prose))
                 else:
-                    print(f"WARNING [rendition-freshness, staged warn]: {prose}", file=sys.stderr)
+                    emit_advisory(f"WARNING [rendition-freshness, staged warn]: {prose}")
 
     return errors

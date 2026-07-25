@@ -17,9 +17,9 @@ from __future__ import annotations
 import contextlib
 import json
 import re
-import sys
 from pathlib import Path
 
+from gzkit.advisory import emit_advisory
 from gzkit.core.validation_rules import ValidationError
 
 _REGISTRY_PATH = Path("data") / "agent-control-surface-scenarios.json"
@@ -43,10 +43,7 @@ def validate_scenario_reachability(project_root: Path) -> list[ValidationError]:
     """Return ValidationErrors for registry schema violations; write advisory warnings to stderr."""
     registry_path = project_root / _REGISTRY_PATH
     if not registry_path.exists():
-        print(
-            f"{_OUTPUT_PREFIX} registry absent (ADR-0.0.34); skipping reachability check",
-            file=sys.stderr,
-        )
+        emit_advisory(f"{_OUTPUT_PREFIX} registry absent (ADR-0.0.34); skipping reachability check")
         return []
 
     raw = _load_registry(registry_path)
@@ -124,9 +121,8 @@ def _check_reachability(project_root: Path, registry: list[dict]) -> None:
             name for name, content in surface_map.items() if normalized in _normalize(content)
         }
         if not covering_files.intersection(all_corpus):
-            print(
-                f"{_OUTPUT_PREFIX} orphan bullet: {rule_text!r} not covered by any scenario corpus",
-                file=sys.stderr,
+            emit_advisory(
+                f"{_OUTPUT_PREFIX} orphan bullet: {rule_text!r} not covered by any scenario corpus"
             )
 
 

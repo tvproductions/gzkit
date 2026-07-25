@@ -20,10 +20,12 @@ Wired into ``gz validate --complexity-thresholds`` (explicit scope) and the
 from __future__ import annotations
 
 import re
+import sys
 from pathlib import Path
 
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.advisory import emit_advisory
 from gzkit.complexity.measurement import CANONICAL_METRICS
 from gzkit.complexity.thresholds import load_threshold_table
 from gzkit.core.validation_rules import ValidationError
@@ -123,11 +125,12 @@ def _has_bootstrap_section(narrative_path: Path) -> bool:
 
 def _emit_bootstrap_mode_notice(narrative_path: Path) -> None:
     """Print the bootstrap-mode notice to stdout (informational only)."""
-    print(
+    emit_advisory(
         f"{BOOTSTRAP_MODE_NOTICE_PREFIX}: "
         f"{narrative_path.as_posix()} declares a Bootstrap absolutes carve-out "
         "section; portability checks against bootstrap rows are skipped per "
         "ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is informational, "
         "not a policy breach — review tracked GHIs (#404 parser zeros, "
-        "#405 polarity-aware model) for resolution."
+        "#405 polarity-aware model) for resolution.",
+        stream=sys.stdout,
     )

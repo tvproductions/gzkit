@@ -31,10 +31,12 @@ from gzkit.governance.trust_audits.rendition_freshness import validate_rendition
 from gzkit.mx import marker as _marker
 from gzkit.mx.marker import Marker
 from gzkit.traceability import covers
+from tests.governance.common import QuietAdvisoriesMixin
 
 
-class _TempProjectMixin(unittest.TestCase):
+class _TempProjectMixin(QuietAdvisoriesMixin):
     def setUp(self) -> None:
+        super().setUp()
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         (self.root / ".gzkit").mkdir()

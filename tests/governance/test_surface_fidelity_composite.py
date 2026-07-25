@@ -22,6 +22,7 @@ from unittest.mock import patch
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.traceability import covers
+from tests.governance.common import QuietAdvisoriesMixin
 
 # REQ-0.0.33-05-06: this import will fail at test-run time (TDD Red)
 # until implementation lands.
@@ -35,7 +36,7 @@ except ImportError:
 _PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 
-class TestValidateSurfaceFidelityImportable(unittest.TestCase):
+class TestValidateSurfaceFidelityImportable(QuietAdvisoriesMixin):
     """Importability tests for the composite validator."""
 
     @covers("REQ-0.0.33-05-06")
@@ -54,7 +55,7 @@ class TestValidateSurfaceFidelityImportable(unittest.TestCase):
         )
 
 
-class TestSurfaceFidelityComposite(unittest.TestCase):
+class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
     """Composite validation tests for surface-fidelity scope."""
 
     @covers("REQ-0.0.33-05-01")
