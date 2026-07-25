@@ -11,9 +11,11 @@ from __future__ import annotations
 
 import ast
 import re
+import warnings
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.governance.brief_path_validity import extract_brief_creates_paths, has_glob_chars
 from gzkit.governance.brief_structure import (
@@ -252,6 +254,13 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
     # applying that to deliverable dimensions; it is narrowed here, not retired,
     # and its covering test now draws the contrast on Discovery.
     unstarted = _is_unstarted_status(parsed)
+
+    # Discovery still gates on an unstarted brief — it is a prerequisite claim —
+    # but a prerequisite whose producer has not run yet is sequence, not drift.
+    # Narrowed by computed predicate over sibling Allowed Paths, so a dead
+    # citation (nothing under this ADR creates it) keeps failing closed.
+    if unstarted and discovery_delta.unresolved_paths:
+        discovery_delta = _scope_discovery_to_unbuilt(discovery_delta, brief_path, allowlist)
 
     gating_allowlist_absence = not unstarted and bool(allowlist_delta.missing_on_disk)
     gating_unresolved_verbs = not unstarted and bool(verification_delta.unresolved_verbs)
@@ -516,6 +525,74 @@ def _is_unstarted_status(parsed: BriefStructure | LegacyBriefShape) -> bool:
     else:
         status = str(parsed.raw_frontmatter.get("status", ""))
     return is_unstarted_brief_status(status)
+
+
+def _norm_rel(path: str) -> str:
+    """Normalize a brief-declared path for set membership."""
+    return path.removeprefix("./").rstrip("/")
+
+
+def _allowlist_of(parsed: BriefStructure | LegacyBriefShape) -> list[str]:
+    """Return a parsed brief's Allowed Paths, whichever shape it parsed as."""
+    if isinstance(parsed, BriefStructure):
+        return list(parsed.allowlist)
+    return _extract_section_paths(parsed.raw_body, _ALLOWED_HEADING_RE)
+
+
+def _pending_deliverable_paths(brief_path: Path, own_allowlist: list[str]) -> set[str]:
+    """Return paths some not-yet-implemented OBPI under this ADR declares it will create.
+
+    Both sources are Layer-1 canon — a brief's own ``## Allowed Paths`` — never a
+    marker an author could assert about their own row (GHI #615):
+
+    * **Own deliverables.** A Discovery row naming a path this same brief will
+      create is describing its own output. The ``**CREATE**`` marker already
+      covered the subset that says so explicitly; the Allowed Paths section says
+      it for every brief, without requiring one.
+    * **Sibling deliverables.** The Allowed Paths of *non-terminal* sibling OBPIs
+      in the same ADR package. ``OBPI-0.0.43-02``'s Discovery row names
+      ``domain_models.py`` and annotates it ``(OBPI-01 product)`` — a genuine
+      prerequisite whose producer is itself unstarted. That is sequence, not
+      drift, and no edit to either brief would make it true sooner.
+
+    A Discovery path in *neither* set is a dead citation: nothing under this ADR
+    will ever create it. Those keep gating — they are the real backlog, and
+    suppressing them is the defect GHI #581 names (``src/gzkit/cli/validate.py``
+    when the module is ``commands/validate_cmd.py``; ``trust_audits.py`` when it
+    has become a package).
+
+    Siblings are read only for an unstarted brief that already has unresolved
+    paths — 54 of 668 briefs — so the scan stays bounded without a cache.
+    """
+    pending = {_norm_rel(p) for p in own_allowlist}
+    for sibling in sorted(brief_path.parent.glob("*.md")):
+        if sibling == brief_path:
+            continue
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                parsed = parse_brief(sibling)
+        except (OSError, UnicodeDecodeError, ValueError, PydanticValidationError):
+            continue
+        if _is_terminal_status(parsed):
+            continue
+        pending.update(_norm_rel(p) for p in _allowlist_of(parsed))
+    return pending
+
+
+def _scope_discovery_to_unbuilt(
+    delta: DiscoveryDelta, brief_path: Path, own_allowlist: list[str]
+) -> DiscoveryDelta:
+    """Drop unresolved Discovery paths that some unstarted OBPI will create.
+
+    Applied only to unstarted briefs. Narrows the fence by computed predicate
+    rather than by exemption: an unstarted brief still gates on every Discovery
+    path no OBPI under its ADR claims (GHI #615 operator ruling 2026-07-25).
+    """
+    pending = _pending_deliverable_paths(brief_path, own_allowlist)
+    return DiscoveryDelta(
+        unresolved_paths=[p for p in delta.unresolved_paths if _norm_rel(p) not in pending]
+    )
 
 
 def _compute_discovery_delta(
