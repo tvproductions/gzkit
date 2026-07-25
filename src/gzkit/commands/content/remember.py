@@ -22,7 +22,7 @@ from gzkit.commands.common import get_project_root
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.models import AgentContract, Corpus, CorpusEntry
 from gzkit.content.parse import parse
-from gzkit.content.parse.markdown_parser import _kebab
+from gzkit.content.parse.markdown_parser import section_id
 from gzkit.content.rendition_store import corpus_fingerprint, load_fingerprint
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import corpus_entry_appended_event
@@ -148,7 +148,7 @@ def content_remember_cmd(
         sys.exit(1)
     contract = parsed
 
-    normalized_section = _kebab(section)
+    normalized_section = section_id(section)
     timestamp = datetime.now(UTC).isoformat()
     entry = CorpusEntry(
         id=f"corpus-{normalized_section}-{timestamp}",

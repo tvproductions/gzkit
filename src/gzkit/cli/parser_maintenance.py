@@ -675,7 +675,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--instructions-files-budget",
         dest="check_instructions_files_budget",
         action="store_true",
-        help="AGENTS.md/CLAUDE.md/.claude/rules char budget (GHI #373)",
+        help="AGENTS.md/CLAUDE.md/rules char budget + delivery witness (GHI #373/#712)",
     )
     p_validate.add_argument(
         "--agents-md-map-conformance",

@@ -137,6 +137,9 @@ from gzkit.governance.trust_audits.sensitivity import (
 )
 from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
 from gzkit.governance.trust_audits.setpoint_coherence import validate_setpoint_coherence
+from gzkit.governance.trust_audits.surface_delivery_witness import (
+    audit_surface_delivery_witness,
+)
 from gzkit.governance.trust_audits.surface_weight import validate_surface_weight
 from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_status_fresh,
@@ -191,6 +194,7 @@ __all__ = [
     "audit_insights_shape",
     "audit_kind_invariance",
     "audit_instructions_files_budget",
+    "audit_surface_delivery_witness",
     "audit_orientation_freshness",
     "audit_qc_binding",
     "audit_deprecated_verb_prescription",

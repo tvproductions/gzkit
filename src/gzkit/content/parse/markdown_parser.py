@@ -180,8 +180,15 @@ def _as_classification(value: str) -> _Classification | None:
     return None
 
 
-def _kebab(title: str) -> str:
-    """Lowercase kebab-case id derived from a section title."""
+def section_id(title: str) -> str:
+    """Lowercase kebab-case id derived from a section title.
+
+    This is the single section-id vocabulary shared by every surface that names
+    a section: ``Pillar.id`` on the parsed contract, the corpus ``section``
+    field written by ``gz content remember``, and the survival declaration read
+    by the surface-delivery witness. It is public because a second slugifier
+    would let those surfaces disagree about what a section is called.
+    """
     slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")
     return slug or "section"
 
@@ -295,7 +302,7 @@ def _build_pillars(secs: dict[str, list[str]], index: dict[str, _Classification]
         body = _strip_trailing_blanks(body_lines)
         pillars.append(
             Pillar(
-                id=_kebab(title),
+                id=section_id(title),
                 title=title,
                 order=order,
                 lines=body,

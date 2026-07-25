@@ -44,12 +44,12 @@ SETPOINT_TOKENS: frozenset[str] = frozenset({"lite", "medium", "heavy"})
 # than resolving to a baked-in default. See temperature_for below.
 
 
-def _load_manifest(project_root: Path) -> dict[str, list[str]]:
-    """Load ``content_type_routes`` from ``data/vendor-manifest.json``.
+def _read_manifest_key(project_root: Path, key: str) -> dict[str, object]:
+    """Read one top-level mapping from ``data/vendor-manifest.json``.
 
-    Returns an empty dict if the file is missing or malformed — callers
-    handle fallback. Schema validation is the responsibility of
-    ``gz validate --vendor-manifest`` (see
+    Returns an empty dict if the file is missing, unparseable, or the key is
+    absent or not a mapping — callers handle fallback. Schema validation is the
+    responsibility of ``gz validate --vendor-manifest`` (see
     ``gzkit.governance.trust_audits.vendor_manifest``).
     """
     manifest_path = project_root / _MANIFEST_REL
@@ -59,9 +59,13 @@ def _load_manifest(project_root: Path) -> dict[str, list[str]]:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
-    routes = data.get("content_type_routes", {})
-    if not isinstance(routes, dict):
-        return {}
+    section = data.get(key, {})
+    return section if isinstance(section, dict) else {}
+
+
+def _load_manifest(project_root: Path) -> dict[str, list[str]]:
+    """Load ``content_type_routes``, dropping anything that does not conform."""
+    routes = _read_manifest_key(project_root, "content_type_routes")
     # Normalize to dict[str, list[str]] — drop anything that does not conform.
     typed: dict[str, list[str]] = {}
     for key, value in routes.items():
@@ -71,20 +75,8 @@ def _load_manifest(project_root: Path) -> dict[str, list[str]]:
 
 
 def _load_temperatures(project_root: Path) -> dict[str, dict[str, str]]:
-    """Load ``content_type_temperatures`` from ``data/vendor-manifest.json``.
-
-    Returns an empty dict if the file is missing, malformed, or has no temperatures key.
-    """
-    manifest_path = project_root / _MANIFEST_REL
-    if not manifest_path.is_file():
-        return {}
-    try:
-        data = json.loads(manifest_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return {}
-    temps = data.get("content_type_temperatures", {})
-    if not isinstance(temps, dict):
-        return {}
+    """Load ``content_type_temperatures``, dropping anything that does not conform."""
+    temps = _read_manifest_key(project_root, "content_type_temperatures")
     typed: dict[str, dict[str, str]] = {}
     for ct, vendor_map in temps.items():
         if isinstance(ct, str) and isinstance(vendor_map, dict):
@@ -143,3 +135,25 @@ def temperature_for(content_type: str, vendor: str, *, project_root: Path | None
         f"in {_MANIFEST_REL}; declare it in content_type_temperatures "
         f"(REQ-0.0.37-15-02 fail-closed)."
     )
+
+
+def delivery_cap_for(
+    content_type: str, vendor: str, *, project_root: Path | None = None
+) -> int | None:
+    """Return the vendor's hard delivery limit in bytes, or ``None`` if unknown.
+
+    A delivery cap is an *observed fact about someone else's product* — Codex
+    silently truncates root ``AGENTS.md`` past ``project_doc_max_bytes``
+    (openai/codex#7138). That is why this resolver fails **open** where
+    :func:`temperature_for` fails closed: temperature is a control gzkit
+    chooses, so an undeclared value is an authoring omission worth blocking on,
+    whereas an undeclared cap means gzkit knows of no limit for that vendor.
+    Fail-closing here would force an agent to invent a byte cap for every
+    vendor, fabricating adapter constraints to satisfy a gate (GHI #712).
+    """
+    caps = _read_manifest_key(project_root, "content_type_delivery_caps") if project_root else {}
+    vendor_map = caps.get(content_type)
+    if not isinstance(vendor_map, dict):
+        return None
+    cap = vendor_map.get(vendor)
+    return cap if isinstance(cap, int) and not isinstance(cap, bool) else None

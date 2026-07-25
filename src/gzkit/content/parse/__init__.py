@@ -6,6 +6,6 @@ Whitespace normalizations applied during parsing (modulo: render output is canon
   - Trailing newlines at end of document are ignored.
 """
 
-from .markdown_parser import parse
+from .markdown_parser import parse, section_id
 
-__all__ = ["parse"]
+__all__ = ["parse", "section_id"]

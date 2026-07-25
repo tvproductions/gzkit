@@ -1,0 +1,31 @@
+{
+  "_doc": "Operator-ratified truncation-survival declaration for per-turn agent-contract surfaces (GHI #580 witness half, ratified 2026-07-25; landed under GHI #712). Ordering principle is RECOVERABILITY, not importance: a section whose loss an agent can repair by reading the file it names ranks below one that exists nowhere else in the per-turn surface. Section ids are the shared vocabulary minted by gzkit.content.parse.section_id over the rendered '## ' headings. Ranks are the declaration; bytes are NOT seated here — they are a measurement, re-taken live by gz validate --instructions-files-budget on every run, because a frozen measurement in a declaration is a derived view masquerading as source-of-truth (Architectural Boundary 6). Ranks at or below must_survive_through_rank are declared must-survive; the remainder are expendable-under-pressure because they are RECOVERABLE, not because they are unimportant. Ratified as data only: applying this order to the committed surface is a Layer-1 canon change requiring Gate-5 attestation through the recompose ceremony, and is parked to pool post-1.0 (GHI #580 reorder half).",
+  "surfaces": {
+    "AGENTS.md": {
+      "content_type": "AgentContract",
+      "must_survive_through_rank": 11,
+      "sections": [
+        {"rank": 1, "id": "operator-doctrine-verbatim-canon", "basis": "10 tier:invariant entries, verbatim-binding, unrecoverable"},
+        {"rank": 2, "id": "prime-directive-ownership", "basis": "ownership contract"},
+        {"rank": 3, "id": "behavior-rules", "basis": "Always/Never — densest mechanical content"},
+        {"rank": 4, "id": "attestation", "basis": "canonical-invocations table"},
+        {"rank": 5, "id": "defect-fix-routing", "basis": "threshold table"},
+        {"rank": 6, "id": "gate-covenant", "basis": "gates, lanes, kinds"},
+        {"rank": 7, "id": "obpi-acceptance-protocol", "basis": "universal Gate 5, REQ coverage"},
+        {"rank": 8, "id": "skills-first-execution-routing", "basis": "tiny, high leverage"},
+        {"rank": 9, "id": "execution-rules", "basis": "tiny, uv run discipline"},
+        {"rank": 10, "id": "do-it-right-craftsmanship-maxim", "basis": "invariants 6c/6g/6h are mechanical"},
+        {"rank": 11, "id": "architectural-boundaries", "basis": "6 binding 'Do not's — must-survive cut line"},
+        {"rank": 12, "id": "make-llm-stochastic-vibes-inert-anti-vibing-mantra", "basis": "doctrine framing"},
+        {"rank": 13, "id": "stdlib-first-doctrine-dependency-posture", "basis": "doctrine framing"},
+        {"rank": 14, "id": "operator-economy-of-effort-design-dialogue-mode", "basis": "doctrine framing"},
+        {"rank": 15, "id": "governance-doctrine-surfaces", "basis": "pointers"},
+        {"rank": 16, "id": "pattern-discovery", "basis": "pointers"},
+        {"rank": 17, "id": "skills", "basis": "pointers"},
+        {"rank": 18, "id": "control-surfaces", "basis": "generated manifest info"},
+        {"rank": 19, "id": "persona", "basis": "recoverable via gz personas list"},
+        {"rank": 20, "id": "project-identity", "basis": "name / purpose / stack"}
+      ]
+    }
+  }
+}

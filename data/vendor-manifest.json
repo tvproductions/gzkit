@@ -9,6 +9,9 @@
     "Scenario": ["claude"],
     "Skill": ["claude"]
   },
+  "content_type_delivery_caps": {
+    "AgentContract": {"codex": 32768}
+  },
   "content_type_temperatures": {
     "AgentContract": {"codex": "lite", "claude": "heavy"},
     "Bullet": {"claude": "heavy"},

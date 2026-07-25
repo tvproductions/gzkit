@@ -14,6 +14,17 @@
         "minItems": 1
       }
     },
+    "content_type_delivery_caps": {
+      "type": "object",
+      "description": "Observed hard delivery limit, in bytes, that a vendor imposes on a rendered content type. A missing entry means no known limit — never a fabricated one. Codex truncates root AGENTS.md past project_doc_max_bytes (openai/codex#7138).",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
     "content_type_temperatures": {
       "type": "object",
       "description": "Per-vendor temperature for each content type. Each key is a content type class name; each value maps vendor name to temperature tier.",

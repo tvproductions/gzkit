@@ -289,7 +289,13 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "instructions_files_budget",
         "explicit",
         True,
-        lambda r, _f: _ta().audit_instructions_files_budget(r),
+        # Two checks on one surface family, one flag: the char budget gzkit sets
+        # for itself, and the witness that the rendered artifact still reaches
+        # the vendor that consumes it (GHI #712). The witness reports vendor-cap
+        # distance to stderr and returns findings only for declaration drift.
+        lambda r, _f: (
+            _ta().audit_instructions_files_budget(r) + _ta().audit_surface_delivery_witness(r)
+        ),
     ),
     _ScopeEntry(
         "agents_md_map_conformance",
@@ -1059,6 +1065,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "complexity_thresholds",
         "insights_shape",
         "instructions_files_budget",
+        "surface_delivery_witness",
         "agents_md_map_conformance",
         "sensitivity-escape-attempt",
         "sensitivity-floor-violation",
