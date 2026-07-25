@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-12-documentation-cross-coverage
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 12
 lane: Heavy
 status: Draft

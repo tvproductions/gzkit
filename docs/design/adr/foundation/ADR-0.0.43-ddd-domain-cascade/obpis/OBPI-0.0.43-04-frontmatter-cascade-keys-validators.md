@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-04-frontmatter-cascade-keys-validators
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 4
 lane: Heavy
 status: Draft

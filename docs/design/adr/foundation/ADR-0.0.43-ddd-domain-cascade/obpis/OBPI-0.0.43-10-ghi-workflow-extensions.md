@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-10-ghi-workflow-extensions
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 10
 lane: Heavy
 status: Draft

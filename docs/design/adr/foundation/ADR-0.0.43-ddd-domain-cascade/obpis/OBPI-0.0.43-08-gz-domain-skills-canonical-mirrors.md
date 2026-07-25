@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-08-gz-domain-skills-canonical-mirrors
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 8
 lane: Heavy
 status: Draft

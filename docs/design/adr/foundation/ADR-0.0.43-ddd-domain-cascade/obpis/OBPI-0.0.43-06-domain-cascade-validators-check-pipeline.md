@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-06-domain-cascade-validators-check-pipeline
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 6
 lane: Heavy
 status: Draft

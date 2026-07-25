@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-07-legacy-mapping-classification-ratification
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 7
 lane: Heavy
 status: Draft

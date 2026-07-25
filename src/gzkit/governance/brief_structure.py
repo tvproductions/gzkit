@@ -50,6 +50,21 @@ _TERMINAL_STATUSES_FOLDED: frozenset[str] = frozenset(
     status.casefold() for status in BRIEF_TERMINAL_STATUSES
 )
 
+# Statuses a brief carries while work is still live. Union with
+# BRIEF_TERMINAL_STATUSES is the whole vocabulary; there is no third set.
+BRIEF_LIVE_STATUSES: frozenset[str] = frozenset({"Draft", "Active", "in_progress"})
+
+# The single status authority. `BriefStructure.status` was authored as a
+# four-value Literal -- {Draft, Active, Validated, Completed} -- which admitted
+# two spellings the corpus has never once used and rejected the 198 briefs
+# carrying `attested_completed`, plus every `Abandoned`/`Withdrawn`/`in_progress`
+# brief. The schema could therefore never have been enforced corpus-wide, which
+# is a large part of why it never was (GHI #615). Composing the vocabulary from
+# BRIEF_TERMINAL_STATUSES rather than restating it keeps the two from drifting.
+BRIEF_STATUSES: frozenset[str] = BRIEF_TERMINAL_STATUSES | BRIEF_LIVE_STATUSES
+
+_BRIEF_STATUSES_FOLDED: frozenset[str] = frozenset(status.casefold() for status in BRIEF_STATUSES)
+
 
 def is_terminal_brief_status(status: str) -> bool:
     """Return True when ``status`` names a sealed brief lifecycle state.
@@ -81,9 +96,7 @@ class BriefStructure(BaseModel):
     id: str = Field(..., description="OBPI identifier")
     parent: str = Field(..., description="Parent ADR identifier")
     lane: Literal["Lite", "Heavy"] = Field(..., description="Execution lane")
-    status: Literal["Draft", "Active", "Validated", "Completed"] = Field(
-        ..., description="Brief lifecycle status"
-    )
+    status: str = Field(..., description="Brief lifecycle status")
     allowlist: list[str] = Field(..., min_length=1, description="Allowed paths for this OBPI")
     reqs: list[str] = Field(..., min_length=1, description="REQ-ID array")
     verification: list[str] = Field(..., min_length=1, description="Verification commands")
@@ -117,6 +130,20 @@ class BriefStructure(BaseModel):
     def _validate_parent(cls, v: str) -> str:
         if not _ADR_ID_RE.match(v):
             raise ValueError(f"parent must match ADR-X.Y.Z-slug pattern: {v!r}")
+        return v
+
+    @field_validator("status")
+    @classmethod
+    def _validate_status(cls, v: str) -> str:
+        """Admit any declared status, casefolded.
+
+        Casefold rather than exact match because the corpus carries both
+        ``Withdrawn`` and ``withdrawn``, and ``is_terminal_brief_status`` already
+        folds -- a schema stricter than the predicate that scopes it would
+        reject briefs the runtime treats as sealed.
+        """
+        if v.strip().strip('"').strip("'").casefold() not in _BRIEF_STATUSES_FOLDED:
+            raise ValueError(f"status must be one of {sorted(BRIEF_STATUSES)}: {v!r}")
         return v
 
     @field_validator("reqs", mode="before")

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-05-ledger-event-schemas-emit-paths
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 5
 lane: Heavy
 status: Draft

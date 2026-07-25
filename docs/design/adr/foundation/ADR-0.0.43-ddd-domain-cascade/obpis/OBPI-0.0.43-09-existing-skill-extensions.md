@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-09-existing-skill-extensions
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 9
 lane: Heavy
 status: Draft

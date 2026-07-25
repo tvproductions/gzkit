@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-03-gz-domain-cli-subcommand-group
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 3
 lane: Heavy
 status: Draft

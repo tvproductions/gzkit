@@ -19,6 +19,7 @@ import jsonschema
 from pydantic import ValidationError
 
 from gzkit.governance.brief_structure import (
+    BRIEF_TERMINAL_STATUSES,
     BriefStructure,
     LegacyBriefShape,
     is_terminal_brief_status,
@@ -188,6 +189,50 @@ class TestBriefStructureJsonSchema(unittest.TestCase):
         }
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(instance, schema)
+
+
+class TestBriefStatusVocabulary(unittest.TestCase):
+    """GHI #615: the schema's status vocabulary must match the one the runtime writes.
+
+    ``BriefStructure.status`` shipped as ``Literal["Draft", "Active",
+    "Validated", "Completed"]`` -- authored against an imagined lifecycle rather
+    than a measured one. It admitted two spellings the corpus has never used and
+    rejected every brief carrying ``attested_completed`` (198 of them),
+    ``Abandoned`` (13), ``Withdrawn`` (2), or ``in_progress`` (1). A schema that
+    rejects a third of the corpus it governs could never be enforced, which is a
+    material part of why it never was.
+
+    Asserted against ``BRIEF_TERMINAL_STATUSES`` -- the vocabulary the runtime
+    already treats as authoritative -- rather than a hand-copied list, so the two
+    cannot drift back apart.
+    """
+
+    def test_every_terminal_status_is_accepted(self) -> None:
+        for status in sorted(BRIEF_TERMINAL_STATUSES):
+            with self.subTest(status=status):
+                brief = BriefStructure(
+                    id="OBPI-0.1.0-01-x",
+                    parent="ADR-0.1.0-x",
+                    lane="Lite",
+                    status=status,
+                    allowlist=["src/x.py"],
+                    reqs=["REQ-0.1.0-01-01"],
+                    verification=["test -f src/x.py"],
+                )
+                self.assertEqual(brief.status, status)
+
+    def test_unknown_status_is_rejected(self) -> None:
+        """The widening admits the real vocabulary; it does not admit anything."""
+        with self.assertRaises(ValidationError):
+            BriefStructure(
+                id="OBPI-0.1.0-01-x",
+                parent="ADR-0.1.0-x",
+                lane="Lite",
+                status="banana",
+                allowlist=["src/x.py"],
+                reqs=["REQ-0.1.0-01-01"],
+                verification=["test -f src/x.py"],
+            )
 
 
 class TestParseBriefPermissive(unittest.TestCase):

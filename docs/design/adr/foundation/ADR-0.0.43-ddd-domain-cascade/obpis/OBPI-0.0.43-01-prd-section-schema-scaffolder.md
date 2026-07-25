@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-01-prd-section-schema-scaffolder
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 1
 lane: Heavy
 status: Draft

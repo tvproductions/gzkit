@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-11-cross-context-ast-import-enforcer
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 11
 lane: Heavy
 status: Draft

@@ -1,6 +1,6 @@
 ---
 id: OBPI-0.0.43-02-dm-artifact-schema-template
-parent: ADR-0.0.43
+parent: ADR-0.0.43-ddd-domain-cascade
 item: 2
 lane: Heavy
 status: Draft
