@@ -243,6 +243,43 @@ class TestListHandoffs(unittest.TestCase):
             # come first. Lexicographic string order would put "offset" first.
             self.assertEqual(ordered, ["utc.md", "offset.md"])
 
+    @covers("REQ-0.0.65-02-03")
+    def test_orders_deterministically_when_timestamps_tie(self) -> None:
+        # "Newest-first" must be a TOTAL order. Sorting on the timestamp alone
+        # leaves equal-timestamp handoffs in `Path.glob` order, which is
+        # `readdir` order and therefore filesystem-dependent: APFS returns a
+        # hash order, ext4 returns roughly insertion order, so the same tree
+        # ranks differently on a developer laptop and on CI.
+        #
+        # This is not cosmetic. `_newest_predecessor` takes element [0] to build
+        # the `continues_from` chain link, and `handoff_resume_gate.newest_handoff`
+        # takes the first resumable entry to decide which handoff an operator
+        # must authorize. Two handoffs written in the same second — reachable
+        # whenever `gz obpi complete` writes its mechanical completion register
+        # entry alongside an authored one — would otherwise pick a different
+        # handoff on each platform.
+        #
+        # The tie-break is the path, which carries no recency meaning; its job
+        # is to be total, not to be semantically "newer".
+        names = ["20260714T090000Z-alpha.md", "20260714T090000Z-beta.md"]
+        listings = []
+        for creation_order in (names, list(reversed(names))):
+            with tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                hd = base / ".gzkit" / "handoffs"
+                hd.mkdir(parents=True)
+                for name in creation_order:
+                    _write_frontmatter_handoff(
+                        hd, name=name, adr_id="ADR-0.0.65", timestamp="2026-07-14T09:00:00Z"
+                    )
+                listings.append([Path(i.path).name for i in list_handoffs(base_path=base)])
+
+        # Creation order must not change the ranking...
+        self.assertEqual(listings[0], listings[1])
+        # ...and the ranking is the declared one, so the tie-break cannot drift
+        # into whatever the host filesystem happens to hand back.
+        self.assertEqual(listings[0], sorted(names, reverse=True))
+
 
 class TestLoadHandoffChain(unittest.TestCase):
     @covers("REQ-0.0.65-02-04")

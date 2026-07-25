@@ -303,6 +303,10 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
         # resuming agent can see the ruling is closed.
         sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
         sections["Decisions Made"] = "- [operator-ruled] Do NOT promote sensitivity into GATE5."
+        # Strictly EARLIER than the resumed handoff: the carry-forward under test
+        # is chronological (a prior session's ruling reaching the next one), so
+        # the fixture must not lean on the equal-timestamp tie-break to decide
+        # which of the two `resume` selects.
         create_handoff(
             adr_id="ADR-0.0.65",
             branch="main",
@@ -310,7 +314,7 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
             slug="first",
             sections=sections,
             base_path=self.base,
-            timestamp="2026-07-14T09:00:00Z",
+            timestamp="2026-07-14T08:00:00Z",
         )
         out = self._resume_output("- [agent-chose] Nothing settled here.", slug="second")
 

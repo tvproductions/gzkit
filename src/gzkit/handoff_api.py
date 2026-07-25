@@ -793,7 +793,15 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path(".")) -> 
                 timestamp=str(fm.get("timestamp", "")),
             )
         )
-    infos.sort(key=lambda info: _timestamp_sort_key(info.timestamp), reverse=True)
+    # The path is a tie-break, not a recency signal: it makes the order TOTAL.
+    # Sorting on the timestamp alone leaves equal-timestamp handoffs in the
+    # order `Path.glob` yielded them, i.e. `readdir` order — APFS hashes, ext4
+    # is roughly insertion-ordered — so the same tree ranks differently on a
+    # laptop and on CI. Callers take element [0] as an answer (`_newest_predecessor`
+    # for the `continues_from` link, `handoff_resume_gate.newest_handoff` for the
+    # handoff an operator must authorize), so a non-total order makes those
+    # answers platform-dependent.
+    infos.sort(key=lambda info: (_timestamp_sort_key(info.timestamp), info.path), reverse=True)
     return infos
 
 
