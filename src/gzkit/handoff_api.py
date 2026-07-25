@@ -113,10 +113,19 @@ class NextStep(BaseModel):
 
     @computed_field
     @property
-    def is_void(self) -> bool:
-        """True when a cited precondition is settled — the step is not actionable.
+    def cites_settled(self) -> bool:
+        """True when this step cites a reference that is already settled.
 
-        Only ``SETTLED`` voids. ``UNKNOWN`` does not: an unresolvable reference
+        Deliberately NOT named ``is_void``. Citing and depending are different
+        claims, and nothing here can tell them apart: a step may name a closed
+        GHI as *context* ("the fix that landed in #696") rather than as a
+        *precondition*. Observed on the first real run — a step referencing #696
+        for provenance was flagged, and the flag was right to fire but wrong to
+        conclude. So this reports the citation and leaves the conclusion to the
+        reader, per the skill's own contract: surface the variance, do not
+        adjudicate it.
+
+        Only ``SETTLED`` counts. ``UNKNOWN`` does not: an unresolvable reference
         is missing evidence, not evidence of a closed precondition.
         """
         return any(ref.state is ReferenceState.SETTLED for ref in self.references)
@@ -407,12 +416,19 @@ def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
 
     De-duplicated on entry text with first-seen order preserved, so carrying a
     ruling down a long chain never multiplies it.
+
+    Lineage resolves through :func:`_newest_predecessor` — the SAME authority the
+    ``continues_from`` link uses — so the two can never disagree about what this
+    handoff continues. An ADR-less handoff therefore inherits nothing: the newest
+    handoff overall is not its lineage, and carrying its rulings forward would
+    assert a settled-ruling continuity that does not exist, while the chain link
+    (correctly) refused to assert the same continuity.
     """
-    infos = list_handoffs(adr_id=adr_id, base_path=base_path)
-    if not infos:
+    predecessor = _newest_predecessor(adr_id, base_path)
+    if predecessor is None:
         return []
     try:
-        previous = Path(infos[0].path).read_text(encoding="utf-8")
+        previous = (_handoffs_dir(base_path) / predecessor).read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return []
     carried = settled_rulings(previous)

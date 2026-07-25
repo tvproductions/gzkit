@@ -15,10 +15,15 @@ never writes anything.
 Each step also carries the live state of the governance references it cites
 (GHI #696). A cited GHI is resolved through `gh` and reported as `live` (open),
 `settled` (closed), or `unknown` (unresolvable — `gh` absent, unauthenticated, or
-offline). A step citing a `settled` precondition is marked **VOID**: the work it
-advises was already done, so relaying it as actionable would re-adjudicate a
-closed question. `unknown` never collapses into `live` — a check that could not
-run is reported as not run.
+offline). A step citing a `settled` reference is marked **CITES SETTLED**, because
+relaying such a step unexamined is how a closed GHI got re-adjudicated three
+sessions running. The flag reports the citation, not a verdict: a step may name a
+closed GHI as a *precondition* (the work is done — the step is void) or as
+*provenance* ("the fix that landed in #696" — the step still stands), and no
+available signal distinguishes them. Confirm which before relaying.
+
+`unknown` never collapses into `live` — a check that could not run is reported as
+not run.
 
 ADR and OBPI references are extracted and displayed but resolve to `unknown`:
 their only repo-local index (`adr-status.md`) is a **Layer-3 derived view**, which
@@ -71,13 +76,13 @@ resume — .gzkit/handoffs/20260724T114926Z-ghi-tier-3closed-3deferred.md
     4. This is a RESUME: present these steps and obtain explicit operator authorization via gz handoff authorize before executing any of them.
 ```
 
-A step whose citation is closed renders with the `VOID` marker and a trailing
-count line, and attributed decisions plus carried settled rulings follow:
+A step whose citation is closed renders with the `CITES SETTLED` marker and a
+trailing count line, and attributed decisions plus carried settled rulings follow:
 
 ```
-    1. VOID — Rule on GHI #693 (cli audit presence-vs-truth).
+    1. CITES SETTLED — Rule on GHI #693 (cli audit presence-vs-truth).
        refs: GHI 693: settled
-  1 step(s) cite a SETTLED precondition — re-verify before relaying.
+  1 step(s) cite a settled reference — confirm whether it is a precondition (step is void) or context (step still stands).
   decisions (1):
     agent-chose:
       - Nothing settled this session.
@@ -103,14 +108,14 @@ derived projections so existing consumers are unbroken.
     {
       "text": "VERIFY reproduction before fixing each item; bodies self-heal and mis-estimate.",
       "references": [],
-      "is_void": false
+      "cites_settled": false
     },
     {
       "text": "#607 (ranked 4, degrading) is GOVERNANCE-PARKED: ... Surface before touching code.",
       "references": [
         { "kind": "GHI", "identifier": "607", "state": "live" }
       ],
-      "is_void": false
+      "cites_settled": false
     }
   ],
   "chain": [

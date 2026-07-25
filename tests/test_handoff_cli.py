@@ -186,7 +186,7 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
     """The resume report marks a step whose cited precondition is settled.
 
     Output-form assertions are the named contract here: the operator reads this
-    rendering to decide what is still actionable, so the VOID marker and the
+    rendering to decide what is still actionable, so the CITES SETTLED marker and the
     per-step ``refs:`` line ARE the behavior (GHI #696 defect 2). The ``gh``
     boundary is mocked per the unit-tier contract — no network, no live issue.
     """
@@ -215,16 +215,16 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
             )
 
     def test_step_citing_a_closed_ghi_renders_void(self) -> None:
-        # output-contract: the VOID marker is what tells the operator the step is
-        # not actionable; its absence is the GHI #693 re-adjudication.
+        # output-contract: the CITES SETTLED marker is what prompts the operator to
+        # adjudicate; its absence is the GHI #693 re-adjudication.
         out = self._resume_with_states(
             "1. Rule on GHI #693 (cli audit presence-vs-truth).",
             {"693": ReferenceState.SETTLED},
         )
 
-        self.assertIn("VOID", out)
+        self.assertIn("CITES SETTLED", out)
         self.assertIn("settled", out)
-        self.assertIn("cite a SETTLED precondition", out)
+        self.assertIn("cite a settled reference", out)
 
     def test_step_citing_an_open_ghi_renders_live_without_void(self) -> None:
         # output-contract: a live precondition must not be decorated as void.
@@ -234,7 +234,7 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
         )
 
         self.assertIn("live", out)
-        self.assertNotIn("VOID", out)
+        self.assertNotIn("CITES SETTLED", out)
 
     def test_unreachable_gh_renders_unknown_not_live(self) -> None:
         # output-contract: an unresolvable reference must read as unknown, never
@@ -242,7 +242,7 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
         out = self._resume_with_states("1. Rule on GHI #693.", {})
 
         self.assertIn("unknown", out)
-        self.assertNotIn("VOID", out)
+        self.assertNotIn("CITES SETTLED", out)
 
 
 class TestHandoffResumeDecisionRendering(_HandoffCliCase):

@@ -151,10 +151,12 @@ def _render_resume(result: ResumeResult) -> None:
     let items 2-N fall out of the advisory channel and be re-adjudicated as
     open loops in the successor session (GHI #696).
 
-    Each step also carries the live state of what it cites. A step whose
-    precondition is settled is marked VOID, because relaying it as actionable is
-    how a closed GHI got re-adjudicated three sessions running (GHI #696
-    defect 2).
+    Each step also carries the live state of what it cites. A step citing a
+    settled reference is flagged, because relaying such a step unexamined is how a
+    closed GHI got re-adjudicated three sessions running (GHI #696 defect 2). The
+    flag reports the citation, not a verdict — whether the reference is a
+    precondition (step is void) or provenance (step still stands) is the reader's
+    call, and no available signal decides it.
     """
     console.print(f"resume — {result.path}")
     console.print(f"  staleness: {result.staleness.value}")
@@ -167,13 +169,14 @@ def _render_resume(result: ResumeResult) -> None:
     else:
         console.print(f"  next steps ({len(result.steps)}):")
         for index, step in enumerate(result.steps, start=1):
-            marker = "VOID — " if step.is_void else ""
+            marker = "CITES SETTLED — " if step.cites_settled else ""
             console.print(f"    {index}. {marker}{step.text}")
             _render_step_references(step)
-        void_count = sum(1 for step in result.steps if step.is_void)
-        if void_count:
+        flagged = sum(1 for step in result.steps if step.cites_settled)
+        if flagged:
             console.print(
-                f"  {void_count} step(s) cite a SETTLED precondition — re-verify before relaying."
+                f"  {flagged} step(s) cite a settled reference — confirm whether it is a "
+                "precondition (step is void) or context (step still stands)."
             )
     _render_decisions(result)
     _render_settled(result)

@@ -250,11 +250,17 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
    **`uv run gz handoff resume` runs the advised-step arm of this gate for you**
    (GHI #696 defect 2). It extracts every governance reference each step cites and
    resolves GHI state through `gh`, rendering `live` / `settled` / `unknown` per
-   reference and marking a step **VOID** when a citation is `settled`. Start there
-   rather than hand-rolling the `gh` calls — then hand-verify what it reports as
-   `unknown` (ADR and OBPI references always resolve `unknown`, because their only
-   repo-local index is a Layer-3 derived view). A `VOID` step is a STALE claim: do
-   not relay it as actionable.
+   reference and marking a step **CITES SETTLED** when a citation is `settled`.
+   Start there rather than hand-rolling the `gh` calls — then hand-verify what it
+   reports as `unknown` (ADR and OBPI references always resolve `unknown`, because
+   their only repo-local index is a Layer-3 derived view).
+
+   **The flag is a citation, not a verdict — you still adjudicate.** A step may
+   name a closed GHI as a *precondition* (the work is done, the step is a STALE
+   claim, do not relay it) or as *provenance* ("the fix that landed in #696", the
+   step still stands). No available signal distinguishes them, so the tool reports
+   and you decide. Treating every flagged step as void discards live work; treating
+   none as void is the decay this gate exists to catch.
 
 8. **Extract the next steps** from the "Immediate Next Steps" section — `resume_handoff` returns `ResumeResult.steps`, one entry per authored step (with its references), and `next_steps` / `first_next_step` as derived text projections. An enumeration collapsed onto one line still yields one entry per step.
 

@@ -493,10 +493,10 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
         )
 
         self.assertTrue(
-            result.steps[0].is_void,
-            "a step citing a settled reference must be marked void, not relayed as actionable",
+            result.steps[0].cites_settled,
+            "a step citing a settled reference must be flagged, not relayed unexamined",
         )
-        self.assertFalse(result.steps[1].is_void)
+        self.assertFalse(result.steps[1].cites_settled)
 
     def test_live_reference_leaves_the_step_actionable(self) -> None:
         result = self._resume(
@@ -504,7 +504,7 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
             checker=lambda _reference: ReferenceState.LIVE,
         )
 
-        self.assertFalse(result.steps[0].is_void)
+        self.assertFalse(result.steps[0].cites_settled)
 
     def test_every_governance_reference_kind_is_extracted(self) -> None:
         """GHI, ADR, and OBPI tokens all reach the checker as domain references."""
@@ -535,8 +535,8 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
         states = [ref.state for ref in result.steps[0].references]
         self.assertEqual(states, [ReferenceState.UNKNOWN])
         self.assertFalse(
-            result.steps[0].is_void,
-            "unknown is not settled — an unresolvable reference must not void a step",
+            result.steps[0].cites_settled,
+            "unknown is not settled — an unresolvable reference must not be flagged",
         )
 
     def test_step_without_references_is_never_void(self) -> None:
@@ -546,7 +546,7 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
         )
 
         self.assertEqual(result.steps[0].references, ())
-        self.assertFalse(result.steps[0].is_void)
+        self.assertFalse(result.steps[0].cites_settled)
 
     def test_next_steps_stays_the_derived_text_projection(self) -> None:
         """Defect 1's contract survives: every authored step, in authored order."""
@@ -725,6 +725,39 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 len([entry for entry in settled if "Ruling one holds." in entry]),
                 1,
                 "carrying a ruling forward twice must not duplicate it",
+            )
+
+    def test_adr_less_handoff_inherits_no_settled_rulings(self) -> None:
+        """Settled lineage and chain lineage must be the SAME authority.
+
+        ``_newest_predecessor`` refuses to link an ADR-less handoff to the newest
+        handoff overall — "the newest handoff overall is not its lineage, and
+        linking to it would assert a continuity that does not exist". Carrying that
+        handoff's rulings forward would assert exactly the continuity the chain
+        link declined to assert, from a second, disagreeing authority.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "adr-scoped", "- [operator-ruled] Unrelated ruling.", hour=10)
+
+            sections = dict(self._SECTIONS)
+            sections["Decisions Made"] = "- [agent-chose] Triage pass, no parent ADR."
+            adr_less = create_handoff(
+                adr_id=None,
+                branch="main",
+                agent="test-agent",
+                slug="triage",
+                sections=sections,
+                base_path=base,
+                timestamp="2026-07-18T11:00:00Z",
+            )
+
+            content = adr_less.read_text(encoding="utf-8")
+            self.assertEqual(settled_rulings(content), [])
+            self.assertNotIn(
+                "continues_from",
+                content,
+                "the chain link is withheld for an ADR-less handoff; settled must agree",
             )
 
     def test_settled_section_is_not_required_for_validation(self) -> None:
