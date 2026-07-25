@@ -27,7 +27,7 @@ import re
 import shutil
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -45,7 +45,13 @@ def _md_escape(s: str) -> str:
     return s.replace("|", "\\|").replace("\n", " ").strip()
 
 
-def render_markdown(issues: list[Issue], precedent: int, duplicates: dict[int, int]) -> str:
+def render_markdown(
+    issues: list[Issue],
+    precedent: int,
+    duplicates: dict[int, int],
+    *,
+    blocker_resolver=None,
+) -> str:
     precedent_ok = precedent >= 3
     triaged: list[tuple[Issue, str, str]] = []
     for issue in issues:
@@ -67,7 +73,7 @@ def render_markdown(issues: list[Issue], precedent: int, duplicates: dict[int, i
             _md_escape(ROUTE_LABEL[r]),
             _md_escape(u),
             _md_escape(issue.title),
-            _md_escape(rationale(issue, r, duplicates)),
+            _md_escape(rationale(issue, r, duplicates, blocker_resolver=blocker_resolver)),
         ]
         lines.append("| " + " | ".join(cells) + " |")
 
@@ -114,6 +120,12 @@ _FENCE_RE = re.compile(r"```.*?```", re.S)
 
 
 @dataclass
+class Comment:
+    body: str
+    created_at: str
+
+
+@dataclass
 class Issue:
     number: int
     title: str
@@ -121,6 +133,7 @@ class Issue:
     body: str
     created_at: str
     updated_at: str
+    comments: list[Comment] = field(default_factory=list)
 
     @property
     def klass(self) -> str:
@@ -135,7 +148,139 @@ class Issue:
         return {m.group(1) for m in _PATH_RE.finditer(body)}
 
 
+# --- Blocker freshness -------------------------------------------------------
+#
+# `ghi-close/SKILL.md` § Phase 1 step 1a: a blocker comment is "a claim about
+# the tree as it stood on the day it was written" and must be re-derived before
+# it is honored. The obligation was prose-only, so the decay went uncaught until
+# someone checked by hand. These functions supply the instrument.
+
+_BLOCKER_MARKERS = (
+    re.compile(r"\bblocker\b", re.I),
+    re.compile(r"\bblocked\s+on\b", re.I),
+    re.compile(r"\bsequence\s+(?:this\s+)?after\b", re.I),
+    re.compile(r"\bwaiting\s+on\b", re.I),
+)
+
+# OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR first
+# would strand the suffix and invent a second, bogus reference.
+_REFERENCE_PATTERNS = (
+    ("OBPI", re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d+")),
+    ("ADR", re.compile(r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)")),
+    ("GHI", re.compile(r"(?:\bGHI\s*)?#(\d+)\b")),
+)
+
+# `#N` is also how gzkit prose numbers a rule, a list item, or a section of some
+# *other* document -- "`skill-surface-sync.md` #6", "Behavior Rules item #13".
+# Those resolve against the issue tracker by coincidence, and a low number
+# almost always hits a long-closed issue, so an unguarded match manufactures a
+# confident false gate. Observed on the first live run against GHI #691.
+_ORDINAL_CONTEXT = re.compile(
+    r"(?:rules?|items?|steps?|sections?|invariants?|criteri(?:on|a)|questions?|rows?"
+    r"|points?|lines?|phases?|notes?|tables?|clauses?|defects?|\.md`?|§)\s*$",
+    re.I,
+)
+
+
+@dataclass
+class BlockerRef:
+    kind: str
+    identifier: str
+    state: str = "unknown"
+
+
+@dataclass
+class Blocker:
+    created_at: str
+    references: list[BlockerRef]
+
+    @property
+    def cites_settled(self) -> bool:
+        """True when a cited precondition has already closed.
+
+        Only `settled` counts. `unknown` does not: an unresolvable reference is
+        missing evidence, not evidence of a closed precondition. Collapsing the
+        two would let the flag manufacture a verdict it never earned.
+        """
+        return any(ref.state == "settled" for ref in self.references)
+
+
+def is_blocker_comment(body: str) -> bool:
+    """True when a comment records a precondition on the tree.
+
+    Deliberately narrow. Every comment cross-links issues, so mining all of them
+    would turn ordinary discussion into false gates -- the noise that gets a
+    freshness signal ignored, which is indistinguishable from not having one.
+    """
+    return any(p.search(body or "") for p in _BLOCKER_MARKERS)
+
+
+def extract_references(text: str) -> list[BlockerRef]:
+    """Return every governance identifier a precondition cites.
+
+    Pure -- no network, no `gh`. Deduplicated on (kind, identifier) with
+    first-seen order preserved, so a blocker naming the same GHI twice yields
+    one reference to adjudicate rather than two.
+    """
+    seen: set[tuple[str, str]] = set()
+    found: list[BlockerRef] = []
+    remaining = text or ""
+    for kind, pattern in _REFERENCE_PATTERNS:
+        for match in pattern.finditer(remaining):
+            identifier = match.group(1) if kind == "GHI" else match.group(0)
+            if kind == "GHI" and _ORDINAL_CONTEXT.search(remaining[: match.start()]):
+                continue
+            if (kind, identifier) in seen:
+                continue
+            seen.add((kind, identifier))
+            found.append(BlockerRef(kind=kind, identifier=identifier))
+        # Consume what this kind claimed so a looser later pattern cannot
+        # re-read the same span (`ADR-0.0.65` inside `OBPI-0.0.65-02`).
+        remaining = pattern.sub(" ", remaining)
+    return found
+
+
+def blockers(issue: Issue, resolver=None) -> list[Blocker]:
+    """Pair each of an issue's preconditions with the live state of what it cites.
+
+    `resolver` is a parameter, never a named technology (hexagonal § Operative
+    rule 4): it maps a GHI number to `live` / `settled` / `unknown`. With none
+    injected every reference stays `unknown`, so the core is exercisable without
+    `gh` and an unreachable live state never renders as verified.
+
+    ADR and OBPI references always resolve `unknown` -- their only repo-local
+    index is a Layer-3 derived view, which `state-doctrine.md` forbids as a
+    source of truth. Reporting them as unverified is the honest outcome.
+    """
+    found: list[Blocker] = []
+    for comment in issue.comments:
+        if not is_blocker_comment(comment.body):
+            continue
+        refs = extract_references(comment.body)
+        if resolver is not None:
+            for ref in refs:
+                if ref.kind == "GHI":
+                    ref.state = resolver(int(ref.identifier))
+        found.append(Blocker(created_at=comment.created_at, references=refs))
+    return found
+
+
+def _stale_blocker_note(issue: Issue, resolver) -> str | None:
+    """Render the settled citations of an issue's preconditions, if any."""
+    settled = [
+        f"#{ref.identifier}"
+        for blocker in blockers(issue, resolver)
+        for ref in blocker.references
+        if ref.state == "settled"
+    ]
+    if not settled:
+        return None
+    return f"stale blocker: cites settled {', '.join(dict.fromkeys(settled))}"
+
+
 # --- Data acquisition --------------------------------------------------------
+
+ISSUE_JSON_FIELDS = "number,title,labels,createdAt,updatedAt,body,comments"
 
 
 def _require(binary: str) -> None:
@@ -155,11 +300,13 @@ def fetch(limit: int, label: str | None) -> list[Issue]:
         "--limit",
         str(limit),
         "--json",
-        "number,title,labels,createdAt,updatedAt,body",
+        ISSUE_JSON_FIELDS,
     ]
     if label:
         cmd += ["--label", label]
-    raw = subprocess.run(cmd, capture_output=True, text=True, check=True, encoding="utf-8")
+    raw = subprocess.run(
+        cmd, capture_output=True, text=True, check=True, encoding="utf-8", errors="replace"
+    )
     data = json.loads(raw.stdout)
     return [
         Issue(
@@ -169,9 +316,48 @@ def fetch(limit: int, label: str | None) -> list[Issue]:
             body=i.get("body") or "",
             created_at=i["createdAt"],
             updated_at=i["updatedAt"],
+            comments=[
+                Comment(body=c.get("body") or "", created_at=c.get("createdAt") or "")
+                for c in (i.get("comments") or [])
+            ],
         )
         for i in data
     ]
+
+
+def gh_reference_resolver(open_numbers: set[int]):
+    """Adapter: resolve a GHI number against GitHub, closing over the open set.
+
+    The open set is already in hand from `fetch()`, so a reference to an open
+    issue costs nothing. Anything else needs one `gh` call to distinguish
+    *closed* from *never existed* -- a distinction that matters, because a
+    blocker citing a typo'd number is not a discharged precondition.
+    """
+    cache: dict[int, str] = {}
+
+    def resolve(number: int) -> str:
+        if number in open_numbers:
+            return "live"
+        if number in cache:
+            return cache[number]
+        try:
+            raw = subprocess.run(
+                ["gh", "issue", "view", str(number), "--json", "state"],
+                capture_output=True,
+                text=True,
+                check=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            state = json.loads(raw.stdout).get("state", "")
+            cache[number] = "settled" if state == "CLOSED" else "live"
+        except (OSError, ValueError, subprocess.SubprocessError):
+            # Unreachable state is `unknown`, never `settled`: a network failure
+            # must not be readable as "the precondition cleared".
+            cache[number] = "unknown"
+        return cache[number]
+
+    return resolve
 
 
 # --- Precedent count cache ---------------------------------------------------
@@ -288,12 +474,23 @@ def urgency(issue: Issue, route_label: str) -> str:
     return "soon"
 
 
-def rationale(issue: Issue, route_label: str, duplicates: dict[int, int]) -> str:
+def rationale(
+    issue: Issue,
+    route_label: str,
+    duplicates: dict[int, int],
+    *,
+    blocker_resolver=None,
+) -> str:
     if route_label == "close-dup":
         return f"Duplicate of #{duplicates[issue.number]}"
     paths = issue.unique_paths
     body = issue.body or ""
     parts: list[str] = []
+    stale = _stale_blocker_note(issue, blocker_resolver)
+    if stale:
+        # First, not appended: a precondition that no longer holds changes
+        # whether the rest of the rationale is worth reading at all.
+        parts.append(stale)
     if paths:
         parts.append(f"{len(paths)} file{'s' if len(paths) != 1 else ''}")
     for p in _OBPI_SIGNALS:
@@ -472,6 +669,8 @@ def render(
     precedent: int,
     duplicates: dict[int, int],
     width: int | None = None,
+    *,
+    blocker_resolver=None,
 ) -> None:
     # Lazy imports: rich is only needed for the --format rich path; keeping
     # the skill script importable on consumers that don't ship rich.
@@ -516,7 +715,7 @@ def render(
             Text(route_label, style=ROUTE_STYLE.get(route_label, "")),
             Text(u, style=URGENCY_STYLE.get(u, "")),
             issue.title,
-            rationale(issue, r, duplicates),
+            rationale(issue, r, duplicates, blocker_resolver=blocker_resolver),
         )
     console.print(table)
 
@@ -534,11 +733,20 @@ def render(
     console.print("")
 
 
-def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int]) -> str:
+def render_json(
+    issues: list[Issue],
+    precedent: int,
+    duplicates: dict[int, int],
+    *,
+    blocker_resolver=None,
+) -> str:
     """Emit triage records for agent consumption.
 
     The agent uses this to drive per-GHI judgment: full body included so the
-    agent does not re-shell `gh issue view` once per issue.
+    agent does not re-shell `gh issue view` once per issue. `blockers` carries
+    each recorded precondition with the live state of what it cites, so the
+    judgment pass re-derives them (`ghi-close` § Phase 1 step 1a) instead of
+    inheriting them as standing fact.
     """
     precedent_ok = precedent >= 3
     records: list[dict] = []
@@ -556,7 +764,18 @@ def render_json(issues: list[Issue], precedent: int, duplicates: dict[int, int])
                 "dup_of": duplicates.get(issue.number),
                 "route": ROUTE_LABEL[r],
                 "urgency": u,
-                "rationale": rationale(issue, r, duplicates),
+                "rationale": rationale(issue, r, duplicates, blocker_resolver=blocker_resolver),
+                "blockers": [
+                    {
+                        "created_at": b.created_at,
+                        "cites_settled": b.cites_settled,
+                        "references": [
+                            {"kind": ref.kind, "identifier": ref.identifier, "state": ref.state}
+                            for ref in b.references
+                        ],
+                    }
+                    for b in blockers(issue, blocker_resolver)
+                ],
                 "created_at": issue.created_at,
                 "updated_at": issue.updated_at,
             }
@@ -681,12 +900,13 @@ def main() -> int:
         }
         sys.stdout.write(render_rank(items, issue_index, routes, precedent, len(issues)))
         return 0
+    resolver = gh_reference_resolver({issue.number for issue in issues})
     if args.format == "rich":
-        render(issues, precedent, duplicates, width=args.width)
+        render(issues, precedent, duplicates, width=args.width, blocker_resolver=resolver)
     elif args.format == "markdown":
-        print(render_markdown(issues, precedent, duplicates))
+        print(render_markdown(issues, precedent, duplicates, blocker_resolver=resolver))
     else:
-        print(render_json(issues, precedent, duplicates))
+        print(render_json(issues, precedent, duplicates, blocker_resolver=resolver))
     return 0
 
 

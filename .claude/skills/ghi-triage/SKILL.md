@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-27
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "5.1.1"
+  skill-version: "5.2.0"
 model: sonnet
 ---
 
@@ -48,9 +48,22 @@ uv run python .claude/skills/ghi-triage/scripts/triage.py [args] --format json
 Each record contains: `number`, `title`, `labels`, `klass` (one of
 `defect`/`enhancement`/`investigation`/`chore`/`unlabeled`), `body`
 (full), `files_mentioned`, `dup_of`, `route`, `urgency`, `rationale`,
-`created_at`, `updated_at`. The `route` field is the script's mechanical
-classification per `AGENTS.md` § Defect-fix routing — treat it as evidence
-the agent reasons over, not as the final answer.
+`blockers`, `created_at`, `updated_at`. The `route` field is the script's
+mechanical classification per `AGENTS.md` § Defect-fix routing — treat it as
+evidence the agent reasons over, not as the final answer.
+
+**`blockers` is the freshness instrument for `ghi-close` § Phase 1 step 1a.**
+Each entry carries the blocker comment's `created_at`, its `references`
+(`kind` / `identifier` / `state`), and `cites_settled`. A reference resolves
+`live`, `settled`, or `unknown`; ADR and OBPI references are always `unknown`,
+because their only repo-local index is a Layer-3 derived view. `rationale`
+leads with `stale blocker: cites settled #N` when any citation has closed.
+
+**The flag is a citation, not a verdict.** A blocker may name a closed GHI as a
+*precondition* (it no longer gates — re-derive and proceed) or as *provenance*
+("the pattern #585 established"). Nothing mechanical separates them, so the
+script reports and the agent adjudicates. `unknown` is never reported as
+settled: missing evidence is not evidence that a precondition cleared.
 
 ### Step 2 — Read each body, compose rank input
 
@@ -155,9 +168,15 @@ neither is part of the agent's binding output.
 
 ## What the script does (mechanical detail)
 
-1. `gh issue list --state open --limit N --json number,title,labels,createdAt,updatedAt,body`
+1. `gh issue list --state open --limit N --json number,title,labels,createdAt,updatedAt,body,comments`
 2. `git log --since='60 days ago' --grep='^fix('` to compute precedent count (cached in `~/.cache/gzkit/triage-precedent.json` keyed by HEAD SHA — recomputed only when HEAD moves)
 3. Detects duplicates by identical title (canonical = lowest number)
+3a. Mines blocker comments for cited GHI/ADR/OBPI references and resolves each
+   GHI against live state, so a precondition that has already closed surfaces
+   in the report instead of being inherited as standing fact. A bare `#N`
+   preceded by an ordinal word (`rule #6`, `` `some-rule.md` #6 ``) is not
+   treated as a citation — it numbers another document, and resolving it
+   against the tracker produces a confident false gate
 4. Routes each issue:
    - **direct-fix** when precedent ≥3 (default — almost any defect can be corrected inside the GHI itself; the GHI is the repair vessel and its receipts are the audit trail)
    - **close-dup** when an earlier issue has the same title
