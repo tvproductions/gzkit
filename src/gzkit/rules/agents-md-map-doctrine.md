@@ -7,11 +7,11 @@ paths:
 description: Map-not-encyclopedia shape invariant for per-turn agent instruction files (ADR-0.0.54)
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Map-Not-Encyclopedia Doctrine (gzkit)
 
-> **Rule version:** `0.2.0` — corrected the § Budget section to read the live `data/instructions_files_budget.json` source of truth instead of duplicating stale enforced numbers, and marked the 15000-char AGENTS.md weight target as deferred to GHI #533 / ADR-0.0.37 (ADR-0.0.54 closed Completed-Partial: shape enforcement delivered; weight-halving deferred). Prior `0.1.0` — authored under OBPI-0.0.54-01; establishes the shape invariant and budget contract. OBPI-0.0.54-02 lifts AGENTS.md sections. OBPI-0.0.54-03 ships `gz validate --agents-md-map-conformance`.
+> **Rule version:** `0.3.0` — repointed § Budget's deferral target off `ADR-0.0.37`, which went terminal 2026-07-18 (§ Terminal Disposition, "Split-and-Supersede") with its registry-spine OBPIs permanently withdrawn, onto the live successor `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3 (section ownership + decrease-only ratchet). The dead pointer sat in a rule scoped to `AGENTS.md` / `CLAUDE.md` / `.claude/rules/*.md`, so every agent editing those surfaces was aimed at a destination that can no longer accept work (GHI #533). Also records that the transitional window is no longer slack: the GHI #712 delivered-surface witness is now in the default `gz check` scope and AGENTS.md sits 560 B under the Codex `project_doc_max_bytes` default. Prior `0.2.0` — corrected the § Budget section to read the live `data/instructions_files_budget.json` source of truth instead of duplicating stale enforced numbers, and marked the 15000-char AGENTS.md weight target as deferred to GHI #533 / ADR-0.0.37 (ADR-0.0.54 closed Completed-Partial: shape enforcement delivered; weight-halving deferred). Prior `0.1.0` — authored under OBPI-0.0.54-01; establishes the shape invariant and budget contract. OBPI-0.0.54-02 lifts AGENTS.md sections. OBPI-0.0.54-03 ships `gz validate --agents-md-map-conformance`.
 
 ## Invariant
 
@@ -29,7 +29,9 @@ AGENTS.md MUST contain only (a) binding bullet rules (one bullet = one rule, ≤
 
 The **live enforced budgets are the values in `data/instructions_files_budget.json`** — the single source of truth read by `gz validate --instructions-files-budget`. This doctrine never duplicates those numbers into prose: a duplicated number drifts from what is enforced (the exact drift ADR-0.0.54 closeout corrected). Read the JSON for the current enforced values.
 
-The **destination** this doctrine sets for AGENTS.md is a tightened `15000`-char ceiling (the map, not the encyclopedia). That weight-halving is **not yet in force**: AGENTS.md currently sits above `15000` under a relaxed interim budget, and reaching the target is **deferred to GHI #533 / ADR-0.0.37**. The transitional window is therefore **open**, not closed — the shape enforcement (`gz validate --agents-md-map-conformance`) ships and binds now; the weight target lands with the deferred work. (ADR-0.0.54 closed Completed-Partial on exactly this split.)
+The **destination** this doctrine sets for AGENTS.md is a tightened `15000`-char ceiling (the map, not the encyclopedia). That weight-halving is **not yet in force**: AGENTS.md currently sits above `15000` under a relaxed interim budget, and reaching the target is **deferred to GHI #533 → `ADR-0.35.0-canon-entry-corpus-landing`** § Decision 3 — sections declare `corpus-owned` or `unowned`, the generator materializes owned sections from the corpus, and the unowned byte total is held in a **decrease-only ratchet**. The predecessor pointer to `ADR-0.0.37` is **retired**: that ADR is terminal (§ Terminal Disposition, 2026-07-18) and its registry-spine OBPIs were permanently withdrawn, so no weight-halving work can land under it.
+
+The transitional window is **open but no longer slack**. The delivered-surface witness (GHI #712, `src/gzkit/governance/trust_audits/surface_delivery_witness.py`) is wired into the default `gz check` scope, and AGENTS.md sits **560 B** under the Codex `project_doc_max_bytes` default — growth past that boundary fails the default gate closed. Shape enforcement (`gz validate --agents-md-map-conformance`) ships and binds now; the weight target lands with the deferred work. (ADR-0.0.54 closed Completed-Partial on exactly this split.)
 
 ## Shape enforcement
 
