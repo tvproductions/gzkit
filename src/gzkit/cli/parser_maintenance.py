@@ -130,6 +130,13 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         "--continues-from", dest="continues_from", default=None, help="Prior handoff reference"
     )
     p_create.add_argument("--session-id", dest="session_id", default=None, help="Session id")
+    p_create.add_argument(
+        "--settled",
+        action="append",
+        default=None,
+        metavar="RULING",
+        help="Seat a late settled ruling (repeatable); unions with carried entries",
+    )
     add_json_flag(p_create)
     p_create.set_defaults(
         func=lambda a: _lazy("handoff_create_cmd")(
@@ -137,6 +144,7 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             slug=a.slug,
             agent=a.agent,
             decisions=a.decisions,
+            settled=a.settled,
             branch=a.branch,
             summary=a.summary,
             context=a.context,

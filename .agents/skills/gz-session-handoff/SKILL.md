@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.17.0"
+  skill-version: "6.18.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-07-24
 model: sonnet
 ---
 
-# gz-session-handoff (v6.17.0)
+# gz-session-handoff (v6.18.0)
 
 ## Purpose
 
@@ -141,6 +141,16 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    re-adjudicated. It is deliberately NOT a required section — the
    `handoff-documents` gate validates the whole post-cutover corpus, and a
    required section would fail all of it.
+
+   **A ruling that arrives AFTER the handoff is committed must be seated in the
+   next one.** Composition runs at authoring time, so a late ruling — the operator
+   rules on a GHI once the session's handoff is already written — has no home in
+   that handoff. On the next CREATE, pass it via `--settled "<ruling>"`
+   (repeatable). It unions with the carried set and never replaces it, so seating
+   one late ruling cannot drop the booked history. Check the prior session's
+   trailing rulings before authoring: if one is not already carried, seat it.
+   Routine use of the flag is a signal that rulings are arriving outside the
+   handoff cycle and belong in a durable ruling store (campaign Movement D box 3).
 
 8. **Validate** the completed document:
    - Parse frontmatter and validate with `HandoffFrontmatter` model

@@ -117,7 +117,12 @@ ignition.
 
      Before this channel existed, a settled-and-relevant ruling had no home —
      "Decisions Made" is scoped to THIS session and "Pending Work / Open Loops" to
-     UNFINISHED — so it was re-filed as an open loop and read as undecided. -->
+     UNFINISHED — so it was re-filed as an open loop and read as undecided.
+
+     ONE EXCEPTION: a ruling issued AFTER the previous handoff was committed has no
+     home in that handoff, because composition runs at authoring time. Seat it on
+     this handoff via `gz handoff create --settled "<ruling>"` (repeatable). It
+     unions with the carried set and never replaces it. -->
 
 ## Environment State
 

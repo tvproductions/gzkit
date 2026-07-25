@@ -27,7 +27,12 @@ from gzkit.commands.handoff import (
     handoff_list_cmd,
     handoff_resume_cmd,
 )
-from gzkit.handoff_api import ReferenceState, create_handoff, validate_handoff_document
+from gzkit.handoff_api import (
+    ReferenceState,
+    create_handoff,
+    settled_rulings,
+    validate_handoff_document,
+)
 from gzkit.handoff_validation import REQUIRED_SECTIONS
 from gzkit.traceability import covers
 
@@ -311,6 +316,71 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
 
         self.assertIn("settled — do NOT re-open", out)
         self.assertIn("Do NOT promote sensitivity into GATE5.", out)
+
+
+class TestHandoffCreateSeatsLateRulings(_HandoffCliCase):
+    """`--settled` seats a ruling that arrived after the prior handoff was authored.
+
+    The carry-forward mechanism composes Settled Rulings at authoring time, so a
+    ruling the operator issues AFTER a session's handoff is committed has no home
+    in that handoff — the next one is the only seat. `--settled` is that seat, and
+    it must UNION with the carried set: replacing would drop every ruling booked
+    before it, turning the cure into a fresh instance of the same decay.
+    """
+
+    def _create(self, *, slug: str, timestamp: str, decisions: str, settled=None) -> Path:
+        handoff_create_cmd(
+            adr="ADR-0.0.65",
+            slug=slug,
+            agent="g0",
+            decisions=decisions,
+            summary="Seeded summary.",
+            context="Seeded context.",
+            next_steps="1. Continue.",
+            pending="Seeded pending.",
+            verification="- [ ] Tests pass.",
+            evidence="Seeded evidence.",
+            settled=settled,
+            base_path=self.base,
+        )
+        written = (self.base / ".gzkit" / "handoffs").glob("*.md")
+        return next(p for p in written if p.name.endswith(f"{slug}.md"))
+
+    def test_seated_ruling_is_recorded_alongside_carried_ones(self) -> None:
+        self._create(
+            slug="first",
+            timestamp="2026-07-14T09:00:00Z",
+            decisions="- [operator-ruled] Earlier ruling holds.",
+        )
+
+        second = self._create(
+            slug="second",
+            timestamp="2026-07-14T10:00:00Z",
+            decisions="- [agent-chose] Nothing new.",
+            settled=["Reframe #580 to truncation survival."],
+        )
+
+        settled = settled_rulings(second.read_text(encoding="utf-8"))
+        self.assertIn("Earlier ruling holds.", settled, "carried rulings must not be dropped")
+        self.assertIn("Reframe #580 to truncation survival.", settled)
+
+    def test_no_settled_flag_still_self_populates(self) -> None:
+        """The flag is an escape hatch, not a requirement — inheritance is default."""
+        self._create(
+            slug="first",
+            timestamp="2026-07-14T09:00:00Z",
+            decisions="- [operator-ruled] Earlier ruling holds.",
+        )
+
+        second = self._create(
+            slug="second",
+            timestamp="2026-07-14T10:00:00Z",
+            decisions="- [agent-chose] Nothing new.",
+        )
+
+        self.assertEqual(
+            settled_rulings(second.read_text(encoding="utf-8")), ["Earlier ruling holds."]
+        )
 
 
 class TestHandoffCreate(_HandoffCliCase):

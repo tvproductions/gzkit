@@ -29,6 +29,7 @@ from gzkit.handoff_api import (
     settled_rulings,
 )
 from gzkit.handoff_validation import (
+    SETTLED_SECTION,
     HandoffValidationError,
     find_handoff_for_release,
     parse_frontmatter,
@@ -725,6 +726,82 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 len([entry for entry in settled if "Ruling one holds." in entry]),
                 1,
                 "carrying a ruling forward twice must not duplicate it",
+            )
+
+    def test_author_supplied_ruling_does_not_drop_carried_rulings(self) -> None:
+        """Seating a late ruling must UNION with the carried set, never replace it.
+
+        A ruling can arrive AFTER a handoff is authored — the operator rules on a
+        GHI once the session's handoff is already committed. The only seat for it is
+        the next handoff's Settled Rulings. If supplying that section suppressed
+        inheritance, seating one late ruling would silently drop every ruling booked
+        before it, which turns the cure into a new instance of the same decay.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Earlier ruling holds.", hour=10)
+
+            sections = dict(self._SECTIONS)
+            sections["Decisions Made"] = "- [agent-chose] Nothing new."
+            sections[SETTLED_SECTION] = "- Late ruling arrived after the prior handoff."
+            second = create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="second",
+                sections=sections,
+                base_path=base,
+                timestamp="2026-07-18T11:00:00Z",
+            )
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertIn("Earlier ruling holds.", settled, "carried rulings must survive")
+            self.assertIn("Late ruling arrived after the prior handoff.", settled)
+
+    def test_carried_rulings_precede_the_newly_seated_one(self) -> None:
+        """Carried first, then new — the settled list reads oldest-booked-first."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Earlier ruling holds.", hour=10)
+
+            sections = dict(self._SECTIONS)
+            sections["Decisions Made"] = "- [agent-chose] Nothing new."
+            sections[SETTLED_SECTION] = "- Late ruling."
+            second = create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="second",
+                sections=sections,
+                base_path=base,
+                timestamp="2026-07-18T11:00:00Z",
+            )
+
+            self.assertEqual(
+                settled_rulings(second.read_text(encoding="utf-8")),
+                ["Earlier ruling holds.", "Late ruling."],
+            )
+
+    def test_reseating_an_already_carried_ruling_does_not_double_it(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
+
+            sections = dict(self._SECTIONS)
+            sections["Decisions Made"] = "- [agent-chose] Nothing new."
+            sections[SETTLED_SECTION] = "- Ruling one holds."
+            second = create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="second",
+                sections=sections,
+                base_path=base,
+                timestamp="2026-07-18T11:00:00Z",
+            )
+
+            self.assertEqual(
+                settled_rulings(second.read_text(encoding="utf-8")), ["Ruling one holds."]
             )
 
     def test_adr_less_handoff_inherits_no_settled_rulings(self) -> None:

@@ -443,6 +443,48 @@ def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
     return composed
 
 
+def _compose_settled(authored: str, adr_id: str | None, base_path: Path) -> list[str]:
+    """Union the carried settled rulings with any the author seats explicitly.
+
+    UNION, never replace. A ruling can arrive AFTER a handoff is authored — the
+    operator rules on a GHI once the session's handoff is already committed — and
+    the only seat for it is the next handoff. If supplying the section suppressed
+    inheritance, seating one late ruling would silently drop every ruling booked
+    before it: the cure would become a fresh instance of the decay it exists to
+    stop.
+
+    Carried entries come first (oldest-booked-first reads as a history), then
+    newly seated ones, de-duplicated on text so re-seating an already-carried
+    ruling is a no-op rather than a double entry.
+    """
+    seen: set[str] = set()
+    composed: list[str] = []
+    for entry in [*_carried_settled(adr_id, base_path), *_bullet_items(authored)]:
+        if entry in seen:
+            continue
+        seen.add(entry)
+        composed.append(entry)
+    return composed
+
+
+def _bullet_items(text: str) -> list[str]:
+    """Return the numbered/bulleted items of a raw section body, markers stripped.
+
+    Tolerates a bare line with no marker so an author who writes one ruling as
+    plain prose is not silently dropped.
+    """
+    items: list[str] = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        marked = _ITEM_MARKER_RE.match(stripped)
+        item = marked.group(1).strip() if marked else stripped
+        if item:
+            items.append(item)
+    return items
+
+
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR
     # first would strand the OBPI suffix as a second, bogus reference.
@@ -588,13 +630,12 @@ def create_handoff(
     """
     ts = timestamp or _now_iso()
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
-    if not sections.get(SETTLED_SECTION, "").strip():
-        carried = _carried_settled(adr_id, base_path)
-        if carried:
-            sections = {
-                **sections,
-                SETTLED_SECTION: "\n".join(f"- {entry}" for entry in carried),
-            }
+    composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), adr_id, base_path)
+    if composed_settled:
+        sections = {
+            **sections,
+            SETTLED_SECTION: "\n".join(f"- {entry}" for entry in composed_settled),
+        }
     frontmatter: dict = {
         "mode": mode,
         "adr_id": adr_id,

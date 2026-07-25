@@ -34,7 +34,7 @@ from gzkit.handoff_api import (
     list_handoffs,
     resume_handoff,
 )
-from gzkit.handoff_validation import HandoffValidationError
+from gzkit.handoff_validation import SETTLED_SECTION, HandoffValidationError
 from gzkit.utils import git_cmd, run_exec
 
 # Required section -> the handoff_create_cmd parameter that fills it. Every
@@ -276,6 +276,7 @@ def handoff_create_cmd(
     obpi: str | None = None,
     continues_from: str | None = None,
     session_id: str | None = None,
+    settled: list[str] | None = None,
     as_json: bool = False,
     base_path: Path = Path("."),
 ) -> None:
@@ -289,6 +290,11 @@ def handoff_create_cmd(
     and Current State Summary did, so the default invocation emitted five empty
     headings and the gate — which checked presence, not population — blessed the
     result. An unsupplied section is now a refusal, not a silent hollow.
+
+    ``settled`` seats rulings that arrived after the PRIOR handoff was authored —
+    the operator rules on a GHI once the session's handoff is already committed, so
+    the next handoff is the only seat available. It is normally unnecessary: the
+    section self-populates from the predecessor's ``[operator-ruled]`` decisions.
     """
     supplied = {
         "summary": summary,
@@ -304,6 +310,10 @@ def handoff_create_cmd(
         for section, param in SECTION_PARAMS.items()
         if (body := supplied[param]) is not None
     }
+    # Seat late-arriving rulings. `create_handoff` UNIONS these with whatever the
+    # predecessor carried, so passing --settled never drops booked history.
+    if settled:
+        sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
     try:
         path = create_handoff(
             adr_id=adr,

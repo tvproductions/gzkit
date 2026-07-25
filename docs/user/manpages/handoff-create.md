@@ -72,9 +72,9 @@ re-argue.
 
 The attribution drives a self-populating channel. `create_handoff` composes the
 optional `## Settled Rulings` section by construction from the newest predecessor:
-its carried entries plus its `[operator-ruled]` decisions, de-duplicated. **Do not
-hand-fill it**, and do not pass a flag for it — there isn't one. A ruling booked
-once keeps arriving, so it is never re-filed as an open loop and re-adjudicated.
+its carried entries plus its `[operator-ruled]` decisions, de-duplicated. A ruling
+booked once keeps arriving, so it is never re-filed as an open loop and
+re-adjudicated. **In the normal case you do not touch this section at all.**
 
 ```bash
 uv run gz handoff create --adr ADR-0.0.65 --slug tier-close --agent g0 \
@@ -94,6 +94,34 @@ The successor handoff then carries, without anyone authoring it:
 `Settled Rulings` is deliberately **not** a required section: the
 `handoff-documents` gate validates every post-cutover entry in `.gzkit/handoffs/`,
 so making it required would fail the entire existing corpus.
+
+### `--settled` — seating a late ruling
+
+Composition happens at authoring time, so a ruling the operator issues **after** a
+session's handoff is already committed has no home in that handoff. The next
+handoff is the only seat, and `--settled` is it (repeatable):
+
+```bash
+uv run gz handoff create --adr ADR-0.0.65 --slug next-session --agent g0 \
+  --settled "Reframe #580 to truncation survival." \
+  --decisions "- [agent-chose] Resumed the tier." \
+  ...
+```
+
+`--settled` **unions** with the carried set — it never replaces it. Carried entries
+render first (oldest-booked-first reads as a history), then newly seated ones,
+de-duplicated on text so re-seating an already-carried ruling is a no-op.
+
+Replacing rather than unioning would drop every ruling booked before the late one,
+turning the settled channel into a fresh instance of the decay it exists to stop.
+That was a real defect in the first cut of this feature; the union is pinned by
+`test_author_supplied_ruling_does_not_drop_carried_rulings`.
+
+The flag is an escape hatch for a timing gap, not part of the normal flow. If you
+find yourself passing it routinely, the rulings are arriving outside the handoff
+cycle and belong in a durable ruling store — campaign Movement D box 3
+(`ruling_issued` / `ruling_superseded` typed events, with this section as a
+rendered projection).
 
 ---
 
