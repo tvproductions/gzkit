@@ -42,12 +42,17 @@ def _write_surface(root: Path, sections: list[tuple[str, int]]) -> int:
     The size is returned rather than re-read from disk so distance assertions
     derive from what the fixture *built*, not from a second measurement of the
     same file taken the same way the audit takes it.
+
+    `newline="\\n"` is load-bearing for exactly that property: the default
+    translates each `\\n` to `os.linesep`, so on Windows the file on disk is one
+    byte per line larger than the count returned here and every byte-distance
+    assertion drifts by the fixture's line count.
     """
     parts = ["# Fixture\n\nPurpose line.\n\n"]
     for title, body_bytes in sections:
         parts.append(f"## {title}\n\n{'x' * body_bytes}\n\n")
     text = "".join(parts)
-    (root / "AGENTS.md").write_text(text, encoding="utf-8")
+    (root / "AGENTS.md").write_text(text, encoding="utf-8", newline="\n")
     return len(text.encode("utf-8"))
 
 

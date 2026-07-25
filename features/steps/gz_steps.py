@@ -222,14 +222,28 @@ def step_exit_code(context, expected: int) -> None:  # type: ignore[no-untyped-d
     assert context.exit_code == expected, context.output
 
 
+def _unwrapped(value: str) -> str:
+    """Collapse whitespace runs so substring assertions survive line wrapping.
+
+    The gz CLI wraps recovery prose to the terminal width, so a phrase like
+    "closed to new" arrives split across a newline on a narrow terminal and
+    intact on a wide one. These assertions are about the prose the operator
+    reads, never the column it happens to wrap at; matching on raw text makes
+    the scenario pass or fail on `COLUMNS`, which is not a governed input.
+    """
+    return " ".join(value.split())
+
+
 @then('the output contains "{text}"')
 def step_output_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
-    assert text in context.output, context.output
+    assert _unwrapped(text) in _unwrapped(context.output), context.output
 
 
 @then('the output does not contain "{text}"')
 def step_output_not_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
-    assert text not in context.output, f"Expected output to not contain {text!r}: {context.output}"
+    assert _unwrapped(text) not in _unwrapped(context.output), (
+        f"Expected output to not contain {text!r}: {context.output}"
+    )
 
 
 @then('the file "{path}" exists')
