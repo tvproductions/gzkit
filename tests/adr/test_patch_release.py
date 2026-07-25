@@ -592,6 +592,116 @@ class TestClassifyGhi(unittest.TestCase):
         self.assertIn("no 'runtime' label", result.warning)
 
 
+class TestClassifyGhiOpenUpstream(unittest.TestCase):
+    """A GHI still OPEN upstream cannot assert closure (GHI #714).
+
+    The project-canonical subject form ``fix(<scope>): <summary> (GHI #N)`` is
+    prescribed by AGENTS.md § Defect-fix routing as the scope anchor for *any*
+    GHI-tracked repair, including incremental work under a deliberately-open
+    tracker. It therefore attributes work; it does not declare closure. When
+    the marker and upstream state disagree, the operator adjudicates rather
+    than the manifest asserting.
+    """
+
+    def test_open_ghi_downgrades_from_qualified(self) -> None:
+        """Label + src diff + OPEN upstream is a warned bucket, not qualified."""
+        from gzkit.commands.patch_release import GhiRecord, _classify_ghi
+
+        ghi = GhiRecord(
+            number=615,
+            title="Held tracker",
+            closed_at="",
+            labels=["runtime"],
+            state="OPEN",
+        )
+        with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.33.1")
+
+        self.assertEqual(result.status, "open_upstream")
+        self.assertIsNotNone(result.warning)
+        self.assertIn("615", result.warning)
+        # The cross-validation facts survive the downgrade — only the verdict moves.
+        self.assertTrue(result.has_runtime_label)
+        self.assertTrue(result.has_src_diff)
+
+    def test_closed_ghi_still_qualifies(self) -> None:
+        """The downgrade is scoped to OPEN state; a closed GHI is unaffected."""
+        from gzkit.commands.patch_release import GhiRecord, _classify_ghi
+
+        ghi = GhiRecord(
+            number=713,
+            title="Closed fix",
+            closed_at="2026-07-24T02:50:27Z",
+            labels=["runtime"],
+            state="CLOSED",
+        )
+        with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.33.1")
+
+        self.assertEqual(result.status, "qualified")
+        self.assertIsNone(result.warning)
+
+    def test_unknown_state_still_qualifies(self) -> None:
+        """An unpopulated state field must not silently downgrade every GHI."""
+        from gzkit.commands.patch_release import GhiRecord, _classify_ghi
+
+        ghi = GhiRecord(number=700, title="No state", closed_at="2026-07-01", labels=["runtime"])
+        with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.33.1")
+
+        self.assertEqual(result.status, "qualified")
+
+    def test_open_ghi_already_warned_keeps_its_own_verdict(self) -> None:
+        """The downgrade applies to the qualified verdict, not to warned buckets.
+
+        An OPEN GHI with no runtime label is already diff_only — already
+        surfaced for adjudication. Re-labelling it would erase the
+        label/diff disagreement the operator needs to see.
+        """
+        from gzkit.commands.patch_release import GhiRecord, _classify_ghi
+
+        ghi = GhiRecord(number=533, title="Tracker", closed_at="", labels=[], state="OPEN")
+        with patch("gzkit.commands.patch_release._ghi_has_src_commits", return_value=True):
+            result = _classify_ghi(_PROJECT_ROOT, ghi, "v0.33.1")
+
+        self.assertEqual(result.status, "diff_only")
+        self.assertIn("no 'runtime' label", result.warning)
+
+    def test_open_upstream_is_excluded_from_release_notes(self) -> None:
+        """A downgraded GHI must not reach the authored narrative."""
+        from gzkit.commands.patch_release import GhiQualification, GhiRecord
+
+        open_ghi = GhiQualification(
+            ghi=GhiRecord(number=615, title="Held", closed_at="", labels=["runtime"], state="OPEN"),
+            has_runtime_label=True,
+            has_src_diff=True,
+            status="open_upstream",
+            warning="still open",
+        )
+        closed_ghi = GhiQualification(
+            ghi=GhiRecord(
+                number=713,
+                title="Shipped",
+                closed_at="2026-07-24",
+                labels=["runtime"],
+                state="CLOSED",
+            ),
+            has_runtime_label=True,
+            has_src_diff=True,
+            status="qualified",
+            warning=None,
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "RELEASE_NOTES.md").write_text("# gzkit Release Notes\n", encoding="utf-8")
+            from gzkit.commands.patch_release import _author_release_notes
+
+            entry = _author_release_notes(root, "0.33.2", [open_ghi, closed_ghi])
+
+        self.assertIn("#713", entry)
+        self.assertNotIn("#615", entry)
+
+
 # ---------------------------------------------------------------------------
 # Test: patch_release_cmd (dry-run integration)
 # ---------------------------------------------------------------------------

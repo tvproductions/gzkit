@@ -41,11 +41,11 @@ from gzkit.utils import git_cmd, run_exec
 # Models
 # ---------------------------------------------------------------------------
 
-GhiStatus = Literal["qualified", "label_only", "diff_only", "excluded"]
+GhiStatus = Literal["qualified", "label_only", "diff_only", "open_upstream", "excluded"]
 
 
 class GhiRecord(BaseModel):
-    """A closed GitHub issue discovered for patch release consideration."""
+    """A GitHub issue discovered for patch release consideration."""
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -54,6 +54,7 @@ class GhiRecord(BaseModel):
     closed_at: str = Field(..., description="ISO 8601 close timestamp")
     labels: list[str] = Field(default_factory=list, description="Label names")
     url: str = Field("", description="Issue HTML URL")
+    state: str = Field("", description="Upstream issue state (OPEN/CLOSED); empty if unknown")
 
 
 class GhiQualification(BaseModel):
@@ -188,12 +189,17 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
     if not in_range_refs:
         return []
 
-    # A commit in ``<base_ref>..HEAD`` with a closure marker is authoritative:
-    # shipping the release will close the GHI on push. Do not filter by
-    # current GitHub state — a locally-committed fix awaiting push still has
-    # ``state=OPEN`` upstream but will be closed by the release. Trust the
-    # commit's closure declaration (GHI #233 doctrine: we count what we
-    # CLOSE at the commit level, not what GitHub currently says about state).
+    # A commit in ``<base_ref>..HEAD`` with a closure marker is authoritative
+    # for *discovery*: shipping the release may close the GHI on push, and a
+    # locally-committed fix awaiting push still reads ``state=OPEN`` upstream.
+    # So do not filter by GitHub state here — every marked GHI is collected
+    # (GHI #233 doctrine: we count what we CLOSE at the commit level, not what
+    # GitHub currently says about state).
+    #
+    # Upstream state is consulted one layer down, in ``_classify_ghi``, where
+    # an OPEN GHI is downgraded to the ``open_upstream`` warned bucket rather
+    # than dropped. The marker cannot distinguish "awaiting push" from "work
+    # under a still-open tracker", so the operator adjudicates (GHI #714).
     records: list[GhiRecord] = []
     for number in sorted(in_range_refs):
         cmd = [
@@ -219,6 +225,7 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
                 closed_at=item.get("closedAt") or "",
                 labels=labels,
                 url=item.get("url", ""),
+                state=item.get("state") or "",
             )
         )
     return records
@@ -318,8 +325,21 @@ def _classify_ghi(project_root: Path, ghi: GhiRecord, base_ref: str | None) -> G
     has_diff = _ghi_has_src_commits(project_root, ghi.number, base_ref)
 
     if has_label and has_diff:
-        status: GhiStatus = "qualified"
-        warning = None
+        # The commit marker qualified it, but a GHI still OPEN upstream has not
+        # declared closure — the subject form ``fix(<scope>): … (GHI #N)`` is
+        # AGENTS.md § Defect-fix routing's scope anchor for *any* GHI-tracked
+        # repair, including incremental work under a deliberately-open tracker.
+        # Downgrade to a warned bucket so the operator adjudicates rather than
+        # the manifest asserting a closure that has not happened (GHI #714).
+        if ghi.state == "OPEN":
+            status: GhiStatus = "open_upstream"
+            warning = (
+                f"GHI #{ghi.number} qualifies on commit markers but is still OPEN "
+                f"upstream; confirm this release closes it before counting it"
+            )
+        else:
+            status = "qualified"
+            warning = None
     elif has_label:
         status = "label_only"
         warning = f"GHI #{ghi.number} has 'runtime' label but no commits touching src/gzkit/"
@@ -415,6 +435,7 @@ _STATUS_STYLE: dict[str, str] = {
     "qualified": "[green]qualified[/green]",
     "label_only": "[yellow]label_only[/yellow]",
     "diff_only": "[yellow]diff_only[/yellow]",
+    "open_upstream": "[yellow]open_upstream[/yellow]",
     "excluded": "[dim]excluded[/dim]",
 }
 

@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.9.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-23
+last_reviewed: 2026-07-25
 model: sonnet
 ---
 
@@ -118,8 +118,8 @@ Present the output to the operator. This shows:
 - Latest tag and date
 - Current version and proposed patch version
 - Each discovered GHI with its cross-validation status (qualified, label_only,
-  diff_only, excluded)
-- Warnings for label/diff disagreements
+  diff_only, open_upstream, excluded)
+- Warnings for label/diff disagreements and for still-open GHIs
 
 If no GHIs qualify (all excluded), inform the operator and stop. There is no
 release to make.
@@ -166,6 +166,42 @@ silence warnings; it is a corrective for the authoring-discipline defect.
 When `diff_only` is a chronic pattern across consecutive releases, file
 a `defect`-labeled GHI against `ghi-author` discipline rather than
 absorbing the recovery cost every cycle (canonical home: GHI #402).
+
+#### Step 1b: Open-upstream adjudication (binding when `open_upstream` GHIs surface)
+
+`open_upstream` means a GHI carries the `runtime` label AND has commits
+touching `src/gzkit/` in the release range — it would otherwise qualify —
+but is still **OPEN** on GitHub. Discovery cannot resolve this alone: the
+project-canonical subject form `fix(<scope>): <summary> (GHI #N)` is what
+`AGENTS.md` § Defect-fix routing prescribes for *any* GHI-tracked repair,
+so it attributes work without declaring closure. A locally-committed fix
+awaiting push and an incremental cut under a deliberately-open tracker
+produce the identical commit (GHI #714).
+
+The operator adjudicates, per GHI:
+
+1. Enumerate them:
+
+   ```bash
+   uv run gz patch release --dry-run --json > /tmp/patch-release.json
+   jq -r '.qualifications[] | select(.status == "open_upstream") | .ghi.number' /tmp/patch-release.json
+   ```
+
+2. For each, determine which case it is:
+
+   | Case | Signal | Action |
+   |------|--------|--------|
+   | Fix landed; close pending push | The range contains the complete remedy; nothing is held back | Close the GHI (`gh issue close <N> --comment "…"` citing the commit SHA), re-run discovery, and it reports `qualified` |
+   | Work under a still-open tracker | Part of the scope landed; the GHI intentionally remains open | Leave open. Describe **only what actually landed** in Step 2 — never the GHI's full scope — and do not count it in the `Stats` line |
+
+3. Re-run `uv run gz patch release --dry-run` after any closures.
+
+4. Proceed to Step 2.
+
+**Do not close a GHI merely to clear the bucket.** The bucket exists so the
+release narrative stops asserting closures that did not happen; closing an
+open tracker to make the warning disappear reintroduces the exact defect
+(canonical instances: GHI #533 and #615 during the v0.33.2 ceremony).
 
 ### Step 2: Narrative Drafting
 
