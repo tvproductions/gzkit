@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.16.0"
+  skill-version: "6.17.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-07-24
 model: sonnet
 ---
 
-# gz-session-handoff (v6.16.0)
+# gz-session-handoff (v6.17.0)
 
 ## Purpose
 
@@ -119,11 +119,28 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    |---------|---------|
    | Current State Summary | What was done, what phase the work is in, last action status |
    | Important Context | Architectural constraints, non-obvious dependencies, gotchas |
-   | Decisions Made | Decisions with rationale and rejected alternatives |
+   | Decisions Made | Decisions with rationale and rejected alternatives. **Lead each entry with `[operator-ruled]` or `[agent-chose]`** (GHI #696 defect 4) |
    | Immediate Next Steps | Ordered list of 3-5 concrete next actions |
    | Pending Work / Open Loops | Deferred items, blockers, discovered work |
    | Verification Checklist | Commands and checks for the resuming agent |
    | Evidence / Artifacts | File paths (backtick-quoted) produced during the session |
+
+   **Attribute every decision.** An operator ruling and an agent's own choice
+   rendered identically is what made both equally re-arguable in the next session
+   (GHI #696 defect 4) — operator canon is verbatim, *"MY WORD IS AUTHORITY IN ALL
+   CASES."* Lead each entry with `[operator-ruled]` or `[agent-chose]`; matching is
+   case- and spacing-tolerant. An unmarked entry parses as **unattributed** and is
+   never promoted to a ruling nor demoted to a preference — but it also does not
+   carry forward, so an unmarked operator ruling is a ruling you will re-argue.
+
+   **`Settled Rulings` is written for you — do NOT hand-fill it.** The optional
+   `## Settled Rulings` section is composed by construction: `create_handoff`
+   carries the predecessor's settled entries forward and promotes its
+   `[operator-ruled]` decisions into it, de-duplicated (GHI #696 defect 3). A
+   ruling booked once keeps arriving, so it is never re-filed as an open loop and
+   re-adjudicated. It is deliberately NOT a required section — the
+   `handoff-documents` gate validates the whole post-cutover corpus, and a
+   required section would fail all of it.
 
 8. **Validate** the completed document:
    - Parse frontmatter and validate with `HandoffFrontmatter` model

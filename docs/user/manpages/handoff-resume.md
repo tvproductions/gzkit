@@ -24,6 +24,12 @@ ADR and OBPI references are extracted and displayed but resolve to `unknown`:
 their only repo-local index (`adr-status.md`) is a **Layer-3 derived view**, which
 `docs/governance/state-doctrine.md` forbids reading as truth.
 
+The report also separates **decisions** by who made them and lists rulings carried
+forward as **settled** (GHI #696). An `[operator-ruled]` decision renders under
+`AUTHORITY`; an `[agent-chose]` decision renders as re-arguable; an unmarked one
+renders as `unattributed` and is never promoted or demoted. Settled rulings are
+closed questions that are still relevant — do not re-open them.
+
 A handoff advises; it does not authorize. The reported steps are advised
 actions for the operator to ratify — resuming is not a Gate-5 attestation.
 
@@ -66,12 +72,17 @@ resume — .gzkit/handoffs/20260724T114926Z-ghi-tier-3closed-3deferred.md
 ```
 
 A step whose citation is closed renders with the `VOID` marker and a trailing
-count line:
+count line, and attributed decisions plus carried settled rulings follow:
 
 ```
     1. VOID — Rule on GHI #693 (cli audit presence-vs-truth).
        refs: GHI 693: settled
   1 step(s) cite a SETTLED precondition — re-verify before relaying.
+  decisions (1):
+    agent-chose:
+      - Nothing settled this session.
+  settled — do NOT re-open (1):
+    - Do NOT promote sensitivity into GATE5_INVARIANTS.
 ```
 
 Machine-readable form:

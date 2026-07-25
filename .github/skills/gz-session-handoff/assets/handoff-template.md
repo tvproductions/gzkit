@@ -58,10 +58,18 @@ ignition.
 <!-- List decisions made during this session with their rationale. Include rejected
      alternatives so the resuming agent does not revisit them.
 
+     ATTRIBUTE EVERY ENTRY. Lead with [operator-ruled] or [agent-chose] (GHI #696).
+     Rendering both identically is what made an operator ruling and an agent's own
+     preference equally re-arguable in the next session. An [operator-ruled] entry
+     is promoted into "## Settled Rulings" of the NEXT handoff automatically; an
+     unmarked entry parses as unattributed and does NOT carry forward.
+
      Format:
-     - **Decision:** [what was decided]
+     - [operator-ruled] [what was decided]
        **Rationale:** [why]
-       **Alternatives rejected:** [what else was considered] -->
+       **Alternatives rejected:** [what else was considered]
+     - [agent-chose] [what the agent decided on its own authority]
+       **Rationale:** [why] -->
 
 ## Immediate Next Steps
 
@@ -99,6 +107,17 @@ ignition.
 
      - `path/to/file.py` — description of what it contains
      - `path/to/test_output.txt` — test results from gate validation -->
+
+## Settled Rulings
+
+<!-- Optional and SELF-POPULATING — do NOT hand-fill this (GHI #696 defect 3).
+     `create_handoff` composes it by construction: the predecessor's settled
+     entries plus its [operator-ruled] decisions, de-duplicated. These are closed
+     questions that are still relevant; a resuming agent must NOT re-open them.
+
+     Before this channel existed, a settled-and-relevant ruling had no home —
+     "Decisions Made" is scoped to THIS session and "Pending Work / Open Loops" to
+     UNFINISHED — so it was re-filed as an open loop and read as undecided. -->
 
 ## Environment State
 

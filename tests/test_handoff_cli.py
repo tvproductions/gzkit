@@ -245,6 +245,74 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
         self.assertNotIn("VOID", out)
 
 
+class TestHandoffResumeDecisionRendering(_HandoffCliCase):
+    """An operator ruling must not arrive looking like an agent preference.
+
+    GHI #696 defect 4: `Decisions Made` rendered operator rulings and unilateral
+    agent choices with identical structure and weight, so both reached the next
+    session equally re-arguable. Operator canon is verbatim — "MY WORD IS
+    AUTHORITY IN ALL CASES" — so the rendering IS the contract here.
+    """
+
+    def _resume_output(self, decisions: str, *, slug: str = "d") -> str:
+        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = decisions
+        create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug=slug,
+            sections=sections,
+            base_path=self.base,
+            timestamp="2026-07-14T09:00:00Z",
+        )
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            handoff_resume_cmd(adr="ADR-0.0.65", now="2026-07-14T11:00:00Z", base_path=self.base)
+        return buf.getvalue()
+
+    def test_operator_ruling_renders_as_authority(self) -> None:
+        # output-contract: the AUTHORITY label is what stops a booked ruling from
+        # reading as one more agent preference on resume.
+        out = self._resume_output("- [operator-ruled] Defer #641 to Movement IV.")
+
+        self.assertIn("AUTHORITY", out)
+        self.assertIn("Defer #641 to Movement IV.", out)
+
+    def test_agent_choice_is_not_labelled_authority(self) -> None:
+        # output-contract: agent choices must stay visibly re-arguable.
+        out = self._resume_output("- [agent-chose] Widened the glob.")
+
+        self.assertNotIn("AUTHORITY", out)
+        self.assertIn("agent-chose", out)
+
+    def test_unattributed_decision_renders_as_unattributed(self) -> None:
+        # output-contract: an unmarked decision is neither promoted nor demoted.
+        out = self._resume_output("- Chose to wrap the validator.")
+
+        self.assertIn("unattributed", out)
+        self.assertNotIn("AUTHORITY", out)
+
+    def test_carried_settled_rulings_render_as_do_not_reopen(self) -> None:
+        # output-contract: the settled channel only cures re-adjudication if the
+        # resuming agent can see the ruling is closed.
+        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = "- [operator-ruled] Do NOT promote sensitivity into GATE5."
+        create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug="first",
+            sections=sections,
+            base_path=self.base,
+            timestamp="2026-07-14T09:00:00Z",
+        )
+        out = self._resume_output("- [agent-chose] Nothing settled here.", slug="second")
+
+        self.assertIn("settled — do NOT re-open", out)
+        self.assertIn("Do NOT promote sensitivity into GATE5.", out)
+
+
 class TestHandoffCreate(_HandoffCliCase):
     def _handoff_files(self) -> list[Path]:
         return list((self.base / ".gzkit" / "handoffs").glob("*.md"))

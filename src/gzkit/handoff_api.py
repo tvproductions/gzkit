@@ -27,12 +27,15 @@ from pydantic import BaseModel, ConfigDict, computed_field
 
 from gzkit.handoff_validation import (
     REQUIRED_SECTIONS,
+    SETTLED_SECTION,
     HandoffValidationError,
     parse_frontmatter,
     validate_handoff_document,
 )
 
 __all__ = [
+    "Decision",
+    "DecisionAttribution",
     "HandoffInfo",
     "NextStep",
     "ObservedState",
@@ -45,9 +48,11 @@ __all__ = [
     "create_handoff",
     "list_handoffs",
     "load_handoff_chain",
+    "parse_decisions",
     "resolve_continues_from",
     "resume_handoff",
     "scaffold_handoff",
+    "settled_rulings",
 ]
 
 _MAX_CHAIN_DEPTH = 20
@@ -117,6 +122,39 @@ class NextStep(BaseModel):
         return any(ref.state is ReferenceState.SETTLED for ref in self.references)
 
 
+class DecisionAttribution(StrEnum):
+    """Who made a decision recorded in ``Decisions Made``.
+
+    ``UNATTRIBUTED`` is first-class and never resolved by guess. Operator canon
+    is verbatim — *"MY WORD IS AUTHORITY IN ALL CASES"* — so silently promoting an
+    unmarked decision to an operator ruling would manufacture authority, and
+    silently demoting one would discard it. Both are worse than saying "unmarked".
+    """
+
+    OPERATOR_RULED = "operator-ruled"
+    AGENT_CHOSE = "agent-chose"
+    UNATTRIBUTED = "unattributed"
+
+
+class Decision(BaseModel):
+    """One decision recorded in the handoff, with who made it."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    text: str
+    attribution: DecisionAttribution = DecisionAttribution.UNATTRIBUTED
+
+    @computed_field
+    @property
+    def is_settled(self) -> bool:
+        """True when this decision is an operator ruling, so it carries forward.
+
+        Only an operator ruling is settled. An agent's own choice stays
+        re-arguable by design — the next session may have better information.
+        """
+        return self.attribution is DecisionAttribution.OPERATOR_RULED
+
+
 class ReferenceChecker(Protocol):
     """Port: resolves one cited reference against live state.
 
@@ -178,6 +216,8 @@ class ResumeResult(BaseModel):
     requires_human_verification: bool
     steps: list[NextStep]
     chain: list[str]
+    decisions: list[Decision] = []
+    settled: list[str] = []
 
     @computed_field
     @property
@@ -245,13 +285,17 @@ def _timestamp_sort_key(raw: str) -> datetime:
 def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
     """Render frontmatter + the seven required sections into a Markdown doc.
 
-    Missing sections render as an empty heading. Written with explicit ``\n``
-    newlines so the committed artifact is LF on every platform.
+    Missing sections render as an empty heading. The optional ``Settled Rulings``
+    section is emitted only when it carries entries, so a handoff with no settled
+    ruling gains no hollow heading. Written with explicit ``\n`` newlines so the
+    committed artifact is LF on every platform.
     """
     parts = ["---\n", yaml.safe_dump(frontmatter, sort_keys=False), "---\n\n"]
-    for section in REQUIRED_SECTIONS:
-        parts.append(f"## {section}\n\n")
+    for section in (*REQUIRED_SECTIONS, SETTLED_SECTION):
         content = sections.get(section, "").strip()
+        if section == SETTLED_SECTION and not content:
+            continue
+        parts.append(f"## {section}\n\n")
         if content:
             parts.append(content + "\n\n")
     # Normalize to a single trailing newline so the authored file satisfies the
@@ -299,6 +343,88 @@ def _extract_next_steps(content: str) -> list[str]:
             if text:
                 steps.append(text)
     return steps
+
+
+_ATTRIBUTION_RE = re.compile(r"^\[\s*(operator-ruled|agent-chose)\s*\]\s*", re.IGNORECASE)
+
+
+def _section_body(content: str, heading: str) -> str:
+    """Return the body text of one ``## <heading>`` section, or empty string."""
+    match = re.search(rf"^##\s+{re.escape(heading)}\s*$", content, re.MULTILINE)
+    if match is None:
+        return ""
+    rest = content[match.end() :]
+    nxt = re.search(r"^##\s+", rest, re.MULTILINE)
+    return rest[: nxt.start()] if nxt else rest
+
+
+def _section_items(content: str, heading: str) -> list[str]:
+    """Return the numbered/bulleted items of one section, marker stripped."""
+    items: list[str] = []
+    for line in _section_body(content, heading).splitlines():
+        marked = _ITEM_MARKER_RE.match(line.strip())
+        if marked and marked.group(1).strip():
+            items.append(marked.group(1).strip())
+    return items
+
+
+def parse_decisions(content: str) -> list[Decision]:
+    """Return the ``Decisions Made`` entries with their attribution (GHI #696).
+
+    An entry may lead with ``[operator-ruled]`` or ``[agent-chose]``; the marker
+    is stripped from the recorded text. An unmarked entry is ``UNATTRIBUTED`` —
+    never guessed either way. Matching is case- and spacing-tolerant so the
+    marker is not a spelling trap.
+    """
+    decisions: list[Decision] = []
+    for item in _section_items(content, "Decisions Made"):
+        marker = _ATTRIBUTION_RE.match(item)
+        if marker is None:
+            decisions.append(Decision(text=item))
+            continue
+        decisions.append(
+            Decision(
+                text=item[marker.end() :].strip(),
+                attribution=DecisionAttribution(marker.group(1).lower()),
+            )
+        )
+    return decisions
+
+
+def settled_rulings(content: str) -> list[str]:
+    """Return the ``Settled Rulings`` entries carried by this handoff."""
+    return _section_items(content, SETTLED_SECTION)
+
+
+def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
+    """Compose the successor's Settled Rulings from the newest predecessor.
+
+    Two sources, in order: the predecessor's own carried rulings, then the
+    operator rulings it booked in ``Decisions Made``. That is what makes the
+    channel self-populating — a ruling booked once keeps arriving, so it is never
+    re-filed as an open loop and re-adjudicated (the observed decay of
+    `20260716T204012Z` DECISION 10 across two successor handoffs).
+
+    De-duplicated on entry text with first-seen order preserved, so carrying a
+    ruling down a long chain never multiplies it.
+    """
+    infos = list_handoffs(adr_id=adr_id, base_path=base_path)
+    if not infos:
+        return []
+    try:
+        previous = Path(infos[0].path).read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return []
+    carried = settled_rulings(previous)
+    booked = [decision.text for decision in parse_decisions(previous) if decision.is_settled]
+    seen: set[str] = set()
+    composed: list[str] = []
+    for entry in [*carried, *booked]:
+        if entry in seen:
+            continue
+        seen.add(entry)
+        composed.append(entry)
+    return composed
 
 
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
@@ -438,9 +564,21 @@ def create_handoff(
     reports violations the document is NOT written — a :class:`HandoffValidationError`
     carrying the violation list is raised (fail-closed). A clean document is
     written to ``<base_path>/.gzkit/handoffs/<fs-ts>-<slug>.md`` and its path returned.
+
+    ``Settled Rulings`` is composed by construction from the predecessor unless the
+    author supplies it: the predecessor's carried rulings plus the operator rulings
+    it booked. A ruling booked once therefore keeps arriving without anyone
+    remembering to re-state it (GHI #696 defect 3).
     """
     ts = timestamp or _now_iso()
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
+    if not sections.get(SETTLED_SECTION, "").strip():
+        carried = _carried_settled(adr_id, base_path)
+        if carried:
+            sections = {
+                **sections,
+                SETTLED_SECTION: "\n".join(f"- {entry}" for entry in carried),
+            }
     frontmatter: dict = {
         "mode": mode,
         "adr_id": adr_id,
@@ -636,4 +774,6 @@ def resume_handoff(
         requires_human_verification=requires,
         steps=_build_steps(content, reference_checker),
         chain=chain,
+        decisions=parse_decisions(content),
+        settled=settled_rulings(content),
     )

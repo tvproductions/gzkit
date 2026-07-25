@@ -24,6 +24,7 @@ __all__ = [
     "AbandonSpec",
     "HANDOFF_SCHEMA_VERSION",
     "REQUIRED_SECTIONS",
+    "SETTLED_SECTION",
     "HandoffFrontmatter",
     "HandoffValidationError",
     "InvalidAbandonSpec",
@@ -55,6 +56,15 @@ REQUIRED_SECTIONS = (
     "Verification Checklist",
     "Evidence / Artifacts",
 )
+
+#: Optional section carrying rulings that are SETTLED and still relevant
+#: (GHI #696 defect 3). Deliberately NOT in ``REQUIRED_SECTIONS``: the
+#: ``handoff-documents`` gate validates every post-cutover entry in
+#: ``.gzkit/handoffs/``, so promoting it to required would fail the whole
+#: existing corpus. It is self-populating (``create_handoff`` carries it forward
+#: and promotes operator rulings into it), so it is never a section an author
+#: must remember to fill — which is the failure mode GHI #696 documents.
+SETTLED_SECTION = "Settled Rulings"
 
 # ---------------------------------------------------------------------------
 # Compiled patterns

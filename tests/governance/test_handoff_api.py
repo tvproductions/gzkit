@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.handoff_api import (
+    DecisionAttribution,
     ObservedState,
     ReferenceKind,
     ReferenceState,
@@ -22,13 +23,16 @@ from gzkit.handoff_api import (
     create_handoff,
     list_handoffs,
     load_handoff_chain,
+    parse_decisions,
     resume_handoff,
     scaffold_handoff,
+    settled_rulings,
 )
 from gzkit.handoff_validation import (
     HandoffValidationError,
     find_handoff_for_release,
     parse_frontmatter,
+    validate_handoff_document,
 )
 from gzkit.traceability import covers
 
@@ -553,6 +557,196 @@ class TestResumeVerifiesStepReferences(unittest.TestCase):
         self.assertEqual(list(result.next_steps), list(authored))
         self.assertEqual(result.first_next_step, authored[0])
         self.assertEqual(result.model_dump()["next_steps"], list(authored))
+
+
+class TestDecisionAttribution(unittest.TestCase):
+    """An operator ruling must be distinguishable from an agent's own choice.
+
+    GHI #696 defect 4: in `20260716T204012Z`, DECISION 5 was "(operator ruling):
+    route GHI #690 to a chore" and DECISION 3 was a unilateral agent choice about
+    glob width — same section, same numbering, same apparent authority. Nothing
+    distinguished them, so both arrived at the next session equally re-arguable.
+    Operator canon, verbatim: "MY WORD IS AUTHORITY IN ALL CASES."
+
+    ``UNATTRIBUTED`` is first-class: an unmarked decision is never silently
+    promoted to an operator ruling, and never silently demoted to an agent choice.
+    """
+
+    def _decisions(self, body: str) -> list:
+        content = (
+            "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+            f"## Decisions Made\n\n{body}\n\n## Immediate Next Steps\n\n1. Continue.\n"
+        )
+        return parse_decisions(content)
+
+    def test_operator_ruled_and_agent_chose_are_separated(self) -> None:
+        decisions = self._decisions(
+            "- [operator-ruled] Route GHI #690 to a chore.\n"
+            "- [agent-chose] Widened the glob to cover nested rule dirs."
+        )
+
+        self.assertEqual(
+            [(d.attribution, d.text) for d in decisions],
+            [
+                (DecisionAttribution.OPERATOR_RULED, "Route GHI #690 to a chore."),
+                (
+                    DecisionAttribution.AGENT_CHOSE,
+                    "Widened the glob to cover nested rule dirs.",
+                ),
+            ],
+        )
+
+    def test_unmarked_decision_is_unattributed_not_guessed(self) -> None:
+        decisions = self._decisions("- Chose to wrap the validator rather than reimplement it.")
+
+        self.assertEqual(len(decisions), 1)
+        self.assertEqual(decisions[0].attribution, DecisionAttribution.UNATTRIBUTED)
+        self.assertEqual(
+            decisions[0].text,
+            "Chose to wrap the validator rather than reimplement it.",
+            "the marker is stripped from the text; absent marker leaves text intact",
+        )
+
+    def test_attribution_marker_is_case_and_spacing_tolerant(self) -> None:
+        decisions = self._decisions("- [Operator-Ruled]  Do NOT promote sensitivity into GATE5.")
+
+        self.assertEqual(decisions[0].attribution, DecisionAttribution.OPERATOR_RULED)
+        self.assertEqual(decisions[0].text, "Do NOT promote sensitivity into GATE5.")
+
+    def test_resume_surfaces_the_attributed_decisions(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            (handoff_dir / "h.md").write_text(
+                "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+                "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+                "## Decisions Made\n\n- [operator-ruled] Defer #641 to Movement IV.\n\n"
+                "## Immediate Next Steps\n\n1. Continue.\n",
+                encoding="utf-8",
+                newline="\n",
+            )
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(len(result.decisions), 1)
+            self.assertEqual(result.decisions[0].attribution, DecisionAttribution.OPERATOR_RULED)
+
+
+class TestSettledRulingsCarryForward(unittest.TestCase):
+    """A settled ruling has a home, and reaches the next session without authoring.
+
+    GHI #696 defect 3: `Decisions Made` is scoped to THIS session and
+    `Pending Work / Open Loops` to UNFINISHED, so a ruling that is settled AND
+    still relevant had no channel — it was re-filed as an open loop and read as
+    undecided. `20260716T204012Z` DECISION 10 settled "do NOT promote
+    `sensitivity` into `GATE5_INVARIANTS`" with full rationale; it reappeared in
+    the next two handoffs inside the open-loop channel.
+
+    The section is OPTIONAL and self-populating. Making it required would break
+    every post-cutover handoff the `handoff-documents` gate validates, and making
+    it hand-filled would add a section an author must remember — the failure mode
+    this GHI documents, not its cure.
+    """
+
+    _SECTIONS = dict(_SEVEN_SECTIONS)
+
+    def _create(self, base: Path, slug: str, decisions: str, *, hour: int = 10) -> Path:
+        """Author one handoff. ``hour`` is explicit so chain order is deterministic.
+
+        ``create_handoff`` stamps second-resolution timestamps, so three handoffs
+        authored inside one second tie and "newest predecessor" becomes arbitrary.
+        Real handoffs are minutes apart; the fixture must not depend on that.
+        """
+        sections = dict(self._SECTIONS)
+        sections["Decisions Made"] = decisions
+        return create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="test-agent",
+            slug=slug,
+            sections=sections,
+            base_path=base,
+            timestamp=f"2026-07-18T{hour:02d}:00:00Z",
+        )
+
+    def test_operator_ruling_is_promoted_into_the_successor_settled_section(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(
+                base,
+                "first",
+                "- [operator-ruled] Do NOT promote sensitivity into GATE5_INVARIANTS.",
+                hour=10,
+            )
+
+            second = self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertIn(
+                "Do NOT promote sensitivity into GATE5_INVARIANTS.",
+                " ".join(settled),
+                "a booked operator ruling reaches the next session as SETTLED, not as an open loop",
+            )
+
+    def test_agent_choice_is_not_promoted(self) -> None:
+        """Only operator rulings are settled — an agent's own choice stays re-arguable."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [agent-chose] Widened the glob.", hour=10)
+
+            second = self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
+
+            self.assertEqual(settled_rulings(second.read_text(encoding="utf-8")), [])
+
+    def test_settled_rulings_accumulate_down_the_chain(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
+            self._create(base, "second", "- [operator-ruled] Ruling two holds.", hour=11)
+
+            third = self._create(base, "third", "- [agent-chose] Nothing settled here.", hour=12)
+
+            settled = " ".join(settled_rulings(third.read_text(encoding="utf-8")))
+            self.assertIn("Ruling one holds.", settled)
+            self.assertIn("Ruling two holds.", settled)
+
+    def test_settled_entries_are_not_duplicated_on_re_carry(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            third = self._create(base, "third", "- [agent-chose] Still nothing new.", hour=12)
+
+            settled = settled_rulings(third.read_text(encoding="utf-8"))
+            self.assertEqual(
+                len([entry for entry in settled if "Ruling one holds." in entry]),
+                1,
+                "carrying a ruling forward twice must not duplicate it",
+            )
+
+    def test_settled_section_is_not_required_for_validation(self) -> None:
+        """The corpus predates this section; a handoff without it must stay valid."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            path = self._create(base, "only", "- [agent-chose] No rulings this session.", hour=10)
+
+            self.assertEqual(
+                validate_handoff_document(path.read_text(encoding="utf-8"), base_path=base),
+                [],
+            )
+
+    def test_resume_surfaces_carried_settled_rulings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertIn("Ruling one holds.", " ".join(result.settled))
 
 
 class TestChainLinkIsCorrectByConstruction(unittest.TestCase):

@@ -43,7 +43,7 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 | `--adr ADR` | Parent ADR id, `ADR-X.Y.Z`. Omit for work with no parent ADR — a design session, triage pass, or GHI burndown (GHI #709). When supplied it must match the format. |
 | `--slug SLUG` | Filename slug for the handoff (required). |
 | `--agent AGENT` | Authoring agent identity (required). |
-| `--decisions TEXT` | `Decisions Made` section body (required). |
+| `--decisions TEXT` | `Decisions Made` section body (required). Lead each entry with `[operator-ruled]` or `[agent-chose]` — see § Decision attribution. |
 | `--summary TEXT` | `Current State Summary` section body. |
 | `--context TEXT` | `Important Context` section body. |
 | `--next-steps TEXT` | `Immediate Next Steps` section body. |
@@ -59,6 +59,41 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 Only `--decisions` is argparse-required; the other six section flags are enforced
 by the validation gate, so their absence is a refusal with every empty section
 named at once rather than one error at a time.
+
+---
+
+## Decision attribution and settled rulings (GHI #696)
+
+Lead each `--decisions` entry with `[operator-ruled]` or `[agent-chose]`. Matching
+is case- and spacing-tolerant. An unmarked entry parses as **unattributed**: it is
+never promoted to a ruling nor demoted to a preference, and it does **not** carry
+forward — so an unmarked operator ruling is a ruling the next session will
+re-argue.
+
+The attribution drives a self-populating channel. `create_handoff` composes the
+optional `## Settled Rulings` section by construction from the newest predecessor:
+its carried entries plus its `[operator-ruled]` decisions, de-duplicated. **Do not
+hand-fill it**, and do not pass a flag for it — there isn't one. A ruling booked
+once keeps arriving, so it is never re-filed as an open loop and re-adjudicated.
+
+```bash
+uv run gz handoff create --adr ADR-0.0.65 --slug tier-close --agent g0 \
+  --decisions "- [operator-ruled] Defer #641 to Movement IV.
+- [agent-chose] Reused the lane-aware helper rather than masking in context." \
+  ...
+```
+
+The successor handoff then carries, without anyone authoring it:
+
+```markdown
+## Settled Rulings
+
+- Defer #641 to Movement IV.
+```
+
+`Settled Rulings` is deliberately **not** a required section: the
+`handoff-documents` gate validates every post-cutover entry in `.gzkit/handoffs/`,
+so making it required would fail the entire existing corpus.
 
 ---
 

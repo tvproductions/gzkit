@@ -22,6 +22,7 @@ from pathlib import Path
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.handoff_api import (
+    DecisionAttribution,
     HandoffInfo,
     NextStep,
     ReferenceChecker,
@@ -158,19 +159,62 @@ def _render_resume(result: ResumeResult) -> None:
     console.print(f"resume — {result.path}")
     console.print(f"  staleness: {result.staleness.value}")
     console.print(f"  requires human verification: {result.requires_human_verification}")
+    # No early return on an empty step list: decisions and settled rulings are
+    # independent channels, and skipping them because no step parsed is how a
+    # carried operator ruling would go unseen (GHI #696 defects 3 and 4).
     if not result.steps:
         console.print("  next steps: (none extracted)")
+    else:
+        console.print(f"  next steps ({len(result.steps)}):")
+        for index, step in enumerate(result.steps, start=1):
+            marker = "VOID — " if step.is_void else ""
+            console.print(f"    {index}. {marker}{step.text}")
+            _render_step_references(step)
+        void_count = sum(1 for step in result.steps if step.is_void)
+        if void_count:
+            console.print(
+                f"  {void_count} step(s) cite a SETTLED precondition — re-verify before relaying."
+            )
+    _render_decisions(result)
+    _render_settled(result)
+
+
+def _render_decisions(result: ResumeResult) -> None:
+    """Render decisions grouped by who made them (GHI #696 defect 4).
+
+    Operator rulings print first and are labelled AUTHORITY: canon is verbatim —
+    "MY WORD IS AUTHORITY IN ALL CASES" — so a ruling must not arrive looking like
+    an agent's own preference, which is how both became equally re-arguable.
+    Unattributed entries are shown as such rather than sorted into either bucket.
+    """
+    if not result.decisions:
         return
-    console.print(f"  next steps ({len(result.steps)}):")
-    for index, step in enumerate(result.steps, start=1):
-        marker = "VOID — " if step.is_void else ""
-        console.print(f"    {index}. {marker}{step.text}")
-        _render_step_references(step)
-    void_count = sum(1 for step in result.steps if step.is_void)
-    if void_count:
-        console.print(
-            f"  {void_count} step(s) cite a SETTLED precondition — re-verify before relaying."
-        )
+    console.print(f"  decisions ({len(result.decisions)}):")
+    labels = {
+        DecisionAttribution.OPERATOR_RULED: "AUTHORITY (operator-ruled)",
+        DecisionAttribution.AGENT_CHOSE: "agent-chose",
+        DecisionAttribution.UNATTRIBUTED: "unattributed",
+    }
+    for attribution in (
+        DecisionAttribution.OPERATOR_RULED,
+        DecisionAttribution.AGENT_CHOSE,
+        DecisionAttribution.UNATTRIBUTED,
+    ):
+        matching = [d for d in result.decisions if d.attribution is attribution]
+        if not matching:
+            continue
+        console.print(f"    {labels[attribution]}:")
+        for decision in matching:
+            console.print(f"      - {decision.text}")
+
+
+def _render_settled(result: ResumeResult) -> None:
+    """Render rulings carried forward as settled (GHI #696 defect 3)."""
+    if not result.settled:
+        return
+    console.print(f"  settled — do NOT re-open ({len(result.settled)}):")
+    for entry in result.settled:
+        console.print(f"    - {entry}")
 
 
 def handoff_resume_cmd(
