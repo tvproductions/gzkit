@@ -6,7 +6,7 @@ repos:
     hooks:
       - id: ruff-check
         name: ruff check (lint)
-        entry: uvx ruff check --fix
+        entry: uv run ruff check --fix
         language: system
         pass_filenames: true
         types: [python]
@@ -14,7 +14,7 @@ repos:
 
       - id: ruff-format
         name: ruff format
-        entry: uvx ruff format
+        entry: uv run ruff format
         language: system
         pass_filenames: true
         types: [python]
@@ -22,7 +22,7 @@ repos:
 
       - id: ty-check
         name: ty (static type check)
-        entry: uvx ty check src/
+        entry: uv run ty check src/
         language: system
         pass_filenames: false
         types: [python]
@@ -37,7 +37,7 @@ repos:
 
       - id: xenon-complexity
         name: xenon (enforce C/C/C complexity ceiling)
-        entry: uvx xenon --max-absolute C --max-modules C --max-average C src/
+        entry: uv run xenon --max-absolute C --max-modules C --max-average C src/
         language: system
         pass_filenames: false
         types: [python]
@@ -45,7 +45,7 @@ repos:
 
       - id: interrogate
         name: interrogate (docstring coverage)
-        entry: uvx interrogate -v -f 50 src/
+        entry: uv run interrogate -v -f 50 src/
         language: system
         pass_filenames: false
         types: [python]
