@@ -24,28 +24,41 @@ _DELIVERY_RECOVERY = (
 )
 
 
+def configured_hooks_path(project_root: Path) -> Path | None:
+    """Return the worktree's ``core.hooksPath`` override, or None when unset.
+
+    Public because two surfaces must agree on the answer: this module's delivery
+    arm (which reads hooks from wherever git actually reads them) and
+    ``gz init``'s activation step (which must not spend a subprocess on a
+    ``pre-commit install`` that git's own refusal will reject). A second parser
+    would be a place for the two to drift.
+    """
+    config_path = project_root / ".git" / "config"
+    if not config_path.is_file():
+        return None
+    try:
+        lines = config_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError:
+        return None
+    for raw in lines:
+        key, sep, value = raw.partition("=")
+        if sep and key.strip().lower() == "hookspath":
+            candidate = Path(value.strip())
+            return candidate if candidate.is_absolute() else project_root / candidate
+    return None
+
+
 def _effective_hooks_dir(project_root: Path) -> Path | None:
     """Resolve the directory git actually reads hooks from, or None outside a worktree.
 
-    Honors ``core.hooksPath`` from the worktree's own ``.git/config`` rather than
-    assuming ``.git/hooks``: a redirect is one of the ways the gate goes
-    undelivered, so assuming the default location would blind the check to the
-    exact failure it exists to catch.
+    Honors ``core.hooksPath`` rather than assuming ``.git/hooks``: a redirect is
+    one of the ways the gate goes undelivered, so assuming the default location
+    would blind the check to the exact failure it exists to catch.
     """
     git_dir = project_root / ".git"
     if not git_dir.is_dir():
         return None
-    config_path = git_dir / "config"
-    if config_path.is_file():
-        try:
-            for raw in config_path.read_text(encoding="utf-8", errors="replace").splitlines():
-                key, sep, value = raw.partition("=")
-                if sep and key.strip().lower() == "hookspath":
-                    candidate = Path(value.strip())
-                    return candidate if candidate.is_absolute() else project_root / candidate
-        except OSError:
-            return git_dir / "hooks"
-    return git_dir / "hooks"
+    return configured_hooks_path(project_root) or git_dir / "hooks"
 
 
 def _delivery_errors(project_root: Path) -> list[ValidationError]:

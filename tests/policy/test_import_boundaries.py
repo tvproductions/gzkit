@@ -50,6 +50,14 @@ COMMAND_ENV_EXCEPTIONS: dict[str, frozenset[str]] = {
     # invocation contract; routing it through core/ports would be a
     # premature abstraction over a stable shell convention.
     "edit.py": frozenset({"EDITOR", "VISUAL"}),
+    # validate_cmd.py reads CI to decide whether the session-green gate's
+    # delivery arm binds: a developer worktree must have the pre-push hook
+    # installed, a fresh CI checkout legitimately has none (CI *is* the gate
+    # there and does not push). Like SKIP above, this is a policy-enforcement
+    # read of the execution context, not a configuration lookup — there is no
+    # value for core to supply, only a fact about where the process is running
+    # (GHI #715).
+    "validate_cmd.py": frozenset({"CI"}),
 }
 
 

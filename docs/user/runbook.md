@@ -405,15 +405,25 @@ uv sync
 uv run gz agent sync control-surfaces   # Rebuild Tier B mirrors
 uv run gz lint                           # Verify tooling works
 uv run gz test                           # Verify tests pass
-uvx pre-commit install --hook-type pre-push   # Install the pre-push gz check gate (ADR-0.0.68)
+uvx pre-commit install --hook-type pre-commit --hook-type pre-push  # Install the gate (ADR-0.0.68)
+uv run gz validate --session-green-gate  # Verify it is DELIVERED, not just declared
 ```
+
+`gz init` runs the install step for you; the explicit command above is for a
+clone, which already carries `.pre-commit-config.yaml` and does not re-run init.
 
 > **If `pre-commit install` reports "Cowardly refusing to install hooks with
 > `core.hooksPath` set":** your git config points `core.hooksPath` at a managed
 > directory. Run `git config --unset-all core.hooksPath` first, then re-run the
-> install. (When `core.hooksPath` already resolves to the default `.git/hooks`
-> and a pre-commit-managed `pre-push` hook is present there, the gate is already
-> live and the refusal is benign.)
+> install.
+>
+> **Do not read the refusal as benign.** That is how this repo ran six weeks of
+> commits and pushes with zero enforcement (GHI #598 → #715): `core.hooksPath`
+> was set to git's own default, so it was invisible, every install refused, and
+> `.git/hooks/` held nothing but stock samples while every green surface agreed
+> the gate was declared. `uv run gz validate --session-green-gate` is the
+> arbiter — it reads the hooks directory git actually uses and fails closed when
+> the hook is absent.
 
 ---
 

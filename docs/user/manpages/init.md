@@ -35,6 +35,17 @@ gz init [OPTIONS]
 6. Sets up agent hooks (Claude, Copilot)
 7. Creates `design/` directories for governance artifacts
 8. Scans for existing PRDs/ADRs and offers to register them
+9. Writes `.pre-commit-config.yaml` declaring the pre-push `gz check` gate
+   (ADR-0.0.68), preserving any config already present
+10. Runs `pre-commit install` so that gate is actually delivered into
+    `.git/hooks/`, not merely declared
+
+Steps 9 and 10 are separate on purpose. A declared-but-uninstalled gate
+enforces nothing while every surface reports green, so `gz check` verifies the
+hook is on disk rather than trusting the declaration (GHI #715). When
+installation cannot complete — `pre-commit` unavailable, or `core.hooksPath`
+set, which makes `pre-commit install` refuse — `gz init` reports the reason and
+continues; the `gz check` gate is the fail-closed half.
 
 ---
 

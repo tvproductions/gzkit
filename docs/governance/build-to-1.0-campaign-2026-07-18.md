@@ -128,7 +128,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] `ADR-0.0.37` → `Validated` via `/gz-adr-audit`. Attribution drift found by independent review and remediated pre-receipt. `b40a8026` · receipt `arb-step-unittest-753d3dda` · detail in § Amendments 2026-07-18 (later session).
 - [ ] Re-home the registry→AGENTS.md composition engine as a **feature** ADR. **DONE as authoring: the successor is `ADR-0.35.0-canon-entry-corpus-landing` (authored 2026-07-21, `Draft`, 9 OBPIs, 0/9 landed) — this item is started-not-done, and the tracker is the ADR, not a GHI.** GHI #623 closed 2026-07-19 and **GHI #654 closed 2026-07-22 `superseded` into `ADR-0.35.0`**, whose § Intent names it: *"Discharges GHI #654 (orchestration gap) and GHI #635 (duplicate invariant entries) -- the same wound."* Do not reopen #623 **or #654** to find this scope; read the ADR. Its OBPI-05 carries the corpus→candidate generator and OBPI-07 the `gz content land` orchestrator. GHI #654's capture-silence gap was direct-fixed ahead of the chain (`48a5f799`, `dcf29b95`) because it was a live footgun; see the pre-landed note in `OBPI-0.35.0-08`. The absorption direction `ADR-0.0.37` § Terminal Disposition recorded (*"tracked at GHI #623 (absorbing GHI #654)"*) is backwards relative to what survived: #623 was an audit finding and its findings are discharged, while #654 states the same unbuilt capability as operator pain with a reproduction — *"there is no generator that renders the corpus delta into a candidate."* Closed after a full re-verification: claims (3)/(4) had been fixed by later work and never credited back, corrective scope (A) had landed as `--rendition-floor-coherence`, the discarded registry parameters were removed (`4f9c7d2b`), and a standing witness-resolution gate was added (`e409bb08`). **Residual scope, unbuilt and feature-shaped:** the attributable corpus→candidate generator and the `rendition ⊆ corpus` lineage gate — today `compose()` *validates* an agent-supplied candidate rather than *materializing* one from the corpus, so prose absent from canon can still pass. The registry spine is NOT the successor: `ADR-0.0.37` § Terminal Disposition permanently withdrew OBPI-02/03 as *"obsoleted by the 2026-06-03 corpus Re-Alignment."* The successor is corpus-shaped.
 - [ ] **Disposition `foundation-adr-registers-invariant`** *(one-line operator canon call, fenced not blocking)*. It declares structural witness `gz validate --foundation-registers-invariant`, which has never existed; the claim is also unenforceable as written — `constitutional_invariant.json` carries no field naming which ADR registered an entry, and the ratio is 4 invariants to 74 foundation ADRs. It was NOT retired: `REQ-0.0.37-01-03` (attested, OBPI-0.0.37-01) asserts three seed invariants, so deleting the entry would falsify attested canon. Fenced shrink-only by `tests/governance/test_invariant_witness.py`; `--invariant-witness` stays out of `gz check` until this is ruled, since holding a gate green over a known-red tree is the staging-flag anti-pattern.
-- [ ] `ADR-0.34.0-foundation-sunset` capstone — 5 authored OBPIs, currently `Draft` **1/5** (OBPI-01 `attested_completed` 2026-07-19: grandfather manifest + closed-kind assertion): demote the ~23 unstarted foundations to pool · ~~populate the grandfather manifest~~ · backfill `foundation_grandfathered` · `gz ontology resense` · wire the permanent `--taxonomy` gate into `gz check`.
+- [ ] `ADR-0.34.0-foundation-sunset` capstone — 5 authored OBPIs, currently `Draft` **2/5** (OBPI-01 `attested_completed` 2026-07-19: grandfather manifest + closed-kind assertion; OBPI-02 `attested_completed`: authoring-time kind rejection at all three CLI doors, foundation closed to new authoring while all 74 grandfathered ADRs keep validating): demote the ~23 unstarted foundations to pool · ~~populate the grandfather manifest~~ · backfill `foundation_grandfathered` · `gz ontology resense` · wire the permanent `--taxonomy` gate into `gz check`.
 
 **Movement B — Put the membrane on the real doors** *(new feature ADR extending `ADR-0.33.0`; heavy)*
 
@@ -266,6 +266,24 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-07-25 — Movement A count correction: ADR-0.34.0 is 2/5, not 1/5 (operator-ratified)
+
+Operator ruling, verbatim: *"#715 + campaign line 131"*.
+
+The Movement A capstone line recorded `ADR-0.34.0` at **1/5**. Layer-2 carries a
+second attested completion — `OBPI-0.34.0-02-authoring-time-kind-rejection`,
+`attested_completed` with full receipt evidence — so the true count was **2/5**.
+Verified against the governed read, not the frontmatter:
+`uv run gz adr status ADR-0.34.0` renders `OBPI 2/5` with OBPI-01 and OBPI-02
+both `attested_completed`.
+
+This is a **derived-count correction, not a scope change.** No checklist item
+moved, none was added or struck. It is recorded here because the session-boot
+orientation banner quotes that line verbatim, so the stale count was
+re-injected into the top of every session — and it had been carried unedited
+across six handoffs, because campaign amendments are operator-ratified and no
+session had held the ruling to make it.
 
 ### 2026-07-18 — Disposition change: TSP routing, not a rush to 1.0 (operator-ratified)
 

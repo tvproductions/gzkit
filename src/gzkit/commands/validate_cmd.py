@@ -1,6 +1,7 @@
 """Validate command implementation."""
 
 import json
+import os
 import re
 from collections.abc import Callable
 from functools import partial
@@ -60,6 +61,23 @@ class _ScopeEntry(NamedTuple):
     tier: str  # "default" (no-flag `gz check`) | "explicit" (flag-gated)
     in_other_scopes: bool  # counts toward validate()'s _other_scopes_active predicate
     run: Callable[[Path, str | None], list[ValidationError]]
+
+
+def _delivery_arm_enabled() -> bool:
+    """Return True when the session-green gate's delivery arm should bind here.
+
+    The arm asserts the declared pre-push hook is installed on disk. That is the
+    right bar for a developer worktree and the wrong one for CI: a fresh CI
+    checkout legitimately has no hooks — CI *is* the gate there, and it does not
+    push — so binding it unconditionally would fail every CI run.
+
+    ``CI`` is the discriminator every major runner sets (GitHub Actions, GitLab,
+    CircleCI, Travis, Buildkite), which makes it the smallest surface that
+    separates the two cases without asking adopters to configure anything. The
+    read lives here, at the CLI adapter boundary, so the audit itself stays a
+    parameterized pure function (GHI #715).
+    """
+    return not os.environ.get("CI")
 
 
 def _ta() -> ModuleType:
@@ -320,7 +338,10 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     ),
     _ScopeEntry("red_parity", "explicit", True, lambda r, _f: _ta().audit_red_parity(r)),
     _ScopeEntry(
-        "session_green_gate", "explicit", False, lambda r, _f: _ta().audit_session_green_gate(r)
+        "session_green_gate",
+        "explicit",
+        False,
+        lambda r, _f: _ta().audit_session_green_gate(r, check_delivery=_delivery_arm_enabled()),
     ),
     _ScopeEntry(
         "orientation_freshness",

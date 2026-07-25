@@ -21,6 +21,7 @@ from gzkit.commands.common import (
     get_project_root,
 )
 from gzkit.config import GzkitConfig, PathConfig
+from gzkit.governance.trust_audits.session_green_gate import configured_hooks_path
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
 from gzkit.ledger import (
@@ -386,6 +387,137 @@ Thumbs.db
 """
 
 
+_PRE_COMMIT_CONFIG_CONTENT = """\
+# Session-green gate (ADR-0.0.68). The pre-push hook below is the covenant's
+# between-sessions enforcement point: it runs the full `gz check` sweep before
+# any push leaves the worktree.
+#
+# Declaring it is not delivering it. `gz init` also runs `pre-commit install`;
+# `gz check` verifies the hook is on disk. Add your own pre-commit-stage hooks
+# (lint, format, typecheck) beneath this one as the project grows.
+default_stages: [pre-commit]
+
+repos:
+  - repo: local
+    hooks:
+      - id: gz-check-pre-push
+        name: gz check (pre-push gate)
+        entry: uv run gz check
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+"""
+
+_HOOK_TYPES = ("pre-commit", "pre-push")
+
+# Ordered by how the project is most likely to reach a pre-commit: the project
+# venv first, then an ephemeral uvx download. pre-commit is deliberately NOT a
+# gzkit dependency (STDLIB-FIRST: adding a runtime dep needs foundation
+# attestation), so activation is best-effort here — `gz check`'s delivery arm is
+# the fail-closed half that makes a silent miss impossible.
+_INSTALLERS = (
+    ("uv", "run", "pre-commit"),
+    ("uvx", "pre-commit"),
+    ("pre-commit",),
+)
+
+
+def _scaffold_pre_commit_config(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Write ``.pre-commit-config.yaml`` declaring the pre-push gate if absent.
+
+    Idempotent and non-destructive: an existing config is operator canon and is
+    never rewritten. Without this, `gz init` left adopters with no config at all
+    while `gz check` fail-closed on its absence — telling them to hand-author a
+    hook and citing a gzkit-internal OBPI id that means nothing in their repo
+    (GHI #715).
+
+    Returns a human-readable status string, or None if skipped.
+    """
+    config = project_root / ".pre-commit-config.yaml"
+    if config.exists():
+        return None
+    if dry_run:
+        return "Would create .pre-commit-config.yaml (pre-push gz check gate)"
+    config.write_text(_PRE_COMMIT_CONFIG_CONTENT, encoding="utf-8")
+    return "Created .pre-commit-config.yaml (pre-push gz check gate)"
+
+
+def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Install the declared hooks into the worktree so the gate actually fires.
+
+    A declared-but-uninstalled gate enforces nothing while every surface reports
+    green — the condition that ran unenforced in the gzkit repo for six weeks
+    (GHI #715). Failure here is reported, never raised: `gz init` must still
+    complete on a machine without pre-commit, and `gz check`'s delivery arm is
+    what fails closed.
+
+    Returns a human-readable status string, or None if skipped.
+    """
+    if not (project_root / ".git").is_dir():
+        return None
+    if not (project_root / ".pre-commit-config.yaml").is_file():
+        return None
+    if dry_run:
+        return "Would run pre-commit install (pre-commit + pre-push hooks)"
+
+    redirect = configured_hooks_path(project_root)
+    if redirect is not None:
+        # pre-commit exits non-zero with "Cowardly refusing to install hooks with
+        # `core.hooksPath` set" — spending the subprocess to be told so adds
+        # nothing. Unsetting an operator's git config is not init's call.
+        return (
+            f"Pre-push gate NOT installed: core.hooksPath is set ({redirect.as_posix()}), "
+            "and pre-commit refuses to install hooks while it is. Commits and pushes "
+            "will run unenforced until this is resolved. Recovery: "
+            "`git config --local --unset-all core.hooksPath` then "
+            "`uv run pre-commit install --hook-type pre-commit --hook-type pre-push`."
+        )
+
+    hook_args = [arg for hook_type in _HOOK_TYPES for arg in ("--hook-type", hook_type)]
+    for installer in _INSTALLERS:
+        try:
+            result = subprocess.run(
+                [*installer, "install", *hook_args],
+                cwd=project_root,
+                capture_output=True,
+                text=True,
+                errors="replace",
+                encoding="utf-8",
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if result.returncode == 0:
+            return "Installed pre-commit + pre-push hooks (session-green gate active)"
+    return (
+        "Pre-push gate NOT installed: could not run `pre-commit install`. Commits and "
+        "pushes will run unenforced until this is resolved. Recovery: install pre-commit "
+        "(`uv tool install pre-commit`), then "
+        "`uv run pre-commit install --hook-type pre-commit --hook-type pre-push`."
+    )
+
+
+def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -> list[str]:
+    """Declare the pre-push gate, then deliver it; return each step's status line.
+
+    Two steps, not one: declaring a gate and installing it fail independently,
+    and the pairing is the whole point of GHI #715.
+    """
+    return [
+        status
+        for status in (
+            _scaffold_pre_commit_config(project_root, dry_run=dry_run),
+            _install_pre_commit_hooks(project_root, dry_run=dry_run),
+        )
+        if status
+    ]
+
+
+def _setup_session_green_gate(project_root: Path, *, dry_run: bool = False) -> None:
+    """Run the session-green-gate setup and print each step's status."""
+    for status in _session_green_gate_statuses(project_root, dry_run=dry_run):
+        console.print(f"  {status}")
+
+
 def _scaffold_audit_thresholds(project_root: Path) -> None:
     """Write ``data/audit_thresholds.json`` with the canonical defaults.
 
@@ -626,6 +758,10 @@ def _repair_missing_artifacts(
     if gi_status:
         repaired.append(gi_status)
 
+    # Repair the session-green gate — declaration then delivery. Projects
+    # initialized before GHI #715 carry neither; repair is how they get both.
+    repaired.extend(_session_green_gate_statuses(project_root, dry_run=dry_run))
+
     # Repair skills — scaffold any core skills added in newer gzkit versions
     new_skills = scaffold_core_skills(project_root, config, skip_existing=not dry_run)
     if dry_run:
@@ -807,6 +943,7 @@ def init(
                 console.print(f"  {item}")
             console.print("  Would run uv sync")
         console.print("  Would create .gitignore")
+        _setup_session_green_gate(project_root, dry_run=True)
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would scaffold canonical chores into .gzkit/chores/")
@@ -861,6 +998,10 @@ def init(
     gi_status = _scaffold_gitignore(project_root)
     if gi_status:
         console.print(f"  {gi_status}")
+
+    # Session-green gate: declare it, then deliver it. `gz check` verifies the
+    # delivery, so a failure to install here surfaces rather than going silent.
+    _setup_session_green_gate(project_root)
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

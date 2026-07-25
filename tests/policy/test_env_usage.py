@@ -24,6 +24,7 @@ ENV_VAR_ALLOWLIST: frozenset[str] = frozenset(
         "FORCE_COLOR",
         "TERM",
         "SKIP",  # CI/hook bypass detection (git_sync, cli/main)
+        "CI",  # Session-green-gate delivery-arm carve-out (validate_cmd, GHI #715)
         "CLAUDE_CODE",  # Agent identity resolution (obpi lock)
         "CLAUDECODE",  # Agent identity resolution variant (lock_manager, GHI #484)
         "CLAUDE_SESSION_ID",  # Agent session identification (hooks, obpi lock)
