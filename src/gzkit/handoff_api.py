@@ -405,6 +405,49 @@ def settled_rulings(content: str) -> list[str]:
     return _section_items(content, SETTLED_SECTION)
 
 
+# Quote glyphs an author may pick between without changing what a ruling says.
+# Straight and curly, single and double, all fold to one sentinel for comparison.
+_QUOTE_GLYPHS = str.maketrans(dict.fromkeys("'‘’“”", '"'))
+
+
+def _ruling_key(entry: str) -> str:
+    """Return the comparison key for a settled ruling.
+
+    Two entries are the SAME ruling when they differ only in characters that
+    carry no meaning: which quote glyph the author reached for, and how the text
+    happened to wrap. Observed on `20260725T085656Z`, where the #580 reframe
+    ruling landed twice, byte-identical but for ``'...'`` versus ``"..."`` around
+    the operator's verbatim words — its predecessor had hand-written the same
+    ruling into both ``Decisions Made`` and ``Settled Rulings``.
+
+    Normalization stays deliberately narrow because the two failure directions
+    are not symmetric. A duplicate is visible and harmless; collapsing two
+    genuinely distinct rulings DROPS a booked operator ruling silently, which is
+    precisely the decay this channel exists to stop. So this folds quoting,
+    whitespace, and case — and nothing that could distinguish one ruling from
+    another.
+    """
+    return " ".join(entry.translate(_QUOTE_GLYPHS).casefold().split())
+
+
+def _dedup_rulings(entries: list[str]) -> list[str]:
+    """De-duplicate settled rulings on :func:`_ruling_key`, first-seen text kept.
+
+    Shared by both composition steps on purpose: a ruling normalized on one path
+    and compared exactly on the other would still multiply down the chain, which
+    is the defect wearing a different hat.
+    """
+    seen: set[str] = set()
+    composed: list[str] = []
+    for entry in entries:
+        key = _ruling_key(entry)
+        if key in seen:
+            continue
+        seen.add(key)
+        composed.append(entry)
+    return composed
+
+
 def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
     """Compose the successor's Settled Rulings from its predecessor.
 
@@ -414,8 +457,9 @@ def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
     re-filed as an open loop and re-adjudicated (the observed decay of
     `20260716T204012Z` DECISION 10 across two successor handoffs).
 
-    De-duplicated on entry text with first-seen order preserved, so carrying a
-    ruling down a long chain never multiplies it.
+    De-duplicated on :func:`_ruling_key` with first-seen order preserved, so
+    carrying a ruling down a long chain never multiplies it — including when the
+    two sources quote the operator with different glyphs.
 
     ``predecessor`` is the ALREADY-RESOLVED link the caller writes into
     ``continues_from``, so the chain link and the carried rulings cannot disagree
@@ -440,14 +484,7 @@ def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
         return []
     carried = settled_rulings(previous)
     booked = [decision.text for decision in parse_decisions(previous) if decision.is_settled]
-    seen: set[str] = set()
-    composed: list[str] = []
-    for entry in [*carried, *booked]:
-        if entry in seen:
-            continue
-        seen.add(entry)
-        composed.append(entry)
-    return composed
+    return _dedup_rulings([*carried, *booked])
 
 
 def _compose_settled(authored: str, predecessor: str | None, base_path: Path) -> list[str]:
@@ -461,17 +498,11 @@ def _compose_settled(authored: str, predecessor: str | None, base_path: Path) ->
     stop.
 
     Carried entries come first (oldest-booked-first reads as a history), then
-    newly seated ones, de-duplicated on text so re-seating an already-carried
+    newly seated ones, de-duplicated on :func:`_ruling_key` so re-seating an
+    already-carried
     ruling is a no-op rather than a double entry.
     """
-    seen: set[str] = set()
-    composed: list[str] = []
-    for entry in [*_carried_settled(predecessor, base_path), *_bullet_items(authored)]:
-        if entry in seen:
-            continue
-        seen.add(entry)
-        composed.append(entry)
-    return composed
+    return _dedup_rulings([*_carried_settled(predecessor, base_path), *_bullet_items(authored)])
 
 
 def _bullet_items(text: str) -> list[str]:

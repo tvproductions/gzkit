@@ -728,6 +728,67 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 "carrying a ruling forward twice must not duplicate it",
             )
 
+    def test_typographic_variance_does_not_re_carry_the_same_ruling(self) -> None:
+        """One ruling authored in two sections with different quote glyphs is ONE ruling.
+
+        Observed on `20260725T085656Z`: the #580 reframe ruling landed twice in
+        Settled Rulings, byte-identical except `'...'` versus `"..."` around the
+        operator's verbatim words. Its predecessor had hand-written the same
+        ruling into both `Decisions Made` and `Settled Rulings` with different
+        quoting, and the exact-string compare saw two rulings.
+
+        This accretes rather than staying flat: every handoff carries the whole
+        settled set forward, so a typographic near-duplicate is copied into every
+        descendant. The blast radius is one line today; the shape is unbounded.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            sections = dict(self._SECTIONS)
+            sections["Decisions Made"] = (
+                '- [operator-ruled] Reframe #580 (operator verbatim: "truncation survival").'
+            )
+            sections[SETTLED_SECTION] = "- Reframe #580 (operator verbatim: 'truncation survival')."
+            create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="first",
+                sections=sections,
+                base_path=base,
+                timestamp="2026-07-18T10:00:00Z",
+            )
+
+            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertEqual(
+                len([entry for entry in settled if "Reframe #580" in entry]),
+                1,
+                "quote-glyph variance is not a second ruling",
+            )
+
+    def test_distinct_rulings_are_never_collapsed(self) -> None:
+        """The dedup key must not merge rulings that genuinely differ.
+
+        Dropping a booked ruling is silent and is the exact decay the settled
+        channel exists to stop, whereas a duplicate is visible and benign — so
+        normalization stays conservative, and this is the assertion that pins it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(
+                base,
+                "first",
+                "- [operator-ruled] Ruling one holds.\n"
+                "- [operator-ruled] Ruling one holds only for foundation ADRs.",
+                hour=10,
+            )
+
+            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertEqual(len(settled), 2, "near-identical but distinct rulings both survive")
+
     def test_author_supplied_ruling_does_not_drop_carried_rulings(self) -> None:
         """Seating a late ruling must UNION with the carried set, never replace it.
 
