@@ -405,8 +405,8 @@ def settled_rulings(content: str) -> list[str]:
     return _section_items(content, SETTLED_SECTION)
 
 
-def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
-    """Compose the successor's Settled Rulings from the newest predecessor.
+def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
+    """Compose the successor's Settled Rulings from its predecessor.
 
     Two sources, in order: the predecessor's own carried rulings, then the
     operator rulings it booked in ``Decisions Made``. That is what makes the
@@ -417,18 +417,25 @@ def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
     De-duplicated on entry text with first-seen order preserved, so carrying a
     ruling down a long chain never multiplies it.
 
-    Lineage resolves through :func:`_newest_predecessor` — the SAME authority the
-    ``continues_from`` link uses — so the two can never disagree about what this
-    handoff continues. An ADR-less handoff therefore inherits nothing: the newest
-    handoff overall is not its lineage, and carrying its rulings forward would
-    assert a settled-ruling continuity that does not exist, while the chain link
-    (correctly) refused to assert the same continuity.
+    ``predecessor`` is the ALREADY-RESOLVED link the caller writes into
+    ``continues_from``, so the chain link and the carried rulings cannot disagree
+    about what this handoff continues. Re-deriving it here is what broke the
+    ADR-less path: ``_newest_predecessor`` returns ``None`` without an ADR
+    (GHI #709), so an author who followed its documented remedy — *"Pass
+    ``continues_from`` explicitly to chain ADR-less handoffs"* — got the
+    frontmatter link and inherited no rulings, leaving the frontmatter asserting a
+    continuity the Settled Rulings section silently contradicted.
+
+    ``None`` still inherits nothing: an unlinked handoff is a genuine chain root,
+    and the newest handoff overall is not its lineage.
     """
-    predecessor = _newest_predecessor(adr_id, base_path)
     if predecessor is None:
         return []
+    referrer = _handoffs_dir(base_path) / "successor.md"
     try:
-        previous = (_handoffs_dir(base_path) / predecessor).read_text(encoding="utf-8")
+        previous = resolve_continues_from(predecessor, referrer, base_path).read_text(
+            encoding="utf-8"
+        )
     except (OSError, UnicodeDecodeError):
         return []
     carried = settled_rulings(previous)
@@ -443,7 +450,7 @@ def _carried_settled(adr_id: str | None, base_path: Path) -> list[str]:
     return composed
 
 
-def _compose_settled(authored: str, adr_id: str | None, base_path: Path) -> list[str]:
+def _compose_settled(authored: str, predecessor: str | None, base_path: Path) -> list[str]:
     """Union the carried settled rulings with any the author seats explicitly.
 
     UNION, never replace. A ruling can arrive AFTER a handoff is authored — the
@@ -459,7 +466,7 @@ def _compose_settled(authored: str, adr_id: str | None, base_path: Path) -> list
     """
     seen: set[str] = set()
     composed: list[str] = []
-    for entry in [*_carried_settled(adr_id, base_path), *_bullet_items(authored)]:
+    for entry in [*_carried_settled(predecessor, base_path), *_bullet_items(authored)]:
         if entry in seen:
             continue
         seen.add(entry)
@@ -630,7 +637,7 @@ def create_handoff(
     """
     ts = timestamp or _now_iso()
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
-    composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), adr_id, base_path)
+    composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), link, base_path)
     if composed_settled:
         sections = {
             **sections,

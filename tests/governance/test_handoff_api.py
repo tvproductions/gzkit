@@ -859,6 +859,110 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             self.assertIn("Ruling one holds.", " ".join(result.settled))
 
 
+class TestAdrlessChainCarriesRulings(unittest.TestCase):
+    """An asserted `continues_from` carries rulings, not just the chain link.
+
+    `_newest_predecessor` refuses to INFER a predecessor for an ADR-less handoff
+    (GHI #709) -- the newest handoff overall is not its lineage -- and its
+    docstring names the remedy: *"Pass ``continues_from`` explicitly to chain
+    ADR-less handoffs."* Following that remedy restored the frontmatter link and
+    nothing else: `_carried_settled` still resolved lineage through
+    `_newest_predecessor`, which returns `None` without an ADR, so the successor
+    inherited no rulings at all.
+
+    The result is worse than an unlinked handoff, because the frontmatter now
+    ASSERTS a continuity the Settled Rulings section silently contradicts. That
+    is the decay #696 closed, reappearing through the ADR-less door #709 opened.
+    Observed on a live ADR-less handoff (2026-07-25): four booked operator
+    rulings were dropped while `continues_from` named the handoff that booked
+    them.
+    """
+
+    _SECTIONS = dict(_SEVEN_SECTIONS)
+
+    def _create(
+        self, base: Path, slug: str, decisions: str, *, settled: list[str] | None = None, **kw
+    ) -> Path:
+        sections = dict(self._SECTIONS)
+        sections["Decisions Made"] = decisions
+        if settled:
+            # Same seating the CLI's --settled performs (commands/handoff.py).
+            sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
+        return create_handoff(
+            adr_id=None,
+            branch="main",
+            agent="test-agent",
+            slug=slug,
+            sections=sections,
+            base_path=base,
+            **kw,
+        )
+
+    def test_explicit_link_carries_the_predecessors_rulings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            first = self._create(
+                base,
+                "first",
+                "- [operator-ruled] Reframe #580 to truncation survival.",
+                timestamp="2026-07-25T01:00:00Z",
+            )
+            second = self._create(
+                base,
+                "second",
+                "- [agent-chose] Extended the triage script.",
+                timestamp="2026-07-25T06:00:00Z",
+                continues_from=first.name,
+            )
+            self.assertIn(
+                "Reframe #580 to truncation survival.",
+                " ".join(settled_rulings(second.read_text(encoding="utf-8"))),
+            )
+
+    def test_seating_a_late_ruling_does_not_drop_the_carried_ones(self) -> None:
+        # The union property, on the ADR-less path specifically. Seating one
+        # late ruling must never be the act that discards booked history.
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            first = self._create(
+                base,
+                "first",
+                "- [operator-ruled] Movement C is Reduce the accretion.",
+                timestamp="2026-07-25T01:00:00Z",
+            )
+            second = self._create(
+                base,
+                "second",
+                "- [agent-chose] Built the witness.",
+                timestamp="2026-07-25T06:00:00Z",
+                continues_from=first.name,
+                settled=["GHI #607 is unparked."],
+            )
+            carried = " ".join(settled_rulings(second.read_text(encoding="utf-8")))
+            self.assertIn("Movement C is Reduce the accretion.", carried)
+            self.assertIn("GHI #607 is unparked.", carried)
+
+    def test_unlinked_adrless_handoff_still_inherits_nothing(self) -> None:
+        # The #709 guarantee is unchanged: absent an asserted link there is no
+        # lineage to read, and the newest handoff overall must not be mistaken
+        # for one.
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(
+                base,
+                "unrelated",
+                "- [operator-ruled] A ruling from unrelated work.",
+                timestamp="2026-07-25T01:00:00Z",
+            )
+            second = self._create(
+                base,
+                "second",
+                "- [agent-chose] Did something else.",
+                timestamp="2026-07-25T06:00:00Z",
+            )
+            self.assertEqual([], settled_rulings(second.read_text(encoding="utf-8")))
+
+
 class TestChainLinkIsCorrectByConstruction(unittest.TestCase):
     """A successor handoff links to its predecessor without the author's help.
 
