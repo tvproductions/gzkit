@@ -3,6 +3,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.commands.specify_cmd import _extract_backticked_paths
+from gzkit.governance.brief_structure import BriefStructure, parse_brief
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -152,6 +153,48 @@ class TestSpecifyCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("source: default", result.output)
             self.assertNotIn("source: WBS table", result.output)
+
+    def test_specify_emits_schema_parseable_brief(self) -> None:
+        """GHI #615: a freshly emitted brief MUST parse as ``BriefStructure``.
+
+        The schema exists but the emitter never fed it: the template wrote
+        ``id/parent/item/lane/status`` and left ``allowlist``/``reqs``/
+        ``verification`` -- the exact trio ``parse_brief`` requires -- to prose
+        in the body. Every ``gz specify`` therefore minted a brief that fell to
+        ``LegacyBriefShape`` regex-scraping by construction, which is why the
+        legacy corpus kept growing (597 briefs when #615 was filed, 665 by
+        2026-07-25) while the schema sat unenforced.
+
+        Asserted in ``strict=True`` because permissive mode's contract is to
+        *succeed* on a legacy brief; only strict mode can fail when the emitter
+        regresses. The claim is the emitter's, not the parser's: no brief this
+        command produces may need the legacy path.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            result = runner.invoke(
+                main, ["specify", "core-feature", "--parent", "ADR-0.1.0-f", "--item", "1"]
+            )
+            self.assertEqual(result.exit_code, 0)
+            obpi_path = Path(
+                "design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-core-feature.md"
+            )
+
+            parsed = parse_brief(obpi_path, strict=True)
+
+            self.assertIsInstance(parsed, BriefStructure)
+            assert isinstance(parsed, BriefStructure)
+            self.assertEqual(parsed.id, "OBPI-0.1.0-01-core-feature")
+            self.assertEqual(parsed.parent, "ADR-0.1.0-f")
+            # The three fields are derived from the same data the body renders,
+            # so a populated frontmatter and an empty body section cannot drift.
+            self.assertTrue(parsed.allowlist)
+            self.assertTrue(parsed.reqs)
+            self.assertTrue(parsed.verification)
+            for req in parsed.reqs:
+                self.assertIn(req, obpi_path.read_text(encoding="utf-8"))
 
     def test_specify_author_creates_authored_ready_brief(self) -> None:
         """specify --author produces a brief that passes authored validation."""

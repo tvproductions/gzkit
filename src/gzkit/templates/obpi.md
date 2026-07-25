@@ -4,6 +4,12 @@ parent: {parent_adr}
 item: {item_number}
 lane: {lane}
 status: Draft
+allowlist:
+{allowlist_yaml}
+reqs:
+{reqs_yaml}
+verification:
+{verification_yaml}
 ---
 
 # {id}: {title}

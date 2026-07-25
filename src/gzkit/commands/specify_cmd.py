@@ -4,6 +4,8 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
+import yaml
+
 from gzkit.commands.common import (
     GzCliError,
     _is_pool_adr_id,
@@ -503,6 +505,29 @@ def _build_verification_specific(
     return "\n".join(_dedupe_lines(commands)) or "test -f " + paths[0]
 
 
+# Harvests the REQ IDs the acceptance seed just rendered rather than rebuilding
+# them from (version, item) -- the frontmatter must agree with the body, and a
+# parallel construction is free to drift from it.
+_REQ_ID_IN_SEED_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d{2}-\d{2}")
+
+
+def _yaml_block_sequence(values: list[str]) -> str:
+    """Render ``values`` as an indented YAML block sequence for frontmatter.
+
+    Quoting is delegated to ``yaml.safe_dump`` rather than hand-built: brief
+    verification entries are shell commands carrying colons, quotes, and
+    braces (``uv run -m unittest tests/x.py -v``, ``rg -n "^## Persona$"``),
+    every one of which is YAML-significant. An f-string ``- {value}`` renders
+    those as broken YAML, which ``parse_brief`` then reports as a *missing*
+    field -- the same silent fallback to ``LegacyBriefShape`` this fix exists
+    to close (GHI #615).
+    """
+    if not values:
+        return "  []"
+    dumped = yaml.safe_dump(values, default_flow_style=False, sort_keys=False, allow_unicode=True)
+    return "\n".join(f"  {line}" for line in dumped.strip().splitlines())
+
+
 def _build_obpi_plan(
     *,
     project_root: Path,
@@ -543,11 +568,24 @@ def _build_obpi_plan(
         allowed_paths_md, checklist_item_text, lane
     )
 
+    # Structured frontmatter (GHI #615). Each list is derived from the SAME
+    # value the body renders, never re-inferred, so frontmatter and prose
+    # cannot disagree -- a second derivation path would reintroduce exactly
+    # the parser-sprawl this closes.
+    allowlist_yaml = _yaml_block_sequence(_extract_backticked_paths(allowed_paths_md))
+    reqs_yaml = _yaml_block_sequence(_REQ_ID_IN_SEED_RE.findall(acceptance_criteria_seed))
+    verification_yaml = _yaml_block_sequence(
+        [line.strip() for line in verification_specific_md.splitlines() if line.strip()]
+    )
+
     content = render_template(
         "obpi",
         id=obpi_id,
         title=title,
         parent_adr=parent_adr_id,
+        allowlist_yaml=allowlist_yaml,
+        reqs_yaml=reqs_yaml,
+        verification_yaml=verification_yaml,
         parent_adr_path=adr_file.relative_to(project_root).as_posix(),
         item_number=str(item),
         checklist_item_text=checklist_item_text,
