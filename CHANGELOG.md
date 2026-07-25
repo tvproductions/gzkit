@@ -17,6 +17,44 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.33.2 (2026-07-25)
+
+### Added
+
+- Codex project-doc truncation-headroom warning reporting remaining bytes before the vendor cap silently truncates the rendered agent contract (GHI #712)
+- Structured OBPI brief frontmatter emission (`allowlist`, `reqs`, `verification`) from `gz specify`, so newly minted briefs parse under the brief schema instead of being regex-scraped (GHI #615)
+- Run telemetry for correction mining: per-run transcript-scanned and correction-matched counts written to a run log, distinguishing a zero-result run from a broken miner (GHI #614)
+- `--settled` option on `gz handoff` for recording an operator ruling that arrives after the handoff was authored (GHI #696)
+- Settled-rulings section, operator-vs-agent decision attribution, and stale-next-step flagging in the handoff format (GHI #696)
+- `draft (scaffold)` lifecycle label in `gz adr status` distinguishing unauthored skeleton briefs from authored drafts (GHI #665)
+- Manpage filename reference binding under `gz validate --cli-alignment`, fail-closing on the non-existent `gz-<verb>.md` convention (GHI #532)
+- Negative-control fixture proving the handoff populated-sections check actually refuses an empty required section (GHI #698)
+
+### Changed
+
+- `gz check` renders advisory output from passing steps in a dedicated end-of-run section rather than discarding it (GHI #713)
+- `gz adr audit-check` separates coverage-exempt REQs onto an informational line naming their proof channel, and splits the two groups in `--json` output (GHI #701)
+- `gz validate --sensitivity` adopts the shared terminal-status predicate in both the audit and CLI paths, exempting sealed historical briefs from the auto-detect floor (GHI #682)
+- Brief-reconcile drift gating scoped by lifecycle dimension: an unstarted brief no longer gates on its own deliverables but still gates on prerequisites (GHI #615)
+- Brief status vocabulary matched to the corpus, admitting `attested_completed`, `Abandoned`, `Withdrawn`, and `in_progress` (GHI #615)
+- `req_kind` module split to satisfy the 600-line module limit, with behavior verified identical (GHI #652)
+- Attestation-verdict classifier fork consolidated into a single governed implementation (GHI #573)
+- Removed `ReqCoverageRecord` and its paired model, declared and tested but never instantiated by any command (GHI #545)
+
+### Fixed
+
+- `gz check` no longer discards advisory notices emitted by steps that passed, which had made them reachable only by running each validation scope individually (GHI #713)
+- An agent holding an OBPI lock with no active pipeline can no longer write implementation files unblocked within the locked OBPI's allowed paths (GHI #606)
+- Fidelity assertion rows can no longer assert the fidelity gate that evaluates them; the tautological row shape is rejected and was swept from 102 ADRs (GHI #702)
+- `gz adr audit-check` no longer reports REQs as missing test coverage when their kind owes no `@covers` test (GHI #701)
+- `gz context` and `gz status` no longer project divergent current gates for the same ADR; both report the furthest gate applicable to the ADR's lane (GHI #577)
+- `gz validate --sensitivity` no longer exits 3 on terminal-status briefs, and two active Draft briefs governing subprocess/hook execution now declare `sensitivity: security` (GHI #682)
+- Drained 174 references to the non-existent `docs/user/manpages/gz-<verb>.md` convention across 60 briefs, skills, and docs (GHI #532)
+- MX maintenance-hangar documentation and rules no longer name `.gzkit/mx-active`, a marker path the tool never creates (GHI #650)
+- Corrected 13 OBPI briefs declaring their parent ADR by bare semver instead of full ID (GHI #615)
+- Removed `@covers` decorations from two SUPPORT REQs that inflated the coverage census (GHI #703)
+- Guarded `@covers` to BEHAVIOR REQs only and removed 47 inverted decorations repo-wide, closing the inverted-proof-channel gap (GHI #711)
+
 ## v0.33.1 (2026-07-23)
 
 ### Added

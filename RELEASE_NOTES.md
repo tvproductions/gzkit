@@ -1,5 +1,75 @@
 # gzkit Release Notes
 
+## v0.33.2 (2026-07-25)
+
+This release makes governance failures visible where they had been silent.
+Advisory notices no longer vanish from passing checks, agent-contract files warn
+before a vendor cap truncates them, and session handoffs carry every ruling
+forward instead of just one.
+
+### New features
+
+- **#712** — Adds a warning reporting how many bytes of headroom the rendered
+  agent-contract file has before a vendor's project-doc size cap silently
+  truncates it, so the shortfall is visible before content is dropped.
+
+### Improvements
+
+- **#696** — Session handoffs now carry all decisions forward instead of one:
+  settled rulings get their own section that survives the resume, operator
+  rulings are marked and listed ahead of agent choices, next steps citing
+  already-closed work are flagged as no longer needed, and a new `--settled`
+  option records a ruling that arrives after the handoff was written.
+- **#665** — `gz adr status` labels an unfinished brief `draft (scaffold)` when
+  it is still a bare skeleton, so you can tell at a glance which briefs still
+  need authoring before they are ready to run.
+- **#615** — New OBPI briefs are generated with machine-readable structure, so
+  brief reconciliation reads a brief's real requirements, paths, and
+  verification steps instead of inferring them from prose. Reconciliation also
+  stops flagging a not-yet-started brief as drifted for naming files that brief
+  exists to create, while still checking its prerequisites.
+- **#614** — Correction mining reports how many transcripts it scanned and how
+  many corrections it matched on every run, so a genuinely empty result is
+  distinguishable from a miner that has quietly stopped working.
+
+### Bug fixes
+
+- **#713** — Fixed `gz check` discarding advisory notices from steps that
+  passed; advisories now appear in a dedicated section at the end of the run
+  instead of being reachable only by running each validation scope
+  individually.
+- **#606** — Fixed a gap that let an agent holding an OBPI lock write
+  implementation files without the governance pipeline running.
+- **#702** — Fixed fidelity assertion rows that verified the fidelity gate
+  itself rather than the ADR's claim; such self-referential rows are now
+  rejected, and pass counts reflect real witnesses.
+- **#701** — Fixed `gz adr audit-check` reporting requirements as missing test
+  coverage when their kind owes no test at all; coverage-exempt requirements now
+  appear separately with their real proof channel named.
+- **#577** — Fixed `gz context` and `gz status` reporting different current
+  gates for the same ADR.
+- **#682** — Fixed `gz validate --sensitivity` failing on sealed historical
+  briefs.
+- **#532** — Fixed stale command-manpage references across briefs, skills, and
+  docs that pointed at filenames which never existed.
+- **#650** — Fixed maintenance-hangar documentation that named a marker file the
+  tool never creates.
+
+### Gate Evidence
+
+- Qualifier: 17 behavior-level GHIs (16 closed since v0.33.1; partial work under
+  the still-open #615). No foundation closeouts.
+- Label recovery: `runtime` backfilled on #532 and #682 per the patch-release
+  Step 1a labeling-recovery, after confirming both landed validator changes.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `gz patch release`.
+- Operator approval recorded before execution; `gz git-sync --apply` gates run
+  immediately before the GitHub release.
+
+### Stats
+
+- 17 GHIs qualified
+
 ## v0.33.1 (2026-07-23)
 
 Hardening release: makes governance doctrine mechanically enforced rather than prose-honored — failure-atomic ledger, airlock, and rendition writes; validators that check semantics over presence; and five foundation-ADR closeouts codifying the composition, handoff, task-envelope, and meta-governance invariants.
