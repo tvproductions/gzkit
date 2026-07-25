@@ -17,6 +17,81 @@ _RECOVERY = (
     ".pre-commit-config.yaml (see ADR-0.0.68 / OBPI-0.0.68-01)."
 )
 
+_DELIVERY_RECOVERY = (
+    "Recovery: `uv run pre-commit install --hook-type pre-commit --hook-type pre-push`. "
+    "If it refuses with 'Cowardly refusing to install hooks with `core.hooksPath` set', "
+    "run `git config --local --unset-all core.hooksPath` first, then re-run the install."
+)
+
+
+def _effective_hooks_dir(project_root: Path) -> Path | None:
+    """Resolve the directory git actually reads hooks from, or None outside a worktree.
+
+    Honors ``core.hooksPath`` from the worktree's own ``.git/config`` rather than
+    assuming ``.git/hooks``: a redirect is one of the ways the gate goes
+    undelivered, so assuming the default location would blind the check to the
+    exact failure it exists to catch.
+    """
+    git_dir = project_root / ".git"
+    if not git_dir.is_dir():
+        return None
+    config_path = git_dir / "config"
+    if config_path.is_file():
+        try:
+            for raw in config_path.read_text(encoding="utf-8", errors="replace").splitlines():
+                key, sep, value = raw.partition("=")
+                if sep and key.strip().lower() == "hookspath":
+                    candidate = Path(value.strip())
+                    return candidate if candidate.is_absolute() else project_root / candidate
+        except OSError:
+            return git_dir / "hooks"
+    return git_dir / "hooks"
+
+
+def _delivery_errors(project_root: Path) -> list[ValidationError]:
+    """Return errors when the declared pre-push gate is not installed on disk.
+
+    A declared hook that was never delivered enforces nothing. This repo ran in
+    exactly that state: ``.pre-commit-config.yaml`` declared ``gz-check-pre-push``
+    while ``.git/hooks/`` held only stock samples, because a local
+    ``core.hooksPath`` made ``pre-commit install`` refuse. The declaration arm
+    stayed green the whole time.
+    """
+    hooks_dir = _effective_hooks_dir(project_root)
+    if hooks_dir is None:
+        # Not a git worktree (fixture tree, sdist export) — delivery is not
+        # assertable here, and the declaration arm still applies.
+        return []
+    hook = hooks_dir / "pre-push"
+    if not hook.is_file():
+        return [
+            ValidationError(
+                type="session_green_gate",
+                artifact=f"{hooks_dir.as_posix()}/pre-push",
+                message=(
+                    "Pre-push gz check hook is declared but not installed — no hook file "
+                    f"at {hooks_dir.as_posix()}/pre-push, so commits and pushes run "
+                    f"unenforced. {_DELIVERY_RECOVERY}"
+                ),
+            )
+        ]
+    try:
+        body = hook.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        body = ""
+    if "pre-commit" not in body:
+        return [
+            ValidationError(
+                type="session_green_gate",
+                artifact=f"{hooks_dir.as_posix()}/pre-push",
+                message=(
+                    "Pre-push hook exists but is not the pre-commit shim, so the declared "
+                    f"'gz check' gate is not installed. {_DELIVERY_RECOVERY}"
+                ),
+            )
+        ]
+    return []
+
 
 def _runs_gz_check(entry: str) -> bool:
     """Return True when *entry* invokes ``gz check`` as a command, not a prefix.
@@ -29,11 +104,19 @@ def _runs_gz_check(entry: str) -> bool:
     return any(tokens[i] == "gz" and tokens[i + 1] == "check" for i in range(len(tokens) - 1))
 
 
-def audit_session_green_gate(project_root: Path) -> list[ValidationError]:
-    """Return errors if no stages: [pre-push] hook running gz check is declared.
+def audit_session_green_gate(
+    project_root: Path, *, check_delivery: bool = False
+) -> list[ValidationError]:
+    """Return errors if the pre-push gz check gate is not declared (and optionally delivered).
 
     Fails closed when .pre-commit-config.yaml is missing, unparseable, or
     contains no hook with stages: [pre-push] and entry containing 'gz check'.
+
+    When *check_delivery* is set, additionally asserts the declared hook is
+    actually installed in the worktree's effective hooks directory. That arm is
+    opt-in because a fresh CI checkout legitimately has no hooks installed — CI
+    *is* the gate there, it does not push — so making it unconditional would
+    fail every CI run. It is enabled on the surfaces that precede a push.
     """
     config_path = project_root / ".pre-commit-config.yaml"
     if not config_path.exists():
@@ -82,4 +165,4 @@ def audit_session_green_gate(project_root: Path) -> list[ValidationError]:
                 message=f"No stages: [pre-push] hook running 'gz check' declared. {_RECOVERY}",
             )
         ]
-    return []
+    return _delivery_errors(project_root) if check_delivery else []

@@ -20,6 +20,7 @@ from gzkit.git_sync import (
     _skip_disables_xenon,
     _skip_tokens,
 )
+from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
 from gzkit.quality import run_lint, run_tests
 from gzkit.utils import git_cmd
 
@@ -131,6 +132,16 @@ def _run_sync_prechecks(
     executed: list[str],
 ) -> None:
     """Run lint/test guardrails before git mutation steps."""
+    # The lint/test gates below are opt-in because this command defers to the
+    # pre-commit/pre-push hooks. That deferral is only sound if those hooks are
+    # actually installed — and a declared-but-undelivered gate enforces nothing
+    # while every surface reports green. Verify delivery before relying on it.
+    blockers.extend(
+        err.message
+        for err in audit_session_green_gate(project_root, check_delivery=True)
+        if err.artifact != ".pre-commit-config.yaml"
+    )
+
     if run_lint_gate and not blockers:
         lint_result = run_lint(project_root)
         if lint_result.success:

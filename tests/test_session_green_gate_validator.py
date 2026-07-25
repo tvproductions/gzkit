@@ -164,3 +164,105 @@ class TestSessionGreenGateInCheckScope(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SessionGreenGateDelivery(unittest.TestCase):
+    """A declared pre-push hook must also be DELIVERED into the worktree.
+
+    The declaration arm alone let a live regression through: this repo's
+    .pre-commit-config.yaml declared gz-check-pre-push correctly while
+    .git/hooks/ held only stock samples, because a local `core.hooksPath`
+    setting made `pre-commit install` refuse. Every commit and push ran
+    with zero enforcement and --session-green-gate stayed green throughout.
+    Verifying the declaration is not verifying the gate.
+    """
+
+    def _worktree(self, root: Path, *, hooks_dir_name: str = "hooks") -> Path:
+        (root / ".pre-commit-config.yaml").write_text(_HOOK_WITH_PRE_PUSH, encoding="utf-8")
+        hooks = root / ".git" / hooks_dir_name
+        hooks.mkdir(parents=True, exist_ok=True)
+        return hooks
+
+    def test_declared_but_not_installed_is_a_violation(self) -> None:
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._worktree(root)  # .git/hooks exists but holds no pre-push
+            errors = audit_session_green_gate(root, check_delivery=True)
+
+        self.assertEqual(len(errors), 1, f"undelivered gate must fail closed, got {errors}")
+        self.assertIn("not installed", errors[0].message)
+
+    def test_declared_and_installed_passes(self) -> None:
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            hooks = self._worktree(root)
+            (hooks / "pre-push").write_text(
+                "#!/usr/bin/env bash\n# start templated\nINSTALL_PYTHON=...\n"
+                "exec pre-commit hook-impl --hook-type=pre-push\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(audit_session_green_gate(root, check_delivery=True), [])
+
+    def test_foreign_pre_push_hook_is_a_violation(self) -> None:
+        """A pre-push file that is not the pre-commit shim does not deliver the gate."""
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            hooks = self._worktree(root)
+            (hooks / "pre-push").write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+            errors = audit_session_green_gate(root, check_delivery=True)
+
+        self.assertEqual(len(errors), 1, f"non-pre-commit shim must fail, got {errors}")
+
+    def test_hooks_path_redirect_is_followed(self) -> None:
+        """core.hooksPath redirection must be honored, not assumed to be .git/hooks."""
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._worktree(root)
+            elsewhere = root / "custom-hooks"
+            elsewhere.mkdir()
+            (elsewhere / "pre-push").write_text(
+                "exec pre-commit hook-impl --hook-type=pre-push\n", encoding="utf-8"
+            )
+            (root / ".git" / "config").write_text(
+                f"[core]\n\thooksPath = {elsewhere.as_posix()}\n", encoding="utf-8"
+            )
+            self.assertEqual(audit_session_green_gate(root, check_delivery=True), [])
+
+    def test_non_git_tree_skips_delivery_arm(self) -> None:
+        """Fixture trees and exports carry no .git — delivery is not assertable there."""
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(_HOOK_WITH_PRE_PUSH, encoding="utf-8")
+            self.assertEqual(audit_session_green_gate(root, check_delivery=True), [])
+
+    def test_delivery_arm_is_off_by_default(self) -> None:
+        """Default call shape is unchanged, so CI and existing callers do not break."""
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._worktree(root)  # declared, not installed
+            self.assertEqual(audit_session_green_gate(root), [])
+
+    def test_missing_declaration_still_fails_when_delivery_checked(self) -> None:
+        """The delivery arm supplements the declaration arm; it does not replace it."""
+        from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(_HOOK_WITHOUT_PRE_PUSH, encoding="utf-8")
+            (root / ".git" / "hooks").mkdir(parents=True)
+            errors = audit_session_green_gate(root, check_delivery=True)
+
+        self.assertEqual(len(errors), 1)
+        self.assertIn("declared", errors[0].message)

@@ -11,6 +11,7 @@ the sync's generated `chore: … (gz git-sync)` commit under
 
 from __future__ import annotations
 
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -130,3 +131,68 @@ class TestStagedGovernedPathsAdapter(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SyncPrechecksVerifyGateDelivery(unittest.TestCase):
+    """git-sync must not defer to a pre-commit gate that is not installed.
+
+    `_run_sync_prechecks` skips lint/test by default on the stated grounds that
+    "pre-commit enforces unittest/lint/type checks". That deferral is only sound
+    if the hook is actually delivered. In this repo it was not — `.git/hooks/`
+    held stock samples while the config declared the gate — so `gz git-sync
+    --apply` pushed a red tree with nothing in the chain objecting.
+    """
+
+    def test_undelivered_gate_blocks_sync(self) -> None:
+        from gzkit.commands.sync import _run_sync_prechecks
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(
+                "repos:\n  - repo: local\n    hooks:\n      - id: gz-check-pre-push\n"
+                "        entry: uv run gz check\n        stages: [pre-push]\n",
+                encoding="utf-8",
+            )
+            (root / ".git" / "hooks").mkdir(parents=True)
+            blockers: list[str] = []
+            executed: list[str] = []
+            _run_sync_prechecks(root, False, False, blockers, executed)
+
+        self.assertTrue(blockers, "undelivered pre-push gate must block sync")
+        self.assertIn("pre-commit install", blockers[0])
+
+    def test_delivered_gate_does_not_block(self) -> None:
+        from gzkit.commands.sync import _run_sync_prechecks
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(
+                "repos:\n  - repo: local\n    hooks:\n      - id: gz-check-pre-push\n"
+                "        entry: uv run gz check\n        stages: [pre-push]\n",
+                encoding="utf-8",
+            )
+            hooks = root / ".git" / "hooks"
+            hooks.mkdir(parents=True)
+            (hooks / "pre-push").write_text(
+                "exec pre-commit hook-impl --hook-type=pre-push\n", encoding="utf-8"
+            )
+            blockers: list[str] = []
+            _run_sync_prechecks(root, False, False, blockers, [])
+
+        self.assertEqual(blockers, [])
+
+    def test_non_git_tree_does_not_block(self) -> None:
+        """Delivery is unassertable outside a worktree; do not invent a blocker."""
+        from gzkit.commands.sync import _run_sync_prechecks
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".pre-commit-config.yaml").write_text(
+                "repos:\n  - repo: local\n    hooks:\n      - id: gz-check-pre-push\n"
+                "        entry: uv run gz check\n        stages: [pre-push]\n",
+                encoding="utf-8",
+            )
+            blockers: list[str] = []
+            _run_sync_prechecks(root, False, False, blockers, [])
+
+        self.assertEqual(blockers, [])
