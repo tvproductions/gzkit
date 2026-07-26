@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -472,6 +473,62 @@ class TestValidateReferencedFiles(unittest.TestCase):
             )
             missing = validate_referenced_files(doc, Path(tmpdir))
             self.assertEqual(missing, ["nonexistent/thing.txt"])
+
+    @staticmethod
+    def _git(root: Path, *args: str) -> None:
+        subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+
+    def _init_repo(self, root: Path) -> None:
+        self._git(root, "init", "--quiet")
+        self._git(root, "config", "user.email", "test@example.invalid")
+        self._git(root, "config", "user.name", "test")
+
+    @covers("REQ-0.25.0-32-03")
+    def test_path_deleted_in_history_is_not_reported(self) -> None:
+        """A retired path stays a valid past-tense evidence citation.
+
+        A handoff records what a finished session touched. Requiring every
+        cited path to exist at HEAD would make the handoff corpus a ratchet
+        against deleting code — retiring any module would retroactively
+        invalidate every handoff that recorded touching it.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._init_repo(root)
+            (root / "retired.py").write_text("x = 1\n", encoding="utf-8")
+            self._git(root, "add", "retired.py")
+            self._git(root, "commit", "--quiet", "-m", "add")
+            self._git(root, "rm", "--quiet", "retired.py")
+            self._git(root, "commit", "--quiet", "-m", "retire")
+
+            doc = (
+                "---\nkey: value\n---\n\n"
+                "## Evidence / Artifacts\n\n"
+                "Changed surfaces: `retired.py`\n"
+            )
+            self.assertEqual(validate_referenced_files(doc, root), [])
+
+    @covers("REQ-0.25.0-32-03")
+    def test_path_never_in_history_is_still_reported(self) -> None:
+        """The gate still catches a typo'd or fabricated citation.
+
+        Negative control for the deleted-path exemption: git history is the
+        discriminator between "deleted since" and "never existed", so a path
+        git has never seen must still fail inside a real repository.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self._init_repo(root)
+            (root / "real.py").write_text("x = 1\n", encoding="utf-8")
+            self._git(root, "add", "real.py")
+            self._git(root, "commit", "--quiet", "-m", "add")
+
+            doc = (
+                "---\nkey: value\n---\n\n"
+                "## Evidence / Artifacts\n\n"
+                "Changed surfaces: `never/existed.py`\n"
+            )
+            self.assertEqual(validate_referenced_files(doc, root), ["never/existed.py"])
 
     @covers("REQ-0.25.0-32-03")
     def test_command_prefixes_skipped(self) -> None:

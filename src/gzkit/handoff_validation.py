@@ -367,7 +367,47 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
     # still a broken reference.
     if missing:
         missing = [p for p in missing if not _is_git_ignored(base_path, p)]
+
+    # A handoff is a point-in-time register entry, and its Evidence section is a
+    # PAST-tense record ("Changed surfaces: ...") of what a finished session
+    # touched. Requiring every cited path to exist at HEAD reads that record as a
+    # present-tense claim, which makes the handoff corpus a ratchet against ever
+    # deleting code: retiring any module retroactively invalidates every handoff
+    # that recorded touching it. That structurally opposes the campaign's
+    # Movement C (Reduce the accretion), and the design already concedes the
+    # point with its pre-2026-06-15 cutover exemption.
+    #
+    # A path git has never heard of is still a broken reference — a typo or a
+    # fabricated citation — and still fails. Git history is the discriminator
+    # between "deleted since" and "never existed" (operator ruling 2026-07-25).
+    if missing:
+        missing = [p for p in missing if not _existed_in_git_history(base_path, p)]
     return missing
+
+
+def _existed_in_git_history(base_path: Path, rel_path: str) -> bool:
+    """Return True when ``rel_path`` was tracked at some commit reachable now.
+
+    Distinguishes a legitimately-retired path (deleted by a later commit, so a
+    past handoff's evidence citation remains accurate for the session it
+    records) from a path git has never seen (a typo or fabricated citation,
+    which is the broken reference this check exists to catch).
+
+    Bytes-mode capture (no stdout decode) keeps this off the non-UTF-8
+    subprocess-read class (GHI #582), matching ``_is_git_tracked``.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "--all", "--max-count=1", "--", rel_path],
+            cwd=base_path,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return False
+    if result.returncode != 0:
+        return False
+    return bool(result.stdout.strip())
 
 
 def validate_handoff_document(
