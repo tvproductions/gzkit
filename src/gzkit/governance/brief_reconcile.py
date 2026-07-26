@@ -598,12 +598,17 @@ def _compute_allowlist_delta(
     exempt from the missing-on-disk check — they exist in contract before they
     exist on disk. Without this exemption a net-new-file OBPI is falsely flagged
     as drifted, which deadlocks the Stage-2 reconcile gate.
+
+    Out-of-tree paths are likewise exempt: this dimension gates via
+    ``gating_allowlist_absence``, so existence-checking a sibling-repo path would
+    gate a gzkit brief on another repository's contents (GHI #721).
     """
     creates = creates_paths or set()
     missing_on_disk = [
         path
         for path in allowlist
         if not has_glob_chars(path)
+        and not _escapes_project_root(path, project_root)
         and not (project_root / path).exists()
         and path.removeprefix("./").rstrip("/") not in creates
     ]
@@ -706,12 +711,25 @@ def _scope_discovery_to_unbuilt(
     )
 
 
+def _escapes_project_root(path: str, project_root: Path) -> bool:
+    """True when a checklist path resolves outside the repository root.
+
+    A path that escapes the root (``../airlineops/.claude/hooks/``, an absolute
+    path) names an artifact the repository does not own. Whether it exists is a
+    property of the developer's working-directory layout, not of the committed
+    tree — so existence-checking it makes the verdict vary by machine: green
+    wherever the sibling happens to be checked out, red in CI and for every
+    adopter (GHI #721).
+    """
+    return not (project_root / path).resolve().is_relative_to(project_root.resolve())
+
+
 def _compute_discovery_delta(
     body: str, project_root: Path, creates_paths: set[str] | None = None
 ) -> DiscoveryDelta:
     """Report discovery-checklist paths that do not exist on disk.
 
-    Two classes of path are not literal existence claims and are skipped:
+    Three classes of path are not literal existence claims and are skipped:
 
     * **Glob prerequisites** (``.../**``) are patterns, not paths:
       ``(project_root / "dir/**").exists()`` is always False, so existence-checking
@@ -721,8 +739,13 @@ def _compute_discovery_delta(
       dimension did not, so the same declaration in the same brief resolved
       differently depending on which section named it, and every
       first-implementation OBPI drifted by construction (GHI #626).
+    * **Out-of-tree citations** escape ``project_root`` and name a artifact this
+      repository does not govern — typically a sibling-repo canon source the OBPI
+      ports FROM (the ADR-0.9.0 airlineops-parity family; 92 briefs cite one).
+      This dimension reconciles a brief against *this* project's shape, so a path
+      outside it is not a claim this dimension can adjudicate (GHI #721).
 
-    A third class is filtered a level up, in ``_extract_discovery_paths``: rows
+    A fourth class is filtered a level up, in ``_extract_discovery_paths``: rows
     whose own prose disclaims the existence assertion (``_NON_CLAIM_ROW_RE``).
     """
     creates = creates_paths or set()
@@ -732,6 +755,7 @@ def _compute_discovery_delta(
         for path in paths
         if not has_glob_chars(path)
         and path.removeprefix("./").rstrip("/") not in creates
+        and not _escapes_project_root(path, project_root)
         and not (project_root / path).exists()
     ]
     return DiscoveryDelta(unresolved_paths=unresolved)
@@ -786,10 +810,17 @@ def _compute_req_count_delta(declared_req_ids: list[str] | None, body: str) -> R
 
 
 def _compute_citation_delta(citations: list[tuple[str, str]], project_root: Path) -> CitationDelta:
-    """Report citation tuples whose artifact file does not exist."""
+    """Report citation tuples whose artifact file does not exist.
+
+    Out-of-tree citations are exempt for the same reason the other two
+    existence-checking dimensions exempt them: a path escaping ``project_root``
+    is not an artifact this repository governs, so judging it makes the verdict a
+    function of the developer's working-directory layout (GHI #721).
+    """
     stale = [
         (artifact_path, anchor)
         for artifact_path, anchor in citations
-        if not (project_root / artifact_path).exists()
+        if not _escapes_project_root(artifact_path, project_root)
+        and not (project_root / artifact_path).exists()
     ]
     return CitationDelta(stale_citations=stale)

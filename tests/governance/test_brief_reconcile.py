@@ -189,6 +189,97 @@ class TestReconcileBriefResult(unittest.TestCase):
         self.assertEqual(delta.unresolved_paths, ["src/gzkit/undeclared_zzz.py"])
 
     @covers("REQ-0.0.37-05-01")
+    def test_discovery_verdict_invariant_to_out_of_tree_state(self):
+        # GHI #721 — a path escaping project_root names an artifact the repository
+        # does not own, so the reconciler cannot govern it and must not judge it.
+        # The invariant under test is INVARIANCE, not mere absence: the identical
+        # brief body must yield the identical verdict whether or not the sibling
+        # exists on the machine running the check. Asserting only "absent
+        # out-of-tree path is skipped" would still pass an implementation that
+        # flags the path when the sibling happens to be present — which is exactly
+        # the split that let this hide (green on the operator's machine, where
+        # ../airlineops is checked out; red in CI, where it is not).
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent("""\
+            ## Discovery Checklist
+
+            - [x] Canonical hook source exists: `../sibling_zzz/.claude/hooks/`
+            """)
+
+        verdicts = []
+        for sibling_present in (False, True):
+            with tempfile.TemporaryDirectory() as td:
+                root = Path(td) / "repo"
+                root.mkdir()
+                if sibling_present:
+                    (Path(td) / "sibling_zzz" / ".claude" / "hooks").mkdir(parents=True)
+                verdicts.append(_compute_discovery_delta(body, root).unresolved_paths)
+
+        self.assertEqual(
+            verdicts[0],
+            verdicts[1],
+            msg=(
+                "out-of-tree discovery verdict must not depend on whether the "
+                f"sibling is checked out; got absent={verdicts[0]} present={verdicts[1]}"
+            ),
+        )
+        self.assertEqual(verdicts[0], [], msg="out-of-tree path must not be reported as drift")
+
+    @covers("REQ-0.0.37-05-01")
+    def test_in_tree_missing_path_still_reported_alongside_out_of_tree(self):
+        # Negative control for GHI #721: the out-of-tree exclusion must not blind
+        # the dimension. An in-tree absent path in the SAME checklist still drifts.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent("""\
+            ## Discovery Checklist
+
+            - [x] Canonical hook source exists: `../sibling_zzz/.claude/hooks/`
+            - [ ] Required path exists or is created: `src/gzkit/in_tree_absent_zzz.py`
+            """)
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "repo"
+            root.mkdir()
+            delta = _compute_discovery_delta(body, root)
+
+        self.assertEqual(delta.unresolved_paths, ["src/gzkit/in_tree_absent_zzz.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_allowlist_out_of_tree_path_not_gated_on_sibling_repo(self):
+        # GHI #721, same class as the discovery dimension but a worse consequence:
+        # missing_on_disk gates via `gating_allowlist_absence`, so an out-of-tree
+        # allowlist path would gate a gzkit brief on ANOTHER repository's contents.
+        # Observed live on OBPI-0.0.13-06, which listed three ../airlineops paths
+        # as missing_on_disk (ungated only because the brief is unstarted).
+        from gzkit.governance.brief_reconcile import _compute_allowlist_delta
+
+        allowlist = ["../sibling_zzz/.gzkit/personas/", "src/gzkit/in_tree_absent_zzz.py"]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "repo"
+            root.mkdir()
+            delta = _compute_allowlist_delta(allowlist, [], root)
+
+        # Negative control is inline: the in-tree absent path still drifts.
+        self.assertEqual(delta.missing_on_disk, ["src/gzkit/in_tree_absent_zzz.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_citation_out_of_tree_artifact_not_stale(self):
+        # GHI #721 — third existence-checking dimension, same predicate flaw.
+        from gzkit.governance.brief_reconcile import _compute_citation_delta
+
+        citations = [
+            ("../sibling_zzz/.claude/hooks/hook.py", "L1-L9"),
+            ("src/gzkit/in_tree_absent_zzz.py", "L1-L9"),
+        ]
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td) / "repo"
+            root.mkdir()
+            delta = _compute_citation_delta(citations, root)
+
+        self.assertEqual(delta.stale_citations, [("src/gzkit/in_tree_absent_zzz.py", "L1-L9")])
+
+    @covers("REQ-0.0.37-05-01")
     def test_line_range_citation_is_not_a_path(self):
         # GHI #626 class — `path.py:36-66` cites a region of a file, not a file.
         # `(root / "common.py:36-66").exists()` is always False, so the citation
@@ -1071,7 +1162,16 @@ class TestValidateBriefReconcile(unittest.TestCase):
 
     @covers("REQ-0.0.37-05-06")
     def test_clean_repo_tree_has_no_errors(self):
-        # The live project tree's one structured brief (OBPI-0.0.37-04) is clean.
+        # Every structured brief in the live project tree reconciles clean. The
+        # "one structured brief (OBPI-0.0.37-04)" premise this comment used to
+        # assert expired when GHI #615 cuts 2+3 widened structured parsing.
+        #
+        # This is the only assertion here made against the REAL tree, which makes
+        # it the canary for environment-coupled drift — and the reason GHI #721
+        # went four commits without being understood: the discovery dimension
+        # existence-checked ../airlineops paths, so this passed on a machine with
+        # the sibling repo checked out and failed only in CI. A verdict that
+        # varies by working-directory layout can only be caught here.
         errors = validate_brief_reconcile(PROJECT_ROOT)
         self.assertEqual(errors, [])
 
