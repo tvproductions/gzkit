@@ -22,7 +22,7 @@ For details on any individual skill, read its `SKILL.md` under
 `gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-patch-release`
 
 #### OBPI Pipeline
-`gz-justify`, `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit`
+`gz-justify`, `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-sync`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit`
 
 #### Governance Infrastructure
 `gz-constitute`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate`

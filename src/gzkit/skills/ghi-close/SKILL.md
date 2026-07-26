@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "2.5.0"
+  skill-version: "2.6.0"
 model: opus
 ---
 
@@ -406,7 +406,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - `ghi-author` — upstream authoring surface; pairs with this skill's § Doctrine — Routing fulfills a GHI's purpose to produce the file→route→close contract
 - `gz-obpi-specify` + `gz-obpi-pipeline` — **NOT a destination from this skill's fix-execution path.** OBPIs are the unit of planned feature increments under an active ADR; defect remedies route to direct fix per § Purpose — Doctrine. Use these skills only after a `withdrawn` route correction when a GHI is mis-labeled feature work.
 - `gz-design` + `gz-plan` — the proper authoring surface when a GHI's prescribed work turns out to be new capability; reach via the `withdrawn` route correction, never as a continuation of fix execution
-- `gz-obpi-reconcile` — when an OBPI under an active ADR happens to mention a GHI in its evidence (e.g. brief notes "addresses GHI #N"), reconcile propagates the closure to brief evidence; this is downstream of the OBPI's own pipeline, not a Phase-2 route from `ghi-close`
+- `gz-obpi-sync` — when an OBPI under an active ADR happens to mention a GHI in its evidence (e.g. brief notes "addresses GHI #N"), reconcile propagates the closure to brief evidence; this is downstream of the OBPI's own pipeline, not a Phase-2 route from `ghi-close`
 - `gz-adr-closeout-ceremony` — end-of-ADR pass often triggers `ghi-close` operations on GHIs that surfaced during the ADR's lifetime
 - `git-sync` — the commits that close GHIs flow through sync
 

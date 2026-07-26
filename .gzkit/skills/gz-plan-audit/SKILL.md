@@ -5,10 +5,10 @@ description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope,
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-11
+last_reviewed: 2026-07-26
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.3.1"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -345,6 +345,6 @@ Future gate logic to preserve:
 ## Related
 
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
-- `.gzkit/skills/gz-obpi-reconcile/SKILL.md`
+- `.gzkit/skills/gz-obpi-sync/SKILL.md`
 - `.gzkit/skills/gz-session-handoff/SKILL.md`
 - `docs/design/adr/pre-release/ADR-0.12.0-obpi-pipeline-enforcement-parity/claude-pipeline-hooks-parity-matrix.md`

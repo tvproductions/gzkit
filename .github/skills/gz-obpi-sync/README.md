@@ -1,4 +1,4 @@
-# gz-obpi-reconcile
+# gz-obpi-sync
 
 Full OBPI reconciliation workflow — **Sync → Audit → Sync**.
 
@@ -46,5 +46,5 @@ docs/design/adr/adr-{series}/ADR-{id}-{slug}/logs/obpi-audit.jsonl
 ## Related
 
 - **Skill procedure:** `SKILL.md` (this folder)
-- **Prompt invocation:** `/gz-obpi-reconcile` (`.github/prompts/`)
-- **Atomic skills:** `gz-obpi-sync`, `gz-obpi-audit`
+- **Prompt invocation:** `/gz-obpi-sync` (`.github/prompts/`)
+- **Atomic phases (pre-consolidation, retired at ADR-0.0.36):** table-sync, `gz-obpi-audit`

@@ -79,7 +79,7 @@ Skill-based entry points:
 /gz-adr-manager   # compatibility alias for /gz-adr-create
 /gz-obpi-brief
 /gz-obpi-pipeline OBPI-<X.Y.Z-NN>
-/gz-obpi-reconcile ADR-<X.Y.Z>
+/gz-obpi-sync ADR-<X.Y.Z>
 /gz-adr-sync ADR-<X.Y.Z>
 /gz-adr-sync
 ```
@@ -192,8 +192,8 @@ See [State Doctrine](state-doctrine.md) for the full three-layer model, five aut
 | Layer | Trust source | Typical tooling |
 |---|---|---|
 | 1 | Runtime evidence generation | `gz implement`, `gz check`, `gz adr audit-check` |
-| 2 | Ledger-driven reconciliation | `/gz-obpi-reconcile`, `gz audit` |
-| 3 | File sync and indexing | `/gz-obpi-sync`, `/gz-adr-sync`, `gz agent sync control-surfaces` |
+| 2 | Ledger-driven reconciliation | `/gz-obpi-sync`, `gz audit` |
+| 3 | File sync and indexing | `/gz-adr-sync`, `gz agent sync control-surfaces` |
 
 **T0 — Distribution layer:** When promoting a new canonical surface, read [`docs/governance/distribution_invariant_catalog.md`](distribution_invariant_catalog.md) first and check it against the "Is this a T0 breach?" decision tree before authoring the surface's packaging OBPI.
 
@@ -599,14 +599,13 @@ ls docs/design/adr/**/briefs/REVIEW-OBPI-*.md
 
 Skill shortcuts for reconciliation (run in trust order — Layer 2 before Layer 3):
 
-- [`/gz-obpi-reconcile`](../user/skills/gz-obpi-reconcile.md) — audit briefs against evidence, fix stale metadata, write ledger proof (Layer 2)
+- [`/gz-obpi-sync`](../user/skills/gz-obpi-sync.md) — audit briefs against evidence, fix stale metadata, write ledger proof (Layer 2)
 - [`/gz-adr-sync`](../user/skills/gz-adr-sync.md) — end-to-end ADR governance sync: evidence discovery, ledger reconciliation, and registration (Layers 1-3)
-- [`/gz-obpi-sync`](../user/skills/gz-obpi-sync.md) — sync OBPI status in ADR table from brief source files (Layer 3)
 
 Run in trust order:
 
 ```text
-/gz-obpi-reconcile ADR-<X.Y.Z>   # OBPI brief evidence (Layer 2)
+/gz-obpi-sync ADR-<X.Y.Z>   # OBPI brief evidence (Layer 2)
 /gz-adr-sync ADR-<X.Y.Z>         # ADR-scoped reconciliation (Layers 1-2)
 /gz-adr-sync                     # Full registration and status refresh (Layer 3)
 ```
@@ -939,7 +938,7 @@ Use readiness as a design input, not a one-time score:
 
 ### Before requesting ADR closeout
 
-- [ ] `/gz-obpi-reconcile ADR-<X.Y.Z>` complete
+- [ ] `/gz-obpi-sync ADR-<X.Y.Z>` complete
 - [ ] `/gz-adr-sync ADR-<X.Y.Z>` complete
 - [ ] `uv run gz adr audit-check ADR-<X.Y.Z>` passes
 - [ ] `uv run gz closeout ADR-<X.Y.Z> --dry-run` reviewed

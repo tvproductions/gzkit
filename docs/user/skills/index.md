@@ -72,11 +72,10 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-obpi-brief`](gz-obpi-brief.md) | Generate a new OBPI brief file with correct headers and evidence stubs |
 | [`/gz-obpi-lock`](gz-obpi-lock.md) | Claim or release OBPI-level work locks for multi-agent coordination |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Post-plan OBPI execution pipeline — implement, verify, present, sync |
-| [`/gz-obpi-reconcile`](gz-obpi-reconcile.md) | Audit briefs against evidence, fix stale metadata, write ledger proof |
-| [`/gz-brief-reconcile`](gz-brief-reconcile.md) | Reconcile an OBPI brief against project state across five drift dimensions |
+| [`/gz-obpi-sync`](gz-obpi-sync.md) | Audit briefs against evidence, fix stale metadata, write ledger proof |
+| [`/gz-obpi-brief-drift`](gz-obpi-brief-drift.md) | Reconcile an OBPI brief against project state across five drift dimensions |
 | [`/gz-obpi-simplify`](gz-obpi-simplify.md) | OBPI-scoped code review for reuse, quality, and efficiency |
 | [`/gz-obpi-specify`](gz-obpi-specify.md) | Create and author OBPI briefs linked to parent ADR items |
-| [`/gz-obpi-sync`](gz-obpi-sync.md) | Sync OBPI status in ADR table from brief source files |
 | [`/gz-plan-audit`](gz-plan-audit.md) | Pre-flight alignment audit — verify plan aligns with OBPI brief |
 | [`/gz-justify`](gz-justify.md) | Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts |
 | [`/gz-specify`](gz-specify.md) | Create OBPI briefs linked to parent ADR items |

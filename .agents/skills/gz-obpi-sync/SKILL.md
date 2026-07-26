@@ -1,29 +1,33 @@
 ---
-name: gz-obpi-reconcile
+name: gz-obpi-sync
 persona: main-session
-description: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, sync ADR table, write ledger proof. Absorbs gz-obpi-audit and gz-obpi-sync.
+description: OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, sync ADR table, write ledger proof.
 category: obpi-pipeline
 compatibility: GovZero v6 framework with OBPI briefs
 metadata:
-  skill-version: "3.2.0"
+  skill-version: "3.3.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   skill-type: "orchestrator"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-26
 model: sonnet
 ---
 
-# gz-obpi-reconcile (v2.0.0)
+# gz-obpi-sync (v2.0.0)
 
 ## Purpose
 
 **Single-command OBPI reconciliation** — audit briefs against actual evidence, fix stale metadata, sync the ADR table, and write ledger proof.
 
-This skill is the unified OBPI verification surface. It absorbs the former
-`gz-obpi-audit` (Layer 1 evidence gathering) and `gz-obpi-sync` (Layer 3 table sync).
+This skill is the unified OBPI verification surface. It consolidates two skills
+retired at ADR-0.0.36 closeout: a Layer 1 evidence-gathering skill and a Layer 3
+ADR-table-sync skill. Both were deleted per the delete-on-retire policy in
+`.gzkit/rules/skill-surface-sync.md`; the table-sync predecessor happened to
+carry this skill's present slug, which is why the pre-consolidation names are
+described here rather than cited.
 
 This skill ensures:
 
@@ -71,8 +75,8 @@ These thoughts mean STOP — you are about to skip evidence-backed verification:
 ## Invocation
 
 ```text
-/gz-obpi-reconcile ADR-0.0.19
-/gz-obpi-reconcile 0.0.19
+/gz-obpi-sync ADR-0.0.19
+/gz-obpi-sync 0.0.19
 ```
 
 ---
@@ -291,7 +295,7 @@ jq -r '.criteria_evaluated[].result' logs/obpi-audit.jsonl | sort | uniq -c
 ## Example Session
 
 ```text
-User: /gz-obpi-reconcile ADR-0.0.19
+User: /gz-obpi-sync ADR-0.0.19
 
 Agent: Starting OBPI reconciliation for ADR-0.0.19...
 

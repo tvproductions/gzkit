@@ -28,7 +28,7 @@ gzkit enforces a ledger-first GovZero workflow:
 |------|-----|-------|
 | 1. Record intent | `gz prd`, `gz plan`, `gz specify` | `/gz-prd`, `/gz-plan`, `/gz-obpi-specify` |
 | 2. Execute and verify | `gz obpi pipeline`, `gz gates` | `/gz-obpi-pipeline`, `/gz-gates` |
-| 3. Reconcile closeout readiness | `gz obpi sync`, `gz adr audit-check` | `/gz-obpi-reconcile` |
+| 3. Reconcile closeout readiness | `gz obpi sync`, `gz adr audit-check` | `/gz-obpi-sync` |
 | 4. Present closeout evidence | `gz closeout` | `/gz-adr-closeout-ceremony` |
 | 5. Record human attestation | `gz attest` | (CLI only — human act) |
 | 6. Reconcile post-attestation | `gz audit` | `/gz-adr-audit` |

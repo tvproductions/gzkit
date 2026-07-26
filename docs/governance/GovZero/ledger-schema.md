@@ -5,6 +5,11 @@
 **Schema version:** `govzero.ledger.v1`
 **Parent ADR:** ADR-0.0.21 (GovZero Tooling Layered Trust Architecture)
 
+> **Naming note (2026-07-26):** `gz-obpi-reconcile` was renamed to
+> `gz-obpi-sync`. See [Layered Trust Architecture](layered-trust.md) for the
+> full naming/consolidation history, including the retired predecessor tool
+> that already carried the `gz-obpi-sync` name before this rename.
+
 ---
 
 ## Overview
@@ -52,7 +57,7 @@ outputs. This enables Layer 2 tools to reliably consume structured evidence from
 | `obpi-audit` | OBPI brief status audit results | gz-obpi-audit |
 | `covers-map` | ADR → test mapping from @covers | gz-adr-verification |
 | `coverage-run` | Module coverage measurement | coverage reporter |
-| `reconciliation` | Reconciliation session summary | gz-obpi-reconcile |
+| `reconciliation` | Reconciliation session summary | gz-obpi-sync |
 
 ---
 
@@ -204,7 +209,7 @@ Records summary of a reconciliation session.
 {
   "type": "reconciliation",
   "timestamp": "2026-01-26T23:15:00Z",
-  "reconciliation_session": "gz-obpi-reconcile",
+  "reconciliation_session": "gz-obpi-sync",
   "adr_id": "ADR-0.0.19",
   "phase": "full_reconciliation",
   "briefs_audited": 12,

@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-14
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "6.1.1"
+  skill-version: "6.2.0"
 model: haiku
 ---
 
@@ -189,7 +189,7 @@ git diff --name-only origin/main..HEAD | grep -E '(adr_status|obpi-audit\.jsonl|
 
 If shared files appear in the diff, the agent should:
 1. Pull and rebase
-2. Regenerate computed files (`/gz-adr-sync`, `/gz-obpi-reconcile`)
+2. Regenerate computed files (`/gz-adr-sync`, `/gz-obpi-sync`)
 3. Re-push
 
 ---

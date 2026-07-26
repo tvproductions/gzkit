@@ -24,7 +24,7 @@ Use `/gz-governance` when you need to perform ADR, OBPI, or ledger governance wo
 | adr sync | `/gz-adr-sync` |
 | adr closeout | `/gz-adr-closeout-ceremony` |
 | obpi specify | `/gz-obpi-specify` |
-| obpi reconcile | `/gz-obpi-reconcile` |
+| obpi sync | `/gz-obpi-sync` |
 | obpi lock | `/gz-obpi-lock` |
 | plan audit | `/gz-plan-audit` |
 | gates | `/gz-gates` |

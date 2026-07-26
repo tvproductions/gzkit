@@ -5,9 +5,9 @@ description: Route agents to the correct skill for a given task type. Use when s
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
 model: haiku
 ---
@@ -58,7 +58,7 @@ Task arrives
     │   ├── Execute the full implementation pipeline → gz-obpi-pipeline
     │   ├── Claim/release OBPI work locks ──────────→ gz-obpi-lock
     │   ├── Review code quality after implementation → gz-obpi-simplify
-    │   └── Reconcile briefs against evidence ──────→ gz-obpi-reconcile
+    │   └── Reconcile briefs against evidence ──────→ gz-obpi-sync
     │
     ├── Auditing or closing out?
     │   ├── Gate 5 audit (COMPLETED → VALIDATED) ───→ gz-adr-audit
@@ -107,7 +107,7 @@ Task arrives
 | implement, execute pipeline, run OBPI | `gz-obpi-pipeline` |
 | lock, claim, release OBPI | `gz-obpi-lock` |
 | simplify, code review, craft | `gz-obpi-simplify` |
-| reconcile, audit briefs, sync table | `gz-obpi-reconcile` |
+| reconcile, audit briefs, sync table | `gz-obpi-sync` |
 | audit ADR, Gate 5, validate ADR | `gz-adr-audit` |
 | closeout, ceremony, attest | `gz-adr-closeout-ceremony` |
 | patch release, cut release | `gz-patch-release` |

@@ -1,5 +1,5 @@
 # Step definitions are authored when the operator-facing surfaces land
-# (OBPI-0.0.37-06 adds the gz-brief-reconcile CLI verb plus features/steps/);
+# (OBPI-0.0.37-06 adds the gz-obpi-brief-drift CLI verb plus features/steps/);
 # OBPI-0.0.37-05's allowlist scopes this file to the .feature contract only.
 # Scenarios are @wip so the pre-merge behave gate skips them until steps exist.
 Feature: OBPI Brief Reconciliation Engine (CIC-2)

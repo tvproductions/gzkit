@@ -125,7 +125,7 @@ Work flows through five gates, adapted by lane (Lite or Heavy):
 | **ADR Lifecycle** | `gz-adr-create`, `gz-adr-evaluate`, `gz-adr-promote`, `gz-adr-status`, `gz-design`, `gz-plan` |
 | **ADR Operations** | `gz-adr-autolink`, `gz-adr-emit-receipt`, `gz-adr-map`, `gz-adr-recon`, `gz-adr-sync` |
 | **ADR Audit & Closeout** | `gz-adr-audit`, `gz-adr-closeout-ceremony`, `gz-patch-release` |
-| **OBPI Pipeline** | `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-reconcile`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit` |
+| **OBPI Pipeline** | `gz-obpi-lock`, `gz-obpi-pipeline`, `gz-obpi-sync`, `gz-obpi-simplify`, `gz-obpi-specify`, `gz-plan-audit` |
 | **Governance Infrastructure** | `gz-constitute`, `gz-gates`, `gz-implement`, `gz-init`, `gz-prd`, `gz-state`, `gz-status`, `gz-validate` |
 | **Agent & Repository** | `git-sync`, `gz-agent-sync`, `gz-check-config-paths`, `gz-migrate-semver`, `gz-session-handoff`, `gz-tidy` |
 | **Code Quality** | `gz-check`, `gz-chore-runner`, `gz-cli-audit` |

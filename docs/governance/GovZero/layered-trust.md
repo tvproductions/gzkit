@@ -4,6 +4,17 @@
 **Last reviewed:** 2026-01-29
 **Parent ADR:** ADR-0.0.21 (GovZero Tooling Layered Trust Architecture)
 
+> **Naming note (2026-07-26):** `gz-obpi-reconcile` (the Layer 2 tool below)
+> was renamed to `gz-obpi-sync`
+> (`.gzkit/rules/tool-skill-runbook-alignment.md` Invariant 2). This
+> coincides with — and post-dates — the Layer 3 `gz-obpi-sync` (table-sync)
+> and Layer 1 `gz-obpi-audit` skills referenced below, which were separately
+> retired and consolidated into the Layer 2 tool at ADR-0.0.36 closeout. Every
+> `gz-obpi-sync` mention past this point that is NOT explicitly tagged
+> "Layer 3" refers to the renamed Layer 2 tool; Layer 3 mentions describe the
+> retired, pre-consolidation predecessor that happened to carry the same
+> name.
+
 ---
 
 ## Overview
@@ -45,7 +56,7 @@ audit trail (ledger entries are receipts).
 ┌─────────────────────────────────────────────────────────────────────┐
 │  LAYER 2: Ledger Consumption                                        │
 │  ───────────────────────────                                        │
-│  Tools: gz-obpi-reconcile, gz-adr-recon, gz-adr-audit               │
+│  Tools: gz-obpi-sync, gz-adr-recon, gz-adr-audit                    │
 │  Action: Read ledger, update metadata, generate reports             │
 │  Output: Updated briefs, ADR tables, audit reports                  │
 │  Trust: Trusts ledger entries — does NOT re-verify                  │
@@ -97,15 +108,15 @@ audit trail (ledger entries are receipts).
 
 | Tool | What It Updates | Ledger Entry Consumed |
 |------|-----------------|----------------------|
-| `gz-obpi-reconcile` | Brief files (Status, checkboxes) | `obpi-audit` |
+| `gz-obpi-sync` | Brief files (Status, checkboxes) | `obpi-audit` |
 | `gz-adr-recon` | ADR OBPI tables | `obpi-audit`, `reconciliation` |
 | `gz-adr-audit` | Audit reports, attestation | All entry types |
 
 **Workflow:** Read ledger → Trust results (no re-verification) → Update metadata → Write summary entry
 
 ```bash
-# Example: gz-obpi-reconcile reads ledger, fixes stale briefs
-/gz-obpi-reconcile ADR-0.0.19
+# Example: gz-obpi-sync reads ledger, fixes stale briefs
+/gz-obpi-sync ADR-0.0.19
 
 # Reads: logs/obpi-audit.jsonl
 # Updates: briefs/OBPI-0.0.19-*.md (Status, checkboxes)
@@ -158,7 +169,7 @@ Two tools can update the ADR OBPI table:
 |------|-------|-------|--------|----------------|
 | gz-obpi-audit | 1 | Code, tests, briefs | Ledger | Brief files, ADR table |
 | gz-adr-verification | 1 | Tests (@covers) | Ledger | ADR files |
-| gz-obpi-reconcile | 2 | Ledger, briefs | Brief files, ledger | ADR OBPI table |
+| gz-obpi-sync | 2 | Ledger, briefs | Brief files, ledger | ADR OBPI table |
 | gz-adr-recon | 2 | Ledger | ADR OBPI table | Brief files |
 | gz-adr-audit | 2 | Ledger | Audit report | Source files |
 | gz-adr-sync | 3 | ADR files | Index files | Ledger |
@@ -172,7 +183,7 @@ Two tools can update the ADR OBPI table:
 |----------|------|-------|
 | "Did this brief's work get done?" | gz-obpi-audit | 1 |
 | "Which tests cover this ADR?" | gz-adr-verification | 1 |
-| "Update stale brief metadata" | gz-obpi-reconcile | 2 |
+| "Update stale brief metadata" | gz-obpi-sync | 2 |
 | "Sync ADR table from ledger (proof-based)" | gz-adr-recon | 2 |
 | "Prepare for closeout ceremony" | gz-adr-audit | 2 |
 | "Update ADR index after status change" | gz-adr-sync | 3 |
@@ -184,7 +195,7 @@ Two tools can update the ADR OBPI table:
 
 ```text
 1. gz-obpi-audit (Layer 1) — verify each brief, write ledger
-2. gz-obpi-reconcile (Layer 2) — fix stale briefs from ledger
+2. gz-obpi-sync (Layer 2) — fix stale briefs from ledger
 3. gz-adr-recon (Layer 2) — sync ADR table from ledger
 4. gz-adr-audit (Layer 2) — generate audit report for attestation
 ```
@@ -193,7 +204,7 @@ Two tools can update the ADR OBPI table:
 
 ```text
 1. gz-obpi-audit (Layer 1) — verify the brief, write ledger
-2. gz-obpi-reconcile (Layer 2) — update brief Status if criteria pass
+2. gz-obpi-sync (Layer 2) — update brief Status if criteria pass
 ```
 
 ---

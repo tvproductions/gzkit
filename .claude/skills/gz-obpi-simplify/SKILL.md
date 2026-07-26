@@ -5,9 +5,9 @@ description: OBPI-scoped code review for reuse, quality, and efficiency. Resolve
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-03
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "6.0.4"
+  skill-version: "6.1.0"
 model: sonnet
 ---
 
@@ -193,5 +193,5 @@ After all reviews complete:
 | Skill | Relationship |
 |-------|--------------|
 | `gz-obpi-pipeline` | Pipeline verifies correctness; simplify verifies craft |
-| `gz-obpi-reconcile` | Run after simplify to catch any status drift |
+| `gz-obpi-sync` | Run after simplify to catch any status drift |
 | `gz-check` | Simplify runs quality checks as part of Step 3 |

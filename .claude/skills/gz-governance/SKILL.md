@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-26
 metadata:
-  skill-version: "0.6.0"
+  skill-version: "0.7.0"
 model: haiku
 ---
 
@@ -22,8 +22,8 @@ model: haiku
 | adr sync | `gz-adr-sync` |
 | adr closeout | `gz-adr-closeout-ceremony` |
 | obpi specify | `gz-obpi-specify` |
-| obpi sync | `gz-obpi-reconcile` |
-| obpi brief-drift | `gz-brief-reconcile` |
+| obpi sync | `gz-obpi-sync` |
+| obpi brief-drift | `gz-obpi-brief-drift` |
 | obpi lock | `gz-obpi-lock` |
 | semver migrate | `gz-migrate-semver` |
 | ledger receipt | `gz-adr-emit-receipt` |

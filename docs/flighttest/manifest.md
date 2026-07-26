@@ -81,8 +81,8 @@ and reconciled under attestation.
 | 4 | direct fix | `fix(<scope>): … (GHI #N)` commit with TDD evidence |
 | 5 | ghi-close | GHI closed citing the commit SHA |
 | 6 | ghi-triage | Open-queue triage renders a deterministic rank |
-| 7 | gz-brief-reconcile | Induced brief drift detected; amendment written under attestation; `brief_reconciled` event |
-| 8 | gz-obpi-reconcile | Stale OBPI metadata corrected; ADR table synced |
+| 7 | gz-obpi-brief-drift | Induced brief drift detected; amendment written under attestation; `brief_reconciled` event |
+| 8 | gz-obpi-sync | Stale OBPI metadata corrected; ADR table synced |
 | 9 | gz-obpi-simplify | Reuse/quality pass over brief scope; fixes applied |
 | 10 | gz-issue-file | Cross-repo filing routes to the gzkit repo with provenance trailer *(note if N/A on substrate)* |
 

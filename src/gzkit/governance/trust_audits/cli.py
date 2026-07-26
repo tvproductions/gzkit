@@ -71,7 +71,7 @@ _NO_SKILL_VERBS: dict[str, str] = {
     "obpi repudiate": (
         "Operator-invoked repair verb (ADR-0.0.71-completion-repudiation). "
         "No standalone skill — the action is one-shot operator-gated correction, "
-        "not a recurring agent workflow. The `gz-obpi-reconcile` skill covers "
+        "not a recurring agent workflow. The `gz-obpi-sync` skill covers "
         "post-repudiation verification."
     ),
     "upgrade": (

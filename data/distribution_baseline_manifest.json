@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.33.0",
+  "gzkit_version": "0.33.3",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -58,7 +58,6 @@
       "gz-agent-sync/SKILL.md",
       "gz-airlock/SKILL.md",
       "gz-arb/SKILL.md",
-      "gz-brief-reconcile/SKILL.md",
       "gz-check/SKILL.md",
       "gz-check-config-paths/SKILL.md",
       "gz-chore-runner/SKILL.md",
@@ -86,11 +85,12 @@
       "gz-manage/SKILL.md",
       "gz-migrate-semver/SKILL.md",
       "gz-mx/SKILL.md",
+      "gz-obpi-brief-drift/SKILL.md",
       "gz-obpi-lock/SKILL.md",
       "gz-obpi-pipeline/SKILL.md",
-      "gz-obpi-reconcile/SKILL.md",
       "gz-obpi-simplify/SKILL.md",
       "gz-obpi-specify/SKILL.md",
+      "gz-obpi-sync/SKILL.md",
       "gz-ontology/SKILL.md",
       "gz-patch-release/SKILL.md",
       "gz-plan/SKILL.md",

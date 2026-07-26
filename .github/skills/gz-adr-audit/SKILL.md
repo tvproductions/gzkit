@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.12.0"
+  skill-version: "6.13.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-07-26
 model: opus
 ---
 
@@ -72,7 +72,7 @@ This is a **Layer 2** tool — it consumes proof from the ledger rather than re-
 
 **Trust Chain:**
 
-1. **Layer 1 tools** (`gz-obpi-reconcile`, `gz adr audit-check`) run tests, check coverage, validate evidence
+1. **Layer 1 tools** (`gz-obpi-sync`, `gz adr audit-check`) run tests, check coverage, validate evidence
 2. **Layer 1 writes proof** to `logs/obpi-audit.jsonl` with status entries
 3. **This tool reads proof** — if all briefs show PASS/Completed, skip re-verification
 4. **Gate 5 attests** to the presence of proof, not re-execution

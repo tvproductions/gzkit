@@ -100,7 +100,7 @@ nav:
     - Closeout & Audit:
       - /gz-adr-closeout-ceremony: user/skills/gz-adr-closeout-ceremony.md
       - /gz-adr-audit: user/skills/gz-adr-audit.md
-      - /gz-obpi-reconcile: user/skills/gz-obpi-reconcile.md
+      - /gz-obpi-sync: user/skills/gz-obpi-sync.md
       - /gz-adr-emit-receipt: user/skills/gz-adr-emit-receipt.md
       - /gz-validate: user/skills/gz-validate.md
     - Operations:
@@ -134,7 +134,8 @@ nav:
     - gz obpi status: user/manpages/obpi-status.md
     - gz obpi pipeline: user/manpages/obpi-pipeline.md
     - gz obpi validate: user/manpages/obpi-validate.md
-    - gz obpi reconcile: user/manpages/obpi-reconcile.md
+    - gz obpi sync: user/manpages/obpi-sync.md
+    - gz obpi brief-drift: user/manpages/obpi-brief-drift.md
     - gz obpi emit-receipt: user/manpages/obpi-emit-receipt.md
     - gz closeout: user/manpages/closeout.md
     - gz patch release: user/manpages/patch-release.md

@@ -52,5 +52,5 @@ and cites the verifiable artifact. `gh issue close` fires with a
 |---------|-------------|
 | [`/ghi-author`](ghi-author.md) | Upstream authoring surface |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Ceremony route when heavy/foundation triggers fire |
-| [`/gz-obpi-reconcile`](gz-obpi-reconcile.md) | Propagate closure to brief evidence |
+| [`/gz-obpi-sync`](gz-obpi-sync.md) | Propagate closure to brief evidence |
 | [`gh issue close`](https://cli.github.com/manual/gh_issue_close) | CLI the skill wraps |

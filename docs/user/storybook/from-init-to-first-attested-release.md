@@ -60,7 +60,7 @@ are derived — regenerable from the artifact graph.
 `gz-init` → `gz-prd` → `gz-constitute` → `gz-design` → `gz-adr-create` →
 `gz-adr-evaluate` → `gz-justify` → `gz-plan` → `gz-plan-audit` →
 `gz-obpi-specify` → `gz-obpi-pipeline` → `gz-arb` → `gz-obpi-simplify` →
-`gz-obpi-reconcile` → `gz-adr-audit` → `gz-adr-closeout-ceremony` →
+`gz-obpi-sync` → `gz-adr-audit` → `gz-adr-closeout-ceremony` →
 `gz-patch-release`
 
 ### Anchored manpages

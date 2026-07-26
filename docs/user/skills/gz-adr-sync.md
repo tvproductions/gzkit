@@ -64,6 +64,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-adr-sync
 
 | Related | Relationship |
 |---------|-------------|
-| [/gz-obpi-reconcile](gz-obpi-reconcile.md) | OBPI-level reconciliation (run before this skill) |
+| [/gz-obpi-sync](gz-obpi-sync.md) | OBPI-level reconciliation (run before this skill) |
 | [skills index](index.md) | Browse the full skill catalog |
 | [governance runbook](../../governance/governance_runbook.md) | Workflow context |

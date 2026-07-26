@@ -1,4 +1,4 @@
-# /gz-obpi-reconcile
+# /gz-obpi-sync
 
 OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, sync ADR table, write ledger proof. Absorbs gz-obpi-audit and gz-obpi-sync.
 
@@ -6,7 +6,7 @@ OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata,
 
 ## Purpose
 
-`/gz-obpi-reconcile` exposes the canonical gz-obpi-reconcile workflow for operator invocation. **Single-command OBPI reconciliation** — audit briefs against actual evidence, fix stale metadata, sync the ADR table, and write ledger proof.
+`/gz-obpi-sync` exposes the canonical gz-obpi-sync workflow for operator invocation. **Single-command OBPI reconciliation** — audit briefs against actual evidence, fix stale metadata, sync the ADR table, and write ledger proof.
 
 ## When to Use
 
@@ -14,12 +14,12 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-reconcile/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-sync/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
 ## Invocation
 
 ```text
-/gz-obpi-reconcile
+/gz-obpi-sync
 ```
 
 | Argument / Flag | Required | Description |
@@ -30,10 +30,10 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-rec
 
 | File | Role | Read/Write |
 |------|------|------------|
-| `.gzkit/skills/gz-obpi-reconcile/SKILL.md` | Canonical skill contract | Read |
-| `.claude/skills/gz-obpi-reconcile/SKILL.md` | Claude mirror | Read |
-| `.agents/skills/gz-obpi-reconcile/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-obpi-reconcile/SKILL.md` | Copilot mirror | Read |
+| `.gzkit/skills/gz-obpi-sync/SKILL.md` | Canonical skill contract | Read |
+| `.claude/skills/gz-obpi-sync/SKILL.md` | Claude mirror | Read |
+| `.agents/skills/gz-obpi-sync/SKILL.md` | Codex mirror | Read |
+| `.github/skills/gz-obpi-sync/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

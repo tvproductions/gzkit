@@ -1,12 +1,12 @@
 ---
-name: gz-brief-reconcile
+name: gz-obpi-brief-drift
 description: Reconcile an OBPI brief against current project state and optionally write operator-attested amendments. Use when a brief's allowlist, discovery checklist, verification verbs, REQ count, or citation tuples may have drifted from reality.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-26
 metadata:
-  skill-version: "0.4.0"
+  skill-version: "0.5.0"
 model: haiku
 gz_command: gz obpi brief-drift
 ---
@@ -57,5 +57,5 @@ records the result to the ledger (invariant CIC-2, brief↔reality coherence).
 
 ## Example
 
-Use $gz-brief-reconcile to reconcile an OBPI brief against project state before
+Use $gz-obpi-brief-drift to reconcile an OBPI brief against project state before
 completion.
