@@ -611,6 +611,55 @@ class TestCollectCampaign(unittest.TestCase):
         )
 
 
+class TestHandoffSelectionUnderBehindClone(unittest.TestCase):
+    """The handoff selection reads the WORKING TREE; `behind` is a ref fact.
+
+    `collect_remote_state` fetches, so the report knows the clone is behind — but
+    a fetch updates refs, never the working tree, so `.gzkit/handoffs/` on disk is
+    still the pre-pull set. The selection was rendered with the same confidence
+    either way, which pinned a live session to a handoff three generations stale
+    while the section directly above it said `behind=20`.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 6, 10, 12, 0, 0, tzinfo=UTC)
+
+    def _state(self, behind: int) -> dict:
+        return {
+            "remote_state": {
+                "branch": "main",
+                "ahead": 0,
+                "behind": behind,
+                "is_behind": behind > 0,
+            },
+            "handoff": {
+                "path": ".gzkit/handoffs/20260610T000000Z-x.md",
+                "freshness": "Fresh",
+                "first_action": "Do the thing",
+            },
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+
+    def test_behind_clone_caveats_the_handoff_selection(self):
+        # output-contract: the rendered caveat IS the operator-visible behavior.
+        rendered = self.mod.render(self._state(behind=20), self.now)
+        section = rendered.split("## Most-recent handoff", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("behind", section.lower())
+        self.assertIn("git pull --ff-only", section)
+
+    def test_level_clone_does_not_caveat_the_selection(self):
+        # Negative control — a caveat on every session is a caveat nobody reads.
+        # output-contract: absence of the caveat is the contract's other half.
+        rendered = self.mod.render(self._state(behind=0), self.now)
+        section = rendered.split("## Most-recent handoff", 1)[1].split("\n## ", 1)[0]
+        self.assertNotIn("git pull --ff-only", section)
+
+
 class TestRenderCampaignBlock(unittest.TestCase):
     def setUp(self):
         self.mod = _load_orientation_module()
