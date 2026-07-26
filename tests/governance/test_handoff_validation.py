@@ -948,5 +948,87 @@ class TestCreateHandoffRefusesHollowLiveNC(unittest.TestCase):
             self.assertEqual(validate_handoff_document(path.read_text(encoding="utf-8"), root), [])
 
 
+class TestDecisionMarkerDiscipline(unittest.TestCase):
+    """An attributed decision must be a list item, or its ruling is dropped (GHI #722).
+
+    `_section_items` only treats a line as an entry when it carries a `-`, `*`, or
+    `N.` marker. A decision that leads with `[operator-ruled]` and no marker parses
+    to nothing, so `parse_decisions` returns an empty list and the successor's
+    Settled Rulings promotes zero rulings — silently, under a clean validation
+    pass. Ten operator rulings left the chain that way across two handoffs before
+    it was noticed.
+
+    The prohibition is asymmetric on purpose: this refuses the shape that DESTROYS
+    booked authority, not every formatting deviation.
+    """
+
+    def _doc_with_decisions(self, decisions_body: str) -> str:
+        doc = _clean_handoff_doc()
+        return doc.replace(
+            "## Decisions Made\n\nContent for section.",
+            f"## Decisions Made\n\n{decisions_body}",
+        )
+
+    def test_unbulleted_operator_ruling_is_refused(self) -> None:
+        doc = self._doc_with_decisions(
+            '[operator-ruled] Ship the thing (verbatim: "ship it").\n'
+            "[agent-chose] Used a temp dir for the fixture."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            violations = validate_handoff_document(doc, Path(tmp))
+        self.assertTrue(
+            any("Decisions Made" in v for v in violations),
+            msg=f"unbulleted attributed decisions must be refused; got {violations}",
+        )
+
+    def test_refusal_prose_carries_what_why_and_recovery(self) -> None:
+        """Three-part bar per `.gzkit/rules/guardrail-feedback-prose.md`."""
+        doc = self._doc_with_decisions("[operator-ruled] Ship the thing.")
+        with tempfile.TemporaryDirectory() as tmp:
+            message = "\n".join(validate_handoff_document(doc, Path(tmp)))
+        self.assertIn("[operator-ruled]", message)  # what failed — the offending shape
+        self.assertIn("Settled Rulings", message)  # why it is forbidden — the consequence
+        self.assertIn("- ", message)  # governed next step — the marker to add
+
+    def test_bulleted_decisions_pass(self) -> None:
+        doc = self._doc_with_decisions(
+            '- [operator-ruled] Ship the thing (verbatim: "ship it").\n'
+            "- [agent-chose] Used a temp dir for the fixture."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(validate_handoff_document(doc, Path(tmp)), [])
+
+    def test_numbered_decisions_pass(self) -> None:
+        """`N.` is a list marker `_section_items` accepts, so it must not be refused."""
+        doc = self._doc_with_decisions("1. [operator-ruled] Ship the thing.")
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(validate_handoff_document(doc, Path(tmp)), [])
+
+    def test_unattributed_prose_is_not_refused(self) -> None:
+        """Negative control: the gate targets DROPPED ATTRIBUTION, not prose style.
+
+        A Decisions Made section of plain prose carries no ruling to lose. Refusing
+        it would be a formatting opinion; refusing an unbulleted `[operator-ruled]`
+        line is data-loss prevention. Conflating the two would make this gate fire
+        on the whole legacy corpus.
+        """
+        doc = self._doc_with_decisions("We decided to ship the thing after discussion.")
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(validate_handoff_document(doc, Path(tmp)), [])
+
+    def test_parse_round_trip_on_an_accepted_document(self) -> None:
+        """The gate's promise: what it accepts, `parse_decisions` can actually read."""
+        from gzkit.handoff_api import parse_decisions  # noqa: PLC0415
+
+        doc = self._doc_with_decisions(
+            "- [operator-ruled] Ship the thing.\n- [agent-chose] Used a temp dir."
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(validate_handoff_document(doc, Path(tmp)), [])
+        decisions = parse_decisions(doc)
+        self.assertEqual(len(decisions), 2)
+        self.assertEqual(sum(1 for d in decisions if d.is_settled), 1)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.18.0"
+  skill-version: "6.19.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-24
+last_reviewed: 2026-07-26
 model: sonnet
 ---
 
@@ -125,13 +125,31 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    | Verification Checklist | Commands and checks for the resuming agent |
    | Evidence / Artifacts | File paths (backtick-quoted) produced during the session |
 
-   **Attribute every decision.** An operator ruling and an agent's own choice
-   rendered identically is what made both equally re-arguable in the next session
-   (GHI #696 defect 4) — operator canon is verbatim, *"MY WORD IS AUTHORITY IN ALL
-   CASES."* Lead each entry with `[operator-ruled]` or `[agent-chose]`; matching is
-   case- and spacing-tolerant. An unmarked entry parses as **unattributed** and is
-   never promoted to a ruling nor demoted to a preference — but it also does not
-   carry forward, so an unmarked operator ruling is a ruling you will re-argue.
+   **Attribute every decision, and write it as a list item.** An operator ruling
+   and an agent's own choice rendered identically is what made both equally
+   re-arguable in the next session (GHI #696 defect 4) — operator canon is
+   verbatim, *"MY WORD IS AUTHORITY IN ALL CASES."* Each entry MUST begin with a
+   list marker (`- `, `* `, or `N. `) and then lead with `[operator-ruled]` or
+   `[agent-chose]`; attribution matching is case- and spacing-tolerant. An
+   unmarked entry parses as **unattributed** and is never promoted to a ruling nor
+   demoted to a preference — but it also does not carry forward, so an unmarked
+   operator ruling is a ruling you will re-argue.
+
+   ```markdown
+   - [operator-ruled] Ship the thing (verbatim: "ship it").
+   - [agent-chose] Used a temp dir for the fixture.
+   ```
+
+   **The list marker is load-bearing, not styling (GHI #722).** `_section_items`
+   only treats a line as an entry when it carries one, so
+   `[operator-ruled] ...` with no `- ` parses to NOTHING — `parse_decisions`
+   returns an empty list and the successor's `Settled Rulings` promotes zero
+   rulings. Ten operator rulings left the chain that way across two handoffs
+   before it was caught. This paragraph exists because the contract previously
+   said only "lead each entry with `[operator-ruled]`", and an author following
+   that literally produced a section the promoter could not read. Now fail-closed:
+   `validate_decision_markers` refuses the shape at authoring, so the gate catches
+   it instead of the next session discovering a ruling it has to re-argue.
 
    **`Settled Rulings` is written for you — do NOT hand-fill it.** The optional
    `## Settled Rulings` section is composed by construction: `create_handoff`

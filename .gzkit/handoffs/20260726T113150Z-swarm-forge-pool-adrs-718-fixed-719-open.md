@@ -22,17 +22,17 @@ Off-cycle session: no parent ADR, no OBPI lock. Began as a competitive analysis 
 
 ## Decisions Made
 
-[operator-ruled] Write two pool ADRs (substrate + capability) crediting swarm-forge + superpowers (verbatim: "authorized -- write the two pool ADRs"; booked via gz handoff authorize, session 786a9e8f).
-[operator-ruled] Primary use case = parallel read-only review personas; parallelism itself "isn't too important"; record the alternatives (parallel OBPI impl / GHI fixes / ADR pipelines) as future scope.
-[operator-ruled] Allow ephemeral worktrees (scratch checkouts, land on main, no branch dance) -- a carve-out from "never create feature branches"; ratifying it is a hard promotion gate for ADR-pool.worktree-parallel-agents.
-[operator-ruled] Ledger concurrency = single-writer-by-construction (only merge-to-main writes Layer-2), NOT a daemon.
-[operator-ruled] Two pool ADRs (substrate + capability), not one combined nor three.
-[operator-ruled] Use the governed skill, not hand-scaffolding ("there is an adr authoring skill don't vibe"; "use skills - skills have rules + tools"). Recorded as an improvement insight.
-[operator-ruled] Fix GHI #718 via direction (a), the skill-doc fix (chosen via AskUserQuestion).
-[operator-ruled] File the #718 follow-on via /ghi-author (became GHI #719).
-[agent-chose] Classified #719 defect+runtime+tech-debt as a sibling-cut of #615 (different artifact, same not-schema-enforced class); posted a cross-link comment on #615.
-[agent-chose] skill-version bump 6.6.2 -> 6.6.3 as PATCH (procedure/wording fix, no governance-rule change) per the skill-surface-sync version table.
-[agent-chose] STOPPED and surfaced the concurrent-writer state before any commit rather than interleaving writes into another session's push.
+- [operator-ruled] Write two pool ADRs (substrate + capability) crediting swarm-forge + superpowers (verbatim: "authorized -- write the two pool ADRs"; booked via gz handoff authorize, session 786a9e8f).
+- [operator-ruled] Primary use case = parallel read-only review personas; parallelism itself "isn't too important"; record the alternatives (parallel OBPI impl / GHI fixes / ADR pipelines) as future scope.
+- [operator-ruled] Allow ephemeral worktrees (scratch checkouts, land on main, no branch dance) -- a carve-out from "never create feature branches"; ratifying it is a hard promotion gate for ADR-pool.worktree-parallel-agents.
+- [operator-ruled] Ledger concurrency = single-writer-by-construction (only merge-to-main writes Layer-2), NOT a daemon.
+- [operator-ruled] Two pool ADRs (substrate + capability), not one combined nor three.
+- [operator-ruled] Use the governed skill, not hand-scaffolding ("there is an adr authoring skill don't vibe"; "use skills - skills have rules + tools"). Recorded as an improvement insight.
+- [operator-ruled] Fix GHI #718 via direction (a), the skill-doc fix (chosen via AskUserQuestion).
+- [operator-ruled] File the #718 follow-on via /ghi-author (became GHI #719).
+- [agent-chose] Classified #719 defect+runtime+tech-debt as a sibling-cut of #615 (different artifact, same not-schema-enforced class); posted a cross-link comment on #615.
+- [agent-chose] skill-version bump 6.6.2 -> 6.6.3 as PATCH (procedure/wording fix, no governance-rule change) per the skill-surface-sync version table.
+- [agent-chose] STOPPED and surfaced the concurrent-writer state before any commit rather than interleaving writes into another session's push.
 
 ## Immediate Next Steps
 

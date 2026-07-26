@@ -31,6 +31,7 @@ __all__ = [
     "find_handoff_for_release",
     "parse_abandon_spec",
     "parse_frontmatter",
+    "validate_decision_markers",
     "validate_handoff_document",
     "validate_no_placeholders",
     "validate_no_secrets",
@@ -309,6 +310,75 @@ def validate_sections_populated(content: str) -> list[str]:
     return empty
 
 
+# An attributed decision, and the list markers `_section_items` will parse. Kept
+# local rather than imported from `gzkit.handoff_api`, which imports THIS module.
+# Both patterns mirror their originals there (`_ATTRIBUTION_RE`,
+# `_ITEM_MARKER_RE`); `tests/governance/test_handoff_validation.py` round-trips an
+# accepted document through `parse_decisions` so the two cannot drift apart
+# silently.
+_DECISION_ATTRIBUTION_RE = re.compile(r"^\[\s*(operator-ruled|agent-chose)\s*\]", re.IGNORECASE)
+_DECISION_ITEM_MARKER_RE = re.compile(r"^(?:\d+\.\s+|[-*]\s+)")
+
+_DECISIONS_SECTION = "Decisions Made"
+
+
+def validate_decision_markers(content: str) -> list[str]:
+    """Refuse attributed decisions that carry no list marker (GHI #722).
+
+    ``gzkit.handoff_api._section_items`` treats a line as an entry only when it
+    leads with ``-``, ``*``, or ``N.``. A decision written as
+    ``[operator-ruled] ...`` with no marker therefore parses to NOTHING:
+    ``parse_decisions`` returns an empty list, every ruling in the section is
+    dropped, and the successor's ``Settled Rulings`` promotes none of them —
+    silently, under an otherwise clean validation pass. Ten operator rulings left
+    the chain that way across two handoffs authored 2026-07-26 before anyone
+    noticed, and operator canon is verbatim *"MY WORD IS AUTHORITY IN ALL
+    CASES"*, so booked rulings are the worst payload in the document to drop
+    without a signal.
+
+    The check is deliberately ASYMMETRIC. It fires only on a line that *claims*
+    attribution and would be discarded — never on ordinary prose, which carries
+    no ruling to lose. Refusing prose would be a formatting opinion; refusing a
+    discarded ruling is data-loss prevention, and the wider rule would fail the
+    whole legacy corpus.
+
+    Args:
+        content: Full Markdown document text.
+
+    Returns:
+        List of violation messages (empty = every attributed decision parses).
+
+    """
+    body = _strip_frontmatter(content.replace("\r\n", "\n"))
+    heading = re.search(rf"^##\s+{re.escape(_DECISIONS_SECTION)}\s*$", body, re.MULTILINE)
+    if heading is None:
+        return []
+    rest = body[heading.end() :]
+    nxt = re.search(r"^##\s+", rest, re.MULTILINE)
+    section_body = rest[: nxt.start()] if nxt else rest
+
+    orphans = [
+        stripped
+        for line in section_body.splitlines()
+        if (stripped := line.strip())
+        and _DECISION_ATTRIBUTION_RE.match(stripped)
+        and not _DECISION_ITEM_MARKER_RE.match(stripped)
+    ]
+    if not orphans:
+        return []
+
+    sample = orphans[0][:80]
+    return [
+        f"Section '{_DECISIONS_SECTION}': {len(orphans)} attributed decision(s) carry no "
+        f"list marker, starting with: {sample!r}. "
+        "An entry leading with [operator-ruled] or [agent-chose] but no '-', '*', or "
+        "'N.' marker is invisible to parse_decisions, so its ruling is dropped from "
+        "the successor's Settled Rulings and silently leaves the chain (GHI #722). "
+        "Next step: prefix each such line with '- ' so the entry parses, then re-run "
+        "the authoring command."
+    ]
+
+
 def validate_referenced_files(content: str, base_path: Path) -> list[str]:
     """Verify that file paths referenced in Evidence section exist on disk.
 
@@ -472,6 +542,12 @@ def validate_handoff_document(
     if not allow_empty_sections:
         for section in validate_sections_populated(content):
             errors.append(f"Empty required section: {section}")
+
+    # 4c. ...and its attributed decisions are parseable list items (GHI #722).
+    # Population is not enough: a populated Decisions Made section whose entries
+    # carry no list marker parses to zero decisions, so every ruling in it is
+    # dropped from the successor's Settled Rulings without a signal.
+    errors.extend(validate_decision_markers(content))
 
     # 5. Referenced files exist (session handoffs only)
     for path in validate_referenced_files(content, base_path):

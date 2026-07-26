@@ -26,13 +26,13 @@ FIFTH, mkdocs build --strict was ALREADY BROKEN before this session's work, by a
 
 ## Decisions Made
 
-[operator-ruled] Work GHI buckets 1, 3, 4, and 5; decline bucket 2 (the Movement A campaign work).
-[operator-ruled] Retire .gzkit/schemas/ledger_events.json by forward supersession and keep the file.
-[agent-chose] Registered event_schemas as an EXPLICIT validate scope rather than adding it to the --audits bundle (whose help text names four trust-doctrine audits) or promoting it to the default tier — the existing test-tier run inside gz check is unchanged, so this adds a discovery surface, not a second execution.
-[agent-chose] Did NOT auto-link continues_from to the newest handoff when fixing GHI #717. handoff_api.py:603-606 already rejected that as asserting a continuity that may not exist, and that reasoning stands; only the author knows the lineage, so the fix asks rather than defaults.
-[agent-chose] Made the #717 warning ADVISORY, not a fail-closed gz validate scope. An unlinked handoff can be a genuine chain root; the silence was the defect, not the shape.
-[agent-chose] Left GovZero/layered-trust.md and ledger-schema.md describing the pre-ADR-0.0.36 architecture, adding dated disambiguating notes rather than rewriting a legacy architecture doc inside a slug-rename sweep.
-[agent-chose] Did NOT resolve #581 item 1 unilaterally — surfaced the operator-doctrine conflict and the three-Draft-brief blocker per Always #9. The operator ruled; the ruling is the disposition.
+- [operator-ruled] Work GHI buckets 1, 3, 4, and 5; decline bucket 2 (the Movement A campaign work).
+- [operator-ruled] Retire .gzkit/schemas/ledger_events.json by forward supersession and keep the file.
+- [agent-chose] Registered event_schemas as an EXPLICIT validate scope rather than adding it to the --audits bundle (whose help text names four trust-doctrine audits) or promoting it to the default tier — the existing test-tier run inside gz check is unchanged, so this adds a discovery surface, not a second execution.
+- [agent-chose] Did NOT auto-link continues_from to the newest handoff when fixing GHI #717. handoff_api.py:603-606 already rejected that as asserting a continuity that may not exist, and that reasoning stands; only the author knows the lineage, so the fix asks rather than defaults.
+- [agent-chose] Made the #717 warning ADVISORY, not a fail-closed gz validate scope. An unlinked handoff can be a genuine chain root; the silence was the defect, not the shape.
+- [agent-chose] Left GovZero/layered-trust.md and ledger-schema.md describing the pre-ADR-0.0.36 architecture, adding dated disambiguating notes rather than rewriting a legacy architecture doc inside a slug-rename sweep.
+- [agent-chose] Did NOT resolve #581 item 1 unilaterally — surfaced the operator-doctrine conflict and the three-Draft-brief blocker per Always #9. The operator ruled; the ruling is the disposition.
 
 ## Immediate Next Steps
 
