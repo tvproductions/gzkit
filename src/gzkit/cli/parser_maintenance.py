@@ -576,6 +576,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every ledger event type must be claimed by a graph handler",
     )
     p_validate.add_argument(
+        "--event-schemas",
+        dest="check_event_schemas",
+        action="store_true",
+        help="Every emitted ledger event type must have a schemas/ledger.json entry",
+    )
+    p_validate.add_argument(
         "--validator-fields",
         dest="check_validator_fields",
         action="store_true",
@@ -1041,6 +1047,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_type_ignores=a.check_type_ignores or a.check_audits,
             check_cli_alignment=a.check_cli_alignment or a.check_audits,
             check_event_handlers=a.check_event_handlers or a.check_audits,
+            check_event_schemas=a.check_event_schemas,
             check_validator_fields=a.check_validator_fields or a.check_audits,
             check_utf8_prefix=a.check_utf8_prefix,
             check_line_endings=a.check_line_endings,

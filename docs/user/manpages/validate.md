@@ -1793,6 +1793,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--type-ignores` | opt-in | Fail on `# type: ignore[<code>]` under `src/` (ty does not honor the bracketed-code form — see GHI #197) |
 | `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills must resolve to a registered parser verb |
 | `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
+| `--event-schemas` | opt-in | Every event type emitted by a `ledger_events.py` factory or an `events.py` typed model must have a paired `src/gzkit/schemas/ledger.json` entry, and no schema entry may be stale (GHI #581) |
 | `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
 | `--utf8-prefix` | opt-in | Forbid the `PYTHONUTF8=1`-as-`uv-run-gz`-prefix anti-pattern in docs / skills / features (GHI #275) |
 | `--line-endings` | opt-in | Fail closed on CRLF line endings in tracked text surfaces, or a `.gitattributes` missing the `* text=auto eol=lf` LF-normalization rule (GHI #570) |

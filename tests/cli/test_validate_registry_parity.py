@@ -68,6 +68,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "type_ignores",
         "cli_alignment",
         "event_handlers",
+        "event_schemas",  # GHI #581 — factory/model ↔ schema coupling at the validator tier
         "validator_fields",
         "utf8_prefix",
         "line_endings",
