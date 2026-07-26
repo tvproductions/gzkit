@@ -27,7 +27,11 @@ gz skill audit [--json] [--strict] [--max-review-age-days N]
     - `retired_on`
   - Optional capability fields: `compatibility`, `invocation`, `gz_command`
 - `last_reviewed` staleness policy is enforced for canonical skills
-  (default threshold: 90 days, configurable via CLI option).
+  (default blocking threshold: 90 days, configurable via CLI option).
+  A non-blocking warn band fires first, at 75 days, so an approaching
+  cohort surfaces while re-review is still cheap rather than arriving as
+  a CI failure with no runway. The warn band is clamped to the blocking
+  ceiling, so lowering `--max-review-age-days` below 75 collapses it.
 - Frontmatter `name` matches the skill directory name.
 - Mirror `SKILL.md` frontmatter `name` must match mirrored directory name.
 - Canonical `.gzkit/skills` entries match mirror surfaces:
@@ -117,6 +121,8 @@ Run `uv run gz agent sync control-surfaces` to repair any blocking mirror drift.
 |-------|----------|----------|----------|
 | Canonical/mirror contract violations | `error` | `true` | Fails audit immediately |
 | Stale mirror-only skill directories | `warning` | `false` | Non-blocking by default; fails with `--strict` |
+| `SKA-LAST-REVIEWED-STALE` (past the ceiling) | `error` | `true` | Fails audit immediately |
+| `SKA-LAST-REVIEWED-AGING` (inside the warn band) | `warning` | `false` | Names days remaining before it blocks |
 
 Stale mirror-only directories are findings where a mirror has a skill directory not
 present under canonical `.gzkit/skills`.

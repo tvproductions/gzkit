@@ -16,6 +16,11 @@ LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}
 SKILL_MANPAGE_DIR = Path("docs/user/skills")
 SKILL_INDEX_PATH = SKILL_MANPAGE_DIR / "index.md"
 DEFAULT_MAX_REVIEW_AGE_DAYS = 90
+# Non-blocking runway ahead of the blocking ceiling. Without it the staleness
+# gate is a binary cliff: a skill passes at day 90 and fails CI at day 91, so a
+# cohort reviewed in one batch tips on one date and presents as a mass CI
+# failure instead of a maintenance signal.
+DEFAULT_WARN_REVIEW_AGE_DAYS = 75
 SKILL_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SKILL_IDENTITY_FIELDS = ("name", "description")
 SKILL_LIFECYCLE_FIELDS = ("lifecycle_state", "owner", "last_reviewed")
@@ -277,14 +282,29 @@ def _validate_last_reviewed(
             f"Invalid last_reviewed '{last_reviewed}' (expected YYYY-MM-DD).",
         )
         return
-    if date.today() - parsed_last_reviewed <= timedelta(days=max_review_age_days):
+    age = date.today() - parsed_last_reviewed
+    if age > timedelta(days=max_review_age_days):
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-LAST-REVIEWED-STALE",
+            skill_file,
+            f"last_reviewed '{last_reviewed}' is older than {max_review_age_days} days.",
+        )
+        return
+    # Clamped so a caller-lowered ceiling can never sit below the warn band.
+    warn_after_days = min(DEFAULT_WARN_REVIEW_AGE_DAYS, max_review_age_days)
+    if age <= timedelta(days=warn_after_days):
         return
     _append_audit_issue(
         issues,
         project_root,
-        "SKA-LAST-REVIEWED-STALE",
+        "SKA-LAST-REVIEWED-AGING",
         skill_file,
-        f"last_reviewed '{last_reviewed}' is older than {max_review_age_days} days.",
+        f"last_reviewed '{last_reviewed}' is {age.days} days old; "
+        f"blocks at {max_review_age_days}. Review and re-stamp within "
+        f"{max_review_age_days - age.days} days.",
+        blocking=False,
     )
 
 

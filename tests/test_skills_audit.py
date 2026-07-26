@@ -375,6 +375,81 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertFalse(report.valid)
             self.assertTrue(any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues))
 
+    def _write_skill_all_roots(self, project_root: Path, config: GzkitConfig, fm: dict) -> None:
+        """Write the same skill to every surface root the audit walks."""
+        for root_rel in (
+            config.paths.skills,
+            config.paths.codex_skills,
+            config.paths.claude_skills,
+            config.paths.copilot_skills,
+        ):
+            _write_skill(project_root, root_rel, "demo-skill", frontmatter=fm)
+
+    def test_aging_last_reviewed_warns_without_blocking(self) -> None:
+        """A review older than the warn band but inside the block ceiling warns only.
+
+        The 90-day gate was a binary cliff with zero runway: a skill passed at
+        day 90 and failed CI at day 91, so a whole cohort tipping on one date
+        presented as a mass CI failure rather than a maintenance signal. The
+        warn band surfaces the same cohort while remediation is still cheap.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            aging_date = (date.today() - timedelta(days=80)).isoformat()
+            self._write_skill_all_roots(
+                project_root, config, _skill_frontmatter("demo-skill", last_reviewed=aging_date)
+            )
+
+            report = audit_skills(project_root, config)
+
+            aging = [i for i in report.issues if i.code == "SKA-LAST-REVIEWED-AGING"]
+            self.assertEqual(len(aging), 1, "expected exactly one aging issue")
+            self.assertFalse(aging[0].blocking, "aging must not block")
+            self.assertEqual(aging[0].severity, "warning")
+            self.assertTrue(report.valid, "an aging review must leave the audit valid")
+            self.assertFalse(
+                any(i.code == "SKA-LAST-REVIEWED-STALE" for i in report.issues),
+                "inside the block ceiling nothing may be reported stale",
+            )
+
+    def test_fresh_last_reviewed_emits_no_aging_warning(self) -> None:
+        """Inside the warn band there is no signal at all — the band discriminates."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            fresh_date = (date.today() - timedelta(days=10)).isoformat()
+            self._write_skill_all_roots(
+                project_root, config, _skill_frontmatter("demo-skill", last_reviewed=fresh_date)
+            )
+
+            report = audit_skills(project_root, config)
+
+            self.assertFalse(
+                any(i.code == "SKA-LAST-REVIEWED-AGING" for i in report.issues),
+                "a fresh review must produce no aging warning",
+            )
+            self.assertTrue(report.valid)
+
+    def test_stale_last_reviewed_does_not_also_emit_aging(self) -> None:
+        """Past the ceiling the issue is stale, not aging — the two must not double-report."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            stale_date = (date.today() - timedelta(days=200)).isoformat()
+            self._write_skill_all_roots(
+                project_root, config, _skill_frontmatter("demo-skill", last_reviewed=stale_date)
+            )
+
+            report = audit_skills(project_root, config)
+
+            self.assertTrue(any(i.code == "SKA-LAST-REVIEWED-STALE" for i in report.issues))
+            self.assertFalse(
+                any(i.code == "SKA-LAST-REVIEWED-AGING" for i in report.issues),
+                "a stale review must not also be reported as aging",
+            )
+            self.assertFalse(report.valid)
+
     def test_missing_skill_version_is_blocking(self) -> None:
         """A skill with no metadata.skill-version fails the audit.
 
