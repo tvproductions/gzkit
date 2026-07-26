@@ -5,9 +5,9 @@ description: Capture before/after evidence with mechanical-delta proof when a Py
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-04-26
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---

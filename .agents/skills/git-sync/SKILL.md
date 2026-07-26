@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-04-26
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.2.3"
+  skill-version: "1.2.4"
 model: haiku
 ---
 
