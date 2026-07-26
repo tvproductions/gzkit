@@ -1043,10 +1043,11 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
 
 
 def run_surface_fidelity_audit(project_root: Path) -> QualityResult:
-    """Run the ADR-0.0.33-05 surface-fidelity composite (all four invariants).
+    """Run the ADR-0.0.33-05 surface-fidelity composite.
 
-    Fails closed when any of bullet_retention, surface_weight,
-    pointer_integrity, or scenario_reachability report errors.
+    Fails closed when any of bullet_retention, surface_weight or
+    pointer_integrity report errors. Invariant 4 (scenario reachability)
+    was retired 2026-07-25 — see ADR-0.0.33 § Amendment (2026-07-25).
     """
     return run_command("uv run gz validate --surface-fidelity", cwd=project_root)
 

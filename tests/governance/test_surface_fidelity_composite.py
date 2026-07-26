@@ -59,22 +59,21 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
     """Composite validation tests for surface-fidelity scope."""
 
     @covers("REQ-0.0.33-05-01")
-    def test_all_four_validators_fire_in_order(self) -> None:
+    def test_all_live_validators_fire_in_order(self) -> None:
         """@covers REQ-0.0.33-05-01
 
-        Composite must invoke bullet_retention, surface_weight,
-        pointer_integrity, scenario_reachability in that declared order
-        and aggregate errors from all four.
+        Composite must invoke bullet_retention, surface_weight and
+        pointer_integrity in that declared order and aggregate their errors.
+        Invariant 4 (scenario reachability) was retired 2026-07-25 —
+        ADR-0.0.33 § Amendment (2026-07-25).
         """
         if validate_surface_fidelity is None:
             self.skipTest("validate_surface_fidelity not yet implemented (TDD Red)")
 
-        # Create mocks for all four validators
         with (
             patch("gzkit.governance.trust_audits.validate_bullet_retention") as mock_bullet,
             patch("gzkit.governance.trust_audits.validate_surface_weight") as mock_surface,
             patch("gzkit.governance.trust_audits.validate_pointer_integrity") as mock_pointer,
-            patch("gzkit.governance.trust_audits.validate_scenario_reachability") as mock_scenario,
         ):
             # Setup return values: each validator returns some errors
             mock_bullet.return_value = [
@@ -92,7 +91,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
                 )
             ]
             mock_pointer.return_value = []
-            mock_scenario.return_value = []
 
             result = validate_surface_fidelity(_PROJECT_ROOT)
 
@@ -100,7 +98,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
             self.assertEqual(mock_bullet.call_count, 1)
             self.assertEqual(mock_surface.call_count, 1)
             self.assertEqual(mock_pointer.call_count, 1)
-            self.assertEqual(mock_scenario.call_count, 1)
 
             # Assert errors are aggregated
             self.assertEqual(len(result), 2)
@@ -114,12 +111,12 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
             )
 
     @covers("REQ-0.0.33-05-02")
-    def test_exit_code_worst_of_four(self) -> None:
+    def test_exit_code_worst_of_constituents(self) -> None:
         """@covers REQ-0.0.33-05-02
 
-        Composite exit code must be the worst (highest) of the four
-        constituent validators. If any constituent indicates a policy breach
-        (exit 3), the composite must also indicate exit 3.
+        Composite exit code must be the worst (highest) of its constituent
+        validators. If any constituent indicates a policy breach (exit 3),
+        the composite must also indicate exit 3.
         """
         if validate_surface_fidelity is None:
             self.skipTest("validate_surface_fidelity not yet implemented (TDD Red)")
@@ -128,7 +125,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
             patch("gzkit.governance.trust_audits.validate_bullet_retention") as mock_bullet,
             patch("gzkit.governance.trust_audits.validate_surface_weight") as mock_surface,
             patch("gzkit.governance.trust_audits.validate_pointer_integrity") as mock_pointer,
-            patch("gzkit.governance.trust_audits.validate_scenario_reachability") as mock_scenario,
         ):
             # Scenario: bullet_retention returns an error (indicating breach)
             # others return clean. Composite should return that error.
@@ -141,7 +137,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
             ]
             mock_surface.return_value = []
             mock_pointer.return_value = []
-            mock_scenario.return_value = []
 
             result = validate_surface_fidelity(_PROJECT_ROOT)
 

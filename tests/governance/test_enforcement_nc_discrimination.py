@@ -323,7 +323,6 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
     SIBLINGS = {
         "surface-fidelity-bullet-retention": "bullet retention",
         "surface-fidelity-surface-weight": "surface weight band",
-        "surface-fidelity-scenario-reachability": "scenario registry schema",
         "task-envelope-subdivision": "signature (b)",
         "task-envelope-layer-drift": "signature (c)",
         "task-envelope-obpi-divergence": "signature (d)",

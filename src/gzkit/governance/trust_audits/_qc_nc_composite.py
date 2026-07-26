@@ -85,13 +85,6 @@ def build_surface_weight() -> Path:
     return root
 
 
-def build_scenario_reachability() -> Path:
-    """A scenario registry whose JSON is well-formed but schema-invalid."""
-    root = _root("scenario-reachability")
-    _put(root / "data" / "agent-control-surface-scenarios.json", "{}\n")
-    return root
-
-
 # ---------------------------------------------------------------------------
 # task-envelope-coherence siblings
 # ---------------------------------------------------------------------------

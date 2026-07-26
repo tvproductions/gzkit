@@ -109,7 +109,6 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "bullet_retention",
         "surface_weight",
         "pointer_anchors",
-        "scenario_reachability",
         "surface_fidelity",
         "vendor_manifest",
         "setpoint_coherence",

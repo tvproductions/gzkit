@@ -128,9 +128,6 @@ from gzkit.governance.trust_audits.rendition_floor_coherence import (
 )
 from gzkit.governance.trust_audits.rendition_freshness import validate_rendition_freshness
 from gzkit.governance.trust_audits.router_tables import audit_router_tables
-from gzkit.governance.trust_audits.scenario_reachability import (
-    validate_scenario_reachability,
-)
 from gzkit.governance.trust_audits.sensitivity import (
     audit_sensitivity_binding,
     explain_sensitivity_for_paths,
@@ -153,17 +150,18 @@ from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manife
 def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
     """Composite: run all four surface-fidelity invariants in declared order.
 
-    Invokes validate_bullet_retention, validate_surface_weight,
-    validate_pointer_integrity, and validate_scenario_reachability in
-    that order and aggregates their ValidationError lists. The exit code
-    is determined by the worst error type in the aggregate (policy-breach
-    types exit 3; others exit 1).
+    Invokes validate_bullet_retention, validate_surface_weight and
+    validate_pointer_integrity in that order and aggregates their
+    ValidationError lists. The exit code is determined by the worst error
+    type in the aggregate (policy-breach types exit 3; others exit 1).
+
+    Invariant 4 (scenario reachability) was retired 2026-07-25 — see
+    ADR-0.0.33 § Amendment (2026-07-25).
     """
     errors: list[ValidationError] = []
     errors.extend(validate_bullet_retention(project_root))
     errors.extend(validate_surface_weight(project_root))
     errors.extend(validate_pointer_integrity(project_root))
-    errors.extend(validate_scenario_reachability(project_root))
     return errors
 
 
@@ -230,7 +228,6 @@ __all__ = [
     "validate_invariant_coherence",
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
-    "validate_scenario_reachability",
     "validate_rendition_floor_coherence",
     "validate_rendition_freshness",
     "validate_setpoint_coherence",

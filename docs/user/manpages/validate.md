@@ -11,7 +11,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--requirements] [--commit-trailers]
             [--taxonomy] [--chores-layout] [--distribution] [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
-            [--scenario-reachability] [--surface-fidelity]
+            [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
@@ -435,67 +435,6 @@ $ echo $?
 | 3 | One or more pointers unresolved (path missing or anchor not present) | Fix the link target or add the heading to the destination |
 | 3 | Destination referenced by forward pointer lacks `<!-- lifted-from: -->` back-pointer | Add `<!-- lifted-from: <source-path>#<anchor> -->` to the destination file |
 
-### `--scenario-reachability`
-
-Enforces ADR-0.0.33 Invariant 4: every Mechanical/Promotable bullet in the
-advisory scorecard (`docs/governance/advisory-rules-audit.md`) must be
-reachable from at least one declared loading scenario in
-`data/agent-control-surface-scenarios.json`.
-
-**Era-1 behavior (registry absent):** The validator exits 0 and emits a
-single advisory to stderr:
-
-```
-scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
-```
-
-The registry is authored under ADR-0.0.34; registry-absent is a bootstrap
-state, not drift.
-
-**Era-2 behavior (registry present):**
-
-1. Validates the registry against the declared JSON Schema (array of objects
-   with `name: string` and `corpus: array[string]`). A schema violation exits 3.
-2. For each Mechanical/Promotable bullet, checks that at least one scenario's
-   `corpus` list includes a surface file containing the bullet. Orphan bullets
-   emit `scenario-reachability: orphan bullet: <bullet_text>` warnings to
-   stderr and exit 0 (advisory — escalation to fail-closed deferred to a
-   follow-up `--strict` GHI per ADR-0.0.33 Decision).
-
-```bash
-# Era-1: check with no registry present
-uv run gz validate --scenario-reachability
-```
-
-**Era-1 clean state (registry absent):**
-
-```
-$ uv run gz validate --scenario-reachability
-$ echo $?
-0
-```
-
-(Advisory line emitted to stderr, not stdout.)
-
-**Era-2 schema violation:**
-
-```
-$ uv run gz validate --scenario-reachability
-
-❌ Validation failed with 1 error(s):
-
-   → [scenario_reachability] data/agent-control-surface-scenarios.json
-    scenario-reachability: registry schema invalid: expected array, got dict
-$ echo $?
-3
-```
-
-| Code | Meaning | Recovery |
-|------|---------|----------|
-| 0 | Registry absent (Era-1 advisory) or all bullets reachable (Era-2 clean) | — |
-| 0 | Orphan bullets found (Era-2 advisory) | Review orphan warnings in stderr; fix coverage or await `--strict` escalation |
-| 3 | Registry schema violation | Fix `data/agent-control-surface-scenarios.json` to match declared schema |
-
 ### `--vendor-manifest`
 
 Validates `data/vendor-manifest.json` against `src/gzkit/schemas/vendor_manifest.json`
@@ -687,7 +626,8 @@ exits 3. No masking.
 **When to use:** Run after editing `AGENTS.md`, `CLAUDE.md`, or any file in
 `.claude/rules/**` to verify the full fidelity doctrine in one pass. Also
 wired into `gz check` (step "Surface fidelity") and the pre-commit cheap
-subset (invariants 1, 2, 3 only — `--scenario-reachability` is CI-only in Era 1).
+subset (invariants 1, 2, 3 — Invariant 4 was retired 2026-07-25, so the
+subset is now the whole set; see ADR-0.0.33 § Amendment (2026-07-25)).
 
 ```bash
 # Run the full composite
@@ -698,7 +638,6 @@ uv run gz validate --surface-fidelity
 
 ```text
 $ uv run gz validate --surface-fidelity
-scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
 Validated: surface_fidelity
 ```
 
@@ -1853,7 +1792,6 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--distribution` | opt-in | T0 static distribution audit: ON\_DISK\_NOT\_INCLUDED / BASELINE\_NOT\_ON\_DISK / ON\_DISK\_NOT\_BASELINE drift classes (ADR-0.0.32-07) |
 | `--receipt-shape` | opt-in | Fail-closed on post-cutoff `obpi_receipt_emitted` events with deprecated shapes (optional attestation, unprefixed completion, agent: attestor); pre-cutoff receipts can be waivered via `data/historical_self_close_waivers.json` (ADR-0.0.36, OBPI-0.0.36-03) |
 | `--bullet-retention` | opt-in | Tier-scoped retention for every Mechanical/Promotable bullet in advisory-rules-audit.md: invariant-tier verbatim in per-turn surface; compressible-tier witnessed by a valid advisor-QC receipt + attestation (ADR-0.0.33-01; tier-scoped amendment OBPI-0.0.37-25) |
-| `--scenario-reachability` | opt-in | Assert every Mechanical/Promotable bullet reachable from a declared loading scenario (ADR-0.0.33-04; Era-1 advisory) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
 | `--brief-command-shape` | opt-in | Fail closed (exit 3) when a brief Verification block contains non-shell-less commands (OBPI-0.0.63-07, GHI #550) |

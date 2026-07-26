@@ -935,12 +935,6 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "Surface weight in red band",
     ),
     (
-        "surface-fidelity-scenario-reachability",
-        _cx.build_scenario_reachability,
-        _ep._ep_surface_fidelity,
-        "scenario-reachability: registry schema invalid:",
-    ),
-    (
         "task-envelope-subdivision",
         _cx.build_task_envelope_subdivision,
         _ep._ep_task_envelope_coherence,

@@ -414,12 +414,6 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "pointer_anchors", "explicit", True, lambda r, _f: _ta().validate_pointer_integrity(r)
     ),
     _ScopeEntry(
-        "scenario_reachability",
-        "explicit",
-        True,
-        lambda r, _f: _ta().validate_scenario_reachability(r),
-    ),
-    _ScopeEntry(
         "surface_fidelity", "explicit", True, lambda r, _f: _ta().validate_surface_fidelity(r)
     ),
     _ScopeEntry(
@@ -1099,7 +1093,6 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "bullet_retention",
         "surface_weight",
         "pointer_anchors",
-        "scenario_reachability",
         "kind_invariance",
         "receipt_shape",
         "setpoint_coherence",
@@ -1421,7 +1414,6 @@ def validate(
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
     check_pointer_anchors: bool = False,
-    check_scenario_reachability: bool = False,
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
@@ -1525,7 +1517,6 @@ def validate(
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,
         "pointer_anchors": check_pointer_anchors,
-        "scenario_reachability": check_scenario_reachability,
         "surface_fidelity": check_surface_fidelity,
         "vendor_manifest": check_vendor_manifest,
         "setpoint_coherence": check_setpoint_coherence,

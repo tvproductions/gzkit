@@ -70,15 +70,16 @@ Four invariants, mechanically validated:
    the per-turn surface resolves to an existing destination heading anchor;
    every lifted-pedagogy page carries a `<!-- lifted-from: <path>#<anchor> -->`
    back-pointer. Validator: `gz validate --pointer-anchors`.
-4. **Loading-scenario reachability** — every Mechanical/Promotable bullet is
+4. ~~**Loading-scenario reachability** — every Mechanical/Promotable bullet is
    reachable from at least one declared loading scenario in
    `data/agent-control-surface-scenarios.json`. Advisory until ADR-0.0.34
    substrate work lands the registry. Validator:
-   `gz validate --scenario-reachability`.
+   `gz validate --scenario-reachability`.~~ **RETIRED 2026-07-25 — see
+   § Amendment (2026-07-25): Invariant 4 is retired.**
 
-Composite scope: `gz validate --surface-fidelity` runs all four invariants
-and wires into `gz check`. Cheap structural subset (1, 2, 3) runs in
-pre-commit; reachability is CI-only Era-1.
+Composite scope: `gz validate --surface-fidelity` runs the three live
+invariants and wires into `gz check`. The cheap structural subset (1, 2, 3)
+runs in pre-commit; with Invariant 4 retired the subset is now the whole set.
 
 The doctrine is **substrate-invariant**: it governs the rendered output's
 fidelity to its declared invariants, not the composition method. Validators
@@ -129,6 +130,40 @@ contract.
 > *model* and did not flip `--bullet-retention` (the validator on disk remained
 > the Era-1 whole-surface grep). The actual realizer is **OBPI-0.0.37-25** per
 > ADR-0.0.37 Checklist item #25; the citation above is corrected accordingly.
+
+### Amendment (2026-07-25): Invariant 4 is retired
+
+**Invariant 4 (loading-scenario reachability) is retired. It is not deferred,
+not pending, and not advisory-until-later. The `gz validate
+--scenario-reachability` scope, its validator module, and its covering tests
+are removed by the same commit that records this amendment.**
+
+Invariant 4 never executed once. Its validator took the Era-1 skip branch on
+every run for two months because its precondition,
+`data/agent-control-surface-scenarios.json`, was never authored. The deferral
+in § Consequences named ADR-0.0.34 as the unblocking condition and
+`OBPI-0.0.33-04` assigned the deliverable there explicitly — *"registry
+creation is owned by ADR-0.0.34; this OBPI consumes the registry when present
+but does NOT bootstrap it"*. ADR-0.0.34 then closed `Validated` with 8/8 OBPIs
+attested and zero references to the registry anywhere in its package. The
+obligation was inherited and dropped; the named unblocking condition was
+satisfied and attested while the artifact it existed to produce was never
+built.
+
+Retirement rather than construction, on three grounds. Building the registry
+requires deciding *what the scenarios are* — a design judgment about gzkit's
+own control-surface model, not a mechanical fill-in; guessing it would produce
+a registry that turns the invariant green while proving nothing, which is the
+reported failure wearing its opposite face. The campaign's Movement C is
+*Reduce the accretion*, and this is accretion that never carried load. And
+dead enforcement is worse than absent enforcement: a scope that exits 0 by
+construction reads as coverage on every `gz check` run, which is precisely how
+the advisory came to be read as ambient noise.
+
+Retirement does not forbid the capability. If a scenario model is later wanted,
+it lands under its own ADR carrying its own registry, as designed work rather
+than as an inherited debt no package claimed. Tracked at GHI #716, closed
+`withdrawn` against this amendment.
 
 ## Comparator Uplift (2026-05-07)
 
@@ -204,8 +239,11 @@ shortcuts:
 - Provisional warning bands in Invariant 2 may need recalibration before
   the 6-month cadence if operational evidence shows the bands are
   miscalibrated. The recalibration is itself a doctrine artifact.
-- Invariant 4 (scenario reachability) is advisory until ADR-0.0.34 lands
-  the loading-scenarios registry. Era-1 fidelity is incomplete by design.
+- ~~Invariant 4 (scenario reachability) is advisory until ADR-0.0.34 lands
+  the loading-scenarios registry. Era-1 fidelity is incomplete by design.~~
+  **Superseded 2026-07-25:** ADR-0.0.34 landed `Validated` 8/8 without ever
+  carrying the registry, so this deferral never discharged. Invariant 4 is
+  retired rather than left pending — see § Amendment (2026-07-25).
 - Behavioral fidelity (the layer that asserts the agent complies with the
   rule when the surface is loaded) is deferred to a follow-up GHI; the four
   invariants are *structural*, not behavioral. Structural-without-behavioral
