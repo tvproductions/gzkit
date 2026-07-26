@@ -44,7 +44,7 @@ envelopes that still render to compact human-readable `BLOCKERS:` output.
   - one blocker per line
 - Add JSON parity for blocker-heavy surfaces such as:
   - `gz obpi validate`
-  - `gz obpi reconcile`
+  - `gz obpi sync`
   - `gz closeout`
   - `gz git-sync`
   - future pipeline runtime commands

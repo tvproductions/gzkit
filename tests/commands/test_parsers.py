@@ -20,7 +20,7 @@ class TestNewCommandParsers(unittest.TestCase):
             ["adr", "emit-receipt", "--help"],
             ["obpi", "--help"],
             ["obpi", "status", "--help"],
-            ["obpi", "reconcile", "--help"],
+            ["obpi", "sync", "--help"],
             ["obpi", "emit-receipt", "--help"],
             ["check-config-paths", "--help"],
             ["cli", "--help"],

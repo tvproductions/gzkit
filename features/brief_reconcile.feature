@@ -149,55 +149,55 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
     Then the ledger event count is unchanged
 
   # ---------------------------------------------------------------------------
-  # OBPI-0.0.37-06: gz brief reconcile CLI verb. CLI-level scenarios are @wip
+  # OBPI-0.0.37-06: gz obpi brief-drift CLI verb. CLI-level scenarios are @wip
   # (steps deferred, matching the OBPI-05 convention in this file); the verb's
   # REQ behavior is proven by tests/commands/test_brief_reconcile.py @covers.
   # ---------------------------------------------------------------------------
 
   @wip
   @REQ-0.0.37-06-01
-  Scenario: gz brief reconcile reports a clean brief and exits zero
+  Scenario: gz obpi brief-drift reports a clean brief and exits zero
     Given a clean OBPI brief resolvable by id
-    When I run "gz brief reconcile <OBPI-ID>"
+    When I run "gz obpi brief-drift <OBPI-ID>"
     Then the command exits 0
     And a brief_reconciled ledger event is emitted with has_drift false
 
   @wip
   @REQ-0.0.37-06-02
-  Scenario: gz brief reconcile reports drift and exits three
+  Scenario: gz obpi brief-drift reports drift and exits three
     Given an OBPI brief whose allowlist names a non-existent path
-    When I run "gz brief reconcile <OBPI-ID>"
+    When I run "gz obpi brief-drift <OBPI-ID>"
     Then the command exits 3
     And a brief_reconcile_drift_detected ledger event is emitted with the per-dimension payload
 
   @wip
   @REQ-0.0.37-06-03
-  Scenario: gz brief reconcile --apply requires --attestor
+  Scenario: gz obpi brief-drift --apply requires --attestor
     Given an OBPI brief resolvable by id
-    When I run "gz brief reconcile <OBPI-ID> --apply"
+    When I run "gz obpi brief-drift <OBPI-ID> --apply"
     Then the command exits non-zero
     And the error names "--apply requires --attestor"
 
   @wip
   @REQ-0.0.37-06-04
-  Scenario: gz brief reconcile --apply --attestor writes attested amendments
+  Scenario: gz obpi brief-drift --apply --attestor writes attested amendments
     Given a drifting OBPI brief resolvable by id
-    When I run "gz brief reconcile <OBPI-ID> --apply --attestor \"Jane Doe\""
+    When I run "gz obpi brief-drift <OBPI-ID> --apply --attestor \"Jane Doe\""
     Then the brief gains the reconciliation amendments
     And a brief_reconciled ledger event is emitted with applied true and the attestor name
 
   @wip
   @REQ-0.0.37-06-05
-  Scenario: gz brief reconcile --apply --dry-run previews without writing
+  Scenario: gz obpi brief-drift --apply --dry-run previews without writing
     Given a drifting OBPI brief resolvable by id
-    When I run "gz brief reconcile <OBPI-ID> --apply --attestor \"Jane Doe\" --dry-run"
+    When I run "gz obpi brief-drift <OBPI-ID> --apply --attestor \"Jane Doe\" --dry-run"
     Then the brief file is unchanged
     And no applied brief_reconciled ledger event is emitted
 
   @wip
   @REQ-0.0.37-06-06
-  Scenario: the brief reconcile verb is registered
-    When I run "gz brief reconcile --help"
+  Scenario: the brief-drift verb is registered
+    When I run "gz obpi brief-drift --help"
     Then the command exits 0
 
   @wip
@@ -208,8 +208,8 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
 
   @wip
   @REQ-0.0.37-06-08
-  Scenario: the brief reconcile manpage exists with required sections
-    Given the manpage "docs/user/manpages/brief-reconcile.md"
+  Scenario: the brief-drift manpage exists with required sections
+    Given the manpage "docs/user/manpages/obpi-brief-drift.md"
     Then it contains NAME, SYNOPSIS, DESCRIPTION, OPTIONS, and EXAMPLES sections
 
   # ---------------------------------------------------------------------------
@@ -257,7 +257,7 @@ Feature: OBPI Brief Reconciliation Engine (CIC-2)
     When I run "gz obpi complete <OBPI-ID> --attestor <attestor> --attestation-text <text>"
     Then the command exits 3
     And the output contains "Completion blocked: no `brief_reconciled` receipt"
-    And the output contains "gz brief reconcile"
+    And the output contains "gz obpi brief-drift"
 
   @wip
   @REQ-0.0.37-08-02

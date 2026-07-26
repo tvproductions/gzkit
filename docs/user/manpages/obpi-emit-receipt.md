@@ -52,7 +52,7 @@ operator's verbatim `attestation_text` in `--evidence-json` (recorded as
   field is supplied explicitly, gzkit validates the structure before writing the
   receipt.
 - The resulting runtime evidence is consumed by `gz obpi status`,
-  `gz obpi reconcile`, and ADR status/lifecycle surfaces.
+  `gz obpi sync`, and ADR status/lifecycle surfaces.
 
 For the OBPI execution pipeline closeout path, emit the final `completed`
 receipt immediately after a successful guarded `uv run gz git-sync --apply

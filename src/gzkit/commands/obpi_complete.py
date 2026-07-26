@@ -813,7 +813,7 @@ def _enforce_reconcile_receipt_gate(
     if latest_ts is None:
         _fail(
             f"Completion blocked: no `brief_reconciled` receipt for {obpi_id}. "
-            f"Run `gz brief reconcile {obpi_id}` then retry.",
+            f"Run `gz obpi brief-drift {obpi_id}` then retry.",
             exit_code=3,
             as_json=as_json,
             obpi_id=obpi_id,
@@ -827,7 +827,7 @@ def _enforce_reconcile_receipt_gate(
         _fail(
             f"Completion blocked: reconciliation receipt for {obpi_id} is stale "
             f"(receipt_ts={latest_ts.isoformat()}, drifted path={drifted_path!r}). "
-            f"Run `gz brief reconcile {obpi_id}` to refresh.",
+            f"Run `gz obpi brief-drift {obpi_id}` to refresh.",
             exit_code=3,
             as_json=as_json,
             obpi_id=obpi_id,
@@ -840,7 +840,7 @@ def _enforce_reconcile_receipt_gate(
         _fail(
             f"Completion blocked: reconciliation receipt for {obpi_id} has_drift=True "
             f"(drifted dimensions: {dims_str}). "
-            f"Run `gz brief reconcile {obpi_id}` to refresh.",
+            f"Run `gz obpi brief-drift {obpi_id}` to refresh.",
             exit_code=3,
             as_json=as_json,
             obpi_id=obpi_id,

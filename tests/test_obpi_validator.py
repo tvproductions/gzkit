@@ -618,7 +618,7 @@ status: {status}
             "uv run gz typecheck\n"
             "uv run gz validate --documents\n"
             "uv run gz adr status ADR-0.1.0\n"
-            "uv run gz obpi reconcile OBPI-0.1.0-01\n"
+            "uv run gz obpi sync OBPI-0.1.0-01\n"
             "```\n\n"
             "## Acceptance Criteria\n- [ ] REQ-0.1.0-01-01: Real criterion.\n",
             encoding="utf-8",

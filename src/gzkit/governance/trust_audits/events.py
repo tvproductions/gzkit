@@ -41,12 +41,12 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     ),
     "brief_reconciled": (
         "Brief reconciliation summary record (ADR-0.0.37, OBPI-06). Consumed by "
-        "`gz brief reconcile` operators and reconciliation audits; does not add or "
+        "`gz obpi brief-drift` operators and reconciliation audits; does not add or "
         "modify artifact graph nodes."
     ),
     "brief_reconcile_drift_detected": (
         "Per-dimension brief drift payload (ADR-0.0.37, OBPI-06). Diagnostic record "
-        "for `gz brief reconcile`; informs amendment decisions, not the artifact graph."
+        "for `gz obpi brief-drift`; informs amendment decisions, not the artifact graph."
     ),
     "brief_reconcile_drift_overridden": (
         "Override receipt for --accept-stale-reconciliation (OBPI-0.0.37-08). "

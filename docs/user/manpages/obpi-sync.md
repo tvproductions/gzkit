@@ -1,4 +1,4 @@
-# gz obpi reconcile
+# gz obpi sync
 
 Fail-closed reconciliation for one OBPI.
 
@@ -7,7 +7,7 @@ Fail-closed reconciliation for one OBPI.
 ## Usage
 
 ```bash
-gz obpi reconcile <OBPI-ID> [--json]
+gz obpi sync <OBPI-ID> [--json]
 ```
 
 `<OBPI-ID>` accepts the full canonical identifier or the same identifier without
@@ -17,7 +17,7 @@ the `OBPI-` prefix. Resolution remains ledger-first and follows rename chains.
 
 ## Runtime Behavior
 
-`gz obpi reconcile` uses the same OBPI runtime payload as `gz obpi status`, then
+`gz obpi sync` uses the same OBPI runtime payload as `gz obpi status`, then
 fails closed when canonical ledger proof is missing or drifted.
 
 It reports blockers for conditions including:
@@ -49,7 +49,7 @@ Text mode prints `PASS` when no blockers are present. Otherwise it prints
 ## Example
 
 ```bash
-uv run gz obpi reconcile OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
+uv run gz obpi sync OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
 ```
 
 ```text
@@ -64,7 +64,7 @@ BLOCKERS:
 ```
 
 ```bash
-uv run gz obpi reconcile OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
+uv run gz obpi sync OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces --json
 ```
 
 Anchor-aware blockers are emitted verbatim, for example:

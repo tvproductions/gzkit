@@ -256,7 +256,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             self.assertEqual(payload["obpi_summary"]["total"], 1)
             self.assertEqual(payload["obpi_rows"][0]["id"], "OBPI-0.1.0-01-demo")
             self.assertIn(
-                "uv run gz obpi reconcile OBPI-0.1.0-01-demo",
+                "uv run gz obpi sync OBPI-0.1.0-01-demo",
                 payload["next_steps"],
             )
             self.assertIsNone(payload["event"])

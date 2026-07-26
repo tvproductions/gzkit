@@ -177,7 +177,7 @@ def _closeout_next_steps(adr_id: str, blocking_ids: list[str]) -> list[str]:
     """Suggest the minimal next commands needed to clear closeout blockers."""
     steps = [f"uv run gz adr status {adr_id}", f"uv run gz adr audit-check {adr_id}"]
     for obpi_id in blocking_ids:
-        steps.append(f"uv run gz obpi reconcile {obpi_id}")
+        steps.append(f"uv run gz obpi sync {obpi_id}")
     return steps
 
 

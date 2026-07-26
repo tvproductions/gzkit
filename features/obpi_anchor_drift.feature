@@ -7,7 +7,7 @@ Feature: OBPI anchor drift reconciliation
     And ADR-0.1.0 exists
     And a completed OBPI with anchor-tracked receipt exists for OBPI-0.1.0-01-demo
     And the tracked module changes after the completion anchor
-    When I run the gz command "obpi reconcile OBPI-0.1.0-01-demo --json"
+    When I run the gz command "obpi sync OBPI-0.1.0-01-demo --json"
     Then the command exits with code 0
     And JSON path "runtime_state" equals "completed"
     And JSON path "anchor_state" equals "superseded"

@@ -122,6 +122,26 @@
       },
       "governance_relevant": false
     },
+    "airlock in": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "airlock out": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
     "arb advise": {
       "surfaces": {
         "manpage": true,
@@ -223,16 +243,6 @@
       "governance_relevant": true
     },
     "audit": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "brief reconcile": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -472,7 +482,7 @@
       },
       "governance_relevant": false
     },
-    "content retire": {
+    "content render": {
       "surfaces": {
         "manpage": false,
         "index_entry": false,
@@ -482,7 +492,7 @@
       },
       "governance_relevant": false
     },
-    "content render": {
+    "content retire": {
       "surfaces": {
         "manpage": false,
         "index_entry": false,
@@ -599,6 +609,56 @@
         "operator_runbook": true,
         "governance_runbook": true,
         "docstring": false
+      },
+      "governance_relevant": true
+    },
+    "handoff archive": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "handoff authorize": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "handoff create": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "handoff list": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "handoff resume": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
       },
       "governance_relevant": true
     },
@@ -732,7 +792,7 @@
       },
       "governance_relevant": true
     },
-    "permitted-entry": {
+    "obpi audit": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -742,7 +802,7 @@
       },
       "governance_relevant": true
     },
-    "obpi audit": {
+    "obpi brief-drift": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -842,16 +902,6 @@
       },
       "governance_relevant": false
     },
-    "obpi reconcile": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
     "obpi repudiate": {
       "surfaces": {
         "manpage": true,
@@ -873,6 +923,16 @@
       "governance_relevant": true
     },
     "obpi supersede": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
+    },
+    "obpi sync": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,
@@ -971,6 +1031,16 @@
         "docstring": true
       },
       "governance_relevant": false
+    },
+    "permitted-entry": {
+      "surfaces": {
+        "manpage": true,
+        "index_entry": true,
+        "operator_runbook": true,
+        "governance_runbook": true,
+        "docstring": true
+      },
+      "governance_relevant": true
     },
     "personas drift": {
       "surfaces": {
@@ -1253,76 +1323,6 @@
       "governance_relevant": true
     },
     "validate": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "airlock in": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "airlock out": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "handoff list": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "handoff resume": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "handoff create": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "handoff authorize": {
-      "surfaces": {
-        "manpage": true,
-        "index_entry": true,
-        "operator_runbook": true,
-        "governance_runbook": true,
-        "docstring": true
-      },
-      "governance_relevant": true
-    },
-    "handoff archive": {
       "surfaces": {
         "manpage": true,
         "index_entry": true,

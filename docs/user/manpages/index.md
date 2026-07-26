@@ -44,8 +44,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
 | [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
 | [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for authored, scaffold, and completion readiness |
-| [`gz obpi reconcile`](obpi-reconcile.md) | Fail-closed reconciliation for one OBPI |
-| [`gz brief reconcile`](brief-reconcile.md) | Reconcile an OBPI brief against project state across five drift dimensions |
+| [`gz obpi sync`](obpi-sync.md) | Fail-closed reconciliation for one OBPI (receipt + ADR table) |
+| [`gz obpi brief-drift`](obpi-brief-drift.md) | Check an OBPI brief against project state across five drift dimensions |
 | [`gz obpi emit-receipt`](obpi-emit-receipt.md) | Emit completed/validated receipt for one OBPI |
 | [`gz obpi repudiate`](obpi-repudiate.md) | Repudiate a fraudulent or erroneous OBPI completion without retiring the OBPI |
 | [`gz obpi supersede`](obpi-supersede.md) | Supersede one OBPI by another |
@@ -154,7 +154,7 @@ Primary daily loop (OBPI-first, pipeline-governed):
 3. Present the Heavy-lane acceptance ceremony when required
 4. Run guarded sync (`gz git-sync --apply --lint --test`)
 5. Emit final OBPI completion accounting from the synced state (`gz obpi emit-receipt`)
-6. Reconcile/update brief and ADR state (`gz obpi reconcile`, `gz adr status`)
+6. Reconcile/update brief and ADR state (`gz obpi sync`, `gz adr status`)
 
 ADR closeout loop (after OBPI batch completion):
 

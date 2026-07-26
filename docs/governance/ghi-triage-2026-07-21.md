@@ -50,7 +50,7 @@ the other likely leaves the path still unrunnable.
 | 11 | #701 | Advisory reports 57 proof-channel-exempt SUPPORT/fence REQs as owing `@covers`, steering agents into authoring tests that cannot fail. |
 | 12 | #703 | Four SUPPORT REQs carry `@covers`, inflating the coverage census with structural assertions. |
 | 13 | #665 | Raw `gz specify` scaffolds and fully-authored briefs render identically as `draft`, so unauthored briefs enter pipelines undetected. |
-| 14 | #641 | Mis-picking `gz brief reconcile` vs `gz obpi reconcile` exits clean on the wrong axis — silent false assurance, no error signal. |
+| 14 | #641 | Mis-picking `gz obpi brief-drift` vs `gz obpi sync` exits clean on the wrong axis — silent false assurance, no error signal. |
 | 15 | #650 | Rules and skill tell agents to check `.gzkit/mx-active`; code writes `.gzkit/mx.json`, so manual MX checks always read absent. |
 | 16 | #577 | `gz context` and `gz status` project different current gates for lite-lane ADRs carrying gate-3/4 pass events — operator reads two answers. |
 | 17 | #573 | Attestation-verdict classifier is duplicated across closeout and `ceremony_state`; a one-sided edit silently diverges ledger status from lifecycle state. |

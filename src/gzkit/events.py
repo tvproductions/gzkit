@@ -582,7 +582,7 @@ class RenditionAdvisorVerdictEvent(_EventBase):
 class BriefReconciledEvent(_EventBase):
     """brief_reconciled event — OBPI brief reconciliation run (ADR-0.0.37, OBPI-06).
 
-    Summary record emitted on every ``gz brief reconcile`` run. ``applied`` and
+    Summary record emitted on every ``gz obpi brief-drift`` run. ``applied`` and
     ``attestor`` are populated only when ``--apply --attestor`` wrote amendments.
     """
 

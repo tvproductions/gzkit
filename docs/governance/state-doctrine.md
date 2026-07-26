@@ -85,7 +85,7 @@ These rules are drawn verbatim from the ADR-0.0.9 Decision section. They govern 
 
 ### Rule 2: Frontmatter Is a Lazy Mirror
 
-> Frontmatter status is a lazy mirror. It is auto-fixed at lifecycle moments (`gz closeout`, `gz attest`, `gz obpi reconcile`) but allowed to lag during active execution. Frontmatter is never read as source-of-truth for completion.
+> Frontmatter status is a lazy mirror. It is auto-fixed at lifecycle moments (`gz closeout`, `gz attest`, `gz obpi sync`) but allowed to lag during active execution. Frontmatter is never read as source-of-truth for completion.
 
 ### Rule 3: Layer 3 Is Always Rebuildable
 
@@ -107,11 +107,11 @@ When state across layers is inconsistent, use this table to determine which laye
 
 | Conflict | Winner | Action |
 |----------|--------|--------|
-| Frontmatter says `Completed`, ledger has no completion event | **L2 (Ledger)** — entity is NOT complete | Run `gz obpi reconcile` to fix frontmatter |
-| Ledger says completed, frontmatter says `Draft` | **L2 (Ledger)** — entity IS complete | Run `gz obpi reconcile` to update frontmatter |
+| Frontmatter says `Completed`, ledger has no completion event | **L2 (Ledger)** — entity is NOT complete | Run `gz obpi sync` to fix frontmatter |
+| Ledger says completed, frontmatter says `Draft` | **L2 (Ledger)** — entity IS complete | Run `gz obpi sync` to update frontmatter |
 | Pipeline marker exists but ledger has no pipeline event | **L2 (Ledger)** — marker is stale | Delete the marker; it will be recreated if needed |
 | ADR table shows `Pending` but brief frontmatter says `Completed` | **L1 (Brief)** over L3 (table) | Run `gz obpi sync` to update the ADR table from brief source |
-| Brief frontmatter says `Completed` but ledger disagrees | **L2 (Ledger)** over L3 (frontmatter) | Run `gz obpi reconcile` to align frontmatter with ledger |
+| Brief frontmatter says `Completed` but ledger disagrees | **L2 (Ledger)** over L3 (frontmatter) | Run `gz obpi sync` to align frontmatter with ledger |
 | Lock file exists but process is dead | **L3 is ephemeral** — lock is stale | Re-claim the lock; stale locks auto-release past TTL |
 | Config manifest lists a path that no longer exists on disk | **L1 (Disk)** — manifest is stale | Update manifest or run `gz check-config-paths` |
 
@@ -131,7 +131,7 @@ When drift is detected between layers, the canonical repair sequence is:
 
 ```bash
 uv run gz state --repair       # Force-reconcile all frontmatter from ledger
-uv run gz obpi reconcile <ID>  # Reconcile one OBPI
+uv run gz obpi sync <ID>  # Reconcile one OBPI
 uv run gz adr audit-check <ADR-ID>  # Verify no evidence gaps remain
 ```
 

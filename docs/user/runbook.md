@@ -272,7 +272,7 @@ uv run gz obpi complete OBPI-<X.Y.Z-NN>-<slug> --attestor "<name>" --attestation
 
 # 6) Run guarded sync, then reconcile and confirm
 uv run gz git-sync --apply --lint --test
-uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>
+uv run gz obpi sync OBPI-<X.Y.Z-NN>-<slug>
 uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz git-sync --apply --lint --test
 ```
@@ -513,16 +513,16 @@ uv run gz adr audit-check ADR-<X.Y.Z>
 
 When a brief itself has drifted from project reality (allowlist, discovery
 checklist, verification verbs, REQ count, citation tuples), reconcile it
-directly. `gz brief reconcile` reports per-dimension deltas and exits 3 on
+directly. `gz obpi brief-drift` reports per-dimension deltas and exits 3 on
 drift; `--apply --attestor "<name>"` writes operator-attested amendments:
 
 ```bash
 # Report drift across the five dimensions (exit 3 on drift)
-uv run gz brief reconcile OBPI-<X.Y.Z-NN>
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN>
 
 # Preview, then apply operator-attested amendments after review
-uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
-uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
 ```
 
 **When Stage 1 blocks: no or stale brief_reconciled receipt (OBPI-0.0.37-07)**
@@ -533,7 +533,7 @@ the receipt:
 
 ```bash
 # Refresh the reconcile receipt (reports per-dimension drift)
-uv run gz brief reconcile OBPI-<X.Y.Z-NN>
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN>
 
 # Then re-launch the pipeline
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>
@@ -543,8 +543,8 @@ If the brief has drift (`has_drift=True`), fix the drifted dimensions first:
 
 ```bash
 # Preview amendments, then apply
-uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
-uv run gz brief reconcile OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>" --dry-run
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> --apply --attestor "<name>"
 ```
 
 If `gz adr audit-check` reports missing or placeholder implementation evidence:
@@ -722,7 +722,7 @@ surrenders any held lock mechanically and writes its register-entry handoff — 
 ```bash
 uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "Jeffry" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
 uv run gz git-sync --apply --lint --test
-uv run gz obpi reconcile OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
+uv run gz obpi sync OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test
 ```
 
@@ -1646,5 +1646,5 @@ detected dangling state (ADR-0.0.74 Boundary Invariant #4).
 - `gz obpi emit-receipt` remains available for manual non-pipeline use; `gz adr emit-receipt` for ADR-level accounting.
 - For heavy lane, Gate 4 must pass before attestation.
 - **REQ-coverage gate (ADR-0.0.25):** `gz obpi complete` exits 3 when any REQ in the closing brief's `## Acceptance Criteria` section lacks a passing `@covers`-decorated test. Heavy-lane and foundation-kind briefs are fail-closed; lite-non-foundation briefs warn and proceed. If a REQ genuinely cannot have a unit-test harness, use `--accept-uncovered REQ-ID --accept-uncovered-reason REASON` (requires `--attestor-present` with a structurally-authentic active pipeline marker — see GHI #412 hardening; refused entirely for `sensitivity:security` and foundation-kind scopes which require live TTY confirmation); each waiver records an `obpi_completion_uncovered_accept` ledger event. `gz adr emit-receipt --event closed` mirrors the same gate: an ADR cannot close while any of its OBPIs has an unwaived REQ gap.
-- **Reconciliation-receipt gate (ADR-0.0.37-08):** `gz obpi complete` exits 3 when no fresh, drift-free `brief_reconciled` receipt exists for the active OBPI. The normal recovery is `gz brief reconcile <OBPI-ID>` then retry. **2am Stage 5 escape:** if the reconcile run cannot complete before the fix must ship, pass `--accept-stale-reconciliation --reason "<text>"` (min 10 chars). This emits a `brief_reconcile_drift_overridden` ledger event before the completion receipt — the override is never silent. The escape works regardless of lane, kind, or sensitivity.
+- **Reconciliation-receipt gate (ADR-0.0.37-08):** `gz obpi complete` exits 3 when no fresh, drift-free `brief_reconciled` receipt exists for the active OBPI. The normal recovery is `gz obpi brief-drift <OBPI-ID>` then retry. **2am Stage 5 escape:** if the reconcile run cannot complete before the fix must ship, pass `--accept-stale-reconciliation --reason "<text>"` (min 10 chars). This emits a `brief_reconcile_drift_overridden` ledger event before the completion receipt — the override is never silent. The escape works regardless of lane, kind, or sensitivity.
 - Historical files under `docs/user/reference/**` are archival and may contain legacy command examples; active operator command contracts are in `docs/user/manpages/**` and CLI help output.

@@ -108,7 +108,7 @@ declares `security` and its Gate 5 fires the extended security walkthrough.
   and OBPI-03; OBPI-05 only WIRES the existing `--taxonomy` gate into `gz check`.
 - `src/gzkit/commands/plan.py`, `src/gzkit/commands/adr_promote.py` — the five
   authoring-door guards are OBPI-02 scope (attested completed). Read them for
-  guardrail-feedback prose parity; NEVER re-edit them here. `gz brief reconcile`
+  guardrail-feedback prose parity; NEVER re-edit them here. `gz obpi brief-drift`
   names both (plus `src/gzkit/ledger.py`, `src/gzkit/commands/common.py`) as
   allowlist drift once the membrane paths are declared — that is the
   neighborhood heuristic surfacing the adjacent guard family, not a mandate to

@@ -135,5 +135,5 @@ BLOCKERS:
 Next steps:
   - uv run gz adr status ADR-0.10.0-obpi-runtime-surface
   - uv run gz adr audit-check ADR-0.10.0-obpi-runtime-surface
-  - uv run gz obpi reconcile OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration
+  - uv run gz obpi sync OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration
 ```

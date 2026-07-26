@@ -62,7 +62,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > brief was authored (51 rows at authoring, 52 now), so the enumerated ids must
 > be re-derived, not trusted.
 >
-> Note: as on OBPI-0.35.0-08, `gz brief reconcile` cannot see pre-landed REQ
+> Note: as on OBPI-0.35.0-08, `gz obpi brief-drift` cannot see pre-landed REQ
 > satisfaction, so this note is authored rather than computed.
 
 ## Lane

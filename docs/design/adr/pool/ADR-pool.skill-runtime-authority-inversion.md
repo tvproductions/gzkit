@@ -35,7 +35,7 @@ runtime procedure:
 - `gz-adr-create` — wraps `gz plan create` / `gz adr promote`
 - `gz-adr-evaluate` — wraps `gz adr evaluate`
 - `gz-check` — wraps `gz check`
-- `gz-obpi-reconcile` — wraps `gz obpi reconcile`
+- `gz-obpi-reconcile` — wraps `gz obpi sync`
 - `gz-validate` — wraps `gz validate`
 - `gz-arb` — wraps `gz arb step / ruff / typecheck`
 

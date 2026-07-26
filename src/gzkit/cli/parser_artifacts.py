@@ -41,7 +41,6 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     """
     _register_adr_parsers(commands)
     _register_obpi_parsers(commands)
-    _register_brief_parsers(commands)
     _register_task_parsers(commands)
     _register_justify_parser(commands)
     _register_knowledge_parser(commands)
@@ -49,71 +48,6 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     _register_complexity_parsers(commands)
     _register_governance_parsers(commands)
     _register_context_parser(commands)
-
-
-def _register_brief_parsers(commands: argparse._SubParsersAction) -> None:
-    """Register the ``gz brief`` sub-command group (ADR-0.0.37, OBPI-06).
-
-    Exposes ``gz brief reconcile <OBPI-ID>``: the operator-runnable surface that
-    wraps the OBPI-05 reconciliation engine. Distinct from ``gz obpi reconcile``
-    (runtime-state vs. ledger) — this reconciles brief *content* against the
-    project tree across the five drift dimensions.
-    """
-    p_brief = commands.add_parser(
-        "brief",
-        help="OBPI brief reconciliation commands",
-        description="Reconcile OBPI brief content against current project shape.",
-        epilog=build_epilog(
-            [
-                "gz brief reconcile OBPI-0.1.0-01",
-                "gz brief reconcile OBPI-0.1.0-01 --apply --dry-run",
-                'gz brief reconcile OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
-            ]
-        ),
-    )
-    brief_commands = p_brief.add_subparsers(dest="brief_command")
-    brief_commands.required = True
-
-    p_reconcile = brief_commands.add_parser(
-        "reconcile",
-        help="Reconcile an OBPI brief against project state (five drift dimensions)",
-        description=(
-            "Run the brief reconciliation engine across allowlist, discovery "
-            "checklist, verification verbs, REQ count, and citation tuples. "
-            "Emits a brief_reconciled ledger event on every run (and "
-            "brief_reconcile_drift_detected on drift); exits 0 when clean, 3 on "
-            "drift. Use --apply --attestor to write operator-attested amendments."
-        ),
-        epilog=build_epilog(
-            [
-                "gz brief reconcile OBPI-0.1.0-01",
-                "gz brief reconcile OBPI-0.1.0-01 --apply --dry-run",
-                'gz brief reconcile OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
-            ]
-        ),
-    )
-    p_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
-    p_reconcile.add_argument(
-        "--apply",
-        action="store_true",
-        help="Write operator-attested amendments back into the brief (requires --attestor)",
-    )
-    p_reconcile.add_argument(
-        "--attestor",
-        default=None,
-        help="Full name of the attesting human (required with --apply)",
-    )
-    add_dry_run_flag(p_reconcile)
-    add_json_flag(p_reconcile)
-    p_reconcile.set_defaults(
-        func=lambda a: _lazy("brief_reconcile_cmd")(
-            obpi_id=a.obpi,
-            dry_run=a.dry_run,
-            apply=a.apply,
-            attestor=a.attestor,
-            as_json=a.as_json,
-        )
-    )
 
 
 def _register_context_parser(commands: argparse._SubParsersAction) -> None:
@@ -1016,7 +950,8 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             [
                 "gz obpi status OBPI-0.1.0-01",
                 "gz obpi pipeline OBPI-0.1.0-01",
-                "gz obpi reconcile OBPI-0.1.0-01",
+                "gz obpi sync OBPI-0.1.0-01",
+                "gz obpi brief-drift OBPI-0.1.0-01",
             ]
         ),
     )
@@ -1141,21 +1076,73 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
-    p_obpi_reconcile = obpi_commands.add_parser(
-        "reconcile",
-        help="Fail-closed runtime reconciliation for one OBPI",
+    # Renamed from `gz obpi sync` (GHI #641). `sync` names what this verb
+    # actually absorbed — gz-obpi-audit + gz-obpi-sync — and ends the collision
+    # with the brief-content check now called `brief-drift`.
+    p_obpi_sync = obpi_commands.add_parser(
+        "sync",
+        help="Fail-closed runtime reconciliation for one OBPI (receipt + ADR table)",
         description="Reconcile OBPI receipt and brief for consistency.",
         epilog=build_epilog(
             [
-                "gz obpi reconcile OBPI-0.1.0-01",
-                "gz obpi reconcile OBPI-0.1.0-01 --json",
+                "gz obpi sync OBPI-0.1.0-01",
+                "gz obpi sync OBPI-0.1.0-01 --json",
             ]
         ),
     )
-    p_obpi_reconcile.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
-    add_json_flag(p_obpi_reconcile)
-    p_obpi_reconcile.set_defaults(
+    p_obpi_sync.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.4-01)")
+    add_json_flag(p_obpi_sync)
+    p_obpi_sync.set_defaults(
         func=lambda a: _lazy("obpi_reconcile_cmd")(obpi=a.obpi, as_json=a.as_json)
+    )
+
+    # Was `gz brief reconcile` in a single-verb `brief` namespace, colliding with
+    # `gz obpi reconcile` on the same artifact (GHI #641). A brief IS an OBPI's
+    # brief, so the namespace was never a disambiguator an operator could draw,
+    # and mis-selection was silent — each exits 0/3 on a different axis. The verb
+    # now names the axis it checks: brief content against the project tree.
+    # Registered inline rather than via a helper because the doc-coverage scanner
+    # binds every `_register_*` parameter to an empty prefix, so a helper taking a
+    # NESTED subparsers action gets discovered as a top-level command.
+    p_brief_drift = obpi_commands.add_parser(
+        "brief-drift",
+        help="Check an OBPI brief against project state (five drift dimensions)",
+        description=(
+            "Run the brief reconciliation engine across allowlist, discovery "
+            "checklist, verification verbs, REQ count, and citation tuples. "
+            "Emits a brief_reconciled ledger event on every run (and "
+            "brief_reconcile_drift_detected on drift); exits 0 when clean, 3 on "
+            "drift. Use --apply --attestor to write operator-attested amendments."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi brief-drift OBPI-0.1.0-01",
+                "gz obpi brief-drift OBPI-0.1.0-01 --apply --dry-run",
+                'gz obpi brief-drift OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
+            ]
+        ),
+    )
+    p_brief_drift.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.1.0-01)")
+    p_brief_drift.add_argument(
+        "--apply",
+        action="store_true",
+        help="Write operator-attested amendments back into the brief (requires --attestor)",
+    )
+    p_brief_drift.add_argument(
+        "--attestor",
+        default=None,
+        help="Full name of the attesting human (required with --apply)",
+    )
+    add_dry_run_flag(p_brief_drift)
+    add_json_flag(p_brief_drift)
+    p_brief_drift.set_defaults(
+        func=lambda a: _lazy("brief_reconcile_cmd")(
+            obpi_id=a.obpi,
+            dry_run=a.dry_run,
+            apply=a.apply,
+            attestor=a.attestor,
+            as_json=a.as_json,
+        )
     )
 
     p_obpi_validate = obpi_commands.add_parser(

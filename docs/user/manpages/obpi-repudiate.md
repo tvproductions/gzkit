@@ -78,4 +78,4 @@ gz obpi repudiate OBPI-0.0.70-02 \
 
 - `gz obpi withdraw` — permanently retire an OBPI (one-way, no re-completion)
 - `gz obpi complete` — record a genuine completion attestation
-- `gz obpi reconcile` — verify brief and ledger state agree after repudiation
+- `gz obpi sync` — verify brief and ledger state agree after repudiation

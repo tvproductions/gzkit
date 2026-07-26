@@ -114,7 +114,7 @@ missing foundation — it prevents divergence across the entire runtime track.
   If frontmatter says `status: Completed` but no corresponding ledger event
   exists, the entity is not complete.
 - Frontmatter status is a lazy mirror. It is auto-fixed at lifecycle moments
-  (`gz closeout`, `gz attest`, `gz obpi reconcile`) but allowed to lag during
+  (`gz closeout`, `gz attest`, `gz obpi sync`) but allowed to lag during
   active execution. Frontmatter is never read as source-of-truth for completion.
 - Layer 3 artifacts (pipeline markers, caches, derived indexes) are always
   rebuildable. Delete them all, run `gz state`, and everything reconstructs
@@ -133,7 +133,7 @@ missing foundation — it prevents divergence across the entire runtime track.
 
 - **CLI (external contract):** `uv run gz state --repair`
   - Flags in scope: `--repair` (force-reconcile all frontmatter from ledger)
-- **Lifecycle auto-fix points:** `gz closeout`, `gz attest`, `gz obpi reconcile`
+- **Lifecycle auto-fix points:** `gz closeout`, `gz attest`, `gz obpi sync`
   auto-update frontmatter to match ledger-derived state
 - **Config keys consumed:** None — doctrine is code, not config
 

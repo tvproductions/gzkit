@@ -195,7 +195,7 @@ class TestSyncStageStepBuilder(unittest.TestCase):
         """Reconcile reads the synced brief; ADR status refreshes the derived view."""
         steps = self._build()
         sync_idx = next(i for i, (c, _) in enumerate(steps) if "git-sync" in c)
-        reconcile_idx = next(i for i, (c, _) in enumerate(steps) if "obpi reconcile" in c)
+        reconcile_idx = next(i for i, (c, _) in enumerate(steps) if "obpi sync" in c)
         status_idx = next(i for i, (c, _) in enumerate(steps) if "adr status" in c)
         self.assertGreater(reconcile_idx, sync_idx)
         self.assertGreater(status_idx, sync_idx)

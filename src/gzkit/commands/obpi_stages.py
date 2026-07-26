@@ -479,7 +479,7 @@ def _build_sync_stage_steps(
     return [
         (complete_cmd, "Complete OBPI atomically"),
         (pipeline_git_sync_command(), "Guarded repository sync"),
-        (f"uv run gz obpi reconcile {obpi_id}", "Reconcile OBPI"),
+        (f"uv run gz obpi sync {obpi_id}", "Reconcile OBPI"),
         (f"uv run gz adr status {resolved_parent} --json", "Refresh parent ADR view"),
     ]
 

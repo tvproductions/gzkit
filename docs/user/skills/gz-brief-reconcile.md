@@ -6,7 +6,7 @@ Reconcile an OBPI brief against current project state and optionally write opera
 
 ## Purpose
 
-`/gz-brief-reconcile` exposes the canonical gz-brief-reconcile workflow for operator invocation. It wraps the `gz brief reconcile` CLI verb over the OBPI-0.0.37-05 reconciliation engine to detect brief↔reality drift across five dimensions (invariant CIC-2) and, under `--apply --attestor`, write operator-attested amendments.
+`/gz-brief-reconcile` exposes the canonical gz-brief-reconcile workflow for operator invocation. It wraps the `gz obpi brief-drift` CLI verb over the OBPI-0.0.37-05 reconciliation engine to detect brief↔reality drift across five dimensions (invariant CIC-2) and, under `--apply --attestor`, write operator-attested amendments.
 
 ## When to Use
 
@@ -42,7 +42,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-brief-re
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz brief reconcile`](../manpages/brief-reconcile.md) | Underlying CLI command |
+| [`gz obpi brief-drift`](../manpages/brief-reconcile.md) | Underlying CLI command |
 | [`/gz-obpi-reconcile`](gz-obpi-reconcile.md) | Reconciles OBPI runtime state (distinct from brief-content) |
 | [skills index](index.md) | Browse the full skill catalog |
 | [governance runbook](../../governance/governance_runbook.md) | Workflow context |

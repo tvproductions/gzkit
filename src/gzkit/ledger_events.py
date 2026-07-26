@@ -833,7 +833,7 @@ def brief_reconciled_event(
 ) -> LedgerEvent:
     """Create a brief_reconciled event (ADR-0.0.37, OBPI-06).
 
-    Summary record for one ``gz brief reconcile`` run. ``applied`` / ``attestor``
+    Summary record for one ``gz obpi brief-drift`` run. ``applied`` / ``attestor``
     are set only when ``--apply --attestor`` wrote amendments back to the brief.
     """
     timestamp = datetime.now(UTC).isoformat()

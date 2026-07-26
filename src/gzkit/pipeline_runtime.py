@@ -472,7 +472,7 @@ def _stage2_drift_blocker(
         return [
             f"Stage 2 entry blocked: receipt for {obpi_id} has_drift=True "
             f"(drifted dimensions: {dims_str}). "
-            f"Run `gz brief reconcile {obpi_id}` to refresh."
+            f"Run `gz obpi brief-drift {obpi_id}` to refresh."
         ]
     return []
 
@@ -538,7 +538,7 @@ def check_reconcile_receipt_gate(
     if latest_ts is None:
         return [
             f"Stage 2 entry blocked: no `brief_reconciled` receipt for {obpi_id}. "
-            f"Run `gz brief reconcile {obpi_id}` then retry."
+            f"Run `gz obpi brief-drift {obpi_id}` then retry."
         ]
 
     from gzkit.governance.brief_path_validity import extract_brief_creates_paths  # noqa: PLC0415
@@ -552,7 +552,7 @@ def check_reconcile_receipt_gate(
         return [
             f"Stage 2 entry blocked: receipt for {obpi_id} stale "
             f"(receipt_ts={latest_ts.isoformat()}, drifted path={drifted_path!r}). "
-            f"Run `gz brief reconcile {obpi_id}` to refresh."
+            f"Run `gz obpi brief-drift {obpi_id}` to refresh."
         ]
 
     return _stage2_drift_blocker(obpi_id, has_drift, drifted_dims)

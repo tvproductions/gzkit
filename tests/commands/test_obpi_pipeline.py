@@ -572,7 +572,9 @@ class TestObpiPipelineCommand(unittest.TestCase):
                 any("obpi emit-receipt" in cmd for cmd in executed),
                 "emit-receipt removed under GHI #422; complete emits receipt internally",
             )
-            self.assertTrue(any("reconcile" in cmd for cmd in executed))
+            # `gz obpi reconcile` was renamed `gz obpi sync` (GHI #641) — the
+            # substring "reconcile" no longer appears in the invocation.
+            self.assertTrue(any("obpi sync" in cmd for cmd in executed))
             self.assertTrue(any("git-sync" in cmd for cmd in executed))
             complete_idx = next(i for i, c in enumerate(executed) if "obpi complete" in c)
             sync_idx = next(i for i, c in enumerate(executed) if "git-sync" in c)

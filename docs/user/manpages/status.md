@@ -17,7 +17,7 @@ gz status [--json] [--table] [--show-gates] [--epic SLUG] [--full]
 ## Runtime Behavior
 
 `gz status` derives ADR lifecycle from ledger events and treats OBPI completion as the primary progress unit.
-For single-OBPI drilldown, use `gz obpi status` or `gz obpi reconcile`.
+For single-OBPI drilldown, use `gz obpi status` or `gz obpi sync`.
 
 Per ADR it reports:
 

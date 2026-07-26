@@ -67,7 +67,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 > Do not re-implement the landed REQs; re-derive their assertions if you change
 > the advisory's shape.
 >
-> Note: `gz brief reconcile` reported this brief **clean** on all five dimensions
+> Note: `gz obpi brief-drift` reported this brief **clean** on all five dimensions
 > (allowlist / discovery / verification / req_count / citation) while four of its
 > REQs were already satisfied — the reconciler cannot see pre-landed REQ
 > satisfaction, so this note is authored rather than computed.

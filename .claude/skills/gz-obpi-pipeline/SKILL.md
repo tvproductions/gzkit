@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-15
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "6.31.0"
+  skill-version: "6.32.0"
 model: sonnet
 ---
 
@@ -839,7 +839,7 @@ the reconcile output and ADR status refresh.
    the same OBPI as the per-OBPI marker.
 6. **Git-sync #1** — `uv run gz git-sync --apply`
    Commits all governance edits from steps 1-5. Tree is now clean.
-7. Run `uv run gz obpi reconcile {OBPI-SLUG}` to confirm receipt and brief agree.
+7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.
 8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
 9. **Git-sync #2** — `uv run gz git-sync --apply`
@@ -965,7 +965,7 @@ All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 | `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |
 | `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |
 | `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |
-| `gz obpi reconcile` | Stage 5 confirmation — receipt and brief agree |
+| `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |
 | `/gz-session-handoff` | Error recovery — preserves context on abort |
 
 ---
@@ -978,7 +978,7 @@ The pipeline is complete when — and ONLY when — all of these are true:
 2. Lock released via `gz obpi lock release` (Stage 5, Step 2)
 3. Pipeline markers cleaned (Stage 5, Steps 3-4)
 4. Git-sync #1 committed governance edits (Stage 5, Step 5)
-5. `gz obpi reconcile` passed (Stage 5, Step 6)
+5. `gz obpi sync` passed (Stage 5, Step 6)
 6. Git-sync #2 committed reconcile output (Stage 5, Step 8)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.

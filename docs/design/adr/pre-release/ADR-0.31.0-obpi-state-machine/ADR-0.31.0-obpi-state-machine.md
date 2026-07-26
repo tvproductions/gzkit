@@ -285,7 +285,7 @@ surface). Promotion would be `gz adr promote ADR-pool.obpi-state-machine
    GHI #348 root cause).
 3. Runtime invariant monitor on the artifact graph read/write boundary
    (heavy — the load-bearing piece).
-4. Migrate `gz obpi complete` / `gz obpi reconcile` /
+4. Migrate `gz obpi complete` / `gz obpi sync` /
    `gz frontmatter reconcile` from batch-reconciler shape to
    transition-emitter shape (heavy — the choreography retirement).
 5. `STATUS_VOCAB_MAPPING` shrink-to-import-only (lite — vocab freeze).

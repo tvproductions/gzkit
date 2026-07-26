@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.15.0"
+  skill-version: "7.16.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-17
+last_reviewed: 2026-07-26
 model: opus
 ---
 
@@ -266,7 +266,7 @@ NEVER, EVER, EVER dead-letter a GHI for the binding rule.
 **Why two syncs:**
 
 1. The first sync makes the human attestation, receipt, and walkthrough evidence durable before any derived state is rebuilt.
-2. The second sync is the mechanical check that no post-closeout hook, per-OBPI `gz obpi reconcile` sweep, or derived-state refresh left uncommitted artifacts. In the common case sync 2 is a no-op because the closeout pipeline emits derived-state reconciliation atomically with the attestation event; sync 2 exists to catch the exceptional case where it did not.
+2. The second sync is the mechanical check that no post-closeout hook, per-OBPI `gz obpi sync` sweep, or derived-state refresh left uncommitted artifacts. In the common case sync 2 is a no-op because the closeout pipeline emits derived-state reconciliation atomically with the attestation event; sync 2 exists to catch the exceptional case where it did not.
 
 If sync 1 fails, the ceremony is paused — fix the failing gate, re-run sync 1. **Never** skip sync 2: skipping it risks leaving a derived-view artifact uncommitted, which is the same failure family as #129 (canon green, derived view stale).
 

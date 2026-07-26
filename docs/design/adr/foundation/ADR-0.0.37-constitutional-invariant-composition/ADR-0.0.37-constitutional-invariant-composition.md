@@ -70,7 +70,7 @@ Codify two co-load-bearing foundation invariants in one ADR:
 - `src/gzkit/governance/trust_audits/` (package): add `invariant_coherence.py` (re-renders, byte-compares to committed AGENTS.md) and `brief_reconcile.py` (drift detection across the five reconciliation dimensions); register both in the package `__init__.py` validator registry. Note: `trust_audits` is a package with per-scope modules (one module per validator scope), not a monolithic file.
 - `src/gzkit/schemas/obpi_brief_structure.json` (new): structural schema for OBPI briefs beyond markdown frontmatter.
 - `src/gzkit/governance/brief_reconcile.py` (new): reconciliation engine; per-dimension delta computation.
-- `src/gzkit/commands/brief_reconcile.py` (new): `gz brief reconcile <OBPI-ID> [--apply]` CLI verb.
+- `src/gzkit/commands/brief_reconcile.py` (new): `gz obpi brief-drift <OBPI-ID> [--apply]` CLI verb.
 - `src/gzkit/cli/parser_artifacts.py`: register the new verbs (`governance render`, `brief reconcile`).
 - `src/gzkit/pipeline_runtime.py`: extend Stage 1 to require fresh reconciliation receipt before Stage 2 entry.
 - `src/gzkit/commands/obpi_complete.py`: extend to require fresh reconciliation receipt before completion event emission.
@@ -94,7 +94,7 @@ Codify two co-load-bearing foundation invariants in one ADR:
 
 **OBPI-0.0.37-05 — Brief reconciliation engine:** `brief_reconcile.py`: given an OBPI brief, walks the project tree, computes observed vs. declared deltas across all five reconciliation dimensions (allowlist coherence with coupled-surface registries, Discovery Checklist file existence, Verification verb resolution against parser_artifacts, REQ-count parity against acceptance criteria, citation-tuple freshness against current corpus revision).
 
-**OBPI-0.0.37-06 — `gz brief reconcile` CLI verb:** Operator-runnable surface; emits `brief_reconciled` ledger event with delta summary; supports `--apply` to write operator-attested amendments back into the brief frontmatter.
+**OBPI-0.0.37-06 — `gz obpi brief-drift` CLI verb:** Operator-runnable surface; emits `brief_reconciled` ledger event with delta summary; supports `--apply` to write operator-attested amendments back into the brief frontmatter.
 
 **OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate:** Extends `gz obpi pipeline` Stage 1 to require a fresh reconciliation receipt before Stage 2 entry; receipt freshness defined as "newer than the most recent mutation timestamp in the brief's allowlist domain."
 
@@ -106,7 +106,7 @@ Codify two co-load-bearing foundation invariants in one ADR:
 
 **Sequencing:** OBPI-01 → OBPI-02 → OBPI-03 (composition framework lands first; ledger events online). Then OBPI-04 → OBPI-05 → OBPI-06 (brief reconciliation engine). Then OBPI-07 → OBPI-08 (gates wired). Then OBPI-09 (migration; depends on OBPI-03 to validate the result). OBPI-10 in parallel with OBPI-09.
 
-**Lane: Heavy.** New Pydantic models + new schema mirrors + new CLI verbs (`gz governance render`, `gz brief reconcile`) + new ledger event family + new validator scopes (`--invariant-coherence`, `--brief-reconcile`) + breaking change to AGENTS.md authoring surface. All trigger heavy-lane rigor per `.gzkit/rules/cli.md`. Foundation-kind brief-level Gate 5 stacks on top per ADR-0.0.18.
+**Lane: Heavy.** New Pydantic models + new schema mirrors + new CLI verbs (`gz governance render`, `gz obpi brief-drift`) + new ledger event family + new validator scopes (`--invariant-coherence`, `--brief-reconcile`) + breaking change to AGENTS.md authoring surface. All trigger heavy-lane rigor per `.gzkit/rules/cli.md`. Foundation-kind brief-level Gate 5 stacks on top per ADR-0.0.18.
 
 **Scope boundary — what this ADR explicitly does NOT do:**
 
@@ -236,7 +236,7 @@ they have a foundation invariant to defend.
 
 2. **The foundation/feature kind axis acquires a structural test.** "Is the invariant intent of the project's purpose, established with structural witness?" is now mechanical (does the invariant have a registry entry with a non-empty `structural_witness` array?), not a narrative judgment call. Future foundation ADRs gain a checklist and a fail-closed gate at promotion.
 
-3. **The recurring brief↔reality drift class closes mechanically.** OBPI-0.0.29-02's `behave_coverage_waivers.json` shape, OBPI-0.0.29-01's silent precedent, the GHI #380/#406/#407 superseding chain, the GHI #381 dispatch-attestation gap all route through a single `gz brief reconcile` surface with operator-attested amendments. The pool stubs become feature-kind defenses *of* CIC-2 once this lands.
+3. **The recurring brief↔reality drift class closes mechanically.** OBPI-0.0.29-02's `behave_coverage_waivers.json` shape, OBPI-0.0.29-01's silent precedent, the GHI #380/#406/#407 superseding chain, the GHI #381 dispatch-attestation gap all route through a single `gz obpi brief-drift` surface with operator-attested amendments. The pool stubs become feature-kind defenses *of* CIC-2 once this lands.
 
 4. **Operator-bandwidth-protection at brief authoring and at Stage 1 entry.** Operators receive the reconciliation delta upfront with operator-attested amendment shapes, instead of discovering coupled-surface edits mid-Stage-4. The OEE doctrine's "agent drafts substantively, operator reviews" pattern applied at brief reconciliation time.
 
@@ -307,7 +307,7 @@ they have a foundation invariant to defend.
 - [ ] OBPI-0.0.37-03 — Composition drift validator (`gz validate --invariant-coherence`; fail-closed on drift; `composition_drift_detected` ledger event) [withdrawn; repudiated 2026-06-16, permanently withdrawn `obpi_withdrawn` 2026-07-17 (`d03ce98f`); `--invariant-coherence` ships but diffs rendition playback vs committed surface, never the registry — re-pointed by item 22; severed to GHI #623, post-1.0]
 - [ ] OBPI-0.0.37-04 — OBPI brief structural schema (`BriefStructure` Pydantic + JSON Schema mirror; structured allowlist + REQs + Verification + citations; permissive mode with deprecation window)
 - [ ] OBPI-0.0.37-05 — Brief reconciliation engine (project-tree walker; per-dimension delta computation across the five drift classes)
-- [ ] OBPI-0.0.37-06 — `gz brief reconcile <OBPI-ID> [--apply]` CLI verb (operator-runnable; `brief_reconciled` ledger event; `--apply` writes operator-attested amendments)
+- [ ] OBPI-0.0.37-06 — `gz obpi brief-drift <OBPI-ID> [--apply]` CLI verb (operator-runnable; `brief_reconciled` ledger event; `--apply` writes operator-attested amendments)
 - [ ] OBPI-0.0.37-07 — Pipeline Stage 1 fail-close gate (refuses Stage 2 entry without fresh reconciliation receipt)
 - [ ] OBPI-0.0.37-08 — `gz obpi complete` fail-close gate (refuses Stage 5 completion without fresh reconciliation receipt; `--accept-stale-reconciliation --reason` escape hatch records override)
 - [ ] OBPI-0.0.37-09 — AGENTS.md migration [withdrawn; never built; invariant-registry migration superseded (ADR line: OBPI-13 "Supersedes OBPI-09's byte-preserving framing") — corpus-rendition track (items 18/22/27) owns AGENTS.md authoring; no substrate to re-home; invariant-coherence lock preserved via OBPI-22 rendition-store playback. `obpi_withdrawn` 2026-06-04, operator-directed]
@@ -426,7 +426,7 @@ severable enrichment behind a shipped floor — the airlock ships and gates on t
 **Delivered and load-bearing (the honest floor 1.0 ships on):**
 
 - **CIC-2 brief↔reality coherence** — `gz validate --brief-reconcile`, the Stage-1 and
-  Stage-5 fail-close gates, and `gz brief reconcile` ship and function (OBPIs 04–08).
+  Stage-5 fail-close gates, and `gz obpi brief-drift` ship and function (OBPIs 04–08).
 - **Corpus rendition floor** — append-only corpus (18), capture tool + skill (19),
   setpoint-coherence (20), invariant-tier verbatim floor (23), advisor-QC receipt (24),
   tier-scoped bullet-retention (25), Codex-root setpoint relief (26), disposition/doctrine

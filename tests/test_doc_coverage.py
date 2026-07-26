@@ -106,7 +106,7 @@ class TestDiscoverCommands(unittest.TestCase):
             "obpi emit-receipt",
             "obpi status",
             "obpi pipeline",
-            "obpi reconcile",
+            "obpi sync",
             "obpi validate",
             "cli audit",
             "parity check",

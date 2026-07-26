@@ -47,7 +47,7 @@ When a skill exists for your current workflow step, prefer it.
    - Skill: `/git-sync`
 6. **Record OBPI completion from the synced state**
    - `uv run gz obpi emit-receipt OBPI-<X.Y.Z-NN>-<slug> --event completed ...`
-   - `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
+   - `uv run gz obpi sync OBPI-<X.Y.Z-NN>-<slug>`
    - `uv run gz adr status ADR-<X.Y.Z> --json`
 7. **Repeat for next OBPI**
 
@@ -55,7 +55,7 @@ When a skill exists for your current workflow step, prefer it.
 
 ## ADR Closeout Loop (When OBPI Batch Is Done)
 
-1. `uv run gz obpi reconcile OBPI-<X.Y.Z-NN>-<slug>`
+1. `uv run gz obpi sync OBPI-<X.Y.Z-NN>-<slug>`
 2. `uv run gz adr audit-check ADR-<X.Y.Z>`
 3. CLI: `uv run gz closeout ADR-<X.Y.Z>` / Skill: `/gz-adr-closeout-ceremony ADR-<X.Y.Z>`
 4. `uv run gz attest ADR-<X.Y.Z> --status completed`

@@ -228,7 +228,7 @@ not met.
    Commits governance edits (steps 1-5). Tree is clean with deterministic commit hash.
 7. **Emit completion receipt:** `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {name} --evidence-json '{...}'`
    Captures clean anchor from the commit in step 6. Receipt `git_sync_state.dirty` = `false`.
-8. Run reconcile: `uv run gz obpi reconcile {OBPI-ID}`
+8. Run reconcile: `uv run gz obpi sync {OBPI-ID}`
 9. Refresh parent ADR view: `uv run gz adr status {PARENT-ADR} --json`
 10. **Git-sync #2:** `uv run gz git-sync --apply --lint --test`
     Commits receipt (step 7) and reconcile output (step 8).
@@ -493,7 +493,7 @@ Current `_run_pipeline_sync_stage()` prints commands for the agent to run. It mu
 actually execute them:
 
 1. `uv run gz obpi emit-receipt {OBPI-ID} --event completed --attestor {name}`
-2. `uv run gz obpi reconcile {OBPI-ID}`
+2. `uv run gz obpi sync {OBPI-ID}`
 3. `uv run gz adr status {PARENT-ADR} --json`
 4. `uv run gz git-sync --apply --lint --test`
 5. Remove pipeline markers

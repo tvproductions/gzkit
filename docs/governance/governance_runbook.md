@@ -43,8 +43,8 @@ uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignmen
 uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
 uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledger
-uv run gz obpi reconcile OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
-uv run gz brief reconcile OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
+uv run gz obpi sync OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
+uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
 uv run gz ontology sense                  # Image the current governance shape (read-only sonar; STRUCTURAL seams)
 uv run gz ontology trace <ID>             # Walk one node's vertical lineage + lateral proof + edge provenance (read-only)
 uv run gz ontology resense                # Diff the shape vs the last sweep — the airlock re-sense gate (read-only)

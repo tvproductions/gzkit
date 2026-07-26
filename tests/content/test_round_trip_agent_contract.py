@@ -107,7 +107,7 @@ class TestReconcileInvariant(unittest.TestCase):
         inv = ConstitutionalInvariant(
             id="CIC-2",
             claim="Every OBPI brief reconciles against project shape.",
-            structural_witness=["gz brief reconcile"],
+            structural_witness=["gz obpi brief-drift"],
             composition_targets=["AGENTS.md"],
         )
         bullet = reconcile_invariant(inv)

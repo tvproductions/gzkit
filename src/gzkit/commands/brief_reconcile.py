@@ -1,4 +1,4 @@
-"""``gz brief reconcile`` command (ADR-0.0.37, OBPI-0.0.37-06).
+"""``gz obpi brief-drift`` command (ADR-0.0.37, OBPI-0.0.37-06).
 
 Operator-runnable wrapper around the OBPI-0.0.37-05 reconciliation engine. Emits
 a ``brief_reconciled`` summary event on every run, an additional
@@ -33,11 +33,11 @@ def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[st
     records them as tracked defects instead.
     """
     allowlist_adds = [
-        f"`{path}` (added by brief reconcile, attestor {attestor})"
+        f"`{path}` (added by obpi brief-drift, attestor {attestor})"
         for path in result.allowlist_delta.missing_in_brief
     ]
     defects = [
-        f"Unresolved verb `gz {verb}` (brief reconcile, attestor {attestor})"
+        f"Unresolved verb `gz {verb}` (obpi brief-drift, attestor {attestor})"
         for verb in result.verification_delta.unresolved_verbs
     ]
     if result.req_count_delta.measurable and result.req_count_delta.delta != 0:
@@ -45,7 +45,7 @@ def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[st
             "REQ identity drift: "
             f"missing from Acceptance Criteria {result.req_count_delta.missing_reqs}, "
             f"undeclared in frontmatter {result.req_count_delta.unexpected_reqs} "
-            f"(brief reconcile, attestor {attestor})"
+            f"(obpi brief-drift, attestor {attestor})"
         )
     return allowlist_adds, defects
 

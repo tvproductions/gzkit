@@ -1,4 +1,4 @@
-# gz brief reconcile
+# gz obpi brief-drift
 
 Reconcile an OBPI brief against current project state across the five drift
 dimensions, and optionally write operator-attested amendments.
@@ -7,12 +7,12 @@ dimensions, and optionally write operator-attested amendments.
 
 ## NAME
 
-`gz brief reconcile` — detect and (optionally) repair OBPI brief↔reality drift.
+`gz obpi brief-drift` — detect and (optionally) repair OBPI brief↔reality drift.
 
 ## SYNOPSIS
 
 ```bash
-gz brief reconcile <OBPI-ID> [--apply] [--attestor "<name>"] [--dry-run] [--json]
+gz obpi brief-drift <OBPI-ID> [--apply] [--attestor "<name>"] [--dry-run] [--json]
 ```
 
 `<OBPI-ID>` accepts the full canonical identifier or the short form
@@ -21,7 +21,7 @@ shared OBPI-id resolver.
 
 ## DESCRIPTION
 
-`gz brief reconcile` is the operator-runnable surface over the OBPI-0.0.37-05
+`gz obpi brief-drift` is the operator-runnable surface over the OBPI-0.0.37-05
 reconciliation engine (`reconcile_brief`). On every run it computes deltas across
 five drift dimensions — **allowlist**, **discovery checklist**, **verification
 verbs**, **REQ count**, and **citation tuples** — and emits a `brief_reconciled`
@@ -79,7 +79,7 @@ emission, and the amendment-write path only.
 Report mode (exits 3 on drift):
 
 ```bash
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli
 ```
 
 ```text
@@ -90,7 +90,7 @@ Brief reconcile: OBPI-0.0.37-06-brief-reconcile-cli — DRIFT
 Machine-readable output:
 
 ```bash
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --json
 ```
 
 ```json
@@ -112,18 +112,18 @@ uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --json
 Preview amendments without writing:
 
 ```bash
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe" --dry-run
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe" --dry-run
 ```
 
 Apply operator-attested amendments:
 
 ```bash
-uv run gz brief reconcile OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe"
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe"
 ```
 
 ## SEE ALSO
 
-- `gz obpi reconcile` — reconciles OBPI *runtime state* against ledger evidence
+- `gz obpi sync` — reconciles OBPI *runtime state* against ledger evidence
   (distinct from this command's brief-*content* reconciliation).
 - ADR-0.0.37 — Constitutional Invariant Composition (invariant CIC-2:
   brief↔reality coherence).

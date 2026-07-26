@@ -1,4 +1,4 @@
-"""Tests for ``gz brief reconcile`` (OBPI-0.0.37-06).
+"""Tests for ``gz obpi brief-drift`` (OBPI-0.0.37-06).
 
 REQ-derived behavior: the CLI wraps OBPI-05's reconciliation engine, emits
 ledger events, and (under ``--apply``) writes operator-attested amendments
@@ -137,7 +137,7 @@ def _seed_repairable_project() -> None:
 
 
 class TestBriefReconcileCommand(unittest.TestCase):
-    """gz brief reconcile CLI contract (OBPI-0.0.37-06)."""
+    """gz obpi brief-drift CLI contract (OBPI-0.0.37-06)."""
 
     def _events(self, name: str) -> list:
         return Ledger(Path(".gzkit/ledger.jsonl")).query(event_type=name)
@@ -147,11 +147,11 @@ class TestBriefReconcileCommand(unittest.TestCase):
 
     @covers("REQ-0.0.37-06-06")
     def test_verb_registered_help(self) -> None:
-        """REQ-06: `gz brief reconcile --help` resolves (verb registered)."""
+        """REQ-06: `gz obpi brief-drift --help` resolves (verb registered)."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            result = runner.invoke(main, ["brief", "reconcile", "--help"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "--help"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("reconcile", result.output.lower())
 
@@ -162,7 +162,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             _write_brief(self._adrs_dir() / "OBPI-0.1.0-01-clean.md", _CLEAN_BRIEF)
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-01-clean"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-01-clean"])
             self.assertEqual(result.exit_code, 0)
             events = self._events("brief_reconciled")
             self.assertEqual(len(events), 1)
@@ -177,7 +177,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             _write_brief(self._adrs_dir() / "OBPI-0.1.0-02-drift.md", _DRIFT_BRIEF)
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-02-drift"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-02-drift"])
             self.assertEqual(result.exit_code, 3)
             reconciled = self._events("brief_reconciled")
             self.assertEqual(len(reconciled), 1)
@@ -196,7 +196,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             _write_brief(self._adrs_dir() / "OBPI-0.1.0-02-drift.md", _DRIFT_BRIEF)
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-02-drift", "--apply"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-02-drift", "--apply"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("--apply requires --attestor", result.output)
             self.assertEqual(self._events("brief_reconciled"), [])
@@ -212,8 +212,8 @@ class TestBriefReconcileCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "brief",
-                    "reconcile",
+                    "obpi",
+                    "brief-drift",
                     "OBPI-0.1.0-02-drift",
                     "--apply",
                     "--attestor",
@@ -243,8 +243,8 @@ class TestBriefReconcileCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "brief",
-                    "reconcile",
+                    "obpi",
+                    "brief-drift",
                     "OBPI-0.1.0-02-drift",
                     "--apply",
                     "--attestor",
@@ -274,8 +274,8 @@ class TestBriefReconcileCommand(unittest.TestCase):
             result = runner.invoke(
                 main,
                 [
-                    "brief",
-                    "reconcile",
+                    "obpi",
+                    "brief-drift",
                     "OBPI-0.1.0-03-repairable",
                     "--apply",
                     "--attestor",
@@ -307,7 +307,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
             _write_brief(brief_path, _DRIFT_BRIEF)
             result = runner.invoke(
                 main,
-                ["brief", "reconcile", "OBPI-0.1.0-02-drift", "--apply", "--attestor", "g0"],
+                ["obpi", "brief-drift", "OBPI-0.1.0-02-drift", "--apply", "--attestor", "g0"],
             )
             self.assertEqual(result.exit_code, 3)
             applied = [e for e in self._events("brief_reconciled") if e.extra.get("applied")]
@@ -329,7 +329,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
             _quick_init()
             brief_path = self._adrs_dir() / "OBPI-0.1.0-02-drift.md"
             _write_brief(brief_path, _DRIFT_BRIEF.replace("status: Active", "status: Completed"))
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-02-drift"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-02-drift"])
             self.assertEqual(result.exit_code, 0)
             self.assertNotIn("clean", result.output)
             self.assertIn("sealed", result.output.lower())
@@ -341,7 +341,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             _write_brief(self._adrs_dir() / "OBPI-0.1.0-01-clean.md", _CLEAN_BRIEF)
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-0.1.0-01-clean"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-01-clean"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("clean", result.output)
 
@@ -394,7 +394,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
-            result = runner.invoke(main, ["brief", "reconcile", "OBPI-9.9.9-99-missing"])
+            result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-9.9.9-99-missing"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("not found", result.output.lower())
 
@@ -402,7 +402,7 @@ class TestBriefReconcileCommand(unittest.TestCase):
     def test_manpage_has_required_sections(self) -> None:
         """REQ-08: the command manpage exists with the contract sections."""
         project_root = Path(__file__).resolve().parent.parent.parent
-        manpage = project_root / "docs" / "user" / "manpages" / "brief-reconcile.md"
+        manpage = project_root / "docs" / "user" / "manpages" / "obpi-brief-drift.md"
         self.assertTrue(manpage.is_file(), f"missing manpage: {manpage}")
         text = manpage.read_text(encoding="utf-8")
         for section in ("NAME", "SYNOPSIS", "DESCRIPTION", "OPTIONS", "EXAMPLES"):

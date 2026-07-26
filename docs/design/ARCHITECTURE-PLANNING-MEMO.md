@@ -142,7 +142,7 @@ authoritative for what:
 
 **The problem:** Multiple commands read "current status" from different layers.
 `ledger_semantics.py` derives OBPI status from ledger events. `sync_*.py` reads
-frontmatter. Reconciliation commands (`gz obpi reconcile`) exist to fix drift
+frontmatter. Reconciliation commands (`gz obpi sync`) exist to fix drift
 between them. But there is no locked doctrine that says which layer wins when
 they disagree.
 
@@ -174,7 +174,7 @@ runtime track started. It is the single most important missing foundation.
 ### Open Questions (Resolved)
 
 1. **Frontmatter auto-fix:** Auto-fix at lifecycle moments. `gz closeout`,
-   `gz attest`, and `gz obpi reconcile` auto-update frontmatter to match
+   `gz attest`, and `gz obpi sync` auto-update frontmatter to match
    ledger-derived state. No manual step required at lifecycle checkpoints.
 
 2. **`gz state --repair`:** Yes. An explicit force-reconcile command exists for
@@ -472,7 +472,7 @@ Proposed envelope schema: `code`, `message`, `artifact`, `stage`, `retryable`,
 `next_actions`.
 
 This is independently valuable and does not require the graph engine. Multiple
-existing surfaces produce blockers: `gz obpi validate`, `gz obpi reconcile`,
+existing surfaces produce blockers: `gz obpi validate`, `gz obpi sync`,
 `gz closeout`, `gz gates`.
 
 ### Recommendation

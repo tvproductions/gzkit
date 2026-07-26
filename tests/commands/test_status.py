@@ -403,7 +403,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["attestation_requirement"], "optional")
 
     def test_obpi_reconcile_json_passes_for_completed_obpi(self) -> None:
-        """obpi reconcile passes when ledger, file, and proof are coherent."""
+        """obpi sync passes when ledger, file, and proof are coherent."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -433,7 +433,7 @@ class TestStatusCommand(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+            result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
@@ -442,7 +442,7 @@ class TestStatusCommand(unittest.TestCase):
             self.assertEqual(payload["runtime_state"], "completed")
 
     def test_obpi_reconcile_json_reports_reflection_drift_without_blocking(self) -> None:
-        """obpi reconcile stays green when only the markdown reflection is stale."""
+        """obpi sync stays green when only the markdown reflection is stale."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -475,7 +475,7 @@ class TestStatusCommand(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+            result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
@@ -486,7 +486,7 @@ class TestStatusCommand(unittest.TestCase):
 
     @covers("REQ-0.11.0-04-02")
     def test_obpi_reconcile_fails_closed_when_proof_missing(self) -> None:
-        """obpi reconcile emits BLOCKERS and exits non-zero when proof is missing."""
+        """obpi sync emits BLOCKERS and exits non-zero when proof is missing."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -503,7 +503,7 @@ class TestStatusCommand(unittest.TestCase):
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
 
-            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo"])
+            result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo"])
 
             self.assertEqual(result.exit_code, 1)
             self.assertIn("BLOCKERS:", result.output)
@@ -541,7 +541,7 @@ class TestStatusCommand(unittest.TestCase):
                     obpi_completion="completed",
                     evidence={
                         "value_narrative": "Anchor-aware reconciliation remains canonical.",
-                        "key_proof": "uv run gz obpi reconcile OBPI-0.1.0-01-demo --json",
+                        "key_proof": "uv run gz obpi sync OBPI-0.1.0-01-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -573,7 +573,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
             )
 
-            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+            result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
@@ -728,7 +728,7 @@ class TestStatusCommand(unittest.TestCase):
                         "value_narrative": (
                             "Earlier sibling receipts stay complete after later shared changes."
                         ),
-                        "key_proof": "uv run gz obpi reconcile OBPI-0.1.0-01-demo --json",
+                        "key_proof": "uv run gz obpi sync OBPI-0.1.0-01-demo --json",
                         "scope_audit": {
                             "allowlist": ["src/module.py"],
                             "changed_files": ["src/module.py"],
@@ -795,7 +795,7 @@ class TestStatusCommand(unittest.TestCase):
                 )
             )
 
-            result = runner.invoke(main, ["obpi", "reconcile", "OBPI-0.1.0-01-demo", "--json"])
+            result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)

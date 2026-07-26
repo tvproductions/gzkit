@@ -944,7 +944,7 @@ class TestLedger(unittest.TestCase):
                 "latest_evidence": {
                     "attestation_requirement": "required",
                     "value_narrative": "The launch log now assembles from ledger truth.",
-                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-01 --json",
+                    "key_proof": "uv run gz obpi sync OBPI-0.10.0-01 --json",
                     "human_attestation": True,
                     "attestation_text": "Accepted by the human reviewer.",
                     "attestation_date": "2026-03-10",
@@ -1046,7 +1046,7 @@ class TestLedger(unittest.TestCase):
                 "latest_evidence": {
                     "attestation_requirement": "required",
                     "value_narrative": "The runtime engine now persists canonical stage state.",
-                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-01 --json",
+                    "key_proof": "uv run gz obpi sync OBPI-0.10.0-01 --json",
                     "human_attestation": True,
                     "attestation_text": "Accepted by the human reviewer.",
                     "attestation_date": "2026-03-10",
@@ -1244,7 +1244,7 @@ class TestLedger(unittest.TestCase):
                 "ledger_completed": True,
                 "latest_evidence": {
                     "value_narrative": "Anchor drift is isolated to files inside recorded scope.",
-                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-02 --json",
+                    "key_proof": "uv run gz obpi sync OBPI-0.10.0-02 --json",
                 },
                 "latest_completion_evidence": {
                     "scope_audit": {
@@ -1315,7 +1315,7 @@ class TestLedger(unittest.TestCase):
                 "ledger_completed": True,
                 "latest_evidence": {
                     "value_narrative": "Tracked receipts require explicit completion anchors.",
-                    "key_proof": "uv run gz obpi reconcile OBPI-0.10.0-02 --json",
+                    "key_proof": "uv run gz obpi sync OBPI-0.10.0-02 --json",
                 },
                 "latest_completion_evidence": {
                     "scope_audit": {
