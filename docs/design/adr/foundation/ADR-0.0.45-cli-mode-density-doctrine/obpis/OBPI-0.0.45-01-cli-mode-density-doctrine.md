@@ -99,7 +99,7 @@ status: Draft
 
 **Existing Code (understand current state):**
 
-- [ ] Test patterns: `tests/governance/test_cli_density_validators.py`
+- [ ] Test patterns for this OBPI's suite: `tests/governance/test_cli_density_models.py`
 - [ ] Parent ADR integration points reviewed for local conventions
 
 ## Quality Gates

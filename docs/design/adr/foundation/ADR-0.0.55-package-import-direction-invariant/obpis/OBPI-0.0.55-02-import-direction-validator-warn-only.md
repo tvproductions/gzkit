@@ -26,6 +26,7 @@ Ship the `gz validate --import-direction` validator scope in warn-only mode: it 
 ## Allowed Paths
 
 - `src/gzkit/governance/trust_audits/` — OBPI creates `import_direction.py` (the validator scope consuming the OBPI-01 helper)
+- `src/gzkit/governance/trust_audits/import_direction.py` — the validator module this OBPI creates, named explicitly so OBPI-04 resolves it as pending-upstream rather than a dead citation
 - `src/gzkit/commands/validate_cmd.py` — registers the `--import-direction` scope and dispatches the validator
 - `src/gzkit/cli/` — OBPI adds the `--import-direction` flag to the `gz validate` parser surface
 - `src/gzkit/commands/` — the `gz check` default-pipeline list gains `--import-direction` as a warning-only step

@@ -84,9 +84,9 @@ Land two validator scopes: (1) `gz validate --storybook-fresh` — anchor stalen
 
 **Existing Code:**
 
-- [ ] `src/gzkit/governance/trust_audits.py` — existing audit-scope conventions
-- [ ] `src/gzkit/cli/validate.py` — existing flag registration
-- [ ] `src/gzkit/checks/` — `gz check` aggregation pipeline
+- [ ] `src/gzkit/governance/trust_audits/` — existing audit-scope conventions
+- [ ] `src/gzkit/commands/validate_cmd.py` — existing flag registration
+- [ ] `src/gzkit/quality.py` — `gz check` aggregation pipeline
 
 ## Quality Gates
 

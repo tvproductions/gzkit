@@ -85,7 +85,7 @@ Extend `gz plan create` (and the `gz-adr-create` skill template) to scaffold a `
 
 **Existing Code:**
 
-- [ ] Existing template loading in `src/gzkit/commands/plan_cmd.py`
+- [ ] Existing template loading in `src/gzkit/commands/plan.py`
 - [ ] Existing `--kind` handling in `gz plan create` and `gz adr promote`
 - [ ] Existing skill mirror sync (`gz agent sync control-surfaces`)
 - [ ] Existing ledger event registration

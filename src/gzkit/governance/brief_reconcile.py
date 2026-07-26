@@ -155,6 +155,7 @@ _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
 _REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[[ xX]\]")
 _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS\s*$", re.IGNORECASE)
+_DENIED_HEADING_RE = re.compile(r"^##\s+DENIED\s+PATHS\s*$", re.IGNORECASE)
 _DISCOVERY_HEADING_RE = re.compile(r"^##\s+DISCOVERY\s+CHECKLIST\s*$", re.IGNORECASE)
 _VERIFICATION_HEADING_RE = re.compile(r"^##\s+VERIFICATION\s*$", re.IGNORECASE)
 _ACCEPTANCE_HEADING_RE = re.compile(r"^##\s+ACCEPTANCE\s+CRITERIA\s*$", re.IGNORECASE)
@@ -167,7 +168,35 @@ _PATH_PREFIXES = ("src/", "tests/", "docs/", ".gzkit/", "features/")
 _NON_PATH_MARKERS = ("(", ")", '"', "'", "::", "{", "}")
 # `path.py:36-66` cites a *region* of a file, not a file. Anchored on a trailing
 # colon-digits so a real path is never rejected for containing a colon (GHI #626).
-_LINE_RANGE_SUFFIX_RE = re.compile(r":\d+(?:-\d+)?$")
+# Multiple comma-separated regions (`config.py:26-60, 106-107`) are the same
+# citation convention naming two regions; anchoring a single range let that
+# spelling fall through and be existence-checked as a filename (GHI #615).
+_LINE_RANGE_SUFFIX_RE = re.compile(r":\d+(?:-\d+)?(?:\s*,\s*\d+(?:-\d+)?)*$")
+
+# A Discovery row is drift evidence only when it CLAIMS the cited path exists.
+# Three row shapes the corpus already uses disclaim that assertion in prose, and
+# the dimension read them all as assertions because it collects backtick tokens
+# without reading the row:
+#
+#   * ABSENCE  — "No existing `x/` directory (the OBPI is creating it)" asserts
+#     the path is not there. Reporting it fails the brief for being correct.
+#   * CONDITIONAL — "(if present)" / "(if any)" states the author does not know
+#     whether the artifact exists; the row is a conditional read instruction.
+#   * HEDGE — "or equivalent" names a guess at the location, not the location,
+#     and instructs the implementer to go find the real one.
+#
+# Repairing the 6 corpus rows to satisfy the scraper would encode the scraper's
+# misreading into governance artifacts, which is the failure class GHI #615 is
+# itself about (structured documents governed by ad-hoc regex-scraping).
+_NON_CLAIM_ROW_RE = re.compile(
+    r"\bno existing\b"
+    r"|\bdoes not exist\b"
+    r"|\bnot present\b"
+    r"|\(if present\b"
+    r"|\(if any\b"
+    r"|\bor equivalent\b",
+    re.IGNORECASE,
+)
 
 
 # --- Engine ---
@@ -205,7 +234,10 @@ def reconcile_brief(brief_path: Path, project_root: Path) -> ReconcileResult:
     body = _brief_body(brief_path)
 
     creates_paths = extract_brief_creates_paths(brief_path)
-    allowlist_delta = _compute_allowlist_delta(allowlist, req_ids, project_root, creates_paths)
+    denied_paths = _extract_denied_paths(body)
+    allowlist_delta = _compute_allowlist_delta(
+        allowlist, req_ids, project_root, creates_paths, denied_paths
+    )
     discovery_delta = _compute_discovery_delta(body, project_root, creates_paths)
     verification_delta = _compute_verb_delta(verbs_to_check)
     req_count_delta = _compute_req_count_delta(declared_req_ids, body)
@@ -329,6 +361,35 @@ def _extract_section_paths(body: str, heading_re: re.Pattern[str]) -> list[str]:
     return paths
 
 
+def _extract_denied_paths(body: str) -> set[str]:
+    """Return paths the brief explicitly excludes from its scope.
+
+    ``## Denied Paths`` is the brief's answer to "why is this module absent from
+    your allowlist?" — reading only ``## Allowed Paths`` and then reporting the
+    denied module as a forgotten declaration inverts the author's precision into
+    a defect (GHI #615).
+    """
+    return {_norm_rel(p) for p in _extract_section_paths(body, _DENIED_HEADING_RE)}
+
+
+def _extract_discovery_paths(body: str) -> list[str]:
+    """Collect Discovery-checklist paths from rows that assert the path exists.
+
+    Row-scoped rather than section-scoped: the disclaimer belongs to the row that
+    carries it, so one ``(if present)`` cannot silence its unqualified siblings.
+    That distinction is the whole safety of the narrowing — a section-level skip
+    would blind a checklist on a single hedged line (GHI #615).
+    """
+    paths: list[str] = []
+    for line in _section_lines(body, _DISCOVERY_HEADING_RE):
+        if _NON_CLAIM_ROW_RE.search(line):
+            continue
+        for token in _BACKTICK_PATH_RE.findall(line):
+            if _looks_like_path(token):
+                paths.append(token)
+    return paths
+
+
 def _looks_like_path(token: str) -> bool:
     """Return True if a token looks like a project-relative file path.
 
@@ -427,7 +488,10 @@ _TEST_INFRA_SRC_RELS = frozenset(
 
 
 def _compute_missing_in_brief(
-    req_ids: list[str], allowlist: list[str], project_root: Path
+    req_ids: list[str],
+    allowlist: list[str],
+    project_root: Path,
+    denied_paths: set[str] | None = None,
 ) -> list[str]:
     """Report src/ files imported by the brief's REQ tests but absent from the allowlist.
 
@@ -444,6 +508,7 @@ def _compute_missing_in_brief(
     """
     if not req_ids:
         return []
+    denied = denied_paths or set()
     src_allowlist = {p.rstrip("/") for p in allowlist if p.startswith("src/")}
     if not src_allowlist:
         return []
@@ -463,6 +528,11 @@ def _compute_missing_in_brief(
                 continue
             if src_rel in _TEST_INFRA_SRC_RELS:
                 continue
+            if _norm_rel(src_rel) in denied:
+                # The brief already answered for this module: it is out of scope
+                # on purpose. Reporting it as a forgotten declaration turns the
+                # author's precision into a defect (GHI #615).
+                continue
             if src_rel.endswith("/__init__.py"):
                 # A package ``__init__.py`` is never a subject-under-test — a
                 # ``from gzkit.pkg import symbol`` resolves the module to the
@@ -480,6 +550,7 @@ def _compute_allowlist_delta(
     req_ids: list[str],
     project_root: Path,
     creates_paths: set[str] | None = None,
+    denied_paths: set[str] | None = None,
 ) -> AllowlistDelta:
     """Report allowlist paths missing on disk and src/ files missing from the allowlist.
 
@@ -496,7 +567,7 @@ def _compute_allowlist_delta(
         and not (project_root / path).exists()
         and path.removeprefix("./").rstrip("/") not in creates
     ]
-    missing_in_brief = _compute_missing_in_brief(req_ids, allowlist, project_root)
+    missing_in_brief = _compute_missing_in_brief(req_ids, allowlist, project_root, denied_paths)
     return AllowlistDelta(missing_in_brief=missing_in_brief, missing_on_disk=missing_on_disk)
 
 
@@ -610,9 +681,12 @@ def _compute_discovery_delta(
       dimension did not, so the same declaration in the same brief resolved
       differently depending on which section named it, and every
       first-implementation OBPI drifted by construction (GHI #626).
+
+    A third class is filtered a level up, in ``_extract_discovery_paths``: rows
+    whose own prose disclaims the existence assertion (``_NON_CLAIM_ROW_RE``).
     """
     creates = creates_paths or set()
-    paths = _extract_section_paths(body, _DISCOVERY_HEADING_RE)
+    paths = _extract_discovery_paths(body)
     unresolved = [
         path
         for path in paths

@@ -28,6 +28,7 @@ Introduce a new tactical-DDD artifact type `docs/design/domain/DM-<bc-slug>.md` 
 - `src/gzkit/governance/domain_models.py` — EXTEND (OBPI-01 created); add `DomainModel`, `Aggregate`, `Entity`, `ValueObject`, `DomainEvent`, `ImplementationSurface`, `InboundContract`, `OutboundContract`
 - `src/gzkit/schemas/domain_model.json` — NEW
 - `src/gzkit/templates/dm.md` — NEW
+- `docs/design/domain/` — NEW directory this OBPI establishes; named explicitly so consuming siblings resolve it as pending-upstream rather than a dead citation
 - `docs/design/domain/.gitkeep` — NEW
 - `tests/governance/domain/test_dm_models.py` — NEW
 - `tests/governance/domain/test_dm_schema.py` — NEW

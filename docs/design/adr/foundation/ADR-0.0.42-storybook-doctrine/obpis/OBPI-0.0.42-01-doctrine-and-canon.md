@@ -29,6 +29,7 @@ Land the `docs/user/storybook/` directory contract, the `arc-type` frontmatter s
 - `docs/user/storybook/from-init-to-first-attested-release.md` — strawman to be revised in-place
 - `docs/user/runbook.md` — single-section cross-link addition
 - `src/gzkit/schemas/` — directory exists; OBPI authors new `storybook.json` schema inside it
+- `src/gzkit/schemas/storybook.json` — the arc-frontmatter schema this OBPI creates (REQUIREMENT 2); named explicitly so consuming siblings resolve it as pending-upstream rather than a dead citation
 
 ## Denied Paths
 

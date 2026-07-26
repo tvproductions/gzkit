@@ -91,7 +91,7 @@ Triangulate `gz-systematic-debug` with the GHI lifecycle by adding a `## Systema
 **Existing Code (understand current state):**
 
 - [ ] Current `skill-version:` values for both GHI skills (record for minor-bump)
-- [ ] Current Step 0 prior-art lookup in `ghi-author/SKILL.md` — confirm the new coupling subsection does not duplicate it; it cites alongside it
+- [ ] Current Step 0 prior-art lookup in `.gzkit/skills/ghi-author/SKILL.md` — confirm the new coupling subsection does not duplicate it; it cites alongside it
 
 ## Quality Gates
 

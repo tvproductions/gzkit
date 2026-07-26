@@ -27,6 +27,7 @@ Author the package-import-direction port: `data/package_layer_order.json` declar
 
 - `data/` — OBPI creates `data/package_layer_order.json` (the tri-role manifest) and `data/package_import_direction_baseline.json` (the bootstrap allowlist)
 - `src/gzkit/governance/` — OBPI creates `import_direction.py` (the helper: `compute_import_edges`, `classify`, `layer_of`, `violates_predicate`); the `PackageImportManifest` Pydantic model lands here or in `src/gzkit/core/models.py`
+- `src/gzkit/governance/import_direction.py` — the helper module this OBPI creates, named explicitly so OBPI-02/03 resolve it as pending-upstream rather than a dead citation
 - `src/gzkit/core/models.py` — permitted home for the `PackageImportManifest` Pydantic model if the helper module is kept logic-only
 - `.gzkit/rules/` — OBPI creates `.gzkit/rules/package-import-direction.md` (new rule file, version `0.1.0`)
 - `docs/governance/advisory-rules-audit.md` — scorecard entry classifying the new rule

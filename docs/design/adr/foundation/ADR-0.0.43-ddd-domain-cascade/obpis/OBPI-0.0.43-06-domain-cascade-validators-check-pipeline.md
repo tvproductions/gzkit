@@ -89,8 +89,8 @@ Land two new validator scopes on `gz validate`: `--domain-cascade` (structural c
 
 **Existing Code:**
 
-- [ ] `src/gzkit/governance/trust_audits/adr_status_fresh.py` — Layer-3 freshness precedent
-- [ ] `src/gzkit/cli/validate.py` scope-dispatch pattern
+- [ ] `src/gzkit/governance/adr_status_index.py` — Layer-3 freshness precedent
+- [ ] `src/gzkit/commands/validate_cmd.py` scope-dispatch pattern
 
 ## Quality Gates
 

@@ -71,7 +71,7 @@ Land the `gz storybook` CLI surface (v0 minimum: `list`, `derive --arc <slug>`; 
 **Context:**
 
 - [ ] `src/gzkit/cli/__init__.py` — existing subcommand registration pattern (use `gz adr` or `gz validate` as model)
-- [ ] `src/gzkit/ledger/` — ledger event registration pattern
+- [ ] `src/gzkit/ledger.py` — ledger event registration pattern
 - [ ] OBPI-01 outputs (the schema and arc files this CLI consumes)
 
 **Prerequisites:**

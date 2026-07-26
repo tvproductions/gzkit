@@ -443,6 +443,174 @@ class TestNonPathTokenRejection(unittest.TestCase):
         self.assertEqual(delta.unresolved_paths, [])
 
 
+class TestDiscoveryNonClaimRows(unittest.TestCase):
+    """GHI #615 — a Discovery bullet is only drift evidence when it *claims the
+    path exists*. The dimension existence-checks every backtick token in the
+    section regardless of what the row says about it, so three row shapes the
+    corpus already uses fail by construction: a row asserting the path is
+    ABSENT, a row that is explicitly CONDITIONAL, and a row that explicitly
+    HEDGES the location. Repairing the briefs to satisfy the scraper would
+    encode the scraper's misreading into the governance artifact; the row
+    semantics are what must be read."""
+
+    @covers("REQ-0.0.37-05-01")
+    def test_absence_assertion_row_not_reported(self):
+        # `OBPI-0.0.49-01` states the OBPI is CREATING the skill directory, so the
+        # row asserts the path does not exist. Reporting it as unresolved fails the
+        # brief for being correct about its own starting state.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] No existing `.gzkit/skills/gz-absent-zzz/` directory (the OBPI is creating it)
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, [])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_conditional_row_not_reported(self):
+        # `(if present)` states the author does not know whether the artifact
+        # exists — the row is a conditional read instruction, not an assertion.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] `docs/governance/absent-doctrine-zzz.md` (if present)
+            - [ ] Existing helpers (if any) under `src/gzkit/absent_pkg_zzz/`
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, [])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_hedged_location_row_not_reported(self):
+        # `or equivalent` names a guess at the location, not the location. The
+        # brief is instructing the implementer to go find it.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] Persona schema in `src/gzkit/absent_module_zzz.py` (or equivalent)
+            - [ ] Pipeline registration (find in `src/gzkit/absent_dir_zzz/` or equivalent)
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, [])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_multi_range_line_citation_is_not_a_path(self):
+        # `_LINE_RANGE_SUFFIX_RE` anchors a SINGLE trailing range, so the
+        # multi-range spelling the corpus uses (`config.py:26-60, 106-107`) falls
+        # through and is existence-checked as a filename. Same class as the
+        # single-range citation already rejected.
+        from gzkit.governance.brief_reconcile import _looks_like_path
+
+        self.assertFalse(_looks_like_path("src/gzkit/config.py:26-60, 106-107"))
+        self.assertFalse(_looks_like_path("src/gzkit/config.py:26-60,106-107"))
+        self.assertFalse(_looks_like_path("src/gzkit/config.py:26-60"))
+        self.assertFalse(_looks_like_path("src/gzkit/config.py:26"))
+        # Regression guard: a real path is still admitted.
+        self.assertTrue(_looks_like_path("src/gzkit/config.py"))
+
+    @covers("REQ-0.0.37-05-01")
+    def test_plain_missing_row_still_reported(self):
+        # Negative control — the narrowing is scoped to rows that disclaim the
+        # existence assertion. An unqualified row naming a path that is not there
+        # is exactly the dead citation the dimension exists to catch, and it must
+        # keep failing closed. Without this the fix would blind the dimension.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] `src/gzkit/cli/absent_validate_zzz.py` — existing flag registration
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, ["src/gzkit/cli/absent_validate_zzz.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_non_claim_marker_does_not_leak_across_rows(self):
+        # Negative control — the disclaimer is a property of the ROW that carries
+        # it. A hedged row must not exempt an unhedged sibling row in the same
+        # section, or one `(if present)` would silence a whole checklist.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Discovery Checklist
+
+            - [ ] `docs/governance/absent-doctrine-zzz.md` (if present)
+            - [ ] `src/gzkit/absent_real_drift_zzz.py` — the helper this OBPI calls
+            """
+        )
+        delta = _compute_discovery_delta(body, PROJECT_ROOT)
+        self.assertEqual(delta.unresolved_paths, ["src/gzkit/absent_real_drift_zzz.py"])
+
+
+class TestDeniedPathsAreNotAllowlistGaps(unittest.TestCase):
+    """GHI #615 — `missing_in_brief` reports src/ modules a brief's REQ tests
+    import but its Allowed Paths omit, as evidence the OBPI leaked into a
+    neighbouring module. It reads `## Allowed Paths` alone, so a path the brief
+    explicitly DENIES is reported as an allowlist gap: the author who wrote
+    "NEVER touch this" is told they forgot to declare it. The adjacent section
+    already answers the question."""
+
+    @covers("REQ-0.0.37-05-02")
+    def test_explicitly_denied_path_is_not_reported_as_gap(self):
+        from gzkit.governance.brief_reconcile import _compute_allowlist_delta
+
+        body = textwrap.dedent(
+            """\
+            ## Allowed Paths
+
+            - `src/gzkit/governance/brief_reconcile.py` — the engine under change
+
+            ## Denied Paths
+
+            - `src/gzkit/quality.py` — the `gz check` pipeline is a sibling OBPI's scope
+            """
+        )
+        delta = _compute_allowlist_delta(
+            ["src/gzkit/governance/brief_reconcile.py"],
+            [],
+            PROJECT_ROOT,
+            denied_paths={"src/gzkit/quality.py"},
+        )
+        self.assertNotIn("src/gzkit/quality.py", delta.missing_in_brief)
+        self.assertIn("## Denied Paths", body)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_undeclared_neighbour_still_reported(self):
+        # Negative control — the exclusion is scoped to paths the brief DENIES.
+        # A module that is neither allowed nor denied is the genuine leakage
+        # signal this dimension exists to surface, and must keep reporting.
+        from gzkit.governance.brief_reconcile import _extract_denied_paths
+
+        body = textwrap.dedent(
+            """\
+            ## Allowed Paths
+
+            - `src/gzkit/governance/brief_reconcile.py` — the engine under change
+
+            ## Denied Paths
+
+            - `src/gzkit/quality.py` — sibling OBPI scope
+            """
+        )
+        denied = _extract_denied_paths(body)
+        self.assertIn("src/gzkit/quality.py", denied)
+        self.assertNotIn("src/gzkit/triangle.py", denied)
+
+
 class TestVerificationVerbDimension(unittest.TestCase):
     @covers("REQ-0.0.37-05-03")
     def test_unregistered_verb_reported(self):

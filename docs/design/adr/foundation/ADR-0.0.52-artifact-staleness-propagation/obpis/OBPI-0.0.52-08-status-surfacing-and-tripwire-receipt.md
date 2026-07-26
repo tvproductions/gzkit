@@ -91,7 +91,7 @@ Existing files modified: `src/gzkit/commands/status.py`, `src/gzkit/commands/sta
 
 **Existing Code:**
 
-- [ ] `src/gzkit/commands/status_cmd.py` reviewed for Rich table-column conventions.
+- [ ] `src/gzkit/commands/status.py` reviewed for Rich table-column conventions.
 - [ ] Existing `gz arb` analytical-receipt examples reviewed for receipt-format conventions.
 
 ## Quality Gates

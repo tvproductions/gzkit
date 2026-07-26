@@ -84,8 +84,8 @@ Existing files modified: `src/gzkit/commands/closeout.py`, `src/gzkit/commands/o
 
 **Existing Code:**
 
-- [ ] `src/gzkit/commands/closeout_cmd.py` reviewed for hook insertion point.
-- [ ] `src/gzkit/commands/obpi_complete_cmd.py` reviewed for hook insertion point.
+- [ ] `src/gzkit/commands/closeout.py` reviewed for hook insertion point.
+- [ ] `src/gzkit/commands/obpi_complete.py` reviewed for hook insertion point.
 
 ## Quality Gates
 
