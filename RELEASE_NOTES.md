@@ -1,5 +1,70 @@
 # gzkit Release Notes
 
+## v0.33.3 (2026-07-25)
+
+This release delivers enforcement that had only been declared. The quality
+gates `gz init` scaffolds are now actually installed and verified, the gates
+themselves run on the project's locked toolchain instead of a stale ambient
+cache, and the release ceremony stops asserting closures that never happened.
+
+### Bug fixes
+
+- **#715** — Fixed `gz init` writing a pre-commit configuration without ever
+  installing the hooks it described. Every commit and push in a freshly
+  initialized project ran with no enforcement — ruff, type checking, secret
+  scanning, and the pre-push `gz check` gate never fired — while
+  `gz validate --session-green-gate` reported green because it read the config
+  file and never looked at the installed hooks. `gz init` now declares,
+  activates, and verifies the gate; when installation is genuinely blocked (a
+  deliberately set `core.hooksPath`, for instance) you get the condition named
+  with recovery steps instead of a silent pass.
+- **#714** — Fixed `gz patch release` counting a still-open issue as closed.
+  Work committed under a long-lived tracker looks identical to a finished fix
+  awaiting push, so release manifests and their statistics claimed closures
+  that had not happened. A qualifying issue that is still open upstream now
+  surfaces separately for your adjudication rather than being folded into the
+  count.
+- **#715** — Fixed the pre-commit gates resolving tools from an ambient cache
+  below the project's own declared version floors — the commit gate had been
+  type-checking with a release 24 versions older than the pre-push gate used,
+  reporting 13 diagnostics that the current version does not. Every gate now
+  runs on the locked toolchain.
+- **#715** — Fixed `gz validate --cli-alignment` failing on generated release
+  manifests. A manifest quotes each issue's title verbatim as a historical
+  record, so a release documenting a manpage-naming fix tripped the very gate
+  that fix installed. Generated release records are now treated as sealed
+  history, consistent with the existing exemption for terminal briefs.
+
+### Improvements
+
+- **#615** — Brief reconciliation now computes why each flagged path is missing
+  instead of exempting unstarted briefs wholesale. A path the brief itself
+  exists to create, a product still owed by an upstream sibling, and a
+  genuinely dead citation are three different findings; collapsing them hid
+  real drift. Corpus-wide this narrowed flagged briefs from 36 to 22 and
+  unresolved paths from 313 to 276, with dead citations still surfacing.
+  (Partial work under a still-open tracker.)
+
+### Gate Evidence
+
+- Qualifier: 2 behavior-level GHIs closed since v0.33.2 (#714, #715), plus
+  partial work under the still-open #615. No foundation closeouts.
+- Attribution: two fixes landed without their own issue anchor — the locked
+  toolchain repoint and the release-manifest exemption. Both are attributed to
+  #715, whose body names the red tree they resolve and the hook installation
+  that surfaced them, rather than filing trackers to satisfy the citation gate.
+- Open-upstream adjudication: #615 confirmed as work-under-a-still-open-tracker
+  per the patch-release Step 1b; left open, described as landed only, excluded
+  from the count. No labeling recovery needed — no `diff_only` issues surfaced.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `gz patch release`.
+- Operator approval recorded before execution; `gz git-sync --apply` gates run
+  immediately before the GitHub release.
+
+### Stats
+
+- 2 GHIs closed
+
 ## v0.33.2 (2026-07-25)
 
 This release makes governance failures visible where they had been silent.

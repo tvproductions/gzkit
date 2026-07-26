@@ -17,6 +17,19 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.33.3 (2026-07-25)
+
+### Changed
+
+- Unstarted-brief Discovery findings in brief reconciliation scoped by computed predicate — own-deliverable, pending-upstream product, or dead citation — rather than exempting unstarted briefs wholesale (GHI #615)
+- Pre-commit hook entries repointed from `uvx` to `uv run` so ruff, ty, xenon, and interrogate resolve at or above their `pyproject.toml` floors instead of from an ambient cache below them (GHI #715)
+- `gz validate --cli-alignment` excludes `docs/releases/` from the manpage-prefix audit, exempting generated release manifests as sealed historical records (GHI #715)
+
+### Fixed
+
+- `gz init` installs and verifies the pre-commit and pre-push hooks it scaffolds instead of writing `.pre-commit-config.yaml` and leaving activation to the operator; `gz validate --session-green-gate` gains a delivery arm that inspects the effective hooks directory, honoring `core.hooksPath`, and reports recovery prose when installation is blocked (GHI #715)
+- `gz patch release` discovery downgrades a still-open GHI carrying qualifying commits to an `open_upstream` bucket for operator adjudication instead of reporting it `qualified`, so manifests and stats no longer assert closures that did not happen (GHI #714)
+
 ## v0.33.2 (2026-07-25)
 
 ### Added
