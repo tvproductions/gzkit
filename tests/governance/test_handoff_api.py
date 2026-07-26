@@ -750,6 +750,53 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             self.assertIn("Ruling one holds.", settled)
             self.assertIn("Ruling two holds.", settled)
 
+    def test_wrapped_ruling_survives_the_carry_intact(self) -> None:
+        """A hard-wrapped ruling must carry forward whole, not first-line-only.
+
+        `_section_items` matched the bullet marker per LINE, so an entry wrapped
+        across lines lost everything after the first. Observed live on
+        `20260726T004802Z`, whose ruling wrapped at four lines and arrived in its
+        successor as *"Book the patch release as this session's work and leave
+        the"* — the operative clause (`unauthorized`), the operator's verbatim
+        words, and the session id all silently dropped. A ruling truncated
+        mid-sentence can invert its own meaning, and it also fails to dedup
+        against its untruncated twin, so BOTH survive down the chain.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(
+                base,
+                "first",
+                "- [operator-ruled] Book the patch release as this session's work\n"
+                "  and leave the resumed handoff's advised steps unauthorized\n"
+                '  (operator verbatim: "/gz-patch-release").',
+                hour=10,
+            )
+            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertEqual(len(settled), 1)
+            self.assertIn("unauthorized", settled[0])
+            self.assertIn("/gz-patch-release", settled[0])
+
+    def test_continuation_join_does_not_merge_sibling_rulings(self) -> None:
+        # Negative control — only INDENTED non-marker lines continue an entry.
+        # Two separate bullets must stay two rulings, or the join would silently
+        # weld distinct operator rulings into one, which is the same class of
+        # loss the truncation causes.
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._create(
+                base,
+                "first",
+                "- [operator-ruled] Ruling one holds.\n- [operator-ruled] Ruling two holds.",
+                hour=10,
+            )
+            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+
+            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            self.assertEqual(len(settled), 2)
+
     def test_settled_entries_are_not_duplicated_on_re_carry(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)

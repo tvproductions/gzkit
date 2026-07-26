@@ -368,12 +368,28 @@ def _section_body(content: str, heading: str) -> str:
 
 
 def _section_items(content: str, heading: str) -> list[str]:
-    """Return the numbered/bulleted items of one section, marker stripped."""
+    """Return the numbered/bulleted items of one section, marker stripped.
+
+    Items may WRAP. Matching the marker per line and keeping only the matched
+    line truncated every wrapped entry to its first line — observed live on
+    `20260726T004802Z`, whose four-line ruling reached its successor as *"Book
+    the patch release as this session's work and leave the"*, dropping the
+    operative ``unauthorized``, the operator's verbatim words, and the session
+    id. A ruling clipped mid-sentence can invert its own meaning, and it no
+    longer dedups against its untruncated twin, so both propagate down the chain.
+
+    A continuation is an INDENTED non-blank line following an item. Requiring the
+    indent is what keeps the join from welding two sibling bullets — or trailing
+    section prose — into one ruling, which would lose a booked ruling just as
+    surely as truncating it.
+    """
     items: list[str] = []
     for line in _section_body(content, heading).splitlines():
         marked = _ITEM_MARKER_RE.match(line.strip())
         if marked and marked.group(1).strip():
             items.append(marked.group(1).strip())
+        elif items and line.strip() and line[:1].isspace():
+            items[-1] = f"{items[-1]} {line.strip()}"
     return items
 
 
