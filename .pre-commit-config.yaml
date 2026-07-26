@@ -107,7 +107,10 @@ repos:
         # (absent from pyproject.toml), matching the un-pinned xenon/gitleaks
         # precedent. The serial canonical/ARB attestation path is unchanged
         # (see GHI #512 Non-goals).
-        entry: uv run --with unittest-parallel unittest-parallel -t . -s tests
+        # `--buffer` replays a test's output only when it fails or errors, so a
+        # PASSING negative-path test no longer prints convincing fail-closed
+        # prose into the log (GHI #723). Failures still show their own stderr.
+        entry: uv run --with unittest-parallel unittest-parallel -t . -s tests --buffer
         language: system
         pass_filenames: false
         types: [python]

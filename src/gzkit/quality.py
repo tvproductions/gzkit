@@ -363,6 +363,17 @@ def run_tests(project_root: Path) -> QualityResult:
     cores. The serial canonical/ARB attestation path (``gz arb step -- uv run -m
     unittest -q``) is a separate command and is intentionally left serial.
 
+    ``--buffer`` captures each test's stdout/stderr and replays it ONLY for tests
+    that fail or error (GHI #723). Negative-path tests deliberately trigger
+    fail-closed surfaces, and ``.gzkit/rules/guardrail-feedback-prose.md``
+    requires those surfaces to emit rich, alarming, actionable prose — so a
+    PASSING negative-path test used to print a convincing failure into the CI
+    log. The log for a run with exactly one real failure carried 26 error-shaped
+    lines across 303, and triage twice targeted a fixture instead of the defect,
+    each time proposing a remedy that would have made a negative control unable
+    to fail. Buffering removes the noise without weakening any test: a genuine
+    failure still replays its own output under a ``Stderr:`` section.
+
     Args:
         project_root: Project root directory.
 
@@ -371,7 +382,7 @@ def run_tests(project_root: Path) -> QualityResult:
 
     """
     return run_command(
-        "uv run --with unittest-parallel unittest-parallel -t . -s tests",
+        "uv run --with unittest-parallel unittest-parallel -t . -s tests --buffer",
         cwd=project_root,
     )
 

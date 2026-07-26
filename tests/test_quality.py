@@ -9,7 +9,13 @@ from unittest.mock import patch
 
 from gzkit import quality
 from gzkit.commands.quality import _test_name_from_record
-from gzkit.quality import QualityResult, run_adr_path_contract_lint, run_command, run_skill_audit
+from gzkit.quality import (
+    QualityResult,
+    run_adr_path_contract_lint,
+    run_command,
+    run_skill_audit,
+    run_tests,
+)
 from gzkit.triangle import EdgeType, LinkageRecord, VertexRef, VertexType
 
 
@@ -229,6 +235,50 @@ class TestSkillAuditQualityIntegration(unittest.TestCase):
                 "uv run gz skill audit",
                 cwd=Path(tmpdir),
             )
+
+
+class TestTestRunnerBuffersPassingOutput(unittest.TestCase):
+    """The test tier must not replay passing tests' fail-closed prose (GHI #723).
+
+    Negative-path tests deliberately trigger fail-closed surfaces, and
+    `.gzkit/rules/guardrail-feedback-prose.md` requires those surfaces to emit
+    rich, alarming, actionable prose. When such a test PASSES, that prose still
+    landed in the console, so a CI log for a run with one real failure carried 26
+    error-shaped lines. Triage then targets the loudest line, which is a fixture:
+    twice in two sessions the proposed remedy would have disabled a negative
+    control rather than fixed a defect.
+
+    `--buffer` is the stdlib-shaped answer (`unittest-parallel` exposes the same
+    flag as `unittest`): output is captured per test and replayed ONLY for tests
+    that fail or error. The assertion is on the runner's command contract because
+    that is where the property lives — a passing suite has, by construction, no
+    observable output to assert on.
+    """
+
+    def _captured_command(self) -> str:
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch("gzkit.quality.run_command") as mock_run_command,
+        ):
+            mock_run_command.return_value = QualityResult(
+                success=True, command="x", stdout="", stderr="", returncode=0
+            )
+            run_tests(Path(tmpdir))
+            mock_run_command.assert_called_once()
+            return str(mock_run_command.call_args.args[0])
+
+    def test_runner_buffers_test_output(self) -> None:
+        self.assertIn(
+            "--buffer",
+            self._captured_command(),
+            msg="the test tier replays passing tests' fail-closed prose into CI logs",
+        )
+
+    def test_runner_still_uses_the_parallel_accelerator(self) -> None:
+        """Negative control: buffering must not cost the parallel runner (GHI #512)."""
+        command = self._captured_command()
+        self.assertIn("unittest-parallel", command)
+        self.assertIn("-t . -s tests", command)
 
 
 class TestCanonicalQualityPath(unittest.TestCase):
