@@ -77,7 +77,15 @@ class TestSkillFrontmatter(unittest.TestCase):
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         meta = cast(dict[str, object], metadata)
-        self.assertEqual(str(meta.get("skill-version", "")), "0.1.1")
+        # Monotonic floor, not an equality pin: review stamps mandated by
+        # `.gzkit/rules/skill-surface-sync.md` #6 bump this on every sweep.
+        actual = str(meta.get("skill-version", ""))
+        floor = "0.1.1"
+        self.assertGreaterEqual(
+            tuple(int(p) for p in actual.split(".")),
+            tuple(int(p) for p in floor.split(".")),
+            f"skill-version {actual!r} regressed below the landed {floor!r}",
+        )
 
     @covers("REQ-0.0.30-02-01")
     def test_description_triggers_on_operator_phrases(self) -> None:

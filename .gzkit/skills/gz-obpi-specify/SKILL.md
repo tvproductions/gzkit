@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-26
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.7.1"
 model: opus
 ---
 

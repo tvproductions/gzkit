@@ -5,9 +5,9 @@ description: Cross-repo defect/enhancement filing wrapper for gzkit-owned surfac
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-02
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
   govzero-framework-version: "v6"
 model: sonnet
 ---
@@ -45,8 +45,9 @@ For enhancements to any of the above, file with `--enhancement` instead of
 - Defects in **consumer-repo** code, content, or governance — file at the
   consumer's tracker via plain `gh issue create`.
 - In-flight defects against gzkit that meet the direct-fix thresholds in
-  `AGENTS.md` § Defect-fix routing (≤10 source lines, ≤2 source files, ≥3
-  recent precedents) — fix in place with `fix(<scope>): … (GHI #N)` rather
+  `AGENTS.md` § Defect-fix routing (diff size ≤10 source lines **OR** ≤2
+  source files; single named surface; ≥3 recent `fix(` precedents) — fix
+  in place with `fix(<scope>): … (GHI #N)` rather
   than filing.
 
 ## Procedure
@@ -61,8 +62,9 @@ For enhancements to any of the above, file with `--enhancement` instead of
      --dry-run
    ```
 
-2. **Confirm the trailer and target** in the dry-run output:
-   - First line is `Filed from <owner>/<repo> running gz vX.Y.Z`.
+2. **Confirm the provenance line and target** in the dry-run output:
+   - `Filed from <owner>/<repo> running gz vX.Y.Z` is the first line of
+     the issue *body* (the dry-run prints `Target:`/`Label:`/`Title:` above it).
    - `Target: tvproductions/gzkit`.
    - `Label: defect` (or `enhancement`).
 
@@ -97,7 +99,7 @@ create`'s default), not a structured payload.
 |---------|-------|------------|
 | Exit 1, "issue body references no gzkit-owned surface" | Body lacks `gz <verb>`, `.gzkit/`, `src/gzkit/`, or `gzkit.<module>` | Edit body to name the gzkit surface; or file at the consumer's tracker if the defect is consumer-owned |
 | Exit 1, "no git remote found" | Working tree is not a git repo or has no remote | Run from a real git working tree |
-| Exit 1, mutually-exclusive flag conflict | Both `--defect` and `--enhancement` supplied | Pick one |
+| Exit 2, mutually-exclusive flag conflict | Both `--defect` and `--enhancement` supplied (argparse rejects before the command body runs) | Pick one |
 | Exit 2 | `gh` subprocess failed (auth, network, GitHub API error) | Run `gh auth status`; check network; re-try |
 
 ## Related

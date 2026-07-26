@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) for a defect, enhancement, or investiga
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-12
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 model: sonnet
 ---
 
@@ -99,7 +99,7 @@ routing matrix will consume.
 
 ## Prerequisites
 
-- `gh auth status` reports authenticated (see `.claude/rules/gh-cli.md` allowed commands)
+- `gh auth status` reports authenticated (see `.gzkit/rules/gh-cli.md` allowed commands)
 - Working tree is in a known state (uncommitted scratch work should not leak into the evidence block)
 - You have read the surface the defect touches — authoring a GHI without reading the code is vibe-tracking and produces cargo-cult issues
 
@@ -300,6 +300,6 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - `AGENTS.md` § Prime Directive #6 (every defect must be trackable)
 - `AGENTS.md` § DO IT RIGHT #1 (fix the class, not the instance — the GHI must name the class)
 - `AGENTS.md` § DO IT RIGHT 6h (verbatim quotes, not narrative reconstruction)
-- `.claude/rules/gh-cli.md` (allowed `gh` commands)
+- `.gzkit/rules/gh-cli.md` (allowed `gh` commands)
 - AGENTS.md § Defect-fix routing (the routing decision this GHI's evidence will feed)
 - `AGENTS.md` § Local Agent Rules (operator PII — never in the GHI body)

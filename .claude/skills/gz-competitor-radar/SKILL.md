@@ -4,13 +4,13 @@ description: Run a monthly B+ competitor-discovery radar for spec-driven and age
 compatibility: Project-local skill contract.
 category: agent-operations
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-07
+last_reviewed: 2026-07-25
 model: opus
 ---
 

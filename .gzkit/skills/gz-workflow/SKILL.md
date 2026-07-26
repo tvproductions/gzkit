@@ -4,9 +4,9 @@ description: Namespace router → end-to-end workflow skills (design through rel
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-24
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 ---
 
@@ -20,5 +20,6 @@ model: haiku
 | verify | `gz-implement` |
 | justify | `gz-justify` |
 | plan audit | `gz-plan-audit` |
+| release | `gz-patch-release` (also routed by `gz-manage`) |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.

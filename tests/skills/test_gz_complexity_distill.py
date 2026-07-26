@@ -82,11 +82,14 @@ class TestSkillFrontmatter(unittest.TestCase):
         metadata = fm.get("metadata")
         self.assertIsInstance(metadata, dict)
         meta = cast(dict[str, object], metadata)
-        self.assertEqual(
-            str(meta.get("skill-version", "")),
-            "0.2.0",
-            "skill-version bumped from 0.1.0 → 0.2.0 on GHI #400 close "
-            "(deferred verb landed, capability resolution = minor bump per "
+        # Monotonic floor, not an equality pin: review stamps mandated by
+        # `.gzkit/rules/skill-surface-sync.md` #6 bump this on every sweep.
+        actual = str(meta.get("skill-version", ""))
+        self.assertGreaterEqual(
+            tuple(int(p) for p in actual.split(".")),
+            (0, 2, 0),
+            f"skill-version {actual!r} regressed below 0.2.0, landed on GHI #400 "
+            "close (deferred verb landed, capability resolution = minor bump per "
             "skill-surface-sync rule)",
         )
 

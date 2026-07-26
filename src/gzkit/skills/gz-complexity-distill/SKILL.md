@@ -4,9 +4,9 @@ description: Run a complexity distillation pass against the exemplar corpus to r
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-05
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill
@@ -129,7 +129,7 @@ leaves intact (REQ-0.0.27-04-10 — the OEE seam, the agent never
 fabricates that block).
 
 Common invocations (full options + exit codes in the
-[`gz-complexity-distill` manpage](../../docs/user/manpages/complexity-distill.md)):
+[`complexity-distill` manpage](../../../docs/user/manpages/complexity-distill.md)):
 
 ```bash
 uv run gz complexity distill                    # default run against canonical corpus

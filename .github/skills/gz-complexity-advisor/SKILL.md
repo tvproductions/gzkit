@@ -4,9 +4,9 @@ description: Preview complexity advisor diagnosis, understand auto-chain context
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-22
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.1.2"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -55,8 +55,12 @@ machine consumption.
 
 ### Auto-chain context
 
-When xenon-as-gate exits non-zero at pre-commit time, the auto-chain hook
-(OBPI-0.0.29-05) fires `gz complexity advise --auto-chain` automatically.
+When installed, the auto-chain hook (OBPI-0.0.29-05) fires
+`gz complexity advise --auto-chain` automatically on a non-zero
+xenon-as-gate exit at pre-commit time. **It is not installed in this
+repo** — `.pre-commit-config.yaml` carries the plain `xenon-complexity`
+hook, not the composite `complexity-advisor-auto-chain` id, so the
+advisor must be invoked by hand after a xenon failure.
 The `--auto-chain` flag signals that the invocation is trigger-fired (not
 operator-initiated), producing a condensed presentation default suited to
 the commit-time moment rather than the verbose preview the ad-hoc path emits.
@@ -111,8 +115,8 @@ Each diagnosis block in the default output contains:
 
 **Machine-readable mode:** `--json` emits the canonical `AdvisorDiagnosis`
 Pydantic serialization as a JSON array. Each element is a frozen Pydantic
-model with fields: `metric`, `value`, `band`, `archetype`, `doctrinal_frame`,
-`proof`, `recommended_move`.
+model with fields: `metric`, `crossing_band`, `crossing_value`, `archetype`,
+`doctrinal_frame`, `proof`, `recommended_move`, `intrinsic_attestation`.
 
 ## Commands
 
@@ -126,14 +130,15 @@ gz complexity advise <path> --json
 # Auto-chain mode (condensed, trigger-fired)
 gz complexity advise <path> --auto-chain
 
-# Intrinsic attestation at commit time
-gz complexity advise <path> --attest-intrinsic
+# Intrinsic attestation (interactive TTY required; headless is refused)
+gz complexity advise <file_path>:<qualname> --attest-intrinsic \
+  --reason "<why this complexity is intrinsic>" --attestor "<name>"
 ```
 
 ## Related
 
 - Manpage: `docs/user/manpages/complexity-advise.md`
-- Runbook: `docs/user/runbook.md` § Complexity doctrine surfaces
+- Runbook: `docs/user/runbook.md` § Governance Doctrine Surfaces
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/`
 - Threshold table: `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28)
 - Distilled characteristics: `data/exemplar_corpus.json` + distillation output

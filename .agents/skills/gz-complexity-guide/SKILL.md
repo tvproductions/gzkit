@@ -4,9 +4,9 @@ description: Preview authoring-time complexity hints before committing. Use when
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-22
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.1.2"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
@@ -70,8 +70,9 @@ Each hint block in the default output contains:
 
 **Machine-readable mode:** `--json` emits the canonical `AuthoringHint`
 Pydantic serialization as a JSON array. Each element is a frozen Pydantic
-model with fields: `archetype`, `precedence_band`, `doctrinal_frame_headline`,
-`recommended_move`.
+model with fields: `metric`, `precedence_band`, `crossing_value`,
+`archetype`, `doctrinal_frame_headline`, `recommended_move`, plus the
+editor-navigation triple `file_path`, `start_line`, `end_line`.
 
 ## Trigger-Time vs. Authoring-Time
 
@@ -94,6 +95,6 @@ See `.gzkit/skills/gz-complexity-advisor/SKILL.md` for the trigger-time surface
 
 - Sister skill: `.gzkit/skills/gz-complexity-advisor/SKILL.md` (ADR-0.0.29)
 - Manpage: `docs/user/manpages/complexity-guide.md`
-- Runbook: `docs/user/runbook.md` § Complexity doctrine surfaces
+- Runbook: `docs/user/runbook.md` § Governance Doctrine Surfaces
 - Parent ADR: `docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/`
 - Threshold table: `.gzkit/rules/complexity-thresholds.json` (ADR-0.0.28)

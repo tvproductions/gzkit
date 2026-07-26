@@ -21,12 +21,23 @@ _INVARIANCE_TEST = "Foundation = without it, we wouldn't be doing the project"
 _HEXAGONAL_LENS = "ports point to invariance; adapters are features"
 _CONCEPT_PAGE_LINK = "foundation-feature-invariance-test"
 
-_EXPECTED_VERSIONS: dict[str, str] = {
+# The versions OBPI-0.0.35-02 landed. REQ-0.0.35-02-04 asserts the version was
+# *incremented from its pre-edit baseline*, not that it is frozen forever: the
+# staleness gate (`.gzkit/rules/skill-surface-sync.md` #6) couples every review
+# stamp to a version bump, so an equality pin here fails on each mandated review
+# sweep. These are therefore a monotonic floor — the increment must have landed
+# and must never regress.
+_LANDED_VERSIONS: dict[str, str] = {
     "gz-plan": "1.3.2",
     "gz-adr-create": "6.6.2",
     "gz-design": "1.3.2",
     "gz-adr-promote": "1.6.0",
 }
+
+
+def _semver(raw: str) -> tuple[int, ...]:
+    """Parse a dotted version into a comparable tuple."""
+    return tuple(int(part) for part in raw.split("."))
 
 
 def _skill_content(slug: str) -> str:
@@ -94,7 +105,7 @@ class TestSkillConceptPageLink(unittest.TestCase):
 
 
 class TestSkillVersionBump(unittest.TestCase):
-    """REQ-0.0.35-02-04: All four skills have their skill-version at expected post-edit value."""
+    """REQ-0.0.35-02-04: all four skills carry a version at or above the landed increment."""
 
     def _read_skill_version(self, slug: str) -> str:
         for line in _skill_content(slug).splitlines():
@@ -102,23 +113,31 @@ class TestSkillVersionBump(unittest.TestCase):
                 return line.split(":", 1)[1].strip().strip('"').strip("'")
         return ""
 
+    def _assert_at_or_above_landed(self, slug: str) -> None:
+        floor = _LANDED_VERSIONS[slug]
+        actual = self._read_skill_version(slug)
+        self.assertGreaterEqual(
+            _semver(actual),
+            _semver(floor),
+            f"{slug} skill-version {actual!r} regressed below the "
+            f"OBPI-0.0.35-02 landed increment {floor!r}",
+        )
+
     @covers("REQ-0.0.35-02-04")
     def test_gz_plan_version_bumped(self) -> None:
-        self.assertEqual(self._read_skill_version("gz-plan"), _EXPECTED_VERSIONS["gz-plan"])
+        self._assert_at_or_above_landed("gz-plan")
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_adr_create_version_bumped(self) -> None:
-        expected = _EXPECTED_VERSIONS["gz-adr-create"]
-        self.assertEqual(self._read_skill_version("gz-adr-create"), expected)
+        self._assert_at_or_above_landed("gz-adr-create")
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_design_version_bumped(self) -> None:
-        self.assertEqual(self._read_skill_version("gz-design"), _EXPECTED_VERSIONS["gz-design"])
+        self._assert_at_or_above_landed("gz-design")
 
     @covers("REQ-0.0.35-02-04")
     def test_gz_adr_promote_version_bumped(self) -> None:
-        expected = _EXPECTED_VERSIONS["gz-adr-promote"]
-        self.assertEqual(self._read_skill_version("gz-adr-promote"), expected)
+        self._assert_at_or_above_landed("gz-adr-promote")
 
 
 class TestSkillMirrorParity(unittest.TestCase):

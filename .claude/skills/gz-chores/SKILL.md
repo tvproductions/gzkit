@@ -4,9 +4,9 @@ description: Namespace router → maintenance and code-quality chore skills. Use
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-24
+last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
 model: haiku
 ---
 

@@ -312,7 +312,7 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         "--auto-chain",
         dest="auto_chain",
         action="store_true",
-        help="Reserved for OBPI-05 (xenon-as-gate auto-fire); no-op here",
+        help="Trigger-fired run; selects condensed commit-time presentation",
     )
     p_advise.add_argument(
         "--rule-path",

@@ -5,10 +5,10 @@ description: Trim per-turn agent context weight by lifting pedagogical narrative
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-05-29
+last_reviewed: 2026-07-25
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 model: sonnet
 ---
 
@@ -36,8 +36,9 @@ This is **not** a substitute for reading the chore. The agent must read
   prose to manage budget or shape is the bypass this skill exists to prevent.
 - Operator asks for a "diet," "trim," or "progressive disclosure" pass on
   the agent contract or memory files
-- `wc -l AGENTS.md CLAUDE.md .claude/rules/*.md` shows a baseline above
-  the GHI #327 ~1777-line origin
+- `uv run gz validate --instructions-files-budget` reports the
+  surface-delivery witness closing on a vendor cap (the advisory prints
+  remaining headroom in bytes); low headroom is the signal, not line count
 - The advisory scorecard (`uv run gz validate --advisory-scorecard`)
   surfaces Judgment-class bullets that duplicate Mechanical neighbors
 
@@ -55,7 +56,7 @@ chore through the standard chore lifecycle (the same five steps
 `gz-chore-runner` enforces):
 
 ```bash
-uv run gz chores plan instructions-files-diet --replace
+uv run gz chores plan instructions-files-diet
 uv run gz chores advise instructions-files-diet
 # ... apply edits per CHORE.md § Workflow ...
 uv run gz chores run instructions-files-diet
@@ -69,8 +70,8 @@ These three constraints justify a dedicated skill over generic
 the per-turn surface even before reading `CHORE.md`:
 
 1. **Narrative trim, never invariant relaxation.** *"Lighter ceremony is
-   not a tradeoff axis"* — `AGENTS.md` § Anti-vibing mantra operative
-   claim 2. Every Mechanical / Promotable bullet on the advisory
+   not a tradeoff axis"* — `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT
+   operative claim 1. Every Mechanical / Promotable bullet on the advisory
    scorecard remains in the per-turn contract.
 2. **Edit canonical, let sync propagate.** `.claude/rules/**` is
    generated from `.gzkit/rules/**`. Direct mirror edits get overwritten
@@ -88,6 +89,7 @@ the per-turn surface even before reading `CHORE.md`:
   trigger-discoverable specialization
 - `gz-agent-sync`, `gz-arb`, `gz-validate` — wielded inside the chore
   workflow
-- `AGENTS.md` § Extracted pedagogy (line 99) — lift precedent
+- `docs/governance/agent-contract-rationale.md` — the standing lift
+  target and precedent (six sections already lifted there)
 - `docs/governance/advisory-rules-audit.md` — scorecard catalogue
 - GHI #327 — origin
