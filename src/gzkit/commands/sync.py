@@ -90,12 +90,23 @@ def _plan_git_sync(
     behind = sync_state["behind"]
     diverged = sync_state["diverged"]
 
-    if diverged:
+    # The ceremony's own auto-commit lands between this plan and the pull/push
+    # steps, and both of those now read state AFTER it (GHI #720). Predict against
+    # the post-commit shape, or the plan contradicts the execution it claims to
+    # describe: a behind-N dirty clone would read "git pull --ff-only" here and
+    # rebase in practice, and its push would be omitted from the plan entirely.
+    # `projected_diverged` implies `projected_ahead > 0`, so the push predicate
+    # needs only the latter.
+    will_auto_commit = dirty and auto_add
+    projected_ahead = ahead + 1 if will_auto_commit else ahead
+    projected_diverged = projected_ahead > 0 and behind > 0
+
+    if projected_diverged:
         actions.append(f"git pull --rebase {remote} {target_branch}")
     elif behind > 0:
         actions.append(f"git pull --ff-only {remote} {target_branch}")
 
-    if allow_push and (ahead > 0 or diverged):
+    if allow_push and projected_ahead > 0:
         actions.append(f"git push {remote} {target_branch}")
 
     if not apply and dirty and not auto_add:
@@ -411,13 +422,29 @@ def _pull_if_needed(
     project_root: Path,
     remote: str,
     target_branch: str,
-    diverged: bool,
-    behind: int,
     blockers: list[str],
     executed: list[str],
 ) -> None:
-    """Pull branch updates if local branch is behind/diverged."""
-    if blockers or not (diverged or behind > 0):
+    """Pull branch updates if local branch is behind/diverged after sync actions.
+
+    State is read here rather than threaded in from ``_plan_git_sync`` because the
+    ceremony's own auto-commit mutates it. A clean behind-N clone becomes genuinely
+    diverged the moment ``_commit_staged_changes`` lands (``ahead`` 0 -> 1), so the
+    pre-commit plan's ``--ff-only`` aborts with ``fatal: Not possible to
+    fast-forward`` — the commit stays, the pull never runs, and the ceremony
+    refuses to resolve the divergence it just created (GHI #720).
+
+    The sibling ``_push_if_ahead`` has always recomputed for exactly this reason
+    ("Push only when branch is ahead after sync actions"); this applies the same
+    rule one step earlier, where the mutation actually happens.
+    """
+    if blockers:
+        return
+
+    state = _compute_git_sync_state(project_root, target_branch, remote)
+    diverged = bool(state["diverged"])
+    behind = int(state["behind"])
+    if not (diverged or behind > 0):
         return
 
     if diverged:
@@ -534,14 +561,17 @@ def _execute_git_sync(
     run_lint_gate: bool,
     run_test_gate: bool,
     allow_push: bool,
-    diverged: bool,
-    behind: int,
     remote: str,
     target_branch: str,
     blockers: list[str],
     warnings: list[str],
 ) -> list[str]:
-    """Execute apply-mode sync steps and return executed command list."""
+    """Execute apply-mode sync steps and return executed command list.
+
+    Takes no ahead/behind/diverged parameters: the pull and push steps each read
+    that state themselves, because the auto-commit between them changes it
+    (GHI #720).
+    """
     executed: list[str] = []
     if blockers:
         return executed
@@ -559,7 +589,7 @@ def _execute_git_sync(
 
     _run_sync_prechecks(project_root, run_lint_gate, run_test_gate, blockers, executed)
     _commit_staged_changes(project_root, blockers, executed)
-    _pull_if_needed(project_root, remote, target_branch, diverged, behind, blockers, executed)
+    _pull_if_needed(project_root, remote, target_branch, blockers, executed)
     _push_if_ahead(project_root, remote, target_branch, allow_push, blockers, executed)
     _run_post_sync_lint(project_root, run_lint_gate, blockers, executed, warnings)
 
@@ -623,8 +653,6 @@ def git_sync(
             run_lint_gate=run_lint_gate,
             run_test_gate=run_test_gate,
             allow_push=allow_push,
-            diverged=diverged,
-            behind=behind,
             remote=remote,
             target_branch=target_branch,
             blockers=blockers,

@@ -69,8 +69,6 @@ class TestSweepGuard(unittest.TestCase):
                 run_lint_gate=False,
                 run_test_gate=False,
                 allow_push=False,
-                diverged=False,
-                behind=0,
                 remote="origin",
                 target_branch="main",
                 blockers=blockers,

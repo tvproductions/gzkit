@@ -35,6 +35,13 @@ gz git-sync [OPTIONS]
 4. Runs lint/test guardrails when requested.
 5. Executes sync operations when `--apply` is set.
 
+The pull and push steps read `ahead`/`behind` **after** the ceremony's own
+auto-commit, not from the plan computed before it. A dirty tree that is behind
+the remote becomes diverged the moment that commit lands, so the ceremony
+rebases rather than attempting a fast-forward that cannot succeed. The dry-run
+plan projects the same post-commit shape, so the preview matches what `--apply`
+runs (GHI #720).
+
 For OBPI pipeline closeout in gzkit, this is the canonical guarded sync step:
 
 - run `uv run gz git-sync --apply --lint --test` after attestation
