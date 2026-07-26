@@ -4,6 +4,35 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 7
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/legacy_mapping.py
+- src/gzkit/schemas/legacy_mapping.json
+- src/gzkit/cli/legacy.py
+- docs/design/domain/legacy-adr-bc-mapping.yaml.draft
+- docs/design/domain/legacy-adr-bc-mapping.yaml
+- docs/user/manpages/legacy-classify.md
+- docs/user/manpages/legacy-ratify.md
+- tests/governance/test_legacy_mapping.py
+- tests/cli/test_legacy_classify.py
+reqs:
+- REQ-0.0.43-07-01
+- REQ-0.0.43-07-02
+- REQ-0.0.43-07-03
+- REQ-0.0.43-07-04
+- REQ-0.0.43-07-05
+- REQ-0.0.43-07-06
+- REQ-0.0.43-07-07
+- REQ-0.0.43-07-08
+- REQ-0.0.43-07-09
+- REQ-0.0.43-07-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz cli audit
+- uv run gz legacy classify --dry-run
 ---
 
 # OBPI-0.0.43-07-legacy-mapping-classification-ratification: Legacy ADR/OBPI/Pool classification + ratification ceremony

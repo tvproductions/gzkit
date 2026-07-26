@@ -4,6 +4,27 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/pool/__init__.py
+- src/gzkit/pool/triage_prepass.py
+- src/gzkit/schemas/pool_triage_prepass.json
+- tests/test_pool_triage_prepass.py
+- tests/fixtures/pool_triage_prepass/
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-01-triage-prepass-contract.md
+reqs:
+- REQ-0.0.48-01-01
+- REQ-0.0.48-01-02
+- REQ-0.0.48-01-03
+- REQ-0.0.48-01-04
+- REQ-0.0.48-01-05
+- REQ-0.0.48-01-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_prepass
+- 'uv run python -c "from gzkit.pool.triage_prepass import PoolTriagePrepassRecord; PoolTriagePrepassRecord.model_validate({...})"  # validate fixture'
+- uv run python -m json.tool tests/fixtures/pool_triage_prepass/expected.json
 ---
 
 # OBPI-0.0.48-01-triage-prepass-contract: **triage-prepass-contract** — Define the single mechanical pre-pass record set that composes ready-pool graph output, pool-overlap triage output, GHI occurrence counts, and agent-insights signal counts.

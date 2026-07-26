@@ -4,6 +4,28 @@ parent: ADR-0.0.49-systematic-debugging-discipline
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/
+- .gzkit/skills/gz-systematic-debug/SKILL.md
+- references/*.md
+- docs/design/adr/foundation/ADR-0.0.49-systematic-debugging-discipline/**
+- src/gzkit/skills/gz-systematic-debug/
+- .claude/skills/gz-systematic-debug/
+- .github/skills/gz-systematic-debug/
+- .gzkit/rules/skill-surface-sync.md
+reqs:
+- REQ-0.0.49-01-01
+- REQ-0.0.49-01-02
+- REQ-0.0.49-01-03
+- REQ-0.0.49-01-04
+- REQ-0.0.49-01-05
+- REQ-0.0.49-01-06
+verification:
+- uv run gz agent sync control-surfaces
+- uv run gz validate --documents
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.49-01-author-systematic-debug-skill: Author `gz-systematic-debug` Skill
@@ -50,7 +72,7 @@ Author the `gz-systematic-debug` skill as a methodology-class procedure of recor
 6. REQUIREMENT: The skill body contains a `## Red Flags` dictionary listing at least five named thought patterns that trigger Phase-1 reset (e.g. *"this looks easy, just patch it"*, *"the error message is probably wrong"*, *"this worked before, I'll just retry"*, *"the test is flaky, run it again"*, *"this is a known issue"*).
 7. REQUIREMENT: The skill body contains a `## Operator Signals` dictionary listing at least four named operator phrases that trigger Phase-1 reset (e.g. operator says *"we've fixed this before"*, operator interjects *"why did you skip X"*, operator names a class-of-failure word like *"architecture"*, operator names a prior receipt ID).
 8. REQUIREMENT: Three adapted supporting references exist at `.gzkit/skills/gz-systematic-debug/references/root-cause-tracing.md`, `.gzkit/skills/gz-systematic-debug/references/defense-in-depth.md`, and `.gzkit/skills/gz-systematic-debug/references/condition-based-waiting.md`. Each translates the superpowers-source technique to Python/gzkit-CLI vocabulary (no JavaScript/Node idioms; use `uv run`, `unittest`, `pathlib`, `subprocess.run([...], check=True)` examples).
-9. REQUIREMENT: The skill's `description:` frontmatter is operator-facing and trigger-discovery oriented per the `.claude/rules/skill-surface-sync.md` skill-description convention: names the operator moment that triggers the skill (e.g. *"Diagnose a bug, test failure, or unexpected behavior using systematic root-cause discipline before proposing any fix"*). 
+9. REQUIREMENT: The skill's `description:` frontmatter is operator-facing and trigger-discovery oriented per the `.claude/rules/skill-surface-sync.md` skill-description convention: names the operator moment that triggers the skill (e.g. *"Diagnose a bug, test failure, or unexpected behavior using systematic root-cause discipline before proposing any fix"*).
 10. REQUIREMENT: After authoring, `uv run gz agent sync control-surfaces` runs successfully and the skill appears in `src/gzkit/skills/gz-systematic-debug/SKILL.md` (wheel-shipping byte-parity copy) and `.claude/skills/gz-systematic-debug/SKILL.md` (vendor mirror). The implementer MUST NOT hand-edit either derived surface (per `.gzkit/rules/skill-surface-sync.md` non-negotiable rule #4 and #5).
 11. REQUIREMENT: NEVER include the operator's personal email in the skill body, supporting references, or any example.
 12. REQUIREMENT: Does NOT touch `.gzkit/personas/`, `AGENTS.md`, `.gzkit/skills/ghi-author/`, `.gzkit/skills/ghi-close/`, or `.gzkit/rules/systematic-debugging.md` — those edits land in OBPIs 02/03/04/05 respectively.

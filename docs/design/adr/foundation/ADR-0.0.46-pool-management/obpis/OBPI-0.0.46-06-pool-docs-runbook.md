@@ -4,6 +4,18 @@ parent: ADR-0.0.46-pool-management
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md
+- docs/design/adr/foundation/ADR-0.0.46-pool-management/**
+reqs:
+- REQ-0.0.46-06-01
+- REQ-0.0.46-06-02
+- REQ-0.0.46-06-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.46-06-pool-docs-runbook: **pool-docs-runbook** — Add manpages, runbook entries, command docs, and the retire-or-absorb decision for the interim `pool-triage` chore.

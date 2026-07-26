@@ -4,6 +4,28 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- src/gzkit/commands/closeout.py
+- src/gzkit/event_evidence.py
+- src/gzkit/events.py
+- src/gzkit/ledger_events.py
+- src/gzkit/schemas/ledger.json
+- tests/test_closeout_pipeline.py
+- tests/governance/test_ledger_event_schema_coverage.py
+reqs:
+- REQ-0.0.56-01-01
+- REQ-0.0.56-01-02
+- REQ-0.0.56-01-03
+- REQ-0.0.56-01-04
+- REQ-0.0.56-01-05
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests.test_closeout_pipeline -v
+- uv run -m unittest tests.governance.test_ledger_event_schema_coverage -v
+- 'uv run gz check --json   # confirm the --json payload exposes scope/predicate/location per defect'
 ---
 
 # OBPI-0.0.56-01-closeout-defect-baseline-snapshot: Closeout Defect Baseline Snapshot

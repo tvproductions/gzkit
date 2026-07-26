@@ -4,6 +4,26 @@ parent: ADR-0.0.66-deterministic-steering-substrate
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/
+- src/gzkit/cli/
+- src/gzkit/trust_audits.py
+- tests/
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.66-deterministic-steering-substrate/**
+reqs:
+- REQ-0.0.66-03-01
+- REQ-0.0.66-03-02
+- REQ-0.0.66-03-03
+- REQ-0.0.66-03-04
+- REQ-0.0.66-03-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.66-03-gz-metrics-read-view: Gz Metrics Read View

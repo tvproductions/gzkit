@@ -4,6 +4,19 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/corpus/AGENTS.md.jsonl
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md
+reqs:
+- REQ-0.35.0-03-01
+- REQ-0.35.0-03-02
+- REQ-0.35.0-03-03
+- REQ-0.35.0-03-04
+verification:
+- uv run gz validate --rendition-floor-coherence
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz test
 ---
 
 # OBPI-0.35.0-03-retire-duplicate-invariant-entries: Retire Duplicate Invariant Entries

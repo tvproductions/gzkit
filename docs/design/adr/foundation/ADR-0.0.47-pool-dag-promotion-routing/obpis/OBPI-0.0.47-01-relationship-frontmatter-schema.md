@@ -4,6 +4,19 @@ parent: ADR-0.0.47-pool-dag-promotion-routing
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.47-pool-dag-promotion-routing/ADR-0.0.47-pool-dag-promotion-routing.md
+- docs/design/adr/foundation/ADR-0.0.47-pool-dag-promotion-routing/**
+reqs:
+- REQ-0.0.47-01-01
+- REQ-0.0.47-01-02
+- REQ-0.0.47-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.47-01-relationship-frontmatter-schema: **relationship-frontmatter-schema** — Add structured pool ADR frontmatter for `depends_on`, `complements`, `blocks`, and `tags`, with validation against known ADR IDs.

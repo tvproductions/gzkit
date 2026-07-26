@@ -4,6 +4,27 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/closeout.py
+- src/gzkit/commands/obpi_complete.py
+- src/gzkit/governance/propagation/trigger.py
+- src/gzkit/governance/propagation/transaction.py
+- src/gzkit/governance/propagation/frontmatter.py
+- tests/governance/test_propagation_trigger.py
+- tests/governance/test_propagation_transaction.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-04-01
+- REQ-0.0.52-04-02
+- REQ-0.0.52-04-03
+- REQ-0.0.52-04-04
+- REQ-0.0.52-04-05
+- REQ-0.0.52-04-06
+- REQ-0.0.52-04-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.governance.test_propagation_trigger tests.governance.test_propagation_transaction -v
 ---
 
 # OBPI-0.0.52-04-trigger-wiring-and-atomic-transactions: Trigger wiring and atomic transactions

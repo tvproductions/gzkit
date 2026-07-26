@@ -4,6 +4,31 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 9
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/sync_surfaces.py
+- src/gzkit/governance/compose.py
+- tests/test_sync_surfaces.py
+- tests/governance/test_compose.py
+- features/**
+- docs/user/runbook.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-09-codex-playback-wiring.md
+reqs:
+- REQ-0.35.0-09-01
+- REQ-0.35.0-09-02
+- REQ-0.35.0-09-03
+- REQ-0.35.0-09-04
+- REQ-0.35.0-09-05
+- REQ-0.35.0-09-06
+- REQ-0.35.0-09-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --invariant-coherence
+- uv run gz validate --rendition-floor-coherence
+- uv run gz validate --surfaces
+- uv run gz validate --req-kind-discipline
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-09-codex-playback-wiring: Codex Playback Wiring

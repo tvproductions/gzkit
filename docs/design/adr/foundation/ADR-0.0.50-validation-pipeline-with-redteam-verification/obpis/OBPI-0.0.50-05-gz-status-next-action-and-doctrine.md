@@ -4,6 +4,18 @@ parent: ADR-0.0.50-validation-pipeline-with-redteam-verification
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.50-validation-pipeline-with-redteam-verification/ADR-0.0.50-validation-pipeline-with-redteam-verification.md
+- docs/design/adr/foundation/ADR-0.0.50-validation-pipeline-with-redteam-verification/**
+reqs:
+- REQ-0.0.50-05-01
+- REQ-0.0.50-05-02
+- REQ-0.0.50-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.50-05-gz-status-next-action-and-doctrine: gz status --next-action extension + Claude-Code-primary doctrine

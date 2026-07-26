@@ -4,6 +4,41 @@ parent: ADR-0.0.40-judge-enforcement-validators
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/**
+- src/gzkit/commands/adr_evaluate.py
+- src/gzkit/commands/adr_evaluate.py
+- data/judge_leakage_waivers.json
+- docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md
+- docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md
+- tests/governance/test_judge_retrofit.py
+- tests/commands/test_adr_evaluate_judge_invocation.py
+reqs:
+- REQ-0.0.40-05-01
+- REQ-0.0.40-05-02
+- REQ-0.0.40-05-03
+- REQ-0.0.40-05-04
+- REQ-0.0.40-05-05
+- REQ-0.0.40-05-06
+- REQ-0.0.40-05-07
+- REQ-0.0.40-05-08
+- REQ-0.0.40-05-09
+- REQ-0.0.40-05-10
+- REQ-0.0.40-05-11
+- REQ-0.0.40-05-12
+- REQ-0.0.40-05-13
+verification:
+- uv run -m unittest tests/governance/test_judge_retrofit.py -v
+- uv run -m unittest tests/commands/test_adr_evaluate_judge_invocation.py -v
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
+- uv run -m behave features/
+- uv run gz validate --judge-leakage
+- uv run gz validate --judge-output-discipline
+- uv run gz adr evaluate ADR-0.0.40 --red-team
+- uv run gz arb step --name judge-retrofit-baseline -- echo "retrofit baseline complete"
 ---
 
 # OBPI-0.0.40-05-existing-judge-surface-retrofit: Existing-Judge-Surface Retrofit (Compliance Close)

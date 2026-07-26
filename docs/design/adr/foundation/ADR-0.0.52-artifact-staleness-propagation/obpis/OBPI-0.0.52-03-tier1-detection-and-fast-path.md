@@ -4,6 +4,26 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/propagation/detect.py
+- src/gzkit/governance/propagation/fast_path.py
+- src/gzkit/governance/propagation/affected_set.py
+- src/gzkit/governance/propagation/__init__.py
+- tests/governance/test_propagation_detect.py
+- tests/governance/test_propagation_fast_path.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-03-01
+- REQ-0.0.52-03-02
+- REQ-0.0.52-03-03
+- REQ-0.0.52-03-04
+- REQ-0.0.52-03-05
+- REQ-0.0.52-03-06
+- REQ-0.0.52-03-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.governance.test_propagation_detect tests.governance.test_propagation_fast_path -v
 ---
 
 # OBPI-0.0.52-03-tier1-detection-and-fast-path: Tier 1 detection and fast path

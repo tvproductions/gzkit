@@ -316,7 +316,16 @@ class TestAllowlistDimension(unittest.TestCase):
             "src/gzkit/governance/nonexistent_module.py",
             result.allowlist_delta.missing_on_disk,
         )
-        self.assertTrue(result.has_drift)
+        # The fixture is `status: Draft`, and an unstarted brief's Allowed Paths
+        # name what the OBPI will CREATE — their absence is the expected state,
+        # so the dimension REPORTS without gating (GHI #615 Draft scoping). This
+        # previously asserted `has_drift` and passed only by accident: the
+        # fixture's synthetic `REQ-0.0.99-01-01` also appears in six unrelated
+        # test modules, and substring attribution donated all of their imports
+        # to this brief as `missing_in_brief`. Asserting the compute/gate split
+        # is the REQ's actual semantics.
+        self.assertTrue(result.unstarted)
+        self.assertFalse(result.has_drift)
 
     @covers("REQ-0.0.37-05-02")
     def test_allowlist_glob_path_not_existence_checked(self):
@@ -609,6 +618,59 @@ class TestDeniedPathsAreNotAllowlistGaps(unittest.TestCase):
         denied = _extract_denied_paths(body)
         self.assertIn("src/gzkit/quality.py", denied)
         self.assertNotIn("src/gzkit/triangle.py", denied)
+
+
+class TestCoverageAttributionIsByCoversNotSubstring(unittest.TestCase):
+    """GHI #615 — `missing_in_brief` decided which tests belong to a brief by
+    substring-matching its REQ ids anywhere in the file, so a test that merely
+    MENTIONS a REQ id — in a docstring, a comment, or a synthetic fixture body —
+    donated all of its imports to that brief as leaked scope. `tests/test_triangle.py`
+    is the worst case by construction: it exercises the REQ parser, so it carries
+    REQ ids as fixture data for briefs it does not cover. `@covers` is the declared
+    proof channel (.gzkit/rules/tests.md); a bare string is not a coverage claim."""
+
+    def _tree(self, root: Path, *, decorated: bool) -> None:
+        (root / "src" / "gzkit").mkdir(parents=True)
+        (root / "src" / "gzkit" / "subject_zzz.py").write_text("", encoding="utf-8")
+        (root / "src" / "gzkit" / "neighbour_zzz.py").write_text("", encoding="utf-8")
+        (root / "tests").mkdir(parents=True)
+        decorator = '@covers("REQ-9.9.9-01-01")\n' if decorated else ""
+        (root / "tests" / "test_zzz.py").write_text(
+            "from gzkit.traceability import covers\n"
+            "from gzkit.neighbour_zzz import thing\n"
+            '"""Fixture body mentioning REQ-9.9.9-01-01 as sample data."""\n'
+            f"{decorator}"
+            "def test_zzz():\n"
+            "    assert thing\n",
+            encoding="utf-8",
+        )
+
+    @covers("REQ-0.0.37-05-02")
+    def test_string_mention_alone_does_not_attribute_imports(self):
+        from gzkit.governance.brief_reconcile import _compute_missing_in_brief
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, decorated=False)
+            reported = _compute_missing_in_brief(
+                ["REQ-9.9.9-01-01"], ["src/gzkit/subject_zzz.py"], root
+            )
+            self.assertEqual(reported, [])
+
+    @covers("REQ-0.0.37-05-02")
+    def test_covers_decorated_test_still_attributes_imports(self):
+        # Negative control — narrowing attribution to `@covers` must not blind the
+        # dimension. A test that genuinely claims the REQ still donates its imports,
+        # which is the leaked-scope signal `missing_in_brief` exists to surface.
+        from gzkit.governance.brief_reconcile import _compute_missing_in_brief
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._tree(root, decorated=True)
+            reported = _compute_missing_in_brief(
+                ["REQ-9.9.9-01-01"], ["src/gzkit/subject_zzz.py"], root
+            )
+            self.assertEqual(reported, ["src/gzkit/neighbour_zzz.py"])
 
 
 class TestVerificationVerbDimension(unittest.TestCase):

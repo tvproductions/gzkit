@@ -4,6 +4,26 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/schemas/obpi.json
+- src/gzkit/commands/obpi_complete.py
+- src/gzkit/governance/propagation/paths.py
+- tests/test_obpi_schema.py
+- tests/governance/test_obpi_complete_paths.py
+- features/staleness_propagation.feature
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-01-01
+- REQ-0.0.52-01-02
+- REQ-0.0.52-01-03
+- REQ-0.0.52-01-04
+- REQ-0.0.52-01-05
+- REQ-0.0.52-01-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.test_obpi_schema tests.governance.test_obpi_complete_paths -v
 ---
 
 # OBPI-0.0.52-01-obpi-brief-actual-paths-touched-field: OBPI brief actual_paths_touched field

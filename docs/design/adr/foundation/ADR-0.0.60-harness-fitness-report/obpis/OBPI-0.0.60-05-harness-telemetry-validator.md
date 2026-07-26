@@ -4,6 +4,19 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/**
+reqs:
+- REQ-0.0.60-05-01
+- REQ-0.0.60-05-02
+- REQ-0.0.60-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.60-05-harness-telemetry-validator: **harness-telemetry-validator** — New `gz validate --harness-telemetry` scope: schema validity, ledger-event resolution for both event IDs per record, high-water-mark monotonicity, in-flight count sanity. Exit 3 fail-closed on drift; wired into default `gz check`.

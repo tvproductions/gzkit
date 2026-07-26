@@ -4,6 +4,30 @@ parent: ADR-0.44.0-vendor-alignment-codex
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/obpis/OBPI-0.44.0-06-codex-instruction-budget-and-docs.md
+- data/instructions_files_budget.json
+- tests/governance/test_agents_md_map_doctrine.py
+- tests/governance/test_agents_md_map_doctrine_application.py
+- tests/governance/test_audit_instructions_files_budget.py
+- docs/user/runbook.md
+- docs/user/manpages/init.md
+- docs/user/manpages/personas.md
+- docs/user/manpages/validate.md
+- docs/governance/harness-engineering-appraisal.md
+reqs:
+- REQ-0.44.0-06-01
+- REQ-0.44.0-06-02
+- REQ-0.44.0-06-03
+- REQ-0.44.0-06-04
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run -m unittest tests.governance.test_agents_md_map_doctrine tests.governance.test_agents_md_map_doctrine_application tests.governance.test_audit_instructions_files_budget
+- uv run gz validate --instructions-files-budget
+- uv run gz validate --surfaces
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.44.0-06-codex-instruction-budget-and-docs: Codex Instruction Budget And Docs

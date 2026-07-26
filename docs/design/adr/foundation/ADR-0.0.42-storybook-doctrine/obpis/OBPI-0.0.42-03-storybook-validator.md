@@ -4,6 +4,33 @@ parent: ADR-0.0.42-storybook-doctrine
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/
+- src/gzkit/cli/
+- tests/governance/
+- tests/cli/
+- docs/governance/advisory-rules-audit.md
+- .gzkit/rules/
+- docs/user/manpages/
+reqs:
+- REQ-0.0.42-03-01
+- REQ-0.0.42-03-02
+- REQ-0.0.42-03-03
+- REQ-0.0.42-03-04
+- REQ-0.0.42-03-05
+- REQ-0.0.42-03-06
+- REQ-0.0.42-03-07
+- REQ-0.0.42-03-08
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz validate --advisory-scorecard
+- 'uv run gz validate --storybook-fresh                # passes when storybook is fresh'
+- 'uv run gz storybook validate --arc from-init-to-first-attested-release   # structural pass'
+- 'uv run gz check                                      # includes --storybook-fresh in default pipeline'
 ---
 
 # OBPI-0.0.42-03-storybook-validator: gz validate --storybook-fresh + structural validator

@@ -4,6 +4,48 @@ parent: ADR-0.0.38-evidence-authority-projection-doctrine
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.38-evidence-authority-projection-doctrine/**
+- .gzkit/skills/**/SKILL.md
+- .gzkit/rules/**.md
+- src/gzkit/**/*.py
+- src/gzkit/cli/parser_*.py
+- artifacts/audits/surface-axis-2026-05-06.md
+- tests/governance/test_surface_axis_baseline.py
+- data/surface_axis_inventory.json
+- .claude/skills/**
+- .claude/rules/**
+- .github/skills/**
+- .github/instructions/**
+reqs:
+- REQ-0.0.38-03-01
+- REQ-0.0.38-03-02
+- REQ-0.0.38-03-03
+- REQ-0.0.38-03-04
+- REQ-0.0.38-03-05
+- REQ-0.0.38-03-06
+- REQ-0.0.38-03-07
+- REQ-0.0.38-03-08
+- REQ-0.0.38-03-09
+- REQ-0.0.38-03-10
+- REQ-0.0.38-03-11
+- REQ-0.0.38-03-12
+verification:
+- uv run -m unittest tests/governance/test_surface_axis_baseline.py -v
+- uv run gz validate --surface-axis
+- uv run gz validate --surface-axis --json
+- '# Confirm gz check now includes surface-axis (opt-out removed)'
+- uv run gz check --list-scopes
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run gz validate --advisory-scorecard
+- uv run mkdocs build --strict
+- uv run -m behave features/
+- uv run gz agent sync control-surfaces
+- uv run gz arb step --name surface-axis-baseline -- uv run gz validate --surface-axis
+- uv run gz events --type surface_axis_classified --json
+- grep -E "_enforce_human_attestation_authenticity|_requires_human_obpi_attestation|gz validate --documents" artifacts/audits/surface-axis-2026-05-06.md
 ---
 
 # OBPI-0.0.38-03-retroactive-classification: Retroactive Surface-Axis Classification

@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-01 — Designate AirlineOps as Canonical GovZero Implementation
 
 ## ADR ITEM (Foundational)

@@ -4,6 +4,39 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/ledger/events.py
+- src/gzkit/ledger/schemas/bounded_context_created.json
+- src/gzkit/ledger/schemas/bounded_context_renamed.json
+- src/gzkit/ledger/schemas/bounded_context_retired.json
+- src/gzkit/ledger/schemas/glossary_term_added.json
+- src/gzkit/ledger/schemas/glossary_term_revised.json
+- src/gzkit/ledger/schemas/context_map_updated.json
+- src/gzkit/ledger/schemas/domain_model_created.json
+- src/gzkit/ledger/schemas/domain_model_revised.json
+- src/gzkit/ledger/schemas/legacy_mapping_ratified.json
+- src/gzkit/ledger/schemas/cascade_reconciled.json
+- src/gzkit/ledger/schemas/cascade_debt_acknowledged.json
+- src/gzkit/ledger/schemas/cascade_import_bypass.json
+- src/gzkit/ledger/schemas/bounded_context_pending_ratification.json
+- src/gzkit/ledger/emitters/cascade.py
+- tests/ledger/test_cascade_events.py
+- tests/ledger/test_cascade_event_schemas.py
+reqs:
+- REQ-0.0.43-05-01
+- REQ-0.0.43-05-02
+- REQ-0.0.43-05-03
+- REQ-0.0.43-05-04
+- REQ-0.0.43-05-05
+- REQ-0.0.43-05-06
+- REQ-0.0.43-05-07
+- REQ-0.0.43-05-08
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run python -c "
 ---
 
 # OBPI-0.0.43-05-ledger-event-schemas-emit-paths: Cascade ledger event schemas + emit paths

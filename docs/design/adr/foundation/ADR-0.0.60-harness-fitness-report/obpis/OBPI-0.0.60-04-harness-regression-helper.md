@@ -4,6 +4,23 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- src/gzkit/harness/regression.py
+- src/gzkit/harness/__init__.py
+- .gzkit/insights/agent-insights.jsonl
+- tests/harness/test_regression.py
+- .gzkit/rules/tests.md
+- .claude/skills/ghi-author/
+reqs:
+- REQ-0.0.60-04-01
+- REQ-0.0.60-04-02
+- REQ-0.0.60-04-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.60-04-harness-regression-helper: **harness-regression-helper** — Shared `file_or_comment_ghi` helper in `src/gzkit/harness/regression.py` routing through `/ghi-author` (Behavior Rule 13); deterministic label policy (`harness-regression` + `lane:<lane>` + `surface:<surface>`); always emits `HarnessRegressionInsight` to `.gzkit/insights/agent-insights.jsonl` regardless of file-vs-comment outcome.

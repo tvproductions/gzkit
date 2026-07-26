@@ -4,6 +4,30 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/content/models/corpus.py
+- src/gzkit/content/tier_policy.py
+- src/gzkit/schemas/corpus_entry.json
+- tests/content/test_corpus_model.py
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-01-corpus-tombstone-schema-and-fold.md
+reqs:
+- REQ-0.35.0-01-01
+- REQ-0.35.0-01-02
+- REQ-0.35.0-01-03
+- REQ-0.35.0-01-04
+- REQ-0.35.0-01-05
+- REQ-0.35.0-01-06
+- REQ-0.35.0-01-07
+- REQ-0.35.0-01-08
+- REQ-0.35.0-01-09
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz validate --rendition-freshness
+- uv run gz validate --rendition-floor-coherence
 ---
 
 # OBPI-0.35.0-01-corpus-tombstone-schema-and-fold: Corpus Tombstone Schema And Fold

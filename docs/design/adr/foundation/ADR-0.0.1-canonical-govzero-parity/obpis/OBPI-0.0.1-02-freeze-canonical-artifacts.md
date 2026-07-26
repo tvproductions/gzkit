@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-02 — Freeze Canonical Governance Artifacts
 
 ## ADR ITEM (Foundational)

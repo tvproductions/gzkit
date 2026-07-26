@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-05 — Introduce Discovery-Index Control Surface
 
 ## ADR ITEM (Foundational)

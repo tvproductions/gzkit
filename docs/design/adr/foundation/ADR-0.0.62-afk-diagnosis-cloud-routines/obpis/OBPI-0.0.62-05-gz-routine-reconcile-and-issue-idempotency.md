@@ -4,6 +4,22 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/commands/routine_cmd.py
+- src/gzkit/commands/issue_cmd.py
+- src/gzkit/routines/reconcile.py
+- tests/routines/test_reconcile.py
+- tests/commands/test_issue_idempotency.py
+reqs:
+- REQ-0.0.62-05-01
+- REQ-0.0.62-05-02
+- REQ-0.0.62-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-05-gz-routine-reconcile-and-issue-idempotency: **gz-routine-reconcile-and-issue-idempotency** — `gz routine reconcile [--apply] [--since] [--dry-run]` queries routine-finding GHIs, parses embedded `RoutineExecEvent`, dedups, appends with `local_reconciled_at`/`local_reconciled_by`; `gz issue file --idempotency-key` extension.

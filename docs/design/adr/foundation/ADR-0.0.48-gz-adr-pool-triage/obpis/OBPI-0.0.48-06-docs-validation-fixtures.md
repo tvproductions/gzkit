@@ -4,6 +4,31 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/user/manpages/pool-triage.md
+- docs/user/manpages/
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- features/pool_triage.feature
+- tests/fixtures/pool_triage_e2e/full_pool/
+- tests/fixtures/pool_triage_e2e/tag_filtered/
+- tests/test_pool_triage_e2e.py
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-06-docs-validation-fixtures.md
+reqs:
+- REQ-0.0.48-06-01
+- REQ-0.0.48-06-02
+- REQ-0.0.48-06-03
+- REQ-0.0.48-06-04
+- REQ-0.0.48-06-05
+- REQ-0.0.48-06-06
+verification:
+- uv run gz validate --documents
+- uv run gz validate --cli-alignment
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_e2e
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+- uv run -m behave features/pool_triage.feature
 ---
 
 # OBPI-0.0.48-06-docs-validation-fixtures: **docs-validation-fixtures** — Add docs, examples, fixtures, and validation coverage for full-pool and tag-filtered pool triage runs.

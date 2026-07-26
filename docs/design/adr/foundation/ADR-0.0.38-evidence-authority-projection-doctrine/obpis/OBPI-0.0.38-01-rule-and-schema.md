@@ -4,6 +4,36 @@ parent: ADR-0.0.38-evidence-authority-projection-doctrine
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.38-evidence-authority-projection-doctrine/**
+- .gzkit/rules/evidence-vs-authority.md
+- docs/governance/advisory-rules-audit.md
+- src/gzkit/rules.py
+- src/gzkit/schemas/skill.json
+- src/gzkit/governance/surface_axis.py
+- src/gzkit/schemas/surface_axis.json
+- tests/governance/test_surface_axis_rule.py
+- tests/governance/test_surface_axis_schema.py
+reqs:
+- REQ-0.0.38-01-01
+- REQ-0.0.38-01-02
+- REQ-0.0.38-01-03
+- REQ-0.0.38-01-04
+- REQ-0.0.38-01-05
+- REQ-0.0.38-01-06
+- REQ-0.0.38-01-07
+- REQ-0.0.38-01-08
+- REQ-0.0.38-01-09
+verification:
+- uv run gz validate --documents
+- uv run gz validate --advisory-scorecard
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests/governance/test_surface_axis_rule.py -v
+- uv run -m unittest tests/governance/test_surface_axis_schema.py -v
+- uv run gz agent sync control-surfaces
+- uv run mkdocs build --strict
+- uv run -m behave features/governance/surface_axis.feature
 ---
 
 # OBPI-0.0.38-01-rule-and-schema: Surface-Axis Rule and Declaration Schema

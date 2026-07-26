@@ -4,6 +4,36 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/content/ownership.py
+- src/gzkit/commands/content/unown.py
+- src/gzkit/commands/content/__init__.py
+- src/gzkit/cli/**
+- src/gzkit/schemas/section_ownership.json
+- .gzkit/ownership/AGENTS.md.json
+- src/gzkit/governance/events.py
+- tests/content/test_ownership.py
+- tests/commands/test_content_unown.py
+- features/**
+- docs/user/manpages/content.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md
+reqs:
+- REQ-0.35.0-04-01
+- REQ-0.35.0-04-02
+- REQ-0.35.0-04-03
+- REQ-0.35.0-04-04
+- REQ-0.35.0-04-05
+- REQ-0.35.0-04-06
+- REQ-0.35.0-04-07
+- REQ-0.35.0-04-08
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz cli audit
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-04-section-ownership-and-ratchet: Section Ownership And Ratchet

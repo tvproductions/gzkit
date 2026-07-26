@@ -4,6 +4,19 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- src/gzkit/schemas/harness_lane_latency.json
+reqs:
+- REQ-0.0.60-01-01
+- REQ-0.0.60-01-02
+- REQ-0.0.60-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.60-01-lane-latency-models: **lane-latency-models** — Pydantic models (`LaneLatencyRecord`, `LaneLatencyAggregate`, `LaneLatencyReport`, `HarnessRegressionInsight`, `HarnessLaneLatencyConfig`) + JSON schema export to `src/gzkit/schemas/harness_lane_latency.json` + schema-drift CI gate.

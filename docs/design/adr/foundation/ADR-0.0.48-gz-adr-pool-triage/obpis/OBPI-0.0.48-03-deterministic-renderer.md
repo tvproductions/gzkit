@@ -4,6 +4,25 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/pool/triage_renderer.py
+- tests/test_pool_triage_renderer.py
+- tests/fixtures/pool_triage_renderer/inputs/
+- tests/fixtures/pool_triage_renderer/golden/
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-03-deterministic-renderer.md
+reqs:
+- REQ-0.0.48-03-01
+- REQ-0.0.48-03-02
+- REQ-0.0.48-03-03
+- REQ-0.0.48-03-04
+- REQ-0.0.48-03-05
+- REQ-0.0.48-03-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_renderer
+- uv run python -m gzkit.pool.triage_renderer --input "$fx"
 ---
 
 # OBPI-0.0.48-03-deterministic-renderer: **deterministic-renderer** — Implement the deterministic markdown renderer for the ranked promotion recommendation deliverable.

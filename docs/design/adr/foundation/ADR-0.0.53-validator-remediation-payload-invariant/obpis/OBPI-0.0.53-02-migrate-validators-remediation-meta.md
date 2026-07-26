@@ -4,6 +4,29 @@ parent: ADR-0.0.53-validator-remediation-payload-invariant
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/
+- src/gzkit/commands/validate_cmd.py
+- src/gzkit/cli/
+- data/validator_remediation_baseline.json
+- docs/user/manpages/validate.md
+- tests/governance/
+- tests/governance/test_validator_remediation_meta.py
+- docs/design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/**
+reqs:
+- REQ-0.0.53-02-01
+- REQ-0.0.53-02-02
+- REQ-0.0.53-02-03
+- REQ-0.0.53-02-04
+- REQ-0.0.53-02-05
+- REQ-0.0.53-02-06
+verification:
+- uv run gz validate --remediation-payload-binding
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.governance.test_validator_remediation_meta
+- uv run gz validate --documents --surfaces
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.53-02-migrate-validators-remediation-meta: Migrate `gz validate` Validators + Ship the Meta-Validator

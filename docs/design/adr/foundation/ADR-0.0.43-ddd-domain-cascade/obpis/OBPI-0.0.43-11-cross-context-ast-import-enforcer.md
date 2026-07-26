@@ -4,6 +4,32 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 11
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/cascade_import_check.py
+- src/gzkit/pipeline/verify.py
+- tests/governance/test_cascade_import_check.py
+- tests/pipeline/test_verify_cascade_import.py
+- docs/governance/cascade-import-enforcer.md
+- docs/governance/domain-cascade.md
+reqs:
+- REQ-0.0.43-11-01
+- REQ-0.0.43-11-02
+- REQ-0.0.43-11-03
+- REQ-0.0.43-11-04
+- REQ-0.0.43-11-05
+- REQ-0.0.43-11-06
+- REQ-0.0.43-11-07
+- REQ-0.0.43-11-08
+- REQ-0.0.43-11-09
+- REQ-0.0.43-11-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run python -c "
+- uv run gz obpi pipeline OBPI-0.0.43-01 --from verify --dry-run
 ---
 
 # OBPI-0.0.43-11-cross-context-ast-import-enforcer: AST cross-context import enforcer

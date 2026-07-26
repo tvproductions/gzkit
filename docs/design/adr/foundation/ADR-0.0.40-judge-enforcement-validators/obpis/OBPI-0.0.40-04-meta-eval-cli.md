@@ -4,6 +4,48 @@ parent: ADR-0.0.40-judge-enforcement-validators
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/**
+- src/gzkit/commands/judge_meta_eval.py
+- src/gzkit/governance/judge_metrics.py
+- src/gzkit/cli/parser_judge.py
+- src/gzkit/cli/__init__.py
+- data/judge_meta_eval_floor.json
+- .gzkit/schemas/ledger_events.json
+- tests/commands/test_judge_meta_eval.py
+- tests/governance/test_judge_metrics.py
+- features/governance/judge_meta_eval.feature
+- docs/user/manpages/judge.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+reqs:
+- REQ-0.0.40-04-01
+- REQ-0.0.40-04-02
+- REQ-0.0.40-04-03
+- REQ-0.0.40-04-04
+- REQ-0.0.40-04-05
+- REQ-0.0.40-04-06
+- REQ-0.0.40-04-07
+- REQ-0.0.40-04-08
+- REQ-0.0.40-04-09
+- REQ-0.0.40-04-10
+- REQ-0.0.40-04-11
+- REQ-0.0.40-04-12
+- REQ-0.0.40-04-13
+- REQ-0.0.40-04-14
+verification:
+- uv run -m unittest tests/governance/test_judge_metrics.py -v
+- uv run -m unittest tests/commands/test_judge_meta_eval.py -v
+- uv run -m behave features/governance/judge_meta_eval.feature
+- uv run gz cli audit
+- uv run gz validate --cli-alignment
+- uv run gz judge meta-eval --help
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
+- uv run gz arb step --name judge-meta-eval -- uv run gz judge meta-eval --window 2026-01-01T00:00:00 2026-05-06T23:59:59 --human-attestations tests/fixtures/judge_meta_eval/sample.json
+- grep -q "gz judge meta-eval" docs/user/runbook.md
 ---
 
 # OBPI-0.0.40-04-meta-eval-cli: gz judge meta-eval CLI Verb (Human-Agreement Metric)

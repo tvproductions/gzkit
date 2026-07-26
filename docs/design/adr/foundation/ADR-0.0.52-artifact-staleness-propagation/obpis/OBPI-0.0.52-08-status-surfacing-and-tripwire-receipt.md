@@ -4,6 +4,33 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 8
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/status.py
+- src/gzkit/commands/state.py
+- src/gzkit/commands/adr_explain_stale_cmd.py
+- src/gzkit/cli/parser_governance.py
+- src/gzkit/arb/staleness_tripwire.py
+- src/gzkit/arb/__init__.py
+- tests/governance/test_status_stale_column.py
+- tests/governance/test_state_staleness_flags.py
+- tests/governance/test_adr_explain_stale.py
+- tests/governance/test_staleness_tripwire.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-08-01
+- REQ-0.0.52-08-02
+- REQ-0.0.52-08-03
+- REQ-0.0.52-08-04
+- REQ-0.0.52-08-05
+- REQ-0.0.52-08-06
+- REQ-0.0.52-08-07
+- REQ-0.0.52-08-08
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz status --table
+- uv run gz state --json
+- uv run -m unittest tests.governance.test_status_stale_column tests.governance.test_state_staleness_flags tests.governance.test_adr_explain_stale tests.governance.test_staleness_tripwire -v
 ---
 
 # OBPI-0.0.52-08-status-surfacing-and-tripwire-receipt: Status surfacing and tripwire receipt

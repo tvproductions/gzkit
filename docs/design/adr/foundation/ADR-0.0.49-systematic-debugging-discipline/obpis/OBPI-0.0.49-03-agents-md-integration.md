@@ -4,6 +4,23 @@ parent: ADR-0.0.49-systematic-debugging-discipline
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/templates/AGENTS.md
+- docs/governance/agent-contract-rationale.md
+- docs/design/adr/foundation/ADR-0.0.49-systematic-debugging-discipline/**
+reqs:
+- REQ-0.0.49-03-01
+- REQ-0.0.49-03-02
+- REQ-0.0.49-03-03
+- REQ-0.0.49-03-04
+- REQ-0.0.49-03-05
+- REQ-0.0.49-03-06
+verification:
+- uv run gz validate --documents
+- uv run gz validate --instructions-files-budget
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.49-03-agents-md-integration: AGENTS.md Integration

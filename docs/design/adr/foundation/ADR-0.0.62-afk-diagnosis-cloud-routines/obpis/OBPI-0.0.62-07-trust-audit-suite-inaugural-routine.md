@@ -4,6 +4,20 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 7
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- .gzkit/routines/trust-audit-suite.yaml
+- tests/routines/test_trust_audit_suite.py
+- tests/routines/fixtures/trust_audit_suite_fixtures.json
+reqs:
+- REQ-0.0.62-07-01
+- REQ-0.0.62-07-02
+- REQ-0.0.62-07-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-07-trust-audit-suite-inaugural-routine: **trust-audit-suite-inaugural-routine** — `.gzkit/routines/trust-audit-suite.yaml` (4 validator scopes) + headless-executability tests + GHI template tests + budget assertion.

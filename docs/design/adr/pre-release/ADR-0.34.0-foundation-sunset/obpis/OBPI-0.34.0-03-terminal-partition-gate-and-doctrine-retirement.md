@@ -4,6 +4,30 @@ parent: ADR-0.34.0-foundation-sunset
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/taxonomy.py
+- .gzkit/ledger.jsonl
+- docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md
+- .gzkit/skills/gz-design/SKILL.md
+- .claude/
+- .agents/
+- .github/
+- docs/user/concepts/foundation-feature-invariance-test.md
+- docs/user/concepts/adr-taxonomy.md
+- tests/test_foundation_limbo_gate.py
+- tests/test_foundation_doctrine_retirement.py
+reqs:
+- REQ-0.34.0-03-01
+- REQ-0.34.0-03-02
+- REQ-0.34.0-03-03
+- REQ-0.34.0-03-04
+verification:
+- uv run gz validate --documents
+- uv run gz validate --taxonomy
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement: Terminal Partition Gate And Doctrine Retirement

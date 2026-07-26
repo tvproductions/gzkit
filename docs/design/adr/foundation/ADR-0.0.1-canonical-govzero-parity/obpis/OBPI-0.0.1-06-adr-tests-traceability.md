@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-06 — Enforce ADR → Tests Traceability Semantics (Gate 2)
 
 ## ADR ITEM (Foundational)

@@ -4,6 +4,32 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- .claude/hooks/
+- .claude/hooks/ghi-triage-chat-silence.py
+- .claude/hooks/
+- .gzkit/
+- .claude/
+- .claude/settings.json
+- .gzkit/skills/ghi-close/SKILL.md
+- .gzkit/
+- .claude/rules/skill-surface-sync.md
+- .claude/skills/ghi-close/SKILL.md
+- tests/test_hooks_guards_ledger_sync.py
+reqs:
+- REQ-0.0.56-05-01
+- REQ-0.0.56-05-02
+- REQ-0.0.56-05-03
+- REQ-0.0.56-05-04
+- REQ-0.0.56-05-05
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests.test_hooks_guards_ledger_sync -v
+- uv run gz agent sync control-surfaces
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.56-05-ghi-close-defect-accounting-backstop: Ghi Close Defect Accounting Backstop

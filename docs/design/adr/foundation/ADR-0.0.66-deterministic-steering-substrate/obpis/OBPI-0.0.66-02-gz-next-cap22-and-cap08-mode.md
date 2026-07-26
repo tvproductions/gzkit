@@ -4,6 +4,28 @@ parent: ADR-0.0.66-deterministic-steering-substrate
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/
+- src/gzkit/cli/
+- src/gzkit/events.py
+- src/gzkit/schemas/
+- tests/
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.66-deterministic-steering-substrate/**
+reqs:
+- REQ-0.0.66-02-01
+- REQ-0.0.66-02-02
+- REQ-0.0.66-02-03
+- REQ-0.0.66-02-04
+- REQ-0.0.66-02-05
+- REQ-0.0.66-02-06
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.66-02-gz-next-cap22-and-cap08-mode: Gz Next Cap22 And Cap08 Mode

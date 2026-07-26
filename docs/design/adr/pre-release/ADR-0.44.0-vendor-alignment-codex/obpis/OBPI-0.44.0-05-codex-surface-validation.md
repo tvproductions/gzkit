@@ -4,6 +4,36 @@ parent: ADR-0.44.0-vendor-alignment-codex
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/obpis/OBPI-0.44.0-05-codex-surface-validation.md
+- src/gzkit/schemas
+- src/gzkit/validate_pkg/surface.py
+- src/gzkit/validate_pkg/sync_parity.py
+- src/gzkit/governance/trust_audits/orientation.py
+- src/gzkit/skills_mirror.py
+- src/gzkit/personas
+- src/gzkit/governance/trust_audits/distribution.py
+- tests/test_codex_config_surface.py
+- tests/test_validate_sync_parity.py
+- tests/test_skills_audit.py
+- tests/test_persona_drift.py
+- tests/governance/test_orientation_freshness.py
+- tests/governance/test_distribution_audit.py
+- features/agent_sync.feature
+- docs/user/manpages/validate.md
+reqs:
+- REQ-0.44.0-05-01
+- REQ-0.44.0-05-02
+- REQ-0.44.0-05-03
+- REQ-0.44.0-05-04
+- REQ-0.44.0-05-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run -m unittest tests.test_codex_config_surface tests.test_validate_sync_parity tests.test_skills_audit tests.test_persona_drift tests.governance.test_orientation_freshness tests.governance.test_distribution_audit
+- uv run gz validate --surfaces
+- uv run gz validate --distribution
 ---
 
 # OBPI-0.44.0-05-codex-surface-validation: Codex Surface Validation

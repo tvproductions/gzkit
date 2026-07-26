@@ -4,6 +4,18 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/**
+reqs:
+- REQ-0.0.60-03-01
+- REQ-0.0.60-03-02
+- REQ-0.0.60-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.60-03-lane-latency-renderer: **lane-latency-renderer** — Rich-table renderer matching `gz status` house style; `--json` emits `LaneLatencyReport.model_dump_json()` to stdout, diagnostics to stderr; `--lane`, `--since <commit>`, `--list-surfaces`, `--no-auto-ghi` flags; soft-non-zero exit 3 on breach.

@@ -16,7 +16,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
-            [--invariant-coherence] [--brief-reconcile] [--router-tables]
+            [--invariant-coherence] [--brief-reconcile] [--brief-structure]
+            [--router-tables]
             [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
             [--closeout-proof] [--okf-conformance] [--ontology-purity]
             [--deprecated-verb-prescription]
@@ -1393,6 +1394,45 @@ gz validate --brief-reconcile
 | 3 | Drift detected in one or more briefs | Inspect the error message and update the affected brief's frontmatter, body structure, or parent references |
 
 **Related:** OBPI-0.0.37-05 (brief reconciliation engine).
+
+### `--brief-structure`
+
+Asserts that every **live** OBPI brief satisfies the `BriefStructure` schema — that
+it carries the structured frontmatter (`allowlist`, `reqs`, `verification`) and that
+the values validate, rather than falling back to `LegacyBriefShape` and being
+regex-scraped out of the markdown body. Fail-closed (exit 3) on any non-conformant
+live brief.
+
+Terminal briefs (`Completed`, `attested_completed`, `Abandoned`, `Withdrawn`,
+`archived`, `Superseded`, `Validated`, `Promoted`) are **out of scope**: a sealed
+record's only available repair would rewrite an attested governance artifact. Same
+scoping as `--brief-reconcile` (GHI #707) and `--brief-command-shape` (GHI #550).
+
+**Usage:**
+
+```bash
+gz validate --brief-structure
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --brief-structure
+Validated: brief_structure
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every live brief satisfies `BriefStructure` | — |
+| 3 | A live brief is missing or has malformed structured frontmatter | `uv run python scripts/migrate_brief_frontmatter.py --dry-run`, then run without `--dry-run` |
+
+Runs in the default `gz check` pipeline as **Brief structure**.
+
+**Related:** GHI #615 (schema built but never enforced), ADR-0.0.37-04 (`BriefStructure`).
 
 ### `--router-tables`
 

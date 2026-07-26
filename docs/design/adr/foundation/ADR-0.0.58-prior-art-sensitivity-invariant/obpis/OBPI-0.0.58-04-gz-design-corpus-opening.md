@@ -4,6 +4,18 @@ parent: ADR-0.0.58-prior-art-sensitivity-invariant
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.58-prior-art-sensitivity-invariant/ADR-0.0.58-prior-art-sensitivity-invariant.md
+- docs/design/adr/foundation/ADR-0.0.58-prior-art-sensitivity-invariant/**
+reqs:
+- REQ-0.0.58-04-01
+- REQ-0.0.58-04-02
+- REQ-0.0.58-04-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.58-04-gz-design-corpus-opening: Gz Design Corpus Opening

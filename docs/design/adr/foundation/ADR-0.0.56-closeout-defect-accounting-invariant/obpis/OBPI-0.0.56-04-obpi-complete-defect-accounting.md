@@ -4,6 +4,27 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- src/gzkit/commands/obpi_stages.py
+- src/gzkit/commands/obpi_complete.py
+- src/gzkit/commands/obpi_precomplete.py
+- src/gzkit/governance/trust_audits/closeout_defect_accounting.py
+- tests/commands/test_obpi_complete.py
+- tests/commands/test_obpi_pipeline.py
+reqs:
+- REQ-0.0.56-04-01
+- REQ-0.0.56-04-02
+- REQ-0.0.56-04-03
+- REQ-0.0.56-04-04
+- REQ-0.0.56-04-05
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests.commands.test_obpi_complete -v
+- uv run -m unittest tests.commands.test_obpi_pipeline -v
+- uv run gz validate --closeout-defect-accounting
 ---
 
 # OBPI-0.0.56-04-obpi-complete-defect-accounting: Obpi Complete Defect Accounting

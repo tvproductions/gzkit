@@ -117,6 +117,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "kind_invariance",
         "receipt_shape",
         "brief_reconcile",
+        "brief_structure",
         "router_tables",
         "req_kind_discipline",
         "ontology_purity",

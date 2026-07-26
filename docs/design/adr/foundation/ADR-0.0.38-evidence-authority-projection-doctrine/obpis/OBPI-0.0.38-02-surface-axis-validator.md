@@ -4,6 +4,50 @@ parent: ADR-0.0.38-evidence-authority-projection-doctrine
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.38-evidence-authority-projection-doctrine/**
+- src/gzkit/governance/trust_audits.py
+- src/gzkit/governance/surface_axis.py
+- src/gzkit/governance/surface_axis_inventory.py
+- src/gzkit/governance/surface_axis_callgraph.py
+- src/gzkit/cli/parser_validate.py
+- src/gzkit/commands/validate.py
+- tests/governance/test_surface_axis_validator.py
+- tests/governance/test_surface_axis_inventory.py
+- tests/governance/test_surface_axis_callgraph.py
+- features/governance/surface_axis.feature
+- docs/user/manpages/validate.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- data/surface_axis_waivers.json
+- src/gzkit/arb/validator.py
+reqs:
+- REQ-0.0.38-02-01
+- REQ-0.0.38-02-02
+- REQ-0.0.38-02-03
+- REQ-0.0.38-02-04
+- REQ-0.0.38-02-05
+- REQ-0.0.38-02-06
+- REQ-0.0.38-02-07
+- REQ-0.0.38-02-08
+- REQ-0.0.38-02-09
+- REQ-0.0.38-02-10
+- REQ-0.0.38-02-11
+- REQ-0.0.38-02-12
+verification:
+- uv run -m unittest tests/governance/test_surface_axis_validator.py -v
+- uv run -m unittest tests/governance/test_surface_axis_inventory.py -v
+- uv run -m unittest tests/governance/test_surface_axis_callgraph.py -v
+- uv run -m behave features/governance/surface_axis.feature
+- uv run gz cli audit
+- uv run gz validate --cli-alignment
+- uv run gz validate --surface-axis
+- uv run gz validate --surface-axis --json
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
+- uv run gz arb step --name surface-axis -- uv run gz validate --surface-axis
 ---
 
 # OBPI-0.0.38-02-surface-axis-validator: Surface-Axis Validator Scope

@@ -4,6 +4,18 @@ parent: ADR-0.0.46-pool-management
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md
+- docs/design/adr/foundation/ADR-0.0.46-pool-management/**
+reqs:
+- REQ-0.0.46-01-01
+- REQ-0.0.46-01-02
+- REQ-0.0.46-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.46-01-pool-metadata-model: **pool-metadata-model** — Define pool ADR metadata, staleness classes, supersession state, archive eligibility, and validation rules for managed pool state.

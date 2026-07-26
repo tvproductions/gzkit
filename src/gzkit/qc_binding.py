@@ -85,6 +85,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Rendition freshness": ("audit", "docs/", "bound", "python_function"),
     "Rendition floor coherence": ("audit", "docs/", "bound", "python_function"),
     "Invariant coherence": ("audit", "docs/", "bound", "python_function"),
+    "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),
     "Kind invariance": ("audit", "docs/", "bound", "python_function"),

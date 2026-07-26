@@ -4,6 +4,31 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 12
 lane: Heavy
 status: Draft
+allowlist:
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- docs/governance/domain-cascade.md
+- docs/governance/agent-contract-rationale.md
+- docs/user/manpages/gz-domain-*.md
+- docs/user/manpages/gz-legacy-*.md
+- docs/user/concepts/domain-cascade.md
+- tests/docs/test_domain_cascade_doctrine.py
+reqs:
+- REQ-0.0.43-12-01
+- REQ-0.0.43-12-02
+- REQ-0.0.43-12-03
+- REQ-0.0.43-12-04
+- REQ-0.0.43-12-05
+- REQ-0.0.43-12-06
+- REQ-0.0.43-12-07
+- REQ-0.0.43-12-08
+- REQ-0.0.43-12-09
+- REQ-0.0.43-12-10
+verification:
+- uv run gz validate --documents --cli-alignment
+- uv run gz lint
+- uv run gz cli audit
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.43-12-documentation-cross-coverage: Runbooks + manpages + cascade doctrine + agent contract appendix

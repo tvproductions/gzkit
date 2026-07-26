@@ -4,6 +4,25 @@ parent: ADR-0.0.42-storybook-doctrine
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/user/storybook/
+- docs/user/storybook/from-init-to-first-attested-release.md
+- docs/user/runbook.md
+- src/gzkit/schemas/
+- src/gzkit/schemas/storybook.json
+reqs:
+- REQ-0.0.42-01-01
+- REQ-0.0.42-01-02
+- REQ-0.0.42-01-03
+- REQ-0.0.42-01-04
+- REQ-0.0.42-01-05
+- REQ-0.0.42-01-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.42-01-doctrine-and-canon: Storybook doctrine + directory contract + initial canon

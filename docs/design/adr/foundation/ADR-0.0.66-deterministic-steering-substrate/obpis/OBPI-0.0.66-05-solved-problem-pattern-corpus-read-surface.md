@@ -4,6 +4,26 @@ parent: ADR-0.0.66-deterministic-steering-substrate
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/
+- src/gzkit/schemas/
+- src/gzkit/cli/
+- tests/
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.66-deterministic-steering-substrate/**
+reqs:
+- REQ-0.0.66-05-01
+- REQ-0.0.66-05-02
+- REQ-0.0.66-05-03
+- REQ-0.0.66-05-04
+- REQ-0.0.66-05-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.66-05-solved-problem-pattern-corpus-read-surface: Solved Problem Pattern Corpus Read Surface

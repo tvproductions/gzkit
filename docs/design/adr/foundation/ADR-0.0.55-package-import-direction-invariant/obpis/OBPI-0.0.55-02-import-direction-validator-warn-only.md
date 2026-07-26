@@ -4,6 +4,31 @@ parent: ADR-0.0.55-package-import-direction-invariant
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/
+- src/gzkit/governance/trust_audits/import_direction.py
+- src/gzkit/commands/validate_cmd.py
+- src/gzkit/cli/
+- src/gzkit/commands/
+- docs/user/manpages/validate.md
+- tests/governance/
+- tests/governance/test_import_direction_validator.py
+- docs/design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/**
+reqs:
+- REQ-0.0.55-02-01
+- REQ-0.0.55-02-02
+- REQ-0.0.55-02-03
+- REQ-0.0.55-02-04
+- REQ-0.0.55-02-05
+- REQ-0.0.55-02-06
+verification:
+- uv run gz validate --import-direction
+- uv run python -c "import subprocess; r = subprocess.run(['uv','run','gz','validate','--import-direction']); assert r.returncode == 0, 'warn-only must exit 0'"
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.governance.test_import_direction_validator
+- uv run gz check
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.55-02-import-direction-validator-warn-only: Ship `gz validate --import-direction` in Warn-Only Mode

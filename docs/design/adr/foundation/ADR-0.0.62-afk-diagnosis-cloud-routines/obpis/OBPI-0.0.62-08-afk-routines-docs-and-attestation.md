@@ -4,6 +4,30 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 8
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/EVALUATION_SCORECARD.md
+- docs/user/runbook.md
+- docs/governance/runbook/governance_runbook.md
+- docs/governance/routines/afk-diagnosis.md
+- docs/user/manpages/gz_routine_list.md
+- docs/user/manpages/gz_routine_show.md
+- docs/user/manpages/gz_routine_exec.md
+- docs/user/manpages/gz_routine_deploy.md
+- docs/user/manpages/gz_routine_reconcile.md
+- docs/user/manpages/gz_routine_results.md
+- docs/user/manpages/gz_routine_validate.md
+- features/routines_afk.feature
+- tests/features/test_routines_afk.py
+reqs:
+- REQ-0.0.62-08-01
+- REQ-0.0.62-08-02
+- REQ-0.0.62-08-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-08-afk-routines-docs-and-attestation: **afk-routines-docs-and-attestation** — Runbook section, manpages for 7 routine subcommands, threshold/cadence doc, Gate 4 BDD, Gate 5 attestation evidence bundle (incl. beta-tier-acceptance attestation).

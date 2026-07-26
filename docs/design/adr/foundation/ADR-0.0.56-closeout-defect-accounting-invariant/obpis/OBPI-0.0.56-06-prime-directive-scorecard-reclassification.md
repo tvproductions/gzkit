@@ -4,6 +4,28 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 6
 lane: Lite
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- docs/governance/advisory-rules-audit.md
+- docs/user/runbook.md
+- docs/user/manpages/validate.md
+- tests/governance/test_promoted_advisory_audits.py
+reqs:
+- REQ-0.0.56-06-01
+- REQ-0.0.56-06-02
+- REQ-0.0.56-06-03
+- REQ-0.0.56-06-04
+- REQ-0.0.56-06-05
+- REQ-0.0.56-06-06
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --advisory-scorecard
+- uv run gz validate --cli-alignment
+- uv run gz validate --commit-trailers
+- uv run mkdocs build --strict
+- uv run -m unittest tests.governance.test_promoted_advisory_audits -v
 ---
 
 # OBPI-0.0.56-06-prime-directive-scorecard-reclassification: Prime Directive Scorecard Reclassification

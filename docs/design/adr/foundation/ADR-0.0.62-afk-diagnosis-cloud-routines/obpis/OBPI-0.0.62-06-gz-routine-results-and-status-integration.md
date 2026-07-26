@@ -4,6 +4,24 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/commands/routine_cmd.py
+- src/gzkit/commands/status_cmd.py
+- src/gzkit/routines/results.py
+- src/gzkit/routines/models.py
+- .gzkit/cache/routine-results.json
+- tests/routines/test_results.py
+- tests/commands/test_status_routine_integration.py
+reqs:
+- REQ-0.0.62-06-01
+- REQ-0.0.62-06-02
+- REQ-0.0.62-06-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-06-gz-routine-results-and-status-integration: **gz-routine-results-and-status-integration** — `gz routine results <name>` Layer-3 derived view + 30-day rollup; `gz status --table` "Most recent AFK-routine activity" line with STALE detection.

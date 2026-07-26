@@ -4,6 +4,38 @@ parent: ADR-0.0.39-llm-as-judge-doctrine
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/**
+- src/gzkit/governance/judge_invocation.py
+- src/gzkit/schemas/judge_invocation.json
+- src/gzkit/arb/validator.py
+- tests/governance/test_judge_invocation_schema.py
+- tests/arb/test_judge_receipt_validation.py
+- features/governance/llm_as_judge_schema.feature
+- data/judge_axis_enums.json
+reqs:
+- REQ-0.0.39-02-01
+- REQ-0.0.39-02-02
+- REQ-0.0.39-02-03
+- REQ-0.0.39-02-04
+- REQ-0.0.39-02-05
+- REQ-0.0.39-02-06
+- REQ-0.0.39-02-07
+- REQ-0.0.39-02-08
+- REQ-0.0.39-02-09
+- REQ-0.0.39-02-10
+- REQ-0.0.39-02-11
+- REQ-0.0.39-02-12
+verification:
+- uv run -m unittest tests/governance/test_judge_invocation_schema.py -v
+- uv run -m unittest tests/arb/test_judge_receipt_validation.py -v
+- uv run -m behave features/governance/llm_as_judge_schema.feature
+- uv run python -c "import sys; sys.stdout.reconfigure(encoding='utf-8'); from gzkit.governance.judge_invocation import JudgeInvocation; import json; pydantic_schema = JudgeInvocation.model_json_schema(); committed = json.load(open('src/gzkit/schemas/judge_invocation.json')); assert pydantic_schema == committed, 'schema drift'; print('schema parity ok')"
+- uv run gz cli audit
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.39-02-judge-invocation-schema: Judge-Invocation Declaration Schema

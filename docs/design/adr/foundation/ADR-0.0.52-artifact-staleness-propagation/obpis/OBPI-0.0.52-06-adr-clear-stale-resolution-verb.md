@@ -4,6 +4,25 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/adr_clear_stale_cmd.py
+- src/gzkit/cli/adr_subcommands.py
+- src/gzkit/governance/propagation/resolution.py
+- tests/governance/test_adr_clear_stale.py
+- tests/governance/test_propagation_composition.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-06-01
+- REQ-0.0.52-06-02
+- REQ-0.0.52-06-03
+- REQ-0.0.52-06-04
+- REQ-0.0.52-06-05
+- REQ-0.0.52-06-06
+- REQ-0.0.52-06-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.governance.test_adr_clear_stale tests.governance.test_propagation_composition -v
 ---
 
 # OBPI-0.0.52-06-adr-clear-stale-resolution-verb: gz adr clear-stale resolution verb

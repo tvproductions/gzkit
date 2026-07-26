@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-08 — Prohibit Non-Canonical Governance Abstractions
 
 ## ADR ITEM (Foundational)

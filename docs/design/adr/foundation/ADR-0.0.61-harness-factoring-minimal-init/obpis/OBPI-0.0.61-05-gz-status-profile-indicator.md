@@ -4,6 +4,19 @@ parent: ADR-0.0.61-harness-factoring-minimal-init
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.61-harness-factoring-minimal-init/ADR-0.0.61-harness-factoring-minimal-init.md
+- src/gzkit/commands/status_cmd.py
+reqs:
+- REQ-0.0.61-05-01
+- REQ-0.0.61-05-02
+- REQ-0.0.61-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.61-05-gz-status-profile-indicator: Gz Status Profile Indicator

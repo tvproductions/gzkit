@@ -4,6 +4,28 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/pool/cognitive_pass.py
+- src/gzkit/schemas/pool_triage_rank_input.json
+- docs/governance/pool-triage-cognitive-pass.md
+- tests/test_pool_cognitive_pass.py
+- tests/fixtures/pool_cognitive_pass/
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-02-candidate-cognitive-pass.md
+reqs:
+- REQ-0.0.48-02-01
+- REQ-0.0.48-02-02
+- REQ-0.0.48-02-03
+- REQ-0.0.48-02-04
+- REQ-0.0.48-02-05
+- REQ-0.0.48-02-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_cognitive_pass
+- uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; PoolTriageRankInputEntry(id='ADR-pool.x', severity='urgent')"
+- uv run python -m json.tool tests/fixtures/pool_cognitive_pass/golden_rank_input.json
+- uv run python -c "from gzkit.pool.cognitive_pass import PoolTriageRankInputEntry; import json; print(json.dumps(PoolTriageRankInputEntry.model_json_schema(), indent=2))"
 ---
 
 # OBPI-0.0.48-02-candidate-cognitive-pass: **candidate-cognitive-pass** — Author the skill's read-each-candidate procedure, requiring Intent and Decision review before structural-only rank input is produced; includes port/adapter reclassification check that flags foundation-appropriate pool items.

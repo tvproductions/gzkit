@@ -881,6 +881,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate OBPI brief corpus drift across five dimensions (OBPI-0.0.37-05).",
     )
     p_validate.add_argument(
+        "--brief-structure",
+        dest="check_brief_structure",
+        action="store_true",
+        help="Every live OBPI brief satisfies the BriefStructure schema, exit 3 (GHI #615).",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1080,6 +1086,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_waiver_ratchet=a.check_waiver_ratchet,
             check_invariant_coherence=a.check_invariant_coherence,
             check_brief_reconcile=a.check_brief_reconcile,
+            check_brief_structure=a.check_brief_structure,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_ontology_purity=a.check_ontology_purity,

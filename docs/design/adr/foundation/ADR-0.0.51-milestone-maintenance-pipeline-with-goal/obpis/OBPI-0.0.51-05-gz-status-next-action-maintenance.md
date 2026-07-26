@@ -4,6 +4,18 @@ parent: ADR-0.0.51-milestone-maintenance-pipeline-with-goal
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.51-milestone-maintenance-pipeline-with-goal/ADR-0.0.51-milestone-maintenance-pipeline-with-goal.md
+- docs/design/adr/foundation/ADR-0.0.51-milestone-maintenance-pipeline-with-goal/**
+reqs:
+- REQ-0.0.51-05-01
+- REQ-0.0.51-05-02
+- REQ-0.0.51-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.51-05-gz-status-next-action-maintenance: gz status --next-action extension for milestone-maintenance recommendation

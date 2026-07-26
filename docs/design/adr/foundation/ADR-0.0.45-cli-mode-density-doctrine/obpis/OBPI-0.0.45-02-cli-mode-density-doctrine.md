@@ -4,6 +4,27 @@ parent: ADR-0.0.45-cli-mode-density-doctrine
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.45-cli-mode-density-doctrine/ADR-0.0.45-cli-mode-density-doctrine.md
+- src/gzkit/cli/parser_*.py
+- src/gzkit/governance/trust_audits/cli_flag_density.py
+- tests/governance/test_cli_flag_density.py
+reqs:
+- REQ-0.0.45-02-01
+- REQ-0.0.45-02-02
+- REQ-0.0.45-02-03
+- REQ-0.0.45-02-04
+- REQ-0.0.45-02-05
+- REQ-0.0.45-02-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/governance/test_cli_density_validators.py -v
+- uv run -m unittest tests/governance/test_cli_density_models.py -v
+- uv run -m unittest tests/cli/test_validate_suite_audit.py -v
+- uv run -m behave features/cli_mode_density.feature
 ---
 
 # OBPI-0.0.45-02-cli-mode-density-doctrine: Cli Mode Density Doctrine

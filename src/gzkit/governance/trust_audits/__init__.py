@@ -45,6 +45,9 @@ from gzkit.governance.trust_audits.attestation_receipts import (
 from gzkit.governance.trust_audits.brief_reconcile import (
     validate_brief_reconcile,
 )
+from gzkit.governance.trust_audits.brief_structure import (
+    validate_brief_structure,
+)
 from gzkit.governance.trust_audits.briefs import (
     audit_behave_req_tags,
     audit_brief_command_shape,
@@ -221,6 +224,7 @@ __all__ = [
     "validate_lock_handoff_coupling",
     "validate_attestation_receipts",
     "validate_brief_reconcile",
+    "validate_brief_structure",
     "validate_bullet_retention",
     "validate_complexity_doctrine_links",
     "validate_complexity_thresholds",

@@ -4,6 +4,18 @@ parent: ADR-0.0.51-milestone-maintenance-pipeline-with-goal
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.51-milestone-maintenance-pipeline-with-goal/ADR-0.0.51-milestone-maintenance-pipeline-with-goal.md
+- src/gzkit/milestone_maintenance_runtime.py
+reqs:
+- REQ-0.0.51-01-01
+- REQ-0.0.51-01-02
+- REQ-0.0.51-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.51-01-milestone-maintenance-orchestrator-skill: Milestone maintenance orchestrator skill + runtime engine

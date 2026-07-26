@@ -4,6 +4,18 @@ parent: ADR-0.0.50-validation-pipeline-with-redteam-verification
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.50-validation-pipeline-with-redteam-verification/ADR-0.0.50-validation-pipeline-with-redteam-verification.md
+- docs/design/adr/foundation/ADR-0.0.50-validation-pipeline-with-redteam-verification/**
+reqs:
+- REQ-0.0.50-02-01
+- REQ-0.0.50-02-02
+- REQ-0.0.50-02-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.50-02-redteam-verifier-persona-and-dispatch: Redteam-verifier persona + dispatch contract

@@ -4,6 +4,25 @@ parent: ADR-0.0.66-deterministic-steering-substrate
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/
+- src/gzkit/cli/
+- tests/
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.66-deterministic-steering-substrate/**
+reqs:
+- REQ-0.0.66-06-01
+- REQ-0.0.66-06-02
+- REQ-0.0.66-06-03
+- REQ-0.0.66-06-04
+- REQ-0.0.66-06-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.66-06-subsume-pool-management-into-gz-next: Subsume Pool Management Into Gz Next

@@ -4,6 +4,47 @@ parent: ADR-0.0.40-judge-enforcement-validators
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/**
+- src/gzkit/governance/trust_audits.py
+- src/gzkit/governance/judge_leakage.py
+- src/gzkit/cli/parser_validate.py
+- src/gzkit/commands/validate.py
+- data/judge_leakage_waivers.json
+- data/judge_model_families.json
+- tests/governance/test_judge_leakage_validator.py
+- tests/governance/test_judge_model_families.py
+- features/governance/judge_leakage.feature
+- docs/user/manpages/validate.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+reqs:
+- REQ-0.0.40-02-01
+- REQ-0.0.40-02-02
+- REQ-0.0.40-02-03
+- REQ-0.0.40-02-04
+- REQ-0.0.40-02-05
+- REQ-0.0.40-02-06
+- REQ-0.0.40-02-07
+- REQ-0.0.40-02-08
+- REQ-0.0.40-02-09
+- REQ-0.0.40-02-10
+- REQ-0.0.40-02-11
+- REQ-0.0.40-02-12
+- REQ-0.0.40-02-13
+verification:
+- uv run -m unittest tests/governance/test_judge_leakage_validator.py -v
+- uv run -m unittest tests/governance/test_judge_model_families.py -v
+- uv run -m behave features/governance/judge_leakage.feature
+- uv run gz cli audit
+- uv run gz validate --cli-alignment
+- uv run gz validate --judge-leakage
+- uv run gz validate --judge-leakage --json
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
+- uv run gz arb step --name judge-leakage -- uv run gz validate --judge-leakage
 ---
 
 # OBPI-0.0.40-02-judge-leakage-validator: Judge Leakage Validator (Preference-Leakage Detection)

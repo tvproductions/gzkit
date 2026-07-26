@@ -4,6 +4,34 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/domain_cascade.py
+- src/gzkit/governance/trust_audits/domain_views_fresh.py
+- src/gzkit/cli/validate.py
+- src/gzkit/cli/check.py
+- tests/governance/test_domain_cascade_validator.py
+- tests/governance/test_domain_views_fresh.py
+- docs/user/manpages/validate.md
+reqs:
+- REQ-0.0.43-06-01
+- REQ-0.0.43-06-02
+- REQ-0.0.43-06-03
+- REQ-0.0.43-06-04
+- REQ-0.0.43-06-05
+- REQ-0.0.43-06-06
+- REQ-0.0.43-06-07
+- REQ-0.0.43-06-08
+- REQ-0.0.43-06-09
+- REQ-0.0.43-06-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz validate --domain-cascade
+- uv run gz validate --domain-views-fresh
+- 'uv run gz check  # both scopes invoked'
 ---
 
 # OBPI-0.0.43-06-domain-cascade-validators-check-pipeline: cascade integrity + view-freshness validators

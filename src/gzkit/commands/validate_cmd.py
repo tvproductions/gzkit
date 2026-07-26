@@ -436,6 +436,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "brief_reconcile", "explicit", True, lambda r, _f: _ta().validate_brief_reconcile(r)
     ),
+    _ScopeEntry(
+        "brief_structure", "explicit", True, lambda r, _f: _ta().validate_brief_structure(r)
+    ),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
@@ -1100,6 +1103,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "rendition_floor_coherence",
         "invariant_coherence",
         "brief_reconcile",
+        "brief_structure",
         "router_tables",
         "req_kind_discipline",
         "ontology_purity",
@@ -1420,6 +1424,7 @@ def validate(
     check_receipt_shape: bool = False,
     check_invariant_coherence: bool = False,
     check_brief_reconcile: bool = False,
+    check_brief_structure: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_ontology_purity: bool = False,
@@ -1526,6 +1531,7 @@ def validate(
         "receipt_shape": check_receipt_shape,
         "invariant_coherence": check_invariant_coherence,
         "brief_reconcile": check_brief_reconcile,
+        "brief_structure": check_brief_structure,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "ontology_purity": check_ontology_purity,

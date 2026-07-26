@@ -4,6 +4,31 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 9
 lane: Heavy
 status: Draft
+allowlist:
+- features/staleness_propagation.feature
+- features/staleness_resolution.feature
+- features/staleness_validators.feature
+- features/tier2_review.feature
+- features/staleness_tripwire.feature
+- features/steps/staleness_steps.py
+- features/steps/staleness_fixtures.py
+- tests/governance/test_bdd_staleness_coverage.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-09-01
+- REQ-0.0.52-09-02
+- REQ-0.0.52-09-03
+- REQ-0.0.52-09-04
+- REQ-0.0.52-09-05
+- REQ-0.0.52-09-06
+- REQ-0.0.52-09-07
+- REQ-0.0.52-09-08
+- REQ-0.0.52-09-09
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m behave features/staleness_propagation.feature features/staleness_resolution.feature features/staleness_validators.feature features/tier2_review.feature features/staleness_tripwire.feature
+- uv run -m unittest tests.governance.test_bdd_staleness_coverage -v
 ---
 
 # OBPI-0.0.52-09-bdd-coverage-staleness-propagation: BDD coverage for staleness propagation

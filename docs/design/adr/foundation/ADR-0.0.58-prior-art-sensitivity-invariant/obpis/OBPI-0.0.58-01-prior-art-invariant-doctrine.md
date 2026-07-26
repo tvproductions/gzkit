@@ -4,6 +4,21 @@ parent: ADR-0.0.58-prior-art-sensitivity-invariant
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.58-prior-art-sensitivity-invariant/ADR-0.0.58-prior-art-sensitivity-invariant.md
+- .gzkit/rules/prior-art-sensitivity.md
+- src/gzkit/templates/agents.md
+- src/gzkit/templates/adr.md
+- src/gzkit/sync_surfaces.py
+reqs:
+- REQ-0.0.58-01-01
+- REQ-0.0.58-01-02
+- REQ-0.0.58-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.58-01-prior-art-invariant-doctrine: Prior Art Invariant Doctrine

@@ -4,6 +4,19 @@ parent: ADR-0.0.51-milestone-maintenance-pipeline-with-goal
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.51-milestone-maintenance-pipeline-with-goal/ADR-0.0.51-milestone-maintenance-pipeline-with-goal.md
+- data/milestone_maintenance_skills.json
+reqs:
+- REQ-0.0.51-02-01
+- REQ-0.0.51-02-02
+- REQ-0.0.51-02-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.51-02-maintenance-manifest-and-validator: Per-ADR-kind aware sweep manifest + structural validator

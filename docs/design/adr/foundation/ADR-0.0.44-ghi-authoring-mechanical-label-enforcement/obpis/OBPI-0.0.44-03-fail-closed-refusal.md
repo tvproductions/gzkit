@@ -4,6 +4,18 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/**
+reqs:
+- REQ-0.0.44-03-01
+- REQ-0.0.44-03-02
+- REQ-0.0.44-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-03-fail-closed-refusal: **fail-closed-refusal** — Refuse the create when the predicate fires without `--label runtime`; exit non-zero before the `gh` API call with an error naming which predicate signature hit.

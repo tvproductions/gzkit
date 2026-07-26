@@ -4,6 +4,33 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/rendition_lineage.py
+- src/gzkit/governance/trust_audits/__init__.py
+- src/gzkit/commands/validate_cmd.py
+- tests/governance/test_rendition_lineage.py
+- features/**
+- docs/user/manpages/validate.md
+- docs/governance/governance_runbook.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-06-validate-rendition-lineage.md
+reqs:
+- REQ-0.35.0-06-01
+- REQ-0.35.0-06-02
+- REQ-0.35.0-06-03
+- REQ-0.35.0-06-04
+- REQ-0.35.0-06-05
+- REQ-0.35.0-06-06
+- REQ-0.35.0-06-07
+- REQ-0.35.0-06-08
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --rendition-lineage
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz cli audit
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-06-validate-rendition-lineage: Validate Rendition Lineage

@@ -4,6 +4,32 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 7
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/propagation/tier2.py
+- src/gzkit/governance/propagation/tfidf_prefilter.py
+- src/gzkit/governance/propagation/judge_call.py
+- src/gzkit/governance/propagation/interactive_review.py
+- src/gzkit/governance/propagation/anti_theatre.py
+- src/gzkit/commands/adr_propagation_cmd.py
+- tests/governance/test_propagation_tier2.py
+- tests/governance/test_propagation_interactive.py
+- tests/governance/test_propagation_anti_theatre.py
+- tests/governance/test_propagation_retry_tier2.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-07-01
+- REQ-0.0.52-07-02
+- REQ-0.0.52-07-03
+- REQ-0.0.52-07-04
+- REQ-0.0.52-07-05
+- REQ-0.0.52-07-06
+- REQ-0.0.52-07-07
+- REQ-0.0.52-07-08
+- REQ-0.0.52-07-09
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.governance.test_propagation_tier2 tests.governance.test_propagation_interactive tests.governance.test_propagation_anti_theatre tests.governance.test_propagation_retry_tier2 -v
 ---
 
 # OBPI-0.0.52-07-tier2-pipeline-and-promotion-surface: Tier 2 pipeline and promotion surface (HARD BLOCKED on ADR-0.0.39)

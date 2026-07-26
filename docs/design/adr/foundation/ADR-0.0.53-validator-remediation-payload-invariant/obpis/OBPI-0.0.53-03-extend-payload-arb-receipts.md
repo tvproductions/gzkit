@@ -4,6 +4,29 @@ parent: ADR-0.0.53-validator-remediation-payload-invariant
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/arb/
+- src/gzkit/governance/trust_audits/
+- src/gzkit/arb/**/*.py
+- data/validator_remediation_baseline.json
+- tests/arb/
+- tests/arb/test_remediation_payload.py
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/**
+reqs:
+- REQ-0.0.53-03-01
+- REQ-0.0.53-03-02
+- REQ-0.0.53-03-03
+- REQ-0.0.53-03-04
+- REQ-0.0.53-03-05
+verification:
+- uv run gz validate --remediation-payload-binding
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.arb.test_remediation_payload
+- uv run python -c "import json; b = json.load(open('data/validator_remediation_baseline.json')); assert not any('arb' in str(e) for e in b), 'ARB entries still in baseline'; print('baseline drained of ARB entries')"
+- uv run gz validate --documents --surfaces
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.53-03-extend-payload-arb-receipts: Extend the Payload Contract to ARB Step + Receipt Failures

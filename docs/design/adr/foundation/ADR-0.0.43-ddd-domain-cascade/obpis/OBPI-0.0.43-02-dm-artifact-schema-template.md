@@ -4,6 +4,33 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/domain_models.py
+- src/gzkit/schemas/domain_model.json
+- src/gzkit/templates/dm.md
+- docs/design/domain/
+- docs/design/domain/.gitkeep
+- tests/governance/domain/test_dm_models.py
+- tests/governance/domain/test_dm_schema.py
+- tests/governance/domain/test_dm_template_parse.py
+reqs:
+- REQ-0.0.43-02-01
+- REQ-0.0.43-02-02
+- REQ-0.0.43-02-03
+- REQ-0.0.43-02-04
+- REQ-0.0.43-02-05
+- REQ-0.0.43-02-06
+- REQ-0.0.43-02-07
+- REQ-0.0.43-02-08
+- REQ-0.0.43-02-09
+- REQ-0.0.43-02-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run python -c "from gzkit.governance.domain_models import DomainModel, Aggregate, Entity, ValueObject, DomainEvent, ImplementationSurface, InboundContract, OutboundContract; print('imports OK')"
+- uv run -m unittest tests.governance.domain.test_dm_models tests.governance.domain.test_dm_schema tests.governance.domain.test_dm_template_parse -v
 ---
 
 # OBPI-0.0.43-02-dm-artifact-schema-template: DM tactical artifact + schema + template

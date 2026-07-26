@@ -5,6 +5,34 @@ item: 2
 lane: Heavy
 status: Draft
 sensitivity: security
+allowlist:
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/obpis/OBPI-0.44.0-02-codex-hooks-policy.md
+- src/gzkit/config.py
+- src/gzkit/hooks
+- src/gzkit/sync_surfaces.py
+- src/gzkit/mx/awareness.py
+- .codex/hooks.json
+- .claude/hooks
+- tests/test_hooks.py
+- tests/test_codex_config_surface.py
+- tests/test_sync.py
+- tests/governance/test_orientation_freshness.py
+- features/agent_sync.feature
+- docs/user
+reqs:
+- REQ-0.44.0-02-01
+- REQ-0.44.0-02-02
+- REQ-0.44.0-02-03
+- REQ-0.44.0-02-04
+- REQ-0.44.0-02-05
+- REQ-0.44.0-02-06
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run -m unittest tests.test_hooks tests.test_codex_config_surface tests.test_sync tests.governance.test_orientation_freshness
+- uv run gz validate --orientation-freshness
+- uv run gz agent sync control-surfaces --dry-run
 ---
 
 # OBPI-0.44.0-02-codex-hooks-policy: Codex Hooks Policy

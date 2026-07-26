@@ -4,6 +4,18 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/**
+reqs:
+- REQ-0.0.44-05-01
+- REQ-0.0.44-05-02
+- REQ-0.0.44-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-05-skill-invocation-update: **skill-invocation-update** — Update `ghi-author` skill Step 5 invocation from raw `gh issue create` to `gz issue file`; bump skill-version; sync mirrors via `gz agent sync control-surfaces`.

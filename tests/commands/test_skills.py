@@ -371,6 +371,7 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_rendition_freshness_audit",
                 "gzkit.quality.run_rendition_floor_coherence_audit",
                 "gzkit.quality.run_invariant_coherence_audit",
+                "gzkit.quality.run_brief_structure_audit",
                 "gzkit.quality.run_session_green_gate_audit",
                 "gzkit.quality.run_closeout_proof_audit",
                 "gzkit.quality.run_kind_invariance_audit",

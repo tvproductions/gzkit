@@ -4,6 +4,38 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 7
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/content/land.py
+- src/gzkit/commands/content/__init__.py
+- src/gzkit/cli/**
+- src/gzkit/content/landing.py
+- src/gzkit/content/rendition_store.py
+- src/gzkit/governance/events.py
+- tests/content/test_landing.py
+- tests/commands/test_content_land.py
+- features/**
+- docs/user/manpages/content.md
+- docs/user/runbook.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-07-content-land-orchestrator.md
+reqs:
+- REQ-0.35.0-07-01
+- REQ-0.35.0-07-02
+- REQ-0.35.0-07-03
+- REQ-0.35.0-07-04
+- REQ-0.35.0-07-05
+- REQ-0.35.0-07-06
+- REQ-0.35.0-07-07
+- REQ-0.35.0-07-08
+- REQ-0.35.0-07-09
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz validate --rendition-freshness
+- uv run gz cli audit
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-07-content-land-orchestrator: Content Land Orchestrator

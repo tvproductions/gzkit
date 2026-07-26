@@ -4,6 +4,18 @@ parent: ADR-0.0.61-harness-factoring-minimal-init
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.61-harness-factoring-minimal-init/ADR-0.0.61-harness-factoring-minimal-init.md
+- src/gzkit/trust_audits.py
+reqs:
+- REQ-0.0.61-06-01
+- REQ-0.0.61-06-02
+- REQ-0.0.61-06-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.61-06-gz-check-skip-absent-surface: Gz Check Skip Absent Surface

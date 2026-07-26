@@ -4,6 +4,24 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/pool/blocked_foundation.py
+- tests/test_pool_blocked_foundation.py
+- tests/fixtures/pool_blocked_foundation/
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-04-blocked-foundation-filter.md
+reqs:
+- REQ-0.0.48-04-01
+- REQ-0.0.48-04-02
+- REQ-0.0.48-04-03
+- REQ-0.0.48-04-04
+- REQ-0.0.48-04-05
+- REQ-0.0.48-04-06
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_blocked_foundation
+- uv run python -c "
 ---
 
 # OBPI-0.0.48-04-blocked-foundation-filter: **blocked-foundation-filter** — Add the dependency cross-check that filters or annotates candidates blocked by in-flight foundation work.

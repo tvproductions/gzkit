@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-04 — Enforce OBPI ⇄ ADR Drift-Detection Semantics
 
 ## ADR ITEM (Foundational)

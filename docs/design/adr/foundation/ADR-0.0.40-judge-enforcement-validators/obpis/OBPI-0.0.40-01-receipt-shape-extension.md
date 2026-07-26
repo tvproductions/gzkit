@@ -4,6 +4,35 @@ parent: ADR-0.0.40-judge-enforcement-validators
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/**
+- src/gzkit/arb/validator.py
+- src/gzkit/arb/middleware.py
+- .gzkit/schemas/ledger_events.json
+- tests/arb/test_judge_receipt_routing.py
+- tests/governance/test_judge_invocation_validated_event.py
+- features/governance/judge_receipt_validation.feature
+reqs:
+- REQ-0.0.40-01-01
+- REQ-0.0.40-01-02
+- REQ-0.0.40-01-03
+- REQ-0.0.40-01-04
+- REQ-0.0.40-01-05
+- REQ-0.0.40-01-06
+- REQ-0.0.40-01-07
+- REQ-0.0.40-01-08
+- REQ-0.0.40-01-09
+- REQ-0.0.40-01-10
+- REQ-0.0.40-01-11
+verification:
+- uv run -m unittest tests/arb/test_judge_receipt_routing.py -v
+- uv run -m unittest tests/governance/test_judge_invocation_validated_event.py -v
+- uv run -m behave features/governance/judge_receipt_validation.feature
+- uv run gz cli audit
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.40-01-receipt-shape-extension: ARB Receipt-Shape Extension for Judge Invocations

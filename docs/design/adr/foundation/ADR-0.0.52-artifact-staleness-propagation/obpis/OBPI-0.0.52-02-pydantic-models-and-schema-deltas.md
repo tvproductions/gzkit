@@ -4,6 +4,31 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/propagation/__init__.py
+- src/gzkit/governance/propagation/models.py
+- src/gzkit/schemas/staleness_event.schema.json
+- src/gzkit/schemas/adr.json
+- src/gzkit/schemas/obpi.json
+- src/gzkit/schemas/staleness_propagation_thresholds.schema.json
+- data/staleness_propagation_thresholds.json
+- src/gzkit/governance/trust_audits/documents.py
+- tests/governance/test_propagation_models.py
+- tests/test_schema_validation.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-02-01
+- REQ-0.0.52-02-02
+- REQ-0.0.52-02-03
+- REQ-0.0.52-02-04
+- REQ-0.0.52-02-05
+- REQ-0.0.52-02-06
+- REQ-0.0.52-02-07
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests.governance.test_propagation_models tests.test_schema_validation -v
 ---
 
 # OBPI-0.0.52-02-pydantic-models-and-schema-deltas: Pydantic models and schema deltas

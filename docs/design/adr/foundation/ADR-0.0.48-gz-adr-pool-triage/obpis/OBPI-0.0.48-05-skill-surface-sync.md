@@ -4,6 +4,28 @@ parent: ADR-0.0.48-gz-adr-pool-triage
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/pool-triage/SKILL.md
+- .gzkit/skills/pool-triage/scripts/triage.py
+- .gzkit/skills/ghi-triage/scripts/
+- src/gzkit/skills/pool-triage/SKILL.md
+- tests/test_pool_triage_skill_surface.py
+- docs/design/adr/foundation/ADR-0.0.48-gz-adr-pool-triage/obpis/OBPI-0.0.48-05-skill-surface-sync.md
+reqs:
+- REQ-0.0.48-05-01
+- REQ-0.0.48-05-02
+- REQ-0.0.48-05-03
+- REQ-0.0.48-05-04
+- REQ-0.0.48-05-05
+- REQ-0.0.48-05-06
+verification:
+- uv run gz validate --documents
+- uv run gz validate --surfaces
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.test_pool_triage_skill_surface
+- uv run gz skill list
+- uv run gz agent sync control-surfaces
 ---
 
 # OBPI-0.0.48-05-skill-surface-sync: **skill-surface-sync** — Add the canonical gz ADR pool triage skill, sync mirrors, and expose the operator invocation surface.

@@ -4,6 +4,30 @@ parent: ADR-0.0.53-validator-remediation-payload-invariant
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/hooks/
+- src/gzkit/governance/trust_audits/
+- src/gzkit/hooks/**/*.py
+- data/validator_remediation_baseline.json
+- tests/hooks/
+- tests/hooks/test_remediation_payload.py
+- docs/governance/governance_runbook.md
+- docs/user/runbook.md
+- docs/design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/**
+reqs:
+- REQ-0.0.53-04-01
+- REQ-0.0.53-04-02
+- REQ-0.0.53-04-03
+- REQ-0.0.53-04-04
+- REQ-0.0.53-04-05
+verification:
+- uv run gz validate --remediation-payload-binding
+- uv run python -c "import json; b = json.load(open('data/validator_remediation_baseline.json')); assert not b or all(not v for v in b.values()) if isinstance(b, dict) else len(b) == 0, 'baseline not empty'; print('baseline empty — invariant fully landed')"
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.hooks.test_remediation_payload
+- uv run gz validate --documents --surfaces
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.53-04-extend-payload-blocking-hooks: Extend the Payload Contract to Blocking Hooks + Finalize the Meta-Validator

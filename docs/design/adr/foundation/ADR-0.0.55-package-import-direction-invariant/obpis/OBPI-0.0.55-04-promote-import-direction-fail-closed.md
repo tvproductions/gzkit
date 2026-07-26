@@ -4,6 +4,30 @@ parent: ADR-0.0.55-package-import-direction-invariant
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/
+- src/gzkit/commands/
+- .gzkit/rules/
+- data/package_import_direction_baseline.json
+- docs/governance/governance_runbook.md
+- docs/user/runbook.md
+- docs/user/manpages/validate.md
+- docs/design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/**
+reqs:
+- REQ-0.0.55-04-01
+- REQ-0.0.55-04-02
+- REQ-0.0.55-04-03
+- REQ-0.0.55-04-04
+- REQ-0.0.55-04-05
+- REQ-0.0.55-04-06
+verification:
+- uv run gz validate --import-direction
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.governance.test_import_direction_validator
+- uv run gz check
+- uv run gz validate --documents --surfaces
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.55-04-promote-import-direction-fail-closed: Promote `gz validate --import-direction` to Fail-Closed

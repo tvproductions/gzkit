@@ -4,6 +4,31 @@ parent: ADR-0.0.49-systematic-debugging-discipline
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/rules/
+- .gzkit/rules/systematic-debugging.md
+- docs/governance/advisory-rules-audit.md
+- docs/design/adr/foundation/ADR-0.0.49-systematic-debugging-discipline/**
+- src/gzkit/rules/systematic-debugging.md
+- .claude/rules/systematic-debugging.md
+- .github/instructions/systematic_debugging.instructions.md
+- .gzkit/rules/skill-surface-sync.md
+reqs:
+- REQ-0.0.49-05-01
+- REQ-0.0.49-05-02
+- REQ-0.0.49-05-03
+- REQ-0.0.49-05-04
+- REQ-0.0.49-05-05
+- REQ-0.0.49-05-06
+verification:
+- grep -q "gz validate --systematic-debug-coupling" .gzkit/rules/systematic-debugging.md
+- uv run gz validate --advisory-scorecard
+- uv run gz validate --unscoped-rules
+- uv run gz agent sync control-surfaces
+- uv run gz validate --documents
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.49-05-systematic-debugging-rule-file: Author `systematic-debugging.md` Rule + Scorecard

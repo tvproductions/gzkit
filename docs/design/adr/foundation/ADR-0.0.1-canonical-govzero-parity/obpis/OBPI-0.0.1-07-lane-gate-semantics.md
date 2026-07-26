@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-07 — Encode Lane-Correct Gate Semantics
 
 ## ADR ITEM (Foundational)

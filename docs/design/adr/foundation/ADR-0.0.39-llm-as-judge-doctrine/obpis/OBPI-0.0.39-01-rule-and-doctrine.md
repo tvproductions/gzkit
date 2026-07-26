@@ -4,6 +4,31 @@ parent: ADR-0.0.39-llm-as-judge-doctrine
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/**
+- .gzkit/rules/llm-as-judge.md
+- docs/governance/advisory-rules-audit.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- tests/governance/test_llm_as_judge_rule.py
+reqs:
+- REQ-0.0.39-01-01
+- REQ-0.0.39-01-02
+- REQ-0.0.39-01-03
+- REQ-0.0.39-01-04
+- REQ-0.0.39-01-05
+- REQ-0.0.39-01-06
+- REQ-0.0.39-01-07
+- REQ-0.0.39-01-08
+- REQ-0.0.39-01-09
+verification:
+- uv run gz validate --documents
+- uv run gz validate --advisory-scorecard
+- uv run gz lint
+- uv run gz typecheck
+- uv run -m unittest tests/governance/test_llm_as_judge_rule.py -v
+- uv run gz agent sync control-surfaces
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.39-01-rule-and-doctrine: LLM-as-Judge Rule and Doctrine

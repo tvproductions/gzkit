@@ -4,6 +4,20 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- src/gzkit/commands/issue_cmd.py
+- src/gzkit/cli/parser_governance.py
+- tests/commands/test_issue_cmd.py
+reqs:
+- REQ-0.0.44-01-01
+- REQ-0.0.44-01-02
+- REQ-0.0.44-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-01-local-repo-routing: **local-repo-routing** — Extend `gz issue file` to accept local-repo (`tvproductions/gzkit`) invocations alongside cross-repo filing.

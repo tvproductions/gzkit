@@ -5,6 +5,40 @@ item: 4
 lane: Heavy
 status: Draft
 sensitivity: security
+allowlist:
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/obpis/OBPI-0.44.0-04-harness-aware-pipeline-runtime.md
+- src/gzkit/config.py
+- src/gzkit/pipeline_markers.py
+- src/gzkit/pipeline_runtime.py
+- src/gzkit/commands/plan_audit_cmd.py
+- src/gzkit/commands/obpi_cmd.py
+- src/gzkit/commands/obpi_precomplete.py
+- src/gzkit/commands/preflight.py
+- src/gzkit/hooks/scripts
+- .claude/hooks
+- .gzkit/skills/gz-plan-audit
+- .gzkit/skills/gz-obpi-pipeline
+- tests/test_pipeline_runtime.py
+- tests/test_plan_audit_cmd.py
+- tests/commands/test_obpi_pipeline.py
+- tests/commands/test_obpi_precomplete.py
+- tests/commands/test_preflight.py
+- features/subagent_pipeline.feature
+- docs/governance/state-doctrine.md
+- docs/user/runbook.md
+reqs:
+- REQ-0.44.0-04-01
+- REQ-0.44.0-04-02
+- REQ-0.44.0-04-03
+- REQ-0.44.0-04-04
+- REQ-0.44.0-04-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run -m unittest tests.test_pipeline_runtime tests.test_plan_audit_cmd tests.commands.test_obpi_pipeline tests.commands.test_obpi_precomplete tests.commands.test_preflight
+- uv run -m behave features/subagent_pipeline.feature
+- uv run gz plan audit OBPI-0.44.0-04 --json
 ---
 
 # OBPI-0.44.0-04-harness-aware-pipeline-runtime: Harness Aware Pipeline Runtime

@@ -4,6 +4,34 @@ parent: ADR-0.0.42-storybook-doctrine
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/
+- src/gzkit/cli/
+- src/gzkit/ledger_events.py
+- tests/
+- tests/storybook/
+- tests/cli/test_storybook_cli.py
+- docs/user/manpages/
+reqs:
+- REQ-0.0.42-02-01
+- REQ-0.0.42-02-02
+- REQ-0.0.42-02-03
+- REQ-0.0.42-02-04
+- REQ-0.0.42-02-05
+- REQ-0.0.42-02-06
+- REQ-0.0.42-02-07
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz cli audit
+- uv run mkdocs build --strict
+- uv run gz storybook --help
+- uv run gz storybook list
+- uv run gz storybook derive --arc from-init-to-first-attested-release
+- 'uv run gz storybook derive --arc from-init-to-first-attested-release   # second run: no-op, no ledger event'
+- uv run gz storybook derive --arc from-init-to-first-attested-release
 ---
 
 # OBPI-0.0.42-02-storybook-cli: gz storybook CLI surface

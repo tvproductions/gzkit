@@ -4,6 +4,22 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/commands/routine_cmd.py
+- src/gzkit/routines/introspection.py
+- src/gzkit/routines/models.py
+- tests/routines/test_read_only.py
+- tests/routines/test_introspection.py
+reqs:
+- REQ-0.0.62-03-01
+- REQ-0.0.62-03-02
+- REQ-0.0.62-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-03-gz-routine-read-only-commands: **gz-routine-read-only-commands** — `gz routine list`, `gz routine show <name>`, `gz routine validate <name>`; `RoutineListReport` + `RoutineSummary` models; read-only surface.

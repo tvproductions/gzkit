@@ -663,6 +663,19 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --rendition-floor-coherence", cwd=project_root)
 
 
+def run_brief_structure_audit(project_root: Path) -> QualityResult:
+    """Run the OBPI brief structural-schema gate (GHI #615 cut 3).
+
+    Fails closed when a live (non-terminal) brief does not satisfy
+    ``BriefStructure``. The schema shipped with ADR-0.0.37-04 but nothing ever
+    enforced it — ``parse_brief`` defaulted to permissive and briefs fell back
+    to regex-scraped ``LegacyBriefShape``. Sealed briefs are out of scope: their
+    only available repair would rewrite an attested artifact. Recovery:
+    `uv run python scripts/migrate_brief_frontmatter.py --dry-run`.
+    """
+    return run_command("uv run gz validate --brief-structure", cwd=project_root)
+
+
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 

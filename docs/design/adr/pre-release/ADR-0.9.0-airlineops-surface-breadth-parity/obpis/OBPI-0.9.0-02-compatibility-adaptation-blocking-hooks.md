@@ -4,6 +4,19 @@ parent: ADR-0.9.0-airlineops-surface-breadth-parity
 item: 2
 lane: Lite
 status: in_progress
+allowlist:
+- .claude/hooks/**
+- .claude/settings.json
+- docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/**
+reqs:
+- REQ-0.9.0-02-01
+- REQ-0.9.0-02-02
+- REQ-0.9.0-02-03
+verification:
+- uv run -m unittest discover tests
+- uv run gz check-config-paths
+- uv run gz cli audit
+- uv run gz adr status ADR-0.9.0 --json
 ---
 
 # OBPI-0.9.0-02-compatibility-adaptation-blocking-hooks: Compatibility adaptation for blocking hooks

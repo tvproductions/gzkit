@@ -4,6 +4,18 @@ parent: ADR-0.0.47-pool-dag-promotion-routing
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.47-pool-dag-promotion-routing/ADR-0.0.47-pool-dag-promotion-routing.md
+- docs/design/adr/foundation/ADR-0.0.47-pool-dag-promotion-routing/**
+reqs:
+- REQ-0.0.47-04-01
+- REQ-0.0.47-04-02
+- REQ-0.0.47-04-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.47-04-promote-dependency-guard: **promote-dependency-guard** — Extend `gz adr promote` to validate hard prerequisites, warn on topological disorder, and update dependent pool ADRs after promotion.

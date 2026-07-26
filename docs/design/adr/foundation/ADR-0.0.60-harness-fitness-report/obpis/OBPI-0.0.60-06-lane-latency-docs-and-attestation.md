@@ -4,6 +4,18 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- docs/governance/harness/lane-latency-config.md
+reqs:
+- REQ-0.0.60-06-01
+- REQ-0.0.60-06-02
+- REQ-0.0.60-06-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.60-06-lane-latency-docs-and-attestation: **lane-latency-docs-and-attestation** — Operator runbook section; `gz harness report` manpage with examples; Gate 4 BDD scenarios; threshold-config doc at `docs/governance/harness/lane-latency-config.md`; Gate 5 attestation evidence bundle.

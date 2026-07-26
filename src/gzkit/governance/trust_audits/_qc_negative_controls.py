@@ -515,6 +515,29 @@ def _build_invariant_coherence() -> Path:
     return root
 
 
+def _build_brief_structure() -> Path:
+    """A LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
+
+    Status is `Draft`, so the terminal-status exemption cannot swallow it: this
+    fixture fails only if the scope has stopped enforcing `BriefStructure` on the
+    live corpus, which is the exact regression the flip exists to prevent.
+    """
+    root = _mkroot("brief-structure")
+    _write(
+        root / "docs" / "design" / "adr" / "pkg" / "obpis" / "OBPI-0.0.99-01-legacy.md",
+        "---\n"
+        "id: OBPI-0.0.99-01-legacy\n"
+        "parent: ADR-0.0.99-negative-control\n"
+        "lane: Lite\n"
+        "status: Draft\n"
+        "---\n\n"
+        "# OBPI-0.0.99-01-legacy: No structured frontmatter\n\n"
+        "## Allowed Paths\n\n"
+        "- `src/gzkit/alpha.py`\n",
+    )
+    return root
+
+
 def _build_closeout_proof() -> Path:
     root = _mkroot("closeout-proof")
     _write(
@@ -855,6 +878,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_rendition_floor_coherence,
     ),
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
+    ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),
     (
         "session-green-gate",
         _build_session_green_gate,

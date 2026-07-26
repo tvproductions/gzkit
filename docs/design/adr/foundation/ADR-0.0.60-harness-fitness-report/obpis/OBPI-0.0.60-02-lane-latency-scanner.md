@@ -4,6 +4,18 @@ parent: ADR-0.0.60-harness-fitness-report
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.60-harness-fitness-report/ADR-0.0.60-harness-fitness-report.md
+- .gzkit/telemetry/lane-latency.json
+reqs:
+- REQ-0.0.60-02-01
+- REQ-0.0.60-02-02
+- REQ-0.0.60-02-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.60-02-lane-latency-scanner: **lane-latency-scanner** — Ledger scanner pairing `pipeline_launched` → `obpi_receipt_emitted` (with `obpi_completion ∈ {"completed","attested_completed"}`); orphan handling; lane drift detection; rolling-window aggregation; cache write to `.gzkit/telemetry/lane-latency.json`.

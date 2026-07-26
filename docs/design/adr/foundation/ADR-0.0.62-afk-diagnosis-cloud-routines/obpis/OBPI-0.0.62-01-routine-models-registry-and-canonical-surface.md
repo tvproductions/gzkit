@@ -4,6 +4,29 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/routines/__init__.py
+- src/gzkit/routines/models.py
+- src/gzkit/routines/_scaffolder.py
+- src/gzkit/ledger_events.py
+- src/gzkit/schemas/routine.json
+- .gzkit/routines/
+- tests/routines/__init__.py
+- tests/routines/test_models.py
+- tests/routines/test_classifier.py
+- tests/routines/test_registry.py
+- tests/test_ledger_events.py
+reqs:
+- REQ-0.0.62-01-01
+- REQ-0.0.62-01-02
+- REQ-0.0.62-01-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.62-01-routine-models-registry-and-canonical-surface: **routine-models-registry-and-canonical-surface** — Pydantic `Routine` models (`diagnosis_only: Literal[True]`) + `RoutineExecEvent` with `recorder_source` field + `.gzkit/routines/` canonical-surface class + `_classify_routine_file` + schema export + `ROUTINE_REGISTRY` loader.

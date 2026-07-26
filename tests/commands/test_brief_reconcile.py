@@ -115,10 +115,12 @@ status: Draft
 
 _REPAIRABLE_TEST = """\
 from gzkit.beta import BETA
+from gzkit.traceability import covers
 
 
+@covers("REQ-0.1.0-03-01")
 def test_thing() -> None:
-    \"\"\"REQ-0.1.0-03-01: covering test importing a non-allowlisted sibling.\"\"\"
+    \"\"\"Covering test importing a non-allowlisted sibling.\"\"\"
     assert BETA == 1
 """
 

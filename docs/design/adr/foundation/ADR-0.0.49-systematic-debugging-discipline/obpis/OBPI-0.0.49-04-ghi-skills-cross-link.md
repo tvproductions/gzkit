@@ -4,6 +4,29 @@ parent: ADR-0.0.49-systematic-debugging-discipline
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/ghi-author/SKILL.md
+- .gzkit/skills/ghi-close/SKILL.md
+- docs/design/adr/foundation/ADR-0.0.49-systematic-debugging-discipline/**
+- src/gzkit/skills/ghi-author/SKILL.md
+- src/gzkit/skills/ghi-close/SKILL.md
+- .claude/skills/ghi-author/SKILL.md
+- .claude/skills/ghi-close/SKILL.md
+- .github/skills/ghi-author/SKILL.md
+- .github/skills/ghi-close/SKILL.md
+- .gzkit/rules/skill-surface-sync.md
+reqs:
+- REQ-0.0.49-04-01
+- REQ-0.0.49-04-02
+- REQ-0.0.49-04-03
+- REQ-0.0.49-04-04
+- REQ-0.0.49-04-05
+verification:
+- uv run gz agent sync control-surfaces
+- uv run gz validate --documents
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.49-04-ghi-skills-cross-link: Cross-Link GHI Skills to Systematic Debugging

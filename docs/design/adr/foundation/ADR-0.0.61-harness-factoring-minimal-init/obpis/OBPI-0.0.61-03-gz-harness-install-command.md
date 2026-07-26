@@ -4,6 +4,20 @@ parent: ADR-0.0.61-harness-factoring-minimal-init
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.61-harness-factoring-minimal-init/ADR-0.0.61-harness-factoring-minimal-init.md
+- src/gzkit/templates/agents.md
+- src/gzkit/templates/adr.md
+- src/gzkit/sync_surfaces.py
+reqs:
+- REQ-0.0.61-03-01
+- REQ-0.0.61-03-02
+- REQ-0.0.61-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.61-03-gz-harness-install-command: Gz Harness Install Command

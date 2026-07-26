@@ -261,6 +261,14 @@ def _ep_invariant_coherence(root: Path) -> list[ValidationError]:
     return validate_invariant_coherence(root)
 
 
+def _ep_brief_structure(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.brief_structure import (  # noqa: PLC0415
+        validate_brief_structure,
+    )
+
+    return validate_brief_structure(root)
+
+
 def _ep_session_green_gate(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.session_green_gate import (  # noqa: PLC0415
         audit_session_green_gate,

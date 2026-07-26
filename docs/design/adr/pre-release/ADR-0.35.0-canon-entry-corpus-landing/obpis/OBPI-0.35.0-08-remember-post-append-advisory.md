@@ -4,6 +4,28 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 8
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/content/remember.py
+- tests/commands/test_content_remember.py
+- features/**
+- docs/user/manpages/content.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md
+reqs:
+- REQ-0.35.0-08-01
+- REQ-0.35.0-08-02
+- REQ-0.35.0-08-03
+- REQ-0.35.0-08-04
+- REQ-0.35.0-08-05
+- REQ-0.35.0-08-06
+- REQ-0.35.0-08-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz cli audit
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-08-remember-post-append-advisory: Remember Post Append Advisory

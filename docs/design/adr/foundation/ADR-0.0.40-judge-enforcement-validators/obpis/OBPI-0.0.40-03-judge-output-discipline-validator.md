@@ -4,6 +4,46 @@ parent: ADR-0.0.40-judge-enforcement-validators
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.40-judge-enforcement-validators/**
+- src/gzkit/governance/trust_audits.py
+- src/gzkit/governance/judge_output_discipline.py
+- src/gzkit/cli/parser_validate.py
+- src/gzkit/commands/validate.py
+- tests/governance/test_judge_output_discipline_validator.py
+- features/governance/judge_output_discipline.feature
+- docs/user/manpages/validate.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+reqs:
+- REQ-0.0.40-03-01
+- REQ-0.0.40-03-02
+- REQ-0.0.40-03-03
+- REQ-0.0.40-03-04
+- REQ-0.0.40-03-05
+- REQ-0.0.40-03-06
+- REQ-0.0.40-03-07
+- REQ-0.0.40-03-08
+- REQ-0.0.40-03-09
+- REQ-0.0.40-03-10
+- REQ-0.0.40-03-11
+- REQ-0.0.40-03-12
+- REQ-0.0.40-03-13
+- REQ-0.0.40-03-14
+verification:
+- uv run -m unittest tests/governance/test_judge_output_discipline_validator.py -v
+- uv run -m behave features/governance/judge_output_discipline.feature
+- uv run gz cli audit
+- uv run gz validate --cli-alignment
+- uv run gz validate --judge-output-discipline
+- uv run gz validate --judge-output-discipline --json
+- '# Confirm scope is in default gz check'
+- uv run gz check --list-scopes
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run mkdocs build --strict
+- uv run gz arb step --name judge-output-discipline -- uv run gz validate --judge-output-discipline
 ---
 
 # OBPI-0.0.40-03-judge-output-discipline-validator: Judge Output-Discipline Validator

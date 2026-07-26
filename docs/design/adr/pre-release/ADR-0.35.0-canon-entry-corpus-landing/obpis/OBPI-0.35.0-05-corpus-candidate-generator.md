@@ -4,6 +4,37 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/content/composer.py
+- src/gzkit/content/rendition.py
+- src/gzkit/content/lineage.py
+- src/gzkit/commands/content/compose.py
+- tests/content/test_composer.py
+- tests/content/test_lineage.py
+- tests/commands/test_content_compose.py
+- features/**
+- docs/user/manpages/content.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-05-corpus-candidate-generator.md
+reqs:
+- REQ-0.35.0-05-01
+- REQ-0.35.0-05-02
+- REQ-0.35.0-05-03
+- REQ-0.35.0-05-04
+- REQ-0.35.0-05-05
+- REQ-0.35.0-05-06
+- REQ-0.35.0-05-07
+- REQ-0.35.0-05-08
+- REQ-0.35.0-05-09
+- REQ-0.35.0-05-10
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz validate --invariant-coherence
+- uv run gz validate --rendition-floor-coherence
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-05-corpus-candidate-generator: Corpus Candidate Generator

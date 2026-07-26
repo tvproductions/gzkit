@@ -4,6 +4,26 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- src/gzkit/event_evidence.py
+- src/gzkit/commands/closeout.py
+- src/gzkit/governance/trust_audits/closeout_defect_accounting.py
+- tests/test_closeout_pipeline.py
+- tests/governance/test_ledger_event_schema_coverage.py
+reqs:
+- REQ-0.0.56-03-01
+- REQ-0.0.56-03-02
+- REQ-0.0.56-03-03
+- REQ-0.0.56-03-04
+- REQ-0.0.56-03-05
+- REQ-0.0.56-03-06
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests.test_closeout_pipeline -v
+- uv run -m unittest tests.governance.test_ledger_event_schema_coverage -v
 ---
 
 # OBPI-0.0.56-03-routing-receipt-model-completion-gate: Routing Receipt Model Completion Gate

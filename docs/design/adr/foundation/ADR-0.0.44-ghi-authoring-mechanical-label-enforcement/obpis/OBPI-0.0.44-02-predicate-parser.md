@@ -4,6 +4,18 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- src/gzkit/
+reqs:
+- REQ-0.0.44-02-01
+- REQ-0.0.44-02-02
+- REQ-0.0.44-02-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-02-predicate-parser: **predicate-parser** — Add runtime-predicate body parser matching `src/gzkit/` path refs, `uv run gz <verb>` symptom lines, and `fix(...)` remedy shape.

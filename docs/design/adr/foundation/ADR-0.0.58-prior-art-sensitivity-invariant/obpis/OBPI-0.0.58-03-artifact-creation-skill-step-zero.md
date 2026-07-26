@@ -4,6 +4,20 @@ parent: ADR-0.0.58-prior-art-sensitivity-invariant
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.58-prior-art-sensitivity-invariant/ADR-0.0.58-prior-art-sensitivity-invariant.md
+- src/gzkit/templates/agents.md
+- src/gzkit/templates/adr.md
+- src/gzkit/sync_surfaces.py
+reqs:
+- REQ-0.0.58-03-01
+- REQ-0.0.58-03-02
+- REQ-0.0.58-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.58-03-artifact-creation-skill-step-zero: Artifact Creation Skill Step Zero

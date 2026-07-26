@@ -4,6 +4,31 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 10
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/ghi-author/SKILL.md
+- .gzkit/skills/ghi-close/SKILL.md
+- .gzkit/skills/ghi-triage/SKILL.md
+- src/gzkit/governance/ghi.py
+- tests/skills/test_ghi_cascade_extensions.py
+- tests/governance/test_ghi_frontmatter_cascade.py
+reqs:
+- REQ-0.0.43-10-01
+- REQ-0.0.43-10-02
+- REQ-0.0.43-10-03
+- REQ-0.0.43-10-04
+- REQ-0.0.43-10-05
+- REQ-0.0.43-10-06
+- REQ-0.0.43-10-07
+- REQ-0.0.43-10-08
+- REQ-0.0.43-10-09
+- REQ-0.0.43-10-10
+verification:
+- uv run gz validate --documents --surfaces
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz agent sync control-surfaces
 ---
 
 # OBPI-0.0.43-10-ghi-workflow-extensions: Cascade-aware extensions to ghi-author / ghi-close / ghi-triage

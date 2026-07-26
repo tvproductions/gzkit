@@ -5,6 +5,27 @@ item: 4
 lane: Heavy
 sensitivity: security
 status: Draft
+allowlist:
+- src/gzkit/foundation/sunset_migrate.py
+- scripts/backfill_*.py
+- data/foundation_grandfather.json
+- src/gzkit/commands/adr_demote.py
+- src/gzkit/events.py
+- src/gzkit/ledger_events.py
+- tests/
+reqs:
+- REQ-0.34.0-04-01
+- REQ-0.34.0-04-02
+- REQ-0.34.0-04-03
+verification:
+- uv run gz validate --brief-headings
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --sensitivity
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.34.0-04-execute-migration-populate-and-resense: Execute Migration, Populate, and Re-sense

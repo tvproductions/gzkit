@@ -4,6 +4,20 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 6
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- .gzkit/rules/gh-cli.md
+- .claude/rules/gh-cli.md
+- src/gzkit/rules/gh-cli.md
+reqs:
+- REQ-0.0.44-06-01
+- REQ-0.0.44-06-02
+- REQ-0.0.44-06-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-06-doctrine-surface-update: **doctrine-surface-update** — Update `AGENTS.md` § Behavior Rules — Always #13 and `.claude/rules/gh-cli.md` allowed-commands list to name `gz issue file` as the mechanical surface.

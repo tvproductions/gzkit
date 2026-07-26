@@ -4,6 +4,32 @@ parent: ADR-0.44.0-vendor-alignment-codex
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md
+- docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/obpis/OBPI-0.44.0-03-codex-skills-personas-subagents.md
+- src/gzkit/personas
+- src/gzkit/sync_surfaces.py
+- src/gzkit/sync_skills.py
+- .codex/agents
+- .agents/verifier.md
+- tests/test_agent_sync.py
+- tests/test_persona_portability.py
+- tests/test_persona_drift.py
+- tests/test_sync.py
+- features/persona_sync.feature
+- docs/user/manpages/personas.md
+reqs:
+- REQ-0.44.0-03-01
+- REQ-0.44.0-03-02
+- REQ-0.44.0-03-03
+- REQ-0.44.0-03-04
+- REQ-0.44.0-03-05
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run -m unittest tests.test_agent_sync tests.test_persona_portability tests.test_persona_drift tests.test_sync
+- uv run gz personas drift
+- uv run gz agent sync control-surfaces --dry-run
 ---
 
 # OBPI-0.44.0-03-codex-skills-personas-subagents: Codex Skills Personas Subagents

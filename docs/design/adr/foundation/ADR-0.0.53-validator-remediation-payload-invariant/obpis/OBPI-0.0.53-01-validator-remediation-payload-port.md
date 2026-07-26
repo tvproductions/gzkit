@@ -4,6 +4,31 @@ parent: ADR-0.0.53-validator-remediation-payload-invariant
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/core/models.py
+- src/gzkit/core/exceptions.py
+- src/gzkit/__main__.py
+- .gzkit/rules/
+- .gzkit/rules/validator-remediation.md
+- docs/governance/advisory-rules-audit.md
+- tests/
+- tests/core/test_remediation_payload.py
+- docs/design/adr/foundation/ADR-0.0.53-validator-remediation-payload-invariant/**
+reqs:
+- REQ-0.0.53-01-01
+- REQ-0.0.53-01-02
+- REQ-0.0.53-01-03
+- REQ-0.0.53-01-04
+- REQ-0.0.53-01-05
+- REQ-0.0.53-01-06
+verification:
+- uv run python -c "from gzkit.core.models import RemediationPayload; p = RemediationPayload(rule_citation='.gzkit/rules/validator-remediation.md:12', diagnosis='example', recovery='/gz-context-diet'); print(p.render_jsonline()); print(p.render_human())"
+- uv run python -c "from gzkit.core.exceptions import RemediationFailure; print(RemediationFailure)"
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.core.test_remediation_payload
+- uv run gz validate --documents --advisory-scorecard
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.53-01-validator-remediation-payload-port: Author the `RemediationPayload` Port and Helper

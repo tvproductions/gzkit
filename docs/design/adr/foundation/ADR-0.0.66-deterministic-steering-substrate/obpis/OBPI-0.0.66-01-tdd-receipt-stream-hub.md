@@ -4,6 +4,28 @@ parent: ADR-0.0.66-deterministic-steering-substrate
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/events.py
+- src/gzkit/schemas/
+- src/gzkit/
+- src/gzkit/cli/
+- tests/
+- docs/user/manpages/
+- docs/design/adr/foundation/ADR-0.0.66-deterministic-steering-substrate/**
+reqs:
+- REQ-0.0.66-01-01
+- REQ-0.0.66-01-02
+- REQ-0.0.66-01-03
+- REQ-0.0.66-01-04
+- REQ-0.0.66-01-05
+- REQ-0.0.66-01-06
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.66-01-tdd-receipt-stream-hub: Tdd Receipt Stream Hub

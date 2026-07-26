@@ -4,6 +4,34 @@ parent: ADR-0.0.55-package-import-direction-invariant
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- data/package_layer_order.json
+- data/package_import_direction_baseline.json
+- src/gzkit/governance/
+- src/gzkit/core/models.py
+- src/gzkit/governance/import_direction.py
+- src/gzkit/core/models.py
+- .gzkit/rules/
+- .gzkit/rules/package-import-direction.md
+- docs/governance/advisory-rules-audit.md
+- tests/governance/
+- tests/governance/test_layer_order_manifest.py
+- docs/design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/**
+reqs:
+- REQ-0.0.55-01-01
+- REQ-0.0.55-01-02
+- REQ-0.0.55-01-03
+- REQ-0.0.55-01-04
+- REQ-0.0.55-01-05
+- REQ-0.0.55-01-06
+verification:
+- uv run python -c "import json; m = json.load(open('data/package_layer_order.json')); print('keys:', sorted(m)); assert len(m['vertical_layers']) == 8"
+- uv run python -c "from gzkit.governance.import_direction import classify, layer_of, violates_predicate; print(classify('cli'), layer_of('cli'), violates_predicate('governance', 'cli'))"
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.governance.test_layer_order_manifest
+- uv run gz validate --documents --advisory-scorecard
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.55-01-author-layer-order-manifest: Author the Tri-Role Layer-Order Manifest + Helper Port

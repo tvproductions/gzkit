@@ -4,6 +4,39 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/cli/domain.py
+- src/gzkit/domain/__init__.py
+- src/gzkit/domain/registry.py
+- src/gzkit/domain/regenerator.py
+- src/gzkit/domain/init.py
+- src/gzkit/domain/renderers.py
+- docs/user/manpages/domain-init.md
+- docs/user/manpages/domain-list.md
+- docs/user/manpages/domain-status.md
+- docs/user/manpages/domain-show.md
+- docs/user/manpages/domain-regenerate.md
+- tests/cli/test_domain_*.py
+reqs:
+- REQ-0.0.43-03-01
+- REQ-0.0.43-03-02
+- REQ-0.0.43-03-03
+- REQ-0.0.43-03-04
+- REQ-0.0.43-03-05
+- REQ-0.0.43-03-06
+- REQ-0.0.43-03-07
+- REQ-0.0.43-03-08
+- REQ-0.0.43-03-09
+- REQ-0.0.43-03-10
+verification:
+- uv run gz validate --documents --cli-alignment
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz cli audit
+- uv run mkdocs build --strict
+- uv run gz domain --help
+- uv run gz domain $verb --help
 ---
 
 # OBPI-0.0.43-03-gz-domain-cli-subcommand-group: gz domain CLI subcommand group

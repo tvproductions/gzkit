@@ -4,6 +4,18 @@ parent: ADR-0.0.58-prior-art-sensitivity-invariant
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.58-prior-art-sensitivity-invariant/ADR-0.0.58-prior-art-sensitivity-invariant.md
+- scripts/session_orientation.py
+reqs:
+- REQ-0.0.58-05-01
+- REQ-0.0.58-05-02
+- REQ-0.0.58-05-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.58-05-session-orientation-corpus-injection: Session Orientation Corpus Injection

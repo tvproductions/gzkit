@@ -4,6 +4,34 @@ parent: ADR-0.0.39-llm-as-judge-doctrine
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/**
+- data/judge_surface_inventory.json
+- artifacts/audits/judge-surface-classification-2026-05-06.md
+- tests/governance/test_judge_surface_baseline.py
+- docs/design/adr/pool/ADR-pool.attestation-advisory-agent.md
+- docs/design/adr/pool/ADR-pool.lightweight-pre-implementation-challenger.md
+- .gzkit/schemas/ledger_events.json
+reqs:
+- REQ-0.0.39-03-01
+- REQ-0.0.39-03-02
+- REQ-0.0.39-03-03
+- REQ-0.0.39-03-04
+- REQ-0.0.39-03-05
+- REQ-0.0.39-03-06
+- REQ-0.0.39-03-07
+- REQ-0.0.39-03-08
+- REQ-0.0.39-03-09
+- REQ-0.0.39-03-10
+verification:
+- uv run -m unittest tests/governance/test_judge_surface_baseline.py -v
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --documents
+- uv run gz validate --advisory-scorecard
+- uv run mkdocs build --strict
+- uv run -m behave features/
+- uv run gz arb step --name judge-classification-baseline -- echo "baseline classification audit"
 ---
 
 # OBPI-0.0.39-03-existing-judge-surface-classification: Existing Judge Surface Classification

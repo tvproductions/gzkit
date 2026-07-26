@@ -4,6 +4,33 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/schemas/adr.json
+- src/gzkit/schemas/ghi.json
+- src/gzkit/schemas/obpi.json
+- src/gzkit/governance/frontmatter.py
+- src/gzkit/cli/plan.py
+- src/gzkit/cli/adr.py
+- tests/governance/test_frontmatter_cascade.py
+- tests/cli/test_plan_create_bounded_context.py
+- tests/cli/test_adr_promote_bounded_context.py
+reqs:
+- REQ-0.0.43-04-01
+- REQ-0.0.43-04-02
+- REQ-0.0.43-04-03
+- REQ-0.0.43-04-04
+- REQ-0.0.43-04-05
+- REQ-0.0.43-04-06
+- REQ-0.0.43-04-07
+- REQ-0.0.43-04-08
+- REQ-0.0.43-04-09
+- REQ-0.0.43-04-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run python -c "
 ---
 
 # OBPI-0.0.43-04-frontmatter-cascade-keys-validators: ADR/GHI/OBPI frontmatter cascade keys

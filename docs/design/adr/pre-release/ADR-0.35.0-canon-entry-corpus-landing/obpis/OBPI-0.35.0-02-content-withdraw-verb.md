@@ -4,6 +4,33 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/content/withdraw.py
+- src/gzkit/commands/content/__init__.py
+- src/gzkit/cli/**
+- src/gzkit/governance/events.py
+- tests/commands/test_content_withdraw.py
+- features/content_withdraw.feature
+- features/steps/**
+- docs/user/manpages/content.md
+- docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-02-content-withdraw-verb.md
+reqs:
+- REQ-0.35.0-02-01
+- REQ-0.35.0-02-02
+- REQ-0.35.0-02-03
+- REQ-0.35.0-02-04
+- REQ-0.35.0-02-05
+- REQ-0.35.0-02-06
+- REQ-0.35.0-02-07
+- REQ-0.35.0-02-08
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz cli audit
+- uv run gz validate --cli-alignment
+- uv run gz validate --req-kind-discipline
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-02-content-withdraw-verb: Content Withdraw Verb

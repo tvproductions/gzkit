@@ -4,6 +4,32 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 10
 lane: Heavy
 status: Draft
+allowlist:
+- docs/user/manpages/adr-clear-stale.md
+- docs/user/manpages/adr-explain-stale.md
+- docs/user/manpages/adr-propagation.md
+- docs/user/manpages/validate.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- docs/governance/state-doctrine.md
+- docs/user/index.md
+- tests/governance/test_manpage_coverage_staleness.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-10-01
+- REQ-0.0.52-10-02
+- REQ-0.0.52-10-03
+- REQ-0.0.52-10-04
+- REQ-0.0.52-10-05
+- REQ-0.0.52-10-06
+- REQ-0.0.52-10-07
+- REQ-0.0.52-10-08
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run mkdocs build --strict
+- uv run gz cli audit
+- uv run -m unittest tests.governance.test_manpage_coverage_staleness -v
 ---
 
 # OBPI-0.0.52-10-docs-and-runbook-updates: Docs, manpages, and runbook updates

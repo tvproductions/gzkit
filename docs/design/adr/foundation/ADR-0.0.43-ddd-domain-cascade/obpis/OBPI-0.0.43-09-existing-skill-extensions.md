@@ -4,6 +4,39 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 9
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/gz-prd/SKILL.md
+- .gzkit/skills/gz-design/SKILL.md
+- .gzkit/skills/gz-adr-evaluate/SKILL.md
+- .gzkit/skills/gz-adr-closeout-ceremony/SKILL.md
+- .gzkit/skills/gz-adr-audit/SKILL.md
+- .claude/skills/gz-prd/SKILL.md
+- .claude/skills/gz-design/SKILL.md
+- .claude/skills/gz-adr-evaluate/SKILL.md
+- .claude/skills/gz-adr-closeout-ceremony/SKILL.md
+- .claude/skills/gz-adr-audit/SKILL.md
+- .agents/skills/<same five>/SKILL.md
+- .github/skills/<same five>/SKILL.md
+- tests/skills/test_skill_cascade_extensions.py
+- src/gzkit/governance/adr_evaluate.py
+reqs:
+- REQ-0.0.43-09-01
+- REQ-0.0.43-09-02
+- REQ-0.0.43-09-03
+- REQ-0.0.43-09-04
+- REQ-0.0.43-09-05
+- REQ-0.0.43-09-06
+- REQ-0.0.43-09-07
+- REQ-0.0.43-09-08
+- REQ-0.0.43-09-09
+- REQ-0.0.43-09-10
+verification:
+- uv run gz validate --documents --surfaces
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz agent sync control-surfaces
 ---
 
 # OBPI-0.0.43-09-existing-skill-extensions: Cascade-aware extensions to gz-prd / gz-design / gz-adr-evaluate / gz-adr-closeout-ceremony / gz-adr-audit

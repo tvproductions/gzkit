@@ -4,6 +4,20 @@ parent: ADR-0.0.61-harness-factoring-minimal-init
 item: 7
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.61-harness-factoring-minimal-init/ADR-0.0.61-harness-factoring-minimal-init.md
+- features/harness_install.feature
+- docs/governance/harness/installation-profiles.md
+reqs:
+- REQ-0.0.61-07-01
+- REQ-0.0.61-07-02
+- REQ-0.0.61-07-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m behave features/harness_install.feature
 ---
 
 # OBPI-0.0.61-07-harness-install-docs-and-attestation: Harness Install Docs And Attestation

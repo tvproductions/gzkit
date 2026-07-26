@@ -4,6 +4,37 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 8
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/skills/gz-domain-enumerate/SKILL.md
+- .gzkit/skills/gz-domain-enumerate/agents/
+- .gzkit/skills/gz-domain-model/SKILL.md
+- .gzkit/skills/gz-domain-model/agents/
+- .claude/skills/gz-domain-enumerate/SKILL.md
+- .claude/skills/gz-domain-model/SKILL.md
+- .agents/skills/gz-domain-enumerate/SKILL.md
+- .agents/skills/gz-domain-model/SKILL.md
+- .github/skills/gz-domain-enumerate/SKILL.md
+- .github/skills/gz-domain-model/SKILL.md
+- .gzkit/manifest.json
+- tests/skills/test_gz_domain_enumerate.py
+- tests/skills/test_gz_domain_model.py
+reqs:
+- REQ-0.0.43-08-01
+- REQ-0.0.43-08-02
+- REQ-0.0.43-08-03
+- REQ-0.0.43-08-04
+- REQ-0.0.43-08-05
+- REQ-0.0.43-08-06
+- REQ-0.0.43-08-07
+- REQ-0.0.43-08-08
+- REQ-0.0.43-08-09
+- REQ-0.0.43-08-10
+verification:
+- uv run gz validate --documents --surfaces
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz agent sync control-surfaces
 ---
 
 # OBPI-0.0.43-08-gz-domain-skills-canonical-mirrors: gz-domain-enumerate + gz-domain-model skills

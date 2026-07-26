@@ -4,6 +4,34 @@ parent: ADR-0.0.55-package-import-direction-invariant
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/cli/
+- src/gzkit/commands/
+- src/gzkit/governance/
+- src/gzkit/doc_coverage/
+- src/gzkit/chores/
+- src/gzkit/justify/
+- src/gzkit/arb/
+- data/package_import_direction_baseline.json
+- tests/governance/
+- tests/governance/test_package_layer_order.py
+- docs/design/adr/foundation/ADR-0.0.55-package-import-direction-invariant/**
+reqs:
+- REQ-0.0.55-03-01
+- REQ-0.0.55-03-02
+- REQ-0.0.55-03-03
+- REQ-0.0.55-03-04
+- REQ-0.0.55-03-05
+- REQ-0.0.55-03-06
+- REQ-0.0.55-03-07
+verification:
+- uv run python -c "import json; b = json.load(open('data/package_import_direction_baseline.json')); entries = b if isinstance(b, list) else b.get('entries', []); assert not [e for e in entries if isinstance(e, dict) and e.get('phase') == 'bootstrap'], 'bootstrap entries remain'; print('baseline drained of bootstrap entries')"
+- uv run gz validate --import-direction
+- uv run gz arb step --name unittest -- uv run -m unittest -q tests.governance.test_package_layer_order
+- uv run gz validate --documents --surfaces
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.55-03-migrate-back-edges-drain-baseline: Migrate the Genuine Back-Edges + Drain the Baseline

@@ -4,6 +4,28 @@ parent: ADR-0.0.49-systematic-debugging-discipline
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- .gzkit/personas/
+- .gzkit/personas/investigator.md
+- docs/design/adr/foundation/ADR-0.0.49-systematic-debugging-discipline/**
+- src/gzkit/personas/investigator.md
+- .claude/personas/investigator.md
+- .agents/personas/investigator.md
+- .github/personas/investigator.md
+- .gzkit/rules/skill-surface-sync.md
+reqs:
+- REQ-0.0.49-02-01
+- REQ-0.0.49-02-02
+- REQ-0.0.49-02-03
+- REQ-0.0.49-02-04
+- REQ-0.0.49-02-05
+verification:
+- uv run gz agent sync control-surfaces
+- uv run gz personas list
+- uv run gz validate --documents
+- uv run gz arb ruff
+- uv run gz arb typecheck
+- uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ---
 
 # OBPI-0.0.49-02-author-investigator-persona: Author `investigator` Persona

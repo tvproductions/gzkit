@@ -4,6 +4,27 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 13
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/prd/PRD-GZKIT-1.0.0.md
+- tests/docs/test_prd_gzkit_cascade_sections.py
+reqs:
+- REQ-0.0.43-13-01
+- REQ-0.0.43-13-02
+- REQ-0.0.43-13-03
+- REQ-0.0.43-13-04
+- REQ-0.0.43-13-05
+- REQ-0.0.43-13-06
+- REQ-0.0.43-13-07
+- REQ-0.0.43-13-08
+- REQ-0.0.43-13-09
+- REQ-0.0.43-13-10
+verification:
+- uv run gz validate --documents --domain-cascade --domain-views-fresh
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz domain regenerate
 ---
 
 # OBPI-0.0.43-13-prd-gzkit-amendment: PRD-GZKIT-1.0.0 amendment — first cascade authoring

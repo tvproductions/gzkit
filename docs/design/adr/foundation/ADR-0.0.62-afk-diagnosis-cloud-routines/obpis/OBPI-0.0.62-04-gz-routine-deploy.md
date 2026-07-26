@@ -4,6 +4,23 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/commands/routine_cmd.py
+- src/gzkit/routines/deploy.py
+- src/gzkit/routines/_deployed_config_schema.py
+- .gzkit/routines/.deployed/
+- tests/routines/test_deploy.py
+- tests/routines/fixtures/expected_trust_audit_suite_config.json
+reqs:
+- REQ-0.0.62-04-01
+- REQ-0.0.62-04-02
+- REQ-0.0.62-04-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-04-gz-routine-deploy: **gz-routine-deploy** — `gz routine deploy <name>` generates Claude Code routine config to `.gzkit/routines/.deployed/`; prints operator-action handoff text; explicitly does NOT push to Anthropic infrastructure.

@@ -5,6 +5,30 @@ item: 5
 lane: Heavy
 sensitivity: security
 status: Draft
+allowlist:
+- src/gzkit/quality.py
+- src/gzkit/commands/quality.py
+- docs/governance/GovZero/adr-status.md
+- src/gzkit/commands/register.py
+- data/foundation_grandfather.json
+- src/gzkit/commands/init_cmd.py
+- tests/
+reqs:
+- REQ-0.34.0-05-01
+- REQ-0.34.0-05-02
+- REQ-0.34.0-05-03
+- REQ-0.34.0-05-04
+verification:
+- uv run gz validate --brief-headings
+- uv run gz validate --documents
+- uv run gz validate --req-kind-discipline
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --adr-status-fresh
+- uv run gz validate --taxonomy
+- uv run gz validate --sensitivity
+- uv run mkdocs build --strict
 ---
 
 # OBPI-0.34.0-05-activate-standing-taxonomy-gate: Activate Standing Taxonomy Gate

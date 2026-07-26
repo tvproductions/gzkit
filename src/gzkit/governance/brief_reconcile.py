@@ -12,6 +12,7 @@ from __future__ import annotations
 import ast
 import re
 import warnings
+from functools import lru_cache
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -487,6 +488,48 @@ _TEST_INFRA_SRC_RELS = frozenset(
 )
 
 
+def _covering_test_files(req_ids: list[str], tests_root: Path) -> list[Path]:
+    """Return the test files that CLAIM coverage of ``req_ids`` via ``@covers``.
+
+    Attribution was a substring scan — any file mentioning a REQ id anywhere
+    donated its imports to that brief. A REQ id in a docstring, a comment, or a
+    synthetic fixture body is not a coverage claim, and the file most likely to
+    carry such ids is the one exercising the REQ parser itself
+    (``tests/test_triangle.py`` carries three ``REQ-0.34.0-04-*`` ids as fixture
+    data for a brief it does not cover). ``@covers`` is the declared proof
+    channel for BEHAVIOR REQs (`.gzkit/rules/tests.md`), so it is the honest
+    basis for "this test belongs to this brief" (GHI #615).
+    """
+    if not tests_root.is_dir():
+        return []
+    wanted = set(req_ids)
+    files: list[Path] = []
+    for req_id, evidence in _covers_index(tests_root):
+        if req_id not in wanted:
+            continue
+        path = Path(evidence)
+        if path not in files:
+            files.append(path)
+    return sorted(files)
+
+
+@lru_cache(maxsize=8)
+def _covers_index(tests_root: Path) -> tuple[tuple[str, str], ...]:
+    """Return (REQ id, test file) pairs for every ``@covers`` reference in the tree.
+
+    Cached per tests root: the reconcile engine asks this question once per
+    brief, and a full AST walk of ~700 test files per brief turns a sub-second
+    validator scope into a multi-minute one.
+    """
+    from gzkit.traceability import scan_test_tree  # noqa: PLC0415 — avoids an import cycle
+
+    return tuple(
+        (record.target.identifier, record.evidence_path)
+        for record in scan_test_tree(tests_root)
+        if record.evidence_path
+    )
+
+
 def _compute_missing_in_brief(
     req_ids: list[str],
     allowlist: list[str],
@@ -516,12 +559,9 @@ def _compute_missing_in_brief(
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
         return []
-    req_set = set(req_ids)
     reported: list[str] = []
-    for test_file in sorted(tests_root.rglob("test_*.py")):
+    for test_file in _covering_test_files(req_ids, tests_root):
         text = test_file.read_text(encoding="utf-8")
-        if not any(req in text for req in req_set):
-            continue
         for module in _extract_gzkit_imports(text):
             src_rel = _module_to_src_rel(module, project_root)
             if src_rel is None or src_rel in src_allowlist:

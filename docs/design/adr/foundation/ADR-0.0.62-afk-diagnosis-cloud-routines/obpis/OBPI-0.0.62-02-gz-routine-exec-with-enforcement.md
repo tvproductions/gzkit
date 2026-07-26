@@ -4,6 +4,25 @@ parent: ADR-0.0.62-afk-diagnosis-cloud-routines
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.62-afk-diagnosis-cloud-routines/ADR-0.0.62-afk-diagnosis-cloud-routines.md
+- src/gzkit/commands/routine_cmd.py
+- src/gzkit/routines/exec_wrapper.py
+- src/gzkit/cli/__init__.py
+- scripts/forbid_routine_mutation.py
+- src/gzkit/hooks/
+- tests/routines/test_exec.py
+- tests/governance/test_forbid_routine_mutation_hook.py
+- tests/routines/test_exec_event_emission.py
+reqs:
+- REQ-0.0.62-02-01
+- REQ-0.0.62-02-02
+- REQ-0.0.62-02-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.62-02-gz-routine-exec-with-enforcement: **gz-routine-exec-with-enforcement** — `gz routine exec <name>` CLI with subprocess wrapper whitelist (`gz validate`/`check`/`status`/`state`/`routine results`/`issue file` prefixes only); `GZKIT_ROUTINE_CONTEXT=1` env injection; `--json` emits one `RoutineExecEvent` line; new `forbid-routine-mutation` pre-commit hook (defense-in-depth).

@@ -4,6 +4,36 @@ parent: ADR-0.0.43-ddd-domain-cascade
 item: 1
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/domain_models.py
+- src/gzkit/schemas/glossary_term.json
+- src/gzkit/schemas/bounded_context.json
+- src/gzkit/schemas/context_map_entry.json
+- src/gzkit/templates/prd.md
+- src/gzkit/cli/prd.py
+- tests/governance/domain/test_strategic_models.py
+- tests/governance/domain/test_strategic_schemas.py
+- tests/cli/test_prd_scaffolds_domain_sections.py
+reqs:
+- REQ-0.0.43-01-01
+- REQ-0.0.43-01-02
+- REQ-0.0.43-01-03
+- REQ-0.0.43-01-04
+- REQ-0.0.43-01-05
+- REQ-0.0.43-01-06
+- REQ-0.0.43-01-07
+- REQ-0.0.43-01-08
+- REQ-0.0.43-01-09
+- REQ-0.0.43-01-10
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run python -c "from gzkit.governance.domain_models import UbiquitousLanguageTerm, BoundedContextDeclaration, ContextMapEntry, RelationType; print('imports OK')"
+- uv run -m unittest tests.governance.domain.test_strategic_models -v
+- uv run -m unittest tests.governance.domain.test_strategic_schemas -v
+- uv run -m unittest tests.cli.test_prd_scaffolds_domain_sections -v
 ---
 
 # OBPI-0.0.43-01-prd-section-schema-scaffolder: PRD strategic schema + scaffolder + Pydantic foundation

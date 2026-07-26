@@ -4,6 +4,17 @@ parent: ADR-0.0.51-milestone-maintenance-pipeline-with-goal
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.51-milestone-maintenance-pipeline-with-goal/ADR-0.0.51-milestone-maintenance-pipeline-with-goal.md
+reqs:
+- REQ-0.0.51-03-01
+- REQ-0.0.51-03-02
+- REQ-0.0.51-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.51-03-goal-first-class-convergence: /goal first-class convergence + bounded-iteration fallback

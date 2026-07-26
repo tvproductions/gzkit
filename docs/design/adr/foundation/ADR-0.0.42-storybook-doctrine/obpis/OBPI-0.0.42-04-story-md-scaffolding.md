@@ -4,6 +4,40 @@ parent: ADR-0.0.42-storybook-doctrine
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/commands/plan.py
+- src/gzkit/commands/
+- src/gzkit/cli/
+- src/gzkit/templates/
+- src/gzkit/ledger_events.py
+- .gzkit/skills/gz-adr-create/
+- tests/
+- tests/commands/
+- tests/cli/
+- docs/user/manpages/
+- docs/design/adr/foundation/
+- docs/design/adr/pre-release/
+reqs:
+- REQ-0.0.42-04-01
+- REQ-0.0.42-04-02
+- REQ-0.0.42-04-03
+- REQ-0.0.42-04-04
+- REQ-0.0.42-04-05
+- REQ-0.0.42-04-06
+- REQ-0.0.42-04-07
+- REQ-0.0.42-04-08
+- REQ-0.0.42-04-09
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run mkdocs build --strict
+- uv run gz agent sync control-surfaces
+- uv run gz plan create test-storybook-scaffold --kind foundation --semver 0.0.99 --lane lite --dry-run
+- uv run gz plan create test-storybook-scaffold --kind foundation --semver 0.0.99 --lane lite --skip-story-scaffold --skip-story-scaffold-reason "test"
+- '#           (uv run gz validate --storybook-fresh below is the mechanical check)'
+- 'uv run gz validate --storybook-fresh   # passes (validator now in fail-closed mode)'
 ---
 
 # OBPI-0.0.42-04-story-md-scaffolding: gz-adr-create STORY.md scaffolding integration

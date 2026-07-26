@@ -4,6 +4,19 @@ parent: ADR-0.0.46-pool-management
 item: 3
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.46-pool-management/ADR-0.0.46-pool-management.md
+- .gzkit/
+reqs:
+- REQ-0.0.46-03-01
+- REQ-0.0.46-03-02
+- REQ-0.0.46-03-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run -m unittest tests/test_persona_schema.py -v
 ---
 
 # OBPI-0.0.46-03-pool-priority-registry: **pool-priority-registry** — Add the `.gzkit/pool-priority.json` schema and ledger snapshot contract for preserving computed ranking state and triage-run evidence.

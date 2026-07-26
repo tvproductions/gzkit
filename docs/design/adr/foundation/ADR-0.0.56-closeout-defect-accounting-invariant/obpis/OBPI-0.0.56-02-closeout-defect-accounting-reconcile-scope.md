@@ -4,6 +4,29 @@ parent: ADR-0.0.56-closeout-defect-accounting-invariant
 item: 2
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.56-closeout-defect-accounting-invariant/ADR-0.0.56-closeout-defect-accounting-invariant.md
+- src/gzkit/governance/trust_audits/
+- src/gzkit/commands/validate_cmd.py
+- src/gzkit/cli/parser_maintenance.py
+- src/gzkit/commands/quality.py
+- tests/commands/test_validate.py
+- tests/test_closeout_pipeline.py
+reqs:
+- REQ-0.0.56-02-01
+- REQ-0.0.56-02-02
+- REQ-0.0.56-02-03
+- REQ-0.0.56-02-04
+- REQ-0.0.56-02-05
+- REQ-0.0.56-02-06
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz validate --closeout-defect-accounting
+- uv run -m unittest tests.commands.test_validate -v
+- uv run -m unittest tests.test_closeout_pipeline -v
+- 'uv run gz check   # confirm the new scope runs as part of the default check pipeline'
 ---
 
 # OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope: Closeout Defect Accounting Reconcile Scope

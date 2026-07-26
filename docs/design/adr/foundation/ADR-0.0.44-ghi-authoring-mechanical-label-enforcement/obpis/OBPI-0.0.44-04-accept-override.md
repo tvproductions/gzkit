@@ -4,6 +4,18 @@ parent: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 item: 4
 lane: Heavy
 status: Draft
+allowlist:
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement.md
+- docs/design/adr/foundation/ADR-0.0.44-ghi-authoring-mechanical-label-enforcement/**
+reqs:
+- REQ-0.0.44-04-01
+- REQ-0.0.44-04-02
+- REQ-0.0.44-04-03
+verification:
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.0.44-04-accept-override: **accept-override** — Add `--accept-no-runtime-label` + mandatory `--accept-reason <text>` override; reason stamped into the issue body as `_audit-exempt: no-runtime-label_`.

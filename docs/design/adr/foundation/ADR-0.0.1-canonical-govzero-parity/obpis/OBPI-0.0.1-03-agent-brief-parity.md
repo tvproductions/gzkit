@@ -1,3 +1,7 @@
+---
+status: archived
+---
+
 # OBPI-0.0.1-03 — Establish Canonical Agent Brief Structure Parity
 
 ## ADR ITEM (Foundational)

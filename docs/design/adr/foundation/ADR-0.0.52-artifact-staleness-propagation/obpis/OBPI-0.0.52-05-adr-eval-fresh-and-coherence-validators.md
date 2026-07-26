@@ -4,6 +4,32 @@ parent: ADR-0.0.52-artifact-staleness-propagation
 item: 5
 lane: Heavy
 status: Draft
+allowlist:
+- src/gzkit/governance/trust_audits/staleness_freshness.py
+- src/gzkit/governance/trust_audits/staleness_coherence.py
+- src/gzkit/governance/trust_audits/__init__.py
+- src/gzkit/commands/validate_cmd.py
+- src/gzkit/commands/quality.py
+- src/gzkit/commands/adr_audit.py
+- tests/governance/test_adr_eval_fresh.py
+- tests/governance/test_staleness_coherence.py
+- tests/governance/test_adr_audit_check_staleness.py
+- docs/design/adr/foundation/ADR-0.0.52-artifact-staleness-propagation/ADR-0.0.52-artifact-staleness-propagation.md
+reqs:
+- REQ-0.0.52-05-01
+- REQ-0.0.52-05-02
+- REQ-0.0.52-05-03
+- REQ-0.0.52-05-04
+- REQ-0.0.52-05-05
+- REQ-0.0.52-05-06
+- REQ-0.0.52-05-07
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz validate --adr-eval-fresh
+- uv run gz validate --staleness-coherence
+- uv run gz check
+- uv run -m unittest tests.governance.test_adr_eval_fresh tests.governance.test_staleness_coherence tests.governance.test_adr_audit_check_staleness -v
 ---
 
 # OBPI-0.0.52-05-adr-eval-fresh-and-coherence-validators: adr-eval-fresh and staleness-coherence validators
