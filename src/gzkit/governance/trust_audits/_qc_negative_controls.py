@@ -326,6 +326,28 @@ def _build_test() -> Path:
     return root
 
 
+def _build_docs_build() -> Path:
+    """A docs site whose nav names a page that does not exist.
+
+    A missing nav target is only a WARNING to mkdocs; it fails the build solely
+    because ``--strict`` promotes warnings to errors. That makes it the right
+    violation for this claim: a control that made mkdocs fail some other way
+    (malformed YAML, missing config) would stay green if ``--strict`` were ever
+    dropped from the command, which is the exact regression the claim guards.
+
+    This is the shape that shipped broken in this repo — a nav entry pointing at
+    a manpage renamed in an earlier pass, green under ``gz check`` until someone
+    ran the build by hand (2026-07-26).
+    """
+    root = _mkroot("docs-build")
+    _write(root / "docs" / "index.md", "# Home\n")
+    _write(
+        root / "mkdocs.yml",
+        "site_name: gzkit-qc-nc\nnav:\n  - Home: index.md\n  - Missing: absent-page.md\n",
+    )
+    return root
+
+
 def _build_behave() -> Path:
     """A scenario whose step FAILS — not one whose step is merely undefined.
 
@@ -858,6 +880,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("typecheck", _build_typecheck, _ep._ep_typecheck),
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
+    ("docs-build", _build_docs_build, _ep._ep_docs_build),
     ("skill-audit", _build_skill_audit, _ep._ep_skill_audit),
     ("parity-check", _build_parity_check, _ep._ep_parity_check),
     ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),

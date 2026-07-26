@@ -561,6 +561,33 @@ def run_pymarkdown(project_root: Path) -> QualityResult:
     return run_command("uv run -m pymarkdown scan docs/", cwd=project_root)
 
 
+def run_mkdocs(project_root: Path) -> QualityResult:
+    """Build the docs site strictly, so broken nav and dead links fail closed.
+
+    ``mkdocs build --strict`` was already a canonical ARB step
+    (``CANONICAL_STEP_COMMANDS``) and the Gate-3 docs command, but it was never
+    in the ``gz check`` aggregator. That gap let a stale ``mkdocs.yml`` nav
+    entry — pointing at a manpage renamed in an earlier pass — sit broken under
+    a fully green ``gz check`` until a rename sweep happened to run the build by
+    hand (observed 2026-07-26). Dead enforcement of the class GHI #515 named:
+    a real gate that nothing routes into the aggregator operators actually run.
+
+    Absent ``mkdocs.yml`` the project ships no docs site, and the step passes.
+    Adopter projects are not required to author one, so failing on the absence
+    of a file they never wrote would make ``gz check`` unadoptable — the same
+    presence-test shape ``gz audit`` already uses for its docs arm.
+    """
+    if not (project_root / "mkdocs.yml").is_file():
+        return QualityResult(
+            success=True,
+            command="uv run mkdocs build --strict",
+            stdout="skipped: no mkdocs.yml (project ships no docs site)",
+            stderr="",
+            returncode=0,
+        )
+    return run_command("uv run mkdocs build --strict", cwd=project_root)
+
+
 def run_skill_audit(project_root: Path) -> QualityResult:
     """Run skill lifecycle/parity audit."""
     return run_command("uv run gz skill audit", cwd=project_root)

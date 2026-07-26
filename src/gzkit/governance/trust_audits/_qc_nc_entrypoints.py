@@ -116,6 +116,25 @@ def _ep_test(root: Path) -> int:
     return _command_fails("uv run -m unittest discover tests", root, expected_exit=1)
 
 
+def _ep_docs_build(root: Path) -> int:
+    """Drive the production ``run_mkdocs`` path and require the RIGHT failure.
+
+    A bare exit-1 check would be satisfied by mkdocs failing to launch at all,
+    which is the mis-scoring GHI #699 named on the behave control. Both markers
+    are asserted instead: mkdocs must name the unresolvable nav target (proving
+    it parsed the config and walked the nav) AND report the strict-mode abort
+    (proving ``--strict`` is what promoted the warning to a failure). Drop
+    ``--strict`` from the command and this control goes red, which is the point.
+    """
+    from gzkit.quality import run_mkdocs  # noqa: PLC0415 — production path under test
+
+    result = run_mkdocs(root)
+    if result.success or result.returncode != 1:
+        return 0
+    output = f"{result.stdout}\n{result.stderr}"
+    return int("absent-page.md" in output and "strict mode" in output)
+
+
 def _ep_behave(root: Path) -> int:
     """Run behave from THIS interpreter, so the installed behave is the one used.
 

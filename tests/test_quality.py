@@ -559,3 +559,54 @@ class TestLintScopeMatchesPreCommit(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDocsBuildInCheckPipeline(unittest.TestCase):
+    """`mkdocs build --strict` must run inside `gz check` (operator directive 2026-07-26).
+
+    The strict docs build was a canonical ARB step and a Gate-3 command, but it
+    was never in the `gz check` aggregator. That gap let a stale `mkdocs.yml`
+    nav entry — pointing at a manpage renamed in an earlier pass — sit broken
+    under a fully green `gz check` until a rename sweep happened to run the
+    build by hand. Dead enforcement of exactly the class GHI #515 named.
+    """
+
+    def test_docs_build_in_check_steps(self) -> None:
+        from gzkit.commands.quality import _build_check_steps
+
+        step_names = [name for name, _ in _build_check_steps()]
+        self.assertIn(
+            "Docs build",
+            step_names,
+            "gz check aggregator must include the Docs build step",
+        )
+
+    def test_docs_build_is_skipped_when_the_project_has_no_docs_site(self) -> None:
+        """Adopter safety: no `mkdocs.yml` means no docs site, not a failure.
+
+        `gz check` runs in adopter repos that may ship no documentation site at
+        all. Failing them for the absence of a file they never authored would
+        make the gate unadoptable.
+        """
+        from gzkit.quality import run_mkdocs
+
+        with tempfile.TemporaryDirectory() as tmp:
+            result = run_mkdocs(Path(tmp))
+
+        self.assertTrue(result.success, "A project with no mkdocs.yml must pass, not fail")
+        self.assertEqual(result.returncode, 0)
+
+    def test_docs_build_runs_strict_when_a_docs_site_exists(self) -> None:
+        """The strict flag is the contract — a non-strict build tolerates broken nav."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "mkdocs.yml").write_text("site_name: probe\n", encoding="utf-8")
+            with patch.object(quality, "run_command") as run_command:
+                run_command.return_value = QualityResult(
+                    success=True, command="", stdout="", stderr="", returncode=0
+                )
+                quality.run_mkdocs(root)
+
+        invoked = run_command.call_args.args[0]
+        self.assertIn("mkdocs build", invoked)
+        self.assertIn("--strict", invoked, f"Docs build must be strict; got {invoked!r}")

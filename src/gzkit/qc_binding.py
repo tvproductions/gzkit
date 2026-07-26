@@ -69,6 +69,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Typecheck": ("typecheck", "src/", "bound", "subprocess"),
     "Test": ("test", "tests/", "bound", "subprocess"),
     "Behave": ("bdd", "features/", "bound", "subprocess"),
+    "Docs build": ("audit", "docs/", "bound", "subprocess"),
     "Skill audit": ("audit", ".gzkit/skills/", "bound", "python_function"),
     "Parity check": ("audit", "all", "bound", "python_function"),
     "Readiness audit": ("audit", "all", "bound", "python_function"),
