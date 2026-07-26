@@ -52,7 +52,7 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 | `--evidence TEXT` | `Evidence / Artifacts` section body. Backtick-quoted paths must exist in committed state. |
 | `--branch BRANCH` | Branch name (default: current git branch). |
 | `--obpi OBPI` | OBPI id this handoff scopes to. |
-| `--continues-from REF` | Prior handoff reference (chain link). |
+| `--continues-from REF` | Prior handoff reference (chain link). Omitting it in a directory that already holds handoffs makes this handoff a chain root inheriting **zero** settled rulings — the command warns and names the newest candidate (GHI #717). |
 | `--session-id ID` | Session id. |
 | `--json` | Emit `{"path": "..."}` instead of the human path line. |
 

@@ -473,3 +473,69 @@ class TestHandoffCreate(_HandoffCliCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestHandoffCreateWarnsOnSilentChainRoot(_HandoffCliCase):
+    """An ADR-less create must not drop the settled-ruling chain in silence (GHI #717).
+
+    `_newest_predecessor` returns None whenever `adr_id` is None, and
+    `_carried_settled` inherits nothing from a None predecessor. Post-GHI #709
+    the ADR-less path is the normal path, so the default invocation in a repo
+    that already has handoffs produces a chain root carrying zero settled
+    rulings. Observed live 2026-07-26: a handoff dropped all 32 booked rulings
+    and validated clean, caught only by a human reading the output.
+
+    Auto-linking to the newest handoff is deliberately NOT the cure — that would
+    assert a lineage that may not exist, the objection recorded at
+    `handoff_api.py:603-606`. Speaking up is.
+    """
+
+    def _create_adr_less(self, slug: str, *, continues_from: str | None = None) -> None:
+        handoff_create_cmd(
+            adr=None,
+            slug=slug,
+            agent="g0",
+            branch="main",
+            decisions="Chose the thin-adapter shape.",
+            summary="Summary body.",
+            context="Context body.",
+            next_steps="Next steps body.",
+            pending="Pending body.",
+            verification="Verification body.",
+            evidence="Evidence body.",
+            continues_from=continues_from,
+            base_path=self.base,
+        )
+
+    def test_warns_and_names_the_predecessor_and_the_flag(self) -> None:
+        predecessor = self._seed(
+            adr_id="ADR-0.0.65", slug="predecessor", timestamp="2026-07-26T09:00:00Z"
+        )
+        with mock.patch("gzkit.commands.handoff.console") as console:
+            self._create_adr_less("successor")
+        emitted = " ".join(str(call.args[0]) for call in console.print.call_args_list if call.args)
+
+        self.assertIn(predecessor.name, emitted, "Warning must name the candidate predecessor")
+        self.assertIn("--continues-from", emitted, "Warning must name the recovering flag")
+
+    def test_no_warning_when_the_author_supplied_the_link(self) -> None:
+        predecessor = self._seed(
+            adr_id="ADR-0.0.65", slug="predecessor", timestamp="2026-07-26T09:00:00Z"
+        )
+        with mock.patch("gzkit.commands.handoff.console") as console:
+            self._create_adr_less("successor", continues_from=predecessor.name)
+        emitted = " ".join(str(call.args[0]) for call in console.print.call_args_list if call.args)
+
+        self.assertNotIn(
+            "--continues-from", emitted, f"Chained create must be quiet; got {emitted!r}"
+        )
+
+    def test_no_warning_for_a_genuine_first_handoff(self) -> None:
+        """An empty handoff directory IS a real chain root — nothing to inherit."""
+        with mock.patch("gzkit.commands.handoff.console") as console:
+            self._create_adr_less("first")
+        emitted = " ".join(str(call.args[0]) for call in console.print.call_args_list if call.args)
+
+        self.assertNotIn(
+            "--continues-from", emitted, f"First handoff must be quiet; got {emitted!r}"
+        )

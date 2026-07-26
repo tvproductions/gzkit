@@ -314,6 +314,7 @@ def handoff_create_cmd(
     # predecessor carried, so passing --settled never drops booked history.
     if settled:
         sections[SETTLED_SECTION] = "\n".join(f"- {entry}" for entry in settled)
+    _warn_on_silent_chain_root(adr=adr, continues_from=continues_from, base_path=base_path)
     try:
         path = create_handoff(
             adr_id=adr,
@@ -334,6 +335,44 @@ def handoff_create_cmd(
         print(json.dumps({"path": path.as_posix()}))  # noqa: T201
         return
     console.print(path.as_posix())
+
+
+def _warn_on_silent_chain_root(
+    *, adr: str | None, continues_from: str | None, base_path: Path
+) -> None:
+    """Speak up when this handoff will inherit no settled rulings (GHI #717).
+
+    ``_newest_predecessor`` returns ``None`` for every ADR-less handoff, and
+    ``_carried_settled`` inherits nothing from a ``None`` predecessor. Since
+    GHI #709 made ``adr_id`` optional the ADR-less path is the *normal* path, so
+    the default invocation in a repo that already has handoffs quietly produces
+    a chain root carrying zero settled rulings. Observed live 2026-07-26: a
+    handoff dropped all 32 booked rulings and validated clean, caught only by a
+    human noticing the section was short.
+
+    Auto-linking to the newest handoff is NOT the cure — ``handoff_api``'s
+    ``_newest_predecessor`` already rejected it (*"the newest handoff overall is
+    not its lineage, and linking to it would assert a continuity that does not
+    exist"*). The author is the only one who knows the lineage; this makes sure
+    they are asked rather than silently defaulted.
+
+    Advisory by design: an unlinked handoff can be a genuine chain root, so this
+    warns and proceeds rather than fail-closing on a legitimate shape.
+    """
+    if continues_from is not None:
+        return
+    prior = list_handoffs(adr_id=adr, base_path=base_path)
+    if not prior:
+        return  # A genuine chain root — there is nothing to inherit.
+
+    newest = Path(prior[0].path).name
+    console.print(
+        f"[yellow]Warning:[/yellow] no --continues-from, so this handoff is a chain root "
+        f"and inherits ZERO settled rulings from {len(prior)} existing handoff(s). "
+        "Rulings booked by predecessors will not carry forward (GHI #717).\n"
+        f"  If it continues prior work, re-run with: --continues-from {newest}\n"
+        "  If it is a genuine chain root, no action is needed."
+    )
 
 
 def handoff_authorize_cmd(
