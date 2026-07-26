@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-07-26
 metadata:
-  skill-version: "1.7.1"
+  skill-version: "1.8.0"
 model: opus
 ---
 
@@ -265,7 +265,18 @@ The skill does not stop at `uv run gz specify`.
 
 The intended workflow is:
 
-1. Run `gz specify --author` to materialize the OBPI from the ADR/WBS contract and execute the authored pass.
+1. Run `gz specify <slug> --parent ADR-<X.Y.Z>` to materialize the OBPI from the ADR/WBS contract.
+   **Do not pass `--author` here.** `--author` runs the authored-validation pass and
+   `raise SystemExit(1)` fires *before* `_write_specify_outputs`, so a failed authored
+   pass leaves **no file on disk** — there would be nothing for steps 2-4 to author.
+   And when it succeeds the brief has already passed `gz obpi validate --authored`,
+   which is step 4's exit condition, so steps 2-4 are already discharged. The runtime
+   says so itself: the non-`--author` path prints *"Review allowed paths, requirements,
+   and acceptance criteria for OBPI-specific scoping"* followed by *"Validate with:
+   uv run gz obpi validate --authored"* — steps 2, 3, and 4 — while the `--author`
+   path prints *"validated for pipeline entry"* and returns with no authoring guidance.
+   Treat `--author` as an optional one-shot fast path for an ADR rich enough to emit a
+   compliant brief directly; it is fail-closed, not the standard route.
 2. Read the parent ADR sections that govern the item: Feature Checklist, WBS row,
    Intent, Decision, Interfaces, Evidence, and adjacent OBPIs when needed.
 3. Author the brief semantically:
