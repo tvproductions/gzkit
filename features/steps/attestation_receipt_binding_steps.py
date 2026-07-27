@@ -168,7 +168,7 @@ Fixture brief for the receipt-binding gate BDD coverage.
 
 ## Acceptance Criteria
 
-- [ ] REQ-FIXTURE-01-01: gate fires.
+- [ ] {req_id} [SUPPORT]: gate fires.
 
 ## Evidence
 
@@ -200,6 +200,19 @@ uv run gz validate --attestation-receipts ... resolves the cited receipt.
 """
 
 
+def _fixture_req_id(obpi_id: str) -> str:
+    """Derive the fixture brief's REQ id from the OBPI it belongs to.
+
+    ``triangle._AC_LINE_PATTERN`` only matches a four-tier numeric id, so the
+    previous hard-coded ``REQ-FIXTURE-01-01`` could never parse: every seeded
+    brief yielded zero REQs and a ``Malformed REQ line`` warning that escaped
+    into committed ADR audit proofs (GHI #726). Deriving the id keeps it correct
+    across a rename of the fixture OBPI rather than re-rotting on the next one.
+    """
+    _, semver, item, *_ = obpi_id.split("-")
+    return f"REQ-{semver}-{item}-01"
+
+
 def _seed_adr_and_brief(adr_id: str, obpi_id: str, *, kind: str, lane: str) -> None:
     """Seed an ADR + OBPI brief on disk and register both in the ledger."""
     config = GzkitConfig.load(Path(".gzkit.json"))
@@ -213,7 +226,12 @@ def _seed_adr_and_brief(adr_id: str, obpi_id: str, *, kind: str, lane: str) -> N
     obpis_dir = adr_dir / "obpis"
     obpis_dir.mkdir(parents=True, exist_ok=True)
     (obpis_dir / f"{obpi_id}.md").write_text(
-        _BRIEF_TEMPLATE.format(obpi_id=obpi_id, adr_id=adr_id, lane=lane.capitalize()),
+        _BRIEF_TEMPLATE.format(
+            obpi_id=obpi_id,
+            adr_id=adr_id,
+            lane=lane.capitalize(),
+            req_id=_fixture_req_id(obpi_id),
+        ),
         encoding="utf-8",
     )
     ledger = Ledger(Path(".gzkit") / "ledger.jsonl")

@@ -46,6 +46,7 @@ Feature: gz validate --receipt-shape enforcement
     And the output contains "--receipt-shape"
 
   @REQ-0.0.36-04-03
+  @expected-warning
   Scenario: Waiver entry with bad added_under is rejected
     Given a minimal project with a pre-cutoff receipt and a waiver entry with bad added_under
     When I run "gz validate --receipt-shape"
@@ -58,6 +59,7 @@ Feature: gz validate --receipt-shape enforcement
     Then it exits with code 0
 
   @REQ-0.0.36-04-04
+  @expected-warning
   Scenario: Pre-cutoff receipt without waiver entry is warn-only
     Given a minimal project with a pre-cutoff receipt and a waiver file lacking that receipt
     When I run "gz validate --receipt-shape"
