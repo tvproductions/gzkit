@@ -274,6 +274,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)
     ),
+    _ScopeEntry("authorship", "explicit", True, lambda r, _f: _ta().audit_authorship(r)),
     _ScopeEntry("utf8_prefix", "explicit", True, lambda r, _f: _ta().audit_utf8_prefix(r)),
     _ScopeEntry("line_endings", "explicit", True, lambda r, _f: _ta().audit_line_endings(r)),
     _ScopeEntry("test_tiers", "explicit", True, lambda r, _f: _ta().audit_test_tiers(r)),
@@ -1376,6 +1377,7 @@ def validate(
     check_event_handlers: bool = False,
     check_event_schemas: bool = False,
     check_validator_fields: bool = False,
+    check_authorship: bool = False,
     check_utf8_prefix: bool = False,
     check_test_tiers: bool = False,
     check_pydantic_models: bool = False,
@@ -1485,6 +1487,7 @@ def validate(
         "event_handlers": check_event_handlers,
         "event_schemas": check_event_schemas,
         "validator_fields": check_validator_fields,
+        "authorship": check_authorship,
         "utf8_prefix": check_utf8_prefix,
         "test_tiers": check_test_tiers,
         "pydantic_models": check_pydantic_models,

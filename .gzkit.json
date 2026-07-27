@@ -10,5 +10,8 @@
     "docs_root": "docs",
     "design_root": "docs/design"
   },
+  "authorship": {
+    "required_email_suffix": "@users.noreply.github.com"
+  },
   "project_name": "gzkit"
 }

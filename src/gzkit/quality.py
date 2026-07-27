@@ -1113,6 +1113,17 @@ def run_line_endings_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --line-endings", cwd=project_root)
 
 
+def run_authorship_audit(project_root: Path) -> QualityResult:
+    """Run the commit-authorship policy audit (GHI #725).
+
+    Fails closed when the effective `git user.email` violates the project's
+    declared `authorship.required_email_suffix`. A no-op in projects that
+    declare no policy, so adopters inherit no identity rule of gzkit's.
+    Recovery: `git config --local user.email '<handle>@users.noreply.github.com'`.
+    """
+    return run_command("uv run gz validate --authorship", cwd=project_root)
+
+
 _POOL_ADR_DISPATCH = "docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attestation.md"
 _DISPATCH_ABSORPTION_MARKER = "absorbed_into: ADR-0.0.73"
 

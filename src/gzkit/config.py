@@ -129,6 +129,26 @@ class ArbConfig(BaseModel):
     )
 
 
+class AuthorshipConfig(BaseModel):
+    """Commit-authorship policy (GHI #725).
+
+    Opt-in by design. gzkit ships to adopters, and an identity rule shaped by
+    gzkit's own operator and enforced on every adopter is the dogfooding-leak
+    complaint open at GHI #607 — so the default admits every address.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    required_email_suffix: str | None = Field(
+        default=None,
+        description=(
+            "When set, `gz validate --authorship` fails closed unless the effective "
+            "git user.email ends with this suffix (e.g. '@users.noreply.github.com'). "
+            "Unset means no policy is declared and the scope is a no-op."
+        ),
+    )
+
+
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -138,6 +158,7 @@ class GzkitConfig(BaseModel):
     paths: PathConfig = Field(default_factory=PathConfig)
     vendors: VendorsConfig = Field(default_factory=VendorsConfig)
     arb: ArbConfig = Field(default_factory=ArbConfig)
+    authorship: AuthorshipConfig = Field(default_factory=AuthorshipConfig)
     project_name: str = ""
 
     @classmethod
@@ -170,19 +191,15 @@ class GzkitConfig(BaseModel):
             )
             del data["gates"]
 
-        paths_data = data.get("paths", {})
-        vendors_data = data.get("vendors", {})
-        arb_data = data.get("arb", {})
-
-        return cls.model_validate(
-            {
-                "mode": data.get("mode", "lite"),
-                "paths": paths_data,
-                "vendors": vendors_data,
-                "arb": arb_data,
-                "project_name": data.get("project_name", ""),
-            }
-        )
+        # Select by the model's OWN fields rather than a hand-copied key list.
+        # The list form silently discarded any block added to the model after it
+        # was written — `extra="forbid"` catches a TYPO'd key loudly, but a
+        # correctly-named new key just vanished, and the feature reading it saw
+        # defaults forever (observed on `authorship`, GHI #725). Unknown keys are
+        # still ignored, as before, so an adopter config carrying a stray key
+        # does not newly fail closed.
+        known = {key: data[key] for key in cls.model_fields if key in data}
+        return cls.model_validate(known)
 
     def save(self, path: Path | None = None) -> None:
         """Save configuration to .gzkit.json.

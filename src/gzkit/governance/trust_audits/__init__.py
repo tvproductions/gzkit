@@ -42,6 +42,10 @@ from gzkit.governance.trust_audits.attestation_receipts import (
     audit_attestation_receipts,
     validate_attestation_receipts,
 )
+from gzkit.governance.trust_audits.authorship import (
+    audit_authorship,
+    evaluate_authorship,
+)
 from gzkit.governance.trust_audits.brief_reconcile import (
     validate_brief_reconcile,
 )
@@ -181,6 +185,8 @@ __all__ = [
     "audit_behave_req_tags",
     "audit_brief_command_shape",
     "audit_brief_cross_references",
+    "audit_authorship",
+    "evaluate_authorship",
     "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_agents_md_map_conformance",

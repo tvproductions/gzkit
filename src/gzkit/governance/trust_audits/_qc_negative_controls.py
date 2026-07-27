@@ -274,6 +274,23 @@ def _build_line_endings() -> Path:
     return root
 
 
+def _build_authorship_policy() -> Path:
+    """Declare an authorship policy that no git identity can satisfy.
+
+    An absent `.gzkit.json` proves only that the scope no-ops for adopters who
+    declare nothing — the branch this audit is FOR is a policy that binds. The
+    suffix uses the reserved `.invalid` TLD (RFC 2606) so the control fires
+    identically on every machine, whatever `user.email` that machine resolves —
+    including one whose global config already satisfies gzkit's real policy.
+    """
+    root = _mkroot("authorship-policy")
+    _write(
+        root / ".gzkit.json",
+        json.dumps({"authorship": {"required_email_suffix": "@qc-negative-control.invalid"}}),
+    )
+    return root
+
+
 def _build_dispatch_attestation() -> Path:
     """Present the pool ADR WITHOUT its absorption marker.
 
@@ -952,6 +969,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_line_endings,
         _ep._ep_line_endings,
         "lacks the `* text=auto eol=lf` LF-normalization directive",
+    ),
+    (
+        "authorship-policy",
+        _build_authorship_policy,
+        _ep._ep_authorship_policy,
+        "Commit authorship policy requires an address ending",
     ),
     (
         "dispatch-attestation",

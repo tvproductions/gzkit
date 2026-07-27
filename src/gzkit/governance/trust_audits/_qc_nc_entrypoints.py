@@ -430,6 +430,12 @@ def _ep_line_endings(root: Path) -> list[ValidationError]:
     return audit_line_endings(root)
 
 
+def _ep_authorship_policy(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.authorship import audit_authorship  # noqa: PLC0415
+
+    return audit_authorship(root)
+
+
 def _ep_dispatch_attestation(root: Path) -> int:
     from gzkit.quality import run_dispatch_attestation_audit  # noqa: PLC0415
 

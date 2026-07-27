@@ -594,6 +594,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Run all four trust-doctrine pattern audits",
     )
     p_validate.add_argument(
+        "--authorship",
+        dest="check_authorship",
+        action="store_true",
+        help="Fail closed when git user.email violates the declared authorship policy",
+    )
+    p_validate.add_argument(
         "--utf8-prefix",
         dest="check_utf8_prefix",
         action="store_true",
@@ -1049,6 +1055,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_event_handlers=a.check_event_handlers or a.check_audits,
             check_event_schemas=a.check_event_schemas,
             check_validator_fields=a.check_validator_fields or a.check_audits,
+            check_authorship=a.check_authorship,
             check_utf8_prefix=a.check_utf8_prefix,
             check_line_endings=a.check_line_endings,
             check_test_tiers=a.check_test_tiers,
