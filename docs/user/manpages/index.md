@@ -102,6 +102,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz drift`](drift.md) | Detect spec-test-code governance drift |
 | [`gz lint`](lint.md) | Run code linting checks |
 | [`gz format`](format.md) | Auto-format code |
+| [`gz smoke`](smoke.md) | Run the smoke/BVT tier against its declared time budget |
 | [`gz test`](test.md) | Run unit tests |
 | [`gz typecheck`](typecheck.md) | Run static type checks |
 | [`gz validate`](validate.md) | Validate governance artifacts |

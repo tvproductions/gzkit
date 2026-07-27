@@ -85,6 +85,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Surface fidelity": ("surface-fidelity", _mx_levels.ERROR),
     "Line endings": ("line-endings", _mx_levels.ERROR),
     "Authorship policy": ("authorship", _mx_levels.ERROR),
+    "Smoke tier": ("smoke-tier", _mx_levels.ERROR),
     "Dispatch attestation": ("dispatch-attestation", _mx_levels.ERROR),
     # §5 enforcement-claim meta-validator — pinned CRITICAL so a FACADE never
     # demotes to advisory inside the hangar (ADR-0.0.74 BI#3 / §5; GHI #651).
@@ -421,6 +422,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_req_kind_discipline_audit,
         run_session_green_gate_audit,
         run_skill_audit,
+        run_smoke_tier,
         run_surface_fidelity_audit,
         run_task_envelope_coherence_audit,
         run_tautological_test_audit,
@@ -471,6 +473,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Surface fidelity", run_surface_fidelity_audit),
         ("Line endings", run_line_endings_audit),
         ("Authorship policy", run_authorship_audit),
+        ("Smoke tier", run_smoke_tier),
         ("Dispatch attestation", run_dispatch_attestation_audit),
         ("Enforcement floor", run_enforcement_floor_audit),
     ]

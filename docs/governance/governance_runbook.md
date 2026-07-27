@@ -178,7 +178,7 @@ without a gzkit-surface marker (`gz <verb>`, `.gzkit/`, `src/gzkit/`,
 | Gate | Name | Verification |
 |---|---|---|
 | 1 | ADR recorded | `uv run gz validate --documents` |
-| 2 | TDD | `uv run gz test` |
+| 2 | TDD | `uv run gz test` (fast build-verification pass: `uv run gz smoke`) |
 | 3 | Docs | `uv run gz lint` + `uv run mkdocs build --strict` |
 | 4 | BDD | `features/` scenarios if present |
 | 5 | Human attestation | `uv run gz attest ADR-<X.Y.Z> --status completed` |

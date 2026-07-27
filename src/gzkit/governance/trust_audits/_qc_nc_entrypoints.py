@@ -430,6 +430,19 @@ def _ep_line_endings(root: Path) -> list[ValidationError]:
     return audit_line_endings(root)
 
 
+def _ep_smoke_tier(root: Path) -> int:
+    import io  # noqa: PLC0415
+    from contextlib import redirect_stdout  # noqa: PLC0415
+
+    from gzkit.commands.smoke_cmd import smoke_gate  # noqa: PLC0415
+
+    # Swallow the gate's recovery prose: this control EXPECTS the failure, and a
+    # passing `gz validate --qc-binding` that prints failure-shaped text is the
+    # exact confusion GHI #726 closed one tier over.
+    with redirect_stdout(io.StringIO()):
+        return smoke_gate(root)
+
+
 def _ep_authorship_policy(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.authorship import audit_authorship  # noqa: PLC0415
 

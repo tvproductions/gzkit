@@ -404,6 +404,7 @@ cd gzkit
 uv sync
 uv run gz agent sync control-surfaces   # Rebuild Tier B mirrors
 uv run gz lint                           # Verify tooling works
+uv run gz smoke                          # Build verification, budgeted (<=60s)
 uv run gz test                           # Verify tests pass
 uvx pre-commit install --hook-type pre-commit --hook-type pre-push  # Install the gate (ADR-0.0.68)
 uv run gz validate --session-green-gate  # Verify it is DELIVERED, not just declared

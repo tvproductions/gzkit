@@ -86,6 +86,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "check": "gzkit.commands.quality",
     "format_cmd": "gzkit.commands.quality",
     "lint": "gzkit.commands.quality",
+    "smoke_cmd": "gzkit.commands.smoke_cmd",
     "test": "gzkit.commands.quality",
     "typecheck": "gzkit.commands.quality",
     "readiness_audit_cmd": "gzkit.commands.readiness",

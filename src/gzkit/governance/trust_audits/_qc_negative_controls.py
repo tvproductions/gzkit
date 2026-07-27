@@ -291,6 +291,19 @@ def _build_authorship_policy() -> Path:
     return root
 
 
+def _build_smoke_tier() -> Path:
+    """Present a `tests/` tree that exists but declares no smoke member.
+
+    An absent `tests/` proves only that the path is checked. The branch that
+    matters is a populated project whose smoke tier is EMPTY — the
+    green-by-emptiness case, where a budget gate passes because it measured
+    nothing.
+    """
+    root = _mkroot("smoke-tier")
+    _write(root / "tests" / "test_ordinary.py", "def test_nothing():\n    pass\n")
+    return root
+
+
 def _build_dispatch_attestation() -> Path:
     """Present the pool ADR WITHOUT its absorption marker.
 
@@ -976,6 +989,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_authorship_policy,
         "Commit authorship policy requires an address ending",
     ),
+    ("smoke-tier", _build_smoke_tier, _ep._ep_smoke_tier),
     (
         "dispatch-attestation",
         _build_dispatch_attestation,
