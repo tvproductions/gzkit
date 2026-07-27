@@ -6471,3 +6471,21 @@ list. This is documentation drift — the doctrine binds going forward only.
 
   ✓ Gate 4 (BDD): PASS
   ⚠ Gate 5 (Human): PENDING (manual)
+
+=== PROVENANCE NOTE (appended 2026-07-27, GHI #726) ===
+The LOG_WARNING lines above were emitted by a PASSING run (0 scenarios failed).
+They did NOT indicate a defect in the gate being audited:
+
+  * receipt_shape (2 lines) -- exercised negative controls. The scenario
+    "Pre-cutoff receipt without waiver entry is warn-only" emits the warning as
+    the behavior under test.
+  * gzkit.triangle (2 lines) -- a fixture brief whose acceptance-criteria REQ id
+    predated the four-tier numeric shape and therefore could not parse.
+
+Both causes were fixed in commit 148e14338. Runs after that commit emit no such
+lines: behave stderr on a passing full run measures 0 bytes.
+
+The captured output above is UNMODIFIED. This note is appended, not edited in --
+a proof artifact records what a run actually emitted, and rewriting it would
+falsify the record it exists to preserve.
+=== END PROVENANCE NOTE ===

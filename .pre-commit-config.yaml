@@ -85,6 +85,22 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: authorship
+        name: authorship policy (commit identity)
+        # Guards at COMMIT time, which is the moment the address is stamped into
+        # a repo-bound artifact. `gz check` alone left the gap this closes: a
+        # clone that only ever commits — no check, no push — would carry the
+        # operator's personal email with nothing objecting, and AGENTS.md prices
+        # that at a filter-repo rewrite plus a force-push (GHI #725).
+        #
+        # Cheap by construction: one `git config --get` and a suffix compare,
+        # and a no-op entirely in projects that declare no policy — so adopters
+        # pay nothing and inherit no identity rule of gzkit's.
+        entry: uv run gz validate --authorship
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: gz-check-pre-push
         name: gz check (pre-push gate)
         entry: uv run gz check

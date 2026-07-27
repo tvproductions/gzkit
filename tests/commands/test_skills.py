@@ -51,6 +51,30 @@ def tearDownModule() -> None:
     stop_init_subprocess_patches()
 
 
+def _check_step_patch_targets(exclude: frozenset[str] | set[str] = frozenset()) -> list[str]:
+    """Return a patch target for every `gz check` step, derived from the registry.
+
+    Two namespaces are in play and the choice is not cosmetic: the handful of
+    runners imported at `gzkit.commands.quality` module scope must be patched
+    THERE, while the rest are imported lazily inside `_build_check_steps` and so
+    resolve against `gzkit.quality` at call time.
+
+    Derived rather than hand-listed because the hand-listed form silently
+    omitted each newly added step, letting it execute for real against a temp
+    project and fail a test about something else entirely (GHI #724/#725).
+    """
+    import gzkit.commands.quality as _cq  # noqa: PLC0415 - test-local, avoids import cycles
+
+    targets = []
+    for _label, runner in _cq._build_check_steps():
+        name = runner.__name__
+        if name in exclude:
+            continue
+        namespace = "gzkit.commands.quality" if hasattr(_cq, name) else "gzkit.quality"
+        targets.append(f"{namespace}.{name}")
+    return targets
+
+
 class _InitFromTemplate:
     """Context manager: copytree cached init'd tree into a fresh tempdir.
 
@@ -355,50 +379,15 @@ class TestSkillCommands(unittest.TestCase):
             # parenthesized `with`: the check pipeline has grown past 20
             # steps, and a parenthesized `with` hits Python's 20-block
             # static-nesting limit (SyntaxError) once it does.
-            ok_steps = (
-                "gzkit.commands.quality.run_lint",
-                "gzkit.quality.run_format_check",
-                "gzkit.commands.quality.run_typecheck",
-                "gzkit.commands.quality.run_tests",
-                "gzkit.commands.quality.run_behave",
-                "gzkit.quality.run_parity_check",
-                "gzkit.quality.run_readiness_audit",
-                "gzkit.quality.run_cli_audit",
-                "gzkit.quality.run_unscoped_rules_audit",
-                "gzkit.quality.run_adr_status_fresh_audit",
-                "gzkit.quality.run_adversarial_validation_audit",
-                "gzkit.quality.run_red_parity_audit",
-                "gzkit.quality.run_rendition_freshness_audit",
-                "gzkit.quality.run_rendition_floor_coherence_audit",
-                "gzkit.quality.run_invariant_coherence_audit",
-                "gzkit.quality.run_brief_structure_audit",
-                "gzkit.quality.run_session_green_gate_audit",
-                "gzkit.quality.run_closeout_proof_audit",
-                "gzkit.quality.run_kind_invariance_audit",
-                "gzkit.quality.run_interviews_audit",
-                "gzkit.quality.run_receipt_shape_audit",
-                "gzkit.quality.run_orientation_freshness_audit",
-                "gzkit.quality.run_insights_shape_audit",
-                "gzkit.quality.run_instructions_files_budget_audit",
-                "gzkit.quality.run_agents_md_map_conformance_audit",
-                "gzkit.quality.run_complexity_doctrine_links_audit",
-                "gzkit.quality.run_complexity_thresholds_audit",
-                "gzkit.quality.run_req_kind_discipline_audit",
-                "gzkit.quality.run_tautological_test_audit",
-                "gzkit.quality.run_task_envelope_coherence_audit",
-                "gzkit.quality.run_lock_handoff_coupling_audit",
-                "gzkit.quality.run_qc_binding_audit",
-                "gzkit.quality.run_fidelity_presence_audit",
-                "gzkit.quality.run_waiver_ratchet_audit",
-                "gzkit.quality.run_preflight",
-                "gzkit.quality.run_surface_fidelity_audit",
-                "gzkit.quality.run_line_endings_audit",
-                "gzkit.quality.run_authorship_audit",
-                "gzkit.quality.run_smoke_tier",
-                "gzkit.quality.run_dispatch_attestation_audit",
-                "gzkit.quality.run_enforcement_floor_audit",
-                "gzkit.quality.run_obpi_lifecycle_coherence_audit",
-            )
+            #
+            # Targets are DERIVED from the live step registry, not hand-listed.
+            # The hand-written tuple silently omitted every newly added step, so
+            # the omitted step executed for real against the temp project — two
+            # of them did exactly that (GHI #724/#725), failing this test for a
+            # reason that had nothing to do with skill audits. A list that must
+            # be updated in lockstep with another list, with nothing linking
+            # them, is the same shape as the `GzkitConfig.load` key-list bug.
+            ok_steps = _check_step_patch_targets(exclude={"run_skill_audit"})
             with ExitStack() as stack:
                 for target in ok_steps:
                     stack.enter_context(patch(target, return_value=ok))
