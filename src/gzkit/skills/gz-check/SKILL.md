@@ -5,10 +5,10 @@ description: Run full quality checks in one pass. Use for pre-merge or pre-attes
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-27
 model: haiku
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 ---
 
 # gz check
@@ -25,10 +25,16 @@ Unified quality gate for all code verification. Replaces the individual
 | `uv run gz lint` | Ruff linting + PyMarkdown |
 | `uv run gz format` | Ruff auto-formatting |
 | `uv run gz typecheck` | Static type checks (ty) |
+| `uv run gz smoke` | Smoke/BVT tier — build verification against a 60s budget (GHI #724) |
 | `uv run gz test --obpi OBPI-X.Y.Z-NN` | Tests covering one OBPI's REQs (pipeline Stage 3) |
 | `uv run gz test` | Full unittest suite |
 | `uv run gz test --bdd` | Unit tests + behave (ADR closeout / Heavy-lane) |
 | `uv run gz check` | All of the above in one pass |
+
+`gz smoke` is the cheapest useful signal: it runs only `@smoke`-marked tests and
+fails closed if they exceed the budget in `.gzkit/rules/tests.md`, or if the tier
+is empty. It proves the build *answers*; it never substitutes for `gz test`,
+which proves it is correct.
 
 ## When to Use
 

@@ -13,5 +13,8 @@
   "authorship": {
     "required_email_suffix": "@users.noreply.github.com"
   },
+  "smoke": {
+    "required": true
+  },
   "project_name": "gzkit"
 }

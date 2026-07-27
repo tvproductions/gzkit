@@ -149,6 +149,27 @@ class AuthorshipConfig(BaseModel):
     )
 
 
+class SmokeConfig(BaseModel):
+    """Smoke/BVT tier policy (GHI #724).
+
+    Opt-in for the same reason as :class:`AuthorshipConfig`: a freshly scaffolded
+    project has no `@smoke` tests, and hard-failing `gz check` on an adopter for
+    not yet having a tier gzkit invented is the dogfooding leak open at GHI #607.
+    Projects that want the tier enforced declare `required: true`.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    required: bool = Field(
+        default=False,
+        description=(
+            "When true, an empty smoke tier is a policy breach (exit 3) rather than "
+            "an advisory pass. The time budget is enforced either way once the tier "
+            "has members."
+        ),
+    )
+
+
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -159,6 +180,7 @@ class GzkitConfig(BaseModel):
     vendors: VendorsConfig = Field(default_factory=VendorsConfig)
     arb: ArbConfig = Field(default_factory=ArbConfig)
     authorship: AuthorshipConfig = Field(default_factory=AuthorshipConfig)
+    smoke: SmokeConfig = Field(default_factory=SmokeConfig)
     project_name: str = ""
 
     @classmethod

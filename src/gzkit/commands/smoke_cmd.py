@@ -10,6 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from gzkit.commands.common import console
+from gzkit.config import GzkitConfig
 from gzkit.smoke import SMOKE_BUDGET_SECONDS, run_smoke, smoke_marked_files
 
 _EXIT_OK = 0
@@ -34,8 +35,20 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
     budget = SMOKE_BUDGET_SECONDS if budget is None else budget
 
     if not smoke_marked_files(root):
+        if not GzkitConfig.load(root / ".gzkit.json").smoke.required:
+            console.print(
+                "[yellow]Smoke tier is empty[/yellow] — no test under `tests/` carries "
+                "`@smoke`, and this project has not declared `smoke.required`.\n"
+                "Passing advisory: a freshly scaffolded project has no tier yet, and "
+                "gzkit does not impose one on adopters.\n"
+                "Next step (optional): mark a build-verification test with "
+                '`from gzkit.smoke import smoke`, then set `"smoke": {"required": true}` '
+                "in `.gzkit.json` to make the tier binding."
+            )
+            return _EXIT_OK
         console.print(
-            "[red]Smoke tier is empty[/red] — no test under `tests/` carries `@smoke`.\n"
+            "[red]Smoke tier is empty[/red] — no test under `tests/` carries `@smoke`, "
+            "but this project declares `smoke.required`.\n"
             "An empty tier satisfies any budget trivially, which is the green-by-emptiness "
             "shape `gz validate --qc-binding` refuses (ADR-0.0.74 Boundary Invariant #6).\n"
             "Next step: mark at least one build-verification test with "

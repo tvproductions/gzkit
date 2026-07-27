@@ -8,12 +8,14 @@ rather than a pass, since a subset with no members satisfies any budget.
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
 from gzkit.commands.smoke_cmd import smoke_cmd, smoke_gate
+from gzkit.config import GzkitConfig
 from gzkit.smoke import SMOKE_BUDGET_SECONDS, smoke, smoke_marked_files
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -37,19 +39,39 @@ class MarkerIsMetadataOnly(unittest.TestCase):
         self.assertTrue(getattr(sample, "__gzkit_smoke__", False))
 
 
-class EmptyTierIsABreach(unittest.TestCase):
-    """Green-by-emptiness is the failure a budget gate invites."""
+class EmptyTierIsABreachWhenRequired(unittest.TestCase):
+    """Green-by-emptiness is the failure a budget gate invites — once opted in."""
 
-    def test_empty_tier_exits_policy_breach(self) -> None:
+    def _project(self, root: Path, *, required: bool | None) -> None:
+        (root / "tests").mkdir()
+        if required is not None:
+            (root / ".gzkit.json").write_text(
+                json.dumps({"smoke": {"required": required}}), encoding="utf-8"
+            )
+
+    def test_empty_tier_exits_policy_breach_when_required(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "tests").mkdir()
+            self._project(Path(tmp), required=True)
             self.assertEqual(smoke_gate(Path(tmp)), 3)
 
-    def test_empty_tier_is_not_reported_as_success(self) -> None:
-        """A zero-member run would otherwise finish in 0.00s and 'pass'."""
+    def test_empty_tier_passes_for_a_project_that_never_opted_in(self) -> None:
+        """A freshly scaffolded adopter has no tier yet; `gz check` must not refuse.
+
+        Hard-failing every adopter for lacking a tier gzkit invented is the
+        dogfooding leak open at GHI #607, arriving through a different door.
+        """
         with tempfile.TemporaryDirectory() as tmp:
-            (Path(tmp) / "tests").mkdir()
-            self.assertNotEqual(smoke_gate(Path(tmp)), 0)
+            self._project(Path(tmp), required=None)
+            self.assertEqual(smoke_gate(Path(tmp)), 0)
+
+    def test_explicit_opt_out_also_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            self._project(Path(tmp), required=False)
+            self.assertEqual(smoke_gate(Path(tmp)), 0)
+
+    def test_this_project_has_opted_in(self) -> None:
+        """gzkit's own tier is binding — otherwise its QC control is vacuous."""
+        self.assertTrue(GzkitConfig.load(_PROJECT_ROOT / ".gzkit.json").smoke.required)
 
 
 class BudgetIsEnforced(unittest.TestCase):

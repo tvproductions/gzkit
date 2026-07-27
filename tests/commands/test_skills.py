@@ -393,6 +393,8 @@ class TestSkillCommands(unittest.TestCase):
                 "gzkit.quality.run_preflight",
                 "gzkit.quality.run_surface_fidelity_audit",
                 "gzkit.quality.run_line_endings_audit",
+                "gzkit.quality.run_authorship_audit",
+                "gzkit.quality.run_smoke_tier",
                 "gzkit.quality.run_dispatch_attestation_audit",
                 "gzkit.quality.run_enforcement_floor_audit",
                 "gzkit.quality.run_obpi_lifecycle_coherence_audit",

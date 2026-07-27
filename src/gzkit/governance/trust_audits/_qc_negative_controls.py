@@ -301,6 +301,9 @@ def _build_smoke_tier() -> Path:
     """
     root = _mkroot("smoke-tier")
     _write(root / "tests" / "test_ordinary.py", "def test_nothing():\n    pass\n")
+    # The project must OPT IN, or the empty tier is a passing advisory for
+    # adopters rather than a breach — which would make this control vacuous.
+    _write(root / ".gzkit.json", json.dumps({"smoke": {"required": True}}))
     return root
 
 

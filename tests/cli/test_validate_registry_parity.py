@@ -70,6 +70,9 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "event_handlers",
         "event_schemas",  # GHI #581 — factory/model ↔ schema coupling at the validator tier
         "validator_fields",
+        # GHI #725 — commit-authorship policy; opt-in per project, so it is
+        # explicit-tier rather than default like its sibling surface checks.
+        "authorship",
         "utf8_prefix",
         "line_endings",
         "test_tiers",
