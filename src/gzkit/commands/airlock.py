@@ -5,11 +5,21 @@ Surfaces the airlock-IN three-beat gate (``airlock_enter``) as a CLI verb
 RECONCILE -> decide preflight for a target OBPI against its declared brief and
 reports the decision plus the two-layer seam-map counts.
 
-DIAGNOSTIC-ONLY contract (parent ADR § Consequences Negative #5): the airlock
-tracer is NOT fail-closed at the CLI. A NO-GO prints ``build_refusal`` but the
-verb still EXITS 0 — it reports, it does not hard-block. This mirrors the
-pipeline call site, which was deliberately downgraded from ``SystemExit(3)`` to
-a warning. The only non-zero exit is a user error (unresolvable brief -> 1).
+DIAGNOSTIC-ONLY FOR NOW — a staged posture, NOT the contract. The airlock tracer
+is not fail-closed at the CLI: a NO-GO prints ``build_refusal`` but the verb
+still EXITS 0. This mirrors the pipeline call site, which was deliberately
+downgraded from ``SystemExit(3)`` to a warning. The only non-zero exit is a user
+error (unresolvable brief -> 1).
+
+The reason is calibration, not design: production reach for an OBPI id yields an
+empty seam-map, so a fail-closed gate would be vacuous or arbitrary (parent ADR
+§ Calibration frontier, operator-attested 2026-07-10 — "calibration is a named
+successor increment"). The DECLARED end state blocks: § Boundary Invariant 4,
+"an un-accounted seam makes GO structurally unreachable."
+
+§ Consequences Negative #5 is NOT authority for never blocking — it governs the
+*shape* of a refusal (name the seam, its provenance, a one-command re-sense;
+logged and revocable override) so a NO-GO is never an undiagnosable 2am wall.
 """
 
 from __future__ import annotations

@@ -87,7 +87,10 @@ def _run_mx_airlock_in_diagnostic(
     Mirrors the pipeline door's Stage-1 diagnostic but CALLS the SHARED primitive
     (``gzkit.airlock.enter.airlock_enter``) directly — ``pipeline_runtime`` is out
     of scope for the mx door. Books the ``airlock_in`` L2 encounter; a NO-GO is
-    surfaced as a diagnostic refusal, never a block (parent ADR § Negative #5).
+    surfaced as a diagnostic refusal rather than a block — a STAGED posture per
+    parent ADR § Calibration frontier, not the declared end state (§ BI-4 blocks
+    on an un-accounted seam). § Negative #5 governs refusal legibility, not
+    whether a refusal blocks.
     Real-entry reach is the deferred calibration frontier, so production passes an
     empty reach (the wiring is proven, the meaningful seam-map deferred); tests
     inject a reach to exercise the NO-GO path.

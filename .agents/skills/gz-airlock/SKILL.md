@@ -6,15 +6,16 @@ description: >
   through (ADR-0.33.0). Use to inspect a target's seam-map before touching it
   (`gz airlock in`), account for what a transit disturbed (`gz airlock out`),
   or make a governed ad-hoc reconnaissance entry with light repair at most
-  (`gz permitted-entry`). Diagnostic-only; never writes L1 canon.
+  (`gz permitted-entry`). Diagnostic-only for now — a staged posture, not the
+  declared end state; never writes L1 canon.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-07-28
 model: haiku
 gz_command: airlock
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
 ---
 
 # gz airlock
@@ -107,9 +108,16 @@ previews the membrane WITHOUT booking an L2 transit.
 
 ## Boundaries
 
-- **Diagnostic-only.** Every verb exits 0; a NO-GO or drift is surfaced, never a
-  hard block (the reason/door selects ceremony weight, never whether the gate
-  fires — parent ADR BI-2 / Negative #5).
+- **Diagnostic-only FOR NOW — a staged posture, not the contract.** Every verb
+  exits 0; a NO-GO or drift is surfaced rather than blocking. That is because
+  production reach yields an empty seam-map, so a fail-closed gate would be
+  vacuous (parent ADR § Calibration frontier, operator-attested 2026-07-10;
+  calibration is "a named successor increment"). The declared end state BLOCKS —
+  BI-4, *"an un-accounted seam makes GO structurally unreachable."* Do not read
+  the current posture as the design. § Negative #5 governs the *shape* of a
+  refusal (name the seam, its provenance, a one-command re-sense; logged and
+  revocable override), never whether one blocks; BI-2 governs that the gate
+  always fires, never that it always passes.
 - **Never writes L1 canon.** The exit membrane proposes attested amendments; it
   never mutates an ADR, invariant, or canon file (BI-1).
 - **The gate is acknowledge-and-decide, never completion attestation** (BI-3) —

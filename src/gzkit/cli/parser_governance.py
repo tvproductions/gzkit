@@ -1030,11 +1030,16 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     # gz airlock — operator surface over the airlock-IN membrane (ADR-0.33.0, OBPI-02)
     p_airlock = commands.add_parser(
         "airlock",
-        help="Run the airlock-IN preflight membrane (diagnostic-only tracer)",
+        help="Run the airlock-IN preflight membrane (diagnostic-only for now)",
         description=(
             "Operator surface over the airlock-IN three-beat gate: DECLARE -> PING "
-            "-> RECONCILE -> decide. DIAGNOSTIC-ONLY (parent ADR § Negative #5): a "
-            "NO-GO prints a refusal but still exits 0 — it reports, it never blocks."
+            "-> RECONCILE -> decide. Diagnostic-only FOR NOW: a NO-GO prints a "
+            "refusal but still exits 0. That is a staged posture, not the contract "
+            "— production reach yields an empty seam-map, so a fail-closed gate "
+            "would be vacuous (ADR-0.33.0 § Calibration frontier, operator-attested "
+            "2026-07-10; calibration is a named successor increment). The declared "
+            "end state BLOCKS: § Boundary Invariant 4, an un-accounted seam makes "
+            "GO structurally unreachable."
         ),
         epilog=build_epilog(["gz airlock in --target OBPI-0.33.0-01 --phase build --dry-run"]),
     )

@@ -494,8 +494,10 @@ def _run_airlock_out_diagnostic(
 
     Co-equal with the Stage-1 airlock-IN diagnostic seam: accounts for what the
     completed transit disturbed by running the drift-diff and booking the
-    ``airlock_out`` L2 encounter. A surfaced finding logs as a warning; it NEVER
-    blocks the exit (parent ADR § Negative #5) and the airlock NEVER writes L1
+    ``airlock_out`` L2 encounter. A surfaced finding logs as a warning rather
+    than blocking the exit — a STAGED posture per parent ADR § Calibration
+    frontier, not the declared end state; § Negative #5 governs refusal
+    legibility, not whether a refusal blocks. The airlock NEVER writes L1
     canon (§ Boundary Invariants #1). No-op when the brief cannot be resolved.
     ``reach_fn`` defaults to the airlock's own ontology-backed reach; tests inject
     a fake so the seam is exercisable with no projection built (hexagonal rule 6).

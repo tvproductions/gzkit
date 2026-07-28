@@ -307,6 +307,14 @@
       "path": ".gzkit/chores/session-correction-mining",
       "lane": "lite",
       "timeoutSeconds": 300
+    },
+    {
+      "slug": "test-consolidation-subtest-sweep",
+      "title": "Test Consolidation \u2014 subTest Sweep & Slow-Tier Quarantine (GHI #644)",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/test-consolidation-subtest-sweep",
+      "lane": "lite",
+      "timeoutSeconds": 900
     }
   ]
 }

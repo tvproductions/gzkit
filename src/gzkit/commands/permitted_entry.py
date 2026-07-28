@@ -237,7 +237,9 @@ def permitted_entry_cmd(
     declare_id, brief_path, tmp_root = _resolve_declare(target, repair, root)
     try:
         # airlock-IN ALWAYS fires — the gate crosses on EVERY entry (BI-2, REQ-01).
-        # DIAGNOSTIC-ONLY: a NO-GO is surfaced, never a block (parent ADR § Negative #5).
+        # Diagnostic-only FOR NOW: a NO-GO is surfaced rather than blocking — a staged
+        # posture per parent ADR § Calibration frontier, not the declared end state
+        # (BI-4 blocks). § Negative #5 governs refusal legibility, not blocking.
         preflight = airlock_enter(declare_id, brief_path, reach_fn=reach, ledger=ledger)
         try:
             # Operator-controlled text (target via declare_id, repair) is ESCAPED before
