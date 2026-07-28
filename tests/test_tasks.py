@@ -403,7 +403,6 @@ class TestTaskBlockedEvent(unittest.TestCase):
     @covers("REQ-0.22.0-02-03")
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-05")
     def test_serialize_includes_reason(self) -> None:
         """REQ-0.22.0-02-02: task_blocked includes reason field."""
         evt = _blocked(reason="Missing dependency")
@@ -420,7 +419,6 @@ class TestTaskBlockedEvent(unittest.TestCase):
     @covers("REQ-0.22.0-02-03")
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-05")
     def test_reason_required(self) -> None:
         """REQ-0.22.0-02-04: task_blocked requires reason field."""
         from pydantic import ValidationError
@@ -440,10 +438,17 @@ class TestTaskBlockedEvent(unittest.TestCase):
 
 
 class TestTaskEscalatedEvent(unittest.TestCase):
-    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03, REQ-0.22.0-02-05."""
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03.
+
+    The `task_escalated` reason / `escalated_to` field assertions below are
+    uncited: OBPI-0.22.0-02 declares REQ-01 through REQ-04 and none of them
+    names the escalation event's own fields. The prior `REQ-0.22.0-02-05`
+    citation resolved to nothing (GHI #729). The gap is in the brief, not the
+    test — recorded on #729 rather than patched by inventing a REQ.
+    """
 
     def test_serialize_includes_reason(self) -> None:
-        """REQ-0.22.0-02-05: task_escalated has reason and escalated_to."""
+        """task_escalated carries reason and escalated_to."""
         evt = _escalated(reason="Needs human decision", escalated_to="jeff")
         data = json.loads(evt.model_dump_json())
         self.assertEqual(data["event"], "task_escalated")
@@ -452,9 +457,8 @@ class TestTaskEscalatedEvent(unittest.TestCase):
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-05")
     def test_escalated_to_optional(self) -> None:
-        """REQ-0.22.0-02-05: escalated_to is optional."""
+        """escalated_to is optional."""
         evt = _escalated(reason="Complex issue")
         data = json.loads(evt.model_dump_json())
         self.assertEqual(data["event"], "task_escalated")
@@ -469,7 +473,6 @@ class TestTaskEscalatedEvent(unittest.TestCase):
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-05")
     def test_discriminated_union_parses_task_escalated(self) -> None:
         """REQ-0.22.0-02-03: parse_typed_event resolves task_escalated."""
         evt = _escalated(reason="Over complexity budget")
@@ -479,11 +482,10 @@ class TestTaskEscalatedEvent(unittest.TestCase):
 
 
 class TestAllFourEventTypes(unittest.TestCase):
-    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03, REQ-0.22.0-02-06."""
+    """@covers REQ-0.22.0-02-01, REQ-0.22.0-02-03."""
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-06")
     def test_four_event_types_defined(self) -> None:
         """REQ-0.22.0-02-01: Exactly four TASK event types exist."""
         event_types = {
@@ -501,7 +503,6 @@ class TestAllFourEventTypes(unittest.TestCase):
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-06")
     def test_all_four_roundtrip_via_discriminated_union(self) -> None:
         """REQ-0.22.0-02-03: All four roundtrip via discriminated union."""
         events = [
@@ -523,9 +524,8 @@ class TestAllFourEventTypes(unittest.TestCase):
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
-    @covers("REQ-0.22.0-02-06")
     def test_all_events_have_common_fields(self) -> None:
-        """REQ-0.22.0-02-06: All events follow existing event model patterns."""
+        """All events follow existing event model patterns."""
         events = [
             _started(),
             _completed(),
@@ -1076,21 +1076,25 @@ class TestTaskStart(_TaskCliBase):
 
 
 class TestTaskComplete(_TaskCliBase):
-    """@covers REQ-0.22.0-04-04, REQ-0.22.0-04-08."""
+    """@covers REQ-0.22.0-04-03.
 
-    @covers("REQ-0.22.0-04-04")
-    @covers("REQ-0.22.0-04-08")
+    `REQ-0.22.0-04-08` was cited here and never existed — OBPI-0.22.0-04
+    declares REQ-01 through REQ-07 (GHI #729). The failure-path test repoints
+    to REQ-04-03, which names exactly it: *"Given `gz task complete` on a
+    pending task, then exit code 1 with error."* The success-path test keeps no
+    citation: the brief has no positive-path `gz task complete` criterion.
+    """
+
     def test_complete_in_progress(self) -> None:
-        """REQ-0.22.0-04-04: gz task complete transitions in_progress -> completed."""
+        """gz task complete transitions in_progress -> completed."""
         self._seed_task_started()
         code, out = _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
         self.assertEqual(code, 0, out)
         self.assertIn("Completed", out)
 
-    @covers("REQ-0.22.0-04-04")
-    @covers("REQ-0.22.0-04-08")
+    @covers("REQ-0.22.0-04-03")
     def test_complete_pending_fails(self) -> None:
-        """REQ-0.22.0-04-08: gz task complete on pending task fails with exit 1."""
+        """gz task complete on a pending task fails with exit 1."""
         code, out = _invoke(["task", "complete", "TASK-0.1.0-01-01-01"])
         self.assertNotEqual(code, 0)
         self.assertIn("Invalid TASK transition", out)

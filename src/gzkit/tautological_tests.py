@@ -199,6 +199,43 @@ def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
     return False
 
 
+# Surface roots holding executables gzkit SHIPS AND RUNS that are not Python.
+# A shell hook here is production code: gzkit installs it into a git hook chain
+# and executes it. Kept as an explicit tuple rather than read from
+# `.gzkit/manifest.json` because this surface is not registered there (the
+# `control_surfaces` map expects vendor-mirror targets, and `check-config-paths`
+# rejects the key) — pinned instead by
+# tests/governance/test_shipped_executable_fence.py.
+_SHIPPED_EXECUTABLE_ROOTS: tuple[str, ...] = (".gzkit/hooks/",)
+
+
+def _asserts_shipped_executable(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return True if the function fences an executable gzkit ships and runs.
+
+    The sibling fence :func:`_reads_project_source` keys on Python-ness —
+    ``ast.parse`` or a ``*.py`` glob — so it recognises a structural invariant
+    asserted over Python production code and misses the identical assertion over
+    a shipped *shell* artifact. Both are production code; only one was exempt,
+    so hook-integrity fences (shebang, git mode, absence of operator PII) were
+    scored as doc-content echoes (GHI #730).
+
+    Applying `.claude/rules/tests.md` § The discriminator — *if the production
+    code's behavior changed but its text did not, would this test fail?* — a
+    hook whose shebang or exec bit changes stops running. The text IS the
+    behavior for an executable artifact, so these assertions are behavioral.
+
+    Deliberately narrow, matching the sibling's stated posture: only a literal
+    path under a shipped-executable root counts, so a test that merely reads a
+    governance doc is never laundered.
+    """
+    for child in ast.walk(node):
+        if not (isinstance(child, ast.Constant) and isinstance(child.value, str)):
+            continue
+        if any(child.value.startswith(root) for root in _SHIPPED_EXECUTABLE_ROOTS):
+            return True
+    return False
+
+
 def _module_backed_self_attrs(tree: ast.Module) -> frozenset[str]:
     """Collect ``self.<attr>`` names a fixture binds to a dynamically-loaded module.
 
@@ -316,7 +353,11 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
             # Static-analysis fences (reading source code as data) and behavioral
             # tests that call a dynamically-loaded project module via a self-attr
             # are not tautological echoes — exempt them (GHI #632).
-            if _reads_project_source(node) or _calls_self_module(node, module_attrs):
+            if (
+                _reads_project_source(node)
+                or _asserts_shipped_executable(node)
+                or _calls_self_module(node, module_attrs)
+            ):
                 continue
             context = _extract_context_hint(node)
             results.append(

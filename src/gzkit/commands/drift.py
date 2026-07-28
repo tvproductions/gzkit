@@ -26,6 +26,8 @@ from gzkit.triangle import (
     scan_briefs,
 )
 
+_FIXTURES_DIR_NAME = "fixtures"
+
 
 def scan_covers_references(test_dir: Path) -> list[LinkageRecord]:
     """Scan Python test files for @covers REQ references.
@@ -37,6 +39,11 @@ def scan_covers_references(test_dir: Path) -> list[LinkageRecord]:
     linkages: list[LinkageRecord] = []
 
     for py_file in sorted(test_dir.rglob("*.py")):
+        # `tests/fixtures/` holds sample trees that scanners are pointed AT.
+        # A @covers inside one is fixture data, not this suite citing a REQ,
+        # so counting it produces a permanent phantom orphan (GHI #729).
+        if _FIXTURES_DIR_NAME in py_file.relative_to(test_dir).parts:
+            continue
         content = py_file.read_text(encoding="utf-8")
         for req_id, line_num in find_covers_in_source(content):
             linkages.append(

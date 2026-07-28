@@ -130,7 +130,9 @@ class TestCloseoutProofExitCodes(unittest.TestCase):
             "OBPI-0.0.99-01-test",
             ["REQ-0.0.99-01-01 [BEHAVIOR]: system does X"],
         )
-        # No test file with @covers("REQ-0.0.99-01-01") — unproven.
+        # No test file cites this REQ, so it is unproven. Phrased without the
+        # decorator spelling on purpose: the covers scanner honors comment form,
+        # so a comment naming the decorator reads as a citation (GHI #729).
 
         errors = validate_closeout_proof(self.root)
 

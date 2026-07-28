@@ -3,16 +3,19 @@
 Covers REQ-0.0.22-02-01 (registry validates against schema), REQ-0.0.22-02-02
 (all nine canonical categories present, each with at least one glob),
 REQ-0.0.22-02-05 (match_globs returns category labels for intersecting globs),
-REQ-0.0.22-02-06 (governance contract documented in sibling README citing
-parent ADR), REQ-0.0.22-02-07 (bootstrap exception narrative present in README),
-REQ-0.0.22-02-08 (scope discipline — no out-of-scope artifacts authored).
+and REQ-0.0.22-02-06 (governance contract documented in sibling README citing
+parent ADR, including the one-time bootstrap exception).
+
+The brief declares REQ-01 through REQ-06 only. Citations to `REQ-0.0.22-02-07`
+(bootstrap-exception narrative) and `-02-08` (scope discipline) were removed
+under GHI #729: neither was ever declared, so they resolved to nothing and
+reported as orphan drift. The bootstrap-exception assertion belongs to REQ-06,
+which names it; scope discipline is a boundary property with no REQ here.
 
 @covers REQ-0.0.22-02-01
 @covers REQ-0.0.22-02-02
 @covers REQ-0.0.22-02-05
 @covers REQ-0.0.22-02-06
-@covers REQ-0.0.22-02-07
-@covers REQ-0.0.22-02-08
 """
 
 from __future__ import annotations
@@ -95,7 +98,7 @@ class TestSchemaIntegrity(unittest.TestCase):
 
 
 class TestRegistryContents(unittest.TestCase):
-    """REQ-0.0.22-02-01 (file half), REQ-0.0.22-02-02, REQ-0.0.22-02-06, REQ-0.0.22-02-07."""
+    """REQ-0.0.22-02-01 (file half), REQ-0.0.22-02-02, REQ-0.0.22-02-06."""
 
     def test_registry_file_exists(self) -> None:
         self.assertTrue(REGISTRY_PATH.is_file(), f"missing {REGISTRY_PATH}")
@@ -203,7 +206,13 @@ class TestMatchGlobs(unittest.TestCase):
 
 
 class TestScopeDiscipline(unittest.TestCase):
-    """REQ-0.0.22-02-08: this OBPI does NOT author cross-OBPI surfaces."""
+    """This OBPI does NOT author cross-OBPI surfaces.
+
+    A boundary property, not a declared REQ — the brief stops at REQ-06. It
+    previously cited `REQ-0.0.22-02-08`, which never existed (GHI #729). Under
+    ADR-0.0.59 this shape is STRUCTURAL-FENCE, proven by the parent ADR's
+    `## Boundary Invariants`, so no `@covers` citation is appropriate here.
+    """
 
     def test_validate_sensitivity_scope_not_authored(self) -> None:
         # OBPI-03's responsibility, not this OBPI's.

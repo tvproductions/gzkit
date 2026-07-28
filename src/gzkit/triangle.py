@@ -89,6 +89,10 @@ class ReqEntity(BaseModel):
         None,
         description="ADR-0.0.59 taxonomy kind (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) from inline tag",
     )
+    brief_status: str | None = Field(
+        None,
+        description="Owning brief's frontmatter status; None when absent or unreadable",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -188,13 +192,19 @@ def _req_sort_key(req_id: ReqId) -> tuple[tuple[int, ...], int, int]:
     return (semver_parts, int(req_id.obpi_item), int(req_id.criterion_index))
 
 
-def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
+def extract_reqs_from_brief(
+    content: str, parent_obpi: str, brief_status: str | None = None
+) -> list[ReqEntity]:
     """Extract REQ entities from the Acceptance Criteria section of an OBPI brief.
 
     Parses checkbox state and description from lines like::
 
         - [ ] REQ-0.15.0-03-01: Some criterion
         - [x] REQ-0.15.0-03-01: Completed criterion
+
+    ``brief_status`` stamps each REQ with its owning brief's lifecycle state so
+    downstream scoping (see :func:`covers_channel_reqs`) does not need a second
+    lookup. Optional: callers parsing a lone brief body may not have it.
 
     Malformed REQ lines are logged as warnings and skipped.
     Results are sorted by REQ identifier (semantic version ordering).
@@ -240,6 +250,7 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
                 parent_obpi=parent_obpi,
                 kind=kind,
                 taxonomy_kind=taxonomy_kind,
+                brief_status=brief_status,
             )
         )
 
@@ -247,9 +258,10 @@ def extract_reqs_from_brief(content: str, parent_obpi: str) -> list[ReqEntity]:
     return reqs
 
 
-def _parse_frontmatter_id(content: str) -> str | None:
-    """Extract the ``id`` field from YAML frontmatter."""
+def _parse_frontmatter_field(content: str, field: str) -> str | None:
+    """Extract a top-level scalar ``field`` from YAML frontmatter."""
     in_fm = False
+    pattern = re.compile(rf"^{re.escape(field)}:\s*(.+)$")
     for line in content.splitlines():
         if line.strip() == "---":
             if not in_fm:
@@ -257,10 +269,15 @@ def _parse_frontmatter_id(content: str) -> str | None:
                 continue
             break
         if in_fm:
-            m = re.match(r"^id:\s*(.+)$", line)
+            m = pattern.match(line)
             if m:
                 return m.group(1).strip()
     return None
+
+
+def _parse_frontmatter_id(content: str) -> str | None:
+    """Extract the ``id`` field from YAML frontmatter."""
+    return _parse_frontmatter_field(content, "id")
 
 
 def _extract_obpi_short_id(frontmatter_id: str) -> str | None:
@@ -285,17 +302,98 @@ def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
             continue
 
         parent_obpi = _extract_obpi_short_id(fm_id) or fm_id
+        brief_status = _parse_frontmatter_field(content, "status")
 
-        for req in extract_reqs_from_brief(content, parent_obpi):
+        for req in extract_reqs_from_brief(content, parent_obpi, brief_status):
             discovered.append(DiscoveredReq(entity=req, source_path=str(md_file)))
 
     discovered.sort(key=lambda d: _req_sort_key(d.entity.id))
     return discovered
 
 
+# Kinds whose proof channel is NOT a `@covers` test (ADR-0.0.59). SUPPORT proves
+# via a path-citing ledger event plus its structural validator; STRUCTURAL-FENCE
+# proves via the parent ADR's `## Boundary Invariants` entry. Counting either as
+# "a REQ with no test" reports the taxonomy working as designed as drift.
+_NON_COVERS_TAXONOMY_KINDS: frozenset[str] = frozenset({"SUPPORT", "STRUCTURAL-FENCE"})
+
+# Briefs whose work is RETIRED, which is narrower than sealed. `Completed`,
+# `attested_completed`, and `Validated` are terminal but their REQs were
+# attested as covered -- a covering test disappearing afterwards is genuine
+# regression drift and must still report. Only these four owe nothing further,
+# so `is_terminal_brief_status` is deliberately NOT the predicate here.
+# Membership is pinned against BRIEF_TERMINAL_STATUSES by
+# tests/governance/test_drift_proof_channel_scope.py so an upstream rename
+# fails loudly instead of silently un-scoping a status.
+_RETIRED_BRIEF_STATUSES: frozenset[str] = frozenset(
+    {"Abandoned", "Withdrawn", "Superseded", "archived"}
+)
+
+_RETIRED_BRIEF_STATUSES_FOLDED: frozenset[str] = frozenset(
+    status.casefold() for status in _RETIRED_BRIEF_STATUSES
+)
+
+
+def _is_retired_brief_status(status: str) -> bool:
+    """Return True when a brief's work will never be delivered."""
+    return status.strip().strip('"').strip("'").casefold() in _RETIRED_BRIEF_STATUSES_FOLDED
+
+
+def covers_channel_reqs(reqs: list[ReqEntity]) -> list[ReqEntity]:
+    """Return the REQs a `@covers` test is the right proof for (GHI #729).
+
+    Drift's unlinked-spec set answers "which REQ still owes a covering test",
+    so a REQ only belongs in it when a test is what would discharge it. Three
+    exclusions, each reading a fact already on the record:
+
+    * `taxonomy_kind` in SUPPORT / STRUCTURAL-FENCE — proven through another
+      channel entirely (`.claude/rules/tests.md` § Proof-channel matrix).
+    * `kind` is `ReqKind.DOC` — the legacy axis for non-testable REQs.
+    * the owning brief is RETIRED — `Abandoned` / `Withdrawn` / `Superseded` /
+      `archived`. Note this is narrower than sealed: a `Completed` brief still
+      owes its coverage, so losing a test there is regression drift worth
+      reporting.
+
+    An UNTAGGED REQ stays in scope. Most of the corpus predates ADR-0.0.59, and
+    a missing tag is unknown kind, never an exemption — inferring one would let
+    the largest segment silently exempt itself.
+
+    This scopes the UNLINKED arm of drift only. Orphan detection must still see
+    every declared REQ, or a test legitimately citing a SUPPORT REQ reads as a
+    phantom orphan — which is why :func:`detect_drift` applies this internally
+    rather than callers pre-filtering what they hand it.
+    """
+    in_scope: list[ReqEntity] = []
+    for entity in reqs:
+        if entity.kind is ReqKind.DOC:
+            continue
+        taxonomy_kind = entity.taxonomy_kind
+        if taxonomy_kind and taxonomy_kind.upper() in _NON_COVERS_TAXONOMY_KINDS:
+            continue
+        if entity.brief_status and _is_retired_brief_status(entity.brief_status):
+            continue
+        in_scope.append(entity)
+    return in_scope
+
+
 # ---------------------------------------------------------------------------
 # Drift detection engine (OBPI-0.20.0-03)
 # ---------------------------------------------------------------------------
+
+
+# The corpus's reserved "this REQ does not exist" sentinel. Tests that prove
+# @covers REJECTS an unknown REQ must cite an unknown REQ, so the citation is
+# the fixture, not a stale pointer. Used across test_traceability,
+# test_advances_decorator, test_ontology_source, and test_req_coverage.
+_RESERVED_FIXTURE_SEMVER = "9.9.9"
+
+
+def _is_reserved_fixture_req(req_id_str: str) -> bool:
+    """Return True for the reserved negative-control REQ namespace."""
+    try:
+        return ReqId.parse(req_id_str).semver == _RESERVED_FIXTURE_SEMVER
+    except ValueError:
+        return False
 
 
 def _req_id_sort_key(req_id_str: str) -> tuple[tuple[int, ...], int, int]:
@@ -349,6 +447,10 @@ class SourceSubgraphView(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     known_req_ids: frozenset[str] = Field(..., description="REQ ids declared in briefs")
+    covers_channel_req_ids: frozenset[str] = Field(
+        frozenset(),
+        description="Known REQs a @covers test is the right proof for (GHI #729)",
+    )
     covered_req_ids: frozenset[str] = Field(..., description="Known REQs with a COVERS edge")
     test_target_req_ids: frozenset[str] = Field(..., description="All COVERS-edge target REQ ids")
     justified_code_ids: frozenset[str] = Field(..., description="Code ids with a JUSTIFIES edge")
@@ -359,6 +461,7 @@ def _project_source_subgraph(
 ) -> SourceSubgraphView:
     """Project reqs + linkage records into the typed source-subgraph view."""
     known_req_ids = {str(req.id) for req in reqs}
+    covers_channel_ids = {str(req.id) for req in covers_channel_reqs(reqs)}
 
     covered_req_ids: set[str] = set()
     test_target_req_ids: set[str] = set()
@@ -374,6 +477,7 @@ def _project_source_subgraph(
 
     return SourceSubgraphView(
         known_req_ids=frozenset(known_req_ids),
+        covers_channel_req_ids=frozenset(covers_channel_ids),
         covered_req_ids=frozenset(covered_req_ids),
         test_target_req_ids=frozenset(test_target_req_ids),
         justified_code_ids=frozenset(justified_code_ids),
@@ -396,8 +500,15 @@ def detect_drift(
     """
     view = _project_source_subgraph(reqs, linkage_records)
 
-    unlinked = sorted(view.known_req_ids - view.covered_req_ids, key=_req_id_sort_key)
-    orphans = sorted(view.test_target_req_ids - view.known_req_ids, key=_req_id_sort_key)
+    unlinked = sorted(view.covers_channel_req_ids - view.covered_req_ids, key=_req_id_sort_key)
+    orphans = sorted(
+        (
+            req_id
+            for req_id in view.test_target_req_ids - view.known_req_ids
+            if not _is_reserved_fixture_req(req_id)
+        ),
+        key=_req_id_sort_key,
+    )
     unjustified = sorted(
         v.identifier for v in changed_code_vertices if v.identifier not in view.justified_code_ids
     )

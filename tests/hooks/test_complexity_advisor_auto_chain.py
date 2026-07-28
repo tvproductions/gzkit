@@ -270,19 +270,32 @@ class TestInstaller(unittest.TestCase):
 
 
 class TestShellHookContract(unittest.TestCase):
-    """Tests for the shell hook script contract."""
+    """Tests for the shell hook script contract.
 
-    @covers("REQ-0.0.29-05-10")
+    Uncited by design (GHI #729). These previously cited `REQ-0.0.29-05-10` /
+    `-05-12`, numbers from a draft the landed brief never carried — it declares
+    REQ-01 through REQ-07 — so the citations resolved to nothing and reported as
+    orphan drift. Removed rather than repointed: no REQ in the brief names the
+    hook artifact's integrity.
+
+    They remain unit tests, not SUPPORT-channel checks. The hook is a shell
+    script gzkit installs into a git hook chain and executes, so a wrong shebang
+    or a cleared exec bit means it silently stops running — the text IS the
+    behavior for an executable artifact. That makes these structural fences over
+    production code, the same class `_reads_project_source` already exempts for
+    Python; `_asserts_shipped_executable` extends it to shipped non-Python
+    executables (GHI #730).
+    """
+
     def test_hook_is_posix_shell(self) -> None:
-        """Hook script starts with #!/bin/sh (REQ-10)."""
+        """Hook script starts with #!/bin/sh."""
         hook_path = Path(".gzkit/hooks/pre-commit-complexity-advisor")
         self.assertTrue(hook_path.exists(), f"Hook not found at {hook_path}")
         first_line = hook_path.read_text(encoding="utf-8").splitlines()[0]
         self.assertEqual(first_line, "#!/bin/sh")
 
-    @covers("REQ-0.0.29-05-10")
     def test_hook_is_executable(self) -> None:
-        """Hook script has executable permission (REQ-10).
+        """Hook script has executable permission.
 
         On Windows the POSIX execute bit is not surfaced in `os.stat`, but git
         preserves the canonical mode (100755) in the index, which is the
@@ -304,9 +317,8 @@ class TestShellHookContract(unittest.TestCase):
             f"Hook git mode {stored_mode!r} != '100755' (not executable in tree)",
         )
 
-    @covers("REQ-0.0.29-05-12")
     def test_no_operator_email_in_artifacts(self) -> None:
-        """No personal email in hook or installer files (REQ-12)."""
+        """No personal email in hook or installer files."""
         paths = [
             Path(".gzkit/hooks/pre-commit-complexity-advisor"),
             Path("src/gzkit/hooks/install_complexity_advisor.py"),

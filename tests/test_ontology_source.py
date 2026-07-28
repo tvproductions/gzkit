@@ -264,7 +264,10 @@ class TestDetectDriftSubgraphView(unittest.TestCase):
             ),
             LinkageRecord(
                 source=VertexRef(vertex_type=VertexType.TEST, identifier="t_orphan"),
-                target=VertexRef(vertex_type=VertexType.SPEC, identifier="REQ-9.9.9-99-99"),
+                # A plain undeclared REQ, deliberately NOT the reserved
+                # `REQ-9.9.9-*` sentinel: that namespace is excluded from orphan
+                # reporting (GHI #729), so using it here would assert nothing.
+                target=VertexRef(vertex_type=VertexType.SPEC, identifier="REQ-0.32.0-07-99"),
                 edge_type=EdgeType.COVERS,
             ),
         ]
@@ -278,7 +281,7 @@ class TestDetectDriftSubgraphView(unittest.TestCase):
 
         expected = DriftReport(
             unlinked_specs=[],
-            orphan_tests=["REQ-9.9.9-99-99"],
+            orphan_tests=["REQ-0.32.0-07-99"],
             unjustified_code_changes=["foo"],
             summary=DriftSummary(
                 unlinked_spec_count=0,
