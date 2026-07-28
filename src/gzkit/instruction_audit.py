@@ -254,6 +254,21 @@ def audit_code_contract_mismatches(project_root: Path) -> list[ValidationError]:
     v1: Checks whether a Pydantic-only models policy is contradicted by
     dataclass usage in source files.
 
+    Scoped to gzkit's own package (GHI #607). STDLIB-FIRST is gzkit's
+    principle and gzkit's *constraint* -- not an adopter's. This audit used to
+    read the whole of ``project_root/src``, so `gz init` scaffolding
+    ``models.md`` into an adopter's rules turned gzkit's internal
+    data-modelling taste into a fail-closed gate on that project's own value
+    objects. Narrowing the root to ``src/gzkit`` makes the audit structurally
+    inert outside this repo: an adopter has no such directory, so the check
+    cannot fire on them at all.
+
+    Attested REQ-0.14.0-04-04 asserts the detection capability and is silent on
+    scope, so scoping preserves it -- gzkit's own tree is still audited exactly
+    as before. Compare :func:`gzkit.governance.trust_audits.models
+    .audit_pydantic_models`, which enforces the same rule and has always used
+    this root.
+
     Args:
         project_root: Project root directory.
 
@@ -277,9 +292,10 @@ def audit_code_contract_mismatches(project_root: Path) -> list[ValidationError]:
     if "Pydantic" not in body and "BaseModel" not in body:
         return errors
 
-    # Scan source files for dataclass usage
-    src_dir = project_root / "src"
-    if not src_dir.exists():
+    # Scan gzkit's OWN source for dataclass usage. Not `project_root/"src"` --
+    # that read an adopter's entire tree (GHI #607).
+    src_dir = project_root / "src" / "gzkit"
+    if not src_dir.is_dir():
         return errors
 
     dataclass_pattern = re.compile(r"^\s*(?:from dataclasses import |@dataclass)", re.MULTILINE)

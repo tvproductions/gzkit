@@ -356,8 +356,9 @@ class TestCodeContract(unittest.TestCase):
                 _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only."),
                 encoding="utf-8",
             )
-            src = root / "src"
-            src.mkdir()
+            # gzkit's OWN package root — the only tree this audit may read.
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
             (src / "models.py").write_text(
                 "from pydantic import BaseModel\n\nclass Foo(BaseModel):\n    pass\n",
                 encoding="utf-8",
@@ -376,8 +377,10 @@ class TestCodeContract(unittest.TestCase):
                 _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only."),
                 encoding="utf-8",
             )
-            src = root / "src"
-            src.mkdir()
+            # Inside gzkit's own package, the detection REQ-0.14.0-04-04
+            # attests to must still fire.
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
             (src / "bad_model.py").write_text(
                 "from dataclasses import dataclass\n\n@dataclass\nclass Bar:\n    x: int\n",
                 encoding="utf-8",
@@ -388,6 +391,38 @@ class TestCodeContract(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("dataclasses", errors[0].message)
             self.assertIn("bad_model.py", errors[0].message)
+
+    def test_adopter_tree_without_gzkit_package_is_noop(self) -> None:
+        """An adopter's own `src/` is not gzkit's constraint to enforce (GHI #607).
+
+        STDLIB-FIRST is gzkit's principle and gzkit's constraint. `gz init`
+        scaffolds `models.md` into an adopter's rules, sync renders it to
+        `.github/instructions/models.instructions.md`, and this audit then read
+        the adopter's ENTIRE `src/` tree -- so a project that took gzkit for the
+        governance process had its pre-existing value objects fail `gz validate`.
+
+        The scope predicate keeps the attested REQ-0.14.0-04-04 detection
+        capability (the REQ is silent on scope) while making the audit
+        structurally inert outside gzkit's own package.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "models.instructions.md").write_text(
+                _instruction_file("**/*", "# Models\nUse Pydantic BaseModel only."),
+                encoding="utf-8",
+            )
+            adopter_pkg = root / "src" / "their_app"
+            adopter_pkg.mkdir(parents=True)
+            (adopter_pkg / "value_objects.py").write_text(
+                "from dataclasses import dataclass\n\n@dataclass\nclass Money:\n    cents: int\n",
+                encoding="utf-8",
+            )
+
+            errors = audit_code_contract_mismatches(root)
+
+            self.assertEqual(errors, [])
 
     def test_missing_models_instruction_skips(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
