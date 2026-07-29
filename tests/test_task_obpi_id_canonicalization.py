@@ -257,5 +257,82 @@ class TestCutoverToleranceRatchet(unittest.TestCase):
             )
 
 
+class TestSigCComparisonSurface(unittest.TestCase):
+    """Signature (c)'s comparison surface is declared, pinned, and falsifiable."""
+
+    _REPO = Path(__file__).resolve().parents[1]
+
+    # Shrink-only. OBPIs whose channel disagreement is sealed in append-only
+    # history: their commits declared one TASK while the ledger recorded 4-6,
+    # and a commit cannot gain a trailer retroactively.
+    _EXPECTED_GRANDFATHER: frozenset[str] = frozenset({"OBPI-0.0.41-03", "OBPI-0.0.63-01"})
+
+    @covers("REQ-0.34.0-03-01")
+    def test_grandfather_set_is_shrink_only(self) -> None:
+        """No OBPI may be added to the Signature (c) grandfather.
+
+        A new channel disagreement means an author under-declared `Task:`
+        trailers on a commit they can still amend, or the pipeline minted TASKs
+        it never attributed. Both are fixable at the source, so growing this
+        list would convert a real finding into a permanent exemption.
+        """
+        from gzkit.commands.validate_task_envelope import _SIG_C_DRIFT_GRANDFATHER
+
+        self.assertEqual(
+            set(_SIG_C_DRIFT_GRANDFATHER) - self._EXPECTED_GRANDFATHER,
+            set(),
+            "Signature (c) grandfather grew — fix the TASK attribution instead",
+        )
+
+    @covers("REQ-0.34.0-03-01")
+    def test_comparison_coverage_does_not_silently_regress(self) -> None:
+        """The gate must keep comparing at least as many OBPIs as it does today.
+
+        Measured 2026-07-29: 6 compared of 669. That is LOW by design limit, not
+        by accident — `@advances` and brief-frontmatter `tasks:` are unpopulated
+        repo-wide (0 keys each), so only ledger x commit_trailer can ever pair,
+        and just 12 OBPIs carry OBPI-scoped `Task:` trailers.
+
+        Pinned so the number cannot drift toward zero unnoticed. A gate that
+        stops comparing looks exactly like a gate finding nothing (GHI #731).
+        """
+        from gzkit.commands.validate_task_envelope import _sig_c_comparison_coverage
+
+        compared, total = _sig_c_comparison_coverage(self._REPO)
+
+        self.assertGreaterEqual(
+            compared,
+            6,
+            f"Signature (c) now compares {compared} of {total} OBPIs, down from "
+            "the 6 pinned on 2026-07-29 — the gate is going inert",
+        )
+
+    @covers("REQ-0.34.0-03-01")
+    def test_unpopulated_channels_are_named_not_assumed(self) -> None:
+        """The two dead channels are asserted dead, so reviving one is visible.
+
+        `_sig_c_layer_drift` is documented as comparing FOUR channels while two
+        produce no keys at all. Asserting the emptiness makes the shortfall a
+        recorded fact rather than a silent one — and this test flips the moment
+        either channel starts carrying data, which is the signal that the gate's
+        real coverage changed.
+        """
+        from gzkit.commands.validate_task_envelope import (
+            _advances_channel_map,
+            _collect_obpi_brief_frontmatter,
+            _frontmatter_channel_map,
+        )
+
+        advances = _advances_channel_map()
+        frontmatter = _frontmatter_channel_map(_collect_obpi_brief_frontmatter(self._REPO))
+
+        self.assertEqual(
+            (len(advances), len(frontmatter)),
+            (0, 0),
+            "an @advances or brief `tasks:` channel is now populated — Signature "
+            "(c)'s coverage floor and GHI #731's measurements must be re-derived",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

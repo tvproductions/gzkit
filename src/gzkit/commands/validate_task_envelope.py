@@ -78,6 +78,18 @@ _OBPI_ID_DIVERGENCE_GRANDFATHER: frozenset[str] = frozenset(
     {"TASK-0.0.69-03-05-01", "TASK-0.0.74-20-01-01"}
 )
 
+# Signature (c) — layer-drift — grandfathers OBPIs whose channel disagreement is
+# sealed in append-only history. Both completed BEFORE the channels were keyed on
+# a common identity (GHI #731), so the gate never compared them: their commits
+# declared one TASK while the ledger recorded 4-6, and a commit cannot gain a
+# trailer retroactively without rewriting history.
+#
+# SHRINK-ONLY: never add an OBPI here. A new disagreement means an author
+# under-declared `Task:` trailers on a commit they can still amend, or the
+# pipeline minted TASKs it did not attribute — fix the attribution, not the list.
+# Pinned by tests/test_task_obpi_id_canonicalization.py.
+_SIG_C_DRIFT_GRANDFATHER: frozenset[str] = frozenset({"OBPI-0.0.41-03", "OBPI-0.0.63-01"})
+
 # TASK-lifecycle event types whose obpi_id must agree across a single task_id.
 _TASK_LIFECYCLE_TYPES: frozenset[str] = frozenset(
     {"task_started", "task_completed", "task_blocked", "task_escalated"}
@@ -105,6 +117,42 @@ def _obpi_lineage_id(obpi_id: str) -> str:
     """Return the slug-independent OBPI identity encoded by TASK ids."""
     match = _OBPI_LINEAGE_RE.match(obpi_id)
     return match.group(1) if match else obpi_id
+
+
+def _bucket_channel_by_lineage(channel: dict[str, set[str]]) -> dict[str, set[str]]:
+    """Re-key a discovery-channel map by OBPI lineage instead of id spelling.
+
+    Signature (c) compares TASK sets per OBPI, but its channels natively key on
+    different id forms, so one OBPI split into two buckets each holding a subset
+    — and a bucket with only one non-empty channel is skipped. That is why the
+    gate compared 6 of 776 OBPIs (GHI #731).
+
+    Narrow by construction: lineage is ``OBPI-<semver>-<item>``, so genuinely
+    different OBPIs never merge and real cross-OBPI drift still fires.
+    """
+    bucketed: dict[str, set[str]] = {}
+    for obpi_id, task_ids in channel.items():
+        bucketed.setdefault(_obpi_lineage_id(obpi_id), set()).update(task_ids)
+    return bucketed
+
+
+def _sig_c_comparison_coverage(project_root: Path) -> tuple[int, int]:
+    """Return ``(compared, total)`` OBPIs for Signature (c).
+
+    Exposed so the comparison surface is measurable rather than assumed: a gate
+    that silently stops comparing looks identical to a gate finding nothing.
+    """
+    brief_fms = _collect_obpi_brief_frontmatter(project_root)
+    ledger_map, ledger_obpis = _ledger_task_channel(project_root / ".gzkit" / "ledger.jsonl")
+    maps = (
+        _bucket_channel_by_lineage(ledger_map),
+        _bucket_channel_by_lineage(_advances_channel_map()),
+        _bucket_channel_by_lineage(_frontmatter_channel_map(brief_fms)),
+        _bucket_channel_by_lineage(_commit_trailer_channel_map(project_root)),
+    )
+    obpi_ids = {_obpi_lineage_id(o) for o in set(brief_fms.keys()) | ledger_obpis}
+    compared = sum(1 for o in obpi_ids if sum(1 for m in maps if m.get(o)) >= 2)
+    return compared, len(obpi_ids)
 
 
 def _event_path(ev: dict[str, object]) -> str:
@@ -743,26 +791,26 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
 
     ledger_map, ledger_obpis = _ledger_task_channel(project_root / ".gzkit" / "ledger.jsonl")
-    # Collapse ledger spelling-splits ONLY. The ledger is the one channel keyed
-    # by a raw event field, so a legacy short/full pair splits one OBPI into two
-    # buckets and each looks short of the other's TASKs — drift no author can
-    # repair against an append-only ledger (GHI #653). Lineage is
-    # `OBPI-<semver>-<item>`, so distinct OBPIs never merge. Deliberately NOT
-    # applied to the other three channels: re-keying those changes which buckets
-    # get compared repo-wide and surfaced unrelated pre-existing drift.
-    collapsed: dict[str, set[str]] = {}
-    for _obpi, _tids in ledger_map.items():
-        collapsed.setdefault(_obpi_lineage_id(_obpi), set()).update(_tids)
-    ledger_map = collapsed
-    advances_map = _advances_channel_map()
-    frontmatter_map = _frontmatter_channel_map(brief_fms)
-    commit_trailer_map = _commit_trailer_channel_map(project_root)
+    # Key EVERY channel on OBPI lineage (GHI #731). The channels natively use
+    # different id forms — the ledger groups by the raw `obpi_id` event field
+    # (full slug after `gz obpi complete`) while the commit-trailer channel keys
+    # off the form encoded in the TASK id (short `OBPI-<semver>-<item>`) — so one
+    # OBPI landed in two buckets, each holding a subset, and `len(non_empty) < 2`
+    # skipped it. Measured before this fix: the gate compared 6 of 776 OBPIs.
+    # A TASK id encodes exactly one OBPI lineage, so lineage is the correct
+    # comparison key and distinct OBPIs never merge.
+    ledger_map = _bucket_channel_by_lineage(ledger_map)
+    advances_map = _bucket_channel_by_lineage(_advances_channel_map())
+    frontmatter_map = _bucket_channel_by_lineage(_frontmatter_channel_map(brief_fms))
+    commit_trailer_map = _bucket_channel_by_lineage(_commit_trailer_channel_map(project_root))
 
     # OBPIs come from authored briefs plus any with ledger task_started events
     # even without a brief.
-    obpi_ids = set(brief_fms.keys()) | ledger_obpis
+    obpi_ids = {_obpi_lineage_id(o) for o in set(brief_fms.keys()) | ledger_obpis}
 
     for obpi_id in sorted(obpi_ids):
+        if obpi_id in _SIG_C_DRIFT_GRANDFATHER:
+            continue
         channels = {
             "advances": advances_map.get(obpi_id, set()),
             "frontmatter": frontmatter_map.get(obpi_id, set()),
