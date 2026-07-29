@@ -1040,6 +1040,21 @@ class TestSignatureC(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
 
+def _after_cutover(hours: int) -> str:
+    """Return an ISO timestamp AFTER the obpi_id canonicalization cutover.
+
+    Derived from `_OBPI_ID_CANONICAL_CUTOVER` rather than hardcoded: the cutover
+    advances whenever the producer is repaired again, and a literal date silently
+    slides to the tolerated side of it, turning this fail-closed assertion into a
+    vacuous pass (observed 2026-07-29).
+    """
+    from datetime import timedelta
+
+    from gzkit.commands.validate_task_envelope import _OBPI_ID_CANONICAL_CUTOVER
+
+    return (_OBPI_ID_CANONICAL_CUTOVER + timedelta(hours=hours)).isoformat()
+
+
 class TestSignatureD(unittest.TestCase):
     """Signature (d): a single task_id carries divergent obpi_id across events (GHI #653).
 
@@ -1065,7 +1080,7 @@ class TestSignatureD(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.99-01",
                             "id": "evt-1",
                             "schema_": "1.0",
-                            "timestamp": "2026-07-11T10:00:00Z",
+                            "timestamp": _after_cutover(1),
                         }
                     ),
                     json.dumps(
@@ -1075,7 +1090,7 @@ class TestSignatureD(unittest.TestCase):
                             "obpi_id": "OBPI-0.0.99-01-full-slug-suffix",
                             "id": "evt-2",
                             "schema_": "1.0",
-                            "timestamp": "2026-07-11T11:00:00Z",
+                            "timestamp": _after_cutover(2),
                         }
                     ),
                 ],

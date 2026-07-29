@@ -48,7 +48,23 @@ _TASK_ENVELOPE_ENFORCEMENT_EPOCH = datetime.fromisoformat("2026-05-30T14:44:00+0
 # before this second producer repair are append-only history. Same-lineage short/
 # full spellings before this dated cutover remain readable; every later raw
 # spelling divergence still fails Signature (d).
-_OBPI_ID_CANONICAL_CUTOVER = datetime.fromisoformat("2026-07-10T10:14:00+00:00")
+#
+# 2026-07-29: advanced from 2026-07-10T10:14 — that value dated a repair that
+# never actually covered the ``--req`` path. Proof: a 2026-07-29 run of
+# ``gz task start --req REQ-0.34.0-03-01 --seq next`` still emitted the short
+# ``OBPI-0.34.0-03``. Root cause was NOT a missing artifact-graph key but an
+# ambiguity — a phantom Layer-2 key (``OBPI-0.34.0-03-insight-harvester``, an
+# ``obpi_created`` with no brief ever on disk) shared the short prefix, so
+# ``_resolve_obpi_id`` saw two matches and bailed to the short form. Repaired at
+# emission this date: the resolver now disambiguates by on-disk brief (Layer-1
+# canon decides; two REAL briefs still refuse to guess) and ``adr_id`` is
+# canonicalized via ``resolve_artifact_id``. Pinned by
+# tests/test_task_obpi_id_canonicalization.py. Blast radius measured BEFORE
+# advancing: exactly 2 post-cutover divergent task_ids (TASK-0.34.0-03-01-02,
+# -03), both same-lineage, ZERO cross-lineage — so this tolerates only the rows
+# the unrepaired producer wrote and masks nothing else. The shrink-only
+# grandfather set below is untouched.
+_OBPI_ID_CANONICAL_CUTOVER = datetime.fromisoformat("2026-07-29T09:45:00+00:00")
 _OBPI_LINEAGE_RE = re.compile(r"^(OBPI-\d+\.\d+\.\d+-\d+)")
 
 
@@ -727,6 +743,17 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
 
     ledger_map, ledger_obpis = _ledger_task_channel(project_root / ".gzkit" / "ledger.jsonl")
+    # Collapse ledger spelling-splits ONLY. The ledger is the one channel keyed
+    # by a raw event field, so a legacy short/full pair splits one OBPI into two
+    # buckets and each looks short of the other's TASKs — drift no author can
+    # repair against an append-only ledger (GHI #653). Lineage is
+    # `OBPI-<semver>-<item>`, so distinct OBPIs never merge. Deliberately NOT
+    # applied to the other three channels: re-keying those changes which buckets
+    # get compared repo-wide and surfaced unrelated pre-existing drift.
+    collapsed: dict[str, set[str]] = {}
+    for _obpi, _tids in ledger_map.items():
+        collapsed.setdefault(_obpi_lineage_id(_obpi), set()).update(_tids)
+    ledger_map = collapsed
     advances_map = _advances_channel_map()
     frontmatter_map = _frontmatter_channel_map(brief_fms)
     commit_trailer_map = _commit_trailer_channel_map(project_root)

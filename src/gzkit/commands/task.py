@@ -77,7 +77,7 @@ def _ledger_obpi_for_task(ledger: Ledger, task_id_str: str) -> str:
     return obpi_id
 
 
-def _resolve_obpi_id(ledger: Ledger, short_obpi: str) -> str:
+def _resolve_obpi_id(ledger: Ledger, short_obpi: str, *, project_root: Path | None = None) -> str:
     """Resolve a short OBPI id (``OBPI-<semver>-<item>``) to its full slug.
 
     Mirrors ``Ledger.resolve_artifact_id``'s short->long ADR logic for the OBPI
@@ -92,6 +92,16 @@ def _resolve_obpi_id(ledger: Ledger, short_obpi: str) -> str:
     matches = [key for key in graph if key.startswith(prefix)]
     if len(matches) == 1:
         return matches[0]
+    if len(matches) > 1 and project_root is not None:
+        # Layer-2 may name OBPIs Layer-1 cannot show — orphaned `obpi_created`
+        # records accumulate (that is why `audit_obpi_lifecycle_coherence`
+        # exists), and one phantom sharing the short prefix is enough to make a
+        # genuinely-unambiguous id look ambiguous and force the divergent short
+        # form. Disambiguate by on-disk brief: canon decides. Two REAL briefs
+        # stay ambiguous — guessing would write a confidently wrong obpi_id.
+        on_disk = [key for key in matches if _find_brief_path(project_root, key) is not None]
+        if len(on_disk) == 1:
+            return on_disk[0]
     return short_obpi
 
 
@@ -438,8 +448,11 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
         raise GzCliError(f"Invalid REQ identifier: {req_id!r}")  # noqa: TRY003
     semver, obpi_item, _ = m.groups()
     short_obpi_id = f"OBPI-{semver}-{obpi_item}"
-    obpi_id = _resolve_obpi_id(ledger, short_obpi_id)
-    adr_id = f"ADR-{semver}"
+    obpi_id = _resolve_obpi_id(ledger, short_obpi_id, project_root=project_root)
+    # Same canonicalization for the ADR: `gz obpi complete` records the full
+    # slug, so emitting the bare `ADR-<semver>` here writes the same class of
+    # spelling divergence this producer was repaired for (GHI #653).
+    adr_id = ledger.resolve_artifact_id(f"ADR-{semver}")
 
     existing_ids = _all_started_task_ids(ledger)
 
