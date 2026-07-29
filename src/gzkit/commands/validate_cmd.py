@@ -1112,6 +1112,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "brief_command_shape",
         "foundation_kind_closed",
         "grandfather_dangling",
+        "foundation_limbo",
         "tautological_test_audit",
         "task_envelope_coherence",
         "closeout_proof",

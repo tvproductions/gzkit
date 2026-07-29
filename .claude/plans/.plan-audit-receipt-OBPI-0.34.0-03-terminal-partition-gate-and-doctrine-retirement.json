@@ -1,0 +1,189 @@
+{
+  "obpi_id": "OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement",
+  "timestamp": "2026-07-29T00:02:00.952891+00:00",
+  "verdict": "PASS",
+  "plan_file": "plan-OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-05-progressive-disclosure-path-docs",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md",
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md",
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-06-agents-md-correction",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md",
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.43",
+      "sibling_obpi": "OBPI-0.0.43-09-existing-skill-extensions",
+      "contested_paths": [
+        ".gzkit/skills/gz-design/SKILL.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.56",
+      "sibling_obpi": "OBPI-0.0.56-02-closeout-defect-accounting-reconcile-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-03-extend-payload-arb-receipts",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-02-migrate-validators-remediation-meta",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.53",
+      "sibling_obpi": "OBPI-0.0.53-04-extend-payload-blocking-hooks",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-10-doctrine-refresh",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-01-author-layer-order-manifest",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-04-promote-import-direction-fail-closed",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-03-migrate-back-edges-drain-baseline",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.55",
+      "sibling_obpi": "OBPI-0.0.55-02-import-direction-validator-warn-only",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-06-rule-and-doc-updates",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md",
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-01-concepts-page",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-04-epic-grouping",
+      "contested_paths": [
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-01-nominal-id-doctrine",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-04-story-md-scaffolding",
+      "contested_paths": [
+        "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.42",
+      "sibling_obpi": "OBPI-0.0.42-03-storybook-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/taxonomy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-03-why-foundation-tier-convention",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-01-concept-page",
+      "contested_paths": [
+        "docs/user/concepts/foundation-feature-invariance-test.md",
+        "docs/user/concepts/adr-taxonomy.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-02-skill-prompt-enrichment",
+      "contested_paths": [
+        ".gzkit/skills/gz-design/SKILL.md"
+      ]
+    }
+  ]
+}

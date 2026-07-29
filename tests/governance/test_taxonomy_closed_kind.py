@@ -59,6 +59,24 @@ def _entry(adr_id: str, semver: str) -> dict[str, str]:
     }
 
 
+def _write_grandfathered_ledger(root: Path, adr_ids: list[str]) -> None:
+    """Witness ``adr_ids`` as terminal via Layer-2 ``foundation_grandfathered``.
+
+    A manifest entry is a *member*; the ledger event is what makes it
+    *terminal* (ADR-0.34.0 OBPI-03). A fixture describing a fully-valid
+    grandfathered foundation therefore needs both.
+    """
+    gz_dir = root / ".gzkit"
+    gz_dir.mkdir(parents=True, exist_ok=True)
+    (gz_dir / "ledger.jsonl").write_text(
+        "".join(
+            json.dumps({"event": "foundation_grandfathered", "id": adr_id}) + "\n"
+            for adr_id in adr_ids
+        ),
+        encoding="utf-8",
+    )
+
+
 class TestFoundationKindClosed(unittest.TestCase):
     """An on-disk foundation ADR absent from the manifest is a breach."""
 
@@ -99,6 +117,7 @@ class TestFoundationKindClosed(unittest.TestCase):
             root = Path(tmp)
             _write_foundation_adr(root, "ADR-0.0.99-listed", "0.0.99")
             _write_manifest(root, [_entry("ADR-0.0.99-listed", "0.0.99")])
+            _write_grandfathered_ledger(root, ["ADR-0.0.99-listed"])
 
             self.assertEqual(audit_foundation_closure(root), [])
 

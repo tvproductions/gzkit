@@ -16,6 +16,21 @@ kind: foundation
 
 This ADR is a Foundation addition and Lite lane: pure doctrine, no external contracts touched. Foundation-kind rigor applies to authoring (attestation, Gate 5 walkthrough) because doctrine drift is an app-system invariant drift — adopters read doctrine to ground their decisions, and stale doctrine mis-routes future ADRs.
 
+> **Superseded (choose-foundation guidance) by [ADR-0.34.0-foundation-sunset](../../pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md).**
+> This ADR's guidance on *when to author a foundation ADR* is **void as
+> instruction, preserved as history**. The `foundation` kind is CLOSED to new
+> gzkit authoring: `gz plan create --kind foundation` and `gz adr promote
+> --kind foundation` are rejected at the command layer, and the on-disk
+> foundation set is fixed by `data/foundation_grandfather.json`. Do not read
+> the sections below as a live decision playbook for gzkit — read them as the
+> record of why the tier existed and how it was chosen while it was open.
+> The record is deliberately NOT deleted, and the schema enum still accepts
+> `foundation` so the grandfathered set keeps validating. **Adopter projects
+> are unaffected** — `gz init` scaffolds them with the kind open, because
+> early adopter projects are exactly when identity-shaping foundations make
+> sense. Everything else in this ADR (pool curation, PRD→ADR derivation, epic
+> grouping) remains live doctrine.
+
 ## Why foundation tier?
 
 Without this ADR, adopters have the kind/lane CLI vocabulary from ADR-0.0.17 but no operator doctrine — "should I make this a foundation?" remains per-author judgment, and the foundation/feature distinction collapses without shared decision criteria.
@@ -34,6 +49,10 @@ ADR-0.0.17 lands the mechanical taxonomy (`kind:` field, `--kind` CLI, `--taxono
 **After this ADR**: `docs/user/concepts/adr-taxonomy.md` is the one-page canonical reference. The runbook cites it at every decision point where kind/lane/semver choice arises. Skills (`gz-plan`, `gz-adr-create`) surface the doctrine in their interview prompts. Pool curation has a named policy with criteria and cadence. Epic grouping uses a frontmatter field (`epic:`) plus a naming convention (`ADR-pool.<epic-slug>-<adr-slug>.md`) locked into the skills and documented in the taxonomy page.
 
 ## Decision
+
+> **Superseded in part (choose-foundation guidance) by ADR-0.34.0-foundation-sunset.**
+> The foundation-vs-feature decision guidance recorded below is frozen-historic.
+> For gzkit the choice no longer exists — new ADRs are `feature` or `pool`.
 
 Land operator doctrine as a concept page + runbook expansions + skill-prompt enrichment. No schema or CLI changes — that scope belongs to ADR-0.0.17 and is already complete when this ADR begins. This ADR is a Lite-lane doctrine ADR: the external contract surface is zero, but the operator-facing contract (what adopters read to ground decisions) is substantial.
 

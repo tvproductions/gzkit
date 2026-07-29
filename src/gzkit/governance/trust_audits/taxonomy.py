@@ -208,8 +208,66 @@ def _manifest_ids(project_root: Path) -> set[str]:
     return {entry.id for entry in load_manifest(path)}
 
 
+_GRANDFATHERED_EVENT = "foundation_grandfathered"
+
+
+def _grandfathered_event_ids(project_root: Path) -> set[str]:
+    """Return the ADR ids carrying a Layer-2 ``foundation_grandfathered`` event.
+
+    Replays raw ledger lines rather than the typed ``Ledger`` reader: the
+    event type is introduced by the sunset migration (ADR-0.34.0 OBPI-04) and
+    has no model yet, so a typed read would couple this gate to a schema it
+    does not own. Same tolerance as ``_pool_violation_key`` — the id may
+    arrive under ``id`` or ``adr_id``.
+    """
+    ledger = project_root / ".gzkit" / "ledger.jsonl"
+    if not ledger.is_file():
+        return set()
+
+    witnessed: set[str] = set()
+    for raw in ledger.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            event = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            # Well-formed JSON that is not an event object (a bare list,
+            # string, or number). Decoding succeeded, so JSONDecodeError
+            # never fires — without this guard the value reaches `.get` and
+            # raises AttributeError, killing the whole audit over one line.
+            continue
+        if event.get("event") != _GRANDFATHERED_EVENT:
+            continue
+        adr_id = event.get("id") or event.get("adr_id")
+        if isinstance(adr_id, str) and adr_id:
+            witnessed.add(adr_id)
+    return witnessed
+
+
+def _limbo_error(adr_id: str, manifest_rel: str) -> ValidationError:
+    """Build the ``foundation_limbo`` finding for one non-terminal foundation."""
+    return ValidationError(
+        type="foundation_limbo",
+        artifact=manifest_rel,
+        message=(
+            f"Grandfathered foundation `{adr_id}` has no `{_GRANDFATHERED_EVENT}` "
+            "ledger event, so it is not terminal — it sits in "
+            "Pending-with-attested-work limbo. ADR-0.34.0 Foundation Sunset "
+            "requires every entry in the closed manifest to be terminal, because "
+            "a sealed era with unfinished members is not sealed. This check reads "
+            "the Layer-2 ledger, NOT frontmatter: editing the ADR's `status:` to "
+            "`Validated` cannot clear it (ADR-0.0.37 proved frontmatter lies about "
+            "repudiated OBPIs). Next: finish the foundation and attest it with "
+            f"`uv run gz closeout {adr_id}`, or drop it to pool with "
+            f"`uv run gz adr demote {adr_id}` and remove it from `{manifest_rel}`."
+        ),
+    )
+
+
 def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
-    """Fail on foundation-kind membership drift against the closed manifest.
+    """Fail on foundation-kind membership drift and non-terminal members.
 
     Enforces ADR-0.34.0 § Decision (INTERFACE): the foundation kind is SEALED,
     and ``data/foundation_grandfather.json`` is its committed closed membership
@@ -217,7 +275,14 @@ def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
     absent from the manifest (``foundation_kind_closed``) means the kind was
     reopened without editing the reviewed list; a manifest entry with no
     on-disk package (``grandfather_dangling``) means the manifest names a
-    foundation that does not exist. Never mutates files.
+    foundation that does not exist.
+
+    The terminal-partition assertion (``foundation_limbo``, OBPI-03) closes the
+    remaining hole: membership does not imply completion. It ranges over
+    *genuine* members — declared AND on disk — so neither containment breach is
+    also reported as non-terminal. One defect, one finding; double-counting
+    would make the migration-scale finding census unreadable. Never mutates
+    files.
     """
     on_disk = _on_disk_foundation_ids(project_root)
     declared = _manifest_ids(project_root)
@@ -255,6 +320,11 @@ def audit_foundation_closure(project_root: Path) -> list[ValidationError]:
             ),
         )
         for adr_id in sorted(declared - set(on_disk))
+    )
+    members = declared & set(on_disk)
+    errors.extend(
+        _limbo_error(adr_id, manifest_rel)
+        for adr_id in sorted(members - _grandfathered_event_ids(project_root))
     )
     return errors
 

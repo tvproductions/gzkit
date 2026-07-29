@@ -3,10 +3,9 @@ id: OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement
 parent: ADR-0.34.0-foundation-sunset
 item: 3
 lane: Heavy
-status: Draft
+status: Completed
 allowlist:
 - src/gzkit/governance/trust_audits/taxonomy.py
-- .gzkit/ledger.jsonl
 - docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md
 - .gzkit/skills/gz-design/SKILL.md
 - .claude/
@@ -16,11 +15,24 @@ allowlist:
 - docs/user/concepts/adr-taxonomy.md
 - tests/test_foundation_limbo_gate.py
 - tests/test_foundation_doctrine_retirement.py
+- tests/governance/test_taxonomy_closed_kind.py
+- src/gzkit/commands/validate_cmd.py
 reqs:
 - REQ-0.34.0-03-01
 - REQ-0.34.0-03-02
 - REQ-0.34.0-03-03
 - REQ-0.34.0-03-04
+# REQ-0.34.0-03-01 is deliberately ABSENT — its labor genuinely subdivided across
+# three distinct surfaces and is accounted as TASK-...-01-01/02/03:
+#   01 the ledger-read predicate + set-difference in taxonomy.py
+#   02 the exit-3 policy-breach registration in validate_cmd.py (a separate file and
+#      a separate contract, surfaced only by Step-4b adversarial pass 1)
+#   03 the non-object-ledger-line robustness guard (surfaced by adversarial pass 2)
+req_atomic:
+# One indivisible unit of labor each; no step below the REQ existed.
+- REQ-0.34.0-03-02  # authoring one finding message to the three-part prose bar
+- REQ-0.34.0-03-03  # seating the superseded marker on one ADR record
+- REQ-0.34.0-03-04  # one coherent closure sweep: skill Step 5 + 2 concept pages + sync
 verification:
 - uv run gz validate --documents
 - uv run gz validate --taxonomy
@@ -37,7 +49,7 @@ verification:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md`
 - **Checklist Item:** #3 — "terminal-partition-gate-and-doctrine-retirement: Add the terminal-partition assertion to gz validate --taxonomy reading the Layer-2 foundation_grandfathered ledger event (never frontmatter): every grandfathered foundation is terminal, none in Pending-with-attested-work limbo -> finding foundation_limbo, whose prose states it reads the ledger and points at gz closeout / gz adr demote. Retire ADR-0.0.18's choose-foundation guidance (record stays frozen). Execute the coupled-surface coherence sweep (gz-design Step 5, plan/promote help + parser choices, AGENTS.md/CLAUDE.md Kinds table, foundation-feature-invariance-test.md, ADR-0.0.35 review). (heavy lane: new validator behavior + doc coherence)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -66,16 +78,18 @@ lane and per the Gate Covenant (validator-scope / runtime-contract change).
 - `docs/user/concepts/adr-taxonomy.md` — same closure note: `foundation` is a grandfathered-only kind for gzkit; no new foundation ADRs may be authored.
 - `tests/test_foundation_limbo_gate.py` — **CREATE**: net-new `@covers` tests for the `foundation_limbo` finding + Layer-2 ledger-read (not frontmatter) behavior (REQ-0.34.0-03-01) and the recovery-prose assertion (REQ-0.34.0-03-02).
 - `tests/test_foundation_doctrine_retirement.py` — **CREATE**: net-new `@covers` tests for the ADR-0.0.18 superseded-marker content assertion (REQ-0.34.0-03-03) and the coupled-surface closure assertions (REQ-0.34.0-03-04).
+- `tests/governance/test_taxonomy_closed_kind.py` — coupled-surface coherence only (DO IT RIGHT 1a; operator-approved allowlist amendment 2026-07-29). OBPI-01's `test_listed_foundation_adr_is_clean` fixture predates the terminal-partition assertion and asserts the whole audit is silent for a foundation with no ledger witness. Fix is fixture-only: seed the `foundation_grandfathered` event so the fixture describes a genuinely valid grandfathered foundation. The `assertEqual(..., [])` assertion is NOT weakened, and no attested REQ-0.34.0-01-* claim changes.
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
 - `AGENTS.md`, `CLAUDE.md` — RENDERED surfaces composed from the corpus; NEVER hand-edited. The Kinds-table doctrine update (marking `foundation` closed for authoring) routes through the corpus source of truth via `gz content remember` against `.gzkit/corpus/AGENTS.md.jsonl`, then recomposition — a corpus write, not a rendered-surface edit. Capturing that corpus entry is deferred to the migration/compose movement; this brief records the routing so the sweep is not "completed" by an illegal direct edit.
-- `src/gzkit/commands/validate_cmd.py` — NOT edited: `_taxonomy_runner` already calls `audit_adr_taxonomy`, so composing the new assertion into that function flows through the existing runner with no wiring change. (Registering the whole `--taxonomy` gate into `gz check` as the standing gate is OBPI-04's last act — "wiring equals populate" — not this OBPI.)
+- `src/gzkit/commands/validate_cmd.py` — **narrowed, not blanket-denied** (amended 2026-07-29, operator-approved, after the Step-4b adversarial refutation). NOT rewired: `_taxonomy_runner` already calls `audit_foundation_closure`, so the assertion needs no runner change, and registering the `--taxonomy` gate into `gz check` remains OBPI-04's last act ("wiring equals populate"). The ONE permitted edit is adding `foundation_limbo` to `_POLICY_BREACH_ERROR_TYPES`. The original blanket denial contradicted REQ-0.34.0-03-01's own exit-3 mandate: unregistered finding types route to `SystemExit(1)` (`validate_cmd.py:1168`) and only registered ones reach `SystemExit(3)` (line 1170), so exit 3 is unreachable without the registration. Sibling OBPI-01 registered `foundation_kind_closed` / `grandfather_dangling` in the same frozenset for the same reason. This is registration, NOT the force-green edit REQ-7 forbids — it makes a real finding fail *harder*, never green.
 - `data/foundation_grandfather.json` — READ-ONLY here; authored by OBPI-01, populated by OBPI-04. This OBPI's assertion reads the ledger event, not this manifest.
 - `src/gzkit/cli/parser_artifacts.py`, `src/gzkit/cli/parser_governance.py` — the `gz plan create`/`gz adr promote` `--kind` parser-choice rejection is OBPI-02's scope, not this one.
 - `docs/design/adr/foundation/ADR-0.0.35-*` — ADR-0.0.35 is a *review* item (read-only confirmation it teaches nothing stale), not an edit target.
+- `.gzkit/ledger.jsonl` — never edited directly. Deliberately NOT in § Allowed Paths despite being written during this OBPI's ceremony: declaring it livelocks the pipeline — `gz obpi brief-drift` emits a `brief_reconciled` ledger event, which drifts the now-allowlisted path, which re-stales the receipt it just wrote, forever. Ceremony control artifacts written only by `gz` commands belong here, not in the allowlist. Matches sibling OBPI-0.34.0-01 § Denied Paths verbatim in rationale (adjacent: GHI #677).
 - New runtime dependencies; CI files; lockfiles.
 - Any path not listed in Allowed Paths.
 
@@ -196,7 +210,13 @@ uv run gz validate --taxonomy
 
 # 2. The limbo finding, shown as JSON (the machine-parseable contract).
 #    After OBPI-04 backfills foundation_grandfathered events, remove/repudiate
-#    the covering event for one grandfathered ADR and re-run to see exit 3.
+#    the covering event for one grandfathered ADR and re-run.
+#    NOTE: `--json` reports `"valid": false` with the finding in `errors[]` and
+#    exits 0 — the established repo-wide contract for EVERY finding type, pinned
+#    by tests/commands/test_validate_cmds.py:726 ("--json doesn't raise
+#    SystemExit"). Exit 3 is the TEXT-mode path (command 1 above); read `valid`
+#    when consuming JSON. Corrected 2026-07-29 after a Step-4b adversarial pass
+#    flagged the prior wording as promising exit 3 from `--json`.
 uv run gz validate --taxonomy --json
 
 # 3. The recovery prose proves it reads the LEDGER, not frontmatter, and names
@@ -286,6 +306,52 @@ rg -n "foundation" .gzkit/skills/gz-design/SKILL.md
 # Record attestation text here (universal brief-level Gate 5, ADR-0.0.36)
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary:** Codex (tier 1, different vendor — `codex-cli 0.145.0`). `codex:setup`
+reported `ready: true`, `sessionRuntime: direct` (no wedged broker), so tier 1 was
+genuinely available and tiers 2/3 were forbidden. Three passes, each prompted to
+REFUTE and to produce its own evidence rather than trust pasted output:
+
+| Pass | Job | Session | Verdict |
+|---|---|---|---|
+| 1 | `task-ms5gaqdb-6721ed` | `019faba6-2de4-7701-978e-4c524e1d9018` | REFUTED |
+| 2 | `task-ms5iz3ye-w4z656` | `019fabea-c5be-7160-b0a4-7684bad36283` | REFUTED |
+| 3 | `task-ms5uezyf-6coaah` | `019fad10-007b-7b10-8d9b-387d5f48140c` | REFUTED |
+
+**Pass 1 — decisive refutation, FIXED.** `foundation_limbo` was absent from
+`_POLICY_BREACH_ERROR_TYPES`, so a limbo-only validation rendered the finding and then
+exited **1** where REQ-0.34.0-03-01 requires **3**. The live repo's 74 inherited
+`foundation_kind_closed` findings masked it — the CLI exited 3 for a sibling's reason.
+Reproduced locally as `AssertionError: 1 != 3`, fixed by registering the type (an
+operator-approved narrowing of the `validate_cmd.py` denial), and re-verified by the
+adversary: `limbo_only_text exit=3`, `mixed_text exit=1`.
+
+**Pass 2 — two new defects, both FIXED.** (a) `_grandfathered_event_ids` crashed with
+`AttributeError: 'list' object has no attribute 'get'` on a valid non-object ledger
+line — guarded with `isinstance(event, dict)` plus two tests, one proving junk lines do
+not mask a real witness beside them. (b) The exit test was hollow as CLI proof —
+`test_taxonomy_scope_dispatch_surfaces_the_finding` now drives `_taxonomy_runner`
+itself; the adversary confirmed the fix meaningful.
+
+**Pass 3 — REQ-03/04 proof channel STILL BROKEN, and the caveat was DISHONEST.** An
+earlier draft of § Tracked Defects claimed fence decoys, nested blockquotes, and
+duplicate headings were rejected. Direct mutations disproved it (tilde fences,
+four-space indented blocks, setext/case/closing-hash duplicates, nested blockquotes,
+HTML-comment/fence interactions all still pass). The caveat has been **corrected to a
+verbatim accepted-bypass table**; the false claim was also corrected on GHI #615
+(comment `5115546992`). The adversary's position was *"Gate 5 should not proceed."*
+
+**Resolution and disposition.** Every refutation admitting a mechanical fix was fixed
+and independently re-verified. The residual — REQ-03/04's doc-content proof channel —
+is a **proof-channel** weakness, not an artifact defect: it under-detects a hostile
+*future* edit; it does not misreport the *present* state, which is verifiable by reading
+the four surfaces (§ Demo 4 and 5). Root cause is the one `.gzkit/rules/tests.md`
+§ The discriminator names — a `@covers` grep is the wrong channel for a document claim —
+and it is homed as an instance on GHI #615. The operator attested **holding this
+verdict and the corrected caveat**, having been offered the alternatives of rewriting
+the tests against a parsed Markdown structure or halting unattested.
+
 ### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
@@ -303,37 +369,142 @@ record) tells readers the foundation kind is closed.
 
 ### Key Proof
 
+
 <!-- One concrete usage example, command, or before/after behavior. -->
 
-`uv run gz validate --taxonomy --json` returns a `foundation_limbo` finding
-(exit 3) for a grandfathered foundation with no covering `foundation_grandfathered`
-ledger event, and the finding message names `gz closeout` / `gz adr demote` —
-computed from the ledger, unchanged by any frontmatter `status:` edit.
+The load-bearing claim is *ledger, never frontmatter* — and it is proven by a negative
+control, not by a happy-path run:
+
+```text
+$ uv run -m unittest tests.test_foundation_limbo_gate -v
+test_frontmatter_status_cannot_clear_the_finding ... ok
+test_terminal_ledger_event_clears_the_finding ... ok
+test_declared_foundation_without_ledger_event_is_flagged ... ok
+Ran 12 tests — OK
+```
+
+A grandfathered foundation marked `status: Validated` — the most terminal-looking
+frontmatter available — still returns `['foundation_limbo']`, because the ledger carries
+no witness. Seeding a `foundation_grandfathered` event clears it. Neither containment
+breach is double-reported. The finding reaches the operator as **exit 3**, verified
+end-to-end by the independent adversary:
+
+```text
+limbo_only_text  exit=3   (policy breach)
+mixed_text       exit=1   (non-policy error present — masking prevented)
+```
+
+Receipts: `arb-step-unittest-d2bb1e6dbb1e4922af795e855ebe12a1` (7574 tests),
+`arb-ruff-6894721afdfc4dd8b8d9b7c4eb5c799b`,
+`arb-step-typecheck-6180fce77ca44b96aed3e61f8fcfbe95`,
+`arb-step-mkdocs-91e7b8fdebd44fe3aac73978b4fdadfd`.
+RED witnesses, all `failure_class=assertion`:
+`arb-red-REQ-0.34.0-03-01-d688344bde8f4c8da66ec3350596805c`,
+`arb-red-REQ-0.34.0-03-02-648088e049ba44c196710313f026c8b1`,
+`arb-red-REQ-0.34.0-03-03-dcb61d90d3654509825bd377252430fa`,
+`arb-red-REQ-0.34.0-03-04-83cb31b55893467ea7bc57f08f723935`.
+
+**Scope honesty:** `uv run gz validate --taxonomy` exits 3 with **74
+`foundation_kind_closed`** findings inherited from OBPI-01's assertion over the empty
+manifest (cleared by OBPI-04). This OBPI adds **zero** findings and removes zero —
+census verified as `{"foundation_kind_closed": 74}` with `git blame` attributing all 74
+to committed sibling work. The green signal here is the census, not the exit code.
 
 ### Implementation Summary
 
-- Parent ADR § Decision item (quoted):
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR § Decision item (quoted): *"terminal-partition-gate-and-doctrine-retirement: Add the terminal-partition assertion to gz validate --taxonomy reading the Layer-2 foundation_grandfathered ledger event (never frontmatter): every grandfathered foundation is terminal, none in Pending-with-attested-work limbo -> finding foundation_limbo, whose prose states it reads the ledger and points at gz closeout / gz adr demote. Retire ADR-0.0.18's choose-foundation guidance (record stays frozen). Execute the coupled-surface coherence sweep (gz-design Step 5, plan/promote help + parser choices, AGENTS.md/CLAUDE.md Kinds table, foundation-feature-invariance-test.md, ADR-0.0.35 review). (heavy lane: new validator behavior + doc coherence)."*
+- Mechanism: `_grandfathered_event_ids` replays raw `.gzkit/ledger.jsonl` lines for `event == "foundation_grandfathered"` (raw read, not the typed `Ledger` — the event type has no model until OBPI-04); `_limbo_error` builds the three-part finding; both composed into `audit_foundation_closure`, which `_taxonomy_runner` already invokes.
+- Composition point: `audit_foundation_closure`, NOT `audit_adr_taxonomy` as § Allowed Paths states. Following the brief literally would have broken the scope-mates-not-callees separation OBPI-01 attested in that function's own docstring. Judged "technically justified, not a rationalization" by the independent adversary.
+- Predicate ranges over `declared & on_disk` — genuine members — so neither containment breach (`foundation_kind_closed`, `grandfather_dangling`) is also reported as non-terminal.
+- Exit-3 registration: `foundation_limbo` added to `_POLICY_BREACH_ERROR_TYPES`. Found by adversarial pass 1; without it the finding rendered and exited 1.
+- Doctrine retirement: ADR-0.0.18 carries seated superseded blockquotes at `## Why foundation tier?` and `## Decision`; record and Decision text intact (frozen-historic).
+- Coupled-surface sweep: `gz-design` Step 5 offers `feature`/`pool` (skill-version 1.3.2 -> 1.4.0, `last_reviewed` bumped, mirrors regenerated via `gz agent sync control-surfaces`); both concept pages carry scoped closure admonitions preserving the adopter carve-out. ADR-0.0.35 reviewed read-only — its operator-facing surface is the concept page, already closed; no edit warranted. AGENTS.md/CLAUDE.md Kinds table deferred to the corpus route per § Denied Paths.
+- Files created: `tests/test_foundation_limbo_gate.py` (12 tests), `tests/test_foundation_doctrine_retirement.py` (6 tests).
+- Files modified: `src/gzkit/governance/trust_audits/taxonomy.py`, `src/gzkit/commands/validate_cmd.py`, `docs/design/adr/foundation/ADR-0.0.18-.../ADR-0.0.18-adr-taxonomy-doctrine.md`, `docs/user/concepts/adr-taxonomy.md`, `docs/user/concepts/foundation-feature-invariance-test.md`, `.gzkit/skills/gz-design/SKILL.md` (+3 vendor mirrors + pkg copy), `tests/governance/test_taxonomy_closed_kind.py` (fixture only).
+- Brief amendments (all operator-approved): removed `.gzkit/ledger.jsonl` from the allowlist (it livelocked the reconcile-freshness gate — sibling OBPI-01 records the identical finding); added `tests/governance/test_taxonomy_closed_kind.py` (coupled-surface coherence); narrowed the `validate_cmd.py` denial to permit the one registration line.
+- Date completed: 2026-07-29
+- Attestation status: operator-attested at Gate 5 holding three adversarial REFUTED verdicts and the corrected § Tracked Defects caveat.
+- Defects noted: REQ-03/04 doc-content proof-channel weakness — recorded in full in § Tracked Defects with a verbatim accepted-bypass table; homed on GHI #615 (comments `5115304791`, `5115546992`).
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI. -->
 
-_No defects tracked._
+**Attested-with-caveat (operator ruling 2026-07-29): REQ-03/04 proof-channel limitation.**
+
+**THREE** independent Step-4b adversarial passes (Codex, jobs `task-ms5gaqdb-6721ed`,
+`task-ms5iz3ye-w4z656`, `task-ms5uezyf-6coaah`) established that the
+REQ-0.34.0-03-03 and -03-04 tests — being doc-content assertions — cannot prove
+*semantic polarity*, and that successive hardening does not close the gap.
+
+**Stated precisely, because an earlier draft of this caveat overstated the fix and the
+third pass correctly judged it dishonest.** What the tests DO reject (verified negative
+controls, `scratchpad/verify_bypass*.py`): mis-seated markers, triple-backtick fence
+decoys, 40-line blank gaps, HTML comments, vacuous absence, and the specific
+contradiction phrasings in `_CONTRADICTION_PHRASES`.
+
+What the tests STILL ACCEPT (measured by the third pass, not hypothesised):
+
+| Bypass shape | Status |
+|---|---|
+| `~~~` (tilde) code fences | **accepted** — only triple-backtick fences are neutralised |
+| Four-space indented code blocks | **accepted** |
+| Setext (`===`/`---`) heading duplicates | **accepted** |
+| Case-variant heading duplicates (`## decision`) | **accepted** |
+| Closing-hash heading duplicates (`## Decision ##`) | **accepted** |
+| Nested blockquotes (`>>`) | **accepted** |
+| HTML comment spanning a closing fence | **accepted** |
+| Contradiction wording outside the denylist | **accepted** (non-exhaustive by construction) |
+
+Root cause, in the adversary's words: *"The REQ-03/04 proof treats Markdown as a few raw
+string patterns rather than checking the rendered document or a real Markdown structure.
+That makes the test sensitive to selected spellings and locations, while structurally
+equivalent reader-visible content remains invisible to the proof."*
+
+This is the limitation `.gzkit/rules/tests.md` § The discriminator predicts for any
+`@covers` test over document content — its named remedy is the **SUPPORT** proof
+channel (a structural validator over a parsed document), not a harder grep. Each
+hardening round closed the previous round's spellings and the next round found new
+ones; that treadmill IS the evidence that the channel is wrong, not the regex.
+
+This is the limitation `.gzkit/rules/tests.md` § The discriminator predicts for any
+`@covers` test over document content — its named remedy is the **SUPPORT** proof
+channel (ledger event + structural validator), not a harder grep. This brief
+deliberately tagged both REQs `[BEHAVIOR]` (see the kind-choice rationale under
+§ Acceptance Criteria); that tagging is **retained** by operator ruling 2026-07-29 and
+is NOT re-litigated here. The residual gap is recorded above in full, so Gate 5 is
+given knowingly and accurately.
+
+**What this means for the deliverable.** The doc edits themselves are correct and
+reader-visible — ADR-0.0.18 carries seated superseded markers, the concept pages carry
+scoped closure admonitions, and `gz-design` Step 5 offers `feature`/`pool`. What is weak
+is the *proof channel*, not the artifact: the tests under-detect a hostile future edit,
+they do not misreport the present state. Verify the present state by reading the four
+surfaces directly (§ Demo commands 4 and 5).
+
+Follow-on: a structural-validator scope giving these doc-closure claims a durable
+SUPPORT channel over a parsed Markdown structure. Not in scope here — it is a new
+validator surface, not defect repair. Homed as an instance on **GHI #615**
+(*"structured governance docs regex-scraped, not schema-enforced"* — the same class),
+comment `5115304791`, rather than filed as a sibling-cut duplicate.
+
+**Not a defect (adjudicated).** The same adversary flagged `gz validate --taxonomy
+--json` exiting 0 while reporting findings. This is the established repo-wide contract
+for EVERY finding type, pinned by `tests/commands/test_validate_cmds.py:726`
+(`--json doesn't raise SystemExit`) against the registered `frontmatter` type. Exit 3
+is the text-mode path. The brief's § Demo comment was imprecise and has been corrected;
+no code change was warranted.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: Attest with the corrected caveat — OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement: gz validate --taxonomy now computes grandfathered-foundation terminality from the Layer-2 foundation_grandfathered ledger event and never from frontmatter, emitting foundation_limbo at exit 3 with three-part recovery prose naming gz closeout / gz adr demote; ADR-0.0.18 is frozen-historic (seated superseded markers, record and Decision text intact); and gz-design Step 5, adr-taxonomy.md and foundation-feature-invariance-test.md all declare the foundation kind CLOSED for gzkit while preserving the adopter carve-out. 18 new tests across tests/test_foundation_limbo_gate.py and tests/test_foundation_doctrine_retirement.py; 7574 unit tests OK; 4/4 REQ @covers parity; four RED witnesses all failure_class=assertion. The gate adds ZERO findings to the 74 pre-existing foundation_kind_closed inherited from OBPI-01. Attested holding THREE independent Codex adversarial REFUTED verdicts (task-ms5gaqdb-6721ed, task-ms5iz3ye-w4z656, task-ms5uezyf-6coaah): pass 1 caught the decisive exit-1-not-exit-3 defect that 7570 green tests had masked, pass 2 caught a ledger crash and a hollow dispatch test, pass 3 caught that my own caveat overstated its closure. All mechanically-fixable refutations were fixed and independently re-verified; the residual REQ-03/04 doc-content proof-channel weakness is recorded verbatim as an accepted-bypass table in the brief's Tracked Defects and homed on GHI #615. Receipts arb-step-unittest-d2bb1e6dbb1e4922af795e855ebe12a1, arb-ruff-6894721afdfc4dd8b8d9b7c4eb5c799b, arb-step-typecheck-6180fce77ca44b96aed3e61f8fcfbe95, arb-step-mkdocs-91e7b8fdebd44fe3aac73978b4fdadfd.
+- Date: 2026-07-29
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-29
 
 **Evidence Hash:** -
 </content>

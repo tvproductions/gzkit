@@ -13,6 +13,24 @@ ADR-0.0.17 locks the vocabulary mechanically (`kind:` frontmatter, `--kind`
 CLI flag, `--taxonomy` validator). This page documents the operator doctrine:
 *when to choose which*, *why the axes matter*, and *how the kind binds semver*.
 
+!!! warning "`foundation` is CLOSED for gzkit — open for adopter projects"
+
+    ADR-0.34.0 Foundation Sunset sealed the `foundation` kind for **gzkit's own
+    authoring**. New gzkit ADRs are `feature` or `pool`; `gz plan create --kind
+    foundation` and `gz adr promote --kind foundation` are rejected at the
+    command layer, and the on-disk foundation set is fixed by the committed
+    manifest `data/foundation_grandfather.json`.
+
+    The kind was **sealed, not deleted** — it remains a valid schema value so
+    the grandfathered foundations keep validating, and their records stay on
+    disk as history. Read the `foundation` guidance below as the doctrine that
+    governs *reading* that set, not as a live authoring choice for gzkit.
+
+    **Adopter projects are unaffected.** The mechanism ships framework-wide but
+    the closure decision is project-local: `gz init` scaffolds adopters with the
+    kind OPEN, because early adopter projects are exactly when identity-shaping
+    foundations make sense.
+
 ---
 
 ## The three kinds

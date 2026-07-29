@@ -7,6 +7,15 @@ decide when you are not sure?*
 
 The answer is a single test.
 
+!!! warning "`foundation` is CLOSED for gzkit — open for adopter projects"
+
+    ADR-0.34.0 Foundation Sunset sealed the `foundation` kind for **gzkit's own
+    authoring**, so for gzkit this page no longer resolves a live choice: new
+    gzkit ADRs are `feature` or `pool`. The test below stays valid doctrine for
+    two uses — reading the grandfathered foundation set, and **adopter
+    projects**, whose `gz init` scaffolds the kind OPEN because early adopter
+    projects are exactly when identity-shaping foundations make sense.
+
 ---
 
 ## The invariance test
