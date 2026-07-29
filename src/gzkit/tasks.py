@@ -10,10 +10,11 @@ Follows the ReqId/ReqEntity pattern in ``triangle.py``.
 from __future__ import annotations
 
 import enum
+import json
 import pathlib
 import re
 import types
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -228,6 +229,67 @@ def format_commit_trailer(task: TaskEntity | TaskId) -> str:
     """
     tid = task.id if isinstance(task, TaskEntity) else task
     return f"Task: {tid}"
+
+
+_TRAILER_REQUIRED_ROOTS: tuple[str, ...] = ("src/", "tests/")
+
+_TASK_CLOSING_EVENTS: frozenset[str] = frozenset(
+    {"task_completed", "task_blocked", "task_escalated"}
+)
+
+
+def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str]) -> list[str]:
+    """Return ``Task:`` trailer lines for every in-progress TASK.
+
+    The pipeline mints one TASK per REQ and then relies on an author to recall
+    each of them in a commit trailer. Measured 2026-07-29: 87 post-epoch OBPIs
+    minted 467 TASKs that appear in no trailer at all, so the commit-trailer
+    discovery channel is empty for 96 of 102 OBPIs and Signature (c) skips them
+    — total under-declaration read as "nothing to compare" (GHI #731). Stamping
+    the attribution the runtime already holds is the producer-side fix, the same
+    move GHI #653 needed twice.
+
+    Scoped, not blanket: `.gzkit/rules/tests.md` § TASK-Driven Workflow makes
+    ``Task:`` mandatory on ``src/**`` and ``tests/**`` only, so a docs-only
+    commit stamps nothing rather than manufacturing attribution the rule never
+    asked for. Returns ``[]`` for an absent ledger and skips malformed lines —
+    this runs inside a commit hook, where an exception blocks all work.
+    """
+    if not any(
+        path.replace("\\", "/").startswith(_TRAILER_REQUIRED_ROOTS) for path in staged_paths
+    ):
+        return []
+    try:
+        raw = ledger_path.read_text(encoding="utf-8")
+    except OSError:
+        return []
+
+    started: list[str] = []
+    closed: set[str] = set()
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        task_id = event.get("task_id")
+        if not isinstance(task_id, str) or not task_id:
+            continue
+        kind = event.get("event")
+        if kind == "task_started":
+            started.append(task_id)
+        elif kind in _TASK_CLOSING_EVENTS:
+            closed.add(task_id)
+
+    seen: set[str] = set()
+    return [
+        f"Task: {task_id}"
+        for task_id in started
+        if task_id not in closed and not (task_id in seen or seen.add(task_id))
+    ]
 
 
 def parse_task_trailers(commit_message: str) -> list[TaskId]:
