@@ -1030,5 +1030,104 @@ class TestDecisionMarkerDiscipline(unittest.TestCase):
         self.assertEqual(sum(1 for d in decisions if d.is_settled), 1)
 
 
+class TestCompletionHandoffFidelity(unittest.TestCase):
+    """What the mechanical exit-edge register entry owes the successor session.
+
+    `write_completion_handoff` runs at every `gz obpi complete` (GHI #619), so any
+    fidelity defect in it is not one bad document — it is every completion handoff
+    gzkit will ever write. Three such defects were found reviewing the
+    OBPI-0.34.0-03 entry on 2026-07-29, all invisible to the validator by
+    construction rather than by oversight.
+    """
+
+    def _write(self, tmp: str, **overrides: object) -> str:
+        kwargs: dict[str, object] = {
+            "obpi_id": "OBPI-0.34.0-03-terminal-partition-gate",
+            "agent": "claude-code",
+            "attestor": "g0",
+            "attestation_text": "attest completed",
+            "implementation_summary": "Summary.",
+            "key_proof": "Proof.",
+            "last_lock_event_timestamp": None,
+            "commit_sha": "abc1234",
+            "branch": "main",
+            "brief_rel_path": "docs/design/adr/x/obpis/y.md",
+        }
+        kwargs.update(overrides)
+        return write_completion_handoff(Path(tmp), **kwargs).read_text(  # type: ignore
+            encoding="utf-8"
+        )
+
+    def test_gate5_attestation_is_recorded_as_an_operator_ruling(self) -> None:
+        """The attestation is operator canon and must carry `[operator-ruled]`.
+
+        Gate 5 is universal — a completion handoff's Decisions Made entry is ALWAYS
+        a human attestation (ADR-0.0.36). Written without the marker it parses
+        UNATTRIBUTED, and per `gz-session-handoff` SKILL.md an unattributed entry
+        "does not carry forward": the successor's Settled Rulings promotes it
+        neither as a ruling nor as a preference. `validate_decision_markers` cannot
+        catch this — it is asymmetric by design, firing only on a line that CLAIMS
+        attribution and lacks a list marker. This is the mirror shape (marker
+        present, attribution absent), so it passes clean. GHI #696 defect 4,
+        reappearing through the mechanical producer.
+        """
+        from gzkit.handoff_api import parse_decisions  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            written = self._write(tmp, attestation_text="attest completed, the gate is green")
+
+        decisions = parse_decisions(written)
+        self.assertEqual(len(decisions), 1, f"expected one decision entry; got {decisions}")
+        self.assertTrue(
+            decisions[0].is_settled,
+            "a Gate-5 attestation must promote into the successor's Settled Rulings; "
+            f"got attribution={decisions[0].attribution!r}",
+        )
+        self.assertIn("attest completed, the gate is green", decisions[0].text)
+
+    def test_overlong_evidence_truncates_visibly_and_on_a_word_boundary(self) -> None:
+        """A silent mid-word cut is indistinguishable from badly-written prose.
+
+        `_sanitize_handoff_text` ended `return collapsed[:limit]`, so three sections
+        of the OBPI-0.34.0-03 entry stopped mid-token — one severing `AGENTS.md` to
+        `AGE`. A reader cannot tell truncation from a sentence that simply trails
+        off, and for the attestation field it silently drops operator verbatim
+        words (AGENTS.md § Attestation).
+        """
+        tokens = [f"token{i:03d}" for i in range(100)]  # 899 chars — well past the limit
+        with tempfile.TemporaryDirectory() as tmp:
+            written = self._write(tmp, implementation_summary=" ".join(tokens))
+
+        line = next(ln for ln in written.splitlines() if ln.startswith("- Implementation summary:"))
+        body = line.removeprefix("- Implementation summary:").strip()
+        self.assertTrue(body.endswith("…"), f"truncation must be marked; got tail {body[-40:]!r}")
+        carried = body.removesuffix("…").split()
+        self.assertTrue(carried, "truncation must still carry content")
+        self.assertTrue(
+            set(carried).issubset(set(tokens)),
+            f"every carried word must be whole; got trailing {carried[-3:]!r}",
+        )
+
+    def test_scaffold_comment_in_embedded_evidence_does_not_ride_along(self) -> None:
+        """A brief's leftover template comment must not land in the register entry.
+
+        The OBPI-0.34.0-03 brief kept its `<!-- One concrete usage example… -->`
+        prompt above the authored Key Proof (brief line 373), and the producer
+        embedded it verbatim into Verification Checklist. Nothing flagged it:
+        `validate_no_placeholders` and `validate_sections_populated` both STRIP
+        HTML comments before scanning, so stripping — not rejecting — is why the
+        gate is blind. Fixing the one brief would leave the class open, so the
+        producer is what must refuse to carry a comment inward.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            written = self._write(
+                tmp,
+                key_proof="<!-- One concrete usage example, command, or behavior. --> Real proof.",
+            )
+
+        self.assertNotIn("One concrete usage example", written)
+        self.assertIn("Real proof.", written)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -789,13 +789,33 @@ def _sanitize_handoff_text(text: str | None, *, limit: int = 600) -> str:
     mechanically-written handoff would fail its own validator. Newlines are collapsed
     so embedded text can never introduce a spurious ``## section`` or ``---`` line into
     the rendered document.
+
+    HTML comments are dropped, not carried. A brief that kept its scaffold prompt
+    above the authored content (``<!-- One concrete usage example… -->``) would
+    otherwise embed that prompt in a required section of the register entry, and
+    nothing downstream would flag it: ``validate_no_placeholders`` and
+    ``validate_sections_populated`` both *strip* comments before scanning, so the
+    gate is blind to their presence by construction. Refusing to carry one inward
+    fixes the class; editing the one brief would not.
+
+    Truncation is marked and lands on a word boundary. A bare ``[:limit]`` cut
+    severed tokens mid-word (``AGENTS.md`` → ``AGE``), which a reader cannot
+    distinguish from prose that simply trails off — and on the attestation field it
+    silently dropped operator verbatim words (``AGENTS.md`` § Attestation). The
+    marker is ``…``, the same glyph elisions already fold to, so it cannot trip
+    the placeholder scan. The returned text never exceeds ``limit``.
     """
     if not text:
         return ""
-    collapsed = " ".join(text.split())
+    collapsed = re.sub(r"<!--.*?-->", " ", text, flags=re.DOTALL)
+    collapsed = " ".join(collapsed.split())
     collapsed = re.sub(r"\.{3,}", "…", collapsed)
     collapsed = _PLACEHOLDER_WORD_RE.sub("(noted)", collapsed)
-    return collapsed[:limit]
+    if len(collapsed) <= limit:
+        return collapsed
+    head = collapsed[: limit - 1]
+    truncated = head.rsplit(" ", 1)[0] if " " in head else head
+    return f"{truncated.rstrip()}…"
 
 
 def write_completion_handoff(
@@ -873,7 +893,16 @@ def write_completion_handoff(
         + "`.gzkit/rules/token-block-discipline.md`). Auto-drafted from completion evidence "
         + "and may be terse.\n\n"
         + "## Decisions Made\n\n"
-        + f"- {decision}\n\n"
+        # `[operator-ruled]` is unconditional here: Gate 5 is universal (ADR-0.0.36), so
+        # a COMPLETION handoff's decision is always a human attestation. Written bare it
+        # parsed UNATTRIBUTED, and an unattributed entry does not carry forward — the
+        # successor's Settled Rulings promoted zero of them. `validate_decision_markers`
+        # cannot catch this shape: it is asymmetric by design, firing only on a line that
+        # CLAIMS attribution and lacks a list marker. This is the mirror (marker present,
+        # attribution absent), so it passed clean — GHI #696 defect 4 reappearing through
+        # the mechanical producer. The abandon-path writer above stays deliberately
+        # unattributed: its entry is a mechanical lock-surrender record, not a ruling.
+        + f"- [operator-ruled] {decision}\n\n"
         + "## Immediate Next Steps\n\n"
         + next_step
         + "## Pending Work / Open Loops\n\n"

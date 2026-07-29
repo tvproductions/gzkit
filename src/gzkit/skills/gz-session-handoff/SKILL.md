@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.19.0"
+  skill-version: "6.20.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-07-29
 model: sonnet
 ---
 
-# gz-session-handoff (v6.18.0)
+# gz-session-handoff (v6.20.0)
 
 ## Purpose
 
@@ -150,6 +150,25 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    that literally produced a section the promoter could not read. Now fail-closed:
    `validate_decision_markers` refuses the shape at authoring, so the gate catches
    it instead of the next session discovering a ruling it has to re-argue.
+
+   **The mechanical completion handoff attributes its own decision.**
+   `write_completion_handoff` (the token-block exit edge, GHI #619) marks its entry
+   `[operator-ruled]` unconditionally — Gate 5 is universal (ADR-0.0.36), so a
+   completion handoff's decision is *always* a human attestation. It wrote the
+   entry bare until 2026-07-29, which parsed UNATTRIBUTED, so every mechanically
+   written completion handoff dropped its Gate-5 attestation from the successor's
+   `Settled Rulings`. `validate_decision_markers` could not catch it: the check is
+   asymmetric by design and this was the mirror shape (list marker present,
+   attribution absent). The abandon-path writer stays unattributed on purpose — its
+   entry is a mechanical lock-surrender record, not a ruling.
+
+   **Embedded evidence is truncated at 600 chars, visibly.** Attestation text,
+   implementation summary, and key proof are collapsed and cut on a word boundary
+   with a trailing `…`. A bare slice severed tokens mid-word (`AGENTS.md` → `AGE`),
+   which reads as prose that trails off rather than as elision — and on the
+   attestation field it dropped operator verbatim words silently. The full
+   attestation always remains in the ledger receipt; the handoff carries a marked
+   excerpt.
 
    **`Settled Rulings` is written for you — do NOT hand-fill it.** The optional
    `## Settled Rulings` section is composed by construction: `create_handoff`
@@ -444,7 +463,8 @@ result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-1
 ## Acceptance Rules
 
 ### CREATE
-- All 7 required sections populated with session-specific content (no HTML comments or placeholders remaining) — **mechanized** by `validate_sections_populated` since GHI #692; an empty required section is a refusal, not a warning
+- All 7 required sections **populated** with session-specific content — **mechanized** by `validate_sections_populated` since GHI #692; an empty required section is a refusal, not a warning
+- **"No HTML comments remaining" is NOT mechanized — do not read the population gate as enforcing it.** `validate_sections_populated` and `validate_no_placeholders` both *strip* comments (`re.sub(r"<!--.*?-->", "", …)`) before scanning. Stripping is the opposite of rejecting: a section containing only a scaffold comment is correctly flagged empty, but a comment sitting above real content passes untouched. That gap let the OBPI-0.34.0-03 brief's `<!-- One concrete usage example… -->` prompt ride into a required section of its completion handoff under a clean validation pass (found 2026-07-29). The producer side is now closed — `_sanitize_handoff_text` drops comments from embedded evidence — but an **author-written** handoff must still be read by a human for leftover scaffold prompts. A wider validator was rejected deliberately: it would fail the whole legacy corpus, the same reason `validate_decision_markers` is asymmetric
 - Frontmatter validates against `HandoffFrontmatter` Pydantic model
 - Full validation pipeline passes (no placeholders, no secrets, sections present **and populated**, references exist)
 - File written to correct path: `.gzkit/handoffs/{timestamp}-{slug}.md`
