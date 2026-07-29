@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -60,6 +61,57 @@ def _write_brief(root: Path, obpi_id: str) -> None:
     (briefs / f"{obpi_id}.md").write_text(
         f"---\nid: {obpi_id}\n---\n# {obpi_id}\n", encoding="utf-8"
     )
+
+
+def _cutover_tolerated(ledger_path: Path, cutover: datetime) -> set[str]:
+    """Return the task_ids whose obpi_id divergence ``cutover`` excuses.
+
+    Mirrors `_sig_d_obpi_id_divergence`'s tolerance branch (same-lineage,
+    latest event at or before the cutover, not already grandfathered). Taking
+    the ledger path and cutover as PARAMETERS is what makes the ratchet
+    falsifiable: the real repo carries no divergence after the current cutover,
+    so a test bound to the live ledger passes whether or not the guard works.
+    """
+    from collections import defaultdict
+
+    from gzkit.commands.validate_task_envelope import (
+        _OBPI_ID_DIVERGENCE_GRANDFATHER,
+        _TASK_LIFECYCLE_TYPES,
+        _obpi_lineage_id,
+    )
+
+    spellings: dict[str, set[str]] = defaultdict(set)
+    latest: dict[str, datetime] = {}
+    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            ev = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(ev, dict) or ev.get("event") not in _TASK_LIFECYCLE_TYPES:
+            continue
+        task_id, obpi_id = ev.get("task_id"), ev.get("obpi_id")
+        if not (isinstance(task_id, str) and task_id and isinstance(obpi_id, str) and obpi_id):
+            continue
+        spellings[task_id].add(obpi_id)
+        stamp = str(ev.get("ts") or ev.get("timestamp") or "").replace("Z", "+00:00")
+        try:
+            seen = datetime.fromisoformat(stamp)
+        except ValueError:
+            continue
+        if task_id not in latest or seen > latest[task_id]:
+            latest[task_id] = seen
+
+    return {
+        task_id
+        for task_id, forms in spellings.items()
+        if task_id not in _OBPI_ID_DIVERGENCE_GRANDFATHER
+        and len(forms) > 1
+        and len({_obpi_lineage_id(f) for f in forms}) == 1
+        and task_id in latest
+        and latest[task_id] <= cutover
+    }
 
 
 class TestResolveObpiIdCanonicalization(unittest.TestCase):
@@ -125,6 +177,84 @@ class TestResolveObpiIdCanonicalization(unittest.TestCase):
             ledger = _ledger_with(root, [])
 
             self.assertEqual(_resolve_obpi_id(ledger, _SHORT, project_root=root), _SHORT)
+
+
+class TestCutoverToleranceRatchet(unittest.TestCase):
+    """`_OBPI_ID_CANONICAL_CUTOVER` must never be advanced to swallow new rows."""
+
+    # Shrink-only. Every task_id the cutover currently excuses, pinned. Advancing
+    # the cutover to hide a NEW divergence grows this set and fails the test;
+    # repairing history shrinks it, which is always allowed.
+    #
+    # This constant is the one escape hatch in Signature (d): the grandfather
+    # frozenset is shrink-only and guarded, but the cutover is a bare date that
+    # silently excuses everything before it. Twice now it has been advanced for
+    # the same GHI (#653). Without a ratchet, "advance the date" is a one-line
+    # way to make any divergence disappear.
+    _TOLERATED: frozenset[str] = frozenset(
+        {
+            "TASK-0.34.0-03-01-02",  # 2026-07-29 --req producer repair
+            "TASK-0.34.0-03-01-03",  # 2026-07-29 --req producer repair
+            "TASK-0.44.0-01-01-01",  # predates the 2026-07-29 advance
+            "TASK-0.44.0-01-03-01",  # predates the 2026-07-29 advance
+        }
+    )
+
+    @covers("REQ-0.34.0-03-01")
+    def test_cutover_excuses_only_the_pinned_task_ids(self) -> None:
+        """The set of divergences excused by the cutover may shrink, never grow."""
+        from gzkit.commands.validate_task_envelope import _OBPI_ID_CANONICAL_CUTOVER
+
+        ledger = Path(__file__).resolve().parents[1] / ".gzkit" / "ledger.jsonl"
+        tolerated = _cutover_tolerated(ledger, _OBPI_ID_CANONICAL_CUTOVER)
+
+        self.assertEqual(
+            tolerated - self._TOLERATED,
+            set(),
+            "the cutover now excuses task_ids that are not pinned — it was "
+            "advanced to hide a new divergence. Fix the producer that wrote the "
+            "short obpi_id instead (src/gzkit/commands/task.py), per the "
+            "shrink-only rule on _OBPI_ID_DIVERGENCE_GRANDFATHER.",
+        )
+
+    @covers("REQ-0.34.0-03-01")
+    def test_ratchet_detects_a_cutover_advanced_to_bury_a_divergence(self) -> None:
+        """The guard bites — proven against a synthetic ledger, not asserted.
+
+        A ratchet that cannot fail is theater. The real repo has no divergence
+        after the current cutover, so simply moving the date changes nothing and
+        the primary test above stays green either way. This drives the same
+        helper with a ledger that DOES carry a fresh divergence and confirms an
+        advanced cutover starts excusing it.
+        """
+        with TemporaryDirectory() as tmp:
+            ledger = Path(tmp) / "ledger.jsonl"
+            rows = [
+                {
+                    "event": "task_started",
+                    "task_id": "TASK-9.9.9-01-01-01",
+                    "obpi_id": "OBPI-9.9.9-01",
+                    "ts": "2027-01-01T00:00:00+00:00",
+                },
+                {
+                    "event": "task_completed",
+                    "task_id": "TASK-9.9.9-01-01-01",
+                    "obpi_id": "OBPI-9.9.9-01-slug",
+                    "ts": "2027-01-01T01:00:00+00:00",
+                },
+            ]
+            ledger.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+
+            before = _cutover_tolerated(ledger, datetime(2026, 7, 29, tzinfo=UTC))
+            after = _cutover_tolerated(ledger, datetime(2027, 6, 1, tzinfo=UTC))
+
+            self.assertEqual(before, set(), "a post-cutover divergence must NOT be excused")
+            self.assertEqual(
+                after,
+                {"TASK-9.9.9-01-01-01"},
+                "advancing the cutover past a divergence must start excusing it, "
+                "which is exactly what the pinned set makes visible",
+            )
 
 
 if __name__ == "__main__":

@@ -1044,9 +1044,17 @@ def _after_cutover(hours: int) -> str:
     """Return an ISO timestamp AFTER the obpi_id canonicalization cutover.
 
     Derived from `_OBPI_ID_CANONICAL_CUTOVER` rather than hardcoded: the cutover
-    advances whenever the producer is repaired again, and a literal date silently
-    slides to the tolerated side of it, turning this fail-closed assertion into a
-    vacuous pass (observed 2026-07-29).
+    advances whenever the producer is repaired again, and a literal date slides
+    to the tolerated side of it, so the divergence this fixture stages stops
+    firing (observed 2026-07-29, when the fixture's `2026-07-11` literal fell
+    behind an advanced cutover).
+
+    That rot is LOUD, not silent — the assertion is `assertGreater(len(errors), 0)`,
+    so the test FAILS rather than passing vacuously; measured by advancing
+    `_TASK_ENVELOPE_ENFORCEMENT_EPOCH` a year, which produced 4 failures and 0
+    silent passes. Deriving the timestamp is still correct: it re-anchors the
+    fixture automatically instead of presenting a red test whose obvious "fix"
+    is to weaken the assertion.
     """
     from datetime import timedelta
 
