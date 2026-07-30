@@ -408,6 +408,18 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
 
 _SUBPROCESS_CAPTURE_FUNCS: frozenset[str] = frozenset({"run", "Popen", "check_output"})
 
+# Executable trees whose subprocess reads are scanned. `scripts` and
+# `.claude/hooks` carry the worst-consequence sites in the repo: a decode crash
+# there kills session boot or refuses every tool call, rather than failing one
+# command. `.claude/hooks` is canonical, not a generated mirror
+# (`.gzkit/manifest.json` declares `"hooks": ".claude/hooks"`). `tests` is
+# excluded on purpose — see `audit_subprocess_errors`.
+_SUBPROCESS_AUDIT_ROOTS: tuple[tuple[str, ...], ...] = (
+    ("src", "gzkit"),
+    ("scripts",),
+    (".claude", "hooks"),
+)
+
 _SUBPROCESS_ERRORS_MESSAGE = (
     "text-mode subprocess capture decodes sub-process output but passes no "
     "`errors=` — non-UTF-8 tool/git output (cp1252/latin-1) raises "
@@ -467,7 +479,7 @@ def _captures_output(func_name: str, kwargs: dict[str, ast.expr]) -> bool:
 
 
 def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
-    """Flag text-mode subprocess captures under ``src/gzkit`` missing ``errors=``.
+    """Flag text-mode subprocess captures missing ``errors=`` across executable trees.
 
     A text-mode capture (``text=True`` / ``encoding=`` / ``universal_newlines=``
     combined with ``check_output``, ``capture_output=True``, or ``stdout=PIPE``)
@@ -476,38 +488,52 @@ def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
     cross-platform crash GHI #582 remediates. Bytes-mode calls are not flagged:
     adding ``errors=`` there would silently enable text mode.
 
-    This is the recurrence defense for the GHI #582 sweep — invoked by
-    ``tests/governance/test_subprocess_errors_replace.py`` against the real tree
-    so a re-introduced site fails closed in the ``gz check`` test tier, mirroring
-    the ``.as_posix()`` rule's ``test_path_separator_portability.py`` enforcement.
+    Scans every tree named in ``_SUBPROCESS_AUDIT_ROOTS``, not ``src/gzkit``
+    alone. The narrower scope was itself the defect: the two worst-consequence
+    call sites in the repo live OUTSIDE ``src`` — ``scripts/session_orientation.py``
+    (the SessionStart boot hook) and the blocking hooks under ``.claude/hooks``
+    — where an undecodable byte does not fail one command but kills session boot
+    or refuses every tool call. GHI #688 already patched the boot hook's
+    *file*-read side of this class; its *subprocess* side was invisible here, so
+    the recurrence guard did not guard the surface whose recurrence mattered most.
+
+    ``tests/`` is deliberately NOT scanned: a decode crash there fails a test
+    loudly, which is self-reporting rather than silent, and 35 sites carry the
+    shape. Sweeping them is real work with a different risk profile, not a
+    scope this audit should quietly annex.
+
+    Invoked by ``tests/governance/test_subprocess_errors_replace.py`` against the
+    real tree so a re-introduced site fails closed in the ``gz check`` test tier,
+    mirroring the ``.as_posix()`` rule's ``test_path_separator_portability.py``.
     """
     errors: list[ValidationError] = []
-    src_root = project_root / "src" / "gzkit"
-    if not src_root.is_dir():
-        return errors
-    for py_path in sorted(src_root.rglob("*.py")):
-        try:
-            tree = ast.parse(py_path.read_text(encoding="utf-8"))
-        except (OSError, SyntaxError):
+    for parts in _SUBPROCESS_AUDIT_ROOTS:
+        root = project_root.joinpath(*parts)
+        if not root.is_dir():
             continue
-        for node in ast.walk(tree):
-            if not isinstance(node, ast.Call):
+        for py_path in sorted(root.rglob("*.py")):
+            try:
+                tree = ast.parse(py_path.read_text(encoding="utf-8"))
+            except (OSError, SyntaxError):
                 continue
-            func_name = _subprocess_func_name(node)
-            if func_name is None:
-                continue
-            kwargs = _call_kwargs(node)
-            if (
-                _decodes_text(kwargs)
-                and _captures_output(func_name, kwargs)
-                and "errors" not in kwargs
-            ):
-                rel = py_path.relative_to(project_root).as_posix()
-                errors.append(
-                    ValidationError(
-                        type="subprocess_errors",
-                        artifact=f"{rel}:{node.lineno}",
-                        message=_SUBPROCESS_ERRORS_MESSAGE,
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                func_name = _subprocess_func_name(node)
+                if func_name is None:
+                    continue
+                kwargs = _call_kwargs(node)
+                if (
+                    _decodes_text(kwargs)
+                    and _captures_output(func_name, kwargs)
+                    and "errors" not in kwargs
+                ):
+                    rel = py_path.relative_to(project_root).as_posix()
+                    errors.append(
+                        ValidationError(
+                            type="subprocess_errors",
+                            artifact=f"{rel}:{node.lineno}",
+                            message=_SUBPROCESS_ERRORS_MESSAGE,
+                        )
                     )
-                )
     return errors

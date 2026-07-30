@@ -302,6 +302,7 @@ def _run_gh_json(args: list[str], timeout: int = 30) -> object | None:
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             check=False,
         )
@@ -366,13 +367,20 @@ def collect_recent_events(ledger_path: Path, now: datetime) -> list[dict]:
 
 
 def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] | None:
-    """Run a git subprocess; return None on any failure shape (missing git, timeout)."""
+    """Run a git subprocess; return None on any failure shape (missing git, timeout).
+
+    ``errors="replace"`` is load-bearing, not decoration: a branch name or commit
+    subject in cp1252/latin-1 would otherwise raise ``UnicodeDecodeError`` — a
+    ``ValueError``, which the guard below does NOT catch — and kill session boot.
+    Same class as the file-read side GHI #688 already patched in this module.
+    """
     try:
         return subprocess.run(
             args,
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             timeout=timeout,
             check=False,
         )

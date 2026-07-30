@@ -80,6 +80,7 @@ def collect_dirty_python_files(cwd: Path) -> list[str]:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
         cwd=cwd,
         timeout=TIMEOUT_SECONDS,
     )
@@ -104,6 +105,7 @@ def run_ruff(files: list[str], cwd: Path) -> tuple[int, str]:
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
         cwd=cwd,
         timeout=TIMEOUT_SECONDS,
     )

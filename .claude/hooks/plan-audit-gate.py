@@ -222,6 +222,8 @@ def attempt_self_audit(obpi_id: str, cwd: str) -> tuple[bool, str]:
             cwd=cwd,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=SELF_AUDIT_TIMEOUT_SECONDS,
             check=False,
         )

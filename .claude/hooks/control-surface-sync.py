@@ -66,6 +66,8 @@ def main():
             ["uv", "run", "gz", "agent", "sync", "control-surfaces"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=TIMEOUT_SECONDS,
             cwd=str(project_root),
         )
