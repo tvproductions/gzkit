@@ -8,7 +8,14 @@ active campaign (Magna Carta — operator ruling, 2026-06-10) is surfaced
 first: it is the one canonical plan and rules every session.
 
 Sources are tolerant: missing inputs degrade into "(no data)" lines so a
-SessionStart hook never fails the boot. Stdlib + git + gh only.
+SessionStart hook never fails the boot. Stdlib + git + gh + `gz` read verbs
+only — no gzkit import.
+
+The `gz` dependency is deliberate and narrow: OBPI counts are resolved through
+`gz adr status --json`, never recomputed here. Re-deriving a count the CLI
+already computes would stand up a second count authority in a boot hook, which
+is the drift class this script exists to surface, automated. One authority, read
+out-of-process, degrading to silence when unavailable.
 """
 
 from __future__ import annotations
@@ -22,6 +29,14 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+
+# Bare ADR ids only — the slug-bearing form is matched by prefix on the CLI side.
+_ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
+# One `gz adr status` per ADR named in the sequencing line. Three keeps the added
+# boot cost near 2.4s at ~0.8s each; raising it raises session-start latency
+# linearly, so it is a budget, not a formality.
+CAMPAIGN_ADR_REF_LIMIT = 3
+ADR_STATUS_TIMEOUT_SEC = 15
 
 SECTION_HEADINGS: tuple[str, ...] = (
     "Active campaign — Magna Carta",
@@ -89,14 +104,88 @@ def collect_campaign(repo_root: Path) -> dict | None:
         # pulled next. When the marker is present it is authoritative; absent,
         # the renderer falls back to document order with an honest caveat.
         topmost = re.search(r"^>?\s*\*\*Topmost \(sequenced\):\*\*\s*(.+?)\s*$", text, re.MULTILINE)
+        topmost_text = topmost.group(1).strip() if topmost else None
         return {
             "path": str(path.relative_to(repo_root)).replace(os.sep, "/"),
             "done": done,
             "total": done + len(unchecked),
             "next_items": [item.strip() for item in unchecked[:3]],
-            "topmost": topmost.group(1).strip() if topmost else None,
+            "topmost": topmost_text,
+            # Refs only — resolution is a subprocess and belongs in
+            # `collect_state`, so this parser stays filesystem-only and cheap.
+            "adr_refs": _campaign_adr_refs(topmost_text),
         }
     return None
+
+
+def collect_live_adr_counts(adr_ids: list[str]) -> list[dict]:
+    """Resolve each ADR's OBPI count from the governed read, never from prose.
+
+    The campaign plan hand-carries counts like ``ADR-0.34.0`` *2/5* in text that
+    :func:`render` quotes verbatim, so a completed OBPI staled the top of every
+    session until an operator ruling cleared it — twice on the same line inside
+    four days. The prose is left untouched (operator-ratified canon; a banner
+    silently disagreeing with the document it quotes would be the worse defect)
+    and Layer-2 truth is rendered beside it.
+
+    One subprocess per ADR, bounded by ``CAMPAIGN_ADR_REF_LIMIT``. The batch
+    alternative was measured and rejected: ``gz status --json`` walks every ADR
+    at ~9.6s, over five times this whole hook's runtime, while a single
+    ``gz adr status`` is ~0.8s.
+
+    Every failure shape — missing binary, timeout, non-zero exit, unparseable or
+    unexpected JSON — drops that ADR from the result. A boot hook must never
+    crash the session, and an absent count must never be rendered as a real one.
+    """
+    resolved: list[dict] = []
+    for adr_id in adr_ids:
+        try:
+            proc = subprocess.run(
+                ["uv", "run", "gz", "adr", "status", adr_id, "--json"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=ADR_STATUS_TIMEOUT_SEC,
+                check=False,
+            )
+        except (FileNotFoundError, subprocess.SubprocessError):
+            continue
+        if proc.returncode != 0:
+            continue
+        try:
+            payload = json.loads(proc.stdout)
+        except ValueError:
+            continue
+        summary = payload.get("obpi_summary") if isinstance(payload, dict) else None
+        if not isinstance(summary, dict):
+            continue
+        resolved.append(
+            {
+                "adr": adr_id,
+                "completed": summary.get("completed", 0),
+                "total": summary.get("total", 0),
+                "lifecycle": payload.get("lifecycle_status"),
+            }
+        )
+    return resolved
+
+
+def _campaign_adr_refs(topmost: str | None, limit: int = CAMPAIGN_ADR_REF_LIMIT) -> list[str]:
+    """Bare ADR ids named in the sequencing line, de-duplicated, order preserved.
+
+    Scoped to the topmost line rather than the whole plan on purpose: that line
+    is what governs what is pulled next, and it bounds the subprocess count to
+    something a boot hook can afford. ``dict`` rather than ``set`` because the
+    order is the sequencing order, and truncation must drop the tail, not an
+    arbitrary member.
+    """
+    if not topmost:
+        return []
+    ordered: dict[str, None] = {}
+    for ref in _ADR_REF_RE.findall(topmost):
+        ordered.setdefault(ref, None)
+    return list(ordered)[:limit]
 
 
 def classify_freshness(now: datetime, ts: datetime) -> str:
@@ -393,8 +482,13 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
 
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
+    campaign = collect_campaign(repo_root)
+    if isinstance(campaign, dict):
+        # Resolved here, not in `collect_campaign`: this is the one place that
+        # pays the subprocess cost, so it is the one place it can be bounded.
+        campaign["live_adr_counts"] = collect_live_adr_counts(campaign.get("adr_refs") or [])
     return {
-        "campaign": collect_campaign(repo_root),
+        "campaign": campaign,
         "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
@@ -421,6 +515,17 @@ def render(state: dict, now: datetime) -> str:
         topmost = campaign.get("topmost")
         if topmost:
             lines.append(f"- Topmost (sequenced): {topmost}")
+            live_counts = campaign.get("live_adr_counts") or []
+            if live_counts:
+                rendered = " · ".join(
+                    f"{entry['adr']} {entry['completed']}/{entry['total']}"
+                    + (f" ({entry['lifecycle']})" if entry.get("lifecycle") else "")
+                    for entry in live_counts
+                )
+                lines.append(
+                    "- Live OBPI counts (Layer-2 via `gz adr status`; AUTHORITATIVE over any "
+                    f"count quoted in the line above, which is transcribed prose): {rendered}"
+                )
             if next_items:
                 lines.append(
                     "- Open checkboxes (document order, NOT the pull order): "

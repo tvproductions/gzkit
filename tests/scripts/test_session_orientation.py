@@ -843,6 +843,130 @@ class TestCollectObpiLocks(unittest.TestCase):
             self.assertEqual(self.mod.collect_obpi_locks(Path(tmp)), [])
 
 
+class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
+    """A count transcribed into campaign prose rots; the banner must not carry the rot.
+
+    The Movement A capstone line hand-copied `gz adr status`'s OBPI count, and
+    `render` quotes that line verbatim — so every OBPI completion re-staled the
+    top of every session, and clearing it cost an operator ruling, because
+    campaign amendments are operator-ratified. It recurred on the same line
+    twice inside four days (amendments 2026-07-25 and 2026-07-29).
+
+    The prose is NOT rewritten: it is operator-ratified canon, and a banner that
+    silently disagreed with the document it quotes would be a worse defect. The
+    banner instead carries the count resolved from the governed read alongside
+    it, so Layer-2 truth is present without any session holding a ruling.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 7, 29, 12, 0, 0, tzinfo=UTC)
+
+    def _status_json(self, completed: int, total: int, lifecycle: str = "Pending") -> str:
+        return json.dumps(
+            {
+                "adr": "ADR-0.0.73-meta-audit",
+                "lifecycle_status": lifecycle,
+                "obpi_summary": {"total": total, "completed": completed},
+            }
+        )
+
+    def _campaign_state(self, topmost: str, live: list[dict]) -> dict:
+        return {
+            "campaign": {
+                "path": "docs/governance/build-to-1.0-campaign-2026-07-18.md",
+                "done": 1,
+                "total": 4,
+                "next_items": [],
+                "topmost": topmost,
+                "live_adr_counts": live,
+            }
+        }
+
+    def test_stale_prose_count_does_not_stand_alone_in_the_banner(self):
+        """The contract: prose claims 0/7, Layer-2 says 4/7, banner carries 4/7."""
+        state = self._campaign_state(
+            "ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild.",
+            [{"adr": "ADR-0.0.73", "completed": 4, "total": 7, "lifecycle": "Pending"}],
+        )
+        out = self.mod.render(state, self.now)
+        line = next(ln for ln in out.splitlines() if "Live OBPI counts" in ln)
+        self.assertIn("ADR-0.0.73 4/7", line)
+        self.assertIn("gz adr status", line)  # the line names its own authority
+        # The ratified prose survives verbatim — the fix adds truth, it does not
+        # edit canon in a derived view.
+        self.assertIn("ADR-0.0.73 meta-audit (0/7)", out)
+
+    def test_live_count_is_read_from_the_governed_read(self):
+        with mock.patch.object(
+            self.mod.subprocess,
+            "run",
+            return_value=subprocess_completed(stdout=self._status_json(3, 5)),
+        ):
+            counts = self.mod.collect_live_adr_counts(["ADR-0.34.0"])
+        self.assertEqual(
+            counts,
+            [{"adr": "ADR-0.34.0", "completed": 3, "total": 5, "lifecycle": "Pending"}],
+        )
+
+    def test_refs_are_deduplicated_order_preserved_and_capped(self):
+        """Boot-hook cost is bounded by construction, not by luck."""
+        refs = self.mod._campaign_adr_refs(
+            "ADR-0.34.0 then ADR-0.35.0 then ADR-0.34.0 again then ADR-0.1.0 then ADR-0.2.0",
+            limit=3,
+        )
+        self.assertEqual(refs, ["ADR-0.34.0", "ADR-0.35.0", "ADR-0.1.0"])
+
+    def test_no_refs_spawns_no_subprocess(self):
+        """No reference to resolve means no process to pay for."""
+        with mock.patch.object(self.mod.subprocess, "run") as run:
+            self.assertEqual(self.mod.collect_live_adr_counts([]), [])
+        run.assert_not_called()
+
+    def test_unusable_output_degrades_without_raising_or_fabricating(self):
+        """Boot-hook contract: never crash the session, never invent a count."""
+        for outcome in (
+            subprocess_completed(stdout="not json", returncode=0),
+            subprocess_completed(stdout="{}", returncode=1),
+            subprocess_completed(stdout=json.dumps({"obpi_summary": "wrong-type"})),
+            subprocess_completed(stdout=json.dumps({"no_summary": True})),
+        ):
+            with mock.patch.object(self.mod.subprocess, "run", return_value=outcome):
+                self.assertEqual(self.mod.collect_live_adr_counts(["ADR-0.34.0"]), [])
+
+    def test_missing_binary_and_timeout_degrade(self):
+        import subprocess as _sp
+
+        for boom in (FileNotFoundError(), _sp.TimeoutExpired("gz", 1)):
+            with mock.patch.object(self.mod.subprocess, "run", side_effect=boom):
+                self.assertEqual(self.mod.collect_live_adr_counts(["ADR-0.34.0"]), [])
+
+    def test_absent_layer2_data_renders_no_line_rather_than_implying_zero(self):
+        state = self._campaign_state("ADR-0.0.73 meta-audit (0/7).", [])
+        out = self.mod.render(state, self.now)
+        self.assertNotIn("Live OBPI counts", out)
+
+    def test_campaign_collection_records_refs_without_spawning_a_subprocess(self):
+        """`collect_campaign` stays filesystem-only; resolution happens in `collect_state`.
+
+        Keeping the split means the campaign parser remains cheap and testable
+        with no process mocking, and the subprocess cost is paid once, in one
+        place, where it can be bounded.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            gov = root / "docs" / "governance"
+            gov.mkdir(parents=True)
+            (gov / "build-to-1.0-campaign-2026-07-18.md").write_text(
+                CAMPAIGN_FIXTURE_WITH_TOPMOST, encoding="utf-8"
+            )
+            with mock.patch.object(self.mod.subprocess, "run") as run:
+                campaign = self.mod.collect_campaign(root)
+            run.assert_not_called()
+        assert campaign is not None
+        self.assertEqual(campaign["adr_refs"], ["ADR-0.0.73"])
+
+
 def subprocess_completed(stdout: str = "", returncode: int = 0):
     """Tiny stand-in for subprocess.CompletedProcess covering the fields we use."""
     import subprocess as _sp
