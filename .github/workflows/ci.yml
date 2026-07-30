@@ -19,6 +19,20 @@ jobs:
         with:
           fetch-depth: 0 # gz check has git-history-dependent validators
 
+      # `gz check` runs the authorship audit (GHI #725), which fails closed when
+      # no git identity resolves — and a fresh Actions checkout sets none. This is
+      # the exact case the audit was written for: identity is machine state the
+      # repository "can neither see, provision, nor verify."
+      #
+      # The bot identity, NOT the operator's: CI is not `g0`, and stamping the
+      # operator's address on runner activity would misattribute machine work to a
+      # human. The address must end in the suffix declared by `.gzkit.json`
+      # (`authorship.required_email_suffix`), which the noreply form satisfies.
+      - name: Configure git identity for the authorship audit
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
       - uses: actions/setup-python@v6
         with:
           python-version: "3.13"
