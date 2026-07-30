@@ -70,7 +70,7 @@ def _write_grandfathered_ledger(root: Path, adr_ids: list[str]) -> None:
     gz_dir.mkdir(parents=True, exist_ok=True)
     (gz_dir / "ledger.jsonl").write_text(
         "".join(
-            json.dumps({"event": "foundation_grandfathered", "id": adr_id}) + "\n"
+            json.dumps({"event": "foundation_grandfathered", "id": adr_id, "attestor": "g0"}) + "\n"
             for adr_id in adr_ids
         ),
         encoding="utf-8",

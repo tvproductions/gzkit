@@ -326,15 +326,70 @@ def obpi_receipt_emitted_event(
     )
 
 
-def artifact_renamed_event(old_id: str, new_id: str, reason: str | None = None) -> LedgerEvent:
-    """Create an artifact rename event used for ID migrations."""
+def artifact_renamed_event(
+    old_id: str, new_id: str, reason: str | None = None, task_id: str | None = None
+) -> LedgerEvent:
+    """Create an artifact rename event used for ID migrations.
+
+    ``artifact_renamed`` is a TASK worklog type (``_TASK_WORKLOG_TYPES``), so a
+    rename emitted while a TASK is active MUST carry ``task_id`` or Signature (a)
+    of ``gz validate --task-envelope-coherence`` fails closed. This producer went
+    unattributed until ADR-0.34.0 OBPI-04: the only prior bulk demotion (GHI #520,
+    2026-05-23) predates ``_TASK_ENVELOPE_ENFORCEMENT_EPOCH``, so the gap never
+    surfaced. Optional because renames also occur outside any TASK envelope.
+    """
     extra: dict[str, Any] = {"new_id": new_id}
     if reason:
         extra["reason"] = reason
+    if task_id:
+        extra["task_id"] = task_id
     return LedgerEvent(
         event="artifact_renamed",
         id=old_id,
         extra=extra,
+    )
+
+
+def foundation_grandfathered_event(
+    adr_id: str,
+    title: str,
+    semver: str,
+    frozen_at: str,
+    attestor: str,
+) -> LedgerEvent:
+    """Create a foundation_grandfathered terminality witness (ADR-0.34.0, OBPI-04).
+
+    ``adr_id`` MUST be the full slugged ADR id form (e.g.
+    ``ADR-0.0.9-state-doctrine-source-of-truth``), never a bare semver
+    (``ADR-0.0.9``) — the reader
+    (``gzkit.governance.trust_audits.taxonomy._grandfathered_event_ids``) does
+    exact string set-difference against on-disk frontmatter ids, so a
+    bare-semver id would silently fail the terminal-partition gate.
+
+    ``attestor`` is REQUIRED and fail-closed non-empty: this event IS the
+    terminality witness the taxonomy gate consumes, and that reader accepts any
+    event of this type carrying a non-empty id without inspecting the witness.
+    A defaulted-empty attestor would therefore make the factory itself a
+    fabrication path — a witnessless event that satisfies the SUPPORT gate. No
+    default: this is a new event with no legacy positional callers to protect
+    (same posture as ``obpi_superseded_event``).
+    """
+    if not attestor.strip():
+        msg = (
+            "foundation_grandfathered requires a non-empty attestor — the event IS the "
+            "Gate-5 terminality witness, and the taxonomy reader does not inspect it, "
+            "so an empty attestor would fabricate the witness it claims to record."
+        )
+        raise ValueError(msg)
+    return LedgerEvent(
+        event="foundation_grandfathered",
+        id=adr_id,
+        extra={
+            "title": title,
+            "semver": semver,
+            "frozen_at": frozen_at,
+            "attestor": attestor,
+        },
     )
 
 

@@ -1,19 +1,16 @@
 ---
 id: ADR-pool.ghi-authoring-mechanical-label-enforcement
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
-promoted_to: ADR-0.0.44-ghi-authoring-mechanical-label-enforcement
 ---
 
 # ADR-pool.ghi-authoring-mechanical-label-enforcement: GHI Authoring Mechanical Label Enforcement
-> Promoted to `ADR-0.0.44-ghi-authoring-mechanical-label-enforcement` on 2026-05-15. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Intent
 

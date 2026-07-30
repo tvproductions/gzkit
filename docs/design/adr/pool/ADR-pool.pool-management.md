@@ -1,18 +1,15 @@
 ---
 id: ADR-pool.pool-management
-status: Superseded
+status: Pool
 lane: heavy
 parent: ADR-0.6.0-pool-promotion-protocol
-promoted_to: ADR-0.0.46-pool-management
 ---
 
 # ADR-pool.pool-management: Pool Management Strategy
-> Promoted to `ADR-0.0.46-pool-management` on 2026-05-16. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 

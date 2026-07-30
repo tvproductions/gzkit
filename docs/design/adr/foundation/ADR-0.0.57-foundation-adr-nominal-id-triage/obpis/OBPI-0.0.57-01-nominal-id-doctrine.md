@@ -185,7 +185,7 @@ rg -n "Order versioned identifiers" AGENTS.md
 
 # Demonstrate the validator now accepts sparse foundation IDs (gaps allowed)
 uv run gz validate --taxonomy
-# Expected: exit 0 even with a gap such as ADR-0.0.55 missing between 0.0.54 and 0.0.56
+# Expected: exit 0 even with a gap such as ADR-pool.package-import-direction-invariant missing between 0.0.54 and 0.0.56
 ```
 
 ## Acceptance Criteria
@@ -199,7 +199,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.57-01-01: Given ADR-0.0.17 and ADR-0.0.18, when each is read, then both contain a dated amendment block that quotes ADR-0.0.57 § Decision item 1 verbatim and states 0.0.x is nominal, not a sequence position.
 - [ ] REQ-0.0.57-01-02: Given the AGENTS.md § Local Agent Rules section, when the ordering rule is read, then its scope is explicitly restricted to feature ADRs and an explicit counter-rule names foundation IDs as nominal.
 - [ ] REQ-0.0.57-01-03: Given `src/gzkit/trust_audits.py`, when audited, then every sequence-position assumption (max+1, consecutive integer expectation, etc.) is either removed or annotated with an `audit-exempt` reason.
-- [ ] REQ-0.0.57-01-04: Given a foundation tree with a gap (e.g. ADR-0.0.55 absent, 0.0.54 and 0.0.56 present), when `gz validate --taxonomy` runs, then exit code is 0 (no drift error on the missing nominal index).
+- [ ] REQ-0.0.57-01-04: Given a foundation tree with a gap (e.g. ADR-pool.package-import-direction-invariant absent, 0.0.54 and 0.0.56 present), when `gz validate --taxonomy` runs, then exit code is 0 (no drift error on the missing nominal index).
 - [ ] REQ-0.0.57-01-05: Given the brief boundary, when implementation completes, then `src/gzkit/commands/plan.py` is unchanged in this OBPI (allocator change is OBPI-02's surface; doctrine here, code there).
 - [ ] REQ-0.0.57-01-06: Given any existing foundation ADR directory under `docs/design/adr/foundation/`, when this OBPI's diff is reviewed, then no directory or file was renamed or moved (digits-preserved invariant).
 

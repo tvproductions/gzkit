@@ -31,7 +31,7 @@ req_atomic:
 Flip `gz validate --bullet-retention` from a **whole-surface verbatim grep** to **tier-aware enforcement**, realizing the already-authored ADR-0.0.33 § Amendment (2026-06-03):
 
 - **Invariant tier** (`tier: invariant` corpus entries): verbatim-presence contract unchanged and fail-closed — these render verbatim at every setpoint, and the validator asserts their exact presence.
-- **Compressible tier**: retention is satisfied by the **advisor-QC information-retention receipt + operator attestation** for the committed rendition (OBPI-24, ADR-0.0.39, universal Gate 5), **NOT** by verbatim-bullet substring. The invariant preserved is *no binding information is lost* (witnessed by receipt + attestation), not *every byte identical*.
+- **Compressible tier**: retention is satisfied by the **advisor-QC information-retention receipt + operator attestation** for the committed rendition (OBPI-24, ADR-pool.llm-as-judge-doctrine, universal Gate 5), **NOT** by verbatim-bullet substring. The invariant preserved is *no binding information is lost* (witnessed by receipt + attestation), not *every byte identical*.
 
 This OBPI lands the validator change **in the same commit-window** as the coupled ADR-0.0.33 Invariant-1 amendment, keeping `--bullet-retention` wired into `--surface-fidelity` / `gz check` throughout (ADR-0.0.33 Anti-Pattern #1). Editing a Validated foundation invariant's enforcement is a **real attested amendment**, never a silent validator edit (parent ADR Alternative #18; ADR-0.0.33 is the doctrine-drift guard this respects).
 

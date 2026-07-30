@@ -52,7 +52,7 @@ channel (no authoritative quality GO from shape), `gz validate --qc-binding` is 
 and the structural scorers carry no substance claim.
 
 Forced downstream (named, NOT this OBPI): the full judge governance (leakage /
-output-discipline / meta-eval validators, JudgeInvocation model — ADR-0.0.40) needed
+output-discipline / meta-eval validators, JudgeInvocation model — ADR-pool.judge-enforcement-validators) needed
 to POPULATE the substance channel; until it lands, substance is honestly UNGRADED.
 
 ## Lane
@@ -315,7 +315,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Tests: 6297 unittests green; 7 substance-channel tests; full repo green (ruff, typecheck, documents, cli-alignment, qc-binding, mkdocs --strict)
 - Date completed: 2026-06-19
 - Attestation status: operator-attested (g0)
-- Forced downstream (named): full judge governance (leakage/output-discipline/meta-eval, JudgeInvocation model — ADR-0.0.40) to POPULATE the substance channel
+- Forced downstream (named): full judge governance (leakage/output-discipline/meta-eval, JudgeInvocation model — ADR-pool.judge-enforcement-validators) to POPULATE the substance channel
 
 ## Tracked Defects
 

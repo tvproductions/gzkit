@@ -39,6 +39,7 @@ from gzkit.events import (
     DiscoveredFromEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
+    FoundationGrandfatheredEvent,
     GateCheckedEvent,
     HandoffResumeAuthorizedEvent,
     IntrinsicComplexityAttestationEvent,
@@ -320,6 +321,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_unparked": ObpiUnparkedEvent,
+    # Foundation Sunset terminality witness (ADR-0.34.0, OBPI-04)
+    "foundation_grandfathered": FoundationGrandfatheredEvent,
 }
 
 # Base fields present on _EventBase -- not event-specific

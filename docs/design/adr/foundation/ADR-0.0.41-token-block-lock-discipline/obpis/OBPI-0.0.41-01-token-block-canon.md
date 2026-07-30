@@ -206,7 +206,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - Verification checks: 16/16 PASS including precomplete
 - Canonical ARB receipts: arb-ruff-790611fd5d1349b59b4888b9b2e50787, arb-step-typecheck-18f81962b9874950bffbf7d7a80cb8b1, arb-step-unittest-2d40900ae9d24e829e8ca253cd91e337, arb-step-mkdocs-75182a2ef39a48d4863fa07584a21e26
 - Precomplete preconditions: 7/7 met (lock_held, plan_audit_receipt, brief_readiness, reconcile_idempotent, arb_receipts, brief_headings, behave_req_coverage)
-- Plan-audit advisory: ADR-0.0.42 OBPI-04 sibling-overlap on parent ADR file (non-blocking)
+- Plan-audit advisory: ADR-pool.storybook-doctrine OBPI-04 sibling-overlap on parent ADR file (non-blocking)
 
 ## Binding Sub-Invariant 1: Auditable Abandon Categories
 ## Binding Sub-Invariant 2: Register-Entry Minimum-Information Rule

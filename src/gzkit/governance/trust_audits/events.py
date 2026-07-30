@@ -162,6 +162,16 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "ARB receipt the operator cites at Gate 5. Advisory, never gating; consumed by the "
         "advisor-QC audit trail and operator attestation, not the artifact graph."
     ),
+    "foundation_grandfathered": (
+        "Terminality witness for one closed-manifest `kind: foundation` entry (ADR-0.34.0 "
+        "Foundation Sunset, OBPI-04), emitted once per `data/foundation_grandfather.json` "
+        "entry at populate time. Consumed by "
+        "`gzkit.governance.trust_audits.taxonomy._grandfathered_event_ids` for the "
+        "terminal-partition gate via a raw-JSONL replay, not by graph construction: it "
+        "records a lifecycle fact ABOUT an existing ADR node, not a relationship BETWEEN "
+        "artifacts, so `get_artifact_graph` materializes no node or edge from it (mirrors "
+        "the `_ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES` disposition in `gzkit.ontology.corpus`)."
+    ),
 }
 
 _VALIDATOR_FIELD_WAIVERS: dict[str, str] = {}

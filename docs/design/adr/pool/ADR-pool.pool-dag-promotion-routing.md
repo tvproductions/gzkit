@@ -1,14 +1,11 @@
 ---
 id: ADR-pool.pool-dag-promotion-routing
-status: Superseded
+status: Pool
 lane: lite
 parent: ADR-0.6.0-pool-promotion-protocol
-promoted_to: ADR-0.0.47-pool-dag-promotion-routing
 ---
 
 # ADR-pool.pool-dag-promotion-routing
-> Promoted to `ADR-0.0.47-pool-dag-promotion-routing` on 2026-05-16. This pool file is retained as historical intake context.
-
 
 - **Status:** Superseded
 - **Lane:** Lite

@@ -59,7 +59,7 @@ status: Completed
 1. REQUIREMENT: `.gzkit/skills/gz-foundation-triage/SKILL.md` MUST declare `name: gz-foundation-triage`, frontmatter compliant with `SkillFrontmatter`, and a description that names the operator moment ("rank the in-flight foundation backlog by priority").
 2. REQUIREMENT: The skill body MUST encode three steps mirroring `ghi-triage` round-3 hardening: Step 1 mechanical pre-pass (gather in-flight foundations + insights/GHI/invariant counts), Step 2 agent cognitive pass over each candidate, Step 3 deterministic rendering of a structural-only ranked report.
 3. REQUIREMENT: The output MUST be **diagnosis-only and ephemeral** (ADR § Decision item 2) — the skill MUST NOT mutate any foundation ADR, ledger entry, or registry, and MUST NOT promote, complete, or change status on any artifact.
-4. REQUIREMENT: The cognitive-pass procedure MUST include a port/adapter reclassification check that flags candidates where a foundation matches port-shape (mirrors the OBPI-0.0.48-02 cognitive-pass pattern; cross-references the same reclassification language).
+4. REQUIREMENT: The cognitive-pass procedure MUST include a port/adapter reclassification check that flags candidates where a foundation matches port-shape (mirrors the ADR-pool.gz-adr-pool-triage cognitive-pass pattern; cross-references the same reclassification language).
 5. REQUIREMENT: The skill MUST expose `/gz-foundation-triage` (or operator-supplied equivalent if naming convention conflicts) as the invocation surface; mirror via `gz agent sync control-surfaces` after canonical edit.
 6. NEVER: Author the rubric scoring or the structural-only schema in this OBPI — those land in OBPI-04. The skill body REFERENCES them by path/name; OBPI-04 implements them.
 7. NEVER: Use `ghi-triage`'s scripts verbatim — the foundation triage helper is its own file under `.gzkit/skills/gz-foundation-triage/scripts/`, even if 90% of the structure is parallel.
@@ -208,7 +208,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.57-03-02: Given the skill body, when read, then it contains Step 1 (mechanical pre-pass), Step 2 (cognitive pass), Step 3 (deterministic rendering) headings in that order.
 - [ ] REQ-0.0.57-03-03: Given the skill is registered, when `uv run gz skill list` runs, then `gz-foundation-triage` appears in the listing.
 - [ ] REQ-0.0.57-03-04: Given a foundation-triage run is invoked against the live repo, when the run completes, then `git status --porcelain docs/design/adr/foundation/ .gzkit/ledger.jsonl` is empty (ephemeral / diagnosis-only invariant).
-- [ ] REQ-0.0.57-03-05: Given the cognitive-pass procedure, when read, then it includes a port/adapter reclassification check identical in shape to the OBPI-0.0.48-02 cognitive pass (cross-reference exact wording or quote it).
+- [ ] REQ-0.0.57-03-05: Given the cognitive-pass procedure, when read, then it includes a port/adapter reclassification check identical in shape to the ADR-pool.gz-adr-pool-triage cognitive pass (cross-reference exact wording or quote it).
 - [ ] REQ-0.0.57-03-06: Given `uv run gz agent sync control-surfaces` runs after a canonical edit, when sync completes, then `src/gzkit/skills/gz-foundation-triage/SKILL.md`, `.claude/skills/gz-foundation-triage/SKILL.md`, `.github/skills/gz-foundation-triage/SKILL.md`, and `.agents/skills/gz-foundation-triage/SKILL.md` are byte-equivalent to canonical.
 
 ## Completion Checklist

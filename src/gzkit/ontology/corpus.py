@@ -96,6 +96,11 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "discovered_from",
         "distribution_baseline_regenerated",
         "enforcement_claim_verified",
+        # Terminality witness for one closed-manifest `kind: foundation` entry
+        # (ADR-0.34.0 Foundation Sunset, OBPI-04). Records a lifecycle fact about
+        # an EXISTING ADR node, not lineage structure — get_artifact_graph
+        # materializes no new node or edge from it.
+        "foundation_grandfathered",
         "gate_checked",
         # Session-scoped operator consent lifting the handoff resume gate (GHI
         # #574). Not corpus lineage: it binds to a harness session id, and the

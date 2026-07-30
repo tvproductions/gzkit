@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.harness-fitness-report
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
@@ -9,16 +9,13 @@ complements:
   - ADR-pool.harness-lab
   - ADR-pool.harness-trace-bundles
   - ADR-pool.workflow-specification
-promoted_to: ADR-0.0.60-harness-fitness-report
 ---
 
 # ADR-pool.harness-fitness-report: Harness Fitness Report
-> Promoted to `ADR-0.0.60-harness-fitness-report` on 2026-05-25. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 

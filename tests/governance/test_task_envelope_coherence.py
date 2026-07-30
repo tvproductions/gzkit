@@ -1608,5 +1608,64 @@ class TestPendingObpiAllSignatures(unittest.TestCase):
             self.assertTrue(any("Signature (b)" in e.message for e in errs))
 
 
+class TestPoolDemotionAttributionCutover(unittest.TestCase):
+    """The ADR-0.34.0 cutover must be narrow and must EXPIRE (ADR-0.34.0 OBPI-04).
+
+    `gz adr demote`'s `artifact_renamed` producer went unattributed until
+    OBPI-0.34.0-04 repaired it. The ledger is append-only, so the rows that
+    producer already wrote are grandfathered — but a grandfather that never
+    expires is just a hole. These pin the four edges of the predicate so it can
+    only ever tolerate the measured 51 pre-cutover `pool_demotion` renames.
+    """
+
+    def test_a_pre_cutover_unattributed_demotion_is_tolerated(self) -> None:
+        self.assertTrue(
+            validate_task_envelope._sig_a_is_grandfathered_demotion(
+                {"reason": "pool_demotion", "ts": "2026-07-30T08:54:12+00:00"},
+                "artifact_renamed",
+                None,
+            )
+        )
+
+    def test_a_post_cutover_unattributed_demotion_still_fails(self) -> None:
+        """The expiry: a demotion run after the repair MUST carry task_id."""
+        self.assertFalse(
+            validate_task_envelope._sig_a_is_grandfathered_demotion(
+                {"reason": "pool_demotion", "ts": "2026-08-01T00:00:00+00:00"},
+                "artifact_renamed",
+                None,
+            )
+        )
+
+    def test_a_rename_that_is_not_a_pool_demotion_is_not_tolerated(self) -> None:
+        """Narrowness: the tolerance is keyed to the demote producer alone."""
+        self.assertFalse(
+            validate_task_envelope._sig_a_is_grandfathered_demotion(
+                {"reason": "something_else", "ts": "2026-07-30T08:54:12+00:00"},
+                "artifact_renamed",
+                None,
+            )
+        )
+
+    def test_a_non_rename_worklog_event_is_not_tolerated(self) -> None:
+        self.assertFalse(
+            validate_task_envelope._sig_a_is_grandfathered_demotion(
+                {"reason": "pool_demotion", "ts": "2026-07-30T08:54:12+00:00"},
+                "artifact_edited",
+                None,
+            )
+        )
+
+    def test_an_unparseable_timestamp_is_not_tolerated(self) -> None:
+        """Fail closed on a malformed ts rather than waving it through."""
+        self.assertFalse(
+            validate_task_envelope._sig_a_is_grandfathered_demotion(
+                {"reason": "pool_demotion", "ts": "not-a-timestamp"},
+                "artifact_renamed",
+                None,
+            )
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -48,7 +48,7 @@ status: Completed
 - `src/gzkit/foundation/**` — rubric + composer are OBPI-04 / OBPI-03 surfaces
 - `.gzkit/skills/gz-foundation-triage/SKILL.md` — skill body is OBPI-03's surface
 - `docs/design/adr/foundation/ADR-0.0.17-*/**`, `docs/design/adr/foundation/ADR-0.0.18-*/**` — doctrine amendments are OBPI-01's surface
-- `docs/user/manpages/pool-triage.md` — owned by ADR-0.0.48-06
+- `docs/user/manpages/pool-triage.md` — owned by ADR-pool.gz-adr-pool-triage
 - New runtime dependencies; CI files; lockfiles
 
 ## Requirements (FAIL-CLOSED)

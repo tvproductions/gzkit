@@ -13,6 +13,7 @@ from pydantic import (
     ConfigDict,
     Field,
     TypeAdapter,
+    field_validator,
     model_serializer,
     model_validator,
 )
@@ -180,6 +181,50 @@ class ArtifactRenamedEvent(_EventBase):
     new_id: str
     reason: str | None = None
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+
+class FoundationGrandfatheredEvent(_EventBase):
+    """foundation_grandfathered event.
+
+    Terminality witness for one closed-manifest `kind: foundation` entry
+    (ADR-0.34.0 Foundation Sunset, OBPI-04). Emitted once per
+    ``data/foundation_grandfather.json`` entry at populate time
+    (backfill-at-populate); ``id`` MUST carry the full slugged ADR id (e.g.
+    ``ADR-0.0.9-state-doctrine-source-of-truth``), never a bare semver — the
+    reader (``gzkit.governance.trust_audits.taxonomy._grandfathered_event_ids``)
+    does exact string set-difference against on-disk frontmatter ids. This
+    event is Gate-5-witnessed: for pre-ledger foundations, the human
+    attestation of the migration IS the terminality witness, so ``attestor``
+    is carried for the audit trail even though the reader itself ignores it.
+    """
+
+    event: Literal["foundation_grandfathered"]
+    title: str
+    semver: str
+    frozen_at: str
+    # REQUIRED and non-blank. This event IS the Gate-5 terminality witness, and
+    # the taxonomy reader admits any event of this type carrying a non-empty id
+    # WITHOUT inspecting the witness — so if the model tolerated a missing or
+    # empty attestor, a hand-constructed event would satisfy REQ-02's structural
+    # proof with no Gate-5 authority behind it. Enforcing it here means such an
+    # event fails `gz validate --ledger` (a bound `gz check` step) even though the
+    # reader itself is indifferent.
+    attestor: str = Field(..., min_length=1, description="Gate-5 human witness")
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+    @field_validator("attestor")
+    @classmethod
+    def _attestor_is_not_blank(cls, value: str) -> str:
+        """Reject a whitespace-only attestor.
+
+        ``min_length=1`` counts CHARACTERS, so ``"   "`` satisfies it while naming
+        no witness at all — a measured bypass of the very guard this field exists
+        to be. Stripped-nonempty is the actual invariant.
+        """
+        if not value.strip():
+            msg = "attestor must name a witness — whitespace is not an attestation"
+            raise ValueError(msg)
+        return value
 
 
 class AdrAnnotatedEvent(_EventBase):
@@ -880,7 +925,8 @@ TypedLedgerEvent = Annotated[
     | AirlockOutEvent
     | HandoffResumeAuthorizedEvent
     | AdversarialValidationEvent
-    | RedReceiptEmittedEvent,
+    | RedReceiptEmittedEvent
+    | FoundationGrandfatheredEvent,
     Field(discriminator="event"),
 ]
 

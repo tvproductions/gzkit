@@ -245,7 +245,7 @@ ARB receipts attesting Stage 3 quality gates:
 - Security registry decision (in-flight): `src/gzkit/rules.py` removed from `data/security_surfaces.json` `deserialization_user_input` category. Operator framing: the entry was gating completion on a scanner toolchain that doesn't exist yet (CANONICAL_STEP_COMMANDS["security"] = []); premature to gate. The deserialization-boundary nature of the rule loaders is real, but registry membership should follow scanner availability, not precede it. Re-registration belongs to whichever ADR promotes pool.agentic-security-review and actually fills the scanner slot.
 - Date completed: 2026-05-11
 - Attestation status: operator attestation received in Stage 4 ceremony (`attest completed`); attestation-type recorded as `agent-relayed-operator-attestation` via GHI #292 `--attestor-present` path.
-- Defects noted: GHI #454 (pre-existing audit failures in ADR-0.0.43 Draft OBPIs, unrelated). GHI #455 (registry-staleness-after-migration class — surfaced and partially resolved during this OBPI; rules entry removed per operator decision pending toolchain readiness).
+- Defects noted: GHI #454 (pre-existing audit failures in ADR-pool.ddd-domain-cascade Draft OBPIs, unrelated). GHI #455 (registry-staleness-after-migration class — surfaced and partially resolved during this OBPI; rules entry removed per operator decision pending toolchain readiness).
 
 ## Tracked Defects
 
@@ -254,7 +254,7 @@ ARB receipts attesting Stage 3 quality gates:
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed — operator confirmed acceptance during Stage 4 ceremony after reviewing dual-surface byte-parity (20 .md files), package conversion (rules.py → rules/__init__.py with git mv history preserved), 5 dual-surface regression tests green (TestRulesLayoutDualSurface), and canonical quality receipts (arb-ruff-fa00ca0687ab42109a5e77b1da404e43, arb-step-typecheck-79109bd55c004b5cbcf5a515498a856a, arb-step-unittest-8d300192300c47aaa71e6c60b8912722, arb-step-mkdocs-8ed8fc3038bc46e99a894b3e7126087f). Pre-existing audit failures in ADR-0.0.43 OBPIs (Draft) tracked at GHI #454, out-of-scope for OBPI-0.0.32-03.
+- Attestation: attest completed — operator confirmed acceptance during Stage 4 ceremony after reviewing dual-surface byte-parity (20 .md files), package conversion (rules.py → rules/__init__.py with git mv history preserved), 5 dual-surface regression tests green (TestRulesLayoutDualSurface), and canonical quality receipts (arb-ruff-fa00ca0687ab42109a5e77b1da404e43, arb-step-typecheck-79109bd55c004b5cbcf5a515498a856a, arb-step-unittest-8d300192300c47aaa71e6c60b8912722, arb-step-mkdocs-8ed8fc3038bc46e99a894b3e7126087f). Pre-existing audit failures in ADR-pool.ddd-domain-cascade OBPIs (Draft) tracked at GHI #454, out-of-scope for OBPI-0.0.32-03.
 - Date: 2026-05-11
 
 ---

@@ -1,22 +1,19 @@
 ---
 id: ADR-pool.judge-enforcement-validators
-status: Superseded
+status: Pool
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: ADR-0.0.39
 inspired_by:
   - https://arxiv.org/abs/2411.15594
   - https://llm-as-a-judge.github.io/
-promoted_to: ADR-0.0.40-judge-enforcement-validators
 ---
 
 # ADR-pool.judge-enforcement-validators: Judge Enforcement Validators
-> Promoted to `ADR-0.0.40-judge-enforcement-validators` on 2026-05-06. This pool file is retained as historical intake context.
-
 
 ## Status
 
-Superseded
+Pool
 
 ## Date
 

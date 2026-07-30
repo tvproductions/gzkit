@@ -212,13 +212,22 @@ _GRANDFATHERED_EVENT = "foundation_grandfathered"
 
 
 def _grandfathered_event_ids(project_root: Path) -> set[str]:
-    """Return the ADR ids carrying a Layer-2 ``foundation_grandfathered`` event.
+    """Return the ADR ids carrying an ATTESTED ``foundation_grandfathered`` event.
 
     Replays raw ledger lines rather than the typed ``Ledger`` reader: the
     event type is introduced by the sunset migration (ADR-0.34.0 OBPI-04) and
     has no model yet, so a typed read would couple this gate to a schema it
     does not own. Same tolerance as ``_pool_violation_key`` — the id may
     arrive under ``id`` or ``adr_id``.
+
+    **The attestor is required and must be non-blank (GHI #733).** This event IS
+    the Gate-5 terminality witness for pre-ledger foundations — the parent ADR's
+    backfill-at-populate design rests on the human attestation being the
+    legitimate witness. A reader that accepted any event of this type carrying a
+    non-empty id would admit a *witnessless* witness, making REQ-0.34.0-04-02's
+    declared proof channel ("ledger event + structural validator") prove only the
+    event's EXISTENCE, not its ATTESTATION. ``.strip()`` matters: a whitespace-only
+    attestor satisfies a raw length check while naming no witness at all.
     """
     ledger = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():
@@ -241,8 +250,14 @@ def _grandfathered_event_ids(project_root: Path) -> set[str]:
         if event.get("event") != _GRANDFATHERED_EVENT:
             continue
         adr_id = event.get("id") or event.get("adr_id")
-        if isinstance(adr_id, str) and adr_id:
-            witnessed.add(adr_id)
+        if not (isinstance(adr_id, str) and adr_id):
+            continue
+        # The witness must be named. A missing, empty, or whitespace-only
+        # attestor is not an attestation (GHI #733).
+        attestor = event.get("attestor")
+        if not (isinstance(attestor, str) and attestor.strip()):
+            continue
+        witnessed.add(adr_id)
     return witnessed
 
 

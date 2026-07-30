@@ -21,13 +21,13 @@ req_atomic:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
-- **Checklist Item:** #24 - "OBPI-0.0.37-24 — Advisor-panel info-retention QC loop (per ADR-0.0.39 llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)"
+- **Checklist Item:** #24 - "OBPI-0.0.37-24 — Advisor-panel info-retention QC loop (per ADR-pool.llm-as-judge-doctrine llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)"
 
 **Status:** Completed
 
 ## Objective
 
-Deliver the **advisor-QC** stage between compress (OBPI-21) and commit (OBPI-22): an advisor that scores the **information-retained-per-byte** of a candidate rendition and records its verdict as a **receipt** the operator cites at Gate 5 — strictly **advisory, never gating** (parent ADR § Decision Re-Alignment point 3; ADR-0.0.39 doctrine). The judgment (an LLM-as-judge read of the candidate vs. the source corpus) is performed by the **agent wielding the `gz-advisor-qc` skill**; the **tool is deterministic** — it ingests the agent's verdict + explanation, validates receipt shape (explanation-before-verdict), writes an ARB receipt, and emits a ledger event. The tool **never blocks** on the verdict value: a low retention score is evidence for the operator, not a fail-closed gate (ADR-0.0.39: judge output is Evidentiary, not pass/fail).
+Deliver the **advisor-QC** stage between compress (OBPI-21) and commit (OBPI-22): an advisor that scores the **information-retained-per-byte** of a candidate rendition and records its verdict as a **receipt** the operator cites at Gate 5 — strictly **advisory, never gating** (parent ADR § Decision Re-Alignment point 3; ADR-pool.llm-as-judge-doctrine doctrine). The judgment (an LLM-as-judge read of the candidate vs. the source corpus) is performed by the **agent wielding the `gz-advisor-qc` skill**; the **tool is deterministic** — it ingests the agent's verdict + explanation, validates receipt shape (explanation-before-verdict), writes an ARB receipt, and emits a ledger event. The tool **never blocks** on the verdict value: a low retention score is evidence for the operator, not a fail-closed gate (ADR-pool.llm-as-judge-doctrine: judge output is Evidentiary, not pass/fail).
 
 ## Lane
 
@@ -41,7 +41,7 @@ A new advisor-QC subcommand + a new ledger event + a new skill are runtime-contr
 
 ## Cross-ADR Dependency (surfaced, not assumed)
 
-**ADR-0.0.39 (llm-as-judge doctrine) is `Proposed`/`Pending`; all its OBPIs are `Draft`; `src/gzkit/governance/judge_invocation.py` and `src/gzkit/schemas/judge_invocation.json` do NOT exist on disk.** This OBPI therefore binds to ADR-0.0.39's **doctrine** (advisory-never-gating, receipt-emitting, explanation-before-verdict) and the **existing** ARB receipt infrastructure (`src/gzkit/arb/`, whose `arb-step-judge-*` receipt-id form already validates under `attestation_receipts.py`). It does NOT depend on the un-landed `judge_invocation` schema. Schema conformance is an Open Implementation Decision (below).
+**ADR-pool.llm-as-judge-doctrine (llm-as-judge doctrine) is `Proposed`/`Pending`; all its OBPIs are `Draft`; `src/gzkit/governance/judge_invocation.py` and `src/gzkit/schemas/judge_invocation.json` do NOT exist on disk.** This OBPI therefore binds to ADR-pool.llm-as-judge-doctrine's **doctrine** (advisory-never-gating, receipt-emitting, explanation-before-verdict) and the **existing** ARB receipt infrastructure (`src/gzkit/arb/`, whose `arb-step-judge-*` receipt-id form already validates under `attestation_receipts.py`). It does NOT depend on the un-landed `judge_invocation` schema. Schema conformance is an Open Implementation Decision (below).
 
 ## Allowed Paths
 
@@ -75,9 +75,9 @@ A new advisor-QC subcommand + a new ledger event + a new skill are runtime-contr
 
 - Paths not listed in Allowed Paths
 - Any in-code LLM/network call — the advisor judgment is the skill's (agent's); the tool only records/validates the verdict (stdlib-first; no dependency departure)
-- **Any fail-closed gate on the verdict value** — the advisor is advisory; a low retention score never blocks compose/commit (ADR-0.0.39 Evidentiary invariant). The only fail-closed path is a structurally malformed receipt (missing explanation), never the verdict itself
+- **Any fail-closed gate on the verdict value** — the advisor is advisory; a low retention score never blocks compose/commit (ADR-pool.llm-as-judge-doctrine Evidentiary invariant). The only fail-closed path is a structurally malformed receipt (missing explanation), never the verdict itself
 - `src/gzkit/content/composer.py`, `src/gzkit/content/rendition_store.py` — compose (OBPI-21) and rendition store/playback (OBPI-22) are coordinated, not modified here
-- `src/gzkit/governance/judge_invocation.py`, `src/gzkit/schemas/judge_invocation.json` — ADR-0.0.39's un-landed surfaces; not created or depended on here
+- `src/gzkit/governance/judge_invocation.py`, `src/gzkit/schemas/judge_invocation.json` — ADR-pool.llm-as-judge-doctrine's un-landed surfaces; not created or depended on here
 - `.gzkit/ledger.jsonl` — never hand-edited
 - New runtime dependencies; CI files; lockfiles
 
@@ -101,12 +101,12 @@ All other Allowed Paths reference existing files modified in place.
 
 ## Open Implementation Decision (operator confirmation at Gate 5)
 
-**Receipt schema conformance.** Recommended: emit the advisor-QC verdict as an existing-form ARB receipt (`arb-step-judge-<hash>` via `gzkit.arb.step_reporter`), aligned to ADR-0.0.39's doctrine fields (explanation-before-verdict, candidate provenance, bias-mitigation roster) but NOT bound to the un-landed `judge_invocation.json` schema. If ADR-0.0.39's OBPI-02 lands before this OBPI, conform to its schema instead. Alternative: block this OBPI on ADR-0.0.39 landing (rejected — the compress→commit pipeline needs the QC loop, and the doctrine is stable even though the schema artifact is not). **Recommend the doctrine-aligned ARB receipt**; confirm at Gate 5.
+**Receipt schema conformance.** Recommended: emit the advisor-QC verdict as an existing-form ARB receipt (`arb-step-judge-<hash>` via `gzkit.arb.step_reporter`), aligned to ADR-pool.llm-as-judge-doctrine's doctrine fields (explanation-before-verdict, candidate provenance, bias-mitigation roster) but NOT bound to the un-landed `judge_invocation.json` schema. If ADR-pool.llm-as-judge-doctrine's OBPI-02 lands before this OBPI, conform to its schema instead. Alternative: block this OBPI on ADR-pool.llm-as-judge-doctrine landing (rejected — the compress→commit pipeline needs the QC loop, and the doctrine is stable even though the schema artifact is not). **Recommend the doctrine-aligned ARB receipt**; confirm at Gate 5.
 
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT [BEHAVIOR]: The advisor-QC tool (`content advise-rendition <surface> [--consumer <vendor>]`), given a candidate rendition and its source corpus, MUST record an information-retained-per-byte verdict as an ARB receipt and exit 0 — it is ADVISORY and MUST NOT gate (no non-zero exit) on the verdict value.
-1. REQUIREMENT [BEHAVIOR]: The recorded receipt MUST carry the explanation BEFORE the verdict (ADR-0.0.39 explanation-before-verdict doctrine); the tool MUST fail closed (non-zero exit, no receipt) when the supplied verdict has an empty/absent explanation — fail-closed on malformed receipt shape, never on the verdict value.
+1. REQUIREMENT [BEHAVIOR]: The recorded receipt MUST carry the explanation BEFORE the verdict (ADR-pool.llm-as-judge-doctrine explanation-before-verdict doctrine); the tool MUST fail closed (non-zero exit, no receipt) when the supplied verdict has an empty/absent explanation — fail-closed on malformed receipt shape, never on the verdict value.
 1. REQUIREMENT [BEHAVIOR]: The advisor judgment MUST be supplied by the wielding skill (the agent); the tool itself MUST perform NO in-code LLM/network call — given the same verdict input it records the same receipt deterministically.
 1. REQUIREMENT [SUPPORT]: A successful record MUST emit a `rendition_advisor_verdict` ledger event carrying at least `surface`, `consumer`, `receipt_id`, and the retention score — proven by `uv run gz validate --ledger` plus the emitted `rendition_advisor_verdict` event.
 1. REQUIREMENT [SUPPORT]: The advisor-QC skill MUST exist at `.gzkit/skills/gz-advisor-qc/SKILL.md` and propagate byte-equal to its mirrors — proven by `uv run gz validate --surfaces` plus the `artifact_edited` event for the skill.
@@ -120,7 +120,7 @@ All other Allowed Paths reference existing files modified in place.
 
 **Parent ADR (read first; order pinned — GHI #321):**
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The contract: "Advisor-panel info-retention QC loop (per ADR-0.0.39 llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)" (Checklist item #24; § Decision Re-Alignment 2026-06-03, point 3 — "advisor panel (LLM-as-judge — advisory, never gating, per ADR-0.0.39)").
+- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The contract: "Advisor-panel info-retention QC loop (per ADR-pool.llm-as-judge-doctrine llm-as-judge: advisory never gating, receipt-emitting; scores information-retained-per-byte of a candidate rendition; verdict cited in operator attestation; tool(s) wielded by an advisor-QC skill)" (Checklist item #24; § Decision Re-Alignment 2026-06-03, point 3 — "advisor panel (LLM-as-judge — advisory, never gating, per ADR-pool.llm-as-judge-doctrine)").
 - [ ] Parent ADR § Decision Re-Alignment point 3 — the compose→advisor-QC→operator-attest→commit sequence.
 - [ ] Parent ADR file: `docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/ADR-0.0.37-constitutional-invariant-composition.md`
 
@@ -128,7 +128,7 @@ All other Allowed Paths reference existing files modified in place.
 
 **Governance (read once, cache):**
 
-- [ ] `docs/design/adr/foundation/ADR-0.0.39-llm-as-judge-doctrine/ADR-0.0.39-llm-as-judge-doctrine.md` — the advisory-never-gating / receipt-emitting / explanation-before-verdict doctrine this OBPI binds to (NOTE: Proposed/Pending — see § Cross-ADR Dependency)
+- [ ] `docs/design/adr/foundation/ADR-pool.llm-as-judge-doctrine/ADR-pool.llm-as-judge-doctrine.md` — the advisory-never-gating / receipt-emitting / explanation-before-verdict doctrine this OBPI binds to (NOTE: Proposed/Pending — see § Cross-ADR Dependency)
 - [ ] `docs/governance/arb-middleware.md` + `src/gzkit/arb/` — the existing ARB receipt infrastructure reused for emission
 - [ ] `AGENTS.md` § STDLIB-FIRST — why the LLM stays out of tool code
 
@@ -301,7 +301,7 @@ uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.12 --exp
 
 ## Tracked Defects
 
-**ADR-0.0.39 dependency (cross-ADR, surfaced).** ADR-0.0.39's judge-invocation schema/code is not landed (see § Cross-ADR Dependency). This OBPI binds to the stable doctrine + existing ARB receipts and surfaces schema conformance as an Open Implementation Decision rather than blocking. If ADR-0.0.39 lands first, conform to its schema at brief-reconcile.
+**ADR-pool.llm-as-judge-doctrine dependency (cross-ADR, surfaced).** ADR-pool.llm-as-judge-doctrine's judge-invocation schema/code is not landed (see § Cross-ADR Dependency). This OBPI binds to the stable doctrine + existing ARB receipts and surfaces schema conformance as an Open Implementation Decision rather than blocking. If ADR-pool.llm-as-judge-doctrine lands first, conform to its schema at brief-reconcile.
 
 _No further defects tracked._
 

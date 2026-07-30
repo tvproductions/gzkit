@@ -1,1 +1,308 @@
-[]
+[
+  {
+    "id": "ADR-0.0.10-storage-tiers-simplicity-profile",
+    "title": "ADR-0.0.10 \u2014 Storage Tiers and Simplicity Profile",
+    "semver": "0.0.10",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.11-persona-driven-agent-identity-frames",
+    "title": "ADR-0.0.11 \u2014 Persona-Driven Agent Identity Frames",
+    "semver": "0.0.11",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.12-agent-role-persona-profiles",
+    "title": "ADR-0.0.12 \u2014 Agent Role Persona Profiles",
+    "semver": "0.0.12",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.13-portable-persona-control-surface",
+    "title": "ADR-0.0.13 \u2014 Portable Persona Control Surface",
+    "semver": "0.0.13",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.14-deterministic-obpi-commands",
+    "title": "ADR-0.0.14 \u2014 Deterministic OBPI Commands",
+    "semver": "0.0.14",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.15-ghi-driven-patch-release-ceremony",
+    "title": "ADR-0.0.15 \u2014 GHI-Driven Patch Release Ceremony",
+    "semver": "0.0.15",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.16-frontmatter-ledger-coherence-guard",
+    "title": "Frontmatter-ledger coherence guard and chore audit",
+    "semver": "0.0.16",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.17-adr-taxonomy-mechanical",
+    "title": "ADR Taxonomy \u2014 pool / foundation / feature (Mechanical)",
+    "semver": "0.0.17",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.18-adr-taxonomy-doctrine",
+    "title": "ADR Taxonomy \u2014 Operator Doctrine (pool curation, PRD\u2192ADR derivation, epic grouping)",
+    "semver": "0.0.18",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.19-pre-execution-reasoning-walkthrough",
+    "title": "Pre-execution reasoning walkthrough (gz justify)",
+    "semver": "0.0.19",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.2-stdlib-cli-and-agent-sync",
+    "title": "Stdlib CLI Foundation and Agent Sync Grammar",
+    "semver": "0.0.2",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.20-agent-rule-placement-invariant",
+    "title": "Agent Rule Placement Invariant",
+    "semver": "0.0.20",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.21-chores-as-gzkit-surface",
+    "title": "Chores as a .gzkit/ Surface",
+    "semver": "0.0.21",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.22-security-sensitivity-doctrine",
+    "title": "Security Sensitivity Doctrine",
+    "semver": "0.0.22",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.23-agent-failure-mode-taxonomy",
+    "title": "Agent Failure-Mode Taxonomy",
+    "semver": "0.0.23",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.24-attestation-receipt-binding",
+    "title": "Attestation Receipt Binding",
+    "semver": "0.0.24",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.25-obpi-completion-req-coverage-gate",
+    "title": "OBPI Completion REQ-Coverage Gate",
+    "semver": "0.0.25",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.26-evaluation-feedback-loop-doctrine",
+    "title": "Evaluation Feedback-Loop Doctrine",
+    "semver": "0.0.26",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.27-exemplar-corpus-doctrine",
+    "title": "Exemplar-Corpus Doctrine",
+    "semver": "0.0.27",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.28-complexity-threshold-doctrine",
+    "title": "Complexity Threshold Doctrine",
+    "semver": "0.0.28",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.29-complexity-advisor",
+    "title": "Complexity Advisor",
+    "semver": "0.0.29",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.3-hexagonal-architecture-tune-up",
+    "title": "Hexagonal Architecture Tune-Up",
+    "semver": "0.0.3",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.30-complexity-authoring-guidance",
+    "title": "Complexity Authoring Guidance",
+    "semver": "0.0.30",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.31-distribution-invariant-doctrine",
+    "title": "Distribution Invariant (T0 Doctrine)",
+    "semver": "0.0.31",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.32-canonical-surface-packaging",
+    "title": "Canonical Surface Packaging",
+    "semver": "0.0.32",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.33-agent-control-surface-fidelity",
+    "title": "Agent Control Surface Fidelity Doctrine",
+    "semver": "0.0.33",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.34-agent-control-surface-rendering-substrate",
+    "title": "Agent Control Surface Rendering Substrate",
+    "semver": "0.0.34",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.35-foundation-feature-invariance-test",
+    "title": "Foundation/Feature Invariance Test",
+    "semver": "0.0.35",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.36-universal-obpi-attestation",
+    "title": "Universal OBPI Attestation (Zero-Maxxing)",
+    "semver": "0.0.36",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.37-constitutional-invariant-composition",
+    "title": "Constitutional Invariant Composition",
+    "semver": "0.0.37",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.4-cli-standards-presentation-foundation",
+    "title": "CLI Standards & Presentation Foundation",
+    "semver": "0.0.4",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.41-token-block-lock-discipline",
+    "title": "Token-Block Lock Discipline \u2014 Lock-Release Coupled to Handoff Register Entry",
+    "semver": "0.0.41",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.5-evaluation-infrastructure",
+    "title": "Evaluation Infrastructure",
+    "semver": "0.0.5",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine",
+    "title": "AGENTS.md Map-Not-Encyclopedia Doctrine",
+    "semver": "0.0.54",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.57-foundation-adr-nominal-id-triage",
+    "title": "Foundation ADR Nominal ID Semantics and Priority Triage",
+    "semver": "0.0.57",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine",
+    "title": "REQ Scope Discipline and Test Shape Doctrine",
+    "semver": "0.0.59",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.6-documentation-cross-coverage-enforcement",
+    "title": "Documentation Cross-Coverage Enforcement",
+    "semver": "0.0.6",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.63-closeout-ceremony-runtime-engine-parity",
+    "title": "Closeout Ceremony Runtime Engine Parity",
+    "semver": "0.0.63",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.64-task-envelope-and-planning-decomposition",
+    "title": "TASK Envelope and Planning Decomposition",
+    "semver": "0.0.64",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.65-handoff-system-consolidation",
+    "title": "Handoff System Consolidation and CLI Surface",
+    "semver": "0.0.65",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.67-tool-skill-invariant1-enforcement",
+    "title": "Complete tool-skill Invariant 1 enforcement and reclaim orphaned CLI verbs",
+    "semver": "0.0.67",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.68-green-between-sessions-gate",
+    "title": "Green-Between-Sessions Gate",
+    "semver": "0.0.68",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.69-channels-first-closeout-proof",
+    "title": "Channels-First Closeout Proof",
+    "semver": "0.0.69",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.7-config-first-resolution-discipline",
+    "title": "ADR-0.0.7 \u2014 Config-First Resolution Discipline",
+    "semver": "0.0.7",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.70-turn-end-feedback-and-correction-mining",
+    "title": "Turn-End Feedback and Ground-Truth Correction Mining",
+    "semver": "0.0.70",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.71-completion-repudiation",
+    "title": "Governed Reversal of Erroneous Completion Attestation",
+    "semver": "0.0.71",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.72-meta-governance-coherence",
+    "title": "Meta-Governance Validator Round-Trip Coherence",
+    "semver": "0.0.72",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.73-verification-layer-binding-audit",
+    "title": "Verification Layer Binding Audit",
+    "semver": "0.0.73",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.74-mx-mode-maintenance-hangar",
+    "title": "MX Mode \u2014 Maintenance Hangar",
+    "semver": "0.0.74",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.8-feature-toggle-system",
+    "title": "Feature Flag System for GZKit",
+    "semver": "0.0.8",
+    "frozen_at": "2026-07-30"
+  },
+  {
+    "id": "ADR-0.0.9-state-doctrine-source-of-truth",
+    "title": "ADR-0.0.9 \u2014 State Doctrine and Source-of-Truth Hierarchy",
+    "semver": "0.0.9",
+    "frozen_at": "2026-07-30"
+  }
+]

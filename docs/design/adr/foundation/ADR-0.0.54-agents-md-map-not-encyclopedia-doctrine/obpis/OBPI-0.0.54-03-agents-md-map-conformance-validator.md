@@ -56,7 +56,7 @@ Ship the `gz validate --agents-md-map-conformance` mechanical validator that bin
 
 1. REQUIREMENT: `src/gzkit/governance/trust_audits/agents_md_map_conformance.py` defines a validator scope that asserts, against `src/gzkit/templates/agents.md` (the primary audit surface) and against populated `.gzkit/invariants/*.json` `claim` fields (the secondary audit surface, when registry entries exist): (a) every paragraph is ≤ 5 lines OR begins with a binding-bullet marker (`- `, `1.`, `**`); (b) no subsection title is in the prohibited set (`Worked example`, `Anti-patterns`, `Rationale`, `Why this is canon`, `Why X is canon`); (c) every `See [text](path)` link resolves to an existing file with the named anchor; (d) the rendered AGENTS.md file size is within the budget declared in `data/instructions_files_budget.json` — the budget check runs against the rendered artifact since size is the projected property; the shape checks (a/b/c) run against the template + registry.
 2. REQUIREMENT: `gz validate --agents-md-map-conformance` is a registered scope — the flag resolves against the `gz validate` parser and dispatches the validator.
-3. REQUIREMENT: On any conformance failure the validator emits a `RemediationPayload` (per ADR-0.0.53) whose `recovery` field is `/gz-context-diet`. If ADR-0.0.53's `RemediationPayload` port has not yet landed, the validator uses a forward-compatible failure shape that becomes payload-conformant under ADR-0.0.53's migration — the dependency is recorded in the Implementation Summary.
+3. REQUIREMENT: On any conformance failure the validator emits a `RemediationPayload` (per ADR-pool.validator-remediation-payload-invariant) whose `recovery` field is `/gz-context-diet`. If ADR-pool.validator-remediation-payload-invariant's `RemediationPayload` port has not yet landed, the validator uses a forward-compatible failure shape that becomes payload-conformant under ADR-pool.validator-remediation-payload-invariant's migration — the dependency is recorded in the Implementation Summary.
 4. REQUIREMENT: `--agents-md-map-conformance` is added to the `gz check` default pipeline as a fail-closed step.
 5. REQUIREMENT: Per ADR § Consequences Negative #3 / Negative #7, the per-bullet 3-line heuristic in the binding-rule sections emits a WARNING (not a hard rejection); hard rejection is reserved for the prohibited-subsection-title set. The validator does not block a new binding rule that legitimately exceeds 3 lines.
 6. REQUIREMENT: `docs/user/manpages/validate.md` documents the `--agents-md-map-conformance` scope with a real EXAMPLES entry showing observed CLI output.
@@ -86,7 +86,7 @@ Ship the `gz validate --agents-md-map-conformance` mechanical validator that bin
 
 - [ ] `src/gzkit/governance/trust_audits/` — an existing validator scope (e.g. `instructions_files_budget.py`) for the registration + dispatch convention
 - [ ] `src/gzkit/commands/validate_cmd.py` — scope registration; the `gz check` default-pipeline list
-- [ ] `gzkit.core.models.RemediationPayload` — the failure shape (ADR-0.0.53 dependency)
+- [ ] `gzkit.core.models.RemediationPayload` — the failure shape (ADR-pool.validator-remediation-payload-invariant dependency)
 
 **Prerequisites (check existence, STOP if missing):**
 
@@ -211,7 +211,7 @@ gz validate --documents 1643 -> 0 errors. ARB receipts arb-ruff-3806b0bd1f3d46d1
 ### Implementation Summary
 
 
-- Files: src/gzkit/governance/trust_audits/agents_md_map_conformance.py (validator); src/gzkit/validate_pkg/document.py (narrow guards under GHI #480); src/gzkit/schemas/adr.json + src/gzkit/core/models.py (enum sync); src/gzkit/templates/agents.md + AGENTS.md byte-parity (template lift); data/instructions_files_budget.json (15k -> 32k); docs/user/manpages/validate.md (manpage); CLI wiring in parser_maintenance + validate_cmd + quality; bounded ADR-0.0.1 authoring (Decomposition Scorecard + Checklist + Evidence)
+- Files: src/gzkit/governance/trust_audits/agents_md_map_conformance.py (validator); src/gzkit/validate_pkg/document.py (narrow guards under GHI #480); src/gzkit/schemas/adr.json + src/gzkit/core/models.py (enum sync); src/gzkit/templates/agents.md + AGENTS.md byte-parity (template lift); data/instructions_files_budget.json (15k -> 32k); docs/user/manpages/validate.md (manpage); CLI wiring in parser_maintenance + validate_cmd + quality; bounded ADR-pool.canonical-govzero-parity authoring (Decomposition Scorecard + Checklist + Evidence)
 - Tests: 13 unittest in tests/governance/test_agents_md_map_conformance.py + 7 narrow-guard in tests/test_validate.py + 2 behave scenarios + 4 waivers
 - Verification: gz validate --documents 1643 -> 0; 11 Stage 3 ARB receipts PASS; 5553/5553 full unittest suite GREEN; gz obpi precomplete 7/7
 - Date completed: 2026-05-25
@@ -225,7 +225,7 @@ _No defects tracked._
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed -- OBPI-0.0.54-03 ships the AGENTS.md map-not-encyclopedia validator (table-shape categorical fix; two-layer audit: template shape a/b/c + rendered budget d); schema-enum lifecycle-vocabulary sync (Nygard-legacy 5-state -> canonical 9-state); AGENTS.md budget retarget 15k -> 32k (GHI #533 / ADR-0.0.37 dependency); narrow lifecycle-aware + kind-aware guards in src/gzkit/validate_pkg/document.py landed under GHI #480 (Alt #5 preserved); ADR-0.0.1 bounded authoring absorbed under PRIME DIRECTIVE Rule 4. Verification receipts: arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca, arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb, arb-step-unittest-c66b4ec49de34e97a1edc9710676a963, arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116, arb-step-behave-8581ddbcb2f94855be5f2a3ccd3e6331. gz validate --documents 1643 -> 0; gz obpi precomplete 7/7; 5553/5553 full unittest suite GREEN.
+- Attestation: attest completed -- OBPI-0.0.54-03 ships the AGENTS.md map-not-encyclopedia validator (table-shape categorical fix; two-layer audit: template shape a/b/c + rendered budget d); schema-enum lifecycle-vocabulary sync (Nygard-legacy 5-state -> canonical 9-state); AGENTS.md budget retarget 15k -> 32k (GHI #533 / ADR-0.0.37 dependency); narrow lifecycle-aware + kind-aware guards in src/gzkit/validate_pkg/document.py landed under GHI #480 (Alt #5 preserved); ADR-pool.canonical-govzero-parity bounded authoring absorbed under PRIME DIRECTIVE Rule 4. Verification receipts: arb-ruff-3806b0bd1f3d46d18dae452e70ab57ca, arb-step-typecheck-9b315cacd67c40c09c33562f791cf4eb, arb-step-unittest-c66b4ec49de34e97a1edc9710676a963, arb-step-mkdocs-203985ef001c43fbad61ae6ea87fa116, arb-step-behave-8581ddbcb2f94855be5f2a3ccd3e6331. gz validate --documents 1643 -> 0; gz obpi precomplete 7/7; 5553/5553 full unittest suite GREEN.
 - Date: 2026-05-26
 
 ---

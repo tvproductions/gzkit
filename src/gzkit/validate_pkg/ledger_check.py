@@ -80,12 +80,20 @@ def _validate_ledger_field(
 
     if isinstance(value, str):
         min_length = rule.get("min_length")
-        if isinstance(min_length, int) and len(value) < min_length:
+        # Measure the STRIPPED length. A raw character count is satisfied by
+        # whitespace, so `"   "` passed every `min_length` guard in the schema
+        # while carrying no content — measured on `foundation_grandfathered`'s
+        # `attestor`, where it meant a witnessless event satisfied the gate that
+        # exists to require a witness (ADR-0.34.0 OBPI-04). This is a class fix:
+        # 54 event types carry min_length-guarded string fields and all of them
+        # had the same hole. Blast radius measured before landing — zero live
+        # ledger rows pass today and fail under the stripped check.
+        if isinstance(min_length, int) and len(value.strip()) < min_length:
             _append_ledger_error(
                 errors,
                 ledger_path,
                 line_no,
-                f"Field '{field}' must be at least {min_length} characters.",
+                f"Field '{field}' must be at least {min_length} non-whitespace characters.",
                 field=field,
             )
 

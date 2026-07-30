@@ -463,6 +463,38 @@
         }
       }
     },
+    "foundation_grandfathered": {
+      "required": [
+        "title",
+        "semver",
+        "frozen_at",
+        "attestor"
+      ],
+      "properties": {
+        "title": {
+          "type": "string",
+          "min_length": 1
+        },
+        "semver": {
+          "type": "string",
+          "min_length": 1
+        },
+        "frozen_at": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "task_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "adr_annotated": {
       "required": [
         "annotation"

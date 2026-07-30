@@ -190,7 +190,7 @@ ARB receipts (all exit_status=0): arb-ruff-954f16380568456d9fe6d2feca02cf38 (lin
 - Tests added: 21 unit tests + 3 BDD scenarios (@REQ-0.0.37-03-01/02/03)
 - Date completed: 2026-05-19
 - Attestation status: operator-attested ("attest completed")
-- Defects noted: GHI #500 (gz validate --documents 3589 historical-brief schema errors), GHI #501 (events.py module split + frozen=True parity), GHI #502 (agent-insights.jsonl:75 invalid type=discovery); comment added to GHI #486 (utf8_prefix in ADR-0.0.52 briefs). _EventBase frozen=True direct-fixed in-flight.
+- Defects noted: GHI #500 (gz validate --documents 3589 historical-brief schema errors), GHI #501 (events.py module split + frozen=True parity), GHI #502 (agent-insights.jsonl:75 invalid type=discovery); comment added to GHI #486 (utf8_prefix in ADR-pool.artifact-staleness-propagation briefs). _EventBase frozen=True direct-fixed in-flight.
 
 ## Tracked Defects
 
@@ -199,7 +199,7 @@ ARB receipts (all exit_status=0): arb-ruff-954f16380568456d9fe6d2feca02cf38 (lin
 ## Human Attestation
 
 - Attestor: `g0`
-- Attestation: attest completed — composition drift validator gz validate --invariant-coherence wired into gz check default scope, fail-closed exit 3 on AGENTS.md byte-drift from the rendered constitutional invariant registry; composition_rendered/composition_drift_detected ledger events registered. 6/6 REQs covered (21 unit tests + 3 BDD scenarios); full unittest sweep green (5358 tests). ARB receipts: arb-ruff-954f16380568456d9fe6d2feca02cf38, arb-step-typecheck-c66836b1981d4557a5fbd46a00cdc294, arb-step-unittest-a96b904094ac47b99629e0b6ed8a6007, arb-step-mkdocs-3e633550eb0f473aa5286c6d0e610f37, arb-step-behave-3a8990d943474609924a9a23d1cc80ce. Pre-existing failures cleared in-flight (utf8_prefix in ADR-0.0.52 briefs; discovery InsightType variant); defects routed to GHI #500/#501/#502/#486.
+- Attestation: attest completed — composition drift validator gz validate --invariant-coherence wired into gz check default scope, fail-closed exit 3 on AGENTS.md byte-drift from the rendered constitutional invariant registry; composition_rendered/composition_drift_detected ledger events registered. 6/6 REQs covered (21 unit tests + 3 BDD scenarios); full unittest sweep green (5358 tests). ARB receipts: arb-ruff-954f16380568456d9fe6d2feca02cf38, arb-step-typecheck-c66836b1981d4557a5fbd46a00cdc294, arb-step-unittest-a96b904094ac47b99629e0b6ed8a6007, arb-step-mkdocs-3e633550eb0f473aa5286c6d0e610f37, arb-step-behave-3a8990d943474609924a9a23d1cc80ce. Pre-existing failures cleared in-flight (utf8_prefix in ADR-pool.artifact-staleness-propagation briefs; discovery InsightType variant); defects routed to GHI #500/#501/#502/#486.
 - Date: 2026-05-20
 
 ---

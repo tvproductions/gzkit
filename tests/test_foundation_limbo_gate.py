@@ -70,7 +70,14 @@ def _write_ledger(root: Path, events: list[dict[str, str]]) -> None:
 
 
 def _grandfathered(adr_id: str) -> dict[str, str]:
-    return {"event": "foundation_grandfathered", "id": adr_id, "ts": "2026-07-29T00:00:00Z"}
+    return {
+        "event": "foundation_grandfathered",
+        "id": adr_id,
+        "ts": "2026-07-29T00:00:00Z",
+        # The attestor is required and must be non-blank (GHI #733): this event IS
+        # the Gate-5 terminality witness, so a witnessless one no longer counts.
+        "attestor": "g0",
+    }
 
 
 def _seed_declared_foundation(root: Path, adr_id: str, *, status: str = "Pending") -> None:
@@ -126,6 +133,53 @@ class TestFoundationLimboGate(unittest.TestCase):
             _write_ledger(root, [_grandfathered("ADR-0.0.99-terminal")])
 
             self.assertEqual(audit_foundation_closure(root), [])
+
+    # Attributed to REQ-0.34.0-03-01 (the terminal-partition assertion whose
+    # behavior this exercises), NOT to REQ-0.34.0-04-02. REQ-04-02 is **SUPPORT**:
+    # its proof channel is a ledger event plus a structural validator, and
+    # ADR-0.0.59 forbids authoring a `@covers` test to make a SUPPORT REQ appear
+    # covered. Mis-attributing it here also made `--red-parity` demand a RED
+    # receipt for a REQ that owns no covering test by design.
+    @covers("REQ-0.34.0-03-01")
+    def test_a_witnessless_event_does_not_clear_the_finding(self) -> None:
+        """The event must NAME its Gate-5 witness, not merely exist (GHI #733).
+
+        This event IS the terminality witness for pre-ledger foundations — the
+        parent ADR's backfill-at-populate design rests on the human attestation
+        being that witness. A reader admitting an attestor-less event would make
+        REQ-0.34.0-04-02's declared proof channel prove the event's EXISTENCE
+        rather than its ATTESTATION, which is a different claim.
+        """
+        for label, event in (
+            ("missing", {"event": "foundation_grandfathered", "id": "ADR-0.0.99-terminal"}),
+            (
+                "empty",
+                {
+                    "event": "foundation_grandfathered",
+                    "id": "ADR-0.0.99-terminal",
+                    "attestor": "",
+                },
+            ),
+            (
+                "whitespace",
+                {
+                    "event": "foundation_grandfathered",
+                    "id": "ADR-0.0.99-terminal",
+                    "attestor": "   ",
+                },
+            ),
+        ):
+            with self.subTest(attestor=label), TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                _seed_declared_foundation(root, "ADR-0.0.99-terminal")
+                _write_ledger(root, [event])
+
+                self.assertEqual(
+                    [e.type for e in audit_foundation_closure(root)],
+                    ["foundation_limbo"],
+                    f"an event with a {label} attestor names no witness and must not "
+                    f"clear the limbo finding",
+                )
 
     @covers("REQ-0.34.0-03-01")
     def test_frontmatter_status_cannot_clear_the_finding(self) -> None:

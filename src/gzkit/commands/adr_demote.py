@@ -317,8 +317,15 @@ def _print_demote_dry_run(project_root: Path, plan: dict[str, Any]) -> None:
         console.print(f"  [red]Dependent children:[/red] {', '.join(children)}")
 
 
-def _apply_demote(ledger: Ledger, plan: dict[str, Any]) -> None:
-    """Write the pool file, remove the source package, append the ledger event."""
+def _apply_demote(ledger: Ledger, plan: dict[str, Any], task_id: str | None = None) -> None:
+    """Write the pool file, remove the source package, append the ledger event.
+
+    ``task_id`` attributes the emitted ``artifact_renamed`` to the TASK the
+    demotion is labor under. ``artifact_renamed`` is a TASK worklog type, so a
+    demotion run inside an active TASK envelope without it fails Signature (a) of
+    ``gz validate --task-envelope-coherence`` (ADR-0.34.0 OBPI-04). Optional: the
+    CLI path demotes outside any TASK envelope.
+    """
     target_file = cast(Path, plan["target_file"])
     source_file = cast(Path, plan["source_file"])
     source_dir = cast(Path, plan["source_dir"])
@@ -338,6 +345,7 @@ def _apply_demote(ledger: Ledger, plan: dict[str, Any]) -> None:
         old_id=cast(str, plan["source_id"]),
         new_id=cast(str, plan["new_id"]),
         reason="pool_demotion",
+        task_id=task_id,
     )
     for key, value in cast(dict[str, Any], plan["extras"]).items():
         event.extra[key] = value

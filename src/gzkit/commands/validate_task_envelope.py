@@ -325,6 +325,40 @@ def _sig_a_is_not_labor_event(
     return ev_type not in _TASK_WORKLOG_TYPES
 
 
+# Signature (a) — `gz adr demote`'s `artifact_renamed` producer went unattributed
+# until ADR-0.34.0 OBPI-04 repaired it (`_apply_demote(..., task_id=...)` ->
+# `artifact_renamed_event(..., task_id=...)`). `artifact_renamed` is a worklog
+# type, but the only prior bulk demotion — GHI #520's Day-0 pool migration,
+# 2026-05-23 — predates `_TASK_ENVELOPE_ENFORCEMENT_EPOCH`, so the gap never
+# surfaced until the Foundation Sunset ran the verb again inside a TASK envelope.
+#
+# The ledger is append-only (history is not rewritten), so the rows that
+# unrepaired producer already wrote are grandfathered here. BLAST RADIUS MEASURED
+# BEFORE ADDING, per the precedent of `_OBPI_ID_CANONICAL_CUTOVER` above: exactly
+# 51 `reason="pool_demotion"` renames carry no `task_id` — 28 pre-epoch (already
+# tolerated) and the 23 the Sunset emitted on 2026-07-30. The predicate is
+# narrowed to that exact shape (event type AND reason AND missing task_id) and to
+# renames emitted at or before the cutover, so it masks nothing else and expires
+# by construction: a demotion run after this date must carry `task_id` or fail.
+_POOL_DEMOTION_ATTRIBUTION_CUTOVER = datetime.fromisoformat("2026-07-30T09:00:00+00:00")
+
+
+def _sig_a_is_grandfathered_demotion(
+    ev: dict[str, object], ev_type: str, task_id: str | None
+) -> bool:
+    """True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."""
+    if ev_type != "artifact_renamed" or task_id or ev.get("reason") != "pool_demotion":
+        return False
+    raw_ts = ev.get("ts")
+    if not isinstance(raw_ts, str):
+        return False
+    try:
+        emitted = datetime.fromisoformat(raw_ts)
+    except ValueError:
+        return False
+    return emitted <= _POOL_DEMOTION_ATTRIBUTION_CUTOVER
+
+
 def _sig_a_attribution_drift(
     project_root: Path, *, obpi_filter: str | None = None
 ) -> list[ValidationError]:
@@ -373,6 +407,8 @@ def _sig_a_attribution_drift(
             continue
 
         any_active = any(active_tasks_by_obpi.values())
+        if _sig_a_is_grandfathered_demotion(ev, ev_type, task_id):
+            continue
         if any_active and not task_id and (obpi_filter is None or obpi_id == obpi_filter):
             errors.append(
                 ValidationError(

@@ -401,17 +401,26 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
 
     @covers("REQ-0.34.0-02-03")
     def test_existing_grandfathered_foundation_adr_still_validates(self) -> None:
-        adr_path = Path(
-            "docs/design/adr/foundation/ADR-0.0.1-canonical-govzero-parity/"
-            "ADR-0.0.1-canonical-govzero-parity.md"
-        )
-        self.assertTrue(adr_path.exists(), msg=f"fixture missing: {adr_path}")
-        errors = validate_document(adr_path, "adr")
-        self.assertEqual(
-            errors,
-            [],
-            msg="closing the authoring doors must not invalidate the grandfathered set",
-        )
+        """Every grandfathered foundation still validates with the kind closed.
+
+        The roster is READ FROM THE MANIFEST rather than hardcoded. A pinned
+        example rots the moment the sunset migration moves it: this test named
+        ``ADR-0.0.1-canonical-govzero-parity`` until OBPI-0.34.0-04 demoted it to
+        pool, at which point the assertion failed over a missing fixture rather
+        than over the behavior it guards. Reading the manifest also widens the
+        check from one ADR to all 51.
+        """
+        manifest = json.loads(Path("data/foundation_grandfather.json").read_text(encoding="utf-8"))
+        self.assertTrue(manifest, msg="the grandfather manifest must not be empty")
+        for entry in manifest:
+            adr_path = Path("docs/design/adr/foundation") / entry["id"] / f"{entry['id']}.md"
+            with self.subTest(adr=entry["id"]):
+                self.assertTrue(adr_path.exists(), msg=f"manifest entry not on disk: {adr_path}")
+                self.assertEqual(
+                    validate_document(adr_path, "adr"),
+                    [],
+                    msg="closing the authoring doors must not invalidate the grandfathered set",
+                )
 
     @covers("REQ-0.34.0-02-03")
     def test_kind_enum_still_lists_foundation_seal_not_delete(self) -> None:

@@ -11,13 +11,13 @@ status: Completed
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/ADR-0.0.57-foundation-adr-nominal-id-triage.md`
-- **Checklist Item:** #4 - "OBPI-0.0.57-04: **foundation-triage-rubric** — Define the ranking rubric: structured signal dimensions (insights-signal count, GHI-occurrence count, feature-unblocking count), judgment-assisted ranking with structural-only output, evidence citations; register the governance-triage vocabulary in PRD-GZKIT-1.0.0 § 2.1 with provenance to this ADR (per ADR-0.0.43 cascade contract)."
+- **Checklist Item:** #4 - "OBPI-0.0.57-04: **foundation-triage-rubric** — Define the ranking rubric: structured signal dimensions (insights-signal count, GHI-occurrence count, feature-unblocking count), judgment-assisted ranking with structural-only output, evidence citations; register the governance-triage vocabulary in PRD-GZKIT-1.0.0 § 2.1 with provenance to this ADR (per ADR-pool.ddd-domain-cascade cascade contract)."
 
 **Status:** Completed
 
 ## Objective
 
-**foundation-triage-rubric** — Define the ranking rubric: structured signal dimensions (insights-signal count, GHI-occurrence count, feature-unblocking count), judgment-assisted ranking with structural-only output, evidence citations; register the governance-triage vocabulary in PRD-GZKIT-1.0.0 § 2.1 with provenance to this ADR (per ADR-0.0.43 cascade contract).
+**foundation-triage-rubric** — Define the ranking rubric: structured signal dimensions (insights-signal count, GHI-occurrence count, feature-unblocking count), judgment-assisted ranking with structural-only output, evidence citations; register the governance-triage vocabulary in PRD-GZKIT-1.0.0 § 2.1 with provenance to this ADR (per ADR-pool.ddd-domain-cascade cascade contract).
 
 ## Lane
 
@@ -34,7 +34,7 @@ status: Completed
 - `src/gzkit/foundation/rubric.py` — rubric scoring module: signal-dimension counters (insights-signal, GHI-occurrence, feature-unblocking) + scoring function emitting `FoundationTriageRankEntry`
 - `src/gzkit/schemas/foundation_triage_rank_input.json` — JSON schema for the structural-only rank-input contract `{id, priority_score, evidence: [...]}`
 - `docs/governance/foundation-triage-rubric.md` — governance documentation explaining each signal dimension and how the rubric composes them
-- `docs/design/prd/PRD-GZKIT-1.0.0.md` — register the governance-triage vocabulary section per ADR-0.0.43 cascade contract; cite ADR-0.0.57 as provenance
+- `docs/design/prd/PRD-GZKIT-1.0.0.md` — register the governance-triage vocabulary section per ADR-pool.ddd-domain-cascade cascade contract; cite ADR-0.0.57 as provenance
 - `tests/test_foundation_triage_rubric.py` — REQ-derived tests covering signal-dimension counters, structural-only output, and PRD vocabulary registration
 - `tests/fixtures/foundation_triage_rubric/` — fixture foundation backlogs + insights JSONL + GHI corpus + expected rank-input output
 - `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-04-foundation-triage-rubric.md` — this brief (evidence updates only)
@@ -60,7 +60,7 @@ status: Completed
 2. REQUIREMENT: The rubric MUST compose three signal dimensions named in ADR § Decision item 2: `insights_signal_count` (from `.gzkit/insights/agent-insights.jsonl`), `ghi_occurrence_count` (from open GHIs), and `feature_unblocking_count` (count of pool/feature ADRs whose `depends_on` references this foundation).
 3. REQUIREMENT: The output MUST be structural-only — `{id, priority_score, evidence}`; NEVER prose narrative or per-entry rationale strings (mirrors `ghi-triage` round-3 hardening per GHI #424).
 <!-- gz-validate-skip: brief-cross-references -->
-4. REQUIREMENT: `docs/design/prd/PRD-GZKIT-1.0.0.md` MUST register the governance-triage vocabulary section per ADR-0.0.43 cascade contract, with provenance citing `ADR-0.0.57-foundation-adr-nominal-id-triage`. NOTE: OBPI-0.51.0-01 also registers a sibling skill-evaluation vocabulary section in the same file under a distinct heading; both registrations follow the ADR-0.0.43 cascade. The two OBPIs add ADDITIVE sections (no overlap of heading anchors), so merge order does not matter — but each section heading anchor MUST be unique within the PRD.
+4. REQUIREMENT: `docs/design/prd/PRD-GZKIT-1.0.0.md` MUST register the governance-triage vocabulary section per ADR-pool.ddd-domain-cascade cascade contract, with provenance citing `ADR-0.0.57-foundation-adr-nominal-id-triage`. NOTE: OBPI-0.51.0-01 also registers a sibling skill-evaluation vocabulary section in the same file under a distinct heading; both registrations follow the ADR-pool.ddd-domain-cascade cascade. The two OBPIs add ADDITIVE sections (no overlap of heading anchors), so merge order does not matter — but each section heading anchor MUST be unique within the PRD.
 5. REQUIREMENT: The JSON schema MUST validate identical examples to the Pydantic model — schema/model drift fail-closes the test suite.
 6. NEVER: Read or mutate the rubric scoring inside the skill body (OBPI-03); the rubric is a callable surface, not a procedure baked into prose.
 7. NEVER: Emit a rank entry with empty `evidence` — every score must cite at least one source signal (`Field(min_length=1)` binding mirrors the ADR-0.0.29 advisor-proof binding precedent).
@@ -204,7 +204,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 - [ ] REQ-0.0.57-04-01: Given `FoundationTriageRankEntry`, when an entry is constructed with non-empty `evidence`, then construction succeeds; when constructed with empty `evidence=()`, then `ValidationError` is raised (`Field(min_length=1)` binding).
 - [ ] REQ-0.0.57-04-02: Given the rubric module, when scoring a fixture foundation, then the three signal dimensions named in ADR § Decision item 2 (`insights_signal_count`, `ghi_occurrence_count`, `feature_unblocking_count`) are each computed and contribute to `priority_score`.
 - [ ] REQ-0.0.57-04-03: Given a rank entry, when extra fields like `rationale` or `why` are passed, then `extra="forbid"` raises `ValidationError` (structural-only invariant).
-- [ ] REQ-0.0.57-04-04: Given `docs/design/prd/PRD-GZKIT-1.0.0.md`, when read, then a governance-triage vocabulary section exists with provenance citing `ADR-0.0.57-foundation-adr-nominal-id-triage` (ADR-0.0.43 cascade contract).
+- [ ] REQ-0.0.57-04-04: Given `docs/design/prd/PRD-GZKIT-1.0.0.md`, when read, then a governance-triage vocabulary section exists with provenance citing `ADR-0.0.57-foundation-adr-nominal-id-triage` (ADR-pool.ddd-domain-cascade cascade contract).
 - [ ] REQ-0.0.57-04-05: Given the JSON schema at `src/gzkit/schemas/foundation_triage_rank_input.json`, when a Pydantic-emitted entry is validated against it, then validation succeeds — schema/model drift fail-closes the test suite.
 - [ ] REQ-0.0.57-04-06: Given a fixture pool/feature ADR whose `depends_on` references a foundation ADR, when the rubric counts `feature_unblocking_count`, then that foundation's count increments by exactly one per matching dependent.
 
