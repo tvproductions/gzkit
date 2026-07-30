@@ -6,7 +6,7 @@ decodes sub-process bytes to ``str``; without ``errors=`` an undecodable byte
 ``ValueError`` that ``except OSError`` misses — and aborts the command mid-run.
 
 ``audit_subprocess_errors`` scans every tree in ``_SUBPROCESS_AUDIT_ROOTS`` —
-``src/gzkit``, ``scripts``, and ``.claude/hooks``. This test runs it against the
+``src/gzkit``, ``scripts``, ``.claude/hooks``, and ``tests``. This test runs it against the
 real tree so a re-introduced site fails closed in the ``gz check`` test tier,
 mirroring ``test_path_separator_portability.py``'s enforcement of the
 ``.as_posix()`` rule. The teeth/false-positive tests prove the audit actually
@@ -181,19 +181,19 @@ class SubprocessAuditScopeTests(unittest.TestCase):
                 self.assertEqual(len(findings), 1, f"declared root {rendered} is not scanned")
                 self.assertIn(f"{rendered}/fixture_mod.py", findings[0].artifact)
 
-    def test_tests_tree_is_deliberately_not_scanned(self) -> None:
-        """Pins the exclusion so it stays a decision, not an accident.
+    def test_an_unscanned_sibling_tree_is_not_swept_in(self) -> None:
+        """Negative control: scope is the declared tuple, not "every .py in the repo".
 
-        A decode crash under ``tests/`` fails a test loudly — self-reporting, not
-        a silent session kill — and 35 real sites carry the shape. Widening here
-        means doing that sweep; it must not happen as a side effect of someone
-        assuming the omission was an oversight.
+        Without this, the four positive cases above are equally satisfied by an
+        audit that walks the whole project — which would flag vendor mirrors and
+        generated surfaces the rule does not govern. ``docs/`` stands in for any
+        tree outside the tuple.
         """
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_at(root, ("tests",), _UNGUARDED)
+            _write_at(root, ("docs",), _UNGUARDED)
             findings = audit_subprocess_errors(root)
-        self.assertEqual(findings, [], "tests/ is excluded by design; widening requires the sweep")
+        self.assertEqual(findings, [], "scope must be the declared roots, not the whole tree")
 
 
 if __name__ == "__main__":

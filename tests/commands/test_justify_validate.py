@@ -153,6 +153,7 @@ class TestValidateHelpSurface(unittest.TestCase):
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
         self.assertEqual(result.returncode, 0)
@@ -189,6 +190,7 @@ class TestValidateSubprocessSmoke(unittest.TestCase):
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
         self.assertEqual(result.returncode, 0)
@@ -201,6 +203,7 @@ class TestValidateSubprocessSmoke(unittest.TestCase):
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
         self.assertEqual(result.returncode, 2)
@@ -217,6 +220,7 @@ class TestCliAuditCoverage(unittest.TestCase):
             capture_output=True,
             text=True,
             encoding="utf-8",
+            errors="replace",
             check=False,
         )
         self.assertEqual(

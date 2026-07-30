@@ -99,6 +99,8 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             cwd=_REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         ).stdout
         completed = subprocess.run(
@@ -106,6 +108,8 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             cwd=_REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         )
         self.assertEqual(completed.returncode, 0, msg=completed.stderr)
@@ -118,6 +122,8 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             cwd=_REPO_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=False,
         ).stdout
         # Compare BEFORE vs AFTER rather than asserting fully-clean — the

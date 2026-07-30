@@ -62,6 +62,8 @@ class TestRetireLnSurface(unittest.TestCase):
             [sys.executable, "-m", "gzkit", "validate", "--closeout-proof-binding"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         self.assertEqual(
             result.returncode,

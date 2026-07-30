@@ -408,16 +408,18 @@ def _scan_crlf_surfaces(project_root: Path) -> list[ValidationError]:
 
 _SUBPROCESS_CAPTURE_FUNCS: frozenset[str] = frozenset({"run", "Popen", "check_output"})
 
-# Executable trees whose subprocess reads are scanned. `scripts` and
-# `.claude/hooks` carry the worst-consequence sites in the repo: a decode crash
-# there kills session boot or refuses every tool call, rather than failing one
-# command. `.claude/hooks` is canonical, not a generated mirror
-# (`.gzkit/manifest.json` declares `"hooks": ".claude/hooks"`). `tests` is
-# excluded on purpose — see `audit_subprocess_errors`.
+# Every tree whose subprocess reads are scanned. `scripts` and `.claude/hooks`
+# carry the worst-consequence sites in the repo: a decode crash there kills
+# session boot or refuses every tool call, rather than failing one command.
+# `.claude/hooks` is canonical, not a generated mirror (`.gzkit/manifest.json`
+# declares `"hooks": ".claude/hooks"`). `tests` was excluded until the 35-site
+# sweep landed (operator ruling: "sweep tests too"); with the tree clean, the
+# guard covers it so a new unguarded fixture cannot re-enter.
 _SUBPROCESS_AUDIT_ROOTS: tuple[tuple[str, ...], ...] = (
     ("src", "gzkit"),
     ("scripts",),
     (".claude", "hooks"),
+    ("tests",),
 )
 
 _SUBPROCESS_ERRORS_MESSAGE = (
@@ -497,10 +499,12 @@ def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
     *file*-read side of this class; its *subprocess* side was invisible here, so
     the recurrence guard did not guard the surface whose recurrence mattered most.
 
-    ``tests/`` is deliberately NOT scanned: a decode crash there fails a test
-    loudly, which is self-reporting rather than silent, and 35 sites carry the
-    shape. Sweeping them is real work with a different risk profile, not a
-    scope this audit should quietly annex.
+    ``tests/`` is in scope as of the 35-site sweep (operator ruling: *"sweep
+    tests too"*). It was excluded while those sites stood, because a guard that
+    reports 35 known failures every run trains readers to ignore it. With the
+    tree clean the guard is worth having: the sites were overwhelmingly
+    ``git``-invoking helpers, exactly the calls whose output carries
+    locale-encoded branch names and commit subjects.
 
     Invoked by ``tests/governance/test_subprocess_errors_replace.py`` against the
     real tree so a re-introduced site fails closed in the ``gz check`` test tier,

@@ -156,7 +156,13 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     rebuild a repo per-test (GHI #253).
     """
     run = lambda args: subprocess.run(  # noqa: E731
-        ["git", *args], cwd=path, check=True, capture_output=True, text=True
+        ["git", *args],
+        cwd=path,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
     )
     run(["init", "-b", "main"])
     # Append the [user] section instead of spawning ``git config`` twice.

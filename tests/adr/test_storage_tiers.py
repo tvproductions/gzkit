@@ -28,6 +28,7 @@ def _run(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.Comple
         capture_output=True,
         text=True,
         encoding="utf-8",
+        errors="replace",
         check=check,
     )
 

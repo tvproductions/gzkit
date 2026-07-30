@@ -208,6 +208,8 @@ class CliExitCodeTests(unittest.TestCase):
                 cwd=root,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
             )
 
@@ -231,6 +233,8 @@ class CliExitCodeTests(unittest.TestCase):
                 cwd=root,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
                 check=False,
             )
 

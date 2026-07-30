@@ -91,7 +91,9 @@ class _TimingResult(unittest.TestResult):
 def _measure_parallel_wallclock() -> tuple[float, int]:
     """Run the suite via the parallel runner; return (wall_seconds, returncode)."""
     wall_start = time.perf_counter()
-    proc = subprocess.run(_PARALLEL_CMD, capture_output=True, text=True)
+    proc = subprocess.run(
+        _PARALLEL_CMD, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
     return time.perf_counter() - wall_start, proc.returncode
 
 

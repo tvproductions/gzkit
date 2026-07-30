@@ -8,7 +8,14 @@ from tests.commands.common import CliRunner, _quick_init
 
 class TestObpiValidateCommand(unittest.TestCase):
     def _git(self, *args: str) -> None:
-        subprocess.run(["git", *args], check=True, capture_output=True, text=True)
+        subprocess.run(
+            ["git", *args],
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
 
     def _commit_all(self, message: str) -> None:
         self._git("add", "-A")
@@ -17,6 +24,8 @@ class TestObpiValidateCommand(unittest.TestCase):
             check=True,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         ).stdout.strip()
         if status:
             self._git("commit", "-m", message)

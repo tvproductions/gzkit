@@ -565,12 +565,16 @@ class TestStatusCommand(unittest.TestCase):
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
 
             result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
@@ -641,12 +645,16 @@ class TestStatusCommand(unittest.TestCase):
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
 
             result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
@@ -752,18 +760,24 @@ class TestStatusCommand(unittest.TestCase):
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             subprocess.run(
                 ["git", "commit", "-m", "later sibling change"],
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             second_anchor = subprocess.run(
                 ["git", "rev-parse", "--short=7", "HEAD"],
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             ).stdout.strip()
 
             ledger.append(
@@ -1526,12 +1540,16 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
                 check=True,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                errors="replace",
             )
 
             result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])

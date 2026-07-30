@@ -308,6 +308,8 @@ class TestShellHookContract(unittest.TestCase):
             ["git", "ls-files", "--stage", str(hook_path)],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         stored_mode = result.stdout.split()[0] if result.stdout.strip() else ""

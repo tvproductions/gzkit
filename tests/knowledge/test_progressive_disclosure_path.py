@@ -94,6 +94,8 @@ class TestCLIAlignmentAfterDocUpdates(unittest.TestCase):
             ["uv", "run", "gz", "validate", "--cli-alignment"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             cwd=_PROJECT_ROOT,
         )
         self.assertEqual(

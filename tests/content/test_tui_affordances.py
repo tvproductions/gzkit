@@ -282,6 +282,8 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             ["uv", "run", "gz", "content", "--help"],
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             cwd=str(Path(__file__).parent.parent.parent),
         )
 

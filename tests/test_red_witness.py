@@ -29,7 +29,15 @@ _RUNNER = [sys.executable, "-m", "unittest"]
 
 
 def _git(args: list[str], cwd: Path) -> None:
-    subprocess.run(["git", *args], cwd=cwd, check=True, capture_output=True, text=True)
+    subprocess.run(
+        ["git", *args],
+        cwd=cwd,
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
 
 
 class TestClassifyFailure(unittest.TestCase):
@@ -245,6 +253,8 @@ class TestRunRedWitness(_GitFixture):
             cwd=self.root,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
             check=True,
         )
         self.assertEqual(
