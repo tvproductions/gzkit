@@ -583,8 +583,7 @@ def _control_surface_sync_script() -> str:
                     sys.exit(0)
 
                 matches = any(
-                    rel_path.startswith(p) or rel_path == p.rstrip("/")
-                    for p in CONTROL_SURFACE_PATTERNS
+                    rel_path.startswith(p) or rel_path == p.rstrip("/") for p in CONTROL_SURFACE_PATTERNS
                 )
                 if not matches:
                     sys.exit(0)
@@ -597,6 +596,8 @@ def _control_surface_sync_script() -> str:
                         ["uv", "run", "gz", "agent", "sync", "control-surfaces"],
                         capture_output=True,
                         text=True,
+                        encoding="utf-8",
+                        errors="replace",
                         timeout=TIMEOUT_SECONDS,
                         cwd=str(project_root),
                     )

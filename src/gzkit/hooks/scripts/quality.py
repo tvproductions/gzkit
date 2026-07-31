@@ -66,15 +66,14 @@ def _post_edit_ruff_script() -> str:
                         capture_output=True,
                         text=True,
                         encoding="utf-8",
+                        errors="replace",
                         timeout=TIMEOUT_SECONDS,
                     )
                     if result.returncode != 0:
                         combined = (result.stdout or "") + (result.stderr or "")
                         lines = combined.splitlines()[:MAX_OUTPUT_LINES]
                         if lines:
-                            sys.stderr.write(
-                                f"post-edit-ruff: lint findings on {target.name}\\n"
-                            )
+                            sys.stderr.write(f"post-edit-ruff: lint findings on {target.name}\\n")
                             sys.stderr.write("\\n".join(lines) + "\\n")
 
                 sys.exit(0)
@@ -155,9 +154,7 @@ def _stop_turn_feedback_script() -> str:
                 re.compile(r"\\b(?:the\\s+)?lock\\s+is\\s+(?:held|released)\\b", re.IGNORECASE),
                 re.compile(r"\\bno\\s+active\\s+locks\\b", re.IGNORECASE),
                 re.compile(r"\\b(?:all\\s+)?tests\\s+pass(?:es|ing)?\\b", re.IGNORECASE),
-                re.compile(
-                    r"\\b(?:the\\s+)?(?:working\\s+)?tree\\s+is\\s+clean\\b", re.IGNORECASE
-                ),
+                re.compile(r"\\b(?:the\\s+)?(?:working\\s+)?tree\\s+is\\s+clean\\b", re.IGNORECASE),
             ]
             CITATION_RE = re.compile(
                 r"`[^`\\n]{2,}`"  # inline code span (command or observed output)
@@ -174,6 +171,7 @@ def _stop_turn_feedback_script() -> str:
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
+                    errors="replace",
                     cwd=cwd,
                     timeout=TIMEOUT_SECONDS,
                 )
@@ -198,6 +196,7 @@ def _stop_turn_feedback_script() -> str:
                     capture_output=True,
                     text=True,
                     encoding="utf-8",
+                    errors="replace",
                     cwd=cwd,
                     timeout=TIMEOUT_SECONDS,
                 )
@@ -317,8 +316,8 @@ def _stop_turn_feedback_script() -> str:
                     "Why this is forbidden: gzkit forbids ending a turn on an "
                     "unbacked governance state-claim (AGENTS.md § MAKE LLM "
                     "STOCHASTIC VIBES INERT; AGENTS.md Behavior Rules — Never #7 "
-                    "\\"Do not read YAML frontmatter status: Completed as proof of "
-                    "completion — read the ledger\\"; GHI #620).\\n\\n"
+                    '"Do not read YAML frontmatter status: Completed as proof of '
+                    'completion — read the ledger"; GHI #620).\\n\\n'
                     "Governed next step: re-state the claim with a citation — a "
                     "`gz` command and its observed output, a commit SHA, a "
                     "`.gzkit/ledger.jsonl` reference, or a file:line — then end "
@@ -375,9 +374,7 @@ def _stop_turn_feedback_script() -> str:
                     if returncode != 0:
                         with suppress(OSError):
                             findings_lines = len(findings.splitlines())
-                            append_telemetry(
-                                cwd, files=len(files), findings_lines=findings_lines
-                            )
+                            append_telemetry(cwd, files=len(files), findings_lines=findings_lines)
                         sys.stderr.write(build_block_message(findings, len(files)) + "\\n")
                         return 2
 

@@ -384,15 +384,13 @@ def _plan_audit_gate_script() -> str:
                 if receipt_short not in plan_shorts:
                     return (
                         False,
-                        f"Audit receipt is for {receipt_obpi}, but plan references "
-                        f"{', '.join(obpi_ids)}",
+                        f"Audit receipt is for {receipt_obpi}, but plan references {', '.join(obpi_ids)}",
                     )
 
                 if receipt_path.stat().st_mtime < plan_mtime:
                     return (
                         False,
-                        "Audit receipt is older than plan file "
-                        "(plan was modified after audit)",
+                        "Audit receipt is older than plan file (plan was modified after audit)",
                     )
 
                 if receipt_verdict not in ("PASS", "FAIL"):
@@ -447,15 +445,15 @@ def _plan_audit_gate_script() -> str:
                         cwd=cwd,
                         capture_output=True,
                         text=True,
+                        encoding="utf-8",
+                        errors="replace",
                         timeout=SELF_AUDIT_TIMEOUT_SECONDS,
                         check=False,
                     )
                 except FileNotFoundError as exc:
                     return False, f"self-audit command not found: {exc}"
                 except subprocess.TimeoutExpired:
-                    return False, (
-                        f"self-audit timed out after {SELF_AUDIT_TIMEOUT_SECONDS}s"
-                    )
+                    return False, (f"self-audit timed out after {SELF_AUDIT_TIMEOUT_SECONDS}s")
 
                 output = (completed.stdout + completed.stderr).strip()
                 return completed.returncode == 0, output
@@ -506,9 +504,7 @@ def _plan_audit_gate_script() -> str:
                 if not obpi_ids:
                     sys.exit(0)
 
-                is_valid, reason = check_audit_receipt(
-                    plans_dir, obpi_ids, plan_file.stat().st_mtime
-                )
+                is_valid, reason = check_audit_receipt(plans_dir, obpi_ids, plan_file.stat().st_mtime)
                 if is_valid:
                     sys.exit(0)
 
@@ -517,8 +513,7 @@ def _plan_audit_gate_script() -> str:
                 # multi-OBPI plans with explicit fixtures.
                 target_obpi = obpi_ids[0]
                 print(
-                    f"plan-audit-gate: receipt {reason.lower()}; "
-                    f"self-running 'gz plan audit {target_obpi}'...",
+                    f"plan-audit-gate: receipt {reason.lower()}; self-running 'gz plan audit {target_obpi}'...",
                     file=sys.stderr,
                 )
                 _, self_audit_output = attempt_self_audit(target_obpi, cwd)
@@ -526,13 +521,10 @@ def _plan_audit_gate_script() -> str:
                 # audit writes the receipt even when it exits non-zero (FAIL
                 # verdict with CREATE-path gaps is the common case), and FAIL
                 # is a valid receipt verdict per check_audit_receipt's contract.
-                is_valid, reason = check_audit_receipt(
-                    plans_dir, obpi_ids, plan_file.stat().st_mtime
-                )
+                is_valid, reason = check_audit_receipt(plans_dir, obpi_ids, plan_file.stat().st_mtime)
                 if is_valid:
                     print(
-                        f"plan-audit-gate: self-audit succeeded ({reason}); "
-                        f"allowing ExitPlanMode.",
+                        f"plan-audit-gate: self-audit succeeded ({reason}); allowing ExitPlanMode.",
                         file=sys.stderr,
                     )
                     sys.exit(0)

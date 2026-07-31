@@ -113,6 +113,17 @@ select = [
     "SIM",    # flake8-simplify
 ]
 
+[tool.ruff.lint.per-file-ignores]
+# Hook-script generators hold hook bodies as indented string literals that are
+# dedented on emit, so a source line is `indent` chars wider than the line it
+# produces. The emitted file under .claude/hooks/ is itself ruff-formatted at
+# line-length 100; wrapping the template to satisfy E501 *here* makes the
+# generated file disagree with `gz agent sync control-surfaces`, which
+# `gz validate --surfaces` then fails closed on. The emitted width is the one
+# that must hold. Inline `# noqa` is unavailable: these lines are string
+# content, so the comment would land in the generated hook. (GHI #582 follow-on.)
+"src/gzkit/hooks/scripts/*.py" = ["E501"]
+
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
