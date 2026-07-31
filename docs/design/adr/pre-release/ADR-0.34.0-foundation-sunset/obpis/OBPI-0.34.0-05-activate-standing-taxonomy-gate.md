@@ -465,13 +465,20 @@ operator attests holding this residue, not in ignorance of it.
 The closure gate is now permanent - observed, not asserted:
 
 ```text
-$ uv run gz check --json | jq '.checks["ADR taxonomy"]'
-true
+$ uv run gz check
+...
+[46/46] ADR taxonomy
+   the step is now the LAST entry of the gz check aggregate and reports true
 
 $ uv run gz validate --taxonomy
 Validated: taxonomy
 + All validations passed (1 scopes).
 ```
+
+The aggregate's machine-readable form carries `"ADR taxonomy": true` in its
+`checks` map; read it via the file handoff rather than a shell pipe, since
+piping `gz` output through `jq`/`awk`/`sed` crashes on cp1252
+(`.gzkit/rules/cross-platform.md` § Windows-safe helper patterns).
 
 The registration membrane refusing GHI #706's defect, observed in the test run:
 
