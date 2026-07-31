@@ -1,0 +1,21 @@
+ADR audit-check: ADR-0.34.0-foundation-sunset
+PASS All linked OBPIs are completed with evidence.
+  - OBPI-0.34.0-01-grandfather-manifest-and-closed-kind-assertion
+  - OBPI-0.34.0-02-authoring-time-kind-rejection
+  - OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement
+  - OBPI-0.34.0-04-execute-migration-populate-and-resense
+  - OBPI-0.34.0-05-activate-standing-taxonomy-gate
+Info 2 proof-exempt REQ(s) owe no @covers by design (SUPPORT → ledger +
+validator; STRUCTURAL-FENCE → parent-ADR boundary invariant):
+  - REQ-0.34.0-04-02 [SUPPORT]
+  - REQ-0.34.0-05-01 [SUPPORT]
+
+Coverage: 18/20 REQs covered (90.0%)
+  OBPI-0.34.0-01: 4/4 (100.0%)
+  OBPI-0.34.0-02: 5/5 (100.0%)
+  OBPI-0.34.0-03: 4/4 (100.0%)
+  OBPI-0.34.0-04: 2/3 (66.7%)
+  OBPI-0.34.0-05: 3/4 (75.0%)
+Uncovered REQs (2):
+  - REQ-0.34.0-04-02
+  - REQ-0.34.0-05-01

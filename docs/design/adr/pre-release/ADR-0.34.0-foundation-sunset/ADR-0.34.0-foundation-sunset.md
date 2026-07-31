@@ -1,6 +1,6 @@
 ---
 id: ADR-0.34.0-foundation-sunset
-status: Completed
+status: Validated
 kind: feature
 semver: 0.34.0
 lane: heavy
