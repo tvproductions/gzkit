@@ -6,7 +6,7 @@ Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-07-18).
 Supersedes [`build-to-1.0-campaign-2026-06-30.md`](build-to-1.0-campaign-2026-06-30.md);
 priors are retained for audit and no longer steer.
 
-> **Topmost (sequenced):** **Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft` 0/9 — *not* GHI #623, closed 2026-07-19; see § Movement A item 2)** → `ADR-0.34.0` capstone (3/5). Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
+> **Topmost (sequenced):** **Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft` 0/9 — *not* GHI #623, closed 2026-07-19; see § Movement A item 2)** → `ADR-0.34.0` capstone (**5/5 OBPIs — closeout ceremony is all that remains**). Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
 
 > **Why this edition exists.** The road to 1.0 was dragging. Measured 2026-07-18 over
 > the prior 90 days: **1,508 commits, 43 of them `feat` (2.9%)**; 703 were `gz git-sync`
@@ -128,7 +128,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] `ADR-0.0.37` → `Validated` via `/gz-adr-audit`. Attribution drift found by independent review and remediated pre-receipt. `b40a8026` · receipt `arb-step-unittest-753d3dda` · detail in § Amendments 2026-07-18 (later session).
 - [ ] Re-home the registry→AGENTS.md composition engine as a **feature** ADR. **DONE as authoring: the successor is `ADR-0.35.0-canon-entry-corpus-landing` (authored 2026-07-21, `Draft`, 9 OBPIs, 0/9 landed) — this item is started-not-done, and the tracker is the ADR, not a GHI.** GHI #623 closed 2026-07-19 and **GHI #654 closed 2026-07-22 `superseded` into `ADR-0.35.0`**, whose § Intent names it: *"Discharges GHI #654 (orchestration gap) and GHI #635 (duplicate invariant entries) -- the same wound."* Do not reopen #623 **or #654** to find this scope; read the ADR. Its OBPI-05 carries the corpus→candidate generator and OBPI-07 the `gz content land` orchestrator. GHI #654's capture-silence gap was direct-fixed ahead of the chain (`48a5f799`, `dcf29b95`) because it was a live footgun; see the pre-landed note in `OBPI-0.35.0-08`. The absorption direction `ADR-0.0.37` § Terminal Disposition recorded (*"tracked at GHI #623 (absorbing GHI #654)"*) is backwards relative to what survived: #623 was an audit finding and its findings are discharged, while #654 states the same unbuilt capability as operator pain with a reproduction — *"there is no generator that renders the corpus delta into a candidate."* Closed after a full re-verification: claims (3)/(4) had been fixed by later work and never credited back, corrective scope (A) had landed as `--rendition-floor-coherence`, the discarded registry parameters were removed (`4f9c7d2b`), and a standing witness-resolution gate was added (`e409bb08`). **Residual scope, unbuilt and feature-shaped:** the attributable corpus→candidate generator and the `rendition ⊆ corpus` lineage gate — today `compose()` *validates* an agent-supplied candidate rather than *materializing* one from the corpus, so prose absent from canon can still pass. The registry spine is NOT the successor: `ADR-0.0.37` § Terminal Disposition permanently withdrew OBPI-02/03 as *"obsoleted by the 2026-06-03 corpus Re-Alignment."* The successor is corpus-shaped.
 - [ ] **Disposition `foundation-adr-registers-invariant`** *(one-line operator canon call, fenced not blocking)*. It declares structural witness `gz validate --foundation-registers-invariant`, which has never existed; the claim is also unenforceable as written — `constitutional_invariant.json` carries no field naming which ADR registered an entry, and the ratio is 4 invariants to 74 foundation ADRs. It was NOT retired: `REQ-0.0.37-01-03` (attested, OBPI-0.0.37-01) asserts three seed invariants, so deleting the entry would falsify attested canon. Fenced shrink-only by `tests/governance/test_invariant_witness.py`; `--invariant-witness` stays out of `gz check` until this is ruled, since holding a gate green over a known-red tree is the staging-flag anti-pattern.
-- [ ] `ADR-0.34.0-foundation-sunset` capstone — 5 authored OBPIs, currently `Draft` **3/5** *(snapshot; live count is `uv run gz adr status ADR-0.34.0`)* (OBPI-01 `attested_completed` 2026-07-19: grandfather manifest + closed-kind assertion; OBPI-02 `attested_completed`: authoring-time kind rejection at all three CLI doors, foundation closed to new authoring while all 74 grandfathered ADRs keep validating; OBPI-03 `attested_completed` 2026-07-29 (`f6088fabc`): terminal-partition gate reading grandfathered-foundation terminality from the Layer-2 `foundation_grandfathered` event and never frontmatter — `foundation_limbo` at exit 3 — plus `ADR-0.0.18` frozen-historic and the foundation kind declared CLOSED across `gz-design` Step 5, `adr-taxonomy.md`, and `foundation-feature-invariance-test.md`): **remaining is OBPI-04 and OBPI-05 alone** — demote the ~23 unstarted foundations to pool · ~~populate the grandfather manifest~~ · backfill `foundation_grandfathered` · `gz ontology resense` · wire the permanent `--taxonomy` gate into `gz check`.
+- [ ] `ADR-0.34.0-foundation-sunset` capstone — **all 5 OBPIs `attested_completed` (5/5)**; the ADR itself is `Pending` with Gates 1–4 `pass`, Gate 5 `pending`, closeout `READY` *(snapshot; live state is `uv run gz adr status ADR-0.34.0`)*. OBPI-01 2026-07-19: grandfather manifest + closed-kind assertion · OBPI-02: authoring-time kind rejection at all three CLI doors · OBPI-03 2026-07-29 (`f6088fabc`): terminal-partition gate reading grandfathered-foundation terminality from the Layer-2 `foundation_grandfathered` event and never frontmatter, plus `ADR-0.0.18` frozen-historic · OBPI-04 2026-07-30 (`d521ace53`): **the migration executed** — `--taxonomy` moved exit 3 / 74 findings → exit 0, 23 genuinely-unstarted foundations demoted to pool (136 briefs removed, lineage preserved by `obpi_parked` per child), 51 manifest entries bijective with 51 `foundation_grandfathered` ledger events, re-sensed with zero orphans (seams 119→119) · OBPI-05 2026-07-31: the permanent `--taxonomy` gate wired as the **last** step of `gz check`, and the registration membrane sealed at both `adr_created` ingresses (GHI #706 discharged). **Remaining is the closeout ceremony alone** — `/gz-adr-closeout-ceremony` through Gate-5 attestation to `Validated`. Per § 9a scope decision #3 the done-bar is `Validated` or operator-parked, which is why this box is still open at 5/5.
 
 **Movement B — Put the membrane on the real doors** *(new feature ADR extending `ADR-0.33.0`; heavy)*
 
@@ -266,6 +266,33 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-07-31 — Movement A capstone reaches 5/5; remaining work is the ceremony, not OBPIs (operator-ratified)
+
+Operator ruling, verbatim: *"update handoff and campaign, then git sync"*.
+
+`OBPI-0.34.0-04` (`d521ace53`) and `OBPI-0.34.0-05` both reached `attested_completed`,
+so `ADR-0.34.0` is **5/5**. Verified against the governed read, not frontmatter:
+`uv run gz adr status ADR-0.34.0 --json` renders `lifecycle_status: "Pending"`,
+gates `1–4 pass` / `5 pending`, `Closeout READY`, `validated: false`.
+
+**The item does not check off.** § 9a scope decision #3 (**CARRIED**) sets the per-ADR
+done-bar at `Validated` or operator-parked — not at 5/5 OBPIs. What changed is the
+*shape* of the remainder: the line previously read *"remaining is OBPI-04 and OBPI-05
+alone"* and now reads **the closeout ceremony alone**. Movement A's capstone is one
+Gate-5 attestation from done, and the Topmost banner is repointed accordingly.
+
+**Fourth occurrence of the identical drift on the identical line** (1/5 → 2/5 → 3/5 →
+5/5). The 07-29 mitigation — labelling the number a *snapshot* and shipping
+`uv run gz adr status` beside it — did **not** stop it, and could not have: the value
+is still hand-carried in Layer-1 prose that the SessionStart banner quotes verbatim.
+Labelling a transcribed derived value does not stop it going stale; only rendering it
+does. This is the standing evidence for the **Movement D** box *"the campaign body as
+a rendered Layer-3 view"* — that box is the actual fix, and every future recurrence of
+this amendment is interest paid on not having built it.
+
+**Derived-count correction plus a remainder-shape correction. No checklist item moved,
+none was added or struck; no ruling is carried or withdrawn.**
 
 ### 2026-07-29 — Movement A count correction: ADR-0.34.0 is 3/5, not 2/5 (operator-ratified)
 
