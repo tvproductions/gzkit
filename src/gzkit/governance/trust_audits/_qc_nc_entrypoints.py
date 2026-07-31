@@ -234,6 +234,15 @@ def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     return audit_adr_status_fresh(root)
 
 
+def _ep_adr_taxonomy(root: Path) -> list[ValidationError]:
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+    from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+        audit_foundation_closure,
+    )
+
+    return trust_audits.audit_adr_taxonomy(root) + audit_foundation_closure(root)
+
+
 def _ep_obpi_lifecycle_coherence(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
         audit_obpi_lifecycle_coherence,

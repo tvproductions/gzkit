@@ -20,6 +20,13 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.commands.register import (
+    grandfathered_foundation_ids,
+    is_undecodable_adr,
+    is_ungrandfathered_foundation,
+    warn_foundation_refused,
+    warn_undecodable_refused,
+)
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.governance.trust_audits.session_green_gate import configured_hooks_path
 from gzkit.hooks.claude import setup_claude_hooks
@@ -829,7 +836,16 @@ def _register_existing_artifacts(
     """Scan and register existing artifacts. Returns True if registered."""
     existing = scan_existing_artifacts(project_root, design_root)
     prd_metadata = [parse_artifact_metadata(p) for p in existing["prds"]]
-    adr_metadata = [parse_artifact_metadata(p) for p in existing["adrs"]]
+    # Refuse undecodable packages BEFORE parse_artifact_metadata, which decodes
+    # UTF-8 and catches only OSError — one bad file would otherwise abort init
+    # partway through, after earlier initialization mutations have landed.
+    adr_files = []
+    for adr_path in existing["adrs"]:
+        if is_undecodable_adr(adr_path):
+            warn_undecodable_refused(adr_path)
+            continue
+        adr_files.append(adr_path)
+    adr_metadata = [parse_artifact_metadata(p) for p in adr_files]
 
     if not prd_metadata and not adr_metadata:
         return False
@@ -858,11 +874,16 @@ def _register_existing_artifacts(
         console.print(f"  Registered PRD: {prd_id}")
 
     # Register ADRs
-    for meta in adr_metadata:
+    grandfathered = grandfathered_foundation_ids(project_root)
+    for adr_file, meta in zip(adr_files, adr_metadata, strict=True):
         adr_id = meta["id"]
         parent = meta.get("parent", prd_ids[0] if prd_ids else "")
         if ledger.has_adr_created(adr_id):
             console.print(f"  Skipped ADR (already registered): {adr_id}")
+            continue
+        # Registration membrane (GHI #706) — second door of the same guard.
+        if is_ungrandfathered_foundation(adr_file, adr_id, grandfathered):
+            warn_foundation_refused(adr_id)
             continue
         ledger.append(adr_created_event(adr_id, parent, mode))
         console.print(f"  Registered ADR: {adr_id} (parent: {parent or 'none'})")

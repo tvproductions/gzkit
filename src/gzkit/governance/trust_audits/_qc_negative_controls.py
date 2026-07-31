@@ -457,6 +457,28 @@ def _build_adr_status_freshness() -> Path:
     return root
 
 
+def _build_adr_taxonomy() -> Path:
+    """Violation: a `kind: foundation` ADR carrying a feature semver.
+
+    ADR-0.0.17 pins `kind: foundation` to `0.0.x`, so a `0.9.0` foundation is
+    the kind/semver incoherence the taxonomy scope exists to refuse. The ADR
+    tree must be planted — `audit_adr_taxonomy` returns clean on an absent
+    `docs/design/adr/`, which would make an empty fixture a hollow control.
+    """
+    root = _mkroot("adr-taxonomy")
+    _write(
+        root
+        / "docs"
+        / "design"
+        / "adr"
+        / "foundation"
+        / "ADR-0.9.0-example"
+        / "ADR-0.9.0-example.md",
+        "---\nid: ADR-0.9.0-example\nlane: Lite\nkind: foundation\nsemver: 0.9.0\n---\n# Example\n",
+    )
+    return root
+
+
 def _build_adversarial_validation() -> Path:
     """Violation: a post-cutover heavy completion with no verdict, in a brief with no 4b section.
 
@@ -925,6 +947,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_obpi_lifecycle_coherence,
         _ep._ep_obpi_lifecycle_coherence,
     ),
+    ("adr-taxonomy", _build_adr_taxonomy, _ep._ep_adr_taxonomy),
     ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),
     ("red-parity", _build_red_parity, _ep._ep_red_parity),
     ("rendition-freshness", _build_rendition_freshness, _ep._ep_rendition_freshness),

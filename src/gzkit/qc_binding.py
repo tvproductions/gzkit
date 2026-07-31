@@ -113,6 +113,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Smoke tier": ("audit", "tests/", "bound", "python_function"),
     "Dispatch attestation": ("audit", "docs/", "bound", "python_function"),
     "Enforcement floor": ("audit", "src/", "bound", "python_function"),
+    "ADR taxonomy": ("audit", "docs/", "bound", "python_function"),
 }
 
 

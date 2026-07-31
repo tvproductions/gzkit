@@ -4,7 +4,7 @@ parent: ADR-0.34.0-foundation-sunset
 item: 5
 lane: Heavy
 sensitivity: security
-status: Draft
+status: Completed
 allowlist:
 - src/gzkit/quality.py
 - src/gzkit/commands/quality.py
@@ -12,6 +12,10 @@ allowlist:
 - src/gzkit/commands/register.py
 - data/foundation_grandfather.json
 - src/gzkit/commands/init_cmd.py
+- src/gzkit/qc_binding.py
+- src/gzkit/governance/trust_audits/taxonomy.py
+- src/gzkit/governance/trust_audits/_qc_negative_controls.py
+- src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py
 - tests/
 reqs:
 - REQ-0.34.0-05-01
@@ -38,7 +42,7 @@ verification:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md`
 - **Checklist Item:** #5 — "activate-standing-taxonomy-gate: Activate the permanent closure gate: run register-adrs to reconcile the Layer-3 status index after the demotions; wire the --taxonomy gate (closed-kind + terminal-partition assertions) into gz check as the LAST act (wiring equals a terminal tree, so it lands green; anti-staging-flag doctrine forbids wiring earlier over limbo foundations). Seal the registration membrane in the same act: gz register-adrs and first-run gz init both book an adr_created ledger event for any on-disk versioned ADR package without inspecting kind, so a hand-placed kind: foundation package enters Layer-2 truth un-guarded (GHI #706); add a manifest-aware kind check at both ingress points that refuses a foundation package absent from data/foundation_grandfather.json while still booking the grandfathered roster. Depends on OBPI-04's populate + backfill having completed (a naive guard over the empty manifest would refuse all 74). (heavy lane: status-index reconcile, gz check step-registry wiring, ledger ingress guard)."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -93,9 +97,30 @@ declares `security` and its Gate 5 fires the extended security walkthrough.
 - `src/gzkit/commands/init_cmd.py` — additive ONLY: the same manifest-aware
   `kind` check on the first-run registration ingress (GHI #706). No other
   `gz init` behavior touched.
+- `src/gzkit/qc_binding.py` — additive ONLY: one `_STEP_CLASSIFICATION` entry
+  `("audit", "docs/", "bound", "python_function")` for the new step. **Coupled
+  surface** (operator-approved amendment, 2026-07-30): `build_qc_registry()`
+  raises `KeyError` by design on any unclassified `gz check` step, so this edit
+  is not optional for a step that lands `bound`. Sibling shape: the
+  `"ADR status freshness"` entry.
+- `src/gzkit/governance/trust_audits/_qc_negative_controls.py` — additive ONLY:
+  an `_build_adr_taxonomy` fixture plus its `_QC_NEGATIVE_CONTROL_TABLE` row.
+  **Coupled surface**: a `bound` step with no `@enforces` registration is
+  refused as green-by-emptiness (ADR-0.0.74 BI#8, strict no-debt).
+- `src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py` — additive ONLY: the
+  `_ep_adr_taxonomy` entrypoint calling the audit function directly (never the
+  subprocess wrapper), mirroring `_ep_adr_status_freshness`.
 - `tests/` — **CREATE**: REQ-derived `@covers` tests for status-index freshness,
   `gz check` step membership + exit, the no-staging-flag assertion, and the
   registration-membrane guard at both ingress points.
+
+> **Allowlist amendment (operator-approved, 2026-07-30).** The three
+> `qc_binding` surfaces above were absent from the brief as authored. Prior art
+> is unambiguous that they are coupled, not discretionary: commit `646dd28bb`
+> (the `"Docs build"` step) touched exactly this set, and sibling briefs
+> `OBPI-0.0.73-08` / `OBPI-0.0.73-09` declared them explicitly as coupled
+> surfaces. The `advisory` classification would have avoided two of the three
+> edits but would label a fail-closed closure gate as non-enforcing — rejected.
 
 ## Denied Paths
 
@@ -103,9 +128,16 @@ declares `security` and its Gate 5 fires the extended security walkthrough.
   `src/gzkit/events.py`, `src/gzkit/ledger_events.py`,
   `src/gzkit/commands/adr_demote.py` — the migration DATA + backfill + demotions
   are OBPI-04 scope; this OBPI consumes their result, never re-runs them.
-- `src/gzkit/governance/trust_audits/taxonomy.py` — the closed-kind,
-  manifest-integrity, and terminal-partition assertions are authored by OBPI-01
-  and OBPI-03; OBPI-05 only WIRES the existing `--taxonomy` gate into `gz check`.
+- `src/gzkit/governance/trust_audits/taxonomy.py` — **denial narrowed
+  (operator-approved, 2026-07-30)**: the closed-kind, manifest-integrity, and
+  terminal-partition ASSERTIONS remain OBPI-01/OBPI-03 scope and are not
+  re-authored here. The single permitted edit is the ADR-root *discovery* fix
+  in `_on_disk_foundation_ids` and `audit_adr_taxonomy`, which hard-coded
+  `docs/design/adr` and returned empty on the default configured layout —
+  i.e. the gate this OBPI makes permanent failed OPEN for adopters. Surfaced
+  by the Step-4b Codex adversary (verdict REFUTED); wiring a known fail-open
+  gate and calling closure "self-maintaining" would be the facade this ADR
+  exists to prevent.
 - `src/gzkit/commands/plan.py`, `src/gzkit/commands/adr_promote.py` — the five
   authoring-door guards are OBPI-02 scope (attested completed). Read them for
   guardrail-feedback prose parity; NEVER re-edit them here. `gz obpi brief-drift`
@@ -301,23 +333,29 @@ uv run gz check --json
 
 <!-- REQ-<semver>-<obpi_item>-<criterion_index> [kind] per ADR-0.0.59. -->
 
-- [ ] REQ-0.34.0-05-01 **[BEHAVIOR]**: after the migration, `gz validate --adr-status-fresh`
-  is green (exit 0) — the Layer-3 status index has been reconciled by
-  `gz register-adrs` to the post-demotion tree (the 23 demoted foundations no
-  longer appear as active foundations in the index). Proof: a
-  `@covers(REQ-0.34.0-05-01)` test asserting the index matches on-disk canon
-  after reconcile.
-- [ ] REQ-0.34.0-05-02 **[BEHAVIOR]**: the `"ADR taxonomy"` step is present in the
+- [ ] REQ-0.34.0-05-01 [SUPPORT]: the Layer-3 status index is reconciled by `gz register-adrs` to the post-demotion tree, so the 23 demoted foundations no longer appear as foundation rows — proven by the `artifact_edited` authorship channel for the cited artifact `docs/governance/GovZero/adr-status.md`, present on disk, paired with the structural validator `gz validate --adr-status-fresh` admitting its shape at exit 0.
+
+  > **Re-kinded BEHAVIOR → SUPPORT (operator-approved, 2026-07-30).** The
+  > reconcile landed with OBPI-04 (`d521ace53`), so OBPI-05 carries no
+  > production hunk behind this claim. A `@covers` test over an already-true
+  > state cannot fail — the `gz arb red` witness for this criterion returned
+  > `failure_class=none` against base `a4fc44759a22`. That is the ADR-0.0.59
+  > category error (GHI #571): a claim whose only proof is "a structural
+  > validator exits 0" is SUPPORT by proof channel, never BEHAVIOR. The two
+  > index tests are retained in
+  > `tests/governance/test_standing_taxonomy_gate.py` as undecorated
+  > regression coverage, not as this REQ's proof.
+- [ ] REQ-0.34.0-05-02 [BEHAVIOR]: the `"ADR taxonomy"` step is present in the
   `gz check` aggregate (`_build_check_steps()` / `gz_check_cmd.steps` includes
   `("ADR taxonomy", run_taxonomy_audit)`) AND `gz check` exits 0 on the terminal
   post-migration tree. Proof: a `@covers(REQ-0.34.0-05-02)` test asserting step
   membership and the passing aggregate exit.
-- [ ] REQ-0.34.0-05-03 **[BEHAVIOR]**: no hand-set staging or fail-closed flag
+- [ ] REQ-0.34.0-05-03 [BEHAVIOR]: no hand-set staging or fail-closed flag
   gates the taxonomy step — it resolves through the real `gz check` runner
   dispatch (the same path as every sibling audit), honoring anti-staging-flag
   doctrine. Proof: a `@covers(REQ-0.34.0-05-03)` test asserting the step tuple
   binds `run_taxonomy_audit` directly with no flag-guard indirection.
-- [ ] REQ-0.34.0-05-04 **[BEHAVIOR]**: the registration membrane refuses to book a
+- [ ] REQ-0.34.0-05-04 [BEHAVIOR]: the registration membrane refuses to book a
   hand-placed `kind: foundation` ADR package that is absent from the populated
   `data/foundation_grandfather.json`, at BOTH `adr_created` ingress points
   (`gz register-adrs` and first-run `gz init`) — no `adr_created` event is
@@ -376,6 +414,43 @@ uv run gz check --json
 # Record attestation text here
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary:** Codex (`codex-cli 0.146.0`, GPT-5.x) — tier 1. `codex:setup`
+reported `ready: true`, so the tier-2 Claude-subagent fallback was forbidden
+(GHI #678). Five rounds, each dispatched via `codex-companion adversarial-review`
+with an explicit REFUTE framing and a requirement to paste observed output.
+
+**Verdict: REFUTED-WITH-CAVEATS** — five rounds, every round acted on.
+
+| Round | Finding | Resolution |
+|---|---|---|
+| 1 | `--taxonomy` hard-coded `docs/design/adr`; fails OPEN on the default `design/adr` layout | **Fixed** — `_adr_roots`/`_iter_adr_files` scan the union; allowlist amended (operator-approved) |
+| 1 | Third `adr_created` ingress `register_adr_in_ledger` unguarded | **Routed** — GHI #734, cross-linked to #706 |
+| 1 | REQ-02 test mocked `run_command`, never inspected the result | **Fixed** — `test_taxonomy_runner_propagates_failure`; the adversary's mutation now goes RED |
+| 2 | Leading BOM bypassed membrane + gate | **Fixed** — `utf-8-sig`; class routed to GHI #735 |
+| 2 | `_adr_roots` union had no containment (self-inflicted by the round-1 fix) | **Fixed** — resolve-and-contain |
+| 3 | Interior BOM still bypassed | **Fixed** — strip U+FEFF anywhere |
+| 3 | File symlink escaped containment; case-alias double-reported | **Fixed** — contain resolved files; dedupe on `st_dev`/`st_ino`. **Confirmed clean by round 4** |
+| 4 | Leading blank lines bypassed | **Attempted, then REVERTED** — see round 5 |
+| 4 | Undecodable-package refusal unreachable behind `parse_artifact_metadata` | **Fixed** — `is_undecodable_adr` seated at the top of both ingress loops |
+| 5 | The round-4 whitespace normalization made an HR-first pool doc parse as frontmatter | **Reverted** (self-inflicted); false claim retracted |
+| 5 | Unicode separators (VT/FF/NEL/U+2028); BOM-less UTF-16/32 | **Routed** — GHI #736 |
+
+**The claim it broke.** The load-bearing refutation was round 1: the gate this
+OBPI makes permanent *failed open* for every adopter, because both taxonomy
+scanners hard-coded `docs/design/adr` while `gz init` defaults to `design/adr`.
+Wiring a known fail-open gate into `gz check` and calling closure
+"self-maintaining" would have been precisely the facade ADR-0.34.0 exists to
+prevent. It was fixed, not waived.
+
+**Residue, stated plainly.** Unicode line separators and BOM-less UTF-16/32 still
+defeat frontmatter detection at both ingresses. This is **not fixed** and is
+tracked at GHI #736. It is structural — three surfaces decode independently and
+"absent" equals "permitted" at every guard — and the shared tri-state reader that
+closes it spans `ledger.py` and `sync.py`, outside this brief's allowlist. The
+operator attests holding this residue, not in ignorance of it.
+
 ### Value Narrative
 
 <!-- Before: OBPI-04 left a terminal tree, but closure was still only a
@@ -386,16 +461,44 @@ uv run gz check --json
 
 ### Key Proof
 
-<!-- One concrete before/after: `gz check --json` now lists "ADR taxonomy" in
-     its checks map and exits 0 on the terminal foundation tree. -->
+
+The closure gate is now permanent - observed, not asserted:
+
+```text
+$ uv run gz check --json | jq '.checks["ADR taxonomy"]'
+true
+
+$ uv run gz validate --taxonomy
+Validated: taxonomy
++ All validations passed (1 scopes).
+```
+
+The registration membrane refusing GHI #706's defect, observed in the test run:
+
+```text
+Refused: ADR-0.0.99-hand-placed-foundation declares `kind: foundation` but is
+absent from data/foundation_grandfather.json.
+  Why: the foundation kind is CLOSED (ADR-0.34.0 Foundation Sunset); only the
+grandfathered roster may enter Layer-2.
+  Fix: author this ADR as `kind: feature`, or promote it via `gz adr promote`.
+```
+
+REQ coverage on correct ADR-0.0.59 channels (behavior_uncovered_reqs 0):
+REQ-01 SUPPORT/LEDGER_PLUS_VALIDATOR pass; REQ-02/03/04 BEHAVIOR/TEST_COVERS pass.
+
+Receipts: lint arb-ruff-b39b24ae711e4cf1a7f26c39bf28452f; typecheck arb-step-typecheck-3ec5ada1d330444aaeeba15f192da92a; unittest arb-step-unittest-05ecf1ac83fe431dbbd428c015b8b681 (7685 tests); mkdocs arb-step-mkdocs-186241a634bb4e399bba5b5398871cfa.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Gate wired: ("ADR taxonomy", run_taxonomy_audit) appended as the LAST tuple in _build_check_steps(), with its _STEP_GUARD_META entry and a bound QC-binding classification plus a genuine negative control. Closure is now permanent and self-maintaining.
+- Root discovery fixed: _adr_roots/_iter_adr_files scan the union of the canonical and configured ADR roots, contain every resolved file to the project, and dedupe on filesystem identity. The gate previously failed OPEN on the default gz init layout (design/adr) - surfaced by Step-4b round 1.
+- Membrane sealed (GHI #706): both adr_created ingresses (gz register-adrs and first-run gz init) refuse an un-grandfathered kind: foundation package while the 51-entry grandfathered roster still books; undecodable packages are refused in a controlled way before metadata parsing.
+- Files modified: src/gzkit/quality.py, src/gzkit/commands/quality.py, src/gzkit/commands/register.py, src/gzkit/commands/init_cmd.py, src/gzkit/qc_binding.py, src/gzkit/governance/trust_audits/taxonomy.py, src/gzkit/governance/trust_audits/_qc_negative_controls.py, src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py
+- Tests added: tests/governance/test_standing_taxonomy_gate.py (9 tests), tests/governance/test_registration_membrane.py (11 tests); full suite 7685 pass
+- Date completed: 2026-07-31
+- Attestation status: operator-attested (g0); Gate 5 universal per ADR-0.0.36
+- Defects noted: GHI #734 (third adr_created ingress register_adr_in_ledger), GHI #735 (parse_frontmatter_value decoder), GHI #736 (frontmatter-ingress class: Unicode separators and BOM-less UTF-16/32 remain open)
 
 ## Tracked Defects
 
@@ -404,15 +507,86 @@ uv run gz check --json
 - GHI #706 — `register-adrs`/`init` book a hand-placed `kind: foundation` ADR into
   Layer-2 with no kind check. Absorbed into this brief as REQ-0.34.0-05-04; the
   guard must be manifest-aware and therefore sequences behind OBPI-04's populate.
+- GHI #734 — **filed this OBPI** (sibling cut of #706). `register_adr_in_ledger`
+  (`src/gzkit/commands/plan.py:266`) is a THIRD `adr_created` ingress that
+  bypasses the membrane; current callers are protected by the OBPI-02 authoring
+  doors, so the hole is latent, not live. Surfaced by the Step-4b tier-1 Codex
+  adversary. Routed out of scope: `plan.py` is OBPI-02's surface, and the correct
+  fix is to seat the guard at the shared writer rather than a fourth call site.
+- **Step-4b [high] — fixed in this OBPI.** Both taxonomy scanners hard-coded
+  `docs/design/adr` and returned empty when absent, so `--taxonomy` reported
+  green on the default `gz init` layout (`design/adr`) while an un-grandfathered
+  foundation sat on disk — the gate this OBPI makes permanent failed OPEN for
+  adopters. Repaired by `_adr_roots`/`_iter_adr_files` (union of canonical and
+  configured roots) with a covering regression test.
+- GHI #735 — **filed this OBPI** (Step-4b round-2 [high]). A leading BOM makes
+  `parse_frontmatter_value` (`src/gzkit/ledger.py:151`) miss the opening `---`
+  and return `None` for every key, so a BOM-prefixed `kind: foundation` package
+  bypassed BOTH the membrane and the closure gate. Fixed at the two surfaces this
+  OBPI owns (`utf-8-sig` in `is_ungrandfathered_foundation` and
+  `_parse_adr_frontmatter`) with covering tests; the class-level fix at the shared
+  primitive is routed to #735 because `ledger.py` is outside this allowlist.
+- GHI #736 — **filed this OBPI; carries the residual class.** Five adversarial
+  rounds each found a new bypass in the frontmatter-ingress family (leading BOM →
+  interior BOM → leading blank lines → Unicode separators → BOM-less UTF-16/32).
+  Root cause is structural, not a bug: three surfaces (`ledger.py`, `sync.py`,
+  `taxonomy.py`) decode-and-detect independently with different rules, and
+  "absent" and "permitted" are the same answer at every guard. The fix is one
+  shared tri-state reader (valid / absent / malformed, malformed refused) spanning
+  files outside this brief's allowlist. **Still open after this OBPI:** Unicode
+  line separators (VT/FF/NEL/U+2028) and BOM-less UTF-16/32 at both ingresses.
+- **Step-4b round-4/5 [high] — ATTEMPTED, REVERTED, ROUTED.** A round-4 attempt
+  to widen normalization to leading blank space was **reverted**: round 5 proved
+  it made a pool document whose first non-blank element is a `---` horizontal rule
+  parse as a frontmatter block. The brief and code previously asserted
+  *"normalization never CREATES frontmatter"* — **that claim was false and is
+  retracted here**; the correct rule requires canonical block shape, not
+  whitespace tolerance, and is routed to GHI #736. What this OBPI ships is the
+  BOM-only normalization, which no round has faulted for compatibility.
+- **Step-4b round-4 [medium] — fixed in this OBPI.** The unreadable-package
+  refusal was unreachable: `parse_artifact_metadata` decodes UTF-8 and catches
+  only `OSError`, so a UTF-16 package raised `UnicodeDecodeError` and aborted the
+  whole registration pass before the guard ran. Fixed by seating
+  `is_undecodable_adr` at the TOP of both ingress loops. The adversary also
+  caught that the UTF-16 test asserted only ledger absence — a crash could pass
+  as a controlled refusal — so it now asserts `exit_code == 0` and the
+  `Refused:` prose.
+- **Step-4b round-4 — Fix B confirmed clean.** The round-3 containment/dedupe fix
+  survived a dedicated regression hunt unchanged: external symlink not scanned,
+  internal symlink still scanned, case-alias deduped, all 82 ADRs discovered
+  (51 foundation, 31 feature).
+- **Step-4b round-3 [high] — fixed in this OBPI (class fix).** `utf-8-sig`
+  strips U+FEFF only at byte zero, so a BOM appended to the opening `---` still
+  blinded both parsers and booked the package. Root lesson: rounds 2 and 3 were
+  patching *input spellings* rather than the *class* (AGENTS.md § DO IT RIGHT
+  #1). Class fix: strip U+FEFF anywhere before parsing in both surfaces, and
+  treat an undecodable package as REFUSE rather than letting "unreadable"
+  collapse into "no kind" — the permissive default every guard downstream reads
+  as permission. Covering tests: interior BOM, leading BOM, UTF-16.
+- **Step-4b round-3 [medium] — fixed in this OBPI (class fix, self-inflicted).**
+  Containment was enforced on ADR *roots* only, so a file symlink inside a
+  contained root still read an external target; and `.resolve()` does not
+  normalize case, so `DoCs/DeSiGn/AdR` double-reported on a case-insensitive
+  volume. Class fix: contain every *resolved file* against `project_root`, and
+  dedupe on filesystem identity (`st_dev`, `st_ino`) rather than path spelling.
+- **Step-4b round-2 [medium] — fixed in this OBPI (self-inflicted).** The
+  round-1 `_adr_roots` union accepted the configured root without resolving or
+  containment-checking it, so `paths.adrs: ../outside-adrs` sent every `gz check`
+  scanning outside the repository and a symlinked alias double-reported.
+  Repaired by resolve-and-contain plus resolved-path dedupe, with a covering test.
+- **Step-4b [medium] — fixed in this OBPI.** REQ-02's covering test mocked
+  `run_command` and never inspected the returned `QualityResult`; it stayed green
+  under a mutation where the runner returned `success=False, returncode=3`.
+  Repaired by `test_taxonomy_runner_propagates_failure`.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.34.0-05 activates the permanent Foundation Sunset closure gate: ("ADR taxonomy", run_taxonomy_audit) is the LAST step in _build_check_steps() and `gz check --json` reports "ADR taxonomy": true, while the registration membrane refuses an un-grandfathered `kind: foundation` package at both adr_created ingresses (gz register-adrs and first-run gz init) with the 51-entry grandfathered roster still booking normally (GHI #706 discharged). 4/4 REQs proven on their correct ADR-0.0.59 channels with behavior_uncovered_reqs 0; REQ-0.34.0-05-01 was re-kinded BEHAVIOR->SUPPORT after `gz arb red` returned failure_class=none, rather than leaving a test that cannot fail. Step 4b ran five tier-1 Codex adversarial rounds (codex-cli 0.146.0, ready:true so tier 2 was forbidden), verdict refuted-with-caveats: round 1's refutation — the gate failed OPEN on the default design/adr layout — was fixed, not waived, and two self-inflicted regressions were caught and reverted. Residual frontmatter-ingress hardening (Unicode separators, BOM-less UTF-16/32) is tracked at GHI #736, with GHI #734 and #735 for the sibling ingress and shared decoder. lint: receipt arb-ruff-b39b24ae711e4cf1a7f26c39bf28452f; typecheck: receipt arb-step-typecheck-3ec5ada1d330444aaeeba15f192da92a; unittest: receipt arb-step-unittest-05ecf1ac83fe431dbbd428c015b8b681 (7685 tests); mkdocs: receipt arb-step-mkdocs-186241a634bb4e399bba5b5398871cfa.
+- Date: 2026-07-31
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-07-31
 
 **Evidence Hash:** -

@@ -18,8 +18,99 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     obpi_created_event,
+    parse_frontmatter_value,
 )
+from gzkit.models.foundation_grandfather import load_manifest
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
+
+_GRANDFATHER_MANIFEST_REL = Path("data") / "foundation_grandfather.json"
+
+
+def grandfathered_foundation_ids(project_root: Path) -> frozenset[str]:
+    """Return the ADR ids in the closed foundation grandfather manifest (ADR-0.34.0)."""
+    manifest_path = project_root / _GRANDFATHER_MANIFEST_REL
+    if not manifest_path.is_file():
+        return frozenset()
+    try:
+        return frozenset(entry.id for entry in load_manifest(manifest_path))
+    except (OSError, ValueError):
+        return frozenset()
+
+
+def _normalize_frontmatter_source(content: str) -> str:
+    """Strip U+FEFF anywhere before frontmatter detection.
+
+    `utf-8-sig` removes only a leading BOM; one appended to the opening `---`
+    hides the whole block just as effectively, and "no frontmatter" reads as
+    permission at every guard downstream.
+
+    Deliberately does NOT strip leading blank space. Doing so made a pool
+    document whose first non-blank element is a `---` horizontal rule parse as
+    a frontmatter block — normalization that CREATES frontmatter is a worse
+    defect than the one it closed (Step-4b round-5). The residual line-zero and
+    encoding family (Unicode separators, BOM-less UTF-16/32) needs one shared
+    tri-state reader across this module, `taxonomy.py`, and `sync.py`; that
+    spans surfaces outside this brief and is tracked at GHI #736.
+    """
+    return content.replace("﻿", "")
+
+
+def is_undecodable_adr(adr_file: Path) -> bool:
+    """True when the package cannot be decoded as UTF-8 at all.
+
+    Checked BEFORE `parse_artifact_metadata`, which reads UTF-8 and catches only
+    `OSError`: a UTF-16/32 package would otherwise raise `UnicodeDecodeError` and
+    abort the whole registration pass rather than being refused in a controlled way.
+    """
+    try:
+        adr_file.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        return True
+    return False
+
+
+def warn_undecodable_refused(adr_file: Path) -> None:
+    """Print the membrane refusal for a package that cannot be decoded."""
+    console.print(
+        f"[red]Refused:[/red] {adr_file.as_posix()} could not be decoded as UTF-8, "
+        "so its `kind:` cannot be read.\n"
+        "  Why: an unreadable package must not collapse into 'no kind' — every "
+        "guard downstream reads that as permission (ADR-0.34.0 Foundation Sunset).\n"
+        "  Fix: re-save the file as UTF-8 without a BOM, then re-run "
+        "`uv run gz register-adrs`."
+    )
+
+
+def is_ungrandfathered_foundation(
+    adr_file: Path, adr_id: str, grandfathered: frozenset[str]
+) -> bool:
+    """True when a package declares `kind: foundation` but is not grandfathered.
+
+    Manifest-aware by contract, never a bare `kind` refusal: refusing on kind
+    alone would reject the whole grandfathered roster and contradict the closure
+    it enforces (GHI #706, brief Requirement 5).
+    """
+    try:
+        content = adr_file.read_text(encoding="utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        # An undecodable package never enters Layer-2: "unreadable" must not
+        # collapse into "no kind", which every guard downstream reads as permission.
+        return True
+    if parse_frontmatter_value(_normalize_frontmatter_source(content), "kind") != "foundation":
+        return False
+    return adr_id not in grandfathered
+
+
+def warn_foundation_refused(adr_id: str) -> None:
+    """Print the membrane refusal for an un-grandfathered foundation package."""
+    console.print(
+        f"[red]Refused:[/red] {adr_id} declares `kind: foundation` but is absent "
+        f"from {_GRANDFATHER_MANIFEST_REL.as_posix()}.\n"
+        "  Why: the foundation kind is CLOSED (ADR-0.34.0 Foundation Sunset); only the "
+        "grandfathered roster may enter Layer-2.\n"
+        "  Fix: author this ADR as `kind: feature`, or promote it via `gz adr promote`."
+    )
+
 
 SEMVER_ID_RENAMES: tuple[tuple[str, str], ...] = (
     # Historical OBPI relabeling migration.
@@ -274,7 +365,13 @@ def _collect_adrs_to_register(
     to_register: list[tuple[str, str, str]] = []
     eligible_parent_ids: set[str] = set()
     stale_pool_files: list[tuple[str, str]] = []
+    grandfathered = grandfathered_foundation_ids(get_project_root())
     for adr_file in artifacts.get("adrs", []):
+        # Before parse_artifact_metadata, which decodes UTF-8 and catches only
+        # OSError — an undecodable package would abort the whole pass.
+        if is_undecodable_adr(adr_file):
+            warn_undecodable_refused(adr_file)
+            continue
         metadata = parse_artifact_metadata(adr_file)
         resolved = _adr_register_identity(ledger, adr_file, metadata)
         if resolved is None:
@@ -283,6 +380,12 @@ def _collect_adrs_to_register(
         if target_ids and canonical_candidates.isdisjoint(target_ids):
             continue
         if pool_only and not is_pool_adr:
+            continue
+        # Registration membrane (GHI #706): a hand-placed foundation package
+        # absent from the closed manifest never reaches the adr_created ingress,
+        # and neither do its children.
+        if is_ungrandfathered_foundation(adr_file, adr_id, grandfathered):
+            warn_foundation_refused(adr_id)
             continue
 
         canonical_adr_id = ledger.canonicalize_id(adr_id)

@@ -180,15 +180,84 @@ def _audit_one_adr_taxonomy(adr_md: Path, project_root: Path) -> list[Validation
 _GRANDFATHER_MANIFEST = ("data", "foundation_grandfather.json")
 
 
+def _adr_roots(project_root: Path) -> list[Path]:
+    """Return every existing ADR root to scan — the canonical layout and the configured one.
+
+    Both taxonomy scanners hard-coded ``docs/design/adr`` and returned empty when
+    it was absent, so a project on the default ``gz init`` layout (``design/adr``)
+    got a green ``--taxonomy`` while an un-grandfathered foundation sat on disk —
+    the gate failed OPEN for every adopter (ADR-0.34.0 OBPI-05 Step-4b finding).
+
+    Scanning the union rather than picking one is deliberate: a gate whose job is
+    to FIND foundations must not miss one because the project chose a layout. The
+    union also keeps every pre-existing fixture (which plants at the canonical
+    path regardless of config) covered.
+    """
+    import contextlib  # noqa: PLC0415 — paired with the lazy config import below
+
+    from gzkit.config import GzkitConfig  # noqa: PLC0415 — lazy: avoids circular import
+
+    candidates = [project_root / "docs" / "design" / "adr"]
+    with contextlib.suppress(OSError, ValueError):
+        candidates.append(project_root / GzkitConfig.load(project_root / ".gzkit.json").paths.adrs)
+
+    project_resolved = project_root.resolve()
+    roots: list[Path] = []
+    seen: set[Path] = set()
+    for candidate in candidates:
+        try:
+            resolved = candidate.resolve()
+        except OSError:
+            continue
+        if not resolved.is_dir() or resolved in seen:
+            continue
+        # Containment: a configured `../outside` or absolute root would otherwise
+        # make every `gz check` scan outside the repository (unbounded walk,
+        # leaked external paths, ungoverned exit 1 instead of a policy exit 3).
+        if resolved != project_resolved and project_resolved not in resolved.parents:
+            continue
+        seen.add(resolved)
+        # Append the UNRESOLVED candidate: callers render paths via
+        # `relative_to(project_root)`, which fails when a resolved root has
+        # traversed a symlink the caller's project_root has not.
+        roots.append(candidate)
+    return roots
+
+
+def _iter_adr_files(project_root: Path) -> list[Path]:
+    """Yield every non-nested ``ADR-*.md`` across all ADR roots, deduped and sorted."""
+    project_resolved = project_root.resolve()
+    files: list[Path] = []
+    seen: set[tuple[int, int]] = set()
+    for adr_root in _adr_roots(project_root):
+        for adr_md in sorted(adr_root.rglob("ADR-*.md")):
+            if _is_nested_adr_artifact(adr_md):
+                continue
+            try:
+                resolved = adr_md.resolve()
+                stat = adr_md.stat()
+            except OSError:
+                continue
+            # Containment on roots alone is insufficient: a file symlink inside a
+            # contained root can point anywhere on the filesystem, and the audit
+            # would read it (Step-4b round-3 finding).
+            if project_resolved not in resolved.parents:
+                continue
+            # Dedupe on filesystem identity, not path spelling — `.resolve()`
+            # does not normalize case, so on a case-insensitive volume
+            # `DoCs/DeSiGn/AdR` and `docs/design/adr` would double-report.
+            key = (stat.st_dev, stat.st_ino)
+            if key in seen:
+                continue
+            seen.add(key)
+            files.append(adr_md)
+    return files
+
+
 def _on_disk_foundation_ids(project_root: Path) -> dict[str, str]:
     """Map ``adr_id -> repo-relative path`` for every on-disk ``kind: foundation`` ADR."""
-    adr_root = project_root / "docs" / "design" / "adr"
     found: dict[str, str] = {}
-    if not adr_root.is_dir():
-        return found
-    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
-        if _is_nested_adr_artifact(adr_md):
-            continue
+    for adr_md in _iter_adr_files(project_root):
         frontmatter = _parse_adr_frontmatter(adr_md)
         if frontmatter is None or frontmatter.get("kind") != "foundation":
             continue
@@ -358,13 +427,8 @@ def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
     ADR-0.0.17 decision tree alone; merging the two would make every existing
     caller's result depend on the grandfather manifest's population state.
     """
-    adr_root = project_root / "docs" / "design" / "adr"
-    if not adr_root.is_dir():
-        return []
     errors: list[ValidationError] = []
-    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
-        if _is_nested_adr_artifact(adr_md):
-            continue
+    for adr_md in _iter_adr_files(project_root):
         errors.extend(_audit_one_adr_taxonomy(adr_md, project_root))
     return errors
 
@@ -392,10 +456,16 @@ def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     import widens the trust surface for a flat key/value block).
     """
     try:
-        text = path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8-sig")
     except (UnicodeDecodeError, OSError):
         return None
-    block = _frontmatter_block(text.splitlines())
+    # Strip U+FEFF anywhere: a BOM appended to the opening `---` hides the whole
+    # block, so the audit would treat a foundation package as frontmatter-less
+    # and skip it — a silent fail-open on the gate this ADR makes permanent.
+    # Leading blank space is deliberately NOT stripped: that made a `---`
+    # horizontal rule at the head of a pool document parse as frontmatter
+    # (Step-4b round-5). The residual family is tracked at GHI #736.
+    block = _frontmatter_block(text.replace("﻿", "").splitlines())
     if block is None:
         return None
     fields: dict[str, str] = {}

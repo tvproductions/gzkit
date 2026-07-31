@@ -90,6 +90,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     # §5 enforcement-claim meta-validator — pinned CRITICAL so a FACADE never
     # demotes to advisory inside the hangar (ADR-0.0.74 BI#3 / §5; GHI #651).
     "Enforcement floor": ("enforcement-floor", _mx_levels.CRITICAL),
+    "ADR taxonomy": ("taxonomy", _mx_levels.ERROR),
 }
 
 
@@ -426,6 +427,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_surface_fidelity_audit,
         run_task_envelope_coherence_audit,
         run_tautological_test_audit,
+        run_taxonomy_audit,
         run_unscoped_rules_audit,
         run_waiver_ratchet_audit,
     )
@@ -476,6 +478,9 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Smoke tier", run_smoke_tier),
         ("Dispatch attestation", run_dispatch_attestation_audit),
         ("Enforcement floor", run_enforcement_floor_audit),
+        # Foundation Sunset closure gate — LAST by design (ADR-0.34.0 OBPI-05):
+        # wiring equals a terminal tree, so it lands green on first run.
+        ("ADR taxonomy", run_taxonomy_audit),
     ]
 
 

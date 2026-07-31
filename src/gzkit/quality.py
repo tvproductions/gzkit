@@ -644,6 +644,18 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_taxonomy_audit(project_root: Path) -> QualityResult:
+    """Run the ADR taxonomy gate (ADR-0.34.0 Foundation Sunset, OBPI-05).
+
+    Fails closed on a `kind: foundation` ADR absent from the closed grandfather
+    manifest (OBPI-01's closed-kind + manifest-integrity assertions) or on a
+    grandfathered foundation left in non-terminal `foundation_limbo`
+    (OBPI-03's terminal-partition assertion, read from Layer-2 never frontmatter).
+    Recovery: `uv run gz validate --taxonomy` names the offending ADR ids.
+    """
+    return run_command("uv run gz validate --taxonomy", cwd=project_root)
+
+
 def run_obpi_lifecycle_coherence_audit(project_root: Path) -> QualityResult:
     """Run the OBPI lifecycle-coherence census (GHI #584 / Architectural Boundary 6).
 
