@@ -1,5 +1,76 @@
 # gzkit Release Notes
 
+## v0.34.0 (2026-07-31)
+
+**ADR:** ADR-0.34.0-foundation-sunset
+
+This release closes the `foundation` ADR kind. gzkit had authored 74 foundation
+ADRs and outgrown the era that produced them: the identity-shaping invariants
+were largely in place, and the remaining backlog was going stale — 23 of them
+sat at zero-completed-of-N OBPIs, several untouched since May. "No more
+foundation ADRs" had been a standing directive, and a directive is exactly the
+kind of thing that drifts. This release converts it into a gate.
+
+The kind is **sealed, not deleted**. Removing `foundation` from the schema enum
+would have invalidated 51 historical ADRs in one stroke, so the value stays
+valid for the grandfathered set on disk while every authoring door refuses to
+mint a new one.
+
+### Delivered
+
+- **The foundation kind is closed at every authoring door.**
+  `gz plan create --kind foundation` and `gz adr promote --kind foundation` are
+  refused at the command handler — not at argument parsing, so the enum remains
+  valid for the grandfathered set — with three-part guardrail prose naming what
+  was requested, why it is forbidden, and the governed alternative
+  (`--kind feature` or `--kind pool`). A third door was found during adversarial
+  validation rather than designed for: `gz interview adr` derives kind from a
+  semver embedded in the ADR id through its own routing, so an id like
+  `ADR-0.0.99-<slug>` reached foundation without touching the guarded path. It
+  now refuses too, and says so in terms of the routing that caused it.
+- **The closure re-validates at the write layer.** `_render_adr_by_kind` and
+  `_build_adr_promotion_plan` raise before any file, OBPI, or ledger write
+  instead of trusting their callers — adversarial re-validation found the
+  promotion path would otherwise still construct a full foundation package.
+- **Registration refuses un-grandfathered packages.** A hand-placed
+  `kind: foundation` ADR absent from the committed manifest is refused at the
+  `adr_created` ingress, with the roster of 51 still booking normally.
+- **The historical set is partitioned from Layer-2 ledger truth, never
+  frontmatter.** 51 foundations are grandfathered into a committed manifest
+  bijective with 51 attested ledger events; 23 genuinely-unstarted foundations
+  demote to pool, re-promotable later as features. Their 136 child briefs are
+  parked with lineage preserved rather than stranded, and the rename left no
+  orphans. Frontmatter was disqualified as the partition source because the
+  ADR-0.0.37 investigation proved it can lie about repudiated OBPIs.
+- **The gate is permanent and self-maintaining.** `gz validate --taxonomy` is
+  wired as the final step of `gz check`. It shipped deliberately red — exit 3
+  with 74 findings — and was moved to green by the migration itself, never by a
+  staging flag held over a non-terminal tree.
+
+### Known limitations
+
+Frontmatter-ingress hardening remains open and is tracked, not silently
+carried: a third `adr_created` ingress still bypasses the membrane (**#734**), a
+leading BOM can hide an entire frontmatter block (**#735**), and three ad-hoc
+frontmatter decoders disagree with no shared reader (**#736**).
+
+### Gate Evidence
+
+- All 5 GovZero gates satisfied. Human attestation recorded by `g0`,
+  2026-07-31; all 5 OBPIs `attested_completed` between 2026-07-19 and
+  2026-07-31.
+- Bound fidelity gate: 2 assertions, 2 pass, 0 fail — closed-kind refusal
+  (expected exit 1, observed 1) and no-limbo partition (expected 0, observed 0).
+- Receipts: `arb-ruff-9b11bcbc647c4b9a9ddb6282f7fc34b4`,
+  `arb-step-unittest-f02e079a9c5c4fce83433f15d1ace4b1` (7685 tests, OK),
+  `arb-step-typecheck-4c8436dc00e842b8847ebcacb7dc866c`,
+  `arb-step-mkdocs-3f31717e44a04a46821f35433f53b0c2`; behave 66 features /
+  401 scenarios / 0 failed.
+- Closeout walkthrough demonstrated all four doors refusing with zero writes;
+  newest `adr_created` in the ledger unchanged at 2026-07-26.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `gz closeout`.
+
 ## v0.33.3 (2026-07-25)
 
 This release delivers enforcement that had only been declared. The quality

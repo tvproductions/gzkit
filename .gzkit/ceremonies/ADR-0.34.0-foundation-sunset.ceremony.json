@@ -1,0 +1,77 @@
+{
+  "adr_id": "ADR-0.34.0-foundation-sunset",
+  "current_step": 10,
+  "is_foundation": false,
+  "started_at": "2026-07-31T09:28:17Z",
+  "updated_at": "2026-07-31T11:59:48Z",
+  "step_history": [
+    {
+      "step": 1,
+      "presented_at": "2026-07-31T09:28:17Z",
+      "acknowledged_at": "2026-07-31T09:28:39Z"
+    },
+    {
+      "step": 2,
+      "presented_at": "2026-07-31T09:28:39Z",
+      "acknowledged_at": "2026-07-31T09:33:34Z"
+    },
+    {
+      "step": 3,
+      "presented_at": "2026-07-31T09:33:34Z",
+      "acknowledged_at": "2026-07-31T09:48:28Z"
+    },
+    {
+      "step": 4,
+      "presented_at": "2026-07-31T09:48:28Z",
+      "acknowledged_at": "2026-07-31T09:48:33Z"
+    },
+    {
+      "step": 5,
+      "presented_at": "2026-07-31T09:48:33Z",
+      "acknowledged_at": "2026-07-31T11:34:22Z"
+    },
+    {
+      "step": 6,
+      "presented_at": "2026-07-31T11:34:22Z",
+      "acknowledged_at": "2026-07-31T11:46:09Z"
+    },
+    {
+      "step": 7,
+      "presented_at": "2026-07-31T11:46:09Z",
+      "acknowledged_at": "2026-07-31T11:47:34Z"
+    },
+    {
+      "step": 8,
+      "presented_at": "2026-07-31T11:47:34Z",
+      "acknowledged_at": "2026-07-31T11:59:05Z"
+    },
+    {
+      "step": 9,
+      "presented_at": "2026-07-31T11:59:05Z",
+      "acknowledged_at": "2026-07-31T11:59:48Z"
+    },
+    {
+      "step": 10,
+      "presented_at": "2026-07-31T11:59:48Z",
+      "acknowledged_at": null
+    }
+  ],
+  "walkthrough_commands": [
+    "uv run gz validate --documents",
+    "uv run gz validate --taxonomy",
+    "uv run gz register-adrs",
+    "uv run gz validate --adr-status-fresh",
+    "uv run gz validate --taxonomy",
+    "uv run gz validate --taxonomy",
+    "uv run gz validate --taxonomy --json",
+    "uv run gz ontology resense --json",
+    "uv run gz validate --taxonomy",
+    "uv run gz validate --taxonomy --json",
+    "uv run gz validate --taxonomy --json"
+  ],
+  "walkthrough_index": 10,
+  "attestation": "attest completed — ADR-0.34.0 Foundation Sunset seals the foundation kind. gz validate --taxonomy exits 0 on the terminal post-migration tree (was exit 3 / 74 findings at OBPI-01, earned green by OBPI-04's migration, never held green by a staging flag), and the bound fidelity gate passes 2/2 (gz adr fidelity ADR-0.34.0: closed-kind refusal expected 1 observed 1; no-limbo partition expected 0 observed 0). All 5 OBPIs attested_completed by g0, 2026-07-19 through 2026-07-31. All four authoring/registration doors were demonstrated refusing in-ceremony with zero writes: gz plan create --kind foundation, gz adr promote --kind foundation, and gz interview adr with a 0.0.x-embedding id each exit 1 with three-part guardrail prose, and the registration membrane's 9 negative controls refuse an un-grandfathered package while still booking the grandfathered roster; newest adr_created in the ledger remains 2026-07-26. gz ontology resense corroborates the migration from a read-only instrument at 23 removed / 23 added nodes, one-to-one foundation-to-pool. Receipts: arb-ruff-9b11bcbc647c4b9a9ddb6282f7fc34b4, arb-step-unittest-f02e079a9c5c4fce83433f15d1ace4b1 (7685 tests OK), arb-step-typecheck-4c8436dc00e842b8847ebcacb7dc866c, arb-step-mkdocs-3f31717e44a04a46821f35433f53b0c2; behave 66 features / 401 scenarios / 0 failed. Residual frontmatter-ingress hardening accepted as deferred at GHI #734 (third adr_created ingress), #735, #736.",
+  "completed_at": null,
+  "attempt": 1,
+  "paused_at": null
+}

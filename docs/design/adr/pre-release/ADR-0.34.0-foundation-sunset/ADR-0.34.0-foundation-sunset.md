@@ -1,6 +1,6 @@
 ---
 id: ADR-0.34.0-foundation-sunset
-status: Draft
+status: Completed
 kind: feature
 semver: 0.34.0
 lane: heavy
@@ -149,4 +149,4 @@ Seal the foundation kind and partition the existing set, across five design sect
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.34.0 | Pending | | | |
+| 0.34.0 | Completed | g0 | 2026-07-31 | attest completed — ADR-0.34.0 Foundation Sunset seals the foundation kind. gz validate --taxonomy exits 0 on the terminal post-migration tree (was exit 3 / 74 findings at OBPI-01, earned green by OBPI-04's migration, never held green by a staging flag), and the bound fidelity gate passes 2/2 (gz adr fidelity ADR-0.34.0: closed-kind refusal expected 1 observed 1; no-limbo partition expected 0 observed 0). All 5 OBPIs attested_completed by g0, 2026-07-19 through 2026-07-31. All four authoring/registration doors were demonstrated refusing in-ceremony with zero writes: gz plan create --kind foundation, gz adr promote --kind foundation, and gz interview adr with a 0.0.x-embedding id each exit 1 with three-part guardrail prose, and the registration membrane's 9 negative controls refuse an un-grandfathered package while still booking the grandfathered roster; newest adr_created in the ledger remains 2026-07-26. gz ontology resense corroborates the migration from a read-only instrument at 23 removed / 23 added nodes, one-to-one foundation-to-pool. Receipts: arb-ruff-9b11bcbc647c4b9a9ddb6282f7fc34b4, arb-step-unittest-f02e079a9c5c4fce83433f15d1ace4b1 (7685 tests OK), arb-step-typecheck-4c8436dc00e842b8847ebcacb7dc866c, arb-step-mkdocs-3f31717e44a04a46821f35433f53b0c2; behave 66 features / 401 scenarios / 0 failed. Residual frontmatter-ingress hardening accepted as deferred at GHI #734 (third adr_created ingress), #735, #736. |
