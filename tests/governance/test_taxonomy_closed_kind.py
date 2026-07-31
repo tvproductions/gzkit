@@ -181,5 +181,56 @@ class TestGrandfatherDangling(unittest.TestCase):
             self.assertEqual(types, ["foundation_kind_closed", "grandfather_dangling"])
 
 
+class TestClosedKindExitContract(unittest.TestCase):
+    """Both closure findings must reach the operator as exit 3, not exit 1.
+
+    REQ-0.34.0-01-01 and REQ-0.34.0-01-02 are each two-conjunct: emit the
+    finding **and exit 3**. Every other test in this module asserts only the
+    first conjunct by calling ``audit_foundation_closure`` directly, which
+    never touches the CLI's exit path. The exit code is conferred by
+    membership in ``_POLICY_BREACH_ERROR_TYPES``: an unregistered finding
+    type falls through to ``SystemExit(0)`` and only a registered one
+    reaches ``SystemExit(3)`` (``validate_cmd.py`` ``_print_validation_result``).
+
+    Without these assertions, deleting either registration line leaves this
+    whole module green while both REQs are violated. The sibling gate
+    ``foundation_limbo`` carries the identical assertion
+    (``tests/test_foundation_limbo_gate.py``) because a Step-4b adversary
+    caught exactly that defect there; this back-fills it for OBPI-01's two
+    types (audit shortfall S2, 2026-07-31).
+
+    Asserted at the registry rather than by scraping console output because
+    the registry IS the mechanism, and because a live repo carrying findings
+    of the other type would make the real command exit 3 for someone else's
+    reason and mask this one entirely.
+    """
+
+    @covers("REQ-0.34.0-01-01")
+    def test_closed_kind_is_registered_as_a_policy_breach(self) -> None:
+        """`foundation_kind_closed` routes to exit 3, per REQ-0.34.0-01-01."""
+        from gzkit.commands.validate_cmd import _POLICY_BREACH_ERROR_TYPES
+
+        self.assertIn(
+            "foundation_kind_closed",
+            _POLICY_BREACH_ERROR_TYPES,
+            "foundation_kind_closed must be a registered policy breach or the "
+            "finding renders and then exits 0, violating REQ-0.34.0-01-01's "
+            "exit-3 conjunct",
+        )
+
+    @covers("REQ-0.34.0-01-02")
+    def test_grandfather_dangling_is_registered_as_a_policy_breach(self) -> None:
+        """`grandfather_dangling` routes to exit 3, per REQ-0.34.0-01-02."""
+        from gzkit.commands.validate_cmd import _POLICY_BREACH_ERROR_TYPES
+
+        self.assertIn(
+            "grandfather_dangling",
+            _POLICY_BREACH_ERROR_TYPES,
+            "grandfather_dangling must be a registered policy breach or the "
+            "finding renders and then exits 0, violating REQ-0.34.0-01-02's "
+            "exit-3 conjunct",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

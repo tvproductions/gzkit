@@ -22,7 +22,6 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.tasks import active_task_trailers
-from gzkit.traceability import covers
 
 
 def _ledger(root: Path, rows: list[dict[str, str]]) -> Path:
@@ -47,7 +46,6 @@ def _completed(task_id: str) -> dict[str, str]:
 class TestActiveTaskTrailers(unittest.TestCase):
     """The runtime stamps what it already knows, scoped to where it is required."""
 
-    @covers("REQ-0.34.0-03-01")
     def test_stamps_every_in_progress_task(self) -> None:
         """All in-progress TASKs are emitted, not just the first.
 
@@ -75,7 +73,6 @@ class TestActiveTaskTrailers(unittest.TestCase):
                 ],
             )
 
-    @covers("REQ-0.34.0-03-01")
     def test_completed_tasks_are_not_stamped(self) -> None:
         """A finished TASK is not active labor and must not be attributed.
 
@@ -99,7 +96,6 @@ class TestActiveTaskTrailers(unittest.TestCase):
                 ["Task: TASK-0.34.0-03-02-01"],
             )
 
-    @covers("REQ-0.34.0-03-01")
     def test_no_stamp_outside_src_and_tests_scope(self) -> None:
         """`Task:` is mandatory only on src/tests commits — do not invent one.
 
@@ -114,7 +110,6 @@ class TestActiveTaskTrailers(unittest.TestCase):
 
             self.assertEqual(active_task_trailers(path, ["docs/user/runbook.md"]), [])
 
-    @covers("REQ-0.34.0-03-01")
     def test_no_active_tasks_stamps_nothing(self) -> None:
         """With no TASK in flight the runtime has nothing to attribute.
 
@@ -129,7 +124,6 @@ class TestActiveTaskTrailers(unittest.TestCase):
 
             self.assertEqual(active_task_trailers(path, ["src/gzkit/tasks.py"]), [])
 
-    @covers("REQ-0.34.0-03-01")
     def test_missing_ledger_is_not_an_error(self) -> None:
         """A repo without a ledger stamps nothing rather than crashing.
 
@@ -141,7 +135,6 @@ class TestActiveTaskTrailers(unittest.TestCase):
                 active_task_trailers(Path(tmp) / "nope" / "ledger.jsonl", ["src/x.py"]), []
             )
 
-    @covers("REQ-0.34.0-03-01")
     def test_malformed_ledger_lines_are_skipped(self) -> None:
         """Junk lines must not take the hook down mid-commit."""
         with TemporaryDirectory() as tmp:

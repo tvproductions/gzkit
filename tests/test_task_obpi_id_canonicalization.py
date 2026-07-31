@@ -23,7 +23,6 @@ from tempfile import TemporaryDirectory
 
 from gzkit.commands.task import _resolve_obpi_id
 from gzkit.ledger import Ledger
-from gzkit.traceability import covers
 
 _SHORT = "OBPI-0.34.0-03"
 _REAL = "OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement"
@@ -117,7 +116,6 @@ def _cutover_tolerated(ledger_path: Path, cutover: datetime) -> set[str]:
 class TestResolveObpiIdCanonicalization(unittest.TestCase):
     """The producer canonicalizes to the full slug, or refuses to guess."""
 
-    @covers("REQ-0.34.0-03-01")
     def test_single_graph_match_resolves_to_full_slug(self) -> None:
         """The unambiguous case still resolves — the pre-existing contract."""
         with TemporaryDirectory() as tmp:
@@ -126,7 +124,6 @@ class TestResolveObpiIdCanonicalization(unittest.TestCase):
 
             self.assertEqual(_resolve_obpi_id(ledger, _SHORT, project_root=root), _REAL)
 
-    @covers("REQ-0.34.0-03-01")
     def test_phantom_graph_key_does_not_defeat_canonicalization(self) -> None:
         """A Layer-2 key with no brief on disk must not force the short form.
 
@@ -151,7 +148,6 @@ class TestResolveObpiIdCanonicalization(unittest.TestCase):
                 "a phantom graph key must not force the divergent short form",
             )
 
-    @covers("REQ-0.34.0-03-01")
     def test_genuine_ambiguity_still_refuses_to_guess(self) -> None:
         """Two REAL briefs remain ambiguous — the resolver must not pick one.
 
@@ -169,7 +165,6 @@ class TestResolveObpiIdCanonicalization(unittest.TestCase):
 
             self.assertEqual(_resolve_obpi_id(ledger, _SHORT, project_root=root), _SHORT)
 
-    @covers("REQ-0.34.0-03-01")
     def test_no_graph_match_returns_short_form(self) -> None:
         """An unknown OBPI resolves to the short form rather than raising."""
         with TemporaryDirectory() as tmp:
@@ -200,7 +195,6 @@ class TestCutoverToleranceRatchet(unittest.TestCase):
         }
     )
 
-    @covers("REQ-0.34.0-03-01")
     def test_cutover_excuses_only_the_pinned_task_ids(self) -> None:
         """The set of divergences excused by the cutover may shrink, never grow."""
         from gzkit.commands.validate_task_envelope import _OBPI_ID_CANONICAL_CUTOVER
@@ -217,7 +211,6 @@ class TestCutoverToleranceRatchet(unittest.TestCase):
             "shrink-only rule on _OBPI_ID_DIVERGENCE_GRANDFATHER.",
         )
 
-    @covers("REQ-0.34.0-03-01")
     def test_ratchet_detects_a_cutover_advanced_to_bury_a_divergence(self) -> None:
         """The guard bites — proven against a synthetic ledger, not asserted.
 
@@ -267,7 +260,6 @@ class TestSigCComparisonSurface(unittest.TestCase):
     # and a commit cannot gain a trailer retroactively.
     _EXPECTED_GRANDFATHER: frozenset[str] = frozenset({"OBPI-0.0.41-03", "OBPI-0.0.63-01"})
 
-    @covers("REQ-0.34.0-03-01")
     def test_grandfather_set_is_shrink_only(self) -> None:
         """No OBPI may be added to the Signature (c) grandfather.
 
@@ -284,7 +276,6 @@ class TestSigCComparisonSurface(unittest.TestCase):
             "Signature (c) grandfather grew — fix the TASK attribution instead",
         )
 
-    @covers("REQ-0.34.0-03-01")
     def test_comparison_coverage_does_not_silently_regress(self) -> None:
         """The gate must keep comparing at least as many OBPIs as it does today.
 
@@ -307,7 +298,6 @@ class TestSigCComparisonSurface(unittest.TestCase):
             "the 6 pinned on 2026-07-29 — the gate is going inert",
         )
 
-    @covers("REQ-0.34.0-03-01")
     def test_unpopulated_channels_are_named_not_assumed(self) -> None:
         """The two dead channels are asserted dead, so reviving one is visible.
 
