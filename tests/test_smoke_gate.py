@@ -17,11 +17,12 @@ from unittest import mock
 from gzkit.commands.smoke_cmd import smoke_cmd, smoke_gate
 from gzkit.config import GzkitConfig
 from gzkit.smoke import SMOKE_BUDGET_SECONDS, smoke, smoke_marked_files
+from tests.commands.common import SilencedConsoleTestCase
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
-class MarkerIsMetadataOnly(unittest.TestCase):
+class MarkerIsMetadataOnly(SilencedConsoleTestCase):
     """`@smoke` must not change what the test does."""
 
     def test_decorated_function_still_runs_and_returns(self) -> None:
@@ -39,7 +40,7 @@ class MarkerIsMetadataOnly(unittest.TestCase):
         self.assertTrue(getattr(sample, "__gzkit_smoke__", False))
 
 
-class EmptyTierIsABreachWhenRequired(unittest.TestCase):
+class EmptyTierIsABreachWhenRequired(SilencedConsoleTestCase):
     """Green-by-emptiness is the failure a budget gate invites — once opted in."""
 
     def _project(self, root: Path, *, required: bool | None) -> None:
@@ -74,7 +75,7 @@ class EmptyTierIsABreachWhenRequired(unittest.TestCase):
         self.assertTrue(GzkitConfig.load(_PROJECT_ROOT / ".gzkit.json").smoke.required)
 
 
-class BudgetIsEnforced(unittest.TestCase):
+class BudgetIsEnforced(SilencedConsoleTestCase):
     """The ceiling must have teeth, and the default must come from the rule."""
 
     def test_over_budget_run_exits_policy_breach(self) -> None:
@@ -88,7 +89,7 @@ class BudgetIsEnforced(unittest.TestCase):
         self.assertEqual(SMOKE_BUDGET_SECONDS, 60.0)
 
 
-class ExitCodeReachesTheShell(unittest.TestCase):
+class ExitCodeReachesTheShell(SilencedConsoleTestCase):
     """`cli.main` discards handler return values and reads SystemExit.
 
     A gate that only *returned* 3 reported success at the shell — observed live
@@ -104,7 +105,7 @@ class ExitCodeReachesTheShell(unittest.TestCase):
         self.assertIsNone(smoke_cmd(_PROJECT_ROOT))
 
 
-class TierIsPopulatedHere(unittest.TestCase):
+class TierIsPopulatedHere(SilencedConsoleTestCase):
     """This repository must actually carry smoke members."""
 
     def test_repository_declares_smoke_members(self) -> None:
@@ -114,7 +115,7 @@ class TierIsPopulatedHere(unittest.TestCase):
         )
 
 
-class FailingMemberIsDistinctFromABreach(unittest.TestCase):
+class FailingMemberIsDistinctFromABreach(SilencedConsoleTestCase):
     """A broken build and a slow tier are different problems with different exits."""
 
     def test_test_failure_exits_one_not_three(self) -> None:

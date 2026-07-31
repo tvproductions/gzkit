@@ -35,12 +35,18 @@ from gzkit.handoff_api import (
 )
 from gzkit.handoff_validation import REQUIRED_SECTIONS
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 _NEXT_STEPS = "## Immediate Next Steps\n\n1. Land the adapter and its unit tests.\n"
 
 
 class _HandoffCliCase(unittest.TestCase):
     def setUp(self) -> None:
+        # Chain to super() so a subclass can mix in SilencedConsoleTestCase for
+        # the handler-direct cases whose console output has no capture. The
+        # *Rendering classes deliberately do NOT mix it in — they assert on that
+        # output, and console.quiet would empty their buffer.
+        super().setUp()
         self.base = Path(self.enterContext(tempfile.TemporaryDirectory()))
 
     def _seed(
@@ -322,7 +328,7 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
         self.assertIn("Do NOT promote sensitivity into GATE5.", out)
 
 
-class TestHandoffCreateSeatsLateRulings(_HandoffCliCase):
+class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase):
     """`--settled` seats a ruling that arrived after the prior handoff was authored.
 
     The carry-forward mechanism composes Settled Rulings at authoring time, so a
@@ -387,7 +393,7 @@ class TestHandoffCreateSeatsLateRulings(_HandoffCliCase):
         )
 
 
-class TestHandoffCreate(_HandoffCliCase):
+class TestHandoffCreate(_HandoffCliCase, SilencedConsoleTestCase):
     def _handoff_files(self) -> list[Path]:
         return list((self.base / ".gzkit" / "handoffs").glob("*.md"))
 

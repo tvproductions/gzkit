@@ -19,6 +19,7 @@ from tempfile import TemporaryDirectory
 
 from gzkit.governance.trust_audits.taxonomy import audit_foundation_closure
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 _FOUNDATION_ADR = """---
 id: {adr_id}
@@ -296,8 +297,13 @@ class TestFoundationLimboLedgerRobustness(unittest.TestCase):
             self.assertEqual(audit_foundation_closure(root), [])
 
 
-class TestFoundationLimboExitContract(unittest.TestCase):
-    """The finding must reach the operator as exit 3, not exit 1."""
+class TestFoundationLimboExitContract(SilencedConsoleTestCase):
+    """The finding must reach the operator as exit 3, not exit 1.
+
+    Silenced base: the contract is asserted at the registry, never by scraping
+    console output (see the test docstring below), so the validator prose these
+    tests provoke is incidental and leaks to the suite's stdout uncaptured.
+    """
 
     @covers("REQ-0.34.0-03-01")
     def test_limbo_is_registered_as_a_policy_breach(self) -> None:

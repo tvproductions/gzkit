@@ -21,7 +21,7 @@ from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, SilencedConsoleTestCase, _quick_init
 
 _FOUNDATION_PACKAGE = (
     "---\n"
@@ -252,8 +252,13 @@ class TestBomPrefixedFoundationRefused(unittest.TestCase):
         )
 
 
-class TestInitMembrane(unittest.TestCase):
-    """REQ-0.34.0-05-04: the first-run `gz init` ingress honors the same membrane."""
+class TestInitMembrane(SilencedConsoleTestCase):
+    """REQ-0.34.0-05-04: the first-run `gz init` ingress honors the same membrane.
+
+    Silenced base: `_register_existing_artifacts` is driven directly rather than
+    through `CliRunner.invoke`, so its Rich console output has no capture and
+    leaks into the suite's stdout. Neither test asserts on that output.
+    """
 
     def _run_first_run_registration(self) -> str:
         """Drive the first-run registration path and return the ledger text."""

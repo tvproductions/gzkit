@@ -31,6 +31,7 @@ from gzkit.airlock.exit import (
 from gzkit.airlock.model import Provenance, SeamKind, Verdict
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
+from tests.commands.common import SilencedConsoleTestCase
 
 _BRIEF = """# Brief
 
@@ -43,8 +44,13 @@ The exit accounts for the declared footprint on the way out.
 """
 
 
-class _AirlockExitCase(unittest.TestCase):
+class _AirlockExitCase(SilencedConsoleTestCase):
+    """Silenced base: the primitive is driven directly, so its diagnostic prose
+    has no CLI capture and leaks to the suite's stdout. No test here asserts on
+    that output — the assertions read ledger events and returned models."""
+
     def setUp(self) -> None:
+        super().setUp()
         self.tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
         self._brief_seq = 0
 
