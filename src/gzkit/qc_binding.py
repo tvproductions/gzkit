@@ -90,6 +90,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),
     "Kind invariance": ("audit", "docs/", "bound", "python_function"),
+    "Persona witness": ("audit", "docs/", "bound", "python_function"),
     "Interview transcripts": ("audit", "docs/", "bound", "python_function"),
     "Receipt shape": ("audit", ".gzkit/", "bound", "python_function"),
     "Orientation freshness": ("audit", ".gzkit/", "bound", "python_function"),

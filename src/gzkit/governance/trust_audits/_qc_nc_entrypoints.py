@@ -319,6 +319,14 @@ def _ep_kind_invariance(root: Path) -> list[ValidationError]:
     return audit_kind_invariance(root)
 
 
+def _ep_persona_witness(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.persona_witness import (  # noqa: PLC0415
+        audit_persona_witness,
+    )
+
+    return audit_persona_witness(root)
+
+
 def _ep_interview_transcripts(root: Path) -> list[ValidationError]:
     from gzkit.commands.validate_briefs import _validate_interviews  # noqa: PLC0415
 

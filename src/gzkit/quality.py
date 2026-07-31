@@ -771,6 +771,19 @@ def run_kind_invariance_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --kind-invariance", cwd=project_root)
 
 
+def run_persona_witness_audit(project_root: Path) -> QualityResult:
+    """Run the persona-witness audit for ADRs (GHI #741).
+
+    Fails closed when any ADR is missing ``## Persona`` or carries a body with
+    no authored content — a placeholder token, an unfilled author-prompt, or
+    unsubstituted template residue such as ``{persona}``. Recovery: author the
+    behavioral identity for agents working on that ADR (``uv run gz personas
+    list`` for reusable definitions). Pre-cutover population is booked in
+    ``data/persona_grandfather.json``, which is shrink-only.
+    """
+    return run_command("uv run gz validate --persona-witness", cwd=project_root)
+
+
 def run_receipt_shape_audit(project_root: Path) -> QualityResult:
     """Run the receipt-shape deprecated-shape audit (OBPI-0.0.36-03).
 

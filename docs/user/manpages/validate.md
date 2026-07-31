@@ -18,7 +18,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--brief-reconcile] [--brief-structure]
             [--router-tables]
-            [--kind-invariance] [--req-kind-discipline] [--brief-command-shape] [--tautological-test-audit]
+            [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
+            [--tautological-test-audit]
             [--closeout-proof] [--okf-conformance] [--ontology-purity]
             [--deprecated-verb-prescription]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
@@ -553,6 +554,56 @@ $ uv run gz validate --kind-invariance
 |------|---------|----------|
 | 0 | All foundation ADRs have Why-foundation-tier section | — |
 | 1 | Parsing or discovery error; foundation ADR missing the section | Add `## Why foundation tier?` section to the ADR and document the architectural justification |
+
+### `--persona-witness`
+
+Validates that every canonical ADR under `docs/design/adr/foundation/` and
+`docs/design/adr/pre-release/` carries an authored `## Persona` section.
+`AGENTS.md` § Persona declares *"Every agent frame MUST include a Persona"*; this
+scope is the witness for that MUST. It is the counterpart of `--kind-invariance`,
+which enforces the sibling `## Why foundation tier?` section — but persona is
+kind-independent, so enumeration spans both tiers rather than `foundation/` alone.
+
+A body fails when it carries no authored content: empty, a placeholder token
+(`TBD`, `TODO`), an unfilled `_[Author: ...]_` prompt or HTML author-prompt
+comment, or unsubstituted template residue such as `{persona}`. Scaffolding is
+*removed* before the substance test rather than merely searched for, so prose
+that happens to contain a brace token or an inline comment still passes.
+
+Pre-cutover population is booked in `data/persona_grandfather.json` (44 entries
+at cutover, 42 of them Validated or Completed). The roster is shrink-only — never
+add an entry to silence a fresh violation. An absent or unreadable manifest
+exempts nothing.
+
+**When to use:** After authoring a new ADR, or as part of a `gz check` sweep.
+
+```bash
+uv run gz validate --persona-witness
+```
+
+**Examples:**
+
+```text
+$ uv run gz validate --persona-witness
+Validated: persona_witness
+
+✓ All validations passed (1 scopes).
+```
+
+```text
+$ uv run gz validate --persona-witness
+❌ Validation failed with 1 error(s):
+
+   → docs/design/adr/pre-release/ADR-0.36.0-example/ADR-0.36.0-example.md
+    ADR has a `## Persona` section but its body carries no authored content
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every non-grandfathered ADR carries an authored Persona | — |
+| 3 | One or more ADRs are missing the section or carry an unauthored body | Author the behavioral identity for agents working on that ADR; `uv run gz personas list` for reusable definitions |
 
 ### `--receipt-shape`
 

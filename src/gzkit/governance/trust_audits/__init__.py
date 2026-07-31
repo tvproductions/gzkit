@@ -119,6 +119,7 @@ from gzkit.governance.trust_audits.orientation import audit_orientation_freshnes
 from gzkit.governance.trust_audits.orphaned_implementation import (
     audit_orphaned_implementation,
 )
+from gzkit.governance.trust_audits.persona_witness import audit_persona_witness
 from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
@@ -200,6 +201,7 @@ __all__ = [
     "audit_event_schemas",
     "audit_insights_shape",
     "audit_kind_invariance",
+    "audit_persona_witness",
     "audit_instructions_files_budget",
     "audit_surface_delivery_witness",
     "audit_orientation_freshness",

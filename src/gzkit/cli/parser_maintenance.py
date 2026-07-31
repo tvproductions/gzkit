@@ -985,6 +985,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Validate foundation ADRs have Why-foundation-tier section",
     )
     p_validate.add_argument(
+        "--persona-witness",
+        dest="check_persona_witness",
+        action="store_true",
+        help="Validate every ADR carries an authored Persona section (GHI #741)",
+    )
+    p_validate.add_argument(
         "--receipt-shape",
         dest="check_receipt_shape",
         action="store_true",
@@ -1140,6 +1146,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_rendition_freshness=a.check_rendition_freshness,
             check_rendition_floor_coherence=a.check_rendition_floor_coherence,
             check_kind_invariance=a.check_kind_invariance,
+            check_persona_witness=a.check_persona_witness,
             check_receipt_shape=a.check_receipt_shape,
             attestation_receipts=a.attestation_receipts,
             attestation_lane=a.attestation_lane,

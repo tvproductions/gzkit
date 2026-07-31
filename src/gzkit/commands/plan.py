@@ -35,6 +35,17 @@ implementation must honor) or an adapter (one implementation behind an existing 
 
 """
 
+# The `{persona}` template variable had no caller-supplied value until GHI #741.
+# `render_template` formats through `SafeDict`, so an omitted variable renders as
+# its own literal token rather than raising — 40 ADRs reached the persona
+# grandfather roster on that path, 36 of them past Gate 5. This prompt is the
+# honest scaffold: `audit_persona_witness` strips `_[...]_` before testing for
+# substance, so an unfilled ADR now fails the gate instead of shipping quietly.
+PERSONA_AUTHOR_PROMPT = """\
+_[Author: Name the behavioral identity for agents working on this ADR — values \
+and craftsmanship standards, never generic expertise claims ("You are an expert \
+X developer"). Start from a reusable definition: `uv run gz personas list`.]_"""
+
 
 def _compose_canonical_adr_id(name: str, semver: str) -> str:
     """Compose the canonical ADR id from a CLI `name` argument and `semver`.
@@ -253,6 +264,7 @@ def _render_adr_by_kind(
             decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[unresolved-attribute]
             checklist=checklist_seed,
             why_foundation_tier=why_foundation_tier,
+            persona=PERSONA_AUTHOR_PROMPT,
         )
         sub = "foundation" if kind == "foundation" else "pre-release"
         adr_dir = adrs_root / sub / adr_id

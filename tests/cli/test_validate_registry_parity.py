@@ -59,6 +59,21 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = ("rule_version_markers",)
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the
 # dispatch contract pins; the order is unified onto registry order (no test pins
 # the multi-scope output order, confirmed pre-cut).
+# Explicit-tier scopes ADDED after the "before" snapshot was taken.
+#
+# Same doctrine as `_POST_SNAPSHOT_DEFAULT_ADDITIONS` above, applied to the
+# explicit tier: the golden set is measured evidence of the pre-collapse
+# dispatch, so appending to it would erase the boundary between "what the
+# collapse had to reproduce" and "what was added later". The default tier had
+# this hatch from the start; the explicit tier did not, so the first genuinely
+# new explicit scope had nowhere honest to go (GHI #741).
+#
+#   persona_witness — witnesses AGENTS.md § Persona ("Every agent frame MUST
+#   include a Persona") for ADRs. The MUST was convention-only while its sibling
+#   section `## Why foundation tier?` was mechanically enforced; 44 ADRs reached
+#   the grandfather roster, 42 of them past Gate 5 (GHI #741).
+_POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset({"persona_witness"})
+
 _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
     {
         "interviews",
@@ -188,10 +203,17 @@ class TestValidatorRegistryParity(unittest.TestCase):
     def test_explicit_tier_set_preserved(self) -> None:
         got = frozenset(e.stem for e in self._registry() if e.tier == "explicit")
         self.assertEqual(
-            got,
+            got - _POST_SNAPSHOT_EXPLICIT_ADDITIONS,
             _GOLDEN_EXPLICIT_SET,
             "explicit-tier stem set must match the pre-collapse "
             "`_explicit_scope_runners` exactly (no scope dropped or re-tiered)",
+        )
+        self.assertEqual(
+            got & _POST_SNAPSHOT_EXPLICIT_ADDITIONS,
+            _POST_SNAPSHOT_EXPLICIT_ADDITIONS,
+            "an explicit-tier scope added after the snapshot must be declared in "
+            "`_POST_SNAPSHOT_EXPLICIT_ADDITIONS` — an undeclared one is drift, and "
+            "a declared-but-absent one means the scope was dropped",
         )
 
     def test_no_unknown_tier(self) -> None:

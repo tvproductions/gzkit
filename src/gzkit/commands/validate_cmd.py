@@ -434,6 +434,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _rendition_floor_coherence_runner(r),
     ),
     _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
+    _ScopeEntry("persona_witness", "explicit", True, lambda r, _f: _ta().audit_persona_witness(r)),
     _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
     _ScopeEntry(
         "brief_reconcile", "explicit", True, lambda r, _f: _ta().validate_brief_reconcile(r)
@@ -1099,6 +1100,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "surface_weight",
         "pointer_anchors",
         "kind_invariance",
+        "persona_witness",
         "receipt_shape",
         "setpoint_coherence",
         "rendition_freshness",
@@ -1426,6 +1428,7 @@ def validate(
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
     check_kind_invariance: bool = False,
+    check_persona_witness: bool = False,
     check_receipt_shape: bool = False,
     check_invariant_coherence: bool = False,
     check_brief_reconcile: bool = False,
@@ -1535,6 +1538,7 @@ def validate(
         "rendition_freshness": check_rendition_freshness,
         "rendition_floor_coherence": check_rendition_floor_coherence,
         "kind_invariance": check_kind_invariance,
+        "persona_witness": check_persona_witness,
         "receipt_shape": check_receipt_shape,
         "invariant_coherence": check_invariant_coherence,
         "brief_reconcile": check_brief_reconcile,

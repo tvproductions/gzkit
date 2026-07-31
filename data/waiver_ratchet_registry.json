@@ -99,6 +99,13 @@
       "mechanism": "closed-set-lock",
       "entries_path": "",
       "lock_field": "frozen_at"
+    },
+    {
+      "data_file": "data/persona_grandfather.json",
+      "gates_step": "ADR persona population (gz check: Persona witness)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "grandfathered_adrs",
+      "baseline_count": 44
     }
   ],
   "excluded": [

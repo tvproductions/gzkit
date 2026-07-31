@@ -13,60 +13,20 @@ carry no frontmatter at all.
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
-from gzkit.hooks.obpi import STRICT_PLACEHOLDERS
+from gzkit.governance.trust_audits.adr_sections import (
+    extract_section_body as _extract_section_body,
+)
+from gzkit.governance.trust_audits.adr_sections import (
+    is_placeholder_body as _is_placeholder_body,
+)
+from gzkit.governance.trust_audits.adr_sections import (
+    strip_frontmatter as _strip_frontmatter,
+)
 from gzkit.validate import ValidationError
 
 _SECTION_HEADING = "## Why foundation tier?"
-_BRACKETED_PROMPT_RE = re.compile(r"_\[.*?\]_", re.DOTALL)
-
-
-def _is_placeholder_body(text: str) -> bool:
-    """Return True if the section body is empty or only placeholder content."""
-    clean = text.strip().lower()
-    if not clean:
-        return True
-    if clean in STRICT_PLACEHOLDERS:
-        return True
-    if any(p in clean for p in ["paste", "one-sentence"]):
-        return True
-    # Remove _[...]_ bracketed author-prompts; if nothing substantive remains, fail.
-    stripped = _BRACKETED_PROMPT_RE.sub("", clean).strip()
-    return not stripped
-
-
-def _extract_section_body(content: str, heading: str) -> str | None:
-    """Return the body text between *heading* and the next ## heading, or None if absent.
-
-    Returns an empty string if the heading is present but has no body lines.
-    """
-    lines = content.splitlines()
-    in_section = False
-    body_lines: list[str] = []
-    for line in lines:
-        if line.rstrip() == heading:
-            in_section = True
-            continue
-        if in_section:
-            if line.startswith("## "):
-                break
-            body_lines.append(line)
-    if not in_section:
-        return None
-    return "\n".join(body_lines)
-
-
-def _strip_frontmatter(content: str) -> str:
-    """Return *content* with the leading YAML frontmatter block removed."""
-    lines = content.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return content
-    for i in range(1, len(lines)):
-        if lines[i].strip() == "---":
-            return "\n".join(lines[i + 1 :])
-    return content
 
 
 def _check_foundation_adr(adr_file: Path, project_root: Path) -> ValidationError | None:

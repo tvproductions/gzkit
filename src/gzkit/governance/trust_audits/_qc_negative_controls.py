@@ -660,6 +660,31 @@ def _build_kind_invariance() -> Path:
     return root
 
 
+def _build_persona_witness() -> Path:
+    """ADR whose Persona body is unsubstituted `{persona}` template residue.
+
+    The fixture uses the token shape rather than an absent section on purpose:
+    absence was always catchable in principle, whereas residue is what actually
+    shipped past Gate 5 forty-four times, because `SafeDict.__missing__` renders
+    an omitted template variable as its own literal token and no substance test
+    recognised braces as scaffolding (GHI #741). A negative control that only
+    proved the easy half would leave the real failure mode unwitnessed.
+    """
+    root = _mkroot("persona-witness")
+    _write(
+        root
+        / "docs"
+        / "design"
+        / "adr"
+        / "pre-release"
+        / "ADR-0.1.0-residue"
+        / "ADR-0.1.0-residue.md",
+        "---\nid: ADR-0.1.0-residue\nkind: feature\nlane: lite\n---\n"
+        "# ADR-0.1.0: Residue\n\n## Persona\n\n{persona}\n\n## Intent\n\nX.\n",
+    )
+    return root
+
+
 def _build_interview_transcripts() -> Path:
     root = _mkroot("interviews")
     adr_dir = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.88-no-transcript"
@@ -966,6 +991,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("closeout-proof", _build_closeout_proof, _ep._ep_closeout_proof),
     ("kind-invariance", _build_kind_invariance, _ep._ep_kind_invariance),
+    ("persona-witness", _build_persona_witness, _ep._ep_persona_witness),
     ("interview-transcripts", _build_interview_transcripts, _ep._ep_interview_transcripts),
     ("receipt-shape", _build_receipt_shape, _ep._ep_receipt_shape),
     (
