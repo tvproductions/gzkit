@@ -159,6 +159,7 @@ def _build_adr_promotion_plan(
         title=target_title,
         status=promoted_status,
         promote_date=promote_date,
+        kind=kind,
     )
     # REQ-0.0.17-03-05: stamp kind: into promoted ADR frontmatter (post-OBPI-0.0.17-01 schema).
     promoted_content = _upsert_frontmatter_value(promoted_content, "kind", kind)

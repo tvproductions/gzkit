@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.templates import load_template, render_template
+from gzkit.templates import load_template, render_surface_template
 from gzkit.traceability import covers
 
 
@@ -18,7 +18,7 @@ class TestAgentsPersonaSection(unittest.TestCase):
     """Verify the mandatory Persona section in generated AGENTS.md."""
 
     def setUp(self) -> None:
-        self.content = render_template(
+        self.content = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -64,7 +64,7 @@ class TestAgentsPersonaReference(unittest.TestCase):
     """Verify persona reference integration in AGENTS.md (ADR-0.0.12-07)."""
 
     def setUp(self) -> None:
-        self.content = render_template(
+        self.content = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -112,7 +112,7 @@ class TestAgentsPersonaReference(unittest.TestCase):
     @covers("REQ-0.0.12-07-02")
     def test_persona_references_survive_regeneration(self) -> None:
         """Template round-trip produces identical persona section."""
-        content_a = render_template(
+        content_a = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -125,7 +125,7 @@ class TestAgentsPersonaReference(unittest.TestCase):
             sync_date="2026-01-01",
             local_content="",
         )
-        content_b = render_template(
+        content_b = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",

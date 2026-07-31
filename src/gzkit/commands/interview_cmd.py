@@ -25,6 +25,7 @@ from gzkit.interview import (
 )
 from gzkit.ledger import Ledger, obpi_created_event, prd_created_event
 from gzkit.templates import render_template
+from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 
 
 def run_interview(document_type: str) -> dict[str, str]:
@@ -250,6 +251,17 @@ def interview(document_type: str, from_file: str | None = None) -> None:
         resolved_obpi_parent = resolved_parent
         doc_dir = adr_file.parent / "obpis"
         doc_id = answers.get("id", "OBPI-DRAFT")
+
+    # An interview cannot answer every template variable. `persona` in particular
+    # is never an interview question, and the ADR sections the interview does not
+    # reach have no computed value either — before GHI #741 both rendered as
+    # literal `{token}` strings and shipped. Prompts are merged UNDER the answers,
+    # so anything the interview actually collected still wins.
+    if document_type in ("adr", "prd"):
+        scaffold_defaults: dict[str, str] = dict(AUTHOR_PROMPTS.get(document_type, {}))
+        if document_type == "adr":
+            scaffold_defaults["persona"] = PERSONA_PROMPT
+        template_vars = {**scaffold_defaults, **template_vars}
 
     content = render_template(document_type, **template_vars)
 

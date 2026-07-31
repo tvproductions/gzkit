@@ -5,6 +5,7 @@ from gzkit.cli import main
 from gzkit.commands.plan import WHY_FOUNDATION_TIER_SECTION
 from gzkit.ledger import Ledger
 from gzkit.templates import render_template
+from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 from gzkit.traceability import covers
 from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
@@ -532,6 +533,8 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
         """
         content = render_template(
             "adr",
+            **AUTHOR_PROMPTS["adr"],
+            persona=PERSONA_PROMPT,
             id="ADR-0.0.99-why-foundation-tier-scaffold",
             title="Why Foundation Tier Scaffold",
             semver="0.0.99",

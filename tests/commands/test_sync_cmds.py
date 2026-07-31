@@ -258,7 +258,9 @@ class TestSyncCommand(unittest.TestCase):
         must NOT be invoked — REQ-0.0.37-14-01."""
         with (
             _InitFromTemplate(),
-            patch("gzkit.sync_surfaces.render_template", return_value="# mocked") as mock_rt,
+            patch(
+                "gzkit.sync_surfaces.render_surface_template", return_value="# mocked"
+            ) as mock_rt,
         ):
             from gzkit.config import GzkitConfig
             from gzkit.sync_surfaces import sync_agents_md
@@ -290,7 +292,9 @@ class TestSyncCommand(unittest.TestCase):
 
         with (
             _InitFromTemplate(),
-            patch("gzkit.sync_surfaces.render_template", return_value="# mocked") as mock_rt,
+            patch(
+                "gzkit.sync_surfaces.render_surface_template", return_value="# mocked"
+            ) as mock_rt,
         ):
             from gzkit.config import GzkitConfig
 

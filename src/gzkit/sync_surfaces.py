@@ -37,7 +37,7 @@ from gzkit.sync_skills import (
     render_skills_catalog,
     sync_skill_mirrors,
 )
-from gzkit.templates import SafeDict, render_template
+from gzkit.templates import SafeDict, render_surface_template
 
 # ---------------------------------------------------------------------------
 # Helpers shared with sync.py
@@ -418,7 +418,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
 
     """
     context = get_project_context(project_root, config)
-    content = render_template("claude", **context)
+    content = render_surface_template("claude", **context)
 
     claude_path = project_root / config.paths.claude_md
     claude_path.write_text(content, encoding="utf-8", newline="\n")
@@ -433,7 +433,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
 
     """
     context = get_project_context(project_root, config)
-    content = render_template("copilot", **context)
+    content = render_surface_template("copilot", **context)
 
     copilot_path = project_root / config.paths.copilot_instructions
     copilot_path.parent.mkdir(parents=True, exist_ok=True)

@@ -380,9 +380,19 @@ def _render_promoted_adr_content(
     title: str,
     status: str,
     promote_date: str,
+    kind: str = "",
 ) -> str:
-    """Render promoted ADR scaffold seeded from a pool ADR source."""
+    """Render promoted ADR scaffold seeded from a pool ADR source.
+
+    ``kind`` is also upserted into the frontmatter by the caller after this
+    returns. It is threaded in here as well because the template carries a
+    ``{kind}`` token: before GHI #741 that rendered as the literal string
+    ``{kind}`` and was only ever correct because the upsert happened to
+    overwrite it. Rendering the real value removes the ordering dependency —
+    the upsert becomes idempotent rather than load-bearing.
+    """
     from gzkit.templates import render_template  # noqa: PLC0415
+    from gzkit.templates.author_prompts import PERSONA_PROMPT  # noqa: PLC0415
 
     intent = (
         _optional_pool_section(pool_content, "Intent")
@@ -397,6 +407,11 @@ def _render_promoted_adr_content(
 
     content = render_template(
         "adr",
+        # A pool ADR carries no persona — promotion is the first moment the ADR
+        # has agents working on it, so the prompt is authored here rather than
+        # inherited.
+        persona=PERSONA_PROMPT,
+        kind=kind,
         id=target_adr_id,
         status=status,
         semver=semver,

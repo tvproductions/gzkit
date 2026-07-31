@@ -9,6 +9,7 @@ from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 from gzkit.ledger import Ledger, adr_created_event
 from gzkit.templates import render_template
+from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 
 FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
 _SEMVER_LITERAL_RE = re.compile(r"^\d+\.\d+\.\d+$")
@@ -34,17 +35,6 @@ _[Port-vs-adapter framing: Is this ADR a port (an abstract contract every \
 implementation must honor) or an adapter (one implementation behind an existing port)?]_
 
 """
-
-# The `{persona}` template variable had no caller-supplied value until GHI #741.
-# `render_template` formats through `SafeDict`, so an omitted variable renders as
-# its own literal token rather than raising — 40 ADRs reached the persona
-# grandfather roster on that path, 36 of them past Gate 5. This prompt is the
-# honest scaffold: `audit_persona_witness` strips `_[...]_` before testing for
-# substance, so an unfilled ADR now fails the gate instead of shipping quietly.
-PERSONA_AUTHOR_PROMPT = """\
-_[Author: Name the behavioral identity for agents working on this ADR — values \
-and craftsmanship standards, never generic expertise claims ("You are an expert \
-X developer"). Start from a reusable definition: `uv run gz personas list`.]_"""
 
 
 def _compose_canonical_adr_id(name: str, semver: str) -> str:
@@ -264,7 +254,8 @@ def _render_adr_by_kind(
             decomposition_scorecard=scorecard.to_markdown(),  # ty: ignore[unresolved-attribute]
             checklist=checklist_seed,
             why_foundation_tier=why_foundation_tier,
-            persona=PERSONA_AUTHOR_PROMPT,
+            persona=PERSONA_PROMPT,
+            **AUTHOR_PROMPTS["adr"],
         )
         sub = "foundation" if kind == "foundation" else "pre-release"
         adr_dir = adrs_root / sub / adr_id

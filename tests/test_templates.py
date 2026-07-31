@@ -6,7 +6,14 @@
 import unittest
 from pathlib import Path
 
-from gzkit.templates import list_templates, load_template, render_template
+from gzkit.templates import (
+    MissingTemplateVariableError,
+    list_templates,
+    load_template,
+    render_surface_template,
+    render_template,
+)
+from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT
 from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -51,6 +58,7 @@ class TestRenderTemplate(unittest.TestCase):
         """Render substitutes provided values."""
         content = render_template(
             "prd",
+            **AUTHOR_PROMPTS["prd"],
             id="PRD-TEST-1.0.0",
             title="Test PRD",
             semver="1.0.0",
@@ -62,8 +70,15 @@ class TestRenderTemplate(unittest.TestCase):
         """Render uses default values for missing keys."""
         content = render_template(
             "adr",
+            **AUTHOR_PROMPTS["adr"],
+            persona=PERSONA_PROMPT,
             id="ADR-0.1.0",
             title="Test ADR",
+            semver="0.1.0",
+            parent="PRD-X",
+            kind="feature",
+            decomposition_scorecard="",
+            checklist="",
         )
         # date should be filled with today's date
         self.assertIn("ADR-0.1.0", content)
@@ -71,15 +86,24 @@ class TestRenderTemplate(unittest.TestCase):
         self.assertIn("Draft", content)
 
     def test_render_preserves_unknown_placeholders(self) -> None:
-        """Render preserves placeholders for unknown keys."""
-        content = render_template(
-            "obpi",
-            id="OBPI-0.1.0-01-test",
-            title="Test OBPI",
-            # parent_adr not provided
-        )
-        # Unknown placeholders preserved
-        self.assertIn("{parent_adr}", content)
+        """Scaffolding refuses an unknown key; only surface rendering preserves it.
+
+        This test previously asserted the opposite — that `render_template`
+        preserved `{parent_adr}` when the caller omitted it. That leniency is
+        what GHI #741 removed: `SafeDict` rendered every omission as its own
+        literal token, so 44 ADRs reached the persona grandfather roster and a
+        fresh `gz plan create` ADR carried six more such tokens.
+
+        Preservation is still correct for adopter-supplied control-surface
+        templates, where an unknown token is the adopter's and not a gzkit bug.
+        Both halves are asserted here so the split cannot silently collapse back
+        into one lenient path.
+        """
+        with self.assertRaises(MissingTemplateVariableError):
+            render_template("obpi", id="OBPI-0.1.0-01-test", title="Test OBPI")
+
+        surface = render_surface_template("obpi", id="OBPI-0.1.0-01-test", title="Test OBPI")
+        self.assertIn("{parent_adr}", surface)
 
 
 class TestAgentsTemplateSemantic(unittest.TestCase):
@@ -89,7 +113,7 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        self.content = render_template(
+        self.content = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -159,19 +183,19 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
     @covers("REQ-0.17.0-03-04")
     @covers("REQ-0.17.0-03-02")
     def test_claude_adapter_references_agents_for_skills(self) -> None:
-        content = render_template("claude", skills_catalog="- `test-skill`: Desc")
+        content = render_surface_template("claude", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
         self.assertIn("AGENTS.md", content)
 
     @covers("REQ-0.17.0-03-03")
     def test_copilot_adapter_references_agents_for_skills(self) -> None:
-        content = render_template("copilot", skills_catalog="- `test-skill`: Desc")
+        content = render_surface_template("copilot", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
         self.assertIn("AGENTS.md", content)
         self.assertIn("Available Skills", content)
 
     def test_agents_template_points_to_live_catalog(self) -> None:
-        content = render_template("agents", skills_catalog="- `test-skill`: Desc")
+        content = render_surface_template("agents", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
         self.assertIn("uv run gz skill list", content)
 
@@ -186,7 +210,7 @@ class TestRootSurfaceSlimming(unittest.TestCase):
     """
 
     def setUp(self) -> None:
-        self.agents = render_template(
+        self.agents = render_surface_template(
             "agents",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -199,7 +223,7 @@ class TestRootSurfaceSlimming(unittest.TestCase):
             sync_date="2026-01-01",
             local_content="",
         )
-        self.copilot = render_template(
+        self.copilot = render_surface_template(
             "copilot",
             project_name="test-project",
             project_purpose="Test purpose",
@@ -662,7 +686,13 @@ class TestRenderTemplateProjectFirst(unittest.TestCase):
             try:
                 os.chdir(tmp)
                 # No .gzkit/templates/ directory
-                result = render_template("prd", id="PRD-TEST-1.0.0", title="T")
+                result = render_template(
+                    "prd",
+                    **AUTHOR_PROMPTS["prd"],
+                    id="PRD-TEST-1.0.0",
+                    title="T",
+                    semver="1.0.0",
+                )
                 self.assertIn("PRD-TEST-1.0.0", result)
             finally:
                 os.chdir(orig_cwd)

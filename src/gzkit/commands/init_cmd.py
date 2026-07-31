@@ -51,6 +51,7 @@ from gzkit.sync import (
     write_manifest,
 )
 from gzkit.templates import render_template, scaffold_core_templates
+from gzkit.templates.author_prompts import AUTHOR_PROMPTS
 
 RefreshState = Literal["IDENTICAL", "STALE", "EDITED"]
 
@@ -1119,6 +1120,7 @@ def prd(name: str, title: str | None, dry_run: bool) -> None:
     # Render template
     content = render_template(
         "prd",
+        **AUTHOR_PROMPTS["prd"],
         id=prd_id,
         title=prd_title,
         semver=semver,

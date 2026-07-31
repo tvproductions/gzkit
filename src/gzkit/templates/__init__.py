@@ -4,6 +4,7 @@ Templates use Python string formatting with {variable} placeholders.
 """
 
 import importlib.resources
+import re
 from collections.abc import Iterator
 from datetime import date
 from importlib.resources import files
@@ -94,36 +95,103 @@ def load_template(name: str) -> str:
     return template_file.read_text(encoding="utf-8")
 
 
+_TEMPLATE_TOKEN_RE = re.compile(r"\{([a-z_][a-z0-9_]*)\}")
+
+_RENDER_DEFAULTS: dict[str, str] = {
+    "date": date.today().isoformat(),
+    "status": "Draft",
+    "lane": "lite",
+    "why_foundation_tier": "",
+}
+
+
+class MissingTemplateVariableError(ValueError):
+    """A scaffolding template was rendered without values for some variables.
+
+    Carries every missing name in ``missing`` rather than failing on the first,
+    so a caller supplying 12 of 18 variables learns all six omissions in one
+    run instead of six render-fail-patch cycles.
+    """
+
+    def __init__(self, template: str, missing: list[str]) -> None:
+        self.template = template
+        self.missing = missing
+        names = ", ".join(missing)
+        super().__init__(
+            f"Template '{template}' rendered without values for: {names}. "
+            "gzkit is the caller, so an unsupplied scaffolding variable is a "
+            "bug here, not adopter input — pass a value, or an "
+            "`_[Author: ...]_` prompt when the section is meant to be filled "
+            "in later (the prompt is caught downstream by the placeholder "
+            "detector in `gzkit.governance.trust_audits.adr_sections`; a bare "
+            "`{token}` was not, which is how 44 ADRs reached the persona "
+            "grandfather roster). For adopter-supplied surface templates whose "
+            "unknown tokens are legitimately passthrough, call "
+            "`render_surface_template` instead."
+        )
+
+
+def _render(name: str, context: dict[str, Any]) -> str:
+    """Render *name* with *context*, strictly — every token must have a value."""
+    template = load_template(name)
+    missing = sorted({t for t in _TEMPLATE_TOKEN_RE.findall(template) if t not in context})
+    if missing:
+        raise MissingTemplateVariableError(name, missing)
+    return template.format_map(context)
+
+
 def render_template(name: str, **kwargs: Any) -> str:
-    """Load and render a template with variables.
+    """Load and render a scaffolding template. Strict — raises on omission.
+
+    This is the path for artifacts gzkit authors: ADRs, OBPI briefs, PRDs,
+    constitutions, closeout and audit forms. gzkit supplies every variable, so
+    an unsupplied one is a defect in the calling command.
+
+    Rendered leniently until GHI #741. ``SafeDict.__missing__`` returned the key
+    as its own literal token, so an omission produced plausible-looking prose
+    instead of an exception — `{persona}` shipped into a section AGENTS.md
+    declares mandatory, 44 times, 42 of them past Gate 5. A fresh
+    ``gz plan create`` ADR carried five more of the same shape.
 
     Args:
         name: Template name without .md extension.
-        **kwargs: Variables to substitute in the template.
+        **kwargs: Variables to substitute. ``date``, ``status``, ``lane`` and
+            ``why_foundation_tier`` have defaults and need not be passed.
 
     Returns:
-        Rendered template content.
+        Rendered template content, with no unsubstituted tokens.
+
+    Raises:
+        MissingTemplateVariableError: any template variable had no value.
 
     """
-    template = load_template(name)
+    return _render(name, {**_RENDER_DEFAULTS, **kwargs})
 
-    # Add default values
-    defaults = {
-        "date": date.today().isoformat(),
-        "status": "Draft",
-        "lane": "lite",
-        "why_foundation_tier": "",
-    }
 
-    # Merge defaults with provided kwargs (kwargs take precedence)
-    context = {**defaults, **kwargs}
+def render_surface_template(name: str, **kwargs: Any) -> str:
+    """Load and render a control-surface template. Lenient — passthrough preserved.
 
-    # Use safe formatting that doesn't fail on missing keys
-    return template.format_map(SafeDict(context))
+    This is the path for surfaces adopters may customise: AGENTS.md, CLAUDE.md,
+    and the Copilot instructions, rendered from ``.gzkit/templates/`` when a
+    project-local copy exists. A token gzkit has no value for belongs to the
+    adopter's template, not to a gzkit bug, so it survives the render.
+
+    Strictness here would break ``gz agent sync`` for every project that
+    customised a surface — which is why GHI #741's fix is two paths rather than
+    one flag flip.
+    """
+    return load_template(name).format_map(SafeDict({**_RENDER_DEFAULTS, **kwargs}))
 
 
 class SafeDict(dict):
-    """Dictionary that returns placeholder for missing keys."""
+    """Dictionary that returns a missing key as its own literal ``{token}``.
+
+    Deliberately lenient, and scoped to the surface-render path
+    (``render_surface_template`` / ``sync_surfaces``) since GHI #741. Do NOT
+    reintroduce it into scaffolding renders: preserving an unknown adopter
+    token is correct for a customised control surface and is silent artifact
+    corruption for an artifact gzkit authored itself.
+    """
 
     def __missing__(self, key: str) -> str:
         return f"{{{key}}}"
