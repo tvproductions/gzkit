@@ -2,6 +2,18 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py --self-test",
+      "expected": 0,
+      "description": "the gate itself has teeth: all four breach directions fire on synthetic data"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py",
+      "expected": 0,
+      "description": "modules obey the canonical radon_raw_nloc block band; shrink-only ratchet"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }

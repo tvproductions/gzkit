@@ -2,9 +2,14 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "uv run -m unittest -q",
+      "command": "uv run gz validate --instructions --instructions-files-budget",
       "expected": 0,
-      "description": "All tests pass after memory hygiene"
+      "description": "per-turn instruction surfaces are well-formed and within budget"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run -m unittest -q",
+      "expected": 0
     }
   ]
 }

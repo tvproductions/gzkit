@@ -2,27 +2,9 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md",
+      "command": "uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability",
       "expected": 0,
-      "description": "Skill inventory artifact present"
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md",
-      "expected": 0,
-      "description": "Reachability matrix artifact present"
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md",
-      "expected": 0,
-      "description": "GHI cross-reference artifact present"
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md",
-      "expected": 0,
-      "description": "Summary artifact present"
+      "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
     }
   ]
 }

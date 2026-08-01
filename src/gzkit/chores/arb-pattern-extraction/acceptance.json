@@ -2,6 +2,12 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz arb validate",
+      "expected": 0,
+      "description": "every recent ARB receipt validates against its schema"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }

@@ -2,6 +2,12 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz validate --utf8-prefix --line-endings --type-ignores",
+      "expected": 0,
+      "description": "the three mechanical cross-platform scopes this chore exists to hold"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }

@@ -2,6 +2,12 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz validate --router-tables --skill-alignment",
+      "expected": 0,
+      "description": "router tables route to skills that exist and resolve"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }

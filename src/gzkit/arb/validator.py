@@ -88,7 +88,19 @@ def _load_schema(schema_path: Path) -> dict[str, Any]:
 
 
 def _iter_receipt_paths(root: Path, *, limit: int) -> list[Path]:
-    paths = sorted(root.glob("*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
+    """Return the most-recent ARB receipts under *root*, newest first.
+
+    Scoped to the ``arb-`` filename prefix (``AGENTS.md`` § Attestation pins
+    ``arb-ruff-`` / ``arb-step-`` / ``arb-red-``). The receipts directory is shared
+    with other artifact kinds — ``foundation-sunset-migration-*.json`` among them —
+    and a bare ``*.json`` glob reported those as invalid ARB receipts, which is a
+    false positive about a file that was never claiming to be one.
+
+    Deliberately filename-scoped rather than filtered on the ``schema`` field: a
+    real ARB receipt with a missing or wrong ``schema`` is precisely the defect
+    this validator exists to catch, and a schema-based filter would skip it.
+    """
+    paths = sorted(root.glob("arb-*.json"), key=lambda p: p.stat().st_mtime, reverse=True)
     if limit < 0:
         return paths
     return paths[:limit]

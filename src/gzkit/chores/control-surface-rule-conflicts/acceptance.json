@@ -2,21 +2,9 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md",
+      "command": "uv run python scripts/check_proof_freshness.py control-surface-rule-conflicts",
       "expected": 0,
-      "description": "Rule inventory artifact present"
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md",
-      "expected": 0,
-      "description": "Conflict matrix artifact present"
-    },
-    {
-      "type": "exitCodeEquals",
-      "command": "test -f .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md",
-      "expected": 0,
-      "description": "Summary artifact present"
+      "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
     },
     {
       "type": "exitCodeEquals",
@@ -28,7 +16,7 @@
       "type": "exitCodeEquals",
       "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline",
       "expected": 0,
-      "description": "Conflict matrix conforms to ADR-pool.control-surface-rule-pair-conflict-audit § Audit-row schema (evidence column resolves)"
+      "description": "Conflict matrix conforms to ADR-pool.control-surface-rule-pair-conflict-audit \u00a7 Audit-row schema (evidence column resolves)"
     }
   ]
 }

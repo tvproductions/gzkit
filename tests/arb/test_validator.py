@@ -34,7 +34,14 @@ _VALID_STEP_RECEIPT = {
 
 
 def _write_receipt(directory: Path, name: str, payload: dict | str) -> Path:
-    path = directory / f"{name}.json"
+    """Write a receipt under the real ``arb-`` filename contract.
+
+    ARB receipts are always written as ``arb-ruff-*`` / ``arb-step-*`` /
+    ``arb-red-*`` (AGENTS.md § Attestation pins the prefixes), and the validator
+    scopes its scan to them because the receipts directory is shared with other
+    artifact kinds. Fixtures named ``a`` / ``bad`` did not exercise that contract.
+    """
+    path = directory / f"arb-{name}.json"
     if isinstance(payload, str):
         path.write_text(payload, encoding="utf-8")
     else:
@@ -108,6 +115,47 @@ class TestValidateReceipts(unittest.TestCase):
 
         self.assertEqual(result.scanned, 0)
         self.assertEqual(result.valid, 0)
+
+    def test_co_located_non_arb_artifact_is_not_reported(self) -> None:
+        """A different artifact kind in the receipts directory is not an ARB defect.
+
+        ``artifacts/receipts/`` is shared: ``foundation-sunset-migration-*.json``
+        lives beside the ARB receipts and carries no ``schema`` field at all. A
+        bare ``*.json`` scan reported three of them as invalid ARB receipts — a
+        false positive about files that never claimed to be ARB receipts, and one
+        that made `gz arb validate` unusable as a chore criterion.
+        """
+        from gzkit.arb.validator import validate_receipts
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            _write_receipt(directory, "step-real", _VALID_STEP_RECEIPT)
+            (directory / "foundation-sunset-migration-2026-07-30T03-38-01Z.json").write_text(
+                json.dumps({"attestor": "g0", "demote_count": 3, "dry_run": False}),
+                encoding="utf-8",
+            )
+            result = validate_receipts(root=directory)
+
+        self.assertEqual(result.scanned, 1, "only the arb-* receipt is in scope")
+        self.assertEqual(result.valid, 1)
+        self.assertEqual(result.invalid, 0, "a non-ARB artifact is not an invalid ARB receipt")
+
+    def test_malformed_arb_receipt_is_still_caught(self) -> None:
+        """Scoping by filename must not become a way to skip a real defect.
+
+        The scan is filename-scoped rather than filtered on the ``schema`` field
+        precisely so an ``arb-*`` receipt with a missing or wrong schema still
+        fails — that is the defect the validator exists to catch.
+        """
+        from gzkit.arb.validator import validate_receipts
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            directory = Path(tmpdir)
+            _write_receipt(directory, "ruff-deadbeef", {"no": "schema"})
+            result = validate_receipts(root=directory)
+
+        self.assertEqual(result.scanned, 1)
+        self.assertEqual(result.invalid, 1)
 
     def test_limit_honored(self) -> None:
         from gzkit.arb.validator import validate_receipts

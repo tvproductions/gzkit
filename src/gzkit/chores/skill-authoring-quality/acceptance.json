@@ -2,6 +2,18 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz skill audit",
+      "expected": 0,
+      "description": "skill lifecycle and mirror parity"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run gz validate --skill-alignment",
+      "expected": 0,
+      "description": "skill surfaces resolve to real commands"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }
