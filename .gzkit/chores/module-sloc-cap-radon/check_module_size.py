@@ -44,8 +44,15 @@ import subprocess
 import sys
 from pathlib import Path
 
+from gzkit.commands.common import get_project_root
+
 _METRIC = "radon_raw_nloc"
-_PROJECT_ROOT = Path(__file__).resolve().parents[3]
+# Manifest-based resolution, never `Path(__file__).parents[N]`: this file is
+# mirrored to `src/gzkit/chores/` by `gz agent sync control-surfaces`, so its
+# depth below the project root differs between the two copies and a positional
+# walk is wrong in one of them. `gz lint` fails closed on the positional form
+# (hardcoded-root-eradication). Chores execute from the project root.
+_PROJECT_ROOT = get_project_root()
 _THRESHOLDS = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _GRANDFATHER = _PROJECT_ROOT / "data" / "module_size_grandfather.json"
 _MEASURE_ROOT = _PROJECT_ROOT / "src"

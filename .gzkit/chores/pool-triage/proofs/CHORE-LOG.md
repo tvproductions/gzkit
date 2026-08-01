@@ -589,3 +589,81 @@ Ran 7704 tests in 79.548s
 
 OK
 ```
+## 2026-08-01T02:54:53-05:00
+- Status: PASS
+- Chore: pool-triage
+- Title: Pool ADR Drift Triage (read-only; stopgap for ADR-pool.pool-management)
+- Lane: lite
+- Version: 0.1.0
+- Criteria Results:
+  - [PASS] `uv run -m unittest -q` => rc=0 (98.50s) -- exit 0 == 0
+  - [PASS] `test -d docs/design/adr/pool` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `test -d docs/design/adr/pool/archive` => rc=0 (0.00s) -- exit 0 == 0
+
+```text
+[uv run -m unittest -q] stderr:
+[1/1] Test
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:393: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:393: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-01-demo.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-02-consumer.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-01-demo.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-01-selfmade.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-02-consumer.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/governance/brief_reconcile.py:212: DeprecationWarning: Brief 'OBPI-0.9.9-02-consumer.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+refused: OBPI-test.md carries terminal OBPI status 'abandoned' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing transition); will not silently write it to 'Completed' (GHI #348 clobber class). Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: argument --repair: not allowed with argument --recon
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:393: DeprecationWarning: Brief 'OBPI-0.0.65-04-x.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:393: DeprecationWarning: Brief 'OBPI-0.0.37-07-test.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.009s
+
+OK
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.008s
+
+OK
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.008s
+
+OK
+..
+----------------------------------------------------------------------
+Ran 2 tests in 0.008s
+
+OK
+BLOCKERS: --apply requires both --attestor and --attestation. The Gate-5 human attestation IS the terminality witness for pre-ledger foundations; without it the backfill has no legitimate witness.
+BLOCKERS: --apply requires both --attestor and --attestation. The Gate-5 human attestation IS the terminality witness for pre-ledger foundations; without it the backfill has no legitimate witness.
+  BLOCKER: ADR-0.0.37 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.54 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.64 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.65 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.72 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+----------------------------------------------------------------------
+Ran 7706 tests in 97.884s
+
+OK
+```
