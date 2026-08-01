@@ -71,3 +71,25 @@
 
 ```text
 ```
+## 2026-08-01T17:31:36-06:00
+- Status: PASS
+- Chore: control-surface-rule-vs-check-drift
+- Title: Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py control-surface-rule-vs-check-drift` => rc=0 (0.09s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-rule-vs-check-drift] stdout:
+proof-freshness gate — control-surface-rule-vs-check-drift
+  audited surfaces:  .gzkit/rules, src/gzkit/governance/trust_audits
+  surface last moved: 2026-08-01
+  check-behaviors.md           2026-08-01  fresh
+  parity-diff.md               2026-08-01  fresh
+  promoted-inventory.md        2026-08-01  fresh
+  prose-assertions.md          2026-08-01  fresh
+  summary.md                   2026-08-01  fresh
+
+PASS: every proof postdates the surfaces it audits.
+```
