@@ -1,70 +1,216 @@
 # Promoted Check Inventory
 
-**Generated:** 2026-05-10
-**Sources:**
-- `uv run gz validate --help` (flag list captured to `proofs/validate-help.txt`)
-- `src/gzkit/governance/trust_audits/*.py` (audit function bodies)
-- `docs/governance/advisory-rules-audit.md` (promotion-status ledger)
+**Generated:** 2026-08-01 (audit-only re-run; supersedes the 2026-05-10 artifact)
+**Audited surfaces:** `.gzkit/rules/` (last moved 2026-07-29) and
+`src/gzkit/governance/trust_audits/` (last moved 2026-08-01).
+**Prior proof commit date:** 2026-05-10 — every artifact in this directory was
+stale by ~12 weeks against `.gzkit/rules` and ~12 weeks against the validators.
 
-Every row is a `gz validate --<scope>` flag that resolves to a concrete audit
-function and asserts a defined invariant. Rule-shaped flags that have no
-underlying audit function (`--manifest`, `--documents`, `--surfaces`,
-`--ledger`, `--briefs`, `--personas`, `--frontmatter`, etc.) are out of
-scope for this drift audit because they wrap schema validation, not rule
-prose.
+**Sources (all read live, none from memory):**
 
-| # | Scope flag | Audit function | Module | What it asserts |
-|---|------------|----------------|--------|-----------------|
-| 1 | `--advisory-scorecard` | `audit_advisory_scorecard` | `src/gzkit/governance/trust_audits/release.py:83` | Every `.gzkit/rules/*.md` stem appears (case-folded substring) in `docs/governance/advisory-rules-audit.md`. |
-| 2 | `--utf8-prefix` | `audit_utf8_prefix` | `src/gzkit/governance/trust_audits/cross_platform.py:80` | No `PYTHONUTF8=1 uv run gz` anti-pattern, no `gz \| python` fresh-interpreter pipes without `sys.stdout.reconfigure`, no `gz \| {jq,awk,sed}` non-Python pipes, and `tools/**/*.py` entry points configure UTF-8. |
-| 3 | `--version-release` | `audit_version_release` | `src/gzkit/governance/trust_audits/release.py:19` | The `pyproject.toml` version has a matching `vX.Y.Z` git tag OR an in-flight `docs/releases/PATCH-vX.Y.Z.md` manifest. |
-| 4 | `--pool-adr-isolation` | `audit_pool_adr_isolation` | `src/gzkit/governance/trust_audits/taxonomy.py:50` | No ledger event whose artifact id has prefix `ADR-pool.` carries an event type in `{gate_checked, attestation, obpi_completed, adr_attested, adr_audit, adr_closeout, lifecycle_transition}`. |
-| 5 | `--taxonomy` | `audit_adr_taxonomy` | `src/gzkit/governance/trust_audits/taxonomy.py:175` | `kind:foundation` requires semver `0.0.x`, `kind:feature` requires non-`0.0.x`, pool ADRs (id-prefix `ADR-pool.`) carry neither `kind:` nor `semver:`. |
-| 6 | `--adr-status-fresh` | `audit_adr_status_fresh` | `src/gzkit/governance/trust_audits/taxonomy.py:232` | `docs/governance/GovZero/adr-status.md` agrees with on-disk ADR canon (frontmatter + H1) under `docs/design/adr/{foundation,pre-release}/`. |
-| 7 | `--test-tiers` | `audit_test_tiers` | `src/gzkit/governance/trust_audits/code_quality.py:126` | No `tests/{integration,e2e,slow,bdd}/` subdir; no forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags in `parser_*.py`. |
-| 8 | `--type-ignores` | `audit_type_ignores` | `src/gzkit/governance/trust_audits/code_quality.py:37` | No `# type: ignore[<code>]` comment under `src/`; only bare `# type: ignore` or `# ty: ignore[<ty-code>]` permitted. |
-| 9 | `--class-size` | `audit_class_size` | `src/gzkit/governance/trust_audits/code_quality.py:73` | Every `ast.ClassDef` under `src/gzkit/` spans <=300 source lines unless waived in `_CLASS_SIZE_WAIVERS`. |
-| 10 | `--pydantic-models` | `audit_pydantic_models` | `src/gzkit/governance/trust_audits/models.py:69` | No `@dataclass` decorator in `src/gzkit/**` (unless waived in `_DATACLASS_WAIVERS`); every `BaseModel` subclass declares a `model_config` attribute. |
-| 11 | `--cli-alignment` | `audit_cli_alignment` | `src/gzkit/governance/trust_audits/cli.py:87` | Every backticked / quoted `gz <verb>` reference in operator-facing docs (`docs/user/runbook.md`, `docs/user/{commands,manpages}/**`, `features/**/*.feature`) resolves to a registered parser subcommand. |
-| 12 | `--skill-alignment` | `audit_skill_alignment` | `src/gzkit/governance/trust_audits/cli.py:149` | Every top-level CLI verb has at least one wielding skill in `.gzkit/skills/**` (via frontmatter `gz_command:` or body) OR is in `_NO_SKILL_VERBS` with rationale. |
-| 13 | `--event-handlers` | `audit_event_handlers` | `src/gzkit/governance/trust_audits/events.py:88` | Every ledger event type emitted by `src/gzkit/ledger_events.py` has a graph handler in `src/gzkit/ledger.py` OR an explicit `_NO_GRAPH_IMPACT` waiver. |
-| 14 | `--validator-fields` | `audit_validator_fields` | `src/gzkit/governance/trust_audits/events.py:262` | Every `info.get('<field>')` read in `validate_frontmatter.py` has a corresponding writer in `ledger.py` (graph-write, entry-key, or `_artifact_creation_entry` initializer). |
-| 15 | `--audits` | aggregator | `src/gzkit/commands/validate.py` | Runs `audit_event_handlers`, `audit_event_schemas`, `audit_validator_fields` together. No new invariant of its own. |
-| 16 | `--reconcile-freshness` | `audit_reconcile_freshness` | `src/gzkit/governance/trust_audits/reconcile.py:68` | The latest `reconcile_*` ledger event is within 24h of HEAD commit time; fail-open at zero-event bootstrap. |
-| 17 | `--insights-shape` | `audit_insights_shape` | `src/gzkit/governance/trust_audits/insights.py:74` | Every record in `.gzkit/insights/agent-insights.jsonl` validates against the `InsightRecord` Pydantic model (`extra="forbid"`, ISO8601 `ts`, enum `type`, `evidence: list[str]`). |
-| 18 | `--instructions-files-budget` | `audit_instructions_files_budget` | `src/gzkit/governance/trust_audits/instructions_files_budget.py:61` | `AGENTS.md`, `CLAUDE.md`, and each `.claude/rules/*.md` file stays within the char budget configured in `data/instructions_files_budget.json` (defaults: 40k AGENTS.md/CLAUDE.md, 16k per rule file). |
-| 19 | `--orientation-freshness` | `audit_orientation_freshness` | `src/gzkit/governance/trust_audits/orientation.py:200` | The SessionStart orientation hook and the `scripts/session_orientation.py` script remain wired (GHI #341). |
-| 20 | `--brief-headings` | `audit_brief_headings` | `src/gzkit/governance/trust_audits/briefs.py:83` | OBPI briefs under `docs/design/adr/**/OBPI-*.md` carry `Implementation Summary`, `Key Proof`, `Closing Argument` as H3 (`### …`), not H2. |
-| 21 | `--behave-req-tags` | `audit_behave_req_tags` | `src/gzkit/governance/trust_audits/briefs.py:203` | Every REQ-ID extracted from the `## Acceptance Criteria` section of a heavy-lane OBPI brief in status `completed` or `validated` (non-pool) has a matching scenario-level `@REQ-X.Y.Z-NN-MM` tag under `features/**` OR is waived in `data/behave_coverage_waivers.json`. |
-| 22 | `--chores-layout` | `audit_chores_layout` | `src/gzkit/governance/trust_audits/chores.py:28` | No stray `CHORE.md` / `acceptance.json` outside `src/gzkit/chores/` or the project-configured chores path (default `.gzkit/chores/`) unless waived in `data/chores_layout_waivers.json`. |
-| 23 | `--unscoped-rules` | (delegated to `gzkit.rules.unscoped_audit`) | `src/gzkit/rules.py` + ADR-0.0.20 | Every `.gzkit/rules/*.md` carries scoped `paths:` frontmatter; `paths: "**"` or missing `paths:` fail-closed unless allowlisted in `.gzkit/manifest.json` `rules.unscoped_allowlist`. |
-| 24 | `--sensitivity` | `audit_sensitivity_binding` | `src/gzkit/governance/trust_audits/sensitivity.py:168` | Briefs whose `## ALLOWED PATHS` overlap an entry in `data/security_surfaces.json` MUST declare `sensitivity: security`; escalation-without-overlap is permitted. |
-| 25 | `--commit-trailers` | (delegated to `gzkit.commands.validate_cmd`) | `src/gzkit/commands/validate*.py` | HEAD commits touching `src/` or `tests/` carry a `Task:`, `Ceremony:`, or `Eval-feedback-source:` trailer. |
-| 26 | `--complexity-doctrine-links` | `validate_complexity_doctrine_links` | `src/gzkit/governance/trust_audits/complexity_doctrine_links.py:188` | Citations of distilled-characteristics docs from cluster ADRs (0.0.27/0.0.28/0.0.29/0.0.30) and `.gzkit/rules/complexity-doctrine.md` resolve (file + anchor) and `corpus_revision` falls within the supported portability window. |
-| 27 | `--complexity-thresholds` | `validate_complexity_thresholds` | `src/gzkit/governance/trust_audits/complexity_thresholds.py:43` | `.gzkit/rules/complexity-thresholds.json` declares a `block` band for every canonical metric; trigger semantics restricted to `{block, warn, advise}`; citation tuple parses; bootstrap-mode notice is informational only. |
-| 28 | `--doc-surface-parity` | `audit_doc_surface_parity` | `src/gzkit/governance/trust_audits/doc_surface_parity.py:22` | The decommissioned `docs/user/commands/` directory does not exist (GHI #418). |
-| 29 | `--absorption-duplicates` | `audit_absorption_duplicates` | `src/gzkit/governance/trust_audits/absorption_duplicates.py:83` | The same `opsdev` source path appearing across multiple parent ADRs requires a `paired_with:` declaration (GHI #376). |
-| 30 | `--evaluation-justify-binding` | `validate_evaluation_justify_binding` | `src/gzkit/governance/trust_audits/evaluation_justify_binding.py:20` | Low ADR evaluation scores (<3.0) require a paired `gz-justify` artifact (ADR-0.0.26). |
-| 31 | `--intrinsic-attestation` | `validate_intrinsic_attestation` | `src/gzkit/governance/trust_audits/intrinsic_attestation.py:30` | `intrinsic-complexity-attestation` ledger events validate against the OBPI-0.0.29-07 payload schema. |
-| 32 | `--advisor-proof-binding` | `validate_advisor_proof_binding` | `src/gzkit/governance/trust_audits/advisor_proof_binding.py:30` | Every advisor diagnosis fixture under `tests/fixtures/advisor/*.json` carries a non-empty `proof` array; the schema enforces `minItems >= 1`; ledger events citing diagnoses with empty proofs fail-closed. |
-| 33 | `--attestation-receipts` | `validate_attestation_receipts` | `src/gzkit/governance/trust_audits/attestation_receipts.py:171` | Receipt IDs in an attestation string reference real `.gzkit/arb/receipts/*.json` files; heavy-lane fail-closed on missing IDs, lite-lane warn. |
+- `uv run gz validate --help` → `proofs/validate-help.txt` (96 flags)
+- `VALIDATOR_REGISTRY` in `src/gzkit/commands/validate_cmd.py:227` (81 scope entries)
+- `_build_check_steps()` in `src/gzkit/commands/quality.py:385` (47 steps)
+- `_POLICY_BREACH_ERROR_TYPES` in `src/gzkit/commands/validate_cmd.py:1081`
+- `.pre-commit-config.yaml`
+- Audit function bodies under `src/gzkit/governance/trust_audits/`
 
-## Out-of-scope flags (schema/IO wrappers)
+---
 
-These flags appear in `gz validate --help` but operate on JSON Schema / manifest
-IO rather than rule prose, so they are excluded from the parity diff:
+## 1. Canonical rule corpus (the prose side)
 
-- `--manifest` — validates `.gzkit/manifest.json` against schema
-- `--documents` — validates governance docs (PRD/ADR/OBPI shape)
-- `--surfaces` — validates control surfaces (skills, mirrors)
-- `--ledger` — validates ledger integrity against `schemas/ledger.json`
-- `--instructions` — validates AGENTS.md / CLAUDE.md instructions structure
-- `--briefs` — validates OBPI briefs against the OBPI schema
-- `--personas` — validates `.gzkit/personas/*.md`
-- `--interviews` — verifies ADRs with OBPIs have interview transcripts
-- `--decomposition` — validates ADR decomposition scorecards + 1:1 checklist sync
-- `--requirements` — flags OBPI briefs whose REQUIREMENTS sections lack REQ-IDs
-- `--frontmatter` / `--adr` / `--explain` — frontmatter-vs-ledger drift validator
-- `--version` — version-consistency check across pyproject/`__init__.py`/README
-- `--allowlist-only` — list current unscoped-rule allowlist entries; not an enforcement flag
-- `--lane` / `--kind` — modifiers for `--attestation-receipts`, not standalone scopes
+`.gzkit/rules/` holds **26 `.md` files + 1 `.json` data file**. Of the 26 `.md`:
+
+| Class | Count | Files |
+|---|---|---|
+| Authored canonical rules | 25 | `adr-audit`, `agent-failure-modes`, `agents-md-map-doctrine`, `brief-heading-conventions`, `changelog-release-notes`, `chores`, `cli`, `complexity-doctrine`, `complexity-thresholds`, `cross-platform`, `gate5-runbook-code-covenant`, `gh-cli`, `governance-core`, `guardrail-feedback-prose`, `hexagonal-architecture`, `model-selection`, `models`, `mx-mode`, `pythonic`, `security-sensitivity`, `skill-surface-sync`, `task-discovery`, `tests`, `token-block-discipline`, `tool-skill-runbook-alignment` |
+| **Generated aggregate — NOT an independent rule** | 1 | `.gzkit/rules/AGENTS.md` — header line 1 reads `<!-- Generated by gzkit — do not edit manually -->`; body is `agent-failure-modes.md` + `skill-surface-sync.md` concatenated. Excluded from parity scoring (its claims are scored on the source rules). It is also the one file `canonical_rule_files()` exempts (`src/gzkit/validators/rule_version_markers.py:39`) and the one `unscoped_rules.py:169` skips. |
+| Data file (not prose) | 1 | `complexity-thresholds.json` |
+
+Root **`AGENTS.md`** is audited as a 26th prose surface — its
+§ *Governance doctrine surfaces → Mechanical scopes that bind here*,
+§ *Attestation*, § *Kinds*, and § *Gate Covenant* are dense enforcement claims.
+
+> **Delta vs. the 2026-05-10 run.** That artifact enumerated *35 promoted rules*.
+> There are 25 authored rules today. The prior number was not a rule count at all —
+> it was a count of `gz validate` scope flags treated as rules. This run separates
+> the two axes explicitly: rules are the prose side, scopes are the check side, and
+> the parity diff is keyed on **claims**, not on either count.
+
+---
+
+## 2. Check surface (the mechanical side)
+
+`gz validate --help` advertises **96 option strings**. Six are modifiers, not scopes
+(`--adr`, `--explain`, `--lane`, `--kind`, `--regenerate`, `--allowlist-only`) and five
+are I/O switches (`--json`, `--quiet`, `--verbose`, `--debug`, `-h`). `VALIDATOR_REGISTRY`
+carries **81 scope entries**; six further flags (`--qc-binding`, `--fidelity-presence`,
+`--waiver-ratchet`, `--audits`, `--attestation-receipts`, `--surface-fidelity`) dispatch
+outside the registry via solo handlers.
+
+### 2.1 Tier split
+
+| Tier | Count | Meaning |
+|---|---|---|
+| `default` | 12 | Runs on a bare `uv run gz validate` with no flags |
+| `explicit` | 69 | Runs only when its flag is passed |
+
+Default tier: `manifest`, `surfaces`, `ledger`, `instructions`, `briefs`, `documents`,
+`personas`, `frontmatter`, `version`, `taxonomy`, `invariant_coherence`,
+`rule_version_markers`.
+
+### 2.2 `gz check` membership — the load-bearing fact
+
+**No step in `_build_check_steps()` invokes `gz validate` with no flags.** The 47 steps
+each call a dedicated runner. A scope reaches `gz check` only if it has its own step.
+
+**29 of 81 registry scopes are reachable from `gz check`:**
+
+`unscoped_rules`, `adr_status_fresh`, `obpi_lifecycle_coherence`, `adversarial_validation`,
+`red_parity`, `rendition_freshness`, `rendition_floor_coherence`, `invariant_coherence`,
+`brief_structure`, `session_green_gate`, `closeout_proof`, `kind_invariance`,
+`persona_witness`, `interviews`, `receipt_shape`, `orientation_freshness`, `insights_shape`,
+`instructions_files_budget`, `agents_md_map_conformance`, `complexity_doctrine_links`,
+`complexity_thresholds`, `req_kind_discipline`, `tautological_test_audit`,
+`task_envelope_coherence`, `lock_handoff_coupling`, `surface_fidelity`, `line_endings`,
+`authorship`, `taxonomy`.
+
+**52 of 81 are NOT** — including nine of the twelve default-tier scopes, which an
+operator would reasonably assume run everywhere:
+
+| Not in `gz check` | Tier | Mitigating surface, if any |
+|---|---|---|
+| `manifest`, `surfaces`, `ledger`, `instructions`, `briefs`, `documents`, `personas`, `frontmatter`, `version` | **default** | none — bare `gz validate` only |
+| `rule_version_markers` | **default** | none |
+| `cli_alignment` | explicit | `gz check` runs `gz cli audit`, a *different* check (see § 2.3) |
+| `skill_alignment` | explicit | `gz check` runs `gz skill audit`, a *different* check |
+| `bullet_retention`, `surface_weight`, `pointer_anchors` | explicit | **`.pre-commit-config.yaml:65`** — `surface-fidelity-cheap` hook |
+| `commit_trailers` | explicit | `.gzkit/hooks/prepare-commit-msg-task-trailers` *stamps* trailers (producer), never validates |
+| `type_ignores`, `class_size`, `pydantic_models`, `test_tiers`, `utf8_prefix`, `chores_layout`, `sensitivity`, `behave_req_tags`, `advisory_scorecard`, `brief_headings`, `brief_cross_references`, `brief_demo_section`, `changelog`, `distribution`, `brief_reconcile`, `advisor_proof_binding`, `deprecated_verb_prescription`, `doc_surface_parity`, `absorption_duplicates`, `orphaned_implementation`, `evaluation_justify_binding`, `intrinsic_attestation`, `pool_adr_isolation`, `version_release`, `reconcile_freshness`, `event_handlers`, `event_schemas`, `validator_fields`, `decomposition`, `requirements`, `router_tables`, `vendor_manifest`, `setpoint_coherence`, `ontology_purity`, `brief_command_shape`, `okf_conformance` | explicit | none |
+
+### 2.3 Two named "mechanical checks" that are NOT `gz validate` scopes
+
+| Rule claim | Actual command | In `gz check`? |
+|---|---|---|
+| `.gzkit/rules/cli.md:33` — "**Mechanical check:** `uv run gz cli audit`" | `cli_audit_cmd`, `src/gzkit/commands/cli_audit.py:172` | **yes** (`quality.py:447`) |
+| `.gzkit/rules/tests.md:18` — "`uv run gz smoke` … exit 3 on breach or on an empty tier" | `smoke_gate`, `src/gzkit/commands/smoke_cmd.py:21` | **yes** (`quality.py:481`) |
+
+### 2.4 Exit disposition is type-driven, not scope-driven
+
+`_print_validation_result` (`validate_cmd.py:1151-1173`):
+
+```python
+policy_errors = [e for e in errors if e.type in _POLICY_BREACH_ERROR_TYPES]
+other_errors  = [e for e in errors if e.type not in _POLICY_BREACH_ERROR_TYPES]
+if other_errors: raise SystemExit(1)
+if policy_errors: raise SystemExit(3)
+```
+
+Consequences an audit must account for:
+
+1. A scope's prose can claim "exit 3" while its error `type` string is absent from
+   `_POLICY_BREACH_ERROR_TYPES` — the run exits **1**.
+2. `other_errors` is checked **first**, so a single non-breach finding in a mixed
+   multi-scope run downgrades genuine policy breaches from 3 to 1.
+
+### 2.5 The MX hangar drops most scopes wholesale
+
+`_run_scope_checks` (`validate_cmd.py:974-993`) appends a scope's findings only if
+`disposition.grounds(checkpoint.resolve(scope, levels.ERROR, project_root))`.
+`checkpoint.resolve` (`src/gzkit/mx/checkpoint.py:29-33`) returns `Route.ADVISORY` for
+any guard outside `GATE5_INVARIANTS = {"gate5-attestation", "secrets", "operator-pii",
+"ledger", "grader-gaming"}` (`src/gzkit/mx/invariants.py:23-31`) whenever `.gzkit/mx.json`
+exists. Of 81 registry stems, exactly **one** (`ledger`) is a floor member.
+
+This is doctrine, not a defect (`.gzkit/rules/mx-mode.md` § Honor the marker;
+`security-sensitivity.md` § 3 states it explicitly for its own scope). It is inventoried
+here because it is the widest single modifier of "does this check bind" and only one
+rule file names it.
+
+---
+
+## 3. Scope → claiming rule index
+
+Every `gz validate --<flag>` string that appears in canonical rule prose, with its
+registry tier and `gz check` membership. Extracted via
+`rg -o 'gz validate --[a-z0-9-]+' .gzkit/rules/ AGENTS.md`.
+
+| # | Scope flag | Claimed by (file:line) | Tier | In `gz check`? | Exit on finding |
+|---|---|---|---|---|---|
+| 1 | `--adr-status-fresh` | `governance-core.md:95` | explicit | **yes** | 1 |
+| 2 | `--advisor-proof-binding` | `AGENTS.md:354` | explicit | no | **1** (docstring says "fail-closed") |
+| 3 | `--advisory-scorecard` | `AGENTS.md:348` | explicit | no | 1 |
+| 4 | `--agents-md-map-conformance` | `agents-md-map-doctrine.md:14,34,38` | explicit | **yes** | 3 (advisory arm forces 1) |
+| 5 | `--behave-req-tags` | `tests.md:118` | explicit | no | 1 |
+| 6 | `--brief-headings` | `brief-heading-conventions.md:5,45,55` | explicit | no | **1** (prose says 3) |
+| 7 | `--brief-reconcile` | `AGENTS.md:360` | explicit | no | 3 |
+| 8 | `--changelog` | `changelog-release-notes.md:13,48,53` | explicit | no *(documented as deliberate)* | **1** (prose says "fails closed") |
+| 9 | `--chores-layout` | `chores.md:55,101` | explicit | no | 3 |
+| 10 | `--class-size` | `pythonic.md:49` | explicit | no | 1 |
+| 11 | `--cli-alignment` | `governance-core.md:79,81` | explicit | **no** | **1** (prose says 3) |
+| 12 | `--commit-trailers` | `task-discovery.md:26,34,84`; `tests.md:87`; `security-sensitivity.md:23`; `agent-failure-modes.md:27`; `AGENTS.md:126` | explicit | no | **1** |
+| 13 | `--complexity-doctrine-links` | `complexity-doctrine.md:120`; `AGENTS.md:355` | explicit | **yes** | 3 |
+| 14 | `--complexity-thresholds` | `complexity-thresholds.md:97` | explicit | **yes** | 3 |
+| 15 | `--deprecated-verb-prescription` | `governance-core.md:25`; `chores.md:17` | explicit | no | 3 |
+| 16 | `--distribution` | `AGENTS.md:358`; `governance-core.md:69`; `skill-surface-sync.md:152,190` | explicit | no | 3 (2 on IO error) |
+| 17 | `--documents` | `governance-core.md:68`; `gate5-runbook-code-covenant.md:47`; `tests.md:132`; `AGENTS.md:186` | **default** | **no** | 1 |
+| 18 | `--instructions-files-budget` | `agents-md-map-doctrine.md:30`; `AGENTS.md:352` | explicit | **yes** | 3 |
+| 19 | `--invariant-coherence` | `AGENTS.md:359` | **default** | **yes** | 3 |
+| 20 | `--lock-handoff-coupling` | `token-block-discipline.md:16,41,51,107,133` | explicit | **yes** | 3 |
+| 21 | `--pointer-anchors` | `complexity-thresholds.md:16` | explicit | no *(pre-commit hook)* | 3 |
+| 22 | `--req-kind-discipline` | `adr-audit.md:62`; `AGENTS.md:362` | explicit | **yes** | 3 |
+| 23 | `--sensitivity` | `security-sensitivity.md:23,25` | explicit | no | 3 (solo handler; MX-immune) |
+| 24 | `--surfaces` | `gate5-runbook-code-covenant.md:47` | **default** | **no** | 1 |
+| 25 | `--task-envelope-coherence` | `task-discovery.md:33,98` | explicit | **yes** | 3 |
+| 26 | `--taxonomy` | `AGENTS.md:212` | **default** | **yes** | 1 (`taxonomy`) / 3 (`foundation_*`) |
+| 27 | `--test-tiers` | `tests.md:44` | explicit | no | 1 |
+| 28 | `--unscoped-rules` | `AGENTS.md:357` | explicit | **yes** | **3** (solo handler; MX-immune) |
+| 29 | `--utf8-prefix` | `cross-platform.md:35` | explicit | no | 1 |
+
+**Never named by any canonical rule (52 scopes)** — these have checks and no rule-file
+prose home. Notable among them because operators would look for a rule: `--type-ignores`
+(the rule cites the *test* `tests/governance/test_type_ignore_syntax.py` instead),
+`--pydantic-models` (`models.md` § Verify describes the invariant but never names the
+flag), `--skill-alignment` (`tool-skill-runbook-alignment.md` Invariant 1 is exactly this
+check and does not name it), `--rule-version-markers` (`skill-surface-sync.md`
+non-negotiable rule #2 is exactly this check and does not name it),
+`--red-parity`, `--closeout-proof`, `--waiver-ratchet`, `--qc-binding`,
+`--session-green-gate`, `--tautological-test-audit`, `--kind-invariance`,
+`--persona-witness`, `--receipt-shape`, `--ontology-purity`, `--okf-conformance`,
+`--router-tables`, `--brief-command-shape`, `--brief-structure`, `--vendor-manifest`,
+`--setpoint-coherence`, `--rendition-freshness`, `--rendition-floor-coherence`,
+`--bullet-retention`, `--surface-weight`, `--doc-surface-parity`,
+`--absorption-duplicates`, `--orphaned-implementation`, `--adversarial-validation`,
+`--obpi-lifecycle-coherence`, `--brief-cross-references`, `--brief-demo-section`,
+`--evaluation-justify-binding`, `--intrinsic-attestation`, `--authorship`,
+`--line-endings`, `--pool-adr-isolation`, `--version-release`, `--reconcile-freshness`,
+`--event-handlers`, `--event-schemas`, `--validator-fields`, `--decomposition`,
+`--requirements`, `--interviews`, `--orientation-freshness`, `--insights-shape`,
+`--manifest`, `--ledger`, `--instructions`, `--briefs`, `--personas`, `--frontmatter`,
+`--version`.
+
+---
+
+## 4. Non-`gz validate` enforcement claimed by rule prose
+
+| Claimed enforcer | Claimed by | Exists? |
+|---|---|---|
+| `uv run gz cli audit` | `cli.md:33,43` | yes — `commands/cli_audit.py:172`; in `gz check` |
+| `uv run gz smoke` | `tests.md:18` | yes — `commands/smoke_cmd.py:21`; in `gz check` |
+| `gz test-shape` (`# output-contract:` markers) | `tests.md` § Output-form carve-out | yes — advisory-only, as the rule states |
+| `uv run gz arb red` → `arb-red-*` receipt | `tests.md` § RED evidence | yes — `--red-parity` scope is the gate |
+| `CANONICAL_STEP_COMMANDS` + `gz arb validate` | `AGENTS.md` § Attestation; `adr-audit.md:32`; `gate5-runbook-code-covenant.md` | yes — `src/gzkit/arb/validator.py:53`, `:203`. **Covers 4 of the table's 5 rows** (see parity-diff row P13) |
+| `_requires_human_obpi_attestation` | `AGENTS.md` § OBPI Acceptance Protocol | yes — `commands/adr_audit.py:462`, `return True` unconditional. **Accurate.** |
+| `forbid-pytest` pre-commit hook | `AGENTS.md` § STDLIB-FIRST | yes — `.pre-commit-config.yaml:40` |
+| `uvx xenon --max-absolute C` | `pythonic.md:52` | yes — `.pre-commit-config.yaml:47` |
+| `tests/governance/test_type_ignore_syntax.py` | `pythonic.md:97` | yes (and `--type-ignores` duplicates it) |
+| `tests/governance/test_path_separator_portability.py` | `cross-platform.md:31` | yes |
+| `tests/governance/test_subprocess_errors_replace.py` via `audit_subprocess_errors` | `cross-platform.md:39` | yes |
+| `tests/hooks/test_stop_turn_feedback.py` | `guardrail-feedback-prose.md:42` | yes |
+| `tests/commands/test_skills.py::TestSkillCommands::test_init_scaffolds_adr_create_and_removes_adr_manager` | `skill-surface-sync.md:110` | yes |
+| `SKA-METADATA-SKILL-VERSION-MISSING` (blocking) | `skill-surface-sync.md:22` | yes — `skills_audit.py` |
+| `RuleFrontmatter` `extra="forbid"` rejects `skill-version:` | `skill-surface-sync.md:22` | yes — `src/gzkit/rules/__init__.py` |
+| `.claude/hooks/mx-awareness.py` per-turn | `mx-mode.md:29,56` | yes — file present |
+| SessionStart warn@12h / reap@24h | `token-block-discipline.md:79-80` | **not audited this pass** — hook-level, out of the two audited surfaces |
+| `src/gzkit/schemas/authoring_guide_protocol.json` "schema-validated at runtime" | `AGENTS.md` § Governance doctrine surfaces | **NO CONSUMER** — see parity-diff row P2 |
+| `gz validate --foundation-registers-invariant` | `.gzkit/invariants/foundation-adr-registers-invariant.json` | **DOES NOT EXIST** — see parity-diff row P1 |

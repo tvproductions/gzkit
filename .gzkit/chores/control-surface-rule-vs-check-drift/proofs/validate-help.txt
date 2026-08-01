@@ -4,19 +4,38 @@ usage: gz validate [-h] [--manifest] [--documents] [--surfaces] [--ledger]
                    [--frontmatter] [--adr FRONTMATTER_ADR]
                    [--explain FRONTMATTER_EXPLAIN] [--version]
                    [--type-ignores] [--cli-alignment] [--event-handlers]
-                   [--validator-fields] [--audits] [--utf8-prefix]
+                   [--event-schemas] [--validator-fields] [--audits]
+                   [--authorship] [--utf8-prefix] [--line-endings]
                    [--test-tiers] [--pydantic-models] [--class-size]
                    [--version-release] [--pool-adr-isolation]
                    [--behave-req-tags] [--skill-alignment]
                    [--advisory-scorecard] [--complexity-doctrine-links]
                    [--complexity-thresholds] [--reconcile-freshness]
                    [--insights-shape] [--instructions-files-budget]
-                   [--adr-status-fresh] [--orientation-freshness] [--taxonomy]
-                   [--brief-headings] [--chores-layout] [--unscoped-rules]
-                   [--sensitivity] [--allowlist-only] [--doc-surface-parity]
-                   [--absorption-duplicates]
+                   [--agents-md-map-conformance] [--adr-status-fresh]
+                   [--obpi-lifecycle-coherence] [--adversarial-validation]
+                   [--red-parity] [--session-green-gate]
+                   [--orientation-freshness] [--taxonomy] [--brief-headings]
+                   [--brief-cross-references] [--brief-demo-section]
+                   [--chores-layout] [--unscoped-rules]
+                   [--rule-version-markers] [--sensitivity] [--allowlist-only]
+                   [--doc-surface-parity] [--absorption-duplicates]
+                   [--orphaned-implementation]
                    [--evaluation-justify-binding [ARTIFACT_ID]]
                    [--intrinsic-attestation] [--advisor-proof-binding]
+                   [--lock-handoff-coupling] [--qc-binding]
+                   [--fidelity-presence] [--waiver-ratchet] [--closeout-proof]
+                   [--deprecated-verb-prescription] [--okf-conformance]
+                   [--invariant-coherence] [--router-tables]
+                   [--brief-reconcile] [--brief-structure] [--distribution]
+                   [--changelog] [--bullet-retention] [--surface-weight]
+                   [--pointer-anchors] [--surface-fidelity]
+                   [--vendor-manifest] [--setpoint-coherence]
+                   [--rendition-freshness] [--rendition-floor-coherence]
+                   [--kind-invariance] [--persona-witness] [--receipt-shape]
+                   [--req-kind-discipline] [--ontology-purity]
+                   [--brief-command-shape] [--tautological-test-audit]
+                   [--task-envelope-coherence] [--regenerate]
                    [--attestation-receipts <text|@file>] [--lane {heavy,lite}]
                    [--kind {foundation,feature}] [--json] [--quiet |
                    --verbose] [--debug]
@@ -30,8 +49,8 @@ options:
   --surfaces            Validate control surfaces
   --ledger              Validate ledger integrity
   --instructions        Validate agent instructions
-  --briefs              Validate all OBPI briefs against the canonical OBPI
-                        schema
+  --briefs              Validate OBPI briefs with lifecycle-aware
+                        authored/completed gates
   --personas            Validate persona files in .gzkit/personas/
   --interviews          Verify ADRs with OBPIs have interview transcript
                         artifacts
@@ -55,11 +74,17 @@ options:
                         resolve
   --event-handlers      Every ledger event type must be claimed by a graph
                         handler
+  --event-schemas       Every emitted ledger event type must have a
+                        schemas/ledger.json entry
   --validator-fields    Every validator info.get(field) must have a graph
                         writer
   --audits              Run all four trust-doctrine pattern audits
+  --authorship          Fail closed when git user.email violates the declared
+                        authorship policy
   --utf8-prefix         Forbid `PYTHONUTF8=1 uv run gz` anti-pattern in
                         docs/skills
+  --line-endings        Fail closed on CRLF text surfaces or a missing
+                        .gitattributes LF rule
   --test-tiers          Forbid third test tier under tests/
                         (integration/e2e/slow/bdd)
   --pydantic-models     Governance classes use Pydantic BaseModel +
@@ -85,20 +110,41 @@ options:
   --insights-shape      Validate `.gzkit/insights/agent-insights.jsonl`
                         records (GHI #358)
   --instructions-files-budget
-                        AGENTS.md/CLAUDE.md/.claude/rules char budget (GHI
-                        #373)
+                        AGENTS.md/CLAUDE.md/rules char budget + delivery
+                        witness (GHI #373/#712)
+  --agents-md-map-conformance
+                        AGENTS.md template + rendered shape conformance
+                        (ADR-0.0.54 / OBPI-0.0.54-03)
   --adr-status-fresh    adr-status.md must agree with on-disk ADR canon (GHI
                         #322)
+  --obpi-lifecycle-coherence
+                        every obpi_created must be terminal, parked, or
+                        parented (GHI #584)
+  --adversarial-validation
+                        Step-4b adversary verdict must be in the ledger and
+                        the brief (GHI #676)
+  --red-parity          BEHAVIOR REQs must carry a base-tree RED
+                        falsifiability witness (GHI #642)
+  --session-green-gate  pre-push gz check hook must be declared in
+                        .pre-commit-config.yaml (ADR-0.0.68)
   --orientation-freshness
                         SessionStart orientation hook + script must remain
                         wired (GHI #341)
   --taxonomy            Enforce ADR kind/semver/id-prefix consistency
                         (ADR-0.0.17)
   --brief-headings      Brief evidence sections must be H3, not H2 (GHI #238)
+  --brief-cross-references
+                        Brief OBPI/ADR identifier references must resolve
+                        on-disk (GHI #436)
+  --brief-demo-section  Heavy-lane CLI-shipping briefs must carry a ## Demo H2
+                        section (GHI #431)
   --chores-layout       Forbid CHORE.md/acceptance.json outside canonical
                         chores roots (ADR-0.0.21)
   --unscoped-rules      Fail on .gzkit/rules/*.md with paths: '**' or missing
                         paths: (ADR-0.0.20)
+  --rule-version-markers
+                        Fail on .gzkit/rules/*.md missing or drifting the
+                        rule-version marker
   --sensitivity         Audit ADR-0.0.22 sensitivity binding (auto-detect
                         floor)
   --allowlist-only      With --unscoped-rules: list current allowlist entries
@@ -108,6 +154,9 @@ options:
   --absorption-duplicates
                         Same opsdev source path across parent ADRs needs
                         paired_with: (GHI #376)
+  --orphaned-implementation
+                        Lock force-released after allowed-path edits without
+                        completion (GHI #438)
   --evaluation-justify-binding [ARTIFACT_ID]
                         Require gz-justify artifact for low eval scores
                         (ADR-0.0.26).
@@ -117,6 +166,75 @@ options:
   --advisor-proof-binding
                         Audit advisor verdict <-> proof binding
                         (OBPI-0.0.29-08).
+  --lock-handoff-coupling
+                        Validate obpi_lock_released events carry a valid
+                        handoff_path (ADR-0.0.41).
+  --qc-binding          Behavioral QC-step binding audit (ADR-0.0.73). Exit 0:
+                        clean; 3: theater found.
+  --fidelity-presence   ADR Fidelity Assertions presence gate (ADR-0.0.73).
+                        Exit 0: ok; 3: missing.
+  --waiver-ratchet      Waiver-ratchet honesty gate (ADR-0.0.73). Exit 0:
+                        ratcheted; 3: unratcheted.
+  --closeout-proof      Derived closeout-proof view (ADR-0.0.69). Exit 0: all
+                        proven; 3: unproven.
+  --deprecated-verb-prescription
+                        Governed surfaces must not prescribe a deprecated
+                        verb. Exit 3 on any (#705).
+  --okf-conformance     OKF generated-bundle conformance (ADR-0.30.0). Exit 0:
+                        clean; 3: malformed file.
+  --invariant-coherence
+                        Validate that AGENTS.md matches the rendered
+                        constitutional invariant registry.
+  --router-tables       Router slugs resolve; concrete skills are
+                        router-reachable (ADR-0.27.0).
+  --brief-reconcile     Validate OBPI brief corpus drift across five
+                        dimensions (OBPI-0.0.37-05).
+  --brief-structure     Every live OBPI brief satisfies the BriefStructure
+                        schema, exit 3 (GHI #615).
+  --distribution        T0 static distribution audit — three drift classes,
+                        exit 3 (ADR-0.0.32-07).
+  --changelog           Hermetic CHANGELOG.md structural audit — shape +
+                        citations (GHI #685).
+  --bullet-retention    Bullet-retention audit: scorecard
+                        Mechanical/Promotable bullets in surface.
+  --surface-weight      Surface-weight audit: direction-binding floor +
+                        warning bands (ADR-0.0.33-02).
+  --pointer-anchors     Pointer-integrity audit: > See [...] anchors
+                        (ADR-0.0.33-03).
+  --surface-fidelity    Composite: run all four surface-fidelity invariants
+                        (ADR-0.0.33-05).
+  --vendor-manifest     Validate vendor manifest schema and content-type route
+                        drift (ADR-0.0.34).
+  --setpoint-coherence  Every content_type_routes pair has a legal declared
+                        setpoint (OBPI-0.0.37-20).
+  --rendition-freshness
+                        Fail-closed when corpus drifted from committed
+                        rendition (OBPI-0.0.37-22).
+  --rendition-floor-coherence
+                        Rendition omits a corpus invariant-tier entry;
+                        fail-closed (GHI #623).
+  --kind-invariance     Validate foundation ADRs have Why-foundation-tier
+                        section
+  --persona-witness     Validate every ADR carries an authored Persona section
+                        (GHI #741)
+  --receipt-shape       Refuse deprecated receipt shapes post-ADR-0.0.36
+                        cutoff (exit 3)
+  --req-kind-discipline
+                        Fail closed (exit 3) on OBPI briefs with missing
+                        [kind] tags (ADR-0.0.59-02).
+  --ontology-purity     Fail closed (exit 3) on a product object in
+                        ownership:harness (ADR-0.32.0-01).
+  --brief-command-shape
+                        Fail closed (exit 3) on non-shell-less Verification
+                        commands (OBPI-0.0.63-07).
+  --tautological-test-audit
+                        Fail closed (exit 3) when tautological-test count
+                        drifts (OBPI-0.0.59-04).
+  --task-envelope-coherence
+                        Fail-close (exit 3) on TASK attribution drift
+                        (ADR-0.0.64/OBPI-04).
+  --regenerate          Rewrite baseline manifest from on-disk truth. Use with
+                        --distribution.
   --attestation-receipts <text|@file>
                         Validate ARB receipt citations in an attestation
                         string (ADR-0.0.24)

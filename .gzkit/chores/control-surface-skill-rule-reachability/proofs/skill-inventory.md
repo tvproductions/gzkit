@@ -1,120 +1,150 @@
 # Skill Inventory — Control Surface Skill ↔ Rule Reachability Audit (Pass B)
 
-**Generated:** 2026-05-10
-**Scope:** every `SKILL.md` under `.gzkit/skills/**`
-**Source-of-truth:** YAML frontmatter (name, `skill-version`, `gz_command`) + body grep for `.gzkit/rules/**` citations
-**Vendor mirrors not audited:** `.claude/skills/`, `.agents/skills/`, `.github/skills/`
+**Generated:** 2026-08-01 (re-run; supersedes the 2026-05-10 pass)
+**Scope:** every `SKILL.md` under `.gzkit/skills/**` — the canonical surface.
+**Vendor mirrors NOT audited:** `.claude/skills/`, `.agents/skills/`, `.github/skills/` are derivatives.
+**Catalogs:** `uv run gz skill list` (68 active, retired hidden); `ls .gzkit/rules/` (26 entries → 25 rules + 1 generated subtree map).
+**Method:** YAML frontmatter (`name`, `metadata.skill-version`, `last_reviewed`, `model`, `gz_command`) + body regex for `.gzkit/rules/**` and `.claude/rules/**` citations.
 
-Counts: **67 skills total** — 50 active, 17 archived (description prefixed `ARCHIVED:` / `RENAMED:`). Archived skills are listed once at the bottom with their consolidation target; they are excluded from the reachability matrix (no live procedure to violate).
+## Headline
+
+- **68 active skills** (was 50 at the 2026-05-10 pass; +18).
+- **18 skills cite at least one rule file**; **50 of 68 (73.5%) cite none.**
+- **4 of those 18 cite the vendor mirror path `.claude/rules/…` rather than canonical `.gzkit/rules/…`** — `skill-surface-sync.md` § Non-negotiable rules #1/#4 names `.gzkit/rules/` canonical and `.claude/rules/` a generated output.
+- Retired/consolidated skills no longer ship a tombstone (`skill-surface-sync.md` § Retirement policy — delete-on-retire), so the prior run's 17-row "archived skills" table has no successor: those directories are gone from disk.
 
 ## Active skills
 
-| Skill slug | skill-version | gz_command (frontmatter) | Allowed paths (inferred) | Body-cited rules |
-|---|---|---|---|---|
-| airlineops-parity-scan | 1.1.1 | (none) | `../airlineops/**` (canon read), `.gzkit/**` (gzkit overlay), `docs/governance/parity/**` | (none) |
-| complexity-advisor | 0.1.0 | `complexity advise` | `src/gzkit/complexity/**`, `.gzkit/rules/complexity-thresholds.md` (preview only) | (none cited) |
-| complexity-guide | 0.1.0 | `complexity guide` | `src/gzkit/complexity/**` (read), authoring diff (read) | (none cited) |
-| ghi-author | 1.2.0 | (none) | `.github/**` (issue body via gh CLI), `data/security_surfaces.json` (read) | `.claude/rules/gh-cli.md`, `.gzkit/rules/security-sensitivity.md` |
-| ghi-close | 2.4.0 | (none) | repo-wide (fix scope varies); `tests/**`, `.gzkit/insights/**`, `.github/**` | `.gzkit/rules/tests.md` (Red-Green-Refactor + Tests assert semantics), `.claude/rules/tool-skill-runbook-alignment.md`, `.claude/rules/gh-cli.md` |
-| ghi-triage | 5.1.0 | (none) | read-only across GHIs; render under operator stdout | `.claude/rules/gh-cli.md` |
-| git-sync | 1.2.3 | (none — wraps `gz git-sync`) | repo-wide commit/push; pre-commit invokes lint/test | (none cited) |
-| gz-adr-audit | 6.7.1 | `audit` | `docs/design/adr/**`, `tests/**` (during evidence remediation), `.gzkit/ledger.jsonl` (read) | `.gzkit/rules/tests.md` (Red-Green-Refactor + REQ semantics) |
-| gz-adr-closeout-ceremony | 7.9.0 | (none — orchestrates `gz adr emit-receipt`, `gz attest`) | `docs/design/adr/**`, `.gzkit/ledger.jsonl` (via CLI), commit messages | (none cited in body) |
-| gz-adr-create | 6.2.0 | (none — wraps `gz plan create` + `gz obpi specify`) | `docs/design/adr/**`, `.gzkit/ledger.jsonl` | (none cited) |
-| gz-adr-emit-receipt | 1.0.1 | (none) | `.gzkit/ledger.jsonl` (via CLI) | (none cited) |
-| gz-adr-evaluate | 6.3.0 | (none) | `docs/design/adr/**` (read-only score) | (none cited) |
-| gz-adr-map | 1.2.0 | `state` | repo-wide (grep traceability) | (none cited) |
-| gz-adr-promote | 1.2.0 | (none — wraps `gz adr promote`) | `docs/design/adr/pool/**` → `docs/design/adr/{foundation,pre-release}/**` | (none cited) |
-| gz-adr-status | 1.12.0 | `adr status` | `docs/design/adr/**` (read), `.gzkit/ledger.jsonl` (read) | (none cited) |
-| gz-adr-sync | 7.0.0 | `register-adrs` | `docs/design/adr/**`, `docs/governance/GovZero/adr-status.md`, `.gzkit/ledger.jsonl` | (none cited) |
-| gz-agent-sync | 1.1.1 | (none — wraps `gz agent sync control-surfaces`) | `.gzkit/skills/**`, `.gzkit/rules/**`, `.claude/**`, `.agents/**`, `.github/**` | (none cited; rule referenced via anti-pattern table) |
-| gz-arb | 1.0.2 | `arb advise` | `.gzkit/arb/**`, `.gzkit/ledger.jsonl` (via CLI) | (none cited; arb.md cited in revival note as historical context) |
-| gz-check | 1.4.0 | (none — wraps `gz check`) | repo-wide (lint, typecheck, test, format) | (none cited) |
-| gz-check-config-paths | (none) | (none — wraps `gz check-config-paths`) | `.gzkit/manifest.json`, `pyproject.toml` (read) | (none cited) |
-| gz-chore-runner | 1.1.2 | (none — wraps `gz chores`) | `src/gzkit/chores/**`, `.gzkit/chores/**` | (none cited; chore registry doctrine implicit) |
-| gz-cli-audit | (none) | (none — wraps `gz cli audit`) | `src/gzkit/commands/**`, `src/gzkit/cli/**`, `docs/user/manpages/**` | (none cited) |
-| gz-competitor-radar | 1.0.0 | (none) | `data/competitors/**`, `docs/governance/competitor-radar/**` | (none cited) |
-| gz-complexity-distill | 0.2.0 | `complexity distill` | `data/exemplar_corpus.json`, `docs/governance/complexity/**`, `.gzkit/rules/complexity-doctrine.md` | `.gzkit/rules/complexity-doctrine.md`, `.gzkit/rules/skill-surface-sync.md`, `.gzkit/rules/tool-skill-runbook-alignment.md` |
-| gz-constitute | (none) | (none — wraps `gz constitution create`) | `docs/governance/constitution/**` | (none cited) |
-| gz-context-diet | 1.0.0 | `chores show instructions-files-diet` | `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`, `docs/governance/**` | (none cited) |
-| gz-deps-upgrade | 1.0.0 | (none) | `pyproject.toml`, `uv.lock` | (none cited) |
-| gz-design | 1.2.1 | (none — collaborative dialogue) | `docs/design/adr/pool/**`, `docs/design/adr/**` | (none cited) |
-| gz-gates | 1.0.0 | (none — wraps `gz gates`) | `.gzkit/ledger.jsonl` (read), `docs/design/adr/**` (read) | (none cited) |
-| gz-implement | (none) | (none — wraps `gz implement`) | `.gzkit/ledger.jsonl` (via CLI), `tests/**` (read) | (none cited) |
-| gz-init | 6.0.1 | `init` | `.gzkit/**`, `.claude/**`, `.github/**`, root-level scaffolds | (none cited) |
-| gz-issue-file | 1.0.0 | (none — wraps `gz issue file`) | `.github/**` (gh CLI), `src/gzkit/schemas/**` (referenced surface), `.gzkit/rules/**` (referenced) | `.gzkit/rules/gh-cli.md` § Cross-repo filing, `.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention |
-| gz-justify | 6.1.0 | `justify` | `.gzkit/justify/**`, GHI/OBPI evidence anchors | (none cited) |
-| gz-migrate-semver | (none) | (none — wraps `gz migrate-semver`) | `docs/design/adr/**`, `.gzkit/ledger.jsonl` | (none cited) |
-| gz-obpi-lock | 6.0.2 | (none — wraps `gz obpi lock`) | `.gzkit/locks/obpi/**`, `.gzkit/handoffs/**` | (none cited; token-block-discipline implicit) |
-| gz-obpi-pipeline | 6.14.3 | (none — wraps `gz obpi pipeline`) | `docs/design/adr/**/obpis/**`, `.gzkit/ledger.jsonl`, repo-wide via stages | (none cited inline; ARB invocation discipline implicit) |
-| gz-obpi-reconcile | 3.0.3 | (none — wraps `gz obpi reconcile`) | `docs/design/adr/**/obpis/**`, `.gzkit/ledger.jsonl` | (none cited) |
-| gz-obpi-simplify | 6.0.4 | (none) | brief's Allowed Paths (varies per OBPI) | (none cited) |
-| gz-obpi-specify | 1.5.0 | (none — wraps `gz obpi specify`) | `docs/design/adr/**/obpis/**` | (none cited; brief-heading-conventions implicit) |
-| gz-patch-release | 1.4.0 | (none) | `pyproject.toml`, `RELEASE_NOTES.md`, `src/gzkit/__init__.py`, `README.md`, `.github/**` | (none cited) |
-| gz-plan | 1.1.1 | (none — wraps `gz plan create`) | `docs/design/adr/**` | (none cited; defect-fix-routing implicit) |
-| gz-plan-audit | 6.2.0 | (none — wraps `gz plan audit`) | `.gzkit/plan-audit/**`, `.gzkit/ledger.jsonl` | (none cited) |
-| gz-prd | (none) | (none — wraps `gz prd create`) | `docs/governance/prd/**` | (none cited) |
-| gz-pythonic-pattern-apply | 1.0.0 | `chores run pythonic-design-pattern-application` | `.gzkit/chores/pythonic-design-pattern-application/proofs/**`, target `src/**/*.py`, `tests/**/*.py` | `.gzkit/rules/tests.md` § Tests assert semantics + Red-Green-Refactor (invariant 6f) |
-| gz-pythonic-pattern-detect | 1.0.0 | `chores run pythonic-design-pattern-detection` | `.gzkit/chores/pythonic-design-pattern-detection/proofs/**`, target `src/**/*.py` | `.gzkit/rules/tests.md` § Tests assert semantics |
-| gz-session-handoff | 6.3.0 | (none — wraps `gz session-handoff`) | `.gzkit/handoffs/**` | (none cited; token-block-discipline implicit) |
-| gz-skill-router | 6.0.3 | (none) | `.gzkit/skills/**` (read), `.gzkit/manifest.json` (read) | (none cited) |
-| gz-state | (none) | (none — wraps `gz state`) | `.gzkit/ledger.jsonl` (read), `docs/design/adr/**` (read) | (none cited) |
-| gz-status | (none) | (none — wraps `gz status`) | `.gzkit/ledger.jsonl` (read), `docs/design/adr/**` (read) | (none cited) |
-| gz-tech-debt-review | 1.2.1 | (none) | repo-wide (`src/**/*.py`, `tests/**/*.py`, `docs/**`) | `.claude/rules/pythonic.md` (referenced in worked example) |
-| gz-tidy | 1.1.1 | (none — wraps `gz tidy`) | repo-wide hygiene | (none cited) |
-| gz-validate | (none) | (none — wraps `gz validate --<scope>`) | governance artifacts across `.gzkit/**`, `docs/**`, `src/**` | (none cited inline) |
+| Skill | ver | last_reviewed | model | `gz_command` | Body-cited rules |
+|---|---|---|---|---|---|
+| `airlineops-parity-scan` | 1.1.1 | 2026-07-12 | haiku | `—` | **none** |
+| `ghi-author` | 1.3.1 | 2026-07-25 | sonnet | `—` | `gh-cli.md`, `security-sensitivity.md` |
+| `ghi-close` | 2.6.0 | 2026-07-26 | opus | `—` | `tests.md`, `arb.md` (mirror), `gh-cli.md` (mirror), `tool-skill-runbook-alignment.md` (mirror) |
+| `ghi-triage` | 5.2.0 | 2026-07-25 | sonnet | `—` | `gh-cli.md` (mirror) |
+| `git-sync` | 1.2.4 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-adr-audit` | 6.13.0 | 2026-07-26 | opus | `audit` | `tests.md` |
+| `gz-adr-closeout-ceremony` | 7.16.0 | 2026-07-26 | opus | `—` | **none** |
+| `gz-adr-create` | 6.6.3 | 2026-07-26 | opus | `—` | `governance-core.md` (mirror) |
+| `gz-adr-emit-receipt` | 1.0.2 | 2026-07-18 | haiku | `—` | **none** |
+| `gz-adr-evaluate` | 6.4.1 | 2026-07-21 | sonnet | `—` | **none** |
+| `gz-adr-map` | 1.2.1 | 2026-07-25 | haiku | `state` | **none** |
+| `gz-adr-promote` | 1.6.0 | 2026-06-07 | sonnet | `—` | **none** |
+| `gz-adr-status` | 1.12.1 | 2026-06-10 | haiku | `adr status` | **none** |
+| `gz-adr-sync` | 7.1.0 | 2026-06-07 | haiku | `register-adrs` | **none** |
+| `gz-advisor-qc` | 0.1.0 | 2026-06-15 | sonnet | `gz content advise-rendition` | **none** |
+| `gz-agent-sync` | 1.1.1 | 2026-07-12 | haiku | `—` | **none** |
+| `gz-airlock` | 1.1.0 | 2026-07-28 | haiku | `airlock` | **none** |
+| `gz-arb` | 1.1.0 | 2026-06-07 | haiku | `arb advise` | **none** |
+| `gz-check` | 1.5.0 | 2026-07-27 | haiku | `—` | `tests.md` |
+| `gz-check-config-paths` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-chore-runner` | 1.3.0 | 2026-07-21 | sonnet | `—` | **none** |
+| `gz-chores` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-cli-audit` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-competitor-radar` | 1.0.1 | 2026-07-25 | opus | `—` | **none** |
+| `gz-complexity-advisor` | 0.1.2 | 2026-07-25 | opus | `complexity advise` | **none** |
+| `gz-complexity-distill` | 0.2.1 | 2026-07-25 | opus | `complexity distill` | `complexity-doctrine.md`, `skill-surface-sync.md`, `tool-skill-runbook-alignment.md` |
+| `gz-complexity-guide` | 0.1.2 | 2026-07-25 | sonnet | `complexity guide` | **none** |
+| `gz-constitute` | 0.1.1 | 2026-07-25 | opus | `—` | **none** |
+| `gz-content-compose` | 1.0.0 | 2026-06-14 | sonnet | `gz content compose` | **none** |
+| `gz-content-remember` | 0.1.0 | 2026-06-05 | haiku | `gz content remember` | **none** |
+| `gz-context` | 0.5.0 | 2026-07-13 | haiku | `—` | **none** |
+| `gz-context-diet` | 1.1.1 | 2026-07-25 | sonnet | `chores show instructions-files-diet` | **none** |
+| `gz-deps-upgrade` | 1.1.0 | 2026-06-22 | haiku | `—` | **none** |
+| `gz-design` | 1.4.0 | 2026-07-28 | opus | `—` | **none** |
+| `gz-flighttest` | 0.1.0 | 2026-07-05 | sonnet | `—` | **none** |
+| `gz-foundation-triage` | 1.0.1 | 2026-06-27 | sonnet | `—` | **none** |
+| `gz-governance` | 0.7.0 | 2026-07-26 | haiku | `—` | **none** |
+| `gz-implement` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-init` | 6.0.1 | 2026-07-15 | sonnet | `init` | **none** |
+| `gz-insights-remember` | 0.1.0 | 2026-07-13 | haiku | `gz insights remember` | **none** |
+| `gz-issue-file` | 1.0.1 | 2026-07-25 | sonnet | `—` | `agent-failure-modes.md`, `gh-cli.md` |
+| `gz-justify` | 6.1.1 | 2026-07-21 | opus | `justify` | **none** |
+| `gz-manage` | 0.5.0 | 2026-07-12 | haiku | `—` | **none** |
+| `gz-migrate-semver` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-mx` | 1.0.1 | 2026-07-24 | haiku | `mx` | `mx-mode.md` |
+| `gz-obpi-brief-drift` | 0.5.0 | 2026-07-26 | haiku | `gz obpi brief-drift` | **none** |
+| `gz-obpi-lock` | 6.2.0 | 2026-07-26 | haiku | `—` | **none** |
+| `gz-obpi-pipeline` | 6.32.0 | 2026-07-26 | sonnet | `—` | **none** |
+| `gz-obpi-simplify` | 6.1.0 | 2026-07-26 | sonnet | `—` | **none** |
+| `gz-obpi-specify` | 1.8.0 | 2026-07-26 | opus | `—` | **none** |
+| `gz-obpi-sync` | 3.3.0 | 2026-07-26 | sonnet | `—` | `skill-surface-sync.md` |
+| `gz-ontology` | 0.1.0 | 2026-07-06 | haiku | `—` | **none** |
+| `gz-patch-release` | 1.9.0 | 2026-07-25 | sonnet | `—` | `changelog-release-notes.md` |
+| `gz-plan` | 1.3.3 | 2026-07-25 | opus | `—` | **none** |
+| `gz-plan-audit` | 6.4.0 | 2026-07-26 | sonnet | `—` | **none** |
+| `gz-prd` | 0.1.1 | 2026-07-25 | opus | `—` | **none** |
+| `gz-project` | 0.3.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-pythonic-pattern-apply` | 1.0.1 | 2026-07-25 | sonnet | `chores run pythonic-design-pattern-application` | `tests.md` |
+| `gz-pythonic-pattern-detect` | 1.0.1 | 2026-07-25 | sonnet | `chores run pythonic-design-pattern-detection` | `tests.md` |
+| `gz-quality` | 0.3.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-session-handoff` | 6.20.0 | 2026-07-29 | sonnet | `—` | **none** |
+| `gz-skill-router` | 6.3.0 | 2026-07-26 | haiku | `—` | **none** |
+| `gz-state` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-status` | 1.1.0 | 2026-06-07 | haiku | `—` | **none** |
+| `gz-tech-debt-review` | 1.3.0 | 2026-07-09 | sonnet | `—` | `pythonic.md` (mirror) |
+| `gz-tidy` | 1.1.1 | 2026-07-12 | haiku | `—` | **none** |
+| `gz-validate` | 0.1.1 | 2026-07-25 | haiku | `—` | **none** |
+| `gz-workflow` | 0.2.1 | 2026-07-25 | haiku | `—` | **none** |
 
-## Archived skills (consolidated; excluded from matrix)
+## Rule corpus reference (live, 2026-08-01)
 
-| Skill | Consolidated into |
-|---|---|
-| format | gz-check |
-| gz-adr-check | gz-adr-audit |
-| gz-adr-manager | gz-adr-create |
-| gz-adr-autolink | gz-adr-sync |
-| gz-adr-recon | gz-adr-sync |
-| gz-adr-verification | gz-adr-audit |
-| gz-attest | gz-adr-closeout-ceremony |
-| gz-audit | gz-adr-closeout-ceremony |
-| gz-closeout | gz-adr-closeout-ceremony |
-| gz-interview | gz-adr-create (Step 0) |
-| gz-obpi-audit | gz-obpi-reconcile |
-| gz-obpi-brief | gz-obpi-specify |
-| gz-obpi-sync | gz-obpi-reconcile |
-| gz-register-adrs | gz-adr-sync |
-| gz-specify | gz-obpi-specify (renamed) |
-| gz-typecheck | gz-check |
-| lint | gz-check |
-| test | gz-check |
+`ls .gzkit/rules/` returns 26 entries. One (`complexity-thresholds.json`) is data;
+one (`AGENTS.md`) is a **generated** subtree-instructions map, not a rule —
+`uv run gz validate --unscoped-rules` confirms the rule population: *"25 rule
+file(s) checked"*.
 
-## Rule corpus reference
+| Rule | body `rule-version` | `paths:` frontmatter |
+|---|---|---|
+| `adr-audit.md` | 0.2.0 | `docs/design/adr/**` |
+| `agent-failure-modes.md` | 0.4.0 | `AGENTS.md`, `.gzkit/rules/**`, `docs/governance/**` |
+| `agents-md-map-doctrine.md` | 0.3.0 | `AGENTS.md`, `CLAUDE.md`, `.claude/rules/*.md` |
+| `brief-heading-conventions.md` | 0.1.0 | `docs/design/adr/**/obpis/**` |
+| `changelog-release-notes.md` | 1.1.0 | `CHANGELOG.md`, `RELEASE_NOTES.md` |
+| `chores.md` | 0.3.0 | `src/gzkit/chores/**`, `.gzkit/chores/**` |
+| `cli.md` | 0.3.0 | `src/gzkit/commands/**` |
+| `complexity-doctrine.md` | 0.3.1 | `docs/governance/complexity/**`, `data/exemplar_corpus.json`, `src/gzkit/complexity/**`, self |
+| `complexity-thresholds.md` | 0.4.0 | self, `complexity-thresholds.json`, `src/gzkit/complexity/thresholds.py`, `src/gzkit/schemas/complexity_thresholds.json`, `docs/governance/complexity/**` |
+| `cross-platform.md` | 0.5.0 | `src/**/*.py`, `tests/**/*.py` |
+| `gate5-runbook-code-covenant.md` | 0.2.0 | `docs/**`, `src/gzkit/**` |
+| `gh-cli.md` | 0.3.0 | `.github/**`, `docs/design/adr/**`, `src/gzkit/commands/issue_cmd.py` |
+| `governance-core.md` | 0.7.0 | `**/*` |
+| `guardrail-feedback-prose.md` | 0.1.0 | `src/gzkit/hooks/**`, `src/gzkit/governance/**`, `.claude/hooks/**` |
+| `hexagonal-architecture.md` | 0.2.0 | `**/*.py` |
+| `model-selection.md` | 0.3.0 | `src/gzkit/pipeline_runtime.py`, `.gzkit/skills/**/SKILL.md`, `.claude/agents/**` |
+| `models.md` | 0.1.0 | `src/**/*.py` |
+| `mx-mode.md` | 1.0.1 | `src/gzkit/mx/**`, `.gzkit/skills/gz-mx/**`, `.claude/hooks/mx-awareness.py`, `src/gzkit/mx/awareness.py` |
+| `pythonic.md` | 0.2.0 | `**/*.py` |
+| `security-sensitivity.md` | 0.5.1 | `docs/design/adr/**/obpis/**`, `data/security_surfaces.json` |
+| `skill-surface-sync.md` | 0.10.0 | `.claude/**`, `.gzkit/skills/**`, `.gzkit/rules/**`, `.github/skills/**`, `.github/instructions/**` |
+| `task-discovery.md` | 0.5.0 | `src/gzkit/**`, `docs/design/adr/**`, `.gzkit/**` |
+| `tests.md` | 0.13.0 | `tests/**` |
+| `token-block-discipline.md` | 0.3.0 | `src/gzkit/lock_manager.py`, `src/gzkit/commands/obpi_lock.py`, `src/gzkit/commands/obpi_complete.py`, `.gzkit/handoffs/**`, `scripts/session_orientation.py` |
+| `tool-skill-runbook-alignment.md` | 0.2.0 | `src/gzkit/commands/**`, `src/gzkit/cli/**`, `.gzkit/skills/**` |
 
-For convenience, the 20 canonical rules under `.gzkit/rules/` (with `paths:` frontmatter):
+### Rules new since the 2026-05-10 pass (6)
 
-| Rule | `paths:` frontmatter |
-|---|---|
-| `adr-audit.md` | `docs/design/adr/**` |
-| `agent-failure-modes.md` | `AGENTS.md`, `.gzkit/rules/**`, `docs/governance/**` |
-| `brief-heading-conventions.md` | `docs/design/adr/**/obpis/**` |
-| `chores.md` | `src/gzkit/chores/**`, `.gzkit/chores/**` |
-| `cli.md` | `src/gzkit/commands/**` |
-| `complexity-doctrine.md` | `docs/governance/complexity/**`, `data/exemplar_corpus.json`, `src/gzkit/complexity/**`, `.gzkit/rules/complexity-doctrine.md` |
-| `complexity-thresholds.md` | `.gzkit/rules/complexity-thresholds.md`, `.gzkit/rules/complexity-thresholds.json`, `src/gzkit/complexity/thresholds.py`, `src/gzkit/schemas/complexity_thresholds.json`, `docs/governance/complexity/**` |
-| `cross-platform.md` | `src/**/*.py`, `tests/**/*.py` |
-| `gate5-runbook-code-covenant.md` | `docs/**`, `src/gzkit/**` |
-| `gh-cli.md` | `.github/**`, `docs/design/adr/**`, `src/gzkit/commands/issue_cmd.py` |
-| `governance-core.md` | `**/*` |
-| `model-selection.md` | `src/gzkit/pipeline_runtime.py`, `.gzkit/skills/**/SKILL.md`, `.claude/agents/**` |
-| `models.md` | `src/**/*.py` |
-| `pythonic.md` | `**/*.py` |
-| `security-sensitivity.md` | `docs/design/adr/**/obpis/**`, `docs/design/adr/**/briefs/**`, `data/security_surfaces.json` |
-| `skill-surface-sync.md` | `.claude/**`, `.gzkit/skills/**`, `.gzkit/rules/**`, `.github/skills/**`, `.github/instructions/**` |
-| `tests.md` | `tests/**` |
-| `token-block-discipline.md` | `src/gzkit/lock_manager.py`, `src/gzkit/commands/obpi_lock.py`, `.gzkit/handoffs/**`, `scripts/session_orientation.py` |
-| `tool-skill-runbook-alignment.md` | `src/gzkit/commands/**`, `src/gzkit/cli/**`, `.gzkit/skills/**` |
+`agents-md-map-doctrine.md`, `changelog-release-notes.md`, `guardrail-feedback-prose.md`,
+`hexagonal-architecture.md`, `mx-mode.md`, `task-discovery.md`. **None of the six is cited
+by more than one skill; four are cited by none.**
 
-Notes:
+### Citation counts by rule (canonical + mirror paths, exact filename match)
 
-- `gh-cli.md` is the only rule cited by three or more skills (ghi-author, ghi-close, ghi-triage, gz-issue-file).
-- `tests.md` is the only rule whose Red-Green-Refactor / "Tests assert semantics, not strings" invariant is cited by name (ghi-close, gz-adr-audit, gz-pythonic-pattern-apply, gz-pythonic-pattern-detect).
-- 41 of 50 active skills cite **zero** `.gzkit/rules/**` files in their body — the baseline reachability gap surface.
+| Rule | # skills citing | Citing skills |
+|---|---|---|
+| `tests.md` | 5 | `gz-adr-audit`, `ghi-close`, `gz-check`, `gz-pythonic-pattern-detect`, `gz-pythonic-pattern-apply` |
+| `gh-cli.md` | 4 | `ghi-author`, `ghi-close`, `ghi-triage`, `gz-issue-file` |
+| `skill-surface-sync.md` | 2 | `gz-complexity-distill`, `gz-obpi-sync` |
+| `tool-skill-runbook-alignment.md` | 2 | `ghi-close`, `gz-complexity-distill` |
+| `agent-failure-modes.md` | 1 | `gz-issue-file` |
+| `changelog-release-notes.md` | 1 | `gz-patch-release` |
+| `complexity-doctrine.md` | 1 | `gz-complexity-distill` |
+| `governance-core.md` | 1 | `gz-adr-create` |
+| `mx-mode.md` | 1 | `gz-mx` |
+| `pythonic.md` | 1 | `gz-tech-debt-review` |
+| `security-sensitivity.md` | 1 | `ghi-author` |
+| `adr-audit.md` · `agents-md-map-doctrine.md` · `brief-heading-conventions.md` · `chores.md` · `cli.md` · `complexity-thresholds.md` · `cross-platform.md` · `gate5-runbook-code-covenant.md` · `guardrail-feedback-prose.md` · `hexagonal-architecture.md` · `model-selection.md` · `models.md` · `task-discovery.md` · `token-block-discipline.md` | **0** | — |
+
+**14 of 25 rules (56%) are named by no skill body.** Note `hexagonal-architecture.md`
+scores zero despite two apparent hits: `gz-design:137` and `gz-patch-release:65`
+both cite **`docs/governance/hexagonal-architecture.md`**, a same-named file that
+is not the rule. See `reachability-matrix.md` § Name-collision hazard.

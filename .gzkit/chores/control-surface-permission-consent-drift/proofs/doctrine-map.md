@@ -1,32 +1,59 @@
-# Doctrine Map — Pass D run 2026-07-16
+# Doctrine Map — Pass D run 2026-08-01
 
-Re-derived from `AGENTS.md` + `.gzkit/rules/**` (26 rule files) this run. Prior-run map not consulted (CHORE.md § Known coverage limits #4 — the map is re-derived every run because a cached map can drift from AGENTS.md, reproducing the drift failure one level up).
+Re-derived from `AGENTS.md` (348 lines, as rendered on disk this run) + `.gzkit/rules/**`
+(27 rule files) this run. The prior run's map was read **only** to diff against, never to
+seed — CHORE.md § Known coverage limits #4 requires re-derivation because a cached map
+reproduces the drift failure one level up.
 
-Scope note: only prohibitions that could plausibly appear as a **command** in a permission rule are mapped. Prohibitions on artifacts, reasoning, or process (Gate 5 bypass, "do not read frontmatter as proof of completion", operator-PII, derived-views-as-source-of-truth) have no command surface and are out of scope by construction, not by omission.
+**Why re-derivation mattered this time.** The permission surfaces are byte-identical to the
+2026-07-16 run (see `permission-inventory.md` § Diff vs prior run). Every new finding below
+comes from the *doctrine* side moving: `.gzkit/rules` last committed 2026-07-29 (`4b9db7592`)
+against `.claude/settings.json` last committed 2026-07-16 (`758e33524`). A run that trusted
+the prior map would have reported "no change" and been wrong on four counts.
+
+Scope note: only prohibitions that could plausibly appear as a **command or a path** in a
+permission rule are mapped. Prohibitions on artifacts, reasoning, or process (Gate 5 bypass,
+"do not read frontmatter as proof of completion", operator-PII, derived-views-as-source-of-truth)
+have no command surface and are out of scope by construction, not by omission.
 
 ## Context-free prohibitions (auditable by this pass)
 
-| # | Doctrine citation | Verbatim | Command token(s) |
-|---|---|---|---|
-| CF-1 | `AGENTS.md:247` § Execution Rules | *"Always use `uv run` for Python commands. `gz --help` for full catalog."* | bare `python`, `python3` (any invocation not prefixed `uv run` / `uvx`) |
-| CF-2 | `AGENTS.md:145` § Behavior Rules — Never #10 | *"Never commit with --no-verify. All commits and pushes must run through the configured hooks and quality gates."* | `--no-verify`, `git commit -n` |
-| CF-3 | `AGENTS.md:94` § STDLIB-FIRST + `.gzkit/rules/tests.md:16` | *"Use **stdlib `unittest`**; no pytest. That means no pytest syntax, fixtures, parametrization, plugins, or bare py…"* — enforced by `forbid-pytest` pre-commit hook (`.pre-commit-config.yaml:31`) | `pytest` |
-| CF-4 | `AGENTS.md:322` § Local Agent Rules | *"Never prefix `uv run gz` or `uv run -m gzkit` commands with `PYTHONUTF8=1` — the CLI entrypoint handles UTF-8 at runtime."* | `PYTHONUTF8=1 uv run gz`, `PYTHONUTF8=1 uv run -m gzkit` |
-| CF-5 | `AGENTS.md:137` § Behavior Rules — Never #2 | *"NEVER: Modify the ledger directly (use gzkit commands)."* | `Edit(.gzkit/ledger.jsonl)` or any Edit rule whose glob covers it |
-| CF-6 | `AGENTS.md:342` § Operator Doctrine (verbatim 2026-06-16) | *"Never create feature branches — work directly on main … 'don't do that feature branch bullshit again'"* | `git checkout -b`, `git switch -c` — **but see UW-2: broad-rule blind in practice** |
+| # | Doctrine citation | Verbatim | Command / path token(s) | New this run? |
+|---|---|---|---|---|
+| CF-1 | `AGENTS.md:249` § Execution Rules | *"Always use `uv run` for Python commands. `gz --help` for full catalog."* | bare `python`, `python3` | no |
+| CF-2 | `AGENTS.md:145` § Behavior Rules — Never #10 | *"Never commit with --no-verify. All commits and pushes must run through the configured hooks and quality gates."* | `--no-verify`, `git commit -n`, `core.hooksPath`, **`SKIP=<hook-id>`** (the pre-commit-native bypass; second sentence is categorical, not `--no-verify`-only) | token widened |
+| CF-3 | `AGENTS.md:94` § STDLIB-FIRST + `.gzkit/rules/tests.md` | *"**Testing:** `unittest` over pytest. Enforced by `forbid-pytest` pre-commit hook"* | `pytest` | no |
+| CF-4 | `AGENTS.md:324` § Local Agent Rules | *"Never prefix `uv run gz` or `uv run -m gzkit` commands with `PYTHONUTF8=1` — the CLI entrypoint handles UTF-8 at runtime."* | `PYTHONUTF8=1 uv run gz`, `PYTHONUTF8=1 uv run -m gzkit` | no |
+| CF-5 | `AGENTS.md:137` § Behavior Rules — Never #2 | *"NEVER: Modify the ledger directly (use gzkit commands)."* | any write path reaching `.gzkit/ledger.jsonl` — `Edit(...)` glob **or** a shell writer | no |
+| CF-6 | `AGENTS.md:344` § Operator Doctrine (verbatim 2026-06-16) | *"Never create feature branches — work directly on main … 'don't do that feature branch bullshit again'"* | `git checkout -b`, `git switch -c` — **see UW-2: broad-rule blind in practice** | no |
+| **CF-7** | `.gzkit/rules/skill-surface-sync.md:30` rule #4, reinforced at `:90` and `:91` § Do Not | *"**Never edit vendor mirrors directly.** `.claude/skills/`, `.claude/rules/`, `.github/skills/`, and `.github/instructions/` are generated outputs."* / *"Do not manually copy skill files between surfaces — use the sync command"* | any write reaching `.claude/skills/**`, `.claude/rules/**`, `.github/skills/**`, `.github/instructions/**`; any `cp`/`mv` **between** surface roots | **YES** — never mapped by the 2026-07-16 run |
+| **CF-8** | `.gzkit/rules/skill-surface-sync.md:31` rule #5 | *"**Never edit `src/gzkit/<surface>/` directly.** `src/gzkit/skills/`, `src/gzkit/rules/`, `src/gzkit/personas/`, and `src/gzkit/templates/` are derived outputs regenerated by sync. Only the sync mechanism (`sync_pkg_surfaces`) writes to them."* | any write reaching `src/gzkit/{skills,rules,personas,templates}/**` | **YES** — never mapped by the 2026-07-16 run |
+| **CF-9** | `src/gzkit/governance/deprecations.py:41` (registry) + `.gzkit/rules/governance-core.md` rule-version `0.6.0` header | `DeprecatedVerb(verb="gates", successor="gz closeout", ghi="#705")`; the rule header records repointing *"off `gz gates`, which announces its own deprecation at runtime … onto `gz closeout --dry-run` (GHI #705)"* | `gz gates` named as a permitted/prescribed invocation on any governed surface | **YES** — the registry landed 2026-07-21 (`322f07473`), after the prior run |
+| **CF-10** | `AGENTS.md:125` § Always #11 + `.gzkit/rules/governance-core.md:50` | *"record an `improvement` via `gz insights remember` … (**never** hand-append the jsonl)"* / *"**never** hand-append `.gzkit/insights/agent-insights.jsonl`"* | any write path reaching `.gzkit/insights/agent-insights.jsonl` other than the CLI | **YES** — same per-artifact shape as CF-5, never mapped before |
 
-## Context-dependent prohibitions (NOT auditable — routed to unwitnessable.md)
+CF-5, CF-7, CF-8 and CF-10 are **per-artifact, per-tool** prohibitions. They are context-free
+in the sense this pass requires (the forbidden *destination* is fixed), even though the
+forbidden *command* is open-ended. The permission surface is per-tool, so each must be walked
+against `Edit(...)` grants and shell-writer grants separately — the failure the prior run
+found for CF-5 (`Edit(...)` closed, `Bash(sed:*)` open).
+
+## Context-dependent prohibitions (NOT auditable — routed to `unwitnessable.md`)
 
 | # | Doctrine citation | Verbatim | Why unauditable |
 |---|---|---|---|
-| CD-1 | `AGENTS.md:127` § Behavior Rules — Always #13 | *"Author GHIs through `/ghi-author` — never call `gh issue create` directly"* | Forbidden only *outside the skill*; `/ghi-author` invokes `gh issue create` itself at `SKILL.md:199`. Sanctioned and forbidden invocations are byte-identical. |
-| CD-2 | `AGENTS.md:142` § Behavior Rules — Never #6 | *"Do not work around hook blocks. A blocking hook signals missing evidence or inactive pipeline state."* | "Working around" is an intent, not a command. No token distinguishes a legitimate retry from a workaround. |
-| CD-3 | `AGENTS.md` § SKILLS FIRST | *"Matching skill first. No convenience exception."* | Prohibits raw-tool use *when a skill matches*. The same command is sanctioned or forbidden depending on whether a skill covers the task. |
+| CD-1 | `AGENTS.md:127` § Always #13; `.gzkit/rules/gh-cli.md:26-30` | *"Author GHIs through `/ghi-author` — never call `gh issue create` directly"* | The rule states its own unwitnessability at `gh-cli.md:30`: *"The prohibition is on the **caller**, not the string: `/ghi-author` itself invokes `gh issue create` at `SKILL.md:199` as its own final step, so the sanctioned and forbidden invocations are byte-identical commands. Nothing mechanical can tell them apart."* |
+| CD-2 | `AGENTS.md:142` § Never #6 | *"Do not work around hook blocks. A blocking hook signals missing evidence or inactive pipeline state."* | "Working around" is an intent, not a command. No token distinguishes a legitimate retry from a workaround. |
+| CD-3 | `AGENTS.md:62` § SKILLS FIRST | *"Matching skill first. No convenience exception."* | Prohibits raw-tool use *when a skill matches*. The same command is sanctioned or forbidden depending on whether a skill covers the task. |
+| CD-4 | `AGENTS.md:38` § PRIME DIRECTIVE 6 | *"file a GHI via `/ghi-author` (never `gh issue create` directly …), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section"* | Same string as CD-1 at a second citation site. Listed so the next run does not mistake the duplicate for an unmapped rule. **Note the internal tension with CF-10:** this line says "append to `.gzkit/insights/agent-insights.jsonl`" where Always #11 says "never hand-append the jsonl". Routed, not resolved — see `unwitnessable.md` UW-5. |
 
 ## Counts
 
-- Context-free, mapped: **6** (CF-1 … CF-6)
-- Context-dependent, routed to `unwitnessable.md`: **3** (CD-1 … CD-3)
-- Prohibitions with no command surface (out of scope by construction): Gate 5 bypass, frontmatter-as-proof, operator-PII, derived-views-as-truth, brief-boundary rules
+- Context-free, mapped: **10** (CF-1 … CF-10) — prior run: 6
+- Context-dependent, routed to `unwitnessable.md`: **4** (CD-1 … CD-4) — prior run: 3
+- Prohibitions with no command surface (out of scope by construction): Gate 5 bypass,
+  frontmatter-as-proof, operator-PII, derived-views-as-truth, brief-boundary rules,
+  `.gzkit/rules/pythonic.md` bare-`except` ban, `.gzkit/rules/adr-audit.md:63` cosmetic-`@covers` ban
 
-**One in three command-shaped prohibitions in AGENTS.md is structurally invisible to this pass.** That ratio is the honest headline, not the drift count.
+**Four in fourteen command-shaped prohibitions in the contract are structurally invisible to
+this pass.** That ratio (29%, improved from the prior run's 33% only because the auditable
+denominator grew) is the honest headline, not the drift count.

@@ -1,7 +1,9 @@
-AGENTS.md
 adr-audit.md
 agent-failure-modes.md
+agents-md-map-doctrine.md
+AGENTS.md
 brief-heading-conventions.md
+changelog-release-notes.md
 chores.md
 cli.md
 complexity-doctrine.md
@@ -11,11 +13,15 @@ cross-platform.md
 gate5-runbook-code-covenant.md
 gh-cli.md
 governance-core.md
+guardrail-feedback-prose.md
+hexagonal-architecture.md
 model-selection.md
 models.md
+mx-mode.md
 pythonic.md
 security-sensitivity.md
 skill-surface-sync.md
+task-discovery.md
 tests.md
 token-block-discipline.md
 tool-skill-runbook-alignment.md

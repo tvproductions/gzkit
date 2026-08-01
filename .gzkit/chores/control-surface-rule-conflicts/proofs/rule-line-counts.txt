@@ -1,29 +1,29 @@
-      61 .gzkit/rules/adr-audit.md
+      78 .gzkit/rules/adr-audit.md
       29 .gzkit/rules/agent-failure-modes.md
-      50 .gzkit/rules/agents-md-map-doctrine.md
-     208 .gzkit/rules/AGENTS.md
-      52 .gzkit/rules/brief-heading-conventions.md
+      52 .gzkit/rules/agents-md-map-doctrine.md
+     213 .gzkit/rules/AGENTS.md
+      59 .gzkit/rules/brief-heading-conventions.md
       55 .gzkit/rules/changelog-release-notes.md
-     138 .gzkit/rules/chores.md
-      89 .gzkit/rules/cli.md
+     143 .gzkit/rules/chores.md
+     116 .gzkit/rules/cli.md
      123 .gzkit/rules/complexity-doctrine.md
       99 .gzkit/rules/complexity-thresholds.md
       51 .gzkit/rules/cross-platform.md
-      43 .gzkit/rules/gate5-runbook-code-covenant.md
-      38 .gzkit/rules/gh-cli.md
-      98 .gzkit/rules/governance-core.md
+      56 .gzkit/rules/gate5-runbook-code-covenant.md
+      57 .gzkit/rules/gh-cli.md
+     123 .gzkit/rules/governance-core.md
       63 .gzkit/rules/guardrail-feedback-prose.md
      130 .gzkit/rules/hexagonal-architecture.md
       76 .gzkit/rules/model-selection.md
       50 .gzkit/rules/models.md
       57 .gzkit/rules/mx-mode.md
-      62 .gzkit/rules/pythonic.md
-      43 .gzkit/rules/security-sensitivity.md
-     189 .gzkit/rules/skill-surface-sync.md
-     100 .gzkit/rules/task-discovery.md
-     152 .gzkit/rules/tests.md
+      99 .gzkit/rules/pythonic.md
+      46 .gzkit/rules/security-sensitivity.md
+     194 .gzkit/rules/skill-surface-sync.md
+     123 .gzkit/rules/task-discovery.md
+     169 .gzkit/rules/tests.md
      137 .gzkit/rules/token-block-discipline.md
       41 .gzkit/rules/tool-skill-runbook-alignment.md
-     373 AGENTS.md
+     375 AGENTS.md
       27 CLAUDE.md
-    2634 total
+    2841 total
