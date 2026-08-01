@@ -1,5 +1,6 @@
-"""FoundationGrandfatherManifest — frozen identity-only entry model for the
-closed ``kind: foundation`` grandfather manifest (ADR-0.34.0).
+"""FoundationGrandfatherManifest — frozen identity-only entry model (ADR-0.34.0).
+
+Backs the closed ``kind: foundation`` grandfather manifest.
 
 ``data/foundation_grandfather.json`` is the committed closed membership set
 for ADR ``kind: foundation``. Each entry is IDENTITY-ONLY — ``id``, ``title``,

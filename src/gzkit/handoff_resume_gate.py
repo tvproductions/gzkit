@@ -212,7 +212,7 @@ def newest_handoff(project_root: Path) -> Path | None:
 
 
 def is_resume_authorized(project_root: Path, session_id: str) -> bool:
-    """True when this session carries an operator authorization on the ledger.
+    """Return True when this session carries an operator authorization on the ledger.
 
     Fails CLOSED (returns False) on an unreadable or absent ledger: a gate that
     opens when it cannot read its own evidence is not a gate. Scans raw JSONL
@@ -256,12 +256,12 @@ def _tokens(command: str) -> list[str]:
 
 
 def _is_shell_operator(token: str) -> bool:
-    """True when a token is a bare control operator (``&&``, ``;``, ``|``, ``>``…)."""
+    """Return True when a token is a bare control operator (``&&``, ``;``, ``|``, ``>``…)."""
     return bool(token) and set(token) <= _SHELL_OPERATOR_CHARS
 
 
 def _can_expand(token: str) -> bool:
-    """True when a token carries command substitution.
+    """Return True when a token carries command substitution.
 
     Checked in EVERY quoting form, deliberately. Double quotes do not make
     substitution inert (bash expands ``"$(rm -rf x)"`` and ``"`rm -rf x`"`` just
@@ -276,7 +276,7 @@ def _can_expand(token: str) -> bool:
 
 
 def _is_compound(command: str) -> bool:
-    """True when the command chains, redirects, or substitutes.
+    r"""Return True when the command chains, redirects, or substitutes.
 
     Quote-aware by construction. The first implementation ran a regex over the RAW
     string, which cannot tell a pipe from the ``|`` inside ``grep "A\\|B"`` — so it
@@ -308,7 +308,7 @@ def _is_compound(command: str) -> bool:
 
 
 def _bash_is_read_only(command: str) -> bool:
-    """True only when the command is an allowlisted read-only invocation.
+    """Return True only when the command is an allowlisted read-only invocation.
 
     Fail-closed by construction: an unrecognized command is NOT read-only. A
     compound command (``&&``, ``;``, ``|``, redirection, substitution) is never

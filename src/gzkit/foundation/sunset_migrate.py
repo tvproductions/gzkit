@@ -750,7 +750,7 @@ def _perform_writes(
     task_id: str | None,
     receipt: dict[str, Any],
 ) -> None:
-    """The destructive half: demote, witness, populate. Ordering is load-bearing.
+    """Run the destructive half: demote, witness, populate. Ordering is load-bearing.
 
     Preflight validates EVERY demotion before the first rmtree, and the
     write-ahead journal is claimed before the first destructive write — an
@@ -843,7 +843,6 @@ def run_migration(
     them — a bypass around a STOP-on-BLOCKERS requirement. Tests patch
     ``_SUNSET_PREREQUISITES`` within test scope instead.
     """
-
     if not dry_run and not (attestor.strip() and attestation.strip()):
         # The witness binds HERE, at the library boundary — not only in the CLI
         # wrapper. The taxonomy reader accepts any foundation_grandfathered event

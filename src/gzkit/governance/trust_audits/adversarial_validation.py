@@ -159,7 +159,7 @@ def _collect_verdicts(project_root: Path) -> tuple[dict[str, list[dict]], list[d
 
 
 def _unresolved_refutation(events: list[dict]) -> bool:
-    """True when the latest verdict is ``refuted`` with no recorded resolution."""
+    """Return True when the latest verdict is ``refuted`` with no recorded resolution."""
     latest = events[-1]
     return latest.get("verdict") == "refuted" and not latest.get("resolution")
 

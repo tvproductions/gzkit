@@ -192,6 +192,7 @@ def run_red_witness(
         ValueError: when no covering test names were supplied — a BEHAVIOR REQ with
             no covering test is a coverage defect, not a falsifiability one, and the
             ``@covers`` parity gate is what must report it.
+
     """
     if not test_names:
         raise ValueError(f"no covering tests supplied for {req_id}; nothing to witness")

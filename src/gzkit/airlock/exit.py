@@ -141,7 +141,7 @@ def compute_drift_diff(
     fact_targets: tuple[str, ...],
     intent_targets: tuple[str, ...],
 ) -> DriftDiff:
-    """The drift-diff push-minus-pull over the two-graph (REQ-01).
+    """Compute the drift-diff push-minus-pull over the two-graph (REQ-01).
 
     FACT (``OBSERVED``, from reach) minus INTENT (``LAW``, from the brief +
     parent-ADR invariants) is the symmetric difference: a fact target with no
@@ -239,7 +239,7 @@ def airlock_exit(
     reach_fn: Callable[[str], list[str] | None] = _default_reach,
     ledger: Ledger | None = None,
 ) -> ExitReport:
-    """The airlock-OUT exit membrane — account for what the transit disturbed.
+    """Run the airlock-OUT exit membrane, accounting for what the transit disturbed.
 
     DECLARE the footprint (the brief's Allowed Paths, seam-as-BODY) -> PING the
     observed reach (FACT edges) -> DRIFT-DIFF against the declared invariants

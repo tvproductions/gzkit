@@ -19,6 +19,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
+from typing import Any
 from unittest import mock
 
 from gzkit.commands.handoff import (
@@ -80,7 +81,10 @@ class _HandoffCliCase(unittest.TestCase):
         )
 
     @staticmethod
-    def _capture_json(fn) -> object:
+    def _capture_json(fn) -> Any:
+        # `Any`, not `object`: this returns whatever json.loads parsed. Declaring
+        # `object` made every caller's subscript and iteration a type error, and
+        # unittest's assertIsInstance is not a narrowing guard the checker reads.
         buf = io.StringIO()
         with redirect_stdout(buf):
             fn()
@@ -266,7 +270,7 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
     """
 
     def _resume_output(self, decisions: str, *, slug: str = "d") -> str:
-        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections: dict[str, str] = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
         sections["Decisions Made"] = decisions
         create_handoff(
             adr_id="ADR-0.0.65",

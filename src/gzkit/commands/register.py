@@ -56,7 +56,7 @@ def _normalize_frontmatter_source(content: str) -> str:
 
 
 def is_undecodable_adr(adr_file: Path) -> bool:
-    """True when the package cannot be decoded as UTF-8 at all.
+    """Return True when the package cannot be decoded as UTF-8 at all.
 
     Checked BEFORE `parse_artifact_metadata`, which reads UTF-8 and catches only
     `OSError`: a UTF-16/32 package would otherwise raise `UnicodeDecodeError` and
@@ -84,7 +84,7 @@ def warn_undecodable_refused(adr_file: Path) -> None:
 def is_ungrandfathered_foundation(
     adr_file: Path, adr_id: str, grandfathered: frozenset[str]
 ) -> bool:
-    """True when a package declares `kind: foundation` but is not grandfathered.
+    """Return True when a package declares `kind: foundation` but is not grandfathered.
 
     Manifest-aware by contract, never a bare `kind` refusal: refusing on kind
     alone would reject the whole grandfathered roster and contradict the closure

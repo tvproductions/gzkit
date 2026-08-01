@@ -64,7 +64,7 @@ def _put_jsonl(path: Path, records: list[dict[str, object]]) -> None:
 
 
 def build_bullet_retention() -> Path:
-    """An invariant-tier scorecard bullet absent from the per-turn surface.
+    """Build an invariant-tier scorecard bullet absent from the per-turn surface.
 
     Only the scorecard exists, so the other three sub-validators return no
     findings and this claim isolates bullet-retention.
@@ -78,7 +78,7 @@ def build_bullet_retention() -> Path:
 
 
 def build_surface_weight() -> Path:
-    """A per-turn surface in the fail-closed red band against a zero floor."""
+    """Build a per-turn surface in the fail-closed red band against a zero floor."""
     root = _root("surface-weight")
     _put(root / "data" / "surface_weight_floor.json", json.dumps({"lines": 0}) + "\n")
     _put(root / "AGENTS.md", "x\n" * 3001)
@@ -179,7 +179,7 @@ def _registry(root: Path, surfaces: list[dict[str, object]]) -> None:
 
 
 def build_waiver_closed_set_lock() -> Path:
-    """A closed-set-lock surface whose entry carries no lock field."""
+    """Build a closed-set-lock surface whose entry carries no lock field."""
     root = _root("waiver-closed-set-lock")
     _registry(
         root,
@@ -196,7 +196,7 @@ def build_waiver_closed_set_lock() -> Path:
 
 
 def build_waiver_dated_cutover() -> Path:
-    """A dated-cutover surface whose cutover has not closed.
+    """Build a dated-cutover surface whose cutover has not closed.
 
     2099 keeps the violation in the future for the lifetime of the codebase; a
     near date would quietly stop violating once it passed.
@@ -218,7 +218,7 @@ def build_waiver_dated_cutover() -> Path:
 
 
 def build_waiver_silent_bypass() -> Path:
-    """A waiver data file on disk that no registry surface declares."""
+    """Build a waiver data file on disk that no registry surface declares."""
     root = _root("waiver-silent-bypass")
     _registry(root, [])
     _put(root / "data" / "rogue_waivers.json", "{}\n")
@@ -226,7 +226,7 @@ def build_waiver_silent_bypass() -> Path:
 
 
 def build_handoff_populated_sections() -> Path:
-    """A post-cutover handoff with every required section PRESENT but one empty.
+    """Build a post-cutover handoff with every required section PRESENT but one empty.
 
     Isolates the ``validate_sections_populated`` invariant (GHI #698). The parent
     ``handoff-documents`` fixture omits six of the seven headings, so its findings

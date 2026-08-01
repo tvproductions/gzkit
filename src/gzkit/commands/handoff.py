@@ -280,7 +280,7 @@ def handoff_create_cmd(
     as_json: bool = False,
     base_path: Path = Path("."),
 ) -> None:
-    """Author a handoff through the fail-closed gate (REQ-0.0.65-03-03).
+    """Write a handoff through the fail-closed gate (REQ-0.0.65-03-03).
 
     Builds all seven required sections from their flags and routes them through
     :func:`create_handoff`. On a validation refusal NOTHING is written and the

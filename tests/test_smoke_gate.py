@@ -120,7 +120,7 @@ class FailingMemberIsDistinctFromABreach(SilencedConsoleTestCase):
 
     def test_test_failure_exits_one_not_three(self) -> None:
         failing = unittest.TestResult()
-        failing.failures = [(None, "boom")]  # type: ignore[list-item]
+        failing.failures = [(None, "boom")]  # ty: ignore[invalid-assignment]
         with mock.patch("gzkit.commands.smoke_cmd.run_smoke", return_value=(failing, 0.01)):
             self.assertEqual(smoke_gate(_PROJECT_ROOT), 1)
 

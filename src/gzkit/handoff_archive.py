@@ -123,9 +123,11 @@ def _key(path: Path) -> str:
 
 
 def _dest_occupied(dest: Path) -> bool:
-    """True when a directory entry already exists at ``dest`` — including a dangling
-    symlink (``exists()`` follows symlinks and misses those, but ``os.link`` still
-    fails on them, so planning must agree with execution — Step-4b round-3 finding)."""
+    """Return True when a directory entry already exists at ``dest``, including a dangling symlink.
+
+    ``exists()`` follows symlinks and misses dangling ones, but ``os.link`` still fails
+    on them, so planning must agree with execution (Step-4b round-3 finding).
+    """
     return dest.exists() or dest.is_symlink()
 
 
@@ -195,7 +197,7 @@ def _resolve_pointer_key(ref: str, referrer: Path, base_path: Path) -> str:
 
 
 def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:
-    """Resolved keys of every continues_from target across the given handoffs."""
+    """Return resolved keys of every continues_from target across the given handoffs."""
     keys: set[str] = set()
     for path in handoffs:
         frontmatter = _frontmatter(path)

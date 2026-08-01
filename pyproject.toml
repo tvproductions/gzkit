@@ -111,6 +111,15 @@ select = [
     "C4",     # flake8-comprehensions
     "UP",     # pyupgrade
     "SIM",    # flake8-simplify
+    "D",      # pydocstyle — adopted 2026-08-01 (operator ruling); see ignore below
+]
+ignore = [
+    # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every
+    # run until one of each is disabled. Keep D211 (no blank line before class)
+    # and D212 (multi-line summary on the first line) — both match the docstrings
+    # already in the tree.
+    "D203",
+    "D213",
 ]
 
 [tool.ruff.lint.per-file-ignores]
@@ -123,6 +132,21 @@ select = [
 # that must hold. Inline `# noqa` is unavailable: these lines are string
 # content, so the comment would land in the generated hook. (GHI #582 follow-on.)
 "src/gzkit/hooks/scripts/*.py" = ["E501"]
+# pydocstyle is adopted for the shipped package only — that is the surface the
+# `pep257-docstring-compliance` chore gates (`ruff check src/gzkit --select D`).
+# Extending it to tests/features/scripts would surface 6321 pre-existing findings
+# in one step, which is a separate decision, not a side effect of this one.
+"tests/**/*.py" = ["D"]
+"features/**/*.py" = ["D"]
+"scripts/**/*.py" = ["D"]
+# Canonical skill helper scripts and their generated vendor mirrors, plus the
+# generated hook scripts. Mirrors are written by `gz agent sync control-surfaces`
+# and must never be hand-edited (.gzkit/rules/skill-surface-sync.md #4/#5), so a
+# docstring rule over them would gate on files no one may fix in place.
+".gzkit/**/*.py" = ["D"]
+".claude/**/*.py" = ["D"]
+".github/**/*.py" = ["D"]
+".agents/**/*.py" = ["D"]
 
 [tool.ruff.format]
 quote-style = "double"

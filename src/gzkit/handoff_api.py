@@ -174,7 +174,9 @@ class ReferenceChecker(Protocol):
     ``.claude/rules/hexagonal-architecture.md`` § Operative rules 3 and 4.
     """
 
-    def __call__(self, reference: StepReference) -> ReferenceState: ...
+    def __call__(self, reference: StepReference) -> ReferenceState:
+        """Resolve one step reference to its observed state."""
+        ...
 
 
 class ObservedState(BaseModel):
@@ -292,7 +294,7 @@ def _timestamp_sort_key(raw: str) -> datetime:
 
 
 def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
-    """Render frontmatter + the seven required sections into a Markdown doc.
+    r"""Render frontmatter + the seven required sections into a Markdown doc.
 
     Missing sections render as an empty heading. The optional ``Settled Rulings``
     section is emitted only when it carries entries, so a handoff with no settled
@@ -669,7 +671,7 @@ def create_handoff(
     timestamp: str | None = None,
     mode: str = "CREATE",
 ) -> Path:
-    """Author a handoff document, routing it through the validation gate.
+    """Write a handoff document, routing it through the validation gate.
 
     Builds frontmatter plus the seven required sections (missing sections
     render empty), then runs :func:`validate_handoff_document`. When validation

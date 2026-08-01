@@ -424,7 +424,7 @@ class TestAirlockEnforcementClaimRegistration(unittest.TestCase):
                 "always-hold": lambda _u, _o: Decision.HOLD,
             }
             for name, mutation in mutations.items():
-                airlock_mod._decide = mutation
+                airlock_mod._decide = mutation  # ty: ignore[invalid-assignment]
                 bit = airlock_mod._ep_airlock_unaccounted_seam(root)
                 self.assertEqual(
                     bit,

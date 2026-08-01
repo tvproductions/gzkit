@@ -133,7 +133,13 @@ def migrate_brief(path: Path, *, dry_run: bool) -> str:
     # must never reach disk, or the strict flip inherits a broken corpus.
     candidate = {**frontmatter, **fields}
     try:
-        BriefStructure(**{k: v for k, v in candidate.items() if k in BriefStructure.model_fields})
+        # model_validate, not `BriefStructure(**...)`: frontmatter values are
+        # `Unknown | list[Unknown]`, so `**`-unpacking makes the checker match each
+        # value against its declared field type and report four false positives.
+        # model_validate takes the mapping whole and runs the same validation.
+        BriefStructure.model_validate(
+            {k: v for k, v in candidate.items() if k in BriefStructure.model_fields}
+        )
     except Exception as exc:  # noqa: BLE001 — refuse and report, never write
         print(f"  REFUSED {path.name}: {str(exc).splitlines()[0]}", file=sys.stderr)
         return "refused"

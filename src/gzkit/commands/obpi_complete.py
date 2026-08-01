@@ -1914,7 +1914,7 @@ _CROSS_VENDOR_ADVERSARY_PREFIXES: tuple[str, ...] = (
 
 
 def _is_cross_vendor_adversary(adversary: str) -> bool:
-    """True when the adversary names a different-vendor (non-Claude) model.
+    """Return True when the adversary names a different-vendor (non-Claude) model.
 
     Cross-vendor is the tier-1 property Step 4b requires: it shares none of this
     agent's blind spots. Detection is an explicit allowlist of vendor prefixes —

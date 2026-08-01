@@ -134,8 +134,7 @@ def _index_claims(events: list) -> dict[str, list[datetime]]:
 
 
 def _concluded_claim_ts(claim_tss: list[datetime], release_ts: datetime) -> datetime | None:
-    """The claim a release concludes: the latest claim for the OBPI at or before the
-    release timestamp.
+    """Return the claim a release concludes — the latest at or before the release timestamp.
 
     Pairing by concluded claim (not the releasing agent's newest claim) keeps
     abandon-then-reclaim and cross-agent force-reap sequences valid, while still

@@ -57,7 +57,7 @@ _SELF_REF_VERB = ("gz", "adr", "fidelity")
 
 
 def is_self_referential_command(command: str) -> bool:
-    """True when the command invokes the fidelity gate itself (``gz adr fidelity``).
+    """Return True when the command invokes the fidelity gate itself (``gz adr fidelity``).
 
     A fidelity assertion whose command runs the gate that evaluates it is
     tautological: the gate must reach the row to run it, so the row can never be

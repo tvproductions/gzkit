@@ -69,7 +69,7 @@ def _build_empty(slug: str = "empty") -> Path:
 
 
 def _build_cli_audit() -> Path:
-    """A valid doc-coverage manifest whose one command has a mismatched manpage heading.
+    """Build a valid doc-coverage manifest whose one command has a mismatched manpage heading.
 
     `.gzkit.json` clears `ensure_initialized`; the manifest, index, and README Quick
     Start are all well-formed. The single violation is the manpage's H1 naming a
@@ -114,7 +114,7 @@ def _build_cli_audit() -> Path:
 
 
 def _build_skill_audit() -> Path:
-    """A mirrored skill whose SKILL.md omits the required `owner` field.
+    """Build a mirrored skill whose SKILL.md omits the required `owner` field.
 
     All four mirror roots carry byte-identical copies so mirror drift does not add a
     second finding, and the canonical root is non-empty so the CANONICAL-ROOT-EMPTY
@@ -360,7 +360,7 @@ def _build_test() -> Path:
 
 
 def _build_docs_build() -> Path:
-    """A docs site whose nav names a page that does not exist.
+    """Build a docs site whose nav names a page that does not exist.
 
     A missing nav target is only a WARNING to mkdocs; it fails the build solely
     because ``--strict`` promotes warnings to errors. That makes it the right
@@ -382,7 +382,7 @@ def _build_docs_build() -> Path:
 
 
 def _build_behave() -> Path:
-    """A scenario whose step FAILS — not one whose step is merely undefined.
+    """Build a scenario whose step FAILS — not one whose step is merely undefined.
 
     The bare feature file made behave exit 1 with
     ``ConfigError: No steps directory``: a configuration bail before any scenario
@@ -593,7 +593,7 @@ def _build_invariant_coherence() -> Path:
 
 
 def _build_brief_structure() -> Path:
-    """A LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
+    """Build a LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
 
     Status is `Draft`, so the terminal-status exemption cannot swallow it: this
     fixture fails only if the scope has stopped enforcing `BriefStructure` on the
@@ -848,7 +848,7 @@ def _build_handoff_documents() -> Path:
 
 
 def _build_preflight() -> Path:
-    """A stale pipeline marker in an INITIALIZED project.
+    """Build a stale pipeline marker in an INITIALIZED project.
 
     The marker was always planted, but without `.gzkit.json` the command bailed at
     `ensure_initialized` with "gzkit not initialized" — exit 1, same as a real

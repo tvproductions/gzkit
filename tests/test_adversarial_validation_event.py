@@ -46,7 +46,7 @@ class TestAdversarialValidationEvent(unittest.TestCase):
         for verdict in _VERDICTS:
             with self.subTest(verdict=verdict):
                 parsed = parse_typed_event(_event(verdict=verdict))
-                self.assertEqual(parsed.verdict, verdict)  # ty: ignore
+                self.assertEqual(parsed.verdict, verdict)
 
     def test_out_of_vocabulary_verdict_is_refused(self) -> None:
         with self.assertRaises(pydantic.ValidationError):

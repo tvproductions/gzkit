@@ -346,7 +346,7 @@ _POOL_DEMOTION_ATTRIBUTION_CUTOVER = datetime.fromisoformat("2026-07-30T09:00:00
 def _sig_a_is_grandfathered_demotion(
     ev: dict[str, object], ev_type: str, task_id: str | None
 ) -> bool:
-    """True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."""
+    """Return True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."""
     if ev_type != "artifact_renamed" or task_id or ev.get("reason") != "pool_demotion":
         return False
     raw_ts = ev.get("ts")

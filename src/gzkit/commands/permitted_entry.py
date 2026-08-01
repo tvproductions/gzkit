@@ -152,7 +152,7 @@ def _resolve_declare(
 
 
 def _sanitize_for_brief(text: str) -> str:
-    """Collapse whitespace/newlines and strip backticks from free-text intent.
+    r"""Collapse whitespace/newlines and strip backticks from free-text intent.
 
     The synthetic DECLARE embeds the intent into Markdown that ``extract_allowed_paths``
     parses for ``- `path` `` bullets. Newlines would let an injected ``\\n- `evil.py` ``

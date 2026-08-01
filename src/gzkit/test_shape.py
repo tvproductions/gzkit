@@ -122,7 +122,7 @@ def _output_source(node: ast.AST) -> str | None:
 
 
 def _has_assertion(fn: ast.FunctionDef) -> bool:
-    """True when the function makes any assertion at all."""
+    """Return True when the function makes any assertion at all."""
     for node in ast.walk(fn):
         if isinstance(node, ast.Assert):
             return True

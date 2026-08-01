@@ -712,7 +712,7 @@ def _scope_discovery_to_unbuilt(
 
 
 def _escapes_project_root(path: str, project_root: Path) -> bool:
-    """True when a checklist path resolves outside the repository root.
+    """Return True when a checklist path resolves outside the repository root.
 
     A path that escapes the root (``../airlineops/.claude/hooks/``, an absolute
     path) names an artifact the repository does not own. Whether it exists is a

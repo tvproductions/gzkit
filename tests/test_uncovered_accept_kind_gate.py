@@ -41,7 +41,7 @@ def _waive(**overrides: object):
         "ledger": None,
     }
     kwargs.update(overrides)
-    return _apply_uncovered_waivers(**kwargs)  # ty: ignore
+    return _apply_uncovered_waivers(**kwargs)
 
 
 class TestBehaviorReqCannotBeWaived(unittest.TestCase):

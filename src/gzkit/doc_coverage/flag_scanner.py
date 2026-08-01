@@ -287,17 +287,17 @@ _FLAG_END = r"(?![\w-])"
 
 
 def _mentions(usage: str, flag: str) -> bool:
-    """True when the usage block names ``flag`` itself (not a longer sibling)."""
+    """Return True when the usage block names ``flag`` itself (not a longer sibling)."""
     return bool(re.search(rf"{re.escape(flag)}{_FLAG_END}", usage))
 
 
 def _claims_optional(usage: str, flag: str) -> bool:
-    """True when the usage block brackets ``flag`` itself as optional."""
+    """Return True when the usage block brackets ``flag`` itself as optional."""
     return bool(re.search(rf"\[{re.escape(flag)}{_FLAG_END}", usage))
 
 
 def _claims_takes_value(usage: str, flag: str) -> bool:
-    """True when the usage block shows ``flag`` binding a placeholder.
+    r"""Return True when the usage block shows ``flag`` binding a placeholder.
 
     Placeholders are uppercase by manpage convention (``PATH``, ``TEXT``, ``ID``).
     Matched on the SAME LINE only: ``\\s+`` would span the newline between a

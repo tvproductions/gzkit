@@ -759,8 +759,9 @@ class ValidatesEvent(_EventBase):
 
 
 class AdversarialValidationEvent(_EventBase):
-    """adversarial_validation event — an independent adversary's verdict on an OBPI
-    completion claim, recorded before Gate 5 (GHI #676, upstream GHI #643).
+    """adversarial_validation event — an adversary's verdict on an OBPI completion claim.
+
+    Recorded before Gate 5 (GHI #676, upstream GHI #643).
 
     Step 4b of the OBPI pipeline is fail-closed: no OBPI reaches attestation without
     an independent adversary, prompted to REFUTE, re-deriving the completion claim.

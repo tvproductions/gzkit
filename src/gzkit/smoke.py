@@ -73,7 +73,7 @@ def _walk(suite: unittest.TestSuite) -> Iterator[unittest.TestCase]:
 
 
 def is_smoke(case: unittest.TestCase) -> bool:
-    """True when *case*'s test method carries the smoke marker."""
+    """Return True when *case*'s test method carries the smoke marker."""
     method = getattr(type(case), case._testMethodName, None)
     return bool(getattr(method, SMOKE_ATTRIBUTE, False))
 

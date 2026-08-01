@@ -25,7 +25,7 @@ from gzkit.cli.parser_handler_manifest import _lazy
 
 
 def _nonblank_target(value: str) -> str:
-    """argparse type: reject a blank/whitespace ``--target`` at the parse boundary.
+    """Argparse type: reject a blank/whitespace ``--target`` at the parse boundary.
 
     ``required=True`` only requires the option to be present, not non-empty; an empty
     target books an anonymous, unaccountable airlock transit and glob-selects an

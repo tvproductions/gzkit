@@ -36,7 +36,7 @@ def _enforce(**overrides: object) -> None:
         "fallback_reason": None,
     }
     kwargs.update(overrides)
-    _enforce_adversarial_validation(**kwargs)  # ty: ignore
+    _enforce_adversarial_validation(**kwargs)
 
 
 class TestAdversarialValidationGate(unittest.TestCase):
