@@ -137,3 +137,24 @@ bpis/OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill.md
 bpis/OBPI-0.0.37-22-committed-rendition-store-deterministic-playback.md
       status: 'Completed' -> 'Abandoned'
 ```
+## 2026-07-31T19:07:57-05:00
+- Status: PASS
+- Chore: frontmatter-ledger-coherence
+- Title: Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz frontmatter reconcile --dry-run` => rc=0 (1.24s) -- exit 0 == 0
+
+```text
+[uv run gz frontmatter reconcile --dry-run] stdout:
+Frontmatter-ledger reconciliation DRY-RUN
+  ledger cursor:
+sha256:8753bae7b595ab23868f4c2a20b4e31097ee035424d3f0a18fb3d3c5807576d4
+  started / ended:   2026-08-01T00:07:56.653901+00:00 /
+2026-08-01T00:07:57.740444+00:00
+  files rewritten:   0
+  refused rewrites:  0
+  pool ADRs skipped: 193
+  no drift detected
+```

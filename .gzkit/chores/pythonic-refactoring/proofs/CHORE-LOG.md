@@ -1100,3 +1100,135 @@ Ran 6808 tests in 77.613s
 
 OK
 ```
+## 2026-07-31T18:41:45-05:00
+- Status: FAIL
+- Chore: pythonic-refactoring
+- Title: Pythonic Refactoring (ruff + ty)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx ruff check .` => rc=0 (0.06s) -- exit 0 == 0
+  - [FAIL] `uvx ty check . --exclude features` => rc=1 (0.50s) -- exit 1 != 0
+
+```text
+[uvx ruff check .] stdout:
+All checks passed!
+[uvx ty check . --exclude features] stdout:
+error[invalid-argument-type]: Argument is incorrect
+   --> scripts/migrate_brief_frontmatter.py:136:24
+    |
+136 |         BriefStructure(**{k: v for k, v in candidate.items() if k in BriefStructure.model_fields})
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Expected `Literal["Lite", "Heavy"]`, found `Unknown | list[Unknown]`
+    |
+info: element `list[Unknown]` of union `Unknown | list[Unknown]` is not assignable to `Literal["Lite", "Heavy"]`
+
+error[invalid-argument-type]: Argument is incorrect
+   --> scripts/migrate_brief_frontmatter.py:136:24
+    |
+136 |         BriefStructure(**{k: v for k, v in candidate.items() if k in BriefStructure.model_fields})
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Expected `str`, found `Unknown | list[Unknown]`
+    |
+info: element `list[Unknown]` of union `Unknown | list[Unknown]` is not assignable to `str`
+
+error[invalid-argument-type]: Argument is incorrect
+   --> scripts/migrate_brief_frontmatter.py:136:24
+    |
+136 |         BriefStructure(**{k: v for k, v in candidate.items() if k in BriefStructure.model_fields})
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Expected `str`, found `Unknown | list[Unknown]`
+    |
+info: element `list[Unknown]` of union `Unknown | list[Unknown]` is not assignable to `str`
+
+error[invalid-argument-type]: Argument is incorrect
+   --> scripts/migrate_brief_frontmatter.py:136:24
+    |
+136 |         BriefStructure(**{k: v for k, v in candidate.items() if k in BriefStructure.model_fields})
+    |                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Expected `str`, found `Unknown | list[Unknown]`
+    |
+info: element `list[Unknown]` of union `Unknown | list[Unknown]` is not assignable to `str`
+
+warning[unused-ignore-comment]: Unused blanket `ty: ignore` directive
+  --> tests/test_adversarial_validation_event.py:49:60
+   |
+49 |                 self.assertEqual(parsed.verdict, verdict)  # ty: ignore
+   |                                                            ^^^^^^^^^^^^
+   |
+help: Remove the unused suppression comment
+   |
+48 |                 parsed = parse_typed_event(_event(verdict=verdict))
+   -                 self.assertEqual(parsed.verdict, verdict)  # ty: ignore
+49 +                 self.assertEqual(parsed.verdict, verdict)
+50 |
+   |
+
+warning[unused-ignore-comment]: Unused blanket `ty: ignore` directive
+  --> tests/test_adversarial_validation_gate.py:39:48
+   |
+39 |     _enforce_adversarial_validation(**kwargs)  # ty: ignore
+   |                                                ^^^^^^^^^^^^
+   |
+help: Remove the unused suppression comment
+   |
+38 |     kwargs.update(overrides)
+   -     _enforce_adversarial_validation(**kwargs)  # ty: ignore
+39 +     _enforce_adversarial_validation(**kwargs)
+40 |
+   |
+
+error[invalid-assignment]: Object of type `((unaccounted, override) -> Unknown) | ((_u, _o) -> Decision)` is not assignable to attribute `_decide` of type `def _decide(unaccounted: tuple[SeamEdge, ...], override: CaptainOverride | None) -> Decision`
+   --> tests/test_airlock_enter.py:427:17
+    |
+427 |                 airlock_mod._decide = mutation
+    |                 ^^^^^^^^^^^^^^^^^^^
+    |
+info: element `(unaccounted, override) -> Unknown` of union `((unaccounted, override) -> Unknown) | ((_u, _o) -> Decision)` is not assignable to `def _decide(unaccounted: tuple[SeamEdge, ...], override: CaptainOverride | None) -> Decision`
+
+error[not-iterable]: Object of type `object` is not iterable
+   --> tests/test_handoff_cli.py:101:42
+    |
+101 |             [row["timestamp"] for row in payload],
+    |                                          ^^^^^^^
+    |
+info: It doesn't have an `__iter__` method or a `__getitem__` method
+
+error[not-iterable]: Object of type `object` is not iterable
+   --> tests/test_handoff_cli.py:106:58
+    |
+106 |             all(row["adr_id"] == "ADR-0.0.65" for row in payload),
+    |                                                          ^^^^^^^
+    |
+info: It doesn't have an `__iter__` method or a `__getitem__` method
+
+error[invalid-assignment]: Invalid subscript assignment with key of type `Literal["Decisions Made"]` and value of type `str` on object of type `dict[str, LiteralString]`
+   --> tests/test_handoff_cli.py:270:9
+    |
+270 |         sections["Decisions Made"] = decisions
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^---------
+    |                                      |
+    |                                      Expected value of type `LiteralString`, got `str`
+    |
+
+error[invalid-assignment]: Object of type `list[tuple[TestCase, str] | tuple[None, str]]` is not assignable to attribute `failures` of type `list[tuple[TestCase, str]]`
+   --> tests/test_smoke_gate.py:123:9
+    |
+123 |         failing.failures = [(None, "boom")]  # type: ignore[list-item]
+    |         ^^^^^^^^^^^^^^^^
+    |
+info: element `tuple[None, str]` of union `tuple[TestCase, str] | tuple[None, str]` is not assignable to `tuple[TestCase, str]`
+info: └── the first tuple element is not compatible: `None` is not assignable to `TestCase`
+
+warning[unused-ignore-comment]: Unused blanket `ty: ignore` directive
+  --> tests/test_uncovered_accept_kind_gate.py:44:48
+   |
+44 |     return _apply_uncovered_waivers(**kwargs)  # ty: ignore
+   |                                                ^^^^^^^^^^^^
+   |
+help: Remove the unused suppression comment
+   |
+43 |     kwargs.update(overrides)
+   -     return _apply_uncovered_waivers(**kwargs)  # ty: ignore
+44 +     return _apply_uncovered_waivers(**kwargs)
+45 |
+   |
+
+Found 12 diagnostics
+```

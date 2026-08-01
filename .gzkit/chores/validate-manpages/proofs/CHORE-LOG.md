@@ -42,3 +42,17 @@ Cross-coverage: 114/114 commands fully covered.
 CLI audit passed.
 Cross-coverage: 120/120 commands fully covered.
 ```
+## 2026-07-31T18:57:17-05:00
+- Status: PASS
+- Chore: validate-manpages
+- Title: Validate Manpages (Call Stack Alignment)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz cli audit` => rc=0 (0.40s) -- exit 0 == 0
+
+```text
+[uv run gz cli audit] stdout:
+CLI audit passed.
+Cross-coverage: 132/132 commands fully covered.
+```

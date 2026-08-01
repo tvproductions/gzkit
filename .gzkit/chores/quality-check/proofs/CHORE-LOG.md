@@ -5004,3 +5004,127 @@ scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
 [38/38] Enforcement floor
 scenario-reachability: registry absent (ADR-0.0.34); skipping reachability check
 ```
+## 2026-07-31T18:40:24-05:00
+- Status: PASS
+- Chore: quality-check
+- Title: Run full quality gates
+- Lane: heavy
+- Version: 2.0.0
+- Criteria Results:
+  - [PASS] `uv run gz check` => rc=0 (86.99s) -- exit 0 == 0
+
+```text
+[uv run gz check] stdout:
+✓ Lint
+  ✓ Format
+  ✓ Typecheck
+  ✓ Test
+  ✓ Behave
+  ✓ Docs build
+  ✓ Skill audit
+  ✓ Parity check
+  ✓ Readiness audit
+  ✓ CLI audit
+  ✓ Unscoped rules
+  ✓ ADR status freshness
+  ✓ OBPI lifecycle coherence
+  ✓ Adversarial validation
+  ✓ RED parity
+  ✓ Rendition freshness
+  ✓ Rendition floor coherence
+  ✓ Invariant coherence
+  ✓ Brief structure
+  ✓ Session green gate
+  ✓ Closeout proof
+  ✓ Kind invariance
+  ✓ Persona witness
+  ✓ Interview transcripts
+  ✓ Receipt shape
+  ✓ Orientation freshness
+  ✓ Insights shape
+  ✓ Instructions files budget
+  ✓ AGENTS.md map conformance
+  ✓ Complexity-doctrine links
+  ✓ Complexity-thresholds
+  ✓ REQ kind discipline
+  ✓ tautological test audit
+  ✓ Task envelope coherence
+  ✓ Lock-handoff coupling
+  ✓ QC binding
+  ✓ Fidelity presence
+  ✓ Waiver ratchet
+  ✓ Handoff documents
+  ✓ Preflight
+  ✓ Surface fidelity
+  ✓ Line endings
+  ✓ Authorship policy
+  ✓ Smoke tier
+  ✓ Dispatch attestation
+  ✓ Enforcement floor
+  ✓ ADR taxonomy
+
+⚠ Advisory (does not affect exit code):
+  Instructions files budget NOTE [surface-delivery-witness] AGENTS.md: 32208 B
+rendered against the codex delivery cap 32768 B — 560 B of headroom.
+  Complexity-thresholds Bootstrap-mode:
+/Users/jeff/Documents/Code/gzkit/.gzkit/rules/complexity-thresholds.md declares
+a Bootstrap absolutes carve-out section; portability checks against bootstrap
+rows are skipped per ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is
+informational, not a policy breach — review tracked GHIs (#404 parser zeros,
+#405 polarity-aware model) for resolution.
+
+✓ All checks passed.
+
+⚠ Advisory: spec-test-code drift detected
+  advisory  Unlinked specs (REQs with no test): 687
+  Total: 687 finding(s) (advisory — does not affect exit code)
+  Run `gz drift` for the full per-finding list.
+[uv run gz check] stderr:
+[1/47] Lint
+[2/47] Format
+[3/47] Typecheck
+[4/47] Test
+[5/47] Behave
+[6/47] Docs build
+[7/47] Skill audit
+[8/47] Parity check
+[9/47] Readiness audit
+[10/47] CLI audit
+[11/47] Unscoped rules
+[12/47] ADR status freshness
+[13/47] OBPI lifecycle coherence
+[14/47] Adversarial validation
+[15/47] RED parity
+[16/47] Rendition freshness
+[17/47] Rendition floor coherence
+[18/47] Invariant coherence
+[19/47] Brief structure
+[20/47] Session green gate
+[21/47] Closeout proof
+[22/47] Kind invariance
+[23/47] Persona witness
+[24/47] Interview transcripts
+[25/47] Receipt shape
+[26/47] Orientation freshness
+[27/47] Insights shape
+[28/47] Instructions files budget
+[29/47] AGENTS.md map conformance
+[30/47] Complexity-doctrine links
+[31/47] Complexity-thresholds
+[32/47] REQ kind discipline
+[33/47] tautological test audit
+[34/47] Task envelope coherence
+[35/47] Lock-handoff coupling
+[36/47] QC binding
+[37/47] Fidelity presence
+[38/47] Waiver ratchet
+[39/47] Handoff documents
+[40/47] Preflight
+[41/47] Surface fidelity
+[42/47] Line endings
+[43/47] Authorship policy
+[44/47] Smoke tier
+[45/47] Dispatch attestation
+[46/47] Enforcement floor
+[47/47] ADR taxonomy
+```

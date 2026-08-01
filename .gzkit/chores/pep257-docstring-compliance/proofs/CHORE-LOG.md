@@ -3892,3 +3892,1254 @@ All checks passed!
 warning: `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible. Ignoring `incorrect-blank-line-before-class`.
 warning: `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible. Ignoring `multi-line-summary-second-line`.
 ```
+## 2026-07-31T18:44:32-05:00
+- Status: FAIL
+- Chore: pep257-docstring-compliance
+- Title: PEP 257 Docstring Compliance (Style + Coverage)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uvx interrogate -v -f 85 -c pyproject.toml src/gzkit` => rc=0 (0.98s) -- exit 0 == 0
+  - [FAIL] `uvx ruff check src/gzkit --select D` => rc=1 (0.03s) -- exit 1 != 0
+
+```text
+[uvx interrogate -v -f 85 -c pyproject.toml src/gzkit] stdout:
+=========== Coverage for /Users/jeff/Documents/Code/gzkit/src/gzkit/ ===========
+----------------------------------- Summary ------------------------------------
+| Name                                                    | Total | Miss | Cover | Cover% |
+|---------------------------------------------------------|-------|------|-------|--------|
+| __init__.py                                             |     1 |    0 |     1 |   100% |
+| __main__.py                                             |     1 |    0 |     1 |   100% |
+| adr_eval.py                                             |    13 |    2 |    11 |    85% |
+| adr_eval_redteam.py                                     |     4 |    0 |     4 |   100% |
+| adr_eval_scoring.py                                     |    21 |   11 |    10 |    48% |
+| adr_eval_substance.py                                   |     8 |    0 |     8 |   100% |
+| advisory.py                                             |     3 |    0 |     3 |   100% |
+| brief_commands.py                                       |     7 |    0 |     7 |   100% |
+| color_env.py                                            |     4 |    1 |     3 |    75% |
+| config.py                                               |    13 |    0 |    13 |   100% |
+| decomposition.py                                        |     1 |    0 |     1 |   100% |
+| enforcement.py                                          |    18 |    1 |    17 |    94% |
+| event_evidence.py                                       |    19 |   11 |     8 |    42% |
+| events.py                                               |    69 |    0 |    69 |   100% |
+| fidelity.py                                             |     9 |    1 |     8 |    89% |
+| git_sync.py                                             |     8 |    0 |     8 |   100% |
+| handoff_api.py                                          |    44 |    5 |    39 |    89% |
+| handoff_archive.py                                      |    18 |    5 |    13 |    72% |
+| handoff_resume_gate.py                                  |    17 |    0 |    17 |   100% |
+| handoff_validation.py                                   |    27 |    4 |    23 |    85% |
+| instruction_audit.py                                    |     6 |    0 |     6 |   100% |
+| instruction_eval.py                                     |    17 |   10 |     7 |    41% |
+| interview.py                                            |    11 |    0 |    11 |   100% |
+| ledger.py                                               |    46 |    8 |    38 |    83% |
+| ledger_events.py                                        |    47 |    0 |    47 |   100% |
+| ledger_proof.py                                         |     5 |    0 |     5 |   100% |
+| ledger_semantics.py                                     |    23 |    0 |    23 |   100% |
+| lifecycle.py                                            |     5 |    0 |     5 |   100% |
+| lock_manager.py                                         |    19 |    1 |    18 |    95% |
+| obpi_lifecycle.py                                       |    11 |    1 |    10 |    91% |
+| pipeline_dispatch.py                                    |    26 |    0 |    26 |   100% |
+| pipeline_markers.py                                     |    38 |    0 |    38 |   100% |
+| pipeline_runtime.py                                     |    23 |    0 |    23 |   100% |
+| pipeline_verification.py                                |    19 |    2 |    17 |    89% |
+| qc_binding.py                                           |     5 |    0 |     5 |   100% |
+| quality.py                                              |    84 |    0 |    84 |   100% |
+| red_witness.py                                          |    11 |    0 |    11 |   100% |
+| registry.py                                             |    10 |    0 |    10 |   100% |
+| req_kind.py                                             |    11 |    2 |     9 |    82% |
+| req_kind_fence.py                                       |     9 |    0 |     9 |   100% |
+| req_kind_support.py                                     |    12 |    0 |    12 |   100% |
+| roles.py                                                |    14 |    0 |    14 |   100% |
+| skill_contract.py                                       |     1 |    0 |     1 |   100% |
+| skills_audit.py                                         |    21 |    0 |    21 |   100% |
+| skills_mirror.py                                        |     7 |    0 |     7 |   100% |
+| smoke.py                                                |     8 |    0 |     8 |   100% |
+| sync.py                                                 |     7 |    0 |     7 |   100% |
+| sync_skill_validation.py                                |    17 |    0 |    17 |   100% |
+| sync_skills.py                                          |    18 |    0 |    18 |   100% |
+| sync_surfaces.py                                        |    26 |    0 |    26 |   100% |
+| tasks.py                                                |    26 |    1 |    25 |    96% |
+| tautological_tests.py                                   |    19 |    0 |    19 |   100% |
+| temporal_drift.py                                       |    14 |    0 |    14 |   100% |
+| test_shape.py                                           |    13 |    1 |    12 |    92% |
+| traceability.py                                         |    31 |    4 |    27 |    87% |
+| triangle.py                                             |    28 |    1 |    27 |    96% |
+| trust_audits.py                                         |     1 |    0 |     1 |   100% |
+| utils.py                                                |     7 |    0 |     7 |   100% |
+| validate.py                                             |     3 |    0 |     3 |   100% |
+| airlock/__init__.py                                     |     1 |    0 |     1 |   100% |
+| airlock/enter.py                                        |    14 |    0 |    14 |   100% |
+| airlock/exit.py                                         |    16 |    0 |    16 |   100% |
+| airlock/model.py                                        |    11 |    0 |    11 |   100% |
+| arb/__init__.py                                         |     1 |    0 |     1 |   100% |
+| arb/advisor.py                                          |     7 |    3 |     4 |    57% |
+| arb/paths.py                                            |     2 |    0 |     2 |   100% |
+| arb/patterns.py                                         |     8 |    1 |     7 |    88% |
+| arb/red_reporter.py                                     |     5 |    2 |     3 |    60% |
+| arb/ruff_reporter.py                                    |    12 |   10 |     2 |    17% |
+| arb/step_reporter.py                                    |     5 |    3 |     2 |    40% |
+| arb/validator.py                                        |     8 |    3 |     5 |    62% |
+| chores/__init__.py                                      |     8 |    2 |     6 |    75% |
+| chores/eval_feedback_cluster_lib.py                     |    13 |    0 |    13 |   100% |
+| chores/control-surface-rule-conflicts/check_evidence.py |    20 |    9 |    11 |    55% |
+| chores/pythonic-design-pattern-detection/scan.py        |    34 |   27 |     7 |    21% |
+| cli/__init__.py                                         |     2 |    1 |     1 |    50% |
+| cli/formatters.py                                       |    25 |    0 |    25 |   100% |
+| cli/logging.py                                          |     5 |    0 |     5 |   100% |
+| cli/main.py                                             |     8 |    1 |     7 |    88% |
+| cli/parser.py                                           |     7 |    2 |     5 |    71% |
+| cli/parser_arb.py                                       |    13 |   10 |     3 |    23% |
+| cli/parser_artifacts.py                                 |    13 |    0 |    13 |   100% |
+| cli/parser_governance.py                                |    10 |    2 |     8 |    80% |
+| cli/parser_handler_manifest.py                          |     2 |    1 |     1 |    50% |
+| cli/parser_maintenance.py                               |    11 |    0 |    11 |   100% |
+| cli/progress.py                                         |     6 |    0 |     6 |   100% |
+| cli/helpers/__init__.py                                 |     1 |    0 |     1 |   100% |
+| cli/helpers/common_flags.py                             |     2 |    0 |     2 |   100% |
+| cli/helpers/epilog.py                                   |     2 |    0 |     2 |   100% |
+| cli/helpers/exit_codes.py                               |     2 |    0 |     2 |   100% |
+| cli/helpers/standard_options.py                         |     7 |    0 |     7 |   100% |
+| commands/__init__.py                                    |     1 |    0 |     1 |   100% |
+| commands/adr_audit.py                                   |    36 |    0 |    36 |   100% |
+| commands/adr_audit_covers_backfill.py                   |    34 |    3 |    31 |    91% |
+| commands/adr_coverage.py                                |    12 |    0 |    12 |   100% |
+| commands/adr_demote.py                                  |    13 |    0 |    13 |   100% |
+| commands/adr_fidelity.py                                |     2 |    0 |     2 |   100% |
+| commands/adr_promote.py                                 |    11 |    0 |    11 |   100% |
+| commands/adr_promote_utils.py                           |    20 |    0 |    20 |   100% |
+| commands/airlock.py                                     |     7 |    0 |     7 |   100% |
+| commands/arb.py                                         |    10 |    0 |    10 |   100% |
+| commands/attest.py                                      |     6 |    0 |     6 |   100% |
+| commands/audit_cmd.py                                   |     9 |    0 |     9 |   100% |
+| commands/brief_reconcile.py                             |     7 |    2 |     5 |    71% |
+| commands/ceremony_data.py                               |    19 |    2 |    17 |    89% |
+| commands/ceremony_intent.py                             |     6 |    1 |     5 |    83% |
+| commands/ceremony_state.py                              |    18 |    6 |    12 |    67% |
+| commands/ceremony_steps.py                              |    12 |    0 |    12 |   100% |
+| commands/chores.py                                      |    28 |    0 |    28 |   100% |
+| commands/chores_exec.py                                 |     8 |    0 |     8 |   100% |
+| commands/chores_propose_ghi_cmd.py                      |     6 |    0 |     6 |   100% |
+| commands/cli_audit.py                                   |     7 |    0 |     7 |   100% |
+| commands/closeout.py                                    |    17 |    9 |     8 |    47% |
+| commands/closeout_ceremony.py                           |    16 |    0 |    16 |   100% |
+| commands/closeout_form.py                               |    15 |    1 |    14 |    93% |
+| commands/common.py                                      |    32 |    1 |    31 |    97% |
+| commands/complexity_advise.py                           |    13 |    2 |    11 |    85% |
+| commands/complexity_distill_cmd.py                      |     7 |    0 |     7 |   100% |
+| commands/complexity_guide.py                            |     4 |    0 |     4 |   100% |
+| commands/config_paths.py                                |    10 |    0 |    10 |   100% |
+| commands/context_cmd.py                                 |     8 |    0 |     8 |   100% |
+| commands/covers.py                                      |     7 |    0 |     7 |   100% |
+| commands/drift.py                                       |     6 |    0 |     6 |   100% |
+| commands/flags.py                                       |     5 |    0 |     5 |   100% |
+| commands/frontmatter_reconcile.py                       |     4 |    0 |     4 |   100% |
+| commands/gates.py                                       |    14 |    6 |     8 |    57% |
+| commands/governance_render.py                           |     2 |    0 |     2 |   100% |
+| commands/handoff.py                                     |    15 |    1 |    14 |    93% |
+| commands/handoff_archive.py                             |     5 |    2 |     3 |    60% |
+| commands/init_cmd.py                                    |    30 |    1 |    29 |    97% |
+| commands/insights.py                                    |     5 |    2 |     3 |    60% |
+| commands/interview_cmd.py                               |     5 |    0 |     5 |   100% |
+| commands/issue_cmd.py                                   |     8 |    0 |     8 |   100% |
+| commands/justify_cmd.py                                 |     2 |    0 |     2 |   100% |
+| commands/knowledge.py                                   |     2 |    0 |     2 |   100% |
+| commands/mx_cmd.py                                      |     9 |    0 |     9 |   100% |
+| commands/obpi_audit_cmd.py                              |    21 |    0 |    21 |   100% |
+| commands/obpi_cmd.py                                    |    19 |    0 |    19 |   100% |
+| commands/obpi_complete.py                               |    46 |    0 |    46 |   100% |
+| commands/obpi_lock.py                                   |     8 |    0 |     8 |   100% |
+| commands/obpi_lock_cmd.py                               |     1 |    0 |     1 |   100% |
+| commands/obpi_precomplete.py                            |    15 |    0 |    15 |   100% |
+| commands/obpi_present_evidence.py                       |     3 |    1 |     2 |    67% |
+| commands/obpi_stages.py                                 |    16 |    1 |    15 |    94% |
+| commands/ontology.py                                    |    24 |    2 |    22 |    92% |
+| commands/parity.py                                      |     3 |    0 |     3 |   100% |
+| commands/patch_release.py                               |    27 |    0 |    27 |   100% |
+| commands/permitted_entry.py                             |     8 |    0 |     8 |   100% |
+| commands/personas.py                                    |     5 |    0 |     5 |   100% |
+| commands/pipeline.py                                    |     9 |    0 |     9 |   100% |
+| commands/plan.py                                        |     9 |    0 |     9 |   100% |
+| commands/plan_audit_cmd.py                              |    18 |    0 |    18 |   100% |
+| commands/preflight.py                                   |     5 |    0 |     5 |   100% |
+| commands/quality.py                                     |    20 |    2 |    18 |    90% |
+| commands/readiness.py                                   |    12 |    0 |    12 |   100% |
+| commands/register.py                                    |    20 |    1 |    19 |    95% |
+| commands/roles.py                                       |     4 |    0 |     4 |   100% |
+| commands/skills_cmd.py                                  |     9 |    0 |     9 |   100% |
+| commands/smoke_cmd.py                                   |     3 |    0 |     3 |   100% |
+| commands/specify_cmd.py                                 |    38 |    0 |    38 |   100% |
+| commands/state.py                                       |    10 |    0 |    10 |   100% |
+| commands/status.py                                      |    16 |    1 |    15 |    94% |
+| commands/status_obpi.py                                 |    16 |    4 |    12 |    75% |
+| commands/status_obpi_inspect.py                         |    15 |   10 |     5 |    33% |
+| commands/status_render.py                               |    14 |    3 |    11 |    79% |
+| commands/sync.py                                        |    20 |    3 |    17 |    85% |
+| commands/task.py                                        |    23 |    3 |    20 |    87% |
+| commands/test_shape.py                                  |     4 |    2 |     2 |    50% |
+| commands/tidy.py                                        |     6 |    0 |     6 |   100% |
+| commands/upgrade.py                                     |     6 |    2 |     4 |    67% |
+| commands/validate_briefs.py                             |     7 |    0 |     7 |   100% |
+| commands/validate_cmd.py                                |    40 |    3 |    37 |    92% |
+| commands/validate_commit_trailers.py                    |     4 |    0 |     4 |   100% |
+| commands/validate_frontmatter.py                        |    10 |    1 |     9 |    90% |
+| commands/validate_req_kind.py                           |    11 |    5 |     6 |    55% |
+| commands/validate_task_envelope.py                      |    36 |    9 |    27 |    75% |
+| commands/version_sync.py                                |     9 |    0 |     9 |   100% |
+| commands/content/__init__.py                            |    14 |   11 |     3 |    21% |
+| commands/content/advise_rendition.py                    |     2 |    0 |     2 |   100% |
+| commands/content/commit.py                              |     2 |    0 |     2 |   100% |
+| commands/content/compose.py                             |     2 |    0 |     2 |   100% |
+| commands/content/edit.py                                |     3 |    0 |     3 |   100% |
+| commands/content/import_.py                             |     2 |    0 |     2 |   100% |
+| commands/content/list.py                                |     2 |    0 |     2 |   100% |
+| commands/content/remember.py                            |     4 |    0 |     4 |   100% |
+| commands/content/render.py                              |     2 |    0 |     2 |   100% |
+| commands/content/retire.py                              |     2 |    0 |     2 |   100% |
+| commands/content/show.py                                |     7 |    0 |     7 |   100% |
+| complexity/__init__.py                                  |     1 |    0 |     1 |   100% |
+| complexity/aggregator.py                                |     6 |    0 |     6 |   100% |
+| complexity/baseline.py                                  |    11 |    0 |    11 |   100% |
+| complexity/citation.py                                  |     4 |    0 |     4 |   100% |
+| complexity/distillation.py                              |    18 |    0 |    18 |   100% |
+| complexity/measurement.py                               |    24 |    0 |    24 |   100% |
+| complexity/thresholds.py                                |    10 |    2 |     8 |    80% |
+| complexity/advisor/__init__.py                          |     1 |    0 |     1 |   100% |
+| complexity/advisor/archetype_rules.py                   |    18 |    7 |    11 |    61% |
+| complexity/advisor/config.py                            |     2 |    0 |     2 |   100% |
+| complexity/advisor/diagnosis.py                         |     8 |    2 |     6 |    75% |
+| complexity/advisor/engine.py                            |    14 |    7 |     7 |    50% |
+| complexity/advisor/intrinsic.py                         |     5 |    1 |     4 |    80% |
+| complexity/advisor/presentation.py                      |    10 |    0 |    10 |   100% |
+| complexity/advisor/timeout.py                           |    10 |    3 |     7 |    70% |
+| complexity/authoring/__init__.py                        |     1 |    0 |     1 |   100% |
+| complexity/authoring/engine.py                          |     8 |    0 |     8 |   100% |
+| complexity/authoring/hint.py                            |     4 |    1 |     3 |    75% |
+| complexity/authoring/protocol.py                        |    13 |    1 |    12 |    92% |
+| content/__init__.py                                     |     1 |    0 |     1 |   100% |
+| content/advisor_qc.py                                   |     3 |    0 |     3 |   100% |
+| content/composer.py                                     |     2 |    0 |     2 |   100% |
+| content/corpus_store.py                                 |     4 |    0 |     4 |   100% |
+| content/rendition.py                                    |     4 |    0 |     4 |   100% |
+| content/rendition_store.py                              |    11 |    0 |    11 |   100% |
+| content/tier_policy.py                                  |     3 |    0 |     3 |   100% |
+| content/vendors.py                                      |     8 |    0 |     8 |   100% |
+| content/migration/__init__.py                           |     1 |    0 |     1 |   100% |
+| content/migration/registry.py                           |     3 |    0 |     3 |   100% |
+| content/models/__init__.py                              |     1 |    0 |     1 |   100% |
+| content/models/agent_contract.py                        |     3 |    0 |     3 |   100% |
+| content/models/base.py                                  |     2 |    0 |     2 |   100% |
+| content/models/bullet.py                                |     2 |    0 |     2 |   100% |
+| content/models/chore.py                                 |     3 |    1 |     2 |    67% |
+| content/models/corpus.py                                |    10 |    0 |    10 |   100% |
+| content/models/handoff.py                               |     3 |    1 |     2 |    67% |
+| content/models/persona.py                               |     3 |    1 |     2 |    67% |
+| content/models/rule.py                                  |     4 |    2 |     2 |    50% |
+| content/models/scenario.py                              |     2 |    0 |     2 |   100% |
+| content/models/skill.py                                 |     3 |    1 |     2 |    67% |
+| content/parse/__init__.py                               |     1 |    0 |     1 |   100% |
+| content/parse/markdown_parser.py                        |    27 |    0 |    27 |   100% |
+| content/render/__init__.py                              |     1 |    0 |     1 |   100% |
+| content/render/pipeline.py                              |     6 |    0 |     6 |   100% |
+| content/tui/__init__.py                                 |     1 |    0 |     1 |   100% |
+| content/tui/panels.py                                   |     2 |    0 |     2 |   100% |
+| content/tui/status.py                                   |     3 |    1 |     2 |    67% |
+| content/tui/tables.py                                   |     2 |    0 |     2 |   100% |
+| content/validation/__init__.py                          |     1 |    0 |     1 |   100% |
+| content/validation/hooks.py                             |     6 |    0 |     6 |   100% |
+| core/__init__.py                                        |     1 |    0 |     1 |   100% |
+| core/exceptions.py                                      |    15 |    0 |    15 |   100% |
+| core/lifecycle.py                                       |     7 |    0 |     7 |   100% |
+| core/models.py                                          |    25 |    0 |    25 |   100% |
+| core/obpi_state_machine.py                              |     6 |    0 |     6 |   100% |
+| core/scoring.py                                         |    17 |    2 |    15 |    88% |
+| core/validation_rules.py                                |     5 |    0 |     5 |   100% |
+| doc_coverage/__init__.py                                |     1 |    0 |     1 |   100% |
+| doc_coverage/flag_scanner.py                            |    16 |    0 |    16 |   100% |
+| doc_coverage/manifest.py                                |     7 |    0 |     7 |   100% |
+| doc_coverage/models.py                                  |     8 |    0 |     8 |   100% |
+| doc_coverage/runner.py                                  |     4 |    0 |     4 |   100% |
+| doc_coverage/scanner.py                                 |    23 |    1 |    22 |    96% |
+| eval/__init__.py                                        |     1 |    0 |     1 |   100% |
+| eval/datasets.py                                        |     9 |    0 |     9 |   100% |
+| eval/delta.py                                           |    11 |    0 |    11 |   100% |
+| eval/regression.py                                      |    12 |    0 |    12 |   100% |
+| eval/runner.py                                          |     6 |    0 |     6 |   100% |
+| eval/scorer.py                                          |    13 |    1 |    12 |    92% |
+| flags/__init__.py                                       |     1 |    0 |     1 |   100% |
+| flags/decisions.py                                      |     6 |    0 |     6 |   100% |
+| flags/diagnostics.py                                    |     6 |    0 |     6 |   100% |
+| flags/models.py                                         |     9 |    0 |     9 |   100% |
+| flags/registry.py                                       |     3 |    0 |     3 |   100% |
+| flags/service.py                                        |    13 |    0 |    13 |   100% |
+| foundation/__init__.py                                  |     1 |    0 |     1 |   100% |
+| foundation/rubric.py                                    |    12 |    2 |    10 |    83% |
+| foundation/sunset_migrate.py                            |    27 |    0 |    27 |   100% |
+| foundation/triage.py                                    |     7 |    2 |     5 |    71% |
+| governance/__init__.py                                  |     1 |    0 |     1 |   100% |
+| governance/adr_status_index.py                          |    12 |    1 |    11 |    92% |
+| governance/brief_path_validity.py                       |    12 |    0 |    12 |   100% |
+| governance/brief_reconcile.py                           |    35 |    0 |    35 |   100% |
+| governance/brief_structure.py                           |    11 |    3 |     8 |    73% |
+| governance/compose.py                                   |     2 |    0 |     2 |   100% |
+| governance/deprecations.py                              |     4 |    0 |     4 |   100% |
+| governance/events.py                                    |     6 |    0 |     6 |   100% |
+| governance/frontmatter_coherence.py                     |    30 |    0 |    30 |   100% |
+| governance/invariants.py                                |     5 |    0 |     5 |   100% |
+| governance/obpi_park_backfill.py                        |     6 |    0 |     6 |   100% |
+| governance/obpi_transition_monitor.py                   |     4 |    0 |     4 |   100% |
+| governance/reconcile_freshness.py                       |     2 |    0 |     2 |   100% |
+| governance/req_coverage.py                              |     6 |    0 |     6 |   100% |
+| governance/stage4_evidence.py                           |    16 |    2 |    14 |    88% |
+| governance/status_vocab.py                              |     4 |    0 |     4 |   100% |
+| governance/trust_audits/__init__.py                     |     2 |    0 |     2 |   100% |
+| governance/trust_audits/_qc_nc_composite.py             |    14 |    4 |    10 |    71% |
+| governance/trust_audits/_qc_nc_entrypoints.py           |    52 |   42 |    10 |    19% |
+| governance/trust_audits/_qc_negative_controls.py        |    57 |   29 |    28 |    49% |
+| governance/trust_audits/absorption_duplicates.py        |     5 |    2 |     3 |    60% |
+| governance/trust_audits/adr_sections.py                 |     4 |    0 |     4 |   100% |
+| governance/trust_audits/adversarial_validation.py       |    11 |    0 |    11 |   100% |
+| governance/trust_audits/advisor_proof_binding.py        |    12 |    6 |     6 |    50% |
+| governance/trust_audits/agents_md_map_conformance.py    |    14 |    0 |    14 |   100% |
+| governance/trust_audits/attestation_receipts.py         |    12 |    3 |     9 |    75% |
+| governance/trust_audits/authorship.py                   |     4 |    0 |     4 |   100% |
+| governance/trust_audits/brief_reconcile.py              |     4 |    0 |     4 |   100% |
+| governance/trust_audits/brief_structure.py              |     3 |    0 |     3 |   100% |
+| governance/trust_audits/briefs.py                       |    22 |    2 |    20 |    91% |
+| governance/trust_audits/bullet_retention.py             |    13 |    0 |    13 |   100% |
+| governance/trust_audits/chores.py                       |     5 |    1 |     4 |    80% |
+| governance/trust_audits/cli.py                          |    15 |    2 |    13 |    87% |
+| governance/trust_audits/closeout_proof.py               |    17 |    1 |    16 |    94% |
+| governance/trust_audits/code_quality.py                 |     4 |    0 |     4 |   100% |
+| governance/trust_audits/complexity_doctrine_links.py    |    10 |    0 |    10 |   100% |
+| governance/trust_audits/complexity_thresholds.py        |     7 |    4 |     3 |    43% |
+| governance/trust_audits/cross_platform.py               |    20 |    4 |    16 |    80% |
+| governance/trust_audits/deprecated_verb_prescription.py |     5 |    2 |     3 |    60% |
+| governance/trust_audits/distribution.py                 |    12 |    1 |    11 |    92% |
+| governance/trust_audits/doc_surface_parity.py           |     2 |    0 |     2 |   100% |
+| governance/trust_audits/evaluation_justify_binding.py   |     5 |    0 |     5 |   100% |
+| governance/trust_audits/events.py                       |    13 |    6 |     7 |    54% |
+| governance/trust_audits/fidelity_presence.py            |     4 |    0 |     4 |   100% |
+| governance/trust_audits/insights.py                     |     3 |    0 |     3 |   100% |
+| governance/trust_audits/instructions_files_budget.py    |     4 |    1 |     3 |    75% |
+| governance/trust_audits/intrinsic_attestation.py        |     2 |    0 |     2 |   100% |
+| governance/trust_audits/invariant_coherence.py          |     4 |    0 |     4 |   100% |
+| governance/trust_audits/invariant_witness.py            |     7 |    0 |     7 |   100% |
+| governance/trust_audits/kind_invariance.py              |     3 |    0 |     3 |   100% |
+| governance/trust_audits/lock_handoff_coupling.py        |     9 |    0 |     9 |   100% |
+| governance/trust_audits/models.py                       |     8 |    5 |     3 |    38% |
+| governance/trust_audits/okf_conformance.py              |     6 |    1 |     5 |    83% |
+| governance/trust_audits/orientation.py                  |    17 |    6 |    11 |    65% |
+| governance/trust_audits/orphaned_implementation.py      |    14 |   10 |     4 |    29% |
+| governance/trust_audits/persona_witness.py              |     4 |    0 |     4 |   100% |
+| governance/trust_audits/pointer_integrity.py            |     9 |    0 |     9 |   100% |
+| governance/trust_audits/qc_binding.py                   |     9 |    1 |     8 |    89% |
+| governance/trust_audits/receipt_shape.py                |    10 |    0 |    10 |   100% |
+| governance/trust_audits/reconcile.py                    |     5 |    1 |     4 |    80% |
+| governance/trust_audits/red_parity.py                   |     9 |    2 |     7 |    78% |
+| governance/trust_audits/release.py                      |     4 |    1 |     3 |    75% |
+| governance/trust_audits/rendition_floor_coherence.py    |     2 |    0 |     2 |   100% |
+| governance/trust_audits/rendition_freshness.py          |     5 |    0 |     5 |   100% |
+| governance/trust_audits/router_tables.py                |     4 |    0 |     4 |   100% |
+| governance/trust_audits/sensitivity.py                  |    11 |    1 |    10 |    91% |
+| governance/trust_audits/session_green_gate.py           |     6 |    0 |     6 |   100% |
+| governance/trust_audits/setpoint_coherence.py           |     2 |    0 |     2 |   100% |
+| governance/trust_audits/surface_delivery_witness.py     |     8 |    3 |     5 |    62% |
+| governance/trust_audits/surface_weight.py               |     8 |    0 |     8 |   100% |
+| governance/trust_audits/taxonomy.py                     |    24 |    6 |    18 |    75% |
+| governance/trust_audits/theater_signature_scan.py       |    11 |    0 |    11 |   100% |
+| governance/trust_audits/vendor_manifest.py              |     2 |    0 |     2 |   100% |
+| governance/trust_audits/waiver_ratchet.py               |    12 |    9 |     3 |    25% |
+| hooks/__init__.py                                       |     1 |    0 |     1 |   100% |
+| hooks/claude.py                                         |    11 |    0 |    11 |   100% |
+| hooks/copilot.py                                        |     4 |    0 |     4 |   100% |
+| hooks/core.py                                           |    13 |    4 |     9 |    69% |
+| hooks/guards.py                                         |    11 |    0 |    11 |   100% |
+| hooks/install_complexity_advisor.py                     |    10 |    1 |     9 |    90% |
+| hooks/obpi.py                                           |    31 |    0 |    31 |   100% |
+| hooks/scripts/__init__.py                               |     1 |    0 |     1 |   100% |
+| hooks/scripts/ghi.py                                    |     2 |    0 |     2 |   100% |
+| hooks/scripts/handoff.py                                |     2 |    0 |     2 |   100% |
+| hooks/scripts/mx.py                                     |     2 |    0 |     2 |   100% |
+| hooks/scripts/pipeline.py                               |     4 |    0 |     4 |   100% |
+| hooks/scripts/quality.py                                |     3 |    0 |     3 |   100% |
+| hooks/scripts/routing.py                                |     4 |    0 |     4 |   100% |
+| hooks/scripts/validation.py                             |     4 |    0 |     4 |   100% |
+| insights/__init__.py                                    |     1 |    0 |     1 |   100% |
+| insights/append.py                                      |     2 |    0 |     2 |   100% |
+| insights/correction_mining.py                           |    15 |    1 |    14 |    93% |
+| insights/model.py                                       |     2 |    0 |     2 |   100% |
+| justify/__init__.py                                     |     1 |    0 |     1 |   100% |
+| justify/anchors.py                                      |     5 |    3 |     2 |    40% |
+| justify/cli.py                                          |     6 |    3 |     3 |    50% |
+| justify/complexity_hints.py                             |     5 |    0 |     5 |   100% |
+| justify/evidence.py                                     |    14 |   12 |     2 |    14% |
+| justify/models.py                                       |     8 |    1 |     7 |    88% |
+| justify/parser.py                                       |    12 |    3 |     9 |    75% |
+| justify/walkthrough.py                                  |    14 |    7 |     7 |    50% |
+| justify/templates/__init__.py                           |     1 |    0 |     1 |   100% |
+| knowledge/__init__.py                                   |     1 |    0 |     1 |   100% |
+| knowledge/__main__.py                                   |     1 |    0 |     1 |   100% |
+| knowledge/concept_frontmatter.py                        |     2 |    0 |     2 |   100% |
+| knowledge/generate.py                                   |     4 |    0 |     4 |   100% |
+| models/__init__.py                                      |     1 |    0 |     1 |   100% |
+| models/exemplar.py                                      |     6 |    0 |     6 |   100% |
+| models/foundation_grandfather.py                        |     3 |    0 |     3 |   100% |
+| models/frontmatter.py                                   |     1 |    0 |     1 |   100% |
+| models/historical_waiver.py                             |     3 |    0 |     3 |   100% |
+| models/persona.py                                       |     9 |    0 |     9 |   100% |
+| models/security_surfaces.py                             |     7 |    2 |     5 |    71% |
+| models/tautological_tests.py                            |     5 |    0 |     5 |   100% |
+| models/theater_signatures.py                            |     2 |    0 |     2 |   100% |
+| mx/__init__.py                                          |     1 |    0 |     1 |   100% |
+| mx/awareness.py                                         |     8 |    1 |     7 |    88% |
+| mx/checkpoint.py                                        |     3 |    0 |     3 |   100% |
+| mx/disposition.py                                       |     4 |    0 |     4 |   100% |
+| mx/hardening.py                                         |    12 |    0 |    12 |   100% |
+| mx/invariants.py                                        |     8 |    0 |     8 |   100% |
+| mx/levels.py                                            |     2 |    0 |     2 |   100% |
+| mx/log.py                                               |    10 |    1 |     9 |    90% |
+| mx/marker.py                                            |    10 |    1 |     9 |    90% |
+| mx/proxy_reality.py                                     |     8 |    0 |     8 |   100% |
+| ontology/__init__.py                                    |     1 |    0 |     1 |   100% |
+| ontology/corpus.py                                      |    10 |    0 |    10 |   100% |
+| ontology/graph.py                                       |    11 |    0 |    11 |   100% |
+| ontology/model.py                                       |     9 |    0 |     9 |   100% |
+| ontology/okf.py                                         |     7 |    0 |     7 |   100% |
+| ontology/purity.py                                      |     3 |    0 |     3 |   100% |
+| ontology/source.py                                      |    48 |    2 |    46 |    96% |
+| ontology/unified.py                                     |    16 |    2 |    14 |    88% |
+| ontology/work.py                                        |    12 |    0 |    12 |   100% |
+| personas/__init__.py                                    |    21 |    0 |    21 |   100% |
+| reporter/__init__.py                                    |     1 |    0 |     1 |   100% |
+| reporter/panels.py                                      |     2 |    0 |     2 |   100% |
+| reporter/presets.py                                     |     7 |    0 |     7 |   100% |
+| rules/__init__.py                                       |    24 |    0 |    24 |   100% |
+| rules/_scaffolder.py                                    |     4 |    0 |     4 |   100% |
+| schemas/__init__.py                                     |     3 |    0 |     3 |   100% |
+| skills/__init__.py                                      |    20 |    0 |    20 |   100% |
+| templates/__init__.py                                   |    15 |    2 |    13 |    87% |
+| templates/author_prompts.py                             |     1 |    0 |     1 |   100% |
+| validate_pkg/__init__.py                                |     1 |    0 |     1 |   100% |
+| validate_pkg/changelog.py                               |     2 |    0 |     2 |   100% |
+| validate_pkg/document.py                                |     8 |    0 |     8 |   100% |
+| validate_pkg/ledger_check.py                            |    10 |    7 |     3 |    30% |
+| validate_pkg/manifest.py                                |     2 |    0 |     2 |   100% |
+| validate_pkg/surface.py                                 |     9 |    0 |     9 |   100% |
+| validate_pkg/sync_parity.py                             |    14 |    1 |    13 |    93% |
+| validators/__init__.py                                  |     1 |    0 |     1 |   100% |
+| validators/rule_version_markers.py                      |     8 |    0 |     8 |   100% |
+| validators/unscoped_rules.py                            |    11 |    0 |    11 |   100% |
+|---------------------------------------------------------|-------|------|-------|--------|
+| TOTAL                                                   |  4303 |  507 |  3796 |  88.2% |
+---------------- RESULT: PASSED (minimum: 85.0%, actual: 88.2%) ----------------
+[uvx ruff check src/gzkit --select D] stdout:
+D401 First line of docstring should be in imperative mood: "The drift-diff push-minus-pull over the two-graph (REQ-01)."
+   --> src/gzkit/airlock/exit.py:144:5
+    |
+142 |       intent_targets: tuple[str, ...],
+143 |   ) -> DriftDiff:
+144 | /     """The drift-diff push-minus-pull over the two-graph (REQ-01).
+145 | |
+146 | |     FACT (``OBSERVED``, from reach) minus INTENT (``LAW``, from the brief +
+147 | |     parent-ADR invariants) is the symmetric difference: a fact target with no
+148 | |     matching intent is a "you wrecked something" PUSH edge; an intent target with
+149 | |     no matching fact is a "broken contract" PULL edge. A fully-matched two-graph
+150 | |     yields empty drift and a CLEAN verdict — drift present SURFACEs (the tracer
+151 | |     reports, it never BLOCKs; state-doctrine Rule 5 keeps this L3-advisory).
+152 | |     """
+    | |_______^
+153 |       fact = dict.fromkeys(fact_targets)  # order-preserving de-dupe
+154 |       intent = dict.fromkeys(intent_targets)
+    |
+
+D401 First line of docstring should be in imperative mood: "The airlock-OUT exit membrane — account for what the transit disturbed."
+   --> src/gzkit/airlock/exit.py:242:5
+    |
+240 |       ledger: Ledger | None = None,
+241 |   ) -> ExitReport:
+242 | /     """The airlock-OUT exit membrane — account for what the transit disturbed.
+243 | |
+244 | |     DECLARE the footprint (the brief's Allowed Paths, seam-as-BODY) -> PING the
+245 | |     observed reach (FACT edges) -> DRIFT-DIFF against the declared invariants
+246 | |     (INTENT edges) -> render findings + the closed decision menu -> route any
+247 | |     wrecked-something correction as a FRESH transit and PROPOSE (never write) a
+248 | |     map amendment for any broken contract -> book exactly one ``airlock_out`` L2
+249 | |     event. NEVER writes L1 canon (parent ADR § Boundary Invariants #1); the L3
+250 | |     reach INFORMS the drift-diff, it never gates (BI #6, state-doctrine Rule 5).
+251 | |     """
+    | |_______^
+252 |       booked = False
+253 |       try:
+    |
+
+D403 [*] First word of the docstring should be capitalized: `argparse` -> `Argparse`
+  --> src/gzkit/cli/parser_governance.py:28:5
+   |
+27 |   def _nonblank_target(value: str) -> str:
+28 | /     """argparse type: reject a blank/whitespace ``--target`` at the parse boundary.
+29 | |
+30 | |     ``required=True`` only requires the option to be present, not non-empty; an empty
+31 | |     target books an anonymous, unaccountable airlock transit and glob-selects an
+32 | |     unrelated ADR (Codex Step-4b, GHI #678). The handler re-checks defensively.
+33 | |     """
+   | |_______^
+34 |       if not value.strip():
+35 |           raise argparse.ArgumentTypeError("must name a non-empty file or region")
+   |
+help: Capitalize `argparse` to `Argparse`
+
+D401 First line of docstring should be in imperative mood: "Author a handoff through the fail-closed gate (REQ-0.0.65-03-03)."
+   --> src/gzkit/commands/handoff.py:283:5
+    |
+281 |       base_path: Path = Path("."),
+282 |   ) -> None:
+283 | /     """Author a handoff through the fail-closed gate (REQ-0.0.65-03-03).
+284 | |
+285 | |     Builds all seven required sections from their flags and routes them through
+286 | |     :func:`create_handoff`. On a validation refusal NOTHING is written and the
+287 | |     verb exits 1; on success the written path is reported.
+288 | |
+289 | |     Every required section has a flag (GHI #692). Previously only Decisions Made
+290 | |     and Current State Summary did, so the default invocation emitted five empty
+291 | |     headings and the gate — which checked presence, not population — blessed the
+292 | |     result. An unsupplied section is now a refusal, not a silent hollow.
+293 | |
+294 | |     ``settled`` seats rulings that arrived after the PRIOR handoff was authored —
+295 | |     the operator rules on a GHI once the session's handoff is already committed, so
+296 | |     the next handoff is the only seat available. It is normally unnecessary: the
+297 | |     section self-populates from the predecessor's ``[operator-ruled]`` decisions.
+298 | |     """
+    | |_______^
+299 |       supplied = {
+300 |           "summary": summary,
+    |
+
+D401 First line of docstring should be in imperative mood: "True when the adversary names a different-vendor (non-Claude) model."
+    --> src/gzkit/commands/obpi_complete.py:1917:5
+     |
+1916 |   def _is_cross_vendor_adversary(adversary: str) -> bool:
+1917 | /     """True when the adversary names a different-vendor (non-Claude) model.
+1918 | |
+1919 | |     Cross-vendor is the tier-1 property Step 4b requires: it shares none of this
+1920 | |     agent's blind spots. Detection is an explicit allowlist of vendor prefixes —
+1921 | |     an unrecognized name is treated as NOT cross-vendor so the gate fails closed
+1922 | |     (the caller must justify why Codex was unavailable), never open by ambiguity.
+1923 | |     """
+     | |_______^
+1924 |       name = adversary.strip().lower()
+1925 |       return any(name.startswith(prefix) for prefix in _CROSS_VENDOR_ADVERSARY_PREFIXES)
+     |
+
+D301 Use `r"""` if any backslashes in a docstring
+   --> src/gzkit/commands/permitted_entry.py:155:5
+    |
+154 |   def _sanitize_for_brief(text: str) -> str:
+155 | /     """Collapse whitespace/newlines and strip backticks from free-text intent.
+156 | |
+157 | |     The synthetic DECLARE embeds the intent into Markdown that ``extract_allowed_paths``
+158 | |     parses for ``- `path` `` bullets. Newlines would let an injected ``\\n- `evil.py` ``
+159 | |     forge a declared body, and a backtick would break a quoted path — both neutralized
+160 | |     here. Applied ONLY to the descriptive intent, NEVER to the target (whose identity
+161 | |     must stay lossless; unrepresentable targets are rejected upstream) — Codex Step-4b,
+162 | |     GHI #678.
+163 | |     """
+    | |_______^
+164 |       return " ".join(text.split()).replace("`", "")
+    |
+help: Add `r` prefix
+
+D401 First line of docstring should be in imperative mood: "True when the package cannot be decoded as UTF-8 at all."
+  --> src/gzkit/commands/register.py:59:5
+   |
+58 |   def is_undecodable_adr(adr_file: Path) -> bool:
+59 | /     """True when the package cannot be decoded as UTF-8 at all.
+60 | |
+61 | |     Checked BEFORE `parse_artifact_metadata`, which reads UTF-8 and catches only
+62 | |     `OSError`: a UTF-16/32 package would otherwise raise `UnicodeDecodeError` and
+63 | |     abort the whole registration pass rather than being refused in a controlled way.
+64 | |     """
+   | |_______^
+65 |       try:
+66 |           adr_file.read_text(encoding="utf-8-sig")
+   |
+
+D401 First line of docstring should be in imperative mood: "True when a package declares `kind: foundation` but is not grandfathered."
+  --> src/gzkit/commands/register.py:87:5
+   |
+85 |       adr_file: Path, adr_id: str, grandfathered: frozenset[str]
+86 |   ) -> bool:
+87 | /     """True when a package declares `kind: foundation` but is not grandfathered.
+88 | |
+89 | |     Manifest-aware by contract, never a bare `kind` refusal: refusing on kind
+90 | |     alone would reject the whole grandfathered roster and contradict the closure
+91 | |     it enforces (GHI #706, brief Requirement 5).
+92 | |     """
+   | |_______^
+93 |       try:
+94 |           content = adr_file.read_text(encoding="utf-8-sig")
+   |
+
+D401 First line of docstring should be in imperative mood: "True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."
+   --> src/gzkit/commands/validate_task_envelope.py:349:5
+    |
+347 |     ev: dict[str, object], ev_type: str, task_id: str | None
+348 | ) -> bool:
+349 |     """True for a pre-cutover ``pool_demotion`` rename from the unrepaired producer."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+350 |     if ev_type != "artifact_renamed" or task_id or ev.get("reason") != "pool_demotion":
+351 |         return False
+    |
+
+D401 First line of docstring should be in imperative mood: "True when the usage block names ``flag`` itself (not a longer sibling)."
+   --> src/gzkit/doc_coverage/flag_scanner.py:290:5
+    |
+289 | def _mentions(usage: str, flag: str) -> bool:
+290 |     """True when the usage block names ``flag`` itself (not a longer sibling)."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+291 |     return bool(re.search(rf"{re.escape(flag)}{_FLAG_END}", usage))
+    |
+
+D401 First line of docstring should be in imperative mood: "True when the usage block brackets ``flag`` itself as optional."
+   --> src/gzkit/doc_coverage/flag_scanner.py:295:5
+    |
+294 | def _claims_optional(usage: str, flag: str) -> bool:
+295 |     """True when the usage block brackets ``flag`` itself as optional."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+296 |     return bool(re.search(rf"\[{re.escape(flag)}{_FLAG_END}", usage))
+    |
+
+D301 Use `r"""` if any backslashes in a docstring
+   --> src/gzkit/doc_coverage/flag_scanner.py:300:5
+    |
+299 |   def _claims_takes_value(usage: str, flag: str) -> bool:
+300 | /     """True when the usage block shows ``flag`` binding a placeholder.
+301 | |
+302 | |     Placeholders are uppercase by manpage convention (``PATH``, ``TEXT``, ``ID``).
+303 | |     Matched on the SAME LINE only: ``\\s+`` would span the newline between a
+304 | |     valueless flag and the next line's ``GZ COMMAND``, inventing a claim the doc
+305 | |     never made.
+306 | |     """
+    | |_______^
+307 |       return bool(re.search(rf"{re.escape(flag)}{_FLAG_END}[ \t]+[A-Z][A-Z_]*", usage))
+    |
+help: Add `r` prefix
+
+D401 First line of docstring should be in imperative mood: "True when the usage block shows ``flag`` binding a placeholder."
+   --> src/gzkit/doc_coverage/flag_scanner.py:300:5
+    |
+299 |   def _claims_takes_value(usage: str, flag: str) -> bool:
+300 | /     """True when the usage block shows ``flag`` binding a placeholder.
+301 | |
+302 | |     Placeholders are uppercase by manpage convention (``PATH``, ``TEXT``, ``ID``).
+303 | |     Matched on the SAME LINE only: ``\\s+`` would span the newline between a
+304 | |     valueless flag and the next line's ``GZ COMMAND``, inventing a claim the doc
+305 | |     never made.
+306 | |     """
+    | |_______^
+307 |       return bool(re.search(rf"{re.escape(flag)}{_FLAG_END}[ \t]+[A-Z][A-Z_]*", usage))
+    |
+
+D205 1 blank line required between summary line and description
+   --> src/gzkit/events.py:762:5
+    |
+761 |   class AdversarialValidationEvent(_EventBase):
+762 | /     """adversarial_validation event — an independent adversary's verdict on an OBPI
+763 | |     completion claim, recorded before Gate 5 (GHI #676, upstream GHI #643).
+764 | |
+765 | |     Step 4b of the OBPI pipeline is fail-closed: no OBPI reaches attestation without
+766 | |     an independent adversary, prompted to REFUTE, re-deriving the completion claim.
+767 | |     This event is that verdict's durable home. Without it the verdict lives only in an
+768 | |     agent transcript or a vendor cache — outside the repo, the ledger, and the brief —
+769 | |     so an agent that skipped 4b and one that was refuted and attested anyway leave
+770 | |     indistinguishable records.
+771 | |
+772 | |     ``degraded-human-only`` is the explicit, attested floor when neither a
+773 | |     different-vendor adversary nor an independent subagent could run. Silence is never
+774 | |     a substitute for it.
+775 | |     """
+    | |_______^
+776 |
+777 |       event: Literal["adversarial_validation"]
+    |
+help: Insert single blank line
+
+D401 First line of docstring should be in imperative mood: "True when the command invokes the fidelity gate itself (``gz adr fidelity``)."
+  --> src/gzkit/fidelity.py:60:5
+   |
+59 |   def is_self_referential_command(command: str) -> bool:
+60 | /     """True when the command invokes the fidelity gate itself (``gz adr fidelity``).
+61 | |
+62 | |     A fidelity assertion whose command runs the gate that evaluates it is
+63 | |     tautological: the gate must reach the row to run it, so the row can never be
+64 | |     red while it is being evaluated (GHI #702). Its subject is the parser, not
+65 | |     the ADR's thesis — it inflates the witness count without exercising the
+66 | |     delivered surface (#699's ``copy-vs-self`` theater signature).
+67 | |
+68 | |     Detection is a contiguous ``gz adr fidelity`` token run anywhere in the
+69 | |     command (a leading ``uv run`` wrapper is transparent), which is the only
+70 | |     shape that re-enters the gate. A command we cannot tokenize is not
+71 | |     self-referential — the gate runner already reports it as unrunnable.
+72 | |     """
+   | |_______^
+73 |       try:
+74 |           tokens = shlex.split(command)
+   |
+
+D401 First line of docstring should be in imperative mood: "The destructive half: demote, witness, populate. Ordering is load-bearing."
+   --> src/gzkit/foundation/sunset_migrate.py:753:5
+    |
+751 |       receipt: dict[str, Any],
+752 |   ) -> None:
+753 | /     """The destructive half: demote, witness, populate. Ordering is load-bearing.
+754 | |
+755 | |     Preflight validates EVERY demotion before the first rmtree, and the
+756 | |     write-ahead journal is claimed before the first destructive write — an
+757 | |     interruption is otherwise undetectable on retry. The journal is deliberately
+758 | |     NOT discharged here: it is the only recovery signal for a partial apply, so it
+759 | |     must outlive the postcondition checks its caller runs. Clearing it here would
+760 | |     delete the evidence exactly when a failed postcondition means it is needed.
+761 | |     """
+    | |_______^
+762 |       from gzkit.ledger_events import foundation_grandfathered_event
+    |
+
+D202 [*] No blank lines allowed after function docstring (found 1)
+   --> src/gzkit/foundation/sunset_migrate.py:838:5
+    |
+836 |       task_id: str | None = None,
+837 |   ) -> dict[str, Any]:
+838 | /     """Execute (or preview) the sunset migration and write a JSON receipt.
+839 | |
+840 | |     The prerequisite roster is deliberately NOT a parameter: a
+841 | |     production-callable ``prerequisites=()`` argument disables the mandatory
+842 | |     pre-migration gate exactly as a fixture does, with no boundary distinguishing
+843 | |     them — a bypass around a STOP-on-BLOCKERS requirement. Tests patch
+844 | |     ``_SUNSET_PREREQUISITES`` within test scope instead.
+845 | |     """
+    | |_______^
+846 |
+847 |       if not dry_run and not (attestor.strip() and attestation.strip()):
+    |
+help: Remove blank line(s) after function docstring
+
+D401 First line of docstring should be in imperative mood: "True when a checklist path resolves outside the repository root."
+   --> src/gzkit/governance/brief_reconcile.py:715:5
+    |
+714 |   def _escapes_project_root(path: str, project_root: Path) -> bool:
+715 | /     """True when a checklist path resolves outside the repository root.
+716 | |
+717 | |     A path that escapes the root (``../airlineops/.claude/hooks/``, an absolute
+718 | |     path) names an artifact the repository does not own. Whether it exists is a
+719 | |     property of the developer's working-directory layout, not of the committed
+720 | |     tree — so existence-checking it makes the verdict vary by machine: green
+721 | |     wherever the sibling happens to be checked out, red in CI and for every
+722 | |     adopter (GHI #721).
+723 | |     """
+    | |_______^
+724 |       return not (project_root / path).resolve().is_relative_to(project_root.resolve())
+    |
+
+D401 First line of docstring should be in imperative mood: "An invariant-tier scorecard bullet absent from the per-turn surface."
+  --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:67:5
+   |
+66 |   def build_bullet_retention() -> Path:
+67 | /     """An invariant-tier scorecard bullet absent from the per-turn surface.
+68 | |
+69 | |     Only the scorecard exists, so the other three sub-validators return no
+70 | |     findings and this claim isolates bullet-retention.
+71 | |     """
+   | |_______^
+72 |       root = _root("bullet-retention")
+73 |       _put(
+   |
+
+D401 First line of docstring should be in imperative mood: "A per-turn surface in the fail-closed red band against a zero floor."
+  --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:81:5
+   |
+80 | def build_surface_weight() -> Path:
+81 |     """A per-turn surface in the fail-closed red band against a zero floor."""
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+82 |     root = _root("surface-weight")
+83 |     _put(root / "data" / "surface_weight_floor.json", json.dumps({"lines": 0}) + "\n")
+   |
+
+D401 First line of docstring should be in imperative mood: "A closed-set-lock surface whose entry carries no lock field."
+   --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:182:5
+    |
+181 | def build_waiver_closed_set_lock() -> Path:
+182 |     """A closed-set-lock surface whose entry carries no lock field."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+183 |     root = _root("waiver-closed-set-lock")
+184 |     _registry(
+    |
+
+D401 First line of docstring should be in imperative mood: "A dated-cutover surface whose cutover has not closed."
+   --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:199:5
+    |
+198 |   def build_waiver_dated_cutover() -> Path:
+199 | /     """A dated-cutover surface whose cutover has not closed.
+200 | |
+201 | |     2099 keeps the violation in the future for the lifetime of the codebase; a
+202 | |     near date would quietly stop violating once it passed.
+203 | |     """
+    | |_______^
+204 |       root = _root("waiver-dated-cutover")
+205 |       _registry(
+    |
+
+D401 First line of docstring should be in imperative mood: "A waiver data file on disk that no registry surface declares."
+   --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:221:5
+    |
+220 | def build_waiver_silent_bypass() -> Path:
+221 |     """A waiver data file on disk that no registry surface declares."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+222 |     root = _root("waiver-silent-bypass")
+223 |     _registry(root, [])
+    |
+
+D401 First line of docstring should be in imperative mood: "A post-cutover handoff with every required section PRESENT but one empty."
+   --> src/gzkit/governance/trust_audits/_qc_nc_composite.py:229:5
+    |
+228 |   def build_handoff_populated_sections() -> Path:
+229 | /     """A post-cutover handoff with every required section PRESENT but one empty.
+230 | |
+231 | |     Isolates the ``validate_sections_populated`` invariant (GHI #698). The parent
+232 | |     ``handoff-documents`` fixture omits six of the seven headings, so its findings
+233 | |     are all *missing-section* — delete the populated check and it stays red for
+234 | |     the same missing-section reason, so the control never notices. This fixture
+235 | |     plants the *present-but-empty* violation the parent never reached: all seven
+236 | |     headings present, six carrying session-specific body text, one heading with an
+237 | |     empty body, so the ONLY blocking finding the production audit can raise is
+238 | |     "Empty required section". Delete ``validate_sections_populated`` and this
+239 | |     document validates clean — which reddens the control.
+240 | |
+241 | |     Frontmatter mirrors the parent fixture (proven to satisfy HandoffFrontmatter
+242 | |     — the parent fails only on missing sections) and the timestamp is post-cutover
+243 | |     so ``run_handoff_document_audit`` does not grandfather it.
+244 | |     """
+    | |_______^
+245 |       root = _root("handoff-populated-sections")
+246 |       sections = (
+    |
+
+D401 First line of docstring should be in imperative mood: "A valid doc-coverage manifest whose one command has a mismatched manpage heading."
+  --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:72:5
+   |
+71 |   def _build_cli_audit() -> Path:
+72 | /     """A valid doc-coverage manifest whose one command has a mismatched manpage heading.
+73 | |
+74 | |     `.gzkit.json` clears `ensure_initialized`; the manifest, index, and README Quick
+75 | |     Start are all well-formed. The single violation is the manpage's H1 naming a
+76 | |     different command. Without the manifest the command raises an uncaught
+77 | |     FileNotFoundError, which also exits 1 — so the old empty fixture scored a crash
+78 | |     as enforcement (GHI #699).
+79 | |     """
+   | |_______^
+80 |       root = _mkroot("cli-audit")
+81 |       _write(root / ".gzkit.json", "{}\n")
+   |
+
+D401 First line of docstring should be in imperative mood: "A mirrored skill whose SKILL.md omits the required `owner` field."
+   --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:117:5
+    |
+116 |   def _build_skill_audit() -> Path:
+117 | /     """A mirrored skill whose SKILL.md omits the required `owner` field.
+118 | |
+119 | |     All four mirror roots carry byte-identical copies so mirror drift does not add a
+120 | |     second finding, and the canonical root is non-empty so the CANONICAL-ROOT-EMPTY
+121 | |     branch does not fire. The one violation is the missing required field.
+122 | |     """
+    | |_______^
+123 |       root = _mkroot("skill-audit")
+124 |       _write(root / ".gzkit.json", "{}\n")
+    |
+
+D401 First line of docstring should be in imperative mood: "A docs site whose nav names a page that does not exist."
+   --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:363:5
+    |
+362 |   def _build_docs_build() -> Path:
+363 | /     """A docs site whose nav names a page that does not exist.
+364 | |
+365 | |     A missing nav target is only a WARNING to mkdocs; it fails the build solely
+366 | |     because ``--strict`` promotes warnings to errors. That makes it the right
+367 | |     violation for this claim: a control that made mkdocs fail some other way
+368 | |     (malformed YAML, missing config) would stay green if ``--strict`` were ever
+369 | |     dropped from the command, which is the exact regression the claim guards.
+370 | |
+371 | |     This is the shape that shipped broken in this repo — a nav entry pointing at
+372 | |     a manpage renamed in an earlier pass, green under ``gz check`` until someone
+373 | |     ran the build by hand (2026-07-26).
+374 | |     """
+    | |_______^
+375 |       root = _mkroot("docs-build")
+376 |       _write(root / "docs" / "index.md", "# Home\n")
+    |
+
+D401 First line of docstring should be in imperative mood: "A scenario whose step FAILS — not one whose step is merely undefined."
+   --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:385:5
+    |
+384 |   def _build_behave() -> Path:
+385 | /     """A scenario whose step FAILS — not one whose step is merely undefined.
+386 | |
+387 | |     The bare feature file made behave exit 1 with
+388 | |     ``ConfigError: No steps directory``: a configuration bail before any scenario
+389 | |     was evaluated, indistinguishable from a real failure at exit 1 (GHI #699). A
+390 | |     steps module makes behave run the scenario and fail it on the assertion, which
+391 | |     is the outcome the claim actually names.
+392 | |     """
+    | |_______^
+393 |       root = _mkroot("behave")
+394 |       _write(
+    |
+
+D401 First line of docstring should be in imperative mood: "A LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615)."
+   --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:596:5
+    |
+595 |   def _build_brief_structure() -> Path:
+596 | /     """A LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
+597 | |
+598 | |     Status is `Draft`, so the terminal-status exemption cannot swallow it: this
+599 | |     fixture fails only if the scope has stopped enforcing `BriefStructure` on the
+600 | |     live corpus, which is the exact regression the flip exists to prevent.
+601 | |     """
+    | |_______^
+602 |       root = _mkroot("brief-structure")
+603 |       _write(
+    |
+
+D401 First line of docstring should be in imperative mood: "A stale pipeline marker in an INITIALIZED project."
+   --> src/gzkit/governance/trust_audits/_qc_negative_controls.py:851:5
+    |
+850 |   def _build_preflight() -> Path:
+851 | /     """A stale pipeline marker in an INITIALIZED project.
+852 | |
+853 | |     The marker was always planted, but without `.gzkit.json` the command bailed at
+854 | |     `ensure_initialized` with "gzkit not initialized" — exit 1, same as a real
+855 | |     finding, so the marker was never inspected (GHI #699).
+856 | |     """
+    | |_______^
+857 |       root = _mkroot("preflight")
+858 |       _write(root / ".gzkit.json", "{}\n")
+    |
+
+D401 First line of docstring should be in imperative mood: "True when the latest verdict is ``refuted`` with no recorded resolution."
+   --> src/gzkit/governance/trust_audits/adversarial_validation.py:162:5
+    |
+161 | def _unresolved_refutation(events: list[dict]) -> bool:
+162 |     """True when the latest verdict is ``refuted`` with no recorded resolution."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+163 |     latest = events[-1]
+164 |     return latest.get("verdict") == "refuted" and not latest.get("resolution")
+    |
+
+D205 1 blank line required between summary line and description
+   --> src/gzkit/governance/trust_audits/lock_handoff_coupling.py:137:5
+    |
+136 |   def _concluded_claim_ts(claim_tss: list[datetime], release_ts: datetime) -> datetime | None:
+137 | /     """The claim a release concludes: the latest claim for the OBPI at or before the
+138 | |     release timestamp.
+139 | |
+140 | |     Pairing by concluded claim (not the releasing agent's newest claim) keeps
+141 | |     abandon-then-reclaim and cross-agent force-reap sequences valid, while still
+142 | |     flagging a handoff that genuinely predates the claim it concluded.
+143 | |     """
+    | |_______^
+144 |       prior = [ts for ts in claim_tss if ts <= release_ts]
+145 |       return prior[-1] if prior else None
+    |
+help: Insert single blank line
+
+D401 First line of docstring should be in imperative mood: "The claim a release concludes: the latest claim for the OBPI at or before the"
+   --> src/gzkit/governance/trust_audits/lock_handoff_coupling.py:137:5
+    |
+136 |   def _concluded_claim_ts(claim_tss: list[datetime], release_ts: datetime) -> datetime | None:
+137 | /     """The claim a release concludes: the latest claim for the OBPI at or before the
+138 | |     release timestamp.
+139 | |
+140 | |     Pairing by concluded claim (not the releasing agent's newest claim) keeps
+141 | |     abandon-then-reclaim and cross-agent force-reap sequences valid, while still
+142 | |     flagging a handoff that genuinely predates the claim it concluded.
+143 | |     """
+    | |_______^
+144 |       prior = [ts for ts in claim_tss if ts <= release_ts]
+145 |       return prior[-1] if prior else None
+    |
+
+D102 Missing docstring in public method
+   --> src/gzkit/handoff_api.py:177:9
+    |
+175 |     """
+176 |
+177 |     def __call__(self, reference: StepReference) -> ReferenceState: ...
+    |         ^^^^^^^^
+    |
+
+D301 Use `r"""` if any backslashes in a docstring
+   --> src/gzkit/handoff_api.py:295:5
+    |
+294 |   def _render_document(frontmatter: dict, sections: dict[str, str]) -> str:
+295 | /     """Render frontmatter + the seven required sections into a Markdown doc.
+296 | |
+297 | |     Missing sections render as an empty heading. The optional ``Settled Rulings``
+298 | |     section is emitted only when it carries entries, so a handoff with no settled
+299 | |     ruling gains no hollow heading. Written with explicit ``\n`` newlines so the
+300 | |     committed artifact is LF on every platform.
+301 | |     """
+    | |_______^
+302 |       parts = ["---\n", yaml.safe_dump(frontmatter, sort_keys=False), "---\n\n"]
+303 |       for section in (*REQUIRED_SECTIONS, SETTLED_SECTION):
+    |
+help: Add `r` prefix
+
+D401 First line of docstring should be in imperative mood: "Author a handoff document, routing it through the validation gate."
+   --> src/gzkit/handoff_api.py:672:5
+    |
+670 |       mode: str = "CREATE",
+671 |   ) -> Path:
+672 | /     """Author a handoff document, routing it through the validation gate.
+673 | |
+674 | |     Builds frontmatter plus the seven required sections (missing sections
+675 | |     render empty), then runs :func:`validate_handoff_document`. When validation
+676 | |     reports violations the document is NOT written — a :class:`HandoffValidationError`
+677 | |     carrying the violation list is raised (fail-closed). A clean document is
+678 | |     written to ``<base_path>/.gzkit/handoffs/<fs-ts>-<slug>.md`` and its path returned.
+679 | |
+680 | |     ``Settled Rulings`` is composed by construction from the predecessor unless the
+681 | |     author supplies it: the predecessor's carried rulings plus the operator rulings
+682 | |     it booked. A ruling booked once therefore keeps arriving without anyone
+683 | |     remembering to re-state it (GHI #696 defect 3).
+684 | |     """
+    | |_______^
+685 |       ts = timestamp or _now_iso()
+686 |       link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
+    |
+
+D205 1 blank line required between summary line and description
+   --> src/gzkit/handoff_archive.py:126:5
+    |
+125 |   def _dest_occupied(dest: Path) -> bool:
+126 | /     """True when a directory entry already exists at ``dest`` — including a dangling
+127 | |     symlink (``exists()`` follows symlinks and misses those, but ``os.link`` still
+128 | |     fails on them, so planning must agree with execution — Step-4b round-3 finding)."""
+    | |_______________________________________________________________________________________^
+129 |       return dest.exists() or dest.is_symlink()
+    |
+help: Insert single blank line
+
+D209 [*] Multi-line docstring closing quotes should be on a separate line
+   --> src/gzkit/handoff_archive.py:126:5
+    |
+125 |   def _dest_occupied(dest: Path) -> bool:
+126 | /     """True when a directory entry already exists at ``dest`` — including a dangling
+127 | |     symlink (``exists()`` follows symlinks and misses those, but ``os.link`` still
+128 | |     fails on them, so planning must agree with execution — Step-4b round-3 finding)."""
+    | |_______________________________________________________________________________________^
+129 |       return dest.exists() or dest.is_symlink()
+    |
+help: Move closing quotes to new line
+
+D401 First line of docstring should be in imperative mood: "True when a directory entry already exists at ``dest`` — including a dangling"
+   --> src/gzkit/handoff_archive.py:126:5
+    |
+125 |   def _dest_occupied(dest: Path) -> bool:
+126 | /     """True when a directory entry already exists at ``dest`` — including a dangling
+127 | |     symlink (``exists()`` follows symlinks and misses those, but ``os.link`` still
+128 | |     fails on them, so planning must agree with execution — Step-4b round-3 finding)."""
+    | |_______________________________________________________________________________________^
+129 |       return dest.exists() or dest.is_symlink()
+    |
+
+D401 First line of docstring should be in imperative mood: "Resolved keys of every continues_from target across the given handoffs."
+   --> src/gzkit/handoff_archive.py:198:5
+    |
+197 | def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:
+198 |     """Resolved keys of every continues_from target across the given handoffs."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+199 |     keys: set[str] = set()
+200 |     for path in handoffs:
+    |
+
+D401 First line of docstring should be in imperative mood: "True when this session carries an operator authorization on the ledger."
+   --> src/gzkit/handoff_resume_gate.py:215:5
+    |
+214 |   def is_resume_authorized(project_root: Path, session_id: str) -> bool:
+215 | /     """True when this session carries an operator authorization on the ledger.
+216 | |
+217 | |     Fails CLOSED (returns False) on an unreadable or absent ledger: a gate that
+218 | |     opens when it cannot read its own evidence is not a gate. Scans raw JSONL
+219 | |     rather than through the typed reader so a single malformed line elsewhere in
+220 | |     the ledger cannot make the gate un-liftable.
+221 | |     """
+    | |_______^
+222 |       if not session_id:
+223 |           return False
+    |
+
+D401 First line of docstring should be in imperative mood: "True when a token is a bare control operator (``&&``, ``;``, ``|``, ``>``…)."
+   --> src/gzkit/handoff_resume_gate.py:259:5
+    |
+258 | def _is_shell_operator(token: str) -> bool:
+259 |     """True when a token is a bare control operator (``&&``, ``;``, ``|``, ``>``…)."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+260 |     return bool(token) and set(token) <= _SHELL_OPERATOR_CHARS
+    |
+
+D401 First line of docstring should be in imperative mood: "True when a token carries command substitution."
+   --> src/gzkit/handoff_resume_gate.py:264:5
+    |
+263 |   def _can_expand(token: str) -> bool:
+264 | /     """True when a token carries command substitution.
+265 | |
+266 | |     Checked in EVERY quoting form, deliberately. Double quotes do not make
+267 | |     substitution inert (bash expands ``"$(rm -rf x)"`` and ``"`rm -rf x`"`` just
+268 | |     as it would bare), and posix-mode tokenization — required by
+269 | |     :func:`_is_compound` — strips quotes, so the inert single-quoted form is
+270 | |     indistinguishable from the live double-quoted one by the time we see a token.
+271 | |     Facing that ambiguity the gate refuses both: a false refusal costs a literal
+272 | |     ``$(``-in-a-pattern search that no claim verification needs; a false permit
+273 | |     costs a subshell.
+274 | |     """
+    | |_______^
+275 |       return "`" in token or "$(" in token
+    |
+
+D301 Use `r"""` if any backslashes in a docstring
+   --> src/gzkit/handoff_resume_gate.py:279:5
+    |
+278 |   def _is_compound(command: str) -> bool:
+279 | /     """True when the command chains, redirects, or substitutes.
+280 | |
+281 | |     Quote-aware by construction. The first implementation ran a regex over the RAW
+282 | |     string, which cannot tell a pipe from the ``|`` inside ``grep "A\\|B"`` — so it
+283 | |     refused alternation patterns and `jq` filters, the most ordinary instruments
+284 | |     the § Claim Verification Gate has (dogfooded 2026-07-17: three of the first
+285 | |     four verification calls of a resume died on it). `shlex` knows quoting and,
+286 | |     with ``punctuation_chars``, emits real operators as standalone tokens.
+287 | |
+288 | |     Two lexer facts are load-bearing here and were established by probing the real
+289 | |     lexer, not by reasoning about it:
+290 | |
+291 | |     * ``posix=True`` is REQUIRED. In non-posix mode a quote that opens mid-token
+292 | |       raises ``No closing quotation`` — which would fail closed on
+293 | |       ``git log --since='60 days ago' --grep='^fix('``, the precedent-check command
+294 | |       AGENTS.md § Defect-fix routing *mandates*, leaving the agent stuck between
+295 | |       two binding rules.
+296 | |     * Tokenization ALONE is not sufficient. Backticks are not punctuation to
+297 | |       `shlex`, so ``gz state `rm -rf x``` yields an allowlisted head and NO
+298 | |       operator token — it would have ridden straight in. :func:`_can_expand`
+299 | |       covers what the split cannot see.
+300 | |     """
+    | |_______^
+301 |       try:
+302 |           lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    |
+help: Add `r` prefix
+
+D401 First line of docstring should be in imperative mood: "True when the command chains, redirects, or substitutes."
+   --> src/gzkit/handoff_resume_gate.py:279:5
+    |
+278 |   def _is_compound(command: str) -> bool:
+279 | /     """True when the command chains, redirects, or substitutes.
+280 | |
+281 | |     Quote-aware by construction. The first implementation ran a regex over the RAW
+282 | |     string, which cannot tell a pipe from the ``|`` inside ``grep "A\\|B"`` — so it
+283 | |     refused alternation patterns and `jq` filters, the most ordinary instruments
+284 | |     the § Claim Verification Gate has (dogfooded 2026-07-17: three of the first
+285 | |     four verification calls of a resume died on it). `shlex` knows quoting and,
+286 | |     with ``punctuation_chars``, emits real operators as standalone tokens.
+287 | |
+288 | |     Two lexer facts are load-bearing here and were established by probing the real
+289 | |     lexer, not by reasoning about it:
+290 | |
+291 | |     * ``posix=True`` is REQUIRED. In non-posix mode a quote that opens mid-token
+292 | |       raises ``No closing quotation`` — which would fail closed on
+293 | |       ``git log --since='60 days ago' --grep='^fix('``, the precedent-check command
+294 | |       AGENTS.md § Defect-fix routing *mandates*, leaving the agent stuck between
+295 | |       two binding rules.
+296 | |     * Tokenization ALONE is not sufficient. Backticks are not punctuation to
+297 | |       `shlex`, so ``gz state `rm -rf x``` yields an allowlisted head and NO
+298 | |       operator token — it would have ridden straight in. :func:`_can_expand`
+299 | |       covers what the split cannot see.
+300 | |     """
+    | |_______^
+301 |       try:
+302 |           lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
+    |
+
+D401 First line of docstring should be in imperative mood: "True only when the command is an allowlisted read-only invocation."
+   --> src/gzkit/handoff_resume_gate.py:311:5
+    |
+310 |   def _bash_is_read_only(command: str) -> bool:
+311 | /     """True only when the command is an allowlisted read-only invocation.
+312 | |
+313 | |     Fail-closed by construction: an unrecognized command is NOT read-only. A
+314 | |     compound command (``&&``, ``;``, ``|``, redirection, substitution) is never
+315 | |     read-only regardless of its head — ``gz state && rm -rf x`` must not ride in
+316 | |     on its prefix.
+317 | |     """
+    | |_______^
+318 |       if _is_compound(command):
+319 |           return False
+    |
+
+D205 1 blank line required between summary line and description
+  --> src/gzkit/models/foundation_grandfather.py:1:1
+   |
+ 1 | / """FoundationGrandfatherManifest — frozen identity-only entry model for the
+ 2 | | closed ``kind: foundation`` grandfather manifest (ADR-0.34.0).
+ 3 | |
+ 4 | | ``data/foundation_grandfather.json`` is the committed closed membership set
+ 5 | | for ADR ``kind: foundation``. Each entry is IDENTITY-ONLY — ``id``, ``title``,
+ 6 | | ``semver``, ``frozen_at`` — and carries no Layer-2 lifecycle fact. Lifecycle is
+ 7 | | read live from the ledger; baking it into this committed Layer-1 file would be
+ 8 | | the exact state-doctrine drift the ADR-0.0.37 frontmatter-lie demonstrated
+ 9 | | (parent ADR § Decision, Alternative 3 REJECTED).
+10 | |
+11 | | This module exposes:
+12 | | - ``FoundationGrandfatherManifest`` — frozen per-entry model (``extra="forbid"``).
+13 | | - ``load_manifest`` — read + parse the on-disk manifest into entry tuples.
+14 | | """
+   | |___^
+15 |
+16 |   from __future__ import annotations
+   |
+help: Insert single blank line
+
+D413 [*] Missing blank line after last section ("Raises")
+   --> src/gzkit/red_witness.py:191:5
+    |
+189 |     """Run ``test_names`` against the base tree and classify how they fail.
+190 |
+191 |     Raises:
+    |     ^^^^^^
+192 |         ValueError: when no covering test names were supplied — a BEHAVIOR REQ with
+193 |             no covering test is a coverage defect, not a falsifiability one, and the
+    |
+help: Add blank line after "Raises"
+
+D401 First line of docstring should be in imperative mood: "True when *case*'s test method carries the smoke marker."
+  --> src/gzkit/smoke.py:76:5
+   |
+75 | def is_smoke(case: unittest.TestCase) -> bool:
+76 |     """True when *case*'s test method carries the smoke marker."""
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+77 |     method = getattr(type(case), case._testMethodName, None)
+78 |     return bool(getattr(method, SMOKE_ATTRIBUTE, False))
+   |
+
+D401 First line of docstring should be in imperative mood: "True when the function makes any assertion at all."
+   --> src/gzkit/test_shape.py:125:5
+    |
+124 | def _has_assertion(fn: ast.FunctionDef) -> bool:
+125 |     """True when the function makes any assertion at all."""
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+126 |     for node in ast.walk(fn):
+127 |         if isinstance(node, ast.Assert):
+    |
+
+Found 50 errors.
+[*] 4 fixable with the `--fix` option (4 hidden fixes can be enabled with the `--unsafe-fixes` option).
+[uvx ruff check src/gzkit --select D] stderr:
+warning: `incorrect-blank-line-before-class` (D203) and `no-blank-line-before-class` (D211) are incompatible. Ignoring `incorrect-blank-line-before-class`.
+warning: `multi-line-summary-first-line` (D212) and `multi-line-summary-second-line` (D213) are incompatible. Ignoring `multi-line-summary-second-line`.
+```

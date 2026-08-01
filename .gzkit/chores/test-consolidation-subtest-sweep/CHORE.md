@@ -33,13 +33,21 @@ already-written tool is not wired to anything.
 
 | Signal | Value | Command |
 |---|---|---|
-| Test files | 497 | `find tests -name 'test_*.py' -type f \| wc -l` |
-| Files using `subTest` | 78 (15.7%) | `grep -rl "subTest" tests --include='test_*.py' \| wc -l` |
+| Test files | 508 | `find tests -name 'test_*.py' -type f \| wc -l` |
+| Files using `subTest` | 84 (16.5%) | `grep -rl "subTest" tests --include='test_*.py' \| wc -l` |
 | Slow-test profiler | exists, wired to nothing | `scripts/profile_unittest_modules.py` |
 
-GHI #644 recorded 59/449 (13.1%) on 2026-06-25. Both the numerator and
-denominator moved; **re-measure before acting rather than trusting either
-figure.** That tracker also carried two rows of stale state — it asserted `gz
+Re-measured 2026-07-31 on the chore's first run: 508 files / 84 using `subTest`
+(16.5%), up from 497 / 78 (15.7%) at authoring on 2026-07-27, and from GHI
+#644's 449 / 59 (13.1%) on 2026-06-25. Three measurements, three different
+denominators in five weeks — **re-measure before acting rather than trusting
+any figure above.** The ratio is drifting upward on its own, which is worth
+knowing before treating the sweep as urgent.
+
+The "wired to nothing" row still holds: `grep -rn profile_unittest_modules`
+across `*.py`/`*.md`/`*.json`/`*.toml`/`*.yml` returns only this CHORE.md, its
+README, and their `src/gzkit/` mirrors — no runner, no CI step, no `gz` verb
+invokes it. That tracker also carried two rows of stale state — it asserted `gz
 test` and CI were serial when both had been parallel since `baeb1f72e` — which
 is the specific reason this chore states its commands rather than its
 conclusions.
