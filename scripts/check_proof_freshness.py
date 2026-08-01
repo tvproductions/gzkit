@@ -5,9 +5,13 @@ The four ``control-surface-*`` chores gate on ``test -f <proofs>/<name>.md`` —
 existence, never currency. A report written once satisfies that criterion
 forever, so the chore reports ``All criteria pass`` while its evidence describes
 a surface that has since moved. Measured on 2026-08-01: ALL FOUR chores carried
-proofs older than the surfaces they audit — two frozen at 2026-06-25 and two at
+proofs older than the surfaces they audit — two frozen at 2026-05-10 and two at
 2026-07-16, against surfaces last moved 2026-07-29 and 2026-08-01 — and all four
 were reporting green throughout.
+
+The 2026-05-10 pair read as 2026-06-25 until ``_iso`` was corrected on
+2026-08-01; that date was the local reflog floor, not a commit date. See
+``_iso``.
 
 This gate compares git commit dates, not filesystem mtimes: a fresh clone or a
 branch switch rewrites every mtime, which would make an mtime comparison report
@@ -24,6 +28,7 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -60,20 +65,18 @@ def _last_commit_epoch(path: str) -> int | None:
 
 
 def _iso(epoch: int) -> str:
-    completed = subprocess.run(
-        ["git", "show", "-s", "--format=%cs", f"@{{{epoch}}}"],
-        cwd=_PROJECT_ROOT,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-        check=False,
-    )
-    out = completed.stdout.strip()
-    if out and not out.startswith("fatal"):
-        return out
-    from datetime import UTC, datetime
+    """Render a commit epoch as an ISO date.
 
+    Formats the epoch directly. The prior implementation asked git via
+    ``git show -s --format=%cs @{<epoch>}``, but ``@{<n>}`` is git's
+    *reflog-relative* revision syntax, not an epoch formatter: it resolves
+    against the local reflog and clamps to the reflog floor for anything
+    older, emitting ``warning: log for 'main' only goes back to ...``. Every
+    epoch predating the reflog therefore rendered as the same wrong date,
+    which is why three separate chores all reported ``2026-06-25``. Only the
+    printed prose was affected — ``main`` compares raw epochs, so the exit
+    code was always sound.
+    """
     return datetime.fromtimestamp(epoch, UTC).date().isoformat()
 
 
