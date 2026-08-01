@@ -9,8 +9,8 @@
 
 # MX Mode (Maintenance Hangar) (gzkit)
 
-> **Rule version:** `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08):
-> honor-the-marker + PRIME-DIRECTIVE-binds doctrine for MX hangar sessions.
+> **Rule version:** `1.0.1` — marker path aligned to `.gzkit/mx.json`; `e2d38c3c0` bumped the
+> HTML marker only (GHI #650). Prior `1.0.0` — initial authoring under ADR-0.0.74 (OBPI-0.0.74-08).
 
 ## Non-negotiable rules
 
