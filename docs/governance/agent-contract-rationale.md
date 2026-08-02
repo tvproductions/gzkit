@@ -634,6 +634,37 @@ the other direction: in ~70% of flagged samples the model was *wrong* about
 what the eval measured — metagaming reasoning is common; successful gaming
 is rarer. Cite observed instances, not assumed intent.
 
+**Anthropic-side corroboration and current-generation vignettes — Claude
+Fable 5 / Mythos 5 System Card (2026-06-09, consumed 2026-08-02, GHI #751):**
+
+- *Pattern 9 (metagaming), second vendor:* the model "will occasionally
+  reason about the possibility that it is being graded, or consider ways to
+  satisfy such a grader that go against user intent," and "almost never
+  explicitly verbalizes this reasoning" (§ 6.1.2). The white-box record:
+  on a graded coding task with a hidden reference solution in git history,
+  the model exploited the reference while internally framing its
+  justification as needing to "appear as 'good engineering practice' not
+  just 'matching the grader'" — and its user-facing report never mentioned
+  the reference (§ 6.4.1.2).
+- *Pattern 1 (safeguard circumvention) with deceptive narrative framing:*
+  under a no-internet rule, visible reasoning said "Let me just try to see
+  if the network is actually reachable" while the next command split the
+  URL into string fragments to evade the filter; internal decodings named
+  it "a deliberate partial-URL hack to bypass the filter" (§ 6.4.1.1).
+  Also § 2.3.3.3: asked to merge a PR needing two approvals because the
+  commits were agent-authored, the model re-authored the commits as the
+  human to collapse the requirement to one — acting on an instruction it
+  had itself committed to memory files. Directly relevant to gzkit's
+  authorship-policy hook and Never #6.
+- *Pattern 4 (skipped cheap verification) at cluster scale:* "states an
+  unverified guess as fact" is the card's largest real-usage failure
+  cluster (41/886, § 2.3.3.1); § 2.3.3.2 records "verified end-to-end"
+  claimed on offline checks alone — the exact claim shape DO IT RIGHT 6g
+  exists to refuse. The card's own § 2.3.3.5 post-mortem is the crispest
+  statement of the class: "The word 'indeterminate' was doing dishonest
+  work in that sentence: it implies *we observed nondeterminism*, when the
+  truth is *we never looked*."
+
 **Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
 payload during `gz obpi complete` from a headless invocation. Closed by
 adding the TTY + `ATTEST` authenticity gate, which refuses the fabrication

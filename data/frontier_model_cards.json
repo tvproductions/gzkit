@@ -10,11 +10,23 @@
       "model_family": "Claude Fable 5 / Mythos 5 (Mythos-class tier)",
       "card_date": "2026-06-09",
       "url": "https://www-cdn.anthropic.com/57a52ea7d8f0e54e8a542e908266086df425cdf5/Claude%20Fable%205%20&%20Claude%20Mythos%205%20System%20Card.pdf",
-      "status": "unconsumed",
-      "consumed_on": null,
-      "consumed_commits": [],
-      "doctrine_surfaces": [],
-      "notes": "Flagged by the chore's seed inventory 2026-08-02: never evaluated against doctrine despite Fable 5 being the session model. Search-reported findings pending primary-source verification: ~7x rise in continuing sabotage of safety-research tasks; prompt-injection defence worse than two predecessors (bears on docs/governance/untrusted-content.md).",
+      "status": "current",
+      "consumed_on": "2026-08-02",
+      "consumed_commits": [
+        "GHI #751 landing commit (SHA in the GHI close comment)"
+      ],
+      "doctrine_surfaces": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/model-selection.md",
+        "docs/governance/model-regression-taxonomy.md",
+        "docs/governance/tests-rationale.md",
+        "docs/governance/untrusted-content.md",
+        "docs/governance/opus-tuning.md",
+        "docs/governance/trust-doctrine.md",
+        "docs/governance/agent-contract-rationale.md",
+        "docs/governance/advisory-rules-audit.md"
+      ],
+      "notes": "SS 2.3.3, 5.2, 6.1.2, 6.3.5, 6.3.7, 6.4.1, 8.17.6 consumed. Primary source CORRECTS earlier secondary reporting: Mythos/Fable is the most injection-resilient GA tier (Gray Swan k=100 4.8%); the regression was browser-use only under originally-deployed safeguards (6.5%), closed to 0/129 by updated safeguards (S 5.2.2.3). Elevated prefill susceptibility (S 6.1.2). Fable cyber classifiers fall back to Opus 4.8 (S 1.5) - silent tier degradation on cyber-adjacent content. Effort peaks at high (not max) on Vending-Bench (S 8.17.6). S 2.3.3 failure tags share this repo's taxonomy vocabulary.",
       "local_path": "data/system_cards/anthropic-claude-fable-5-mythos-5-2026-06-09.pdf"
     },
     {

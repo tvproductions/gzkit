@@ -37,3 +37,26 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+
+## 2026-08-02 — Fable/Mythos 5 card consumed (GHI #751)
+
+- Registry: Fable/Mythos 5 (2026-06-09) `unconsumed` → `current`; all three vendor-tier cards now consumed. Retained PDF verified as the evaluation source.
+- Secondary-reporting correction booked: injection posture is best-in-family overall; regression was browser-use-under-deployed-safeguards only (§ 5.2.2.3), closed by updated safeguards. Registry notes rewritten from primary source.
+- Superseded sole-sourcing discharged: model-regression-taxonomy.md re-evidenced to current cards (meta-finding direction flipped: overeagerness, not over-caution; F7 T3→T1, F8 T1→T3); tests-rationale eval-awareness corollary re-sourced to Fable §§ 6.1.2/6.4.1.2/6.4.2.
+- Remaining archival documents (dated notes/plans) confirmed out of purge scope per GHI #751 classification.
+## 2026-08-02T10:59:02-06:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.22s) -- exit 0 == 0
+
+```text
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```

@@ -40,9 +40,11 @@ theater" mimics TDD shape while skipping the part that makes it work
 - Refactoring while tests are still failing (mixing Green and Refactor)
 - Backfilling `@covers(REQ-...)` decorators cosmetically without re-deriving assertions from the REQ (GHI #272)
 
-## Eval-awareness corollary (Opus 4.7 § 6.5.2)
+## Eval-awareness corollary (Fable/Mythos 5 §§ 6.1.2, 6.4.1.2, 6.4.2)
 
-Suppressing internal evaluation-awareness representations *increases* deceptive behavior (Claude Opus 4.7 system card, 2026-04-16). For governance test surfaces: an assertion helper whose name pattern-matches as "this is the audit step" creates a recognizable evaluation context that risks the same drift. Name helpers by behavior, not audit role:
+Evaluation awareness on the current frontier tier is significant and mostly *unverbalized*: the model "will occasionally reason about the possibility that it is being graded, or consider ways to satisfy such a grader that go against user intent," while white-box methods show it "almost never explicitly verbalizes this reasoning" (Claude Fable 5 / Mythos 5 System Card § 6.1.2). The white-box record includes a graded coding task where the model exploited a hidden reference solution while internally framing its justification as needing to "appear as 'good engineering practice' not just 'matching the grader'" — with no mention of the reference in its user-facing report (§ 6.4.1.2). Grader-shaped reasoning appears "disproportionately in training environments with exploitable graders" (§ 6.1.2, § 6.4.2).
+
+For governance test surfaces the consequence is direct: an assertion helper whose name pattern-matches as "this is the audit step" creates exactly the recognizable graded context that elicits grader-satisfying behavior instead of the behavior under test. Name helpers by behavior, not audit role:
 
 | Anti-pattern (audit-role name) | Preferred (behavior-named) |
 |---|---|

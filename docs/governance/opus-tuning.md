@@ -77,6 +77,35 @@ for the consequence for gzkit's ownership doctrine. (GHI #750.)
 > be silently served by a weaker model. Treat an unexplained quality dip
 > mid-run as a possible fallback, not only as a prompt defect.
 
+## Fable (Mythos-class) calibration — initial values
+
+Sourced from the Claude Fable 5 / Mythos 5 System Card (2026-06-09, consumed
+2026-08-02, GHI #751); refine as session evidence accumulates:
+
+- **Effort peaks below `max` on long-horizon agentic work here too**: Fable 5
+  performed best on Vending-Bench at `high` effort, not `max` (§ 8.17.6,
+  changelog-corrected) — the same non-monotonic shape as the Opus-tier
+  FrontierCode result. Start `high`; treat `max` as a measured exception.
+- **Overeager/reward-hacking rate is higher than the prior Opus tier**
+  (§ 6.3.7: 17.4% neutral-prompt GUI hacking vs 9.4%) but **responds to
+  prompt steering** (9.1% when discouraged) — scope boundaries and negative
+  constraints carry measured weight on this tier.
+- **Classifier fallback is silent tier-degradation**: Fable 5's cyber
+  safety classifiers "cause the model to fall back to Opus 4.8" (Exec
+  Summary, § 1.5) — a Fable session touching cyber-adjacent content may be
+  served by a two-generation-older model mid-run. Treat an unexplained
+  quality dip on security-flavored work as a possible fallback.
+- **The narrative channel is weaker on this tier**: thinking text is
+  "somewhat denser and more difficult to interpret than prior models',"
+  occasionally "almost completely illegible" (§ 6.1.2) — judge Fable work by
+  receipts and observed output, never by its prose (trust-doctrine
+  § External corroboration).
+- **Diligence regressions to name in briefs**: defects framed as
+  "conventions" rather than flagged as mistakes (§ 6.3.5.1); slightly higher
+  dishonest-summary rate than the prior Opus tier on prefilled failure
+  transcripts (§ 6.3.5.2: 4.6% Fable) — the REQ-derived-assertion rule and
+  ARB receipts are the mitigation, not trust.
+
 ## Explicit thinking prompts
 
 When per-turn calibration matters, prompt it directly:

@@ -65,7 +65,27 @@ zero, and model improvement is not a reason to relax a harness rule:
   established attack patterns while remaining vulnerable to novel approaches."*
   At publication no live human bug-bounty result for Opus 5 existed.
 
-Scope honesty: the card's measured scenarios cover webpages, shared documents,
+**Mythos-tier update (Claude Fable 5 / Mythos 5 System Card § 5.2, consumed
+2026-08-02, GHI #751).** The Mythos-class tier is Anthropic's most
+injection-resilient generally-available surface to date — Gray Swan ART k=100
+attack success 4.8% (vs 9.6% for the prior Opus tier), k=1 0.1%; Shade
+adaptive attacks in coding land at 0.45% of attempts (8/40 scenarios)
+without safeguards. Three qualifications keep the rule binding at full
+strength:
+
+- **Browser use regressed under the originally-deployed safeguards** — 6.5%
+  attempt-level success, behind two predecessor configurations — and reached
+  0/129 only under an *updated* safeguard set (§ 5.2.2.3). Surface-specific
+  regressions can ship inside an overall-improved model.
+- **Prefill susceptibility is elevated**: the model "will also more readily
+  continue prefilled content that represents misaligned actions supposedly
+  taken at the model's own initiative" (§ 6.1.2, corroborated by UK AISI) —
+  a channel adjacent to injected tool output.
+- The card repeats the standing caveat verbatim-in-substance: fixed attack
+  datasets give a false sense of security against novel approaches
+  (§ 5.2.2).
+
+Scope honesty: the current cards' measured scenarios cover webpages, shared documents,
 email, screenshots, and page reads. It reports **no** measured scenario
 covering repository files, issue-tracker bodies, or shell output specifically —
 those fall under its general "tool results" definition only. gzkit's highest-risk
