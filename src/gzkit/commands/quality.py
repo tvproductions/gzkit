@@ -431,6 +431,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_tautological_test_audit,
         run_taxonomy_audit,
         run_unscoped_rules_audit,
+        run_validate_default_scopes,
         run_waiver_ratchet_audit,
     )
 
@@ -441,6 +442,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Test", run_tests),
         ("Behave", run_behave),
         ("Docs build", run_mkdocs),
+        ("Validate default scopes", run_validate_default_scopes),
         ("Skill audit", run_skill_audit),
         ("Parity check", run_parity_check),
         ("Readiness audit", run_readiness_audit),

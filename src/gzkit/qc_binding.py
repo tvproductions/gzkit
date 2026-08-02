@@ -70,6 +70,9 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Test": ("test", "tests/", "bound", "subprocess"),
     "Behave": ("bdd", "features/", "bound", "subprocess"),
     "Docs build": ("audit", "docs/", "bound", "subprocess"),
+    # One bare `gz validate` gates the whole default tier (GHI #744). Subject is
+    # "all" because the tier spans manifest, ledger, docs, briefs and rules.
+    "Validate default scopes": ("audit", "all", "bound", "subprocess"),
     "Skill audit": ("audit", ".gzkit/skills/", "bound", "python_function"),
     "Parity check": ("audit", "all", "bound", "python_function"),
     "Readiness audit": ("audit", "all", "bound", "python_function"),

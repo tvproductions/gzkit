@@ -634,6 +634,22 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
 
+def run_validate_default_scopes(project_root: Path) -> QualityResult:
+    """Run every default-tier `gz validate` scope in one pass (GHI #744).
+
+    Ten default-tier scopes — manifest, ledger, documents, briefs, frontmatter,
+    personas, surfaces, version, instructions, rule_version_markers — were
+    registered but unreachable from `gz check`, which is how a
+    `--rule-version-markers` breach survived eight days of green commits.
+
+    A BARE `gz validate` runs the whole default tier in a single subprocess
+    (~2s for 12 scopes), so enrolling them costs one process rather than ten.
+    Flag-scoped steps stay separate where a step needs its own name in the
+    progress display or its own MX seam.
+    """
+    return run_command("uv run gz validate", cwd=project_root)
+
+
 def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     """Run the adr-status.md freshness audit (GHI #322 / Architectural Boundary 6).
 

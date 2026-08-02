@@ -7,11 +7,16 @@ signal — the scope simply never runs. That is how ``--rule-version-markers``, 
 *default-tier* scope, failed for eight days while every commit's ``gz check``
 passed (fixed instance ``2810b8e51``; the gap that hid it is what this fences).
 
-The fix is not "enroll everything": 52 of 84 scopes are deliberately outside the
-gate, and each enrolled scope costs a full subprocess (the coupling is a command
+The fix is not "enroll everything": 42 of 84 scopes are deliberately outside the
+gate, and a flag-scoped step costs a full subprocess (the coupling is a command
 STRING — ``run_command("uv run gz validate --<flag>")`` — not a function call).
 The fix is to make membership **declared**, so adding a scope forces a decision
 and drift fails closed.
+
+Two invariants bind here. Membership must match the source (either direction of
+drift fails), and every ``default``-tier scope must actually gate — the operator
+ruling of 2026-08-02 enrolled the ten that did not, via one bare ``gz validate``
+covering the whole tier in a single ~2s subprocess rather than ten.
 
 ``data/check_scope_membership.json`` is that declaration. This module recomputes
 the true membership from source and fails when the two disagree.
@@ -26,6 +31,11 @@ import unittest
 from pathlib import Path
 
 _FLAG_RE = re.compile(r"gz validate ((?:--[a-z0-9-]+\s*)+)")
+
+# A bare `gz validate` runs the whole default tier in one subprocess. Anchored to
+# the WHOLE string so prose mentioning the command in a docstring is not mistaken
+# for an invocation — only a string that IS the command counts.
+_BARE_VALIDATE_RE = re.compile(r"^(?:uv\s+run\s+)?gz\s+validate\s*$")
 
 _ROOT = Path(__file__).resolve().parents[2]
 _VALIDATE_CMD = _ROOT / "src" / "gzkit" / "commands" / "validate_cmd.py"
@@ -50,23 +60,32 @@ def _called_names(node: ast.AST) -> set[str]:
     return out
 
 
-def _flags_in(node: ast.AST) -> set[str]:
-    """Scope stems named by `gz validate --flag` strings under ``node``."""
+def _flags_in(node: ast.AST) -> tuple[set[str], bool]:
+    """Scope stems named under ``node``, and whether a BARE `gz validate` appears.
+
+    A bare invocation carries no flag and runs the entire default tier, so it
+    cannot be read off a flag token — it has to be reported separately and
+    expanded against the registry's tiers by the caller.
+    """
     out: set[str] = set()
+    bare = False
     for sub in ast.walk(node):
-        if isinstance(sub, ast.Constant) and isinstance(sub.value, str):
-            for group in _FLAG_RE.findall(sub.value):
-                out.update(
-                    tok.strip().lstrip("-").replace("-", "_")
-                    for tok in group.split()
-                    if tok.startswith("--")
-                )
-    return out
+        if not (isinstance(sub, ast.Constant) and isinstance(sub.value, str)):
+            continue
+        for group in _FLAG_RE.findall(sub.value):
+            out.update(
+                tok.strip().lstrip("-").replace("-", "_")
+                for tok in group.split()
+                if tok.startswith("--")
+            )
+        if _BARE_VALIDATE_RE.match(sub.value.strip()):
+            bare = True
+    return out, bare
 
 
-def registry_stems(validate_cmd_src: str) -> set[str]:
-    """Every scope stem declared in ``VALIDATOR_REGISTRY``."""
-    stems: set[str] = set()
+def registry_scopes(validate_cmd_src: str) -> dict[str, str]:
+    """``{stem: tier}`` for every scope declared in ``VALIDATOR_REGISTRY``."""
+    scopes: dict[str, str] = {}
     for node in ast.walk(ast.parse(validate_cmd_src)):
         if isinstance(node, ast.AnnAssign):
             target, value = node.target, node.value
@@ -81,18 +100,22 @@ def registry_stems(validate_cmd_src: str) -> set[str]:
                 isinstance(entry, ast.Call)
                 and isinstance(entry.func, ast.Name)
                 and entry.func.id == "_ScopeEntry"
-                and entry.args
+                and len(entry.args) >= 2
             ):
-                stems.add(ast.literal_eval(entry.args[0]))
-    return stems
+                scopes[ast.literal_eval(entry.args[0])] = ast.literal_eval(entry.args[1])
+    return scopes
 
 
-def scopes_reached_by_check(quality_src: str, quality_cmd_src: str) -> set[str]:
+def scopes_reached_by_check(
+    quality_src: str, quality_cmd_src: str, scopes: dict[str, str] | None = None
+) -> set[str]:
     """Scope stems the `gz check` step list actually invokes.
 
     Resolves each ``_build_check_steps()`` entry to its ``run_*`` function and
     walks that function's callees, collecting the ``gz validate --flag`` tokens
-    embedded in string literals along the way.
+    embedded in string literals along the way. A bare ``gz validate`` expands to
+    every ``default``-tier stem in ``scopes`` (GHI #744): one subprocess runs the
+    whole tier, so reachability must follow the tier, not a flag token.
     """
     quality_cmd_tree = ast.parse(quality_cmd_src)
     defs = _func_defs(ast.parse(quality_src)) | _func_defs(quality_cmd_tree)
@@ -108,6 +131,7 @@ def scopes_reached_by_check(quality_src: str, quality_cmd_src: str) -> set[str]:
                     step_fns.add(fn.id)
 
     reached: set[str] = set()
+    saw_bare = False
     seen, frontier = set(step_fns), list(step_fns)
     for _ in range(4):
         nxt: list[str] = []
@@ -115,11 +139,15 @@ def scopes_reached_by_check(quality_src: str, quality_cmd_src: str) -> set[str]:
             body = defs.get(name)
             if body is None:
                 continue
-            reached |= _flags_in(body)
+            flags, bare = _flags_in(body)
+            reached |= flags
+            saw_bare = saw_bare or bare
             for callee in _called_names(body) - seen:
                 seen.add(callee)
                 nxt.append(callee)
         frontier = nxt
+    if saw_bare and scopes:
+        reached |= {stem for stem, tier in scopes.items() if tier == "default"}
     return reached
 
 
@@ -131,14 +159,14 @@ class TestExtractorsDetectRealChanges(unittest.TestCase):
     green because its scope structurally cannot see its field.
     """
 
-    def test_registry_stems_reads_scope_entries(self) -> None:
+    def test_registry_scopes_reads_stems_and_tiers(self) -> None:
         src = (
             "VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (\n"
             "    _ScopeEntry('alpha', 'default', True, lambda r, _f: []),\n"
             "    _ScopeEntry('beta', 'explicit', True, lambda r, _f: []),\n"
             ")\n"
         )
-        self.assertEqual(registry_stems(src), {"alpha", "beta"})
+        self.assertEqual(registry_scopes(src), {"alpha": "default", "beta": "explicit"})
 
     def test_a_scope_added_to_the_registry_is_seen(self) -> None:
         """Adding an entry changes the computed set — the fence tracks the source."""
@@ -146,7 +174,36 @@ class TestExtractorsDetectRealChanges(unittest.TestCase):
         two = one.replace(")\n", "    _ScopeEntry('gamma', 'explicit', True, None),\n)\n").replace(
             "(_ScopeEntry", "(\n    _ScopeEntry"
         )
-        self.assertEqual(registry_stems(two) - registry_stems(one), {"gamma"})
+        self.assertEqual(set(registry_scopes(two)) - set(registry_scopes(one)), {"gamma"})
+
+    def test_bare_validate_reaches_every_default_tier_scope(self) -> None:
+        """One bare invocation runs the whole default tier (GHI #744)."""
+        quality = (
+            "def run_defaults(root):\n    return run_command('uv run gz validate', cwd=root)\n"
+        )
+        quality_cmd = "def _build_check_steps():\n    return [('Defaults', run_defaults)]\n"
+        scopes = {"alpha": "default", "beta": "default", "gamma": "explicit"}
+        self.assertEqual(scopes_reached_by_check(quality, quality_cmd, scopes), {"alpha", "beta"})
+
+    def test_prose_naming_the_command_is_not_an_invocation(self) -> None:
+        """A docstring mentioning `gz validate` must not count as running it."""
+        quality = (
+            "def run_defaults(root):\n"
+            '    """Recovery: run gz validate to see the failing scope."""\n'
+            "    return run_command('uv run gz cli audit', cwd=root)\n"
+        )
+        quality_cmd = "def _build_check_steps():\n    return [('Defaults', run_defaults)]\n"
+        scopes = {"alpha": "default"}
+        self.assertEqual(scopes_reached_by_check(quality, quality_cmd, scopes), set())
+
+    def test_flagged_validate_does_not_expand_to_the_whole_tier(self) -> None:
+        """`gz validate --one-scope` reaches one scope, not the default tier."""
+        quality = (
+            "def run_one(root):\n    return run_command('uv run gz validate --alpha', cwd=root)\n"
+        )
+        quality_cmd = "def _build_check_steps():\n    return [('One', run_one)]\n"
+        scopes = {"alpha": "default", "beta": "default"}
+        self.assertEqual(scopes_reached_by_check(quality, quality_cmd, scopes), {"alpha"})
 
     def test_check_flags_are_read_from_command_strings(self) -> None:
         """The coupling is a subprocess string, so the extractor must read strings."""
@@ -187,10 +244,13 @@ class TestCommittedCheckMembership(unittest.TestCase):
         cls._roster = json.loads(_ROSTER.read_text(encoding="utf-8"))
         cls._in_check = set(cls._roster["in_check"])
         cls._out_of_check = set(cls._roster["out_of_check"])
-        cls._registry = registry_stems(_VALIDATE_CMD.read_text(encoding="utf-8"))
+        scopes = registry_scopes(_VALIDATE_CMD.read_text(encoding="utf-8"))
+        cls._scopes = scopes
+        cls._registry = set(scopes)
         cls._reached = scopes_reached_by_check(
             _QUALITY.read_text(encoding="utf-8"),
             _QUALITY_CMD.read_text(encoding="utf-8"),
+            scopes,
         )
 
     def test_declared_membership_matches_source(self) -> None:
@@ -201,6 +261,26 @@ class TestCommittedCheckMembership(unittest.TestCase):
             "gz check's validate-scope membership changed without updating "
             "data/check_scope_membership.json. A scope newly reached must move to "
             "`in_check`; a scope no longer reached must move to `out_of_check`.",
+        )
+
+    def test_every_default_tier_scope_runs_in_the_gate(self) -> None:
+        """Default tier means "on when `gz validate` runs bare" — so it must gate.
+
+        Operator ruling 2026-08-02: the 10 default-tier scopes that `gz check`
+        never ran (manifest, ledger, documents, briefs, frontmatter, personas,
+        surfaces, version, instructions, rule_version_markers) are enrolled. A
+        scope declared default-tier but absent from the gate is the exact
+        condition that let a --rule-version-markers breach survive eight days of
+        green commits, so it now fails closed rather than being merely declared.
+        """
+        missing = {s for s, tier in self._scopes.items() if tier == "default"} - self._reached
+        self.assertEqual(
+            missing,
+            set(),
+            "Default-tier scope(s) are not reachable from gz check. Either wire "
+            "them in (a bare `uv run gz validate` covers the whole default tier "
+            "in one subprocess) or reclassify them as explicit tier in "
+            "VALIDATOR_REGISTRY.",
         )
 
     def test_every_registered_scope_is_classified(self) -> None:

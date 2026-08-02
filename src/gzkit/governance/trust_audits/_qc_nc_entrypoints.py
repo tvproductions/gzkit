@@ -228,6 +228,13 @@ def _ep_unscoped_rules(root: Path) -> int:
     return 1 if run_unscoped_rules(root).exit_code == 3 else 0
 
 
+def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
+    """Run the whole default `gz validate` tier, as the bare invocation does."""
+    from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415
+
+    return _collect_errors(root, {})
+
+
 def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.taxonomy import audit_adr_status_fresh  # noqa: PLC0415
 

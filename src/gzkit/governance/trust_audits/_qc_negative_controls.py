@@ -581,6 +581,31 @@ def _build_rendition_floor_coherence() -> Path:
     return root
 
 
+def _build_validate_default_scopes() -> Path:
+    """Build a canonical rule whose version marker disagrees with its block quote.
+
+    Deliberately the `--rule-version-markers` violation shape: that default-tier
+    scope was registered but unreachable from `gz check`, so a real marker
+    mismatch survived eight days of green commits (GHI #744). The frontmatter is
+    well-formed on purpose — an invalid rule would trip the `surfaces` scope
+    instead, and the control must fail for the marker reason, not a parse error.
+    """
+    root = _mkroot("validate-default-scopes")
+    _write(
+        root / ".gzkit" / "rules" / "drifted.md",
+        "---\n"
+        "id: drifted\n"
+        "description: Negative-control rule whose version marker disagrees.\n"
+        "paths:\n"
+        '  - "src/**"\n'
+        "---\n\n"
+        "<!-- rule-version: 1.0.1 -->\n\n"
+        "> **Rule version:** `1.0.0` - drifted on purpose.\n\n"
+        "# Drifted\n",
+    )
+    return root
+
+
 def _build_invariant_coherence() -> Path:
     root = _mkroot("invariant-coherence")
     # A committed rendition that plays back to a non-empty AGENTS.md, with NO
@@ -967,6 +992,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
+    (
+        "validate-default-scopes",
+        _build_validate_default_scopes,
+        _ep._ep_validate_default_scopes,
+        "marker=1.0.1 disagrees with block quote=1.0.0",
+    ),
     (
         "obpi-lifecycle-coherence",
         _build_obpi_lifecycle_coherence,
