@@ -1,0 +1,33 @@
+# Baseline — instructions-files-diet — 2026-08-02
+
+Trigger: operator ruling 'rule on the surface-weight ceiling: do the diet pass'
+Surface at 2600/2600 green ceiling (floor 1859), zero headroom.
+
+     375 AGENTS.md
+      27 CLAUDE.md
+      77 .claude/rules/adr-audit.md
+      28 .claude/rules/agent-failure-modes.md
+      51 .claude/rules/agents-md-map-doctrine.md
+      58 .claude/rules/brief-heading-conventions.md
+      54 .claude/rules/changelog-release-notes.md
+     142 .claude/rules/chores.md
+     115 .claude/rules/cli.md
+     122 .claude/rules/complexity-doctrine.md
+      98 .claude/rules/complexity-thresholds.md
+      50 .claude/rules/cross-platform.md
+      55 .claude/rules/gate5-runbook-code-covenant.md
+      56 .claude/rules/gh-cli.md
+     120 .claude/rules/governance-core.md
+      62 .claude/rules/guardrail-feedback-prose.md
+     129 .claude/rules/hexagonal-architecture.md
+      73 .claude/rules/model-selection.md
+      49 .claude/rules/models.md
+      55 .claude/rules/mx-mode.md
+      98 .claude/rules/pythonic.md
+      45 .claude/rules/security-sensitivity.md
+     193 .claude/rules/skill-surface-sync.md
+     122 .claude/rules/task-discovery.md
+     168 .claude/rules/tests.md
+     137 .claude/rules/token-block-discipline.md
+      41 .claude/rules/tool-skill-runbook-alignment.md
+    2600 total

@@ -5,19 +5,9 @@ applyTo: "docs/**, src/gzkit/**"
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.2.1 -->
 
-> **Rule version:** `0.2.0` — reconciled to ADR-0.0.24 and ADR-0.0.36 (Pass A
-> conflict-matrix rows 15 and 19, run 2026-07-16). § Do Not scoped attestation
-> to "heavy/foundation scope", describing lane branching collapsed at
-> ADR-0.0.36 — an agent on a Lite+feature OBPI read it as permission to
-> self-close. § Validation bundle prescribed bare commands that emit no ARB
-> receipt, making the sequence mechanically unrunnable on the foundation ADRs
-> this rule governs (`gz adr emit-receipt` exits 3 on zero receipt citations).
-> The same drift was caught and fixed on the skill side at
-> `gz-adr-closeout-ceremony/SKILL.md:317`; the rule side was never reconciled.
-> Prior `0.1.0` — initial shape conformance pass; renamed prohibited heading
-> (OBPI-0.0.54-04).
+> **Rule version:** `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.36 — attestation is universal and the validation bundle must cite ARB-wrapped invocations (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd). Binding rules unchanged.
 
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 

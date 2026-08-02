@@ -6,17 +6,9 @@ paths:
 
 # ADR Audit (gzkit)
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.2.1 -->
 
-> **Rule version:** `0.2.0` — reconciled to ADR-0.0.24 and ADR-0.0.59 (Pass A
-> conflict-matrix rows 18 and 19, run 2026-07-16); adds the body-level version
-> marker this file never carried, which is how both drifts survived unnoticed.
-> § Audit sequence step 2 prescribed bare commands that emit no ARB receipt,
-> making step 4 fail closed at exit 3 on every foundation ADR this rule
-> governs. § Rules offered only two diagnosis branches, the first of which
-> (`author a @covers test`) is the anti-pattern `tests.md` § REQ Scope
-> Discipline names for SUPPORT and STRUCTURAL-FENCE REQs. Prior: unversioned
-> since authoring.
+> **Rule version:** `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.59 — ARB-wrapped audit commands and per-REQ-kind diagnosis branches (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
 
 Purpose: verify ADR completion claims using reproducible evidence.
 

@@ -7,27 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.3.1 -->
 
-> **Rule version:** `0.3.0` — reconciled § Core Principles — Consistency to the
-> mechanism it names (GHI #693, operator ruling 2026-07-17: this is a
-> *correction*, not an enhancement — the rule's promise WAS the audit's declared
-> intent). "The audit is the mechanical check" read as a promise that the
-> documented flag contract is verified; the audit mechanized *presence* only, so
-> a manpage could contradict its parser and ship green — observed live on
-> `gz handoff authorize --session-id`, which documented a required flag as
-> optional under a fully green `gz check`. The audit now checks usage-line
-> agreement (required-ness, value-taking) and the rule says so. The § Adding CLI
-> Features caveat also claimed the audit "audits verbs, not flags", which stopped
-> being true at GHI #350; scoped it to the lane claim it was actually making.
-> Prior `0.2.0` — resolved a self-contradiction and a release-notes
-> conflict (Pass A conflict-matrix rows 17 and 25, run 2026-07-16); adds the
-> body-level version marker this file never carried. § Adding CLI Features
-> declared "New Flag (Additive = Lite Lane)" while § Heavy Lane Trigger, 65
-> lines above, named *flags* explicitly as Heavy — and `AGENTS.md` § Lane
-> Rules agrees with the latter. Step 5 prescribed hand-authoring release
-> notes, the one artifact `changelog-release-notes.md` forbids hand-editing.
-> Prior: unversioned since authoring.
+> **Rule version:** `0.3.1` — reconciled § Core Principles — Consistency to the mechanism it names, so the audit checks usage-line agreement (`0.3.0`, GHI #693); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd). Binding rules unchanged.
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Mechanical check:** `uv run gz cli audit` (see § Core Principles — Consistency).

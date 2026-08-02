@@ -5,16 +5,11 @@ paths:
 description: Ports & adapters as gzkit's primary code architecture directive
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.2.1 -->
 
 # Hexagonal Architecture (Ports & Adapters) — Primary Code Directive
 
-> **Rule version:** `0.2.0` — seats HA inside the DDD → HA → BDD → TDD spine and
-> adds the binding cohesion doctrine (domain modeled as the ontology, not a folder
-> tree; `core/` stays; subsumption over parallel models; "why is this here?" is a
-> required answer). `0.1.0` enshrined Cockburn Ports & Adapters as the primary
-> code-architecture directive (deps behind adapters, stdlib + Pydantic core,
-> parameterize every external dependency).
+> **Rule version:** `0.2.1` — seats HA inside the DDD → HA → BDD → TDD spine and adds the binding cohesion doctrine (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd). Binding rules unchanged.
 
 > Ports & adapters is gzkit's **primary code-architecture directive**. Every
 > external dependency is confined to an **adapter** behind a **port**; the inner

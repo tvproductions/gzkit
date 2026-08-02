@@ -6,15 +6,9 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.2.1 -->
 
-> **Rule version:** `0.2.0` — names the unreconciled three-way threshold conflict
-> in § Size Limits & Refactoring (Pass A conflict-matrix row 11, run 2026-07-16);
-> adds the body-level version marker this file never carried, which is how a
-> competing threshold authority survived `complexity-thresholds.md` § Invariant's
-> explicit prohibition on exactly that. No number changed — resolution needs a
-> class-size corpus band that does not exist yet, and is routed for operator
-> decision rather than guessed. Prior: unversioned since authoring.
+> **Rule version:** `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## Core Principles
 
