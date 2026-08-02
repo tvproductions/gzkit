@@ -1,5 +1,5 @@
 {
-  "_doc": "Registry of frontier-model system cards consumed into gzkit doctrine (chore: frontier-model-card-currency). One entry per card. status: current (latest for its vendor tier, consumed), unconsumed (published, not yet evaluated against doctrine), superseded (a newer card for the same tier exists; rules sourced SOLELY to it must be re-sourced or retired). consumed_commits are the doctrine-refresh commits; doctrine_surfaces are the files whose citations trace to the card. The chore compares this registry against the vendor publication hubs and reports drift — it never auto-consumes a card.",
+  "_doc": "Registry of frontier-model system cards consumed into gzkit doctrine (chore: frontier-model-card-currency). ROTATION POLICY (operator-ruled 2026-08-02): the registry holds CURRENT cards only, one per vendor tier, plus any newer card awaiting consumption (status unconsumed). When a newer card is consumed, its entry replaces the superseded one and the superseded PDF is removed from data/system_cards/ in the same commit; superseded-model references are purged from live doctrine (re-sourced or retired), with lineage recorded in docs/governance/rule-version-history.md and git history. local_path is the retained primary-source PDF. The chore compares this registry against the vendor hubs and reports drift; it never auto-consumes a card.",
   "vendor_hubs": {
     "anthropic": "https://www.anthropic.com/news (system card announcements; PDFs linked per release)",
     "openai": "https://deploymentsafety.openai.com/"
@@ -9,21 +9,25 @@
       "vendor": "anthropic",
       "model_family": "Claude Fable 5 / Mythos 5 (Mythos-class tier)",
       "card_date": "2026-06-09",
-      "url": "https://www.anthropic.com/news/claude-fable-5-mythos-5",
+      "url": "https://www-cdn.anthropic.com/57a52ea7d8f0e54e8a542e908266086df425cdf5/Claude%20Fable%205%20&%20Claude%20Mythos%205%20System%20Card.pdf",
       "status": "unconsumed",
       "consumed_on": null,
       "consumed_commits": [],
       "doctrine_surfaces": [],
-      "notes": "Flagged by the chore's seed inventory 2026-08-02: never evaluated against doctrine despite Fable 5 being the session model. Search-reported findings pending primary-source verification: ~7x rise in continuing sabotage of safety-research tasks; prompt-injection defence worse than two predecessors (bears on docs/governance/untrusted-content.md)."
+      "notes": "Flagged by the chore's seed inventory 2026-08-02: never evaluated against doctrine despite Fable 5 being the session model. Search-reported findings pending primary-source verification: ~7x rise in continuing sabotage of safety-research tasks; prompt-injection defence worse than two predecessors (bears on docs/governance/untrusted-content.md).",
+      "local_path": "data/system_cards/anthropic-claude-fable-5-mythos-5-2026-06-09.pdf"
     },
     {
       "vendor": "anthropic",
       "model_family": "Claude Opus 5 (Opus tier)",
       "card_date": "2026-07-24",
-      "url": "https://www.anthropic.com/claude/opus",
+      "url": "https://www-cdn.anthropic.com/c5fbac3f0b1280a933ebd26d3cb8bb9f5bdeaf48/Claude%20Opus%205%20System%20Card.pdf",
       "status": "current",
       "consumed_on": "2026-08-02",
-      "consumed_commits": ["1ddbfaaa1", "b89754166"],
+      "consumed_commits": [
+        "1ddbfaaa1",
+        "b89754166"
+      ],
       "doctrine_surfaces": [
         ".gzkit/rules/agent-failure-modes.md",
         ".gzkit/rules/governance-core.md",
@@ -34,7 +38,8 @@
         "docs/governance/advisory-rules-audit.md",
         "CLAUDE.md"
       ],
-      "notes": "SS 6.1.2, 6.4.4, 6.6.1, 8.4, 8.5, 6.4.7 consumed. Effort calibration in opus-tuning.md is measured on THIS model and expires with it."
+      "notes": "SS 6.1.2, 6.4.4, 6.6.1, 8.4, 8.5, 6.4.7 consumed. Effort calibration in opus-tuning.md is measured on THIS model and expires with it.",
+      "local_path": "data/system_cards/anthropic-claude-opus-5-2026-07-24.pdf"
     },
     {
       "vendor": "openai",
@@ -43,7 +48,10 @@
       "url": "https://deploymentsafety.openai.com/gpt-5-6/gpt-5-6.pdf",
       "status": "current",
       "consumed_on": "2026-08-02",
-      "consumed_commits": ["7f0b8bdf4", "79ce8b25b"],
+      "consumed_commits": [
+        "7f0b8bdf4",
+        "79ce8b25b"
+      ],
       "doctrine_surfaces": [
         ".gzkit/rules/agent-failure-modes.md",
         "docs/governance/opus-tuning.md",
@@ -51,37 +59,8 @@
         "docs/governance/trust-doctrine.md",
         "docs/governance/advisory-rules-audit.md"
       ],
-      "notes": "SS 1, 3.3, 4.2, 7.1-7.4, 9.1.3, 9.2, 9.3 consumed. Source of failure-mode pattern 9 (Metagaming / gaming the gate)."
-    },
-    {
-      "vendor": "anthropic",
-      "model_family": "Claude Opus 4.7",
-      "card_date": "2026-04-16",
-      "url": "https://www.anthropic.com/claude/opus",
-      "status": "superseded",
-      "consumed_on": "2026-04-25",
-      "consumed_commits": [],
-      "doctrine_surfaces": [
-        ".gzkit/rules/agent-failure-modes.md",
-        "docs/governance/model-regression-taxonomy.md",
-        "docs/governance/trust-doctrine.md"
-      ],
-      "notes": "Superseded by Opus 5. Residual sole-source citations: docs/governance/model-regression-taxonomy.md still cites S 6.2.2.2 as current-best evidence (staleness surfaced 2026-08-02, unruled). agent-failure-modes patterns 1-6 keep it as historical provenance alongside newer corroboration - acceptable."
-    },
-    {
-      "vendor": "openai",
-      "model_family": "GPT-5.5",
-      "card_date": "2026-04-23",
-      "url": "https://deploymentsafety.openai.com/gpt-5-5/gpt-5-5.pdf",
-      "status": "superseded",
-      "consumed_on": "2026-04-25",
-      "consumed_commits": [],
-      "doctrine_surfaces": [
-        ".gzkit/rules/agent-failure-modes.md",
-        "docs/governance/trust-doctrine.md",
-        "docs/governance/agent-contract-rationale.md"
-      ],
-      "notes": "Superseded by GPT-5.6. Kept as historical provenance for patterns 1-6 (S 9.2); GPT-5.6 SS 7.1-7.2 carries the current-generation corroboration."
+      "notes": "SS 1, 3.3, 4.2, 7.1-7.4, 9.1.3, 9.2, 9.3 consumed. Source of failure-mode pattern 9 (Metagaming / gaming the gate).",
+      "local_path": "data/system_cards/openai-gpt-5-6-2026-07-09.pdf"
     }
   ]
 }

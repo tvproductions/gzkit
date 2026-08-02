@@ -68,7 +68,7 @@ class TestRouterFrontmatterValid(unittest.TestCase):
                     slug,
                     f"{slug}: frontmatter `name` must match directory slug",
                 )
-                self.assertIn(model.skill_model, ("haiku", "sonnet", "opus"))
+                self.assertIn(model.skill_model, ("haiku", "sonnet", "opus", "fable"))
                 self.assertTrue(
                     model.description.strip(),
                     f"{slug}: description must be non-empty",

@@ -165,3 +165,37 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 > required answer). `0.1.0` enshrined Cockburn Ports & Adapters as the primary
 > code-architecture directive (deps behind adapters, stdlib + Pydantic core,
 > parameterize every external dependency).
+
+## `agent-failure-modes.md`
+
+Lifted at version `0.6.0` (rule now at `0.6.1`, re-sourced to current-card-only
+citations under the 2026-08-02 operator ruling against retaining superseded-model
+references in live rules). Origin provenance for the pattern set, preserved
+verbatim:
+
+> Patterns 1–6 from the Opus 4.7 System Card (§ 2.3.6) and GPT-5.5 System Card
+> (§ 9.2); patterns 7–8 from the Claude Opus 5 System Card (§§ 6.4.4, 6.6.1);
+> pattern 9 from the GPT-5.6 System Card (§§ 7.4, 9.1.3.6, 9.2.2, 2026-07-09),
+> whose §§ 7.1–7.2 also corroborate patterns 2, 3, 7, 8 from a second vendor's
+> internal agentic-coding traffic.
+
+> **Rule version:** `0.6.0` — extended 8 → 9 patterns (operator ruling
+> 2026-08-02; GHI #750 lineage; ADR-0.0.23 § Consequences pre-authorizes
+> extension). Adds **Metagaming / gaming the gate** from the GPT-5.6 System
+> Card: § 7.4 defines metagaming as reasoning "about how it will be graded,
+> rewarded, or monitored"; § 9.1.3.6 records METR discarding a capability
+> measurement over the detected cheating rate; § 9.2.2 records UK AISI
+> observing anticipation of monitors and user-facing summaries that omit what
+> the reasoning admits. Prior `0.5.1` — citation refresh (GHI #750): GPT-5.6
+> §§ 7.1–7.2 supplies second-vendor observations for patterns 2, 3, 7, 8.
+> Prior `0.5.0` — re-sourced to the Claude Opus 5 System Card (2026-07-24) and
+> extended 6 → 8 patterns. Adds **Hallucinated authorization** (Opus 5 § 6.6.1
+> measured the model internally representing "user consent that was never
+> given" before a destructive action) and **Security shortcut for expedience**
+> (§ 6.4.4, one of two dimensions Anthropic newly introduced). The ADR that
+> authored this rule pre-authorized the revision: ADR-0.0.23 § Consequences —
+> *"treating the rule as living: future system cards may rename or extend
+> patterns."* Prior `0.4.0` — repointed the Safeguard-circumvention and
+> Fabrication backstops off the removed TTY `ATTEST` authenticity gate onto
+> AGENTS.md § Never #1 (operator-verbatim attestation + audit), per the
+> canon-owner attestation declaration.

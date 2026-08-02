@@ -1,9 +1,14 @@
 # Model Tuning — Claude Code Calibration
 
+> GPT-side counterpart: [`gpt-tuning.md`](gpt-tuning.md) — gzkit runs with
+> either vendor (operator ruling 2026-08-02); this page calibrates the
+> Claude side, sourced to the current Anthropic card in
+> `data/frontier_model_cards.json`.
+
 *Lifted from `CLAUDE.md` under GHI #327 diet pass. The binding summary
 remains in `CLAUDE.md`; this page holds the full calibration guidance.
 Re-sourced to the Claude Opus 5 System Card (2026-07-24); the prior
-revision was pinned to Opus 4.7 and its `xhigh` default is
+revision was pinned to a since-superseded model and its `xhigh` default is
 counter-indicated for agentic coding on Opus 5 — see § Effort is a dial.*
 
 ## Adaptive regulation
@@ -19,7 +24,7 @@ adaptive), and disabling it is accepted only at effort `high` or below.
 **Effort/quality is non-monotonic and workload-dependent on Opus 5. Do not
 assume more effort is better; re-baseline per workload.** The prior
 "default to `xhigh` for agentic coding" rule is retired — it was
-calibrated against Opus 4.7 and the Opus 5 evidence splits:
+calibrated against the prior model generation and the Opus 5 evidence splits:
 
 | Benchmark | Peak effort | Card evidence |
 |---|---|---|
@@ -47,7 +52,7 @@ Operating guidance:
 
 **Cross-vendor confirmation — GPT-5.6 System Card (OpenAI, 2026-07-09).**
 The high-effort failure mode is not Opus-specific. OpenAI reports GPT-5.6
-takes actions beyond user intent more often than GPT-5.5, driven "in part
+takes actions beyond user intent more often than its predecessor, driven "in part
 by the model's increased persistence … when using the highest reasoning
 efforts" (§ 7.2), with coding-context misalignment stemming from
 overeagerness and permissive instruction-reading — "assuming that actions
@@ -107,8 +112,8 @@ section names the Claude-Code-specific calibration.
 ## Recalibration on model change
 
 Effort defaults and thinking prompts are **model-specific and expire**.
-This page was pinned to Opus 4.7 for three model generations before the
-Opus 5 evidence inverted its central rule — treat every value here as
+This page once stayed pinned to a superseded model for three generations
+before the current-card evidence inverted its central rule — treat every value here as
 carrying an implicit "as measured on the named model" and re-derive on
 each frontier release rather than inheriting.
 

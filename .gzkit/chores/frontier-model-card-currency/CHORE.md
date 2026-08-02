@@ -1,6 +1,6 @@
 # CHORE: Frontier Model Card Currency (System-Card Doctrine Refresh)
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Lane:** Lite
 **Slug:** `frontier-model-card-currency`
 
@@ -40,14 +40,20 @@ for superseded models."
 - **Lane:** Lite — the scan is read-only; refresh work routes to its own
   GHI-tracked commits under AGENTS.md § Defect-fix routing
 - **Network:** Required (vendor hubs, card PDFs via WebFetch/WebSearch)
-- **Cards are cited, not committed.** The registry keeps URL + date +
-  provenance; multi-MB PDFs stay out of the repo. Verify claims against the
-  primary PDF at evaluation time, never against secondary reporting alone.
-- **Historical provenance is not drift.** A superseded card cited *alongside*
-  current-generation corroboration (e.g. patterns 1–6 keeping Opus 4.7 /
-  GPT-5.5 as origin citations) is a valid lineage record. Drift is a
-  superseded card standing as the **sole** source of a live rule or
-  calibration value.
+- **Cards are retained and rotated (operator-ruled 2026-08-02).** The
+  current card PDF for each vendor tier lives in `data/system_cards/`
+  (named `<vendor>-<model>-<date>.pdf`); when a newer card is consumed, the
+  new PDF lands and the superseded PDF and its registry entry are removed
+  in the same commit. Verify claims against the retained primary PDF, never
+  against secondary reporting alone.
+- **No superseded-model references survive in live doctrine
+  (operator-ruled 2026-08-02, verbatim: "I don't want to retain direct
+  references, and rationale, to older models").** When a card is
+  superseded, every live rule, calibration page, and rationale citation
+  pinned to it is re-sourced to the current card or retired in the same
+  refresh. Origin lineage moves to
+  `docs/governance/rule-version-history.md` (audit trail, not doctrine);
+  the ledger and commit history remain untouched.
 - **Effort/tuning values expire with their model.** Any calibration page
   (opus-tuning.md and successors) must state which model measured its
   numbers; a card for a newer model in the same tier voids the values until
@@ -68,15 +74,17 @@ Anthropic news/system-card announcements; OpenAI
 `deploymentsafety.openai.com`. A card newer than the registry's `current`
 entry for that vendor/tier, or any tier with no registry entry, is drift.
 
-### 3. Sweep doctrine for superseded sole-sourcing
+### 3. Sweep live doctrine for superseded-model references
 
 ```bash
 grep -rlE "Opus 4\.7|GPT-5\.5" .gzkit/rules/ docs/governance/ CLAUDE.md
 ```
 
-For each hit, classify: historical-provenance-alongside-current (fine) vs
-sole-source-of-a-live-rule (drift; re-source to the current card or retire
-the rule). Extend the pattern as models supersede.
+**Every hit in live doctrine is drift** — re-source the citation to the
+current card or retire the rule (operator ruling 2026-08-02). The only
+legitimate homes for superseded-model text are
+`docs/governance/rule-version-history.md`, the ledger, and commit history
+(audit trail). Extend the grep pattern as models supersede.
 
 ### 4. Route drift
 
@@ -108,8 +116,12 @@ Append the run's findings (or a clean no-drift line) to
   (Skipped cheap verification)
 - Marking a card `current` without listing the doctrine surfaces its
   citations landed on — an unlisted surface is invisible to the next sweep
-- Deleting a superseded card's registry entry — supersession is lineage,
-  not garbage
+- Rotating a card out of the registry while its citations still stand in
+  live doctrine — the re-source lands first (or in the same commit), then
+  the rotation
+- Keeping a superseded card's PDF or registry entry "for reference" — the
+  rotation is the ruling; lineage lives in rule-version-history.md and git
+  history
 - Auto-rewriting doctrine inside the chore run — evaluation is judgment
   work with its own GHI and commit trail
 - Treating a same-tier vendor rebrand as a new tier requiring a new entry —

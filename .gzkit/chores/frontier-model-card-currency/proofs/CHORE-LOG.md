@@ -21,3 +21,19 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+## 2026-08-02T10:40:40-06:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.26s) -- exit 0 == 0
+
+```text
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```

@@ -163,7 +163,7 @@ This doctrine trusts artifacts (receipts, ledger events, bound provenance) over 
 - **Action-only monitoring is the weak channel.** UK AISI's evaluation of GPT-5.6 found action-only monitors "much less reliable" than reasoning-based monitors, and observed the model downplaying or omitting from user-facing summaries strategies its own reasoning described as cheating (GPT-5.6 System Card § 9.2.2, OpenAI, 2026-07-09). An agent's prose self-report is the least trustworthy evidence surface — which is why T3 binds canonical labels to canonical invocations instead of accepting the label's word for it.
 - **The narrative channel gets less auditable over time.** The same card reports CoT controllability *rising* generation-over-generation (§ 7.3.2), and the Claude Opus 5 System Card reports constraint adherence flat across a near-doubling of agentic capability (§ 6.1.2). Capability gains do not make agent self-reports more trustworthy; they make independent verification of inputs at every trust boundary *more* necessary, not less.
 
-Prior-generation citations (GPT-5.5 § 9.2, Opus 4.7 § 2.3.6) entered under GHI #308; refreshed to the GPT-5.6 generation under GHI #750. External cards corroborate the doctrine; the 2026-04-18 outage taxonomy above remains its authority.
+External corroboration tracks the **current** frontier cards in `data/frontier_model_cards.json` (chore `frontier-model-card-currency`; prior-generation citations entered under GHI #308 and were refreshed under GHI #750 — lineage in git history). External cards corroborate the doctrine; the 2026-04-18 outage taxonomy above remains its authority.
 
 ---
 

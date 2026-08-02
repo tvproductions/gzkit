@@ -10,7 +10,7 @@ When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, etc.), invoke i
 
 ### Model tuning
 
-Effort is a dial to re-baseline per workload, never a fixed default — on Opus 5 the effort/quality curve is non-monotonic (Claude Opus 5 System Card § 8.4: FrontierCode peaks at `medium` and *declines* above `high` because the model makes out-of-scope edits; § 8.5: FrontierBench peaks at `xhigh`). Start at `high`, sweep, and hold the scope boundary explicit — an in-prompt scope instruction "recovered performance on most of these tasks" (§ 8.4). Reserve `max` for genuinely hard problems. Per-turn thinking prompts: *"Think carefully and step-by-step"* (hard) or *"Prioritize responding quickly"* (light). See [`docs/governance/opus-tuning.md`](docs/governance/opus-tuning.md) for full calibration guidance.
+Effort is a dial to re-baseline per workload, never a fixed default — on Opus 5 the effort/quality curve is non-monotonic (Claude Opus 5 System Card § 8.4: FrontierCode peaks at `medium` and *declines* above `high` because the model makes out-of-scope edits; § 8.5: FrontierBench peaks at `xhigh`). Start at `high`, sweep, and hold the scope boundary explicit — an in-prompt scope instruction "recovered performance on most of these tasks" (§ 8.4). Reserve `max` for genuinely hard problems. Per-turn thinking prompts: *"Think carefully and step-by-step"* (hard) or *"Prioritize responding quickly"* (light). See [`docs/governance/opus-tuning.md`](docs/governance/opus-tuning.md) for full calibration guidance; GPT-side sessions calibrate via [`docs/governance/gpt-tuning.md`](docs/governance/gpt-tuning.md) (gzkit runs with either vendor; current cards registry-rotated in `data/frontier_model_cards.json`).
 
 ## Compact Instructions
 

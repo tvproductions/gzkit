@@ -146,11 +146,13 @@ full predicate):
 ### Why a gate, not a reviewer checklist
 
 ADR-0.0.24 § Alternatives Considered #1 records the rejection of "keep
-advisory, raise visibility via reviewer checklist" — the Opus 4.7 system
-card § 2.3.6.2 documents a model writing six memory files about a
-verification rule and re-violating it. Discipline-only enforcement is
-demonstrably insufficient at the current capability frontier; the gate
-is the mechanical backstop under the narrative discipline.
+advisory, raise visibility via reviewer checklist" — the failure-mode
+taxonomy's **Correction fails** pattern
+(`.gzkit/rules/agent-failure-modes.md`, sourced to the current frontier
+cards) names the demonstrated shape: a correction received, memorialized,
+and re-violated anyway. Discipline-only enforcement is demonstrably
+insufficient at the current capability frontier; the gate is the
+mechanical backstop under the narrative discipline.
 
 ### Cross-references
 

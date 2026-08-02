@@ -18,19 +18,19 @@ agent-contract shape aligns with these primary-source patterns:
 
 - **Operator economy of effort.** Anthropic's clear/direct prompting guide
   says task descriptions should name context, workflow position, end goal,
-  and what successful completion looks like. OpenAI's GPT-5.5 prompt guidance
+  and what successful completion looks like. OpenAI's current prompt guidance
   likewise recommends short prompt sections for role, goal, success criteria,
   constraints, output, and stop rules. gzkit's draft-review-decide-attest
   mode applies that guidance by having the agent draft the structured work
   and the operator attest decisions instead of authoring every paragraph.
 - **Read before changing; verify before claiming.** Anthropic's hallucination
   guidance recommends grounding factual work in direct quotes for long
-  documents, and OpenAI's GPT-5.5 guidance tells coding agents to run relevant
+  documents, and OpenAI's guidance tells coding agents to run relevant
   validation commands after changes. gzkit renders those practices as
   DO IT RIGHT #5, #6g, #6h, ARB receipts, and `uv run gz check`.
 - **Selective subagent use.** Anthropic's subagent docs frame subagents as
   focused workers with separate context windows and note their latency cost.
-  OpenAI's GPT-5.5 guidance emphasizes traceable plans and concrete validation
+  OpenAI's guidance emphasizes traceable plans and concrete validation
   over process expansion. gzkit therefore uses subagents for independent
   fan-out and context isolation, not as a default response to every lookup.
 
@@ -39,7 +39,7 @@ Sources: Anthropic
 [subagents](https://docs.anthropic.com/en/docs/claude-code/sub-agents), and
 [XML tags](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags);
 OpenAI
-[GPT-5.5 prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5).
+[prompt guidance](https://developers.openai.com/api/docs/guides/prompt-guidance) (consult the current-model variant per `data/frontier_model_cards.json`).
 
 ## Anti-pattern canon
 

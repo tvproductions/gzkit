@@ -5,9 +5,9 @@ applyTo: "src/gzkit/pipeline_runtime.py, .gzkit/skills/**/SKILL.md, .claude/agen
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
-> **Rule version:** `0.4.0` — adds operative claim 5 (subagent claims are relayed only with independent evidence), closing the relay gap the Claude Opus 5 System Card § 6.1.3 named: *"the model can relay claims from subagents to users without verifying them"*, with multi-agent coverage acknowledged as an unmeasured limitation of that card's whole audit. gzkit dispatches `narrator`/`implementer`/`quality-reviewer`/`spec-reviewer` and relays their output into ceremony evidence, so the gap was live here. Also retires the two-generations-stale model mapping (`opus` → `claude-opus-4-7`) and compresses it to one line. Prior `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
+> **Rule version:** `0.5.0` — adds the `fable` tier (operator ruling 2026-08-02: "It seems like we should incorporate fable for the cases and times"): Mythos-class judgment work — doctrine evaluation, design dialogues, adversarial review, system-card evaluation — under operator supervision. Fable is NOT the pipeline or mechanical default; effort calibration is pending consumption of the Claude Fable 5 / Mythos 5 System Card (see `data/frontier_model_cards.json`). `skill_model` Literal and router test extended in the same commit. Prior `0.4.0` — adds operative claim 5 (subagent claims are relayed only with independent evidence), closing the relay gap the Claude Opus 5 System Card § 6.1.3 named: *"the model can relay claims from subagents to users without verifying them"*, with multi-agent coverage acknowledged as an unmeasured limitation of that card's whole audit. gzkit dispatches `narrator`/`implementer`/`quality-reviewer`/`spec-reviewer` and relays their output into ceremony evidence, so the gap was live here. Also retires the two-generations-stale model mapping (`opus` → `claude-opus-4-7`) and compresses it to one line. Prior `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
 ## Operative claims (binding)
 
@@ -28,6 +28,7 @@ applyTo: "src/gzkit/pipeline_runtime.py, .gzkit/skills/**/SKILL.md, .claude/agen
 | **Architectural design, planning** | Opus | Unbounded; constraints compete; novel decisions | ADR authoring, `/gz-design`, brief writing, cross-surface coherence checks |
 | **Complex refactoring** | Opus | Dataflow reasoning across N≥3 files | Multi-file renames, schema migrations, coupled-surface updates |
 | **Gate-5 attestation, narrative synthesis** | Opus | Operator-facing quality; tone and completeness matter | Closing OBPIs with evidence, writing release notes, operator-facing prose |
+| **Mythos-class judgment (operator-supervised)** | Fable | Highest-stakes judgment; doctrine and evidence evaluation | System-card evaluation, doctrine refresh, design dialogues, adversarial review sessions |
 | **Subagent multi-step work** | Varies (see below) | Depends on subtask type | Agent spawned for parallel exploration, verification, or specialized review |
 
 ## Skill frontmatter (`model:` directive)
@@ -44,9 +45,9 @@ model: haiku  # or: sonnet, opus
 ...
 ```
 
-**Valid values:** `haiku`, `sonnet`, `opus`. No inference; no runtime detection; declared value is the contract.
+**Valid values:** `haiku`, `sonnet`, `opus`, `fable`. No inference; no runtime detection; declared value is the contract. `fable` is reserved for Mythos-class judgment surfaces (operator-supervised); pipelines and mechanical work never default to it.
 
-**Mapping to Claude models** (re-sourced 2026-08-02; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5`.
+**Mapping to Claude models** (re-sourced 2026-08-02; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5`; `fable` → `claude-fable-5`.
 
 ## Subagent effort levels
 
