@@ -1,0 +1,16 @@
+{
+    "criteria": [
+        {
+            "type": "exitCodeEquals",
+            "command": "python3 -c \"import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'\"",
+            "expected": 0,
+            "description": "Card registry parses; every entry carries vendor/model_family/card_date/url and a valid status"
+        },
+        {
+            "type": "exitCodeEquals",
+            "command": "uv run gz validate --documents",
+            "expected": 0,
+            "description": "Doctrine documents validate after any card-refresh routing"
+        }
+    ]
+}
