@@ -1173,7 +1173,7 @@ uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without loss."
 
 # The verdict is witnessed in the ledger; inspect it before attesting
-uv run gz ledger tail --event rendition_advisor_verdict
+grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 ```
 
 The tool is deterministic (no LLM/network call — the judgment is the agent's). It writes

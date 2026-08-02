@@ -29,6 +29,12 @@ _BACKTICKED_INVOCATION = re.compile(r"`gz\s+([a-z][a-z0-9-]*)[^`]*`")
 _QUOTED_INVOCATION = re.compile(r'"gz\s+([a-z][a-z0-9-]*)[^"]*"')
 _STEP_DEF_FIXTURE = re.compile(r'the gz command\s+"([a-z][a-z0-9-]*)')
 
+# Inside a fenced block the delimiter-bound recognizers above cannot fire, so the
+# command line itself is the token (GHI #745). Tolerates the two prefixes gzkit
+# docs actually use: the canonical `uv run` and a transcript `$ ` prompt.
+_FENCE_DELIMITER = re.compile(r"^(?:```|~~~)")
+_FENCED_INVOCATION = re.compile(r"^\s*(?:\$\s*)?(?:uv\s+run\s+)?gz\s+([a-z][a-z0-9-]*)")
+
 # CLI verbs that legitimately have no wielding skill (e.g. bootstrap and
 # internal commands). Each entry must cite a reason.
 _NO_SKILL_VERBS: dict[str, str] = {
@@ -103,27 +109,54 @@ _NO_SKILL_VERBS: dict[str, str] = {
 
 
 def _cli_alignment_sources(project_root: Path) -> list[Path]:
-    """Enumerate every operator-facing surface that may carry ``gz <verb>`` strings."""
+    """Enumerate every operator-facing surface that may carry ``gz <verb>`` strings.
+
+    Tracks `.claude/rules/governance-core.md` § Operator-doc verb resolution.
+    ``.gzkit/skills/**/SKILL.md`` and the governance runbook are named there and
+    were absent from this list until GHI #745 — a skill could prescribe a verb
+    that never existed and the audit never opened the file.
+    """
     sources: list[Path] = []
     features_root = project_root / "features"
     if features_root.is_dir():
         sources.extend(sorted(features_root.rglob("*.feature")))
-    runbook = project_root / "docs" / "user" / "runbook.md"
-    if runbook.is_file():
-        sources.append(runbook)
+    for runbook in (
+        project_root / "docs" / "user" / "runbook.md",
+        project_root / "docs" / "governance" / "governance_runbook.md",
+    ):
+        if runbook.is_file():
+            sources.append(runbook)
     for sub in ("commands", "manpages"):
         candidate = project_root / "docs" / "user" / sub
         if candidate.is_dir():
             sources.extend(sorted(candidate.rglob("*.md")))
+    skills_root = project_root / ".gzkit" / "skills"
+    if skills_root.is_dir():
+        sources.extend(sorted(skills_root.rglob("SKILL.md")))
     return sources
 
 
 def _collect_verb_references(sources: list[Path], project_root: Path) -> dict[str, list[str]]:
-    """Return ``{verb: [<file:line>, …]}`` for every ``gz <verb>`` reference."""
+    """Return ``{verb: [<file:line>, …]}`` for every ``gz <verb>`` reference.
+
+    Outside a fence the three delimiter-bound recognizers apply. Inside one they
+    cannot: fenced commands carry no per-command backticks and no quotes, so
+    before GHI #745 the runnable form — the one operators copy — was the only
+    form that escaped checking.
+    """
     verbs_seen: dict[str, list[str]] = {}
     for source in sources:
+        in_fence = False
         for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
             rel = f"{source.relative_to(project_root).as_posix()}:{lineno}"
+            if _FENCE_DELIMITER.match(line.lstrip()):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                fenced = _FENCED_INVOCATION.match(line)
+                if fenced:
+                    verbs_seen.setdefault(fenced.group(1), []).append(rel)
+                continue
             for pattern in (_BACKTICKED_INVOCATION, _QUOTED_INVOCATION, _STEP_DEF_FIXTURE):
                 for match in pattern.finditer(line):
                     verbs_seen.setdefault(match.group(1), []).append(rel)

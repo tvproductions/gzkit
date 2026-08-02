@@ -309,7 +309,7 @@ uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
 
 # The verdict is witnessed in the ledger and written as an ARB receipt cited at Gate 5:
-uv run gz ledger tail --event rendition_advisor_verdict
+grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 ```
 
 ## Files

@@ -4,9 +4,9 @@ description: Validate and stage a candidate rendition from the corpus via gz con
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-14
+last_reviewed: 2026-08-02
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 model: sonnet
 gz_command: gz content compose
 ---
@@ -53,7 +53,7 @@ gz content compose <surface> --consumer <vendor> --candidate /tmp/candidate.md
 
 ```bash
 test -s .gzkit/renditions/<surface>/<consumer>.candidate.md
-gz ledger tail --event composition_candidate_emitted
+grep "composition_candidate_emitted" .gzkit/ledger.jsonl
 ```
 
 7. The candidate flows to the advisor-QC loop (OBPI-24) and operator attestation

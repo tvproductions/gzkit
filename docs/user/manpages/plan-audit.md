@@ -5,7 +5,7 @@ Structural prerequisite check for plan-OBPI alignment.
 ## Usage
 
 ```
-gz plan-audit OBPI-X.Y.Z-NN [--json]
+gz plan audit OBPI-X.Y.Z-NN [--json]
 ```
 
 ## Description
@@ -36,6 +36,6 @@ Writes a receipt to `.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`.
 ## Examples
 
 ```bash
-gz plan-audit OBPI-0.1.0-01
-gz plan-audit OBPI-0.1.0-01 --json
+gz plan audit OBPI-0.1.0-01
+gz plan audit OBPI-0.1.0-01 --json
 ```
