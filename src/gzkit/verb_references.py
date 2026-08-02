@@ -103,6 +103,13 @@ _FENCE_DELIMITER = re.compile(r"^(?:```|~~~)")
 _COMMAND_LINE = re.compile(r"^[ \t]*(?:\$[ \t]*)?(?:uv[ \t]+run[ \t]+)?gz[ \t]")
 _VERB_TOKEN = re.compile(r"^[a-z][a-z0-9-]*$")
 
+#: Line prefixes that continue a multi-line markdown construct. The marker
+#: suppresses a whole such run, so it can always sit OUTSIDE the construct: an
+#: HTML comment placed between two table rows splits the table in the rendered
+#: page, and one between two blockquote lines breaks the quote — a silent
+#: rendering regression that no validator here would catch.
+_BLOCK_PREFIXES: tuple[str, ...] = ("|", ">")
+
 
 class VerbReference(BaseModel):
     """One extracted ``gz`` invocation and where it was written."""
@@ -147,17 +154,26 @@ def extract_verb_references(
     capture is already a chain) is scanned, so prose that merely mentions a verb
     is not read as prescribing it.
 
-    :data:`SPECULATIVE_MARKER` on its own line suppresses the reference that
-    follows: the next line when that line is prose, or the entire block when the
-    next line opens a fence.
+    :data:`SPECULATIVE_MARKER` on its own line suppresses the whole block that
+    follows — a fenced code block, a markdown table, a blockquote, or (failing
+    those) the single next line. Block granularity is what lets the marker sit
+    OUTSIDE the construct it suppresses; a line-granular marker would have to be
+    written between two table rows or two blockquote lines, which breaks the
+    rendered page while every validator here still reports green.
     """
     references: list[VerbReference] = []
     in_fence = False
     skip_block = False
     pending_marker = False
+    suppress_prefix: str | None = None
 
     for lineno, line in enumerate(content.splitlines(), 1):
         stripped = line.strip()
+
+        if suppress_prefix is not None:
+            if stripped.startswith(suppress_prefix):
+                continue
+            suppress_prefix = None
 
         if _FENCE_DELIMITER.match(stripped):
             if in_fence:
@@ -182,6 +198,9 @@ def extract_verb_references(
 
         if pending_marker:
             pending_marker = False
+            suppress_prefix = next(
+                (prefix for prefix in _BLOCK_PREFIXES if stripped.startswith(prefix)), None
+            )
             continue
 
         for pattern in segments:

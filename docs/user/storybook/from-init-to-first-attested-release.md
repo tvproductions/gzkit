@@ -28,6 +28,7 @@ are derived — regenerable from the artifact graph.
 
 ## Anchored facts (Layer 3 — regenerable)
 
+<!-- gz-validate-skip: command-shape -->
 > Regenerated from artifact graph on 2026-05-09. Do not hand-edit; rerun
 > `gz storybook derive` (planned) to refresh.
 
@@ -65,7 +66,7 @@ are derived — regenerable from the artifact graph.
 
 ### Anchored manpages
 
-`gz init`, `gz status`, `gz state`, `gz justify`, `gz adr create`,
+`gz init`, `gz status`, `gz state`, `gz justify`, `gz plan create`,
 `gz obpi pipeline`, `gz arb`, `gz check`, `gz validate`, `gz attest`,
 `gz adr emit-receipt`, `gz git-sync`
 
@@ -279,5 +280,6 @@ That is the value flow this arc claims to deliver.
   36}, ADR-0.{7, 13, 18, 19, 20}.0, plus the skill registry as of
   2026-05-09.
 - **Authored sections:** all prose under "Narrative" headings.
+<!-- gz-validate-skip: command-shape -->
 - **Regenerator (planned):** `gz storybook derive --arc from-init-to-first-attested-release`.
 - **Freshness validator (planned):** `gz validate --storybook-fresh`.

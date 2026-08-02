@@ -183,6 +183,7 @@ and nothing in the nine OBPIs would surface the error.
 
 ## 5. The 2am Operator Question
 
+<!-- gz-validate-skip: command-shape -->
 `gz content land` half-wrote the rendition set and died. What the design as
 ruled does not provide:
 
@@ -192,6 +193,7 @@ ruled does not provide:
   two consumers with no common record that a landing was ever in flight. Needed:
   `landing_id`, intended consumer set, and corpus fingerprint persisted **first**,
   cleared **last**.
+<!-- gz-validate-skip: command-shape -->
 - **`gz content land --status <landing_id>`.** At 2am the operator needs "which
   consumers are on the new corpus fingerprint, which are on the old, which are
   indeterminate." Today the only tool is `rendition_exists` plus eyeballing

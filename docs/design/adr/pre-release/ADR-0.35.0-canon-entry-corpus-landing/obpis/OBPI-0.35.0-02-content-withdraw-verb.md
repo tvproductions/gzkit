@@ -38,6 +38,7 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
+<!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #2 - "gz content withdraw verb; Gate 5 fail-closed on invariant tier (`--attestor` / `--reason` refused when empty)"
 
 **Status:** Draft

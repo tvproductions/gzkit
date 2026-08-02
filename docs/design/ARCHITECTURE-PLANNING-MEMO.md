@@ -588,6 +588,7 @@ Three pool ADRs address agent coordination:
 
 - `agent-role-specialization` — superseded into ADR-0.18.0 (subagent pipeline). Defines Planner, Implementer, Reviewer, Narrator roles.
 - `graduated-oversight-model` — three-tier oversight (Full / Standard / Light) replacing binary Normal/Exception.
+<!-- gz-validate-skip: command-shape -->
 - `universal-agent-onboarding` — vendor-neutral `gz onboard` for cold-start context injection.
 
 ADR-0.18.0 (subagent-driven-pipeline-execution) is the most architecturally
@@ -605,6 +606,7 @@ delta per OBPI). Without graph-backed scoring, oversight tier selection is
 guesswork.
 
 **Onboarding:** Merge into `prime-context-hooks` (or its successor). Onboarding
+<!-- gz-validate-skip: command-shape -->
 is a special case of context projection — `gz prime --cold-start` or equivalent.
 Not a separate architectural decision.
 
@@ -620,6 +622,7 @@ Lock (when the time comes):
    deterministic risk scoring. Don't add oversight complexity without
    infrastructure to support it.
 
+<!-- gz-validate-skip: command-shape -->
 2. **gz prime independently:** Yes. Simple `gz prime` now (dumps current OBPI
    brief summary, recent commits, open blockers, brief status). No graph
    dependency. When the graph engine lands, prime becomes a projection of

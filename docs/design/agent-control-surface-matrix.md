@@ -59,6 +59,7 @@ Used for gzkit sync parity planning and vendor-alignment ADR scoping.
 - `ADR-pool.vendor-alignment-copilot` — Copilot surface alignment
 - `ADR-pool.vendor-alignment-gemini-cli` — Gemini CLI surface alignment
 - `ADR-pool.vendor-alignment-opencode` — OpenCode surface alignment
+<!-- gz-validate-skip: command-shape -->
 - `ADR-pool.universal-agent-onboarding` — Vendor-neutral `gz onboard` command
 - `ADR-0.14.0` — Multi-agent instruction architecture unification (active)
 

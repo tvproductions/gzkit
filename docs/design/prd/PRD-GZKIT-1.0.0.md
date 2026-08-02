@@ -217,7 +217,7 @@ docs/design/adr/{foundation|pre-release|<major>.0}/ADR-X.Y.Z-{slug}/
 
 **Control Surface Generation:**
 
-- `gz sync` generates agent control surfaces from governance canon
+- `gz agent sync` generates agent control surfaces from governance canon
 - CLAUDE.md — Claude Code contract (constraint-forward)
 - AGENTS.md — Universal agent contract (all vendors)
 - Precedence hierarchy: AGENTS.md > vendor-specific > task prompt > skills

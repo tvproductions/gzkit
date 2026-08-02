@@ -43,6 +43,7 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
+<!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #7 - "gz content land &lt;surface&gt; orchestrator -- atomic multi-consumer write, single Gate 5 on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation"
 
 **Status:** Draft

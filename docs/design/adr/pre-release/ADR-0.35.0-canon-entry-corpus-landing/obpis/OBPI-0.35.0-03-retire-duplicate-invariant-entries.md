@@ -34,6 +34,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the withdraw verb). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
 
+<!-- gz-validate-skip: command-shape -->
 > **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22).**
 > ONE of this brief's eight retirements landed ahead of the chain as a direct fix:
 > commit `42ba6c25` retired the divergent-pair loser under GHI #635, using the

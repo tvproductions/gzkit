@@ -632,6 +632,7 @@ gzkit is 1.0 when ALL hold:
 
 ### Phase 0 — EMERGENCY: Schema-enforce the fillable artifacts (GHI #615)
 
+<!-- gz-validate-skip: command-shape -->
 > **New entry in the Phase 0 hot-store (operator verbatim, 2026-06-16) — the
 > ADR-0.0.37 verification-theater facade + QC-binding meta-audit.** Phase 0's
 > model is already correct — a standing hot store for emergencies; this is a new
@@ -1034,10 +1035,12 @@ Exit gate: corpus → rendered-surface round-trip works under the validators;
 ### Phase C — MOTD build (the cadence engine)
 
 Per the designed build plan (restore-health § Session MOTD §7), leaf-first,
+<!-- gz-validate-skip: command-shape -->
 absorbing ADR-0.0.65 and implementing ADR-0.0.66 (`gz next`):
 
 - [ ] C.1 `.gzkit/work/` store + workplan schema (campaign + daily-brief)
 - [ ] C.2 `session_orientation.py` → lightweight auto-triage (the MOTD)
+<!-- gz-validate-skip: command-shape -->
 - [ ] C.3 Directed triage skill (`gz next` UX)
 - [ ] C.4 Continuity hybrid (subsumes handoff; Stop/clear hook drafts, agent
       finalizes). Includes the terminal disposition of in-flight

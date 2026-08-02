@@ -261,7 +261,7 @@ asserts every mapping value lands in the canonical set).
 |---|---|
 | Pydantic models (`core/models.py`, `brief_structure.py`) | Field validators call the loader; no `Literal[...]` vocabulary copies |
 | JSON schemas (`obpi.json`, `obpi_brief_structure.json`, `adr.json`, `prd.json`, `constitution.json`) | `enum` generated from the source at build/test time; drift-guard test fails on divergence |
-| Authoring tools (`gz plan`, `gz obpi specify`, `gz prd`, `gz constitute`, scaffolders) | Write only canonical terms; never a literal |
+| Authoring tools (`gz plan`, `gz specify`, `gz prd`, `gz constitute`, scaffolders) | Write only canonical terms; never a literal |
 | Validators / auditors (`validate_cmd`, `trust_audits/*`, `adr_audit`, `gates`, `frontmatter_coherence`) | Read the loader; the ~14 hand parsers route through the model |
 | Skills (`.gzkit/skills/**`) | Reference the canonical vocabulary doc; no inline value lists |
 | Docs (`docs/user/**`, `docs/governance/**`, runbooks) | Cite the canonical doc; examples use canonical terms only |

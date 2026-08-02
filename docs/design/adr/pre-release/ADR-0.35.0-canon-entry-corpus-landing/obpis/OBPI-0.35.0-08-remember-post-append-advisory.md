@@ -43,6 +43,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 08 is independent of the 01 -> 02 -> 03 chain and of 04 -> 05 -> 06 -> 07; it may land at any point. Its advisory text names the OBPI-0.35.0-07 verb as the governed next step, so the prose is authored against that verb's final shape.
 
+<!-- gz-validate-skip: command-shape -->
 > **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22, operator-ruled).**
 > GHI #654's capture-silence gap was direct-fixed ahead of this brief because it was
 > a live footgun (it red-treed the repo once already; see `dc2bc605`) and this brief

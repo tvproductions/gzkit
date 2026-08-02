@@ -42,6 +42,7 @@ Each layer is individually correct. The composition is wrong because no layer in
 
 ## The 2026-04-18 outage taxonomy
 
+<!-- gz-validate-skip: command-shape -->
 | # | Layer broken | Instance | How it poisoned the chain |
 |---|--------------|----------|---------------------------|
 | A | Graph builder | `_apply_attestation_metadata` didn't recognize `obpi_receipt_emitted` events (GHI #193) | Every attested OBPI's graph node said `attested=False` |

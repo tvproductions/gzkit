@@ -31,6 +31,7 @@ Scoring scale (0-3):
 
 ### gzkit
 
+<!-- gz-validate-skip: command-shape -->
 | Item | Score | Current State | Gap |
 |------|-------|---------------|-----|
 | CLAUDE.md or equivalent project-level agent instructions | 3 | `CLAUDE.md` present and generated from governance canon. | Minor: architecture section is terse ("See project documentation"). |
@@ -110,6 +111,7 @@ Initial snapshot below reflects pre-remediation scoring; see Post-Remediation Ad
 ### gzkit: Top 3 gaps
 
 1. **Context contract drift (high impact, low effort):**
+   <!-- gz-validate-skip: command-shape -->
    - Gap: README quickstart uses invalid command patterns (`gz plan new`, `gz verify`).
    - Fix: update README quickstart to match current CLI surface and add a CLI-doc contract check in `gz cli audit` scope.
 
@@ -142,6 +144,7 @@ Initial snapshot below reflects pre-remediation scoring; see Post-Remediation Ad
 Tracked defects discovered during this audit:
 
 1. README command drift
+   <!-- gz-validate-skip: command-shape -->
    - Evidence: `README.md` references `gz plan new` and `gz verify`; `uv run gz --help` shows no `verify` command.
 2. Missing discovery index
    - Evidence: `.github/discovery-index.json` absent while referenced by OBPI templates and ADR artifacts.

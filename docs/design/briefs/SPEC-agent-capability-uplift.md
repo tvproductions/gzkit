@@ -242,6 +242,7 @@ Capabilities that span the agent lifecycle.
 - Optional session-start hook that runs `gz status --orientation` and injects output as context
 - **Post-compaction re-orientation:** Orientation must also fire after context compaction, not just session start. Real-world testing (superpowers in production) revealed that after ~50% context consumption and compaction, agents lose skill awareness entirely and revert to unstructured behavior. The orientation hook should be triggered by `compact` events in addition to `startup` events.
 - Orientation document is ephemeral (not persisted) — generated from authoritative sources on demand
+<!-- gz-validate-skip: command-shape -->
 **Pool ADR:** Subsumes `ADR-pool.universal-agent-onboarding` (`gz onboard` command). This CAP proposes `gz status --orientation` as the implementation vehicle — a subcommand of existing `gz status` rather than a new top-level command. The pool ADR's `--vendor` and `--resume` flags remain valid extensions.
 **GovZero fit:** No new persistent state. Derived from existing ledger/status infrastructure.
 **Priority:** P1 — directly reduces wasted tokens on orientation across every session.
@@ -357,6 +358,7 @@ Capabilities that span the agent lifecycle.
   - Findings classified as Critical (likely production failure) / Warning (possible edge case) / Note (defensive improvement)
   - Critical findings block Stage 4 (evidence presentation)
   - Warning/Note findings included in evidence presentation for human review
+<!-- gz-validate-skip: command-shape -->
 - Can be run standalone via `gz predict-failures` skill for ad-hoc analysis
 - Anti-rationalization: "All tests passing does not mean all failure modes are covered"
 **GovZero fit:** Extends verification without changing gate structure. Produces evidence artifacts.
@@ -502,6 +504,7 @@ E2 (Quality + Traceability) ◄── depends on ── ADR-0.21.0 (external)
 
 This spec overlaps with existing pool ADRs. Dispositions:
 
+<!-- gz-validate-skip: command-shape -->
 | Pool ADR | Disposition | CAP Items | Notes |
 |---|---|---|---|
 | `pre-planning-interview` | **Subsumed by CAP-01** | CAP-01 | CAP-01 is broader (approach exploration + spec review, not just questioning) |

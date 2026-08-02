@@ -97,6 +97,123 @@ class TestSkillsAreInScope(_Tree):
         self.assertEqual(len(audit_cli_alignment(self.root)), 1)
 
 
+class TestDeclaredDocsScopeIsRead(_Tree):
+    """The rule declares `docs/**/*.md`, not a hand-listed subset (GHI #745).
+
+    Enumerating four directories under `docs/user` left the rest of the declared
+    field unread: a dead verb in a design doc, a governance page, or a PRD was
+    invisible indefinitely. The enumeration IS the blind spot — the same
+    derivation error as scoping an allowlist by its examples.
+    """
+
+    def test_an_arbitrary_docs_file_is_scanned(self) -> None:
+        self.write("docs/design/some-proposal.md", "Run `gz nosuchverb` to start.\n")
+        self.assertEqual(len(audit_cli_alignment(self.root)), 1)
+
+    def test_a_governance_page_is_scanned(self) -> None:
+        self.write("docs/governance/some-doctrine.md", "```bash\ngz nosuchverb\n```\n")
+        self.assertEqual(len(audit_cli_alignment(self.root)), 1)
+
+
+class TestStructuralExemptions(_Tree):
+    """Sealed records are exempted, never rewritten.
+
+    Editing a sealed artifact to insert a suppression marker would contradict
+    the doctrine that created the terminal-brief exemption in the first place:
+    these documents are evidence of what was true at a moment, and a later hand
+    reaching into them is the defect, not the fix.
+
+    Pool ADRs are exempt on a different ground (operator ruling, 2026-08-02):
+    describing a proposed CLI surface is what a pool ADR is FOR, so its verbs
+    are unregistered by definition rather than by mistake.
+    """
+
+    def test_pool_adrs_are_exempt(self) -> None:
+        self.write("docs/design/adr/pool/ADR-pool.thing.md", "`gz nosuchverb run`\n")
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_terminal_briefs_are_exempt(self) -> None:
+        self.write(
+            "docs/design/adr/foundation/ADR-0.0.1-x/obpis/OBPI-0.0.1-01-y.md",
+            "---\nstatus: Completed\n---\n\n`gz nosuchverb`\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_superseded_is_terminal_and_therefore_exempt(self) -> None:
+        """`Superseded` is already in BRIEF_TERMINAL_STATUSES.
+
+        GHI #745 proposed a third exemption for "self-declared SUPERSEDED docs".
+        It needs no separate predicate — the terminal-brief check already covers
+        it, which is why a separate scan for it finds nothing.
+        """
+        self.write(
+            "docs/design/adr/foundation/ADR-0.0.2-x/ADR-0.0.2-x.md",
+            "---\nstatus: Superseded\n---\n\n`gz nosuchverb`\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_adr_audit_artifacts_are_exempt(self) -> None:
+        """Audit records are sealed evidence of a completed ceremony."""
+        self.write(
+            "docs/design/adr/foundation/ADR-0.0.3-x/audit/AUDIT.md",
+            "The brief prescribed `gz nosuchverb` at audit time.\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_evaluation_scorecards_are_exempt(self) -> None:
+        self.write(
+            "docs/design/adr/foundation/ADR-0.0.4-x/EVALUATION_SCORECARD.md",
+            "Scored against `gz nosuchverb`.\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_releases_are_exempt(self) -> None:
+        """Release manifests quote GHI titles verbatim; rewriting falsifies them."""
+        self.write("docs/releases/v1.2.3.md", "- #123 `gz nosuchverb` miscounts rows\n")
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_a_live_doc_beside_an_exempt_one_still_fails(self) -> None:
+        """Exemption is per-artifact, never a blanket over the directory."""
+        self.write("docs/design/adr/pool/ADR-pool.thing.md", "`gz nosuchverb`\n")
+        self.write("docs/design/live-thing.md", "`gz alsonosuchverb`\n")
+        errors = audit_cli_alignment(self.root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("alsonosuchverb", errors[0].message)
+
+
+class TestSpeculativeMarkerIsHonored(_Tree):
+    """The escape hatch `governance-core.md` promises, now real on this surface.
+
+    The rule told operators to "mark the reference as speculative so the check
+    skips it"; `audit_cli_alignment` was the one governed verb-checker that had
+    never adopted the marker, so the promised recovery did not exist here.
+    """
+
+    def test_marker_suppresses_a_planned_verb(self) -> None:
+        self.write(
+            "docs/design/proposal.md",
+            "<!-- gz-validate-skip: command-shape -->\nWe will add `gz nosuchverb`.\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_marker_suppresses_a_planned_fenced_block(self) -> None:
+        self.write(
+            "docs/design/proposal.md",
+            "<!-- gz-validate-skip: command-shape -->\n```bash\ngz nosuchverb --flag\n```\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_marker_does_not_suppress_the_rest_of_the_file(self) -> None:
+        """A blanket-suppressing marker would be an off switch, not an escape."""
+        self.write(
+            "docs/design/proposal.md",
+            "<!-- gz-validate-skip: command-shape -->\n`gz nosuchverb`\n\n`gz alsonosuchverb`\n",
+        )
+        errors = audit_cli_alignment(self.root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("alsonosuchverb", errors[0].message)
+
+
 class TestCommittedSurfacesResolve(unittest.TestCase):
     """Every governed surface in the widened scope resolves today.
 

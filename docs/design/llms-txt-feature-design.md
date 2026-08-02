@@ -422,10 +422,13 @@ release glue.
 
 ### Recommended command surfaces
 
+<!-- gz-validate-skip: command-shape -->
 - `gz llms build`
   - build public and packaged artifacts from docs + config
+<!-- gz-validate-skip: command-shape -->
 - `gz llms sync`
   - materialize packaged artifacts into local project `.gzkit/`
+<!-- gz-validate-skip: command-shape -->
 - `gz llms show`
   - show artifact status, source version, and drift summary
 
@@ -563,6 +566,6 @@ These are legitimate follow-ups, but they should not block v1 design:
 
 - Should page mirror export use source Markdown directly or rendered/normalized Markdown?
 - Should the local `.gzkit/` copy include page mirrors in addition to `llms-full.txt`?
+<!-- gz-validate-skip: command-shape -->
 - Should `gz agent sync control-surfaces` refresh local `llms` artifacts, or should that remain owned by `gz llms sync` and `gz init` repair mode?
 - Should non-MkDocs discovery adapters exist later, or should this remain intentionally MkDocs-scoped?
-

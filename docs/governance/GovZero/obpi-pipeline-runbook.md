@@ -323,15 +323,19 @@ finishing-a-development-branch       → Stage 5 (sync & account)
 
 ### Bridge: gz-superbook
 
+<!-- gz-validate-skip: command-shape -->
 `gz superbook` translates superpowers artifacts into GovZero governance:
 
+<!-- gz-validate-skip: command-shape -->
 - **Forward booking** (`gz superbook forward`): Spec + plan → ADR + OBPI briefs
   (before implementation). Status set to Draft.
+<!-- gz-validate-skip: command-shape -->
 - **Retroactive booking** (`gz superbook retroactive`): Spec + plan → ADR + OBPI briefs
   (after implementation). Status set to Pending-Attestation.
 
 ### Interop Modes
 
+<!-- gz-validate-skip: command-shape -->
 | Mode | Superpowers | GovZero Pipeline | Bridge |
 |------|-------------|------------------|--------|
 | GovZero only | Off | Full pipeline (Stages 1-5) | None |
@@ -341,6 +345,7 @@ finishing-a-development-branch       → Stage 5 (sync & account)
 ### When Superpowers Is Enabled
 
 1. Superpowers handles brainstorming, spec writing, and plan writing
+<!-- gz-validate-skip: command-shape -->
 2. `gz superbook forward` books the plan into GovZero (creates ADR + OBPIs)
 3. Superpowers handles implementation (executing-plans or subagent-driven)
 4. `gz obpi pipeline {OBPI-ID} --from=verify` picks up governance from Stage 3

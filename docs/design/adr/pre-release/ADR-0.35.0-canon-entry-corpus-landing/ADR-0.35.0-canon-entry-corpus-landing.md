@@ -60,6 +60,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 1. RETIREMENT IS AN APPENDED TOMBSTONE, NEVER A DELETION. `CorpusEntry` gains optional `supersedes: str | None` and `retires: str | None`. `effective_corpus()` folds the append log; `tier_policy.invariant_entries()` reads the effective view; the raw log is never mutated. Direct analogue of `gz obpi withdraw`/`repudiate` (ADR-0.0.71). The fold's algebra is specified in this ADR, not deferred to implementation -- it is the one genuinely irreversible commitment.
 
+<!-- gz-validate-skip: command-shape -->
 2. `gz content withdraw <surface> --entry <id>` retires by entry id, never by text. Retiring an invariant-tier entry is Gate 5: `--attestor` + `--reason`, fail closed on empty. Per-entry-id rather than per-text because six of the seven byte-identical groups address the same text to two different sections -- text-keyed retirement silently elects a section winner.
 
 3. SECTION OWNERSHIP + DECREASE-ONLY RATCHET. Sections declare `corpus-owned` or `unowned`. The generator materializes owned sections from the corpus and carries unowned sections forward verbatim. The unowned byte total is recorded in a decrease-only ratchet. Un-owning a section (which raises the ratchet) requires an attested raise-path, Gate 5, the same shape as the retire path -- an undefined reversal path is the one agents invent.
@@ -68,6 +69,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 5. The lineage map is a SEPARATE `<consumer>.lineage.json` artifact ({section_id: {owned, entry_ids, byte_span}}), not bolted onto `RenditionProvenance` -- generate-time versus commit-time lifecycle, and `RenditionProvenance` is frozen/extra=forbid.
 
+<!-- gz-validate-skip: command-shape -->
 6. `gz content land <surface>` (required positional, matching compose/commit) orchestrates atomic multi-consumer write. ONE Gate 5 attestation on the corpus delta covers N consumers; each sidecar records the same `attestation_text` and a shared `landing_id`. Justified because renditions are Layer-3 derived views and generation over owned sections is deterministic -- N attestations would demand N human judgments where only one exists.
 
 7. `gz content remember` gains a POST-APPEND ADVISORY -- three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`, never a refusal, exit stays 0. Capture must never be blocked: losing the operator's words is strictly worse than a red tree. The tree going red is correct; GHI #654's defect is the SILENCE, not the redness.
@@ -124,6 +126,7 @@ and declares the remaining **22,378 B** as decrease-only debt. A gate
 whose scope is partial and undeclared is the theater this ADR exists to remove,
 so the coverage figure is asserted here and re-measured on every run.
 
+<!-- gz-validate-skip: command-shape -->
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Owned sections derive from the corpus; hand-authored prose in an owned section is refused. | `uv run gz validate --rendition-lineage` | 0 |
@@ -243,11 +246,13 @@ pool item (operator ruling, 2026-07-21).
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
 - [ ] `CorpusEntry.supersedes` / `.retires` fields + `effective_corpus()` fold (algebra specified, including retire-the-tombstone) + `tier_policy.invariant_entries()` reads the effective view
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz content withdraw` verb; Gate 5 fail-closed on invariant tier (`--attestor` / `--reason` refused when empty)
 - [ ] Retire the 8 duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus 50 -> 42 (GHI #635)
 - [ ] Section ownership declaration + decrease-only unowned-byte ratchet + attested ratchet-raise path for un-owning
 - [ ] corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction
 - [ ] `gz validate --rendition-lineage` -- fail-closed over owned sections, coverage % surfaced to Fidelity Assertions
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz content land <surface>` orchestrator -- atomic multi-consumer write, single Gate 5 on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
 - [ ] `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
 - [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-0.44.0-vendor-alignment-codex
@@ -300,6 +305,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 1. RETIREMENT IS AN APPENDED TOMBSTONE, NEVER A DELETION. `CorpusEntry` gains optional `supersedes: str | None` and `retires: str | None`. `effective_corpus()` folds the append log; `tier_policy.invariant_entries()` reads the effective view; the raw log is never mutated. Direct analogue of `gz obpi withdraw`/`repudiate` (ADR-0.0.71). The fold's algebra is specified in this ADR, not deferred to implementation -- it is the one genuinely irreversible commitment.
 
+<!-- gz-validate-skip: command-shape -->
 2. `gz content withdraw <surface> --entry <id>` retires by entry id, never by text. Retiring an invariant-tier entry is Gate 5: `--attestor` + `--reason`, fail closed on empty. Per-entry-id rather than per-text because six of the seven byte-identical groups address the same text to two different sections -- text-keyed retirement silently elects a section winner.
 
 3. SECTION OWNERSHIP + DECREASE-ONLY RATCHET. Sections declare `corpus-owned` or `unowned`. The generator materializes owned sections from the corpus and carries unowned sections forward verbatim. The unowned byte total is recorded in a decrease-only ratchet. Un-owning a section (which raises the ratchet) requires an attested raise-path, Gate 5, the same shape as the retire path -- an undefined reversal path is the one agents invent.
@@ -308,6 +314,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 5. The lineage map is a SEPARATE `<consumer>.lineage.json` artifact ({section_id: {owned, entry_ids, byte_span}}), not bolted onto `RenditionProvenance` -- generate-time versus commit-time lifecycle, and `RenditionProvenance` is frozen/extra=forbid.
 
+<!-- gz-validate-skip: command-shape -->
 6. `gz content land <surface>` (required positional, matching compose/commit) orchestrates atomic multi-consumer write. ONE Gate 5 attestation on the corpus delta covers N consumers; each sidecar records the same `attestation_text` and a shared `landing_id`. Justified because renditions are Layer-3 derived views and generation over owned sections is deterministic -- N attestations would demand N human judgments where only one exists.
 
 7. `gz content remember` gains a POST-APPEND ADVISORY -- three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`, never a refusal, exit stays 0. Capture must never be blocked: losing the operator's words is strictly worse than a red tree. The tree going red is correct; GHI #654's defect is the SILENCE, not the redness.
@@ -348,11 +355,13 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
 ### Q: What are the implementation checklist items? Each becomes an OBPI.
 
 **A:** 1. `CorpusEntry.supersedes` / `.retires` fields + `effective_corpus()` fold (algebra specified, including retire-the-tombstone) + `tier_policy.invariant_entries()` reads the effective view
+<!-- gz-validate-skip: command-shape -->
 2. `gz content withdraw` verb; Gate 5 fail-closed on invariant tier (`--attestor` / `--reason` refused when empty)
 3. Retire the 8 duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus 50 -> 42 (GHI #635)
 4. Section ownership declaration + decrease-only unowned-byte ratchet + attested ratchet-raise path for un-owning
 5. corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction
 6. `gz validate --rendition-lineage` -- fail-closed over owned sections, coverage % surfaced to Fidelity Assertions
+<!-- gz-validate-skip: command-shape -->
 7. `gz content land <surface>` orchestrator -- atomic multi-consumer write, single Gate 5 on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
 8. `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
 9. Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-0.44.0-vendor-alignment-codex
@@ -361,6 +370,7 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
 
 **A:** B -- TOTAL CORPUS BACKFILL TO 100%. Rejected. Much of the unwitnessed 22,378 B is table-shaped (gate covenant, lane rules, kinds table, control-surface block) with no operator utterance behind it; backfilling means fabricating `origin` and `witness` fields. That poisons the one artifact the whole system trusts, and is the same can't-fail-witness defect class this ADR exists to remove. Honest accounting on the record: because one Gate 5 covers the delta, B's ATTESTATION cost is actually LOWER than A's, not higher -- the intuition that B is attestation-expensive is wrong. Its disqualifying cost is entirely the fabricated provenance. Equally on the record: A's failure mode (a permanent 31.2% that nobody drives down) is INVISIBLE and requires no error by anyone, whereas B's failure mode is at least legible in the log. A trades a visible defect for an invisible one. It remains the right call, but the trade is named here rather than assumed away.
 
+<!-- gz-validate-skip: command-shape -->
 C -- DELTA-PATCH GENERATOR ONLY. Rejected as a destination, retained as the presentation layer inside `gz content land`. Diffing effective-corpus against the last-landed fingerprint and patching the prior rendition is the smallest surface and closes the footgun, but the `rendition subset-of corpus` gate CANNOT be built on it: the rendition is by construction prior-rendition-plus-patch with no total corpus derivation anywhere. It also cannot self-heal -- once a rendition drifts, the delta path perpetuates the drift forever.
 
 D -- TEXT-KEYED DEDUP AT COMPOSITION TIME. Rejected on two counts. Six of the seven byte-identical groups address the same text to two DIFFERENT sections, so text-keyed retirement silently elects a section winner -- a question text identity cannot see. And on the divergent pair it would silently pick a quote style with no witness, which is doctrine drift with no attestation: the named root failure in AGENTS.md section MAKE LLM STOCHASTIC VIBES INERT, operative claim 3.
@@ -399,6 +409,7 @@ O -- STORE THE PROVENANCE MAP INSIDE `RenditionProvenance`. Rejected. It is froz
 
 B -- TOTAL CORPUS BACKFILL TO 100%. Rejected. Much of the unwitnessed 22,378 B is table-shaped (gate covenant, lane rules, kinds table, control-surface block) with no operator utterance behind it; backfilling means fabricating `origin` and `witness` fields. That poisons the one artifact the whole system trusts, and is the same can't-fail-witness defect class this ADR exists to remove. Honest accounting on the record: because one Gate 5 covers the delta, B's ATTESTATION cost is actually LOWER than A's, not higher -- the intuition that B is attestation-expensive is wrong. Its disqualifying cost is entirely the fabricated provenance. Equally on the record: A's failure mode (a permanent 31.2% that nobody drives down) is INVISIBLE and requires no error by anyone, whereas B's failure mode is at least legible in the log. A trades a visible defect for an invisible one. It remains the right call, but the trade is named here rather than assumed away.
 
+<!-- gz-validate-skip: command-shape -->
 C -- DELTA-PATCH GENERATOR ONLY. Rejected as a destination, retained as the presentation layer inside `gz content land`. Diffing effective-corpus against the last-landed fingerprint and patching the prior rendition is the smallest surface and closes the footgun, but the `rendition subset-of corpus` gate CANNOT be built on it: the rendition is by construction prior-rendition-plus-patch with no total corpus derivation anywhere. It also cannot self-heal -- once a rendition drifts, the delta path perpetuates the drift forever.
 
 D -- TEXT-KEYED DEDUP AT COMPOSITION TIME. Rejected on two counts. Six of the seven byte-identical groups address the same text to two DIFFERENT sections, so text-keyed retirement silently elects a section winner -- a question text identity cannot see. And on the divergent pair it would silently pick a quote style with no witness, which is doctrine drift with no attestation: the named root failure in AGENTS.md section MAKE LLM STOCHASTIC VIBES INERT, operative claim 3.

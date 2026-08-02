@@ -150,6 +150,7 @@ Items A (process-plane only), B, C, E from the decisions table above.
 
 ## Deferred Items
 
+<!-- gz-validate-skip: command-shape -->
 | Item | Path | Rationale | Follow-up |
 | --- | --- | --- | --- |
 | D | `locks/obpi/` | No lock acquisition/release runtime; no concurrent agent sessions in gzkit | Future post-1.0 ADR when multi-agent concurrency is needed |

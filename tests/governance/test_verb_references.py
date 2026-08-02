@@ -103,6 +103,33 @@ class SpeculativeMarkerTests(unittest.TestCase):
         content = f"{SPECULATIVE_MARKER}\n```\ngz unbuilt verb\n```\n\n`gz state`"
         self.assertEqual(_chains(content), [("state",)])
 
+    def test_marker_suppresses_a_whole_table(self) -> None:
+        """Placement must stay OUTSIDE the table.
+
+        An HTML comment written between two table rows splits the table in the
+        rendered page — a silent regression no validator here catches. Block
+        granularity is what lets the marker sit above the table instead.
+        """
+        content = (
+            f"{SPECULATIVE_MARKER}\n"
+            "| id | note |\n"
+            "|----|------|\n"
+            "| A | renamed to `gz unbuiltverb` |\n"
+            "| B | second row |\n"
+        )
+        self.assertEqual(_chains(content), [])
+
+    def test_marker_suppresses_a_whole_blockquote(self) -> None:
+        content = f"{SPECULATIVE_MARKER}\n> rerun\n> `gz unbuiltverb derive` to refresh\n"
+        self.assertEqual(_chains(content), [])
+
+    def test_suppression_ends_when_the_run_ends(self) -> None:
+        """A block marker is not a file-level off switch."""
+        content = (
+            f"{SPECULATIVE_MARKER}\n| A | `gz unbuiltverb` |\n| B | second row |\n\n`gz state`\n"
+        )
+        self.assertEqual(_chains(content), [("state",)])
+
 
 class SegmentSelectionTests(unittest.TestCase):
     """Call sites differ in which prose contexts count as an invocation.

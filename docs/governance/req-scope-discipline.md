@@ -191,6 +191,7 @@ The ~3,404 filesystem-shaped operations in `tests/` are dispositioned by kind:
 | Render-form fixture test (table box-drawing, JSON structure, tree indentation) | Keep — BEHAVIOR REQ proof per GHI #270 reconciliation |
 | Test that exercises CLI command and observes output structure | Keep — BEHAVIOR REQ proof |
 
+<!-- gz-validate-skip: command-shape -->
 The re-runnable decommissioning chore (`gz chore decommission-tautological-tests`,
 OBPI-0.0.59-04) automates this matrix with per-file AST analysis and operator-paced
 disposition.

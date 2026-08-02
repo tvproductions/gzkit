@@ -89,6 +89,7 @@ the committed-main baseline; this edit records only the OBPI-26 disposition chan
 - [ ] **2.0 Housekeeping: re-home ADR-0.0.66 → pool** (§13 immediate, *not executed*) — frontmatter disposition → `uv run gz register-adrs`. → *§13; Snapshot C note*.
 - [ ] **2.1 Canon Foundation** — the substrate the others assume; build per its §12 sequence. → *Designated Workstream — Canon Foundation*.
 - [ ] **2.2 Context-Load CMS** — pulled into Tier 1 while #519 remains open. Current live route is **1.1 / OBPI-0.0.37-26** (Codex-root setpoint + interim operator-attested compressed rendition), with the active ADR-0.0.37 set numbered 06–10 and 18–27. Historical 11–17 are withdrawn (`Abandoned` mirror; 11–15 retain valid completion receipts; 16/17 created-only/retired). Do not restart the retired OBPI-17 density-classification route. → *Execution Worklist 1.1; Designated Workstream — Context-Load CMS historical context*
+<!-- gz-validate-skip: command-shape -->
 - [ ] **2.3 Harness Hardening + ADR-0.0.66** — the enforcement spine + `gz next`/triage read-substrate. → *Designated Workstream — Harness Hardening*.
 - [ ] **2.4 Session MOTD** — consumes the absorbed ADR-0.0.65, ADR-0.0.66, and canon; build per its §7. → *Designated Workstream — Session MOTD*.
 - [ ] **2.5 Config-first store — repo-wide SSOT (its own first-class workstream; design deferred, operator 2026-06-01).** A NEW thing, not a subset of anything: gzkit has no single source of truth for its own operational tuning values, which live as drifting literals repo-wide — instructions budgets, validator thresholds, `_PIPELINE_MARKER_STALE_HOURS` / timeouts / ceilings hardcoded in `src/`, lock TTL, the 40% coverage floor, defect-fix thresholds — scattered across `data/`, code, tests, and prose docs. **Live instance (2026-06-01):** the AGENTS.md char budget exists in 4 places — `data/instructions_files_budget.json` (now 33000), two test literals (`test_agents_md_map_doctrine` / `test_agents_md_map_doctrine_application`), and the `agents-md-map-doctrine.md` Budget table *still saying 15000* (drifted since OBPI-0.0.54-01). Inventory: `grep -E '^_[A-Z_]+ *= *[0-9]' src/gzkit`. Target: one typed source that code, tests, **and doc-table generation** read from, + a `gz validate --config-ssot` drift fail-close. **Overlaps but exceeds Canon Foundation §8.8** — canon subsumes scattered `data/*.json` *invariant data*; this is broader: repo-wide tuning *scalars*, most hardcoded in `src/`, which canon (invariant rules) does not home. The irony it names: gzkit preaches SSOT for governance state, has none for its own config. **Prior art (operator, 2026-06-01): AirlineOps did this notably better — study its config-SSOT pattern via `/airlineops-parity-scan` before designing.** Reference for a gzkit-native design, not perpetual-parity catch-up (Architectural Boundary 5).
@@ -574,6 +575,7 @@ fail-closed, smallest win) → `agent-execution-intelligence` MODE +
 `tdd-receipt-stream` → `skill-behavioral-hardening` → `harness-aware-execution-modes`
 Mode 2.
 
+<!-- gz-validate-skip: command-shape -->
 **Orientation-layer sibling — `ADR-0.0.66-deterministic-steering-substrate` (booked 2026-05-31, operator-waived Boundary 1 / Operating Rule 6).** ADR-0.0.66 coalesces `tdd-receipt-stream` (the shared hub), `agent-execution-intelligence` CAP-22 (`gz next`) + CAP-08 MODE, `session-productivity-metrics`, the queryability verbs (`gz search` / `gz insights query`), and `solved-problem-pattern-corpus` into one deterministic read-substrate. The enforcement spine above reads the `tdd-receipt-stream` hub for *enforcement*; ADR-0.0.66 reads it for *orientation* — **same hub, two consumers.** Consequence for sequencing: `tdd-receipt-stream` and CAP-08 MODE promote **once**, as ADR-0.0.66's leaf-first OBPI-01 (hub) and OBPI-02 (`gz next` + MODE); the spine's enforcement layers (`skill-behavioral-hardening`, `harness-aware-execution-modes`) then consume the same hub rather than promoting it separately. ADR-0.0.66 also subsumes the booked-but-unbuilt `ADR-0.0.46/0.0.47/0.0.48` (pool-management / DAG-routing / pool-triage): `gz next --pool` becomes the pool-scoped predicate of the whole-project `gz next`. The supersession of those nine ADRs is *declared* in ADR-0.0.66's body and *executed* under its OBPI-06 (frontmatter → `gz register-adrs` reconcile, never `gz adr demote`); until then it is a tracked follow-up, not silent drift. The operator's Boundary-1 waiver covered the *booking* only — promotion of ADR-0.0.66 stays frozen behind recovery, leaf-first and operator-gated, like the spine.
 
 Non-negotiable gates:
@@ -854,6 +856,7 @@ CANON ⟺ HUMAN  — operator review (you confirm canon jibes with your sensemak
 ```
 
 The operator **authors nothing directly** — every canon edit is an agent action under operator
+<!-- gz-validate-skip: command-shape -->
 direction, through the forced `gz canon` verb (deterministic, validated, ledger-witnessed). So
 the verb + validation + ledger + the review loop **is the entire integrity model** — there is no
 "careful hand-edit" fallback. **Operator-economy payoff:** you review the *law* (concise canon);
@@ -876,6 +879,7 @@ the gates *transitively guarantee* the code conforms. Reviewing canon *is* revie
 
 ### 6. The mechanism
 
+<!-- gz-validate-skip: command-shape -->
 - **`gz canon` verb** — the only write path into canon. Deterministic, validated, ledger-witnessed.
   No raw JSON edits (an agent can vibe a JSON edit as easily as a prose one). Foundry analogy:
   mutations happen only through governed **Actions**.
@@ -903,7 +907,9 @@ Judgment back into prose — reopening the latent-space hole. **Both kinds are f
 Ontology = **Objects · Properties · Links · Actions**, a single semantic SoT that *both* humans
 and applications reason from, where mutations happen only through governed **Actions**. Map onto
 canon: concepts → objects; vocabulary + synonyms → properties/aliases; relations → links;
+<!-- gz-validate-skip: command-shape -->
 decided rules + `gz canon` mutations → **Actions**. The Foundry lesson: the ontology is the single
+<!-- gz-validate-skip: command-shape -->
 semantic SoT and governed actions are the *only* write path — precisely the `gz canon` model.
 
 ### 8. Full blast radius (nuke touches all)
@@ -911,6 +917,7 @@ semantic SoT and governed actions are the *only* write path — precisely the `g
 **Core (where the failure mass is — §1 audit):**
 
 1. **Canon store** — `.gzkit/canon/`, JSON, ontology-shaped, two entry kinds (§6).
+<!-- gz-validate-skip: command-shape -->
 2. **`gz canon` verb** + **`gz validate --canon-coherence`** (§6).
 3. **Migrate `.gzkit/rules/*.md` → canon** — prose demoted to `rationale_ref`. *The high-leverage
    core:* closes the dominant "advisory-rule-never-mechanized" family.
@@ -967,6 +974,7 @@ gate it enables.
   boundary (anti-vibe-edit — keep as-is); a **path-independent floor check**
   (`count(Judgment in model) == count(Judgment in rendered-lite)`) guards the *render-correctness*
   boundary. Neither subsumes the other.
+<!-- gz-validate-skip: command-shape -->
 - **Deterministic authoring affordance** — `gz canon` (and the design-store analog) must be the
   forced edit path; raw-file edits to canon/design data are flagged. Only human-directed agents
   author; the operator authors nothing outside chat.
@@ -997,6 +1005,7 @@ alignment that freeform execution buries under "tests pass, ship it."
 
 The blast radius is the *design* scope; the *build* sequences by failure-mass leverage:
 
+<!-- gz-validate-skip: command-shape -->
 1. Canon store + `gz canon` + `--canon-coherence` + canon-entry-#1.
 2. Migrate `.gzkit/rules/*.md` → canon (+ correspondence map, classification SoT).
 3. Design store `.gzkit/design/`; relocate ADRs/OBPIs.
@@ -1105,6 +1114,7 @@ and lock coupling — dissolves. MOTD has **two pillars that combine like peanut
 independently; together they are the briefing.
 
 **Anti-fork:** this materializes the one work-graph that **ADR-0.0.65** (handoff consolidation —
+<!-- gz-validate-skip: command-shape -->
 now *absorbed* here rather than landing standalone), **ADR-0.0.66** (`gz next` / triage), and
 Canon Foundation **§8.13** already imply. It folds into them; it does not spawn a fourth structure.
 
@@ -1196,6 +1206,7 @@ Leaf-first; each increment consumes an existing surface rather than forking it.
 2. **Evolve `session_orientation.py` → lightweight auto-triage** — the MOTD: scan + assemble +
    write the daily brief at `SessionStart` / `PreCompact` / `clear`.
 3. **Directed triage skill** — high-intelligence agent finalize; backs the login brief *and*
+   <!-- gz-validate-skip: command-shape -->
    runs on demand. The concrete UX of ADR-0.0.66 `gz next`.
 4. **Continuity hybrid (subsumes handoff)** — supplies handoff's missing CREATE trigger: a
    `Stop`/`clear` hook **drafts** the continuity record from ledger + git-diff, an **agent
@@ -1204,6 +1215,7 @@ Leaf-first; each increment consumes an existing surface rather than forking it.
    with the lock system itself (§13.7: locks → branches + PRs).
 5. **Independent logrotation** — bounded, separate retention for the two logs (`.gzkit/work/` and
    the continuity log), on their own cadences.
+<!-- gz-validate-skip: command-shape -->
 6. **Verb surface** — fold into ADR-0.0.66 (`gz next` → triage); add no new top-level verb family.
 
 ### 8. Exit criteria
@@ -1215,6 +1227,7 @@ Leaf-first; each increment consumes an existing surface rather than forking it.
   chained into the continuity log.
 - The two logs logrotate independently; neither grows unbounded.
 - The whole MOTD advises only; execution waits on explicit operator authorization (§6).
+<!-- gz-validate-skip: command-shape -->
 - No fork: triage = `gz next` (ADR-0.0.66); continuity = the absorbed ADR-0.0.65; locks dropped
   (§13.7); `.gzkit/work/` reconciles with the Canon `.gzkit/design/` store.
 - `uv run gz check` green throughout (this workstream is built post-green).

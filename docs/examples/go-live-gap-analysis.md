@@ -201,6 +201,7 @@ governance? What should they look at?
 
 ## Nice-to-Haves (Post Go-Live)
 
+<!-- gz-validate-skip: command-shape -->
 | Feature | Value | Effort |
 |---------|-------|--------|
 | `gz init --template student` | One-command setup with student mode, simplified templates, pyproject.toml | High (8+ hrs) |
@@ -230,6 +231,7 @@ governance? What should they look at?
 ### Nice to have
 
 - [ ] `gz init --template student`
+<!-- gz-validate-skip: command-shape -->
 - [ ] `gz explain <concept>`
 - [ ] Video walkthrough
 

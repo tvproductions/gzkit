@@ -32,6 +32,12 @@ _MANPAGE_GZ_PREFIX_REF = re.compile(r"manpages/(gz-[a-z0-9-]+\.md)")
 _BRIEF_STATUS_RE = re.compile(r"^status:\s*(.+)$", re.MULTILINE)
 _ADR_PACKAGE_MARKER = "design/adr"
 
+# Ceremony artifacts inside an ADR package that record what was true at audit or
+# closeout time. Sealed on the same ground as a terminal brief (GHI #532).
+_SEALED_ADR_ARTIFACTS: frozenset[str] = frozenset(
+    {"EVALUATION_SCORECARD.md", "ADR-CLOSEOUT-FORM.md"}
+)
+
 # CLI verbs that legitimately have no wielding skill (e.g. bootstrap and
 # internal commands). Each entry must cite a reason.
 _NO_SKILL_VERBS: dict[str, str] = {
@@ -108,29 +114,65 @@ _NO_SKILL_VERBS: dict[str, str] = {
 def _cli_alignment_sources(project_root: Path) -> list[Path]:
     """Enumerate every operator-facing surface that may carry ``gz <verb>`` strings.
 
-    Tracks `.claude/rules/governance-core.md` § Operator-doc verb resolution.
-    ``.gzkit/skills/**/SKILL.md`` and the governance runbook are named there and
-    were absent from this list until GHI #745 — a skill could prescribe a verb
-    that never existed and the audit never opened the file.
+    Tracks `.gzkit/rules/governance-core.md` § Operator-doc verb resolution,
+    which declares ``docs/**/*.md``, ``features/**/*.feature`` and
+    ``.gzkit/skills/**/SKILL.md``. This function used to enumerate four
+    directories under ``docs/user`` instead, so the rest of the declared field
+    was never opened — the enumeration WAS the blind spot, the same derivation
+    error as scoping an allowlist by its examples rather than its obligation
+    (GHI #745).
+
+    ``docs/releases/`` is excluded at enumeration, matching
+    :func:`_manpage_alignment_sources`: ``gz patch release`` renders one manifest
+    row per discovered GHI from that issue's title, so an issue *about* a dead
+    verb carries the string as quoted evidence rather than as a pointer.
     """
     sources: list[Path] = []
+    docs_root = project_root / "docs"
+    if docs_root.is_dir():
+        releases_root = docs_root / "releases"
+        sources.extend(
+            path for path in sorted(docs_root.rglob("*.md")) if releases_root not in path.parents
+        )
     features_root = project_root / "features"
     if features_root.is_dir():
         sources.extend(sorted(features_root.rglob("*.feature")))
-    for runbook in (
-        project_root / "docs" / "user" / "runbook.md",
-        project_root / "docs" / "governance" / "governance_runbook.md",
-    ):
-        if runbook.is_file():
-            sources.append(runbook)
-    for sub in ("commands", "manpages"):
-        candidate = project_root / "docs" / "user" / sub
-        if candidate.is_dir():
-            sources.extend(sorted(candidate.rglob("*.md")))
     skills_root = project_root / ".gzkit" / "skills"
     if skills_root.is_dir():
         sources.extend(sorted(skills_root.rglob("SKILL.md")))
     return sources
+
+
+def _is_exempt_source(path: Path, text: str) -> bool:
+    """Return ``True`` for artifacts whose unresolvable verbs are not defects.
+
+    Two exemption grounds, both structural — never a per-reference judgment:
+
+    * **Pool ADRs** (operator ruling, 2026-08-02). Describing a proposed CLI
+      surface is what a pool ADR is FOR, so its verbs are unregistered by
+      definition rather than by mistake. 530 sites across 79 files.
+    * **Sealed records** — terminal briefs, ADR-package ``audit/`` artifacts,
+      evaluation scorecards, and closeout forms. These are evidence of what was
+      true at a moment. Marking them speculative would mean *editing* them, and
+      a later hand reaching into a sealed record is the defect the terminal-brief
+      exemption already exists to prevent (GHI #532 precedent).
+
+    ``Superseded`` needs no separate arm: it is already a member of
+    ``BRIEF_TERMINAL_STATUSES``, so the terminal check covers the
+    "self-declared SUPERSEDED docs" class GHI #745 proposed as a third exemption.
+
+    Everything outside these classes carries the speculative marker instead —
+    explicit, greppable, and removed by whoever lands the verb.
+    """
+    posix = path.as_posix()
+    if "design/adr/pool/" in posix:
+        return True
+    if _ADR_PACKAGE_MARKER not in posix:
+        return False
+    if "/audit/" in posix or path.name in _SEALED_ADR_ARTIFACTS:
+        return True
+    status_match = _BRIEF_STATUS_RE.search(text)
+    return bool(status_match and is_terminal_brief_status(status_match.group(1)))
 
 
 def _collect_verb_references(
@@ -148,6 +190,8 @@ def _collect_verb_references(
         try:
             content = source.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):
+            continue
+        if _is_exempt_source(source, content):
             continue
         rel_path = source.relative_to(project_root).as_posix()
         for ref in extract_verb_references(

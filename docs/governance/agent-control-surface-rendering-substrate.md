@@ -138,6 +138,7 @@ The canonical authoring mode in gzkit is **agent-mediated dialogical tuning agai
 
 **What this means concretely:**
 
+<!-- gz-validate-skip: command-shape -->
 | Mode | Surface | Authoring action |
 |---|---|---|
 | **Direct CLI** | `gz content edit <type> <id>` | Opens the canonical model as a Jinja2-rendered markdown scaffold (with `_[To be filled]_` blocks where the model has empty fields); operator and agent iterate dialogically; `gz content save` validates and ledger-records the lifecycle transition |
@@ -205,6 +206,7 @@ A change to AGENTS.md is then expressed as:
 
 1. `gz content edit agent_contract --section pillars` — opens the rendered scaffold for the pillars section
 2. Operator and agent iterate dialogically; agent drafts; operator corrects verbatim
+<!-- gz-validate-skip: command-shape -->
 3. `gz content save` validates against the Pydantic model and records the lifecycle transition in the ledger
 4. `gz content render agent_contract --vendor=root` renders to `AGENTS.md` deterministically
 5. ADR-0.0.33 fidelity validators confirm: every Mechanical/Promotable bullet from the canonical model lands in the rendered output; line-count regression is within tolerance; pointer anchors resolve
