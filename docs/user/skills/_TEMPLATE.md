@@ -69,4 +69,4 @@ One-line description of what this skill does for operators.
 | Related | Relationship |
 |---------|-------------|
 | [`/other-skill`](other-skill.md) | Commonly run before/after this skill |
-| [`gz command`](../commands/command.md) | CLI equivalent or companion |
+| [`gz <command>`](../commands/command.md) | CLI equivalent or companion |

@@ -205,7 +205,7 @@ floor — eliminating the lite-feature self-closeable carve-out.
 
 A release that does not bear a person's name is not a release.
 
-### Stage 8 — Release (`gz patch-release`)
+### Stage 8 — Release (`gz patch release`)
 
 > *Value claim:* the value you delivered is itself a traceable artifact,
 > all the way back to the issues that motivated it.

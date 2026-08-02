@@ -52,7 +52,7 @@ test -s .gzkit/renditions/AGENTS.md/codex.candidate.md
 git diff --exit-code AGENTS.md
 
 # Confirm the ledger records the compose event
-gz ledger tail --event composition_candidate_emitted
+grep "composition_candidate_emitted" .gzkit/ledger.jsonl
 ```
 
 ## Related
