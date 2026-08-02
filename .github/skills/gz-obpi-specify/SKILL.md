@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-02
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.8.1"
 model: opus
 ---
 
@@ -122,8 +122,9 @@ re-read."*
 This is Anthropic Prompt Engineering 101's order-matters discipline applied
 to brief authoring. The failure pattern it closes: an agent grepping
 backward from a keyword to a code path rather than tracing forward from the
-parent ADR's Decision (Opus 4.7 § 2.3.6.2; failure-mode taxonomy
-ADR-0.0.23 *Skipped cheap verification*). When the first authoring step is
+parent ADR's Decision (failure-mode taxonomy ADR-0.0.23 *Skipped cheap
+verification*; current-card provenance is owned by
+`.gzkit/rules/agent-failure-modes.md`). When the first authoring step is
 "quote the Decision item," drift between the ADR's Feature Checklist line
 and the OBPI brief is structurally harder to introduce — which secondary-
 benefits the OBPI Decomposition Mandate's 1:1 ADR↔brief sync.
