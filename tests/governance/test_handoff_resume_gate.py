@@ -550,6 +550,29 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
 
+    def test_branch_sync_claims_are_verifiable(self) -> None:
+        """An "origin/main in sync" claim needs a counting instrument.
+
+        Dogfooding regression (2026-08-02): a handoff asserted "origin/main in
+        sync" and prescribed `git rev-list --left-right --count
+        origin/main...HEAD` in its OWN Verification Checklist — and the gate
+        refused it. `rev-parse` was allowlisted; `rev-list`, the only verb that
+        counts ahead/behind, was not. Third instance of the same root: the
+        allowlist was derived from example commands rather than from the
+        § Claim Verification Gate's obligation to verify EVERY readiness claim.
+
+        Read-only by construction — `rev-list` has no write form.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git rev-list --left-right --count origin/main...HEAD",
+                "git rev-list --count HEAD",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
     def test_plain_mutators_remain_blocked(self) -> None:
         with TemporaryDirectory() as tmp:
             base = Path(tmp)

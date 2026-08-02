@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.20.0"
+  skill-version: "6.21.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-29
+last_reviewed: 2026-08-02
 model: sonnet
 ---
 
@@ -350,8 +350,9 @@ did not say: that is fabrication, the same failure as fabricating a receipt id.
 requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
 `gz obpi lock list`, `gz handoff list|resume` — **plus `gh` read verbs**
 (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`) — **plus
-plain shell reads** (`git status|log|diff|show`, `grep`, `rg`, `cat`, `ls`,
-`head`, `tail`, `find`, `jq`) — plus `gz handoff authorize` itself. These are
+plain shell reads** (`git status|log|diff|show|rev-parse|rev-list`, `grep`,
+`rg`, `cat`, `ls`, `head`, `tail`, `find`, `jq`) — plus `gz handoff authorize`
+itself. These are
 load-bearing, not convenience: the § Claim Verification Gate below MANDATES
 verifying claims against Layer-2 before presenting. The harness does not always
 expose `Grep`/`Glob`, so Bash is the read path; and a handoff's GHI-state claims
@@ -404,14 +405,18 @@ holds:
 | "tests were green" / coverage claim | re-run the canonical step (see Verification Checklist) | observed output |
 | "GHI #N CLOSED / OPEN" / advises "rule on GHI #M" | `uv run gz handoff resume` (**mechanized** for advised steps — GHI #696), else `gh issue view <N> --json state,title` | GitHub issue state |
 | "PR #N merged" / "released vX.Y.Z" | `gh pr view <N>` / `gh release view vX.Y.Z` | GitHub |
+| "origin/main in sync" / "pushed" / any ahead-behind claim | `git rev-list --left-right --count origin/<branch>...HEAD` | git refs |
 
 **This table is the allowlist's authority.** The gate's permitted-read set is
 derived from the claim shapes named here — so a claim shape MISSING from this
 table becomes a claim the gate structurally forbids you to verify. That is not
 hypothetical: the GHI-state rows above were absent until 2026-07-17, `gh` was
 therefore never derived into `_PERMITTED_BASH`, and a resume whose advised steps
-were both GHI rulings could not check either one. When you add a claim shape,
-add its instrument to the allowlist in the same commit.
+were both GHI rulings could not check either one. It happened a third time on
+2026-08-02: no branch-sync row, so `git rev-list` was never derived in, and a
+handoff prescribing that exact command in its own Verification Checklist was
+refused by this gate. When you add a claim shape, add its instrument to the
+allowlist in the same commit.
 
 **Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
 A STALE claim voids any advised step that depends on it: surface the variance and

@@ -89,6 +89,11 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #:   GHI-state claim — while handoffs routinely assert "GHI #N CLOSED" and advise
 #:   "rule on GHI #M" as next steps. Those claims had NO verifiable surface
 #:   (operator ruling, 2026-07-17: "this is essential").
+#: * Third miss: no `git rev-list`, so an "origin/main in sync" / ahead-behind
+#:   claim had no counting instrument — `rev-parse` resolves a ref but cannot
+#:   count a range. Caught 2026-08-02 when a handoff's OWN Verification Checklist
+#:   prescribed `git rev-list --left-right --count origin/main...HEAD` and this
+#:   gate refused it.
 #:
 #: A gate that forbids the verification its own skill mandates cannot be complied
 #: with, and an un-compliable gate gets worked around — the failure mode gzkit
@@ -131,6 +136,9 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("git", "show"),
     ("git", "branch"),
     ("git", "rev-parse"),
+    # The ahead/behind counting instrument. `rev-parse` resolves a ref; only
+    # `rev-list` counts a range, which is what a "branch in sync" claim asserts.
+    ("git", "rev-list"),
     ("git", "ls-files"),
     ("grep",),
     ("rg",),
