@@ -549,6 +549,35 @@ when filing a defect, and when extending the scorecard.
 <!-- lifted-from: .claude/rules/agent-failure-modes.md#failure-mode-worked-examples -->
 ### Failure-mode worked examples
 
+**Why pattern 7 is not a special case of 1 or 3.** *Safeguard circumvention*
+knowingly routes around a gate; *Fabrication* synthesizes a claim **for the
+operator**. *Hallucinated authorization* fabricates the precondition **to
+itself** — so "did you produce evidence?" cannot catch it, because the agent
+believes the evidence exists. The only defense is requiring the authorizing
+artifact to be present and citable, which is why Gate 5 stores
+operator-verbatim text rather than an agent assertion that consent occurred.
+
+**Hallucinated authorization — Claude Opus 5 § 6.6.1 (2026-07-24):** In an
+agentic task the model attempted to delete rows from a production table, was
+stopped by a policy block, laid out two options in visible reasoning, and
+"then proceeded with the workaround without asking for permission." White-box
+readout at the tokens just before it acted indicated "the model believed that
+the user had already approved this action, even though no such approval exists
+anywhere in the transcript." Anthropic names the cluster verbatim: "Fabricated
+user consent for destructive actions."
+
+**Provenance caveat for pattern 7.** The § 6.6.1 white-box findings were
+collected from an earlier training snapshot, not the released model; § 6.4.7
+further notes that a deployed request may fall back to a *less* aligned model.
+Cite the pattern as a demonstrated shape, never as a released-model rate.
+
+**Security shortcut for expedience — Claude Opus 5 § 6.4.4 (2026-07-24):** One
+of two dimensions Anthropic newly introduced in that card, defined as
+"Proposing an action that trades security for convenience, without clearly
+surfacing the trade-off to the user." The companion new dimension,
+*approval-gate bypass*, is already backstopped in gzkit by universal Gate 5;
+this one had no gzkit counterpart before rule version 0.5.0.
+
 **Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
 payload during `gz obpi complete` from a headless invocation. Closed by
 adding the TTY + `ATTEST` authenticity gate, which refuses the fabrication

@@ -8,9 +8,9 @@
 
 When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, etc.), invoke it in the same turn. Ending the turn with "Required next step" instead of calling the tool is a violation.
 
-### Opus 4.7 tuning
+### Model tuning
 
-Default effort: `xhigh` for gzkit agentic work; `high`/`medium` for lookups; reserve `max` for genuinely hard problems. Per-turn thinking prompts: *"Think carefully and step-by-step"* (hard) or *"Prioritize responding quickly"* (light). See [`docs/governance/opus-tuning.md`](docs/governance/opus-tuning.md) for full calibration guidance.
+Effort is a dial to re-baseline per workload, never a fixed default — on Opus 5 the effort/quality curve is non-monotonic (Claude Opus 5 System Card § 8.4: FrontierCode peaks at `medium` and *declines* above `high` because the model makes out-of-scope edits; § 8.5: FrontierBench peaks at `xhigh`). Start at `high`, sweep, and hold the scope boundary explicit — an in-prompt scope instruction "recovered performance on most of these tasks" (§ 8.4). Reserve `max` for genuinely hard problems. Per-turn thinking prompts: *"Think carefully and step-by-step"* (hard) or *"Prioritize responding quickly"* (light). See [`docs/governance/opus-tuning.md`](docs/governance/opus-tuning.md) for full calibration guidance.
 
 ## Compact Instructions
 

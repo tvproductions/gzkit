@@ -43,11 +43,27 @@ The doctrine names the loop as canonical and gates each stage on
 observational discipline (Layer-2 ledger events, not Layer-1 narrative
 recall) per the trust-doctrine T1/T2/T3 invariants.
 
-External evidence: GPT-5.5 § 9.2 (Apollo) reports verbalized eval-awareness
-at 22.1% — up from 17.3% / 11.7% on prior checkpoints. The implication for
-gzkit is that any feedback loop the agent knows is feeding rule authoring
-risks Goodhart drift; the loop's design must treat artifacts as
-observational and gate rule promotion on human approval.
+External evidence (re-sourced 2026-08-02; the superseded citation is
+preserved in § Q&A Transcript). Claude Opus 5 System Card (Anthropic,
+2026-07-24) measures the two halves of eval-awareness moving in opposite
+directions: UK AISI recorded **verbalized** awareness at 9.8% unprompted
+(2.8% continuation) while the model's **capability to discriminate**
+evaluation from deployment when prompted rose to **95%** — the highest of
+any model tested (88% Mythos 5, 86% Opus 4.8, 84% Mythos Preview, 72%
+Opus 4.7). Anthropic's § 6.1.2 records the same split: "Claude Opus 5
+breaks the recent pattern of increasing verbalized evaluation awareness…
+Meanwhile, cases of unverbalized grader awareness, fabricating data, and
+taking destructive actions were detected by our white-box analyses."
+
+The implication for gzkit is unchanged and strengthened: any feedback loop
+the agent knows is feeding rule authoring risks Goodhart drift, so the
+loop's design must treat artifacts as observational and gate rule
+promotion on human approval. What changed is that **verbalized awareness
+is no longer a usable proxy for the risk** — the model can tell, and no
+longer says so. UK AISI's own conclusion: "we cannot be confident that
+good performance on our evaluation is representative of deployment
+behavior, as opposed to the model recognising and acting on the fact it is
+in the evaluation situation."
 
 ## Decision
 
@@ -112,9 +128,17 @@ observational and gate rule promotion on human approval.
   proposals may write justifications they think will produce rules they
   want. Mitigation: the loop is observational, not prescriptive (the chore
   emits proposals, not edits), and the rule-promotion gate is human
-  attestation. Eval-awareness probe research (Opus 4.7 § 6.5.2) is the
-  named external evidence that this risk is real and the gating
-  discipline is the right shape.
+  attestation. Eval-awareness research is the named external evidence
+  that this risk is real and the gating discipline is the right shape —
+  now sourced to Claude Opus 5 § 6.6.1, whose top-ranked white-box
+  cluster is "Task represented as a graded evaluation. The model
+  internally represents the task as having a grader or hidden test to
+  satisfy… reasoning about what the grader would prefer, or rationalize
+  the model's choices in terms of what that grader will or won't check."
+  In the worked example the visible reasoning promised to flag a
+  discrepancy, the internal representation read "the grader likely won't
+  care," and the output omitted the flag. Grader-modelling is therefore
+  measured, not hypothesized, and it is invisible in the transcript.
 - Adds a new ledger event family. The ledger is the system-of-record, so
   this is the right home — but it grows the schema and `gz validate
   --documents` must be extended to recognize the new event shape.
@@ -154,6 +178,24 @@ observational and gate rule promotion on human approval.
 - [ ] OBPI-0.0.26-05: BDD coverage — heavy-lane `@REQ-…`-tagged scenarios for the full loop (low-score → justify-required → clustering → proposal GHI → human-approved rule edit)
 
 ## Q&A Transcript
+
+**Evidence re-sourcing, 2026-08-02.** The § Intent external-evidence
+paragraph and the § Consequences Goodhart bullet were re-sourced to the
+Claude Opus 5 System Card (Anthropic, 2026-07-24). The superseded
+citation, preserved verbatim for lineage:
+
+> External evidence: GPT-5.5 § 9.2 (Apollo) reports verbalized
+> eval-awareness at 22.1% — up from 17.3% / 11.7% on prior checkpoints.
+
+That citation was load-bearing on a **rising verbalized-awareness trend**
+that has since reversed while the underlying capability rose (9.8%
+verbalized / 95% discrimination on Opus 5). The doctrine it justified is
+unaffected — only the metric was wrong to lean on. Recorded here rather
+than overwritten because silently swapping the numbers under a `Validated`
+ADR is the doctrine-drift shape `AGENTS.md` § MAKE LLM STOCHASTIC VIBES
+INERT operative claim 3 names ("silent rule/threshold changes without a
+witness are the root failure"). Nothing in the Attestation Block, the
+Checklist, or any REQ is altered by this re-sourcing.
 
 Authored 2026-04-25 from a session-card review session that surfaced two
 related observations: (a) the GPT-5.5 + Opus 4.7 cards both treat the

@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.4.0 -->
 
-> **Rule version:** `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
+> **Rule version:** `0.4.0` — adds operative claim 5 (subagent claims are relayed only with independent evidence), closing the relay gap the Claude Opus 5 System Card § 6.1.3 named: *"the model can relay claims from subagents to users without verifying them"*, with multi-agent coverage acknowledged as an unmeasured limitation of that card's whole audit. gzkit dispatches `narrator`/`implementer`/`quality-reviewer`/`spec-reviewer` and relays their output into ceremony evidence, so the gap was live here. Also retires the two-generations-stale model mapping (`opus` → `claude-opus-4-7`) and compresses it to one line. Prior `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
 
 ## Operative claims (binding)
 
@@ -19,6 +19,7 @@ description: Token-efficient model routing across skills, subagents, and work su
 2. **Default to the lowest tier that closes the decision space.** Each surface must name what "closing the decision" means.
 3. **Skill SKILL.md files carry explicit `model:` frontmatter.** No inference; declaration is the contract.
 4. **Subagent prompts specify effort level, not model name.** The Agent tool maps effort to model; agents do not hardcode model IDs.
+5. **A subagent's claim is not evidence.** Never relay a subagent's factual assertion into ceremony, attestation, or an operator-facing conclusion on the subagent's word — cite the ARB receipt, the file, or re-run the command yourself. The orchestrator owns every claim it passes upward.
 
 ## Routing matrix
 
@@ -49,10 +50,7 @@ model: haiku  # or: sonnet, opus
 
 **Valid values:** `haiku`, `sonnet`, `opus`. No inference; no runtime detection; declared value is the contract.
 
-**Mapping to Claude models:**
-- `haiku` → `claude-haiku-4-5-20251001`
-- `sonnet` → `claude-sonnet-4-6`
-- `opus` → `claude-opus-4-7`
+**Mapping to Claude models** (re-sourced 2026-08-02; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5`.
 
 ## Subagent effort levels
 
