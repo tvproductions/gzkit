@@ -4,7 +4,7 @@ description: Build ADR-to-artifact traceability using gz state and repository se
 category: adr-operations
 compatibility: GovZero v6 framework; manual mapping workflow
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.2.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -12,7 +12,7 @@ gz_command: state
 invocation: uv run gz state --json
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-02
 model: haiku
 ---
 
@@ -38,6 +38,7 @@ uv run gz adr audit-check ADR-0.3.0 --json
 
 ## Notes
 
+<!-- gz-validate-skip: command-shape -->
 - There is no dedicated `gz adr map` subcommand in this repository.
 - This skill is intentionally workflow-based instead of a single command.
 

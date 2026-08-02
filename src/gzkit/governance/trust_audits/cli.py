@@ -15,6 +15,13 @@ from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.governance.brief_structure import is_terminal_brief_status
 from gzkit.governance.deprecations import find_deprecated_verb
 from gzkit.validate import ValidationError
+from gzkit.verb_references import (
+    DOC_BARE_SEGMENTS,
+    DOC_SEGMENTS,
+    SPECULATIVE_MARKER,
+    extract_verb_references,
+    verify_gz_chain,
+)
 
 _DOC_PROSE_VERBS: frozenset[str] = frozenset()
 
@@ -24,16 +31,6 @@ _DOC_PROSE_VERBS: frozenset[str] = frozenset()
 _MANPAGE_GZ_PREFIX_REF = re.compile(r"manpages/(gz-[a-z0-9-]+\.md)")
 _BRIEF_STATUS_RE = re.compile(r"^status:\s*(.+)$", re.MULTILINE)
 _ADR_PACKAGE_MARKER = "design/adr"
-
-_BACKTICKED_INVOCATION = re.compile(r"`gz\s+([a-z][a-z0-9-]*)[^`]*`")
-_QUOTED_INVOCATION = re.compile(r'"gz\s+([a-z][a-z0-9-]*)[^"]*"')
-_STEP_DEF_FIXTURE = re.compile(r'the gz command\s+"([a-z][a-z0-9-]*)')
-
-# Inside a fenced block the delimiter-bound recognizers above cannot fire, so the
-# command line itself is the token (GHI #745). Tolerates the two prefixes gzkit
-# docs actually use: the canonical `uv run` and a transcript `$ ` prompt.
-_FENCE_DELIMITER = re.compile(r"^(?:```|~~~)")
-_FENCED_INVOCATION = re.compile(r"^\s*(?:\$\s*)?(?:uv\s+run\s+)?gz\s+([a-z][a-z0-9-]*)")
 
 # CLI verbs that legitimately have no wielding skill (e.g. bootstrap and
 # internal commands). Each entry must cite a reason.
@@ -136,50 +133,57 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     return sources
 
 
-def _collect_verb_references(sources: list[Path], project_root: Path) -> dict[str, list[str]]:
-    """Return ``{verb: [<file:line>, …]}`` for every ``gz <verb>`` reference.
+def _collect_verb_references(
+    sources: list[Path], project_root: Path
+) -> dict[tuple[str, ...], list[str]]:
+    """Return ``{verb-chain: [<file:line>, …]}`` for every ``gz <verb>`` reference.
 
-    Outside a fence the three delimiter-bound recognizers apply. Inside one they
-    cannot: fenced commands carry no per-command backticks and no quotes, so
-    before GHI #745 the runnable form — the one operators copy — was the only
-    form that escaped checking.
+    Delegates to the shared extractor in :mod:`gzkit.verb_references` (GHI #748).
+    This function previously reimplemented that extraction — without multi-word
+    chains, without the speculative-skip marker, and (before GHI #745) without
+    fenced blocks — while guarding the wider surface of the two call sites.
     """
-    verbs_seen: dict[str, list[str]] = {}
+    references: dict[tuple[str, ...], list[str]] = {}
     for source in sources:
-        in_fence = False
-        for lineno, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
-            rel = f"{source.relative_to(project_root).as_posix()}:{lineno}"
-            if _FENCE_DELIMITER.match(line.lstrip()):
-                in_fence = not in_fence
-                continue
-            if in_fence:
-                fenced = _FENCED_INVOCATION.match(line)
-                if fenced:
-                    verbs_seen.setdefault(fenced.group(1), []).append(rel)
-                continue
-            for pattern in (_BACKTICKED_INVOCATION, _QUOTED_INVOCATION, _STEP_DEF_FIXTURE):
-                for match in pattern.finditer(line):
-                    verbs_seen.setdefault(match.group(1), []).append(rel)
-    return verbs_seen
+        try:
+            content = source.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        rel_path = source.relative_to(project_root).as_posix()
+        for ref in extract_verb_references(
+            content, segments=DOC_SEGMENTS, bare_segments=DOC_BARE_SEGMENTS
+        ):
+            references.setdefault(ref.chain, []).append(f"{rel_path}:{ref.lineno}")
+    return references
 
 
 def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
-    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198)."""
+    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198).
+
+    Resolution walks the live parser tree via
+    :func:`gzkit.verb_references.verify_gz_chain`, so a multi-word reference is
+    checked at every level — ``gz adr bogus`` no longer passes because its first
+    token is registered (GHI #588 / #748). Trailing positional arguments after a
+    leaf verb resolve; unregistered intermediate verbs fail closed.
+    """
     sources = _cli_alignment_sources(project_root)
-    verbs_seen = _collect_verb_references(sources, project_root)
-    known_verbs = _known_cli_verbs()
+    references = _collect_verb_references(sources, project_root)
     errors: list[ValidationError] = []
-    for verb, locations in sorted(verbs_seen.items()):
-        if verb in _DOC_PROSE_VERBS or verb in known_verbs:
+    for chain, locations in sorted(references.items()):
+        if chain[0] in _DOC_PROSE_VERBS:
+            continue
+        ok, reason = verify_gz_chain(chain)
+        if ok:
             continue
         errors.append(
             ValidationError(
                 type="cli_alignment",
                 artifact=locations[0],
                 message=(
-                    f"`gz {verb}` is not a registered CLI verb; "
-                    f"seen at {len(locations)} location(s). Rename the reference "
-                    "or register the verb."
+                    f"`gz {' '.join(chain)}` does not resolve: {reason}. "
+                    f"Seen at {len(locations)} location(s). Rename the reference, "
+                    f"register the verb, or mark it speculative with "
+                    f"`{SPECULATIVE_MARKER}` on the preceding line."
                 ),
             )
         )

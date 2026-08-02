@@ -13,6 +13,7 @@ from gzkit.config import GzkitConfig
 from gzkit.git_sync import assess_git_sync_readiness
 from gzkit.ledger import Ledger
 from gzkit.utils import git_cmd
+from gzkit.verb_references import BRIEF_SEGMENTS, extract_verb_references, verify_gz_chain
 
 # Blacklist of non-substantive placeholder tokens
 STRICT_PLACEHOLDERS = {
@@ -43,134 +44,22 @@ TEMPLATE_SCAFFOLD_MARKERS: dict[str, list[str]] = {
 }
 
 
-# GHI #194: brief-prescribed gz commands must resolve against the registered
-# parser. The pattern matches `(uv run )?gz <verb-chain>` where the chain is
-# one or more lowercase verb tokens. Whitespace is `[ \t]` (not `\s`) so the
-# chain cannot span newlines — each prescribed command is one line. The
-# extractor confines matching to backtick-inline and fenced-code contexts so
-# prose mentions like "transcribe gz commands" are not interpreted as
-# prescriptive invocations.
-_GZ_COMMAND_PATTERN = re.compile(
-    r"(?:uv run[ \t]+)?\bgz[ \t]+([a-z][a-z-]*(?:[ \t]+[a-z][a-z-]*)*)",
-)
-_INLINE_CODE_PATTERN = re.compile(r"`([^`\n]+)`")
-# GHI #432: speculative-skip marker for OBPIs introducing a new CLI verb.
-# Mirrors the convention in
-# ``src/gzkit/governance/trust_audits/complexity_doctrine_links.py`` so
-# both validators share one marker shape. The marker on the line
-# immediately preceding an inline-code reference suppresses that line's
-# gz chains; when the marker immediately precedes an opening fence, the
-# entire fenced block is suppressed.
-_SPECULATIVE_MARKER = "<!-- gz-validate-skip: command-shape -->"
-
-
+# GHI #194 / #432: brief-prescribed gz commands must resolve against the
+# registered parser, and an OBPI whose own scope introduces a verb needs an
+# escape hatch. Both behaviors — and the extractor that feeds them — now live in
+# `gzkit.verb_references`, shared with the operator-doc checker that had
+# reimplemented them weakly (GHI #748). Re-exported here because this module is
+# the established import site for both names.
 def extract_gz_command_chains(content: str) -> list[list[str]]:
-    r"""Extract every `gz <verb> [<verb>...]` chain from brief code segments.
+    """Extract every `gz <verb> [<verb>...]` chain from brief code segments.
 
-    Scans inline code (\`...\`) and fenced code blocks (\`\`\`...\`\`\`)
-    only — prose mentions are ignored by design (brief authors quote
-    prescriptive commands; prose references are descriptive). Used by
-    ObpiValidator._validate_command_shapes to verify each chain resolves
-    against the registered CLI parser tree (GHI #194).
-
-    The speculative-skip marker
-    ``<!-- gz-validate-skip: command-shape -->`` on the line
-    immediately preceding an inline-code reference suppresses extraction
-    from that line; when the marker immediately precedes an opening
-    fence, the entire fenced block is suppressed. This is the escape
-    hatch for OBPIs whose own scope introduces a new CLI verb that
-    cannot yet resolve against the registered parser (GHI #432).
+    Thin adapter over :func:`gzkit.verb_references.extract_verb_references` with
+    the brief segment set (backtick-inline plus fenced code; prose mentions are
+    descriptive, not prescriptive). Returns bare chains — briefs report by
+    chain, not by line — while the operator-doc checker consumes the line
+    attribution the shared extractor also carries.
     """
-    chains: list[list[str]] = []
-    in_fenced_block = False
-    skip_current_block = False
-    pending_marker = False
-
-    for line in content.splitlines():
-        stripped = line.strip()
-
-        if stripped.startswith("```"):
-            if in_fenced_block:
-                in_fenced_block = False
-                skip_current_block = False
-            else:
-                in_fenced_block = True
-                skip_current_block = pending_marker
-            pending_marker = False
-            continue
-
-        if in_fenced_block:
-            if skip_current_block:
-                continue
-            for match in _GZ_COMMAND_PATTERN.finditer(line):
-                chain = match.group(1).split()
-                if chain:
-                    chains.append(chain)
-            continue
-
-        if stripped == _SPECULATIVE_MARKER:
-            pending_marker = True
-            continue
-
-        if pending_marker:
-            pending_marker = False
-            continue
-
-        for inline_match in _INLINE_CODE_PATTERN.finditer(line):
-            for match in _GZ_COMMAND_PATTERN.finditer(inline_match.group(1)):
-                chain = match.group(1).split()
-                if chain:
-                    chains.append(chain)
-    return chains
-
-
-def verify_gz_chain(verbs: list[str]) -> tuple[bool, str]:
-    """Walk a verb chain through the gz parser tree.
-
-    Returns ``(ok, reason)``. The walk advances through subparser levels;
-    when the current level has no further subparsers (a leaf verb), the
-    remaining tokens are treated as positional arguments (e.g.
-    ``gz chores run frontmatter-ledger-coherence`` resolves at ``run`` and
-    the slug is a positional). Verbs at intermediate levels MUST be
-    registered choices — typos fail closed.
-    """
-    import argparse  # noqa: PLC0415
-
-    from gzkit.cli.main import _get_parser  # noqa: PLC0415
-
-    parser = _get_parser()
-    current: argparse.ArgumentParser = parser
-    walked: list[str] = []
-    for verb in verbs:
-        sub_action = next(
-            (a for a in current._actions if isinstance(a, argparse._SubParsersAction)),
-            None,
-        )
-        if sub_action is None:
-            # Current parser is a leaf; remaining tokens are positional args.
-            return True, f"resolved 'gz {' '.join(walked)}'"
-        if verb not in sub_action.choices:
-            available = sorted(sub_action.choices.keys())
-            # Surface near-matches first so the likely-intended verb (e.g. the
-            # plural `chores` for a `chore` typo) always appears even when the
-            # full choice list is truncated. Prefix overlap in either direction.
-            near = [v for v in available if v.startswith(verb[:3]) or verb.startswith(v[:3])]
-            ordered = near + [v for v in available if v not in near]
-            sample = ", ".join(ordered[:8])
-            suffix = "..." if len(available) > 8 else ""
-            prefix = f"'gz {' '.join(walked)}'" if walked else "'gz'"
-            return False, (
-                f"{prefix} — '{verb}' is not a registered subcommand at "
-                f"this level (available: {sample}{suffix})"
-            )
-        walked.append(verb)
-        # argparse _SubParsersAction.choices values are ArgumentParser at runtime
-        # but the stub types them as object; safe cast based on isinstance check above.
-        next_parser = sub_action.choices[verb]
-        if not isinstance(next_parser, argparse.ArgumentParser):
-            return True, f"resolved 'gz {' '.join(walked)}' (leaf choice)"
-        current = next_parser
-    return True, f"resolved 'gz {' '.join(walked)}'"
+    return [list(ref.chain) for ref in extract_verb_references(content, segments=BRIEF_SEGMENTS)]
 
 
 def section_body(content: str, heading: str) -> str | None:
