@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "0fc08f17e38ac4def1041d5ae1e74e32dad87bcfe7d7841f1d248425a55f0822",
   "corpus_entry_count": 52,
-  "rendition_fingerprint": "8786b3170d91c0c881b9a6e26e9889967937e679ab66bd564fd2f26bc61eaa4d",
-  "committed_ts": "2026-08-02T12:14:09.419748+00:00",
+  "rendition_fingerprint": "f3a878830fb8b285e9b8e946d1e55355a8908b0be133985eda39e14d3fbb7662",
+  "committed_ts": "2026-08-02T15:24:57.961633+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — commit it — AGENTS.md § DO IT RIGHT taxonomy pointer recomposed six-pattern → eight-pattern to match .gzkit/rules/agent-failure-modes.md rule-version 0.5.0 (adds Hallucinated authorization, Security shortcut for expedience from Claude Opus 5 System Card §§ 6.4.4, 6.6.1); zero net line delta, invariant floor 9039B unchanged; receipts arb-ruff-9491e9a7bea74cef88660eb9e506d753, arb-step-typecheck-ecc12a7029894c2abe8cb70121af3591, arb-step-unittest-0ed7ec8520404a0d9a35bf54d6ade17b (7730 tests OK), arb-step-mkdocs-b69a016d9e194e1192b19ca163dbec4c"
+  "attestation_text": "diet pass — relieve the ceiling and land pattern-9 — AGENTS.md § DO IT RIGHT taxonomy pointer recomposed count-agnostic (eight-pattern → failure-mode taxonomy) so rule extensions never re-stale the pointer; coupled to agent-failure-modes.md rule-version 0.6.0 adding pattern 9 Metagaming / gaming the gate (GPT-5.6 §§ 7.4, 9.1.3.6, 9.2.2); one-line delta, invariant floor 9039B unchanged, surface weight 2432/2600 after the 71-line diet (token-block-discipline 0.3.1, skill-surface-sync 0.10.1)"
 }

@@ -177,3 +177,28 @@ The treatment of the audit trail as a Layer-2 primitive in gzkit's state doctrin
 - `.gzkit/skills/gz-session-handoff/SKILL.md` — the agent-facing skill whose CREATE workflow produces the register entry; trigger semantics rewritten under OBPI-0.0.41-05.
 - [GHI #410](https://github.com/tvproductions/gzkit/issues/410) — the surfacing observation; closed `superseded` against ADR-0.0.41.
 - [GHI #326](https://github.com/tvproductions/gzkit/issues/326) — the SessionStart auto-load (read-side counterpart whose mechanical-floor presence exposed the asymmetry this doctrine closes).
+
+---
+
+## Vocabulary quick reference
+
+(Lifted verbatim from `.gzkit/rules/token-block-discipline.md` § Vocabulary under the 2026-08-02 diet pass; the rule keeps a pointer here.)
+
+- **Token** — the OBPI lock artifact (file-based mutex stored in `.gzkit/locks/`)
+- **Issue** — the act of claiming a token; corresponds to `obpi_lock_claimed` ledger event
+- **Register entry** — the handoff document written to `.gzkit/handoffs/` (canonical storage per OBPI-0.0.41-03); the audit pairing for every lock release
+- **Traversal** — a single OBPI work session; may span multiple agent invocations and clock boundaries
+- **Abandonment** — surrender of a token due to external circumstance (network loss, blocker, wrong claim, tool failure) recorded via degenerate handoff with `abandoned: true`
+- **Reaping** — forcible surrender of an expired token by a different agent (or the same agent in a later session), paired with a degenerate `abandoned_by_reaper` register entry
+
+## Lock/handoff-coupling audit path
+
+(Lifted from the rule's § Audit Path, 2026-08-02.) When troubleshooting lock/handoff coupling failures:
+
+1. `uv run gz validate --lock-handoff-coupling` — fail-closed validator that replays ledger and checks every `obpi_lock_released` event.
+2. `grep "obpi_lock_released" .gzkit/ledger.jsonl` — find all release events; each MUST have a `handoff_path` field.
+3. `test -f "<path-from-handoff_path>"` — verify register entry exists on-disk.
+4. `head -n 10 <path>` — check frontmatter for timestamp, commit SHA, decision context, branch state.
+5. Cross-check frontmatter timestamp against `obpi_lock_claimed` timestamp for the same OBPI/agent pair — handoff timestamp must be later.
+
+The rule's former § Cross-Links pointers are absorbed by § Cross-references within gzkit above. Governance context: Behavior Rule Always #11 (course correction) and the Anti-vibing mantra operative claims establish why every token surrender requires explicit verification, not memory or good faith. (The lifted text's "5:1 governance ratio" phrasing was already retired by AGENTS.md as rhetorical — read the rule, not the metaphor — and is corrected here in transit.)

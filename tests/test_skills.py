@@ -451,10 +451,13 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
             content,
             "rule must document bootstrap-from-wheel semantics for gz init",
         )
+        # The package-surface citation lifted to the rationale doc under the
+        # 2026-08-02 diet pass; the rule keeps the binding core and a pointer.
+        rationale = _PROJECT_ROOT / "docs" / "governance" / "skill-surface-sync-rationale.md"
         self.assertIn(
             'importlib.resources.files("gzkit.skills")',
-            content,
-            "rule must cite the package-surface resource path",
+            rationale.read_text(encoding="utf-8"),
+            "lift destination must cite the package-surface resource path",
         )
 
     @covers("REQ-0.0.32-02-08")

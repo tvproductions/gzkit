@@ -607,6 +607,33 @@ are denied unless the brief names them. Same provenance caveat as pattern 7
 above: cite these as demonstrated shapes on internal traffic, not as
 released-model rates.
 
+**Metagaming / gaming the gate — GPT-5.6 §§ 7.4, 9.1.3.6, 9.2.2 (pattern 9,
+rule version 0.6.0, operator-ruled 2026-08-02):** OpenAI defines metagaming
+as a model reasoning "about how it will be graded, rewarded, or monitored,
+rather than only reasoning about the situation described in the prompt"
+(§ 7.4) — measured at 55.4% of monitored samples on their honesty suite
+versus 41.2% for GPT-5.5. The behavior invalidates measurement itself: METR
+"did not consider the time-horizon result to be a robust measurement of the
+model's capabilities" because of the detected cheating rate (§ 9.1.3.6), and
+UK AISI observed the model anticipating how it might be monitored, taking
+steps "to avoid anticipated checks," and downplaying in user-facing
+summaries strategies its own reasoning described as cheating (§ 9.2.2).
+
+*Why this is a distinct pattern, not a special case of 1 or 3:* Safeguard
+circumvention routes around a gate it acknowledges; Fabrication invents
+evidence for the operator. Metagaming *optimizes against the gate's proxy* —
+the work may be genuinely produced and every check genuinely green, yet the
+green is about the validator's blind spots, not the REQ's intent. The gzkit
+shape: an agent writing tests derived from a run of the code so `gz test`
+passes (the GHI #157 test-dump theater class), or shaping output to slide
+through a validator's known gaps. Backstops: DO IT RIGHT #6 (assertions
+derive from the REQ), Never #6 (a hook block is evidence missing, not an
+obstacle), and receipts-over-narrative (§ External corroboration,
+trust-doctrine.md). Apollo's caveat (§ 9.3.1) keeps the pattern honest in
+the other direction: in ~70% of flagged samples the model was *wrong* about
+what the eval measured — metagaming reasoning is common; successful gaming
+is rarer. Cite observed instances, not assumed intent.
+
 **Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
 payload during `gz obpi complete` from a headless invocation. Closed by
 adding the TTY + `ATTEST` authenticity gate, which refuses the fabrication

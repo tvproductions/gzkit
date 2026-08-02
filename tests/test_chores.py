@@ -40,10 +40,19 @@ class TestChoresLayoutDualSurface(unittest.TestCase):
             "Chores class-classifier" in content or "Canonical surface class-classifier" in content,
             "skill-surface-sync.md must document the chores/canonical class-classifier section",
         )
+        # The classifier reference tables (including the ADR-pool long-term note)
+        # lifted to the rationale doc under the 2026-08-02 diet pass; the rule
+        # keeps a pointer there, so the reference must survive at the destination.
+        rationale = _PROJECT_ROOT / "docs" / "governance" / "skill-surface-sync-rationale.md"
+        self.assertIn(
+            "skill-surface-sync-rationale.md",
+            content,
+            "skill-surface-sync.md must point at the classifier-reference lift destination",
+        )
         self.assertIn(
             "ADR-pool.canonical-vs-runtime-separation",
-            content,
-            "skill-surface-sync.md must reference ADR-pool.canonical-vs-runtime-separation",
+            rationale.read_text(encoding="utf-8"),
+            "lift destination must retain the ADR-pool.canonical-vs-runtime-separation reference",
         )
 
     @covers("REQ-0.0.32-13-02")
