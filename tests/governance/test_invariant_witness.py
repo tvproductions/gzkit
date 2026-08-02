@@ -100,33 +100,37 @@ class TestInvariantWitnessResolution(unittest.TestCase):
 
 
 class TestCommittedRegistryWitnesses(unittest.TestCase):
-    """Shrink-only fence on the real registry's vapor witnesses (GHI #623).
+    """Fence on the real registry's vapor witnesses (GHI #623).
 
-    One entry is known-unresolvable and awaits an operator ruling, so this asserts the
-    exact known set rather than emptiness. The fence is shrink-only by construction: a
-    NEW vapor witness fails immediately, and retiring the known one fails too — forcing
-    the set to be updated deliberately rather than drifting. It is not a waiver; the
-    finding stays visible in `validate_invariant_witnesses` output.
+    The known set is now EMPTY: every committed invariant's structural witness resolves
+    to a registered command. The fence stays shrink-only by construction — a NEW vapor
+    witness fails immediately, and re-admitting one requires updating this set
+    deliberately rather than letting it drift.
 
-    Known: `foundation-adr-registers-invariant` claims "every foundation-kind ADR
-    registers at least one invariant" witnessed by `gz validate
-    --foundation-registers-invariant`. That scope has never existed, and the claim is
+    Formerly known: `foundation-adr-registers-invariant` claimed "every foundation-kind
+    ADR registers at least one invariant" witnessed by `gz validate
+    --foundation-registers-invariant`, a scope that never existed. The claim was also
     unenforceable as written — `constitutional_invariant.json` carries no field naming
-    which ADR registered an entry, and the ratio is 4 invariants to 74 foundation ADRs.
-    Disposition (retire the claim, or add ADR linkage and backfill) is operator canon
-    work, not an agent call.
+    which ADR registered an entry. Retired as superseded by the ADR-0.34.0 Foundation
+    Sunset (operator ruling, Movement A item 3, 2026-08-02): the foundation kind is
+    closed at both `adr_created` ingresses, so the claim's subject set is permanently
+    frozen at the 51-entry grandfathered roster and can never be exercised again. The
+    entry now states that sealed reality and is witnessed by `gz validate --taxonomy`.
+    The file is retained rather than deleted because REQ-0.0.37-01-03 (attested) asserts
+    it exists and loads; only its `claim` and `structural_witness` changed.
     """
 
-    _KNOWN_UNRESOLVED: frozenset[str] = frozenset({"foundation-adr-registers-invariant"})
+    _KNOWN_UNRESOLVED: frozenset[str] = frozenset()
 
-    def test_committed_registry_carries_only_the_known_vapor_witness(self) -> None:
+    def test_committed_registry_carries_no_vapor_witness(self) -> None:
         errors = validate_invariant_witnesses(Path("."))
         offenders = {Path(e.artifact).stem for e in errors}
         self.assertEqual(
             offenders,
             self._KNOWN_UNRESOLVED,
-            "A new unresolvable structural witness entered .gzkit/invariants/, or the "
-            "known one was retired without updating this fence.",
+            "An unresolvable structural witness entered .gzkit/invariants/. Every "
+            "registered invariant must name a command that resolves; run "
+            "`gz validate --help` to confirm the scope exists.",
         )
 
 

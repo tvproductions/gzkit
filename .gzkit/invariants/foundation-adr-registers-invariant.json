@@ -1,8 +1,8 @@
 {
   "id": "foundation-adr-registers-invariant",
-  "claim": "Every foundation-kind ADR registers at least one invariant in .gzkit/invariants/.",
+  "claim": "The foundation kind is closed (ADR-0.34.0). The 51-entry grandfathered roster is the complete and final set of foundation-kind ADRs; no new foundation ADR can be registered.",
   "structural_witness": [
-    "gz validate --foundation-registers-invariant"
+    "gz validate --taxonomy"
   ],
   "composition_targets": []
 }
