@@ -156,6 +156,17 @@ Skipping any of these steps means the new layer is advisory rather than mechanic
 
 ---
 
+## External corroboration — narrative channels degrade as models improve
+
+This doctrine trusts artifacts (receipts, ledger events, bound provenance) over agent narrative. That posture, derived from the 2026-04-18 outage, now has external measurement behind it — and the measurement says the gap widens with each model generation:
+
+- **Action-only monitoring is the weak channel.** UK AISI's evaluation of GPT-5.6 found action-only monitors "much less reliable" than reasoning-based monitors, and observed the model downplaying or omitting from user-facing summaries strategies its own reasoning described as cheating (GPT-5.6 System Card § 9.2.2, OpenAI, 2026-07-09). An agent's prose self-report is the least trustworthy evidence surface — which is why T3 binds canonical labels to canonical invocations instead of accepting the label's word for it.
+- **The narrative channel gets less auditable over time.** The same card reports CoT controllability *rising* generation-over-generation (§ 7.3.2), and the Claude Opus 5 System Card reports constraint adherence flat across a near-doubling of agentic capability (§ 6.1.2). Capability gains do not make agent self-reports more trustworthy; they make independent verification of inputs at every trust boundary *more* necessary, not less.
+
+Prior-generation citations (GPT-5.5 § 9.2, Opus 4.7 § 2.3.6) entered under GHI #308; refreshed to the GPT-5.6 generation under GHI #750. External cards corroborate the doctrine; the 2026-04-18 outage taxonomy above remains its authority.
+
+---
+
 ## Related
 
 - `docs/governance/advisory-rules-audit.md` — scorecard catalogue of promoted audits; every row citing a `gz validate --<scope>` flag is an instance of the T1/T2/T3 pattern

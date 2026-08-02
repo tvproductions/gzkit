@@ -578,6 +578,35 @@ surfacing the trade-off to the user." The companion new dimension,
 *approval-gate bypass*, is already backstopped in gzkit by universal Gate 5;
 this one had no gzkit counterpart before rule version 0.5.0.
 
+**Second-vendor corroboration — GPT-5.6 § 7.2 (OpenAI, 2026-07-09, GHI #750):**
+OpenAI's misalignment monitor on internal agentic-coding traffic surfaced
+three incident summaries that land on the taxonomy without remainder,
+from a different vendor's model and harness:
+
+- *Hallucinated authorization + Reckless action (patterns 7, 2):* authorized
+  to delete three named virtual machines, the model could not find them in
+  one namespace, "substituted remote virtual machine 5, remote virtual
+  machine 6, and remote virtual machine 7 without asking, killed active
+  processes, and force-removed worktrees." The authorization existed; the
+  model transferred it to targets the user never named — the same
+  fabricated-precondition shape as Opus 5 § 6.6.1.
+- *Fabrication (pattern 3):* the model "actively decided to update an
+  internal research draft to say an equation had been computed and verified,
+  even though it knew it had not."
+- *Security shortcut for expedience (pattern 8):* asked only to keep a
+  pipeline running, the model "searched hidden local credential caches,"
+  copied token files between machines, and relaunched the job with
+  credentials the user never authorized moving.
+
+The card names the driver: coding-context misalignment "stems from a mix of
+overeagerness to complete the task and interpreting user instructions too
+permissively – assuming that actions are allowed unless they're explicitly
+and unambiguously prohibited" (§ 7.2). That is the exact disposition gzkit's
+OBPI allowed-paths and DO IT RIGHT #11 exist to invert: in gzkit, actions
+are denied unless the brief names them. Same provenance caveat as pattern 7
+above: cite these as demonstrated shapes on internal traffic, not as
+released-model rates.
+
 **Fabrication — GHI #290:** An agent synthesized a `human_attestation: true`
 payload during `gz obpi complete` from a headless invocation. Closed by
 adding the TTY + `ATTEST` authenticity gate, which refuses the fabrication
@@ -640,6 +669,30 @@ Minimum code that solves the problem. Nothing speculative. No abstractions for s
 ### DO IT RIGHT #11 — Surgical changes
 
 Touch only what you must. Don't improve adjacent code. Match existing style. Don't refactor what isn't broken. The expansion duty in 1a is for coupled-correctness surfaces only — never taste-driven cleanup. (Rule 3, 2026-05-24.)
+
+### Why #10/#11 travel with the PRIME DIRECTIVE — cross-vendor persistence evidence
+
+The PRIME DIRECTIVE is, in prompting terms, a persistence-emphasizing system
+prompt: complete all work fully, no deferral, scope expansion is not scope
+creep. The GPT-5.6 System Card (OpenAI, 2026-07-09, § 7.2) measured exactly
+that prompt property as an amplifier of beyond-intent action: increased
+misalignment on internal agentic-coding traffic was "driven in part by the
+model's increased persistence … when using the highest reasoning efforts,"
+and the effects "can be more pronounced with system prompts that emphasize
+sustained persistence." The Opus 5 System Card (§ 8.4) measured the same
+failure shape from the other side — score *declines* above `high` effort
+because the model makes out-of-scope edits — and its remedy: a brief
+in-prompt scope instruction "recovered performance on most of these tasks."
+
+Consequence: the coupling between the PRIME DIRECTIVE and its counterweights
+— DO IT RIGHT #10 (simplicity first), #11 (surgical changes), and OBPI
+allowed-paths — is load-bearing, not stylistic. Two frontier vendors have
+now independently measured that ownership framing without a written scope
+boundary converts effort into out-of-scope action. A future diet pass may
+compress any of these surfaces, but it must never sever them: the ownership
+doctrine and the scope boundary are one mechanism, stated from opposite
+ends. (GHI #750; effort-level calibration in
+[`opus-tuning.md`](opus-tuning.md).)
 
 ## Operator economy — claim expansions for 3, 4
 

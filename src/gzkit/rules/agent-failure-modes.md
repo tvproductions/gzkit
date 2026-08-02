@@ -4,16 +4,16 @@ paths:
   - "AGENTS.md"
   - ".gzkit/rules/**"
   - "docs/governance/**"
-description: Eight-pattern agent-failure-mode taxonomy (Opus 4.7 § 2.3.6 / GPT-5.5 § 9.2 / Opus 5 §§ 6.4.4, 6.6.1) with gzkit-invariant backstops.
+description: Eight-pattern agent-failure-mode taxonomy (Opus 4.7 § 2.3.6 / GPT-5.5 § 9.2 / Opus 5 §§ 6.4.4, 6.6.1 / GPT-5.6 §§ 7.1–7.2) with gzkit-invariant backstops.
 ---
 
-<!-- rule-version: 0.5.0 -->
+<!-- rule-version: 0.5.1 -->
 
 # Agent Failure-Mode Taxonomy (gzkit)
 
-> **Rule version:** `0.5.0` — re-sourced to the Claude Opus 5 System Card (2026-07-24) and extended 6 → 8 patterns. Adds **Hallucinated authorization** (Opus 5 § 6.6.1 measured the model internally representing "user consent that was never given" before a destructive action) and **Security shortcut for expedience** (§ 6.4.4, one of two dimensions Anthropic newly introduced). The ADR that authored this rule pre-authorized the revision: ADR-0.0.23 § Consequences — *"treating the rule as living: future system cards may rename or extend patterns."* Prior `0.4.0` — repointed the Safeguard-circumvention and Fabrication backstops off the removed TTY `ATTEST` authenticity gate onto AGENTS.md § Never #1 (operator-verbatim attestation + audit), per the canon-owner attestation declaration.
+> **Rule version:** `0.5.1` — citation refresh (GHI #750): the GPT-5.6 System Card (OpenAI, 2026-07-09, §§ 7.1–7.2) supplies second-vendor observations for patterns 2, 3, 7, and 8; vignettes in the rationale doc's worked examples. No pattern or backstop changed. Prior `0.5.0` — re-sourced to the Claude Opus 5 System Card (2026-07-24) and extended 6 → 8 patterns. Adds **Hallucinated authorization** (Opus 5 § 6.6.1 measured the model internally representing "user consent that was never given" before a destructive action) and **Security shortcut for expedience** (§ 6.4.4, one of two dimensions Anthropic newly introduced). The ADR that authored this rule pre-authorized the revision: ADR-0.0.23 § Consequences — *"treating the rule as living: future system cards may rename or extend patterns."* Prior `0.4.0` — repointed the Safeguard-circumvention and Fabrication backstops off the removed TTY `ATTEST` authenticity gate onto AGENTS.md § Never #1 (operator-verbatim attestation + audit), per the canon-owner attestation declaration.
 
-Patterns 1–6 from the Opus 4.7 System Card (§ 2.3.6) and GPT-5.5 System Card (§ 9.2); patterns 7–8 from the Claude Opus 5 System Card (§§ 6.4.4, 6.6.1). Cite by name when reviewing, filing defects, or extending the scorecard to route directly to the backstop. **Loading posture:** advisory vocabulary, not a mechanical gate — the defenses named in the Backstop column are the shared enforcement.
+Patterns 1–6 from the Opus 4.7 System Card (§ 2.3.6) and GPT-5.5 System Card (§ 9.2); patterns 7–8 from the Claude Opus 5 System Card (§§ 6.4.4, 6.6.1); the GPT-5.6 System Card (§§ 7.1–7.2, 2026-07-09) corroborates patterns 2, 3, 7, 8 from a second vendor's internal agentic-coding traffic. Cite by name when reviewing, filing defects, or extending the scorecard to route directly to the backstop. **Loading posture:** advisory vocabulary, not a mechanical gate — the defenses named in the Backstop column are the shared enforcement.
 
 | Pattern | Definition | Backstop |
 |---------|-----------|----------|

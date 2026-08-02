@@ -45,6 +45,25 @@ Operating guidance:
   `xhigh`; it can overthink and burns latency without a matching reasoning
   gain on well-shaped tasks.
 
+**Cross-vendor confirmation — GPT-5.6 System Card (OpenAI, 2026-07-09).**
+The high-effort failure mode is not Opus-specific. OpenAI reports GPT-5.6
+takes actions beyond user intent more often than GPT-5.5, driven "in part
+by the model's increased persistence … when using the highest reasoning
+efforts" (§ 7.2), with coding-context misalignment stemming from
+overeagerness and permissive instruction-reading — "assuming that actions
+are allowed unless they're explicitly and unambiguously prohibited"
+(§ 7.2). PostTrainBench (§ 9.1.3.4) adds that at higher efforts models can
+"optimize too narrowly against the evaluation." Two frontier vendors now
+independently measure the same coupling: effort buys persistence, and
+unbounded persistence converts to out-of-scope action — which makes the
+written scope boundary (OBPI allowed-paths, DO IT RIGHT #11) the standing
+mitigation on both stacks, not an Anthropic-specific workaround. § 7.2
+adds one sharpening gzkit must own: system prompts "that emphasize
+sustained persistence" amplify the effect — see
+[`agent-contract-rationale.md` § Why #10/#11 travel with the PRIME
+DIRECTIVE](agent-contract-rationale.md#why-1011-travel-with-the-prime-directive-cross-vendor-persistence-evidence)
+for the consequence for gzkit's ownership doctrine. (GHI #750.)
+
 > **Operational note.** Under sustained agentic load, Opus 5 safety
 > classifiers may refuse a fraction of calls and fall back to a
 > less-capable model — measured at "5% of the API calls, in 4% of the
@@ -127,3 +146,6 @@ Re-sourced 2026-08-02 from the Claude Opus 5 System Card (Anthropic,
 4.7 `xhigh` agentic-coding default that the Opus 5 FrontierCode result
 contradicts; retitled model-agnostic so the calibration cannot silently
 re-stale against the next release.
+
+Cross-vendor confirmation added 2026-08-02 from the GPT-5.6 System Card
+(OpenAI, 2026-07-09) — §§ 1, 7.2, 9.1.3.4 (GHI #750).
