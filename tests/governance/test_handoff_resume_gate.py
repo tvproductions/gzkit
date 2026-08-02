@@ -573,6 +573,33 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertFalse(self._verdict(base, command).blocked, command)
 
+    def test_read_only_git_plumbing_is_permitted(self) -> None:
+        """The whole read-only git family, not one verb at a time.
+
+        GHI #732 named the CLASS — "read-only git plumbing/porcelain verbs absent
+        from an allowlist that advertises 'git reads' generically ... The instance
+        is `rev-list`; the class is enumerate-the-examples scoping" — and listed
+        these six. The rev-list fix took the instance, so the class stayed open and
+        would have produced a fourth narrow miss.
+
+        Every verb here is read-only BY CONSTRUCTION: none has a write form. That
+        is the membership predicate, and it is what makes the set closable rather
+        than extendable-on-demand.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git blame src/gzkit/handoff_resume_gate.py",
+                "git shortlog -sn",
+                "git describe --tags",
+                "git merge-base origin/main HEAD",
+                "git cat-file -p HEAD",
+                "git for-each-ref refs/heads",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
     def test_plain_mutators_remain_blocked(self) -> None:
         with TemporaryDirectory() as tmp:
             base = Path(tmp)

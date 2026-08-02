@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.21.0"
+  skill-version: "6.22.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -350,9 +350,10 @@ did not say: that is fabrication, the same failure as fabricating a receipt id.
 requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
 `gz obpi lock list`, `gz handoff list|resume` — **plus `gh` read verbs**
 (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`) — **plus
-plain shell reads** (`git status|log|diff|show|rev-parse|rev-list`, `grep`,
-`rg`, `cat`, `ls`, `head`, `tail`, `find`, `jq`) — plus `gz handoff authorize`
-itself. These are
+plain shell reads** (the read-only-by-construction `git` family —
+`status|log|diff|show|branch|rev-parse|rev-list|ls-files|blame|shortlog|describe|merge-base|cat-file|for-each-ref`
+— plus `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `wc`, `find`, `jq`, `pwd`) —
+plus `gz handoff authorize` itself. These are
 load-bearing, not convenience: the § Claim Verification Gate below MANDATES
 verifying claims against Layer-2 before presenting. The harness does not always
 expose `Grep`/`Glob`, so Bash is the read path; and a handoff's GHI-state claims
@@ -417,6 +418,16 @@ were both GHI rulings could not check either one. It happened a third time on
 handoff prescribing that exact command in its own Verification Checklist was
 refused by this gate. When you add a claim shape, add its instrument to the
 allowlist in the same commit.
+
+**The `git` arm is now closed by predicate, not by enumeration (GHI #732).** The
+`rev-list` repair fixed the instance and left the family open, which is the
+enumerate-the-examples habit repeating one verb later. Membership is now stated:
+a `git` verb is admitted when it is **read-only by construction** — it has no
+write form in any flag combination. `blame`, `shortlog`, `describe`,
+`merge-base`, `cat-file`, and `for-each-ref` are admitted on that predicate;
+`tag`, `fetch`, `checkout`, `update-ref`, and `hash-object` are excluded by it,
+because each reads in one form and writes in another. Judge a candidate against
+the predicate rather than asking whether it already appears in the list.
 
 **Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
 A STALE claim voids any advised step that depends on it: surface the variance and

@@ -95,6 +95,22 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #:   prescribed `git rev-list --left-right --count origin/main...HEAD` and this
 #:   gate refused it.
 #:
+#: The third fix took the INSTANCE and left the class open — GHI #732 had already
+#: named the family ("read-only git plumbing/porcelain verbs absent from an
+#: allowlist that advertises 'git reads' generically") and listed `blame`,
+#: `shortlog`, `describe`, `merge-base`, `cat-file`, `for-each-ref`. Admitting one
+#: verb per discovery is the enumerate-the-examples habit itself, so the whole
+#: named family is admitted below under one stated membership predicate:
+#:
+#:     A git verb belongs here when it is READ-ONLY BY CONSTRUCTION — it has no
+#:     write form at all, in any flag combination.
+#:
+#: That predicate is what makes the set closable. Verbs excluded by it are excluded
+#: on purpose: `tag`, `fetch`, `checkout`, `update-ref`, and `hash-object` all read
+#: in one form and write in another, so allowlisting the head would license the
+#: write. `_MUTATING_FLAGS` guards the flag surface of what IS admitted; it is not
+#: a substitute for the predicate.
+#:
 #: A gate that forbids the verification its own skill mandates cannot be complied
 #: with, and an un-compliable gate gets worked around — the failure mode gzkit
 #: exists to close. Reads are not execution; the contract forbids MUTATION.
@@ -140,6 +156,17 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     # `rev-list` counts a range, which is what a "branch in sync" claim asserts.
     ("git", "rev-list"),
     ("git", "ls-files"),
+    # The rest of the read-only-by-construction family GHI #732 named. Each
+    # answers a distinct verification question a handoff can raise: who last
+    # touched this line, what work landed over a span, where HEAD sits relative
+    # to a release tag, what the divergence point is, what an object actually
+    # contains, and what refs exist.
+    ("git", "blame"),
+    ("git", "shortlog"),
+    ("git", "describe"),
+    ("git", "merge-base"),
+    ("git", "cat-file"),
+    ("git", "for-each-ref"),
     ("grep",),
     ("rg",),
     ("ls",),
