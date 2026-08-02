@@ -303,62 +303,7 @@ uv run gz obpi lock release {OBPI-ID}
 
 ---
 
-## Part 4: Superpowers Interop
-
-### Phase Mapping
-
-When superpowers is enabled, its workflow phases map to GovZero stages:
-
-```
-Superpowers                          GovZero
-──────────                           ───────
-brainstorming → spec                 → ADR (intent, scope, lane)
-spec review loop                     → ADR defense / plan-audit
-writing-plans → plan                 → Plan mode + plan-audit receipt
-plan review loop                     → gz-plan-audit (plan ↔ brief alignment)
-executing-plans / subagent-driven    → Stage 2 (implementation)
-verification-before-completion       → Stage 3 (verify)
-finishing-a-development-branch       → Stage 5 (sync & account)
-```
-
-### Bridge: gz-superbook
-
-<!-- gz-validate-skip: command-shape -->
-`gz superbook` translates superpowers artifacts into GovZero governance:
-
-<!-- gz-validate-skip: command-shape -->
-- **Forward booking** (`gz superbook forward`): Spec + plan → ADR + OBPI briefs
-  (before implementation). Status set to Draft.
-<!-- gz-validate-skip: command-shape -->
-- **Retroactive booking** (`gz superbook retroactive`): Spec + plan → ADR + OBPI briefs
-  (after implementation). Status set to Pending-Attestation.
-
-### Interop Modes
-
-<!-- gz-validate-skip: command-shape -->
-| Mode | Superpowers | GovZero Pipeline | Bridge |
-|------|-------------|------------------|--------|
-| GovZero only | Off | Full pipeline (Stages 1-5) | None |
-| Superpowers + GovZero | On | Stages 3-5 only (`--from=verify`) | `gz superbook forward` before, then pipeline |
-| Superpowers retroactive | On | Stages 4-5 only (`--from=ceremony`) | `gz superbook retroactive`, then pipeline |
-
-### When Superpowers Is Enabled
-
-1. Superpowers handles brainstorming, spec writing, and plan writing
-<!-- gz-validate-skip: command-shape -->
-2. `gz superbook forward` books the plan into GovZero (creates ADR + OBPIs)
-3. Superpowers handles implementation (executing-plans or subagent-driven)
-4. `gz obpi pipeline {OBPI-ID} --from=verify` picks up governance from Stage 3
-5. Stages 3→4→5 run identically regardless of whether superpowers was used
-
-The pipeline does not need to know whether superpowers was used. It cares only about:
-- Does a brief exist? (yes, via superbook)
-- Is there a plan-audit receipt? (yes, via plan-audit hook or manual)
-- Is the code implemented? (yes, via superpowers execution)
-
----
-
-## Part 5: Subagent Execution Model
+## Part 4: Subagent Execution Model
 
 ### Why Subagents
 
@@ -370,8 +315,8 @@ problems:
 2. **No isolation**: A single agent's mistakes in Stage 2 propagate into Stage 3+
    without a fresh review.
 
-Superpowers solves this with **subagent-driven development**: dispatch a fresh agent
-per task with isolated context, then review the results from the coordinator.
+gzkit solves this with **subagent-driven development** (ADR-0.18.0): dispatch a fresh
+agent per task with isolated context, then review the results from the coordinator.
 
 ### Architecture: Agent/CLI Boundary
 
@@ -472,7 +417,7 @@ escalates to the human.
 
 ---
 
-## Part 6: CLI Implementation Changes
+## Part 5: CLI Implementation Changes
 
 ### Required Changes to `gz obpi pipeline`
 
@@ -561,7 +506,7 @@ All protocol details, stage contracts, and failure modes live in this runbook.
 
 ---
 
-## Part 7: Verification Checklist
+## Part 6: Verification Checklist
 
 After implementing the changes in this runbook, verify:
 
@@ -587,5 +532,4 @@ After implementing the changes in this runbook, verify:
 - Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`
 - Runtime contract: `docs/governance/GovZero/obpi-runtime-contract.md`
 - Decomposition matrix: `docs/governance/GovZero/obpi-decomposition-matrix.md`
-- Superpowers: https://github.com/obra/superpowers
-- Superbook skill: `.claude/skills/gz-superbook/SKILL.md`
+- Subagent dispatch: `ADR-0.18.0-subagent-driven-pipeline-execution`
