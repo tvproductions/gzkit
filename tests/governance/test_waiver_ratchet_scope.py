@@ -8,12 +8,16 @@ the growth-fails-closed property, and the green-by-emptiness / silent-bypass gua
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
+import re
 import tempfile
 import unittest
 from datetime import date
 from pathlib import Path
 
+from gzkit.cli.main import _build_parser
 from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
 from gzkit.traceability import covers
 
@@ -196,6 +200,34 @@ class TestRealRegistryIsGreen(unittest.TestCase):
     def test_committed_registry_green(self) -> None:
         errs = audit_waiver_ratchet(Path.cwd())
         self.assertEqual(errs, [], f"committed registry not green: {[e.artifact for e in errs]}")
+
+
+class TestRegistryPointersResolve(unittest.TestCase):
+    """Every ``gates_step`` flag must name a registered ``gz validate`` scope.
+
+    ``gates_step`` is the operator's only route from a ratcheted data file back
+    to the gate that reads it. A flag that no longer parses is a dead pointer of
+    the same class as an unresolvable import: the registry still reads as
+    authoritative while sending the operator to ``unrecognized arguments``.
+    Nothing else covers this field -- ``gz validate --cli-alignment`` scopes
+    ``docs/**`` and skills, not ``data/**`` -- so three pointers went stale
+    unnoticed and one of them was copied into a GHI body as fact (GHI #730).
+    """
+
+    def test_every_gates_step_flag_parses(self) -> None:
+        registry = json.loads(
+            (Path.cwd() / "data" / "waiver_ratchet_registry.json").read_text(encoding="utf-8")
+        )
+        parser = _build_parser()
+        dead: list[tuple[str, str]] = []
+        for surface in registry["surfaces"]:
+            for flag in re.findall(r"--[a-z0-9-]+", surface["gates_step"]):
+                with contextlib.redirect_stderr(io.StringIO()):
+                    try:
+                        parser.parse_args(["validate", flag])
+                    except SystemExit:
+                        dead.append((flag, surface["data_file"]))
+        self.assertEqual(dead, [], f"gates_step names unregistered flags: {dead}")
 
 
 if __name__ == "__main__":

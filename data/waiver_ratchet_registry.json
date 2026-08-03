@@ -32,21 +32,21 @@
   },
   {
    "data_file": "data/tautological_test_waivers.json",
-   "gates_step": "tautological-test detection (gz validate --tautological-tests)",
+   "gates_step": "tautological-test detection (gz validate --tautological-test-audit)",
    "mechanism": "shrink-ratchet",
    "entries_path": "file_waivers",
    "baseline_count": 2
   },
   {
    "data_file": "data/tautological_test_baseline.json",
-   "gates_step": "tautological-test baseline (gz validate --tautological-tests)",
+   "gates_step": "tautological-test baseline (gz validate --tautological-test-audit)",
    "mechanism": "shrink-ratchet",
    "entries_path": "operations",
    "baseline_count": 70
   },
   {
    "data_file": "data/interview_transcript_waivers.json",
-   "gates_step": "interview transcript (gz validate --interview-transcript)",
+   "gates_step": "interview transcript (gz validate --interviews)",
    "mechanism": "shrink-ratchet",
    "entries_path": "waivers",
    "baseline_count": 44
