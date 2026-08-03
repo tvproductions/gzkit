@@ -23,6 +23,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
     obpi_withdrawn_event,
+    parse_frontmatter_value,
     pipeline_launched_event,
     prd_created_event,
     project_init_event,
@@ -1969,6 +1970,60 @@ class TestAuditGeneratedEvent(unittest.TestCase):
         )
         dumped = evt.model_dump()
         self.assertFalse(dumped["passed"])
+
+
+class ParseFrontmatterValueBomTolerance(unittest.TestCase):
+    """GHI #735 — a U+FEFF hid the whole frontmatter block from the shared primitive.
+
+    `parse_frontmatter_value` gated on ``lines[0].strip() == "---"``. U+FEFF is
+    not whitespace in Python (``"﻿".isspace()`` is False), so a BOM-prefixed
+    artifact returned ``None`` for EVERY key — indistinguishable from "this file
+    has no frontmatter". That is a permissive answer: ~25 call sites across
+    hooks, commands, and state read this primitive, and several are shaped
+    ``parse_frontmatter_value(...) != "<forbidden>"``, which admits on None.
+    """
+
+    def _frontmatter(self, prefix: str = "") -> str:
+        return (
+            f"{prefix}---\nid: ADR-0.0.99-probe\nkind: foundation\nstatus: Draft\n---\n\n# body\n"
+        )
+
+    def test_leading_bom_does_not_hide_the_block(self) -> None:
+        """The BOM instance from the OBPI-0.34.0-05 Step-4b probe."""
+        self.assertEqual(
+            parse_frontmatter_value(self._frontmatter("﻿"), "kind"),
+            "foundation",
+            msg="a BOM-prefixed artifact must not read as frontmatter-less",
+        )
+
+    def test_bom_appended_to_the_opening_marker_does_not_hide_the_block(self) -> None:
+        """`utf-8-sig` strips only a LEADING BOM; one on the marker hides it just as well."""
+        self.assertEqual(
+            parse_frontmatter_value("---﻿\nkind: foundation\n---\n", "kind"),
+            "foundation",
+            msg="an interior BOM on the opening marker must not read as frontmatter-less",
+        )
+
+    def test_absent_frontmatter_still_reads_as_absent(self) -> None:
+        """Normalization must not invent frontmatter where there is none."""
+        self.assertIsNone(parse_frontmatter_value("# ADR-0.1.0: no frontmatter here\n", "kind"))
+
+    def test_horizontal_rule_first_document_is_not_frontmatter(self) -> None:
+        """The reverted round-5 regression: normalization must never CREATE a block.
+
+        `lstrip()`-ing leading whitespace before marker detection made a pool
+        document whose first non-blank element is a `---` horizontal rule parse
+        as frontmatter. Normalization that creates frontmatter is worse than the
+        gap it closes, so BOM stripping must not drag whitespace tolerance in.
+        """
+        self.assertIsNone(
+            parse_frontmatter_value("\n\n---\n\nSome prose after a rule.\n", "kind"),
+            msg="a leading blank line + HR must not be read as a frontmatter block",
+        )
+
+    def test_bom_tolerance_does_not_change_a_clean_document(self) -> None:
+        """Regression fence: the ordinary path is byte-identical in behavior."""
+        self.assertEqual(parse_frontmatter_value(self._frontmatter(), "status"), "Draft")
 
 
 if __name__ == "__main__":

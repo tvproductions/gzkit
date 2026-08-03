@@ -37,24 +37,6 @@ def grandfathered_foundation_ids(project_root: Path) -> frozenset[str]:
         return frozenset()
 
 
-def _normalize_frontmatter_source(content: str) -> str:
-    """Strip U+FEFF anywhere before frontmatter detection.
-
-    `utf-8-sig` removes only a leading BOM; one appended to the opening `---`
-    hides the whole block just as effectively, and "no frontmatter" reads as
-    permission at every guard downstream.
-
-    Deliberately does NOT strip leading blank space. Doing so made a pool
-    document whose first non-blank element is a `---` horizontal rule parse as
-    a frontmatter block — normalization that CREATES frontmatter is a worse
-    defect than the one it closed (Step-4b round-5). The residual line-zero and
-    encoding family (Unicode separators, BOM-less UTF-16/32) needs one shared
-    tri-state reader across this module, `taxonomy.py`, and `sync.py`; that
-    spans surfaces outside this brief and is tracked at GHI #736.
-    """
-    return content.replace("﻿", "")
-
-
 def is_undecodable_adr(adr_file: Path) -> bool:
     """Return True when the package cannot be decoded as UTF-8 at all.
 
@@ -96,7 +78,11 @@ def is_ungrandfathered_foundation(
         # An undecodable package never enters Layer-2: "unreadable" must not
         # collapse into "no kind", which every guard downstream reads as permission.
         return True
-    if parse_frontmatter_value(_normalize_frontmatter_source(content), "kind") != "foundation":
+    # BOM normalization lives in `parse_frontmatter_value` itself (GHI #735), so
+    # every caller of the primitive inherits it rather than each guard carrying
+    # its own copy. The local `_normalize_frontmatter_source` wrapper this call
+    # used to wear was retired in the same change.
+    if parse_frontmatter_value(content, "kind") != "foundation":
         return False
     return adr_id not in grandfathered
 

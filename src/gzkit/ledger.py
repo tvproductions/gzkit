@@ -149,8 +149,30 @@ class LedgerEvent(BaseModel):
 
 
 def parse_frontmatter_value(content: str, key: str) -> str | None:
-    """Extract a single value from YAML frontmatter."""
-    lines = content.splitlines()
+    """Extract a single value from YAML frontmatter.
+
+    U+FEFF is stripped anywhere before block detection (GHI #735). It is NOT
+    whitespace in Python — ``"﻿".isspace()`` is False — so a BOM-prefixed
+    artifact failed the ``lines[0] == "---"`` gate and returned ``None`` for
+    every key, indistinguishable from "this file has no frontmatter". That is a
+    *permissive* answer: several of this primitive's ~25 call sites are shaped
+    ``parse_frontmatter_value(...) != "<forbidden>"`` and therefore admit on
+    ``None``. Reading with ``utf-8-sig`` is not sufficient — it strips only a
+    LEADING BOM, and one appended to the opening ``---`` hides the block just as
+    effectively.
+
+    Deliberately does NOT strip leading blank space. ``lstrip()``-ing before
+    marker detection made a pool document whose first non-blank element is a
+    ``---`` horizontal rule parse as a frontmatter block — normalization that
+    CREATES frontmatter is a worse defect than the one it closes
+    (OBPI-0.34.0-05 Step-4b round 5, reverted).
+
+    The residual encoding family — Unicode line separators (VT/FF/NEL/U+2028)
+    and BOM-less UTF-16/32 — is NOT closed here; it needs one shared tri-state
+    reader (valid / absent / malformed) across this module, ``taxonomy.py``, and
+    ``sync.py``, and is tracked at GHI #736.
+    """
+    lines = content.replace("﻿", "").splitlines()
     if not lines or lines[0].strip() != "---":
         return None
 
