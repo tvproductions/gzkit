@@ -792,6 +792,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail on .gzkit/rules/*.md missing or drifting the rule-version marker",
     )
     p_validate.add_argument(
+        "--invariant-witness",
+        dest="check_invariant_witness",
+        action="store_true",
+        help="Fail when an invariant's structural_witness names no registered command",
+    )
+    p_validate.add_argument(
         "--sensitivity",
         dest="check_sensitivity",
         action="store_true",
@@ -1123,6 +1129,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_fidelity_presence=a.check_fidelity_presence,
             check_waiver_ratchet=a.check_waiver_ratchet,
             check_invariant_coherence=a.check_invariant_coherence,
+            check_invariant_witness=a.check_invariant_witness,
             check_brief_reconcile=a.check_brief_reconcile,
             check_brief_structure=a.check_brief_structure,
             check_router_tables=a.check_router_tables,

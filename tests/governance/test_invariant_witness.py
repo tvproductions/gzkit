@@ -99,6 +99,74 @@ class TestInvariantWitnessResolution(unittest.TestCase):
         self.assertIn("gz validate --help", message)
 
 
+class TestInvariantWitnessScopeIsReachable(unittest.TestCase):
+    """The validator must be reachable past the test boundary (GHI #746).
+
+    `validate_invariant_witnesses` existed as a function whose only caller was the
+    fence below. Enforcement logic that stops at the test boundary is invisible to
+    every mechanical surface: it cannot run in `gz check`, cannot be named as a
+    `structural_witness` by another invariant (the resolver rejects unregistered
+    scopes), and cannot be cited in an operator doc without tripping the intent of
+    the verb-resolution rule. Registration is what makes it enforcement rather than
+    a library function with a test.
+
+    Reachability is asserted through the registry entry rather than by importing the
+    function again — importing it is exactly what the fence already did, and it is
+    what passed while the scope was unreachable.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self._root = Path(self._tmp.name)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _entry(self):
+        from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
+
+        return next((e for e in VALIDATOR_REGISTRY if e.stem == "invariant_witness"), None)
+
+    def test_scope_is_registered_in_the_default_tier(self) -> None:
+        """Default tier is what enrolls it in `gz check` (GHI #744 collapse).
+
+        `gz check` runs one bare `gz validate` that gates the whole default tier,
+        so tier membership IS gate membership -- no separate step entry.
+        """
+        entry = self._entry()
+        self.assertIsNotNone(entry, "invariant_witness must be a registered validate scope")
+        self.assertEqual(entry.tier, "default")
+
+    def test_registered_runner_fails_closed_on_a_vapor_witness(self) -> None:
+        """Reached through the registry, the scope still reports the finding."""
+        _write_invariant(self._root, "vapor", ["gz validate --no-such-scope"])
+        errors = self._entry().run(self._root, None)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("no-such-scope", errors[0].message)
+
+    def test_negative_control_clean_registry_reports_nothing(self) -> None:
+        """The runner is wired to real logic, not stubbed to always fail."""
+        _write_invariant(self._root, "real", ["gz validate --taxonomy"])
+        self.assertEqual(self._entry().run(self._root, None), [])
+
+    def test_cli_flag_reaches_the_scope(self) -> None:
+        """`--invariant-witness` parses to the check parameter the runner answers to."""
+        from gzkit.cli.main import _build_parser
+
+        args = _build_parser().parse_args(["validate", "--invariant-witness"])
+        self.assertTrue(args.check_invariant_witness)
+
+    def test_the_scope_is_itself_nameable_as_a_structural_witness(self) -> None:
+        """Registration closes the loop: the gate can now witness an invariant.
+
+        Before wiring, an invariant declaring `gz validate --invariant-witness`
+        would have been reported as vapor by this very validator -- the scope that
+        polices witness resolution could not be cited as one.
+        """
+        _write_invariant(self._root, "self-ref", ["gz validate --invariant-witness"])
+        self.assertEqual(validate_invariant_witnesses(self._root), [])
+
+
 class TestCommittedRegistryWitnesses(unittest.TestCase):
     """Fence on the real registry's vapor witnesses (GHI #623).
 

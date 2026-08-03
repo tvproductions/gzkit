@@ -54,7 +54,13 @@ _GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
 #   rule_version_markers — enforces the rule-version-marker invariant declared by
 #   skill-surface-sync.md § Non-negotiable rules #2 but never mechanized
 #   (Pass A conflict-matrix re-run, 2026-07-16).
-_POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = ("rule_version_markers",)
+#   invariant_witness — resolves every registered invariant's structural_witness to a
+#   real command. The validator existed from GHI #623 with no CLI wiring at all; its
+#   only caller was its own fence test until GHI #746 registered it here.
+_POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
+    "rule_version_markers",
+    "invariant_witness",
+)
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the
 # dispatch contract pins; the order is unified onto registry order (no test pins

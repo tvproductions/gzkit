@@ -16,7 +16,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
-            [--invariant-coherence] [--brief-reconcile] [--brief-structure]
+            [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--tautological-test-audit]
@@ -1468,6 +1468,46 @@ gz validate --invariant-coherence
 
 **Related:** ADR-0.0.37 (constitutional invariant composition), OBPI-0.0.37-22
 (rendition playback gate), `--rendition-freshness`.
+
+### `--invariant-witness`
+
+Resolves every registered constitutional invariant's `structural_witness` against the
+commands this CLI actually registers. A `ConstitutionalInvariant` in
+`.gzkit/invariants/*.json` names, in that field, the gate that mechanically enforces its
+claim; an invariant whose witness does not exist claims enforcement it does not have —
+the structural-witness theater ADR-0.0.37's closeout audit named (GHI #623). Runs under
+bare `gz validate` as a default scope, and is therefore in `gz check`.
+
+Two witness shapes resolve:
+
+- `gz validate --<scope>` — checked against registered `VALIDATOR_REGISTRY` stems.
+- `gz <verb> [<subverb>...]` — checked against registered parser leaf paths.
+
+A trailing parenthetical is documentation rather than part of the command and is
+stripped before resolution (`gz obpi complete (stage 5)` → `gz obpi complete`). Every
+witness of every entry is checked: a resolvable first witness does not excuse a vapor
+second one. Bootstrap-safe — a project with no `.gzkit/invariants/` yields no findings.
+
+The validator dates from GHI #623 but had no CLI wiring until GHI #746: its only caller
+was its own fence test, which left it unable to run in `gz check` and — the closed
+loop — unable to be named as a `structural_witness` itself, since the resolver rejects
+unregistered scopes.
+
+**Usage:**
+
+```bash
+gz validate --invariant-witness
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every registered invariant's witness resolves to a registered command | — |
+| 3 | An invariant names a witness that resolves to no registered command | Register the command that enforces the claim, or correct the witness to name the gate that already does (`gz validate --help` lists registered scopes); if nothing enforces the claim, retire the entry rather than leave it standing |
+
+**Related:** ADR-0.0.37 (constitutional invariant composition), `--invariant-coherence`,
+`--cli-alignment` (verb resolution in operator docs).
 
 ### `--brief-reconcile`
 

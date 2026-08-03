@@ -366,6 +366,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "rule_version_markers", "default", True, lambda r, _f: _rule_version_markers_runner(r)
     ),
+    _ScopeEntry("invariant_witness", "default", True, lambda r, _f: _invariant_witness_runner(r)),
     _ScopeEntry("sensitivity", "explicit", False, lambda r, _f: _sensitivity_umbrella_runner(r)),
     _ScopeEntry(
         "doc_surface_parity", "explicit", True, lambda r, _f: _ta().audit_doc_surface_parity(r)
@@ -926,6 +927,15 @@ def _rule_version_markers_runner(project_root: Path) -> list[ValidationError]:
     return audit_rule_version_markers_errors(project_root)
 
 
+def _invariant_witness_runner(project_root: Path) -> list[ValidationError]:
+    """Run the constitutional-invariant structural-witness resolver (GHI #623/#746)."""
+    from gzkit.governance.trust_audits.invariant_witness import (  # noqa: PLC0415
+        validate_invariant_witnesses,
+    )
+
+    return validate_invariant_witnesses(project_root)
+
+
 def _unscoped_rules_runner(project_root: Path) -> list[ValidationError]:
     """Run the unscoped-rules validator and map violations to ValidationError."""
     from gzkit.validators.unscoped_rules import run_unscoped_rules  # noqa: PLC0415
@@ -1106,6 +1116,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "rendition_freshness",
         "rendition_floor_coherence",
         "invariant_coherence",
+        "invariant_witness",
         "brief_reconcile",
         "brief_structure",
         "router_tables",
@@ -1431,6 +1442,7 @@ def validate(
     check_persona_witness: bool = False,
     check_receipt_shape: bool = False,
     check_invariant_coherence: bool = False,
+    check_invariant_witness: bool = False,
     check_brief_reconcile: bool = False,
     check_brief_structure: bool = False,
     check_router_tables: bool = False,
@@ -1541,6 +1553,7 @@ def validate(
         "persona_witness": check_persona_witness,
         "receipt_shape": check_receipt_shape,
         "invariant_coherence": check_invariant_coherence,
+        "invariant_witness": check_invariant_witness,
         "brief_reconcile": check_brief_reconcile,
         "brief_structure": check_brief_structure,
         "router_tables": check_router_tables,
