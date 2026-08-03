@@ -819,5 +819,94 @@ class TestGhi632ScannerCorrectnessAndDrift(unittest.TestCase):
         self.assertIn("test_brand_new", errors[0].message)
 
 
+class TestDecoratorsAreNotBehavior(unittest.TestCase):
+    """A decorator is traceability metadata, never evidence the test runs project code.
+
+    ``ast.walk`` over a ``FunctionDef`` yields ``decorator_list``, so every
+    exemption predicate saw ``@covers("REQ-…")`` — an imported gzkit symbol — as a
+    production call and exempted the test before reading its body. That masked 220
+    of 290 detected operations, and masked them in the audit's intended field of
+    view: a test authored to fill a REQ evidence cell carries ``@covers`` by
+    construction (GHI #730).
+
+    The shrink-only ratchet cannot catch a regression here — reverting the fix
+    *lowers* the count, which the ratchet permits by design. These assertions are
+    the only thing standing between the fix and a silent revert.
+    """
+
+    def _scan(self, body: str) -> list:
+        from gzkit.tautological_tests import scan_test_tree
+
+        with tempfile.TemporaryDirectory() as tmp_str:
+            tests_dir = pathlib.Path(tmp_str) / "tests"
+            tests_dir.mkdir()
+            (tests_dir / "test_fixture.py").write_text(textwrap.dedent(body), encoding="utf-8")
+            return scan_test_tree(tests_dir)
+
+    @covers("REQ-0.0.59-04-01")
+    def test_covers_decorator_does_not_exempt_a_content_echo(self) -> None:
+        """The masked case: doc-content echo whose only gzkit call is its decorator."""
+        ops = self._scan(
+            """\
+            import unittest
+            from pathlib import Path
+            from gzkit.traceability import covers
+
+            class TestFoo(unittest.TestCase):
+                @covers("REQ-1.2.3-01-01")
+                def test_doc_mentions_heading(self):
+                    body = Path("docs/x.md").read_text()
+                    self.assertIn("## Heading", body)
+            """
+        )
+        self.assertEqual(len(ops), 1, "a @covers decorator must not launder a content echo")
+        self.assertEqual(ops[0].function_name, "test_doc_mentions_heading")
+
+    @covers("REQ-0.0.59-04-01")
+    def test_undecorated_equivalent_is_flagged_identically(self) -> None:
+        """Negative control: the decorator is the ONLY difference, so the verdict must match.
+
+        Without this pairing the test above could pass for the wrong reason — some
+        unrelated change in detection — rather than because decorators stopped counting.
+        """
+        ops = self._scan(
+            """\
+            import unittest
+            from pathlib import Path
+
+            class TestFoo(unittest.TestCase):
+                def test_doc_mentions_heading(self):
+                    body = Path("docs/x.md").read_text()
+                    self.assertIn("## Heading", body)
+            """
+        )
+        self.assertEqual(len(ops), 1, "the undecorated twin must flag the same way")
+
+    @covers("REQ-0.0.59-04-01")
+    def test_real_production_call_in_body_still_exempts(self) -> None:
+        """The exemption must survive for its actual purpose — a body that runs project code.
+
+        Guards the opposite failure: narrowing the walk must not turn the
+        discriminator into "flag everything" and start crying wolf on the ~88% of
+        filesystem-touching tests that are genuinely behavioral.
+        """
+        ops = self._scan(
+            """\
+            import unittest
+            from pathlib import Path
+            from gzkit.traceability import covers
+            from gzkit.rules import load_rules
+
+            class TestFoo(unittest.TestCase):
+                @covers("REQ-1.2.3-01-01")
+                def test_loads_and_checks(self):
+                    rules = load_rules(Path(".gzkit/rules"))
+                    body = Path(".gzkit/rules/x.md").read_text()
+                    self.assertIn("foo", body)
+            """
+        )
+        self.assertEqual(ops, [], "a body that calls production code is still behavioral")
+
+
 if __name__ == "__main__":
     unittest.main()

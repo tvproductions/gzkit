@@ -72,7 +72,7 @@ baseline = {
     'operations': [op.model_dump(exclude={'context_hint'}) for op in ops],
     'generated_at': datetime.now(timezone.utc).isoformat(),
 }
-Path('data/tautological_test_baseline.json').write_text(json.dumps(baseline, indent=2))
+Path('data/tautological_test_baseline.json').write_text(json.dumps(baseline, indent=2) + '\n')
 print(f'Baseline updated: {len(ops)} operations')
 "
 ```

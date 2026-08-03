@@ -108,6 +108,31 @@ def _attr_root_name(node: ast.expr) -> str | None:
     return node.id if isinstance(node, ast.Name) else None
 
 
+def _walk_body(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.AST]:
+    """Return every node in the function's BODY, excluding decorators and signature.
+
+    ``ast.walk(node)`` over a ``FunctionDef`` also yields ``node.decorator_list``
+    and ``node.args``. That silently made ``@covers("REQ-…")`` — whose ``covers``
+    is an imported gzkit symbol — satisfy :func:`_calls_production_code` before
+    the body was ever examined, exempting 220 of 290 detected operations
+    (GHI #730).
+
+    Traceability metadata is not behavior. Applying `.claude/rules/tests.md`
+    § The discriminator — *if the production code's behavior changed but its text
+    did not, would this test fail?* — a decorator evaluated at import time cannot
+    make an assertion fail when behavior changes, which is the exemption's entire
+    stated rationale. The masked population was the worst possible one: a test
+    authored to fill a REQ evidence cell carries ``@covers`` by construction, so
+    the audit was blind in exactly its intended field of view.
+
+    Every exemption predicate below reasons about what a test *exercises*, so all
+    of them walk the body only. Fixing the shared traversal rather than the one
+    observed call site closes the class: any gzkit-sourced decorator laundered a
+    test, not just ``@covers``.
+    """
+    return [child for stmt in node.body for child in ast.walk(stmt)]
+
+
 def _calls_production_code(
     node: ast.FunctionDef | ast.AsyncFunctionDef, gzkit_names: frozenset[str]
 ) -> bool:
@@ -121,7 +146,7 @@ def _calls_production_code(
     audit targets. This discriminator stops the scan from flagging the ~88% of
     filesystem-touching tests that are in fact behavioral.
     """
-    for child in ast.walk(node):
+    for child in _walk_body(node):
         if not isinstance(child, ast.Call):
             continue
         func = child.func
@@ -186,7 +211,7 @@ def _reads_project_source(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
     reference source paths incidentally. Only consulted for an already-flagged
     op (filesystem-op + assertion, no production call, not a fixture).
     """
-    for child in ast.walk(node):
+    for child in _walk_body(node):
         if not (isinstance(child, ast.Call) and isinstance(child.func, ast.Attribute)):
             continue
         if child.func.attr == "parse" and _attr_root_name(child.func) == "ast":
@@ -228,7 +253,7 @@ def _asserts_shipped_executable(node: ast.FunctionDef | ast.AsyncFunctionDef) ->
     path under a shipped-executable root counts, so a test that merely reads a
     governance doc is never laundered.
     """
-    for child in ast.walk(node):
+    for child in _walk_body(node):
         if not (isinstance(child, ast.Constant) and isinstance(child.value, str)):
             continue
         if any(child.value.startswith(root) for root in _SHIPPED_EXECUTABLE_ROOTS):
@@ -280,7 +305,7 @@ def _calls_self_module(
 
     A production call the static-import heuristic misses.
     """
-    for child in ast.walk(node):
+    for child in _walk_body(node):
         if (
             isinstance(child, ast.Call)
             and isinstance(child.func, ast.Attribute)

@@ -2,564 +2,2034 @@
   "operations": [
     {
       "file_path": "tests/adr/test_storage_tiers.py",
-      "line_number": 68,
+      "line_number": 69,
       "operation_kind": "exists",
       "function_name": "test_tier_b_rebuild_and_gz_state",
-      "assertion_kind": "assertEqual",
-      "context_hint": "REQ-0.0.10-04-01/03: Tier B state resolves \u2014 gz state succeeds."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/arb/test_ruff_reporter.py",
       "line_number": 59,
       "operation_kind": "read_text",
       "function_name": "_assert_valid_receipt",
-      "assertion_kind": "assertEqual",
-      "context_hint": "arb_lint_receipt.schema.json"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/arb/test_schemas.py",
       "line_number": 23,
       "operation_kind": "exists",
       "function_name": "test_lint_schema_exists_and_is_valid",
-      "assertion_kind": "assertTrue",
-      "context_hint": "gzkit.arb.lint_receipt.schema.json"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/arb/test_schemas.py",
       "line_number": 36,
       "operation_kind": "exists",
       "function_name": "test_step_schema_exists_and_is_valid",
-      "assertion_kind": "assertTrue",
-      "context_hint": "gzkit.arb.step_receipt.schema.json"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/arb/test_schemas.py",
       "line_number": 49,
       "operation_kind": "read_text",
       "function_name": "test_lint_receipt_shape_matches_schema",
-      "assertion_kind": "assertEqual",
-      "context_hint": "A well-formed lint receipt validates against the schema."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/arb/test_schemas.py",
       "line_number": 72,
       "operation_kind": "read_text",
       "function_name": "test_step_receipt_shape_matches_schema",
-      "assertion_kind": "assertEqual",
-      "context_hint": "A well-formed step receipt validates against the schema."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/arb/test_step_reporter.py",
       "line_number": 63,
       "operation_kind": "read_text",
       "function_name": "test_passing_step_writes_receipt",
-      "assertion_kind": "assertEqual",
-      "context_hint": "OK\n"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/arb/test_step_reporter.py",
       "line_number": 79,
       "operation_kind": "read_text",
       "function_name": "test_step_receipt_file_ends_with_newline",
-      "assertion_kind": "assertIsNotNone",
-      "context_hint": "Receipts must end with `\\n` so the ``end-of-file-fixer``\n        pre-commit hook does not rewrite them on every commit (the fix\n        loop was burning operator tokens during ``gz git-sync``).\n        "
+      "assertion_kind": "assertIsNotNone"
     },
     {
       "file_path": "tests/arb/test_step_reporter.py",
       "line_number": 91,
       "operation_kind": "read_text",
       "function_name": "test_failing_step_writes_receipt",
-      "assertion_kind": "assertEqual",
-      "context_hint": ""
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/chores/test_eval_feedback_cluster.py",
+      "line_number": 287,
+      "operation_kind": "exists",
+      "function_name": "test_chore_registered_in_registry",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/cli/test_justify_manpage.py",
+      "line_number": 60,
+      "operation_kind": "is_file",
+      "function_name": "test_manpage_file_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/cli/test_justify_manpage.py",
+      "line_number": 290,
+      "operation_kind": "read_text",
+      "function_name": "test_manpage_path_is_valid_markdown_for_mkdocs",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/cli/test_justify_manpage.py",
+      "line_number": 298,
+      "operation_kind": "read_text",
+      "function_name": "test_doc_coverage_manifest_marks_justify_as_governance_relevant",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/cli/test_justify_manpage.py",
+      "line_number": 318,
+      "operation_kind": "read_text",
+      "function_name": "test_commands_index_lists_justify",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/cli/test_validate_evaluation_justify_binding_exit.py",
+      "line_number": 156,
+      "operation_kind": "read_text",
+      "function_name": "test_predicate_source_does_not_self_include_eval_binding_flag",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/commands/test_brief_reconcile.py",
+      "line_number": 407,
+      "operation_kind": "read_text",
+      "function_name": "test_manpage_has_required_sections",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_complexity_distill_cmd.py",
+      "line_number": 77,
+      "operation_kind": "exists",
+      "function_name": "test_writes_dated_distilled_characteristics_under_output_dir",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_complexity_distill_cmd.py",
+      "line_number": 140,
+      "operation_kind": "exists",
+      "function_name": "test_collision_with_allow_sibling_writes_dated_sibling",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_complexity_distill_cmd.py",
+      "line_number": 150,
+      "operation_kind": "read_text",
+      "function_name": "test_no_prior_emits_cold_start_diff_section",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/commands/test_complexity_distill_cmd.py",
+      "line_number": 174,
+      "operation_kind": "read_text",
+      "function_name": "test_auto_detected_prior_emits_diff_section_against_prior",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_complexity_distill_cmd.py",
+      "line_number": 186,
+      "operation_kind": "read_text",
+      "function_name": "test_baseline_json_with_extra_fields_returns_user_config_error",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_foundation_kind_closed.py",
+      "line_number": 428,
+      "operation_kind": "read_text",
+      "function_name": "test_kind_enum_still_lists_foundation_seal_not_delete",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/commands/test_frontmatter_reconcile.py",
+      "line_number": 46,
+      "operation_kind": "read_text",
+      "function_name": "test_chore_registered_as_heavy_lane_in_production_config",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_governance_render.py",
+      "line_number": 94,
+      "operation_kind": "exists",
+      "function_name": "test_stdout_mode_does_not_write_file",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_governance_render.py",
+      "line_number": 124,
+      "operation_kind": "exists",
+      "function_name": "test_write_mode_creates_agents_md",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_governance_render.py",
+      "line_number": 215,
+      "operation_kind": "read_text",
+      "function_name": "test_write_mode_does_not_emit_ledger_event",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/commands/test_init.py",
+      "line_number": 599,
+      "operation_kind": "exists",
+      "function_name": "test_init_manpage_mentions_rules",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_init.py",
+      "line_number": 607,
+      "operation_kind": "exists",
+      "function_name": "test_skill_surface_sync_rule_has_gz_init_bootstrap_note",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_issue_cmd.py",
+      "line_number": 340,
+      "operation_kind": "read_text",
+      "function_name": "test_features_file_carries_required_scenario_tags",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/commands/test_justify_cmd.py",
+      "line_number": 191,
+      "operation_kind": "read_text",
+      "function_name": "test_output_path_exists_exits_one",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_justify_cmd.py",
+      "line_number": 201,
+      "operation_kind": "read_text",
+      "function_name": "test_output_path_new_writes_scaffold",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/commands/test_justify_cmd.py",
+      "line_number": 286,
+      "operation_kind": "read_text",
+      "function_name": "test_justify_command_doc_and_index_exist",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_plan.py",
+      "line_number": 631,
+      "operation_kind": "read_text",
+      "function_name": "test_concept_page_documents_why_foundation_tier_convention",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_plan.py",
+      "line_number": 650,
+      "operation_kind": "read_text",
+      "function_name": "test_runbook_cross_references_why_foundation_tier_convention",
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/commands/test_skills.py",
-      "line_number": 219,
+      "line_number": 243,
       "operation_kind": "exists",
       "function_name": "test_init_scaffolds_adr_create_and_removes_adr_manager",
-      "assertion_kind": "assertTrue",
-      "context_hint": "core skill scaffolding uses gz-adr-create hard cutover."
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/commands/test_skills.py",
-      "line_number": 234,
+      "line_number": 258,
       "operation_kind": "read_text",
       "function_name": "test_init_scaffolds_git_sync_skill_with_canonical_body",
-      "assertion_kind": "assertTrue",
-      "context_hint": "gz init delivers the git-sync skill that ``gz git-sync --skill`` advertises.\n\n        Canonical contract: the path printed by ``gz git-sync --skill``\n        (``.gzkit/skills/git-sync/SKILL.md``) MUST exist on consumer projects\n        after ``gz init``, and the body MUST be the canonical workflow \u2014 not\n        the generic ``Step 1 / Step 2 / Step 3`` template placeholder, which\n        provides no operator value (GHI #315).\n        "
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_upgrade_resources.py",
+      "line_number": 67,
+      "operation_kind": "is_dir",
+      "function_name": "test_skills_resource_is_directory",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/commands/test_upgrade_resources.py",
+      "line_number": 75,
+      "operation_kind": "is_dir",
+      "function_name": "test_rules_resource_is_directory",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/complexity/advisor/test_timeout.py",
+      "line_number": 144,
+      "operation_kind": "read_text",
+      "function_name": "test_no_subprocess_spawned",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/complexity/test_baseline.py",
+      "line_number": 127,
+      "operation_kind": "read_text",
+      "function_name": "test_baseline_schema_rejects_unknown_field",
+      "assertion_kind": "assertRaises"
     },
     {
       "file_path": "tests/complexity/test_baseline.py",
       "line_number": 178,
       "operation_kind": "is_file",
       "function_name": "test_measure_corpus_writes_files_under_output_dir",
-      "assertion_kind": "assertTrue",
-      "context_hint": "``measure_corpus`` writes baseline.json + baseline.summary.md."
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/complexity/test_citation.py",
+      "line_number": 124,
+      "operation_kind": "read_text",
+      "function_name": "test_body_marker_and_block_quote_agree",
+      "assertion_kind": "assertIsNotNone"
+    },
+    {
+      "file_path": "tests/complexity/test_citation.py",
+      "line_number": 146,
+      "operation_kind": "exists",
+      "function_name": "test_schema_file_present_and_constrains_three_fields",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/complexity/test_citation.py",
+      "line_number": 191,
+      "operation_kind": "read_text",
+      "function_name": "test_canonical_rule_body_present_in_each_vendor_mirror",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/complexity/test_citation.py",
       "line_number": 243,
       "operation_kind": "read_text",
       "function_name": "test_personal_email_absent_from_authored_surfaces",
-      "assertion_kind": "assertFalse",
-      "context_hint": "ahui"
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/complexity/test_measurement.py",
+      "line_number": 62,
+      "operation_kind": "read_text",
+      "function_name": "test_measure_corpus_smoke",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/complexity/test_measurement.py",
+      "line_number": 247,
+      "operation_kind": "read_text",
+      "function_name": "test_pyproject_declares_three_deps_with_pins",
+      "assertion_kind": "assertRegex"
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
       "line_number": 258,
       "operation_kind": "read_text",
       "function_name": "test_pyproject_cites_stdlib_first_named_departure",
-      "assertion_kind": "assertIn",
-      "context_hint": "The dep block carries the named-departure rationale comment."
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
       "line_number": 284,
       "operation_kind": "read_text",
       "function_name": "test_module_size_discipline",
-      "assertion_kind": "assertLessEqual",
-      "context_hint": "The module respects the 600-line module ceiling."
+      "assertion_kind": "assertLessEqual"
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
       "line_number": 337,
       "operation_kind": "read_text",
       "function_name": "test_no_shell_true_in_measurement_source",
-      "assertion_kind": "assertNotRegex",
-      "context_hint": "Defense in depth: REQ-07 is also a static-source guarantee."
+      "assertion_kind": "assertNotRegex"
     },
     {
       "file_path": "tests/complexity/test_measurement.py",
       "line_number": 342,
       "operation_kind": "read_text",
       "function_name": "test_subprocess_calls_use_list_form_in_source",
-      "assertion_kind": "assertTrue",
-      "context_hint": "Every ``subprocess.run`` call passes a list literal as its first arg."
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/complexity/test_thresholds.py",
+      "line_number": 392,
+      "operation_kind": "is_file",
+      "function_name": "test_schema_file_exists_and_loads",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/complexity/test_thresholds.py",
+      "line_number": 399,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_enforces_trigger_semantic_enum",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/complexity/test_thresholds.py",
+      "line_number": 406,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_enforces_canonical_percentile_enum",
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/distribution/test_baseline_manifest.py",
       "line_number": 69,
       "operation_kind": "is_file",
       "function_name": "_assert_entries_resolve",
-      "assertion_kind": "assertTrue",
-      "context_hint": "surfaces"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 41,
       "operation_kind": "is_file",
       "function_name": "test_schema_file_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "Schema not found: "
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 44,
       "operation_kind": "read_text",
       "function_name": "test_schema_is_valid_json",
-      "assertion_kind": "assertIn",
-      "context_hint": "properties"
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 59,
       "operation_kind": "read_text",
       "function_name": "test_all_fixtures_valid_json",
-      "assertion_kind": "assertIsInstance",
-      "context_hint": "*.json"
+      "assertion_kind": "assertIsInstance"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 71,
       "operation_kind": "read_text",
       "function_name": "test_no_duplicate_case_ids_within_dataset",
-      "assertion_kind": "assertEqual",
-      "context_hint": "*.json"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 144,
       "operation_kind": "read_text",
       "function_name": "test_no_timestamps_in_fixtures",
-      "assertion_kind": "assertEqual",
-      "context_hint": "*.json"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
       "line_number": 155,
       "operation_kind": "read_text",
       "function_name": "test_no_random_seeds",
-      "assertion_kind": "assertNotIn",
-      "context_hint": "*.json"
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 69,
+      "operation_kind": "exists",
+      "function_name": "test_agent_contract_rule_file_deleted",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 98,
+      "operation_kind": "read_text",
+      "function_name": "test_agents_md_contains_migrated_invariants",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 135,
+      "operation_kind": "read_text",
+      "function_name": "test_claude_md_carries_10a_and_agents_md_does_not",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 176,
+      "operation_kind": "read_text",
+      "function_name": "test_rationale_md_has_three_named_sections",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 209,
+      "operation_kind": "read_text",
+      "function_name": "test_manifest_allowlist_removes_agent_contract_entry",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 258,
+      "operation_kind": "read_text",
+      "function_name": "test_no_inbound_references_to_legacy_paths_in_live_files",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 283,
+      "operation_kind": "exists",
+      "function_name": "test_vendor_mirrors_of_agent_contract_were_removed_by_sync",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_agent_contract_fold.py",
+      "line_number": 326,
+      "operation_kind": "read_text",
+      "function_name": "test_no_new_deps_shell_true_or_dataclass",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine.py",
+      "line_number": 146,
+      "operation_kind": "read_text",
+      "function_name": "test_doctrine_doc_exists_with_canonical_anchors",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine.py",
+      "line_number": 184,
+      "operation_kind": "read_text",
+      "function_name": "test_budget_enforces_codex_cap_and_files_fit",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine.py",
+      "line_number": 231,
+      "operation_kind": "read_text",
+      "function_name": "test_scorecard_entry_mechanical_with_judgment_note",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine.py",
+      "line_number": 270,
+      "operation_kind": "exists",
+      "function_name": "test_obpi02_lift_targets_present_after_obpi02_landed",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 67,
+      "operation_kind": "read_text",
+      "function_name": "test_claude_md_has_no_prohibited_headings",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 78,
+      "operation_kind": "read_text",
+      "function_name": "test_claude_md_within_budget",
+      "assertion_kind": "assertLessEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 98,
+      "operation_kind": "read_text",
+      "function_name": "test_no_rule_file_has_prohibited_heading",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 110,
+      "operation_kind": "is_file",
+      "function_name": "test_model_selection_rationale_expansion_doc_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 119,
+      "operation_kind": "is_file",
+      "function_name": "test_skill_surface_sync_rationale_expansion_doc_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 127,
+      "operation_kind": "read_text",
+      "function_name": "test_model_selection_has_see_link_to_expansion",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 137,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_surface_sync_has_see_link_to_expansion",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 159,
+      "operation_kind": "read_text",
+      "function_name": "test_rule_files_fit_their_glob_budget",
+      "assertion_kind": "assertIsInstance"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 186,
+      "operation_kind": "read_text",
+      "function_name": "test_agents_md_and_claude_md_fit_budget_and_codex_cap",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 216,
+      "operation_kind": "read_text",
+      "function_name": "test_user_runbook_has_gz_context_diet_recovery_path",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 226,
+      "operation_kind": "read_text",
+      "function_name": "test_user_runbook_references_agents_md_map_conformance_validator",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 235,
+      "operation_kind": "read_text",
+      "function_name": "test_governance_runbook_has_instruction_files_section",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 245,
+      "operation_kind": "read_text",
+      "function_name": "test_governance_runbook_names_map_not_encyclopedia_doctrine",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 258,
+      "operation_kind": "read_text",
+      "function_name": "test_trust_doctrine_cross_links_conformance_scope",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 268,
+      "operation_kind": "read_text",
+      "function_name": "test_trust_doctrine_references_adr_0054",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 281,
+      "operation_kind": "read_text",
+      "function_name": "test_no_claude_md_prohibited_headings",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 289,
+      "operation_kind": "read_text",
+      "function_name": "test_no_rule_files_prohibited_headings",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_map_doctrine_application.py",
+      "line_number": 299,
+      "operation_kind": "read_text",
+      "function_name": "test_rule_files_within_tightened_budget",
+      "assertion_kind": "assertLessEqual"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_matrix.py",
+      "line_number": 43,
+      "operation_kind": "read_text",
+      "function_name": "test_self_closeable_phrase_is_absent",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_matrix.py",
+      "line_number": 66,
+      "operation_kind": "read_text",
+      "function_name": "test_universal_attestation_binding_rule_present",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_matrix.py",
+      "line_number": 104,
+      "operation_kind": "read_text",
+      "function_name": "test_lane_kind_axes_retained_for_gate_firing_scope",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_matrix.py",
+      "line_number": 153,
+      "operation_kind": "read_text",
+      "function_name": "test_amendment_cites_ghi_and_adr_inline",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_agents_md_matrix.py",
+      "line_number": 185,
+      "operation_kind": "read_text",
+      "function_name": "test_mirrors_reflect_amended_canon",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 92,
+      "operation_kind": "exists",
+      "function_name": "test_attestation_rule_file_deleted",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 115,
+      "operation_kind": "read_text",
+      "function_name": "test_agents_md_has_attestation_section",
+      "assertion_kind": "assertNotEqual"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 192,
+      "operation_kind": "read_text",
+      "function_name": "test_arb_middleware_doc_exists_with_five_sections",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 241,
+      "operation_kind": "read_text",
+      "function_name": "test_manifest_allowlist_removes_attestation_enrichment_entry",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 292,
+      "operation_kind": "read_text",
+      "function_name": "test_no_inbound_references_to_legacy_paths_in_live_files",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 317,
+      "operation_kind": "exists",
+      "function_name": "test_vendor_mirrors_of_attestation_rule_were_removed_by_sync",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_attestation_fold.py",
+      "line_number": 378,
+      "operation_kind": "read_text",
+      "function_name": "test_no_arb_schema_change_and_no_new_deps",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_closeout_audit_fidelity.py",
+      "line_number": 173,
+      "operation_kind": "read_text",
+      "function_name": "test_both_ceremonies_import_the_same_gate",
+      "assertion_kind": "assertIs"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_doctrine_links.py",
+      "line_number": 311,
+      "operation_kind": "read_text",
+      "function_name": "test_validate_command_doc_documents_flag",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_doctrine_rule.py",
+      "line_number": 166,
+      "operation_kind": "read_text",
+      "function_name": "test_advisory_scorecard_classifies_rule_mechanical",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_doctrine_rule.py",
+      "line_number": 204,
+      "operation_kind": "is_file",
+      "function_name": "test_vendor_mirrors_carry_rule_version_marker",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_doctrine_rule.py",
+      "line_number": 218,
+      "operation_kind": "is_file",
+      "function_name": "test_vendor_mirror_body_contains_key_canonical_content",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_thresholds_rule.py",
+      "line_number": 310,
+      "operation_kind": "read_text",
+      "function_name": "test_advisory_scorecard_classifies_rule_mechanical",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_thresholds_rule.py",
+      "line_number": 349,
+      "operation_kind": "is_file",
+      "function_name": "test_vendor_mirrors_carry_rule_version_marker",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_thresholds_validator.py",
+      "line_number": 285,
+      "operation_kind": "read_text",
+      "function_name": "test_command_doc_documents_flag",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_complexity_thresholds_validator.py",
+      "line_number": 292,
+      "operation_kind": "read_text",
+      "function_name": "test_runbook_lists_complexity_thresholds_verb",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 104,
+      "operation_kind": "exists",
+      "function_name": "test_defect_fix_routing_rule_file_deleted",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 128,
+      "operation_kind": "read_text",
+      "function_name": "test_agents_md_has_defect_fix_routing_section",
+      "assertion_kind": "assertNotEqual"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 199,
+      "operation_kind": "read_text",
+      "function_name": "test_governance_doc_exists_with_three_sections",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 244,
+      "operation_kind": "read_text",
+      "function_name": "test_manifest_allowlist_no_longer_contains_defect_fix_routing",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 294,
+      "operation_kind": "read_text",
+      "function_name": "test_no_inbound_references_to_legacy_paths_in_live_files",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 321,
+      "operation_kind": "exists",
+      "function_name": "test_vendor_mirrors_of_defect_fix_routing_rule_were_removed_by_sync",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_defect_fix_routing_fold.py",
+      "line_number": 361,
+      "operation_kind": "read_text",
+      "function_name": "test_no_new_deps_no_shell_true_no_dataclass",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_distribution_invariant_catalog.py",
+      "line_number": 30,
+      "operation_kind": "exists",
+      "function_name": "test_catalog_exists_with_three_required_sections",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_distribution_invariant_catalog.py",
+      "line_number": 138,
+      "operation_kind": "exists",
+      "function_name": "test_catalog_well_formed_for_validate_and_mkdocs_strict",
+      "assertion_kind": "assertIsNotNone"
+    },
+    {
+      "file_path": "tests/governance/test_evaluation_event.py",
+      "line_number": 98,
+      "operation_kind": "exists",
+      "function_name": "test_schema_entry_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_evaluation_event.py",
+      "line_number": 106,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_has_required_fields",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_exemplar_corpus.py",
+      "line_number": 192,
+      "operation_kind": "is_file",
+      "function_name": "test_all_six_cluster_pool_stubs_exist",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_exemplar_corpus.py",
+      "line_number": 201,
+      "operation_kind": "read_text",
+      "function_name": "test_each_pool_stub_carries_canonical_id_frontmatter",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_exemplar_corpus.py",
+      "line_number": 219,
+      "operation_kind": "read_text",
+      "function_name": "test_each_pool_stub_cites_obpi_02_as_booking_event",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_exemplar_corpus.py",
       "line_number": 236,
       "operation_kind": "read_text",
       "function_name": "test_corpus_text_contains_no_personal_email",
-      "assertion_kind": "assertNotIn",
-      "context_hint": "utf-8"
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_foundation_grandfather_manifest.py",
+      "line_number": 129,
+      "operation_kind": "read_text",
+      "function_name": "test_guard_accepts_a_byte_identical_copy",
+      "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/governance/test_foundation_invariance_skill_enrichment.py",
-      "line_number": 128,
+      "line_number": 147,
       "operation_kind": "read_bytes",
       "function_name": "_assert_mirror_parity",
-      "assertion_kind": "assertTrue",
-      "context_hint": "SKILL.md"
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_handoff_migration.py",
+      "line_number": 144,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_canon_has_no_per_adr_write_path",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_historical_waiver_integration.py",
+      "line_number": 273,
+      "operation_kind": "read_text",
+      "function_name": "test_documentation_published_and_cites_lineage",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 259,
+      "operation_kind": "exists",
+      "function_name": "test_composition_rendered_event_defined_in_schema",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 273,
+      "operation_kind": "read_text",
+      "function_name": "test_composition_drift_detected_event_defined_in_schema",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 286,
+      "operation_kind": "read_text",
+      "function_name": "test_composition_rendered_required_fields_present",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 301,
+      "operation_kind": "read_text",
+      "function_name": "test_composition_drift_required_fields_present",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 368,
+      "operation_kind": "read_text",
+      "function_name": "test_scorecard_entry_present",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_invariant_coherence.py",
+      "line_number": 377,
+      "operation_kind": "read_text",
+      "function_name": "test_scorecard_row_cites_validator_module",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_invariants.py",
+      "line_number": 78,
+      "operation_kind": "exists",
+      "function_name": "test_schema_file_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_invariants.py",
+      "line_number": 82,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_additional_properties_false",
+      "assertion_kind": "assertIs"
+    },
+    {
+      "file_path": "tests/governance/test_invariants.py",
+      "line_number": 87,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_structural_witness_min_items_one",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_invariants.py",
+      "line_number": 94,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_required_keys_present",
+      "assertion_kind": "assertLessEqual"
+    },
+    {
+      "file_path": "tests/governance/test_invariants.py",
+      "line_number": 115,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_rejects_missing_id",
+      "assertion_kind": "assertRaises"
+    },
+    {
+      "file_path": "tests/governance/test_kind_invariance_docs.py",
+      "line_number": 27,
+      "operation_kind": "read_text",
+      "function_name": "test_behave_scenario_tagged_with_req",
+      "assertion_kind": "assertGreater"
+    },
+    {
+      "file_path": "tests/governance/test_kind_invariance_docs.py",
+      "line_number": 35,
+      "operation_kind": "read_text",
+      "function_name": "test_manpage_documents_kind_invariance",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_kind_invariance_docs.py",
+      "line_number": 43,
+      "operation_kind": "read_text",
+      "function_name": "test_runbook_cross_references_kind_invariance",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_kind_invariance_docs.py",
+      "line_number": 53,
+      "operation_kind": "read_text",
+      "function_name": "test_validator_tests_assert_semantics_not_strings",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/governance/test_kind_invariance_docs.py",
+      "line_number": 78,
+      "operation_kind": "read_text",
+      "function_name": "test_every_obpi_test_carries_covers_decorator",
+      "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/governance/test_req_coverage_record.py",
-      "line_number": 496,
+      "line_number": 388,
       "operation_kind": "exists",
       "function_name": "test_grandfathering_json_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "data/req_kind_grandfathering.json exists in the repository."
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_req_coverage_record.py",
-      "line_number": 502,
+      "line_number": 394,
       "operation_kind": "read_text",
       "function_name": "test_grandfathering_json_is_valid_json",
-      "assertion_kind": "assertIsInstance",
-      "context_hint": "data/req_kind_grandfathering.json contains valid JSON."
+      "assertion_kind": "assertIsInstance"
+    },
+    {
+      "file_path": "tests/governance/test_req_kind_discipline.py",
+      "line_number": 305,
+      "operation_kind": "read_text",
+      "function_name": "test_obpi_specify_skill_has_req_kind_authoring_section",
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_schema_sensitivity.py",
       "line_number": 120,
       "operation_kind": "read_text",
       "function_name": "test_existing_artifacts_lack_sensitivity_or_match_enum",
-      "assertion_kind": "assertEqual",
-      "context_hint": "No existing artifact carries a sensitivity value outside the registered enum."
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_security_sensitivity_rule.py",
+      "line_number": 138,
+      "operation_kind": "read_text",
+      "function_name": "test_agents_md_matrix_cites_rule_and_lists_every_cell",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_security_sensitivity_rule.py",
+      "line_number": 160,
+      "operation_kind": "read_text",
+      "function_name": "test_advisory_scorecard_classifies_rule_mechanical",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 101,
+      "line_number": 104,
       "operation_kind": "is_file",
       "function_name": "test_registry_file_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "missing "
-    },
-    {
-      "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 129,
-      "operation_kind": "is_file",
-      "function_name": "test_governance_readme_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "missing "
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
       "line_number": 132,
+      "operation_kind": "is_file",
+      "function_name": "test_governance_readme_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_security_surfaces_registry.py",
+      "line_number": 135,
       "operation_kind": "read_text",
       "function_name": "test_governance_readme_documents_contract",
-      "assertion_kind": "assertIn",
-      "context_hint": "ADR-0.0.22"
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 137,
+      "line_number": 140,
       "operation_kind": "read_text",
       "function_name": "test_governance_readme_records_bootstrap_exception",
-      "assertion_kind": "assertIn",
-      "context_hint": "bootstrap"
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 211,
+      "line_number": 220,
       "operation_kind": "is_file",
       "function_name": "test_validate_sensitivity_scope_not_authored",
-      "assertion_kind": "assertNotIn",
-      "context_hint": "trust_audits.py"
+      "assertion_kind": "assertNotIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 221,
+      "line_number": 230,
       "operation_kind": "is_file",
       "function_name": "test_security_review_attestation_authored_at_named_path",
-      "assertion_kind": "assertTrue",
-      "context_hint": "adr_audit.py"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 233,
+      "line_number": 242,
       "operation_kind": "read_text",
       "function_name": "test_security_sensitivity_rule_authored_at_named_path",
-      "assertion_kind": "assertTrue",
-      "context_hint": "security-sensitivity.md"
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_skill_self_close_drift.py",
+      "line_number": 119,
+      "operation_kind": "exists",
+      "function_name": "test_canon_skill_files_have_no_self_close",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_skill_self_close_drift.py",
+      "line_number": 151,
+      "operation_kind": "exists",
+      "function_name": "test_canon_rule_files_have_no_self_close",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/governance/test_skill_self_close_drift.py",
+      "line_number": 209,
+      "operation_kind": "read_text",
+      "function_name": "test_edited_skills_have_bumped_version",
+      "assertion_kind": "assertIsNotNone"
+    },
+    {
+      "file_path": "tests/governance/test_skill_self_close_drift.py",
+      "line_number": 265,
+      "operation_kind": "read_text",
+      "function_name": "test_vendor_mirrors_match_canonical_post_sync",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/governance/test_skill_self_close_drift.py",
+      "line_number": 298,
+      "operation_kind": "read_text",
+      "function_name": "test_pipeline_and_closeout_skills_cross_reference_dead_letter",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_status_vocab.py",
+      "line_number": 148,
+      "operation_kind": "read_text",
+      "function_name": "test_state_doctrine_contains_addendum",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/governance/test_surface_fidelity_composite.py",
+      "line_number": 180,
+      "operation_kind": "read_text",
+      "function_name": "test_precommit_cheap_subset_registration",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/governance/test_surface_fidelity_composite.py",
+      "line_number": 222,
+      "operation_kind": "read_text",
+      "function_name": "test_validate_manpage_documents_surface_fidelity",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/hooks/test_complexity_advisor_auto_chain.py",
+      "line_number": 347,
+      "operation_kind": "read_text",
+      "function_name": "test_tests_use_tempfile_and_covers",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/hooks/test_stop_turn_feedback.py",
+      "line_number": 183,
+      "operation_kind": "read_text",
+      "function_name": "test_block_appends_exactly_one_json_line",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/hooks/test_stop_turn_feedback.py",
+      "line_number": 201,
+      "operation_kind": "read_text",
+      "function_name": "test_over_cap_log_is_rewritten_keeping_newest_lines",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/hooks/test_stop_turn_feedback.py",
+      "line_number": 332,
+      "operation_kind": "read_text",
+      "function_name": "test_settings_json_wires_stop_hook_to_existing_script",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/justify/test_walkthrough.py",
+      "line_number": 380,
+      "operation_kind": "read_text",
+      "function_name": "test_rendered_markdown_matches_golden_fixture",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/knowledge/test_content_boundary_doctrine.py",
+      "line_number": 51,
+      "operation_kind": "exists",
+      "function_name": "test_doctrine_file_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/knowledge/test_content_boundary_doctrine.py",
+      "line_number": 134,
+      "operation_kind": "exists",
+      "function_name": "test_relocation_candidate_docs_still_present_and_nonempty",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/knowledge/test_progressive_disclosure_path.py",
+      "line_number": 38,
+      "operation_kind": "read_text",
+      "function_name": "test_all_tracer_slice_concepts_reachable",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/knowledge/test_progressive_disclosure_path.py",
+      "line_number": 79,
+      "operation_kind": "read_text",
+      "function_name": "test_concept_doc_names_bundle_root",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/models/test_exemplar.py",
+      "line_number": 396,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_declares_draft_2020_12",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/models/test_exemplar.py",
+      "line_number": 423,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_commit_sha_pattern",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/models/test_exemplar.py",
+      "line_number": 430,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_additional_properties_false_on_all_objects",
+      "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/policy/test_naming_conventions.py",
       "line_number": 74,
       "operation_kind": "is_dir",
       "function_name": "test_src_root_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "Sanity check: src/gzkit/ directory exists."
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 89,
       "operation_kind": "read_text",
       "function_name": "test_classifies_foundation_and_feature_by_semver",
-      "assertion_kind": "assertEqual",
-      "context_hint": "@covers REQ-0.0.17-05-02 \u2014 0.0.x \u2192 foundation; everything else \u2192 feature."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 102,
       "operation_kind": "read_text",
       "function_name": "test_records_error_for_missing_semver",
-      "assertion_kind": "assertEqual",
-      "context_hint": "@covers REQ-0.0.17-05-02 \u2014 missing semver: surfaces in receipt errors[]; no mutation."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 142,
       "operation_kind": "read_text",
       "function_name": "test_preserves_other_frontmatter_fields_and_inserts_kind_after_status",
-      "assertion_kind": "assertTrue",
-      "context_hint": "@covers REQ-0.0.17-05-03 \u2014 every non-kind field byte-identical; kind: after status:."
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 200,
       "operation_kind": "read_text",
       "function_name": "test_dry_run_does_not_mutate",
-      "assertion_kind": "assertTrue",
-      "context_hint": "@covers REQ-0.0.17-05-01 \u2014 --dry-run sets dry_run flag and writes no file changes."
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 256,
       "operation_kind": "read_text",
       "function_name": "test_emits_receipt_with_required_fields",
-      "assertion_kind": "assertIsInstance",
-      "context_hint": "@covers REQ-0.0.17-05-04 \u2014 receipt JSON has required keys + writes to disk."
+      "assertion_kind": "assertIsInstance"
     },
     {
       "file_path": "tests/scripts/test_backfill_adr_taxonomy.py",
       "line_number": 273,
       "operation_kind": "read_text",
       "function_name": "test_does_not_touch_ledger",
-      "assertion_kind": "assertEqual",
-      "context_hint": "@covers REQ-0.0.17-05-08 \u2014 ledger byte-identical before/after."
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/scripts/test_session_orientation.py",
+      "line_number": 325,
+      "operation_kind": "read_text",
+      "function_name": "test_orientation_source_has_no_dual_scan_markers",
+      "assertion_kind": "assertNotIn"
     },
     {
       "file_path": "tests/skills/test_complexity_advisor.py",
-      "line_number": 269,
+      "line_number": 244,
+      "operation_kind": "read_bytes",
+      "function_name": "test_each_vendor_mirror_matches_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/skills/test_complexity_advisor.py",
+      "line_number": 277,
       "operation_kind": "read_text",
       "function_name": "test_test_module_contains_no_personal_email_addresses",
-      "assertion_kind": "assertTrue",
-      "context_hint": "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/skills/test_complexity_guide.py",
-      "line_number": 257,
+      "line_number": 232,
+      "operation_kind": "read_bytes",
+      "function_name": "test_each_vendor_mirror_matches_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/skills/test_complexity_guide.py",
+      "line_number": 265,
       "operation_kind": "read_text",
       "function_name": "test_test_module_contains_no_personal_email_addresses",
-      "assertion_kind": "assertTrue",
-      "context_hint": "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/skills/test_ghi_triage_deliverable.py",
       "line_number": 238,
       "operation_kind": "exists",
       "function_name": "test_cache_dir_auto_created_when_missing",
-      "assertion_kind": "assertFalse",
-      "context_hint": "Portability: a fresh checkout should not need a manual mkdir."
+      "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/skills/test_gz_complexity_distill.py",
-      "line_number": 337,
+      "line_number": 306,
+      "operation_kind": "read_bytes",
+      "function_name": "test_each_vendor_mirror_matches_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/skills/test_gz_complexity_distill.py",
+      "line_number": 340,
       "operation_kind": "read_text",
       "function_name": "test_test_module_contains_no_personal_email_addresses",
-      "assertion_kind": "assertTrue",
-      "context_hint": "[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+"
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/skills/test_gz_justify_complexity_amendment.py",
+      "line_number": 122,
+      "operation_kind": "read_text",
+      "function_name": "test_vendor_mirrors_byte_identical",
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/skills/test_namespace_router_surface_sync.py",
       "line_number": 49,
       "operation_kind": "is_file",
       "function_name": "test_each_router_byte_equivalent_in_every_vendor_mirror",
-      "assertion_kind": "assertTrue",
-      "context_hint": "SKILL.md"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/skills/test_namespace_router_surface_sync.py",
       "line_number": 73,
       "operation_kind": "is_file",
       "function_name": "test_each_router_byte_equivalent_in_wheel_pkg_copy",
-      "assertion_kind": "assertTrue",
-      "context_hint": "SKILL.md"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/skills/test_namespace_routers.py",
       "line_number": 50,
       "operation_kind": "is_file",
       "function_name": "test_all_six_router_files_exist_under_canonical_skills_root",
-      "assertion_kind": "assertTrue",
-      "context_hint": "canonical router skill missing: "
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/skills/test_namespace_routers.py",
       "line_number": 88,
       "operation_kind": "is_dir",
       "function_name": "test_intent_table_present_and_every_routed_skill_is_a_canonical_slug",
-      "assertion_kind": "assertRegex",
-      "context_hint": ": body must contain a '| Intent | Skill |' header row"
+      "assertion_kind": "assertRegex"
     },
     {
       "file_path": "tests/skills/test_router_coverage_completion.py",
       "line_number": 208,
       "operation_kind": "read_bytes",
       "function_name": "test_gz_chores_byte_equivalent_in_pkg_and_every_vendor_mirror",
-      "assertion_kind": "assertTrue",
-      "context_hint": "SKILL.md"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_adr_audit_predicates.py",
       "line_number": 154,
       "operation_kind": "read_text",
       "function_name": "test_agents_md_matrix_names_third_axis",
-      "assertion_kind": "assertIn",
-      "context_hint": "REQ-0.0.22-04-06"
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_adr_management_confirm.py",
+      "line_number": 43,
+      "operation_kind": "read_text",
+      "function_name": "test_final_decision_recorded_in_brief",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_adr_management_confirm.py",
+      "line_number": 98,
+      "operation_kind": "exists",
+      "function_name": "test_no_absorbed_adr_module_introduced",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/test_audit_pipeline.py",
+      "line_number": 362,
+      "operation_kind": "read_text",
+      "function_name": "test_attestation_section_rendered_with_event",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_audit_pipeline.py",
+      "line_number": 390,
+      "operation_kind": "read_text",
+      "function_name": "test_gate_results_table_rendered",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_audit_pipeline.py",
+      "line_number": 770,
+      "operation_kind": "read_text",
+      "function_name": "test_audit_md_contains_obpi_summary_section",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_audit_pipeline.py",
       "line_number": 783,
       "operation_kind": "read_text",
       "function_name": "test_audit_md_contains_generated_timestamp",
-      "assertion_kind": "assertIn",
-      "context_hint": "Rendered AUDIT.md includes a Generated timestamp from template."
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_audit_pipeline.py",
       "line_number": 807,
       "operation_kind": "read_text",
       "function_name": "test_audit_md_verification_results_section",
-      "assertion_kind": "assertIn",
-      "context_hint": "Rendered AUDIT.md has Verification Results section (not old Results)."
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_chores.py",
+      "line_number": 38,
+      "operation_kind": "read_text",
+      "function_name": "test_classifier_section_in_rule",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_chores.py",
+      "line_number": 171,
+      "operation_kind": "is_dir",
+      "function_name": "test_no_runtime_state_relocation",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_closeout_migration.py",
+      "line_number": 165,
+      "operation_kind": "read_text",
+      "function_name": "test_primary_path_uses_decisions_not_config_gate",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_doc_coverage.py",
       "line_number": 753,
       "operation_kind": "exists",
       "function_name": "test_real_manifest_validates_against_schema",
-      "assertion_kind": "assertTrue",
-      "context_hint": "doc_coverage_manifest.schema.json"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_doc_coverage.py",
       "line_number": 952,
       "operation_kind": "read_text",
       "function_name": "test_doc_coverage_in_chore_registry",
-      "assertion_kind": "assertIn",
-      "context_hint": "registry.json"
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_doc_coverage.py",
       "line_number": 958,
       "operation_kind": "read_text",
       "function_name": "test_doc_coverage_chore_frequency",
-      "assertion_kind": "assertEqual",
-      "context_hint": "registry.json"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_doc_coverage.py",
       "line_number": 964,
       "operation_kind": "is_dir",
       "function_name": "test_doc_coverage_chore_dir_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "doc-coverage"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_doc_coverage.py",
       "line_number": 971,
       "operation_kind": "exists",
       "function_name": "test_doc_coverage_schema_exists",
-      "assertion_kind": "assertTrue",
-      "context_hint": "doc-coverage-report.schema.json"
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_doctrine_retirement.py",
+      "line_number": 163,
+      "operation_kind": "is_file",
+      "function_name": "test_record_remains_on_disk",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_doctrine_retirement.py",
+      "line_number": 176,
+      "operation_kind": "read_text",
+      "function_name": "test_superseded_marker_is_seated_at_the_guidance",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_doctrine_retirement.py",
+      "line_number": 209,
+      "operation_kind": "read_text",
+      "function_name": "test_decision_text_is_preserved_not_redacted",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_foundation_doctrine_retirement.py",
+      "line_number": 228,
+      "operation_kind": "read_text",
+      "function_name": "test_gz_design_kind_question_enumerates_feature_and_pool_only",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_e2e.py",
+      "line_number": 153,
+      "operation_kind": "read_text",
+      "function_name": "test_foundation_triage_skill_doc_exists_with_template_form",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_e2e.py",
+      "line_number": 169,
+      "operation_kind": "read_text",
+      "function_name": "test_foundation_kind_example_in_plan_create_manpage",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_e2e.py",
+      "line_number": 184,
+      "operation_kind": "read_text",
+      "function_name": "test_both_runbooks_contain_foundation_triage_section",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_e2e.py",
+      "line_number": 197,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_doc_example_contains_real_output_not_placeholder",
+      "assertion_kind": "assertNotIn"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_rubric.py",
+      "line_number": 277,
+      "operation_kind": "read_text",
+      "function_name": "test_governance_triage_vocabulary_exists",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_rubric.py",
+      "line_number": 285,
+      "operation_kind": "read_text",
+      "function_name": "test_feature_unblocking_count_term_registered",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_rubric.py",
+      "line_number": 302,
+      "operation_kind": "exists",
+      "function_name": "test_schema_file_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_rubric.py",
+      "line_number": 338,
+      "operation_kind": "read_text",
+      "function_name": "test_schema_rejects_extra_fields",
+      "assertion_kind": "assertRaises"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 44,
+      "operation_kind": "exists",
+      "function_name": "test_skill_md_exists_at_canonical_path",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 92,
+      "operation_kind": "exists",
+      "function_name": "test_triage_run_leaves_governance_surfaces_untouched",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 162,
+      "operation_kind": "exists",
+      "function_name": "test_wheel_copy_byte_equals_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 170,
+      "operation_kind": "exists",
+      "function_name": "test_claude_mirror_byte_equals_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 178,
+      "operation_kind": "exists",
+      "function_name": "test_github_mirror_byte_equals_canonical",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_foundation_triage_skill.py",
+      "line_number": 186,
+      "operation_kind": "exists",
+      "function_name": "test_agents_mirror_byte_equals_canonical",
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 457,
+      "line_number": 476,
       "operation_kind": "read_text",
       "function_name": "test_all_hook_commands_anchor_to_project_dir",
-      "assertion_kind": "assertTrue",
-      "context_hint": "settings.json declares no hook commands"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 490,
+      "line_number": 509,
       "operation_kind": "read_text",
       "function_name": "test_all_hook_commands_anchor_to_git_toplevel",
-      "assertion_kind": "assertTrue",
-      "context_hint": ".codex/hooks.json declares no hook commands"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 1136,
+      "line_number": 1166,
       "operation_kind": "exists",
       "function_name": "test_self_audits_when_receipt_missing_and_allows_on_pass",
-      "assertion_kind": "assertEqual",
-      "context_hint": "GHI #191: hook self-runs gz plan audit when receipt missing; allows on PASS."
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_hooks.py",
-      "line_number": 1210,
+      "line_number": 1240,
       "operation_kind": "exists",
       "function_name": "test_allows_when_self_audit_writes_fail_receipt_with_nonzero_exit",
-      "assertion_kind": "assertEqual",
-      "context_hint": "Real `gz plan audit` writes a FAIL receipt AND exits 1 when the brief\n        has CREATE-path gaps (the common new-OBPI case). The hook must re-check\n        the freshly written receipt regardless of the subprocess exit code \u2014\n        FAIL is a valid receipt verdict per check_audit_receipt's contract.\n        "
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 135,
+      "operation_kind": "open",
+      "function_name": "test_pyproject_uses_hatchling_native_syntax",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 174,
+      "operation_kind": "open",
+      "function_name": "test_pyproject_preserves_packages_declaration",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 193,
+      "operation_kind": "is_dir",
+      "function_name": "test_importlib_resources_lists_chore_slugs",
+      "assertion_kind": "assertGreaterEqual"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 210,
+      "operation_kind": "read_text",
+      "function_name": "test_importlib_resources_resolves_registry_json",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 228,
+      "operation_kind": "read_text",
+      "function_name": "test_gz_spec_extends_datas_with_chores",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_packaging.py",
+      "line_number": 254,
+      "operation_kind": "open",
+      "function_name": "test_pyinstaller_dependency_remains_declared",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 42,
+      "operation_kind": "is_dir",
+      "function_name": "test_persona_files_retained_at_authored_source",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 53,
+      "operation_kind": "is_dir",
+      "function_name": "test_persona_files_present_in_package_surface",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 72,
+      "operation_kind": "read_bytes",
+      "function_name": "test_dual_surface_byte_parity",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 81,
+      "operation_kind": "is_file",
+      "function_name": "test_package_init_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 93,
+      "operation_kind": "read_text",
+      "function_name": "test_pyproject_has_personas_wheel_include",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 134,
+      "operation_kind": "is_file",
+      "function_name": "test_vendor_mirrors_remain_transformed_renders",
+      "assertion_kind": "assertNotEqual"
+    },
+    {
+      "file_path": "tests/test_personas.py",
+      "line_number": 238,
+      "operation_kind": "read_text",
+      "function_name": "test_manpage_and_runbook_mention_personas_scaffolding",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_plan_command.py",
+      "line_number": 35,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_version_bumped_to_6_5_or_higher",
+      "assertion_kind": "assertIsNotNone"
+    },
+    {
+      "file_path": "tests/test_plan_command.py",
+      "line_number": 48,
+      "operation_kind": "read_text",
+      "function_name": "test_last_reviewed_bumped_to_landing_date_or_later",
+      "assertion_kind": "assertIsNotNone"
+    },
+    {
+      "file_path": "tests/test_plan_command.py",
+      "line_number": 61,
+      "operation_kind": "read_bytes",
+      "function_name": "test_claude_mirror_is_byte_equivalent_to_canonical",
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_quality.py",
-      "line_number": 195,
+      "line_number": 201,
       "operation_kind": "read_text",
       "function_name": "test_no_shell_true_in_quality_source",
-      "assertion_kind": "assertNotRegex",
-      "context_hint": "No source line in quality.py opts into shell=True."
+      "assertion_kind": "assertNotRegex"
     },
     {
       "file_path": "tests/test_quality.py",
-      "line_number": 200,
+      "line_number": 206,
       "operation_kind": "read_text",
       "function_name": "test_subprocess_run_uses_non_shell_form",
-      "assertion_kind": "assertNotRegex",
-      "context_hint": "Every ``subprocess.run`` call in quality.py is shell=False (default)."
+      "assertion_kind": "assertNotRegex"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 684,
+      "operation_kind": "exists",
+      "function_name": "test_rules_py_does_not_exist",
+      "assertion_kind": "assertFalse"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 692,
+      "operation_kind": "exists",
+      "function_name": "test_rules_init_exists",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 705,
+      "operation_kind": "exists",
+      "function_name": "test_dual_surface_rule_count",
+      "assertion_kind": "assertGreater"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 725,
+      "operation_kind": "exists",
+      "function_name": "test_dual_surface_byte_parity",
+      "assertion_kind": "assertEqual"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 797,
+      "operation_kind": "read_text",
+      "function_name": "test_req06_pyproject_has_rules_wheel_include",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 1073,
+      "operation_kind": "open",
+      "function_name": "test_pyproject_includes_rules_json",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_rules.py",
+      "line_number": 1097,
+      "operation_kind": "read_text",
+      "function_name": "test_sync_surfaces_has_rules_classifier_integration",
+      "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_skill_manpage_coverage.py",
       "line_number": 44,
       "operation_kind": "is_file",
       "function_name": "test_every_active_skill_has_a_manpage",
-      "assertion_kind": "assertEqual",
-      "context_hint": "active skills missing manpages: "
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_skill_manpage_coverage.py",
       "line_number": 54,
       "operation_kind": "is_file",
       "function_name": "test_every_manpage_has_expected_heading",
-      "assertion_kind": "assertEqual",
-      "context_hint": "# /"
+      "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/test_skill_manpage_coverage.py",
       "line_number": 67,
       "operation_kind": "read_text",
       "function_name": "test_every_active_skill_is_linked_from_index",
-      "assertion_kind": "assertTrue",
-      "context_hint": "utf-8"
+      "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_skill_naming.py",
       "line_number": 38,
       "operation_kind": "exists",
       "function_name": "test_skill_dirs_and_frontmatter_names_are_kebab_case",
-      "assertion_kind": "assertTrue",
-      "context_hint": "Missing skills root: "
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 181,
+      "operation_kind": "exists",
+      "function_name": "test_skill_files_present_in_package_surface",
+      "assertion_kind": "assertGreater"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 186,
+      "operation_kind": "is_dir",
+      "function_name": "test_skill_files_retained_at_authored_source",
+      "assertion_kind": "assertGreaterEqual"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 204,
+      "operation_kind": "exists",
+      "function_name": "test_dual_surface_byte_parity",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 229,
+      "operation_kind": "read_text",
+      "function_name": "test_all_skill_md_files_have_frontmatter",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 236,
+      "operation_kind": "is_dir",
+      "function_name": "test_skills_count_is_full",
+      "assertion_kind": "assertGreaterEqual"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 247,
+      "operation_kind": "read_text",
+      "function_name": "test_pyproject_includes_skills_package_data",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 443,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_surface_sync_rule_documents_bootstrap_semantics",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 467,
+      "operation_kind": "read_text",
+      "function_name": "test_init_manpage_documents_skills_scaffolding",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_skills.py",
+      "line_number": 543,
+      "operation_kind": "exists",
+      "function_name": "test_skills_package_not_flat_module",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_sync_surfaces.py",
+      "line_number": 528,
+      "operation_kind": "exists",
+      "function_name": "test_manifest_records_skills_control_surface",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_sync_surfaces.py",
+      "line_number": 579,
+      "operation_kind": "read_text",
+      "function_name": "test_agent_sync_feature_has_req_tagged_scenario",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_sync_surfaces.py",
+      "line_number": 590,
+      "operation_kind": "read_text",
+      "function_name": "test_skill_surface_sync_rule_documents_broadened_sync",
+      "assertion_kind": "assert"
+    },
+    {
+      "file_path": "tests/test_taxonomy_validator_nominal.py",
+      "line_number": 75,
+      "operation_kind": "read_text",
+      "function_name": "test_adr_0017_contains_amendment_block",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_taxonomy_validator_nominal.py",
+      "line_number": 95,
+      "operation_kind": "read_text",
+      "function_name": "test_adr_0018_contains_amendment_block",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_taxonomy_validator_nominal.py",
+      "line_number": 112,
+      "operation_kind": "read_text",
+      "function_name": "test_trust_audits_audit_annotation_present",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_taxonomy_validator_nominal.py",
+      "line_number": 130,
+      "operation_kind": "is_dir",
+      "function_name": "test_no_existing_foundation_adr_was_renamed",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 412,
+      "operation_kind": "is_dir",
+      "function_name": "test_authored_canonical_surface_populated",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 427,
+      "operation_kind": "is_dir",
+      "function_name": "test_dual_surface_byte_parity",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 464,
+      "operation_kind": "is_dir",
+      "function_name": "test_skills_subdir_retained",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 472,
+      "operation_kind": "read_text",
+      "function_name": "test_pyproject_includes_template_markdown",
+      "assertion_kind": "assertIn"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 709,
+      "operation_kind": "read_text",
+      "function_name": "test_init_manpage_has_templates_scaffolding_section",
+      "assertion_kind": "assertTrue"
+    },
+    {
+      "file_path": "tests/test_templates.py",
+      "line_number": 719,
+      "operation_kind": "read_text",
+      "function_name": "test_runbook_has_templates_section",
+      "assertion_kind": "assertTrue"
     }
   ],
-  "generated_at": "2026-06-01T00:13:19.910175+00:00"
+  "generated_at": "2026-08-03T23:11:38.637897+00:00"
 }
