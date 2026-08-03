@@ -58,6 +58,54 @@ def _write_index(root: Path, body: str) -> Path:
     return target
 
 
+class H1TitleSeparatorTests(unittest.TestCase):
+    """The H1 separator is a convention with two spellings, not one.
+
+    The title regex required a literal `:` after the ADR id, so every ADR
+    written `# ADR-x — Title` fell through to the stem fallback and rendered
+    its own id in the Title column. Eleven of 86 canonical ADRs did, each one
+    discarding an authored human title the file actually carried.
+
+    The stem fallback itself is correct behaviour and must survive — an H1 that
+    genuinely carries no title has nothing to extract — so the fallback case is
+    asserted alongside, otherwise widening the separator could degenerate into
+    "match anything" undetected.
+    """
+
+    def _title_for_h1(self, root: Path, h1: str) -> str:
+        adr_id = "ADR-0.9.9-sample-work"
+        adr_dir = root / "docs" / "design" / "adr" / "pre-release" / adr_id
+        adr_dir.mkdir(parents=True, exist_ok=True)
+        (adr_dir / f"{adr_id}.md").write_text(
+            f"---\nid: {adr_id}\nstatus: Validated\nkind: feature\n"
+            f"semver: 0.9.9\nlane: heavy\ndate: 2026-03-15\n---\n\n"
+            f"{h1}\n\n## Intent\n\nBody.\n",
+            encoding="utf-8",
+        )
+        rows = collect_adr_rows(root)
+        self.assertEqual(len(rows), 1)
+        return rows[0].title
+
+    def test_em_dash_separator_yields_the_authored_title(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            title = self._title_for_h1(
+                Path(tmp), "# ADR-0.9.9 — Config-First Resolution Discipline"
+            )
+            self.assertEqual(title, "Config-First Resolution Discipline")
+
+    def test_colon_separator_still_yields_the_authored_title(self) -> None:
+        """Regression guard: the pre-existing spelling must keep working."""
+        with tempfile.TemporaryDirectory() as tmp:
+            title = self._title_for_h1(Path(tmp), "# ADR-0.9.9: Config-First Resolution")
+            self.assertEqual(title, "Config-First Resolution")
+
+    def test_h1_carrying_no_title_still_falls_back_to_the_stem(self) -> None:
+        """Negative control: absent title is not the same as unparsed title."""
+        with tempfile.TemporaryDirectory() as tmp:
+            title = self._title_for_h1(Path(tmp), "# ADR-0.9.9-sample-work")
+            self.assertEqual(title, "ADR-0.9.9-sample-work")
+
+
 class CollectAdrRowsTests(unittest.TestCase):
     def test_walks_foundation_and_pre_release_subdirs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

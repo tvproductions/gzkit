@@ -29,7 +29,12 @@ SOURCE_OF_TRUTH_NOTE = (
     "`gz validate --adr-status-fresh`."
 )
 
-_HEADER_TITLE_RE = re.compile(r"^#\s+(ADR-\S+):\s*(.+?)\s*$")
+# The H1 separator has two authored spellings in the corpus -- `# ADR-x: Title`
+# and `# ADR-x — Title`. Matching only the colon sent every em-dash ADR to the
+# stem fallback, so 11 of 86 rendered their own id in the Title column while the
+# file carried a real authored title. The fallback itself stays correct: an H1
+# with no separator genuinely has no title to extract.
+_HEADER_TITLE_RE = re.compile(r"^#\s+(ADR-\S+)\s*[:—–]\s*(.+?)\s*$")
 _TABLE_ROW_LINK_RE = re.compile(r"\[([^\]]+)\]")
 _SEMVER_RE = re.compile(r"^ADR-(\d+)\.(\d+)\.(\d+)")
 
