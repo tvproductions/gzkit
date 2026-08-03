@@ -1,3 +1,4 @@
+import json
 import unittest
 from pathlib import Path
 
@@ -652,3 +653,109 @@ class TestPlanCreateKindFoundation(unittest.TestCase):
             content,
             msg="runbook must cross-reference the `## Why foundation tier?` convention",
         )
+
+
+class FoundationMembraneSeatedAtTheSharedWriter(unittest.TestCase):
+    """GHI #734 — the third `adr_created` ingress bypassed the foundation membrane.
+
+    ADR-0.34.0 closed the `foundation` kind to new authoring. OBPI-0.34.0-05
+    sealed the `gz register-adrs` and first-run `gz init` doors, but the shared
+    helper `register_adr_in_ledger` — wielded by `gz plan create` and
+    `gz interview adr` — never read `kind` and never consulted the grandfather
+    manifest. Guarding doors instead of the writer means every future caller
+    bypasses the membrane for free.
+    """
+
+    _FOUNDATION_ID = "ADR-0.0.99-hand-placed-foundation"
+
+    def _write_package(self, root: Path, adr_id: str, kind: str) -> Path:
+        sub = "foundation" if kind == "foundation" else "pre-release"
+        adr_dir = root / "docs" / "design" / "adr" / sub / adr_id
+        adr_dir.mkdir(parents=True, exist_ok=True)
+        adr_file = adr_dir / f"{adr_id}.md"
+        adr_file.write_text(
+            f"---\nid: {adr_id}\nstatus: Draft\nkind: {kind}\nsemver: 0.0.99\n"
+            f"lane: lite\nparent: PRD-GZKIT-1.0.0\n---\n\n# {adr_id}: probe\n",
+            encoding="utf-8",
+        )
+        return adr_file
+
+    def _register(self, adr_file: Path, ledger_path: Path) -> None:
+        from gzkit.commands.plan import register_adr_in_ledger
+
+        register_adr_in_ledger(
+            canonical_parent="PRD-GZKIT-1.0.0",
+            lane="lite",
+            adr_file=adr_file,
+            ledger_path=ledger_path,
+        )
+
+    def test_ungrandfathered_foundation_is_refused_and_books_nothing(self) -> None:
+        """The prohibited package must not reach Layer-2 through the shared writer."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            adr_file = self._write_package(root, self._FOUNDATION_ID, "foundation")
+
+            with self.assertRaises(SystemExit) as ctx:
+                self._register(adr_file, ledger_path)
+
+            self.assertEqual(ctx.exception.code, 3, msg="membrane refusal is fail-closed")
+            self.assertFalse(
+                Ledger(ledger_path).has_adr_created(self._FOUNDATION_ID),
+                msg="a refused foundation package must leave no adr_created event",
+            )
+
+    def test_feature_kind_still_books_through_the_same_writer(self) -> None:
+        """The membrane refuses `foundation`, never the kinds that remain open."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            adr_id = "ADR-0.99.0-open-kind-probe"
+            adr_file = self._write_package(root, adr_id, "feature")
+
+            self._register(adr_file, ledger_path)
+
+            self.assertTrue(
+                Ledger(ledger_path).has_adr_created(adr_id),
+                msg="feature-kind ADRs must still register",
+            )
+
+    def test_grandfathered_foundation_still_books(self) -> None:
+        """The guard is manifest-aware, never a bare `kind: foundation` refusal.
+
+        Refusing on kind alone would reject the whole grandfathered roster and
+        contradict the closure it enforces (GHI #706, brief Requirement 5).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            adr_file = self._write_package(root, self._FOUNDATION_ID, "foundation")
+            manifest = root / "data" / "foundation_grandfather.json"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text(
+                json.dumps(
+                    [
+                        {
+                            "id": self._FOUNDATION_ID,
+                            "title": "ADR-0.0.99 — hand-placed foundation probe",
+                            "semver": "0.0.99",
+                            "frozen_at": "2026-08-02",
+                        }
+                    ]
+                ),
+                encoding="utf-8",
+            )
+
+            self._register(adr_file, ledger_path)
+
+            self.assertTrue(
+                Ledger(ledger_path).has_adr_created(self._FOUNDATION_ID),
+                msg="a grandfathered foundation package must still register",
+            )

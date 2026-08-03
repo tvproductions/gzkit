@@ -6,6 +6,11 @@ from datetime import date
 from pathlib import Path
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root
+from gzkit.commands.register import (
+    grandfathered_foundation_ids,
+    is_ungrandfathered_foundation,
+    warn_foundation_refused,
+)
 from gzkit.decomposition import build_checklist_seed, compute_scorecard, default_dimension_scores
 from gzkit.ledger import Ledger, adr_created_event
 from gzkit.templates import render_template
@@ -287,6 +292,14 @@ def register_adr_in_ledger(
     (via the ledger's rename-aware ``has_adr_created``), the append is
     skipped with a warning. Prevents the duplicate-emission class surfaced
     in GHI #279.
+
+    GHI #734: the foundation membrane (ADR-0.34.0 Foundation Sunset) is
+    enforced HERE, at the shared writer, rather than replicated at each
+    calling door. OBPI-0.34.0-05 sealed the ``gz register-adrs`` and
+    first-run ``gz init`` ingresses; this helper was the third and was
+    unguarded, so any present or future internal caller bypassed the
+    membrane for free. Guarding the writer makes the membrane hold for
+    callers that do not exist yet.
     """
     canonical_id = adr_file.parent.name
     if not CANONICAL_ADR_ID_RE.match(canonical_id):
@@ -299,6 +312,10 @@ def register_adr_in_ledger(
             "Rename the directory to ADR-<semver>-<slug> and run "
             "[bold]gz register-adrs --all[/bold] to recover."
         )
+        sys.exit(3)
+    grandfathered = grandfathered_foundation_ids(get_project_root())
+    if is_ungrandfathered_foundation(adr_file, canonical_id, grandfathered):
+        warn_foundation_refused(canonical_id)
         sys.exit(3)
     ledger = Ledger(ledger_path)
     if ledger.has_adr_created(canonical_id):
