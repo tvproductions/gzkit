@@ -37,6 +37,7 @@ from gzkit.ledger import (
     obpi_created_event,
 )
 from gzkit.ledger_events import obpi_unparked_event
+from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.obpi_lifecycle import parked_at
 
 # REQ-0.0.17-03-02 / -03 — kind/semver binding regex.
@@ -53,12 +54,16 @@ def _adr_bucket_for_kind(kind: str) -> str:
     return "foundation" if kind == "foundation" else "pre-release"
 
 
-def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
+def _validate_promotion_kind_semver(kind: str | None, semver: str, project_root: Path) -> None:
     """Validate --kind and its binding to --semver. Exits 1 on failure.
 
     REQ-0.0.17-03-01 -- --kind required; pool rejected (pool is the source).
     REQ-0.0.17-03-02 -- foundation requires 0.0.x semver.
     REQ-0.0.17-03-03 -- feature rejects 0.0.x semver.
+
+    The closed-kind refusal is conditioned on ``foundation_kind_is_closed`` --
+    closure is a project-local decision, so an adopter who never sunset the kind
+    promotes into it normally (ADR-0.34.0 § Decision; GHI #740).
     """
     if kind is None:
         console.print("[red]ERROR:[/red] --kind is required for promotion. Choose one of:")
@@ -68,7 +73,7 @@ def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
             "requires --semver NOT matching 0.0.x"
         )
         raise SystemExit(1)
-    if kind == "foundation":
+    if kind == "foundation" and foundation_kind_is_closed(project_root):
         console.print(
             "[red]ERROR:[/red] --kind foundation was requested, but the foundation "
             "kind is closed to new authoring by ADR-0.34.0 (Foundation Sunset). It "
@@ -92,6 +97,20 @@ def _validate_promotion_kind_semver(kind: str | None, semver: str) -> None:
             f"[red]ERROR:[/red] --kind feature rejects 0.0.x semver (got {semver!r}). "
             "Feature ADRs carry release-carrying semver (0.y.z and up). "
             "If this is infrastructure work, use --kind foundation."
+        )
+        raise SystemExit(1)
+    # REQ-0.0.17-03-02's half of the binding, which this docstring has always
+    # declared and the code never implemented. Only the feature-side twin above
+    # existed; foundation + non-0.0.x was unreachable while the closed-kind
+    # refusal short-circuited above it, so nothing surfaced the gap. Conditioning
+    # that refusal on the project-local decision (GHI #740) makes it reachable for
+    # adopters, where it would otherwise promote ADR-0.6.0 INTO foundation/ and
+    # break the ADR-0.0.17 binding that `gz validate --taxonomy` enforces.
+    if kind == "foundation" and not _FOUNDATION_SEMVER_RE.match(semver):
+        console.print(
+            f"[red]ERROR:[/red] --kind foundation requires 0.0.x semver (got {semver!r}). "
+            "Foundation ADRs carry infrastructure semver (0.0.x). "
+            "If this is release-carrying work, use --kind feature."
         )
         raise SystemExit(1)
 
@@ -118,8 +137,11 @@ def _build_adr_promotion_plan(
     caller's guard. ADR-0.34.0 closed the kind; a check that lives only in the
     command handler is reopened by the next caller that builds a plan directly
     (AGENTS.md § DO IT RIGHT 1 — fix the class of failure, not the instance).
+
+    Conditioned on the project-local closure decision, same as the CLI guard
+    (ADR-0.34.0 § Decision; GHI #740).
     """
-    if kind == "foundation":
+    if kind == "foundation" and foundation_kind_is_closed(project_root):
         msg = (
             "kind='foundation' was requested, but the foundation kind is closed "
             "to new authoring by ADR-0.34.0 (Foundation Sunset). It remains a "
@@ -358,7 +380,7 @@ def adr_promote_cmd(
 ) -> None:
     """Promote a pool ADR into canonical ADR package structure."""
     # REQ-0.0.17-03-01/-02/-03/-04: validate kind/semver atomically before any I/O.
-    _validate_promotion_kind_semver(kind, semver)
+    _validate_promotion_kind_semver(kind, semver, get_project_root())
     assert kind is not None and kind != "pool"  # noqa: S101 — narrowed by validator above
 
     config = ensure_initialized()

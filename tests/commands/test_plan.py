@@ -695,6 +695,12 @@ class FoundationMembraneSeatedAtTheSharedWriter(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            # The membrane enforces a project-local decision, so the project must
+            # have made it — the manifest's presence IS the closure (GHI #740).
+            # A bare `_quick_init` tree is an adopter, where the package is
+            # legitimately admitted.
+            Path("data").mkdir(parents=True, exist_ok=True)
+            Path("data/foundation_grandfather.json").write_text("[]", encoding="utf-8")
             root = Path.cwd()
             ledger_path = root / ".gzkit" / "ledger.jsonl"
             adr_file = self._write_package(root, self._FOUNDATION_ID, "foundation")

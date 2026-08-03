@@ -38,6 +38,7 @@ from gzkit.ledger import (
     prd_created_event,
     project_init_event,
 )
+from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.personas import scaffold_core_personas
 from gzkit.rules import scaffold_core_rules
 from gzkit.skills import scaffold_core_skills
@@ -876,6 +877,7 @@ def _register_existing_artifacts(
 
     # Register ADRs
     grandfathered = grandfathered_foundation_ids(project_root)
+    kind_is_closed = foundation_kind_is_closed(project_root)
     for adr_file, meta in zip(adr_files, adr_metadata, strict=True):
         adr_id = meta["id"]
         parent = meta.get("parent", prd_ids[0] if prd_ids else "")
@@ -883,7 +885,9 @@ def _register_existing_artifacts(
             console.print(f"  Skipped ADR (already registered): {adr_id}")
             continue
         # Registration membrane (GHI #706) — second door of the same guard.
-        if is_ungrandfathered_foundation(adr_file, adr_id, grandfathered):
+        if is_ungrandfathered_foundation(
+            adr_file, adr_id, grandfathered, kind_is_closed=kind_is_closed
+        ):
             warn_foundation_refused(adr_id)
             continue
         ledger.append(adr_created_event(adr_id, parent, mode))

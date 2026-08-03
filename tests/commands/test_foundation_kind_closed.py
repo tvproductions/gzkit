@@ -13,6 +13,7 @@ from tempfile import TemporaryDirectory
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event
+from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.traceability import covers
 from gzkit.validate_pkg.document import validate_document
 from tests.commands.common import CliRunner, _quick_init
@@ -24,6 +25,33 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
     guardrail-feedback prose, while the schema enum / argparse choices keep
     `foundation` so grandfathered on-disk ADRs still validate.
     """
+
+    @staticmethod
+    def _close_the_kind() -> Path:
+        """Record the project-local decision to sunset `foundation` (ADR-0.34.0).
+
+        Closure is project-local, not framework-wide: the manifest's PRESENCE is
+        the decision (GHI #740). A bare `_quick_init` temp project is an ADOPTER
+        — no manifest, kind open — so every test asserting gzkit's own refusal
+        must first put the project in gzkit's state. Without this the doors are
+        correctly open and the refusal assertions are measuring an adopter.
+        """
+        manifest = Path("data") / "foundation_grandfather.json"
+        manifest.parent.mkdir(parents=True, exist_ok=True)
+        manifest.write_text(
+            json.dumps(
+                [
+                    {
+                        "id": "ADR-0.0.1-seed",
+                        "title": "Seed",
+                        "semver": "0.0.1",
+                        "frozen_at": "2026-07-31",
+                    }
+                ]
+            ),
+            encoding="utf-8",
+        )
+        return manifest
 
     @staticmethod
     def _seed_pool_adr(config: GzkitConfig, adr_id: str = "ADR-pool.sample-work") -> Path:
@@ -57,6 +85,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             ledger_path = Path(".gzkit/ledger.jsonl")
             ledger_bytes_before = ledger_path.read_bytes()
 
@@ -100,6 +129,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             result = runner.invoke(
                 main,
                 [
@@ -123,6 +153,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_file = self._seed_pool_adr(config)
             ledger_path = Path(".gzkit/ledger.jsonl")
@@ -173,6 +204,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             config = GzkitConfig.load(Path(".gzkit.json"))
             self._seed_pool_adr(config)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -210,6 +242,14 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         from gzkit.commands.plan import _build_scorecard_and_checklist, _render_adr_by_kind
 
         with TemporaryDirectory() as tmp:
+            # A project that HAS closed the kind — the manifest's presence is that
+            # decision (GHI #740). Without it this asserts an adopter's tree, where
+            # the render path is correctly permitted.
+            closed_root = Path(tmp) / "closed-project"
+            (closed_root / "data").mkdir(parents=True)
+            (closed_root / "data" / "foundation_grandfather.json").write_text(
+                "[]", encoding="utf-8"
+            )
             scorecard, checklist_seed = _build_scorecard_and_checklist(
                 lane="lite",
                 semver="0.0.99",
@@ -235,6 +275,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
                     scorecard=scorecard,
                     checklist_seed=checklist_seed,
                     adrs_root=Path(tmp),
+                    project_root=closed_root,
                 )
             self.assertIn("ADR-0.34.0", str(ctx.exception))
             self.assertFalse(
@@ -272,6 +313,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
                 scorecard=scorecard,
                 checklist_seed=checklist_seed,
                 adrs_root=Path(tmp),
+                project_root=Path(tmp),
             )
             self.assertTrue(adr_file.is_file())
             self.assertIn("kind: feature", adr_file.read_text(encoding="utf-8"))
@@ -291,6 +333,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             config = GzkitConfig.load(Path(".gzkit.json"))
             pool_file = self._seed_pool_adr(config)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -332,6 +375,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             ledger_path = Path(".gzkit/ledger.jsonl")
             events_before = [e.id for e in Ledger(ledger_path).read_all()]
 
@@ -379,6 +423,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             answers = {
                 "id": "ADR-0.36.0-interview-feature-door",
                 "semver": "0.36.0",
@@ -435,6 +480,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             result = runner.invoke(
                 main,
                 [
@@ -454,6 +500,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             result = runner.invoke(
                 main,
                 ["plan", "create", "some-backlog-item", "--kind", "pool"],
@@ -464,6 +511,7 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
+            self._close_the_kind()
             config = GzkitConfig.load(Path(".gzkit.json"))
             self._seed_pool_adr(config)
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -483,6 +531,123 @@ class TestFoundationKindClosedAtAuthoringTime(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 0, msg=result.output)
+
+
+class TestFoundationClosureIsProjectLocal(unittest.TestCase):
+    """Closure is a project-local DECISION, shipped as a framework-wide MECHANISM.
+
+    ADR-0.34.0 § Decision (DATA FLOW): *"The mechanism ... ships framework-wide;
+    the DECISION to close is project-local - gz init scaffolds adopters OPEN"*.
+    § Alternatives Considered item 8 records framework-wide forced closure as
+    REJECTED over-reach, and `docs/user/concepts/adr-taxonomy.md` promises
+    adopters the same. The shipped code did the opposite at five doors, and the
+    refusal even cited gzkit's own ADR as binding law inside an adopter's repo
+    (GHI #740).
+
+    Every test here runs in a bare `_quick_init` project with NO
+    `data/foundation_grandfather.json` — which is exactly what `gz init`
+    produces, and therefore exactly what an adopter has.
+    """
+
+    def test_adopter_can_author_a_foundation_adr(self) -> None:
+        """The CLI-handler door. This one was NOT in GHI #740's surface table."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            result = runner.invoke(
+                main,
+                ["plan", "create", "adopter-identity", "--kind", "foundation", "--semver", "0.0.1"],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_adopter_foundation_adr_lands_in_the_foundation_bucket(self) -> None:
+        """Routing must follow the kind, not merely avoid the refusal.
+
+        A carve-out that permitted the verb but filed the package under
+        `pre-release/` would break the ADR-0.0.17 foundation <=> 0.0.x binding
+        that `gz validate --taxonomy` enforces — trading a refusal for silent
+        misfiling.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(
+                main,
+                ["plan", "create", "adopter-identity", "--kind", "foundation", "--semver", "0.0.1"],
+            )
+            authored = list(Path("design/adr/foundation").rglob("*.md"))
+            self.assertTrue(authored, "adopter foundation ADR must land under foundation/")
+            self.assertIn("kind: foundation", authored[0].read_text(encoding="utf-8"))
+
+    def test_closing_the_kind_restores_the_refusal(self) -> None:
+        """The decisive control: the manifest's PRESENCE is the whole difference.
+
+        Same command, same tree, one file added. Without this pairing the tests
+        above would also pass if the guard had simply been deleted.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            Path("data").mkdir(parents=True, exist_ok=True)
+            Path("data/foundation_grandfather.json").write_text("[]", encoding="utf-8")
+            result = runner.invoke(
+                main,
+                ["plan", "create", "adopter-identity", "--kind", "foundation", "--semver", "0.0.1"],
+            )
+            self.assertNotEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("ADR-0.34.0", result.output)
+
+    def test_adopter_registration_membrane_admits_foundation_packages(self) -> None:
+        """The load-bearing door for adopters (GHI #740 § Observed).
+
+        An adopter has no manifest, so the roster is empty — which the membrane
+        read as "nothing is grandfathered, refuse everything" rather than "this
+        project never closed the kind."
+        """
+        from gzkit.commands.register import is_ungrandfathered_foundation
+
+        with TemporaryDirectory() as tmp:
+            adr = Path(tmp) / "ADR-0.0.1-adopter-identity.md"
+            adr.write_text(
+                "---\nid: ADR-0.0.1-adopter-identity\nkind: foundation\n"
+                "status: Draft\n---\n\n# x\n",
+                encoding="utf-8",
+            )
+            self.assertFalse(
+                is_ungrandfathered_foundation(
+                    adr, "ADR-0.0.1-adopter-identity", frozenset(), kind_is_closed=False
+                ),
+                "an adopter's foundation package must reach the adr_created ingress",
+            )
+            self.assertTrue(
+                is_ungrandfathered_foundation(
+                    adr, "ADR-0.0.1-adopter-identity", frozenset(), kind_is_closed=True
+                ),
+                "the same package in a closed project must still be refused",
+            )
+
+    def test_gz_init_scaffolds_adopters_with_the_kind_open(self) -> None:
+        """`gz init scaffolds adopters OPEN` — the premise the carve-out rests on.
+
+        If a future `gz init` ever shipped the manifest, every door above would
+        silently re-close for adopters and the carve-out would be inert while
+        still appearing tested.
+
+        Runs the REAL `gz init`, not the `_quick_init` fixture: the fixture is a
+        hand-built scaffold that never executes the init command, so asserting
+        against it would prove a property of the test helper rather than of the
+        surface the docstring names. Asserts through the closure predicate rather
+        than on the file path, so the claim is "the kind is open for a fresh
+        adopter" — the behavior — instead of an echo of a filename.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertFalse(
+                foundation_kind_is_closed(Path.cwd()),
+                msg="gz init must scaffold adopters with the foundation kind OPEN",
+            )
 
 
 if __name__ == "__main__":

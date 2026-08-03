@@ -31,6 +31,13 @@ CLI flag, `--taxonomy` validator). This page documents the operator doctrine:
     kind OPEN, because early adopter projects are exactly when identity-shaping
     foundations make sense.
 
+    **How your project's answer is determined.** The presence of
+    `data/foundation_grandfather.json` *is* the closure decision. gzkit commits
+    one, so the kind is closed here; `gz init` scaffolds none, so the kind is
+    open for you. To sunset the kind in your own project, freeze your existing
+    foundation ADRs into that manifest — every authoring and registration door
+    then refuses new ones, exactly as they do for gzkit.
+
 ---
 
 ## The three kinds

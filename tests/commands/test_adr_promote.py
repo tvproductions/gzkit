@@ -332,11 +332,43 @@ class TestAdrPromoteKindFlag(unittest.TestCase):
 
     # --- REQ-0.0.17-03-02 / 03: kind/semver binding ---
     #
-    # test_foundation_rejects_non_zero_zero_semver retired (ADR-0.34.0
-    # Foundation Sunset closes --kind foundation before the semver-binding
-    # check ever runs); superseded by
-    # tests/commands/test_foundation_kind_closed.py::
-    # test_adr_promote_foundation_kind_rejected_before_semver_binding_check.
+    def test_foundation_rejects_non_zero_zero_semver(self) -> None:
+        """@covers REQ-0.0.17-03-02 — foundation requires 0.0.x semver.
+
+        Un-retired under GHI #740. It was retired on the premise that "ADR-0.34.0
+        Foundation Sunset closes --kind foundation before the semver-binding check
+        ever runs" — true only while closure was framework-wide. Closure is a
+        project-local decision, so in an adopter's tree (no manifest, kind open)
+        the binding check is the FIRST guard this promotion meets.
+
+        Retiring the test also concealed that the guard did not exist: the
+        `_validate_promotion_kind_semver` docstring declared REQ-0.0.17-03-02
+        while only the feature-side twin was implemented. Without the carve-out
+        this promotion produced `design/adr/foundation/ADR-0.6.0-sample-work` —
+        a foundation package at a release-carrying semver, which
+        `gz validate --taxonomy` forbids.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_for_promote()
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "promote",
+                    "ADR-pool.sample-work",
+                    "--semver",
+                    "0.6.0",
+                    "--kind",
+                    "foundation",
+                ],
+            )
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertIn("0.0.x", result.output)
+            self.assertFalse(
+                Path("design/adr/foundation").exists(),
+                msg="a semver-unbound foundation promotion must write no package",
+            )
 
     def test_feature_rejects_zero_zero_semver(self) -> None:
         """@covers REQ-0.0.17-03-03 — feature rejects 0.0.x semver."""

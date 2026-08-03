@@ -20,10 +20,14 @@ from gzkit.ledger import (
     artifact_renamed_event,
     obpi_created_event,
 )
-from gzkit.models.foundation_grandfather import load_manifest
+from gzkit.models.foundation_grandfather import (
+    GRANDFATHER_MANIFEST_REL,
+    foundation_kind_is_closed,
+    load_manifest,
+)
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
-_GRANDFATHER_MANIFEST_REL = Path("data") / "foundation_grandfather.json"
+_GRANDFATHER_MANIFEST_REL = GRANDFATHER_MANIFEST_REL
 
 
 def grandfathered_foundation_ids(project_root: Path) -> frozenset[str]:
@@ -79,13 +83,20 @@ def warn_unreadable_refused(adr_file: Path) -> None:
 
 
 def is_ungrandfathered_foundation(
-    adr_file: Path, adr_id: str, grandfathered: frozenset[str]
+    adr_file: Path, adr_id: str, grandfathered: frozenset[str], *, kind_is_closed: bool
 ) -> bool:
     """Return True when a package declares `kind: foundation` but is not grandfathered.
 
     Manifest-aware by contract, never a bare `kind` refusal: refusing on kind
     alone would reject the whole grandfathered roster and contradict the closure
     it enforces (GHI #706, brief Requirement 5).
+
+    *kind_is_closed* carries the project-local closure decision and is keyword-only
+    with no default: a new caller must state which project's decision it is
+    enforcing rather than silently inheriting gzkit's. Defaulting it to ``True``
+    would reopen GHI #740 for the next call site — an adopter who never sunset
+    the kind has an empty roster because they have no manifest, not because
+    every foundation package they hold is illegitimate.
 
     Reads through the shared tri-state reader (GHI #736), so a package this
     guard cannot READ is refused rather than reported as kind-less. `absent`
@@ -95,6 +106,8 @@ def is_ungrandfathered_foundation(
     rendering that decodes as UTF-8 "successfully". Both previously returned
     the same permissive "no kind".
     """
+    if not kind_is_closed:
+        return False
     try:
         read = read_frontmatter_bytes(adr_file.read_bytes())
     except OSError:
@@ -373,6 +386,7 @@ def _collect_adrs_to_register(
     eligible_parent_ids: set[str] = set()
     stale_pool_files: list[tuple[str, str]] = []
     grandfathered = grandfathered_foundation_ids(get_project_root())
+    kind_is_closed = foundation_kind_is_closed(get_project_root())
     for adr_file in artifacts.get("adrs", []):
         # Before parse_artifact_metadata, which decodes UTF-8 and catches only
         # OSError — an undecodable package would abort the whole pass.
@@ -391,7 +405,9 @@ def _collect_adrs_to_register(
         # Registration membrane (GHI #706): a hand-placed foundation package
         # absent from the closed manifest never reaches the adr_created ingress,
         # and neither do its children.
-        if is_ungrandfathered_foundation(adr_file, adr_id, grandfathered):
+        if is_ungrandfathered_foundation(
+            adr_file, adr_id, grandfathered, kind_is_closed=kind_is_closed
+        ):
             warn_foundation_refused(adr_id)
             continue
 

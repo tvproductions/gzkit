@@ -48,7 +48,36 @@ def load_manifest(path: Path) -> tuple[FoundationGrandfatherManifest, ...]:
     return _MANIFEST_ADAPTER.validate_python(raw)
 
 
+GRANDFATHER_MANIFEST_REL = Path("data") / "foundation_grandfather.json"
+
+
+def foundation_kind_is_closed(project_root: Path) -> bool:
+    """Return True if THIS project has sunset the ``foundation`` kind (ADR-0.34.0).
+
+    Closure is a **project-local decision**, not a framework-wide mechanism.
+    ADR-0.34.0 § Decision (DATA FLOW) is explicit: *"The mechanism ... ships
+    framework-wide; the DECISION to close is project-local"*, and § Alternatives
+    Considered item 8 records framework-wide forced closure as REJECTED
+    over-reach. `docs/user/concepts/adr-taxonomy.md` promises adopters the same.
+
+    The manifest's **presence** is that decision, recorded on disk. A project
+    that sunset the kind froze its grandfathered roster into
+    ``data/foundation_grandfather.json``; gzkit has one. A project that never
+    closed the kind has no manifest, and `gz init` scaffolds none — so absence
+    means *"this project never closed the kind"*, never *"nothing is
+    grandfathered, refuse everything"*.
+
+    That distinction is the whole defect (GHI #740): reading an absent manifest
+    as an empty roster made ``is_ungrandfathered_foundation`` true for every
+    foundation package an adopter held, so all four authoring doors refused them
+    while citing gzkit's own ADR as the reason.
+    """
+    return (project_root / GRANDFATHER_MANIFEST_REL).is_file()
+
+
 __all__ = [
+    "GRANDFATHER_MANIFEST_REL",
     "FoundationGrandfatherManifest",
+    "foundation_kind_is_closed",
     "load_manifest",
 ]

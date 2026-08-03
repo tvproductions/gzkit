@@ -64,6 +64,35 @@ def step_init_heavy(_context) -> None:  # type: ignore[no-untyped-def]
     _quick_init(mode="heavy")
 
 
+@given("the project has closed the foundation kind")
+def step_close_foundation_kind(_context) -> None:  # type: ignore[no-untyped-def]
+    """Record the project-local decision to sunset `foundation` (ADR-0.34.0).
+
+    Closure is project-local, not framework-wide: the presence of
+    `data/foundation_grandfather.json` IS the decision (GHI #740). A freshly
+    initialized workspace is an ADOPTER — no manifest, kind open — so any
+    scenario asserting gzkit's own refusal must first put the workspace into
+    gzkit's state.
+    """
+    import json  # noqa: PLC0415
+
+    manifest = Path("data") / "foundation_grandfather.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(
+        json.dumps(
+            [
+                {
+                    "id": "ADR-0.0.1-seed",
+                    "title": "Seed",
+                    "semver": "0.0.1",
+                    "frozen_at": "2026-07-31",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+
 @given("the workspace is initialized")
 def step_init_default(_context) -> None:  # type: ignore[no-untyped-def]
     from tests.commands.common import _quick_init  # noqa: PLC0415
