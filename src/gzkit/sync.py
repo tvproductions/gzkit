@@ -9,7 +9,10 @@ This module provides the public API. Implementation is split across:
 """
 
 import re
+from collections.abc import Mapping
 from pathlib import Path
+
+from gzkit.frontmatter import read_frontmatter_bytes
 
 # Re-export rules-based functions (originally imported and re-exported here)
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
@@ -278,22 +281,21 @@ def extract_artifact_id(file_path: Path) -> str:
     return file_path.stem
 
 
-def _parse_frontmatter(lines: list[str], result: dict[str, str]) -> bool:
-    """Parse YAML-style frontmatter and merge known metadata fields."""
-    if not lines or lines[0].strip() != "---":
-        return False
+def _parse_frontmatter(fields: Mapping[str, str], result: dict[str, str]) -> bool:
+    r"""Merge known metadata fields from an already-read frontmatter block.
 
+    Block DETECTION moved to `gzkit.frontmatter` (GHI #736); this function now
+    only maps an already-read block onto the metadata dict. Detection lived here
+    as `lines[0].strip() == "---"` over `content.split("\\n")`, which disagreed
+    with `ledger.parse_frontmatter_value`'s `splitlines()` on identical bytes:
+    given a VT-prefixed artifact this reader extracted `id` while that one
+    reported no frontmatter at all. Two answers for one file is the defect; one
+    reader is the fix.
+    """
     has_frontmatter_id = False
-    for idx in range(1, len(lines)):
-        line = lines[idx].strip()
-        if line == "---":
-            break
-        if ":" not in line:
-            continue
-
-        key, _, value = line.partition(":")
-        normalized_key = key.strip().lower()
-        normalized_value = value.strip().strip("\"'")
+    for raw_key, raw_value in fields.items():
+        normalized_key = raw_key.strip().lower()
+        normalized_value = raw_value.strip().strip("\"'")
         if not normalized_value:
             continue
 
@@ -361,12 +363,21 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
     result: dict[str, str] = {"id": file_path.stem}
 
     try:
-        content = file_path.read_text(encoding="utf-8")
+        raw = file_path.read_bytes()
     except OSError:
         return result
 
+    read = read_frontmatter_bytes(raw)
+    if read.state == "malformed":
+        # Refuse to guess. A malformed block is NOT an absent one, and inventing
+        # a stem-derived id for an artifact whose frontmatter is hidden is the
+        # permissive default GHI #736 closes. Callers gate on this via
+        # `register.is_unreadable_adr` before registration.
+        return result
+
+    content = raw.decode("utf-8-sig", errors="replace")
     lines = content.split("\n")
-    has_frontmatter_id = _parse_frontmatter(lines, result)
+    has_frontmatter_id = _parse_frontmatter(read.fields, result)
     _parse_header_fallback(lines, result, has_frontmatter_id)
 
     return result

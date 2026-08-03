@@ -135,6 +135,20 @@ Violations include:
 - `kind: foundation` paired with a non-`0.0.x` semver.
 - `kind: feature` paired with a `0.0.x` semver.
 - Any `kind:` value other than `foundation` or `feature` on a non-pool ADR.
+- **An ADR whose frontmatter cannot be read at all** (GHI #736). An
+  unreadable package is a finding, never a skip: "cannot read" must not
+  resolve to "nothing to check". Causes are a BOM-less UTF-16/32 rendering
+  (which decodes as UTF-8 *successfully* into a string containing NUL), an
+  invisible line separator before the block (VT, FF, NEL, U+2028, …), or an
+  opening `---` with no closing `---`. The diagnostic names which. Recovery:
+  re-save as UTF-8 without a BOM and without invisible separators.
+
+A frontmatter-*less* ADR is **not** a violation here — `absent` and
+`malformed` are different answers. Reading is done by the shared tri-state
+reader in `gzkit.frontmatter`, which the `adr_created` ingresses
+(`gz register-adrs`, first-run `gz init`) consult through the same predicate,
+so this audit and those membranes can no longer disagree about whether a
+package has a `kind:`.
 
 The audit never mutates files.
 

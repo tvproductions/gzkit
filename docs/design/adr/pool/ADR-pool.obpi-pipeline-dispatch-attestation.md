@@ -41,6 +41,7 @@ amendments:
       lifts P4 D3 from PARTIAL to PASS and unblocks Pattern A across four
       SKILL surfaces. Pattern routing: prose-vs-mechanics + tautological-
       test-surface (GHI #531) per GHI #517 operator tie-break D8.
+---
 
 # ADR-pool.obpi-pipeline-dispatch-attestation: OBPI Pipeline Subagent Dispatch Attestation
 

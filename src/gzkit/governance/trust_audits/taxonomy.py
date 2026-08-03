@@ -22,6 +22,7 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.frontmatter import FrontmatterRead, read_frontmatter_bytes
 from gzkit.validate import ValidationError
 
 _FOUNDATION_SEMVER_RE = re.compile(r"^0\.0\.\d+$")
@@ -156,10 +157,26 @@ def _check_kind_semver_consistency(rel: str, kind: str, semver: object) -> Valid
 
 def _audit_one_adr_taxonomy(adr_md: Path, project_root: Path) -> list[ValidationError]:
     """Apply the taxonomy decision tree to a single ADR file."""
-    frontmatter = _parse_adr_frontmatter(adr_md)
-    if frontmatter is None:
-        return []
+    read = _read_adr_frontmatter(adr_md)
     rel = adr_md.relative_to(project_root).as_posix()
+    if read.state == "malformed":
+        # GHI #736: a package the audit cannot READ is a finding, not a skip.
+        # Returning [] here is what let a prohibited package stay green in this
+        # audit while booking itself at the ingress — the audit and the membrane
+        # failing open together, in the same direction, for the same reason.
+        return [
+            _taxonomy_error(
+                rel,
+                f"frontmatter could not be read: {read.reason}. "
+                "An unreadable package is refused rather than skipped — "
+                "'cannot read' must never resolve to 'nothing to check'. "
+                "Re-save the file as UTF-8 without a BOM and without invisible "
+                "line separators, then re-run `uv run gz validate --taxonomy`.",
+            )
+        ]
+    if read.state == "absent":
+        return []
+    frontmatter = read.fields
     adr_id = frontmatter.get("id", "")
     kind = frontmatter.get("kind")
     semver = frontmatter.get("semver")
@@ -433,48 +450,30 @@ def audit_adr_taxonomy(project_root: Path) -> list[ValidationError]:
     return errors
 
 
-def _strip_quoted(value: str) -> str:
-    if value.startswith('"') and value.endswith('"') and len(value) >= 2:
-        return value[1:-1]
-    return value
+def _read_adr_frontmatter(path: Path) -> FrontmatterRead:
+    """Read one ADR's frontmatter through the shared tri-state reader (GHI #736).
 
-
-def _frontmatter_block(lines: list[str]) -> list[str] | None:
-    """Return the lines between the first two ``---`` markers, or None if absent."""
-    if not lines or lines[0].strip() != "---":
-        return None
-    for i in range(1, len(lines)):
-        if lines[i].strip() == "---":
-            return lines[1:i]
-    return None
+    This module previously carried the third of three ad-hoc decoders, each with
+    its own detection rule. They disagreed on real inputs, and every disagreement
+    resolved permissively: an artifact this audit could not read was skipped as
+    frontmatter-less, so a prohibited package stayed green here while booking
+    itself at the ingress.
+    """
+    try:
+        return read_frontmatter_bytes(path.read_bytes())
+    except OSError as exc:
+        return FrontmatterRead(state="malformed", reason=str(exc))
 
 
 def _parse_adr_frontmatter(path: Path) -> dict[str, str] | None:
     """Read a flat YAML frontmatter block as a ``str -> str`` mapping.
 
-    Stdlib-only to match every sibling audit in this package (no PyYAML
-    import widens the trust surface for a flat key/value block).
+    Retained for ``sensitivity.py``, which re-imports it. Returns ``None`` for
+    both ``absent`` and ``malformed`` — callers that must distinguish the two
+    (every membrane guard) use :func:`_read_adr_frontmatter` instead.
     """
-    try:
-        text = path.read_text(encoding="utf-8-sig")
-    except (UnicodeDecodeError, OSError):
-        return None
-    # Strip U+FEFF anywhere: a BOM appended to the opening `---` hides the whole
-    # block, so the audit would treat a foundation package as frontmatter-less
-    # and skip it — a silent fail-open on the gate this ADR makes permanent.
-    # Leading blank space is deliberately NOT stripped: that made a `---`
-    # horizontal rule at the head of a pool document parse as frontmatter
-    # (Step-4b round-5). The residual family is tracked at GHI #736.
-    block = _frontmatter_block(text.replace("﻿", "").splitlines())
-    if block is None:
-        return None
-    fields: dict[str, str] = {}
-    for raw in block:
-        if ":" not in raw:
-            continue
-        key, _, value = raw.partition(":")
-        fields[key.strip()] = _strip_quoted(value.strip())
-    return fields
+    read = _read_adr_frontmatter(path)
+    return dict(read.fields) if read.state == "valid" else None
 
 
 _BARE_ADR_ID_RE = re.compile(r"^(ADR-\d+\.\d+\.\d+)-.+$")

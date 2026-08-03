@@ -10,6 +10,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.frontmatter import read_frontmatter_bytes
 from gzkit.governance.adr_status_index import regenerate_adr_status_md
 from gzkit.ledger import (
     Ledger,
@@ -18,7 +19,6 @@ from gzkit.ledger import (
     adr_created_event,
     artifact_renamed_event,
     obpi_created_event,
-    parse_frontmatter_value,
 )
 from gzkit.models.foundation_grandfather import load_manifest
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
@@ -37,29 +37,44 @@ def grandfathered_foundation_ids(project_root: Path) -> frozenset[str]:
         return frozenset()
 
 
-def is_undecodable_adr(adr_file: Path) -> bool:
-    """Return True when the package cannot be decoded as UTF-8 at all.
+def is_unreadable_adr(adr_file: Path) -> bool:
+    """Return True when the package's frontmatter cannot be READ.
 
     Checked BEFORE `parse_artifact_metadata`, which reads UTF-8 and catches only
     `OSError`: a UTF-16/32 package would otherwise raise `UnicodeDecodeError` and
     abort the whole registration pass rather than being refused in a controlled way.
+
+    Widened from "undecodable" to "unreadable" (GHI #736), which is why the name
+    changed: decodability is too narrow a predicate. A BOM-less UTF-16/32
+    rendering of ASCII markdown decodes as UTF-8 *successfully* into a string
+    full of NUL, and an invisible line separator (VT/FF/NEL/U+2028) decodes
+    perfectly while hiding the block from `splitlines()`-based readers. Both
+    were "decodable" and both defeated `kind:` detection, which every guard
+    downstream reads as permission.
     """
     try:
-        adr_file.read_text(encoding="utf-8-sig")
-    except (OSError, UnicodeDecodeError):
+        return read_frontmatter_bytes(adr_file.read_bytes()).state == "malformed"
+    except OSError:
         return True
-    return False
 
 
-def warn_undecodable_refused(adr_file: Path) -> None:
-    """Print the membrane refusal for a package that cannot be decoded."""
+def unreadable_reason(adr_file: Path) -> str | None:
+    """Return why the package is unreadable, or None when it reads cleanly."""
+    try:
+        return read_frontmatter_bytes(adr_file.read_bytes()).reason
+    except OSError as exc:
+        return str(exc)
+
+
+def warn_unreadable_refused(adr_file: Path) -> None:
+    """Print the membrane refusal for a package whose frontmatter cannot be read."""
+    reason = unreadable_reason(adr_file) or "its frontmatter block could not be read"
     console.print(
-        f"[red]Refused:[/red] {adr_file.as_posix()} could not be decoded as UTF-8, "
-        "so its `kind:` cannot be read.\n"
+        f"[red]Refused:[/red] {adr_file.as_posix()} — {reason}.\n"
         "  Why: an unreadable package must not collapse into 'no kind' — every "
         "guard downstream reads that as permission (ADR-0.34.0 Foundation Sunset).\n"
-        "  Fix: re-save the file as UTF-8 without a BOM, then re-run "
-        "`uv run gz register-adrs`."
+        "  Fix: re-save the file as UTF-8 without a BOM and without invisible line "
+        "separators, then re-run `uv run gz register-adrs`."
     )
 
 
@@ -71,18 +86,24 @@ def is_ungrandfathered_foundation(
     Manifest-aware by contract, never a bare `kind` refusal: refusing on kind
     alone would reject the whole grandfathered roster and contradict the closure
     it enforces (GHI #706, brief Requirement 5).
+
+    Reads through the shared tri-state reader (GHI #736), so a package this
+    guard cannot READ is refused rather than reported as kind-less. `absent`
+    and `malformed` are different answers: the first is an ordinary
+    frontmatter-less document, the second is an artifact whose block exists but
+    is hidden — by an invisible line separator or a BOM-less UTF-16/32
+    rendering that decodes as UTF-8 "successfully". Both previously returned
+    the same permissive "no kind".
     """
     try:
-        content = adr_file.read_text(encoding="utf-8-sig")
-    except (OSError, UnicodeDecodeError):
-        # An undecodable package never enters Layer-2: "unreadable" must not
-        # collapse into "no kind", which every guard downstream reads as permission.
+        read = read_frontmatter_bytes(adr_file.read_bytes())
+    except OSError:
         return True
-    # BOM normalization lives in `parse_frontmatter_value` itself (GHI #735), so
-    # every caller of the primitive inherits it rather than each guard carrying
-    # its own copy. The local `_normalize_frontmatter_source` wrapper this call
-    # used to wear was retired in the same change.
-    if parse_frontmatter_value(content, "kind") != "foundation":
+    if read.state == "malformed":
+        # Unreadable never collapses into "no kind", which every guard
+        # downstream reads as permission.
+        return True
+    if read.fields.get("kind") != "foundation":
         return False
     return adr_id not in grandfathered
 
@@ -355,8 +376,8 @@ def _collect_adrs_to_register(
     for adr_file in artifacts.get("adrs", []):
         # Before parse_artifact_metadata, which decodes UTF-8 and catches only
         # OSError — an undecodable package would abort the whole pass.
-        if is_undecodable_adr(adr_file):
-            warn_undecodable_refused(adr_file)
+        if is_unreadable_adr(adr_file):
+            warn_unreadable_refused(adr_file)
             continue
         metadata = parse_artifact_metadata(adr_file)
         resolved = _adr_register_identity(ledger, adr_file, metadata)

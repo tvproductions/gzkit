@@ -22,10 +22,10 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
-    is_undecodable_adr,
     is_ungrandfathered_foundation,
+    is_unreadable_adr,
     warn_foundation_refused,
-    warn_undecodable_refused,
+    warn_unreadable_refused,
 )
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.governance.trust_audits.session_green_gate import configured_hooks_path
@@ -842,8 +842,8 @@ def _register_existing_artifacts(
     # partway through, after earlier initialization mutations have landed.
     adr_files = []
     for adr_path in existing["adrs"]:
-        if is_undecodable_adr(adr_path):
-            warn_undecodable_refused(adr_path)
+        if is_unreadable_adr(adr_path):
+            warn_unreadable_refused(adr_path)
             continue
         adr_files.append(adr_path)
     adr_metadata = [parse_artifact_metadata(p) for p in adr_files]
