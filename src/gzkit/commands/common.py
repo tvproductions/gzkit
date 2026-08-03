@@ -520,6 +520,9 @@ from gzkit.commands.version_sync import check_version_sync as check_version_sync
 from gzkit.commands.version_sync import (  # noqa: E402
     sync_project_version as sync_project_version,
 )
+from gzkit.commands.version_sync import (  # noqa: E402
+    write_in_flight_release_manifest as write_in_flight_release_manifest,
+)
 
 # ---------------------------------------------------------------------------
 # Ceremony enforcement helpers (ADR-0.23.0 / OBPI-0.23.0-04)

@@ -222,5 +222,79 @@ class TestValidateVersionConsistency(unittest.TestCase):
             self.assertEqual(errors, [])
 
 
+class TestWriteInFlightReleaseManifest(unittest.TestCase):
+    """GHI #739 — the bump and its in-flight evidence are one operation.
+
+    ``gz patch release`` wrote a manifest at bump time; ``gz closeout``
+    bumped the identical field and wrote nothing, so the ceremony's own
+    mandated Step-10 sync ran a test gate that the bump had just turned red.
+    Every bump-performing command now files the evidence its bump requires.
+    """
+
+    def _bumped_root(self, tmp: str, version: str) -> Path:
+        root = Path(tmp)
+        (root / "pyproject.toml").write_text(
+            f'[project]\nname = "gzkit"\nversion = "{version}"\n', encoding="utf-8"
+        )
+        return root
+
+    def test_manifest_satisfies_the_audit_that_governs_the_bump(self) -> None:
+        """The written manifest is accepted by ``audit_version_release`` — the whole point."""
+        from gzkit.commands.version_sync import write_in_flight_release_manifest
+        from gzkit.governance.trust_audits.release import audit_version_release
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._bumped_root(tmp, "9.9.0")
+            write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0-demo")
+            self.assertEqual(
+                audit_version_release(root),
+                [],
+                msg="a bump plus its manifest must leave the audit green",
+            )
+
+    def test_returns_repo_relative_posix_path(self) -> None:
+        """Path is returned relative and posix-rendered (cross-platform rule)."""
+        from gzkit.commands.version_sync import write_in_flight_release_manifest
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._bumped_root(tmp, "9.9.0")
+            rel = write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0-demo")
+            self.assertEqual(rel, "docs/releases/RELEASE-v9.9.0.md")
+
+    def test_manifest_names_its_driving_adr_and_version(self) -> None:
+        """The artifact traces the bump to the closeout that caused it."""
+        from gzkit.commands.version_sync import write_in_flight_release_manifest
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._bumped_root(tmp, "9.9.0")
+            write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0-demo")
+            body = (root / "docs" / "releases" / "RELEASE-v9.9.0.md").read_text(encoding="utf-8")
+            self.assertIn("ADR-9.9.0-demo", body)
+            self.assertIn("9.9.0", body)
+
+    def test_creates_releases_directory_when_absent(self) -> None:
+        """A fresh clone has no docs/releases/; the writer provisions it."""
+        from gzkit.commands.version_sync import write_in_flight_release_manifest
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._bumped_root(tmp, "9.9.0")
+            self.assertFalse((root / "docs" / "releases").exists())
+            write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0-demo")
+            self.assertTrue((root / "docs" / "releases" / "RELEASE-v9.9.0.md").is_file())
+
+    def test_does_not_clobber_an_existing_manifest(self) -> None:
+        """A hand-authored or ceremony-authored manifest for the same version wins."""
+        from gzkit.commands.version_sync import write_in_flight_release_manifest
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._bumped_root(tmp, "9.9.0")
+            releases = root / "docs" / "releases"
+            releases.mkdir(parents=True)
+            existing = releases / "RELEASE-v9.9.0.md"
+            existing.write_text("# hand-authored\n", encoding="utf-8")
+            write_in_flight_release_manifest(root, "9.9.0", "ADR-9.9.0-demo")
+            self.assertEqual(existing.read_text(encoding="utf-8"), "# hand-authored\n")
+
+
 if __name__ == "__main__":
     unittest.main()

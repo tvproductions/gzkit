@@ -39,6 +39,21 @@ If any linked OBPI still has missing proof, canonical drift, or missing
 required human-attestation evidence, `gz closeout` prints `BLOCKERS:` and exits
 `1` without writing `closeout_initiated`.
 
+### Version bump and in-flight release manifest
+
+When the ADR's semver exceeds the declared project version, `gz closeout` bumps
+`pyproject.toml`, `src/gzkit/__init__.py`, and the README badge, and writes an
+in-flight release manifest at `docs/releases/RELEASE-v{version}.md`.
+
+The manifest is not bookkeeping — it is the evidence `audit_version_release`
+accepts in place of a `v{version}` git tag. That audit runs inside `gz test`,
+and the ceremony's Step 10 runs `gz git-sync --apply --lint --test` *before*
+`gh release create` makes the tag, so without the manifest the bump would make
+the ceremony's own next mandated step unrunnable (GHI #739). `gz patch release`
+writes the equivalent `PATCH-v{version}.md`; both prefixes are accepted.
+
+An existing manifest for the same version is never overwritten.
+
 ### Product Proof Gate
 
 After OBPI completion checks pass, `gz closeout` validates that each OBPI has

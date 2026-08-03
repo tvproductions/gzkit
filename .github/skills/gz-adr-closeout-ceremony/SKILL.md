@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.16.0"
+  skill-version: "7.17.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-02
 model: opus
 ---
 
@@ -235,6 +235,16 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 ```
 
 After each step, advance via `--next`.
+
+**The sync-before-release order is only executable because the bump files its own
+evidence (GHI #739).** `audit_version_release` fails a declared version with no
+matching `vX.Y.Z` tag, and it runs inside `gz test` — which `gz git-sync --apply
+--lint --test` runs *before* `gh release create` makes that tag. `gz closeout`
+therefore writes `docs/releases/RELEASE-v{version}.md` at bump time, the same way
+`gz patch release` writes `PATCH-v{version}.md`; both prefixes are accepted
+in-flight evidence. If that manifest is missing, the sync will refuse on a
+`version_release` violation — write it rather than reordering the ceremony (a
+tag created before the bump commit points at a tree lacking the bump).
 
 ### Step 9: Completion (Two-Sync Pattern)
 

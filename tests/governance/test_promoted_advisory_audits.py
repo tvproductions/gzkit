@@ -1020,6 +1020,47 @@ class VersionReleaseAuditChickenAndEgg(unittest.TestCase):
             errors = audit_version_release(root)
             self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
 
+    def test_release_prefixed_manifest_satisfies_audit(self) -> None:
+        """GHI #739: a minor release from `gz closeout` files RELEASE-v{version}.md.
+
+        The escape was hardcoded to a ``PATCH-`` prefix, which forced every
+        minor release to file an artifact mislabelled as a patch
+        (``PATCH-v0.30.0.md``, ``PATCH-v0.34.0.md`` are both minor). Both
+        prefixes are in-flight evidence for the same window.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_empty_git(root)
+            self._write_pyproject(root, "9.9.0")
+            manifest_dir = root / "docs" / "releases"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "RELEASE-v9.9.0.md").write_text(
+                "# Minor Release: v9.9.0\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                audit_version_release(root),
+                [],
+                msg="RELEASE-v{version}.md must be equivalent in-flight evidence",
+            )
+
+    def test_release_prefixed_manifest_for_different_version_does_not_satisfy(self) -> None:
+        """Version matching binds on the RELEASE- arm exactly as on the PATCH- arm."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._init_empty_git(root)
+            self._write_pyproject(root, "9.9.0")
+            manifest_dir = root / "docs" / "releases"
+            manifest_dir.mkdir(parents=True)
+            (manifest_dir / "RELEASE-v9.8.0.md").write_text(
+                "# Minor Release: v9.8.0\n", encoding="utf-8"
+            )
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+
 
 if __name__ == "__main__":
     unittest.main()

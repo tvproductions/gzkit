@@ -31,6 +31,7 @@ from gzkit.commands.common import (
     resolve_adr_file,
     resolve_adr_ledger_id,
     sync_project_version,
+    write_in_flight_release_manifest,
 )
 from gzkit.commands.status import (
     _adr_closeout_readiness,
@@ -495,6 +496,12 @@ def _complete_closeout_pipeline(
     version_updated: list[str] = []
     if needs_bump and adr_ver is not None:
         version_updated = sync_project_version(project_root, adr_ver)
+        # GHI #739: the bump owes `audit_version_release` in-flight evidence, and
+        # that audit runs inside `gz test` — which the ceremony's own Step 10 runs
+        # (`gz git-sync --apply --lint --test`) BEFORE `gh release create` makes
+        # the tag. Filing the manifest with the bump keeps the prescribed order
+        # executable; `gz patch release` has always done this at its bump site.
+        version_updated.append(write_in_flight_release_manifest(project_root, adr_ver, adr_id))
 
     to_state = "Dropped" if attest_status == "dropped" else "Completed"
     ledger.append(lifecycle_transition_event(adr_id, "adr", "Proposed", to_state))

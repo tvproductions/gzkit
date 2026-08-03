@@ -1,8 +1,8 @@
 """Release-discipline trust audits.
 
 * ``audit_version_release`` — every ``pyproject.toml`` version bump must
-  have a matching ``vX.Y.Z`` git tag (or a ``docs/releases/PATCH-vX.Y.Z.md``
-  manifest in flight). GHI #205 / GHI #217.
+  have a matching ``vX.Y.Z`` git tag (or a ``docs/releases/{PATCH,RELEASE}-vX.Y.Z.md``
+  manifest in flight). GHI #205 / GHI #217 / GHI #739.
 * ``audit_advisory_scorecard`` — every rule under ``.gzkit/rules/`` must
   appear in ``docs/governance/advisory-rules-audit.md`` so the scorecard
   remains a complete index. GHI #212.
@@ -15,6 +15,22 @@ from pathlib import Path
 
 from gzkit.validate import ValidationError
 
+#: Filename prefixes accepted as in-flight release evidence (GHI #217, GHI #739).
+#: ``PATCH-`` is written by ``gz patch release``; ``RELEASE-`` by ``gz closeout``,
+#: whose bumps are minor. Both denote the same window — between the bump commit
+#: and ``gh release create`` — so both are equivalent evidence. The prefix names
+#: the ceremony that bumped, never a different kind of proof.
+IN_FLIGHT_MANIFEST_PREFIXES: tuple[str, ...] = ("PATCH", "RELEASE")
+
+
+def in_flight_manifest_path(project_root: Path, version: str, prefix: str = "RELEASE") -> Path:
+    """Return the manifest path a bump of *version* must file to stay syncable.
+
+    Single source for the path contract shared by the writers
+    (``gz patch release``, ``gz closeout``) and the audit that reads it.
+    """
+    return project_root / "docs" / "releases" / f"{prefix}-v{version}.md"
+
 
 def audit_version_release(project_root: Path) -> list[ValidationError]:
     """Fail if ``pyproject.toml`` version has no matching ``vX.Y.Z`` git tag.
@@ -23,11 +39,18 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     compares the declared pyproject version against the local git-tag set;
     if the bump landed without a tag, the release step was skipped.
 
-    Per GHI #217, the audit also accepts an in-flight release manifest at
-    ``docs/releases/PATCH-v{version}.md`` as equivalent evidence. The
-    manifest is written by ``gz patch release`` before the bump commit is
-    attempted, so it satisfies the audit during the brief window between
+    Per GHI #217, the audit also accepts an in-flight release manifest under
+    ``docs/releases/`` as equivalent evidence, written before the bump commit
+    is attempted, so it satisfies the audit during the brief window between
     the commit and ``gh release create`` (which creates the tag).
+
+    Per GHI #739 the lookup accepts both ``IN_FLIGHT_MANIFEST_PREFIXES``.
+    ``PATCH-`` alone was hardcoded here, which had two consequences: minor
+    releases from ``gz closeout`` had to file an artifact mislabelled as a
+    patch (``PATCH-v0.30.0.md``, ``PATCH-v0.34.0.md``), and because
+    ``gz closeout`` wrote no manifest at all, its bump made ``gz test`` red
+    while the ceremony's own Step 10 ran that gate before creating the tag —
+    a deadlock on every minor release.
     """
     import subprocess  # noqa: PLC0415
 
@@ -38,8 +61,10 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     if version is None:
         return []
     expected = f"v{version}"
-    manifest = project_root / "docs" / "releases" / f"PATCH-{expected}.md"
-    if manifest.is_file():
+    if any(
+        in_flight_manifest_path(project_root, version, prefix).is_file()
+        for prefix in IN_FLIGHT_MANIFEST_PREFIXES
+    ):
         return []
     try:
         result = subprocess.run(

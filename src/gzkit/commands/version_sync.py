@@ -92,6 +92,55 @@ def sync_project_version(project_root: Path, new_version: str) -> list[str]:
     return updated
 
 
+def write_in_flight_release_manifest(project_root: Path, version: str, adr_id: str) -> str:
+    """File the in-flight evidence a version bump owes ``audit_version_release``.
+
+    Returns the repo-relative posix path of the manifest. An existing manifest
+    for the same version is left untouched — the ceremony's own richer artifact
+    (or a hand-authored one) outranks this minimum record.
+
+    Why this exists (GHI #739): the audit fails a declared version that has no
+    matching git tag, and it runs inside ``gz test``. The ADR-closeout ceremony
+    prescribes ``gz git-sync --apply --lint --test`` *before* ``gh release
+    create``, which is what creates the tag — so a bump with no manifest makes
+    the ceremony's next mandated step unrunnable. ``gz patch release`` already
+    filed one at bump time; ``gz closeout`` bumped the same field and filed
+    nothing, so every minor release deadlocked.
+    """
+    from gzkit.governance.trust_audits.release import in_flight_manifest_path  # noqa: PLC0415
+
+    manifest = in_flight_manifest_path(project_root, version, "RELEASE")
+    rel = manifest.relative_to(project_root).as_posix()
+    if manifest.is_file():
+        return rel
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    manifest.write_text(
+        "\n".join(
+            [
+                f"# Minor Release: v{version}",
+                "",
+                f"**Driving ADR:** {adr_id}",
+                f"**Version:** {version}",
+                "",
+                "## In-flight window",
+                "",
+                "This manifest is the evidence `audit_version_release` accepts during",
+                f"the window between the version-bump commit and `gh release create v{version}`,",
+                "which creates the tag. It is written by `gz closeout` at bump time so the",
+                "ceremony's mandated `gz git-sync --apply --lint --test` step stays runnable",
+                "(GHI #217 established the escape; GHI #739 extended it to closeout bumps).",
+                "",
+                "## Release Notes",
+                "",
+                f"See `RELEASE_NOTES.md` for the narrative entry covering v{version}.",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    return rel
+
+
 def validate_version_consistency(project_root: Path) -> list[ValidationError]:
     """Assert pyproject.toml, __init__.py, and README badge versions all match.
 
