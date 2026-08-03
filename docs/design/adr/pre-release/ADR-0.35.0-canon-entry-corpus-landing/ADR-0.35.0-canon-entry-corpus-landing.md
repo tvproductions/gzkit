@@ -76,6 +76,8 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 8. Codex playback wires to a real surface, coordinating with ADR-0.44.0-vendor-alignment-codex (which owns that surface). This makes the `lite` setpoint falsifiable for the first time.
 
+9. `classification` IS CORPUS-OWNED WHERE THE CORPUS OWNS THE SECTION (operator-ruled 2026-08-02, GHI #737). `CorpusEntry.classification` is schema-required and part of the baseline identity fingerprint but has NO reader anywhere in `src/` -- every hit is a declaration or a writer. The binding copy lives instead in `docs/governance/advisory-rules-audit.md`, which `bullet_retention.py:141-163` parses. Two differently-typed representations of one governance concept, the structured one inert and the markdown one binding, is precisely the shape `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids. Resolution: `bullet_retention` resolves a bullet's classification from the corpus when that bullet's section is corpus-owned, and from the scorecard otherwise -- one reader, declared precedence. Pointing the audit wholesale at the corpus (the shape GHI #737 proposed) is REJECTED on measurement: the scorecard carries 144 rows against the corpus's 52 over 8 sections, so a wholesale swap is a ~64% coverage REGRESSION, not a clean substitution. The two surfaces classify overlapping but unequal populations, which is why the field went inert rather than being wired up. This is item 3's section-ownership seam applied to the classification axis: owning a section makes its entries' classification BINDING, so the 36 `Ambiguous` capture-defaults (all `origin: cli:content-remember`, never revisited) must be reconciled BEFORE ownership binds, not after. The field is never dropped -- it is baseline identity, and removal re-fingerprints every committed rendition.
+
 PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scoped to corpus entries -- an attested invariant entry may be superseded by an appended tombstone carrying attestor + reason, never edited or deleted in place. Recorded in Boundary Invariants so `ADR-pool.attested-record-edit-doctrine` inherits rather than re-litigates. This ADR does not block on that pool item.
 
 ## Consequences
@@ -164,6 +166,18 @@ lifecycles stay separated (§ Alternatives O). Cross-OBPI because OBPI-06 and
 OBPI-07 both read these artifacts and either could bolt the map on.
 *Proves REQ-0.35.0-05-10.*
 
+**BI-04 — No classification surface exists without a reader, and no bullet
+resolves from two surfaces at once.** After section ownership lands (OBPI-04)
+and the resolver lands (OBPI-10), exactly one surface answers for any given
+bullet: the corpus for corpus-owned sections, `advisory-rules-audit.md`
+everywhere else. Cross-OBPI because OBPI-04 owns which sections are
+corpus-owned and can move a bullet between the two resolvers without touching
+OBPI-10's diff — the resolver can be correct on the day it lands and be reading
+the wrong surface a section-declaration later. Also fences the reverse failure:
+a `CorpusEntry` field re-added with no consumer is the exact defect GHI #737
+named, and BI-04 is what makes its recurrence auditable at closeout rather than
+discoverable years later. *Proves REQ-0.35.0-10-07.*
+
 **BI-04 — The fail-closed reach of `--rendition-lineage` is owned sections
 only.** No ADR-0.35.0 OBPI extends it over unowned bytes. The gate's partial
 scope is a declared property of the whole decomposition — OBPI-04 sets the
@@ -204,13 +218,13 @@ pool item (operator ruling, 2026-07-21).
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 6
+- Baseline Selected: 7
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 1
 - Split Total: 3
-- Final Target OBPI Count: 9
+- Final Target OBPI Count: 10
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -222,8 +236,15 @@ pool item (operator ruling, 2026-07-21).
      Observability 2   — lineage map, coverage %, ratchet, advisory prose.
      Lineage 2         — the tombstone fold is a historical lineage migration.
 
-     Baseline Selected 6 inside the 5+ band: the dimension total is at the top
-     of the scale (10/10), so the band's floor understates the work.
+     Baseline Selected 7 inside the 5+ band: the dimension total is at the top
+     of the scale (10/10), so the band's floor understates the work. Raised
+     6 -> 7 on 2026-08-02 (operator-ruled, GHI #737) when the `classification`
+     reader was folded in as checklist item 10. The BASELINE is the right dial
+     for this, not a split adder: the split rules divide a fixed scope, and
+     this amendment ADDS scope — one more narrative unit on the section-
+     ownership seam. `Final Target OBPI Count` is derived (baseline + splits),
+     so amending it directly would have been drift; `gz specify` rejects a
+     hand-set total, which is how the correct dial was found.
 
      Split adders (each rule is a boolean +1, not a count):
      Single-Narrative +1 — a draft decomposition bundled "generator AND
@@ -239,7 +260,16 @@ pool item (operator ruling, 2026-07-21).
        across N consumers, `landing_id` propagation, and resume semantics.
        If the 2am-operator requirements all land as REQs it exceeds five
        clusters and splits again into "atomic write" / "resume, status,
-       rollback" -> 10. Flagged up front rather than discovered mid-flight. -->
+       rollback". Flagged up front rather than discovered mid-flight; that
+       contingency has NOT fired, and if it does the target goes 10 -> 11.
+
+     AMENDED 2026-08-02 (operator-ruled, GHI #737): 7 + 3 = 10. The dimension
+       scores are UNCHANGED — the classification cut opens no new dimension, it
+       is Interface/Observability work on the section-ownership seam item 3
+       already scored at 2/2. What changed is how many narrative units that
+       fixed dimension profile is being asked to carry, which is the baseline's
+       job. Folded into an unstarted ADR (0/10 landed) rather than retrofitted
+       after its OBPIs land over the same corpus surface. -->
 
 ## Checklist
 
@@ -256,6 +286,7 @@ pool item (operator ruling, 2026-07-21).
 - [ ] `gz content land <surface>` orchestrator -- atomic multi-consumer write, single Gate 5 on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
 - [ ] `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
 - [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-0.44.0-vendor-alignment-codex
+- [ ] `classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)
 
 ## Q&A Transcript
 
