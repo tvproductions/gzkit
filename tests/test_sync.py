@@ -444,6 +444,39 @@ class TestParseArtifactMetadata(unittest.TestCase):
 
         self.assertEqual(result["id"], "ADR-0.1.0-missing")
 
+    def test_malformed_frontmatter_yields_no_id_rather_than_a_stem_guess(self) -> None:
+        """A malformed block must not resolve to an invented id (GHI #736 residual).
+
+        The function already refused to *parse* a malformed block, but still
+        returned the stem-derived id it had seeded before reading -- so it
+        handed back exactly the guess its own comment said it refused. That
+        left callers unable to distinguish "no frontmatter, id taken from the
+        stem" from "frontmatter present but unreadable, id invented", which are
+        different conditions with different repairs.
+
+        Absence is asserted alongside as the negative control: a genuinely
+        frontmatter-less file still resolves to its stem, so the refusal is
+        scoped to damage rather than applied to every id-less artifact.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            malformed = Path(tmpdir) / "ADR-0.5.0-truncated.md"
+            malformed.write_text(
+                "---\nid: ADR-0.5.0-truncated\n\n# ADR-0.5.0: no closing marker\n",
+                encoding="utf-8",
+            )
+
+            self.assertNotIn("id", parse_artifact_metadata(malformed))
+
+    def test_absent_frontmatter_still_resolves_to_the_stem(self) -> None:
+        """Negative control for the refusal above: absent is not malformed."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            plain = Path(tmpdir) / "ADR-0.5.0-plain.md"
+            # No ADR-shaped H1 either, so the stem is the only id source left;
+            # a header would otherwise supply one and mask the distinction.
+            plain.write_text("Body prose with no heading.\n", encoding="utf-8")
+
+            self.assertEqual(parse_artifact_metadata(plain)["id"], "ADR-0.5.0-plain")
+
     def test_parse_parent_with_obpi(self) -> None:
         """Parses parent when it's an OBPI reference."""
         with tempfile.TemporaryDirectory() as tmpdir:

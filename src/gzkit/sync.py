@@ -357,7 +357,9 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
         file_path: Path to artifact file.
 
     Returns:
-        Dictionary with "id" and optionally "parent" keys.
+        Dictionary with "id" and optionally "parent" keys, or an EMPTY mapping
+        when the frontmatter block is present but unreadable -- an id is never
+        invented for an artifact whose metadata could not be read (GHI #736).
 
     """
     result: dict[str, str] = {"id": file_path.stem}
@@ -369,11 +371,19 @@ def parse_artifact_metadata(file_path: Path) -> dict[str, str]:
 
     read = read_frontmatter_bytes(raw)
     if read.state == "malformed":
-        # Refuse to guess. A malformed block is NOT an absent one, and inventing
-        # a stem-derived id for an artifact whose frontmatter is hidden is the
-        # permissive default GHI #736 closes. Callers gate on this via
-        # `register.is_unreadable_adr` before registration.
-        return result
+        # Refuse to guess, and return nothing rather than the stem-derived id
+        # seeded above -- handing that back WAS the guess this branch claims to
+        # refuse (GHI #736 residual). An empty mapping is what lets a caller
+        # tell "no frontmatter, id taken from the stem" from "frontmatter
+        # present but unreadable, id invented": different conditions with
+        # different repairs, previously indistinguishable.
+        #
+        # This does NOT by itself close the fail-open. Every caller resolves via
+        # `metadata.get("id", <stem>)`, so each re-derives the same stem
+        # independently; the refusal makes the distinction AVAILABLE, it does
+        # not make callers honour it. Registration is gated separately by
+        # `register.is_unreadable_adr`, which is why this is latent, not live.
+        return {}
 
     content = raw.decode("utf-8-sig", errors="replace")
     lines = content.split("\n")
