@@ -1,3 +1,13 @@
+---
+id: ADR-0.1.0-enforced-governance-foundation
+status: Validated
+semver: 0.1.0
+lane: heavy
+kind: feature
+parent: PRD-GZKIT-1.0.0
+date: 2026-01-13
+---
+
 # ADR-0.1.0: enforced-governance-foundation
 
 **Status:** Completed

@@ -10,6 +10,7 @@ from gzkit.core.validation_rules import (
     parse_frontmatter,
 )
 from gzkit.decomposition import active_checklist_items, parse_checklist_items, parse_scorecard
+from gzkit.frontmatter import read_frontmatter
 from gzkit.schemas import load_schema
 
 # ADR lifecycle states that are grandfather-exempted from the
@@ -42,6 +43,24 @@ _POOL_ADR_STEM_PREFIX = "ADR-pool."
 def is_pool_adr_path(path: Path) -> bool:
     """Return True when ``path`` names a pool ADR artifact."""
     return path.stem.startswith(_POOL_ADR_STEM_PREFIX)
+
+
+def is_canonical_adr_intent_path(path: Path) -> bool:
+    """Return True when ``path`` is the intent document of a canonical ADR package.
+
+    A canonical ADR package is a directory named for its ADR whose intent
+    document carries the same stem: ``ADR-0.34.0-foundation-sunset/
+    ADR-0.34.0-foundation-sunset.md``. Everything else the ``ADR-*.md`` glob
+    reaches is a sidecar that legitimately carries no frontmatter -- closeout
+    forms, briefs under ``obpis/``, audit and log files -- as are pool ADRs,
+    which are flat files whose parent is the ``pool/`` tier directory.
+
+    Stated as a property rather than as a list of sidecar names on purpose: an
+    enumeration has to be revisited every time a package grows a subdirectory,
+    and the omission is silent. Measured equivalent to the name-list form over
+    all 357 ``ADR-*.md`` files on disk, selecting the same 86 (GHI #742).
+    """
+    return path.stem == path.parent.name
 
 
 def is_adr_shape_grandfathered(frontmatter: dict[str, Any]) -> bool:
@@ -285,9 +304,32 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
     # Parse and validate
     frontmatter, body = parse_frontmatter(content)
 
-    # Skip files without frontmatter -- they are not governance documents
     if not frontmatter:
-        return []
+        # For sidecars (closeout forms, briefs, audit/log files) and pool ADRs,
+        # absence of frontmatter really is absence of the obligation. For the
+        # intent document of a canonical ADR package it is the loudest possible
+        # finding: no field can be checked at all, so a frontmatter-keyed reader
+        # reports green over an artifact it never inspected (GHI #742). Keying
+        # the exemption on directory placement rather than a frontmatter field
+        # is the GHI #483 precedent generalized instead of re-instantiated.
+        if not is_canonical_adr_intent_path(path):
+            return []
+        read = read_frontmatter(content)
+        detail = (
+            f"malformed and cannot be read: {read.reason}"
+            if read.state == "malformed"
+            else (
+                "absent; a canonical ADR intent document must declare "
+                "id, status, semver, lane, kind, parent, and date"
+            )
+        )
+        return [
+            ValidationError(
+                type="frontmatter",
+                artifact=str(path),
+                message=f"Frontmatter is {detail}",
+            )
+        ]
 
     # Kind-aware pool ADR skip (GHI #480). Pool ADRs are structurally distinct
     # from foundation/feature ADRs and the current adr schema does not encode

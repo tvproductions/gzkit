@@ -1,3 +1,13 @@
+---
+id: ADR-0.16.0-cms-architecture-formalization
+status: Validated
+semver: 0.16.0
+lane: heavy
+kind: feature
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-15
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.16.0 — cms-architecture-formalization

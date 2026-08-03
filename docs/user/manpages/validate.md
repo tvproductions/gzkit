@@ -119,6 +119,35 @@ bypass pattern observed across GHI-141 through GHI-156.
 Non-code commits (docs-only, config-only) and commits with a valid
 trailer pass the check. The scope scans HEAD only.
 
+### `--documents`
+
+Validates governance documents declared in the manifest (PRDs, constitutions,
+ADRs) against their schemas. OBPI briefs are owned by `--briefs`. Runs under
+bare `gz validate` as a default scope.
+
+Violations include the schema's own frontmatter-field and required-section
+checks, plus:
+
+- **A canonical ADR whose frontmatter is absent** (GHI #742). Absence of
+  frontmatter is not absence of the obligation: with no block to read, *no
+  field can be checked at all*, so a frontmatter-keyed reader reports green
+  over an artifact it never inspected. Four canonical ADRs sat in exactly that
+  state. Recovery: author the block, declaring `id`, `status`, `semver`,
+  `lane`, `kind`, `parent`, and `date`.
+- **A canonical ADR whose frontmatter is malformed** — reported distinctly from
+  absent, since the two have different repairs. The diagnostic names the cause
+  (see `--taxonomy` for the shared tri-state reader's classes).
+
+Scope is **directory placement**, matching the GHI #483 precedent: the check
+binds the intent document of a canonical ADR package — the `.md` file named for
+its own directory. Sidecars that legitimately carry no frontmatter stay exempt:
+closeout forms, briefs under `obpis/`, audit and log files, and pool ADRs
+(flat files under `pool/`). Stating the exemption as a property rather than a
+list of sidecar names is deliberate — an enumeration has to be revisited every
+time a package grows a subdirectory, and the omission is silent.
+
+The audit never mutates files.
+
 ### `--taxonomy`
 
 Enforces the ADR taxonomy contract from ADR-0.0.17: every non-pool ADR
@@ -144,7 +173,9 @@ Violations include:
   re-save as UTF-8 without a BOM and without invisible separators.
 
 A frontmatter-*less* ADR is **not** a violation here — `absent` and
-`malformed` are different answers. Reading is done by the shared tri-state
+`malformed` are different answers, and the `absent` half is owned by
+`--documents` (GHI #742), which fails closed on it for canonical ADR intent
+documents. Reading is done by the shared tri-state
 reader in `gzkit.frontmatter`, which the `adr_created` ingresses
 (`gz register-adrs`, first-run `gz init`) consult through the same predicate,
 so this audit and those membranes can no longer disagree about whether a

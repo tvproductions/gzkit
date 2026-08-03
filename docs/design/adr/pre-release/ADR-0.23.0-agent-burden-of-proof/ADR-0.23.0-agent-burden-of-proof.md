@@ -1,3 +1,13 @@
+---
+id: ADR-0.23.0-agent-burden-of-proof
+status: Validated
+semver: 0.23.0
+lane: heavy
+kind: feature
+parent: PRD-GZKIT-1.0.0
+date: 2026-03-21
+---
+
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
 # ADR-0.23.0 — Agent Burden of Proof at ADR Closeout
