@@ -17,6 +17,45 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.1 (2026-08-04)
+
+### Release highlights
+
+- Nine of the twenty-three fixes are validators, audits, or discovery channels that passed while measuring a fraction of their declared surface, or none of it (GHI #744)
+- The three frontmatter-ingress bypasses recorded as known limitations in v0.34.0 are closed (GHI #736)
+
+### Added
+
+- `gz validate --invariant-witness` registered as a CLI scope and enrolled in the gate; the validator function previously had no caller outside its own test (GHI #746)
+- Refusal and negative demo discovery in closeout walkthroughs, so ceremony queues surface commands that must fail rather than only positive assertions that exit 0 (GHI #738)
+- Schema enforcement for the `tasks:` discovery channel on both readers — `BriefStructure._validate_tasks` on the model path and signature (e) of `gz validate --task-envelope-coherence` on the corpus path — rejecting malformed TASK IDs and unknown parent REQs (GHI #753)
+- `project_local` content class for chores, declared in `registry.json` and honored by sync, `gz init`, and `gz chores doctor`, keeping gzkit-internal chores out of the wheel and out of adopter scaffolding (GHI #728)
+
+### Changed
+
+- OBPI briefs parse through their `BriefStructure` Pydantic schema fail-closed; the regex-scraping `LegacyBriefShape` fallback that 597 of 600 briefs used no longer gates governance (GHI #615)
+- Chore acceptance criteria gate the chore's own subject instead of standing in with the unit suite (GHI #743)
+- The `tasks:` channel is producer-stamped by `gz task start`, and `@advances` is demoted to advisory with its emptiness asserted rather than assumed (GHI #752)
+- Foundation closure is scoped project-local rather than framework-wide, so an adopter is no longer refused their own `kind: foundation` packages (GHI #740)
+- MX agent-facing surfaces name the marker path the code writes, `.gzkit/mx.json`, instead of `.gzkit/mx-active` (GHI #650)
+- `gz validate --cli-alignment` verb detection widened to fenced code blocks, which previously escaped all three detectors (GHI #745)
+- `gz validate --cli-alignment` adopts the stronger shared verb extractor already shipped in `hooks/obpi.py` instead of its own weaker reimplementation (GHI #748)
+
+### Fixed
+
+- Text-mode `subprocess` reads across 41 call sites pass `errors=`, so commands no longer crash when a tool emits non-UTF-8 output (GHI #582)
+- The tautological-test audit no longer walks the decorator list when applying its production-code exemption, so a `@covers` decorator stops hiding the test; 217 of 290 previously-masked findings are visible (GHI #730)
+- The task-envelope layer-drift gate keys all channels on a canonical OBPI id, so signature (c) compares more than the 6 of 776 OBPIs that survived the key mismatch (GHI #731)
+- The handoff resume gate admits `git rev-list`, closing the third narrow miss in a read allowlist its own refusal prose describes as permitting git reads (GHI #732)
+- The shared `register_adr_in_ledger` helper enforces the foundation membrane, closing the third `adr_created` ingress that booked prohibited `kind: foundation` ADRs (GHI #734)
+- A leading UTF-8 byte-order mark no longer hides an entire frontmatter block, which previously read as "this file has no frontmatter" for every key (GHI #735)
+- Frontmatter ingress decodes through one shared tri-state reader, closing the unicode-line-separator and BOM-less UTF-16/32 bypasses that three disagreeing ad-hoc decoders admitted (GHI #736)
+- The minor-release closeout ceremony no longer deadlocks on the rule-11 tag audit after bumping the version; `gz closeout` writes an in-flight manifest and the audit accepts `RELEASE-v{version}.md` (GHI #739)
+- The ADR template's `{persona}` placeholder is substituted rather than rendered as literal text, with a validator enforcing the `## Persona` section (GHI #741)
+- `gz validate --documents` validates ADR packages authored before the frontmatter mandate instead of silently exempting them (GHI #742)
+- Registering a `gz validate` scope enrolls it in `gz check`, closing the gap that let a failing scope pass the commit gate for eight days (GHI #744)
+- The GovZero OBPI-pipeline runbook no longer documents a `gz superbook` bridge that has never been registered (GHI #749)
+
 ## v0.33.3 (2026-07-25)
 
 ### Changed

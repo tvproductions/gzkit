@@ -1,5 +1,94 @@
 # gzkit Release Notes
 
+## v0.34.1 (2026-08-04)
+
+### Highlights
+
+This release is mostly about **gates that were green because they were not
+actually looking.** Nine of the twenty-three fixes are validators, audits, or
+discovery channels that passed while measuring a fraction of their declared
+surface — or none of it. It also closes the three frontmatter-ingress bypasses
+that v0.34.0 shipped as named known limitations.
+
+### Improvements
+
+- **#615** — OBPI briefs parse through their Pydantic schema fail-closed. The
+  regex-scraping fallback that 597 of 600 briefs silently used no longer gates
+  governance.
+- **#753** — The `tasks:` discovery channel is schema-enforced on both readers,
+  rejecting malformed TASK IDs and unknown parent REQs.
+- **#743** — Chore acceptance criteria gate the chore's own subject instead of
+  standing in with the unit suite.
+- **#738** — Closeout walkthroughs surface refusal and negative demos, not only
+  commands that exit 0.
+
+### Bug fixes
+
+**Frontmatter ingress and the foundation membrane**
+
+- **#734** — A third `adr_created` ingress booked `kind: foundation` ADRs the
+  membrane was meant to refuse.
+- **#735** — A leading byte-order mark hid an entire frontmatter block, reading
+  as "this file has no frontmatter".
+- **#736** — Three frontmatter decoders disagreed; unicode line separators and
+  BOM-less UTF-16/32 slipped past all of them.
+- **#742** — ADRs authored before the frontmatter mandate were silently exempt
+  from `gz validate --documents` rather than validated.
+
+**Gates that were not measuring**
+
+- **#744** — Registering a validate scope did not enroll it in `gz check`, so a
+  failing scope passed the commit gate for eight days.
+- **#746** — `gz validate --invariant-witness` was documented but never
+  registered; the validator's only caller was its own test.
+- **#730** — The tautological-test audit's exemption walked decorators, so a
+  `@covers` decorator hid the test from the audit — 217 of 290 findings masked.
+- **#731**, **#752** — The task-envelope layer-drift gate compared 7 of 534
+  OBPIs, because two of its four channels produced no keys at all and the other
+  two keyed on different id forms.
+- **#745**, **#748** — `gz validate --cli-alignment` missed verbs inside fenced
+  code blocks, and used a weaker extractor than the one already shipped
+  elsewhere in the codebase.
+
+**Adopter-facing**
+
+- **#740** — Adopters were refused their own `kind: foundation` packages;
+  foundation closure applied framework-wide instead of project-local as decided.
+- **#728** — gzkit-internal chores were exported into every adopter project by
+  sync and `gz init`.
+
+**Ceremony and tooling**
+
+- **#582** — Commands crashed when a subprocess emitted non-UTF-8 output, across
+  41 call sites.
+- **#739** — The minor-release closeout deadlocked on its own tag audit after
+  bumping the version.
+- **#732** — The handoff resume gate refused `git rev-list`, a read its own
+  refusal prose named as permitted.
+- **#650** — MX agent-facing surfaces named a marker path that `gz mx enter`
+  never creates.
+- **#741** — `{persona}` rendered as literal text in generated ADRs, with no
+  validator enforcing the section.
+- **#749** — The GovZero runbook documented a `gz superbook` bridge that has
+  never existed.
+
+### Gate Evidence
+
+- **Qualifier:** 23 behavior-level GHIs closed since `v0.34.0`, each carrying the
+  `runtime` label and a `src/gzkit/` diff. No foundation closeouts in range.
+- **#750 excluded deliberately** — surfaced as `diff_only`; its `src/gzkit/` diff
+  is confined to generated mirrors (`src/gzkit/rules/`, `src/gzkit/chores/`)
+  written only by `sync_pkg_surfaces`, so the runtime predicate does not fire.
+  The patch-release Step 1a carve-out applies and the label was not backfilled.
+- Version sync via `gz patch release`: `pyproject.toml`, `src/gzkit/__init__.py`,
+  README badge. Manifest at `docs/releases/PATCH-v0.34.1.md`.
+- `uv run gz check` exit 0 on the release tree.
+- Operator approval recorded 2026-08-04 (attestor `g0`).
+
+### Stats
+
+- 23 GHIs closed
+
 ## v0.34.0 (2026-07-31)
 
 **ADR:** ADR-0.34.0-foundation-sunset
