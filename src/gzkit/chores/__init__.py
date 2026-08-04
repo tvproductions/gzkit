@@ -28,20 +28,84 @@ from gzkit.config import GzkitConfig
 _CANONICAL_RESOURCE = "gzkit.chores"
 _PER_SLUG_FILES = ("CHORE.md", "acceptance.json", "README.md")
 _REGISTRY_FILE = "registry.json"
+_PROJECT_LOCAL_KEY = "projectLocal"
+
+
+def _chore_slug_of(path: Path) -> str | None:
+    """Return the chore slug a path sits under, for either surface spelling.
+
+    Sync passes ``<root>/.gzkit/chores/<slug>/...``; `gz init` and the
+    distribution audit pass ``src/gzkit/chores/<slug>/...``. Both must resolve to
+    the same slug or a withheld chore stays invisible to the audit that should
+    catch it leaking.
+    """
+    parts = path.parts
+    for index, part in enumerate(parts):
+        if part == "chores" and index + 1 < len(parts):
+            return parts[index + 1]
+    return None
+
+
+def _project_local_slugs(project_root: Path | None) -> frozenset[str]:
+    """Return the slugs the project registry declares ``projectLocal``.
+
+    Read fresh rather than cached: the registry is small, and a cache keyed on
+    project_root would go stale exactly when sync rewrites the registry during
+    the same run.
+    """
+    if project_root is None:
+        return frozenset()
+    registry = Path(project_root) / ".gzkit" / "chores" / _REGISTRY_FILE
+    try:
+        data = json.loads(registry.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError, ValueError):
+        return frozenset()
+    entries = data.get("chores") if isinstance(data, dict) else None
+    if not isinstance(entries, list):
+        return frozenset()
+    return frozenset(
+        str(entry["slug"])
+        for entry in entries
+        if isinstance(entry, dict) and entry.get("slug") and entry.get(_PROJECT_LOCAL_KEY) is True
+    )
+
+
+def exportable_registry(registry_path: Path) -> dict[str, Any]:
+    """Return the registry with ``projectLocal`` slug entries removed.
+
+    The wheel must not advertise a chore whose files it does not carry.
+    ``merge_chores_registry`` is canonical-wins on shipped slugs, so a surviving
+    entry would be ADDED to an adopter's registry while its files were withheld
+    — a registered chore with no files, which `gz chores doctor` reports as
+    MISSING. Withholding files without withholding the entry trades a leak for a
+    broken install (GHI #728).
+    """
+    data = json.loads(Path(registry_path).read_text(encoding="utf-8"))
+    entries = data.get("chores")
+    if isinstance(entries, list):
+        data["chores"] = [
+            entry
+            for entry in entries
+            if not (isinstance(entry, dict) and entry.get(_PROJECT_LOCAL_KEY) is True)
+        ]
+    return data
 
 
 def _classify_chore_file(
     path: Path,
     *,
     project_root: Path | None = None,
-) -> Literal["canonical", "package_only", "runtime_state"]:
-    """Classify a chore file into one of three content classes.
+) -> Literal["canonical", "package_only", "runtime_state", "project_local"]:
+    """Classify a chore file into one of four content classes.
 
     canonical: CHORE.md, AGENTS.md, *.md outside proofs/, acceptance.json,
                registry.json, authored .py tool scripts (present at .gzkit/ surface)
     package_only: __init__.py, __pycache__/**, Python modules with no
                   .gzkit/chores/ counterpart
     runtime_state: CHORE-LOG.md, proofs/**, .gitkeep
+    project_local: every file under a slug whose registry entry declares
+               ``projectLocal: true`` — gzkit's own maintenance chores, which
+               must not reach the wheel or an adopter (GHI #728)
 
     See .gzkit/rules/skill-surface-sync.md § Chores class-classifier.
     """
@@ -49,6 +113,13 @@ def _classify_chore_file(
     name = path.name
     parts = path.parts
     path_posix = path.as_posix()
+
+    # project_local: the whole slug is withheld, whatever the file type. Checked
+    # first because the declaration is per-slug — a per-file class cannot
+    # override it without re-opening the export this closes.
+    slug = _chore_slug_of(path)
+    if slug is not None and slug in _project_local_slugs(project_root):
+        return "project_local"
 
     # runtime_state: proofs/ contents, .gitkeep, CHORE-LOG.md
     if "proofs" in parts or name in (".gitkeep", "CHORE-LOG.md"):

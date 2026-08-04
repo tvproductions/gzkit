@@ -657,6 +657,22 @@ def render_content_surface(
     updated.append(dest_path.relative_to(project_root).as_posix())
 
 
+def _write_bytes_if_changed(
+    payload: bytes, dest_file: Path, project_root: Path, updated: list[str]
+) -> None:
+    """Write payload to dest_file when bytes differ; record the write in updated.
+
+    Sibling of ``_copy_if_changed`` for content that is DERIVED rather than
+    copied — the chores registry ships filtered, so there is no source file whose
+    bytes equal the destination's (GHI #728). Same idempotence contract.
+    """
+    dest_file.parent.mkdir(parents=True, exist_ok=True)
+    if dest_file.exists() and dest_file.read_bytes() == payload:
+        return
+    dest_file.write_bytes(payload)
+    updated.append(dest_file.relative_to(project_root).as_posix())
+
+
 def _copy_if_changed(
     src_file: Path, dest_file: Path, project_root: Path, updated: list[str]
 ) -> None:
@@ -664,12 +680,7 @@ def _copy_if_changed(
 
     Idempotent: a bytes-identical destination is left untouched and not recorded.
     """
-    dest_file.parent.mkdir(parents=True, exist_ok=True)
-    src_bytes = src_file.read_bytes()
-    if dest_file.exists() and dest_file.read_bytes() == src_bytes:
-        return
-    dest_file.write_bytes(src_bytes)
-    updated.append(dest_file.relative_to(project_root).as_posix())
+    _write_bytes_if_changed(src_file.read_bytes(), dest_file, project_root, updated)
 
 
 def _sync_classified_flat(
@@ -766,7 +777,11 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
         )
 
     # Chores: canonical-class files only, recursive tree, per _classify_chore_file
-    from gzkit.chores import _classify_chore_file  # noqa: PLC0415
+    from gzkit.chores import (  # noqa: PLC0415
+        _REGISTRY_FILE,
+        _classify_chore_file,
+        exportable_registry,
+    )
 
     gzkit_chores = project_root / config.paths.chores
     pkg_chores = pkg_root / "chores"
@@ -776,9 +791,19 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
                 continue
             if _classify_chore_file(src_file, project_root=project_root) != "canonical":
                 continue
-            _copy_if_changed(
-                src_file, pkg_chores / src_file.relative_to(gzkit_chores), project_root, updated
-            )
+            dest_file = pkg_chores / src_file.relative_to(gzkit_chores)
+            # The top-level registry ships FILTERED: a project-local slug's files
+            # are withheld above, so shipping its entry would advertise a chore
+            # the wheel does not carry (GHI #728).
+            if src_file.name == _REGISTRY_FILE and src_file.parent == gzkit_chores:
+                _write_bytes_if_changed(
+                    json.dumps(exportable_registry(src_file), indent=2).encode("utf-8") + b"\n",
+                    dest_file,
+                    project_root,
+                    updated,
+                )
+                continue
+            _copy_if_changed(src_file, dest_file, project_root, updated)
 
     return updated
 

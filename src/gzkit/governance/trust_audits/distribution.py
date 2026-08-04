@@ -64,7 +64,12 @@ def _surface_from_posix(rel_posix: str) -> str | None:
 
 
 def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
-    """Return True if a file's per-surface classifier marks it package_only or runtime_state."""
+    """Return True when a classifier marks a file as not-shipped-by-design.
+
+    Covers package_only, runtime_state, and project_local. The last is a
+    declared gzkit-internal chore slug: it is absent from the wheel on purpose,
+    so flagging its absence would turn the fix for GHI #728 into a gate failure.
+    """
     surface = _surface_from_posix(rel_posix)
     if surface is None:
         return False
@@ -76,7 +81,7 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
         result = classifier(path, project_root=project_root)  # type: ignore
     except TypeError:
         result = classifier(path)
-    return result in ("package_only", "runtime_state")
+    return result in ("package_only", "runtime_state", "project_local")
 
 
 def audit_distribution(project_root: Path) -> list[ValidationError]:

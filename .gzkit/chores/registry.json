@@ -298,7 +298,8 @@
             "version": "1.0.0",
             "path": ".gzkit/chores/test-consolidation-subtest-sweep",
             "lane": "lite",
-            "timeoutSeconds": 900
+            "timeoutSeconds": 900,
+            "projectLocal": true
         },
         {
             "slug": "test-isolation-compliance",

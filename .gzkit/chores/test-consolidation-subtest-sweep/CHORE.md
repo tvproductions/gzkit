@@ -5,21 +5,20 @@
 > satisfied by shipped code (`baeb1f72e` — `run_tests` invokes
 > `unittest-parallel`); these consolidation items are the scope that survived.
 
-**Intended project-local; ships anyway — tracked at GHI #728.** This chore
-encodes gzkit's own test-hygiene posture, not portable adopter governance, and
-was authored only under `.gzkit/chores/`. It is nonetheless propagated into
-`src/gzkit/chores/` by `gz agent sync control-surfaces` and scaffolded into
-adopter projects by `gz init`: no project-local-only affordance exists in either
-path, even though `gz chores doctor` honours exactly that category
-(REQ-0.0.21-09-06) and `.gzkit/rules/chores.md` § Two-Surface Layout marks the
-project overlay "Shipped in wheel? **No**".
+**Project-local — declared, and now enforced (GHI #728).** This chore encodes
+gzkit's own test-hygiene posture, not portable adopter governance. Its registry
+entry carries `"projectLocal": true`, so `_classify_chore_file` returns
+`project_local` for every file under it and all three consumers withhold it:
+`gz agent sync control-surfaces` does not copy it into `src/gzkit/chores/`,
+`gz init` does not scaffold it into an adopter, and `gz validate --distribution`
+does not flag its absence from the wheel. The shipped `registry.json` is filtered
+too, so the wheel never advertises a chore it does not carry.
 
-An earlier revision of this file asserted the opposite as fact. That claim was
-false; it is corrected here rather than quietly dropped.
-
-**If you are an adopter who received this chore:** the baseline table below is
-gzkit's own measurement, not yours. Re-measure before acting, or disregard the
-chore — it is gzkit's internal hygiene, not governance you adopted.
+Two earlier revisions of this paragraph were wrong in opposite directions: the
+first asserted project-locality as a delivered fact when no affordance existed,
+the second recorded it as permanently unfixable. The history is kept rather than
+quietly dropped — the baseline table below reads differently if you know this
+chore once shipped to adopters who never asked for it.
 
 ## Why this exists
 
