@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from enum import IntEnum
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from gzkit.commands.common import console
 
@@ -64,6 +64,40 @@ class CeremonyStepRecord(BaseModel):
     acknowledged_at: str | None = Field(None, description="ISO-8601 timestamp")
 
 
+class WalkthroughDemo(BaseModel):
+    """One walkthrough demo: a command plus the exit code that PROVES its claim.
+
+    The expected exit is the whole point (GHI #738). An ADR whose product is a
+    refusal, a gate, or a closed door has nothing it can demonstrate while every
+    demo must exit 0 — an all-green queue is indistinguishable from the
+    enforcement never having been built. ADR-0.34.0's closeout walked 11 commands
+    that were all positive assertions while its thesis was that four authoring
+    doors now refuse.
+
+    The ``claim`` / ``command`` / ``expected_exit`` shape is taken deliberately
+    from ``## Fidelity Assertions`` (``gzkit.fidelity.FidelityAssertion``), which
+    could already express a negative while this surface could not. The two now
+    share one representation, which was the issue's own diagnosis of the gap.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    command: str = Field(..., description="Command to demonstrate")
+    expected_exit: int = Field(0, description="Exit code that proves the claim")
+    claim: str | None = Field(None, description="What the demo proves, when a claim is known")
+
+
+def _coerce_demo(value: object) -> object:
+    """Accept a bare command string as a zero-exit demo.
+
+    Ceremony state persists to ``.gzkit/ceremonies/*.json`` and in-flight files
+    written before GHI #738 hold ``list[str]``. Coercing on read keeps a paused
+    ceremony resumable across the upgrade instead of failing validation on a
+    file the operator cannot regenerate without restarting the ceremony.
+    """
+    return {"command": value} if isinstance(value, str) else value
+
+
 class CeremonyState(BaseModel):
     """Persistent ceremony state stored in .gzkit/ceremonies/."""
 
@@ -75,12 +109,21 @@ class CeremonyState(BaseModel):
     started_at: str = Field(..., description="ISO-8601 timestamp")
     updated_at: str = Field(..., description="ISO-8601 timestamp")
     step_history: list[CeremonyStepRecord] = Field(default_factory=list, description="Step records")
-    walkthrough_commands: list[str] = Field(default_factory=list, description="Commands for Step 5")
+    walkthrough_commands: list[WalkthroughDemo] = Field(
+        default_factory=list, description="Demos for Step 5"
+    )
     walkthrough_index: int = Field(0, description="Current command index in Step 5")
     attestation: str | None = Field(None, description="Human attestation text")
     completed_at: str | None = Field(None, description="ISO-8601 when ceremony finished")
     attempt: int = Field(1, description="R&R attempt number")
     paused_at: str | None = Field(None, description="ISO-8601 when paused for revision")
+
+    @field_validator("walkthrough_commands", mode="before")
+    @classmethod
+    def _accept_legacy_command_strings(cls, value: object) -> object:
+        if isinstance(value, list):
+            return [_coerce_demo(item) for item in value]
+        return value
 
 
 # ---------------------------------------------------------------------------

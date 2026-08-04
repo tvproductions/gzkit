@@ -25,6 +25,27 @@ from gzkit.commands.closeout_ceremony import (
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init
 
+
+def _advance_to_attestation(runner, adr_id: str = "ADR-0.1.0-f", limit: int = 25) -> None:
+    """Drive `--next` until the ceremony reaches Step 6 ATTESTATION.
+
+    Replaces `for _ in range(5)`, which silently encoded "the walkthrough holds
+    exactly one demo". Step 5 is operator-paced — one `--next` per demo
+    (GHI #260) — so any change to demo discovery re-times the whole walk. Merging
+    Fidelity Assertions into the queue (GHI #738) did exactly that, and the fixed
+    counts failed at Step 5 while reporting a Step-6 assertion, which points at
+    the attestation gate rather than at the demo count that actually moved.
+
+    Bounded by *limit* so a ceremony that stops advancing fails the test instead
+    of hanging.
+    """
+    for _ in range(limit):
+        state = load_ceremony_state(Path.cwd(), adr_id)
+        if state is not None and state.current_step >= CeremonyStep.ATTESTATION:
+            return
+        runner.invoke(main, ["closeout", adr_id, "--ceremony", "--next"])
+
+
 # ---------------------------------------------------------------------------
 # Model unit tests
 # ---------------------------------------------------------------------------
@@ -272,12 +293,10 @@ class TestCeremonyAdvance(unittest.TestCase):
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             # Step 2->3 (docs check)
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
-            # Step 3->4 (walkthrough)
-            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
-            # Step 4->5 (execute)
-            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
-            # Step 5->6 (attestation)
-            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+            # Step 3->4 (walkthrough), 4->5 (execute), then one --next per demo
+            # until Step 6 — Step 5 is operator-paced, so its length is the demo
+            # count, not a constant.
+            _advance_to_attestation(runner)
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
             self.assertEqual(state.current_step, CeremonyStep.ATTESTATION)
             # Attest
@@ -341,8 +360,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
         """Init a feature-ADR ceremony and advance via --next to Step 6."""
         runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
         runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
-        for _ in range(5):  # 1->2->3->4->5->6
-            runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+        _advance_to_attestation(runner)
         state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
         assert state.current_step == CeremonyStep.ATTESTATION, state.current_step
 
@@ -424,8 +442,7 @@ class TestCeremonyGate5Enforcement(unittest.TestCase):
             ledger.append(stale)
             # This run starts now (2026) >> the stale event's ts.
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
-            for _ in range(5):
-                runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
+            _advance_to_attestation(runner)
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 3, result.output)
             self.assertIn("no `attested` ledger receipt was recorded", result.output)

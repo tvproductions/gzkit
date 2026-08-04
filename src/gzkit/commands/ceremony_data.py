@@ -19,7 +19,9 @@ from typing import Any
 from rich.console import Console
 
 from gzkit.brief_commands import extract_fenced_commands
+from gzkit.commands.ceremony_state import WalkthroughDemo
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.fidelity import is_self_referential_command, parse_fidelity_assertions
 from gzkit.reporter.presets import ColumnDef, status_table
 
 _MANPAGE_DIR_POSIX = MANPAGE_DIR.as_posix()
@@ -282,11 +284,66 @@ def _is_housekeeping_verb_chain(verb_chain: str) -> bool:
     return verb_chain.split(" ", 1)[0] in _HOUSEKEEPING_GZ_VERB_ROOTS
 
 
+def _fidelity_demos(adr_file: Path | None) -> list[WalkthroughDemo]:
+    """Return the ADR's Fidelity Assertions as walkthrough demos.
+
+    These are merged into the queue rather than competing with the brief
+    strategies, because they are the only authored surface that can express a
+    NEGATIVE (GHI #738). ``## Fidelity Assertions`` is mandatory on every
+    non-pool ADR Decision (ADR-0.0.73 Boundary Invariant #4, fail-closed by
+    ``gz validate --fidelity-presence``), so an enforcement-claim ADR carries its
+    refusal demo already — the walkthrough simply had no way to read it.
+
+    The self-referential ``gz adr fidelity`` guard is honored here as it is in
+    the gate: a demo that runs the fidelity gate demonstrates the gate, not the
+    ADR's product.
+    """
+    if adr_file is None or not adr_file.is_file():
+        return []
+    try:
+        assertions = parse_fidelity_assertions(adr_file)
+    except (OSError, ValueError):
+        # A missing or unparseable block is `--fidelity-presence`'s finding to
+        # report, never a reason to abort ceremony bootstrap.
+        return []
+    return [
+        WalkthroughDemo(
+            command=a.command,
+            expected_exit=a.expected_exit,
+            claim=a.claim,
+        )
+        for a in assertions
+        if not is_self_referential_command(a.command)
+    ]
+
+
+def _dedupe_demos(demos: list[WalkthroughDemo]) -> list[WalkthroughDemo]:
+    """Collapse demos repeating the same command, preserving first-seen order.
+
+    ``_commands_from_demo_sections`` concatenates every brief's Demo section
+    with no cross-brief dedupe, so a gate cited by four briefs became four
+    demos. ADR-0.34.0's ceremony walked 11 commands that were 5 distinct ones
+    and therefore read as more verification coverage than it performed
+    (GHI #738).
+
+    A demo carrying a claim wins over a bare duplicate of the same command, so
+    merging Fidelity Assertions in enriches an existing row rather than adding a
+    second one for the same invocation.
+    """
+    by_command: dict[str, WalkthroughDemo] = {}
+    for demo in demos:
+        existing = by_command.get(demo.command)
+        if existing is None or (existing.claim is None and demo.claim is not None):
+            by_command[demo.command] = demo
+    return list(by_command.values())
+
+
 def discover_demo_commands(
     project_root: Path,
     adr_id: str,
     obpi_files: list[Path],
-) -> list[str]:
+    adr_file: Path | None = None,
+) -> list[WalkthroughDemo]:
     """Discover demo commands from OBPI briefs.
 
     Priority chain:
@@ -308,22 +365,19 @@ def discover_demo_commands(
     CLI parser (GHI-156) — an unregistered verb chain is dropped before the
     walkthrough can try to execute it.
     """
-    # Strategy 1: ## Demo or ## Examples sections
-    commands = _commands_from_demo_sections(obpi_files)
-    if commands:
-        return commands
-
-    # Strategy 2: command-doc links → --help
-    commands = _commands_from_command_doc_links(project_root, obpi_files)
-    if commands:
-        return commands
-
-    # Strategy 3: brief titles → --help
-    commands = _commands_from_brief_titles(obpi_files)
-    if commands:
-        return commands
-
-    return [f"uv run gz adr status {adr_id} --json"]
+    # Strategies 1-3 select the brief-sourced product demos; the Fidelity
+    # Assertions are merged onto whichever wins rather than competing in the
+    # chain, because they answer a different question — "what does this ADR
+    # claim, and what exit proves it?" — and are the only source that can carry
+    # a refusal (GHI #738).
+    commands = (
+        _commands_from_demo_sections(obpi_files)
+        or _commands_from_command_doc_links(project_root, obpi_files)
+        or _commands_from_brief_titles(obpi_files)
+        or [f"uv run gz adr status {adr_id} --json"]
+    )
+    demos = [WalkthroughDemo(command=command) for command in commands]
+    return _dedupe_demos(demos + _fidelity_demos(adr_file))
 
 
 _DEMO_SECTION_HEADINGS: tuple[str, ...] = ("Demo", "Examples")

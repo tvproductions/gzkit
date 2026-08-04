@@ -27,6 +27,7 @@ from gzkit.commands.ceremony_intent import (
     pair_intent_with_obpis,
     parse_intent_items,
 )
+from gzkit.commands.ceremony_state import WalkthroughDemo
 
 if TYPE_CHECKING:
     from gzkit.commands.closeout_ceremony import CeremonyState
@@ -140,7 +141,7 @@ def render_step_3_docs_check(
 
 def render_step_4_walkthrough(
     adr_id: str,
-    commands: list[str],
+    commands: list[WalkthroughDemo],
     obpi_files: list[Path],
 ) -> str:
     """Value narrative — per-OBPI sections, then demo command list."""
@@ -169,7 +170,11 @@ def render_step_4_walkthrough(
     if commands:
         elements.append(Rule("Demo Commands (Step 5)", style="dim"))
         for i, c in enumerate(commands):
-            elements.append(Text(f"  {i + 1}. {c}"))
+            # Flag refusal demos in the queue preview too: an operator scanning
+            # the list must be able to tell which rows PROVE a closed door
+            # before running any of them (GHI #738).
+            suffix = f"   [expects exit {c.expected_exit}]" if c.expected_exit != 0 else ""
+            elements.append(Text(f"  {i + 1}. {c.command}{suffix}"))
     else:
         elements.append(Text("No demo commands discovered."))
 
@@ -185,7 +190,7 @@ def render_step_4_walkthrough(
 
 def render_step_5_execute(
     adr_id: str,
-    commands: list[str],
+    commands: list[WalkthroughDemo],
     walkthrough_index: int = 0,
 ) -> str:
     """Live demo — present ONE command per render for operator-paced execution.
@@ -226,21 +231,31 @@ def render_step_5_execute(
             f"({remaining} remaining)."
         )
 
-    return "\n".join(
-        [
-            f"LIVE DEMO — Test Drive ({position})",
+    lines = [
+        f"LIVE DEMO — Test Drive ({position})",
+        "",
+        "For this command:",
+        "  1. Explain briefly why it demonstrates value",
+        "  2. Run it (or offer to let the human run it)",
+        "  3. Wait for human acknowledgment before advancing",
+        "",
+        "Command to demonstrate now:",
+        f"  `{current.command}`",
+    ]
+    if current.claim:
+        lines += ["", f"Claim under demonstration:  {current.claim}"]
+    if current.expected_exit != 0:
+        # Without this the operator reads a refusal demo as a broken command and
+        # the negative control it provides is worse than useless — an ADR whose
+        # product is a closed door needs the non-zero exit named as the PROOF
+        # (GHI #738).
+        lines += [
             "",
-            "For this command:",
-            "  1. Explain briefly why it demonstrates value",
-            "  2. Run it (or offer to let the human run it)",
-            "  3. Wait for human acknowledgment before advancing",
-            "",
-            "Command to demonstrate now:",
-            f"  `{current}`",
-            "",
-            advance_hint,
+            f"EXPECTED EXIT: {current.expected_exit} — this demo proves a REFUSAL.",
+            "  A zero exit here means the enforcement is NOT in place.",
         ]
-    )
+    lines += ["", advance_hint]
+    return "\n".join(lines)
 
 
 def render_step_6_attestation(adr_id: str) -> str:

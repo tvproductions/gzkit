@@ -189,7 +189,7 @@ def _initialize_ceremony(
         raise GzCliError(f"Cannot start ceremony: {'; '.join(blockers)}")
 
     now = _now_iso()
-    commands = discover_demo_commands(project_root, adr_id, obpi_files)
+    commands = discover_demo_commands(project_root, adr_id, obpi_files, adr_file)
     state = CeremonyState(
         adr_id=adr_id,
         current_step=CeremonyStep.INITIALIZE,

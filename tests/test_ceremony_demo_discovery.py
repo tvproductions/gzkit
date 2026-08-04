@@ -21,7 +21,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.commands.ceremony_data import _commands_from_demo_sections
+from gzkit.commands.ceremony_data import _commands_from_demo_sections, discover_demo_commands
 from gzkit.traceability import covers
 
 _FIXTURE = Path(__file__).parent / "fixtures" / "ceremony_demos" / "multiline_demo.md"
@@ -102,6 +102,87 @@ class TestCeremonyDemoDiscovery(unittest.TestCase):
             brief_path.write_text(brief, encoding="utf-8")
             commands = _commands_from_demo_sections([brief_path])
         self.assertEqual(commands, ["uv run gz validate --documents"], f"got {commands!r}")
+
+
+class TestWalkthroughSurfacesRefusals(unittest.TestCase):
+    """The walkthrough must be able to demonstrate a REFUSAL (GHI #738).
+
+    ADR-0.34.0's thesis was that four authoring doors now refuse; its closeout
+    walked 11 commands that were all positive assertions. For an ADR asserting
+    fail-closed behavior, an all-green demo set is indistinguishable from the
+    enforcement never having been built — the campaign § 4 enforcement-claim rule
+    stopped at the test boundary and never reached the attestation surface.
+
+    `## Fidelity Assertions` could already express a negative and is mandatory on
+    every non-pool ADR (ADR-0.0.73 BI #4). These pin that the two surfaces now
+    share one representation.
+    """
+
+    _ADR = (
+        "# ADR-9.9.9-probe\n\n"
+        "## Fidelity Assertions\n\n"
+        "| Claim | Command | Expected exit |\n"
+        "|-------|---------|---------------|\n"
+        "| The door refuses | `uv run gz plan create p --kind foundation` | 1 |\n"
+        "| The tree is clean | `uv run gz validate --taxonomy` | 0 |\n\n"
+        "## Next\n"
+    )
+
+    def _discover(self, tmp: Path, briefs: list[Path]):
+        adr = tmp / "ADR-9.9.9-probe.md"
+        adr.write_text(self._ADR, encoding="utf-8")
+        return discover_demo_commands(tmp, "ADR-9.9.9-probe", briefs, adr)
+
+    def test_refusal_demo_reaches_the_walkthrough(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            demos = self._discover(Path(tmp), [])
+        refusals = [d for d in demos if d.expected_exit != 0]
+        self.assertEqual(len(refusals), 1, f"got {demos!r}")
+        self.assertIn("--kind foundation", refusals[0].command)
+        self.assertEqual(refusals[0].claim, "The door refuses")
+
+    def test_positive_assertions_still_reach_the_walkthrough(self) -> None:
+        """Negative control: the merge must not admit ONLY negatives."""
+        with tempfile.TemporaryDirectory() as tmp:
+            demos = self._discover(Path(tmp), [])
+        self.assertIn(
+            "uv run gz validate --taxonomy",
+            [d.command for d in demos],
+        )
+
+    def test_duplicate_commands_collapse(self) -> None:
+        """A gate cited by four briefs is one demo, not four.
+
+        ADR-0.34.0's queue carried 11 entries for 5 distinct commands, reading as
+        more verification coverage than it performed.
+        """
+        brief = (
+            "## Demo\n\n```bash\nuv run gz validate --taxonomy\n```\n",
+            "## Demo\n\n```bash\nuv run gz validate --taxonomy\n```\n",
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            paths = []
+            for i, text in enumerate(brief):
+                p = Path(tmp) / f"OBPI-{i}.md"
+                p.write_text(text, encoding="utf-8")
+                paths.append(p)
+            demos = self._discover(Path(tmp), paths)
+        commands = [d.command for d in demos]
+        self.assertEqual(len(commands), len(set(commands)), f"duplicates survived: {commands!r}")
+
+    def test_fidelity_claim_enriches_a_duplicate_rather_than_adding_one(self) -> None:
+        """A brief demo and a fidelity row naming the same command are ONE demo.
+
+        Otherwise merging the two surfaces would reintroduce the duplication the
+        dedupe exists to remove.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            p = Path(tmp) / "OBPI-0.md"
+            p.write_text("## Demo\n\n```bash\nuv run gz validate --taxonomy\n```\n", "utf-8")
+            demos = self._discover(Path(tmp), [p])
+        matching = [d for d in demos if d.command == "uv run gz validate --taxonomy"]
+        self.assertEqual(len(matching), 1, f"got {demos!r}")
+        self.assertEqual(matching[0].claim, "The tree is clean")
 
 
 if __name__ == "__main__":
