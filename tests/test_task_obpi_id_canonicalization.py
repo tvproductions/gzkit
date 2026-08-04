@@ -298,29 +298,31 @@ class TestSigCComparisonSurface(unittest.TestCase):
             "the 6 pinned on 2026-07-29 — the gate is going inert",
         )
 
-    def test_unpopulated_channels_are_named_not_assumed(self) -> None:
-        """The two dead channels are asserted dead, so reviving one is visible.
+    def test_advances_channel_is_asserted_dead_not_assumed_dead(self) -> None:
+        """`@advances` carries no keys, and that is recorded rather than inferred.
 
-        `_sig_c_layer_drift` is documented as comparing FOUR channels while two
-        produce no keys at all. Asserting the emptiness makes the shortfall a
-        recorded fact rather than a silent one — and this test flips the moment
-        either channel starts carrying data, which is the signal that the gate's
-        real coverage changed.
+        Scope narrowed under GHI #752. This asserted BOTH dead channels until
+        `tasks:` gained a producer (`_stamp_brief_task_declaration`, stamped by
+        `gz task start`). Keeping the frontmatter arm would have inverted the
+        test's meaning: the first genuine stamp would fail the suite, so a
+        WORKING producer would read as a regression — the assertion would be
+        pinning the defect open instead of pinning the measurement honest.
+
+        `@advances` keeps the assertion because it is dead by construction, not
+        by neglect: it marks the function an author judges materially advances a
+        TASK, and no runtime can know which function that is. It is demoted to
+        advisory in `.gzkit/rules/task-discovery.md`. If it ever becomes
+        populated, that is a design change and Signature (c)'s coverage floor
+        must be re-derived — which is what this test forces.
         """
-        from gzkit.commands.validate_task_envelope import (
-            _advances_channel_map,
-            _collect_obpi_brief_frontmatter,
-            _frontmatter_channel_map,
-        )
-
-        advances = _advances_channel_map()
-        frontmatter = _frontmatter_channel_map(_collect_obpi_brief_frontmatter(self._REPO))
+        from gzkit.commands.validate_task_envelope import _advances_channel_map
 
         self.assertEqual(
-            (len(advances), len(frontmatter)),
-            (0, 0),
-            "an @advances or brief `tasks:` channel is now populated — Signature "
-            "(c)'s coverage floor and GHI #731's measurements must be re-derived",
+            len(_advances_channel_map()),
+            0,
+            "the @advances channel is now populated — it is demoted to advisory "
+            "with no producer, so this is a design change; re-derive Signature "
+            "(c)'s coverage floor and the GHI #752 measurements",
         )
 
 

@@ -5,6 +5,8 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
+import yaml
+
 from gzkit.ledger import parse_frontmatter_value
 
 _COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
@@ -101,6 +103,58 @@ def _upsert_frontmatter_value(content: str, key: str, value: str) -> str:
     if not replaced:
         lines.insert(end_idx, f"{key}: {value}")
 
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
+    """Append ``value`` to a top-level frontmatter list ``key``, idempotently.
+
+    Deliberately distinct from ``_upsert_frontmatter_value``, which REPLACES a
+    scalar. An OBPI mints one TASK per REQ, so its declaration accumulates: a
+    replacing writer would leave the channel naming only the most recent TASK,
+    which is under-declaration — the exact drift Signature (c) exists to catch
+    (GHI #752).
+
+    An existing inline value (``tasks: [A, B]``) is normalized to block form
+    rather than skipped, so a hand-authored brief cannot silently drop the
+    declaration this stamps.
+    """
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        return f"---\n{key}:\n  - {value}\n---\n\n{content.lstrip()}"
+
+    end_idx = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+    if end_idx is None:
+        return content
+
+    key_idx = next(
+        (
+            i
+            for i in range(1, end_idx)
+            if lines[i].partition(":")[1] and lines[i].partition(":")[0].strip() == key
+        ),
+        None,
+    )
+    if key_idx is None:
+        lines[end_idx:end_idx] = [f"{key}:", f"  - {value}"]
+        return "\n".join(lines).rstrip() + "\n"
+
+    item_end = key_idx + 1
+    items: list[str] = []
+    while item_end < end_idx and lines[item_end].lstrip().startswith("- "):
+        items.append(lines[item_end].lstrip()[2:].strip())
+        item_end += 1
+
+    inline = lines[key_idx].partition(":")[2].strip()
+    if inline:
+        parsed = yaml.safe_load(inline)
+        items = [str(p) for p in parsed] if isinstance(parsed, list) else [str(parsed)]
+
+    if value in items:
+        return content
+
+    items.append(value)
+    lines[key_idx:item_end] = [f"{key}:", *(f"  - {item}" for item in items)]
     return "\n".join(lines).rstrip() + "\n"
 
 

@@ -7,6 +7,7 @@ import json
 import re
 from pathlib import Path
 
+from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.events import (
     TaskBlockedEvent,
@@ -295,6 +296,7 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
         agent="claude-code",
     )
     _emit_task_event(ledger, event)
+    _stamp_brief_task_declaration(project_root, obpi_id, str(task_id))
 
     if as_json:
         console.print(
@@ -489,6 +491,7 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
         agent="claude-code",
     )
     _emit_task_event(ledger, event)
+    _stamp_brief_task_declaration(project_root, obpi_id, task_id_str)
 
     if as_json:
         console.print(
@@ -512,6 +515,32 @@ def _find_brief_path(project_root: Path, obpi_id: str) -> Path | None:
         if needle in candidate.name:
             return candidate
     return None
+
+
+def _stamp_brief_task_declaration(project_root: Path, obpi_id: str, task_id: str) -> Path | None:
+    """Declare ``task_id`` in its OBPI brief's ``tasks:`` discovery channel.
+
+    Fixes the producer rather than the gate — the same move the commit-trailer
+    channel needed (GHI #731). ``task_start`` already resolves the OBPI id at the
+    moment the TASK is minted, so the declaration is runtime-known; asking an
+    author to restate it is the convention that decayed to ~15% on the trailer
+    channel and to zero here (GHI #752).
+
+    Best-effort by design: minting the TASK is the operator's work and the
+    declaration is the governance record of it. An unfindable or unwritable brief
+    returns None rather than raising, so attribution can never block the pipeline.
+    """
+    brief = _find_brief_path(project_root, obpi_id)
+    if brief is None:
+        return None
+    try:
+        content = brief.read_text(encoding="utf-8")
+        updated = _append_frontmatter_list_value(content, "tasks", task_id)
+        if updated != content:
+            brief.write_text(updated, encoding="utf-8")
+    except OSError:
+        return None
+    return brief
 
 
 def _collect_ledger_task_ids_for_obpi_prefix(ledger_path: Path, obpi_prefix: str) -> set[str]:
