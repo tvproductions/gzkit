@@ -4,17 +4,20 @@ Defines the three-kind taxonomy (BEHAVIOR / SUPPORT / STRUCTURAL_FENCE), the
 proof-channel mapping used by gz validate --req-kind-discipline (Decision item 2),
 and the three-channel coverage enrichment logic (Decision item 3).
 
-Separate from triangle.py's ReqKind(CODE, DOC) which owns the pre-ADR-0.0.59
-binary testable/doc classification used by the traceability layer.
+Separate from triangle.py's ReqTestability(CODE, DOC), which owns the pre-ADR-0.0.59
+binary testable/doc classification used by the traceability layer. That enum was
+itself named ``ReqKind`` until GHI #615 renamed it: two same-named enums with
+incompatible members forced ``ReqEntity.taxonomy_kind`` to be typed ``str``,
+bypassing this schema.
 """
 
 from __future__ import annotations
 
 import enum
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, RootModel, TypeAdapter
 
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
@@ -45,6 +48,11 @@ _KIND_TO_CHANNEL: dict[ReqKind, ProofChannel] = {
     ReqKind.SUPPORT: ProofChannel.LEDGER_PLUS_VALIDATOR,
     ReqKind.STRUCTURAL_FENCE: ProofChannel.PARENT_ADR_INVARIANT,
 }
+
+NON_COVERS_KINDS: frozenset[ReqKind] = frozenset(
+    kind for kind, channel in _KIND_TO_CHANNEL.items() if channel is not ProofChannel.TEST_COVERS
+)
+"""Kinds a `@covers` test does not prove -- derived, so a new kind cannot omit itself."""
 
 # High-specificity triggers for STRUCTURAL-FENCE inference.
 _STRUCTURAL_FENCE_TRIGGERS: tuple[str, ...] = (
@@ -109,43 +117,61 @@ def infer_req_kind(text: str) -> tuple[ReqKind, str]:
 # Three-channel coverage enrichment (ADR-0.0.59 Decision item 3)
 # ---------------------------------------------------------------------------
 
-_KIND_STR_TO_ENUM: dict[str, ReqKind] = {
-    "BEHAVIOR": ReqKind.BEHAVIOR,
-    "SUPPORT": ReqKind.SUPPORT,
-    "STRUCTURAL-FENCE": ReqKind.STRUCTURAL_FENCE,
-}
+
+def _normalise_kind_spelling(value: object) -> object:
+    """Uppercase a kind spelling so ``support`` and ``SUPPORT`` name one kind.
+
+    Non-strings pass through untouched so ``ReqKind`` itself rejects them.
+    """
+    return value.upper() if isinstance(value, str) else value
 
 
-class ReqKindGrandfatheringCache(RootModel[dict[str, str]]):
+ReqKindValue = Annotated[ReqKind, BeforeValidator(_normalise_kind_spelling)]
+"""A kind spelling validated against the taxonomy, case-insensitively."""
+
+_GRANDFATHERING_CACHE_ADAPTER: TypeAdapter[dict[str, ReqKind]] = TypeAdapter(
+    dict[str, ReqKindValue]
+)
+"""One parse path for the override cache, shared by the file loader and direct callers."""
+
+
+class ReqKindGrandfatheringCache(RootModel[dict[str, ReqKindValue]]):
     """Operator-authored REQ-ID -> taxonomy-kind override cache.
 
     Schema for ``data/req_kind_grandfathering.json``. Loading is fail-closed
-    (GHI #544): malformed JSON or a non-string kind value raises
-    ``pydantic.ValidationError`` instead of silently degrading to an empty
-    cache, which would silently broaden BEHAVIOR proof-channel enforcement.
+    (GHI #544): malformed JSON, or a value naming no real kind, raises
+    ``pydantic.ValidationError`` instead of silently degrading, which would
+    silently broaden BEHAVIOR proof-channel enforcement.
+
+    The value domain is ``ReqKind`` itself, not ``str`` (GHI #615). Typing it
+    as ``str`` admitted any spelling and left the resolver to coerce unknowns
+    to ``BEHAVIOR`` -- so ``STRUCTURAL_FENCE`` (the Python member name, and the
+    natural typo) silently discarded the operator's exemption and re-imposed
+    the very proof channel they had waived, with no diagnostic. Spelling
+    tolerance belongs in the validator; membership is not negotiable.
     """
 
     model_config = ConfigDict(frozen=True)
 
 
-def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, str]:
+def load_req_kind_grandfathering_cache(project_root: Path) -> dict[str, ReqKind]:
     """Load and validate ``data/req_kind_grandfathering.json``.
 
     Returns an empty cache when the file is absent (no override configured).
     Raises ``pydantic.ValidationError`` when the file exists but is malformed
-    or contains non-string kind values; callers must not suppress it.
+    or names a kind outside the taxonomy; callers must not suppress it.
     """
     cache_path = project_root / "data" / "req_kind_grandfathering.json"
     if not cache_path.exists():
         return {}
     raw = cache_path.read_text(encoding="utf-8")
-    return ReqKindGrandfatheringCache.model_validate_json(raw).root
+    return dict(ReqKindGrandfatheringCache.model_validate_json(raw).root)
 
 
 def compute_three_channel_coverage(
     report: CoverageReport,
     known_reqs: list[DiscoveredReq],
-    grandfathering_cache: dict[str, str] | None = None,
+    grandfathering_cache: dict[str, ReqKind] | None = None,
     project_root: Path | None = None,
 ) -> CoverageReport:
     """Enrich a CoverageReport with per-REQ taxonomy kind and proof-channel status.
@@ -174,7 +200,10 @@ def compute_three_channel_coverage(
     from gzkit.traceability import CoverageEntry, CoverageRollup
     from gzkit.traceability import CoverageReport as _CoverageReport
 
-    cache = grandfathering_cache or {}
+    # Validated here, not only in the file loader: an in-process caller passing a
+    # dict directly is an entry point too, and a schema that holds on one path
+    # while another accepts anything is the bypass GHI #615 names.
+    cache = _GRANDFATHERING_CACHE_ADAPTER.validate_python(grandfathering_cache or {})
     req_index: dict[str, DiscoveredReq] = {str(d.entity.id): d for d in known_reqs}
 
     def _enrich(entry: CoverageEntry) -> CoverageEntry:
@@ -182,12 +211,13 @@ def compute_three_channel_coverage(
 
         # Resolve taxonomy kind
         if entry.req_id in cache:
-            raw_kind_str = cache[entry.req_id].upper()
-            resolved_kind = _KIND_STR_TO_ENUM.get(raw_kind_str, ReqKind.BEHAVIOR)
+            # Validated at load; an unknown spelling never reaches here (GHI #615).
+            resolved_kind = cache[entry.req_id]
             inferred = False
             status_suffix = resolved_kind.value.lower().replace("_", "-")
         elif dreq is not None and dreq.entity.taxonomy_kind:
-            resolved_kind = _KIND_STR_TO_ENUM.get(dreq.entity.taxonomy_kind, ReqKind.BEHAVIOR)
+            # Validated by `ReqEntity`; no coercing lookup needed (GHI #615).
+            resolved_kind = dreq.entity.taxonomy_kind
             inferred = False
             status_suffix = None
         else:

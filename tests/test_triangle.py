@@ -1417,5 +1417,75 @@ class TestDriftAdvisoryRenderForm(unittest.TestCase):
         self.assertEqual(cap.get().strip(), "")
 
 
+class TestTaxonomyKindIsSchemaEnforced(unittest.TestCase):
+    """`taxonomy_kind` carries the ADR-0.0.59 taxonomy, not free text (GHI #615).
+
+    The kind axis had a Pydantic enum (`req_kind.ReqKind`) and a `str` field
+    that bypassed it, so membership was re-spelled in four hand-synced places
+    and unknown values were coerced to BEHAVIOR downstream. These pin the
+    single-source-of-truth property rather than any one spelling.
+    """
+
+    def _entity(self, taxonomy_kind: str) -> ReqEntity:
+        from gzkit.triangle import ReqEntity as _ReqEntity
+
+        return _ReqEntity(
+            id=ReqId(semver="0.1.0", obpi_item="01", criterion_index="01"),
+            description="a requirement",
+            status=ReqStatus.UNCHECKED,
+            parent_obpi="OBPI-0.1.0-01",
+            taxonomy_kind=taxonomy_kind,
+        )
+
+    def test_out_of_taxonomy_kind_is_rejected(self) -> None:
+        """A value naming no kind must fail closed, never coerce to BEHAVIOR."""
+        for bogus in ("STRUCTURAL_FENCE", "behaviour", "FENCE"):
+            with self.subTest(kind=bogus), self.assertRaises(ValidationError):
+                self._entity(bogus)
+
+    def test_kind_spelling_is_normalised_by_the_schema(self) -> None:
+        """Case tolerance is the type's job, not each reader's `.upper()` call."""
+        from gzkit.req_kind import ReqKind
+
+        self.assertIs(self._entity("support").taxonomy_kind, ReqKind.SUPPORT)
+        self.assertIs(self._entity("SUPPORT").taxonomy_kind, ReqKind.SUPPORT)
+
+    def test_every_kind_round_trips_through_brief_extraction(self) -> None:
+        """Brief parsing admits exactly the taxonomy -- no member can desync.
+
+        The AC line pattern used to enumerate the kinds independently of the
+        enum. A kind added to `ReqKind` without updating that alternation would
+        parse as untagged and silently default to BEHAVIOR.
+        """
+        from gzkit.req_kind import ReqKind
+        from gzkit.triangle import extract_reqs_from_brief
+
+        for index, kind in enumerate(ReqKind, start=1):
+            for spelling in (kind.value, kind.value.lower()):
+                with self.subTest(kind=kind, spelling=spelling):
+                    body = (
+                        "## Acceptance Criteria\n"
+                        f"- [ ] REQ-0.1.0-01-{index:02d} [{spelling}]: a claim\n"
+                    )
+                    reqs = extract_reqs_from_brief(body, "OBPI-0.1.0-01")
+                    self.assertEqual(len(reqs), 1)
+                    self.assertIs(reqs[0].taxonomy_kind, kind)
+
+    def test_non_covers_kinds_are_derived_from_the_proof_channel_map(self) -> None:
+        """Exclusion from the `@covers` channel follows the channel, not a literal set.
+
+        `_NON_COVERS_TAXONOMY_KINDS` was a hand-written frozenset. It must hold
+        exactly the kinds whose proof channel is not `TEST_COVERS`, so a new
+        kind cannot silently land in the covers channel by omission.
+        """
+        from gzkit.req_kind import _KIND_TO_CHANNEL, ProofChannel
+        from gzkit.triangle import _NON_COVERS_TAXONOMY_KINDS
+
+        self.assertEqual(
+            set(_NON_COVERS_TAXONOMY_KINDS),
+            {k for k, ch in _KIND_TO_CHANNEL.items() if ch is not ProofChannel.TEST_COVERS},
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

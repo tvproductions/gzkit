@@ -19,7 +19,7 @@ from gzkit.triangle import (
     EdgeType,
     LinkageRecord,
     ReqId,
-    ReqKind,
+    ReqTestability,
     VertexRef,
     VertexType,
     scan_briefs,
@@ -50,7 +50,7 @@ def _synthesize_doc_proof_linkage(
     obpi_brief_paths: dict[str, Path] = {}
     obpi_doc_reqs: dict[str, list[DiscoveredReq]] = {}
     for dreq in discovered:
-        if dreq.entity.kind != ReqKind.DOC:
+        if dreq.entity.kind != ReqTestability.DOC:
             continue
         obpi_id = dreq.entity.parent_obpi
         obpi_brief_paths[obpi_id] = Path(dreq.source_path)

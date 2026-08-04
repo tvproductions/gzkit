@@ -25,7 +25,7 @@ from gzkit.triangle import (
     EdgeType,
     LinkageRecord,
     ReqId,
-    ReqKind,
+    ReqTestability,
     VertexRef,
     VertexType,
     scan_briefs,
@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 _F = TypeVar("_F")
 
-_TESTABLE_KIND = ReqKind.CODE
+_TESTABLE_KIND = ReqTestability.CODE
 
 # Canonical @covers reference regex used by every scanner.
 # Catches three forms in a single pattern:

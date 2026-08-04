@@ -13,6 +13,8 @@ import re
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from gzkit.req_kind import NON_COVERS_KINDS, ReqKind, ReqKindValue
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -68,8 +70,14 @@ class ReqStatus(enum.StrEnum):
     UNCHECKED = "unchecked"
 
 
-class ReqKind(enum.StrEnum):
-    """Whether a REQ is testable code or documentation-only."""
+class ReqTestability(enum.StrEnum):
+    """Whether a REQ is testable code or documentation-only.
+
+    The pre-ADR-0.0.59 binary axis, orthogonal to `req_kind.ReqKind`'s three-kind
+    taxonomy. Renamed off `ReqKind` under GHI #615: two same-named enums with
+    incompatible members made importing the wrong one a silent semantic bug, and
+    blocked `ReqEntity.taxonomy_kind` from being typed as the taxonomy it carries.
+    """
 
     CODE = "code"
     DOC = "doc"
@@ -84,8 +92,10 @@ class ReqEntity(BaseModel):
     description: str = Field(..., description="Human-readable criterion text")
     status: ReqStatus = Field(..., description="Checked or unchecked in the brief")
     parent_obpi: str = Field(..., description="Parent OBPI reference (e.g. 'OBPI-0.15.0-03')")
-    kind: ReqKind = Field(ReqKind.CODE, description="Code (testable) or doc (non-testable)")
-    taxonomy_kind: str | None = Field(
+    kind: ReqTestability = Field(
+        ReqTestability.CODE, description="Code (testable) or doc (non-testable)"
+    )
+    taxonomy_kind: ReqKindValue | None = Field(
         None,
         description="ADR-0.0.59 taxonomy kind (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) from inline tag",
     )
@@ -165,6 +175,11 @@ class LinkageRecord(BaseModel):
 # Brief REQ extraction (OBPI-0.20.0-02)
 # ---------------------------------------------------------------------------
 
+# Derived from `ReqKind`, never re-spelled: a kind added to the taxonomy without
+# updating a hand-written alternation here would parse as untagged and silently
+# default to BEHAVIOR (GHI #615). Case folding is the field validator's job.
+_KIND_ALTERNATION = "|".join(re.escape(kind.value) for kind in ReqKind)
+
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
     r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
@@ -172,7 +187,9 @@ _AC_LINE_PATTERN = re.compile(
     # REQ id: ADR-0.0.59 mandates the tag, not its typographic weight, and an
     # unmatched line is only warned about — so a `**[BEHAVIOR]**` brief would
     # silently under-count its REQ set (GHI #700).
-    r"(?:\s+\*{0,2}\[(?P<taxonomy_kind>BEHAVIOR|SUPPORT|STRUCTURAL-FENCE|behavior|support|structural-fence)\]\*{0,2})?"
+    # `(?i:...)` scopes the case folding to the kind tag alone — the surrounding
+    # `REQ-` literal and `[doc]` marker stay case-sensitive as they always were.
+    rf"(?:\s+\*{{0,2}}\[(?P<taxonomy_kind>(?i:{_KIND_ALTERNATION}))\]\*{{0,2}})?"
     r":\*{0,2}\s*(?:\[(?P<kind>doc)\]\s+)?(?P<description>.+)$"
 )
 
@@ -238,9 +255,12 @@ def extract_reqs_from_brief(
             continue
 
         status = ReqStatus.CHECKED if m.group("check").lower() == "x" else ReqStatus.UNCHECKED
-        kind = ReqKind.DOC if m.group("kind") == "doc" else ReqKind.CODE
+        kind = ReqTestability.DOC if m.group("kind") == "doc" else ReqTestability.CODE
+        # The parse path yields the domain type, not a string the reader must
+        # re-normalise (GHI #615). The alternation is derived from `ReqKind`, so
+        # a match is a member by construction and this cannot raise.
         raw_taxonomy = m.group("taxonomy_kind")
-        taxonomy_kind = raw_taxonomy.upper() if raw_taxonomy else None
+        taxonomy_kind = ReqKind(raw_taxonomy.upper()) if raw_taxonomy else None
 
         reqs.append(
             ReqEntity(
@@ -315,7 +335,9 @@ def scan_briefs(directory: pathlib.Path) -> list[DiscoveredReq]:
 # via a path-citing ledger event plus its structural validator; STRUCTURAL-FENCE
 # proves via the parent ADR's `## Boundary Invariants` entry. Counting either as
 # "a REQ with no test" reports the taxonomy working as designed as drift.
-_NON_COVERS_TAXONOMY_KINDS: frozenset[str] = frozenset({"SUPPORT", "STRUCTURAL-FENCE"})
+# Derived from the proof-channel map, not re-spelled: a kind whose channel is not
+# `TEST_COVERS` excludes itself here the moment it is added (GHI #615).
+_NON_COVERS_TAXONOMY_KINDS: frozenset[ReqKind] = NON_COVERS_KINDS
 
 # Briefs whose work is RETIRED, which is narrower than sealed. `Completed`,
 # `attested_completed`, and `Validated` are terminal but their REQs were
@@ -348,7 +370,7 @@ def covers_channel_reqs(reqs: list[ReqEntity]) -> list[ReqEntity]:
 
     * `taxonomy_kind` in SUPPORT / STRUCTURAL-FENCE — proven through another
       channel entirely (`.claude/rules/tests.md` § Proof-channel matrix).
-    * `kind` is `ReqKind.DOC` — the legacy axis for non-testable REQs.
+    * `kind` is `ReqTestability.DOC` — the legacy axis for non-testable REQs.
     * the owning brief is RETIRED — `Abandoned` / `Withdrawn` / `Superseded` /
       `archived`. Note this is narrower than sealed: a `Completed` brief still
       owes its coverage, so losing a test there is regression drift worth
@@ -365,10 +387,9 @@ def covers_channel_reqs(reqs: list[ReqEntity]) -> list[ReqEntity]:
     """
     in_scope: list[ReqEntity] = []
     for entity in reqs:
-        if entity.kind is ReqKind.DOC:
+        if entity.kind is ReqTestability.DOC:
             continue
-        taxonomy_kind = entity.taxonomy_kind
-        if taxonomy_kind and taxonomy_kind.upper() in _NON_COVERS_TAXONOMY_KINDS:
+        if entity.taxonomy_kind in _NON_COVERS_TAXONOMY_KINDS:
             continue
         if entity.brief_status and _is_retired_brief_status(entity.brief_status):
             continue

@@ -3,7 +3,7 @@
 `gz drift` reported every REQ lacking a `@covers` test as drift, including the
 two kinds whose proof channel is definitionally NOT a test (SUPPORT,
 STRUCTURAL-FENCE per ADR-0.0.59), REQs marked non-testable by the legacy
-`ReqKind.DOC` axis, and REQs in sealed briefs. Both kind axes were already
+`ReqTestability.DOC` axis, and REQs in sealed briefs. Both kind axes were already
 parsed onto `ReqEntity` and then discarded by `_project_source_subgraph`.
 
 These tests pin the scoping rule, not the current numbers: a REQ enters the
@@ -21,8 +21,8 @@ from gzkit.triangle import (
     LinkageRecord,
     ReqEntity,
     ReqId,
-    ReqKind,
     ReqStatus,
+    ReqTestability,
     VertexRef,
     VertexType,
     covers_channel_reqs,
@@ -34,7 +34,7 @@ def _req(
     criterion: str,
     *,
     taxonomy_kind: str | None = None,
-    kind: ReqKind = ReqKind.CODE,
+    kind: ReqTestability = ReqTestability.CODE,
 ) -> ReqEntity:
     """Build a REQ entity under OBPI-0.1.0-01 with the given kind axes."""
     return ReqEntity(
@@ -85,10 +85,10 @@ class TestCoversChannelScoping(unittest.TestCase):
         self.assertEqual(self._ids(rows), set())
 
     def test_doc_kind_reqs_are_not_covers_channel(self) -> None:
-        """`ReqKind.DOC` means non-testable — its own field docstring says so."""
+        """`ReqTestability.DOC` means non-testable — its own field docstring says so."""
         rows = [
-            _with_status(_req("01", kind=ReqKind.CODE)),
-            _with_status(_req("02", kind=ReqKind.DOC)),
+            _with_status(_req("01", kind=ReqTestability.CODE)),
+            _with_status(_req("02", kind=ReqTestability.DOC)),
         ]
         self.assertEqual(self._ids(rows), {"REQ-0.1.0-01-01"})
 

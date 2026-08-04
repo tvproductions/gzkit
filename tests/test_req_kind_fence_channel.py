@@ -42,7 +42,7 @@ def _make_adr_package(
 def _make_fence_report(req_id: str):
     """Minimal CoverageReport + DiscoveredReq pair for a STRUCTURAL-FENCE REQ."""
     from gzkit.traceability import CoverageEntry, CoverageReport, CoverageRollup
-    from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqKind, ReqStatus
+    from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus, ReqTestability
 
     entry = CoverageEntry(req_id=req_id, covered=False, covering_tests=[])
     rollup = CoverageRollup(
@@ -60,7 +60,7 @@ def _make_fence_report(req_id: str):
         description="STRUCTURAL-FENCE test REQ",
         status=ReqStatus.UNCHECKED,
         parent_obpi="OBPI-0.0.69-02",
-        kind=ReqKind.CODE,
+        kind=ReqTestability.CODE,
         taxonomy_kind="STRUCTURAL-FENCE",
     )
     dreq = DiscoveredReq(entity=entity, source_path="brief.md")

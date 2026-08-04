@@ -61,8 +61,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
         """compute_three_channel_coverage with project_root resolves real proof_status."""
         from gzkit.req_kind import compute_three_channel_coverage
         from gzkit.traceability import CoverageEntry, CoverageReport, CoverageRollup
-        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus
-        from gzkit.triangle import ReqKind as TriReqKind
+        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus, ReqTestability
 
         rid = ReqId.parse("REQ-0.0.59-99-01")
         entity = ReqEntity(
@@ -70,7 +69,7 @@ class TestResolveSupportProofPass(unittest.TestCase):
             description=("rule updated — artifact_edited ledger event + gz validate --documents"),
             status=ReqStatus.UNCHECKED,
             parent_obpi="OBPI-0.0.59-99",
-            kind=TriReqKind.CODE,
+            kind=ReqTestability.CODE,
             taxonomy_kind="SUPPORT",
         )
         dreq = DiscoveredReq(entity=entity, source_path="test.md")
@@ -393,8 +392,7 @@ class TestSupportChannelLegacyRegression(unittest.TestCase):
         """compute_three_channel_coverage without project_root → advisory-support for SUPPORT."""
         from gzkit.req_kind import compute_three_channel_coverage
         from gzkit.traceability import CoverageEntry, CoverageReport, CoverageRollup
-        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus
-        from gzkit.triangle import ReqKind as TriReqKind
+        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus, ReqTestability
 
         rid = ReqId.parse("REQ-0.0.59-99-01")
         entity = ReqEntity(
@@ -402,7 +400,7 @@ class TestSupportChannelLegacyRegression(unittest.TestCase):
             description="rule updated — artifact_edited gz validate --documents",
             status=ReqStatus.UNCHECKED,
             parent_obpi="OBPI-0.0.59-99",
-            kind=TriReqKind.CODE,
+            kind=ReqTestability.CODE,
             taxonomy_kind="SUPPORT",
         )
         dreq = DiscoveredReq(entity=entity, source_path="test.md")

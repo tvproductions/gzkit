@@ -829,7 +829,7 @@ class TestComputeCoverage(unittest.TestCase):
 
     @covers("REQ-0.21.0-02-04")
     def test_doc_kind_excluded_by_default(self):
-        from gzkit.triangle import ReqEntity, ReqId, ReqKind, ReqStatus
+        from gzkit.triangle import ReqEntity, ReqId, ReqStatus, ReqTestability
 
         doc_req = DiscoveredReq(
             entity=ReqEntity(
@@ -837,7 +837,7 @@ class TestComputeCoverage(unittest.TestCase):
                 description="doc-only criterion",
                 status=ReqStatus.CHECKED,
                 parent_obpi="OBPI-0.9.0-01",
-                kind=ReqKind.DOC,
+                kind=ReqTestability.DOC,
             ),
             source_path="test_brief.md",
         )
@@ -847,7 +847,7 @@ class TestComputeCoverage(unittest.TestCase):
 
     @covers("REQ-0.21.0-02-05")
     def test_doc_kind_included_when_flag_set(self):
-        from gzkit.triangle import ReqEntity, ReqId, ReqKind, ReqStatus
+        from gzkit.triangle import ReqEntity, ReqId, ReqStatus, ReqTestability
 
         doc_req = DiscoveredReq(
             entity=ReqEntity(
@@ -855,7 +855,7 @@ class TestComputeCoverage(unittest.TestCase):
                 description="doc-only criterion",
                 status=ReqStatus.CHECKED,
                 parent_obpi="OBPI-0.9.0-01",
-                kind=ReqKind.DOC,
+                kind=ReqTestability.DOC,
             ),
             source_path="test_brief.md",
         )

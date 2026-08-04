@@ -7,12 +7,14 @@ surface as a fail-closed error, not silently fall back to an empty cache.
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from pydantic import ValidationError
 
+from gzkit.req_kind import ReqKind
 from tests.commands.common import SilencedConsoleTestCase
 
 
@@ -58,7 +60,7 @@ class TestLoadReqKindGrandfatheringCache(unittest.TestCase):
                 load_req_kind_grandfathering_cache(project_root)
 
     def test_non_string_kind_value_raises(self) -> None:
-        """A non-string kind value must fail closed, matching dict[str, str]."""
+        """A non-string kind value must fail closed."""
         from gzkit.req_kind import load_req_kind_grandfathering_cache
 
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -71,6 +73,52 @@ class TestLoadReqKindGrandfatheringCache(unittest.TestCase):
 
             with self.assertRaises(ValidationError):
                 load_req_kind_grandfathering_cache(project_root)
+
+    def _load_with_kind(self, raw_kind: str) -> dict[str, ReqKind]:
+        """Write a one-entry cache carrying *raw_kind* and load it."""
+        from gzkit.req_kind import load_req_kind_grandfathering_cache
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            data_dir = project_root / "data"
+            data_dir.mkdir()
+            (data_dir / "req_kind_grandfathering.json").write_text(
+                json.dumps({"REQ-0.0.1-01-01": raw_kind}), encoding="utf-8"
+            )
+            return load_req_kind_grandfathering_cache(project_root)
+
+    def test_kind_value_outside_the_taxonomy_raises(self) -> None:
+        """An override naming no real kind must fail closed, not resolve to BEHAVIOR.
+
+        The value domain of this cache is exactly `ReqKind`. A string that names
+        no kind is an operator override that cannot be honoured; silently
+        coercing it broadens BEHAVIOR proof-channel enforcement onto a REQ the
+        operator explicitly exempted -- the failure this loader's fail-closed
+        contract exists to prevent.
+        """
+        for typo in ("STRUCTURAL_FENCE", "behaviour", "FENCE", ""):
+            with self.subTest(kind=typo), self.assertRaises(ValidationError):
+                self._load_with_kind(typo)
+
+    def test_kind_value_case_is_normalised_not_rejected(self) -> None:
+        """Operators author `support` and `SUPPORT`; both name one kind."""
+        from gzkit.req_kind import ReqKind
+
+        for spelling in ("support", "SUPPORT", "Support"):
+            with self.subTest(kind=spelling):
+                self.assertEqual(
+                    self._load_with_kind(spelling)["REQ-0.0.1-01-01"],
+                    ReqKind.SUPPORT,
+                )
+
+    def test_hyphenated_fence_kind_round_trips(self) -> None:
+        """`STRUCTURAL-FENCE` is the canonical wire spelling of the fence kind."""
+        from gzkit.req_kind import ReqKind
+
+        self.assertEqual(
+            self._load_with_kind("structural-fence")["REQ-0.0.1-01-01"],
+            ReqKind.STRUCTURAL_FENCE,
+        )
 
 
 class TestCoversCmdSurfacesMalformedCache(SilencedConsoleTestCase):

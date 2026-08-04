@@ -241,7 +241,7 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
         return CoverageReport(by_adr=[], by_obpi=[], entries=[entry], summary=rollup)
 
     def _make_discovered_req(self, req_id: str, taxonomy_kind: str | None):
-        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqKind, ReqStatus
+        from gzkit.triangle import DiscoveredReq, ReqEntity, ReqId, ReqStatus, ReqTestability
 
         rid = ReqId.parse(req_id)
         entity = ReqEntity(
@@ -249,7 +249,7 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
             description="test",
             status=ReqStatus.UNCHECKED,
             parent_obpi="OBPI-0.0.59-03",
-            kind=ReqKind.CODE,
+            kind=ReqTestability.CODE,
             taxonomy_kind=taxonomy_kind,
         )
         return DiscoveredReq(entity=entity, source_path="test_brief.md")
@@ -341,6 +341,25 @@ class TestComputeThreeChannelCoverage(unittest.TestCase):
         entry = enriched.entries[0]
         self.assertEqual(entry.taxonomy_kind, "STRUCTURAL-FENCE")
         self.assertEqual(entry.proof_status, "unproven-fence")
+
+    def test_grandfathering_cache_naming_no_kind_fails_closed(self) -> None:
+        """An override naming no kind must raise here too, not coerce to BEHAVIOR.
+
+        A caller passing the cache in-process is an entry point as much as the
+        file loader is; validating only at load would leave this path accepting
+        anything (GHI #615). Coercion is the dangerous direction -- it silently
+        re-imposes the BEHAVIOR proof channel the operator meant to waive.
+        """
+        from pydantic import ValidationError
+
+        from gzkit.req_kind import compute_three_channel_coverage
+
+        report = self._make_minimal_report("REQ-0.0.59-03-01", covered=False, covering_tests=[])
+        dreq = self._make_discovered_req("REQ-0.0.59-03-01", None)
+        # `STRUCTURAL_FENCE` is the Python member name, not the wire spelling.
+        cache = {"REQ-0.0.59-03-01": "STRUCTURAL_FENCE"}
+        with self.assertRaises(ValidationError):
+            compute_three_channel_coverage(report, [dreq], grandfathering_cache=cache)
 
 
 class TestBypassFlagLedgerEvent(SilencedConsoleTestCase):
