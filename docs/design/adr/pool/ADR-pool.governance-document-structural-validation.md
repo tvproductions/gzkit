@@ -29,10 +29,10 @@ which is why they need one surface rather than one fix each.
 
 | Surface | Observed state | Source |
 |---|---|---|
-| ADR `## Persona` | **No validator at all.** Five ADRs shipped carrying the literal scaffold token `{persona}`; four are Validated/Completed, i.e. they passed Gate 5. Its neighbour `## Why foundation tier?` *is* mechanically enforced. | GHI #741 |
+| ADR `## Persona` | **Discharged 2026-07-31 (`36f3e9f3f`) — by a standalone validator.** Was: no validator at all, five ADRs shipped carrying the literal scaffold token `{persona}`, four of them Validated/Completed. Now `persona_witness.py` enforces the section over `foundation/` + `pre-release/`, and `render_template` raises on every missing variable rather than emitting residue. Retained in this corpus because *how* it closed is itself evidence — see Alternatives Considered §2. | GHI #741 (CLOSED) |
 | Doc-content REQ proof | Three rounds of regex hardening produced three rounds of new bypasses. Still accepted after round 3: nested blockquotes, tilde-fence decoys, four-space-indented markers, setext duplicates, case-variant duplicates, HTML comments spanning a closing fence. | GHI #615 (2026-07-29, and its correction) |
 | Pool-ADR Step-0 interview | Answer JSON is unschema'd. | GHI #719 |
-| Handoff sections | `validate_sections_present` / `_populated` locate required sections by `re.search(rf"^##\s+{section}\s*$")` over raw Markdown; section bodies are untyped, so a decision cannot be marked operator-ruled or settled. | GHI #696 |
+| Handoff sections | **Still regex-located; the typed-decision half is discharged.** `validate_sections_present` / `_populated` locate required sections by `re.search(rf"^##\s+{section}\s*$")` over raw Markdown (`handoff_validation.py:272,301`), as does every body reader. A decision *can* now be marked operator-ruled or settled — `validate_decision_markers` (`:325`) plus Settled-Rulings promotion landed under #696. The residue is the parse, not the vocabulary: #722 then dropped 10 operator rulings silently because `_section_items` required a list marker the attribution rule never named, under a clean validation pass. | GHI #696, #722 (both CLOSED) |
 | Frontmatter parsing | **20 modules** parse frontmatter by hand, across skills, personas, rules, chores, handoffs, OKF, and briefs. (Re-measured 2026-08-03; GHI #615's original "~14 ADR parsers" understated the breadth and misstated the shape.) | GHI #615 instance 2 |
 | `--brief-reconcile` escalation | Still keys on structural shape rather than lifecycle. Post-migration this stops mattering for the 146 migrated briefs; the keying itself is unchanged. | GHI #615 (2026-06-16) |
 
@@ -77,8 +77,11 @@ Candidate decomposition, in dependency order:
 2. **Frontmatter through one parser.** Collapse the 20 hand-rolled sites onto
    the existing per-artifact models, so a document has one shape, not N.
 3. **Section-presence and section-content validation** driven by a per-artifact
-   declaration of required sections — absorbing GHI #741's persona audit and
-   GHI #696's typed-decision need instead of shipping two one-off validators.
+   declaration of required sections. Both one-off validators this item was
+   meant to pre-empt have since shipped — `persona_witness.py` under GHI #741,
+   `validate_decision_markers` under GHI #696 — so the scope is now
+   *collapsing two existing readers* onto one declaration, not *absorbing two
+   open needs*. The work grew while this ADR sat in pool; it did not shrink.
 4. **A schema-coverage gate**: a governance artifact type with no enforced
    schema is itself reportable. Today an unenforced schema and an absent one
    are indistinguishable from outside.
@@ -103,10 +106,18 @@ and 5 are independent and could land first.
    reproduces the very failure being fixed — N independently-authored readers
    of one document shape, free to disagree, with nothing asserting they agree.
    It is the four-copies-of-the-taxonomy pattern at a larger grain.
+   **Observed since filing (2026-08-04):** GHI #741 and GHI #696 were each
+   discharged by precisely this shape, adding `persona_witness.py` and
+   `validate_decision_markers` as two further independently-authored readers.
+   The rejection is now evidenced rather than predicted — and #722 is what the
+   prediction looks like when it lands: #696's composer was correct, the
+   parser feeding it was not, and nothing asserted the two agreed.
 
 3. **Accept the current state as advisory.** *Rejected.* It is not advisory in
    effect: four ADRs carrying a literal `{persona}` scaffold token passed Gate
-   5. A gate that admits an unfilled template is not reporting a preference.
+   5 — remedied under GHI #741, and cited here as demonstrated consequence
+   rather than as a live gap. A gate that admits an unfilled template is not
+   reporting a preference.
 
 4. **Full Markdown AST for every governance surface, uniformly.** *Rejected as
    over-reach.* The doc-content instance genuinely needs a parsed document; the
@@ -132,10 +143,21 @@ and 5 are independent and could land first.
 
 ## Related GHIs
 
-`#615` (class/catalogue surface), `#741` (ADR `## Persona`, absent enforcement),
-`#719` (pool-interview JSON), `#696` (handoff sections), `#581` (dead citations
-— consumes the class-B corpus), `#544` (grandfathering-cache fail-closed intent,
-whose guarantee this class silently voided).
+State as of **2026-08-04**. This block is a snapshot, not a live view —
+re-check it before promotion rather than reading it as current.
+
+**Open:** `#719` (pool-interview JSON, unschema'd), `#581` (dead citations —
+consumes the class-B corpus).
+
+**Closed:** `#615` (class/catalogue surface; closed `superseded` into this ADR
+2026-08-04), `#741` (ADR `## Persona`; closed 2026-07-31 by a standalone
+validator), `#696` (handoff sections; closed 2026-07-25) with its follow-on
+`#722` (closed 2026-07-26), `#544` (grandfathering-cache fail-closed intent,
+whose guarantee this class silently voided; closed 2026-07-01).
+
+A closed sibling does **not** shrink this ADR's scope. Each closed by adding a
+reader of a document shape nothing else asserts agreement with — which is the
+count Decision item 3 exists to collapse.
 
 ## Notes
 
