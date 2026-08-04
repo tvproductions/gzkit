@@ -21,7 +21,19 @@ logger = logging.getLogger(__name__)
 # REQ identifier
 # ---------------------------------------------------------------------------
 
-_REQ_PATTERN = re.compile(r"^REQ-(?P<semver>\d+\.\d+\.\d+)-(?P<obpi_item>\d+)-(?P<criterion>\d+)$")
+# The one REQ-ID grammar (GHI #615 instance 3). It was previously re-spelled in
+# roughly twenty regexes that disagreed on component width -- strict `\d{2}` in
+# the validators, loose `\d+` here and in the scanners -- so `REQ-0.0.37-1-1`
+# parsed into a REQ entity owing coverage while being invisible to
+# `--brief-structure` and `adr_coverage`. Two digits is the corpus's actual
+# grammar: 0 of 4396 occurrences under `docs/design/adr` use another width
+# (measured 2026-08-03). Readers anchor this body rather than restating it.
+REQ_ID_BODY = r"REQ-(?P<semver>\d+\.\d+\.\d+)-(?P<obpi_item>\d{2})-(?P<criterion>\d{2})"
+
+#: The same grammar with no capture groups, for readers that embed it.
+REQ_ID_BODY_PLAIN = r"REQ-\d+\.\d+\.\d+-\d{2}-\d{2}"
+
+_REQ_PATTERN = re.compile(rf"^{REQ_ID_BODY}$")
 
 
 class ReqId(BaseModel):
@@ -182,7 +194,7 @@ _KIND_ALTERNATION = "|".join(re.escape(kind.value) for kind in ReqKind)
 
 _AC_LINE_PATTERN = re.compile(
     r"^-\s+\[(?P<check>[xX ])\]\s+"
-    r"\*{0,2}(?P<req_id>REQ-\d+\.\d+\.\d+-\d+-\d+)"
+    rf"\*{{0,2}}(?P<req_id>{REQ_ID_BODY_PLAIN})"
     # Emphasis is tolerated around the kind tag as it already is around the
     # REQ id: ADR-0.0.59 mandates the tag, not its typographic weight, and an
     # unmatched line is only warned about — so a `**[BEHAVIOR]**` brief would

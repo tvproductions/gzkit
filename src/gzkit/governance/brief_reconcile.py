@@ -26,6 +26,7 @@ from gzkit.governance.brief_structure import (
     is_unstarted_brief_status,
     parse_brief,
 )
+from gzkit.triangle import REQ_ID_BODY_PLAIN
 
 # --- Delta models (frozen) ---
 
@@ -153,7 +154,9 @@ class ReconcileResult(BaseModel):
 
 _GZ_VERB_RE = re.compile(r"gz\s+([a-z][a-z0-9-]*)")
 _BACKTICK_PATH_RE = re.compile(r"`([^`]+)`")
-_REQ_ID_RE = re.compile(r"REQ-\d+\.\d+\.\d+-\d+-\d+")
+# Derived from the one grammar (GHI #615): this used the loose `\d+` form and
+# so counted identifiers the validators could not see.
+_REQ_ID_RE = re.compile(REQ_ID_BODY_PLAIN)
 _CHECKBOX_RE = re.compile(r"^\s*-\s*\[[ xX]\]")
 _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS\s*$", re.IGNORECASE)
 _DENIED_HEADING_RE = re.compile(r"^##\s+DENIED\s+PATHS\s*$", re.IGNORECASE)

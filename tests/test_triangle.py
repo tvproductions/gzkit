@@ -49,11 +49,18 @@ class TestReqIdParsing(unittest.TestCase):
         self.assertEqual(req.obpi_item, "03")
         self.assertEqual(req.criterion_index, "02")
 
-    def test_parse_single_digit_components(self) -> None:
-        req = ReqId.parse("REQ-1.0.0-1-1")
-        self.assertEqual(req.semver, "1.0.0")
-        self.assertEqual(req.obpi_item, "1")
-        self.assertEqual(req.criterion_index, "1")
+    def test_parse_rejects_single_digit_components(self) -> None:
+        """Single-digit components are not the grammar (GHI #615).
+
+        This asserted the opposite until 2026-08-03. It carried no `@covers`
+        decorator and no REQ mandates that width -- REQ-0.20.0-01-01's own
+        example is `REQ-0.15.0-03-02` -- so it pinned an accident of this
+        module's regex rather than a required behavior. The width it admitted
+        was rejected by `--brief-structure` and `adr_coverage`, so such a REQ
+        was decomposable but unvalidatable.
+        """
+        with self.assertRaises(ValueError):
+            ReqId.parse("REQ-1.0.0-1-1")
 
     def test_parse_strips_whitespace(self) -> None:
         req = ReqId.parse("  REQ-0.20.0-01-04  ")
@@ -1485,6 +1492,62 @@ class TestTaxonomyKindIsSchemaEnforced(unittest.TestCase):
             set(_NON_COVERS_TAXONOMY_KINDS),
             {k for k, ch in _KIND_TO_CHANNEL.items() if ch is not ProofChannel.TEST_COVERS},
         )
+
+
+class TestReqIdGrammarIsSingleSourced(unittest.TestCase):
+    """One REQ-ID grammar, not one per reader (GHI #615 instance 3).
+
+    The identifier was spelled independently in ~20 regexes that disagreed on
+    component width: strict `\\d{2}` in the validators, loose `\\d+` in the
+    parsers. `REQ-0.0.37-1-1` was therefore extracted as a real REQ owing
+    coverage while being invisible to `--brief-structure` and `adr_coverage`
+    -- decomposable but unvalidatable. Measured 2026-08-03: 0 of 4396 REQ-ID
+    occurrences under `docs/design/adr` use non-two-digit components, so the
+    strict form is the corpus's actual grammar and the loose readers were the
+    outliers.
+    """
+
+    def test_canonical_parser_rejects_non_two_digit_components(self) -> None:
+        """A width the validators reject must not parse into a REQ entity."""
+        for bad in ("REQ-0.0.37-1-1", "REQ-0.0.37-001-002", "REQ-0.0.37-1-02"):
+            with self.subTest(req_id=bad), self.assertRaises(ValueError):
+                ReqId.parse(bad)
+
+    def test_canonical_parser_accepts_the_corpus_form(self) -> None:
+        """The two-digit form every one of 4396 corpus occurrences uses."""
+        parsed = ReqId.parse("REQ-0.0.37-01-02")
+        self.assertEqual(
+            (parsed.semver, parsed.obpi_item, parsed.criterion_index), ("0.0.37", "01", "02")
+        )
+
+    def test_full_id_readers_agree_with_the_canonical_parser(self) -> None:
+        """Every full-REQ-ID matcher admits exactly what `ReqId.parse` admits.
+
+        Derived from one grammar, so a reader cannot drift into accepting an
+        identifier the parser rejects (or vice versa) without this failing.
+        """
+        import re
+
+        from gzkit.commands.adr_coverage import REQ_ID_RE
+        from gzkit.governance.brief_reconcile import _REQ_ID_RE as RECONCILE_RE
+        from gzkit.governance.brief_structure import _REQ_ID_RE as STRUCTURE_RE
+        from gzkit.triangle import _REQ_PATTERN
+
+        readers = {
+            "adr_coverage": REQ_ID_RE,
+            "brief_structure": STRUCTURE_RE,
+            "brief_reconcile": RECONCILE_RE,
+        }
+        cases = ["REQ-0.0.37-01-02", "REQ-0.0.37-1-1", "REQ-0.0.37-001-002"]
+        for case in cases:
+            canonical = _REQ_PATTERN.match(case) is not None
+            for name, pattern in readers.items():
+                with self.subTest(reader=name, req_id=case):
+                    self.assertEqual(
+                        re.search(pattern, case) is not None,
+                        canonical,
+                        f"{name} disagrees with ReqId.parse on {case!r}",
+                    )
 
 
 if __name__ == "__main__":

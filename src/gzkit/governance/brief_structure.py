@@ -15,9 +15,12 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from gzkit.triangle import REQ_ID_BODY_PLAIN
+
 _OBPI_ID_RE = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d{2}(-[a-z0-9-]+)?$")
 _ADR_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-[a-z0-9-]+$")
-_REQ_ID_RE = re.compile(r"^REQ-\d+\.\d+\.\d+-\d{2}-\d{2}$")
+# Derived from the one grammar (GHI #615); never re-spelled here.
+_REQ_ID_RE = re.compile(rf"^{REQ_ID_BODY_PLAIN}$")
 
 
 # Terminal statuses: a brief in one of these states is a historical record, not an

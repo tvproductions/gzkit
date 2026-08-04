@@ -15,6 +15,7 @@ from gzkit.traceability import (
     scan_test_tree,
 )
 from gzkit.triangle import (
+    REQ_ID_BODY_PLAIN,
     DiscoveredReq,
     EdgeType,
     LinkageRecord,
@@ -259,7 +260,8 @@ def _collect_covers_annotations(project_root: Path) -> dict[str, list[str]]:
 
 
 OBPI_SEMVER_ITEM_RE = re.compile(r"^OBPI-([0-9]+\.[0-9]+\.[0-9]+)-([0-9]{2})(?:-[a-z0-9-]+)?$")
-REQ_ID_RE = re.compile(r"\bREQ-[0-9]+\.[0-9]+\.[0-9]+-[0-9]{2}-[0-9]{2}\b")
+# Derived from the one grammar (GHI #615); never re-spelled here.
+REQ_ID_RE = re.compile(rf"\b{REQ_ID_BODY_PLAIN}\b")
 
 
 def _extract_h2_section_lines(content: str, heading: str) -> list[tuple[int, str]]:
