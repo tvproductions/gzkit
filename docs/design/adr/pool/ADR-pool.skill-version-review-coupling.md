@@ -104,6 +104,22 @@ GHI #492's scope hint):
   doctrine-only). This ADR's promotion *makes ADR-0.0.52's three-tier framing
   true* — it is the missing rule-tier mechanical witness, not an increment of
   0.0.52's graph-tier scope.
+
+  > **Correction (2026-08-04, GHI #691).** This ADR's promotion is **necessary
+  > but not sufficient** for 0.0.52's three-tier framing. The premise is false
+  > twice over: beyond the coupling being doctrine-only, `last_reviewed` does
+  > not exist on `.gzkit/rules/**` at all — it governs *skills*, and this
+  > ADR's scope is the skill-side edit-time coupling. The rule-surface calendar
+  > clock is homed at **`ADR-pool.rule-surface-aging-clock`**; 0.0.52's framing
+  > becomes true only when both promote.
+- **`ADR-pool.rule-surface-aging-clock`** — sibling, not parent. It adds the
+  rule-surface *calendar* clock (does a rule get re-read every 90 days); this
+  ADR adds the skill-surface *edit-time* coupling (does a `skill-version` bump
+  carry a `last_reviewed` bump). Different surface, different trigger — the
+  boundary § Notes already draws against GHI #503's calendar class. **Both edit
+  `skill-surface-sync.md` § #6 from opposite directions** — this ADR promotes
+  its coupling clause, that one retires its *"skills only"* carve-out. Per
+  Invariant 1a, whichever promotes second reconciles against the first's edit.
 - **`docs/governance/advisory-rules-audit.md`** — the Promotable→Mechanical
   scorecard pattern this ADR instantiates; the promotion should add the new
   scope to the audit catalogue and to CLAUDE.md § Mechanical scopes.
