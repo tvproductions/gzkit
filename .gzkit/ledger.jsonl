@@ -14583,3 +14583,4 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.rule-surface-aging-clock.md","ts":"2026-08-04T10:05:46.290917+00:00","path":"docs/design/adr/pool/ADR-pool.rule-surface-aging-clock.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.artifact-staleness-propagation.md","ts":"2026-08-04T10:09:46.846845+00:00","path":"docs/design/adr/pool/ADR-pool.artifact-staleness-propagation.md"}
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.skill-version-review-coupling.md","ts":"2026-08-04T10:09:56.756174+00:00","path":"docs/design/adr/pool/ADR-pool.skill-version-review-coupling.md"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.mechanism-objective-and-scope-record.md","ts":"2026-08-04T10:26:07.476271+00:00","path":"docs/design/adr/pool/ADR-pool.mechanism-objective-and-scope-record.md"}
