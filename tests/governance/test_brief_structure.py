@@ -11,6 +11,7 @@ REQ-derived assertions for:
 from __future__ import annotations
 
 import json
+import re
 import unittest
 import warnings
 from pathlib import Path
@@ -131,6 +132,86 @@ class TestBriefStructureModel(unittest.TestCase):
         """req_atomic accepts a list of REQ ID strings (OBPI-0.0.64-04)."""
         b = BriefStructure(**{**_VALID_FIELDS, "req_atomic": ["REQ-0.0.64-04-01"]})
         self.assertEqual(b.req_atomic, ["REQ-0.0.64-04-01"])
+
+
+class TestTasksSchemaEnforcement(unittest.TestCase):
+    """GHI #753: the ``tasks:`` channel rejects malformed TASK IDs.
+
+    ``.gzkit/rules/task-discovery.md`` § Convention: Frontmatter ``tasks:``
+    declares the field carries TASK IDs. Its three sibling identifier fields
+    (``id``, ``parent``, ``reqs``) each validate their grammar; ``tasks`` did
+    not, so a malformed entry parsed clean into a frozen model that downstream
+    channel comparison then treats as a declaration.
+    """
+
+    def test_rejects_malformed_task_id(self) -> None:
+        with self.assertRaises(ValidationError):
+            BriefStructure(**{**_VALID_FIELDS, "tasks": ["not-a-task-id"]})
+
+    def test_rejects_req_id_in_tasks(self) -> None:
+        """A REQ ID is the near-miss an author actually types; it is not a TASK ID."""
+        with self.assertRaises(ValidationError):
+            BriefStructure(**{**_VALID_FIELDS, "tasks": ["REQ-0.0.64-04-01"]})
+
+    def test_rejects_truncated_task_id(self) -> None:
+        """TASK IDs are four-tier; a three-tier id names no labor unit."""
+        with self.assertRaises(ValidationError):
+            BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01"]})
+
+    def test_rejects_malformed_entry_among_valid_ones(self) -> None:
+        """Validation is per-entry -- one bad id in a good list still fails."""
+        with self.assertRaises(ValidationError):
+            BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01", "TASK-bogus"]})
+
+    def test_accepts_well_formed_formal_task_id(self) -> None:
+        b = BriefStructure(**{**_VALID_FIELDS, "tasks": ["TASK-0.0.64-04-01-01"]})
+        self.assertEqual(b.tasks, ["TASK-0.0.64-04-01-01"])
+
+    def test_accepts_producer_stamped_multi_req_accumulation(self) -> None:
+        """``gz task start`` accumulates one TASK per REQ into the same brief (GHI #752)."""
+        stamped = ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"]
+        b = BriefStructure(**{**_VALID_FIELDS, "tasks": stamped})
+        self.assertEqual(b.tasks, stamped)
+
+    def test_empty_tasks_still_valid(self) -> None:
+        """The overwhelming majority of briefs predate the producer stamp."""
+        b = BriefStructure(**{**_VALID_FIELDS, "tasks": []})
+        self.assertEqual(b.tasks, [])
+
+    def test_pydantic_and_json_schema_readers_agree(self) -> None:
+        """Both readers of the ``tasks:`` shape accept and reject the same ids.
+
+        The defect class ``ADR-pool.governance-document-structural-validation``
+        catalogues is N independently-authored readers of one document shape,
+        free to disagree, with nothing asserting they agree. This model and the
+        JSON Schema mirror are two such readers; this is the assertion.
+        """
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        pattern = re.compile(schema["properties"]["tasks"]["items"]["pattern"])
+        cases = [
+            "TASK-0.0.64-04-01-01",
+            "TASK-0.34.0-03-02-11",
+            "not-a-task-id",
+            "REQ-0.0.64-04-01",
+            "TASK-0.0.64-04-01",
+            "TASK-0.0.64-04-01-01-01",
+            "task-0.0.64-04-01-01",
+            "",
+        ]
+        for raw in cases:
+            with self.subTest(task_id=raw):
+                json_ok = pattern.match(raw) is not None
+                try:
+                    BriefStructure(**{**_VALID_FIELDS, "tasks": [raw]})
+                except ValidationError:
+                    model_ok = False
+                else:
+                    model_ok = True
+                self.assertEqual(
+                    model_ok,
+                    json_ok,
+                    f"readers disagree on {raw!r}: model={model_ok}, json-schema={json_ok}",
+                )
 
 
 class TestBriefStructureJsonSchema(unittest.TestCase):

@@ -1637,6 +1637,90 @@ class TestPoolDemotionAttributionCutover(unittest.TestCase):
             )
         )
 
+
+class TestSignatureE(unittest.TestCase):
+    """Signature (e): a brief's ``tasks:`` entry names an unresolvable TASK (GHI #753).
+
+    ``.gzkit/rules/task-discovery.md`` promised this enforcement and deferred it
+    to OBPI-0.0.64-04, whose seven REQs never scoped it. The corpus-side check
+    is not redundant with ``BriefStructure._validate_tasks``:
+    ``_collect_obpi_brief_frontmatter`` parses raw YAML and never constructs the
+    model, so a malformed id on disk reaches the channel comparison unchecked.
+    """
+
+    def test_malformed_task_id_in_frontmatter_flagged(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, {**_BASE_FM, "tasks": ["not-a-task-id"]})
+            errs = validate_task_envelope._sig_e_unresolvable_task_declaration(root)
+            self.assertTrue(any("Signature (e)" in e.message for e in errs))
+            self.assertTrue(any("not-a-task-id" in e.message for e in errs))
+
+    def test_unknown_parent_req_flagged(self) -> None:
+        """Well-formed id whose derived parent REQ exists in no brief."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, {**_BASE_FM, "tasks": ["TASK-9.9.9-77-88-01"]})
+            errs = validate_task_envelope._sig_e_unresolvable_task_declaration(root)
+            self.assertTrue(any("REQ-9.9.9-77-88" in e.message for e in errs))
+
+    def test_resolvable_task_declaration_is_clean(self) -> None:
+        """The producer-stamped shape: parent REQ is in the same brief's reqs."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-01"]})
+            self.assertEqual(validate_task_envelope._sig_e_unresolvable_task_declaration(root), [])
+
+    def test_absent_tasks_key_is_clean(self) -> None:
+        """Nearly every brief predates the producer stamp; absence is not a finding."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, _BASE_FM)
+            self.assertEqual(validate_task_envelope._sig_e_unresolvable_task_declaration(root), [])
+
+    def test_parent_check_suppressed_when_no_reqs_discoverable(self) -> None:
+        """An empty known-REQ set means the corpus was not readable, not that every
+        declaration is unknown -- fail-closed here would flag the whole corpus."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(
+                root,
+                {
+                    **{k: v for k, v in _BASE_FM.items() if k != "reqs"},
+                    "reqs": [],
+                    "tasks": ["TASK-0.0.64-04-01-01"],
+                },
+            )
+            self.assertEqual(validate_task_envelope._sig_e_unresolvable_task_declaration(root), [])
+
+    def test_composite_includes_signature_e(self) -> None:
+        """(e) must reach the same exit-3 route as (a)-(d), not sit uncalled."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(root, [])
+            _write_brief(root, {**_BASE_FM, "tasks": ["not-a-task-id"]})
+            errs = validate_task_envelope._validate_task_envelope_coherence(root)
+            self.assertTrue(any("Signature (e)" in e.message for e in errs))
+            self.assertTrue(all(e.type == "task_envelope_coherence" for e in errs))
+
+
+class TestTaskGrammarSingleSourced(unittest.TestCase):
+    """The TASK-ID grammar must have one spelling across its readers (GHI #753).
+
+    ``4a256b7ac`` converged the REQ-ID grammar on one source for exactly this
+    reason. This module carried its own copy of the TASK pattern; nothing
+    asserted the copies agreed, which is the defect family
+    ``ADR-pool.governance-document-structural-validation`` catalogues.
+    """
+
+    def test_module_copy_agrees_with_canonical_task_pattern(self) -> None:
+        from gzkit.tasks import _TASK_PATTERN
+
+        self.assertEqual(
+            validate_task_envelope._SIG_B_TASK_ID_RE.pattern,
+            _TASK_PATTERN.pattern,
+        )
+
     def test_a_rename_that_is_not_a_pool_demotion_is_not_tolerated(self) -> None:
         """Narrowness: the tolerance is keyed to the demote producer alone."""
         self.assertFalse(

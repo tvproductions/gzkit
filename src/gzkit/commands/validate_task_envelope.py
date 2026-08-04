@@ -946,16 +946,92 @@ def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _sig_e_unresolvable_task_declaration(project_root: Path) -> list[ValidationError]:
+    """Signature (e) — a brief's ``tasks:`` entry names an unresolvable TASK.
+
+    Two arms, both promised by ``.gzkit/rules/task-discovery.md`` § Convention:
+    Frontmatter ``tasks:`` — *"rejecting malformed TASK IDs and unknown
+    parents"* — and both deferred to OBPI-0.0.64-04, whose seven REQs never
+    scoped them (GHI #753).
+
+    This is the corpus-side half. ``BriefStructure._validate_tasks`` covers the
+    model-construction path, but ``_collect_obpi_brief_frontmatter`` reads raw
+    YAML and never builds the model, so a malformed id on disk would otherwise
+    reach signature (c)'s channel comparison as a legitimate declaration. The
+    parent-REQ arm lives here rather than on the model because resolving it
+    means scanning the brief corpus off disk, which the model may not do
+    (``.gzkit/rules/hexagonal-architecture.md`` rule 1).
+
+    Parent resolution reuses the frontmatter already collected for the rest of
+    the audit, so the corpus is still parsed once.
+    """
+    from gzkit.tasks import TaskId  # noqa: PLC0415  (module-local, as the trailer channel does)
+
+    errors: list[ValidationError] = []
+    brief_fms = _collect_obpi_brief_frontmatter(project_root)
+
+    known_reqs: set[str] = set()
+    for fm in brief_fms.values():
+        declared_reqs = fm.get("reqs")
+        if isinstance(declared_reqs, list):
+            known_reqs |= {str(r) for r in declared_reqs}
+
+    for obpi_id, fm in sorted(brief_fms.items()):
+        declared = fm.get("tasks")
+        if not isinstance(declared, list):
+            continue
+        for raw in declared:
+            tid = str(raw)
+            try:
+                parsed = TaskId.parse(tid)
+            except ValueError:
+                errors.append(
+                    ValidationError(
+                        type="task_envelope_coherence",
+                        artifact=obpi_id,
+                        message=(
+                            f"Signature (e): malformed TASK id {tid!r} in the "
+                            f"`tasks:` frontmatter of {obpi_id}. Expected "
+                            f"TASK-X.Y.Z-NN-MM-PP. Recovery: correct the entry, "
+                            f"or let `gz task start` stamp it."
+                        ),
+                    )
+                )
+                continue
+            if not known_reqs:
+                # No REQs discoverable at all means the corpus was unreadable,
+                # not that every declaration is unknown. Flagging here would
+                # fail the whole corpus on a parse failure elsewhere.
+                continue
+            parent_req = f"REQ-{parsed.semver}-{parsed.obpi_item}-{parsed.req_index}"
+            if parent_req not in known_reqs:
+                errors.append(
+                    ValidationError(
+                        type="task_envelope_coherence",
+                        artifact=obpi_id,
+                        message=(
+                            f"Signature (e): TASK {tid} declared in {obpi_id} "
+                            f"derives parent {parent_req}, which is in no "
+                            f"extracted brief. Recovery: correct the TASK id, or "
+                            f"add the REQ to its brief's `reqs:`."
+                        ),
+                    )
+                )
+    return errors
+
+
 def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationError]:
     """Validate task envelope coherence (OBPI-0.0.64-04).
 
-    Composite of four Heavy-fail signatures:
+    Composite of five Heavy-fail signatures:
         (a) worklog event under active TASK with no ``task_id`` (attribution drift)
         (b) OBPI default-bucket-only TASKs without ``req_atomic`` exemption
         (c) layer-drift across the four discovery channels (@advances, frontmatter
             tasks:, commit trailer, ledger task_id)
         (d) a single ``task_id`` carries divergent ``obpi_id`` across its
             lifecycle events (producer canonicalization drift, GHI #653)
+        (e) a brief's ``tasks:`` entry is malformed or derives a parent REQ that
+            exists in no brief (GHI #753)
 
     All ValidationError instances carry ``type="task_envelope_coherence"`` and
     route to exit 3 via ``_POLICY_BREACH_ERROR_TYPES``.
@@ -965,4 +1041,5 @@ def _validate_task_envelope_coherence(project_root: Path) -> list[ValidationErro
     errors.extend(_sig_b_subdivision_skipped(project_root))
     errors.extend(_sig_c_layer_drift(project_root))
     errors.extend(_sig_d_obpi_id_divergence(project_root))
+    errors.extend(_sig_e_unresolvable_task_declaration(project_root))
     return errors

@@ -60,8 +60,11 @@
     },
     "tasks": {
       "type": "array",
-      "items": {"type": "string"},
-      "description": "TASK IDs this artifact advances (ADR-0.0.64 / OBPI-02)"
+      "items": {
+        "type": "string",
+        "pattern": "^TASK-\\d+\\.\\d+\\.\\d+-\\d+-\\d+-\\d+$"
+      },
+      "description": "TASK IDs this artifact advances (ADR-0.0.64 / OBPI-02; GHI #753)"
     },
     "req_atomic": {
       "type": "array",

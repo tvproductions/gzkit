@@ -15,6 +15,7 @@ from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from gzkit.tasks import TaskId
 from gzkit.triangle import REQ_ID_BODY_PLAIN
 
 _OBPI_ID_RE = re.compile(r"^OBPI-\d+\.\d+\.\d+-\d{2}(-[a-z0-9-]+)?$")
@@ -131,7 +132,8 @@ class BriefStructure(BaseModel):
         default_factory=list,
         description=(
             "TASK IDs this artifact advances (ADR-0.0.64 / OBPI-02 channel). "
-            "Schema enforcement by OBPI-04."
+            "Producer-stamped by `gz task start` (GHI #752); format enforced by "
+            "`_validate_tasks` below (GHI #753)."
         ),
     )
     req_atomic: list[str] = Field(
@@ -176,6 +178,28 @@ class BriefStructure(BaseModel):
         for req in v:
             if not _REQ_ID_RE.match(str(req)):
                 raise ValueError(f"req must match REQ-X.Y.Z-NN-MM pattern: {req!r}")
+        return v
+
+    @field_validator("tasks", mode="before")
+    @classmethod
+    def _validate_tasks(cls, v: list) -> list:
+        """Reject malformed TASK IDs in the ``tasks:`` channel (GHI #753).
+
+        Delegates to ``TaskId.parse`` rather than restating the grammar: the
+        ``@advances`` channel already validates TASK identifiers against that
+        one pattern, and a second copy here is the N-readers-of-one-shape
+        drift ``ADR-pool.governance-document-structural-validation`` catalogues.
+        Unknown-parent-REQ resolution is deliberately NOT here -- it requires
+        scanning briefs off disk, and this model stays stdlib+Pydantic per
+        ``.gzkit/rules/hexagonal-architecture.md`` rule 1. That half lives in
+        ``gz validate --task-envelope-coherence``.
+        """
+        for task in v:
+            try:
+                TaskId.parse(str(task))
+            except ValueError as exc:
+                msg = f"task must match TASK-X.Y.Z-NN-MM-PP pattern: {task!r}"
+                raise ValueError(msg) from exc
         return v
 
 
