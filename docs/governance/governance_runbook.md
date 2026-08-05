@@ -764,15 +764,20 @@ the fail-closed validation gate (ADR-0.0.65):
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + next step
 uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
-uv run gz handoff authorize --handoff <path> --session-id <id> --operator-text "<verbatim>"
+uv run gz handoff decide --handoff <path> --session-id <id> --decision proceed --operator-text "<verbatim>"
+uv run gz handoff authorize --handoff <path> --session-id <id> --operator-text "<verbatim>"  # deprecated alias for `decide`
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention
 uv run gz handoff archive --older-than 30d            # move eligible handoffs into archive/
 ```
 
 **Resuming requires an operator ruling, at every freshness level (GHI #574).**
 The resume gate (`.claude/hooks/handoff-resume-gate.py`) refuses every mutating
-tool call until the ruling is booked with `gz handoff authorize`. Staleness
-escalates *re-verification depth*, never the authorization requirement:
+tool call until a `proceed` ruling is booked with `gz handoff decide`. The
+ruling is an **acknowledge-and-decide transit**, never a completion attestation
+(ADR-0.0.33 § Alternatives; GHI #757) — `pause`, `hold`, and `revert` are
+equally bookable and leave the gate armed, and `--set-aside` records any advised
+step the ruling declines. Staleness escalates *re-verification depth*, never the
+authorization requirement:
 
 - `Fresh` (<24h) — present the advised steps, obtain the ruling, book it. Fresh
   shortens verification; it never converts an advisory into a license.

@@ -1398,9 +1398,21 @@ class TestSyncClaudeSettingsPreservesUserPhases(unittest.TestCase):
             result = json.loads(settings_path.read_text(encoding="utf-8"))
             self.assertIn("SessionStart", result.get("hooks", {}))
             session_hooks = result["hooks"]["SessionStart"][0]["hooks"]
-            self.assertEqual(
-                session_hooks[0]["command"],
-                "uv run python scripts/session_orientation.py",
+            commands = [h["command"] for h in session_hooks]
+
+            # SessionStart became a gzkit-OWNED phase in GHI #757, so this is no
+            # longer the untouched-passthrough case (`test_pre_compact_phase_
+            # survives_sync` still covers that). The property that matters here
+            # is the one `_merge_hook_phase` guarantees for an owned phase: a
+            # hook the project wired itself — one that does not live under the
+            # gzkit hooks dir — is preserved ALONGSIDE gzkit's, not evicted by
+            # it. Asserted by membership rather than index, because ordering
+            # within the group is not a contract and pinning it would fail on
+            # any future addition without a real defect behind it.
+            self.assertIn("uv run python scripts/session_orientation.py", commands)
+            self.assertTrue(
+                any("session-start-advisement.py" in c for c in commands),
+                f"gzkit's own SessionStart hook must also be present; got {commands}",
             )
 
     def test_pre_compact_phase_survives_sync(self) -> None:

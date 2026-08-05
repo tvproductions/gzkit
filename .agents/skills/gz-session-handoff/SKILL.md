@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.23.0"
+  skill-version: "6.24.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -36,16 +36,17 @@ uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + fi
 uv run gz handoff create [--adr ADR-<X.Y.Z>] --slug <slug> --agent <id> \
   --summary "<text>" --context "<text>" --decisions "<text>" --next-steps "<text>" \
   --pending "<text>" --verification "<text>" --evidence "<text>"
-uv run gz handoff authorize --handoff <path> --operator-text "<operator's exact words>"
+uv run gz handoff decide --handoff <path> --session-id <id> --decision proceed --operator-text "<operator's exact words>"
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention (read-only)
 uv run gz handoff archive --older-than 30d            # move handoffs older than the threshold into archive/
 ```
 
 `create` is fail-closed and requires **all seven** sections populated — each has
 its own flag, and an unsupplied section is a refusal, not an empty heading
-(GHI #692). `authorize` books the operator's ruling on a resumed handoff and is
-what lifts the § Operator Authorization Gate for the session (GHI #574); until it
-is booked, every mutating tool call is refused. `archive` is move-not-delete: it
+(GHI #692). `decide` books the operator's transit decision on a resumed handoff;
+a `proceed` decision is what lifts the § Operator Authorization Gate for the
+session (GHI #574, #757), and until one is booked every mutating tool call is
+refused. `authorize` is a retained deprecated alias. `archive` is move-not-delete: it
 relocates handoffs older than `--older-than` into `.gzkit/handoffs/archive/`,
 skipping any that are lock-coupled or are the `continues_from:` target of a
 still-canonical handoff, so the audit trail is preserved and no resume chain is
@@ -60,7 +61,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
-- **Blocks (RESUME):** every mutating tool call until the operator's ruling is booked via `gz handoff authorize` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
+- **Blocks (RESUME):** every mutating tool call until a `proceed` ruling is booked via `gz handoff decide` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
 - **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz status`, `gz state`), GitHub issue/PR/release state via `gh` read verbs (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`), and plain shell reads (`git`, `grep`, `rg`, `cat`, …) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate). **This list is illustrative, not the allowlist's authority** — the allowlist derives from the § Claim Verification Gate's *obligation* to verify every claim. Enumerating examples here is what under-covered it twice (GHI #574 follow-ups).
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
@@ -339,12 +340,34 @@ refusing.
 **Booking the ruling.** When the operator rules, record their VERBATIM words:
 
 ```bash
-uv run gz handoff authorize --handoff <path> --operator-text "<their exact words>"
+uv run gz handoff decide --handoff <path> --session-id <id> \
+  --decision proceed --operator-text "<their exact words>"
 ```
+
+**This is an acknowledge-and-decide transit, NOT an attestation (GHI #757).**
+ADR-0.0.33 § Alternatives rejects that conflation by name — completion
+attestation is reserved for claims about completed planned work, and spending
+that register on an every-transit gate cheapens the sacred word. The grammar is
+borrowed from the airlock's `Decision`; the records stay this layer's own.
+
+| Decision | Lifts the gate? |
+|---|:---:|
+| `proceed` | **yes** |
+| `pause` / `hold` / `revert` | no |
+
+Only `proceed` lifts. The predecessor shape was a consent boolean — booking it
+*was* authorization — so an operator who looked and ruled *not yet* left no
+record at all. Book the `hold`; do not leave it unrecorded. Add
+`--set-aside "<step>"` for any advised step the ruling declines: that is the
+clearance-amendment record (*"ATC keeps a record of all clearances issued and
+all amendments."*).
 
 The gate reads Layer-2, so a ruling given in conversation and never booked leaves
 the gate armed — by design. Never author `--operator-text` for words the operator
 did not say: that is fabrication, the same failure as fabricating a receipt id.
+The words stay VERBATIM (operator ruling 2026-08-05); only the register changed.
+
+`gz handoff authorize` remains as a deprecated alias and behaves identically.
 
 **What stays permitted while unauthorized:** the § Trust Model reads this skill
 requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
@@ -353,7 +376,7 @@ requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
 plain shell reads** (the read-only-by-construction `git` family —
 `status|log|diff|show|branch|rev-parse|rev-list|ls-files|blame|shortlog|describe|merge-base|cat-file|for-each-ref`
 — plus `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `wc`, `find`, `jq`, `pwd`) —
-plus `gz handoff authorize` itself. These are
+plus `gz handoff decide` (and its `authorize` alias) itself. These are
 load-bearing, not convenience: the § Claim Verification Gate below MANDATES
 verifying claims against Layer-2 before presenting. The harness does not always
 expose `Grep`/`Glob`, so Bash is the read path; and a handoff's GHI-state claims

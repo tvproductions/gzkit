@@ -1683,6 +1683,40 @@
         }
       }
     },
+    "handoff_resume_decided": {
+      "required": [
+        "session_id",
+        "handoff_path",
+        "operator_text",
+        "decision"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "handoff_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator_text": {
+          "type": "string",
+          "min_length": 1
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "proceed",
+            "pause",
+            "hold",
+            "revert"
+          ]
+        },
+        "set_aside": {
+          "type": "array"
+        }
+      }
+    },
     "obpi_parked": {
       "required": [
         "parked_to",

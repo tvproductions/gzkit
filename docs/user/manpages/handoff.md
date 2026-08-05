@@ -24,6 +24,7 @@ The three verbs:
 | [`gz handoff list`](handoff-list.md) | List handoffs newest-first, optionally scoped by ADR |
 | [`gz handoff resume`](handoff-resume.md) | Report the newest handoff for an ADR, its staleness, and first next step |
 | [`gz handoff create`](handoff-create.md) | Author a handoff, fail-closed through the validation gate |
+| [`gz handoff decide`](handoff-decide.md) | Book the operator's transit decision on a resumed handoff (only `proceed` lifts the resume gate) |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
 
 A handoff **advises**; it does not authorize. Resuming a handoff surfaces its

@@ -1027,12 +1027,14 @@ def handoff_resume_authorized_event(
 ) -> LedgerEvent:
     """Create a handoff resume authorization event (GHI #574).
 
-    The Layer-2 record that discharges the Operator Authorization Gate. Booking
-    it is what lifts ``gzkit.handoff_resume_gate``'s block for this session.
+    Superseded by :func:`handoff_resume_decided_event` (GHI #757), which records
+    a transit DECISION rather than a bare consent boolean. Retained because the
+    gate still reads this shape: every authorization booked before that change
+    is one of these, and dropping it would retroactively un-authorize the whole
+    committed ledger.
 
-    ``operator_text`` carries the operator's VERBATIM words, unmodified — the
-    same relay model as Gate 5 attestation (AGENTS.md § Attestation): the agent
-    seats the operator's words, it never rewrites or summarizes them.
+    ``operator_text`` carries the operator's VERBATIM words, unmodified: the
+    agent seats the operator's words, it never rewrites or summarizes them.
     """
     return LedgerEvent(
         event="handoff_resume_authorized",
@@ -1041,5 +1043,51 @@ def handoff_resume_authorized_event(
             "session_id": session_id,
             "handoff_path": handoff_path,
             "operator_text": operator_text,
+        },
+    )
+
+
+def handoff_resume_decided_event(
+    *,
+    session_id: str,
+    handoff_path: str,
+    operator_text: str,
+    decision: str,
+    set_aside: list[str] | None = None,
+) -> LedgerEvent:
+    """Create a handoff resume DECISION event (GHI #757).
+
+    The Layer-2 record of an acknowledge-and-decide transit. This is deliberately
+    *not* an attestation: ADR-0.0.33 § Alternatives rejects that conflation by
+    name — *"completion-attestation is sacrosanct and reserved for claims about
+    completed planned work; the airlock's every-transit gate is
+    acknowledge-and-decide, a different sort -- conflating them would spend and
+    cheapen the sacred word."* The predecessor event's own docstring claimed
+    "the same relay model as Gate 5 attestation", which is that conflation
+    written down.
+
+    ``decision`` borrows the airlock's ``Decision`` grammar (PROCEED / PAUSE /
+    HOLD / REVERT) while keeping the handoff layer's own records — the two
+    systems sit on different axes. Only PROCEED lifts the resume gate.
+
+    ``operator_text`` remains VERBATIM by operator ruling (2026-08-05): the word
+    is still recorded, what changes is that it is filed as a transit decision
+    rather than a completion claim.
+
+    ``set_aside`` names advised steps the ruling declines — the clearance
+    AMENDMENT record. Previously nothing captured which counsel was set aside or
+    why, so a session could depart from the handoff's advice invisibly. The
+    operator's frame: *"ATC keeps a record of all clearances issued and all
+    amendments."*
+    """
+    return LedgerEvent(
+        event="handoff_resume_decided",
+        id=handoff_path,
+        extra={
+            "session_id": session_id,
+            "handoff_path": handoff_path,
+            "operator_text": operator_text,
+            "decision": decision,
+            "set_aside": list(set_aside or []),
         },
     )

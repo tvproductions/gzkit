@@ -458,7 +458,12 @@ class ResumeGateProseTests(unittest.TestCase):
             reason = decide(base, session_id=_SESSION, tool_name="Write").reason
             self.assertIn("BLOCKED", reason, "part 1: what failed")
             self.assertIn("gz-session-handoff", reason, "part 2: the cited rule")
-            self.assertIn("gz handoff authorize", reason, "part 3: a runnable next step")
+            self.assertIn("gz handoff decide", reason, "part 3: a runnable next step")
+            # The recovery command must be RUNNABLE, not merely named: only a
+            # `proceed` decision lifts the gate (GHI #757), so prose that named
+            # the verb without the flag would hand the blocked party a command
+            # that books a record and leaves them still blocked.
+            self.assertIn("--decision proceed", reason, "part 3 must be complete")
             self.assertIn(handoff.name, reason, "the prose names the specific handoff")
 
     def test_coverage_limits_are_declared(self) -> None:
@@ -670,6 +675,94 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
             for command in ("rm -rf src", "mv a b", "sed -i s/a/b/ f", "git commit -m x"):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
+
+
+class ResumeDecisionIsATransitNotAnAttestationTests(unittest.TestCase):
+    """The gate books a transit decision, not a completion claim (GHI #757).
+
+    ADR-0.33.0 § Alternatives rejects this conflation by name: *"completion-
+    attestation is sacrosanct and reserved for claims about completed planned
+    work; the airlock's every-transit gate is acknowledge-and-decide, a
+    different sort -- conflating them would spend and cheapen the sacred word."*
+    The handoff gate did exactly that, down to the event's own docstring
+    claiming "the same relay model as Gate 5 attestation".
+
+    Operator ruling (2026-08-05): keep the verbatim words, add the decision.
+    The word is still recorded; what changes is that it is filed as a transit
+    decision. The grammar is borrowed from `airlock.model.Decision`; the
+    records stay the handoff layer's own — the two systems sit on different
+    axes.
+    """
+
+    def _write_event(self, base: Path, event: dict) -> None:
+        ledger = base / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        with ledger.open("a", encoding="utf-8") as fh:
+            fh.write(json.dumps(event) + "\n")
+
+    def _decided(self, base: Path, decision: str, *, session_id: str = _SESSION) -> None:
+        self._write_event(
+            base,
+            {
+                "event": "handoff_resume_decided",
+                "session_id": session_id,
+                "handoff_path": "h.md",
+                "operator_text": "close 757",
+                "decision": decision,
+            },
+        )
+
+    def test_proceed_lifts_the_gate(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._decided(base, "proceed")
+            self.assertTrue(is_resume_authorized(base, _SESSION))
+
+    def test_hold_does_not_lift_the_gate(self) -> None:
+        """The capability the old shape could not express.
+
+        `handoff_resume_authorized` was a boolean: booking it was consent, and
+        there was no way to record that the operator looked and said *not yet*.
+        A HOLD must leave the gate armed, or the register can only ever say yes.
+        """
+        for decision in ("hold", "pause", "revert"):
+            with self.subTest(decision=decision), TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                self._decided(base, decision)
+                self.assertFalse(
+                    is_resume_authorized(base, _SESSION),
+                    f"{decision!r} is a ruling to NOT proceed; it must not lift the gate",
+                )
+
+    def test_the_legacy_authorized_event_still_lifts_the_gate(self) -> None:
+        """Back-compat is load-bearing, not courtesy.
+
+        Every authorization booked before this change is a
+        `handoff_resume_authorized` event. A gate that stopped reading them
+        would retroactively un-authorize the entire committed ledger.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _authorize(base)
+            self.assertTrue(is_resume_authorized(base, _SESSION))
+
+    def test_a_decision_for_another_session_does_not_lift_this_one(self) -> None:
+        """Session scoping survives the new event shape (GHI #574's obligation)."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._decided(base, "proceed", session_id="some-other-session")
+            self.assertFalse(is_resume_authorized(base, _SESSION))
+
+    def test_an_unknown_decision_token_fails_closed(self) -> None:
+        """A malformed or future token is not consent.
+
+        The gate reads raw JSONL, so nothing upstream guarantees the token is
+        in the enum. Anything that is not exactly PROCEED leaves the gate armed.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self._decided(base, "PROCEED-ish")
+            self.assertFalse(is_resume_authorized(base, _SESSION))
 
 
 if __name__ == "__main__":

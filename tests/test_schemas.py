@@ -42,6 +42,7 @@ from gzkit.events import (
     FoundationGrandfatheredEvent,
     GateCheckedEvent,
     HandoffResumeAuthorizedEvent,
+    HandoffResumeDecidedEvent,
     IntrinsicComplexityAttestationEvent,
     LifecycleTransitionEvent,
     MxSessionClosedEvent,
@@ -318,6 +319,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "red_receipt_emitted": RedReceiptEmittedEvent,
     # Operator ruling lifting the handoff resume gate (GHI #574)
     "handoff_resume_authorized": HandoffResumeAuthorizedEvent,
+    # Successor carrying a transit decision rather than a consent boolean (GHI #757)
+    "handoff_resume_decided": HandoffResumeDecidedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_unparked": ObpiUnparkedEvent,

@@ -866,6 +866,39 @@ class HandoffResumeAuthorizedEvent(_EventBase):
     )
 
 
+class HandoffResumeDecidedEvent(_EventBase):
+    """handoff_resume_decided event — the operator's transit decision on a resumed handoff.
+
+    Successor to :class:`HandoffResumeAuthorizedEvent` (GHI #757). That event was
+    a consent BOOLEAN — booking it *was* authorization — so an operator who
+    reviewed a handoff and ruled *not yet* left no record at all; the register
+    could only ever say yes.
+
+    This is an **acknowledge-and-decide transit, not an attestation**. ADR-0.0.33
+    § Alternatives rejects the conflation by name: completion-attestation is
+    reserved for claims about completed planned work, and spending that register
+    on an every-transit gate cheapens it. The predecessor's docstring claimed
+    "the same relay model as Gate 5" — that conflation, written down.
+
+    ``decision`` borrows the airlock's ``Decision`` grammar while the records
+    stay the handoff layer's own; only ``proceed`` lifts the gate. ``set_aside``
+    names advised steps the ruling declines — the clearance-amendment record.
+    ``operator_text`` remains VERBATIM by operator ruling (2026-08-05): the word
+    is still recorded, only the drawer it is filed in changed.
+    """
+
+    event: Literal["handoff_resume_decided"]
+    session_id: str = Field(..., min_length=1, description="Harness session the ruling binds to")
+    handoff_path: str = Field(..., min_length=1, description="Resumed handoff the ruling covers")
+    operator_text: str = Field(..., min_length=1, description="Operator's verbatim ruling words")
+    decision: Literal["proceed", "pause", "hold", "revert"] = Field(
+        ..., description="Transit decision; only 'proceed' lifts the resume gate"
+    )
+    set_aside: list[str] = Field(
+        default_factory=list, description="Advised steps this ruling declines"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -925,6 +958,7 @@ TypedLedgerEvent = Annotated[
     | AirlockInEvent
     | AirlockOutEvent
     | HandoffResumeAuthorizedEvent
+    | HandoffResumeDecidedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent
     | FoundationGrandfatheredEvent,

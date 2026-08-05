@@ -35,6 +35,73 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_handoff_parsers(commands)
 
 
+def _handoff_decide_description(verb: str) -> str:
+    """Return the shared description for `decide` and its `authorize` alias."""
+    return (
+        "Record the operator's decision on a resumed handoff. Until a "
+        "PROCEED decision is booked, the resume gate refuses every mutating "
+        "tool call for this session (gz-session-handoff SKILL.md § RESUME). "
+        "This is an acknowledge-and-decide transit gate, NOT a completion "
+        "attestation — ADR-0.0.33 reserves that register for completed "
+        "planned work. --operator-text still carries the operator's VERBATIM "
+        "words: never a paraphrase, and never words they did not say."
+        + (" `authorize` is a deprecated alias for `decide`." if verb == "authorize" else "")
+    )
+
+
+def _handoff_decide_epilog(verb: str) -> str:
+    """Return the shared epilog examples for `decide` and its `authorize` alias."""
+    return build_epilog(
+        [
+            f"gz handoff {verb} --handoff .gzkit/handoffs/20260716T204012Z-work.md "
+            '--session-id abc123 --operator-text "focus on handoff first"',
+            f"gz handoff {verb} --handoff .gzkit/handoffs/20260716T204012Z-work.md "
+            '--session-id abc123 --decision hold --operator-text "not yet"',
+        ]
+    )
+
+
+def _add_handoff_decide_arguments(p: argparse.ArgumentParser) -> None:
+    """Add the shared flag surface for `decide` and its `authorize` alias (GHI #757).
+
+    The FLAGS are single-sourced because they are what drifts — a hand-copied
+    second parser is exactly how a flag lands on one verb and not the other.
+    The parser NAMES stay literal at the two call sites on purpose: the doc
+    scanner (`gzkit.doc_coverage.scanner`) reads source via AST and extracts the
+    string argument of `add_parser`, so a dynamically-named parser is invisible
+    to manpage coverage. Registering both names through a loop variable silently
+    dropped BOTH verbs from the audit's discovered set.
+    """
+    p.add_argument("--handoff", required=True, help="Resumed handoff the ruling covers")
+    p.add_argument(
+        "--operator-text",
+        dest="operator_text",
+        required=True,
+        help="The operator's verbatim ruling words (never paraphrased)",
+    )
+    p.add_argument(
+        "--session-id",
+        dest="session_id",
+        required=True,
+        help="Harness session the ruling binds to (the gate's block message interpolates it)",
+    )
+    p.add_argument(
+        "--decision",
+        choices=("proceed", "pause", "hold", "revert"),
+        default="proceed",
+        help="Transit decision; only proceed lifts the gate (default: proceed)",
+    )
+    p.add_argument(
+        "--set-aside",
+        dest="set_aside",
+        action="append",
+        default=None,
+        metavar="STEP",
+        help="An advised step this ruling declines (repeatable); the amendment record",
+    )
+    add_json_flag(p)
+
+
 def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
     """Register the ``gz handoff`` sub-command group (ADR-0.0.65 OBPI-03)."""
     p_handoff = commands.add_parser(
@@ -166,42 +233,48 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    # `decide` is the canonical verb (GHI #757); `authorize` is retained as an
+    # alias because it is named across skills, runbooks, hook block prose, and
+    # every handoff in the corpus. The flag surface is single-sourced through
+    # `_add_handoff_decide_arguments`; the names are literal so the AST-based
+    # doc scanner can still discover both.
+    p_decide = handoff_sub.add_parser(
+        "decide",
+        help="Book the operator's transit decision on a resumed handoff",
+        description=_handoff_decide_description("decide"),
+        epilog=_handoff_decide_epilog("decide"),
+    )
+    _add_handoff_decide_arguments(p_decide)
+    # `set_defaults` is repeated per verb rather than shared: the doc scanner
+    # discovers a command only from a standalone `p_foo.set_defaults(func=...)`
+    # whose lambda it can read via AST (`_handle_set_defaults`). Hoisting it
+    # into the shared helper made both verbs undiscoverable and orphaned the
+    # manpage. The flags — what actually drifts — stay single-sourced above.
+    p_decide.set_defaults(
+        func=lambda a: _lazy("handoff_authorize_cmd")(
+            handoff=a.handoff,
+            operator_text=a.operator_text,
+            session_id=a.session_id,
+            decision=a.decision,
+            set_aside=a.set_aside,
+            as_json=a.as_json,
+        )
+    )
+
     p_authorize = handoff_sub.add_parser(
         "authorize",
-        help="Book the operator's ruling on a resumed handoff (lifts the resume gate)",
-        description=(
-            "Record the operator's authorization to act on a resumed handoff. "
-            "Until this is booked, the resume gate refuses every mutating tool "
-            "call for this session (gz-session-handoff SKILL.md § RESUME). "
-            "--operator-text carries the operator's VERBATIM words — never a "
-            "paraphrase, and never words they did not say."
-        ),
-        epilog=build_epilog(
-            [
-                "gz handoff authorize --handoff .gzkit/handoffs/20260716T204012Z-work.md "
-                '--operator-text "focus on handoff first"',
-            ]
-        ),
+        help="Deprecated alias for `decide`",
+        description=_handoff_decide_description("authorize"),
+        epilog=_handoff_decide_epilog("authorize"),
     )
-    p_authorize.add_argument("--handoff", required=True, help="Resumed handoff the ruling covers")
-    p_authorize.add_argument(
-        "--operator-text",
-        dest="operator_text",
-        required=True,
-        help="The operator's verbatim authorization words (never paraphrased)",
-    )
-    p_authorize.add_argument(
-        "--session-id",
-        dest="session_id",
-        required=True,
-        help="Harness session the ruling binds to (the gate's block message interpolates it)",
-    )
-    add_json_flag(p_authorize)
+    _add_handoff_decide_arguments(p_authorize)
     p_authorize.set_defaults(
         func=lambda a: _lazy("handoff_authorize_cmd")(
             handoff=a.handoff,
             operator_text=a.operator_text,
             session_id=a.session_id,
+            decision=a.decision,
+            set_aside=a.set_aside,
             as_json=a.as_json,
         )
     )

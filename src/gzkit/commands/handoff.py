@@ -388,31 +388,64 @@ def handoff_authorize_cmd(
     handoff: str,
     operator_text: str,
     session_id: str,
+    decision: str = "proceed",
+    set_aside: list[str] | None = None,
     as_json: bool = False,
     base_path: Path = Path("."),
 ) -> None:
-    """Book the operator's ruling on a resumed handoff (GHI #574).
+    """Book the operator's transit decision on a resumed handoff (GHI #574, #757).
 
     Discharges the Operator Authorization Gate (`gz-session-handoff` SKILL.md
-    § RESUME) for this session: until this event is on the ledger, the resume
-    gate refuses every mutating tool call. The gate reads Layer-2, so the ruling
-    must be BOOKED — presenting the steps and being told "go" in conversation
-    leaves no record, which is the state that let the gate hold by goodwill alone.
+    § RESUME) for this session: until a PROCEED decision is on the ledger, the
+    resume gate refuses every mutating tool call. The gate reads Layer-2, so the
+    ruling must be BOOKED — presenting the steps and being told "go" in
+    conversation leaves no record, which is the state that let the gate hold by
+    goodwill alone.
 
-    ``--operator-text`` is the operator's VERBATIM words. Do not paraphrase,
-    summarize, or improve them (AGENTS.md § Attestation; § OPERATOR ECONOMY OF
-    EFFORT #3 — the agent seats the operator's words, never rewrites them).
-    Authorizing without a ruling actually given is fabrication, the same failure
-    as fabricating a receipt id.
+    **This is a transit decision, not an attestation.** ADR-0.0.33 § Alternatives
+    rejects the conflation by name — completion-attestation is reserved for
+    claims about completed planned work, and spending that register on an
+    every-transit gate cheapens the sacred word. ``decision`` borrows the
+    airlock's ``Decision`` grammar (PROCEED / PAUSE / HOLD / REVERT); only
+    PROCEED lifts. The predecessor shape was a bare consent boolean, so an
+    operator who looked and said *not yet* left no record at all.
+
+    ``set_aside`` names advised steps the ruling declines — the clearance
+    AMENDMENT record (*"ATC keeps a record of all clearances issued and all
+    amendments."*). Departure from counsel was previously invisible.
+
+    ``--operator-text`` is the operator's VERBATIM words, and stays verbatim by
+    operator ruling (2026-08-05). Do not paraphrase, summarize, or improve them
+    (§ OPERATOR ECONOMY OF EFFORT #3 — the agent seats the operator's words,
+    never rewrites them). Booking a decision the operator did not give is
+    fabrication, the same failure as fabricating a receipt id.
 
     ``session_id`` is passed explicitly rather than read from a harness env var:
     `commands/` is fenced to a two-entry env allowlist (NO_COLOR / FORCE_COLOR)
     precisely so vendor coupling cannot leak into the command layer. The gate's
     block prose interpolates the id, so the caller never has to discover it.
     """
+    from gzkit.airlock.model import Decision  # noqa: PLC0415
     from gzkit.commands.common import ensure_initialized  # noqa: PLC0415
     from gzkit.ledger import Ledger  # noqa: PLC0415
-    from gzkit.ledger_events import handoff_resume_authorized_event  # noqa: PLC0415
+    from gzkit.ledger_events import handoff_resume_decided_event  # noqa: PLC0415
+
+    # The grammar is borrowed from the airlock; the RECORDS stay this layer's own
+    # (GHI #757). Re-declaring the four tokens here would be the per-copy drift
+    # the CHECKPOINT_MODE single-sourcing exists to avoid.
+    try:
+        resolved_decision = Decision(decision.strip().lower())
+    except ValueError:
+        allowed = ", ".join(d.value for d in Decision)
+        console.print(
+            f"[red]Refusing to book:[/red] unknown decision {decision!r}.\n"
+            f"WHY: the gate compares the token exactly and fails closed on anything "
+            f"it does not recognize, so an unknown token would book a record that "
+            f"reads as a ruling but authorizes nothing (GHI #757).\n"
+            f"NEXT STEP: re-run with one of: {allowed}.",
+            style="red",
+        )
+        raise SystemExit(1) from None
 
     resolved_session = session_id.strip()
     if not resolved_session:
@@ -443,15 +476,24 @@ def handoff_authorize_cmd(
     rel = resolved.relative_to(root).as_posix() if resolved.is_relative_to(root) else handoff
     config = ensure_initialized()
     Ledger(root / config.paths.ledger).append(
-        handoff_resume_authorized_event(
+        handoff_resume_decided_event(
             session_id=resolved_session,
             handoff_path=rel,
             operator_text=operator_text,
+            decision=resolved_decision,
+            set_aside=set_aside,
         )
     )
 
-    payload = {"status": "authorized", "handoff_path": rel, "session_id": resolved_session}
+    payload = {
+        "status": "decided",
+        "decision": resolved_decision,
+        "handoff_path": rel,
+        "session_id": resolved_session,
+        "set_aside": list(set_aside or []),
+    }
     if as_json:
         print(json.dumps(payload))  # noqa: T201
         return
-    console.print(f"authorized — {rel} (session {resolved_session})")
+    lifted = " (gate lifted)" if resolved_decision == Decision.PROCEED else " (gate stays armed)"
+    console.print(f"{resolved_decision} — {rel} (session {resolved_session}){lifted}")

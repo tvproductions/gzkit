@@ -26,7 +26,10 @@ from gzkit.hooks.scripts.routing import (
     _pipeline_gate_script,
     _pipeline_router_script,
 )
-from gzkit.hooks.scripts.session_exit import _session_exit_bookmark_script
+from gzkit.hooks.scripts.session_exit import (
+    _session_exit_bookmark_script,
+    _session_start_advisement_script,
+)
 from gzkit.hooks.scripts.validation import (
     _control_surface_sync_script,
     _ledger_writer_script,
@@ -86,6 +89,12 @@ def _claude_hooks_readme() -> str:
             "  Stop (`*`) hook that runs `ruff check` over git-dirty Python",
             "  files at turn end and blocks the stop with agent-actionable",
             "  prose; fail-open, one block per turn (ADR-0.0.70).",
+            "- `session-start-advisement.py`",
+            "  SessionStart (`*`) hook that surfaces the newest handoff and its",
+            "  advised steps via `additionalContext` (universal) and",
+            "  `initialUserMessage` (Claude-side upgrade seeding a real first",
+            "  turn). Binds by seeding, never by refusing; it ADVISES — only",
+            "  `gz handoff decide` lifts the resume gate (GHI #757).",
             "- `session-exit-bookmark.py`",
             "  SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording",
             "  where the session stopped — the trigger ADR-0.0.65 never",
@@ -116,6 +125,7 @@ def _claude_hooks_readme() -> str:
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
+            "- `SessionStart` `*`: `session-start-advisement.py`",
             "- `SessionEnd` `*`: `session-exit-bookmark.py`",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
@@ -181,11 +191,22 @@ def gzkit_owned_phases() -> tuple[str, ...]:
     hand-wired here since ADR-0.0.65 and delivered to no adopter.
 
     `SessionEnd` is owned so the exit-beat bookmark is a delivered surface
-    rather than a local convenience. Phases NOT listed (e.g. `PreCompact`)
+    rather than a local convenience (GHI #756); `SessionStart` is owned so the
+    handoff advisement is (GHI #757). Phases NOT listed (e.g. `PreCompact`)
     pass through untouched, which is how an adopter's own hooks survive a
-    sync — ownership is deliberately narrow, not total.
+    sync — ownership is deliberately narrow, not total. Within an owned phase,
+    hooks that do not reference the gzkit hooks directory are preserved
+    alongside gzkit's, so a project's own `SessionStart` orientation script
+    keeps running.
     """
-    return ("PreToolUse", "PostToolUse", "Stop", "UserPromptSubmit", "SessionEnd")
+    return (
+        "PreToolUse",
+        "PostToolUse",
+        "Stop",
+        "UserPromptSubmit",
+        "SessionEnd",
+        "SessionStart",
+    )
 
 
 def generate_claude_settings(config: GzkitConfig) -> dict:
@@ -312,6 +333,22 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "mx-awareness.py"),
+                        }
+                    ],
+                },
+            ],
+            "SessionStart": [
+                {
+                    # The entry beat (GHI #757). Surfaces the newest handoff and
+                    # its advised steps through additionalContext (universal) and
+                    # initialUserMessage (Claude-side upgrade that seeds a real
+                    # first turn). Binds by seeding, never by refusing — and it
+                    # ADVISES: only `gz handoff decide` lifts the resume gate.
+                    "matcher": "*",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "session-start-advisement.py"),
                         }
                     ],
                 },
@@ -502,6 +539,12 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     handoff_resume_gate_path = hooks_path / "handoff-resume-gate.py"
     _write_hook_file(handoff_resume_gate_path, _handoff_resume_gate_script(), executable=True)
     created.append(handoff_resume_gate_path.relative_to(project_root).as_posix())
+
+    session_start_advisement_path = hooks_path / "session-start-advisement.py"
+    _write_hook_file(
+        session_start_advisement_path, _session_start_advisement_script(), executable=True
+    )
+    created.append(session_start_advisement_path.relative_to(project_root).as_posix())
 
     session_exit_bookmark_path = hooks_path / "session-exit-bookmark.py"
     _write_hook_file(session_exit_bookmark_path, _session_exit_bookmark_script(), executable=True)

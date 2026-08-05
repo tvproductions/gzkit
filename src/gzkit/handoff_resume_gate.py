@@ -42,7 +42,7 @@ Design notes that are load-bearing:
   turned on. Blocking a mandated read makes the skill un-compliable; everything
   that is not a mandated read fails CLOSED.
 
-* **The gate never blocks its own recovery.** `gz handoff authorize` is always
+* **The gate never blocks its own recovery.** `gz handoff decide` is always
   permitted. A rule that forbids the command that lifts it is worse than the hole
   it plugs (operator ruling, 2026-07-16 permission-surface pass).
 
@@ -73,6 +73,21 @@ __all__ = [
 
 _LEDGER_REL = ".gzkit/ledger.jsonl"
 _AUTHORIZED_EVENT = "handoff_resume_authorized"
+
+#: The successor event (GHI #757). `handoff_resume_authorized` was a boolean —
+#: booking it WAS consent, so the register could only ever say yes and an
+#: operator who looked and said "not yet" left no record. The decision event
+#: carries a token from the airlock's `Decision` grammar, so only PROCEED lifts.
+#:
+#: The legacy event is still read and still lifts. Every authorization booked
+#: before this change is one, and a gate that stopped reading them would
+#: retroactively un-authorize the entire committed ledger.
+_DECIDED_EVENT = "handoff_resume_decided"
+
+#: The only decision that lifts the gate. Compared exactly: the gate reads raw
+#: JSONL, so nothing upstream guarantees the token is in the enum, and anything
+#: that is not PROCEED is not consent.
+_PROCEED = "proceed"
 
 #: Tools whose use is "execution" under the § RESUME contract's "no file
 #: mutation" clause. `Bash` is included because `gz` ceremony and migration —
@@ -123,7 +138,13 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #: with, and an un-compliable gate gets worked around — the failure mode gzkit
 #: exists to close. Reads are not execution; the contract forbids MUTATION.
 _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
-    # The recovery path — must never be blocked by the gate it lifts.
+    # The recovery path — must never be blocked by the gate it lifts. BOTH
+    # spellings: `decide` is canonical (GHI #757) and `authorize` is its
+    # retained alias, and an allowlist carrying only one of them would let the
+    # gate refuse its own recovery. Renaming the recovery verb without adding
+    # it here would have been the fifth miss on THIS allowlist — the
+    # enumerate-the-examples class GHI #732 is open against.
+    ("gz", "handoff", "decide"),
     ("gz", "handoff", "authorize"),
     # § Trust Model: the Layer-2 surfaces RESUME must read to verify claims.
     ("gz", "obpi", "status"),
@@ -270,7 +291,7 @@ def is_resume_authorized(project_root: Path, session_id: str) -> bool:
     except OSError:
         return False
     for line in text.splitlines():
-        if _AUTHORIZED_EVENT not in line:
+        if _AUTHORIZED_EVENT not in line and _DECIDED_EVENT not in line:
             continue
         try:
             event = json.loads(line)
@@ -278,8 +299,31 @@ def is_resume_authorized(project_root: Path, session_id: str) -> bool:
             continue
         if not isinstance(event, dict):
             continue
-        if event.get("event") == _AUTHORIZED_EVENT and event.get("session_id") == session_id:
+        if event.get("session_id") != session_id:
+            continue
+        if _lifts_the_gate(event):
             return True
+    return False
+
+
+def _lifts_the_gate(event: dict) -> bool:
+    """Return True when this session-scoped event is consent to proceed.
+
+    Two shapes, one meaning. The legacy `handoff_resume_authorized` is a
+    boolean — its existence was consent — and it must keep lifting, or the
+    whole committed ledger un-authorizes itself. The successor
+    `handoff_resume_decided` carries a token, and only PROCEED is consent:
+    PAUSE / HOLD / REVERT are rulings to NOT proceed and leave the gate armed,
+    which is the state the boolean shape could not express.
+
+    Fails CLOSED on an unrecognized token — a future or malformed decision is
+    not consent (GHI #757).
+    """
+    kind = event.get("event")
+    if kind == _AUTHORIZED_EVENT:
+        return True
+    if kind == _DECIDED_EVENT:
+        return str(event.get("decision", "")).strip().lower() == _PROCEED
     return False
 
 
@@ -429,8 +473,12 @@ def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: 
         "NEXT STEP: present the handoff's advised next steps to the operator and wait "
         "for a ruling. When they rule, book their VERBATIM words (copy this line; the "
         "session id is already filled in):\n"
-        f"  uv run gz handoff authorize --handoff {rel} \\\n"
-        f'    --session-id {session_id} --operator-text "<their exact words>"\n\n'
+        f"  uv run gz handoff decide --handoff {rel} \\\n"
+        f'    --session-id {session_id} --decision proceed --operator-text "<their exact words>"\n'
+        "Only `proceed` lifts this gate. `pause`, `hold`, and `revert` are equally "
+        "bookable rulings and leave it armed — an operator who looks and says 'not yet' "
+        'should be recorded, not left unbooked. Add `--set-aside "<step>"` for any '
+        "advised step the ruling declines.\n\n"
         "Run it BARE — a `cd ...;` prefix makes it a compound command, which this "
         "gate correctly refuses.\n"
         "Reading is permitted while unauthorized (gz state / gz gates / gz obpi status, "

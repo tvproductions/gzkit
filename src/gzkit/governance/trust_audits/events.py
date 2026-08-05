@@ -27,6 +27,15 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "frontmatter. Adding an edge would model a transient permission as a durable "
         "relationship."
     ),
+    "handoff_resume_decided": (
+        "Operator transit decision on a resumed handoff (GHI #757), the successor to "
+        "`handoff_resume_authorized` and read by the same gate. Waived for the same "
+        "reason: session-scoped consent, not artifact lineage. It attaches to a "
+        "session id, and the handoff it names is already a graph node via its own "
+        "frontmatter. The added `decision` and `set_aside` fields sharpen WHAT was "
+        "ruled and which counsel was declined — they do not make the ruling a durable "
+        "relationship between artifacts."
+    ),
     "red_receipt_emitted": (
         "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "
         "that the REQ's covering test fails without its implementation; read by "

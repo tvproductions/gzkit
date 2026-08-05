@@ -742,9 +742,15 @@ every mutating tool call until you rule and the agent books your verbatim words
 (GHI #574); the block message carries the exact command, session id filled in:
 
 ```bash
-uv run gz handoff authorize --handoff .gzkit/handoffs/<file>.md \
-  --session-id <id> --operator-text "<your exact words>"
+uv run gz handoff decide --handoff .gzkit/handoffs/<file>.md \
+  --session-id <id> --decision proceed --operator-text "<your exact words>"
 ```
+
+Only `proceed` lifts the gate. `pause`, `hold`, and `revert` are equally
+bookable rulings that leave it armed — so "I looked, not yet" is a recordable
+answer rather than silence. Add `--set-aside "<step>"` for any advised step you
+decline; that is the clearance-amendment record. (`gz handoff authorize` is a
+deprecated alias for `decide`.)
 
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the

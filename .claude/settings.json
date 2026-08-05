@@ -16,6 +16,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start-advisement.py\""
+          },
+          {
+            "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/scripts/session_orientation.py\""
           }
         ]

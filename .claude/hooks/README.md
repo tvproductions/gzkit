@@ -46,6 +46,12 @@ Current hook surface in gzkit:
   Stop (`*`) hook that runs `ruff check` over git-dirty Python
   files at turn end and blocks the stop with agent-actionable
   prose; fail-open, one block per turn (ADR-0.0.70).
+- `session-start-advisement.py`
+  SessionStart (`*`) hook that surfaces the newest handoff and its
+  advised steps via `additionalContext` (universal) and
+  `initialUserMessage` (Claude-side upgrade seeding a real first
+  turn). Binds by seeding, never by refusing; it ADVISES — only
+  `gz handoff decide` lifts the resume gate (GHI #757).
 - `session-exit-bookmark.py`
   SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording
   where the session stopped — the trigger ADR-0.0.65 never
@@ -76,6 +82,7 @@ Current hook surface in gzkit:
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
+- `SessionStart` `*`: `session-start-advisement.py`
 - `SessionEnd` `*`: `session-exit-bookmark.py`
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/

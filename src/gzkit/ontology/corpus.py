@@ -106,6 +106,12 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # #574). Not corpus lineage: it binds to a harness session id, and the
         # handoff it names is already a node via its own frontmatter.
         "handoff_resume_authorized",
+        # Successor to the above (GHI #757), dispositioned identically: a transit
+        # DECISION rather than a consent boolean, but still session-scoped
+        # permission, not corpus lineage. `decision` and `set_aside` sharpen what
+        # was ruled and which counsel was declined; neither is an edge between
+        # artifacts.
+        "handoff_resume_decided",
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
         "mx_session_closed",
