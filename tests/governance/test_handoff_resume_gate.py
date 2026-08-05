@@ -33,6 +33,7 @@ def _seed_handoff(
     name: str = "20260716T000000Z-work.md",
     *,
     abandoned: bool = False,
+    session_id: str | None = None,
 ) -> Path:
     """Write a resumable handoff.
 
@@ -59,6 +60,8 @@ def _seed_handoff(
     ]
     if abandoned:
         lines.append("abandoned: true")
+    if session_id is not None:
+        lines.append(f"session_id: {session_id}")
     lines += ["---", "", "## Decisions Made", "", "body", ""]
     path = d / name
     path.write_text("\n".join(lines), encoding="utf-8")
@@ -243,6 +246,66 @@ class ResumeGateCannotBeDefeatedTests(unittest.TestCase):
             base = Path(tmp)
             _seed_handoff(base, name="20260716T000000Z-OBPI-x-abandoned.md", abandoned=True)
             self.assertIsNone(newest_handoff(base))
+            self.assertFalse(decide(base, session_id=_SESSION, tool_name="Write").blocked)
+
+
+class ResumeGateDoesNotRevokeTheAuthorsClearanceTests(unittest.TestCase):
+    """Authoring a handoff is not resuming one (GHI #755).
+
+    Derived from the declared clause's own scope word: § RESUME gates every
+    *resume*. A session that WROTE the newest handoff performed no resume, so
+    the clause never reached it — yet the gate armed anyway, because it read the
+    handoff's EXISTENCE as proof the session was un-cleared and never asked who
+    authored it. The operator's frame: clearance is amended mid-flight, never
+    revoked, "that would be Schrodinger's flight".
+
+    No bypass is created. A session holding no clearance cannot Write, and
+    `gz handoff create` is Bash outside the read allowlist — so a handoff
+    carrying this session's id can only exist if the session was already
+    permitted to write it.
+    """
+
+    def test_authoring_a_handoff_does_not_arm_the_gate_against_its_author(self) -> None:
+        """The reported symptom: author a bookmark, then be refused a sync."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, session_id=_SESSION)
+            verdict = decide(base, session_id=_SESSION, tool_name="Write")
+            self.assertFalse(verdict.blocked)
+
+    def test_a_prior_sessions_handoff_still_arms_the_gate(self) -> None:
+        """Paired block-case: the permit tracks AUTHORSHIP, not a constant."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, session_id="session-from-a-prior-run")
+            self.assertTrue(decide(base, session_id=_SESSION, tool_name="Write").blocked)
+
+    def test_handoff_without_session_id_fails_closed(self) -> None:
+        """The whole pre-existing corpus predates the field; absence must not permit."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            self.assertTrue(decide(base, session_id=_SESSION, tool_name="Write").blocked)
+
+    def test_empty_session_id_cannot_match_an_unattributed_handoff(self) -> None:
+        """Adversarial: an empty id must not equal an empty/absent frontmatter value."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, session_id="")
+            self.assertTrue(decide(base, session_id="", tool_name="Write").blocked)
+
+    def test_mid_flight_checkpoint_does_not_revoke_an_existing_clearance(self) -> None:
+        """A cleared session that bookmarks mid-flight stays cleared.
+
+        The `gz obpi complete` completion-handoff case (GHI #619) the module's
+        design notes already named — pinned so the ordering of the authorship
+        and authorization checks cannot regress it.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, name="20260716T000000Z-resumed.md")
+            _authorize(base)
+            _seed_handoff(base, name="20260717T000000Z-checkpoint.md", session_id=_SESSION)
             self.assertFalse(decide(base, session_id=_SESSION, tool_name="Write").blocked)
 
 

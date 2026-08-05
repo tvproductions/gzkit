@@ -21,10 +21,17 @@ Design notes that are load-bearing:
   :func:`decide` — the ports-and-adapters shape, and the only shape a live
   negative control can point an entrypoint at.
 
-* **Session-scoped, not per-handoff.** Authorization cites the harness
-  ``session_id``. Per-handoff arming would let `gz obpi complete`'s mechanically
-  written completion handoff (GHI #619) re-arm the gate mid-session, blocking the
-  operator right after a completion they just attested.
+* **Session-scoped, not per-handoff — AND authorship-aware.** Authorization cites
+  the harness ``session_id``. Per-handoff arming would let `gz obpi complete`'s
+  mechanically written completion handoff (GHI #619) re-arm the gate mid-session,
+  blocking the operator right after a completion they just attested. Session
+  scoping closed that instance and left the CLASS open: it protects a session that
+  is ALREADY authorized, and structurally cannot protect one that never was —
+  there is no authorization event to scope to. So a session that did fresh work
+  and then wrote a bookmark armed the gate against its own author (GHI #755).
+  :func:`_authored_by_session` closes the class by asking who WROTE the handoff,
+  which is the question the § RESUME clause's own scope word ("every *resume*")
+  was always asking.
 
 * **The allowlist is OBLIGATION-derived, not example-derived.** What RESUME may
   read while unauthorized is fixed by the § Claim Verification Gate's duty —
@@ -276,6 +283,39 @@ def is_resume_authorized(project_root: Path, session_id: str) -> bool:
     return False
 
 
+def _authored_by_session(handoff: Path, session_id: str) -> bool:
+    """Return True when THIS session WROTE the handoff, rather than resuming one.
+
+    § RESUME gates every *resume*, and authoring is not resuming. :func:`decide`
+    read the newest handoff's mere EXISTENCE as proof the session was un-cleared
+    and never asked who wrote it, so a session that authored one — a session-end
+    bookmark, or a mid-flight checkpoint — armed the gate against itself and was
+    refused its next mutation by prose asserting it had "resumed" the document it
+    had just written (GHI #755). The operator's frame: a clearance is AMENDED
+    mid-flight, never revoked.
+
+    Fails CLOSED on every ambiguity — no session id, an unreadable or malformed
+    document, or a handoff carrying no ``session_id`` at all (the entire corpus
+    predating the field). The empty-id guard is load-bearing rather than
+    defensive: without it an unattributed session would match an unattributed
+    handoff and open the gate for both.
+
+    No bypass is created. A session holding no clearance cannot ``Write``, and
+    ``gz handoff create`` is Bash outside :data:`_PERMITTED_BASH` — so a handoff
+    carrying this session's id can only exist if the session was already
+    permitted to write it.
+    """
+    if not session_id:
+        return False
+    try:
+        frontmatter = parse_frontmatter(handoff.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, HandoffValidationError):
+        return False
+    if not isinstance(frontmatter, dict):
+        return False
+    return frontmatter.get("session_id") == session_id
+
+
 def _tokens(command: str) -> list[str]:
     """Split a Bash command into leading tokens, `uv run` stripped.
 
@@ -409,15 +449,21 @@ def decide(
 ) -> Verdict:
     """Decide whether a tool call is permitted under the Operator Authorization Gate.
 
-    Blocks when ALL hold: the tool can mutate, a resumable handoff exists, and no
-    operator authorization is on the ledger for this session. Read-only Bash named
-    by the skill's § Trust Model is permitted so the mandated Claim Verification
-    Gate can run before the operator is asked to rule.
+    Blocks when ALL hold: the tool can mutate, a resumable handoff exists, this
+    session did not AUTHOR that handoff, and no operator authorization is on the
+    ledger for this session. Read-only Bash named by the skill's § Trust Model is
+    permitted so the mandated Claim Verification Gate can run before the operator
+    is asked to rule.
     """
     if tool_name not in MUTATING_TOOLS:
         return Verdict(blocked=False)
     handoff = newest_handoff(project_root)
     if handoff is None:
+        return Verdict(blocked=False)
+    # Authoring is not resuming (GHI #755). Checked BEFORE the ledger lookup so a
+    # session that never held a clearance is still not un-cleared by its own
+    # bookmark — the case session-scoping structurally cannot reach.
+    if _authored_by_session(handoff, session_id):
         return Verdict(blocked=False)
     if is_resume_authorized(project_root, session_id):
         return Verdict(blocked=False)
