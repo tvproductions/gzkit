@@ -42,6 +42,10 @@ SECTION_HEADINGS: tuple[str, ...] = (
     "Active campaign — Magna Carta",
     "Git remote state",
     "Most-recent handoff",
+    # CONDITIONAL — emitted only when unprocessed floor bookmarks exist. Every
+    # other entry here is unconditional; do not assert this one's presence
+    # against an arbitrary corpus.
+    "Session-exit bookmarks awaiting sensemaking",
     "Open session-handoff GHIs",
     "Active OBPI claims",
     "Active ADR pipeline state",
@@ -218,6 +222,40 @@ def parse_frontmatter_timestamp(text: str) -> datetime | None:
     return parsed
 
 
+def parse_frontmatter_agent(text: str) -> str | None:
+    """Return the frontmatter ``agent`` value, or None.
+
+    The writer identity is what distinguishes a mechanical floor bookmark from an
+    authored handoff. ``mode`` cannot: both are ``CHECKPOINT`` once an operator
+    authors a mid-flight checkpoint, so a mode test would discard the authored
+    document (GHI #758).
+    """
+    match = re.match(r"^---\s*\n(.*?)\n---", text, re.DOTALL)
+    if match is None:
+        return None
+    agent_match = re.search(r"^agent:\s*['\"]?([^'\"\n]+?)['\"]?\s*$", match.group(1), re.MULTILINE)
+    return agent_match.group(1).strip() if agent_match else None
+
+
+def floor_bookmark_agent() -> str | None:
+    """Return the exit beat's writer identity, or None when gzkit is unavailable.
+
+    Read from `gzkit.session_exit` rather than restated, so this script and the
+    resume gate cannot come to disagree about what a floor bookmark is — the
+    second-copy failure GHI #758's fix existed to avoid.
+
+    Guarded like the lock-reaping block below: this module is stdlib-only by
+    design and must render orientation even when the package will not import. A
+    None here degrades to the pre-GHI-#758 behavior (pure newest-first), which is
+    the honest fallback — never a hardcoded duplicate of the identity.
+    """
+    try:
+        from gzkit.session_exit import FLOOR_BOOKMARK_AGENT
+    except Exception:  # noqa: BLE001  (any import failure degrades, never raises)
+        return None
+    return FLOOR_BOOKMARK_AGENT
+
+
 def extract_first_next_step(text: str) -> str | None:
     section = re.search(
         r"^## Immediate Next Steps\s*\n(.*?)(?=^## |\Z)",
@@ -280,7 +318,24 @@ def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
             candidates.append((ts, path, text))
     if not candidates:
         return None
-    ts, latest, text = max(candidates, key=lambda candidate: candidate[0])
+    # Rank an AUTHORED handoff above a mechanical floor bookmark (GHI #758). A
+    # floor bookmark is written at every session end, so under a plain
+    # newest-first max() it always wins — the precaution out-competing the
+    # artifact it backs up. Observed 2026-08-05: this function surfaced a
+    # 1,765-byte bookmark reading "Unknown to the writer" as "Most-recent
+    # handoff" while a 24,877-byte authored handoff sat 48 minutes beneath it.
+    #
+    # Deprioritize, never drop: a session that crashed or `/clear`ed before
+    # authoring leaves nothing else, and covering that is why the exit beat
+    # exists. Sorting by (is_authored, ts) keeps recency inside each class.
+    floor_agent = floor_bookmark_agent()
+    ts, latest, text = max(
+        candidates,
+        key=lambda candidate: (
+            floor_agent is not None and parse_frontmatter_agent(candidate[2]) != floor_agent,
+            candidate[0],
+        ),
+    )
     try:
         rel = str(latest.relative_to(REPO_ROOT))
     except ValueError:
@@ -293,6 +348,141 @@ def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
     if first_action:
         result["first_action"] = first_action
     return result
+
+
+def collect_exit_bookmarks(repo_root: Path, now: datetime) -> dict[str, object] | None:
+    """Floor bookmarks written since the last authored handoff, with git status.
+
+    The exit beat books a bookmark at every session end and cannot commit one —
+    it fires after the session's last chance to do so. So bookmarks accumulate
+    unread and untracked unless something at the NEXT session start looks for
+    them. Nothing did: `collect_handoff` surfaces exactly one document, and once
+    GHI #758 stopped that being the bookmark, the bookmarks became invisible
+    rather than merely misleading. This is the sensemaking half.
+
+    Scoped to bookmarks NEWER than the newest authored handoff. An older one was
+    already covered by the authoring that superseded it, so including it would
+    grow this section without bound and train the reader to skip it.
+
+    Returns None when there is nothing to say — an empty section is noise every
+    session, and this one is only actionable when it has entries.
+    """
+    handoffs_dir = repo_root / ".gzkit" / "handoffs"
+    floor_agent = floor_bookmark_agent()
+    if floor_agent is None or not handoffs_dir.is_dir():
+        return None
+
+    newest_authored: datetime | None = None
+    bookmarks: list[tuple[datetime, Path]] = []
+    for path in sorted(handoffs_dir.glob("*.md")):
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if not _looks_like_handoff(text):
+            continue
+        ts = parse_frontmatter_timestamp(text)
+        if ts is None:
+            ts = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+        if parse_frontmatter_agent(text) == floor_agent:
+            bookmarks.append((ts, path))
+        elif newest_authored is None or ts > newest_authored:
+            newest_authored = ts
+
+    unprocessed = [
+        (ts, path) for ts, path in bookmarks if newest_authored is None or ts > newest_authored
+    ]
+    if not unprocessed:
+        return None
+
+    tracked = _tracked_handoff_paths(repo_root)
+    entries: list[dict[str, str]] = []
+    for ts, path in sorted(unprocessed, reverse=True):
+        # Relative to the repo_root ARGUMENT, not the module-global REPO_ROOT:
+        # `_tracked_handoff_paths` runs `git -C repo_root`, whose output is
+        # relative to that same root. Using the global happens to agree in
+        # production and silently disagrees anywhere else, which would report
+        # every bookmark as untracked under any other root.
+        try:
+            rel = str(path.relative_to(repo_root)).replace(os.sep, "/")
+        except ValueError:
+            rel = str(path)
+        entries.append(
+            {
+                "path": rel,
+                "age": classify_freshness(now, ts),
+                # `tracked is None` means the git query failed — reported as
+                # unknown rather than assumed clean, because "assume tracked" is
+                # the answer that makes a missing file look fine.
+                "inclusion": "tracked"
+                if tracked is None or rel in tracked
+                else "UNTRACKED — needs inclusion",
+            }
+        )
+    return {"entries": entries, "unknown_tracking": tracked is None}
+
+
+def _tracked_handoff_paths(repo_root: Path) -> set[str] | None:
+    """Repo-relative handoff paths git is tracking, or None when git cannot answer.
+
+    None is distinct from empty and both callers must keep it that way: an empty
+    set means "git answered, nothing is tracked", while None means "unknown".
+    Collapsing them would let a failed query render every bookmark as needing
+    inclusion, and a noisy false alarm every session is how a real one stops
+    being read.
+    """
+    completed = _git_run(
+        ["git", "-C", str(repo_root), "ls-files", ".gzkit/handoffs"],
+        timeout=REMOTE_QUERY_TIMEOUT_SEC,
+    )
+    if completed is None or completed.returncode != 0:
+        return None
+    return {line.strip() for line in completed.stdout.splitlines() if line.strip()}
+
+
+def _render_exit_bookmarks(lines: list[str], payload: object) -> None:
+    """Render the bookmark sensemaking section, or nothing when there is none."""
+    if not isinstance(payload, dict):
+        return
+    entries = payload.get("entries")
+    if not isinstance(entries, list) or not entries:
+        return
+    lines.append("")
+    lines.append("## Session-exit bookmarks awaiting sensemaking")
+    lines.append(
+        f"- {len(entries)} floor bookmark(s) written since the last authored handoff. "
+        "These are mechanical exit-beat records, not authored context — the writer "
+        "could not enumerate open loops and says so."
+    )
+    for entry in entries:
+        if not isinstance(entry, dict):
+            continue
+        lines.append(
+            f"  - `{entry.get('path', '?')}` ({entry.get('age', '?')}) — "
+            f"{entry.get('inclusion', '?')}"
+        )
+    if payload.get("unknown_tracking"):
+        lines.append(
+            "- NOTE: git could not be queried, so inclusion status is unverified "
+            "rather than clean. Check with `git status --short .gzkit/handoffs/`."
+        )
+    lines.append(
+        "- OFFER THE OPERATOR SENSEMAKING on these before other work: read each "
+        "against live state, fold whatever is still live into an authored handoff "
+        "that supersedes them, and include any untracked file in that same commit."
+    )
+    lines.append(
+        "- Flagged for inclusion because the exit beat structurally cannot commit "
+        "its own output — it fires after the session's last chance to. A bookmark "
+        "left untracked is a Layer-2 `handoff_path` with no referent in a fresh "
+        "clone (GHI #759)."
+    )
+    lines.append(
+        "- A bookmark ADVISES, like any handoff — and a mechanically drafted one "
+        "advises with less authority, not more. Do not act on its contents unprompted."
+    )
 
 
 def _run_gh_json(args: list[str], timeout: int = 30) -> object | None:
@@ -499,6 +689,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "campaign": campaign,
         "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root, now),
+        "exit_bookmarks": collect_exit_bookmarks(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": collect_obpi_locks(repo_root),
         "adr_pipeline": [],
@@ -596,6 +787,10 @@ def render(state: dict, now: datetime) -> str:
         )
     else:
         lines.append("- (no handoff documents found)")
+    # Outside the branch deliberately: unprocessed bookmarks are worth surfacing
+    # even when no handoff was selected at all, which is exactly the corpus state
+    # where they are the only record of what happened.
+    _render_exit_bookmarks(lines, state.get("exit_bookmarks"))
     lines.append("")
 
     lines.append("## Open session-handoff GHIs")

@@ -976,3 +976,165 @@ def subprocess_completed(stdout: str = "", returncode: int = 0):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestFloorBookmarksDoNotShadowAuthoredHandoffs(unittest.TestCase):
+    """Orientation must not surface a mechanical bookmark as "the" handoff (GHI #758).
+
+    This is the THIRD reader over the handoff corpus, after the resume gate's
+    `newest_handoff` and the release path's `find_handoff_for_release`. GHI #758's
+    fix hardened the gate; this selector kept its own `max(candidates, key=ts)` and
+    went on shadowing — and this is the one whose output an operator actually reads
+    at session start.
+
+    Observed 2026-08-05: rendered "Most-recent handoff:
+    20260805T221056Z-session-exit-bookmark.md" (1,765 bytes, "Unknown to the
+    writer") while a 24,877-byte authored handoff sat 48 minutes beneath it.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
+
+    def _write(self, root: Path, name: str, ts: datetime, agent: str) -> Path:
+        handoffs = root / ".gzkit" / "handoffs"
+        handoffs.mkdir(parents=True, exist_ok=True)
+        path = handoffs / name
+        path.write_text(
+            f"---\nmode: CHECKPOINT\nadr_id: ADR-0.0.65\ntimestamp: {ts.isoformat()}\n"
+            f"agent: {agent}\n---\n\n## Immediate Next Steps\n\n1. Do the thing\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_authored_handoff_outranks_a_newer_floor_bookmark(self):
+        """Both are `mode: CHECKPOINT` — a mode filter here would pick the wrong one."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "authored.md", self.now - timedelta(hours=2), "claude-code")
+            self._write(
+                root,
+                "20260425T115900Z-session-exit-bookmark.md",
+                self.now - timedelta(minutes=1),
+                "gzkit-session-exit",
+            )
+            result = self.mod.collect_handoff(root, self.now)
+            assert result is not None
+            self.assertIn("authored.md", result["path"])
+
+    def test_floor_bookmark_still_surfaces_when_it_is_the_only_record(self):
+        """Deprioritize, never drop — the crashed-before-authoring case is the point."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(
+                root,
+                "20260425T115900Z-session-exit-bookmark.md",
+                self.now - timedelta(minutes=1),
+                "gzkit-session-exit",
+            )
+            result = self.mod.collect_handoff(root, self.now)
+            assert result is not None
+            self.assertIn("session-exit-bookmark", result["path"])
+
+
+class TestExitBookmarkSensemakingSection(unittest.TestCase):
+    """Bookmarks are discovered, offered for sensemaking, and flagged for inclusion.
+
+    The exit beat fires after the session's last chance to commit, so it
+    structurally cannot land its own output. Once GHI #758 stopped bookmarks
+    winning the "Most-recent handoff" slot they became invisible rather than
+    merely misleading — this section is the half that keeps them visible.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
+
+    def _write(self, root: Path, name: str, ts: datetime, agent: str) -> Path:
+        handoffs = root / ".gzkit" / "handoffs"
+        handoffs.mkdir(parents=True, exist_ok=True)
+        path = handoffs / name
+        path.write_text(
+            f"---\nmode: CHECKPOINT\nadr_id: null\ntimestamp: {ts.isoformat()}\n"
+            f"agent: {agent}\n---\n\n## Immediate Next Steps\n\n1. Read it\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_bookmarks_newer_than_the_last_authored_handoff_are_surfaced(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "authored.md", self.now - timedelta(hours=3), "claude-code")
+            self._write(root, "bm-new.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            with mock.patch.object(self.mod, "_tracked_handoff_paths", return_value=set()):
+                payload = self.mod.collect_exit_bookmarks(root, self.now)
+            assert payload is not None
+            paths = [e["path"] for e in payload["entries"]]
+            self.assertEqual(len(paths), 1)
+            self.assertIn("bm-new.md", paths[0])
+
+    def test_a_bookmark_older_than_the_last_authored_handoff_is_already_processed(self):
+        """Scoping keeps the section bounded; an unbounded list trains readers to skip it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "bm-old.md", self.now - timedelta(days=2), "gzkit-session-exit")
+            self._write(root, "authored.md", self.now - timedelta(hours=1), "claude-code")
+            with mock.patch.object(self.mod, "_tracked_handoff_paths", return_value=set()):
+                self.assertIsNone(self.mod.collect_exit_bookmarks(root, self.now))
+
+    def test_an_untracked_bookmark_is_flagged_for_inclusion(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "bm.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            with mock.patch.object(self.mod, "_tracked_handoff_paths", return_value=set()):
+                payload = self.mod.collect_exit_bookmarks(root, self.now)
+            assert payload is not None
+            self.assertIn("needs inclusion", payload["entries"][0]["inclusion"])
+
+    def test_a_tracked_bookmark_is_not_flagged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "bm.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            tracked = {".gzkit/handoffs/bm.md"}
+            with mock.patch.object(self.mod, "_tracked_handoff_paths", return_value=tracked):
+                payload = self.mod.collect_exit_bookmarks(root, self.now)
+            assert payload is not None
+            self.assertEqual(payload["entries"][0]["inclusion"], "tracked")
+
+    def test_an_unanswerable_git_query_is_unknown_not_clean(self):
+        """None != empty set. Collapsing them makes a real omission look fine, or
+        raises a false alarm every session until nobody reads the section."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write(root, "bm.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            with mock.patch.object(self.mod, "_tracked_handoff_paths", return_value=None):
+                payload = self.mod.collect_exit_bookmarks(root, self.now)
+            assert payload is not None
+            self.assertTrue(payload["unknown_tracking"])
+
+    def test_the_section_renders_the_offer_and_the_inclusion_flag(self):
+        # output-contract: this section's whole value is the operator-facing text —
+        # the offer to make sense of the bookmarks and the inclusion flag. A payload
+        # that renders neither has no consumer.
+        lines: list[str] = []
+        self.mod._render_exit_bookmarks(
+            lines,
+            {
+                "entries": [
+                    {"path": ".gzkit/handoffs/bm.md", "age": "Fresh", "inclusion": "UNTRACKED"}
+                ],
+                "unknown_tracking": False,
+            },
+        )
+        rendered = "\n".join(lines)
+        self.assertIn("## Session-exit bookmarks awaiting sensemaking", rendered)
+        self.assertIn("OFFER THE OPERATOR SENSEMAKING", rendered)
+        self.assertIn("Flagged for inclusion", rendered)
+        self.assertIn(".gzkit/handoffs/bm.md", rendered)
+
+    def test_nothing_renders_when_there_is_nothing_to_say(self):
+        """An empty section every session is noise that teaches the reader to skip it."""
+        lines: list[str] = []
+        self.mod._render_exit_bookmarks(lines, None)
+        self.mod._render_exit_bookmarks(lines, {"entries": []})
+        self.assertEqual(lines, [])
