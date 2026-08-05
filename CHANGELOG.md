@@ -56,6 +56,37 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 - Registering a `gz validate` scope enrolls it in `gz check`, closing the gap that let a failing scope pass the commit gate for eight days (GHI #744)
 - The GovZero OBPI-pipeline runbook no longer documents a `gz superbook` bridge that has never been registered (GHI #749)
 
+## v0.34.0 (2026-07-31)
+
+### Release highlights
+
+- The `foundation` ADR kind is sealed at every authoring door (ADR-0.34.0 Foundation Sunset): 51 historical foundations are grandfathered from ledger truth, 23 genuinely-unstarted ones demote to pool, and `gz validate --taxonomy` is wired as the permanent final step of `gz check`. The kind is sealed, not deleted — the enum stays valid for the grandfathered set on disk
+- Fifteen GHIs closed alongside it, seven of them surfaces that returned a clean or confident result while measuring the wrong thing — a reconciliation verdict that varied by machine, 1876 of 2020 REQs miscounted as drift, and a witnessless grandfather event accepted as attested
+
+### Added
+
+- `gz smoke` tier and its `gz check` gate, giving the 60-second smoke budget a tier to measure and a gate to enforce it after the budget had been declared with neither (GHI #724)
+- `test-consolidation-subtest-sweep` chore registered project-local — deliberately not shipped in the wheel — as the landing site for the consolidation scope that survived the at-scale test-management tracker, which closes `superseded` (GHI #644)
+
+### Changed
+
+- `gz brief reconcile` becomes `gz obpi brief-drift` and `gz obpi reconcile` becomes `gz obpi sync`, retiring the single-verb `brief` namespace; the two verbs previously operated on the same artifact, so reaching for the wrong one exited clean on the wrong axis with no error signal (GHI #641)
+- `audit_code_contract_mismatches` is scoped to `src/gzkit`, so gzkit's internal Pydantic-over-dataclass constraint is structurally inert outside this repository and no longer fails `gz validate` on an adopter's own `@dataclass` value objects; the rule text is unchanged, since the defect was the export rather than the doctrine (GHI #607)
+- ADR-0.0.33 Invariant 4 (scenario reachability) and its validator scope are retired, ending a two-month advisory that three `gz check` steps emitted for a registry that was never delivered (GHI #716)
+
+### Fixed
+
+- `gz handoff create` reports when it cannot resolve a predecessor instead of silently dropping the settled-ruling chain, which had made an ADR-less create without `--continues-from` discard every carried ruling (GHI #717)
+- The pool-ADR authoring path names the interview verb that actually accepts a pool ADR, rather than one that rejects it (GHI #718)
+- `gz git-sync` reads pull state after the auto-commit that changes it, so a branch that is both behind and dirty no longer self-diverges (GHI #720)
+- Brief reconciliation stops existence-checking paths outside the repository root, so its verdict no longer varies by machine (GHI #721)
+- Handoff authoring refuses a `## Decisions Made` section whose marker-less shape parses to zero entries, the defect that silently dropped ten operator rulings across two handoffs (GHI #722)
+- Test output is buffered so only failures speak, ending CI logs in which passing negative-path prose was indistinguishable from a real failure (GHI #723)
+- Commit-authorship enforcement is bound to a gate rather than to a single clone's git config, closing a path that left operator PII one `git config` away (GHI #725)
+- Negative-control warnings emitted by passing `behave` runs no longer persist into Gate-5 audit proofs (GHI #726)
+- Drift reporting scopes unlinked specs to the `@covers` proof channel, so SUPPORT, STRUCTURAL-FENCE, doc-channel, and terminal REQs are no longer counted as drift — 1876 of 2020 reported entries were not drift (GHI #729)
+- The `gz validate --taxonomy` terminal-partition reader inspects the `attestor` on a `foundation_grandfathered` event instead of accepting any event that carries a non-empty id, closing a path by which a generic attestorless event read as witnessed (GHI #733)
+
 ## v0.33.3 (2026-07-25)
 
 ### Changed
