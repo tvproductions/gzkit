@@ -37,11 +37,23 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.handoff_api import create_handoff
 from gzkit.handoff_validation import CHECKPOINT_MODE, HandoffValidationError
 
-__all__ = ["ExitBookmarkResult", "book_exit_bookmark"]
+__all__ = ["FLOOR_BOOKMARK_AGENT", "ExitBookmarkResult", "book_exit_bookmark"]
 
 #: Slug for the mechanically-written bookmark. Fixed so the artifacts are
 #: greppable as a class and distinguishable from authored handoffs at a glance.
 _SLUG = "session-exit-bookmark"
+
+#: Writer identity stamped on every floor bookmark, and the one field that
+#: distinguishes this class MECHANICALLY rather than "at a glance" — exported
+#: because `newest_handoff` must rank an authored handoff above a floor one and
+#: a second copy of the string is how the two would come to disagree (GHI #758).
+#:
+#: `mode` cannot do this job. A floor bookmark and an operator-authored
+#: mid-flight checkpoint are BOTH `CHECKPOINT`, so a mode filter on the resume
+#: arm would discard the authored document — the opposite of the intent. Mode is
+#: the right discriminator on the RELEASE arm, where no checkpoint of any
+#: authorship satisfies a token surrender; here the question is who wrote it.
+FLOOR_BOOKMARK_AGENT = "gzkit-session-exit"
 
 
 class ExitBookmarkResult(BaseModel):
@@ -92,7 +104,7 @@ def book_exit_bookmark(
         path = create_handoff(
             adr_id=adr_id,
             branch=_current_branch(project_root),
-            agent="gzkit-session-exit",
+            agent=FLOOR_BOOKMARK_AGENT,
             slug=_SLUG,
             sections=sections,
             obpi_id=obpi_id,

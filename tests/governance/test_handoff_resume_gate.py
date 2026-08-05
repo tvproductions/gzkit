@@ -24,6 +24,7 @@ from gzkit.handoff_resume_gate import (
     is_resume_authorized,
     newest_handoff,
 )
+from gzkit.session_exit import FLOOR_BOOKMARK_AGENT
 
 _SESSION = "session-abc123"
 
@@ -34,6 +35,8 @@ def _seed_handoff(
     *,
     abandoned: bool = False,
     session_id: str | None = None,
+    agent: str = "g0",
+    timestamp: str = "2026-07-16T00:00:00Z",
 ) -> Path:
     """Write a resumable handoff.
 
@@ -55,8 +58,8 @@ def _seed_handoff(
         "mode: CREATE",
         "adr_id: ADR-0.0.65",
         "branch: main",
-        "timestamp: '2026-07-16T00:00:00Z'",
-        "agent: g0",
+        f"timestamp: '{timestamp}'",
+        f"agent: {agent}",
     ]
     if abandoned:
         lines.append("abandoned: true")
@@ -446,6 +449,110 @@ class ResumeGatePermitsTheMandatedVerificationTests(unittest.TestCase):
                         tool_input={"command": command},
                     )
                     self.assertTrue(verdict.blocked, f"{command!r} is ceremony, not a read")
+
+
+class FloorBookmarkIsAFloorNotAPreferenceTests(unittest.TestCase):
+    """A machine floor bookmark must never displace an authored handoff (GHI #758).
+
+    GHI #756 built the exit-beat bookmark and named this exact hazard while closing
+    it on the SIBLING selector — from its close comment, on
+    `find_handoff_for_release`: *"skipping rather than returning-and-rejecting,
+    because a later checkpoint would otherwise win the newest-candidate sort and
+    take a genuine register entry down with it."* `newest_handoff` sorts the same
+    corpus newest-first and read only `abandoned`, so the hazard stayed open here.
+
+    It is not an ordering accident. A floor bookmark is written at EVERY session
+    end, so it is always the newest document on disk — the precaution structurally
+    out-competes the artifact it exists to back up, on every session.
+
+    Observed live 2026-08-05: a 1,765-byte bookmark reading "Unknown to the writer"
+    was selected over a 24,877-byte authored handoff written 48 minutes earlier, and
+    the session's whole orientation was built on the empty one.
+
+    The discriminator is AUTHORSHIP, not mode. Both documents in that incident were
+    `mode: CHECKPOINT` — a mode filter here would have discarded the authored one,
+    which is the opposite of the fix. Mode is right for the release arm (no
+    CHECKPOINT surrenders a token, whoever wrote it) and wrong for this one.
+    """
+
+    def test_an_authored_handoff_outranks_a_newer_floor_bookmark(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            authored = _seed_handoff(
+                base,
+                "20260716T000000Z-real-work.md",
+                agent="claude-code",
+                timestamp="2026-07-16T00:00:00Z",
+            )
+            _seed_handoff(
+                base,
+                "20260716T235959Z-session-exit-bookmark.md",
+                agent=FLOOR_BOOKMARK_AGENT,
+                timestamp="2026-07-16T23:59:59Z",
+            )
+            self.assertEqual(
+                newest_handoff(base),
+                authored,
+                "the newer floor bookmark shadowed the authored handoff",
+            )
+
+    def test_the_floor_still_wins_when_it_is_the_only_record(self) -> None:
+        """Deprioritize, never skip — the floor is why GHI #756 built it.
+
+        A session that crashed or `/clear`ed before authoring leaves nothing else,
+        and that is precisely the case the exit beat exists to cover. A filter that
+        skipped floor bookmarks outright would delete the guarantee.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            floor = _seed_handoff(
+                base,
+                "20260716T235959Z-session-exit-bookmark.md",
+                agent=FLOOR_BOOKMARK_AGENT,
+                timestamp="2026-07-16T23:59:59Z",
+            )
+            self.assertEqual(newest_handoff(base), floor)
+
+    def test_the_newest_floor_wins_among_floors(self) -> None:
+        """Recency still orders within a class; the preference is between classes."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(
+                base,
+                "20260716T000000Z-session-exit-bookmark.md",
+                agent=FLOOR_BOOKMARK_AGENT,
+                timestamp="2026-07-16T00:00:00Z",
+            )
+            newer = _seed_handoff(
+                base,
+                "20260716T235959Z-session-exit-bookmark.md",
+                agent=FLOOR_BOOKMARK_AGENT,
+                timestamp="2026-07-16T23:59:59Z",
+            )
+            self.assertEqual(newest_handoff(base), newer)
+
+    def test_an_abandoned_authored_handoff_does_not_outrank_the_floor(self) -> None:
+        """The existing `abandoned` skip composes with the new preference.
+
+        An abandoned register entry describes a surrendered token, not context to
+        resume (OBPI-0.0.72-02). Preferring authorship must not resurrect one.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(
+                base,
+                "20260716T000000Z-real-work.md",
+                agent="claude-code",
+                abandoned=True,
+                timestamp="2026-07-16T00:00:00Z",
+            )
+            floor = _seed_handoff(
+                base,
+                "20260716T235959Z-session-exit-bookmark.md",
+                agent=FLOOR_BOOKMARK_AGENT,
+                timestamp="2026-07-16T23:59:59Z",
+            )
+            self.assertEqual(newest_handoff(base), floor)
 
 
 class ResumeGateProseTests(unittest.TestCase):

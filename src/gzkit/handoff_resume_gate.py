@@ -299,9 +299,33 @@ def newest_handoff(project_root: Path) -> Path | None:
 
     Abandoned register entries are skipped — a distinct document class
     (OBPI-0.0.72-02) describing a surrendered token, not context to resume.
+
+    Floor bookmarks are DEPRIORITIZED, not skipped (GHI #758). The exit beat
+    writes one at every session end, so a floor bookmark is always the newest
+    document on disk — under a plain newest-first rule the precaution
+    structurally out-competes the artifact it exists to back up, every session,
+    forever. Observed 2026-08-05: a 1,765-byte bookmark reading "Unknown to the
+    writer" was selected over a 24,877-byte authored handoff written 48 minutes
+    earlier, and a whole session's orientation was built on the empty one.
+
+    GHI #756 named this hazard while closing it on the sibling selector —
+    `find_handoff_for_release` skips checkpoints "rather than
+    returning-and-rejecting, because a later checkpoint would otherwise win the
+    newest-candidate sort and take a genuine register entry down with it". Same
+    sort, same corpus; this arm had not been taught it.
+
+    Deprioritize rather than skip, because the floor is the point: a session that
+    crashed or `/clear`ed before authoring leaves nothing else, which is the case
+    GHI #756 built the beat to cover. And the discriminator is AUTHORSHIP, not
+    `mode` — a floor bookmark and an operator-authored mid-flight checkpoint are
+    both `CHECKPOINT`, so filtering on mode here would discard the authored one.
+    Mode is the right question on the release arm (no checkpoint of any
+    authorship surrenders a token); "who wrote it" is the right question here.
     """
     from gzkit.handoff_api import list_handoffs  # noqa: PLC0415  (avoids an import cycle)
+    from gzkit.session_exit import FLOOR_BOOKMARK_AGENT  # noqa: PLC0415  (same cycle)
 
+    floor: Path | None = None
     for info in list_handoffs(base_path=project_root):
         path = Path(info.path)
         candidate = path if path.is_absolute() else project_root / path
@@ -309,10 +333,22 @@ def newest_handoff(project_root: Path) -> Path | None:
             frontmatter = parse_frontmatter(candidate.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, HandoffValidationError):
             continue
-        if isinstance(frontmatter, dict) and frontmatter.get("abandoned"):
+        if not isinstance(frontmatter, dict):
+            # Unreadable shape → treat as resumable, deliberately. Skipping here
+            # would fail OPEN for the gate: fewer candidates can mean no handoff
+            # found, which means no gate at all. Arming on an odd document is the
+            # safe direction; this is the pre-existing behavior, kept.
+            return candidate
+        if frontmatter.get("abandoned"):
+            continue
+        if frontmatter.get("agent") == FLOOR_BOOKMARK_AGENT:
+            # First one wins: the walk is newest-first, so this is the newest
+            # floor. Held, not returned, until the corpus is known to carry no
+            # authored handoff.
+            floor = floor or candidate
             continue
         return candidate
-    return None
+    return floor
 
 
 def is_resume_authorized(project_root: Path, session_id: str) -> bool:
