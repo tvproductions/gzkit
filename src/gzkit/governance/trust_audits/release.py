@@ -3,17 +3,19 @@
 * ``audit_version_release`` — every ``pyproject.toml`` version bump must
   have a matching ``vX.Y.Z`` git tag (or a ``docs/releases/{PATCH,RELEASE}-vX.Y.Z.md``
   manifest in flight). GHI #205 / GHI #217 / GHI #739.
-* ``audit_advisory_scorecard`` — every rule under ``.gzkit/rules/`` must
-  appear in ``docs/governance/advisory-rules-audit.md`` so the scorecard
-  remains a complete index. GHI #212.
+* ``audit_advisory_scorecard`` — every rule under ``.gzkit/rules/`` must be
+  scored in ``docs/governance/advisory-rules-audit.md`` *at its current
+  rule-version*, so the scorecard remains a complete index. GHI #212, GHI #754.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
 from gzkit.validate import ValidationError
+from gzkit.validators.rule_version_markers import canonical_rule_files, rule_version_of
 
 #: Filename prefixes accepted as in-flight release evidence (GHI #217, GHI #739).
 #: ``PATCH-`` is written by ``gz patch release``; ``RELEASE-`` by ``gz closeout``,
@@ -106,34 +108,133 @@ def _read_pyproject_version(path: Path) -> str | None:
     return None
 
 
+#: The scorecard's per-rule review ledger: ``| `<file>.md` | `X.Y.Z` |``.
+#: Version equality against the rule's own ``<!-- rule-version: -->`` marker is
+#: the whole check — deliberately not a prose or clause-shape heuristic. A
+#: heuristic clause extractor would itself grade by shape, reintroducing the
+#: ``shape-graded-not-substance`` theater signature this audit exists to close
+#: (ADR-0.0.73; ``theater_signature_scan`` § "Deliberately NOT detected").
+_LEDGER_ROW_RE = re.compile(
+    r"^\|\s*`(?P<file>[^`]+\.md)`\s*\|\s*`(?P<version>\d+\.\d+\.\d+)`\s*\|",
+    re.MULTILINE,
+)
+
+_SCORECARD_REL = "docs/governance/advisory-rules-audit.md"
+_SCORES = "Mechanical / Promotable / Judgment / Ambiguous"
+_GRANDFATHER_REL = Path("data") / "advisory_scorecard_grandfather.json"
+
+
+def _scorecard_coverage_ledger(scorecard_text: str) -> dict[str, str]:
+    """Return ``{rule filename: scored-at rule-version}`` from the scorecard."""
+    return {m.group("file"): m.group("version") for m in _LEDGER_ROW_RE.finditer(scorecard_text)}
+
+
+def _grandfathered_rules(project_root: Path) -> dict[str, str]:
+    """Return ``{rule filename: version at which its coverage debt froze}``.
+
+    Pre-ledger scorecard coverage is real but unattributable — the rows exist,
+    but nothing records which version of the rule they were written against.
+    Rather than stamp them all "reviewed" (which would launder exactly the
+    unreviewed coverage this audit exists to surface), today's debt is frozen at
+    today's versions, shrink-only, per the ``fidelity_presence_grandfather``
+    precedent ADR-0.0.73 established.
+
+    The freeze is version-pinned on purpose: a grandfathered rule that is *edited*
+    leaves its pinned version behind and must be scored for real. Debt cannot grow
+    and cannot silently follow a rule forward.
+    """
+    path = project_root / _GRANDFATHER_REL
+    if not path.is_file():
+        return {}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    entries = payload.get("grandfathered_rules", [])
+    return {e["file"]: e["version"] for e in entries if "file" in e and "version" in e}
+
+
 def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
-    """Every rule file under ``.gzkit/rules/`` must appear in the scorecard.
+    """Every rule under ``.gzkit/rules/`` must be scored at its current version.
 
     The scorecard at ``docs/governance/advisory-rules-audit.md`` catalogues
-    rules and scores their enforceability. When a new rule file lands
-    without a scorecard entry, this audit flags the drift so the scorecard
-    stays a complete index (trust-doctrine §3 — doctrine that survives agent
-    rotation is doctrine that's mechanical).
+    rules and scores their enforceability (trust-doctrine §3 — doctrine that
+    survives agent rotation is doctrine that's mechanical).
+
+    **Filename presence is not coverage (GHI #754).** This audit previously
+    asked only whether a rule's *filename stem* appeared anywhere in the
+    scorecard, which no edit to an existing rule file could ever falsify. Two
+    drifts shipped behind it: ``tests.md`` § Verification exit-code integrity
+    (added in rule ``0.8.0``) was never scored, and row 60 still described
+    ``task-discovery.md`` behavior that rule ``0.7.0`` had retired.
+
+    The check is now version equality against each rule's
+    ``<!-- rule-version: X.Y.Z -->`` marker — the same marker
+    ``gz validate --rule-version-markers`` already enforces as present on every
+    canonical rule. Bumping a rule without re-scoring it is unreviewed coverage
+    and fails closed.
     """
-    scorecard = project_root / "docs" / "governance" / "advisory-rules-audit.md"
+    scorecard = project_root / _SCORECARD_REL
     rules_root = project_root / ".gzkit" / "rules"
     if not scorecard.is_file() or not rules_root.is_dir():
         return []
-    scorecard_text = scorecard.read_text(encoding="utf-8").lower()
+    ledger = _scorecard_coverage_ledger(scorecard.read_text(encoding="utf-8"))
+    grandfathered = _grandfathered_rules(project_root)
     errors: list[ValidationError] = []
-    for rule_md in sorted(rules_root.glob("*.md")):
-        stem = rule_md.stem.lower()
-        if stem in scorecard_text:
+    for rule_md in canonical_rule_files(rules_root):
+        artifact = rule_md.relative_to(project_root).as_posix()
+        current = rule_version_of(rule_md.read_text(encoding="utf-8", errors="replace"))
+        if current is None:
+            # Missing markers are `--rule-version-markers`' finding, not this
+            # scope's; flagging here would double-report one defect.
             continue
-        errors.append(
-            ValidationError(
-                type="advisory_scorecard",
-                artifact=rule_md.relative_to(project_root).as_posix(),
-                message=(
-                    f"Rule file `{rule_md.name}` is not referenced by the advisory "
-                    "scorecard. Add a row to `docs/governance/advisory-rules-audit.md` "
-                    "with a score (Mechanical / Promotable / Judgment / Ambiguous)."
-                ),
+        frozen = grandfathered.get(rule_md.name)
+        if frozen is not None and frozen == current:
+            # Unmoved pre-ledger debt; visible in the grandfather file, shrink-only.
+            continue
+        if frozen is not None:
+            errors.append(
+                ValidationError(
+                    type="advisory_scorecard",
+                    artifact=artifact,
+                    message=(
+                        f"Rule `{rule_md.name}` was grandfathered into the advisory "
+                        f"scorecard at version {frozen} but is now at {current}. The "
+                        "grandfather freezes pre-existing debt; it does not extend to "
+                        "clauses added after it. Score the rule's clauses "
+                        f"({_SCORES}), add `| \\`{rule_md.name}\\` | \\`{current}\\` |` to "
+                        f"the Coverage Ledger of `{_SCORECARD_REL}`, and drop its entry "
+                        f"from `{_GRANDFATHER_REL.as_posix()}`."
+                    ),
+                )
             )
-        )
+            continue
+        scored = ledger.get(rule_md.name)
+        if scored is None:
+            errors.append(
+                ValidationError(
+                    type="advisory_scorecard",
+                    artifact=artifact,
+                    message=(
+                        f"Rule `{rule_md.name}` (version {current}) has no entry in the "
+                        f"Coverage Ledger of `{_SCORECARD_REL}`, so no clause of it has "
+                        f"been scored. Score its binding clauses ({_SCORES}), then add "
+                        f"`| \\`{rule_md.name}\\` | \\`{current}\\` |` to the ledger."
+                    ),
+                )
+            )
+        elif scored != current:
+            errors.append(
+                ValidationError(
+                    type="advisory_scorecard",
+                    artifact=artifact,
+                    message=(
+                        f"Rule `{rule_md.name}` is at version {current} but the Coverage "
+                        f"Ledger of `{_SCORECARD_REL}` last scored it at {scored} — the "
+                        "clauses added or changed since then are unreviewed. Re-read the "
+                        f"rule, add or correct its scorecard rows ({_SCORES}), then set "
+                        f"its ledger row to `{current}`."
+                    ),
+                )
+            )
     return errors

@@ -457,6 +457,36 @@ def _build_adr_status_freshness() -> Path:
     return root
 
 
+def _build_advisory_scorecard() -> Path:
+    """Violation: a canonical rule absent from the scorecard's Coverage Ledger.
+
+    The rule carries a valid ``<!-- rule-version: -->`` marker (a missing marker
+    is `--rule-version-markers`' finding and this scope deliberately skips it, so
+    an unmarked fixture would be hollow), and the scorecard mentions the rule's
+    filename stem *in prose* without a ledger row. That last detail is the point:
+    stem presence was the entire pre-GHI-754 check, so a fixture whose stem was
+    absent would pass the old implementation too and prove nothing about the
+    proxy having been removed.
+    """
+    root = _mkroot("advisory-scorecard")
+    _write(
+        root / ".gzkit" / "rules" / "sample-rule.md",
+        "<!-- rule-version: 1.2.3 -->\n\n"
+        "> **Rule version:** `1.2.3` — fixture.\n\n"
+        "## Invariant\n\n**Something binding.**\n",
+    )
+    _write(
+        root / "docs" / "governance" / "advisory-rules-audit.md",
+        "# Advisory Rules Audit\n\n"
+        "## Coverage Ledger\n\n"
+        "| Rule file | Scored at rule-version |\n|---|---|\n\n"
+        "### Sample Rule (`.gzkit/rules/sample-rule.md`)\n\n"
+        "| # | Rule | Score | Notes |\n|---|------|-------|-------|\n"
+        "| 1 | Something binding | **Judgment** | prose only |\n",
+    )
+    return root
+
+
 def _build_adr_taxonomy() -> Path:
     """Violation: a `kind: foundation` ADR carrying a feature semver.
 
@@ -992,6 +1022,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
+    ("advisory-scorecard-coverage", _build_advisory_scorecard, _ep._ep_advisory_scorecard),
     (
         "validate-default-scopes",
         _build_validate_default_scopes,

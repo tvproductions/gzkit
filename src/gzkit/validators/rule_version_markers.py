@@ -66,6 +66,18 @@ class RuleVersionMarkersResult(BaseModel):
     exit_code: int
 
 
+def rule_version_of(body: str) -> str | None:
+    """Return the ``<!-- rule-version: X.Y.Z -->`` version in *body*, if any.
+
+    The single reader of the marker grammar. Other scopes that key on a rule's
+    version (``advisory_scorecard``'s Coverage Ledger, GHI #754) call this
+    rather than restating the regex — a second copy is how two readers of one
+    convention drift apart.
+    """
+    match = _MARKER_RE.search(body)
+    return match.group(1) if match else None
+
+
 def canonical_rule_files(rules_root: Path) -> list[Path]:
     """Return the authored rule files under ``rules_root``, sorted."""
     if not rules_root.is_dir():

@@ -113,6 +113,13 @@
    "mechanism": "shrink-ratchet",
    "entries_path": "grandfathered_modules",
    "baseline_count": 5
+  },
+  {
+   "data_file": "data/advisory_scorecard_grandfather.json",
+   "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
+   "mechanism": "shrink-ratchet",
+   "entries_path": "grandfathered_rules",
+   "baseline_count": 23
   }
  ],
  "excluded": [

@@ -1,0 +1,102 @@
+{
+ "schema_version": 1,
+ "rationale": "GHI #754. Pre-ledger advisory-scorecard coverage is real but unattributable: rows exist for these rules, but nothing recorded which rule-version they were written against, so no reader can tell a current row from a stale one. Stamping them all as reviewed-at-current-version would launder exactly the unreviewed coverage this audit exists to surface, so today debt is frozen at today versions instead (the data/fidelity_presence_grandfather.json precedent, ADR-0.0.73 OBPI-08). The freeze is version-pinned: a grandfathered rule that is edited leaves its pin behind and must be scored for real. Debt cannot grow and cannot follow a rule forward silently. tests.md and task-discovery.md are deliberately absent - they carried the two drifts GHI #754 found and were scored for real at landing.",
+ "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
+ "mechanism": "shrink-ratchet",
+ "entries_path": "grandfathered_rules",
+ "baseline_count": 23,
+ "grandfathered_rules": [
+  {
+   "file": "adr-audit.md",
+   "version": "0.2.1"
+  },
+  {
+   "file": "agent-failure-modes.md",
+   "version": "0.6.2"
+  },
+  {
+   "file": "agents-md-map-doctrine.md",
+   "version": "0.3.0"
+  },
+  {
+   "file": "brief-heading-conventions.md",
+   "version": "0.1.0"
+  },
+  {
+   "file": "changelog-release-notes.md",
+   "version": "1.1.0"
+  },
+  {
+   "file": "chores.md",
+   "version": "0.3.1"
+  },
+  {
+   "file": "cli.md",
+   "version": "0.3.1"
+  },
+  {
+   "file": "complexity-doctrine.md",
+   "version": "0.3.1"
+  },
+  {
+   "file": "complexity-thresholds.md",
+   "version": "0.4.0"
+  },
+  {
+   "file": "cross-platform.md",
+   "version": "0.5.0"
+  },
+  {
+   "file": "gate5-runbook-code-covenant.md",
+   "version": "0.2.1"
+  },
+  {
+   "file": "gh-cli.md",
+   "version": "0.3.1"
+  },
+  {
+   "file": "governance-core.md",
+   "version": "0.8.1"
+  },
+  {
+   "file": "guardrail-feedback-prose.md",
+   "version": "0.1.0"
+  },
+  {
+   "file": "hexagonal-architecture.md",
+   "version": "0.2.1"
+  },
+  {
+   "file": "model-selection.md",
+   "version": "0.5.1"
+  },
+  {
+   "file": "models.md",
+   "version": "0.1.0"
+  },
+  {
+   "file": "mx-mode.md",
+   "version": "1.0.1"
+  },
+  {
+   "file": "pythonic.md",
+   "version": "0.2.1"
+  },
+  {
+   "file": "security-sensitivity.md",
+   "version": "0.5.1"
+  },
+  {
+   "file": "skill-surface-sync.md",
+   "version": "0.11.0"
+  },
+  {
+   "file": "token-block-discipline.md",
+   "version": "0.3.1"
+  },
+  {
+   "file": "tool-skill-runbook-alignment.md",
+   "version": "0.2.0"
+  }
+ ]
+}

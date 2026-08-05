@@ -56,6 +56,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "CLI audit": ("cli-audit", _mx_levels.ERROR),
     "Unscoped rules": ("unscoped-rules", _mx_levels.ERROR),
     "ADR status freshness": ("adr-status-fresh", _mx_levels.ERROR),
+    "Advisory scorecard coverage": ("advisory-scorecard", _mx_levels.ERROR),
     "Adversarial validation": ("adversarial-validation", _mx_levels.ERROR),
     "RED parity": ("red-parity", _mx_levels.ERROR),
     "Rendition freshness": ("rendition-freshness", _mx_levels.ERROR),
@@ -391,6 +392,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     from gzkit.quality import (
         run_adr_status_fresh_audit,
         run_adversarial_validation_audit,
+        run_advisory_scorecard_audit,
         run_agents_md_map_conformance_audit,
         run_authorship_audit,
         run_brief_structure_audit,
@@ -449,6 +451,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("CLI audit", run_cli_audit),
         ("Unscoped rules", run_unscoped_rules_audit),
         ("ADR status freshness", run_adr_status_fresh_audit),
+        ("Advisory scorecard coverage", run_advisory_scorecard_audit),
         ("OBPI lifecycle coherence", run_obpi_lifecycle_coherence_audit),
         ("Adversarial validation", run_adversarial_validation_audit),
         ("RED parity", run_red_parity_audit),

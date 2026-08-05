@@ -79,6 +79,10 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "CLI audit": ("audit", "docs/", "bound", "python_function"),
     "Unscoped rules": ("audit", ".gzkit/rules/", "bound", "python_function"),
     "ADR status freshness": ("audit", "docs/", "bound", "python_function"),
+    # GHI #754: enrolled here the same commit it joined `gz check`. Its subject is
+    # `.gzkit/rules/` because the population it audits is the canonical rule set,
+    # not the scorecard document it reads them against.
+    "Advisory scorecard coverage": ("audit", ".gzkit/rules/", "bound", "python_function"),
     "OBPI lifecycle coherence": ("audit", ".gzkit/", "bound", "python_function"),
     # Spans both surfaces by construction (GHI #676): the ledger half reads
     # `.gzkit/ledger.jsonl`, the brief half reads `docs/design/adr/**`.

@@ -25,6 +25,23 @@ This audit scores every rule by:
 
 ---
 
+## Coverage Ledger (binding — GHI #754)
+
+**Which rule-version each rule's rows below were scored against.** `gz validate --advisory-scorecard` reads this table, compares each entry against the rule's own `<!-- rule-version: X.Y.Z -->` marker, and fails closed (exit 3) on any rule that is unlisted or has been bumped past its scored version.
+
+Before GHI #754 the audit asked only whether a rule's *filename stem* appeared anywhere in this document — a check no edit to an existing rule file could ever falsify. Two drifts shipped behind it: `tests.md` § Verification exit-code integrity (added in rule `0.8.0`, GHI #589) was never scored, and row 60 described `task-discovery.md` behavior that rule `0.7.0` had retired. Filename presence is not coverage.
+
+**When you bump a rule:** re-read its binding clauses, add or correct its rows below, then set its version here. That is the whole protocol — it is version equality, not a prose grade, deliberately: a heuristic clause extractor would itself grade by shape, which is the `shape-graded-not-substance` theater signature this scope exists to close (ADR-0.0.73).
+
+| Rule file | Scored at rule-version |
+|---|---|
+| `tests.md` | `0.13.0` |
+| `task-discovery.md` | `0.7.0` |
+
+**Pre-ledger debt is frozen, not laundered.** The remaining 23 canonical rules carry rows written before this ledger existed, against versions nobody recorded. They are enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json), pinned at their current versions and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 Boundary Invariant #8). The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves its pinned version behind and must be scored for real before `gz check` goes green. Debt can only shrink, and it cannot follow a rule forward in silence.
+
+---
+
 ## Scorecard
 
 ### Architectural Boundaries (`CLAUDE.md` § Architectural Boundaries)
@@ -108,6 +125,13 @@ This audit scores every rule by:
 | 37 | Two runners, one test surface | **Mechanical** | Enforced by `gz validate --test-tiers` (GHI #209) — fails on `tests/{integration,e2e,slow,bdd}/` or forbidden `--integration`/`--e2e`/`--slow`/`--bdd-only` flags re-appearing in `parser_*.py` |
 | 38 | Coverage >=40.00% | **Mechanical** | Pre-commit hook |
 | 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211, reversed direction GHI #276) — enumerates heavy-lane OBPI briefs (pool ADRs excluded), extracts REQ-IDs from each brief's Acceptance Criteria, and asserts every REQ has a matching scenario-level `@REQ-*` tag under `features/**`. Heavy OBPIs that defer BDD (schema-only, template-only) register in `data/behave_coverage_waivers.json`. |
+| 66 | **Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. | **Promotable** | **Unenforced today.** Added in rule `0.8.0` (GHI #589) and unscored until GHI #754 — the row was missing because the audit checked only that the stem `tests` appeared in this file. Nothing mechanical reads it: `PIPESTATUS` appears in no file repo-wide and no hook inspects Bash command strings for a verifier piped into a filter. Named promotion path: a `PreToolUse` hook refusing `<verifier> \| <filter>`, reusing the shell-aware `shlex` command parsing already in `src/gzkit/handoff_resume_gate.py` (`_is_compound`) rather than a fresh regex. Highest-frequency observed violation class in agent sessions. |
+| 67 | **RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". | **Mechanical** | `uv run gz arb red --req <REQ-ID>` emits `gzkit.arb.red_receipt.v1` + a `red_receipt_emitted` ledger event carrying `failure_class`; `gz validate --red-parity` is a bound QC step. A `none` verdict (test passes without its implementation) fail-closes as the § 6f defect (GHI #642). |
+| 68 | **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. | **Mechanical** | `gz validate --commit-trailers` (GHI #552 strict mode); `has_task_trailer()` in `src/gzkit/tasks.py`. Auto-stamped by `.gzkit/hooks/prepare-commit-msg-task-trailers`. Accepted forms single-sourced through `_ANY_TASK_TRAILER_RE`; the `-#<ghi>` anchor is OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). |
+| 69 | **Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. | **Promotable** | `gz test-shape` reads the markers, but an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported **advisory, never fail-closed** (GHI #571). Promotion = flipping that arm closed once the declared-marker backlog drains. |
+| 70 | **Prefer structured assertion targets** / **the discriminator** (*if behavior changed but text did not, would this test fail?*) | **Judgment** | The discriminator is an authoring question no static check decides — a `grep`-a-doc assertion is structurally legal Python. Partial mechanical arm: `gz validate --tautological-test-audit` (bound QC step) catches the degenerate end (`assertEqual(x, x)`), and `theater_signature_scan` catches `copy-vs-self` in validator source. The middle band — a test that asserts real strings that happen not to track behavior — stays judgment by construction. |
+| 71 | **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names | **Promotable** | Naming convention with no reader today. Tractable check: flag helpers named `assert_*audit*passes*` under `tests/**`. Low catch-rate expected; listed for completeness rather than urgency. |
+| 72 | **Derivation rule** / **per-increment rhythm** / **unit-test purpose** — tests derive from OBPI acceptance criteria, one test → one observed RED → minimum code to GREEN | **Judgment** | "Derived from the REQ rather than from a run of the code" is not recoverable from the artifact after the fact; the RED witness (row 67) is the closest mechanical proxy and covers the rhythm's observable half only. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
@@ -268,7 +292,9 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 60 | Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels | **Promotable** | Python `@advances` decorator landed in OBPI-0.0.64-02 with decoration-time fail-close on invalid TASK IDs and unknown parent REQs (mirrors `@covers` machinery). Commit-trailer channel already enforced by `gz validate --commit-trailers`. Ledger `task_id` channel added in OBPI-0.0.64-01. Frontmatter `tasks:` schema enforcement and four-channel coherence validator (`gz validate --task-envelope-coherence`) deferred to OBPI-0.0.64-04. Parent ADR-0.0.64. |
+| 60 | Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels — with a floor: any commit touching `src/**` or `tests/**` MUST additionally carry a `Task:` trailer | **Mechanical** | `gz validate --task-envelope-coherence` is a bound QC step; `gz validate --commit-trailers` fail-closes the floor on src/tests scope. All four channels are live: ledger `task_id` (OBPI-0.0.64-01), `@advances` (OBPI-0.0.64-02), commit trailer (auto-stamped, GHI #731), and frontmatter `tasks:` (producer-stamped by `gz task start`, GHI #752). **`tasks:` schema enforcement is LIVE on both readers** — `BriefStructure._validate_tasks` (model path) and signature (e) of `--task-envelope-coherence` (corpus path), each delegating to `TaskId.parse` (GHI #753). Parent ADR-0.0.64. |
+| 60a | `@advances` is advisory and expected to be empty | **Judgment** | GHI #752 demoted it deliberately: it marks the function an author judges *materially advances* a TASK, which no runtime can determine, so it has no producer by construction. Its emptiness is asserted rather than assumed (`test_advances_channel_is_asserted_dead_not_assumed_dead`) and is **not** a defect. Scoring it Promotable would misread a designed property as debt. |
+| 60b | The OBPI-04 validator will fail Heavy lane closeouts on layer-drift; Lite lane warns. | **Mechanical** | Signature (c) of `gz validate --task-envelope-coherence` compares channels where two or more carry data. Heavy lane fails closed; Lite warns. |
 
 ### Guardrail Feedback Prose (`.gzkit/rules/guardrail-feedback-prose.md`)
 

@@ -660,6 +660,27 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_advisory_scorecard_audit(project_root: Path) -> QualityResult:
+    """Run the advisory-scorecard coverage audit (GHI #212 / GHI #754).
+
+    Fails closed when a canonical rule under `.gzkit/rules/` is absent from the
+    scorecard's Coverage Ledger, or has been bumped past the rule-version it was
+    last scored at — unreviewed coverage in the surface that tracks which
+    doctrine is mechanically enforced.
+
+    Enrolled as a `gz check` step under GHI #754. It had been registered
+    `explicit`, so it ran in no pipeline at all: not in the default validate
+    tier, not in pre-commit, not in CI. A gate nobody pulls cannot fail, and its
+    absence from `gz check` also kept it outside the ADR-0.0.73 QC-step
+    registry — which is derived from what `gz check` actually runs (Boundary
+    Invariant #1) — so it carried no negative control either.
+
+    Recovery: `uv run gz validate --advisory-scorecard` names each unscored rule
+    and the ledger row to add.
+    """
+    return run_command("uv run gz validate --advisory-scorecard", cwd=project_root)
+
+
 def run_taxonomy_audit(project_root: Path) -> QualityResult:
     """Run the ADR taxonomy gate (ADR-0.34.0 Foundation Sunset, OBPI-05).
 
