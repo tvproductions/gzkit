@@ -26,6 +26,7 @@ from gzkit.hooks.scripts.routing import (
     _pipeline_gate_script,
     _pipeline_router_script,
 )
+from gzkit.hooks.scripts.session_exit import _session_exit_bookmark_script
 from gzkit.hooks.scripts.validation import (
     _control_surface_sync_script,
     _ledger_writer_script,
@@ -85,6 +86,12 @@ def _claude_hooks_readme() -> str:
             "  Stop (`*`) hook that runs `ruff check` over git-dirty Python",
             "  files at turn end and blocks the stop with agent-actionable",
             "  prose; fail-open, one block per turn (ADR-0.0.70).",
+            "- `session-exit-bookmark.py`",
+            "  SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording",
+            "  where the session stopped — the trigger ADR-0.0.65 never",
+            "  specified. Fires on `/exit` AND on `clear`. Books, never refuses;",
+            "  the bookmark is CHECKPOINT mode so it can never discharge a token",
+            "  surrender (GHI #756).",
             "",
             "## Notes",
             "",
@@ -109,6 +116,7 @@ def _claude_hooks_readme() -> str:
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
+            "- `SessionEnd` `*`: `session-exit-bookmark.py`",
             "- Historical intake matrix:",
             "  `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/",
             "claude-hooks-intake-matrix.md`",
@@ -161,6 +169,23 @@ def _hook_command(hooks_dir: str, script: str) -> str:
     PreToolUse/PostToolUse surface fail on any cwd drift (GHI #509).
     """
     return f'uv run python "$CLAUDE_PROJECT_DIR/{hooks_dir}/{script}"'
+
+
+def gzkit_owned_phases() -> tuple[str, ...]:
+    """Return the hook phases gzkit owns when merging an adopter's settings.
+
+    Ownership is what makes a hook SHIP. A phase absent from this tuple is
+    never written into an adopter's `.claude/settings.json`, so a hook wired
+    only in this repository's own settings file reaches nobody — the defect
+    GHI #756 found on `SessionStart`, whose orientation scan had been
+    hand-wired here since ADR-0.0.65 and delivered to no adopter.
+
+    `SessionEnd` is owned so the exit-beat bookmark is a delivered surface
+    rather than a local convenience. Phases NOT listed (e.g. `PreCompact`)
+    pass through untouched, which is how an adopter's own hooks survive a
+    sync — ownership is deliberately narrow, not total.
+    """
+    return ("PreToolUse", "PostToolUse", "Stop", "UserPromptSubmit", "SessionEnd")
 
 
 def generate_claude_settings(config: GzkitConfig) -> dict:
@@ -291,6 +316,22 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
             ],
+            "SessionEnd": [
+                {
+                    # The exit beat (GHI #756). Fires on `/exit` AND on `clear`,
+                    # which is how the operator moves between tasks inside one
+                    # working session and therefore the boundary that loses the
+                    # most context. Cannot block by platform contract, which is
+                    # the point: it books and leaves.
+                    "matcher": "*",
+                    "hooks": [
+                        {
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "session-exit-bookmark.py"),
+                        }
+                    ],
+                },
+            ],
         },
     }
 
@@ -382,19 +423,19 @@ def merge_settings(
     # order so a sync round-trip on an untouched file is byte-stable.
     existing_hooks = existing.get("hooks", {})
     gzkit_hooks = gzkit_settings.get("hooks", {})
-    gzkit_owned_phases = ("PreToolUse", "PostToolUse", "Stop", "UserPromptSubmit")
+    owned = gzkit_owned_phases()
     merged_hooks: dict[str, list] = {}
 
     # Walk existing phases first to lock their order; gzkit-owned phases
     # get the merged content, user-only phases pass through unchanged.
     for phase, groups in existing_hooks.items():
-        if phase in gzkit_owned_phases:
+        if phase in owned:
             merged_hooks[phase] = _merge_hook_phase(groups, gzkit_hooks.get(phase, []), hooks_dir)
         else:
             merged_hooks[phase] = groups
 
     # Append any gzkit-owned phases the existing file did not declare.
-    for phase in gzkit_owned_phases:
+    for phase in owned:
         if phase not in merged_hooks:
             merged_hooks[phase] = gzkit_hooks.get(phase, [])
 
@@ -461,6 +502,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     handoff_resume_gate_path = hooks_path / "handoff-resume-gate.py"
     _write_hook_file(handoff_resume_gate_path, _handoff_resume_gate_script(), executable=True)
     created.append(handoff_resume_gate_path.relative_to(project_root).as_posix())
+
+    session_exit_bookmark_path = hooks_path / "session-exit-bookmark.py"
+    _write_hook_file(session_exit_bookmark_path, _session_exit_bookmark_script(), executable=True)
+    created.append(session_exit_bookmark_path.relative_to(project_root).as_posix())
 
     verifier_pipe_gate_path = hooks_path / "verifier-pipe-gate.py"
     _write_hook_file(verifier_pipe_gate_path, _verifier_pipe_gate_script(), executable=True)

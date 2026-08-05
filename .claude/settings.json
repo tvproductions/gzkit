@@ -155,6 +155,17 @@
           }
         ]
       }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-exit-bookmark.py\""
+          }
+        ]
+      }
     ]
   },
   "enabledPlugins": {

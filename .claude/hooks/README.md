@@ -46,6 +46,12 @@ Current hook surface in gzkit:
   Stop (`*`) hook that runs `ruff check` over git-dirty Python
   files at turn end and blocks the stop with agent-actionable
   prose; fail-open, one block per turn (ADR-0.0.70).
+- `session-exit-bookmark.py`
+  SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording
+  where the session stopped — the trigger ADR-0.0.65 never
+  specified. Fires on `/exit` AND on `clear`. Books, never refuses;
+  the bookmark is CHECKPOINT mode so it can never discharge a token
+  surrender (GHI #756).
 
 ## Notes
 
@@ -70,6 +76,7 @@ Current hook surface in gzkit:
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`
+- `SessionEnd` `*`: `session-exit-bookmark.py`
 - Historical intake matrix:
   `docs/design/adr/pre-release/ADR-0.9.0-airlineops-surface-breadth-parity/
 claude-hooks-intake-matrix.md`
