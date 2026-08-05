@@ -21,6 +21,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 
 __all__ = [
     "ABANDON_CATEGORIES",
+    "CHECKPOINT_MODE",
     "AbandonSpec",
     "HANDOFF_SCHEMA_VERSION",
     "REQUIRED_SECTIONS",
@@ -47,6 +48,12 @@ __all__ = [
 # ---------------------------------------------------------------------------
 
 HANDOFF_SCHEMA_VERSION = "govzero.handoff.v1"
+
+#: The mid-flight bookmark mode (GHI #756). Named once and read by every
+#: consumer that must distinguish a bookmark from a departure notice — the
+#: frontmatter enum, `find_handoff_for_release`, the `--mode` flag, and the
+#: lock-handoff coupling validator — so the distinction cannot drift per-copy.
+CHECKPOINT_MODE = "CHECKPOINT"
 
 REQUIRED_SECTIONS = (
     "Current State Summary",
@@ -115,7 +122,10 @@ class HandoffFrontmatter(BaseModel):
     # still raise (OBPI-0.0.72-02). Dropping the guard is forbidden.
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    mode: Literal["CREATE", "RESUME"]
+    # CHECKPOINT is the mid-flight bookmark (GHI #756): a session writes one
+    # without departing, so it is NOT a token surrender. `find_handoff_for_release`
+    # skips it; token-block discipline § Sub-Invariant 5 is unrelaxed.
+    mode: Literal["CREATE", "RESUME", "CHECKPOINT"]
     # Optional: a handoff carries continuity for any work, not only ADR-scoped
     # work (GHI #709). Design sessions, triage passes, and GHI burndowns have no
     # parent ADR. `mode` — not `adr_id` — is the is-this-a-handoff discriminator.
@@ -957,6 +967,14 @@ def find_handoff_for_release(
             # Abandoned handoffs satisfy the pairing only when invoked via the
             # --abandon code path; they are not the same surface as a
             # completion-pairing handoff.
+            continue
+        if str(fm.get("mode", "")).upper() == CHECKPOINT_MODE:
+            # A checkpoint is a mid-flight bookmark, not a departure notice
+            # (GHI #756). The session that wrote it still holds the token, so
+            # accepting it here would let a bookmark discharge a surrender that
+            # never happened — token-block discipline § Sub-Invariant 5. Skipped
+            # rather than returned-and-rejected so a later checkpoint cannot win
+            # the sort below and displace a genuine register entry.
             continue
         candidates.append((ts, path))
 

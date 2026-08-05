@@ -33,7 +33,8 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
                   [--summary TEXT] [--context TEXT] [--next-steps TEXT]
                   [--pending TEXT] [--verification TEXT] [--evidence TEXT]
                   [--branch BRANCH] [--obpi OBPI]
-                  [--continues-from REF] [--session-id ID] [--json]
+                  [--continues-from REF] [--session-id ID]
+                  [--mode {CREATE,RESUME,CHECKPOINT}] [--json]
 ```
 
 ### Options
@@ -54,11 +55,49 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 | `--obpi OBPI` | OBPI id this handoff scopes to. |
 | `--continues-from REF` | Prior handoff reference (chain link). Omitting it in a directory that already holds handoffs makes this handoff a chain root inheriting **zero** settled rulings — the command warns and names the newest candidate (GHI #717). |
 | `--session-id ID` | Session id. |
+| `--mode {CREATE,RESUME,CHECKPOINT}` | Register-entry class (default `CREATE`). `CHECKPOINT` is a **mid-flight bookmark** — see § Checkpoint mode. |
 | `--json` | Emit `{"path": "..."}` instead of the human path line. |
 
 Only `--decisions` is argparse-required; the other six section flags are enforced
 by the validation gate, so their absence is a refusal with every empty section
 named at once rather than one error at a time.
+
+---
+
+## Checkpoint mode (GHI #756)
+
+`--mode CHECKPOINT` writes a **mid-flight bookmark**: the session captures its
+state without departing. Use it when you want the record updated but the work is
+not over — before a long verification run, at a `/clear` boundary inside a
+multi-task session, or whenever the next reader would otherwise inherit a stale
+"Immediate Next Steps".
+
+A checkpoint is a full session handoff — all seven sections are still required
+and still validated. What differs is what it *means*:
+
+| Mode | Meaning | Satisfies token surrender? |
+|------|---------|:--------------------------:|
+| `CREATE` | Departure notice — the session is concluding | yes |
+| `RESUME` | Departure notice authored on resume | yes |
+| `CHECKPOINT` | Mid-flight bookmark — the session continues | **no** |
+
+The distinction is mechanical, not advisory. A session writing a checkpoint
+still holds its work lock, so `gz obpi lock release` will **not** accept one as
+the register entry — token-block discipline § Sub-Invariant 5 is unrelaxed
+(`find_handoff_for_release` skips checkpoints; `gz validate
+--lock-handoff-coupling` is the ledger-replay backstop). To surrender a token,
+author a departure handoff or use `--abandon <category>:<reason>`.
+
+```bash
+uv run gz handoff create --mode CHECKPOINT --slug midflight-bookmark --agent g0 \
+  --summary "Verification run started; 3 of 7 REQs covered." \
+  --context "The lock is still held; this is a bookmark, not a departure." \
+  --decisions "- [agent-chose] Bookmarked before the long verification run." \
+  --next-steps "1. Read the run log, then continue REQ-04." \
+  --pending "The verification run itself." \
+  --verification "uv run gz check" \
+  --evidence "\`.gzkit/ledger.jsonl\` — the claim event for the held lock."
+```
 
 ---
 

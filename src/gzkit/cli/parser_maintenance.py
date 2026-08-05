@@ -137,6 +137,12 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
         metavar="RULING",
         help="Seat a late settled ruling (repeatable); unions with carried entries",
     )
+    p_create.add_argument(
+        "--mode",
+        choices=("CREATE", "RESUME", "CHECKPOINT"),
+        default="CREATE",
+        help="Register-entry class; CHECKPOINT is a mid-flight bookmark, not a surrender",
+    )
     add_json_flag(p_create)
     p_create.set_defaults(
         func=lambda a: _lazy("handoff_create_cmd")(
@@ -155,6 +161,7 @@ def _register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             obpi=a.obpi,
             continues_from=a.continues_from,
             session_id=a.session_id,
+            mode=a.mode,
             as_json=a.as_json,
         )
     )

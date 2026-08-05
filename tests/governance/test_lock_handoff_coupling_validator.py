@@ -105,12 +105,13 @@ def _write_handoff(
     last_commit_sha: str | None = "abc1234",
     branch: str | None = "main",
     decisions_section: bool = True,
+    mode: str = "CREATE",
 ) -> Path:
     path = project_root / relative_path
     path.parent.mkdir(parents=True, exist_ok=True)
 
     fm: dict = {
-        "mode": "CREATE",
+        "mode": mode,
         "adr_id": "ADR-0.0.41",
         "obpi_id": _OBPI_ID,
         "timestamp": timestamp,
@@ -162,6 +163,39 @@ class TestLockHandoffCouplingValidatorClean(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)
+
+
+class TestLockHandoffCouplingRefusesCheckpointAsSurrender(unittest.TestCase):
+    """A release citing a mid-flight bookmark is an unpaired surrender (GHI #756).
+
+    `find_handoff_for_release` is the live gate and skips CHECKPOINT, so this
+    validator is the ledger-replay backstop: it reads events already emitted,
+    catching a release whose `handoff_path` was resolved by some other producer
+    or hand-set. Without it the mode distinction would hold only at the one
+    call site that happens to consult the predicate — the enumerate-the-callers
+    shape that has already missed on this codebase's read allowlist four times.
+    """
+
+    def test_release_citing_a_checkpoint_is_an_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
+            _write_handoff(root, mode="CHECKPOINT")
+            errors = validate_lock_handoff_coupling(root)
+
+        self.assertEqual(len(errors), 1, f"expected exactly one coupling error, got {errors}")
+        self.assertEqual(errors[0].type, "lock_handoff_coupling")
+        self.assertEqual(errors[0].artifact, _OBPI_ID)
+
+    def test_release_citing_a_create_handoff_is_clean(self) -> None:
+        """The negative pole: the error must key on CHECKPOINT, not on the fixture."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
+            _write_handoff(root, mode="CREATE")
+            errors = validate_lock_handoff_coupling(root)
+
         self.assertEqual([], errors)
 
 

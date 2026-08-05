@@ -18,6 +18,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
+from gzkit.handoff_validation import CHECKPOINT_MODE
 
 # Use the latest of OBPI-02 (additive/warning) or OBPI-03 (fail-closed) as the
 # effective enforcement cutover. This grandfathers the warning-only transition
@@ -95,6 +96,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         claim_ts = _concluded_claim_ts(claims.get(obpi_id, []), ev_ts)
         errors.extend(_check_timestamp(obpi_id, agent, ev.ts, handoff_content, claim_ts))
         errors.extend(_check_min_info(obpi_id, agent, ev.ts, handoff_content))
+        errors.extend(_check_mode(obpi_id, agent, ev.ts, handoff_content))
 
     return errors
 
@@ -210,6 +212,38 @@ def _check_min_info(
             )
         )
     return errors
+
+
+def _check_mode(
+    obpi_id: str,
+    agent: str,
+    release_ts: str,
+    content: str,
+) -> list[ValidationError]:
+    """Return an error when the cited register entry is a mid-flight bookmark.
+
+    A ``CHECKPOINT`` handoff records that a session paused, not that it
+    surrendered its token (GHI #756). ``find_handoff_for_release`` refuses one
+    at the live gate; this is the ledger-replay backstop for a release whose
+    ``handoff_path`` was resolved by any other route.
+    """
+    mode = (_parse_frontmatter_field(content, "mode") or "").upper()
+    if mode != CHECKPOINT_MODE:
+        return []
+    return [
+        ValidationError(
+            type="lock_handoff_coupling",
+            artifact=obpi_id,
+            message=(
+                f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
+                f"ts={release_ts!r}) cites a {CHECKPOINT_MODE} handoff. A "
+                "mid-flight bookmark is not a token surrender (token-block "
+                "discipline § Sub-Invariant 5). Author a departure handoff via "
+                "the `gz-session-handoff` skill, or surrender explicitly with "
+                "`gz obpi lock release --abandon <category>:<reason>`."
+            ),
+        )
+    ]
 
 
 def _parse_frontmatter_field(content: str, key: str) -> str | None:

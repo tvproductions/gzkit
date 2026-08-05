@@ -277,6 +277,7 @@ def handoff_create_cmd(
     continues_from: str | None = None,
     session_id: str | None = None,
     settled: list[str] | None = None,
+    mode: str = "CREATE",
     as_json: bool = False,
     base_path: Path = Path("."),
 ) -> None:
@@ -290,6 +291,12 @@ def handoff_create_cmd(
     and Current State Summary did, so the default invocation emitted five empty
     headings and the gate — which checked presence, not population — blessed the
     result. An unsupplied section is now a refusal, not a silent hollow.
+
+    ``mode`` selects the register-entry class. ``CREATE`` (the default) and
+    ``RESUME`` are departure notices; ``CHECKPOINT`` is the mid-flight bookmark
+    (GHI #756) — the session writes one WITHOUT departing, so it is not a token
+    surrender and `find_handoff_for_release` skips it. Without this parameter
+    every write took the ``CREATE`` default, recording a bookmark as a departure.
 
     ``settled`` seats rulings that arrived after the PRIOR handoff was authored —
     the operator rules on a GHI once the session's handoff is already committed, so
@@ -326,6 +333,7 @@ def handoff_create_cmd(
             continues_from=continues_from,
             session_id=session_id,
             base_path=base_path,
+            mode=mode,
         )
     except HandoffValidationError as exc:
         console.print(f"[red]Refusing to write handoff:[/red] {exc}", style="red")

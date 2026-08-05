@@ -37,6 +37,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 |---|---|
 | `tests.md` | `0.14.0` |
 | `task-discovery.md` | `0.7.0` |
+| `token-block-discipline.md` | `0.4.0` |
 
 **Pre-ledger debt is frozen, not laundered.** The remaining 23 canonical rules carry rows written before this ledger existed, against versions nobody recorded. They are enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json), pinned at their current versions and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 Boundary Invariant #8). The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves its pinned version behind and must be scored for real before `gz check` goes green. Debt can only shrink, and it cannot follow a rule forward in silence.
 
@@ -250,7 +251,8 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 53 | abandon categories are closed | **Promotable** | Doctrine exists in the rule file and parent ADR-0.0.41, but OBPI-0.0.41-02/03/04 are still pending for runtime warning/fail-closed enforcement and `gz validate --lock-handoff-coupling`. Until those land, this is a promotable rule with a clear mechanical path rather than already-mechanical enforcement. |
+| 53 | abandon categories are closed | **Mechanical** | Enforced at CLI parse time by `parse_abandon_spec` (`src/gzkit/handoff_validation.py`), which rejects an unregistered category, a missing colon, an empty category or reason, and surrounding whitespace; `obpi_lock_release_cmd` translates the refusal into exit 1 naming the closed enum, and validates it *before* deleting the lock. Scored **Promotable** until `0.4.0` on the premise that "OBPI-0.0.41-02/03/04 are still pending" — they have since landed, and nothing re-scored the row when they did. Corrected while scoring the rule for the CHECKPOINT clause (GHI #756). Scorecard citation: ADR-0.0.41 (parent), OBPI-0.0.41-01 (enum + parser). |
+| 73 | a `CHECKPOINT` handoff never satisfies token surrender | **Mechanical** | Two enforcement points, live gate plus ledger backstop. `find_handoff_for_release` (`src/gzkit/handoff_validation.py`) *skips* checkpoint-mode candidates, so `gz obpi lock release` cannot resolve one as the register entry and falls through to the § Sub-Invariant 5 fail-closed exit 3; skipping rather than returning-and-rejecting also prevents a later checkpoint from winning the newest-candidate sort and displacing a genuine entry. `_check_mode` in `src/gzkit/governance/trust_audits/lock_handoff_coupling.py` replays the ledger and emits a `lock_handoff_coupling` error for any post-cutover `obpi_lock_released` citing a checkpoint, covering a `handoff_path` resolved by any other route; that audit is a live step of the default `gz check` pipeline (`("Lock-handoff coupling", run_lock_handoff_coupling_audit)`). The mode string is named once as `CHECKPOINT_MODE` and read by every consumer, so the distinction cannot drift per-copy. Scorecard citation: ADR-0.0.65 (owning ADR, not reopened), GHI #756 (corrective work). |
 
 ### Exemplar Corpus Doctrine (`.gzkit/rules/complexity-doctrine.md`)
 

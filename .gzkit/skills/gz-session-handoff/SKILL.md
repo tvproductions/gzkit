@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.22.0"
+  skill-version: "6.23.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-02
+last_reviewed: 2026-08-05
 model: sonnet
 ---
 
@@ -105,7 +105,7 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
 3. **Get current branch** via `git branch --show-current`.
 
 4. **Fill frontmatter fields:**
-   - `mode: CREATE`
+   - `mode: CREATE` — or `mode: CHECKPOINT` when the session is **bookmarking, not departing** (GHI #756). Both write a full seven-section handoff; they differ in what they mean. A `CHECKPOINT` records a pause mid-flight — before a long verification run, at a `/clear` boundary inside a multi-task session — and does **not** satisfy token-block § Sub-Invariant 5, so it can never discharge a lock release. Use `CREATE` when the session is concluding.
    - `adr_id`, `branch`, `timestamp`, `agent` — from inputs
    - `obpi_id`, `session_id`, `continues_from` — from optional inputs (leave empty if not provided)
 

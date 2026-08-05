@@ -21,6 +21,7 @@ from gzkit.handoff_validation import (
     REQUIRED_SECTIONS,
     HandoffFrontmatter,
     HandoffValidationError,
+    find_handoff_for_release,
     parse_frontmatter,
     validate_handoff_document,
     validate_no_placeholders,
@@ -1127,6 +1128,90 @@ class TestCompletionHandoffFidelity(unittest.TestCase):
 
         self.assertNotIn("One concrete usage example", written)
         self.assertIn("Real proof.", written)
+
+
+class CheckpointModeTests(unittest.TestCase):
+    """A mid-flight bookmark is not a departure notice (GHI #756).
+
+    `mode` was `Literal["CREATE", "RESUME"]`, so every write took the default
+    `"CREATE"` — a checkpoint written mid-session was recorded as a departure.
+    Admitting `CHECKPOINT` is only half the fix: token-block discipline
+    § Sub-Invariant 5 makes a non-abandoned handoff postdating the claim
+    sufficient to surrender a lock, and `find_handoff_for_release` never read
+    `mode`. Introducing the mode without teaching that predicate would let a
+    bookmark discharge a surrender the session never performed.
+
+    Each assertion is paired with its opposite pole: the CHECKPOINT case must
+    fail *because it is a checkpoint*, not because the fixture is malformed.
+    """
+
+    def _write_handoff(self, tmp: Path, *, mode: str, ts: str) -> Path:
+        handoff_dir = tmp / ".gzkit" / "handoffs"
+        handoff_dir.mkdir(parents=True, exist_ok=True)
+        doc = _clean_handoff_doc(
+            f"mode: {mode}\n"
+            "adr_id: ADR-0.25.0\n"
+            "obpi_id: OBPI-0.25.0-32\n"
+            "branch: main\n"
+            f"timestamp: '{ts}'\n"
+            "agent: claude-code\n"
+        )
+        path = handoff_dir / f"{ts.replace(':', '').replace('-', '')}-bookmark.md"
+        path.write_text(doc, encoding="utf-8", newline="\n")
+        return path
+
+    def test_checkpoint_is_an_admitted_mode(self) -> None:
+        fm = HandoffFrontmatter(**_valid_frontmatter_dict(mode="CHECKPOINT"))
+        self.assertEqual(fm.mode, "CHECKPOINT")
+
+    def test_unknown_mode_is_still_refused(self) -> None:
+        """The negative pole: widening the enum must not disarm typo-defense."""
+        with self.assertRaises(ValidationError):
+            HandoffFrontmatter(**_valid_frontmatter_dict(mode="BOOKMARK"))
+
+    def test_checkpoint_does_not_satisfy_token_surrender(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_handoff(root, mode="CHECKPOINT", ts="2026-04-14T12:00:00")
+            found = find_handoff_for_release(
+                root,
+                obpi_id="OBPI-0.25.0-32",
+                after_timestamp="2026-04-14T09:00:00",
+            )
+        self.assertIsNone(
+            found,
+            "a mid-flight checkpoint must not discharge § Sub-Invariant 5",
+        )
+
+    def test_create_handoff_still_satisfies_token_surrender(self) -> None:
+        """The negative pole: the refusal must key on CHECKPOINT, not on the fixture."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            expected = self._write_handoff(root, mode="CREATE", ts="2026-04-14T12:00:00")
+            found = find_handoff_for_release(
+                root,
+                obpi_id="OBPI-0.25.0-32",
+                after_timestamp="2026-04-14T09:00:00",
+            )
+        self.assertEqual(found, expected)
+
+    def test_checkpoint_does_not_mask_a_later_create(self) -> None:
+        """A checkpoint is skipped, never treated as the newest candidate.
+
+        Candidates are sorted by timestamp and the last is returned, so a
+        checkpoint written after a genuine surrender handoff would otherwise
+        win the sort and — once refused — take the real register entry with it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            expected = self._write_handoff(root, mode="CREATE", ts="2026-04-14T12:00:00")
+            self._write_handoff(root, mode="CHECKPOINT", ts="2026-04-14T18:00:00")
+            found = find_handoff_for_release(
+                root,
+                obpi_id="OBPI-0.25.0-32",
+                after_timestamp="2026-04-14T09:00:00",
+            )
+        self.assertEqual(found, expected)
 
 
 if __name__ == "__main__":

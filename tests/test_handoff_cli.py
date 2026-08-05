@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 from unittest import mock
 
+from gzkit.cli.main import _build_parser
 from gzkit.commands.handoff import (
     SECTION_PARAMS,
     handoff_create_cmd,
@@ -34,7 +35,7 @@ from gzkit.handoff_api import (
     settled_rulings,
     validate_handoff_document,
 )
-from gzkit.handoff_validation import REQUIRED_SECTIONS
+from gzkit.handoff_validation import REQUIRED_SECTIONS, parse_frontmatter
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 
@@ -483,6 +484,71 @@ class TestHandoffCreate(_HandoffCliCase, SilencedConsoleTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestHandoffCreateMode(_HandoffCliCase, SilencedConsoleTestCase):
+    """`--mode` reaches the written frontmatter (GHI #756).
+
+    `handoff_create_cmd` had no `mode` parameter and never passed one, so every
+    write took `create_handoff`'s `"CREATE"` default — a bookmark written
+    mid-session was recorded as a departure notice. The default is asserted
+    alongside the override so widening the enum cannot silently re-point it.
+    """
+
+    def _write(self, **overrides: object) -> dict:
+        kwargs: dict = {
+            "adr": "ADR-0.0.65",
+            "slug": "bookmark",
+            "agent": "g0",
+            "summary": "Mid-flight state captured without departing.",
+            "context": "The session still holds its clearance and its lock.",
+            "decisions": "- [agent-chose] Bookmarked before the long verification run.",
+            "next_steps": "1. Resume the verification run.",
+            "pending": "The run itself.",
+            "verification": "uv run -m unittest tests.test_handoff_cli",
+            "evidence": "The ledger claim event for the held lock.",
+            "branch": "main",
+            "base_path": self.base,
+        }
+        kwargs.update(overrides)
+        handoff_create_cmd(**kwargs)
+        written = list((self.base / ".gzkit" / "handoffs").glob("*.md"))
+        self.assertEqual(len(written), 1)
+        parsed = parse_frontmatter(written[0].read_text(encoding="utf-8"))
+        self.assertIsInstance(parsed, dict)
+        return parsed
+
+    def test_checkpoint_mode_reaches_the_written_frontmatter(self) -> None:
+        self.assertEqual(self._write(mode="CHECKPOINT")["mode"], "CHECKPOINT")
+
+    def test_mode_defaults_to_create(self) -> None:
+        """The negative pole: an unspecified mode is still a departure notice."""
+        self.assertEqual(self._write()["mode"], "CREATE")
+
+    def test_the_flag_exists_on_the_parser(self) -> None:
+        """Coupled-surface coherence: a handler parameter with no flag is unreachable.
+
+        `handoff_create_cmd` is only ever invoked by the parser's `set_defaults`
+        lambda, so a `mode` parameter the parser never passes is dead on the
+        operator surface — the exact shape GHI #692 found across five sections
+        (AGENTS.md § DO IT RIGHT 1a).
+        """
+        parser = _build_parser()
+        namespace = parser.parse_args(
+            [
+                "handoff",
+                "create",
+                "--slug",
+                "s",
+                "--agent",
+                "g0",
+                "--decisions",
+                "d",
+                "--mode",
+                "CHECKPOINT",
+            ]
+        )
+        self.assertEqual(namespace.mode, "CHECKPOINT")
 
 
 class TestHandoffCreateWarnsOnSilentChainRoot(_HandoffCliCase):
