@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.24.0"
+  skill-version: "6.25.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -375,7 +375,7 @@ requires *before* presenting — `gz state`, `gz status`, `gz obpi status`,
 (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`) — **plus
 plain shell reads** (the read-only-by-construction `git` family —
 `status|log|diff|show|branch|rev-parse|rev-list|ls-files|blame|shortlog|describe|merge-base|cat-file|for-each-ref`
-— plus `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `wc`, `find`, `jq`, `pwd`) —
+— plus `grep`, `rg`, `cat`, `ls`, `head`, `tail`, `wc`, `jq`, `pwd`) —
 plus `gz handoff decide` (and its `authorize` alias) itself. These are
 load-bearing, not convenience: the § Claim Verification Gate below MANDATES
 verifying claims against Layer-2 before presenting. The harness does not always
@@ -391,8 +391,10 @@ forbidden by AGENTS.md § Behavior Rules — Always #13 (author GHIs through
 Everything else fails closed — including compound commands (`gz state && rm -rf x`
 is not a read of `gz state`), command substitution in **any** quoting form
 (`"$(…)"` expands under bash, and posix tokenization cannot tell it from the
-inert `'$(…)'`, so both are refused), and write-capable flags on a read's name
-(`find -delete`, `sed -i`). Shell metacharacters *inside quotes* are data, not
+inert `'$(…)'`, so both are refused), and any verb carrying a write form at all
+(`find`, `sed`, `awk`, `tee` — refused at the head, not merely flag-guarded; the
+mutating-flag set is defense in depth beneath the predicate, never the membership
+test). Shell metacharacters *inside quotes* are data, not
 operators: `grep "A\|B"` and `gh issue list -q '.[] | select(…)'` are reads and
 are permitted. The gate blocks execution, never the verification that precedes
 it, and never its own recovery path.
@@ -442,15 +444,48 @@ handoff prescribing that exact command in its own Verification Checklist was
 refused by this gate. When you add a claim shape, add its instrument to the
 allowlist in the same commit.
 
-**The `git` arm is now closed by predicate, not by enumeration (GHI #732).** The
+**The Bash arm is closed by predicate, not by enumeration (GHI #732).** The
 `rev-list` repair fixed the instance and left the family open, which is the
-enumerate-the-examples habit repeating one verb later. Membership is now stated:
-a `git` verb is admitted when it is **read-only by construction** — it has no
-write form in any flag combination. `blame`, `shortlog`, `describe`,
-`merge-base`, `cat-file`, and `for-each-ref` are admitted on that predicate;
-`tag`, `fetch`, `checkout`, `update-ref`, and `hash-object` are excluded by it,
-because each reads in one form and writes in another. Judge a candidate against
-the predicate rather than asking whether it already appears in the list.
+enumerate-the-examples habit repeating one verb later. Membership is stated:
+a verb is admitted when it is **read-only by construction** — it has no
+write form at all, in any flag *or script* combination. `blame`, `shortlog`,
+`describe`, `merge-base`, `cat-file`, and `for-each-ref` are admitted on that
+predicate; `tag`, `fetch`, `checkout`, `update-ref`, and `hash-object` are
+excluded by it, because each reads in one form and writes in another. Judge a
+candidate against the predicate rather than asking whether it already appears in
+the list.
+
+**The predicate governs the plain-shell half too, and closed a hole there rather
+than opening one.** It was first stated for `git` alone, leaving the plain half an
+enumeration — so `find` sat in it while `find . -fprint FILE`, `-fls`, and
+`-fprintf` wrote files straight through this gate. The proposal on the reopened
+issue was to keep extending: admit a write-capable verb whose *write-enabling
+flags* are all in the mutating-flag guard. Probing the tools disproved the premise
+behind it — a verb's write surface is not reachable only through flags. `find`'s
+write primitives were never in the guard, and `sed` writes from inside its **script
+operand** (`sed -n '1,2w FILE'`, `s///w FILE`), where no flag set can see it; `-i`
+is not sed's only write form, only its most famous one. So `find` was **removed**
+by the predicate and `sed` stays out, alongside `awk` (in-program redirect), `sort`
+(`-o`), `uniq` (positional output operand), `tee`, and `env`/`xargs` (they execute
+arbitrary commands). Nothing verifiable was lost: `rg --files`, `ls`, and
+`git ls-files` locate files, and a line **range** is the never-gated `Read` tool's
+`offset`/`limit`, not `sed -n`.
+
+**The `gz` arm reads the predicate in its own terms:** a verb is admitted when the
+*admitted prefix* has no write form, because matching is on leading tokens — so a
+verb that reads only under a later flag cannot be expressed here at all. That is
+why `gz closeout` is absent: it is ceremony whose only read is `--dry-run`, four
+tokens deep, so admitting the head would license the write — and a dry-run is an
+advised *step* needing authorization, not a claim verification. `gz status`
+answers the readiness claim.
+
+The allowlist also still admits one verb retired under #705, which the #743
+control-surface audit recorded on GHI #732 as an over-grant. It is not one: a
+**deprecation governs what a doc may prescribe, not what this gate may read**, and
+the verb still runs and still answers a gate-status claim. This skill deliberately
+does not name it — a skill that named it would *route agents onto it*, the
+inversion `gz validate --cli-alignment` fails closed on, which is why the pair is
+recorded in the gate module's own comment rather than here.
 
 **Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
 A STALE claim voids any advised step that depends on it: surface the variance and

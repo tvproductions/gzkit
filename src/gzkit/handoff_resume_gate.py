@@ -98,12 +98,13 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #: Read-only Bash prefixes permitted while unauthorized. Matched against the
 #: command's leading tokens after `uv run` is stripped.
 #:
-#: Derived from the OBLIGATION, not from a list of examples. Twice now this
-#: allowlist has been too narrow, and both times the root was the same: it was
-#: scoped by enumerating the § Trust Model's example surfaces instead of asking
-#: what the § Claim Verification Gate REQUIRES — "verify every completion / lock /
-#: gate / readiness claim before presenting it". Enumerate-the-examples always
-#: under-covers the rule it serves.
+#: Derived from the OBLIGATION, not from a list of examples. Four times now this
+#: allowlist has been wrong, and every time the root was the same: it was scoped by
+#: enumerating the § Trust Model's example surfaces instead of asking what the
+#: § Claim Verification Gate REQUIRES — "verify every completion / lock / gate /
+#: readiness claim before presenting it". Enumerate-the-examples under-covers the
+#: rule it serves, and — the fourth miss — silently over-grants beside it, because
+#: an enumeration records no reason a reader could use to judge either edge.
 #:
 #: * First miss: only `gz` verbs, on the premise that "Read/Grep/Glob are never
 #:   gated, so Bash is not the read path". False in this harness — `Grep`/`Glob`
@@ -134,6 +135,28 @@ MUTATING_TOOLS = frozenset({"Write", "Edit", "NotebookEdit", "Bash"})
 #: write. `_MUTATING_FLAGS` guards the flag surface of what IS admitted; it is not
 #: a substitute for the predicate.
 #:
+#: * Fourth miss, and the first that was too WIDE rather than too narrow: the
+#:   predicate was stated for the `git` arm only, leaving the plain-shell arm a bare
+#:   enumeration — so `find` sat in it, admitted, while `find . -fprint FILE`,
+#:   `-fls`, and `-fprintf` WROTE FILES through this gate (observed 2026-08-05).
+#:   GHI #732 proposed extending the enumeration by admitting a write-capable verb
+#:   whose "write-enabling flags are all in `_MUTATING_FLAGS`", on the premise that
+#:   `find`'s grant proved the flag guard was the intended pattern. Probing the real
+#:   tools disproved the premise in both directions: `find`'s write primitives are
+#:   not flags anyone had enumerated, and `sed` writes from INSIDE its script operand
+#:   (`sed -n '1,2w FILE'`, `s///w FILE`) where no flag set can see it. `-i` is not
+#:   sed's only write form, only its most famous one.
+#:
+#: So ONE predicate governs the whole Bash arm, and `find` is removed by it rather
+#: than `sed` added under a weaker one. Excluded on purpose, each for a reason that
+#: is a flag guard's blind spot: `find` (`-fprint`/`-fls`/`-fprintf` primitives),
+#: `sed` (in-script `w`), `awk` (in-program redirect), `sort` (`-o`, which cannot
+#: even be guarded — it collides with `find`'s OR operator), `uniq` (positional
+#: output operand), `tee` (writes by definition), `env`/`xargs` (execute arbitrary
+#: commands). Nothing is lost: `rg --files`, `ls`, and `git ls-files` locate files,
+#: and a line RANGE is the ungated `Read` tool's `offset`/`limit`, not `sed -n`.
+#: Judge a candidate against the predicate, never against the list.
+#:
 #: A gate that forbids the verification its own skill mandates cannot be complied
 #: with, and an un-compliable gate gets worked around — the failure mode gzkit
 #: exists to close. Reads are not execution; the contract forbids MUTATION.
@@ -146,7 +169,19 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     # enumerate-the-examples class GHI #732 is open against.
     ("gz", "handoff", "decide"),
     ("gz", "handoff", "authorize"),
-    # § Trust Model: the Layer-2 surfaces RESUME must read to verify claims.
+    # § Trust Model: the Layer-2 surfaces RESUME must read to verify claims. The
+    # same predicate, said in this arm's terms: a `gz` verb is admitted when the
+    # ADMITTED PREFIX has no write form — because matching is on leading tokens, a
+    # verb that reads only under a later flag cannot be expressed here at all.
+    #
+    # That is why `gz gates` is in and `gz closeout` is out, a pair the #743
+    # control-surface audit recorded on GHI #732 as an over/under-grant. It is
+    # neither. Deprecation (#705, successor `gz closeout`) governs what docs may
+    # PRESCRIBE, not what this gate may READ: `gz gates` still runs and still
+    # answers a gate-status claim. `gz closeout` is ceremony whose only read is
+    # `--dry-run`, four tokens deep — admitting the head would license the write,
+    # and its dry-run is an advised STEP requiring authorization, not a claim
+    # verification. `gz status` already answers the claim.
     ("gz", "obpi", "status"),
     ("gz", "obpi", "lock", "list"),
     ("gz", "gates"),
@@ -173,8 +208,8 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("gh", "release", "view"),
     ("gh", "release", "list"),
     # Plain shell reads — the § Claim Verification Gate's actual instrument when
-    # the harness exposes no Grep/Glob tool. Each is read-only in these forms;
-    # write-capable flags are rejected below (see _MUTATING_FLAGS).
+    # the harness exposes no Grep/Glob tool. ONE predicate governs this whole
+    # arm, git and non-git alike: admitted only when READ-ONLY BY CONSTRUCTION.
     ("git", "status"),
     ("git", "log"),
     ("git", "diff"),
@@ -196,6 +231,9 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("git", "merge-base"),
     ("git", "cat-file"),
     ("git", "for-each-ref"),
+    # The non-git half of the same predicate. Each has NO write form: writing
+    # with one of these takes a shell redirect, which `_is_compound` already
+    # refuses before the head is ever matched.
     ("grep",),
     ("rg",),
     ("ls",),
@@ -203,14 +241,16 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("head",),
     ("tail",),
     ("wc",),
-    ("find",),
     ("jq",),
     ("pwd",),
 )
 
-#: Flags that turn an otherwise-read-only allowlisted command into a mutation.
-#: `sed`/`find` are deliberately absent from the allowlist head where they are
-#: write-capable; these catch the in-place forms of what IS allowlisted.
+#: Flags that turn an otherwise-read-only command into a mutation. DEFENSE IN
+#: DEPTH, never the membership test: every verb in `_PERMITTED_BASH` is read-only
+#: by construction, so nothing admitted can legally carry one of these and a hit
+#: here means the head was matched by something that should not have been. Trusting
+#: this guard AS the predicate is what admitted `find` — whose write primitives
+#: (`-fprint`, `-fls`, `-fprintf`) were never in this set — for three releases.
 _MUTATING_FLAGS: frozenset[str] = frozenset({"-i", "--in-place", "-delete", "-exec", "--fix"})
 
 #: Shell control operators that make a command compound. `shlex` with
@@ -484,7 +524,11 @@ def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: 
         "Reading is permitted while unauthorized (gz state / gz gates / gz obpi status, "
         "gh issue|pr read verbs, and git/grep/cat reads; quoted metacharacters like "
         'grep "A\\|B" are data, not pipes) — the gate blocks execution, never the '
-        "verification that precedes it, and never its own recovery."
+        "verification that precedes it, and never its own recovery.\n"
+        "Admitted Bash reads are read-only BY CONSTRUCTION, so a verb with any write "
+        "form is refused even in a read shape: `sed` writes in-script (`1,2w FILE`) "
+        "and `find` writes via `-fprint`/`-fls`. Use the Read/Grep/Glob tools — never "
+        "gated — for a line range or a file search."
     )
 
 

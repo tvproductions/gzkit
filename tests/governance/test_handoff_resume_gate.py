@@ -676,6 +676,106 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
 
+    def test_a_plain_verb_with_any_write_form_is_refused(self) -> None:
+        """The plain-shell arm is closed by the SAME predicate as the git arm.
+
+        GHI #732 reopened for a fourth miss: the git arm got a stated membership
+        predicate ("read-only by construction") while the plain-shell arm stayed a
+        bare enumeration, so judging a candidate meant asking "is it in the list?"
+        — answerable only by discovering a miss.
+
+        The reopened issue proposed a WEAKER predicate for this arm — admit a
+        write-capable verb when "every write-enabling flag is in `_MUTATING_FLAGS`"
+        — on the premise that `find`'s admission proved the flag guard was the
+        intended pattern. Probing the real tools disproved the premise: a verb's
+        write surface is not reachable only through flags.
+
+        * `find . -fprint FILE` / `-fls` / `-fprintf` write via unguarded PRIMITIVES,
+          not flags. Observed writing a file 2026-08-05 while this gate permitted it.
+        * `sed -n '1,2w FILE'` and `sed -n 's/a/z/w FILE'` write via a command INSIDE
+          the script operand, where no flag set can see it. `-i` is not sed's only
+          write form, only its most famous one.
+
+        So `find`'s grant was the hole, not the precedent — and one predicate governs
+        both arms: a verb is admitted only when it has NO write form at all. Flags are
+        defense-in-depth beneath that, never a substitute for it.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                # find: write primitives that `_MUTATING_FLAGS` never enumerated.
+                "find . -fprint /tmp/out",
+                "find . -fls /tmp/out",
+                "find . -fprintf /tmp/out %p",
+                "find . -name x -delete",
+                # sed: in-script writes, invisible to any flag guard.
+                "sed -n '1,2w /tmp/out' f",
+                "sed -n 's/a/z/w /tmp/out' f",
+                "sed -i s/a/b/ f",
+                # The rest of the family the predicate excludes, each for a stated
+                # reason: in-program redirect, a write flag that collides with an
+                # admitted verb's read syntax, a positional output operand, writing
+                # by definition, and arbitrary-command execution.
+                "awk '{print > \"/tmp/out\"}' f",
+                "sort -o /tmp/out f",
+                "uniq f /tmp/out",
+                "tee /tmp/out",
+                "env rm -rf src",
+                "xargs rm",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(
+                        self._verdict(base, command).blocked,
+                        f"{command!r} has a write form and must not be admitted",
+                    )
+
+    def test_read_only_by_construction_plain_verbs_stay_permitted(self) -> None:
+        """Closing the predicate must not cost the reads the Gate actually mandates.
+
+        These have no write form in any flag or script combination, so the same
+        predicate that excludes `find`/`sed` admits every one of them. `rg --files`
+        and `git ls-files` are the file-location instruments that make `find`'s
+        removal a no-op for the § Claim Verification Gate's obligation.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "rg --files src/",
+                "git ls-files src/gzkit",
+                "wc -l src/gzkit/handoff_resume_gate.py",
+                "tail -40 .gzkit/ledger.jsonl",
+                "jq .event .gzkit/ledger.jsonl",
+                "pwd",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_a_readiness_read_is_admitted_but_its_ceremony_successor_is_not(self) -> None:
+        """`gz gates` is a readiness READ; `gz closeout` writes in its bare form.
+
+        Recorded on GHI #732 by the #743 control-surface audit as an over-grant /
+        under-grant pair: the allowlist admits `gz gates` (deprecated under #705,
+        successor `gz closeout`) while refusing the successor. Re-derived here rather
+        than inherited — the pair is CORRECT under the obligation predicate, and the
+        reason has to be recorded or the next audit re-files it.
+
+        Deprecation governs what docs may PRESCRIBE, not what this gate may READ:
+        `gz gates` still runs and still answers a gate-status claim. `gz closeout`
+        is ceremony — only `--dry-run` is a read, and `_PERMITTED_BASH` matches
+        LEADING tokens, so admitting the head would license the write form. Its
+        dry-run is an advised step requiring authorization, not a claim-verification
+        read; `gz status` answers the claim.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            self.assertFalse(self._verdict(base, "gz gates").blocked, "gz gates is a read")
+            for command in ("gz closeout ADR-0.0.1", "gz closeout ADR-0.0.1 --dry-run"):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
 
 class ResumeDecisionIsATransitNotAnAttestationTests(unittest.TestCase):
     """The gate books a transit decision, not a completion claim (GHI #757).
