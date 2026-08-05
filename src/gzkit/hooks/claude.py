@@ -16,7 +16,11 @@ from gzkit.hooks.scripts.pipeline import (
     _plan_audit_gate_script,
     _session_staleness_check_script,
 )
-from gzkit.hooks.scripts.quality import _post_edit_ruff_script, _stop_turn_feedback_script
+from gzkit.hooks.scripts.quality import (
+    _post_edit_ruff_script,
+    _stop_turn_feedback_script,
+    _verifier_pipe_gate_script,
+)
 from gzkit.hooks.scripts.routing import (
     _instruction_router_script,
     _pipeline_gate_script,
@@ -43,6 +47,13 @@ def _claude_hooks_readme() -> str:
             "  operator has not ruled on. Mechanizes the universal Operator",
             "  Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);",
             "  lifted by `gz handoff authorize` (GHI #574).",
+            "- `verifier-pipe-gate.py`",
+            "  PreToolUse (`Bash`) hook that refuses a command piping a verifier",
+            "  (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any",
+            "  ARB-wrapped verifier) into another process — the shell would",
+            "  report the last stage's exit, masking a failing run as green.",
+            "  Mechanizes `.gzkit/rules/tests.md` § Verification exit-code",
+            "  integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).",
             "- `session-staleness-check.py`",
             "  PreToolUse (`Write|Edit`) hook that detects stale pipeline",
             "  artifacts from previous sessions and emits warnings.",
@@ -92,7 +103,9 @@ def _claude_hooks_readme() -> str:
             "  then `session-staleness-check.py`, then `pipeline-gate.py`,",
             "  then `obpi-completion-validator.py`, then `instruction-router.py`",
             "- `PreToolUse` `Bash`: `handoff-resume-gate.py`,",
-            "  then `pipeline-completion-reminder.py`",
+            "  then `verifier-pipe-gate.py`,",
+            "  then `pipeline-completion-reminder.py`,",
+            "  then `ghi-triage-chat-silence.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
             "  then `ledger-writer.py`",
             "- `Stop` `*`: `stop-turn-feedback.py`",
@@ -213,6 +226,13 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                             # would enforce one third of the declared clause.
                             "type": "command",
                             "command": _hook_command(hooks_dir, "handoff-resume-gate.py"),
+                        },
+                        {
+                            # Second: authorization outranks verification hygiene.
+                            # An unauthorized resume must be refused before the
+                            # command's SHAPE is ever considered.
+                            "type": "command",
+                            "command": _hook_command(hooks_dir, "verifier-pipe-gate.py"),
                         },
                         {
                             "type": "command",
@@ -441,6 +461,10 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     handoff_resume_gate_path = hooks_path / "handoff-resume-gate.py"
     _write_hook_file(handoff_resume_gate_path, _handoff_resume_gate_script(), executable=True)
     created.append(handoff_resume_gate_path.relative_to(project_root).as_posix())
+
+    verifier_pipe_gate_path = hooks_path / "verifier-pipe-gate.py"
+    _write_hook_file(verifier_pipe_gate_path, _verifier_pipe_gate_script(), executable=True)
+    created.append(verifier_pipe_gate_path.relative_to(project_root).as_posix())
 
     session_staleness_path = hooks_path / "session-staleness-check.py"
     _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)

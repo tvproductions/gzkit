@@ -52,6 +52,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
+from gzkit.shell_reading import strip_uv_run, tokenize_shell
 
 __all__ = [
     "MUTATING_TOOLS",
@@ -285,9 +286,7 @@ def _tokens(command: str) -> list[str]:
         parts = shlex.split(command)
     except ValueError:
         return []
-    while parts[:2] == ["uv", "run"]:
-        parts = parts[2:]
-    return parts
+    return strip_uv_run(parts)
 
 
 def _is_shell_operator(token: str) -> bool:
@@ -332,12 +331,14 @@ def _is_compound(command: str) -> bool:
       `shlex`, so ``gz state `rm -rf x``` yields an allowlisted head and NO
       operator token — it would have ridden straight in. :func:`_can_expand`
       covers what the split cannot see.
+
+    The lexer configuration itself lives in :func:`gzkit.shell_reading.tokenize_shell`
+    — the verifier-exit-status gate (GHI #589) reads the same command strings with
+    the same two facts, and a second copy of them is how the two gates would come
+    to disagree about what a pipe is.
     """
-    try:
-        lexer = shlex.shlex(command, posix=True, punctuation_chars=True)
-        lexer.whitespace_split = True
-        tokens = list(lexer)
-    except ValueError:
+    tokens = tokenize_shell(command)
+    if tokens is None:
         return True  # unbalanced quotes → unparseable → fail closed
     return any(_is_shell_operator(token) or _can_expand(token) for token in tokens)
 

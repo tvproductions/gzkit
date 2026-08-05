@@ -8,6 +8,13 @@ Current hook surface in gzkit:
   operator has not ruled on. Mechanizes the universal Operator
   Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);
   lifted by `gz handoff authorize` (GHI #574).
+- `verifier-pipe-gate.py`
+  PreToolUse (`Bash`) hook that refuses a command piping a verifier
+  (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any
+  ARB-wrapped verifier) into another process — the shell would
+  report the last stage's exit, masking a failing run as green.
+  Mechanizes `.gzkit/rules/tests.md` § Verification exit-code
+  integrity; `pipefail` / `PIPESTATUS` opt out (GHI #589).
 - `session-staleness-check.py`
   PreToolUse (`Write|Edit`) hook that detects stale pipeline
   artifacts from previous sessions and emits warnings.
@@ -57,7 +64,9 @@ Current hook surface in gzkit:
   then `session-staleness-check.py`, then `pipeline-gate.py`,
   then `obpi-completion-validator.py`, then `instruction-router.py`
 - `PreToolUse` `Bash`: `handoff-resume-gate.py`,
-  then `pipeline-completion-reminder.py`
+  then `verifier-pipe-gate.py`,
+  then `pipeline-completion-reminder.py`,
+  then `ghi-triage-chat-silence.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,
   then `ledger-writer.py`
 - `Stop` `*`: `stop-turn-feedback.py`

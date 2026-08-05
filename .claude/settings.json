@@ -72,6 +72,10 @@
           },
           {
             "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/verifier-pipe-gate.py\""
+          },
+          {
+            "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/pipeline-completion-reminder.py\""
           },
           {

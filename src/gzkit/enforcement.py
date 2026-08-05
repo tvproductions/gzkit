@@ -369,6 +369,11 @@ def _ensure_production_claims_registered() -> None:
         hooking only Write|Edit leaves the bash claim undischargeable, so a
         partial mechanism fails ``gz check`` instead of shipping with a caveat
         (GHI #574).
+      * ``verifier_pipe_gate`` — ``verifier-exit-status-masked``, the mechanical
+        form of `.gzkit/rules/tests.md` § Verification exit-code integrity. ONE
+        claim because the clause declares one rule; its NC asserts the
+        differential (refuse piped, permit redirected) so an always-block
+        implementation cannot discharge it (GHI #589).
 
     The gate5 + grader-gaming sources were authored Completed but left un-wired here (the
     docstring formerly named them "future work" that never landed); GHI tracks the
@@ -380,12 +385,16 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
     from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
+    from gzkit.verifier_pipe_gate import (  # noqa: PLC0415
+        _ensure_verifier_pipe_claims_registered,
+    )
 
     qc_binding._ensure_qc_claims_registered()
     _ensure_gate5_claims_registered()
     _ensure_grader_gaming_registered()
     _ensure_airlock_claims_registered()
     _ensure_resume_gate_claims_registered()
+    _ensure_verifier_pipe_claims_registered()
 
 
 def _gate5_enrollment_results(records: list[EnforcementClaimRecord]) -> list[ClaimRunResult]:

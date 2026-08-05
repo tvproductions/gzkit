@@ -273,6 +273,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                             "command": _expected_hook_command("handoff-resume-gate.py"),
                         },
                         {
+                            # Second: authorization outranks verification hygiene.
+                            "type": "command",
+                            "command": _expected_hook_command("verifier-pipe-gate.py"),
+                        },
+                        {
                             "type": "command",
                             "command": _expected_hook_command("pipeline-completion-reminder.py"),
                         },
@@ -332,11 +337,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        # 13 = 11 + the resume gate registered on BOTH mutating matchers
+        # 14 = 12 + the resume gate registered on BOTH mutating matchers
         # (`Write|Edit|NotebookEdit` and `Bash`), since the § RESUME contract
         # names "no file mutation / gz ceremony / migration" and ceremony only
         # reaches the harness through Bash (GHI #574).
-        self.assertEqual(len(commands), 13, commands)
+        self.assertEqual(len(commands), 14, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -550,6 +555,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             ledger_writer = hooks_dir / "ledger-writer.py"
             control_surface_sync = hooks_dir / "control-surface-sync.py"
             handoff_resume_gate = hooks_dir / "handoff-resume-gate.py"
+            verifier_pipe_gate = hooks_dir / "verifier-pipe-gate.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
 
@@ -565,6 +571,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 ledger_writer,
                 control_surface_sync,
                 handoff_resume_gate,
+                verifier_pipe_gate,
                 readme,
                 settings_path,
             ):
@@ -580,6 +587,7 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/obpi-completion-validator.py", created)
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/control-surface-sync.py", created)
+            self.assertIn(".claude/hooks/verifier-pipe-gate.py", created)
             self.assertIn(".claude/hooks/handoff-resume-gate.py", created)
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
@@ -629,6 +637,10 @@ class TestSetupClaudeHooks(unittest.TestCase):
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("handoff-resume-gate.py"),
+                            },
+                            {
+                                "type": "command",
+                                "command": _expected_hook_command("verifier-pipe-gate.py"),
                             },
                             {
                                 "type": "command",
