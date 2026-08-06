@@ -215,6 +215,198 @@ ADR_QUESTIONS = [
         ),
         multiline=True,
     ),
+    # Forcing functions — the seven techniques `gz-adr-create` SKILL.md declares
+    # non-negotiable. They were mandated by the skill and asked in practice, but had
+    # no channel in this question set, no section in the ADR template, and no reader:
+    # 2 of 25 interview records captured them, under an invented `forcing_functions`
+    # key nothing consumed. The doctrine said "ask"; nothing said "keep".
+    # Agent drafts each against session evidence; the operator audits and confirms
+    # (AGENTS.md § OPERATOR ECONOMY OF EFFORT #4) — these are not operator typing.
+    Question(
+        id="pre_mortem",
+        prompt=(
+            "Pre-mortem (Klein): it is 18 months from now and this decision has "
+            "failed spectacularly. Why? Name the mitigation."
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Failed because the 'no Layer-2 writes until merge' rule was never "
+            "mechanically gated, so a duplicate attested completion reached the "
+            "ledger. Mitigation: checklist item 4 (fail-closed validator) is not "
+            "optional."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="wwhtbt",
+        prompt=(
+            "What would have to be true (Martin) for this to be the right decision — "
+            "and which of those conditions is shakiest?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Must be true that no legitimate parallel mode needs a Layer-2 fact "
+            "before merge. Shakiest: a long parallel run an operator wants to "
+            "observe mid-flight. Judged rare because the primary use case is "
+            "read-only."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="constraint_archaeology",
+        prompt=(
+            "Constraint archaeology: is each constraint here real, inherited, or "
+            "assumed? When was it last tested?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "The single-writer constraint is real (SQLite WAL). The 'no branches' "
+            "constraint is inherited from operator doctrine, last restated "
+            "2026-06-16, still load-bearing."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="assumption_surfacing",
+        prompt=(
+            "Assumption surfacing: which assumptions are implicit and undocumented? "
+            "What if the opposite of the core assumption were true?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Assumes agents read the ledger before writing. If they do not, the "
+            "guard is advisory and the invariant rests on goodwill."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="operator_2am",
+        prompt=(
+            "The 2am operator question: you are on-call at 2am and this is broken. "
+            "What do you need that the design does not provide?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "A half-emitted merge leaves no single command that says which side "
+            "won. Needs a `--explain` that replays the decision."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="reversibility",
+        prompt=(
+            "Reversibility: one-way door or two-way? If this must be reversed in "
+            "12 months, what does that cost?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Two-way door. The daemon alternative can be adopted later without "
+            "unwinding this — the merge lane simply becomes one client."
+        ),
+        multiline=True,
+    ),
+    Question(
+        id="scope_minimization",
+        prompt=(
+            "Scope minimization: what is the smallest version that delivers value? "
+            "If you had half the time, what would you cut?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Smallest: the read-only review mode alone. Cut the merge lane; it is "
+            "the half that carries the Layer-2 risk."
+        ),
+        multiline=True,
+    ),
+    # The skill's closing question — "always ask last". Forward-looking, so it is
+    # not one of the seven techniques, but it is captured on the same channel and
+    # both surviving interview records carried it.
+    Question(
+        id="downstream_adrs",
+        prompt=(
+            "Closing question: what subsequent decisions does this force? What ADRs "
+            "will we need to write because of this one?"
+        ),
+        section="Forcing Functions",
+        # Not `required`: an unanswered forcing function must never depend on an
+        # interactive confirm. `check_interview_complete` routes missing REQUIRED
+        # fields through `_confirm("Create document anyway?")`, which has no answer
+        # in an agent or CI context — it exits 130. Operator canon forbids gating
+        # work on a TTY. The forcing lives on channels that do not need one: the
+        # skill mandates asking, the template always renders the section, and an
+        # unfilled `_[Author: ...]_` prompt is caught downstream by the placeholder
+        # detector in `gzkit.governance.trust_audits.adr_sections`.
+        required=False,
+        example=(
+            "Forces ADR-pool.worktree-parallel-agents (the capability that consumes "
+            "this). May force a state-doctrine amendment naming the "
+            "parallel=Layer-3-until-merge boundary."
+        ),
+        multiline=True,
+    ),
 ]
 
 

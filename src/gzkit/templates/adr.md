@@ -79,6 +79,46 @@ date: {date}
 
 {alternatives}
 
+## Forcing Functions
+
+<!-- The seven techniques `gz-adr-create` SKILL.md declares non-negotiable, plus
+     its closing question. Agent drafts each against session evidence; the
+     operator audits, names what was missed, and confirms
+     (AGENTS.md § OPERATOR ECONOMY OF EFFORT #4) — this is agent labor, not
+     operator typing. -->
+
+### Pre-Mortem
+
+{pre_mortem}
+
+### What Would Have to Be True
+
+{wwhtbt}
+
+### Constraint Archaeology
+
+{constraint_archaeology}
+
+### Assumption Surfacing
+
+{assumption_surfacing}
+
+### The 2am Operator Question
+
+{operator_2am}
+
+### Reversibility
+
+{reversibility}
+
+### Scope Minimization
+
+{scope_minimization}
+
+### Downstream Decisions Forced
+
+{downstream_adrs}
+
 ## Attestation Block
 
 | Term | Status | Attested By | Date | Reason |

@@ -392,7 +392,15 @@ def _render_promoted_adr_content(
     the upsert becomes idempotent rather than load-bearing.
     """
     from gzkit.templates import render_template  # noqa: PLC0415
-    from gzkit.templates.author_prompts import PERSONA_PROMPT  # noqa: PLC0415
+    from gzkit.templates.author_prompts import AUTHOR_PROMPTS, PERSONA_PROMPT  # noqa: PLC0415
+
+    # Scaffold defaults for every ADR section this function does not derive from the
+    # pool document. Promotion enumerated its template variables by hand, so a new
+    # template section made it raise `MissingTemplateVariableError` — the same
+    # coupling the interview path already solved by merging AUTHOR_PROMPTS. Merged
+    # UNDER the explicit keyword arguments below, so anything promotion genuinely
+    # derives still wins and only the un-derived sections fall back to a prompt.
+    scaffold_defaults = dict(AUTHOR_PROMPTS["adr"])
 
     intent = (
         _optional_pool_section(pool_content, "Intent")
@@ -405,37 +413,39 @@ def _render_promoted_adr_content(
         "tracked scope:\n\n" + "\n".join(f"- {item}" for item in scope_items)
     )
 
-    content = render_template(
-        "adr",
+    derived: dict[str, str] = {
         # A pool ADR carries no persona — promotion is the first moment the ADR
         # has agents working on it, so the prompt is authored here rather than
         # inherited.
-        persona=PERSONA_PROMPT,
-        kind=kind,
-        id=target_adr_id,
-        status=status,
-        semver=semver,
-        lane=lane,
-        parent=parent,
-        date=promote_date,
-        title=title,
-        intent=intent,
-        decision=decision,
-        positive_consequences=(
+        "persona": PERSONA_PROMPT,
+        "kind": kind,
+        "id": target_adr_id,
+        "status": status,
+        "semver": semver,
+        "lane": lane,
+        "parent": parent,
+        "date": promote_date,
+        "title": title,
+        "intent": intent,
+        "decision": decision,
+        "positive_consequences": (
             "- Promotion preserves backlog intent as executable ADR scope.\n"
             "- Checklist items now map 1:1 to generated OBPI briefs immediately."
         ),
-        negative_consequences=(
+        "negative_consequences": (
             "- Promotion fails closed when the pool ADR lacks actionable execution scope."
         ),
-        decomposition_scorecard=scorecard.to_markdown(),
-        checklist=checklist_seed,
-        qa_transcript=(
+        "decomposition_scorecard": scorecard.to_markdown(),
+        "checklist": checklist_seed,
+        "qa_transcript": (
             f"Promotion derived from `{pool_adr_id}` on {promote_date}; executable scope "
             "was carried forward from the pool ADR instead of reseeded as placeholders."
         ),
-        alternatives="- Keep this work in the pool backlog until reprioritized.",
-    )
+        "alternatives": "- Keep this work in the pool backlog until reprioritized.",
+    }
+    # Scaffold defaults first so anything promotion genuinely derives overrides its
+    # prompt; only sections promotion does not derive fall back to `_[Author: ...]_`.
+    content = render_template("adr", **{**scaffold_defaults, **derived})
     content = _upsert_frontmatter_value(content, "promoted_from", pool_adr_id)
     preserved_sections: list[tuple[str, str]] = [
         ("Target Scope", _required_pool_section(pool_content, "Target Scope"))
