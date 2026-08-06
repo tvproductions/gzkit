@@ -1047,6 +1047,40 @@ def handoff_resume_authorized_event(
     )
 
 
+def session_exit_bookmark_skipped_event(
+    *,
+    session_id: str,
+    exit_reason: str,
+    handoff_path: str,
+) -> LedgerEvent:
+    """Record that the exit beat fired and deliberately booked nothing.
+
+    Operator ruling 2026-08-05: the bookmark is a safety valve, so when an
+    authored handoff already covers the session and provably nothing has happened
+    since, a bookmark is noise — *"if we have a proper fresh handoff and a clean
+    tree, skip the bookmark."*
+
+    The skip is RECORDED rather than silent because GHI #756's whole class was
+    *"a governed verb whose trigger was never specified — the surface passes every
+    test that asks 'does it work?' and fails the only question that matters,
+    'does it fire?'"*. A silent skip is indistinguishable from a crashed hook, and
+    would reintroduce exactly that ambiguity one layer down. This event is the
+    difference between "chose not to" and "could not".
+
+    ``handoff_path`` names the authored handoff that made the bookmark redundant,
+    so the skip can be audited against the document it deferred to.
+    """
+    return LedgerEvent(
+        event="session_exit_bookmark_skipped",
+        id=session_id,
+        extra={
+            "session_id": session_id,
+            "exit_reason": exit_reason,
+            "handoff_path": handoff_path,
+        },
+    )
+
+
 def handoff_resume_decided_event(
     *,
     session_id: str,

@@ -9,6 +9,7 @@ minimum-information fields is absent; and grandfathers pre-cutover events.
 from __future__ import annotations
 
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -509,3 +510,78 @@ class TestLockHandoffCouplingDefaultPipeline(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
+    """ "Exists on disk" is not the durability the doctrine means (GHI #759).
+
+    Token-block § Doctrine Foundation: *"A token cannot be surrendered without a
+    register entry. **Memory is not evidence**"*. A file present only in one
+    working tree IS memory in that sense — it vanishes with the checkout and no
+    second party or later audit can read it. The `Path.exists()` arm cannot see
+    the difference, which is how a `handoff_path` reached the committed ledger
+    with no referent in a fresh clone while `gz check` exited 0.
+
+    Staged counts (operator ruling 2026-08-05: *"staged counts as durable"*),
+    which is what makes the exit beat's `git add` sufficient.
+    """
+
+    @staticmethod
+    def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["git", "-C", str(root), *args],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            check=True,
+        )
+
+    def _repo(self, tmp: str) -> Path:
+        root = Path(tmp)
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        self._git(root, "config", "user.email", "t@e.com")
+        self._git(root, "config", "user.name", "t")
+        return root
+
+    def _seed(self, root: Path) -> None:
+        _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
+        _write_handoff(root)
+
+    def test_an_untracked_referent_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._seed(root)
+            errors = validate_lock_handoff_coupling(root)
+        self.assertTrue(errors, "an untracked register entry must not satisfy the coupling")
+        self.assertIn("NOT in git's index", errors[0].message)
+
+    def test_a_staged_referent_passes(self) -> None:
+        """The exit beat stages rather than commits; that must be enough."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._seed(root)
+            self._git(root, "add", "-A")
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)
+
+    def test_a_committed_referent_passes(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._seed(root)
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-qm", "land")
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)
+
+    def test_no_git_skips_the_durability_arm_rather_than_failing_everything(self) -> None:
+        """None (unknown) and empty-set (nothing tracked) must stay distinct.
+
+        Failing a whole governance run because git is absent is the false alarm
+        that gets a check disabled. The `exists()` arm still binds without git.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)  # deliberately NOT a git repo
+            self._seed(root)
+            errors = validate_lock_handoff_coupling(root)
+        self.assertEqual([], errors)

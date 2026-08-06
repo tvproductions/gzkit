@@ -323,8 +323,15 @@ def newest_handoff(project_root: Path) -> Path | None:
     authorship surrenders a token); "who wrote it" is the right question here.
     """
     from gzkit.handoff_api import list_handoffs  # noqa: PLC0415  (avoids an import cycle)
-    from gzkit.session_exit import FLOOR_BOOKMARK_AGENT  # noqa: PLC0415  (same cycle)
+    from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415  (same cycle)
 
+    # `selection_rank`'s rule, expressed for an ALREADY-SORTED newest-first walk:
+    # take the first authored candidate, else the first floor seen. Equivalent to
+    # `max(..., key=selection_rank)` and deliberately not written that way — this
+    # is a PreToolUse hot path, and max() would read every file in the corpus to
+    # answer what early exit usually answers from one. The differential test in
+    # `tests/governance/test_handoff_selection.py` is what holds the two readers
+    # to the same answer, since sharing the constant alone cannot.
     floor: Path | None = None
     for info in list_handoffs(base_path=project_root):
         path = Path(info.path)
@@ -341,7 +348,7 @@ def newest_handoff(project_root: Path) -> Path | None:
             return candidate
         if frontmatter.get("abandoned"):
             continue
-        if frontmatter.get("agent") == FLOOR_BOOKMARK_AGENT:
+        if is_floor_bookmark(frontmatter.get("agent")):
             # First one wins: the walk is newest-first, so this is the newest
             # floor. Held, not returned, until the corpus is known to carry no
             # authored handoff.

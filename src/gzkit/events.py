@@ -842,6 +842,35 @@ class AirlockOutEvent(_EventBase):
     event: Literal["airlock_out"]
 
 
+class SessionExitBookmarkSkippedEvent(_EventBase):
+    """session_exit_bookmark_skipped event — the exit beat chose not to book.
+
+    Operator ruling 2026-08-05: the floor bookmark is a safety valve, so when an
+    authored handoff already covers the session and provably nothing has happened
+    since, there is nothing to relieve — *"if we have a proper fresh handoff and a
+    clean tree, skip the bookmark."* Emitting one at every exit is what made the
+    artifact carry no information; a bookmark's PRESENCE should mean something was
+    unfinished.
+
+    Recorded rather than silent on purpose. GHI #756's whole class was *"a
+    governed verb whose trigger was never specified — the surface passes every
+    test that asks 'does it work?' and fails the only question that matters,
+    'does it fire?'"*. A skip that leaves no trace is indistinguishable from a
+    crashed hook, which would reintroduce that ambiguity one layer down. This
+    event is the difference between "chose not to" and "could not".
+
+    ``handoff_path`` names the authored handoff the beat deferred to, so the skip
+    can be audited against the document that justified it.
+    """
+
+    event: Literal["session_exit_bookmark_skipped"]
+    session_id: str = Field(..., min_length=1, description="Harness session that exited")
+    exit_reason: str = Field(..., min_length=1, description="Harness-reported exit reason")
+    handoff_path: str = Field(
+        ..., min_length=1, description="Authored handoff that made the bookmark redundant"
+    )
+
+
 class HandoffResumeAuthorizedEvent(_EventBase):
     """handoff_resume_authorized event — the operator ruled on a resumed handoff.
 

@@ -250,7 +250,7 @@ def floor_bookmark_agent() -> str | None:
     the honest fallback — never a hardcoded duplicate of the identity.
     """
     try:
-        from gzkit.session_exit import FLOOR_BOOKMARK_AGENT
+        from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT
     except Exception:  # noqa: BLE001  (any import failure degrades, never raises)
         return None
     return FLOOR_BOOKMARK_AGENT

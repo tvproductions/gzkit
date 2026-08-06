@@ -42,6 +42,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         return []
 
     claims = _index_claims(events)
+    index = _git_index_paths(project_root)
     errors: list[ValidationError] = []
     for ev in events:
         if ev.event != "obpi_lock_released":
@@ -79,6 +80,23 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
                 )
             )
             continue
+        if index is not None and str(handoff_path_rel).replace("\\", "/") not in index:
+            errors.append(
+                ValidationError(
+                    type="lock_handoff_coupling",
+                    artifact=obpi_id,
+                    message=(
+                        f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
+                        f"ts={ev.ts!r}) references handoff_path {handoff_path_rel!r} "
+                        f"which exists on disk but is NOT in git's index. A register "
+                        f"entry that lives only in one working tree is the 'memory is "
+                        f"not evidence' clause this validator enforces — it vanishes "
+                        f"with the checkout and cannot be read by any other party. "
+                        f"Stage it (`git add`) or commit it (GHI #759)."
+                    ),
+                )
+            )
+            continue
         try:
             handoff_content = handoff_abs.read_text(encoding="utf-8")
         except OSError:
@@ -99,6 +117,38 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         errors.extend(_check_mode(obpi_id, agent, ev.ts, handoff_content))
 
     return errors
+
+
+def _git_index_paths(project_root: Path) -> frozenset[str] | None:
+    """Every path in git's index, or None when git cannot answer (GHI #759).
+
+    "In the index" is the durability test, not "on disk". A file that exists only
+    in one working tree is exactly what token-block § Doctrine Foundation excludes
+    when it says *"memory is not evidence"* — it vanishes with the checkout and no
+    second party or later audit can read it. The `Path.exists()` test this sits
+    beside cannot see that difference, which is how a `handoff_path` was committed
+    to the ledger with no referent in a fresh clone while `gz check` exited 0.
+
+    STAGED counts, by operator ruling 2026-08-05 (*"staged counts as durable"*).
+    `git ls-files` lists index entries, so a `git add`-ed file is reported before
+    any commit — which is precisely what makes the exit beat's staging sufficient.
+
+    Returns None rather than an empty set when git is unavailable, and the caller
+    SKIPS the check on None instead of failing every path. Distinguishing them is
+    the point: an empty set means git answered "nothing is tracked" and every
+    reference is genuinely undurable; None means we do not know, and failing a
+    whole governance run because git is missing would be a false alarm of the kind
+    that gets a check disabled. The `exists()` arm still binds either way.
+    """
+    from gzkit.utils import git_cmd  # noqa: PLC0415 — avoids an import cycle at module load
+
+    try:
+        rc, out, _ = git_cmd(project_root, "ls-files")
+    except (OSError, ValueError):
+        return None
+    if rc != 0:
+        return None
+    return frozenset(line.strip() for line in out.splitlines() if line.strip())
 
 
 def _find_cutover_ts(events: list) -> datetime | None:

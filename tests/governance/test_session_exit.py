@@ -9,6 +9,7 @@ token surrender the session did not perform.
 
 from __future__ import annotations
 
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -161,3 +162,173 @@ class SessionEndIsShippedToAdoptersTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
+    """The bookmark is a safety valve; it should not fire when there is nothing
+    to relieve (operator ruling 2026-08-05).
+
+    Emitting one at every session end made the artifact carry no information: a
+    bookmark's PRESENCE should mean something was unfinished. The skip predicate
+    is "provably nothing has happened since the authored handoff was written",
+    not "the handoff looks recent" — age measures when a document was written,
+    never whether it still describes reality.
+    """
+
+    def _repo(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
+            subprocess.run(["git", "-C", str(root), "config", key, val], check=True)
+        return root
+
+    def _commit(self, root: Path, message: str) -> None:
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+        subprocess.run(["git", "-C", str(root), "commit", "-qm", message], check=True)
+
+    def _authored(self, root: Path, name: str = "20260101T000000Z-real.md") -> Path:
+        path = root / ".gzkit" / "handoffs" / name
+        path.write_text(
+            "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            "timestamp: '2026-01-01T00:00:00Z'\nagent: claude-code\n---\n\n"
+            "## Decisions Made\n\n- [agent-chose] body\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def test_skips_when_an_authored_handoff_covers_a_clean_tree(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            self._commit(root, "land handoff")
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertFalse(result.written)
+            self.assertTrue(result.skipped, "a deliberate no-op must not read as a failure")
+
+    def test_the_skip_is_recorded_on_the_ledger_not_silent(self):
+        """A silent skip is indistinguishable from a crashed hook — the exact
+        does-it-fire ambiguity GHI #756 was filed to close."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            self._commit(root, "land handoff")
+            book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            ledger = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+            self.assertIn("session_exit_bookmark_skipped", ledger)
+            self.assertIn("20260101T000000Z-real.md", ledger)
+
+    def test_books_when_work_landed_after_the_handoff(self):
+        """The hole a freshness test would leave: a recent handoff, then real work,
+        all committed. The handoff is young and no longer describes reality."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            self._commit(root, "land handoff")
+            (root / "src.py").write_text("x = 1\n", encoding="utf-8")
+            self._commit(root, "work after the handoff")
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.written)
+
+    def test_books_when_the_tree_is_dirty(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            self._commit(root, "land handoff")
+            (root / "wip.py").write_text("unfinished\n", encoding="utf-8")
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.written)
+
+    def test_books_when_the_authored_handoff_is_untracked(self):
+        """Staged or committed counts as durable; untracked does not survive the tree."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            (root / "seed.txt").write_text("x\n", encoding="utf-8")
+            self._commit(root, "seed")
+            self._authored(root)  # written, never added
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.written)
+
+    def test_books_when_only_floor_bookmarks_exist(self):
+        """No authored handoff means nothing covers the session, whatever else is true."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            (root / "seed.txt").write_text("x\n", encoding="utf-8")
+            self._commit(root, "seed")
+            first = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(first.written)
+            self._commit(root, "land bookmark")
+            second = book_exit_bookmark(root, session_id="s2", exit_reason="clear")
+            self.assertTrue(second.written, "a floor bookmark must not cover the next session")
+
+    def test_a_staged_bookmark_does_not_block_the_next_skip(self):
+        """The two operator rulings cancel out without the handoffs-dir exclusion.
+
+        Staging makes `git status --porcelain` report the bookmark, so an unscoped
+        cleanliness test would read the PREVIOUS session's bookmark as a dirty
+        tree, refuse to skip, and write another — each bookmark guaranteeing the
+        next, forever, with nothing failing loudly.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            self._commit(root, "land handoff")
+            stray = root / ".gzkit" / "handoffs" / "20260102T000000Z-session-exit-bookmark.md"
+            stray.write_text(
+                "---\nmode: CHECKPOINT\nadr_id: null\nbranch: main\n"
+                "timestamp: '2026-01-02T00:00:00Z'\nagent: gzkit-session-exit\n---\n\n"
+                "## Decisions Made\n\n- [agent-chose] floor\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "-C", str(root), "add", "--", str(stray)], check=True)
+            result = book_exit_bookmark(root, session_id="s2", exit_reason="clear")
+            self.assertTrue(result.skipped, "a staged bookmark must not count as a dirty tree")
+
+    def test_a_written_bookmark_is_staged(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            (root / "seed.txt").write_text("x\n", encoding="utf-8")
+            self._commit(root, "seed")
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.written)
+            self.assertTrue(result.staged)
+            staged = subprocess.run(
+                ["git", "-C", str(root), "diff", "--cached", "--name-only"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            ).stdout
+            self.assertIn("session-exit-bookmark", staged)
+
+    def test_a_staged_bookmark_rides_the_next_commit(self):
+        """The property staging buys: `git commit` commits the INDEX, so the
+        referent can no longer land after the ledger event that cites it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            (root / "seed.txt").write_text("x\n", encoding="utf-8")
+            self._commit(root, "seed")
+            book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            (root / "later.py").write_text("y = 2\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "--", "later.py"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "unrelated"], check=True)
+            tree = subprocess.run(
+                ["git", "-C", str(root), "ls-tree", "-r", "--name-only", "HEAD"],
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=True,
+            ).stdout
+            self.assertIn("session-exit-bookmark", tree)
+
+    def test_no_git_still_books_rather_than_skipping(self):
+        """Fail toward writing: a spurious bookmark is noise, a missing one is
+        lost context, and this surface exists to prevent the second."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit" / "handoffs").mkdir(parents=True)
+            self._authored(root)
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.written)

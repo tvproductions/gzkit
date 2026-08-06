@@ -1662,6 +1662,27 @@
     "airlock_out": {
       "required": []
     },
+    "session_exit_bookmark_skipped": {
+      "required": [
+        "session_id",
+        "exit_reason",
+        "handoff_path"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "exit_reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "handoff_path": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "handoff_resume_authorized": {
       "required": [
         "session_id",

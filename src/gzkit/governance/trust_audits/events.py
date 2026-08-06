@@ -19,6 +19,16 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "session_exit_bookmark_skipped": (
+        "The exit beat fired and deliberately booked nothing, because an authored "
+        "handoff already covers the session and provably nothing has happened since "
+        "(operator ruling 2026-08-05). It records a NON-event: no artifact was "
+        "created, so there is no node to add and no edge to draw — the handoff it "
+        "names is already a graph node via its own frontmatter. It exists so a "
+        "deliberate skip is distinguishable from a crashed hook, which is the "
+        "'does it fire?' ambiguity GHI #756 was filed to close; that is an audit "
+        "property, not a lineage one."
+    ),
     "handoff_resume_authorized": (
         "Operator ruling on a resumed handoff (GHI #574), read by "
         "`gzkit.handoff_resume_gate` to lift the Operator Authorization Gate for one "
