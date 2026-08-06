@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "0fc08f17e38ac4def1041d5ae1e74e32dad87bcfe7d7841f1d248425a55f0822",
-  "corpus_entry_count": 52,
-  "rendition_fingerprint": "f3a878830fb8b285e9b8e946d1e55355a8908b0be133985eda39e14d3fbb7662",
-  "committed_ts": "2026-08-02T15:24:57.961633+00:00",
+  "corpus_fingerprint": "b5aad5b8a75c16ec2c120c4c746199c87561c5b894d1701caf09f9d380da2096",
+  "corpus_entry_count": 53,
+  "rendition_fingerprint": "5b0a678605d89dd9c95d6f6e49c07954ede8824140f471036ea450b6de1026ab",
+  "committed_ts": "2026-08-06T12:34:29.295509+00:00",
   "attestor": "g0",
-  "attestation_text": "diet pass — relieve the ceiling and land pattern-9 — AGENTS.md § DO IT RIGHT taxonomy pointer recomposed count-agnostic (eight-pattern → failure-mode taxonomy) so rule extensions never re-stale the pointer; coupled to agent-failure-modes.md rule-version 0.6.0 adding pattern 9 Metagaming / gaming the gate (GPT-5.6 §§ 7.4, 9.1.3.6, 9.2.2); one-line delta, invariant floor 9039B unchanged, surface weight 2432/2600 after the 71-line diet (token-block-discipline 0.3.1, skill-surface-sync 0.10.1)"
+  "attestation_text": "land the canon, raise the ceiling; i won't worry about adjusting those until we hit a stable 1.0 — the three-term canon (transit/exchange/handoff) is seated verbatim as invariant-tier entry corpus-operator-doctrine-verbatim-canon-2026-08-06T12:07:45.501673+00:00 (954 B) in section operator-doctrine-verbatim-canon, which the survival declaration ranks 1 of 20 (must-survive). No ceiling was raised because none needed it: the gzkit AGENTS.md budget is already 50000 chars against this 33153 B render, and _PROJECT_DOC_BUDGET_CEILING_BYTES was decoupled from the vendor cap to 65536 by the 2026-07-06 ruling. The remaining 32768 B number is Codex's project_doc_max_bytes, which surface_delivery_witness.py:53-58 states is not gzkit's to raise and which it reports as advisory, never fail-closed. Byte evidence invariant=9993B compressible=835B->23160B total=33153B setpoint=heavy; no compressible entry was dropped or rewritten."
 }

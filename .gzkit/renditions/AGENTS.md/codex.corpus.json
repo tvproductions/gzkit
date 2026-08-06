@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "0fc08f17e38ac4def1041d5ae1e74e32dad87bcfe7d7841f1d248425a55f0822",
-  "corpus_entry_count": 52,
-  "rendition_fingerprint": "85cb2c974a3788cfb4c9924cc32f6f588d5e2e8fd8866959fd0821f6320e8040",
-  "committed_ts": "2026-07-22T10:32:27.694113+00:00",
+  "corpus_fingerprint": "b5aad5b8a75c16ec2c120c4c746199c87561c5b894d1701caf09f9d380da2096",
+  "corpus_entry_count": 53,
+  "rendition_fingerprint": "a3832c06f6e509597bb30b43d41b1b3fba847e4207083bd4f8b800c60d86ca73",
+  "committed_ts": "2026-08-06T12:34:42.333871+00:00",
   "attestor": "g0",
-  "attestation_text": "i don't attest to ghi fixes. — GHI #635 direct repair under operator canon (AGENTS.md § Operator Doctrine: 'GHIs are AUTHORIZED for direct repair, always... the GHI is the work order and the receipt'). Rendition text is byte-identical to the prior committed rendition (cmp clean); only the corpus provenance fingerprint advances, re-attesting derivation after the duplicate invariant entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 was retired. Invariant floor 9039B, total 13606B, setpoint lite — all unchanged."
+  "attestation_text": "land the canon, raise the ceiling; i won't worry about adjusting those until we hit a stable 1.0 — the three-term canon (transit/exchange/handoff) is seated verbatim as invariant-tier entry corpus-operator-doctrine-verbatim-canon-2026-08-06T12:07:45.501673+00:00 (954 B) in section operator-doctrine-verbatim-canon, which the survival declaration ranks 1 of 20 (must-survive). No ceiling was raised because none needed it: the gzkit AGENTS.md budget is already 50000 chars, and _PROJECT_DOC_BUDGET_CEILING_BYTES was decoupled from the vendor cap to 65536 by the 2026-07-06 ruling. This codex rendition totals 14563 B, roughly 18 KB under Codex's 32768 B project_doc_max_bytes, so no delivery-cap exposure exists on this consumer at all. Byte evidence invariant=9993B compressible=835B->4570B total=14563B setpoint=lite; no compressible entry was dropped or rewritten."
 }
