@@ -770,6 +770,16 @@ uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete 
 uv run gz handoff archive --older-than 30d            # move eligible handoffs into archive/
 ```
 
+The ARB receipt store carries the sibling retention verb (GHI #594), on the same
+move-not-delete shape and the same `--older-than` grammar. A receipt cited in the
+ledger is never relocated — receipt ids are the canonical Heavy-lane attestation
+evidence, so a citation must keep resolving:
+
+```bash
+uv run gz arb archive --older-than 30d --dry-run  # preview; reports the cited-skip count
+uv run gz arb archive --older-than 30d            # move eligible receipts into archive/
+```
+
 **Resuming requires an operator ruling, at every freshness level (GHI #574).**
 The resume gate (`.claude/hooks/handoff-resume-gate.py`) refuses every mutating
 tool call until a `proceed` ruling is booked with `gz handoff decide`. The

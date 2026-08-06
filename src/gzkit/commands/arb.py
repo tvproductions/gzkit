@@ -14,6 +14,7 @@ deep-dive, and `src/gzkit/arb/` for the implementation.
 from __future__ import annotations
 
 import sys
+from pathlib import Path
 
 from gzkit.arb.advisor import collect_arb_advice, render_arb_advice_text
 from gzkit.arb.patterns import collect_patterns, render_patterns_compact, render_patterns_markdown
@@ -225,8 +226,63 @@ def arb_patterns_cmd(
     return 0
 
 
+def arb_archive_cmd(
+    *,
+    older_than: str = "30d",
+    dry_run: bool = False,
+    as_json: bool = False,
+) -> int:
+    """Relocate aged, uncited ARB receipts into artifacts/receipts/archive/."""
+    from datetime import UTC, datetime
+
+    from gzkit.arb.archive import execute_receipt_archive, plan_receipt_archive
+    from gzkit.arb.paths import receipts_root
+    from gzkit.cli.helpers.durations import parse_older_than_days
+
+    older_than_days = parse_older_than_days(older_than)
+    try:
+        root = receipts_root()
+        plan = plan_receipt_archive(
+            root=root,
+            base_path=Path.cwd(),
+            older_than_days=older_than_days,
+            now=datetime.now(UTC),
+        )
+        result = None if dry_run else execute_receipt_archive(plan, root=root)
+    except OSError as exc:
+        print(f"arb: internal error: {exc}", file=sys.stderr)
+        return _INTERNAL_ERROR
+
+    payload = result if result is not None else plan
+    if as_json:
+        sys.stdout.write(payload.model_dump_json(indent=2) + "\n")
+        return 0
+
+    header = "Receipt archive plan (dry-run)" if dry_run else "Receipt archive"
+    lines = [
+        header,
+        f"  Root: {root}",
+        f"  Older than: {older_than_days}d",
+        f"  Eligible: {len(plan.eligible)}",
+        f"  Skipped (cited in ledger): {len(plan.skipped_cited)}",
+        f"  Skipped (newer than threshold): {len(plan.skipped_recent)}",
+        f"  Skipped (undatable): {len(plan.skipped_undatable)}",
+        f"  Skipped (name conflict in archive/): {len(plan.skipped_conflict)}",
+        f"  Skipped (not ARB-emitted): {len(plan.skipped_foreign)}",
+    ]
+    if result is None:
+        lines.append("  Use without --dry-run to relocate.")
+    else:
+        lines.append(f"  Moved: {len(result.moved)}")
+        if result.skipped_conflict:
+            lines.append(f"  Skipped at execution (race): {len(result.skipped_conflict)}")
+    sys.stdout.write("\n".join(lines) + "\n")
+    return 0
+
+
 __all__ = [
     "arb_advise_cmd",
+    "arb_archive_cmd",
     "arb_coverage_cmd",
     "arb_patterns_cmd",
     "arb_ruff_cmd",

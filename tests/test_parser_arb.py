@@ -47,6 +47,7 @@ class TestArbParserRegistration(unittest.TestCase):
             "validate",
             "advise",
             "patterns",
+            "archive",
         }
         self.assertEqual(set(arb_commands.keys()), expected)
 

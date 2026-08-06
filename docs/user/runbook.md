@@ -763,6 +763,19 @@ uv run gz handoff archive --older-than 30d --dry-run
 uv run gz handoff archive --older-than 30d
 ```
 
+The ARB receipt store accretes the same way and has the same cure. `gz arb
+archive` relocates receipts older than the threshold into
+`artifacts/receipts/archive/`, skipping any whose id is cited in the ledger —
+those are Heavy-lane attestation evidence and must stay where citations resolve
+(`AGENTS.md` § Attestation). Nothing is deleted; there is no `purge` verb, by
+design (GHI #594 reserves the retention window and purge authorization for an
+operator ruling).
+
+```bash
+uv run gz arb archive --older-than 30d --dry-run
+uv run gz arb archive --older-than 30d
+```
+
 ### Flow 2: ADR Closeout (OBPIs Completed)
 
 Use an ADR whose OBPIs are completed:

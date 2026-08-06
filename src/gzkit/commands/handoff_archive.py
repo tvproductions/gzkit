@@ -14,6 +14,7 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gzkit.cli.helpers.durations import parse_older_than_days
 from gzkit.commands.common import console, get_project_root
 from gzkit.handoff_archive import ArchivePlan, ArchiveResult, execute_archive, plan_archive
 
@@ -27,17 +28,14 @@ _SKIP_LABELS: tuple[str, ...] = (
 
 
 def _parse_older_than(raw: str) -> int:
-    """Parse an ``--older-than`` duration like ``30d`` or ``30`` into a day count."""
-    token = raw.strip().lower().removesuffix("d")
-    try:
-        days = int(token)
-    except ValueError:
-        console.print(f"[red]invalid --older-than value:[/red] {raw!r} (expected e.g. 30d)")
-        raise SystemExit(1) from None
-    if days < 0:
-        console.print(f"[red]invalid --older-than value:[/red] {raw!r} (must be non-negative)")
-        raise SystemExit(1)
-    return days
+    """Parse an ``--older-than`` duration like ``30d`` or ``30`` into a day count.
+
+    Delegates to the shared grammar in :mod:`gzkit.cli.helpers.durations` so this
+    verb and ``gz arb archive`` cannot drift into accepting different values under
+    the same flag name (GHI #594). Retained as a named local so this module's call
+    sites and tests keep their existing shape.
+    """
+    return parse_older_than_days(raw)
 
 
 def _payload(plan: ArchivePlan, result: ArchiveResult | None, *, dry_run: bool) -> dict:

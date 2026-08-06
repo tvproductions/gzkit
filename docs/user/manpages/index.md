@@ -144,6 +144,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz arb validate`](arb-validate.md) | Validate recent receipts against JSON schemas |
 | [`gz arb advise`](arb-advise.md) | Summarize recent receipts into recommendations |
 | [`gz arb patterns`](arb-patterns.md) | Extract recurring anti-patterns from receipts |
+| [`gz arb archive`](arb-archive.md) | Move aged, uncited receipts into `artifacts/receipts/archive/` |
 
 ---
 

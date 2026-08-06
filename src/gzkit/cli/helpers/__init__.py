@@ -1,6 +1,7 @@
 """CLI helper modules for gzkit."""
 
 from gzkit.cli.helpers.common_flags import add_common_flags
+from gzkit.cli.helpers.durations import parse_older_than_days
 from gzkit.cli.helpers.epilog import build_epilog
 from gzkit.cli.helpers.standard_options import (
     add_adr_option,
@@ -18,4 +19,5 @@ __all__ = [
     "add_force_flag",
     "add_json_flag",
     "add_table_flag",
+    "parse_older_than_days",
 ]

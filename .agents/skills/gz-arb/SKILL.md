@@ -5,11 +5,11 @@ description: Wrap QA commands in ARB receipts for attestation evidence. Use when
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-07
+last_reviewed: 2026-08-06
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -53,6 +53,12 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 3. **Summarize recent receipts** — `uv run gz arb advise --limit 20`
 4. **Extract recurring patterns** (optional) — `uv run gz arb patterns`
 5. **Cite receipt IDs in the attestation** per `AGENTS.md` § Attestation
+6. **Bound the store** (periodic, after harvesting) — `uv run gz arb archive --older-than 30d --dry-run`,
+   then without `--dry-run` to relocate. Move-not-delete: aged receipts go to
+   `artifacts/receipts/archive/`, and a receipt whose id is cited in the ledger is
+   never moved, because a citation must keep resolving. Run it AFTER steps 3–4, so
+   the harvest verbs have already read what they were going to read. There is no
+   `purge` verb by design (GHI #594).
 
 ## Example
 
@@ -74,6 +80,7 @@ uv run gz arb advise --limit 10
 - `gz arb validate` — human text by default; `--json` for machine-readable
 - `gz arb advise` — human text; `--json` for machine-readable
 - `gz arb patterns` — Markdown report by default; `--compact` for one-liner; `--json` for machine-readable
+- `gz arb archive` — human summary of the plan/result buckets; `--json` for machine-readable; `--dry-run` classifies without moving
 
 ## Validation
 

@@ -1,7 +1,7 @@
 """ARB (Agent Self-Reporting) subparser registrations for gz CLI.
 
-Registers the `gz arb` subcommand group with 8 verbs: ruff, step, red, ty,
-coverage, validate, advise, patterns.
+Registers the `gz arb` subcommand group with 10 verbs: ruff, step, red, ty,
+typecheck, coverage, validate, advise, patterns, archive.
 
 See `AGENTS.md` § Attestation for the binding rule contract
 (em-dash pattern, canonical invocations, lane behavior) and
@@ -27,6 +27,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "arb_validate_cmd": "gzkit.commands.arb",
     "arb_advise_cmd": "gzkit.commands.arb",
     "arb_patterns_cmd": "gzkit.commands.arb",
+    "arb_archive_cmd": "gzkit.commands.arb",
 }
 
 
@@ -87,6 +88,7 @@ def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
     _register_validate(arb_commands)
     _register_advise(arb_commands)
     _register_patterns(arb_commands)
+    _register_archive(arb_commands)
 
 
 def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
@@ -302,5 +304,46 @@ def _register_patterns(arb_commands: argparse._SubParsersAction) -> None:
             limit=a.limit,
             as_json=a.as_json,
             compact=a.compact,
+        )
+    )
+
+
+def _register_archive(arb_commands: argparse._SubParsersAction) -> None:
+    p = arb_commands.add_parser(
+        "archive",
+        help="Relocate aged, uncited ARB receipts into artifacts/receipts/archive/",
+        description=(
+            "Move-not-delete retention for the receipt store, on the same shape as "
+            "`gz handoff archive`. A receipt is relocated only when it is ARB-emitted, "
+            "older than the threshold, and its id is cited nowhere in the ledger — a "
+            "cited receipt is Heavy-lane attestation evidence and always stays put. "
+            "Nothing is ever deleted; purge is deliberately not implemented (GHI #594 "
+            "reserves retention-window and purge-authorization for an operator ruling)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz arb archive --older-than 30 --dry-run",
+                "gz arb archive --older-than 30",
+                "gz arb archive --older-than 90 --json",
+            ]
+        ),
+    )
+    p.add_argument(
+        "--older-than",
+        default="30d",
+        dest="older_than",
+        help="Age threshold, e.g. 30d. Receipts older than this are eligible (default: 30d).",
+    )
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Classify and report without relocating anything.",
+    )
+    add_json_flag(p)
+    p.set_defaults(
+        func=lambda a: _arb("arb_archive_cmd")(
+            older_than=a.older_than,
+            dry_run=a.dry_run,
+            as_json=a.as_json,
         )
     )
