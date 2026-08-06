@@ -52,12 +52,19 @@ The operator selected "Moderate" (halve current weight; preserve binding-bullet 
 | `CLAUDE.md` | 40,000 chars | 4,000 chars | Already 1,378 chars; 4k provides 2.6k headroom for model-specific addenda |
 | `.claude/rules/*.md` | 16,000 chars/file | 16,000 chars/file | Unchanged; per-file shape audit deferred to OBPI-0.0.54-04 |
 
-Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json` — the single source of truth. The **live enforced** values are whatever that JSON carries (currently higher than these targets); the column above records the doctrine *destination*, deferred to GHI #533 / ADR-0.0.37, not a currently-enforced number.
+Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json` — the single source of truth. The **live enforced** values are whatever that JSON carries (currently higher than these targets); the column above records the doctrine *destination*, deferred to GHI #533 → `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3, not a currently-enforced number.
 
-> The 15,000-char figure above is the doctrine *destination*. During the ADR-0.0.37
-> CMS work the enforced interim budget is higher (GHI #533, ADR-0.0.37). The live
+> The 15,000-char figure above is the doctrine *destination*. During the
+> `ADR-0.35.0` CMS work the enforced interim budget is higher (GHI #533). The live
 > enforced value is always whatever `data/instructions_files_budget.json` carries —
 > the single source of truth — never a number duplicated into prose or tests.
+>
+> The predecessor pointer to `ADR-0.0.37` is **retired**: that ADR went terminal
+> 2026-07-18 (§ Terminal Disposition, "Split-and-Supersede") with its
+> registry-spine OBPIs permanently withdrawn, so no weight-halving work can land
+> there. The successor is corpus-shaped — sections declare `corpus-owned` or
+> `unowned`, the generator materializes owned sections from the corpus, and the
+> unowned byte total is held in a decrease-only ratchet.
 
 ## Per-section targets (OBPI-02 lift guide)
 
