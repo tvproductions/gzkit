@@ -284,6 +284,42 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             result = book_exit_bookmark(root, session_id="s2", exit_reason="clear")
             self.assertTrue(result.skipped, "a staged bookmark must not count as a dirty tree")
 
+    def test_the_handoffs_own_landing_commit_does_not_block_the_skip(self):
+        """The displaced form of the staged-bookmark trap: each handoff's landing
+        commit guaranteeing the next bookmark.
+
+        `gz git-sync` bundles `.gzkit/**` into one `chore: update .gzkit` commit,
+        so the commit that lands an authored handoff routinely carries adjacent
+        files too. A pathspec exclusion only skips commits touching handoffs
+        ALONE, so that bundled landing commit reads as work-since-the-handoff and
+        defeats the skip — the predicate defeated by its own anchor. The
+        exclusion has to be by commit IDENTITY, which is what it always meant.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._authored(root)
+            (root / ".gzkit" / "insights.jsonl").write_text("{}\n", encoding="utf-8")
+            self._commit(root, "chore: update .gzkit (2 files) (gz git-sync)")
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(
+                result.skipped,
+                "a bundled landing commit is the handoff arriving, not work after it",
+            )
+
+    def test_a_staged_but_uncommitted_handoff_still_covers(self):
+        """Clause 2 is "staged counts as durable" (operator ruling) — and a staged
+        handoff has no landing commit at all, so there is no anchor to measure
+        from. Every commit in history predates it, so nothing can postdate it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            (root / "seed.txt").write_text("x\n", encoding="utf-8")
+            self._commit(root, "seed")
+            authored = self._authored(root)
+            subprocess.run(["git", "-C", str(root), "add", "--", str(authored)], check=True)
+            result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
+            self.assertTrue(result.skipped, "staged counts as durable — it needs no commit")
+
     def test_a_written_bookmark_is_staged(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._repo(tmp)

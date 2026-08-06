@@ -174,9 +174,18 @@ def _covering_handoff(project_root: Path) -> str | None:
     1. an authored (non-floor) handoff exists;
     2. it is TRACKED, so it survives this working tree (the operator's ruling
        that staged counts as durable; untracked does not);
-    3. no commit postdates it EXCEPT commits touching only `.gzkit/handoffs/` —
-       which also excludes the commit that landed the handoff itself;
+    3. no commit postdates it — measured as the range AFTER its landing commit,
+       excluding commits touching only `.gzkit/handoffs/`;
     4. the working tree is clean, EXCLUDING `.gzkit/handoffs/`.
+
+    Clause 3 excludes the landing commit by IDENTITY, not by pathspec, and that
+    distinction is the whole clause (GHI #760). `gz git-sync` bundles `.gzkit/**`
+    into one `chore: update .gzkit` commit, so the commit that lands a handoff
+    routinely carries adjacent files and is NOT handoff-only — a pathspec filter
+    reads it as work-since and refuses to skip, every time. That is the clause-4
+    trap displaced one level: each handoff's landing commit guaranteeing the next
+    bookmark. A commit range cannot make that mistake; a path filter cannot avoid
+    it.
 
     Clause 4's exclusion is load-bearing and non-obvious. Once this beat stages
     its bookmark, a bookmark makes `git status --porcelain` report a staged file,
@@ -226,13 +235,17 @@ def _covering_handoff(project_root: Path) -> str | None:
         tracked_rc, _, _ = git_cmd(project_root, "ls-files", "--error-unmatch", "--", authored)
         if tracked_rc != 0:
             return None
-        landed_rc, landed_at, _ = git_cmd(project_root, "log", "-1", "--format=%cI", "--", authored)
-        if landed_rc != 0 or not landed_at.strip():
+        landed_rc, landed_sha, _ = git_cmd(project_root, "log", "-1", "--format=%H", "--", authored)
+        if landed_rc != 0:
             return None
+        # No landing commit means the handoff is staged but uncommitted, which
+        # clause 2 admits as durable. It needs no anchor: every commit in history
+        # predates it, so nothing can postdate it. HEAD is that truth as a range.
+        anchor = landed_sha.strip() or "HEAD"
         since_rc, since, _ = git_cmd(
             project_root,
             "log",
-            f"--since={landed_at.strip()}",
+            f"{anchor}..HEAD",
             "--format=%h",
             "--",
             ".",
