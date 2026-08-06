@@ -174,18 +174,9 @@ def _covering_handoff(project_root: Path) -> str | None:
     1. an authored (non-floor) handoff exists;
     2. it is TRACKED, so it survives this working tree (the operator's ruling
        that staged counts as durable; untracked does not);
-    3. no commit postdates it — measured as the range AFTER its landing commit,
-       excluding commits touching only `.gzkit/handoffs/`;
+    3. no commit postdates it — `commits_since_range` + `HANDOFF_PATHSPEC_EXCLUDE`,
+       which own the anchor-by-identity rule and the reason for it (GHI #760);
     4. the working tree is clean, EXCLUDING `.gzkit/handoffs/`.
-
-    Clause 3 excludes the landing commit by IDENTITY, not by pathspec, and that
-    distinction is the whole clause (GHI #760). `gz git-sync` bundles `.gzkit/**`
-    into one `chore: update .gzkit` commit, so the commit that lands a handoff
-    routinely carries adjacent files and is NOT handoff-only — a pathspec filter
-    reads it as work-since and refuses to skip, every time. That is the clause-4
-    trap displaced one level: each handoff's landing commit guaranteeing the next
-    bookmark. A commit range cannot make that mistake; a path filter cannot avoid
-    it.
 
     Clause 4's exclusion is load-bearing and non-obvious. Once this beat stages
     its bookmark, a bookmark makes `git status --porcelain` report a staged file,
@@ -204,7 +195,11 @@ def _covering_handoff(project_root: Path) -> str | None:
     missing one is lost context, and this surface exists to prevent the second.
     """
     from gzkit.handoff_api import list_handoffs  # noqa: PLC0415 — import cycle
-    from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415 — same cycle
+    from gzkit.handoff_selection import (  # noqa: PLC0415 — same cycle
+        HANDOFF_PATHSPEC_EXCLUDE,
+        commits_since_range,
+        is_floor_bookmark,
+    )
     from gzkit.handoff_validation import parse_frontmatter  # noqa: PLC0415 — same cycle
     from gzkit.utils import git_cmd  # noqa: PLC0415 — same cycle
 
@@ -230,7 +225,6 @@ def _covering_handoff(project_root: Path) -> str | None:
     if authored is None:
         return None
 
-    handoffs_glob = ":(exclude).gzkit/handoffs"
     try:
         tracked_rc, _, _ = git_cmd(project_root, "ls-files", "--error-unmatch", "--", authored)
         if tracked_rc != 0:
@@ -238,23 +232,19 @@ def _covering_handoff(project_root: Path) -> str | None:
         landed_rc, landed_sha, _ = git_cmd(project_root, "log", "-1", "--format=%H", "--", authored)
         if landed_rc != 0:
             return None
-        # No landing commit means the handoff is staged but uncommitted, which
-        # clause 2 admits as durable. It needs no anchor: every commit in history
-        # predates it, so nothing can postdate it. HEAD is that truth as a range.
-        anchor = landed_sha.strip() or "HEAD"
         since_rc, since, _ = git_cmd(
             project_root,
             "log",
-            f"{anchor}..HEAD",
+            commits_since_range(landed_sha),
             "--format=%h",
             "--",
             ".",
-            handoffs_glob,
+            HANDOFF_PATHSPEC_EXCLUDE,
         )
         if since_rc != 0 or since.strip():
             return None
         dirty_rc, dirty, _ = git_cmd(
-            project_root, "status", "--porcelain", "--", ".", handoffs_glob
+            project_root, "status", "--porcelain", "--", ".", HANDOFF_PATHSPEC_EXCLUDE
         )
         if dirty_rc != 0 or dirty.strip():
             return None

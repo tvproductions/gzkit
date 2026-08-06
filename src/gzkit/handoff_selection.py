@@ -29,13 +29,28 @@ Why the identity and not `mode`: a floor bookmark and an operator-authored
 mid-flight checkpoint are BOTH `mode: CHECKPOINT`, so a mode test on the
 selection arms discards the authored document — the opposite of the intent. Mode
 is the right question on the release arm; authorship is the right question here.
+
+This module also owns the corpus's OTHER cross-reader rule: given a handoff, what
+counts as having happened SINCE it (`HANDOFF_PATHSPEC_EXCLUDE`,
+`commits_since_range`). That rule drifted exactly the way selection did — the exit
+beat's skip predicate and the orientation account each built their own range and
+spelled the exclusion pathspec themselves, and each learned the GHI #760 lesson
+in a separate commit with a separate test. The two rules live together because
+they are the same kind of thing about the same corpus, with the same drift risk
+and the same structural fence.
 """
 
 from __future__ import annotations
 
 from typing import Any
 
-__all__ = ["FLOOR_BOOKMARK_AGENT", "is_floor_bookmark", "selection_rank"]
+__all__ = [
+    "FLOOR_BOOKMARK_AGENT",
+    "HANDOFF_PATHSPEC_EXCLUDE",
+    "commits_since_range",
+    "is_floor_bookmark",
+    "selection_rank",
+]
 
 #: Writer identity stamped on every mechanically-written exit-beat bookmark.
 #:
@@ -69,3 +84,33 @@ def selection_rank(agent: str | None, timestamp: Any) -> tuple[bool, Any]:
     because every candidate then carries the same first element.
     """
     return (not is_floor_bookmark(agent), timestamp)
+
+
+#: Git pathspec excluding the handoff corpus from a since-the-handoff query.
+#:
+#: Load-bearing on every such query, for two distinct reasons that both reduce to
+#: "the corpus is not the work": a staged exit bookmark would otherwise read as a
+#: dirty tree, and a later handoff would otherwise read as work the earlier one
+#: failed to describe. Defined HERE rather than in each caller —
+#: `test_the_exclusion_pathspec_appears_only_in_its_defining_module` fails closed
+#: on a second copy anywhere under `src/` or `scripts/`.
+HANDOFF_PATHSPEC_EXCLUDE = ":(exclude).gzkit/handoffs"
+
+
+def commits_since_range(landing_sha: str | None) -> str:
+    """Return the `git log` revision range for commits postdating a handoff.
+
+    Anchored on the landing commit's IDENTITY, never its timestamp. `gz git-sync`
+    bundles `.gzkit/**` into one `chore: update .gzkit` commit, so the commit that
+    lands a handoff routinely carries adjacent files; a `--since=<landing time>`
+    window therefore reports the handoff's own arrival as work it failed to
+    describe, on every handoff, forever. `<sha>..HEAD` cannot make that mistake —
+    a range excludes its own endpoint, and no path filter can (GHI #760).
+
+    An absent sha means the handoff is staged but not yet committed, which needs
+    no anchor: every commit in history predates it, so nothing can postdate it.
+    `HEAD..HEAD` is that fact as a range, and it is empty by construction rather
+    than by luck. Treating the absence as an uncertainty instead is what made a
+    staged handoff unable to cover a session at all.
+    """
+    return f"{(landing_sha or '').strip() or 'HEAD'}..HEAD"

@@ -262,6 +262,26 @@ def floor_bookmark_agent() -> str | None:
     return FLOOR_BOOKMARK_AGENT
 
 
+def handoff_delta_rule() -> tuple[str, object] | None:
+    """Return `(exclusion pathspec, commits_since_range)`, or None without gzkit.
+
+    Imported for the same reason as the writer identity above, and guarded the
+    same way: this script must render orientation even when the package will not
+    import. The honest degradation is to render NO account rather than to restate
+    the rule locally — a local copy is precisely the drift the shared module
+    exists to prevent, and it would be invisible until the two answers disagreed.
+
+    Composes with `_scan_handoffs`, which already returns None on the same
+    condition, so a gzkit that will not import drops the account section whole
+    rather than rendering half of one.
+    """
+    try:
+        from gzkit.handoff_selection import HANDOFF_PATHSPEC_EXCLUDE, commits_since_range
+    except Exception:  # noqa: BLE001  (any import failure degrades, never raises)
+        return None
+    return HANDOFF_PATHSPEC_EXCLUDE, commits_since_range
+
+
 def extract_first_next_step(text: str) -> str | None:
     section = re.search(
         r"^## Immediate Next Steps\s*\n(.*?)(?=^## |\Z)",
@@ -399,16 +419,21 @@ def _scan_handoffs(
 def _commits_since_handoff(repo_root: Path, rel_path: str) -> dict[str, object] | None:
     """Commits postdating the handoff, excluding the commit that landed it.
 
-    Anchored on the landing commit's IDENTITY (`<sha>..HEAD`), never its
-    timestamp. `gz git-sync` bundles `.gzkit/**` into one `chore: update .gzkit`
-    commit, so a handoff's landing commit routinely carries adjacent files; a
-    timestamp window would report the handoff's own arrival as work it failed to
-    describe, on every handoff, every session (GHI #760).
+    The anchor rule is IMPORTED, never restated — `gzkit.handoff_selection` owns
+    both the range form and the exclusion pathspec, and owns the reason for each
+    (GHI #760/#762). This module's own subprocess wrapper and boot-hook timeout
+    stay local: what the two readers must share is the question's grammar, not how
+    each of them is allowed to spend the session's boot budget.
 
-    None when git cannot answer — distinct from an empty list, which means git
-    answered and nothing has landed. Collapsing them would render an unreachable
-    git as a clean account, which is the answer that makes a gap look fine.
+    None when git cannot answer OR when gzkit will not import — each distinct from
+    an empty list, which means git answered and nothing has landed. Collapsing
+    them would render an unreachable git as a clean account, which is the answer
+    that makes a gap look fine.
     """
+    rule = handoff_delta_rule()
+    if rule is None:
+        return None
+    pathspec, commits_since_range = rule
     landed = _git_run(
         ["git", "-C", str(repo_root), "log", "-1", "--format=%h", "--", rel_path],
         timeout=REMOTE_QUERY_TIMEOUT_SEC,
@@ -416,20 +441,17 @@ def _commits_since_handoff(repo_root: Path, rel_path: str) -> dict[str, object] 
     if landed is None or landed.returncode != 0:
         return None
     sha = landed.stdout.strip()
-    # No landing commit means the handoff is staged but uncommitted, which needs
-    # no anchor: every commit in history predates it, so nothing can postdate it.
-    anchor = sha or "HEAD"
     completed = _git_run(
         [
             "git",
             "-C",
             str(repo_root),
             "log",
-            f"{anchor}..HEAD",
+            commits_since_range(sha),
             "--format=%h\t%s",
             "--",
             ".",
-            ":(exclude).gzkit/handoffs",
+            pathspec,
         ],
         timeout=REMOTE_QUERY_TIMEOUT_SEC,
     )
@@ -491,8 +513,13 @@ def _tree_is_dirty(repo_root: Path) -> bool | None:
 
     Handoffs are excluded for the reason the exit beat's skip predicate excludes
     them: this session's own staged bookmark is not work the previous handoff
-    failed to account for.
+    failed to account for. Same imported pathspec, so the two cannot come to
+    disagree about what "the corpus is not the work" means.
     """
+    rule = handoff_delta_rule()
+    if rule is None:
+        return None
+    pathspec, _ = rule
     completed = _git_run(
         [
             "git",
@@ -502,7 +529,7 @@ def _tree_is_dirty(repo_root: Path) -> bool | None:
             "--porcelain",
             "--",
             ".",
-            ":(exclude).gzkit/handoffs",
+            pathspec,
         ],
         timeout=REMOTE_QUERY_TIMEOUT_SEC,
     )

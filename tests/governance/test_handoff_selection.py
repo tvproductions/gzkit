@@ -194,5 +194,131 @@ class TestTheIdentityHasExactlyOneDefinition(unittest.TestCase):
     # § The discriminator: if behavior changed but text did not, would it fail?).
 
 
+class TestTheDeltaRuleHasExactlyOneDefinition(unittest.TestCase):
+    """The "what has landed since this handoff" rule must not be re-stated either.
+
+    Selection was coupled under GHI #758 and the DELTA question was left
+    uncoupled, so it drifted the same way: `session_exit._covering_handoff` and
+    `session_orientation` each built their own `<sha>..HEAD` range and each
+    spelled the handoffs exclusion pathspec themselves — four copies across two
+    modules, and each learned the GHI #760 lesson (anchor on identity, never a
+    timestamp) in a separate commit with a separate test.
+
+    Two copies is a convention. The fence is what makes it a mechanism: a reader
+    that wants to ask this question must import the rule, and importing it puts
+    `commits_since_range` in front of them at the same moment.
+    """
+
+    def test_the_exclusion_pathspec_appears_only_in_its_defining_module(self) -> None:
+        owner = REPO_ROOT / "src" / "gzkit" / "handoff_selection.py"
+        offenders: list[str] = []
+        for root in (REPO_ROOT / "src" / "gzkit", REPO_ROOT / "scripts"):
+            for path in root.rglob("*.py"):
+                if path == owner:
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    continue
+                for line in text.splitlines():
+                    # The literal, not the NAME — importers legitimately mention
+                    # HANDOFF_PATHSPEC_EXCLUDE; what may not recur is the string.
+                    if re.search(r"""["']:\(exclude\)\.gzkit/handoffs["']""", line):
+                        offenders.append(f"{path.relative_to(REPO_ROOT)}: {line.strip()}")
+        self.assertEqual(
+            offenders,
+            [],
+            "the handoffs exclusion pathspec is re-stated instead of imported from "
+            "gzkit.handoff_selection; a second copy is how the delta readers drift",
+        )
+
+    def test_an_absent_landing_commit_anchors_at_head(self) -> None:
+        """A staged-but-uncommitted handoff has no landing commit and needs none:
+        every commit in history predates it, so the range is empty (GHI #760)."""
+        from gzkit.handoff_selection import commits_since_range
+
+        self.assertEqual(commits_since_range(None), "HEAD..HEAD")
+        self.assertEqual(commits_since_range(""), "HEAD..HEAD")
+
+    def test_a_landing_commit_is_excluded_by_identity_not_by_timestamp(self) -> None:
+        """`<sha>..HEAD` excludes the landing commit itself. A `--since=<its time>`
+        window cannot: `gz git-sync` bundles `.gzkit/**`, so that commit carries
+        adjacent files and reads as work the handoff failed to describe."""
+        from gzkit.handoff_selection import commits_since_range
+
+        self.assertEqual(commits_since_range("93e7e229a"), "93e7e229a..HEAD")
+        self.assertEqual(commits_since_range("  93e7e229a\n"), "93e7e229a..HEAD")
+
+
+class TestTheAccountAnchorAgreesWithSelection(unittest.TestCase):
+    """A fourth reader over the same corpus, fenced like the other three.
+
+    `collect_handoff_account` picks the newest AUTHORED handoff to measure from.
+    Whenever an authored handoff exists that must be the same document
+    `selection_rank` picks, or the banner would render an account measured from
+    one handoff directly beneath a section naming another.
+
+    They are allowed to differ in exactly one corpus — floor bookmarks only —
+    where selection deprioritizes-but-never-drops and the account has no authored
+    anchor at all. That divergence is asserted, not merely tolerated.
+    """
+
+    def setUp(self) -> None:
+        self.mod = _load_orientation()
+        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
+
+    def _anchor_via_selection(self, root: Path) -> Path | None:
+        """The anchor `selection_rank` would pick, over production's admitted corpus.
+
+        Mirrors production's two admission rules deliberately: `_looks_like_handoff`
+        (`.gzkit/handoffs/AGENTS.md` is a directory README, not a handoff) and the
+        mtime fallback for a missing frontmatter timestamp. A differential that
+        admitted a different corpus would compare two answers to two questions.
+        """
+        candidates = []
+        for path in sorted((root / ".gzkit" / "handoffs").glob("*.md")):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            if not self.mod._looks_like_handoff(text):
+                continue
+            agent = self.mod.parse_frontmatter_agent(text)
+            ts = self.mod.parse_frontmatter_timestamp(text)
+            if ts is None:
+                ts = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+            candidates.append((selection_rank(agent, ts), agent, path))
+        if not candidates:
+            return None
+        _, agent, path = max(candidates, key=lambda row: row[0])
+        return None if is_floor_bookmark(agent) else path
+
+    def test_agree_when_an_authored_handoff_exists(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root, "old.md", self.now - timedelta(days=2), "claude-code")
+            _write(root, "new.md", self.now - timedelta(hours=2), "claude-code")
+            _write(root, "bm.md", self.now - timedelta(minutes=1), FLOOR_BOOKMARK_AGENT)
+            account = self.mod.collect_handoff_account(root, self.now)
+            expected = self._anchor_via_selection(root)
+            assert account is not None and expected is not None
+            self.assertTrue(account["anchor"].endswith(expected.name))
+
+    def test_agree_that_a_floor_only_corpus_has_no_authored_anchor(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write(root, "bm.md", self.now - timedelta(minutes=1), FLOOR_BOOKMARK_AGENT)
+            self.assertIsNone(self._anchor_via_selection(root))
+            self.assertIsNone(self.mod.collect_handoff_account(root, self.now))
+
+    def test_agree_on_the_live_repository_corpus(self) -> None:
+        """The synthetic corpora above are the ones this session imagined; the
+        live one is the corpus that actually ships."""
+        expected = self._anchor_via_selection(REPO_ROOT)
+        account = self.mod.collect_handoff_account(REPO_ROOT, self.now)
+        if expected is None:
+            self.assertIsNone(account)
+            return
+        assert account is not None
+        self.assertTrue(account["anchor"].endswith(expected.name))
+
+
 if __name__ == "__main__":
     unittest.main()
