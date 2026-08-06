@@ -37,11 +37,17 @@ _ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
 # linearly, so it is a budget, not a formality.
 CAMPAIGN_ADR_REF_LIMIT = 3
 ADR_STATUS_TIMEOUT_SEC = 15
+# Commits named individually in the account before it summarizes the remainder.
+# Ten keeps the section readable on a busy delta; the count above it is always
+# the true total, and the overflow is stated rather than dropped.
+ACCOUNT_COMMIT_LIMIT = 10
 
 SECTION_HEADINGS: tuple[str, ...] = (
     "Active campaign — Magna Carta",
     "Git remote state",
     "Most-recent handoff",
+    # CONDITIONAL — emitted only when an AUTHORED handoff exists to anchor on.
+    "Account since the last authored handoff",
     # CONDITIONAL — emitted only when unprocessed floor bookmarks exist. Every
     # other entry here is unconditional; do not assert this one's presence
     # against an arbitrary corpus.
@@ -350,6 +356,276 @@ def collect_handoff(repo_root: Path, now: datetime) -> dict[str, str] | None:
     return result
 
 
+def _scan_handoffs(
+    repo_root: Path,
+) -> tuple[list[tuple[datetime, Path]], list[tuple[datetime, Path]]] | None:
+    """One pass over the handoff corpus, split into (authored, floor bookmarks).
+
+    Shared by the two surfaces that ask "what has happened since the last
+    authored handoff" — the bookmark sensemaking section and the account. They
+    read ONE scan rather than each running their own, because a disagreement
+    between them about which document is the anchor is GHI #758's shadowing
+    defect in a second costume: one would report bookmarks as unprocessed while
+    the other counted them as already covered, and neither would fail. Pinned by
+    a differential test.
+
+    None when the corpus cannot be classified at all — no floor-bookmark
+    identity to split on, or no handoffs directory.
+    """
+    handoffs_dir = repo_root / ".gzkit" / "handoffs"
+    floor_agent = floor_bookmark_agent()
+    if floor_agent is None or not handoffs_dir.is_dir():
+        return None
+
+    authored: list[tuple[datetime, Path]] = []
+    bookmarks: list[tuple[datetime, Path]] = []
+    for path in sorted(handoffs_dir.glob("*.md")):
+        if not path.is_file():
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        if not _looks_like_handoff(text):
+            continue
+        ts = parse_frontmatter_timestamp(text)
+        if ts is None:
+            ts = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
+        bucket = bookmarks if parse_frontmatter_agent(text) == floor_agent else authored
+        bucket.append((ts, path))
+    return authored, bookmarks
+
+
+def _commits_since_handoff(repo_root: Path, rel_path: str) -> dict[str, object] | None:
+    """Commits postdating the handoff, excluding the commit that landed it.
+
+    Anchored on the landing commit's IDENTITY (`<sha>..HEAD`), never its
+    timestamp. `gz git-sync` bundles `.gzkit/**` into one `chore: update .gzkit`
+    commit, so a handoff's landing commit routinely carries adjacent files; a
+    timestamp window would report the handoff's own arrival as work it failed to
+    describe, on every handoff, every session (GHI #760).
+
+    None when git cannot answer — distinct from an empty list, which means git
+    answered and nothing has landed. Collapsing them would render an unreachable
+    git as a clean account, which is the answer that makes a gap look fine.
+    """
+    landed = _git_run(
+        ["git", "-C", str(repo_root), "log", "-1", "--format=%h", "--", rel_path],
+        timeout=REMOTE_QUERY_TIMEOUT_SEC,
+    )
+    if landed is None or landed.returncode != 0:
+        return None
+    sha = landed.stdout.strip()
+    # No landing commit means the handoff is staged but uncommitted, which needs
+    # no anchor: every commit in history predates it, so nothing can postdate it.
+    anchor = sha or "HEAD"
+    completed = _git_run(
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "log",
+            f"{anchor}..HEAD",
+            "--format=%h\t%s",
+            "--",
+            ".",
+            ":(exclude).gzkit/handoffs",
+        ],
+        timeout=REMOTE_QUERY_TIMEOUT_SEC,
+    )
+    if completed is None or completed.returncode != 0:
+        return None
+    rows = [line for line in completed.stdout.splitlines() if line.strip()]
+    commits: list[dict[str, str]] = []
+    for line in rows[:ACCOUNT_COMMIT_LIMIT]:
+        short_sha, _, subject = line.partition("\t")
+        commits.append({"sha": short_sha.strip(), "subject": subject.strip()})
+    return {"landed": sha or None, "commits": commits, "total": len(rows)}
+
+
+def _events_since(ledger_path: Path, anchor: datetime) -> tuple[list[tuple[str, int]], int]:
+    """Ledger events postdating the anchor, counted by type, busiest first.
+
+    Measured from the handoff, not from a fixed clock. The `last 24h` section
+    answers a different question and cannot answer this one: an event three hours
+    BEFORE the handoff sits inside a 24h window and outside the account, and a
+    handoff written four days ago has its whole delta outside the window.
+    """
+    counts: dict[str, int] = {}
+    total = 0
+    if not ledger_path.exists():
+        return [], 0
+    try:
+        text = ledger_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return [], 0
+    for line in text.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(event, dict):
+            continue
+        ts_raw = event.get("timestamp") or event.get("ts")
+        if not ts_raw:
+            continue
+        try:
+            ts = datetime.fromisoformat(str(ts_raw).replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=UTC)
+        if ts <= anchor:
+            continue
+        kind = str(event.get("event") or event.get("event_type") or event.get("type") or "unknown")
+        counts[kind] = counts.get(kind, 0) + 1
+        total += 1
+    return sorted(counts.items(), key=lambda item: (-item[1], item[0])), total
+
+
+def _tree_is_dirty(repo_root: Path) -> bool | None:
+    """Whether uncommitted non-handoff work exists. None when git cannot answer.
+
+    Handoffs are excluded for the reason the exit beat's skip predicate excludes
+    them: this session's own staged bookmark is not work the previous handoff
+    failed to account for.
+    """
+    completed = _git_run(
+        [
+            "git",
+            "-C",
+            str(repo_root),
+            "status",
+            "--porcelain",
+            "--",
+            ".",
+            ":(exclude).gzkit/handoffs",
+        ],
+        timeout=REMOTE_QUERY_TIMEOUT_SEC,
+    )
+    if completed is None or completed.returncode != 0:
+        return None
+    return bool(completed.stdout.strip())
+
+
+def collect_handoff_account(repo_root: Path, now: datetime) -> dict[str, object] | None:
+    """Assemble what has happened since the last authored handoff (GHI #761).
+
+    The operator ruled that SessionStart *"looks for those, looks at ledger, and
+    develops a handoff account based on all evidence"*. Half of that shipped: the
+    bookmarks are found and flagged. This is the join — bookmarks, ledger, and
+    commits resolved against one anchor into one claim: is the handoff still an
+    accurate account of the tree, and if not, what is it missing.
+
+    "Since" is measured in each source's own units — a commit range for git, the
+    anchor timestamp for the ledger — because those are what each source can
+    answer precisely. Nothing here narrates; the account is assembled evidence
+    plus a mechanical verdict, and an agent that wants meaning still has to read.
+
+    None when no AUTHORED handoff exists to anchor on. That corpus is already
+    covered by the bookmarks section, which is the only record it has.
+    """
+    scan = _scan_handoffs(repo_root)
+    if scan is None:
+        return None
+    authored, bookmarks = scan
+    if not authored:
+        return None
+
+    anchor_ts, anchor_path = max(authored)
+    try:
+        rel = str(anchor_path.relative_to(repo_root)).replace(os.sep, "/")
+    except ValueError:
+        rel = str(anchor_path)
+
+    git_side = _commits_since_handoff(repo_root, rel)
+    events, events_total = _events_since(repo_root / ".gzkit" / "ledger.jsonl", anchor_ts)
+    unprocessed = sum(1 for ts, _ in bookmarks if ts > anchor_ts)
+    dirty = _tree_is_dirty(repo_root)
+
+    commits = git_side["commits"] if git_side else []
+    commits_total = git_side["total"] if git_side else 0
+    return {
+        "anchor": rel,
+        "anchor_age": classify_freshness(now, anchor_ts),
+        "landed": git_side["landed"] if git_side else None,
+        "git_unavailable": git_side is None,
+        "commits": commits,
+        "commits_total": commits_total,
+        "events": events,
+        "events_total": events_total,
+        "bookmarks": unprocessed,
+        "dirty": dirty,
+        # Every channel must be both readable and empty. An unreachable git or a
+        # dirty tree is not a current account — it is an unknown one, and those
+        # are the same to a reader deciding whether to trust the anchor.
+        "current": (
+            git_side is not None
+            and commits_total == 0
+            and events_total == 0
+            and unprocessed == 0
+            and dirty is False
+        ),
+    }
+
+
+def _render_handoff_account(lines: list[str], payload: object) -> None:
+    """Render the account, or nothing when there is no anchor to account from."""
+    if not isinstance(payload, dict):
+        return
+    lines.append("")
+    lines.append("## Account since the last authored handoff")
+    landed = payload.get("landed")
+    anchor_note = f"landed `{landed}`" if landed else "not yet committed"
+    age = payload.get("anchor_age", "?")
+    lines.append(f"- Anchor: `{payload.get('anchor', '?')}` ({age}, {anchor_note})")
+
+    if payload.get("git_unavailable"):
+        lines.append("- Commits since: UNKNOWN — git could not be queried, not verified clean.")
+    else:
+        total = payload.get("commits_total", 0)
+        commits = payload.get("commits") or []
+        lines.append(f"- Commits since: {total}")
+        for commit in commits:
+            if isinstance(commit, dict):
+                lines.append(f"  - `{commit.get('sha', '?')}` {commit.get('subject', '')}")
+        # Never truncate silently — a capped list reads as "this is everything".
+        if isinstance(total, int) and total > len(commits):
+            lines.append(f"  - … {total - len(commits)} older commit(s) not shown")
+
+    events = payload.get("events") or []
+    lines.append(f"- Ledger events since: {payload.get('events_total', 0)}")
+    for entry in events:
+        if isinstance(entry, (list, tuple)) and len(entry) == 2:
+            lines.append(f"  - {entry[0]}: {entry[1]}")
+    lines.append(f"- Exit bookmarks since: {payload.get('bookmarks', 0)}")
+    dirty = payload.get("dirty")
+    tree = "UNKNOWN (git unreachable)" if dirty is None else ("dirty" if dirty else "clean")
+    lines.append(f"- Working tree (excluding handoffs): {tree}")
+
+    if payload.get("current"):
+        lines.append(
+            "- VERDICT: the anchor is still a current account — nothing has landed, "
+            "run, or been left uncommitted since it was written. Treat it as this "
+            "session's context, subject to the operator's ruling."
+        )
+    else:
+        lines.append(
+            "- VERDICT: the anchor is NOT a current account. The evidence above "
+            "postdates it and no authored document describes it. Read the delta "
+            "before acting on the handoff, and fold it into a successor that "
+            "supersedes the anchor."
+        )
+    lines.append(
+        "- This account is assembled evidence, not narrative. It reports what "
+        "happened, never what it meant — that reading is the agent's to do and "
+        "the operator's to rule on."
+    )
+
+
 def collect_exit_bookmarks(repo_root: Path, now: datetime) -> dict[str, object] | None:
     """Floor bookmarks written since the last authored handoff, with git status.
 
@@ -367,29 +643,11 @@ def collect_exit_bookmarks(repo_root: Path, now: datetime) -> dict[str, object] 
     Returns None when there is nothing to say — an empty section is noise every
     session, and this one is only actionable when it has entries.
     """
-    handoffs_dir = repo_root / ".gzkit" / "handoffs"
-    floor_agent = floor_bookmark_agent()
-    if floor_agent is None or not handoffs_dir.is_dir():
+    scan = _scan_handoffs(repo_root)
+    if scan is None:
         return None
-
-    newest_authored: datetime | None = None
-    bookmarks: list[tuple[datetime, Path]] = []
-    for path in sorted(handoffs_dir.glob("*.md")):
-        if not path.is_file():
-            continue
-        try:
-            text = path.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            continue
-        if not _looks_like_handoff(text):
-            continue
-        ts = parse_frontmatter_timestamp(text)
-        if ts is None:
-            ts = datetime.fromtimestamp(path.stat().st_mtime, tz=UTC)
-        if parse_frontmatter_agent(text) == floor_agent:
-            bookmarks.append((ts, path))
-        elif newest_authored is None or ts > newest_authored:
-            newest_authored = ts
+    authored, bookmarks = scan
+    newest_authored = max((ts for ts, _ in authored), default=None)
 
     unprocessed = [
         (ts, path) for ts, path in bookmarks if newest_authored is None or ts > newest_authored
@@ -689,6 +947,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "campaign": campaign,
         "remote_state": collect_remote_state(),
         "handoff": collect_handoff(repo_root, now),
+        "handoff_account": collect_handoff_account(repo_root, now),
         "exit_bookmarks": collect_exit_bookmarks(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": collect_obpi_locks(repo_root),
@@ -787,9 +1046,12 @@ def render(state: dict, now: datetime) -> str:
         )
     else:
         lines.append("- (no handoff documents found)")
-    # Outside the branch deliberately: unprocessed bookmarks are worth surfacing
-    # even when no handoff was selected at all, which is exactly the corpus state
-    # where they are the only record of what happened.
+    # Both outside the branch deliberately. Unprocessed bookmarks are worth
+    # surfacing even when no handoff was selected at all, which is exactly the
+    # corpus state where they are the only record of what happened; and the
+    # account anchors on the newest AUTHORED handoff, which is not always the
+    # document `collect_handoff` selected above.
+    _render_handoff_account(lines, state.get("handoff_account"))
     _render_exit_bookmarks(lines, state.get("exit_bookmarks"))
     lines.append("")
 

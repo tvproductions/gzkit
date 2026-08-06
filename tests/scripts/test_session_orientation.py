@@ -19,6 +19,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -1138,3 +1139,186 @@ class TestExitBookmarkSensemakingSection(unittest.TestCase):
         self.mod._render_exit_bookmarks(lines, None)
         self.mod._render_exit_bookmarks(lines, {"entries": []})
         self.assertEqual(lines, [])
+
+
+class TestHandoffAccountSynthesis(unittest.TestCase):
+    """SessionStart assembles the account rather than prompting an agent to (GHI #761).
+
+    The operator ruled that SessionStart 'looks for those, looks at ledger, and
+    develops a handoff account based on all evidence'. Half landed: bookmarks are
+    found and flagged. The other half — joining bookmarks, ledger, and commits
+    against the handoff and saying whether it still describes reality — was left
+    to whichever agent read three unrelated lists.
+
+    The anchor is the last AUTHORED handoff, and 'since' is measured in each
+    evidence source's own units: a commit range for git, the anchor timestamp for
+    the ledger. Not a fixed 24h clock, which measures elapsed time and cannot
+    answer whether a document is still true.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
+
+    def _repo(self, tmp: str) -> Path:
+        root = Path(tmp)
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
+            subprocess.run(["git", "-C", str(root), "config", key, val], check=True)
+        return root
+
+    def _commit(self, root: Path, message: str) -> None:
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
+        subprocess.run(["git", "-C", str(root), "commit", "-qm", message], check=True)
+
+    def _handoff(self, root: Path, name: str, ts: datetime, agent: str = "claude-code") -> Path:
+        path = root / ".gzkit" / "handoffs" / name
+        path.write_text(
+            f"---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            f"timestamp: '{ts.isoformat()}'\nagent: {agent}\n---\n\n"
+            "## Decisions Made\n\n- [agent-chose] body\n",
+            encoding="utf-8",
+        )
+        return path
+
+    def _ledger(self, root: Path, *events: tuple[str, datetime]) -> None:
+        path = root / ".gzkit" / "ledger.jsonl"
+        path.write_text(
+            "".join(
+                json.dumps({"event_type": kind, "timestamp": ts.isoformat()}) + "\n"
+                for kind, ts in events
+            ),
+            encoding="utf-8",
+        )
+
+    def test_no_authored_handoff_yields_no_account(self):
+        """Nothing to anchor on. The bookmarks section already covers that corpus."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "bm.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            self._commit(root, "land bookmark")
+            self.assertIsNone(self.mod.collect_handoff_account(root, self.now))
+
+    def test_the_account_reports_current_when_nothing_landed_since(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "authored.md", self.now - timedelta(hours=1))
+            self._commit(root, "land handoff")
+            account = self.mod.collect_handoff_account(root, self.now)
+            assert account is not None
+            self.assertTrue(account["current"], "nothing landed, so the handoff is still true")
+            self.assertEqual(account["commits_total"], 0)
+
+    def test_commits_after_the_handoff_are_named_not_merely_counted(self):
+        """A count says something is unaccounted; the subjects say what."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "authored.md", self.now - timedelta(hours=2))
+            self._commit(root, "land handoff")
+            (root / "src.py").write_text("x = 1\n", encoding="utf-8")
+            self._commit(root, "fix(thing): a real change")
+            account = self.mod.collect_handoff_account(root, self.now)
+            assert account is not None
+            self.assertFalse(account["current"])
+            self.assertEqual(account["commits_total"], 1)
+            self.assertEqual(account["commits"][0]["subject"], "fix(thing): a real change")
+
+    def test_the_handoffs_own_landing_commit_is_not_unaccounted_work(self):
+        """GHI #760's lesson on this surface: `gz git-sync` bundles `.gzkit/**`, so
+        the commit that lands a handoff carries adjacent files. Measuring 'since'
+        by timestamp would report the handoff's own arrival as work it failed to
+        describe — every session, on every handoff."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "authored.md", self.now - timedelta(hours=1))
+            (root / ".gzkit" / "insights.jsonl").write_text("{}\n", encoding="utf-8")
+            self._commit(root, "chore: update .gzkit (2 files) (gz git-sync)")
+            account = self.mod.collect_handoff_account(root, self.now)
+            assert account is not None
+            self.assertEqual(account["commits_total"], 0, "its own arrival is not a delta")
+            self.assertTrue(account["current"])
+
+    def test_ledger_is_measured_from_the_handoff_not_a_fixed_clock(self):
+        """The 24h section cannot answer this question: an event three hours before
+        the handoff is inside a 24h window and outside the account."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            anchor = self.now - timedelta(hours=6)
+            self._handoff(root, "authored.md", anchor)
+            self._commit(root, "land handoff")
+            self._ledger(
+                root,
+                ("gate_checked", anchor - timedelta(hours=3)),
+                ("validator_run", anchor + timedelta(hours=1)),
+                ("validator_run", anchor + timedelta(hours=2)),
+            )
+            account = self.mod.collect_handoff_account(root, self.now)
+            assert account is not None
+            self.assertEqual(account["events_total"], 2)
+            self.assertEqual(dict(account["events"]), {"validator_run": 2})
+            self.assertFalse(account["current"])
+
+    def test_a_capped_commit_list_says_what_it_dropped(self):
+        """A silent truncation reads as 'this is everything'."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "authored.md", self.now - timedelta(hours=3))
+            self._commit(root, "land handoff")
+            for index in range(self.mod.ACCOUNT_COMMIT_LIMIT + 3):
+                (root / f"f{index}.py").write_text(f"x = {index}\n", encoding="utf-8")
+                self._commit(root, f"work {index}")
+            account = self.mod.collect_handoff_account(root, self.now)
+            assert account is not None
+            self.assertEqual(account["commits_total"], self.mod.ACCOUNT_COMMIT_LIMIT + 3)
+            self.assertEqual(len(account["commits"]), self.mod.ACCOUNT_COMMIT_LIMIT)
+            lines: list[str] = []
+            self.mod._render_handoff_account(lines, account)
+            self.assertIn("not shown", "\n".join(lines))
+
+    def test_the_section_states_a_verdict_not_just_lists(self):
+        # output-contract: the verdict IS the synthesis this section exists to add —
+        # three lists without it are what the surface already did before GHI #761.
+        lines: list[str] = []
+        self.mod._render_handoff_account(
+            lines,
+            {
+                "anchor": ".gzkit/handoffs/a.md",
+                "anchor_age": "Fresh",
+                "landed": "abc1234",
+                "commits": [{"sha": "def5678", "subject": "fix(x): y"}],
+                "commits_total": 1,
+                "events": [("validator_run", 2)],
+                "events_total": 2,
+                "bookmarks": 1,
+                "dirty": False,
+                "current": False,
+            },
+        )
+        rendered = "\n".join(lines)
+        self.assertIn("## Account since the last authored handoff", rendered)
+        self.assertIn("VERDICT", rendered)
+        self.assertIn("fix(x): y", rendered)
+        self.assertIn("validator_run", rendered)
+
+    def test_nothing_renders_without_an_account(self):
+        lines: list[str] = []
+        self.mod._render_handoff_account(lines, None)
+        self.assertEqual(lines, [])
+
+    def test_both_readers_agree_on_which_handoff_is_authored(self):
+        """Differential fence. If the account and the bookmarks section disagreed
+        about the newest authored handoff, one would report bookmarks as unprocessed
+        while the other counted them as covered — GHI #758's shadowing defect wearing
+        a second costume. They read one corpus scan, and this asserts it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo(tmp)
+            self._handoff(root, "old-authored.md", self.now - timedelta(days=2))
+            self._handoff(root, "new-authored.md", self.now - timedelta(hours=2))
+            self._handoff(root, "bm.md", self.now - timedelta(minutes=5), "gzkit-session-exit")
+            self._commit(root, "land all")
+            account = self.mod.collect_handoff_account(root, self.now)
+            bookmarks = self.mod.collect_exit_bookmarks(root, self.now)
+            assert account is not None and bookmarks is not None
+            self.assertIn("new-authored.md", account["anchor"])
+            self.assertEqual(account["bookmarks"], len(bookmarks["entries"]))
