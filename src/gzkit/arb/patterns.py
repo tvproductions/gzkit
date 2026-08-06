@@ -14,8 +14,10 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.arb.coverage import measure_receipt_coverage
 from gzkit.arb.paths import receipts_root
 from gzkit.arb.ruff_reporter import SCHEMA_ID as LINT_SCHEMA_ID
+from gzkit.efficacy import StoreCoverage
 
 # Map ruff rules to agent-actionable guidance.
 # Key: rule code (or prefix), Value: (anti-pattern description, correct approach)
@@ -101,6 +103,14 @@ class PatternReport(BaseModel):
     scanned_receipts: int = Field(..., description="Receipts inspected")
     total_findings: int = Field(..., description="Total lint findings aggregated")
     candidates: list[PatternCandidate] = Field(default_factory=list)
+    coverage: StoreCoverage | None = Field(
+        default=None,
+        description=(
+            "what this run reached against what was in the store. Optional so an "
+            "existing caller constructing PatternReport directly keeps working; "
+            "every path through collect_patterns populates it."
+        ),
+    )
 
 
 def _iter_receipt_paths(root: Path, *, limit: int) -> list[Path]:
@@ -132,7 +142,8 @@ def collect_patterns(
     scanned = 0
     total_findings = 0
 
-    for receipt_path in _iter_receipt_paths(receipts_dir, limit=limit):
+    selected = _iter_receipt_paths(receipts_dir, limit=limit)
+    for receipt_path in selected:
         try:
             payload: Any = json.loads(receipt_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
@@ -179,6 +190,12 @@ def collect_patterns(
         scanned_receipts=scanned,
         total_findings=total_findings,
         candidates=candidates,
+        coverage=measure_receipt_coverage(
+            receipts_dir,
+            readable_schema=LINT_SCHEMA_ID,
+            covered=scanned,
+            truncated=limit >= 0 and len(selected) >= limit,
+        ),
     )
 
 
@@ -188,6 +205,8 @@ def render_patterns_markdown(report: PatternReport) -> str:
     lines.append("# ARB Pattern Extraction Report")
     lines.append("")
     lines.append(f"**Receipts scanned:** {report.scanned_receipts}")
+    if report.coverage is not None:
+        lines.append(f"**{report.coverage.render()}**")
     lines.append(f"**Total findings:** {report.total_findings}")
     lines.append("")
 

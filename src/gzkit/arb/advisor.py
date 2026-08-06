@@ -15,8 +15,10 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.arb.coverage import measure_receipt_coverage
 from gzkit.arb.paths import receipts_root
 from gzkit.arb.ruff_reporter import SCHEMA_ID as LINT_SCHEMA_ID
+from gzkit.efficacy import StoreCoverage
 
 
 class ArbAdvice(BaseModel):
@@ -30,6 +32,14 @@ class ArbAdvice(BaseModel):
     top_rules: list[tuple[str, int]] = Field(default_factory=list)
     top_paths: list[tuple[str, int]] = Field(default_factory=list)
     recommendations: list[str] = Field(default_factory=list)
+    coverage: StoreCoverage | None = Field(
+        default=None,
+        description=(
+            "what this run reached against what was in the store. Optional so an "
+            "existing caller constructing ArbAdvice directly keeps working; every "
+            "path through collect_arb_advice populates it."
+        ),
+    )
 
 
 def _iter_receipt_paths(root: Path, *, limit: int) -> list[Path]:
@@ -109,7 +119,8 @@ def collect_arb_advice(
     failed = 0
     findings_total = 0
 
-    for receipt_path in _iter_receipt_paths(receipts_dir, limit=limit):
+    selected = _iter_receipt_paths(receipts_dir, limit=limit)
+    for receipt_path in selected:
         try:
             payload: Any = json.loads(receipt_path.read_text(encoding="utf-8"))
         except json.JSONDecodeError:
@@ -144,6 +155,15 @@ def collect_arb_advice(
             if isinstance(path, str) and path:
                 path_counts[path] += 1
 
+    # `limit` bounds FILES walked, not eligible receipts found, so a run can stop
+    # short of the lint receipts it was able to read simply because newer receipts
+    # of other kinds filled the window. Both forms of shortfall are truncation.
+    coverage = measure_receipt_coverage(
+        receipts_dir,
+        readable_schema=LINT_SCHEMA_ID,
+        covered=scanned,
+        truncated=limit >= 0 and len(selected) >= limit,
+    )
     return ArbAdvice(
         scanned_receipts=scanned,
         failed_receipts=failed,
@@ -151,6 +171,7 @@ def collect_arb_advice(
         top_rules=rule_counts.most_common(10),
         top_paths=path_counts.most_common(10),
         recommendations=_recommendations_for_counts(rule_counts),
+        coverage=coverage,
     )
 
 
@@ -161,6 +182,10 @@ def render_arb_advice_text(advice: ArbAdvice) -> str:
     lines.append(f"Receipts scanned: {advice.scanned_receipts}")
     lines.append(f"Failures: {advice.failed_receipts}")
     lines.append(f"Findings total (incl. truncated): {advice.findings_total}")
+    if advice.coverage is not None:
+        # Printed next to the numerator on purpose. "Receipts scanned: 130" read as
+        # success for three months; the same run reporting 130 of 3,286 does not.
+        lines.append(advice.coverage.render())
 
     if advice.top_rules:
         lines.append("")
