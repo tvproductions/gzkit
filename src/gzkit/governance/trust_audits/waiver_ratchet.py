@@ -8,7 +8,7 @@ so a waiver list cannot silently launder "not built yet" into "attested green":
    ``added_under``); the set is frozen and new entries are forbidden. Proven by
    ``data/historical_self_close_waivers.json``.
 2. **dated cutover** — a cutover date (ISO ``YYYY-MM-DD``) that is in the past;
-   after it the waiver no longer applies. Proven by ``lock_handoff_coupling``.
+   after it the waiver no longer applies. Proven by ``lock_exchange_coupling``.
 3. **monotonic shrink-ratchet** — a committed baseline count the live list can
    only decrease against. Proven by ``tautological_test_baseline``.
 

@@ -19,11 +19,14 @@ import unittest
 from pathlib import Path
 
 from gzkit.commands.obpi_complete import _surrender_lock_at_completion
+from gzkit.exchange_records import (
+    exchange_dir,
+    write_completion_exchange,
+)
 from gzkit.handoff_validation import (
     parse_frontmatter,
     validate_handoff_document,
     validate_no_placeholders,
-    write_completion_handoff,
 )
 from gzkit.ledger import Ledger
 from gzkit.lock_manager import LockData, read_lock, write_lock
@@ -46,7 +49,7 @@ class TestWriteCompletionHandoff(unittest.TestCase):
     """The auto-drafted completion handoff is a valid, non-abandoned register entry."""
 
     def _write(self, root: Path, brief_rel: str, *, implementation_summary: str) -> Path:
-        return write_completion_handoff(
+        return write_completion_exchange(
             root,
             obpi_id=_OBPI,
             agent="claude-code",
@@ -62,7 +65,7 @@ class TestWriteCompletionHandoff(unittest.TestCase):
 
     def test_produces_validator_clean_handoff(self) -> None:
         # GHI #619: the mechanical completion handoff must be a *valid* register
-        # entry — find_handoff_for_release accepts only non-abandoned handoffs that
+        # entry — find_exchange_for_release accepts only non-abandoned handoffs that
         # pass the full seven-section + referenced-file contract.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -179,7 +182,7 @@ class TestSurrenderLockAtCompletion(unittest.TestCase):
 
             # No lock was held → no surrender event, but the handoff is still written.
             self.assertEqual(self._released(self._events(root)), [])
-            handoffs = list((root / ".gzkit" / "handoffs").glob(f"*-{_OBPI}-complete.md"))
+            handoffs = list(exchange_dir(root).glob(f"*-{_OBPI}-complete.md"))
             self.assertEqual(len(handoffs), 1)
 
 

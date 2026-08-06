@@ -15,8 +15,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.exchange_records import exchange_dir, is_exchange_register_entry
 from gzkit.handoff_validation import (
-    find_handoff_for_release,
     parse_frontmatter,
     validate_handoff_document,
 )
@@ -63,22 +63,46 @@ class SessionExitBookmarkTests(unittest.TestCase):
         self.assertEqual(frontmatter["mode"], "CHECKPOINT")
 
     def test_the_bookmark_cannot_surrender_a_token(self) -> None:
-        """The coupling that makes the automatic writer safe to run at all."""
+        """The coupling that makes the automatic writer safe to run at all.
+
+        Asserted against the PREDICATE, not against the search. Since GHI #763
+        the bookmark and the exchange corpus live in different directories, so a
+        search-based assertion here would pass on the directory mismatch alone —
+        it would keep passing if the shape check were deleted outright, which is
+        the tautology `.gzkit/rules/tests.md` § The discriminator names. The
+        location is a real second fence and is asserted separately below.
+        """
         root = self._root()
-        book_exit_bookmark(
+        result = book_exit_bookmark(
             root,
             session_id="s-1",
             exit_reason="clear",
             obpi_id="OBPI-0.25.0-32",
         )
 
-        self.assertIsNone(
-            find_handoff_for_release(
-                root,
-                obpi_id="OBPI-0.25.0-32",
-                after_timestamp="2000-01-01T00:00:00Z",
-            ),
+        assert result.path is not None
+        frontmatter = parse_frontmatter(Path(result.path).read_text(encoding="utf-8"))
+        assert isinstance(frontmatter, dict)
+        self.assertFalse(
+            is_exchange_register_entry(frontmatter),
             "an auto-written exit bookmark must never discharge a lock release",
+        )
+
+    def test_the_bookmark_is_not_written_into_the_exchange_corpus(self) -> None:
+        """Location is the first fence: session documents never enter the token store."""
+        root = self._root()
+        result = book_exit_bookmark(
+            root,
+            session_id="s-1",
+            exit_reason="clear",
+            obpi_id="OBPI-0.25.0-32",
+        )
+
+        assert result.path is not None
+        self.assertNotIn(
+            exchange_dir(root),
+            Path(result.path).parents,
+            "the exit beat must never write into the exchange-record store",
         )
 
     def test_the_bookmark_passes_the_authoring_gate(self) -> None:

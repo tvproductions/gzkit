@@ -76,7 +76,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 | `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`, `copilot`) |
 | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |
 | `obpi_id` | No | OBPI identifier if handoff is scoped to a specific brief |
-| `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-handoff-coupling`) |
+| `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-exchange-coupling`) |
 | `last_commit_sha` | When concluding a held lock | Frontmatter key — HEAD at handoff creation (`git rev-parse --short HEAD`) |
 | `session_id` | No | Session identifier for tracing |
 | `continues_from` | No | Path to previous handoff document (for chained sessions) |

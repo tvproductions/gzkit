@@ -128,7 +128,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "evaluation_justify_binding",
         "intrinsic_attestation",
         "advisor_proof_binding",
-        "lock_handoff_coupling",
+        "lock_exchange_coupling",
         "distribution",
         "changelog",
         "bullet_retention",
@@ -160,7 +160,7 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
 # `unscoped_rules` are legitimately excluded — they own a solo early-return
 # lifecycle and must not count as "another scope active". The remaining five
 # (`invariant_coherence`, `session_green_gate`, `intrinsic_attestation`,
-# `advisor_proof_binding`, `lock_handoff_coupling`) are regular aggregate scopes
+# `advisor_proof_binding`, `lock_exchange_coupling`) are regular aggregate scopes
 # whose exclusion is a PRE-EXISTING anomaly (combining them with a solo scope
 # would drop them). This cut preserves the membership exactly; the anomaly is
 # flagged for separate routing, not healed here.
@@ -170,7 +170,7 @@ _GOLDEN_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
         "session_green_gate",
         "intrinsic_attestation",
         "advisor_proof_binding",
-        "lock_handoff_coupling",
+        "lock_exchange_coupling",
         "sensitivity",
         "evaluation_justify_binding",
         "unscoped_rules",

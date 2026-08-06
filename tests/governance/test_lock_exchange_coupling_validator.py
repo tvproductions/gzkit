@@ -14,8 +14,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.governance.trust_audits.lock_handoff_coupling import (
-    validate_lock_handoff_coupling,
+from gzkit.governance.trust_audits.lock_exchange_coupling import (
+    validate_lock_exchange_coupling,
 )
 
 
@@ -148,7 +148,7 @@ class TestLockHandoffCouplingValidatorClean(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_empty_ledger_passes(self) -> None:
@@ -156,21 +156,21 @@ class TestLockHandoffCouplingValidatorClean(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_ledger(root, [])
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_ledger_absent_passes(self) -> None:
         """When ledger.jsonl does not exist, validator returns no errors."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
 
 class TestLockHandoffCouplingRefusesCheckpointAsSurrender(unittest.TestCase):
     """A release citing a mid-flight bookmark is an unpaired surrender (GHI #756).
 
-    `find_handoff_for_release` is the live gate and skips CHECKPOINT, so this
+    `find_exchange_for_release` is the live gate and skips CHECKPOINT, so this
     validator is the ledger-replay backstop: it reads events already emitted,
     catching a release whose `handoff_path` was resolved by some other producer
     or hand-set. Without it the mode distinction would hold only at the one
@@ -183,10 +183,10 @@ class TestLockHandoffCouplingRefusesCheckpointAsSurrender(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, mode="CHECKPOINT")
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
 
         self.assertEqual(len(errors), 1, f"expected exactly one coupling error, got {errors}")
-        self.assertEqual(errors[0].type, "lock_handoff_coupling")
+        self.assertEqual(errors[0].type, "lock_exchange_coupling")
         self.assertEqual(errors[0].artifact, _OBPI_ID)
 
     def test_release_citing_a_create_handoff_is_clean(self) -> None:
@@ -195,7 +195,7 @@ class TestLockHandoffCouplingRefusesCheckpointAsSurrender(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, mode="CREATE")
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
 
         self.assertEqual([], errors)
 
@@ -210,9 +210,9 @@ class TestLockHandoffCouplingValidatorMissingHandoffPath(unittest.TestCase):
                 root,
                 [_cutover_event(), _claim_event(), _release_event(handoff_path=None)],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
-        self.assertEqual("lock_handoff_coupling", errors[0].type)
+        self.assertEqual("lock_exchange_coupling", errors[0].type)
         msg = errors[0].message
         self.assertIn(_OBPI_ID, msg)
         self.assertIn(_AGENT, msg)
@@ -233,7 +233,7 @@ class TestLockHandoffCouplingValidatorMissingHandoffPath(unittest.TestCase):
                     _release_event(obpi_id=obpi, agent=agent, ts=ts, handoff_path=None),
                 ],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         msg = errors[0].message
         self.assertIn(obpi, msg)
@@ -256,9 +256,9 @@ class TestLockHandoffCouplingValidatorNonexistentPath(unittest.TestCase):
                     _release_event(handoff_path=missing_path),
                 ],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
-        self.assertEqual("lock_handoff_coupling", errors[0].type)
+        self.assertEqual("lock_exchange_coupling", errors[0].type)
         self.assertIn(missing_path, errors[0].message)
 
 
@@ -279,9 +279,9 @@ class TestLockHandoffCouplingValidatorPredatedHandoff(unittest.TestCase):
                 ],
             )
             _write_handoff(root, timestamp=handoff_ts)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
-        self.assertEqual("lock_handoff_coupling", errors[0].type)
+        self.assertEqual("lock_exchange_coupling", errors[0].type)
         self.assertIn(_OBPI_ID, errors[0].message)
 
 
@@ -293,7 +293,7 @@ class TestLockHandoffCouplingValidatorMinimumInfo(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, last_lock_event_timestamp=None)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         self.assertIn("last_lock_event_timestamp", errors[0].message)
 
@@ -304,7 +304,7 @@ class TestLockHandoffCouplingValidatorMinimumInfo(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, last_commit_sha=None)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         self.assertIn("last_commit_sha", errors[0].message)
 
@@ -315,7 +315,7 @@ class TestLockHandoffCouplingValidatorMinimumInfo(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, branch=None)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         self.assertIn("branch", errors[0].message)
 
@@ -326,7 +326,7 @@ class TestLockHandoffCouplingValidatorMinimumInfo(unittest.TestCase):
             root = Path(tmp)
             _write_ledger(root, [_cutover_event(), _claim_event(), _release_event()])
             _write_handoff(root, decisions_section=False)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         self.assertIn("decision", errors[0].message.lower())
 
@@ -342,7 +342,7 @@ class TestLockHandoffCouplingValidatorMinimumInfo(unittest.TestCase):
                 branch=None,
                 decisions_section=False,
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(4, len(errors))
         msgs = " ".join(e.message for e in errors)
         self.assertIn("last_lock_event_timestamp", msgs)
@@ -366,7 +366,7 @@ class TestLockHandoffCouplingValidatorPreCutover(unittest.TestCase):
                     _release_event(ts=pre_ts, handoff_path=None),
                 ],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_no_cutover_event_grandfathers_all(self) -> None:
@@ -377,7 +377,7 @@ class TestLockHandoffCouplingValidatorPreCutover(unittest.TestCase):
                 root,
                 [_claim_event(), _release_event(handoff_path=None)],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     @covers("REQ-0.0.41-04-06")
@@ -401,7 +401,7 @@ class TestLockHandoffCouplingValidatorPreCutover(unittest.TestCase):
                     pre_cutover_release,
                 ],
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
 
@@ -436,7 +436,7 @@ class TestLockHandoffCouplingReclaimAndReap(unittest.TestCase):
                 timestamp="2026-06-07T12:30:00+00:00",
                 last_lock_event_timestamp="2026-06-07T12:00:00+00:00",
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_cross_agent_reap_no_false_error(self) -> None:
@@ -463,7 +463,7 @@ class TestLockHandoffCouplingReclaimAndReap(unittest.TestCase):
                 timestamp="2026-06-07T12:30:00+00:00",
                 last_lock_event_timestamp="2026-06-07T12:00:00+00:00",
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_genuine_predate_still_caught_amid_churn(self) -> None:
@@ -489,23 +489,23 @@ class TestLockHandoffCouplingReclaimAndReap(unittest.TestCase):
                 timestamp="2026-06-07T11:30:00+00:00",  # predates the concluded claim
                 last_lock_event_timestamp="2026-06-07T11:00:00+00:00",
             )
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual(1, len(errors))
         self.assertIn("predates the matching claim", errors[0].message)
 
 
 class TestLockHandoffCouplingDefaultPipeline(unittest.TestCase):
     @covers("REQ-0.0.41-04-07")
-    def test_lock_handoff_coupling_in_default_check_pipeline(self) -> None:
-        """_build_check_steps() includes Lock-handoff coupling so gz check fires it."""
+    def test_lock_exchange_coupling_in_default_check_pipeline(self) -> None:
+        """_build_check_steps() includes Lock-exchange coupling so gz check fires it."""
         from gzkit.commands.quality import _build_check_steps
-        from gzkit.quality import run_lock_handoff_coupling_audit
+        from gzkit.quality import run_lock_exchange_coupling_audit
 
         steps = _build_check_steps()
         step_names = [name for name, _ in steps]
-        self.assertIn("Lock-handoff coupling", step_names)
+        self.assertIn("Lock-exchange coupling", step_names)
         step_runners = dict(steps)
-        self.assertIs(step_runners["Lock-handoff coupling"], run_lock_handoff_coupling_audit)
+        self.assertIs(step_runners["Lock-exchange coupling"], run_lock_exchange_coupling_audit)
 
 
 if __name__ == "__main__":
@@ -552,7 +552,7 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._repo(tmp)
             self._seed(root)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertTrue(errors, "an untracked register entry must not satisfy the coupling")
         self.assertIn("NOT in git's index", errors[0].message)
 
@@ -562,7 +562,7 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
             root = self._repo(tmp)
             self._seed(root)
             self._git(root, "add", "-A")
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_a_committed_referent_passes(self) -> None:
@@ -571,7 +571,7 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
             self._seed(root)
             self._git(root, "add", "-A")
             self._git(root, "commit", "-qm", "land")
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)
 
     def test_no_git_skips_the_durability_arm_rather_than_failing_everything(self) -> None:
@@ -583,5 +583,5 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)  # deliberately NOT a git repo
             self._seed(root)
-            errors = validate_lock_handoff_coupling(root)
+            errors = validate_lock_exchange_coupling(root)
         self.assertEqual([], errors)

@@ -17,6 +17,7 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (
     HandoffValidationError,
     parse_frontmatter,
@@ -936,15 +937,15 @@ def run_task_envelope_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --task-envelope-coherence", cwd=project_root)
 
 
-def run_lock_handoff_coupling_audit(project_root: Path) -> QualityResult:
+def run_lock_exchange_coupling_audit(project_root: Path) -> QualityResult:
     """Run the lock-handoff coupling audit (ADR-0.0.41 / OBPI-04).
 
     Fails closed (exit 3) when any obpi_lock_released event in the ledger
     (post-OBPI-02 cutover) lacks a valid handoff_path, references a missing
     file, has a predated frontmatter timestamp, or is missing min-info fields.
-    Recovery: uv run gz validate --lock-handoff-coupling for diagnostics.
+    Recovery: uv run gz validate --lock-exchange-coupling for diagnostics.
     """
-    return run_command("uv run gz validate --lock-handoff-coupling", cwd=project_root)
+    return run_command("uv run gz validate --lock-exchange-coupling", cwd=project_root)
 
 
 def run_qc_binding_audit(project_root: Path) -> QualityResult:
@@ -1014,7 +1015,7 @@ def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are
 # grandfathered so the wiring lands green over the existing corpus. This mirrors
-# the lock_handoff_coupling cutover posture (grandfather legacy, fail-close
+# the lock_exchange_coupling cutover posture (grandfather legacy, fail-close
 # go-forward). The boundary sits just past the newest existing entry; legacy
 # cleanup is tracked separately (see OBPI-0.0.72-02 evidence/concerns).
 _HANDOFF_ENFORCEMENT_CUTOVER = "2026-06-15T00:00:00Z"
@@ -1073,20 +1074,30 @@ def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:
 
 
 def run_handoff_document_audit(project_root: Path) -> QualityResult:
-    """Gate-wire validate_handoff_document over the .gzkit/handoffs/ store (OBPI-0.0.72-02).
+    """Gate-wire validate_handoff_document over both register-entry stores (OBPI-0.0.72-02).
 
     Before this gate, validate_handoff_document was a strict consumer with no
     authoring-time enforcement, so invalid-frontmatter register entries shipped.
     Each entry authored on or after _HANDOFF_ENFORCEMENT_CUTOVER must validate
     clean; pre-cutover (and undatable) legacy entries are grandfathered so the
     gate lands green over the existing corpus.
+
+    Scans BOTH `.gzkit/handoffs/` (session handoffs, ADR-0.0.65) and
+    `.gzkit/locks/exchange/` (token exchange records, ADR-0.0.41). The two are
+    separate systems that share only a document format (GHI #763), and that shared
+    format is exactly why one validator covers both. Adding the second directory
+    here is not optional bookkeeping: when the exchange writers moved out of
+    `.gzkit/handoffs/`, a single-directory scan would have silently dropped every
+    exchange record from the only authoring-time gate they had, and the gate would
+    have kept reporting green.
     """
-    handoff_dir = project_root / ".gzkit" / "handoffs"
-    if not handoff_dir.is_dir():
+    stores = [project_root / ".gzkit" / "handoffs", exchange_dir(project_root)]
+    present = [d for d in stores if d.is_dir()]
+    if not present:
         return QualityResult(
             success=True,
             command="handoff-document audit",
-            stdout="No .gzkit/handoffs/ directory; skipping.",
+            stdout="No register-entry store on disk; skipping.",
             stderr="",
             returncode=0,
         )
@@ -1096,7 +1107,7 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
     blocking: list[str] = []
     grandfathered = 0
     hollow = 0
-    for path in sorted(handoff_dir.glob("*.md")):
+    for path in sorted(p for d in present for p in d.glob("*.md")):
         try:
             content = path.read_text(encoding="utf-8")
         except OSError:

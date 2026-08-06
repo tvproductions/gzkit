@@ -864,8 +864,8 @@ def _build_task_envelope_coherence() -> Path:
     return root
 
 
-def _build_lock_handoff_coupling() -> Path:
-    root = _mkroot("lock-handoff")
+def _build_lock_exchange_coupling() -> Path:
+    root = _mkroot("lock-exchange")
     _write_jsonl(
         root / ".gzkit" / "ledger.jsonl",
         [
@@ -1087,7 +1087,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("req-kind-discipline", _build_req_kind_discipline, _ep._ep_req_kind_discipline),
     ("tautological-test-audit", _build_tautological_test_audit, _ep._ep_tautological_test_audit),
     ("task-envelope-coherence", _build_task_envelope_coherence, _ep._ep_task_envelope_coherence),
-    ("lock-handoff-coupling", _build_lock_handoff_coupling, _ep._ep_lock_handoff_coupling),
+    ("lock-exchange-coupling", _build_lock_exchange_coupling, _ep._ep_lock_exchange_coupling),
     ("handoff-documents", _build_handoff_documents, _ep._ep_handoff_documents),
     ("preflight", _build_preflight, _ep._ep_preflight),
     ("surface-fidelity", _build_surface_fidelity, _ep._ep_surface_fidelity),

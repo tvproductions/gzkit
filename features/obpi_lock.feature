@@ -101,5 +101,5 @@ Feature: OBPI lock management
     And I run "gz obpi lock release OBPI-0.0.41-02"
     Then it exits with code 3
     And the output contains "FAIL-CLOSED"
-    And the output contains "gz-session-handoff"
+    And the output contains "gz obpi complete"
     And the output contains "--abandon"

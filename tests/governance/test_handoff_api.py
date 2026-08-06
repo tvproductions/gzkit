@@ -13,6 +13,10 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
+from gzkit.exchange_records import (
+    find_exchange_for_release,
+    write_completion_exchange,
+)
 from gzkit.handoff_api import (
     DecisionAttribution,
     ObservedState,
@@ -31,7 +35,6 @@ from gzkit.handoff_api import (
 from gzkit.handoff_validation import (
     SETTLED_SECTION,
     HandoffValidationError,
-    find_handoff_for_release,
     parse_frontmatter,
     validate_handoff_document,
 )
@@ -1181,8 +1184,17 @@ class TestChainLinkIsCorrectByConstruction(unittest.TestCase):
 
 
 class TestFullSlugReleasePairing(unittest.TestCase):
+    """The full-slug `obpi_id` form must survive a round trip through both systems.
+
+    Re-pointed at the exchange corpus under GHI #763. It previously wrote a
+    SESSION handoff via ``create_handoff`` and asserted the token finder returned
+    it — encoding the very conflation that GHI as a passing test. The REQ's claim
+    is about the slug-bearing id matching, not about which system owns the
+    document, so both halves are asserted here against their own system.
+    """
+
     @covers("REQ-0.0.65-02-07")
-    def test_full_slug_handoff_validates_and_is_found(self) -> None:
+    def test_full_slug_handoff_validates(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
             full_slug = "OBPI-0.0.65-02-programmatic-api-implementation"
@@ -1197,8 +1209,46 @@ class TestFullSlugReleasePairing(unittest.TestCase):
                 timestamp="2026-07-12T10:00:00Z",
             )
             self.assertTrue(path.exists())
-            found = find_handoff_for_release(base, obpi_id=full_slug)
-            self.assertEqual(found, path, "full-slug handoff must be the release-pairing match")
+            self.assertEqual(validate_handoff_document(path.read_text(encoding="utf-8"), base), [])
+
+    @covers("REQ-0.0.65-02-07")
+    def test_full_slug_exchange_record_is_found(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            full_slug = "OBPI-0.0.65-02-programmatic-api-implementation"
+            written = write_completion_exchange(
+                base,
+                obpi_id=full_slug,
+                agent="test-agent",
+                attestor="g0",
+                attestation_text="attest completed",
+                implementation_summary="summary",
+                key_proof="proof",
+                last_lock_event_timestamp="2026-07-12T09:00:00Z",
+                commit_sha="abc1234",
+                branch="main",
+                brief_rel_path="docs/brief.md",
+            )
+            found = find_exchange_for_release(base, obpi_id=full_slug)
+            self.assertEqual(found, written, "full-slug id must be the release-pairing match")
+
+    @covers("REQ-0.0.65-02-07")
+    def test_a_session_handoff_never_pairs_a_token_release(self) -> None:
+        """The regression fence for the conflation this class used to assert."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            full_slug = "OBPI-0.0.65-02-programmatic-api-implementation"
+            create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="test-agent",
+                slug="release-pairing",
+                sections=_SEVEN_SECTIONS,
+                obpi_id=full_slug,
+                base_path=base,
+                timestamp="2026-07-12T10:00:00Z",
+            )
+            self.assertIsNone(find_exchange_for_release(base, obpi_id=full_slug))
 
 
 class TestNoNetwork(unittest.TestCase):

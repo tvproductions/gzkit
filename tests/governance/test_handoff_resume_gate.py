@@ -456,7 +456,7 @@ class FloorBookmarkIsAFloorNotAPreferenceTests(unittest.TestCase):
 
     GHI #756 built the exit-beat bookmark and named this exact hazard while closing
     it on the SIBLING selector — from its close comment, on
-    `find_handoff_for_release`: *"skipping rather than returning-and-rejecting,
+    `find_exchange_for_release`: *"skipping rather than returning-and-rejecting,
     because a later checkpoint would otherwise win the newest-candidate sort and
     take a genuine register entry down with it."* `newest_handoff` sorts the same
     corpus newest-first and read only `abandoned`, so the hazard stayed open here.

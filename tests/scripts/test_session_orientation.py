@@ -795,8 +795,9 @@ class TestCollectObpiLocks(unittest.TestCase):
             # ... and the surrender is audit-coupled, not a silent vanish.
             ledger_text = (root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn("obpi_lock_released", ledger_text)
-            handoffs_dir = root / ".gzkit" / "handoffs"
-            register_entries = list(handoffs_dir.glob("*OBPI-0.2.0-01*reaped*.md"))
+            # Reaping writes an EXCHANGE record, not a session handoff (GHI #763).
+            exchange = root / ".gzkit" / "locks" / "exchange"
+            register_entries = list(exchange.glob("*OBPI-0.2.0-01*reaped*.md"))
             self.assertTrue(register_entries, "reaping must write a register entry")
 
     def test_active_lock_is_surfaced_not_reaped(self):
@@ -983,7 +984,7 @@ class TestFloorBookmarksDoNotShadowAuthoredHandoffs(unittest.TestCase):
     """Orientation must not surface a mechanical bookmark as "the" handoff (GHI #758).
 
     This is the THIRD reader over the handoff corpus, after the resume gate's
-    `newest_handoff` and the release path's `find_handoff_for_release`. GHI #758's
+    `newest_handoff` and the release path's `find_exchange_for_release`. GHI #758's
     fix hardened the gate; this selector kept its own `max(candidates, key=ts)` and
     went on shadowing — and this is the one whose output an operator actually reads
     at session start.

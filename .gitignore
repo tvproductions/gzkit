@@ -54,7 +54,14 @@ Thumbs.db
 .claude/settings.local.json
 .claude/worktrees/
 .gzkit/cache/
-.gzkit/locks/
+# Locks are ephemeral runtime state and never committed. Exchange records are
+# the opposite: they are the audit evidence a token surrender cites, and
+# `validate_lock_exchange_coupling` fails closed on any cited path that is not
+# in git's index (GHI #759). The `/*` form (not `/`) is load-bearing — git does
+# not descend into an excluded DIRECTORY, so the negation below would be inert
+# against `.gzkit/locks/` (GHI #763).
+.gzkit/locks/*
+!.gzkit/locks/exchange/
 .antigravitycli/
 artifacts/
 

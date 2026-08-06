@@ -84,8 +84,8 @@ and still validated. What differs is what it *means*:
 The distinction is mechanical, not advisory. A session writing a checkpoint
 still holds its work lock, so `gz obpi lock release` will **not** accept one as
 the register entry — token-block discipline § Sub-Invariant 5 is unrelaxed
-(`find_handoff_for_release` skips checkpoints; `gz validate
---lock-handoff-coupling` is the ledger-replay backstop). To surrender a token,
+(`find_exchange_for_release` skips checkpoints; `gz validate
+--lock-exchange-coupling` is the ledger-replay backstop). To surrender a token,
 author a departure handoff or use `--abandon <category>:<reason>`.
 
 ```bash

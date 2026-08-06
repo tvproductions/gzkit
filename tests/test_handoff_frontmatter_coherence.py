@@ -1,9 +1,9 @@
 """Coherence tests for HandoffFrontmatter and the handoff-document gate.
 
 Reconciles the authoring model (``HandoffFrontmatter``) with the fields its own
-writers emit (``write_degenerate_handoff``, ``lock_manager._write_reaping_handoff``)
-and its consumers require (``validate_lock_handoff_coupling``'s min-info fields,
-``find_handoff_for_release``'s slug-bearing ``obpi_id``). Before this OBPI the
+writers emit (``write_degenerate_exchange``, ``lock_manager._write_reaping_exchange``)
+and its consumers require (``validate_lock_exchange_coupling``'s min-info fields,
+``find_exchange_for_release``'s slug-bearing ``obpi_id``). Before this OBPI the
 model was a strict consumer with a toothless authoring guard, so invalid-
 frontmatter handoffs shipped.
 
@@ -21,15 +21,18 @@ import yaml
 from pydantic import ValidationError
 
 from gzkit.commands.quality import _build_check_steps
+from gzkit.exchange_records import (
+    AbandonSpec,
+    exchange_dir,
+    find_exchange_for_release,
+    write_degenerate_exchange,
+)
 from gzkit.handoff_validation import (
     REQUIRED_SECTIONS,
-    AbandonSpec,
     HandoffFrontmatter,
-    find_handoff_for_release,
     validate_handoff_document,
-    write_degenerate_handoff,
 )
-from gzkit.lock_manager import LockData, _write_reaping_handoff
+from gzkit.lock_manager import LockData, _write_reaping_exchange
 from gzkit.quality import _HANDOFF_ENFORCEMENT_CUTOVER, run_handoff_document_audit
 from gzkit.traceability import covers
 
@@ -89,15 +92,15 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
         # Short form must STILL validate — widening is additive, not a swap.
         short = HandoffFrontmatter(**_base_kwargs(), obpi_id="OBPI-0.0.72-02")
         self.assertEqual(short.obpi_id, "OBPI-0.0.72-02")
-        # The slug-bearing consumer (find_handoff_for_release) exact-matches it.
+        # The slug-bearing consumer (find_exchange_for_release) exact-matches it.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            handoff_dir = root / ".gzkit" / "handoffs"
+            handoff_dir = exchange_dir(root)
             handoff_dir.mkdir(parents=True)
             frontmatter = {**_base_kwargs(), "obpi_id": _SLUG_OBPI_ID}
             target = handoff_dir / "20260613T000000Z-handoff.md"
             target.write_text(_full_document(frontmatter), encoding="utf-8")
-            found = find_handoff_for_release(root, obpi_id=_SLUG_OBPI_ID)
+            found = find_exchange_for_release(root, obpi_id=_SLUG_OBPI_ID)
             self.assertEqual(found, target)
 
     @covers("REQ-0.0.72-02-02")
@@ -141,12 +144,12 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
         # lock evidence must round-trip clean.
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / ".gzkit" / "handoffs").mkdir(parents=True)
+            exchange_dir(root).mkdir(parents=True)
 
             # Degenerate writer: its Evidence section points at the now-deleted
             # lock file; shape-awareness must NOT flag that as a missing reference.
             spec = AbandonSpec(category="network_loss", reason="session network interruption")
-            degenerate_path = write_degenerate_handoff(
+            degenerate_path = write_degenerate_exchange(
                 root,
                 obpi_id=_SLUG_OBPI_ID,
                 adr_id="ADR-0.0.72",
@@ -173,7 +176,7 @@ class TestHandoffFrontmatterCoherence(unittest.TestCase):
                 branch="main",
                 ttl_minutes=120,
             )
-            reaping_path = _write_reaping_handoff(root, lock, "agent:reaper")
+            reaping_path = _write_reaping_exchange(root, lock, "agent:reaper")
             reaping_text = reaping_path.read_text(encoding="utf-8")
             self.assertEqual(validate_handoff_document(reaping_text, root), [])
             self.assertIn("adr_id: ADR-0.0.72\n", reaping_text)

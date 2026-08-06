@@ -295,7 +295,7 @@ def handoff_create_cmd(
     ``mode`` selects the register-entry class. ``CREATE`` (the default) and
     ``RESUME`` are departure notices; ``CHECKPOINT`` is the mid-flight bookmark
     (GHI #756) — the session writes one WITHOUT departing, so it is not a token
-    surrender and `find_handoff_for_release` skips it. Without this parameter
+    surrender and `find_exchange_for_release` skips it. Without this parameter
     every write took the ``CREATE`` default, recording a bookmark as a departure.
 
     ``settled`` seats rulings that arrived after the PRIOR handoff was authored —

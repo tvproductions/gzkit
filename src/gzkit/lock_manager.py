@@ -17,6 +17,8 @@ from typing import TYPE_CHECKING, Protocol
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 
+from gzkit.exchange_records import exchange_dir
+
 if TYPE_CHECKING:
     from gzkit.ledger import LedgerEvent
 
@@ -224,17 +226,17 @@ def _head_commit_sha() -> str:
         return "unknown"
 
 
-def _write_reaping_handoff(project_root: Path, lock: LockData, reaper_agent: str) -> Path:
-    """Write an ``abandoned_by_reaper`` register entry under ``.gzkit/handoffs/``.
+def _write_reaping_exchange(project_root: Path, lock: LockData, reaper_agent: str) -> Path:
+    """Write an ``abandoned_by_reaper`` exchange record under ``.gzkit/locks/exchange/``.
 
-    The register entry pairs a reaped lock surrender with a durable audit
+    The exchange record pairs a reaped lock surrender with a durable audit
     artifact (token-block discipline § Sub-Invariant 3). Frontmatter carries the
     reaping-specific fields (``abandoned: true``, ``category: reaping``,
     ``abandoned_by``, ``abandoned_at``, ``previous_agent``) plus the
     Sub-Invariant 2 minimum-information fields (``last_lock_event_timestamp``,
     ``last_commit_sha``). Returns the on-disk path written.
     """
-    handoff_dir = project_root / ".gzkit" / "handoffs"
+    handoff_dir = exchange_dir(project_root)
     handoff_dir.mkdir(parents=True, exist_ok=True)
 
     now = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -320,7 +322,7 @@ def reap_expired_locks(
         if not lock.is_expired:
             continue
         try:
-            handoff_path = _write_reaping_handoff(project_root, lock, agent)
+            handoff_path = _write_reaping_exchange(project_root, lock, agent)
         except OSError:
             # Fail-closed: no register entry → lock survives, no event emitted.
             continue

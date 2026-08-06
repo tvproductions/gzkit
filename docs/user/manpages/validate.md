@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-handoff-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
@@ -1099,11 +1099,19 @@ gz validate --advisor-proof-binding
 | 0 | All scopes pass (vacuous when fixtures/ledger absent) | — |
 | 1 | One or more diagnoses lack non-empty `proof` | Inspect named fixture/event/schema and restore the binding (or remove the empty-proof artifact) |
 
-### `--lock-handoff-coupling`
+### `--lock-exchange-coupling`
 
 Ledger-replay validator that fail-closes on any `obpi_lock_released` event
 (post-OBPI-02 cutover) that violates the token-block discipline
 (ADR-0.0.41 / OBPI-0.0.41-04). Enforced on the default `gz check` pipeline.
+
+> **`--lock-handoff-coupling` is a deprecated alias** and still works (GHI #763).
+> The register entry a token surrender cites is an **exchange record** under
+> `.gzkit/locks/exchange/`, not a session handoff — the two are separate systems
+> that shared a word. The ledger payload key stays `handoff_path`: the ledger is
+> append-only and 204 historical events carry it, so the field name is part of
+> the record. This validator resolves whatever path each event recorded, so
+> pre-relocation events keep resolving under `.gzkit/handoffs/`.
 
 Four failure conditions:
 
@@ -1124,13 +1132,13 @@ are grandfathered (validator exits 0).
 
 ```bash
 # Run on the live ledger (clean ledger exits 0)
-gz validate --lock-handoff-coupling
+gz validate --lock-exchange-coupling
 ```
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | All post-cutover releases carry valid handoff_path and pass min-info checks | — |
-| 3 | One or more releases violate the coupling invariant | Run `gz validate --lock-handoff-coupling` for diagnostic output; use `gz-session-handoff` to author the missing register entry before releasing the lock |
+| 3 | One or more releases violate the coupling invariant | Run `gz validate --lock-exchange-coupling` for diagnostic output; complete the OBPI with `gz obpi complete` (which writes the exchange record mechanically) or surrender with `gz obpi lock release --abandon <category>:<reason>` |
 
 ### `--qc-binding`
 
@@ -1214,7 +1222,7 @@ mechanisms are:
   `added_under`); the set is frozen, new entries forbidden (proven by
   `data/historical_self_close_waivers.json`).
 - **dated cutover** — a past ISO `cutover_date` after which the waiver no longer
-  applies (proven by `lock_handoff_coupling`).
+  applies (proven by `lock_exchange_coupling`).
 - **monotonic shrink-ratchet** — a committed `baseline_count` the live list may
   only decrease against (proven by `tautological_test_baseline`).
 
@@ -1963,7 +1971,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |
-| `--lock-handoff-coupling` | opt-in | Ledger-replay audit: every post-OBPI-02 obpi_lock_released event must carry a valid handoff_path (ADR-0.0.41) |
+| `--lock-exchange-coupling` | opt-in | Ledger-replay audit: every post-OBPI-02 obpi_lock_released event must carry a valid handoff_path (ADR-0.0.41) |
 | `--closeout-proof` | opt-in | Derived closeout-proof view: recomputes per-REQ proof over three live channels (BEHAVIOR/SUPPORT/STRUCTURAL-FENCE) for in-closeout ADRs; exit 3 on any unproven REQ (ADR-0.0.69 / OBPI-0.0.69-03) |
 | `--okf-conformance` | opt-in | OKF generated-bundle-only conformance: every concept doc has parseable frontmatter + non-empty `type`, reserved `index.md`/`log.md` parse; recognizes bundles structurally (reserved files + `type`), never by folder name; never gates authored source docs; exit 3 names the offending file/field (ADR-0.30.0 / OBPI-0.30.0-03) |
 | `--deprecated-verb-prescription` | opt-in | Governed surfaces (rules, skills, runbooks, AGENTS.md/CLAUDE.md) must not prescribe a `gz` verb the CLI announces as deprecated; the inverse of tool-skill-runbook-alignment Invariant 2. Vendor mirrors and historical record are not scanned; a `deprecated-verb-ok` line marker exempts documentation of the deprecation. Exit 3 names file, line, verb, successor (GHI #705) |

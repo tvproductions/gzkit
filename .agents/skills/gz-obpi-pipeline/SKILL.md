@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-06
 metadata:
-  skill-version: "6.32.0"
+  skill-version: "6.32.1"
 model: sonnet
 ---
 
@@ -824,7 +824,7 @@ the reconcile output and ADR status refresh.
      session handoff, pulled earlier because the release depends on it).
    - The handoff frontmatter `obpi_id:` MUST be the **full OBPI slug**
      (e.g. `OBPI-0.0.37-22-committed-rendition-store-deterministic-playback`),
-     not the short form — `find_handoff_for_release` matches by exact equality
+     not the short form — `find_exchange_for_release` matches by exact equality
      against the lock's full-slug `obpi_id`. Known surface friction:
      `validate_handoff_document`'s `_OBPI_ID_RE` rejects the full slug, so the
      standalone validator will flag it; the full slug is nonetheless the

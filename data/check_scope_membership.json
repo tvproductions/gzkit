@@ -33,7 +33,7 @@
     "kind_invariance",
     "ledger",
     "line_endings",
-    "lock_handoff_coupling",
+    "lock_exchange_coupling",
     "manifest",
     "obpi_lifecycle_coherence",
     "orientation_freshness",

@@ -20,6 +20,7 @@ from gzkit.commands.obpi_lock import (
     obpi_lock_list_cmd,
     obpi_lock_release_cmd,
 )
+from gzkit.exchange_records import exchange_dir
 from gzkit.ledger_events import obpi_lock_claimed_event, obpi_lock_released_event
 from gzkit.lock_manager import (
     LockData,
@@ -90,14 +91,17 @@ def _write_release_handoff(
     """Write a valid (non-abandoned) register entry that postdates the claim.
 
     OBPI-0.0.41-03 makes release fail-closed without a register entry, so any
-    normal-release test must seat a matching handoff under ``.gzkit/handoffs/``.
+    normal-release test must seat a matching exchange record under
+    ``.gzkit/locks/exchange/``.
     """
-    handoff_dir = root / ".gzkit" / "handoffs"
+    handoff_dir = exchange_dir(root)
     handoff_dir.mkdir(parents=True, exist_ok=True)
     ts = (datetime.fromisoformat(claimed_at) + timedelta(seconds=1)).isoformat()
     content = (
         "---\n"
-        "mode: RESUME\n"
+        # CREATE, not RESUME: `is_exchange_register_entry` is default-deny and
+        # admits only the shape an exchange writer emits (GHI #763).
+        "mode: CREATE\n"
         "adr_id: ADR-0.0.14\n"
         f"obpi_id: {obpi_id}\n"
         "branch: main\n"
@@ -861,7 +865,7 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
     @covers("REQ-0.0.41-02-04")
     def test_release_parses_abandon_flag(self, mock_init, mock_root):
         """`--abandon <category>:<reason>` parses; whitespace in category rejected."""
-        from gzkit.handoff_validation import (  # noqa: PLC0415
+        from gzkit.exchange_records import (  # noqa: PLC0415
             InvalidAbandonSpec,
             parse_abandon_spec,
         )
@@ -905,8 +909,8 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
                 abandon="network_loss:session interrupted",
             )
 
-            # Degenerate handoff was written under .gzkit/handoffs/
-            handoff_dir = root / ".gzkit" / "handoffs"
+            # Degenerate exchange record was written under .gzkit/locks/exchange/
+            handoff_dir = exchange_dir(root)
             self.assertTrue(handoff_dir.is_dir())
             handoffs = list(handoff_dir.glob("*OBPI-0.0.41-02-abandoned.md"))
             self.assertEqual(len(handoffs), 1)
@@ -927,7 +931,7 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
             self.assertGreater(len(release_events), 0)
             # `extra` is flattened to top-level keys on serialization.
             self.assertIn("handoff_path", release_events[-1])
-            self.assertTrue(release_events[-1]["handoff_path"].startswith(".gzkit/handoffs/"))
+            self.assertTrue(release_events[-1]["handoff_path"].startswith(".gzkit/locks/exchange/"))
 
     @patch("gzkit.commands.obpi_lock.get_project_root")
     @patch("gzkit.commands.obpi_lock.ensure_initialized")
@@ -983,7 +987,7 @@ class TestClaimReleaseSafetyPrimitives(unittest.TestCase):
 
             self.assertEqual(ctx.exception.code, 3)
             stderr_output = captured.getvalue()
-            self.assertIn("gz-session-handoff", stderr_output)
+            self.assertIn("gz obpi complete", stderr_output)
             self.assertIn("--abandon", stderr_output)
 
             # Lock survives — fail-closed before delete.

@@ -11,13 +11,13 @@ import json
 import sys
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root
-from gzkit.handoff_validation import (
+from gzkit.exchange_records import (
     ABANDON_CATEGORIES,
     AbandonSpec,
     InvalidAbandonSpec,
-    find_handoff_for_release,
+    find_exchange_for_release,
     parse_abandon_spec,
-    write_degenerate_handoff,
+    write_degenerate_exchange,
 )
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import obpi_lock_claimed_event, obpi_lock_released_event
@@ -133,8 +133,9 @@ def obpi_lock_release_cmd(
 
     The ``abandon`` parameter accepts ``<category>:<reason>`` per token-block
     discipline (``.gzkit/rules/token-block-discipline.md`` § Sub-Invariant 1).
-    When provided, a degenerate handoff is written under ``.gzkit/handoffs/``
-    and the released event carries ``handoff_path``.
+    When provided, a degenerate exchange record is written under
+    ``.gzkit/locks/exchange/`` and the released event carries ``handoff_path``
+    (the ledger key is frozen on the wire; GHI #763).
 
     Releasing without ``--abandon`` AND without a matching register entry is
     fail-closed (exit 3) per token-block discipline § Sub-Invariant 5: a token
@@ -191,7 +192,7 @@ def obpi_lock_release_cmd(
     handoff_path_str: str | None = None
     if abandon_spec is not None:
         adr_id = _adr_id_from_obpi(obpi_id)
-        handoff_path = write_degenerate_handoff(
+        handoff_path = write_degenerate_exchange(
             project_root,
             obpi_id=obpi_id,
             adr_id=adr_id,
@@ -203,7 +204,7 @@ def obpi_lock_release_cmd(
         )
         handoff_path_str = handoff_path.relative_to(project_root).as_posix()
     else:
-        handoff_match = find_handoff_for_release(
+        handoff_match = find_exchange_for_release(
             project_root,
             obpi_id=obpi_id,
             after_timestamp=existing.claimed_at,
@@ -211,11 +212,16 @@ def obpi_lock_release_cmd(
         if handoff_match is None:
             # Fail-closed (token-block discipline § Sub-Invariant 5): a token
             # cannot be surrendered without a register entry. Name BOTH recovery
-            # surfaces — the handoff skill and the explicit --abandon escape.
+            # surfaces — completion (which writes the exchange record mechanically)
+            # and the explicit --abandon escape. It previously named the
+            # `gz-session-handoff` skill, which authors a SESSION handoff and can
+            # never produce a token register entry — the vocabulary collision
+            # reaching all the way into the recovery prose (GHI #763).
             message = (
-                f"FAIL-CLOSED: refusing to release {obpi_id} without a register "
-                "entry. Create a handoff via the `gz-session-handoff` skill, or "
-                "surrender explicitly with `--abandon <category>:<reason>` "
+                f"FAIL-CLOSED: refusing to release {obpi_id} without an exchange "
+                "record. Complete the OBPI with `gz obpi complete` (which writes "
+                "the record and surrenders the lock mechanically), or surrender "
+                "explicitly with `--abandon <category>:<reason>` "
                 "(token-block discipline § Sub-Invariant 5)."
             )
             if as_json:

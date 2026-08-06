@@ -309,7 +309,7 @@ def newest_handoff(project_root: Path) -> Path | None:
     earlier, and a whole session's orientation was built on the empty one.
 
     GHI #756 named this hazard while closing it on the sibling selector —
-    `find_handoff_for_release` skips checkpoints "rather than
+    `find_exchange_for_release` skips checkpoints "rather than
     returning-and-rejecting, because a later checkpoint would otherwise win the
     newest-candidate sort and take a genuine register entry down with it". Same
     sort, same corpus; this arm had not been taught it.

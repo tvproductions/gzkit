@@ -927,12 +927,20 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Audit advisor verdict <-> proof binding (OBPI-0.0.29-08).",
     )
+    # `--lock-handoff-coupling` is retained as a deprecated alias because it is an
+    # operator-facing surface that appears in runbooks, skills, and prior handoffs;
+    # the precedent is `gz handoff authorize` aliasing `decide` (GHI #763). Both
+    # option strings share one dest, so the alias cannot drift from the flag.
     p_validate.add_argument(
+        "--lock-exchange-coupling",
         "--lock-handoff-coupling",
-        dest="check_lock_handoff_coupling",
+        dest="check_lock_exchange_coupling",
         action="store_true",
         default=False,
-        help="Validate obpi_lock_released events carry a valid handoff_path (ADR-0.0.41).",
+        # Help text is capped at 80 chars (.claude/rules/cli.md § Help Text
+        # Requirements), so the alias is documented in docs/user/manpages/validate.md
+        # rather than inline here.
+        help="Validate obpi_lock_released events cite a valid exchange record.",
     )
     p_validate.add_argument(
         "--qc-binding",
@@ -1204,7 +1212,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_evaluation_justify_binding=(a.check_evaluation_justify_binding),
             check_intrinsic_attestation=a.check_intrinsic_attestation,
             check_advisor_proof_binding=a.check_advisor_proof_binding,
-            check_lock_handoff_coupling=a.check_lock_handoff_coupling,
+            check_lock_exchange_coupling=a.check_lock_exchange_coupling,
             check_qc_binding=a.check_qc_binding,
             check_fidelity_presence=a.check_fidelity_presence,
             check_waiver_ratchet=a.check_waiver_ratchet,

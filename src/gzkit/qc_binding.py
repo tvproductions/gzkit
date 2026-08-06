@@ -109,7 +109,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "REQ kind discipline": ("audit", "docs/", "bound", "python_function"),
     "tautological test audit": ("audit", "tests/", "bound", "python_function"),
     "Task envelope coherence": ("audit", "docs/", "bound", "python_function"),
-    "Lock-handoff coupling": ("audit", ".gzkit/", "bound", "python_function"),
+    "Lock-exchange coupling": ("audit", ".gzkit/", "bound", "python_function"),
     "QC binding": ("audit", "src/", "bound", "python_function"),
     "Fidelity presence": ("audit", "docs/", "bound", "python_function"),
     "Waiver ratchet": ("audit", "data/", "bound", "python_function"),

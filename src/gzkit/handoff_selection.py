@@ -6,13 +6,14 @@ same lesson separately:
 * `gzkit.handoff_resume_gate.newest_handoff` — what the resume gate arms on.
 * `scripts.session_orientation.collect_handoff` — what renders as "Most-recent
   handoff" at session start.
-* `gzkit.lock_manager.find_handoff_for_release` — what may discharge a token
+* `gzkit.exchange_records.find_exchange_for_release` — what may discharge a token
   surrender.
 
 The first two answer *"which document describes the current state?"* and rank an
 AUTHORED handoff above a mechanical floor bookmark. The third answers a different
-question — *"may this document discharge a surrender?"* — and refuses every
-`CHECKPOINT` outright, whoever wrote it (token-block § Sub-Invariant 5). It is
+question — *"may this document discharge a surrender?"* — and since GHI #763 it
+does not even read this corpus: exchange records live in `.gzkit/locks/exchange/`
+and its predicate is default-DENY (token-block § Sub-Invariant 5). It is
 deliberately NOT a caller here: sharing a rule across two questions that merely
 look alike is how the wrong filter gets applied to the wrong arm.
 

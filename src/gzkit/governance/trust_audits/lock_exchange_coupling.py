@@ -1,11 +1,21 @@
-"""Lock-handoff coupling validator (ADR-0.0.41 / OBPI-04).
+"""Lock-exchange coupling validator (ADR-0.0.41 / OBPI-04).
 
 Replays `.gzkit/ledger.jsonl` via the canonical `Ledger.read_all()` surface
 and fail-closes on any `obpi_lock_released` event (post-OBPI-02 cutover)
 whose `handoff_path` payload is missing, references a nonexistent file,
-predates the matching claim, or whose register entry violates Sub-Invariant 2's
+predates the matching claim, or whose exchange record violates Sub-Invariant 2's
 minimum-information rule (last_lock_event_timestamp, last_commit_sha, branch,
 ## Decisions Made section).
+
+The register entry a token surrender cites is an **exchange record**
+(:mod:`gzkit.exchange_records`), not a session handoff — the two systems merely
+shared a word, a directory, and this validator's old name (GHI #763).
+
+The ledger payload key stays ``handoff_path``: 204 historical events carry it and
+the ledger is append-only, so the field name is part of the record. This
+validator resolves whatever path an event recorded, so entries written before the
+relocation keep resolving to `.gzkit/handoffs/` while new ones resolve to
+`.gzkit/locks/exchange/`. Nothing on disk is moved, and nothing needs to be.
 
 Cutover detection: the timestamp of the `obpi_receipt_emitted` event whose `id`
 matches `OBPI-0.0.41-02-*`; derived from ledger at init, never hardcoded.
@@ -28,7 +38,7 @@ _DECISIONS_RE = re.compile(r"^##\s+Decisions\s+Made", re.MULTILINE | re.IGNORECA
 _MIN_INFO_FRONTMATTER_FIELDS = ("last_lock_event_timestamp", "last_commit_sha", "branch")
 
 
-def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
+def validate_lock_exchange_coupling(project_root: Path) -> list[ValidationError]:
     """Replay the ledger and fail-close on broken release/handoff couplings."""
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
@@ -56,7 +66,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         if not handoff_path_rel:
             errors.append(
                 ValidationError(
-                    type="lock_handoff_coupling",
+                    type="lock_exchange_coupling",
                     artifact=obpi_id,
                     message=(
                         f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -70,7 +80,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         if not handoff_abs.exists():
             errors.append(
                 ValidationError(
-                    type="lock_handoff_coupling",
+                    type="lock_exchange_coupling",
                     artifact=obpi_id,
                     message=(
                         f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -83,7 +93,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         if index is not None and str(handoff_path_rel).replace("\\", "/") not in index:
             errors.append(
                 ValidationError(
-                    type="lock_handoff_coupling",
+                    type="lock_exchange_coupling",
                     artifact=obpi_id,
                     message=(
                         f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -102,7 +112,7 @@ def validate_lock_handoff_coupling(project_root: Path) -> list[ValidationError]:
         except OSError:
             errors.append(
                 ValidationError(
-                    type="lock_handoff_coupling",
+                    type="lock_exchange_coupling",
                     artifact=obpi_id,
                     message=(
                         f"obpi_lock_released event for {obpi_id!r}: handoff at "
@@ -215,7 +225,7 @@ def _check_timestamp(
     if handoff_ts < claim_ts:
         return [
             ValidationError(
-                type="lock_handoff_coupling",
+                type="lock_exchange_coupling",
                 artifact=obpi_id,
                 message=(
                     f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -240,7 +250,7 @@ def _check_min_info(
         if not value:
             errors.append(
                 ValidationError(
-                    type="lock_handoff_coupling",
+                    type="lock_exchange_coupling",
                     artifact=obpi_id,
                     message=(
                         f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -252,7 +262,7 @@ def _check_min_info(
     if not _DECISIONS_RE.search(content):
         errors.append(
             ValidationError(
-                type="lock_handoff_coupling",
+                type="lock_exchange_coupling",
                 artifact=obpi_id,
                 message=(
                     f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "
@@ -273,16 +283,19 @@ def _check_mode(
     """Return an error when the cited register entry is a mid-flight bookmark.
 
     A ``CHECKPOINT`` handoff records that a session paused, not that it
-    surrendered its token (GHI #756). ``find_handoff_for_release`` refuses one
-    at the live gate; this is the ledger-replay backstop for a release whose
-    ``handoff_path`` was resolved by any other route.
+    surrendered its token (GHI #756). ``find_exchange_for_release`` refuses one
+    at the live gate — now by default-deny, admitting only the shape an exchange
+    writer emits — and the exchange directory no longer receives session
+    documents at all (GHI #763). This stays as the ledger-replay backstop for a
+    release whose ``handoff_path`` was resolved by any other route, and for the
+    historical events that still cite `.gzkit/handoffs/`.
     """
     mode = (_parse_frontmatter_field(content, "mode") or "").upper()
     if mode != CHECKPOINT_MODE:
         return []
     return [
         ValidationError(
-            type="lock_handoff_coupling",
+            type="lock_exchange_coupling",
             artifact=obpi_id,
             message=(
                 f"obpi_lock_released event for {obpi_id!r} (agent={agent!r}, "

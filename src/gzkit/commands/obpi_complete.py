@@ -1371,7 +1371,7 @@ def _surrender_lock_at_completion(
     discipline § Sub-Invariant 5). Runs after the atomic transaction has
     committed, so it never affects completion's all-or-nothing guarantee.
     """
-    from gzkit.handoff_validation import write_completion_handoff  # noqa: PLC0415
+    from gzkit.exchange_records import write_completion_exchange  # noqa: PLC0415
     from gzkit.ledger_events import obpi_lock_released_event  # noqa: PLC0415
     from gzkit.lock_manager import (  # noqa: PLC0415
         current_branch,
@@ -1383,7 +1383,7 @@ def _surrender_lock_at_completion(
     agent = resolve_agent(None)
     held = read_lock(project_root, obpi_id)
     try:
-        handoff_path = write_completion_handoff(
+        handoff_path = write_completion_exchange(
             project_root,
             obpi_id=obpi_id,
             agent=agent,

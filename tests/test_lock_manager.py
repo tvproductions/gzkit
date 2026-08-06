@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 from pydantic import ValidationError
 
+from gzkit.exchange_records import exchange_dir
 from gzkit.lock_manager import (
     LockData,
     current_branch,
@@ -514,7 +515,7 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
             reaped = reap_expired_locks(root, reaper_agent="reaper-b")
             self.assertEqual(len(reaped), 1)
 
-            handoffs = list((root / ".gzkit" / "handoffs").glob("*.md"))
+            handoffs = list(exchange_dir(root).glob("*.md"))
             self.assertEqual(len(handoffs), 1)
             text = handoffs[0].read_text(encoding="utf-8")
             # Reaping-specific frontmatter (Sub-Invariant 3 step 2)
@@ -546,7 +547,7 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
             self.assertEqual(len(released), 1)
             self.assertIn("handoff_path", released[-1].extra)
             hp = released[-1].extra["handoff_path"]
-            self.assertTrue(hp.startswith(".gzkit/handoffs/"))
+            self.assertTrue(hp.startswith(".gzkit/locks/exchange/"))
             # handoff_path resolves to the on-disk register entry, not a fabricated string
             self.assertTrue((root / hp).is_file())
 
@@ -565,7 +566,7 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
             self.assertEqual(len(reaped), 1)
             self.assertIsNone(read_lock(root, "OBPI-0.0.41-03"))
             # Register entry still written even without a ledger
-            self.assertEqual(len(list((root / ".gzkit" / "handoffs").glob("*.md"))), 1)
+            self.assertEqual(len(list(exchange_dir(root).glob("*.md"))), 1)
 
 
 if __name__ == "__main__":

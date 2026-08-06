@@ -81,7 +81,7 @@ The dual phrasing — *the register entry is required at every signal box, not o
 | "T" written-authority form | (no current gzkit analogue — would correspond to a manual ledger amendment under operator attestation, intentionally not provided) |
 | Rule Book (GE/RT8000) | AGENTS.md + `.gzkit/rules/**` |
 | Signal-engineering interlock (galvanic circuit between instruments) | The fail-closed precondition in `obpi_lock_release_cmd` |
-| Railway Inspector's accident report | `gz validate --lock-handoff-coupling` ledger replay |
+| Railway Inspector's accident report | `gz validate --lock-exchange-coupling` ledger replay |
 
 The mapping is intentionally precise. Where the railway corpus provides a primitive we have not imported (the *"T"* form), the absence is deliberate — the gzkit doctrine refuses to provide the manual-amendment escape hatch that, in railway practice, depends on a signed authority and signalman-to-signalman phone confirmation that has no software-governance analogue worth the abuse surface.
 
@@ -186,16 +186,16 @@ The treatment of the audit trail as a Layer-2 primitive in gzkit's state doctrin
 
 - **Token** — the OBPI lock artifact (file-based mutex stored in `.gzkit/locks/`)
 - **Issue** — the act of claiming a token; corresponds to `obpi_lock_claimed` ledger event
-- **Register entry** — the handoff document written to `.gzkit/handoffs/` (canonical storage per OBPI-0.0.41-03); the audit pairing for every lock release
+- **Register entry** — the **exchange record** written to `.gzkit/locks/exchange/` (canonical storage; relocated from `.gzkit/handoffs/` by GHI #763); the audit pairing for every lock release. It is NOT a session handoff: `exchange` notes one block's vacation, `handoff` is a session-to-session memory refresh, and `transit` is entry to and exit from the ecosystem — three systems, one word they used to share. This line previously defined the correct term using the wrong one
 - **Traversal** — a single OBPI work session; may span multiple agent invocations and clock boundaries
-- **Abandonment** — surrender of a token due to external circumstance (network loss, blocker, wrong claim, tool failure) recorded via degenerate handoff with `abandoned: true`
+- **Abandonment** — surrender of a token due to external circumstance (network loss, blocker, wrong claim, tool failure) recorded via a degenerate exchange record with `abandoned: true`
 - **Reaping** — forcible surrender of an expired token by a different agent (or the same agent in a later session), paired with a degenerate `abandoned_by_reaper` register entry
 
 ## Lock/handoff-coupling audit path
 
 (Lifted from the rule's § Audit Path, 2026-08-02.) When troubleshooting lock/handoff coupling failures:
 
-1. `uv run gz validate --lock-handoff-coupling` — fail-closed validator that replays ledger and checks every `obpi_lock_released` event.
+1. `uv run gz validate --lock-exchange-coupling` — fail-closed validator that replays ledger and checks every `obpi_lock_released` event.
 2. `grep "obpi_lock_released" .gzkit/ledger.jsonl` — find all release events; each MUST have a `handoff_path` field.
 3. `test -f "<path-from-handoff_path>"` — verify register entry exists on-disk.
 4. `head -n 10 <path>` — check frontmatter for timestamp, commit SHA, decision context, branch state.

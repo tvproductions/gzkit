@@ -24,13 +24,14 @@ from unittest.mock import patch
 from rich.console import Console
 
 from gzkit.commands.obpi_lock import obpi_lock_release_cmd
-from gzkit.handoff_validation import (
+from gzkit.exchange_records import (
     ABANDON_CATEGORIES,
     AbandonSpec,
     InvalidAbandonSpec,
-    find_handoff_for_release,
+    exchange_dir,
+    find_exchange_for_release,
     parse_abandon_spec,
-    write_degenerate_handoff,
+    write_degenerate_exchange,
 )
 from gzkit.lock_manager import lock_path, reap_expired_locks, write_lock
 from tests.commands.common import SilencedConsoleTestCase
@@ -118,7 +119,7 @@ class TestAbandonCategoryEnum(unittest.TestCase):
 
 @covers("OBPI-0.0.41-02")
 class TestDegenerateHandoffWriter(SilencedConsoleTestCase):
-    """REQ-05: --abandon writes a degenerate handoff under .gzkit/handoffs/."""
+    """REQ-05: --abandon writes a degenerate exchange record under .gzkit/locks/exchange/."""
 
     @covers("REQ-0.0.41-02-05")
     def test_release_abandon_writes_degenerate_handoff_and_records_path(self) -> None:
@@ -143,7 +144,7 @@ class TestDegenerateHandoffWriter(SilencedConsoleTestCase):
                     abandon="external_blocker:downstream service offline",
                 )
 
-                handoffs = list((root / ".gzkit" / "handoffs").glob("*OBPI-0.0.41-02-abandoned.md"))
+                handoffs = list(exchange_dir(root).glob("*OBPI-0.0.41-02-abandoned.md"))
                 self.assertEqual(len(handoffs), 1)
 
                 text = handoffs[0].read_text(encoding="utf-8")
@@ -230,7 +231,7 @@ class TestFailClosedOnNoHandoff(unittest.TestCase):
 
                 self.assertEqual(ctx.exception.code, 3)
                 stderr = captured.getvalue()
-                self.assertIn("gz-session-handoff", stderr)
+                self.assertIn("gz obpi complete", stderr)
                 self.assertIn("--abandon", stderr)
 
                 # Lock survives — fail-closed before delete
@@ -255,7 +256,7 @@ class TestReapFailsClosed(unittest.TestCase):
             ledger = _CapturingLedger()
 
             with patch(
-                "gzkit.lock_manager._write_reaping_handoff",
+                "gzkit.lock_manager._write_reaping_exchange",
                 side_effect=OSError("simulated handoff write failure"),
             ):
                 reaped = reap_expired_locks(root, ledger=ledger, reaper_agent="reaper-b")
@@ -271,36 +272,44 @@ class TestReapFailsClosed(unittest.TestCase):
 
 @covers("OBPI-0.0.41-03")
 class TestNoAdrPackageHandoffWrites(unittest.TestCase):
-    """REQ-03-05: every handoff-dir write under src/ is rooted at .gzkit/handoffs/."""
+    """REQ-03-05: every register-entry store write under src/ is rooted at .gzkit."""
 
     @covers("REQ-0.0.41-03-05")
     def test_no_adr_package_handoff_writes(self) -> None:
-        """Static fence: no code path constructs a handoffs dir outside .gzkit."""
+        """Static fence: no code path constructs a register-entry dir outside .gzkit.
+
+        Covers BOTH store segments (GHI #763). The fence originally named
+        ``handoffs`` alone, which was the only store that existed; leaving it that
+        way after the exchange corpus split off would have fenced the system this
+        REQ is not about and left the token system's own store unfenced — the
+        enumerate-the-known-cases miss that produced the default-admit blocklist
+        this same GHI retired.
+        """
         repo_root = Path(__file__).resolve().parents[2]
         src = repo_root / "src" / "gzkit"
-        # Matches a Path join onto a "handoffs" segment, e.g. `pkg / "handoffs"`.
-        join_handoffs = re.compile(r"""/\s*["']handoffs["']""")
+        # Matches a Path join onto a store segment, e.g. `pkg / "handoffs"`.
+        join_store = re.compile(r"""/\s*["'](?:handoffs|exchange)["']""")
         offenders: list[str] = []
         for py in src.rglob("*.py"):
             for lineno, line in enumerate(py.read_text(encoding="utf-8").splitlines(), start=1):
-                if join_handoffs.search(line) and ".gzkit" not in line:
+                if join_store.search(line) and ".gzkit" not in line:
                     offenders.append(f"{py.relative_to(repo_root)}:{lineno}: {line.strip()}")
         self.assertEqual(
             offenders,
             [],
-            "handoff-dir writes MUST target .gzkit/handoffs/, never an ADR "
-            "package: " + "; ".join(offenders),
+            "register-entry writes MUST target .gzkit/handoffs/ (session) or "
+            ".gzkit/locks/exchange/ (token), never an ADR package: " + "; ".join(offenders),
         )
 
 
 @covers("OBPI-0.0.41-02")
 class TestFindHandoffForRelease(unittest.TestCase):
-    """Companion: find_handoff_for_release helper used by release path."""
+    """Companion: find_exchange_for_release helper used by release path."""
 
     def test_returns_none_when_no_handoffs(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            result = find_handoff_for_release(root, obpi_id="OBPI-0.0.41-02")
+            result = find_exchange_for_release(root, obpi_id="OBPI-0.0.41-02")
             self.assertIsNone(result)
 
     def test_returns_none_for_abandoned_handoff(self) -> None:
@@ -308,7 +317,7 @@ class TestFindHandoffForRelease(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             spec = AbandonSpec(category="network_loss", reason="example")
-            written = write_degenerate_handoff(
+            written = write_degenerate_exchange(
                 root,
                 obpi_id="OBPI-0.0.41-02",
                 adr_id="ADR-0.0.41",
@@ -321,7 +330,7 @@ class TestFindHandoffForRelease(unittest.TestCase):
             self.assertTrue(written.exists())
             # Abandoned handoffs don't count as register-entry pairing for
             # normal release (they pair only with --abandon code path).
-            result = find_handoff_for_release(root, obpi_id="OBPI-0.0.41-02")
+            result = find_exchange_for_release(root, obpi_id="OBPI-0.0.41-02")
             self.assertIsNone(result)
 
 

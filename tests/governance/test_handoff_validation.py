@@ -15,13 +15,17 @@ from unittest.mock import patch
 
 from pydantic import ValidationError
 
+from gzkit.exchange_records import (
+    exchange_dir,
+    find_exchange_for_release,
+    write_completion_exchange,
+)
 from gzkit.handoff_api import create_handoff
 from gzkit.handoff_validation import (
     HANDOFF_SCHEMA_VERSION,
     REQUIRED_SECTIONS,
     HandoffFrontmatter,
     HandoffValidationError,
-    find_handoff_for_release,
     parse_frontmatter,
     validate_handoff_document,
     validate_no_placeholders,
@@ -29,7 +33,6 @@ from gzkit.handoff_validation import (
     validate_referenced_files,
     validate_sections_populated,
     validate_sections_present,
-    write_completion_handoff,
 )
 from gzkit.traceability import covers
 
@@ -233,13 +236,13 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
     def test_completion_handoff_does_not_synthesize_a_sentinel_adr(self) -> None:
         """No ``ADR-0.0.0`` placeholder — an absent ADR is recorded as absent.
 
-        ``write_completion_handoff`` wrote ``ADR-0.0.0`` when it could not
+        ``write_completion_exchange`` wrote ``ADR-0.0.0`` when it could not
         derive an ADR from the OBPI id, satisfying the required field with an
         identifier that names no real artifact. Its own docstring named the
         motive: *"so the frontmatter validates."*
         """
         with tempfile.TemporaryDirectory() as tmp:
-            path = write_completion_handoff(
+            path = write_completion_exchange(
                 Path(tmp),
                 obpi_id="OBPI-not-semver-shaped",
                 agent="claude-code",
@@ -1034,7 +1037,7 @@ class TestDecisionMarkerDiscipline(unittest.TestCase):
 class TestCompletionHandoffFidelity(unittest.TestCase):
     """What the mechanical exit-edge register entry owes the successor session.
 
-    `write_completion_handoff` runs at every `gz obpi complete` (GHI #619), so any
+    `write_completion_exchange` runs at every `gz obpi complete` (GHI #619), so any
     fidelity defect in it is not one bad document — it is every completion handoff
     gzkit will ever write. Three such defects were found reviewing the
     OBPI-0.34.0-03 entry on 2026-07-29, all invisible to the validator by
@@ -1055,7 +1058,7 @@ class TestCompletionHandoffFidelity(unittest.TestCase):
             "brief_rel_path": "docs/design/adr/x/obpis/y.md",
         }
         kwargs.update(overrides)
-        return write_completion_handoff(Path(tmp), **kwargs).read_text(  # type: ignore
+        return write_completion_exchange(Path(tmp), **kwargs).read_text(  # type: ignore
             encoding="utf-8"
         )
 
@@ -1137,7 +1140,7 @@ class CheckpointModeTests(unittest.TestCase):
     `"CREATE"` — a checkpoint written mid-session was recorded as a departure.
     Admitting `CHECKPOINT` is only half the fix: token-block discipline
     § Sub-Invariant 5 makes a non-abandoned handoff postdating the claim
-    sufficient to surrender a lock, and `find_handoff_for_release` never read
+    sufficient to surrender a lock, and `find_exchange_for_release` never read
     `mode`. Introducing the mode without teaching that predicate would let a
     bookmark discharge a surrender the session never performed.
 
@@ -1146,7 +1149,11 @@ class CheckpointModeTests(unittest.TestCase):
     """
 
     def _write_handoff(self, tmp: Path, *, mode: str, ts: str) -> Path:
-        handoff_dir = tmp / ".gzkit" / "handoffs"
+        # Seats the fixture in the EXCHANGE corpus (GHI #763). The mode predicate
+        # is what these assertions exercise, so the fixture must reach the arm
+        # that applies it; writing to `.gzkit/handoffs/` would make every case
+        # pass on the directory mismatch and prove nothing about `mode`.
+        handoff_dir = exchange_dir(tmp)
         handoff_dir.mkdir(parents=True, exist_ok=True)
         doc = _clean_handoff_doc(
             f"mode: {mode}\n"
@@ -1173,7 +1180,7 @@ class CheckpointModeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_handoff(root, mode="CHECKPOINT", ts="2026-04-14T12:00:00")
-            found = find_handoff_for_release(
+            found = find_exchange_for_release(
                 root,
                 obpi_id="OBPI-0.25.0-32",
                 after_timestamp="2026-04-14T09:00:00",
@@ -1188,7 +1195,7 @@ class CheckpointModeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             expected = self._write_handoff(root, mode="CREATE", ts="2026-04-14T12:00:00")
-            found = find_handoff_for_release(
+            found = find_exchange_for_release(
                 root,
                 obpi_id="OBPI-0.25.0-32",
                 after_timestamp="2026-04-14T09:00:00",
@@ -1206,7 +1213,7 @@ class CheckpointModeTests(unittest.TestCase):
             root = Path(tmp)
             expected = self._write_handoff(root, mode="CREATE", ts="2026-04-14T12:00:00")
             self._write_handoff(root, mode="CHECKPOINT", ts="2026-04-14T18:00:00")
-            found = find_handoff_for_release(
+            found = find_exchange_for_release(
                 root,
                 obpi_id="OBPI-0.25.0-32",
                 after_timestamp="2026-04-14T09:00:00",

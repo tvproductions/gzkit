@@ -20,7 +20,7 @@ Runs the complete quality assurance suite: linting with Ruff, format check, stat
 
 The `Surface fidelity` step runs `gz validate --surface-fidelity` to verify all four surface-fidelity invariants (ADR-0.0.33-05).
 
-The `Lock-handoff coupling` step runs `gz validate --lock-handoff-coupling` to
+The `Lock-exchange coupling` step runs `gz validate --lock-exchange-coupling` to
 enforce the token-block discipline: every `obpi_lock_released` event in the
 ledger (post-OBPI-02 cutover) must carry a valid `handoff_path` and satisfy
 Sub-Invariant 2's minimum-information rule (ADR-0.0.41 / OBPI-0.0.41-04).

@@ -179,7 +179,7 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertIn("obpi_lock_released", ledger_text)
             self.assertIn("OBPI-0.2.0-01", ledger_text)
             # ... and a reaping register entry exists on disk.
-            register_entries = list(Path(".gzkit/handoffs").glob("*OBPI-0.2.0-01*reaped*.md"))
+            register_entries = list(Path(".gzkit/locks/exchange").glob("*OBPI-0.2.0-01*reaped*.md"))
             self.assertTrue(
                 register_entries,
                 "reaping must write an abandoned_by_reaper register entry",

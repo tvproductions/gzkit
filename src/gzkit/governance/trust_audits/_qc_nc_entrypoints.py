@@ -418,12 +418,12 @@ def _ep_task_envelope_coherence(root: Path) -> list[ValidationError]:
     return _validate_task_envelope_coherence(root)
 
 
-def _ep_lock_handoff_coupling(root: Path) -> list[ValidationError]:
-    from gzkit.governance.trust_audits.lock_handoff_coupling import (  # noqa: PLC0415
-        validate_lock_handoff_coupling,
+def _ep_lock_exchange_coupling(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.lock_exchange_coupling import (  # noqa: PLC0415
+        validate_lock_exchange_coupling,
     )
 
-    return validate_lock_handoff_coupling(root)
+    return validate_lock_exchange_coupling(root)
 
 
 def _ep_handoff_documents(root: Path) -> int:
