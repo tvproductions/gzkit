@@ -1102,8 +1102,11 @@ class TestCompletionHandoffFidelity(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             written = self._write(tmp, implementation_summary=" ".join(tokens))
 
-        line = next(ln for ln in written.splitlines() if ln.startswith("- Implementation summary:"))
-        body = line.removeprefix("- Implementation summary:").strip()
+        # The summary moved to `## Current State Summary` under a `Work performed:`
+        # prefix (GHI #764): it is retrospective, and `## Pending Work / Open Loops`
+        # is a prospective heading. The truncation contract is unchanged.
+        line = next(ln for ln in written.splitlines() if ln.startswith("Work performed:"))
+        body = line.removeprefix("Work performed:").strip()
         self.assertTrue(body.endswith("…"), f"truncation must be marked; got tail {body[-40:]!r}")
         carried = body.removesuffix("…").split()
         self.assertTrue(carried, "truncation must still carry content")

@@ -14,11 +14,16 @@ prompt was the defect this work corrects.
 from __future__ import annotations
 
 import json
+import re
 import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.commands.obpi_complete import _surrender_lock_at_completion
+from gzkit.commands.obpi_complete import (
+    _read_observation,
+    _read_open_loops,
+    _surrender_lock_at_completion,
+)
 from gzkit.exchange_records import (
     exchange_dir,
     write_completion_exchange,
@@ -184,6 +189,148 @@ class TestSurrenderLockAtCompletion(unittest.TestCase):
             self.assertEqual(self._released(self._events(root)), [])
             handoffs = list(exchange_dir(root).glob(f"*-{_OBPI}-complete.md"))
             self.assertEqual(len(handoffs), 1)
+
+
+def _section(content: str, heading: str) -> str:
+    """Return the body of one `## ` section, or '' when absent."""
+    match = re.search(
+        rf"^## {re.escape(heading)}\s*$([\s\S]*?)(?=^## |\Z)",
+        content,
+        flags=re.MULTILINE,
+    )
+    return match.group(1).strip() if match else ""
+
+
+class TestObservationReport(unittest.TestCase):
+    """An exchange record is block vacation AND an observation report (GHI #764).
+
+    Operator canon, 2026-08-06: *"exchange (noting block vacation and an observation
+    report of what happened)"*. The writer had three content inlets for seven
+    sections, so four sections emitted boilerplate that was byte-identical across all
+    33 records on disk — and those four are the observation report's own subject
+    matter.
+    """
+
+    def _write(self, root: Path, brief_rel: str, **kwargs) -> str:
+        path = write_completion_exchange(
+            root,
+            obpi_id=_OBPI,
+            agent="claude-code",
+            attestor="g0",
+            attestation_text="attest completed",
+            implementation_summary="Wired the observation report.",
+            key_proof="uv run -m unittest passes.",
+            last_lock_event_timestamp="2026-06-28T10:00:00+00:00",
+            commit_sha="abcdef0",
+            branch="main",
+            brief_rel_path=brief_rel,
+            **kwargs,
+        )
+        return path.read_text(encoding="utf-8")
+
+    def test_the_observation_reaches_important_context(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = self._write(
+                root, brief_rel, observation="Discovered the manifest must load first."
+            )
+        self.assertIn(
+            "Discovered the manifest must load first.", _section(content, "Important Context")
+        )
+
+    def test_the_residual_reaches_pending_work(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = self._write(root, brief_rel, open_loops="GHI #999 - the third ingress.")
+        self.assertIn(
+            "GHI #999 - the third ingress.", _section(content, "Pending Work / Open Loops")
+        )
+
+    def test_the_implementation_summary_is_retrospective_not_pending(self) -> None:
+        """The tense violation GHI #764 names, asserted as behavior.
+
+        The summary describes COMPLETED work and was filed under a PROSPECTIVE
+        heading because the writer had retrospective content and a prospective
+        schema. Asserted on both poles so the test fails if the content merely
+        moves somewhere else.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = self._write(root, brief_rel)
+        self.assertIn("Wired the observation report.", _section(content, "Current State Summary"))
+        self.assertNotIn(
+            "Wired the observation report.", _section(content, "Pending Work / Open Loops")
+        )
+
+    def test_the_fallback_needs_no_observation_input(self) -> None:
+        """GHI #619's floor survives: no inlets supplied still yields a valid record.
+
+        Surrender was made mechanical because locks were stranded whenever nobody
+        authored a record. Requiring the new inlets would re-create that friction, so
+        the fallback must stay a floor rather than become a ceiling.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = self._write(root, brief_rel)
+            self.assertEqual(validate_handoff_document(content, root), [])
+        for heading in ("Important Context", "Immediate Next Steps", "Pending Work / Open Loops"):
+            self.assertTrue(_section(content, heading), f"{heading} must never be empty")
+
+    def test_observation_does_not_displace_the_provenance_note(self) -> None:
+        """The mechanical-provenance note is a coda, not the section's content."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = self._write(root, brief_rel, observation="A learned constraint.")
+        context = _section(content, "Important Context")
+        self.assertIn("A learned constraint.", context)
+        self.assertIn("token-block exit-edge register", context)
+
+
+class TestObservationSourcedFromBrief(unittest.TestCase):
+    """The observation report is already authored in the brief; it lacked a channel."""
+
+    def test_value_narrative_is_read_as_the_observation(self) -> None:
+        brief = "### Value Narrative\n\nBefore: no gate. After: the gate runs everywhere.\n"
+        self.assertEqual(
+            _read_observation(brief),
+            "Before: no gate. After: the gate runs everywhere.",
+        )
+
+    def test_a_comment_only_narrative_degrades_rather_than_emptying(self) -> None:
+        """116 of 368 briefs write the narrative inside the scaffold comment.
+
+        `_sanitize_exchange_text` strips comments by design so a prompt is never
+        carried inward as content, so those must fall back to boilerplate — never to
+        an empty required section.
+        """
+        brief = "### Value Narrative\n\n<!-- Before: ... After: ... -->\n"
+        observation = _read_observation(brief)
+        with tempfile.TemporaryDirectory() as tmp:
+            root, brief_rel = _scaffold(Path(tmp))
+            content = write_completion_exchange(
+                root,
+                obpi_id=_OBPI,
+                agent="claude-code",
+                attestor="g0",
+                attestation_text="attest completed",
+                implementation_summary="s",
+                key_proof="p",
+                last_lock_event_timestamp="2026-06-28T10:00:00+00:00",
+                commit_sha="abcdef0",
+                branch="main",
+                brief_rel_path=brief_rel,
+                observation=observation,
+            ).read_text(encoding="utf-8")
+        self.assertTrue(_section(content, "Important Context"))
+
+    def test_tracked_defects_is_read_as_the_residual(self) -> None:
+        brief = "## Tracked Defects\n\n- GHI #706 - latent third ingress.\n\n## Next\n"
+        self.assertEqual(_read_open_loops(brief), "- GHI #706 - latent third ingress.")
+
+    def test_absent_sections_return_none_not_empty_string(self) -> None:
+        """None is the 'fall back to boilerplate' signal; '' would render a blank section."""
+        self.assertIsNone(_read_observation("# brief\n"))
+        self.assertIsNone(_read_open_loops("# brief\n"))
 
 
 if __name__ == "__main__":

@@ -1332,6 +1332,9 @@ def obpi_complete_cmd(
 
     # Token-block exit edge (GHI #619): completion mechanically surrenders the
     # work lock and writes its register entry — no manual `gz obpi lock release`.
+    # The observation report (GHI #764) is sourced from the brief the agent just
+    # completed, so the record carries what the traversal learned without asking
+    # the operator for anything the brief does not already hold.
     _surrender_lock_at_completion(
         project_root=project_root,
         ledger=ledger,
@@ -1342,6 +1345,8 @@ def obpi_complete_cmd(
         key_proof=effective_proof,
         commit_sha=anchor.commit,
         brief_rel_path=obpi_file.relative_to(project_root).as_posix(),
+        observation=_read_observation(original_content),
+        open_loops=_read_open_loops(original_content),
     )
 
     # Success output
@@ -1359,17 +1364,26 @@ def _surrender_lock_at_completion(
     key_proof: str,
     commit_sha: str,
     brief_rel_path: str,
+    observation: str | None = None,
+    open_loops: str | None = None,
 ) -> None:
     """Write the completion register entry and surrender any held work lock.
 
     The token-block exit edge (GHI #619): OBPI completion is a mechanical
-    surrender. A full completion handoff is written as the register entry, and if
-    a lock is held it is deleted and an ``obpi_lock_released`` event is emitted
-    citing that handoff — no operator prompt, no manual ``gz obpi lock release``
-    chore. Best-effort and fail-safe: if the register entry cannot be written the
-    lock is left for TTL reaping rather than surrendered without one (token-block
-    discipline § Sub-Invariant 5). Runs after the atomic transaction has
-    committed, so it never affects completion's all-or-nothing guarantee.
+    surrender. A full completion exchange record is written as the register entry,
+    and if a lock is held it is deleted and an ``obpi_lock_released`` event is
+    emitted citing that record — no operator prompt, no manual
+    ``gz obpi lock release`` chore. Best-effort and fail-safe: if the register entry
+    cannot be written the lock is left for TTL reaping rather than surrendered
+    without one (token-block discipline § Sub-Invariant 5). Runs after the atomic
+    transaction has committed, so it never affects completion's all-or-nothing
+    guarantee.
+
+    ``observation`` and ``open_loops`` carry the observation report half of the
+    exchange record (GHI #764) and are optional on the same terms as everything
+    else here: absent, the writer falls back to boilerplate and surrender still
+    happens. The caller sources them from the brief's own ``### Value Narrative``
+    and ``## Tracked Defects``, so the normal path needs no new operator input.
     """
     from gzkit.exchange_records import write_completion_exchange  # noqa: PLC0415
     from gzkit.ledger_events import obpi_lock_released_event  # noqa: PLC0415
@@ -1395,6 +1409,8 @@ def _surrender_lock_at_completion(
             commit_sha=commit_sha,
             branch=current_branch(),
             brief_rel_path=brief_rel_path,
+            observation=observation,
+            open_loops=open_loops,
         )
     except OSError:
         return
@@ -1616,6 +1632,50 @@ def _read_existing_key_proof(content: str) -> str | None:
     if body is None:
         return None
     if _is_placeholder(body):
+        return None
+    return body
+
+
+def _read_observation(content: str) -> str | None:
+    """Read the brief's ``### Value Narrative`` as the traversal's observation report.
+
+    This is where the completing agent already writes what the traversal learned
+    about the block — the before/after, the constraint discovered, the approach
+    rejected. It had no channel into the exchange record, so that record's
+    ``## Important Context`` emitted boilerplate byte-identical across all 33
+    mechanically-written records (GHI #764).
+
+    Returns ``None`` when the section is absent or holds only scaffold prose. That
+    is a real case, not a defensive branch: 116 of 368 briefs carrying the section
+    write their narrative *inside* the HTML scaffold comment, which
+    ``_sanitize_exchange_text`` strips by design so a prompt is never carried inward
+    as content. Those degrade to the prior boilerplate rather than to an empty
+    section.
+    """
+    body = _extract_h3_body(content, "Value Narrative")
+    if body is None or _is_placeholder(body):
+        return None
+    return body
+
+
+def _read_open_loops(content: str) -> str | None:
+    """Read the brief's ``## Tracked Defects`` as the residual left for the next occupant.
+
+    An H2 section, so it does not go through :func:`_extract_h3_body`. This is the
+    prospective content ``## Pending Work / Open Loops`` exists to carry; before
+    GHI #764 that section held the *implementation summary*, which is retrospective
+    — the writer had retrospective content and a prospective schema and placed it
+    where it fit rather than where it belonged.
+    """
+    match = re.search(
+        r"^## Tracked Defects\s*$([\s\S]*?)(?=^## |\n---|\Z)",
+        content,
+        flags=re.MULTILINE,
+    )
+    if match is None:
+        return None
+    body = match.group(1).strip()
+    if not body or _is_placeholder(body):
         return None
     return body
 

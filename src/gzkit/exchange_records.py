@@ -296,6 +296,10 @@ def write_completion_exchange(
     commit_sha: str,
     branch: str,
     brief_rel_path: str,
+    observation: str | None = None,
+    residual: str | None = None,
+    open_loops: str | None = None,
+    artifacts: str | None = None,
 ) -> Path:
     r"""Write a full exchange record as the register entry for OBPI completion.
 
@@ -308,6 +312,24 @@ def write_completion_exchange(
     Auto-drafted from completion evidence and written mechanically at every
     ``gz obpi complete`` (token-block exit edge, GHI #619); it may be terse. Written
     with explicit ``\n`` newlines so the committed artifact is LF on every platform.
+
+    **The observation report (GHI #764).** An exchange record is two things —
+    the fact of block vacation *and* an observation report of what happened during
+    possession (operator canon, 2026-08-06). Only the second half needed wiring:
+    the writer had three content inlets for seven sections, so four sections emitted
+    boilerplate that was byte-identical across all 33 records on disk. Those four
+    were not low-value sections; they are the observation report's own subject
+    matter, with no channel to reach the document.
+
+    ``observation``, ``residual``, ``open_loops``, and ``artifacts`` are those
+    channels. **All four are optional by design.** GHI #619 made surrender mechanical
+    because locks were being stranded whenever nobody authored a record, so requiring
+    them would re-create exactly that friction. Absent, each falls back to the prior
+    boilerplate: the fallback stops being the normal path without ceasing to be a
+    valid floor. ``gz obpi complete`` fills them from the brief's own
+    ``### Value Narrative`` and ``## Tracked Defects``, which is where the completing
+    agent already wrote the observation report — so the usual path needs no new
+    operator input at all.
     """
     target_dir = exchange_dir(project_root)
     target_dir.mkdir(parents=True, exist_ok=True)
@@ -343,6 +365,26 @@ def write_completion_exchange(
     summary = _sanitize_exchange_text(implementation_summary) or "See brief Implementation Summary."
     proof = _sanitize_exchange_text(key_proof) or "See brief Key Proof and the ledger receipt."
 
+    # The mechanical provenance note is a CODA, not the section. It was the whole of
+    # `## Important Context` in all 33 prior records — byte-identical, and displacing
+    # the observation report that section exists to carry.
+    provenance = (
+        "Written mechanically at `gz obpi complete` as the token-block exit-edge register "
+        "entry (token surrender at the section's end; see "
+        "`.gzkit/rules/token-block-discipline.md`)."
+    )
+    observed = _sanitize_exchange_text(observation)
+    context_block = f"{observed}\n\n{provenance}\n\n" if observed else f"{provenance}\n\n"
+
+    residual_text = _sanitize_exchange_text(residual)
+    next_block = f"1. {residual_text}\n\n" if residual_text else next_step
+
+    loops = _sanitize_exchange_text(open_loops)
+    loops_block = f"- {loops}\n\n" if loops else "- None recorded at surrender; see the brief.\n\n"
+
+    extra_artifacts = _sanitize_exchange_text(artifacts)
+    artifacts_block = f"- {extra_artifacts}\n" if extra_artifacts else ""
+
     body = (
         "---\n"
         + yaml.safe_dump(frontmatter, sort_keys=False)
@@ -353,11 +395,13 @@ def write_completion_exchange(
         + f"OBPI {obpi_id} completed and attested by `{attestor}`{parent_phrase}. The work "
         + "lock (if held) was surrendered mechanically at completion; the "
         + "`obpi_lock_released` ledger event is the surrender audit.\n\n"
+        # The implementation summary is RETROSPECTIVE and belongs here. It was filed
+        # under `## Pending Work / Open Loops` — a prospective section — because the
+        # writer had retrospective content and a prospective schema, so it placed the
+        # content where it fit rather than where it belonged (GHI #764).
+        + f"Work performed: {summary}\n\n"
         + "## Important Context\n\n"
-        + "Written mechanically at `gz obpi complete` as the token-block exit-edge register "
-        + "entry (token surrender at the section's end; see "
-        + "`.gzkit/rules/token-block-discipline.md`). Auto-drafted from completion evidence "
-        + "and may be terse.\n\n"
+        + context_block
         + "## Decisions Made\n\n"
         # `[operator-ruled]` is unconditional here: Gate 5 is universal (ADR-0.0.36), so
         # a COMPLETION record's decision is always a human attestation. Written bare it
@@ -370,9 +414,9 @@ def write_completion_exchange(
         # unattributed: its entry is a mechanical lock-surrender record, not a ruling.
         + f"- [operator-ruled] {decision}\n\n"
         + "## Immediate Next Steps\n\n"
-        + next_step
+        + next_block
         + "## Pending Work / Open Loops\n\n"
-        + f"- Implementation summary: {summary}\n\n"
+        + loops_block
         + "## Verification Checklist\n\n"
         + f"- [ ] `git rev-parse HEAD` resolves to `{commit_sha}` (or operator explains drift).\n"
         + f"- [ ] Branch matches `{branch}`.\n"
@@ -380,6 +424,7 @@ def write_completion_exchange(
         + "## Evidence / Artifacts\n\n"
         + f"- `{brief_rel_path}` — the completed OBPI brief.\n"
         + "- `.gzkit/ledger.jsonl` — completion receipt and lock-release event.\n"
+        + artifacts_block
     )
 
     path.write_text(body, encoding="utf-8", newline="\n")
