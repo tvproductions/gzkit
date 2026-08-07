@@ -179,28 +179,28 @@ a `CorpusEntry` field re-added with no consumer is the exact defect GHI #737
 named, and BI-04 is what makes its recurrence auditable at closeout rather than
 discoverable years later. *Proves REQ-0.35.0-10-07.*
 
-**BI-04 — The fail-closed reach of `--rendition-lineage` is owned sections
+**BI-05 — The fail-closed reach of `--rendition-lineage` is owned sections
 only.** No ADR-0.35.0 OBPI extends it over unowned bytes. The gate's partial
 scope is a declared property of the whole decomposition — OBPI-04 sets the
 scope, OBPI-05 supplies the comparison artifact, OBPI-07 consumes the result.
 Widening the gate silently would convert a declared 31.2% into an implied 100%,
 which is the theater this ADR exists to remove. *Proves REQ-0.35.0-06-08.*
 
-**BI-05 — `gz content remember` refuses an append on no path introduced anywhere
+**BI-06 — `gz content remember` refuses an append on no path introduced anywhere
 in ADR-0.35.0.** Capture is unblockable across the whole decomposition. OBPI-06's
 gate and OBPI-07's orchestrator both make the tree redder, and either could be
 tempted to add a precondition to `remember` to keep it green. Losing the
 operator's words is strictly worse than a red tree; the defect this ADR fixes is
 the SILENCE, not the redness. *Proves REQ-0.35.0-08-07.*
 
-**BI-06 — ADR-0.35.0 makes no change to the surfaces ADR-0.44.0 owns.**
+**BI-07 — ADR-0.35.0 makes no change to the surfaces ADR-0.44.0 owns.**
 Specifically: `.codex/config.toml` generation, Codex hook registration and
 adapters, Codex subagent role definitions, the `gz validate --surfaces` Codex
 drift scope, and the Codex instruction-budget artifacts. This ADR wires playback
 of an existing committed rendition and nothing else. Cross-ADR, so auditable
 only once the whole ADR-0.35.0 diff is in hand. *Proves REQ-0.35.0-09-07.*
 
-**BI-07 — Attested-record edit, scoped to corpus entries (precedent).** An
+**BI-08 — Attested-record edit, scoped to corpus entries (precedent).** An
 attested `invariant`-tier corpus entry may be superseded ONLY by an appended
 tombstone carrying `--attestor` and `--reason`; it is never edited in place and
 never deleted. Recorded here so `ADR-pool.attested-record-edit-doctrine`
