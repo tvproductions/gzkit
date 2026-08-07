@@ -519,8 +519,16 @@ def _detect_orphan_obpis(
 ) -> list[str]:
     """Detect ledger OBPIs with no on-disk brief file.
 
-    Returns a list of orphaned OBPI IDs (non-withdrawn, under eligible parents,
-    with no matching file on disk).  GHI #67.
+    Returns a list of orphaned OBPI IDs (neither withdrawn nor parked, under
+    eligible parents, with no matching file on disk).  GHI #67.
+
+    Parked OBPIs are excluded for the same reason withdrawn ones are: the brief
+    is *intentionally* absent. Park is the reversible counterpart to withdraw
+    (GHI #584) and preserves lineage via ``parked_to``, so a parked OBPI is
+    already correctly dispositioned — reporting it under advice to "withdraw or
+    rename to fix" would invite re-dispositioning work the Foundation Sunset
+    deliberately parked. ``parked`` is two-way, so ``obpi_unparked`` returns an
+    OBPI to orphan reporting when its brief is genuinely missing again.
     """
     on_disk_ids: set[str] = set()
     for obpi_file in artifacts.get("obpis", []):
@@ -534,7 +542,7 @@ def _detect_orphan_obpis(
     for artifact_id, info in existing_graph.items():
         if info.get("type") != "obpi":
             continue
-        if info.get("withdrawn"):
+        if info.get("withdrawn") or info.get("parked"):
             continue
         parent = info.get("parent", "")
         canonical_parent = ledger.canonicalize_id(parent) if parent else ""

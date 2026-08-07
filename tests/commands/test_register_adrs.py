@@ -356,6 +356,46 @@ class TestRegisterAdrsCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertNotIn("orphan", result.output)
 
+    def test_register_adrs_does_not_flag_parked_obpi_as_orphan(self) -> None:
+        """A parked OBPI with no brief on disk is dispositioned, not orphaned.
+
+        Park is the reversible counterpart to withdraw (GHI #584): the brief is
+        intentionally removed while lineage is preserved via ``parked_to``. The
+        orphan detector's advice is "withdraw or rename to fix", which is wrong
+        for a parked OBPI — it is already correctly dispositioned, so reporting
+        it invites re-withdrawing work the Foundation Sunset deliberately parked.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            adr_dir = Path(config.paths.adrs) / "pre-release" / "ADR-0.4.0-sample"
+            (adr_dir / "obpis").mkdir(parents=True, exist_ok=True)
+            (adr_dir / "ADR-0.4.0-sample.md").write_text(
+                "---\nid: ADR-0.4.0-sample\nparent: PRD-GZKIT-1.0.0\nlane: lite\n---\n\n"
+                "# ADR-0.4.0: Sample\n",
+                encoding="utf-8",
+            )
+            runner.invoke(main, ["register-adrs"])
+
+            from gzkit.ledger import Ledger, obpi_created_event
+            from gzkit.ledger_events import obpi_parked_event
+
+            ledger = Ledger(Path(config.paths.ledger))
+            ledger.append(obpi_created_event("OBPI-0.4.0-01-parked", "ADR-0.4.0-sample"))
+            ledger.append(
+                obpi_parked_event(
+                    "OBPI-0.4.0-01-parked",
+                    "ADR-0.4.0-sample",
+                    parked_to="ADR-pool.sample",
+                )
+            )
+
+            result = runner.invoke(main, ["register-adrs"])
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("orphan", result.output)
+
     def test_register_adrs_warns_on_stale_promoted_pool_file(self) -> None:
         """register-adrs warns when a pool file on disk maps to a promoted versioned ADR."""
         runner = CliRunner()
