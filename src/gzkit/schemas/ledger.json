@@ -1624,6 +1624,9 @@
         },
         "adversary_tier": {
           "type": "integer"
+        },
+        "adversary_receipt": {
+          "type": "string"
         }
       }
     },

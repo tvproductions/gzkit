@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-07
 metadata:
-  skill-version: "6.33.0"
+  skill-version: "6.34.0"
 model: sonnet
 ---
 
@@ -690,9 +690,33 @@ Step 4a is authored by the same agent that may have fabricated it. Step 4b adds 
 
 **Record the tier and why.** The tier is recorded on the **completion call**, not on a dispatch record: pass `--adversary-tier {1,2,3}` to `gz obpi complete`, plus — for tier 2/3 — `--adversary-fallback-reason` naming the observed unavailability. Both land on the `adversarial_validation` ledger event, which is the verdict's durable home (GHI #676). **The declared tier GOVERNS**: `gz obpi complete` fail-closes when tier 1 is declared while the named adversary is not a recognized different-vendor model, and when a tier-2/3 verdict carries no fallback reason. "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
 
+**Prove the tier; do not merely declare it (GHI #765).** A declared tier is a second
+assertion from the same caller — as is `--adversary-job-id`, which **nothing resolves**.
+Run the tier-1 adversary under ARB and cite the receipt:
+
+```bash
+uv run gz arb step --name codexadversary -- codex exec '<refute-framed prompt>'
+# → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json
+uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
+  --adversary-receipt arb-step-codexadversary-<hash>
+```
+
+The gate **resolves** the receipt: it must exist, record `exit_status: 0`, and its
+`step.command[0]` must be a recognized different-vendor binary. Precedence is
+**proven > declared > inferred**, and a receipt contradicting a declared tier 1 fails
+closed. The receipt is not yet mandatory — supply it whenever the adversary ran through
+a shell, which is every tier-1 run you can wrap.
+
+> **Why the name scan is left conservative rather than "fixed."** `_is_cross_vendor_adversary`
+> prefix-scans, so `"independent Codex subagent"` reads as NOT cross-vendor and demands a
+> fallback reason. That false negative is a *safe* wrong answer and is deliberate: any scan
+> admitting a *mentioned* vendor would classify the ledger's existing
+> `independent-claude-subagent (codex-unavailable; degraded tier)` as tier 1 — failing OPEN
+> on the exact substitution Step 4b exists to catch. A name can mention; an argv ran.
+
 > This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` preserves the older name-inference behavior, so records predating the flag still resolve.
 
-**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to REFUTE — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real. Require a verdict — `REFUTED` | `NOT-REFUTED` | `REFUTED-WITH-CAVEATS` — with pasted output per check and a "Weakest point" section. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
+**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to REFUTE — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real. Require a verdict — `REFUTED` | `NOT-REFUTED` | `REFUTED-WITH-CAVEATS` — with pasted output per check and a "Weakest point" section. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
 
 **Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator a known caveat dressed as clean. Present the adversary's verdict (and any fix) alongside Step 4a.
 

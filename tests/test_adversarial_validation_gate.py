@@ -16,13 +16,17 @@ from __future__ import annotations
 import contextlib
 import io
 import json
+import tempfile
 import unittest
+from pathlib import Path
 from unittest import mock
 
 from gzkit.commands.obpi_complete import (
     ADVERSARY_VERDICTS,
     _build_adversarial_event,
     _enforce_adversarial_validation,
+    _is_cross_vendor_adversary,
+    _receipt_proves_cross_vendor,
 )
 from gzkit.events import parse_typed_event
 
@@ -366,6 +370,189 @@ class TestGateIsWiredIntoCompletion(unittest.TestCase):
         gate.assert_not_called()
         # A preview writes nothing: no brief flip, no ledger append.
         execute.assert_not_called()
+
+
+class TestNameScanCannotDistinguishMentionFromUse(unittest.TestCase):
+    """GHI #765: the adversary NAME is not a sound channel for the tier-1 property.
+
+    `_is_cross_vendor_adversary` prefix-scans, so a vendor named anywhere but the
+    first token reads as not-cross-vendor. The obvious repair — token membership —
+    is worse, and these assertions pin why: two adversary names recorded in
+    `.gzkit/ledger.jsonl` mention Codex precisely to say it was UNAVAILABLE. A scan
+    that admits a mentioned vendor classifies a degraded Claude-family run as
+    tier-1, which fails OPEN on the exact substitution Step 4b exists to catch.
+
+    The prefix scan's conservatism is therefore deliberate, not a bug to fix: its
+    wrong answers demand a fallback reason. Authority for the tier belongs to the
+    receipt channel, which reads argv and cannot confuse mention with use.
+    """
+
+    def test_a_name_mentioning_codex_as_unavailable_is_not_cross_vendor(self) -> None:
+        # Verbatim from .gzkit/ledger.jsonl. Both name Codex to record its ABSENCE.
+        for name in (
+            "independent-claude-subagent (codex-unavailable; degraded tier)",
+            "independent-claude-subagent (degraded from unavailable codex/gpt-5)",
+        ):
+            with self.subTest(name=name):
+                self.assertFalse(_is_cross_vendor_adversary(name))
+
+    def test_claude_family_name_is_not_cross_vendor(self) -> None:
+        self.assertFalse(_is_cross_vendor_adversary("claude/general-purpose"))
+
+    def test_a_genuinely_codex_led_name_is_cross_vendor(self) -> None:
+        for name in ("codex", "codex/gpt-5", "codex-cli-0.146.0"):
+            with self.subTest(name=name):
+                self.assertTrue(_is_cross_vendor_adversary(name))
+
+
+class TestReceiptProvesCrossVendorFromArgv(unittest.TestCase):
+    """GHI #765: tier 1 is proven by what RAN, not by what the caller typed.
+
+    An ARB step receipt is written by a different process at invocation time and
+    records `step.command` — the argv actually executed. These assertions derive
+    from the requirement that the proof read that argv, never a display name.
+    """
+
+    @staticmethod
+    def _receipt(command: list[str], *, exit_status: int = 0) -> dict[str, object]:
+        return {
+            "schema": "gzkit.arb.step_receipt.v1",
+            "run_id": "arb-step-codexadversary-" + "0" * 32,
+            "exit_status": exit_status,
+            "step": {"name": "codexadversary", "command": command},
+        }
+
+    def test_argv_invoking_codex_proves_cross_vendor(self) -> None:
+        self.assertTrue(_receipt_proves_cross_vendor(self._receipt(["codex", "exec", "refute"])))
+
+    def test_absolute_binary_path_still_proves_cross_vendor(self) -> None:
+        # The recorded argv may carry a resolved path; the binary name is the claim.
+        self.assertTrue(
+            _receipt_proves_cross_vendor(self._receipt(["/opt/homebrew/bin/codex", "exec"]))
+        )
+
+    def test_windows_binary_path_still_proves_cross_vendor(self) -> None:
+        # .claude/rules/cross-platform.md: platforms are co-equal.
+        self.assertTrue(
+            _receipt_proves_cross_vendor(self._receipt([r"C:\tools\codex.exe", "exec"]))
+        )
+
+    def test_argv_invoking_a_claude_family_tool_does_not_prove_cross_vendor(self) -> None:
+        self.assertFalse(_receipt_proves_cross_vendor(self._receipt(["claude", "-p", "refute"])))
+
+    def test_a_receipt_whose_argv_merely_mentions_codex_does_not_prove(self) -> None:
+        # The distinction the name channel structurally cannot make: the binary that
+        # ran is `echo`, and "codex" is an argument to it.
+        self.assertFalse(_receipt_proves_cross_vendor(self._receipt(["echo", "codex ran, honest"])))
+
+    def test_malformed_receipts_do_not_prove(self) -> None:
+        for receipt in (
+            {},
+            {"step": {}},
+            {"step": {"command": []}},
+            {"step": "not-a-mapping"},
+        ):
+            with self.subTest(receipt=receipt):
+                self.assertFalse(_receipt_proves_cross_vendor(receipt))
+
+
+class TestReceiptGovernsTheDeclaredTier(unittest.TestCase):
+    """GHI #765: a receipt that contradicts the declared tier fails closed.
+
+    Precedence is proven > declared > inferred. A caller declaring tier 1 while
+    supplying a receipt whose argv ran a same-family tool is asserting against
+    evidence it supplied itself; that contradiction must block, not pass.
+    """
+
+    def setUp(self) -> None:
+        self._dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._dir.cleanup)
+        self.root = Path(self._dir.name)
+
+    def _write(self, run_id: str, command: list[str], *, exit_status: int = 0) -> str:
+        payload = {
+            "schema": "gzkit.arb.step_receipt.v1",
+            "run_id": run_id,
+            "exit_status": exit_status,
+            "step": {"name": "codexadversary", "command": command},
+        }
+        (self.root / f"{run_id}.json").write_text(json.dumps(payload), encoding="utf-8")
+        return run_id
+
+    def test_receipt_proving_codex_admits_tier_1_without_fallback_reason(self) -> None:
+        run_id = self._write("arb-step-codexadversary-" + "a" * 32, ["codex", "exec"])
+        _enforce(
+            adversary="independent Codex subagent",
+            tier=1,
+            receipt=run_id,
+            receipts_root=self.root,
+            fallback_reason=None,
+        )
+
+    def test_unresolvable_receipt_blocks(self) -> None:
+        # A receipt id naming no file on disk is the fabrication case.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(tier=1, receipt="arb-step-codexadversary-" + "f" * 32, receipts_root=self.root)
+
+    def test_receipt_recording_a_failed_run_blocks(self) -> None:
+        run_id = self._write(
+            "arb-step-codexadversary-" + "b" * 32, ["codex", "exec"], exit_status=1
+        )
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(tier=1, receipt=run_id, receipts_root=self.root)
+
+    def test_declared_tier_1_contradicting_the_receipt_argv_blocks(self) -> None:
+        run_id = self._write("arb-step-codexadversary-" + "c" * 32, ["claude", "-p", "refute"])
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="codex/gpt-5.4", tier=1, receipt=run_id, receipts_root=self.root)
+
+    def test_block_message_names_the_receipt_and_a_runnable_next_step(self) -> None:
+        buffer = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(buffer):
+            _enforce(
+                tier=1,
+                receipt="arb-step-codexadversary-" + "f" * 32,
+                receipts_root=self.root,
+                as_json=True,
+            )
+        error = json.loads(buffer.getvalue())["error"]
+        self.assertIn("--adversary-receipt", error)
+        self.assertIn("gz arb step", error)
+
+
+class TestReceiptReachesTheLedger(unittest.TestCase):
+    """GHI #765: the resolved receipt id must outlive the session, like the tier."""
+
+    def test_receipt_id_reaches_the_serialized_ledger_record(self) -> None:
+        event = _build_adversarial_event(
+            obpi_id="OBPI-0.33.0-01-airlock-data-model-and-events",
+            verdict="not-refuted",
+            adversary="independent Codex subagent",
+            job_id=None,
+            refuted_claim=None,
+            resolution=None,
+            tier=1,
+            receipt="arb-step-codexadversary-" + "a" * 32,
+        )
+        assert event is not None
+        self.assertEqual(
+            event.model_dump()["adversary_receipt"],
+            "arb-step-codexadversary-" + "a" * 32,
+        )
+
+    def test_absent_receipt_is_omitted_rather_than_recorded_as_null(self) -> None:
+        event = _build_adversarial_event(
+            obpi_id="OBPI-0.33.0-01-airlock-data-model-and-events",
+            verdict="not-refuted",
+            adversary="codex/gpt-5.4",
+            job_id=None,
+            refuted_claim=None,
+            resolution=None,
+            tier=None,
+            receipt=None,
+        )
+        assert event is not None
+        self.assertNotIn("adversary_receipt", event.model_dump())
 
 
 if __name__ == "__main__":

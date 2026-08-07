@@ -1020,6 +1020,7 @@ def obpi_complete_cmd(
     adversary_verdict: str | None = None,
     adversary: str | None = None,
     adversary_job_id: str | None = None,
+    adversary_receipt: str | None = None,
     refuted_claim: str | None = None,
     adversary_resolution: str | None = None,
     adversary_fallback_reason: str | None = None,
@@ -1289,6 +1290,7 @@ def obpi_complete_cmd(
     # their own cause first: an operator with an uncovered REQ must hear about the
     # REQ, not the adversary. A --dry-run has already returned above; it writes
     # nothing, so it gates nothing.
+    arb_receipts_dir = receipts_root(project_root=project_root)
     _enforce_adversarial_validation(
         obpi_id=obpi_id,
         parent_lane=parent_lane,
@@ -1298,6 +1300,8 @@ def obpi_complete_cmd(
         as_json=as_json,
         fallback_reason=adversary_fallback_reason,
         tier=adversary_tier,
+        receipt=adversary_receipt,
+        receipts_root=arb_receipts_dir,
     )
 
     # 6-8. Execute atomic transaction
@@ -1309,6 +1313,7 @@ def obpi_complete_cmd(
         refuted_claim=refuted_claim,
         resolution=adversary_resolution,
         tier=adversary_tier,
+        receipt=adversary_receipt,
     )
     try:
         _execute_transaction(
@@ -1988,6 +1993,56 @@ def _is_cross_vendor_adversary(adversary: str) -> bool:
     return any(name.startswith(prefix) for prefix in _CROSS_VENDOR_ADVERSARY_PREFIXES)
 
 
+def _receipt_binary_name(argv_head: str) -> str:
+    """Return the bare binary name from a recorded argv head.
+
+    Handles both separators explicitly rather than via ``Path``: the receipt may
+    have been written on a different platform than the one reading it, and
+    ``PurePosixPath`` does not split a Windows head (`.claude/rules/cross-platform.md`).
+    """
+    return argv_head.replace("\\", "/").rsplit("/", 1)[-1]
+
+
+def _receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
+    """Return True when the receipt records a cross-vendor binary that actually ran.
+
+    The proof is ``step.command[0]`` — the argv ARB executed — never a caller-supplied
+    display name. This is the distinction the name channel cannot make by construction:
+    a name can MENTION a vendor while describing its absence (two adversary names in
+    `.gzkit/ledger.jsonl` read "codex-unavailable"), and any scan admitting a mentioned
+    vendor would classify those degraded Claude-family runs as tier 1 — failing OPEN on
+    the exact substitution Step 4b exists to catch. An argv cannot mention; it ran.
+
+    Malformed receipts return False rather than raising: an unreadable proof is an
+    absent proof, and the caller fails closed on it (GHI #765).
+    """
+    step = receipt.get("step")
+    if not isinstance(step, dict):
+        return False
+    command = step.get("command")
+    if not isinstance(command, list) or not command:
+        return False
+    return _is_cross_vendor_adversary(_receipt_binary_name(str(command[0])))
+
+
+def _load_adversary_receipt(run_id: str, *, root: Path) -> dict[str, Any] | None:
+    """Read the ARB step receipt named by *run_id*, or None when unresolvable.
+
+    Unresolvable covers every way the id can fail to name a real receipt: no such
+    file, unreadable, non-JSON, or a JSON scalar. Each collapses to the same
+    governance meaning — the corroborating artifact is not there.
+    """
+    try:
+        raw = (root / f"{run_id}.json").read_text(encoding="utf-8")
+    except OSError:
+        return None
+    try:
+        receipt = json.loads(raw)
+    except json.JSONDecodeError:
+        return None
+    return receipt if isinstance(receipt, dict) else None
+
+
 def _build_adversarial_event(
     *,
     obpi_id: str,
@@ -1997,6 +2052,7 @@ def _build_adversarial_event(
     refuted_claim: str | None,
     resolution: str | None,
     tier: int | None = None,
+    receipt: str | None = None,
 ) -> LedgerEvent | None:
     """Render the Step-4b verdict as an ``adversarial_validation`` ledger event.
 
@@ -2021,10 +2077,71 @@ def _build_adversarial_event(
         ("refuted_claim", refuted_claim),
         ("resolution", resolution),
         ("adversary_tier", tier),
+        ("adversary_receipt", receipt),
     ):
         if value:
             payload[key] = value
     return LedgerEvent.model_validate(payload)
+
+
+def _enforce_adversary_receipt(
+    *,
+    obpi_id: str,
+    receipt: str,
+    receipts_root: Path | None,
+    tier: int | None,
+    as_json: bool,
+) -> bool:
+    """Resolve the cited ARB receipt and report whether it proves a cross-vendor run.
+
+    Fails closed — never returning — when the receipt does not resolve, records a
+    non-zero exit, or contradicts a declared tier 1. Split out of
+    ``_enforce_adversarial_validation`` to hold that gate under the C complexity
+    ceiling (`.pre-commit-config.yaml` xenon) rather than to add a seam (GHI #765).
+    """
+    loaded = (
+        _load_adversary_receipt(receipt, root=receipts_root) if receipts_root is not None else None
+    )
+    if loaded is None:
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
+            f"'{receipt}', which does not resolve to a readable ARB step receipt. "
+            "A receipt id naming no artifact is an assertion wearing the shape of "
+            "proof. Run the adversary under ARB so the receipt exists: "
+            "uv run gz arb step --name codexadversary -- codex exec '<refute prompt>', "
+            "then cite the run_id it prints with --adversary-receipt.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+    if loaded.get("exit_status") != 0:
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
+            f"'{receipt}', which records exit_status={loaded.get('exit_status')!r} — "
+            "the adversary run did not succeed. A failed run cannot have re-derived "
+            "the completion claim. Re-run the adversary under ARB (uv run gz arb step "
+            "--name codexadversary -- codex exec '<refute prompt>') and cite the "
+            "successful run_id.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+    proven = _receipt_proves_cross_vendor(loaded)
+    if tier == 1 and not proven:
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} declares --adversary-tier 1 "
+            f"(cross-vendor) but its receipt '{receipt}' records an argv that did not "
+            "invoke a recognized different-vendor binary. The receipt is the proof "
+            "channel precisely because it records what RAN — a declaration that "
+            "contradicts it is asserting against the caller's own evidence. Either "
+            "cite the receipt of the cross-vendor run, or declare the tier that "
+            "actually ran (--adversary-tier 2) with --adversary-fallback-reason "
+            "'<observed Codex unavailability>'.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+    return proven
 
 
 def _enforce_adversarial_validation(
@@ -2037,6 +2154,8 @@ def _enforce_adversarial_validation(
     as_json: bool,
     fallback_reason: str | None = None,
     tier: int | None = None,
+    receipt: str | None = None,
+    receipts_root: Path | None = None,
 ) -> None:
     """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
 
@@ -2095,8 +2214,21 @@ def _enforce_adversarial_validation(
     # with nothing behind it, so "codex-shaped name" and "ran on Codex" were the same
     # claim. Declaring a tier that contradicts the name is a contradiction the name scan
     # cannot see by construction — it fails closed here rather than passing silently.
+    # Precedence: PROVEN (receipt) > DECLARED (tier) > INFERRED (name). A receipt is
+    # written by ARB at invocation time and records the argv that actually ran, so it
+    # is the only channel here not authored by the agent making the claim (GHI #765).
+    proven_cross_vendor: bool | None = None
+    if receipt:
+        proven_cross_vendor = _enforce_adversary_receipt(
+            obpi_id=obpi_id,
+            receipt=receipt,
+            receipts_root=receipts_root,
+            tier=tier,
+            as_json=as_json,
+        )
+
     name_is_cross_vendor = _is_cross_vendor_adversary(adversary)
-    if tier == 1 and not name_is_cross_vendor:
+    if proven_cross_vendor is None and tier == 1 and not name_is_cross_vendor:
         _fail(
             f"Completion blocked: Step 4b for {obpi_id} declares --adversary-tier 1 "
             f"(cross-vendor) but names adversary '{adversary}', which is not a recognized "
@@ -2110,7 +2242,12 @@ def _enforce_adversarial_validation(
             obpi_id=obpi_id,
         )
 
-    is_cross_vendor = name_is_cross_vendor if tier is None else tier == 1
+    if proven_cross_vendor is not None:
+        is_cross_vendor = proven_cross_vendor
+    elif tier is not None:
+        is_cross_vendor = tier == 1
+    else:
+        is_cross_vendor = name_is_cross_vendor
     if not is_cross_vendor and not (fallback_reason and fallback_reason.strip()):
         _fail(
             f"Completion blocked: Step 4b for {obpi_id} used a non-cross-vendor "

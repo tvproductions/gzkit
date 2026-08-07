@@ -1476,6 +1476,13 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         help="Adversary run id, when the runtime supplies one.",
     )
     p_obpi_complete.add_argument(
+        "--adversary-receipt",
+        dest="adversary_receipt",
+        metavar="RUN_ID",
+        default=None,
+        help="ARB step receipt run_id proving the tier from the argv that ran.",
+    )
+    p_obpi_complete.add_argument(
         "--refuted-claim",
         dest="refuted_claim",
         metavar="TEXT",
@@ -1522,6 +1529,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             adversary_verdict=a.adversary_verdict,
             adversary=a.adversary,
             adversary_job_id=a.adversary_job_id,
+            adversary_receipt=a.adversary_receipt,
             refuted_claim=a.refuted_claim,
             adversary_resolution=a.adversary_resolution,
             adversary_fallback_reason=a.adversary_fallback_reason,

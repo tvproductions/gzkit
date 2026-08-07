@@ -800,6 +800,13 @@ class AdversarialValidationEvent(_EventBase):
         default=None,
         description="Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded",
     )
+    adversary_receipt: str | None = Field(
+        default=None,
+        description=(
+            "ARB step receipt run_id proving the tier from the argv that ran (GHI #765). "
+            "Unlike job_id, the gate resolves this before admitting the completion"
+        ),
+    )
 
 
 class RedReceiptEmittedEvent(_EventBase):

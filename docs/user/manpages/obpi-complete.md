@@ -28,7 +28,8 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--reason TEXT` | Rationale for `--accept-stale-reconciliation` (min 10 chars). |
 | `--adversary-verdict {refuted,not-refuted,refuted-with-caveats,degraded-human-only}` | Step-4b independent adversarial validation verdict. **Required on the heavy lane** (GHI #676). Emits an `adversarial_validation` ledger event before the completion receipt. |
 | `--adversary IDENTITY` | Adversary identity — vendor/model (e.g. `codex/gpt-5.4`), or `human` in degraded mode. Required whenever `--adversary-verdict` is given. |
-| `--adversary-job-id ID` | Adversary run id, when the runtime supplies one (e.g. a Codex `task-*` id). |
+| `--adversary-job-id ID` | Adversary run id, when the runtime supplies one (e.g. a Codex `task-*` id). Recorded as provenance only — **nothing resolves it**, so it is never proof of the tier (GHI #765). |
+| `--adversary-receipt RUN_ID` | ARB step receipt `run_id` proving the tier from the argv that actually ran (GHI #765). Unlike `--adversary-job-id`, the gate **resolves** this: the receipt must exist, record `exit_status: 0`, and its `step.command[0]` must be a recognized different-vendor binary. Precedence is **proven > declared > inferred** — a receipt contradicting `--adversary-tier 1` fails closed. Produce one with `gz arb step --name codexadversary -- codex exec '<refute prompt>'`. |
 | `--refuted-claim TEXT` | The specific claim the adversary broke, verbatim. |
 | `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict refuted`** — a known refutation may never be handed to the operator dressed as clean. |
 | `--adversary-fallback-reason TEXT` | Why Codex (tier 1, cross-vendor) was unavailable, when a Claude-family (tier-2) adversary ran. **Required for a non-cross-vendor adversary** (GHI #678) — Codex is required first because a Claude validating Claude shares this agent's blind spots; "it was convenient" is not a reason. |
@@ -73,6 +74,38 @@ uv run gz obpi complete OBPI-0.0.99-01-example \
 
 `--adversary-verdict refuted` without `--adversary-resolution` is blocked. The lite
 lane is exempt, matching the lane that already carries fail-closed Gate 3 and Gate 4.
+
+### Proving the tier instead of asserting it (GHI #765)
+
+Run the adversary **under ARB**, then cite the receipt it prints. ARB records the
+argv at invocation time, so the cross-vendor property is read from what ran rather
+than from the identity string you typed:
+
+```console
+$ uv run gz arb step --name codexadversary -- codex --version
+codex-cli 0.147.0
+arb step name=codexadversary exit_status=0 receipt=artifacts/receipts/arb-step-codexadversary-c2f59259604a42d68ba594842a624794.json
+```
+
+```bash
+uv run gz obpi complete OBPI-0.0.99-01-example \
+  --attestor 'g0' --attestation-text 'attest completed' \
+  --adversary-verdict not-refuted --adversary 'independent Codex subagent' \
+  --adversary-tier 1 \
+  --adversary-receipt arb-step-codexadversary-c2f59259604a42d68ba594842a624794
+```
+
+Note the adversary name above does **not** begin with a vendor token, so name-based
+inference alone would have refused it as tier 1. The receipt admits it, because
+`step.command[0]` is `codex`. The converse also holds: a receipt whose argv ran a
+same-family tool blocks a `--adversary-tier 1` declaration, since the declaration
+would contradict the caller's own evidence.
+
+The name channel is deliberately left conservative rather than "fixed". It cannot
+distinguish mention from use — two adversary identities already in the ledger read
+`codex-unavailable`, and any scan admitting a *mentioned* vendor would classify
+those degraded Claude-family runs as tier 1, failing open on the exact substitution
+Step 4b exists to catch.
 
 ## The waiver refuses every REQ it can reach (GHI #537)
 
