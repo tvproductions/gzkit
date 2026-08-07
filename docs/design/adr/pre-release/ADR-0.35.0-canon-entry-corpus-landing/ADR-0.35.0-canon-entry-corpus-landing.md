@@ -87,7 +87,7 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
 
 1. The invariant floor becomes ENFORCEABLE over a named, growing fraction of the contract, rather than asserted over all of it and verified over none.
 2. Coverage becomes a published number with a decrease-only ratchet, so unwitnessed contract text is VISIBLE DEBT instead of silence. Consistent with gzkit's own posture on Layer-3 derived views and advisory scorecards.
-3. Duplicate canon retires without breaking append-only; provenance survives in the log. Corpus goes 50 -> 42 invariant entries.
+3. Duplicate canon retires without breaking append-only; provenance survives in the log. Corpus goes **50 -> 43** live invariant entries (RE-MEASURED 2026-08-07; the authoring-time projection was `50 -> 42`). One of the eight retirements landed early under GHI #635 and one new `invariant` entry was captured 2026-08-06, so the live count reads 50 today for different reasons than it did at authoring. The binding figure at implementation time is whatever OBPI-0.35.0-03 Requirement 2's mandatory re-measurement returns — never this line.
 4. `ByteEvidence` stops reporting a 63x inflation (354 B -> 22,378 B) as a compression accounting.
 5. `codex.md` becomes falsifiable -- a `lite` setpoint that is actually consumed, for the first time.
 6. `gz content remember` stops being a footgun: capture still always succeeds, but it names the drift it caused and the governed next step.
@@ -283,7 +283,7 @@ pool item (operator ruling, 2026-07-21).
 
 - [ ] `CorpusEntry.supersedes` / `.retires` fields + `effective_corpus()` fold (algebra specified, including retire-the-tombstone) + `tier_policy.invariant_entries()` reads the effective view
 - [ ] `gz content retire` — Gate-5 extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2.
-- [ ] Retire the 8 duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus 50 -> 42 (GHI #635)
+- [ ] Retire the duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus **50 -> 43** live invariant (GHI #635). Re-measured 2026-08-07: the divergent pair landed early (`42ba6c250`), so **7 of the 8 remain**; the authoring-time projection was "8 ... 50 -> 42". Re-derive at implementation time per OBPI-0.35.0-03 Requirement 2 -- an off-by-one inside a Gate 5 batch is a fabricated receipt.
 - [ ] Section ownership declaration + decrease-only unowned-byte ratchet + attested ratchet-raise path for un-owning
 - [ ] corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction
 - [ ] `gz validate --rendition-lineage` -- fail-closed over owned sections, coverage % surfaced to Fidelity Assertions
