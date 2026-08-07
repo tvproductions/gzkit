@@ -32,6 +32,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--refuted-claim TEXT` | The specific claim the adversary broke, verbatim. |
 | `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict refuted`** — a known refutation may never be handed to the operator dressed as clean. |
 | `--adversary-fallback-reason TEXT` | Why Codex (tier 1, cross-vendor) was unavailable, when a Claude-family (tier-2) adversary ran. **Required for a non-cross-vendor adversary** (GHI #678) — Codex is required first because a Claude validating Claude shares this agent's blind spots; "it was convenient" is not a reason. |
+| `--adversary-tier {1,2,3}` | Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded. **The declaration governs**: tier 1 named against an adversary that is not a recognized different-vendor model fails closed, and tier 2/3 still requires `--adversary-fallback-reason` even when the adversary is named after a tier-1 vendor. Omit it to fall back to name-based inference, which is how records predating the flag resolve (GHI #678). |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 

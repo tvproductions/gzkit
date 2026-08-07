@@ -796,6 +796,10 @@ class AdversarialValidationEvent(_EventBase):
     resolution: str | None = Field(
         default=None, description="How a refutation was closed, and how that was re-verified"
     )
+    adversary_tier: int | None = Field(
+        default=None,
+        description="Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded",
+    )
 
 
 class RedReceiptEmittedEvent(_EventBase):

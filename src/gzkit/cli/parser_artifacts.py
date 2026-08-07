@@ -1496,6 +1496,14 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Why Codex was unavailable, if a Claude-family adversary ran (GHI #678).",
     )
+    p_obpi_complete.add_argument(
+        "--adversary-tier",
+        dest="adversary_tier",
+        type=int,
+        choices=[1, 2, 3],
+        default=None,
+        help="Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded.",
+    )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
     p_obpi_complete.set_defaults(
@@ -1517,6 +1525,7 @@ def _register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             refuted_claim=a.refuted_claim,
             adversary_resolution=a.adversary_resolution,
             adversary_fallback_reason=a.adversary_fallback_reason,
+            adversary_tier=a.adversary_tier,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )

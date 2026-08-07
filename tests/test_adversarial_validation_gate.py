@@ -21,8 +21,10 @@ from unittest import mock
 
 from gzkit.commands.obpi_complete import (
     ADVERSARY_VERDICTS,
+    _build_adversarial_event,
     _enforce_adversarial_validation,
 )
+from gzkit.events import parse_typed_event
 
 
 def _enforce(**overrides: object) -> None:
@@ -136,6 +138,106 @@ class TestStep4bTierBindingGate(unittest.TestCase):
         error = json.loads(buffer.getvalue())["error"].lower()
         self.assertIn("codex", error)
         self.assertIn("--adversary-fallback-reason", error)
+
+
+class TestDeclaredTierGovernsOverNameInference(unittest.TestCase):
+    """GHI #678 reopened: tier was INFERRED from a caller-supplied string, never recorded.
+
+    `_is_cross_vendor_adversary` prefix-scans the adversary name, so "names something
+    codex-shaped" and "ran on Codex" were the same claim, with no corroborating artifact
+    required. A declared tier is the recorded claim; these assertions derive from the
+    requirement that the declaration governs and that a declaration contradicting the
+    name fails closed — the contradiction the name scan cannot see by construction.
+    """
+
+    def test_declared_tier_1_with_cross_vendor_name_passes(self) -> None:
+        _enforce(adversary="codex/gpt-5.4", tier=1, fallback_reason=None)
+
+    def test_declared_tier_1_with_claude_family_name_blocks(self) -> None:
+        # Claiming a different vendor re-derived the completion while naming a
+        # same-vendor adversary is a contradiction; the pre-fix gate passed it,
+        # because the name scan alone decided the tier.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="claude/general-purpose", tier=1, fallback_reason=None)
+
+    def test_declared_tier_2_still_requires_reason_despite_cross_vendor_name(self) -> None:
+        # The declaration governs: a tier-2 run does not become tier 1 by being
+        # named after a tier-1 vendor. Pre-fix, the name exempted it outright.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="codex/gpt-5.4", tier=2, fallback_reason=None)
+
+    def test_declared_tier_2_with_reason_passes(self) -> None:
+        _enforce(
+            adversary="claude/general-purpose",
+            tier=2,
+            fallback_reason="codex setup reported ready=false (not authenticated)",
+        )
+
+    def test_undeclared_tier_preserves_name_inference(self) -> None:
+        # Backward compatibility is load-bearing: events recorded before the flag
+        # existed carry no tier, and must keep resolving by name rather than
+        # retroactively failing closed.
+        _enforce(adversary="codex/gpt-5.4", tier=None, fallback_reason=None)
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="claude/general-purpose", tier=None, fallback_reason=None)
+
+    def test_human_floor_is_exempt_from_tier_binding(self) -> None:
+        _enforce(verdict="degraded-human-only", adversary="human", tier=3, fallback_reason=None)
+
+    def test_contradiction_block_message_names_both_halves_and_next_step(self) -> None:
+        buffer = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(buffer):
+            _enforce(
+                adversary="claude/general-purpose",
+                tier=1,
+                fallback_reason=None,
+                as_json=True,
+            )
+        error = json.loads(buffer.getvalue())["error"]
+        self.assertIn("--adversary-tier 1", error)
+        self.assertIn("claude/general-purpose", error)
+        self.assertIn("--adversary-tier 2", error)
+        self.assertIn("--adversary-fallback-reason", error)
+
+
+class TestDeclaredTierReachesTheLedger(unittest.TestCase):
+    """The tier must be DURABLE, not merely checked — GHI #678's 'record the tier'.
+
+    A gate that validates a tier and then discards it leaves the ledger unable to
+    answer 'which tier ran?' after the fact; 13 of 19 recorded events carried no
+    corroborating artifact at all when this was reopened.
+    """
+
+    def _dump(self, **overrides: object) -> dict[str, object]:
+        kwargs: dict[str, object] = {
+            "obpi_id": "OBPI-0.33.0-01-airlock-data-model-and-events",
+            "verdict": "not-refuted",
+            "adversary": "codex/gpt-5.4",
+            "job_id": None,
+            "refuted_claim": None,
+            "resolution": None,
+        }
+        kwargs.update(overrides)
+        event = _build_adversarial_event(**kwargs)
+        assert event is not None
+        return event.model_dump()
+
+    def test_declared_tier_reaches_the_serialized_ledger_record(self) -> None:
+        # The durable form is what a later audit reads — asserting on the in-memory
+        # object alone would not prove the tier survives to the ledger line.
+        self.assertEqual(self._dump(tier=1)["adversary_tier"], 1)
+
+    def test_undeclared_tier_is_omitted_rather_than_recorded_as_null(self) -> None:
+        # Absent detail is omitted, never emitted as a null a reader could mistake
+        # for a recorded tier — matching how job_id/resolution already behave.
+        self.assertNotIn("adversary_tier", self._dump(tier=None))
+
+    def test_typed_event_model_admits_the_recorded_tier(self) -> None:
+        # The discriminated union is the typed read path (parse_typed_event,
+        # req_kind_support, ontology/corpus). A field the writer emits but the
+        # typed model rejects would fail closed on replay.
+        parsed = parse_typed_event(self._dump(tier=2))
+        self.assertEqual(parsed.adversary_tier, 2)
 
 
 class TestGateIsWiredIntoCompletion(unittest.TestCase):

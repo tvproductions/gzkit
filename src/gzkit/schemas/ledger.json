@@ -1621,6 +1621,9 @@
         },
         "resolution": {
           "type": "string"
+        },
+        "adversary_tier": {
+          "type": "integer"
         }
       }
     },

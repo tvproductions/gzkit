@@ -1023,6 +1023,7 @@ def obpi_complete_cmd(
     refuted_claim: str | None = None,
     adversary_resolution: str | None = None,
     adversary_fallback_reason: str | None = None,
+    adversary_tier: int | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()
@@ -1296,6 +1297,7 @@ def obpi_complete_cmd(
         resolution=adversary_resolution,
         as_json=as_json,
         fallback_reason=adversary_fallback_reason,
+        tier=adversary_tier,
     )
 
     # 6-8. Execute atomic transaction
@@ -1306,6 +1308,7 @@ def obpi_complete_cmd(
         job_id=adversary_job_id,
         refuted_claim=refuted_claim,
         resolution=adversary_resolution,
+        tier=adversary_tier,
     )
     try:
         _execute_transaction(
@@ -1993,6 +1996,7 @@ def _build_adversarial_event(
     job_id: str | None,
     refuted_claim: str | None,
     resolution: str | None,
+    tier: int | None = None,
 ) -> LedgerEvent | None:
     """Render the Step-4b verdict as an ``adversarial_validation`` ledger event.
 
@@ -2016,6 +2020,7 @@ def _build_adversarial_event(
         ("job_id", job_id),
         ("refuted_claim", refuted_claim),
         ("resolution", resolution),
+        ("adversary_tier", tier),
     ):
         if value:
             payload[key] = value
@@ -2031,6 +2036,7 @@ def _enforce_adversarial_validation(
     resolution: str | None,
     as_json: bool,
     fallback_reason: str | None = None,
+    tier: int | None = None,
 ) -> None:
     """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
 
@@ -2081,11 +2087,31 @@ def _enforce_adversarial_validation(
     # and that reason must be recorded. The human degraded floor is exempt (its verdict
     # already flags it); a proven cross-vendor adversary needs no justification.
     is_human_floor = verdict == "degraded-human-only" or adversary.strip().lower() == "human"
-    if (
-        not is_human_floor
-        and not _is_cross_vendor_adversary(adversary)
-        and not (fallback_reason and fallback_reason.strip())
-    ):
+    if is_human_floor:
+        return
+
+    # A DECLARED tier governs; the name scan is only the fallback for callers predating
+    # the flag. Inference alone was the hole: tier was read off a caller-supplied string
+    # with nothing behind it, so "codex-shaped name" and "ran on Codex" were the same
+    # claim. Declaring a tier that contradicts the name is a contradiction the name scan
+    # cannot see by construction — it fails closed here rather than passing silently.
+    name_is_cross_vendor = _is_cross_vendor_adversary(adversary)
+    if tier == 1 and not name_is_cross_vendor:
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} declares --adversary-tier 1 "
+            f"(cross-vendor) but names adversary '{adversary}', which is not a recognized "
+            "different-vendor model. Tier 1 is the claim that a DIFFERENT vendor re-derived "
+            "the completion — a Claude validating Claude shares this agent's blind spots. "
+            "Either name the cross-vendor adversary that actually ran, or declare the tier "
+            "that did (--adversary-tier 2) with --adversary-fallback-reason '<observed Codex "
+            "unavailability>'.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
+    is_cross_vendor = name_is_cross_vendor if tier is None else tier == 1
+    if not is_cross_vendor and not (fallback_reason and fallback_reason.strip()):
         _fail(
             f"Completion blocked: Step 4b for {obpi_id} used a non-cross-vendor "
             f"(tier-2 Claude-family) adversary '{adversary}' with no recorded reason "
