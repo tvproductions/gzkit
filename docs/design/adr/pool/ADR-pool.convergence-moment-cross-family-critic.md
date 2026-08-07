@@ -172,10 +172,18 @@ yet."*
 > working with a model, but **I am past being gaslighted that the issue lies with
 > me and my refusal to "let go and let token" a la Cherny.**
 
-## Decision
+## Decision (RULED BUT CONTESTED — read § Adversarial review before building)
 
 Fire a cross-family critic at the convergence moment via a `PreToolUse` hook on
 `AskUserQuestion`, carrying the critic's verdict to the operator **unedited**.
+
+> **Status of this decision.** Every row below is an operator ruling or a
+> measurement and stands as recorded. But the *mechanism* they compose was
+> submitted to two independent cross-family critics and **both returned
+> PERFORATED** — see § Adversarial review. The rulings were made before those
+> verdicts were fully absorbed, and the handoff chain then lost most of the
+> critique. Treat this section as **the design as ruled**, not as the design as
+> validated. The promoting session must reconcile the two.
 
 ### The trigger
 
@@ -283,12 +291,183 @@ The operator named the cost of this explicitly, and it is larger than this ADR:
 > decoupling is implausible againt our need for better reliability and determinism
 > with gzkit's behavior.**
 
-## The unresolved frame challenge (Codex, tier-1 cross-family)
+## Adversarial review: TWO independent cross-family passes, BOTH returned PERFORATED
 
-**This is the most important open item and the thing the handoff chain lost.**
-The cross-family critic was actually run against this very design and returned a
-frame challenge the operator called *"equally useful"* and *"powerfully
-precient"*. Verbatim:
+**This is the single most important fact about this design, and the handoff chain
+lost nearly all of it.** The proposed mechanism was submitted to two independent
+tier-1 (Codex) critics. Both returned **PERFORATED**. The need was affirmed both
+times; the mechanism was refuted both times, on largely non-overlapping grounds.
+
+Nothing below invalidates the § Intent — the operator's need is real,
+operator-attested, and independently confirmed. What is contested is the
+**mechanism**, and a promoting session that reads only § Decision without this
+section will rebuild something two critics already broke.
+
+> **Pass 2 verdict, verbatim:** "PERFORATED. The need for fresh, cross-family
+> criticism is real. The proposed always-on implementation is not strong."
+
+> **Pass 1 verdict, verbatim:** "PERFORATED. The need is real, operator-attested,
+> and already booked — but the mechanism fails on four independent axes, any one
+> of which is disqualifying."
+
+### Pass 1 — the four disqualifying axes
+
+1. **It duplicates shipped machinery.** Step 4b is already a fail-closed
+   independent-adversary gate with a ledger event, a Layer-1 evidence section, a
+   repo-wide re-audit, and a 225-entry shrink-ratchet. The proposal re-invented
+   its verdict shape and minted parallel event types.
+
+2. **Its critic was the tier gzkit's own doctrine forbids.** The proposal's critic
+   was a fresh *Claude* subagent — *"precisely the correlated second draw #670
+   exists to reject"* — which `SKILL.md:686` and `obpi_complete.py` treat as a
+   Step-4b **bypass** absent checked Codex unavailability.
+
+3. **Its coverage is inverted — and this is measured.** Verbatim:
+
+   > 239 `AskUserQuestion` calls against **41,624** assistant turns over **160**
+   > transcripts — ≈1.5 per session, **0.57%** of turns. The overwhelming majority
+   > of recommendations reach the operator as prose. Trigger A gates the rare
+   > case; Trigger B (the weak one) carries the actual load.
+
+   **The convergence-moment trigger covers 0.57% of turns.** This is the hardest
+   number in the entire corpus and it bears directly on whether the mechanism
+   earns its surface. It was never carried into any handoff.
+
+4. **It runs against the governing campaign.** Movement C's reduction deferral was
+   lifted and *"the accretion is reduced"* is a named 1.0 gate. The critic
+   measured the validate surface at **97 flags** against the campaign's recorded
+   92 — *"that surface has grown by 5 while the mandate says shrink."*
+
+   > *"gzkit has no external forcing function, and its only consumer is its own
+   > construction. Self-inspection of a self-governing system is unbounded —
+   > every governance surface is a new surface needing governance, and every audit
+   > pass finds real defects, which is what makes the loop seductive rather than
+   > obviously wasteful."*
+
+Pass 1 also named the **re-adjudication** charge directly: the proposal re-derived
+GHI #670 — an open, operator-authored ruling — in a weaker form, which is
+*"Movement D, 'Stop the re-adjudication' … the named disease, and it fired
+again."*
+
+### Pass 1 — the cost evidence from the named comparable
+
+The strongest empirical finding, quoted from gzkit's own source
+(`handoff_resume_gate.py`): *"**Four times now this allowlist has been wrong**,
+and every time the root was the same"* — four documented misses plus a pre-empted
+fifth, across GHIs #574, #692, #697, #709, #732, #755, #756, #757, #758. And the
+sentence the critic said should govern this decision:
+
+> *"A gate that forbids the verification its own skill mandates cannot be complied
+> with, and **an un-compliable gate gets worked around — the failure mode gzkit
+> exists to close.**"*
+
+**This session supplied live corroboration.** The resume gate refused four
+compound read-only commands during the handoff review that opened this very
+session — the fifth instance of exactly the profile the critic warned about.
+
+### Pass 2 — the missing policy, which attacks the ruled passthrough directly
+
+> The proposal also omits the policy that matters after the verdict. **If the
+> critic returns PERFORATED, must the primary produce a new scope map, collect new
+> evidence, or merely show the operator the criticism? Without a mandatory state
+> transition, verbatim presentation transfers adjudication back to an already
+> exhausted operator.**
+
+This lands squarely on the ruled design. `updatedInput` passthrough was chosen
+precisely so the verdict reaches the operator unedited — but unedited
+presentation *without a required state transition* converts the critic into more
+reading for the person the ADR exists to protect. **Unresolved.**
+
+Pass 2 also enumerated the five ways critic and primary agree for the wrong
+reason, which no amount of vendor separation fixes:
+
+> - The primary-selected evidence boundary.
+> - An omitted file or alternative.
+> - The same repository doctrine and terminology.
+> - A test or validator that observes the wrong subject.
+> - The premise that another gate is the appropriate solution.
+
+### Pass 2 — binding constraints the ruled mechanism violates
+
+| Finding | Consequence |
+|---|---|
+| `AskUserQuestion` is broader than recommendation delivery — it also carries plan-mode requirements, interviews, attestation, and brief amendments | Trigger A "would interpose the critic before required *clarification*, not merely before recommendations" |
+| `AGENTS.md:121-124` requires asking the human below 90% confidence | "A fail-closed critic dependency can **prevent the very question those rules require**. A plain-text question would also bypass an AskUserQuestion-only gate." |
+| The `Stop` hook is **fail-open by contract** and yields immediately when `stop_hook_active` is set | It "can request one correction; it cannot guarantee that a critic ran" — so the fallback trigger cannot enforce either |
+| **ADR-0.44.0 forbids placing a fail-closed invariant solely in a vendor hook** | A Claude-hook-only critic violates a standing boundary invariant. `.codex/hooks.json` carries only `SessionStart`/`UserPromptSubmit` — no `PreToolUse` or `Stop` equivalent |
+| Hook behavior inside critic subagents is **UNVERIFIED** | "recommendation-shaped critic output risks **recursively triggering the critic gate**; if critics are exempted, that exemption becomes a bypass surface" |
+
+### Pass 2 — the vendor-lock answer the operator asked for
+
+The operator's stated fear was that this work *"casts definitve doubt on the
+'multi-agent' premise of gzkit."* Pass 2 answered it directly, and the answer is
+more optimistic than the fear:
+
+> A cross-family critic requirement creates **supplier dependence. It does not
+> inherently require vendor lock-in.**
+
+> **"Decoupling versus determinism" is mostly a false dilemma.** Determinism comes
+> from a stable contract, explicit state transitions, hashes, provenance,
+> replayable evidence, and deterministic validation. The critic's judgment remains
+> probabilistic regardless of vendor. **Ports and adapters increase determinism by
+> preventing vendor transport details from becoming the invariant.**
+
+The prescribed vendor-neutral contract:
+
+- A **decision-review request**: the operator's exact question, objective, scope
+  manifest, evidence references, primary draft hash, risk classification.
+- A **critic-provider port** returning a typed verdict, premise findings, scope
+  omissions, alternatives, provider identity, model family, and invocation
+  receipt.
+- Per-harness adapters (Claude, Codex, Gemini, Copilot, local) implementing
+  whatever interception each supports.
+- A **capability matrix** distinguishing automatic interception, explicit
+  invocation, asynchronous review, and unavailable/degraded operation.
+
+> **The core must not equate "cross-family" with the literal string `codex`.** It
+> should require demonstrably distinct model-family provenance when that tier is
+> mandated.
+
+> The founding multi-agent premise is **not existentially disproven. It is,
+> however, aspirational and incomplete today.** … The premise becomes genuinely
+> untenable only if gzkit continues claiming identical fail-closed semantics on
+> harnesses that lack the necessary interception capabilities. **Honest semantic
+> capability levels are viable; fictional parity is not.**
+
+> **Note against today's work.** GHI #765 (`cd4e14687`) discharged the
+> *provenance* half of this — the tier is now proven from the argv ARB executed,
+> not from an asserted name. It did **not** discharge the *literal-string* half:
+> `_CROSS_VENDOR_ADVERSARY_PREFIXES` still hard-codes vendor names in the core,
+> exactly what this finding forbids. That residual is unfiled.
+
+### Pass 2 — the honesty caveat on the cross-family premise itself
+
+The critic undercut its own family advantage, and this must not be lost:
+
+> The correlated-draw concern is real, but "same family" and "independent" are not
+> binary states. … **I cannot honestly claim that any finding here is structurally
+> unavailable to Claude.** A sufficiently skeptical Claude critic with repository
+> access could have found every item above. If the prior Claude review missed
+> them, that is an **empirical miss, not proof of a family-level incapacity.**
+
+> The cross-family benefit here is not magical independence. It is **a lower
+> probability of sharing the primary agent's gate-shaped solution prior.** The
+> proposal appears anchored in a Claude/gzkit habit: **when trust is weak, add a
+> hook, event, and validator. The repository evidence says that habit itself now
+> requires criticism.**
+
+### Pass 2 — the narrower conclusion it recommends instead
+
+> The appropriate conclusion is narrower: **retain cross-family review for
+> consequential decisions, move the first independent challenge to scope-setting,
+> and fix evidence provenance in the existing adversary mechanism before creating
+> another universal gate.**
+
+Note that the first clause is the operator's own stated session goal, verbatim.
+
+## The frame challenge (Pass 2, quoted in full)
+
+The operator called this *"powerfully precient"* and *"equally useful"*. Verbatim:
 
 > **FRAME CHALLENGE**
 >
@@ -399,6 +578,53 @@ critic, since the same "did it really run, on the real thing" question applies.
    the tokens burn eventual consistency with goals and loops'?"*). Rejected by the
    operator on lived experience, verbatim: *"NOT, ONCE."*
 
+## Alternatives the critics offered (NOT yet adjudicated)
+
+These came from the two perforating passes. **None has been ruled on.** They are
+recorded verbatim-in-substance because they are the constructive half of a
+PERFORATED verdict, and losing them was the costliest part of the dilution.
+
+### Structural alternatives to the gate
+
+| # | Alternative | Why it was offered |
+|---|---|---|
+| A1 | **Scope-first review** — before investigation, give the critic the operator's exact question and repo access; require an independent scope map, likely-omitted surfaces, and the question that should be answered. **Do not give it the primary synthesis.** | The only variant that breaks correlated draw at its source |
+| A2 | **Emit the negative space** — require the primary to publish, with every recommendation, *the surfaces it chose not to read* and *the options it considered and dropped*; hand the critic that list plus the operator's raw question | "the critic's reading list is no longer the primary agent's reading list" — directly answers *"the meander of an accreting context window"* |
+| A3 | **Persistent decision envelope** — carry target, constraints, assumptions, investigated surfaces, exclusions, open questions, and evidence plan across tool transitions | Addresses the Memento mechanisms structurally rather than at one moment |
+| A4 | **Risk-tiered criticism** — mandate cross-family review for architecture, external contracts, irreversible operations, high-cost recommendations, explicit operator requests, and contradictions; **sample** routine decisions | The one thing BOTH passes independently converged on |
+| A5 | **Operator-invoked skill (`/second-opinion`), not a gate** | Zero fail-closed surface, zero allowlist-erosion risk, operator controls when latency is paid. "**This session is the existence proof that the manual path works**" |
+| A6 | **Generalize Step 4b into a vendor-neutral decision-review port** — do not mint a parallel event family until existing provenance defects are fixed | Reuses schema, audit, ratchet, and `gz validate --adversarial-validation` for free |
+| A7 | **Measure before gating** — telemetry-only for N sessions | "there is **no base rate** for how often the primary agent's recommendations are actually wrong — the proposal spends a fail-closed surface on an unquantified harm" |
+| A8 | **Widen the airlock instead of building beside it** — Movement B's *"Session entry triggers the airlock"* is open and operator-ruled; a recommendation is a transit | Closes a campaign item instead of opening a surface. NOTE: conflicts with the operator's *"we are not trying to make Airlock JR"* — the tension is unresolved |
+
+### Mechanism-hardening alternatives (apply to whatever is built)
+
+- **Strong subject binding** — bind every verdict to a decision ID, exact
+  operator-question hash, objective/scope-manifest hash, primary-output hash,
+  critic prompt version, provider/model family, invocation receipt, and
+  timestamps. **Reject stale or replayed verdicts.**
+- **Deterministic checks first** — campaign alignment, prior-decision lookup,
+  contradiction detection, scope-to-evidence coverage, and validator-subject
+  correspondence should run *before* spending a probabilistic critic call.
+- **Explicit verdict transitions** — `CONFIRMED` may proceed; `PERFORATED` **must
+  produce a revised scope or conclusion**; `INSUFFICIENT` must identify missing
+  evidence and **cannot be represented as approval**. Operator override should be
+  explicit and durable. *(This is the missing policy named above.)*
+- **Calibrated pilot** — review a bounded sample and measure unique actionable
+  findings, wrong agreements, false blocks, latency, operator reading time, and
+  decisions changed. A universal fail-closed gate should follow evidence that the
+  mechanism earns its surface area.
+
+### The airlock conflict, stated plainly
+
+Pass 1: the airlock is *"diagnostic-only … never a hard block — it always exits
+0"* and *"never writes L1 canon"*, whereas the proposal is a hard block —
+**"CONFLICTS on role, DUPLICATES on trigger."** Movement B's open
+*"Session entry triggers the airlock"* item claims the same trigger real-estate.
+Two mechanisms competing for the session door is how the 23-`airlock_in`
+vs 10-`airlock_out` accounting gap happened. The operator's *"not Airlock JR"*
+ruling and this finding are in direct tension and must be reconciled at promotion.
+
 ## Risks and Open Questions
 
 1. **Alert fatigue is the strongest argument against this ADR**, raised by the
@@ -472,11 +698,43 @@ critic, since the same "did it really run, on the real thing" question applies.
    altitude* with alternating conclusions is an epicycle. `#658 → #743 → today` is
    the former.
 
-7. **Evidence not recoverable in text.** In session `d01f355f` the operator
-   supplied a screenshot with the remark *"do you see this? this is exactly the
-   mode that the work was designed to react to"* (image cached at
-   `~/.claude/image-cache/d01f355f-362e-45ed-9ed8-4d30ad06d452/1.png`). The image
-   is outside this document; the pointer is preserved so the referent is not lost.
+7. **The operator's exhibit — recovered and transcribed.** In session `d01f355f`
+   the operator supplied a screenshot with the remark *"do you see this? **this is
+   exactly the mode that the work was designed to react to.** the whole reason for
+   the '2nd opinion' is right there, we must discover its mechanics and work
+   within those mechanics."* The image cache has since been cleared, but the PNG
+   survives base64-embedded in the transcript and was recovered. It is an
+   `AskUserQuestion` picker — the design's own subject, recursively, since it was
+   asking the operator to rule *on the second-opinion handoff itself*:
+
+   ```
+   □ Ruling
+   The resume gate is armed on the second-opinion handoff. How do you rule?
+     1. Proceed — supersede with corrected handoff
+     2. Proceed — file the Step 4b GHI now
+     3. Proceed — rule on next-step 1 first
+          Take up the ordering question the handoff calls the blocker:
+          scope-challenge before conclusion-challenge (Codex) vs. the
+          convergence moment (your stated trigger). Everything else waits.
+     4. Hold
+     5. Type something.
+     ─────────────────────────
+     6. Chat about this
+   ```
+
+   Three things it establishes that no prose in the chain preserved. **(a)** It is
+   the `[choices|direct entry|discuss]` triple made concrete: 1–4 are
+   agent-authored options, 5 is direct entry, 6 is discuss — the exact affordance
+   the operator named as the trigger signature. **(b)** The agent-authored cap is
+   visibly 4; 5 and 6 are harness-supplied. **(c)** Option 3 shows the
+   scope-vs-conclusion tension *was* surfaced to the operator as a choice — and
+   the operator's next message was the equivocation complaint (*"the option you
+   always provide is 'discuss this' … You almost always equivocate and hedge"*),
+   which is the behavior the critic is meant to attack.
+
+   Recovery note: the cache directory is gone; the durable copy is the transcript.
+   Anyone re-recovering it should decode the `image` content block from
+   `d01f355f-362e-45ed-9ed8-4d30ad06d452.jsonl` rather than look for the file.
 
 ## Notes
 
@@ -527,6 +785,29 @@ Superseded routing artifact: **GHI #670**, closed `superseded` against this ADR.
 Sibling: **GHI #765** (Step-4b tier-1 corroboration) — distinct surface, same
 lesson: prefer a runtime artifact over a self-assertion.
 
+### What the critics themselves could not verify
+
+Recorded so their findings are not over-trusted in the direction their own
+authors refused:
+
+- Whether `AskUserQuestion` is matchable by a `PreToolUse` matcher was
+  **UNVERIFIED** at critique time — Pass 1 called it *"the single highest-value
+  unverified premise — if it is false, Trigger A is dead outright."* **Since
+  resolved: the probe confirmed `updatedInput` renders.**
+- Neither critic dispatched a live critic job; runtime hook inheritance,
+  recursion behavior, and end-to-end latency were unverified. **Latency has since
+  been measured (11.62–19.62s); recursion has not.**
+- Pass 2 could not reach `api.github.com`, so GHI #670's and #743's live state
+  were unverified — which is why Pass 2 did not raise the re-adjudication charge
+  that Pass 1 did.
+- Neither measured the recommendation-classifier's precision, nor the operator's
+  actual reading burden.
+- Pass 1 reviewed *"the summary in my brief, not a document"*, and said so:
+  *"If the proposal cites GHI #670, Step 4b, or Movement C and dispositions them,
+  my re-adjudication finding weakens."* This ADR now does cite and disposition
+  all three, so that specific charge is partially answered by this document's
+  existence.
+
 ### Promotion plan
 
 Pool ADRs carry no `semver:` or `kind:` frontmatter; promotion via
@@ -534,6 +815,20 @@ Pool ADRs carry no `semver:` or `kind:` frontmatter; promotion via
 shape: `feature` kind, `heavy` lane. Campaign placement is the **operator's
 decision** (stated 2026-08-07: *"I'll decide its campaign placement"*).
 
-Before OBPI decomposition, the promoting session must rule on the frame
-challenge above — whether a scope-time trigger accompanies the conclusion-time
-one — because that ruling changes the decomposition, not merely its ordering.
+**Three rulings are required before OBPI decomposition**, each of which changes
+the decomposition rather than merely its ordering:
+
+1. **Scope-time vs conclusion-time.** Does a scope-first trigger (A1/A2)
+   accompany or replace the convergence moment? The operator has already ruled the
+   critic reads raw surface itself, which narrows but does not close this.
+2. **Gate or skill.** Both critics pushed toward A5 (operator-invoked) or A7
+   (measure first) over a fail-closed gate, on the 0.57% coverage number, the
+   allowlist-erosion precedent, and Movement C. The operator's *"every time"*
+   ruling points the other way. This is a genuine conflict between an operator
+   ruling and two independent measurements.
+3. **The post-verdict state transition.** What must happen when the critic returns
+   PERFORATED? Without this, the mechanism adds reading load to the person it
+   exists to protect — Pass 2's sharpest finding against the ruled design.
+
+A promoting session that does not resolve these three will rebuild the mechanism
+two critics already broke.
