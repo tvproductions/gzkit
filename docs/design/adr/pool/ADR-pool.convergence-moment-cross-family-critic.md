@@ -82,6 +82,46 @@ And the structural reason a single agent cannot self-check:
 > It gets epicyclic when (look at the GHIs for your evidence) we readjudicate the
 > same desisions, designs, and implementations. repeatedly.
 
+### The epistemic crisis this is answering
+
+The operator stated the doubt in its sharpest form, and it is the reason the ADR
+exists rather than a smaller fix:
+
+> even un the case of 743 is bringing to light things that made sense at the
+> time. **Were we right then and wrong now? Wrong now and right then? some
+> combination? Are we now in endless eipcycles of doubt/revision/insight/
+> correctness? It feels like there is no compass and no magnetic field even if we
+> have a compass.** This is the whole reason for the airlock system. I am
+> skeptical.
+
+And the drift chain it produces, verbatim:
+
+> all traversals of gzkit result in a flurry of GHIs and I wonder how many are
+> from the issue we are now discussing/designing for now? **overconfident design
+> options given to me by a random guide on each turn. what was "gold" yesterday is
+> supect today in post hoc inspection. Drift from design intent, to implementation
+> options, to test design, to implemented artifacts each presents opprtunity (and
+> observed evidence of misalignment.**
+
+The failure mode is externally corroborated, not merely felt:
+
+> I am not sure you can always/reliable serve as an objective design partner — I
+> may be outsourcing too much and only focusing on the scope you provide. **The
+> recent system cards for Fable, Opus, an GPT all suggest this to be an issue.**
+
+(gzkit tracks these in `data/frontier_model_cards.json`; the taxonomy in
+`.gzkit/rules/agent-failure-modes.md` already names the relevant patterns —
+*Skipped cheap verification*, *Metagaming / gaming the gate*, *Correction fails*.)
+
+### The delivery vehicle is ordinary gzkit machinery
+
+> **Most of what we are describing are rules, tools, and chores.** tons of
+> overhead to get reliable performance out of frontier harnesses like claude code
+> + latest model.
+
+This is a scoping constraint, not an aside: the remedy is expected to land as
+rules, tools, and chores — not as a new governance tier.
+
 ### The Memento diagnosis
 
 The operator grounded the need in the anterograde-amnesia analogy, supplying a
@@ -153,11 +193,41 @@ Operator, verbatim on why this moment:
 > experimentally refine this moving forward, but you reliably exhibit this
 > behavior and I want 2nd opinion in those moments.
 
+### The trigger signature is a Claude Code product affordance, not a gzkit one
+
+The operator identified the observable signature precisely — the three-way choice
+mechanic the harness presents. Verbatim:
+
+> each and everytime you provided a critical analysis that leads to my decision
+> making — **which is surely product-driven (claude code product level) because
+> you offer the same choice mechanic enery time [choices|direct entry|discuss]**
+
+This matters for two reasons. First, it is *why* the trigger is reliably
+detectable from outside the model: the affordance is a product surface, not an
+introspected mental state. Second, it is a **portability liability** — the
+signature belongs to Claude Code and will move when the product moves. See
+§ Derived work: hook-surface currency.
+
 ### The critic asks two questions, both necessary
 
 > and, why not a comibination: **"what question should be asked" and "is the
 > encountered conclusion strong?" both are possible, both are necessary, or we
 > are resigned to the mire.**
+
+### The critic must reach the raw surface itself
+
+Operator, verbatim, in the same breath as commissioning the critic:
+
+> **Of course it would be directed to explore the raw surface. This is necessary
+> for it to impugn your misgivings, or validate the cogence of your work.**
+
+**This is partial pre-emption of the Codex frame challenge below** and must not be
+lost in decomposition. Codex's objection is that a critic fed a primary-curated
+bundle "is independent in inference but not in scope." The operator had already
+ruled that the critic explores raw surface directly rather than receiving a
+digest. The residual question is not *whether* the critic reads independently —
+that is ruled — but whether reading independently **at conclusion time** is
+sufficient, or whether a scope-time trigger is additionally required.
 
 ### Mechanics (measured, not assumed)
 
@@ -369,6 +439,27 @@ critic, since the same "did it really run, on the real thing" question applies.
 4. **`permissionDecision: "deny"` untested.** Only `updatedInput` was exercised;
    whether deny blocks cleanly or wedges the picker is unknown.
 
+4a. **One critic or several, and how are several combined?** Operator, verbatim
+   and explicitly undecided: *"I think we want both? or, do we want a
+   composite/median/mean? I don't know if we can even alter the persentation"*.
+   Unresolved on all three axes — how many critics, what aggregation (union /
+   composite / median / mean), and how much of the presentation is mutable. The
+   probe answered only the last in part: `updatedInput` renders, and the option
+   cap is 4.
+
+4b. **Two questions the operator returned to the agent unanswered**, preserved
+   because they mark where the design was still open when the session ended.
+   Verbatim: *"1. I don't know, are you asking me my design intent oor current
+   behavior?"* and *"2. explain. do you mean the 2nd opinion agent's role in
+   posing the question? or, does the question get posed after 2nd opinion
+   modification?"* The second was subsequently settled — the question is posed
+   *carrying* the critic's verdict, unedited — but the first was never resolved
+   and should be re-asked at promotion.
+
+4c. **The named blocker at session end**, verbatim: *"we need to allow the critic
+   to operate, so that needs resolution."* Latency and transport were measured
+   afterward; whether that fully discharges this is the promoting session's call.
+
 5. **Base rate to re-measure after any mechanism ships** — seed `20260807`, same
    five-class taxonomy. State the ceiling honestly: **68.3%** is the share of
    defect GHIs whose root cause is a design decision, an UPPER bound, since most
@@ -388,6 +479,41 @@ critic, since the same "did it really run, on the real thing" question applies.
    is outside this document; the pointer is preserved so the referent is not lost.
 
 ## Notes
+
+### Derived work: hook-surface currency (separable, and probably a chore)
+
+The operator raised this as its own idea during the design and it is **not part of
+the critic** — it is the maintenance discipline that keeps any hook-based
+mechanism from silently rotting. Verbatim:
+
+> **the product surface is ever evolving, so why not (even as a chore) explore
+> what new doors exist, old doors have changed, or even closed?** ==> "The full
+> event list is also considerably larger than the 6 gzkit uses —
+> UserPromptSubmit, SubagentStart/SubagentStop, PermissionRequest, PostToolBatch,
+> StopFailure, InstructionsLoaded, and the compaction pair among them."
+
+gzkit wires 6 hook events; the harness exposes materially more. Since this ADR's
+trigger is a *product affordance* (§ The trigger signature), a door that changes
+or closes silently breaks the mechanism. This is chore-shaped — recurring survey,
+not a one-time build — and should be routed separately rather than bundled into
+the critic's decomposition.
+
+### The operator predicted this exact loss
+
+Recorded because it is the strongest available argument for homing designs in
+ADRs rather than handoffs. At the close of the origin session, verbatim:
+
+> the final analysis (critic differences is very useful, but may need is own
+> turn. and thus I turn to a handoff, we need to prime action for a fresh turn.
+> **how not to lose this superb design discussion/momentum and continue one of
+> the more consequential design sessions in a long time.**
+
+The handoff chain was chosen as the answer to that question, and it is what
+degraded the design over the following three sessions — until the operator named
+it: *"multiple audio tape recordings of audio tape recordings."* The mechanism
+adopted to prevent the loss was the mechanism that caused it. That is the case
+for this ADR existing, and it generalizes: **a design under active development
+belongs in a durable artifact from the first session, not after it converges.**
 
 ### Provenance
 
