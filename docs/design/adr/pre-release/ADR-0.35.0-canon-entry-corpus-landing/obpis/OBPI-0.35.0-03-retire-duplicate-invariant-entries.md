@@ -35,19 +35,48 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the withdraw verb). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
 
 <!-- gz-validate-skip: command-shape -->
-> **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22).**
+> **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22;
+> RE-RECONCILED 2026-08-07).**
 > ONE of this brief's eight retirements landed ahead of the chain as a direct fix:
 > commit `42ba6c25` retired the divergent-pair loser under GHI #635, using the
 > already-landed `gz content retire` verb (`852e8a25`) rather than the
-> `gz content withdraw` verb this brief's Prerequisites name. Measured
-> 2026-07-22 at HEAD `9393b750`:
+> `gz content withdraw` verb this brief's Prerequisites name. Re-measured
+> 2026-08-07 at HEAD `6863f0555`:
 >
-> | Requirement | Target | Observed | State |
-> |-------------|--------|----------|-------|
-> | REQ-0.35.0-03-01 | 8 `corpus_entry_retired` events | 1 | **1/8 landed** |
-> | REQ-0.35.0-03-02 | operator ruling on the divergent pair recorded in this brief | Requirement 10 plus this note | **landed** |
-> | REQ-0.35.0-03-03 | 59 raw corpus rows | 52 | **open** |
-> | REQ-0.35.0-03-04 | no two live invariant entries byte-identical | 7 duplicate texts remain | **open (structural-fence)** — audited at ADR closeout |
+> | Requirement | Target | Observed 2026-07-22 | Observed 2026-08-07 | State |
+> |-------------|--------|---------------------|---------------------|-------|
+> | REQ-0.35.0-03-01 | 8 `corpus_entry_retired` events | 1 | 1 | **1/8 landed — SEVEN remain** |
+> | REQ-0.35.0-03-02 | operator ruling on the divergent pair recorded in this brief | Requirement 10 plus this note | unchanged | **landed** |
+> | REQ-0.35.0-03-03 | raw corpus rows after the batch | target 59, observed 52 | **target 60, observed 53** | **open — target moved** |
+> | REQ-0.35.0-03-04 | no two live invariant entries byte-identical | 7 duplicate texts remain | 7 duplicate texts remain | **open (structural-fence)** — audited at ADR closeout |
+>
+> **Corpus state measured on disk 2026-08-07** (liveness = id not named by any
+> row's `retires`):
+>
+> | Quantity | At authoring | 2026-08-07 | After the 7 remaining retirements |
+> |---|---|---|---|
+> | raw rows | 51 | **53** | **60** |
+> | live `invariant` | 50 | **50** | **43** |
+> | live `compressible` | 1 | **2** | **9** |
+> | retired (tombstoned) | 0 | **1** | **8** |
+>
+> The corpus both SHRANK and GREW since authoring: one retirement landed, and one
+> new `invariant` entry was captured 2026-08-06
+> (`operator-doctrine-verbatim-canon`). Live invariant therefore reads 50 in both
+> columns for different reasons — do not read the unchanged number as an unchanged
+> corpus.
+>
+> **The parent ADR's `50 -> 42` projection is stale; the live figure is `50 -> 43`.**
+> ADR § Checklist item 3 and § Consequences Positive #3 both quote `50 -> 42`, which
+> was correct against the authoring-time corpus. Not amended here — REQ-2 already
+> mandates re-measurement at implementation time, and the brief is the right home
+> for the live number. Flagged so the closeout does not read the ADR's projection
+> as a target.
+>
+> **Requirements 3-9 re-verified against disk: all seven groups and all fourteen
+> entry ids still match EXACTLY.** The enumeration did not drift — only the
+> arithmetic did. Requirement 2's re-measurement obligation still stands at
+> implementation time; this pass discharges it as of 2026-08-07, not permanently.
 >
 > **The landed retirement is Requirement 10's target only** — the divergent pair,
 > `corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00` retired,
@@ -55,16 +84,21 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > retained, matching the ruling recorded there. Requirements 3-9 (the seven
 > byte-identical groups) are UNTOUCHED.
 >
+> **Requirement 1 says EXACTLY EIGHT; the remaining work is SEVEN.** Requirement 1
+> is written against the authoring-time corpus and is not silently rewritten here —
+> an off-by-one inside a Gate 5 batch is a fabricated receipt, so the count must be
+> re-derived at implementation time and reconciled deliberately, which is
+> Requirement 2's job.
+>
 > **This brief is correctly `PENDING` and must not be completed.** Its
 > Prerequisites are not met: `gz content withdraw` does not exist
-> (`gz content` admits `retire` but not `withdraw`), so OBPI-0.35.0-02 has not
-> landed, and the tombstone fold of OBPI-0.35.0-01 is unproven here. Re-measure
-> per Requirement 2 before appending anything — the corpus has moved since this
-> brief was authored (51 rows at authoring, 52 now), so the enumerated ids must
-> be re-derived, not trusted.
+> (`gz content` admits `retire` but not `withdraw` — see OBPI-0.35.0-02's blocking
+> decision on the verb-name collision), so OBPI-0.35.0-02 has not landed, and the
+> tombstone fold of OBPI-0.35.0-01 is unproven here.
 >
 > Note: as on OBPI-0.35.0-08, `gz obpi brief-drift` cannot see pre-landed REQ
-> satisfaction, so this note is authored rather than computed.
+> satisfaction — it reports **clean across all five dimensions** — so this note is
+> authored rather than computed (GHI #581).
 
 ## Lane
 

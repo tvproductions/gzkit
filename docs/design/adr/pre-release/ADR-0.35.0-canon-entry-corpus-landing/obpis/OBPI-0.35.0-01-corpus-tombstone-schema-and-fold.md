@@ -45,6 +45,42 @@ Add two optional tombstone fields to `CorpusEntry` and ship `effective_corpus()`
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 01 is the head of the 01 -> 02 -> 03 prerequisite chain and the minimum shippable slice. Nothing else in ADR-0.35.0 may land first: alternative H is rejected precisely because shipping the OBPI-05 generator before retirement ships a regression by construction.
 
+> **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-08-07).**
+> Roughly half of this brief landed ahead of the chain as the GHI #635 direct fix
+> (`852e8a25`, `42ba6c250`) on 2026-07-22 — ONE DAY after this brief was authored,
+> and nobody reconciled it. Measured at HEAD `6863f0555`:
+>
+> | Requirement | Target | Observed | State |
+> |-------------|--------|----------|-------|
+> | 1 — additive fields | `retires` + `supersedes`, both `str \| None = None` | `retires` only (`models/corpus.py:100`) | **half landed** |
+> | 1 — regression fixture | 51 rows: 50 invariant, 1 compressible | **53 rows: 51 invariant, 2 compressible** (1 retired, so 50 live invariant) | **stale — re-measure** |
+> | 2 — omit unset tombstone fields | must never emit `"retires":null` | **solved and fenced** — `POST_BASELINE_IDENTITY_FIELDS` + `_inert_fields` (`corpus.py:66-115`); fence is `test_every_field_is_classified` | **landed** |
+> | 3-12 — the nine-clause fold | `effective_corpus()` | **absent** — a flat `Corpus.retired_ids()` stands in (`corpus.py:129-131`) | **open** |
+> | 14 — `tier_policy` reads the effective view | route through the fold | **already routed, in the flat form** (`tier_policy.py:20`) | **landed; needs repoint** |
+>
+> **What this changes about the work.** REQ-2 is no longer something to invent.
+> The identity-serialization mechanism exists and GENERALIZES: adding `supersedes`
+> means appending it to `POST_BASELINE_IDENTITY_FIELDS`, and
+> `test_every_field_is_classified` fails closed if you forget. REQ-14's consumer is
+> already wired; it must be REPOINTED from `retired_ids()` to the fold, not newly
+> connected — and per BI-01 the repoint must reach every consumer, since a leftover
+> flat reader is the green-gate-over-omitted-canon failure this ADR ranks worst
+> (§ Consequences Negative #5).
+>
+> **Latent defect the flat stand-in carries — Algebra 6 does not hold today.**
+> `retired_ids()` is `frozenset(e.retires for e in entries if e.retires is not None)`:
+> flat, with no liveness pass. Append `T2` retiring `T1` and the set becomes
+> `{X, T1}` — `X` stays retired forever. **Un-retirement does not work today, and
+> fails silently.** The nine-clause fold is not decoration over the shipped
+> mechanism; it is what makes retirement reversible at all.
+>
+> **Why this note is authored rather than computed.**
+> `uv run gz obpi brief-drift OBPI-0.35.0-01-corpus-tombstone-schema-and-fold`
+> reports **clean across all five dimensions** (allowlist, discovery, verification,
+> req_count, citation). Every dimension is an existence check, so none can see a
+> surface this brief plans to CREATE that already exists — the inverse of the
+> exists-but-dead class GHI #581 names, and invisible to the same engine.
+
 ## Lane
 
 **Heavy** - This OBPI changes a command/API/schema/runtime contract surface.

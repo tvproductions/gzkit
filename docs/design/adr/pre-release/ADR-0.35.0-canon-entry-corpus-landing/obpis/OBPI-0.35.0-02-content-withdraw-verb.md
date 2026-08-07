@@ -49,6 +49,53 @@ Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 02 depends on 01 (the tombstone fields and the fold must exist before a verb can append one) and is the prerequisite for 03. 01 -> 02 -> 03 is the minimum shippable slice and alone discharges GHI #635.
 
+<!-- gz-validate-skip: command-shape -->
+> **PARTIALLY PRE-LANDED, AND THE VERB NAME COLLIDES — read before implementing
+> (reconciled 2026-08-07).** A retirement verb already ships. It landed ahead of
+> this chain as the GHI #635 direct fix (`852e8a25`) on 2026-07-22, ONE DAY after
+> this brief was authored, and it is named **`gz content retire`**
+> (`src/gzkit/commands/content/retire.py`) — not `gz content withdraw`. Implementing
+> this brief as written would stand up a SECOND verb doing one job. Measured at
+> HEAD `6863f0555`:
+>
+> | Requirement | Target | Observed in `retire.py` | State |
+> |-------------|--------|--------------------------|-------|
+> | 1 — never accept a `--text` selector | id-keyed only | `--entry <id>` keyed; no text selector | **landed** |
+> | 2 — Gate 5 fail-closed on `invariant` tier | empty `--attestor`/`--reason` exits non-zero, writes nothing | **no `--attestor` parameter at all**; `reason` is not empty-checked (`retire.py:31`) | **open** |
+> | 3 — never require Gate 5 for `compressible` | tier discrimination | **no tier discrimination anywhere** | **open** |
+> | 4 — always append, never shrink | append-only | appends a retraction row via `corpus_store.append_entry` (`retire.py:74`) | **landed** |
+> | 5 — fail closed on unknown / already-retired / absent store | exit non-zero, write nothing | exit 1 on both unknown (`:47`) and already-retired (`:55`) | **landed** |
+> | 6 — emit BOTH `corpus_entry_appended` and `corpus_entry_retired` | two events | only `corpus_entry_retired_event` (`:80`); `append_entry` emits none | **half open** |
+> | 7 — three-part recovery prose on every fail-closed exit | what failed, cited rule, runnable next step | messages name what failed and that nothing was written, but carry **no runnable next step and no rule citation** | **open** |
+>
+> **Allowlist drift the reconciler cannot see.** This brief's allowlist names
+> `src/gzkit/governance/events.py` as the home of the `corpus_entry_retired` ledger
+> event. The shipped event is `corpus_entry_retired_event` in
+> **`src/gzkit/ledger_events.py`**; `governance/events.py` carries no corpus-retirement
+> helper (its only `corpus` hits are `corpus_fingerprint`). `gz obpi brief-drift`
+> reports allowlist=0 because the named file EXISTS — existence is not
+> relevance (GHI #581).
+>
+> **BLOCKING DECISION — do not resolve this by implementing.** Two routes, and they
+> are not equivalent:
+>
+> 1. **Extend `retire` in place** — add `--attestor`, the empty-check, tier
+>    discrimination, the second event, and the recovery prose to the shipped verb;
+>    amend the parent ADR § Decision item 2 and its Fidelity Assertion row to say
+>    `retire`. Smaller diff, no duplicate surface, but edits an ADR Decision.
+> 2. **Rename `retire` → `withdraw`** — a CLI contract change (Heavy; `.claude/rules/cli.md`
+>    § Heavy Lane Trigger), carrying the manpage, `gz cli audit` coverage, and any
+>    existing callers. Keeps the ADR's word; costs a rename of a shipped verb.
+>
+> The parent ADR's Fidelity Assertion invokes
+> `gz content withdraw ... --attestor "" --reason "probe"` expecting exit 1 — a
+> command that does not exist. It is invisible to `gz validate --cli-alignment`
+> because the row carries `<!-- gz-validate-skip: command-shape -->`: the marker
+> that lets a planned verb be documented is also what hid this collision.
+>
+> Note: `uv run gz obpi brief-drift OBPI-0.35.0-02-content-withdraw-verb` reports
+> **clean across all five dimensions**. This note is authored, never computed.
+
 ## Lane
 
 **Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
