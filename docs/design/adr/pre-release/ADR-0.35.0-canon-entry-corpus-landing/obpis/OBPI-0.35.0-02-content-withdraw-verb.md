@@ -5,12 +5,12 @@ item: 2
 lane: Heavy
 status: Draft
 allowlist:
-- src/gzkit/commands/content/withdraw.py
+- src/gzkit/commands/content/retire.py
 - src/gzkit/commands/content/__init__.py
 - src/gzkit/cli/**
-- src/gzkit/governance/events.py
-- tests/commands/test_content_withdraw.py
-- features/content_withdraw.feature
+- src/gzkit/ledger_events.py
+- tests/commands/test_content_retire.py
+- features/content_retire.feature
 - features/steps/**
 - docs/user/manpages/content.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-02-content-withdraw-verb.md
@@ -38,14 +38,21 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-<!-- gz-validate-skip: command-shape -->
-- **Checklist Item:** #2 - "gz content withdraw verb; Gate 5 fail-closed on invariant tier (`--attestor` / `--reason` refused when empty)"
+- **Checklist Item:** #2 - "`gz content retire` — Gate-5 extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2."
 
 **Status:** Draft
 
 ## Objective
 
-Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor <name> --reason <text>` — the operator surface that appends an OBPI-0.35.0-01 tombstone. Retirement is keyed to the entry id and NEVER to the entry text; retiring an `invariant`-tier entry is Gate 5 fail-closed on empty `--attestor` or `--reason`, mirroring `gz obpi repudiate` (ADR-0.0.71).
+Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --attestor <name> --reason <text>` — the operator surface that appends an OBPI-0.35.0-01 tombstone. Retirement is already keyed to the entry id and never to the entry text; what this OBPI adds is the Gate-5 half: retiring an `invariant`-tier entry becomes fail-closed on empty `--attestor` or `--reason`, mirroring `gz obpi repudiate` (ADR-0.0.71).
+
+> **This objective was AMENDED 2026-08-07 (operator-ruled) from "ship the new verb
+> `content withdraw`."** The verb already shipped under GHI #635; extending it in
+> place was ruled over renaming it. Parent ADR § Decision item 2 and § Checklist
+> item 2 carry the matching amendment. **This brief's `id` and filename still read
+> `content-withdraw-verb`** — renaming an OBPI id is a semver-identifier migration
+> touching the ADR's 1:1 checklist mapping and every ledger reference, so it is
+> deliberately NOT done here. The id is a label; § Objective is the contract.
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 02 depends on 01 (the tombstone fields and the fold must exist before a verb can append one) and is the prerequisite for 03. 01 -> 02 -> 03 is the minimum shippable slice and alone discharges GHI #635.
 
@@ -54,7 +61,8 @@ Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor
 > (reconciled 2026-08-07).** A retirement verb already ships. It landed ahead of
 > this chain as the GHI #635 direct fix (`852e8a25`) on 2026-07-22, ONE DAY after
 > this brief was authored, and it is named **`gz content retire`**
-> (`src/gzkit/commands/content/retire.py`) — not `gz content withdraw`. Implementing
+> (`src/gzkit/commands/content/retire.py`) — not the `content withdraw` this brief
+> was written against. Implementing
 > this brief as written would stand up a SECOND verb doing one job. Measured at
 > HEAD `6863f0555`:
 >
@@ -76,22 +84,23 @@ Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor
 > reports allowlist=0 because the named file EXISTS — existence is not
 > relevance (GHI #581).
 >
-> **BLOCKING DECISION — do not resolve this by implementing.** Two routes, and they
-> are not equivalent:
+> **DECISION RULED 2026-08-07 (operator): EXTEND `retire` IN PLACE.** The
+> alternative — renaming the shipped verb to `withdraw`, a Heavy CLI contract change
+> per `.claude/rules/cli.md` § Heavy Lane Trigger — was declined. Parent ADR
+> § Decision item 2, § Checklist item 2, its Fidelity Assertion row, and the
+> § Decomposition Scorecard's Interface scoring basis all now read `retire`; the
+> § Q&A Transcript keeps `withdraw` as history under a SUPERSEDED banner (the
+> ADR-0.0.74 / GHI #640 convention). The Interface dimension score is UNCHANGED at 2.
 >
-> 1. **Extend `retire` in place** — add `--attestor`, the empty-check, tier
->    discrimination, the second event, and the recovery prose to the shipped verb;
->    amend the parent ADR § Decision item 2 and its Fidelity Assertion row to say
->    `retire`. Smaller diff, no duplicate surface, but edits an ADR Decision.
-> 2. **Rename `retire` → `withdraw`** — a CLI contract change (Heavy; `.claude/rules/cli.md`
->    § Heavy Lane Trigger), carrying the manpage, `gz cli audit` coverage, and any
->    existing callers. Keeps the ADR's word; costs a rename of a shipped verb.
->
-> The parent ADR's Fidelity Assertion invokes
-> `gz content withdraw ... --attestor "" --reason "probe"` expecting exit 1 — a
-> command that does not exist. It is invisible to `gz validate --cli-alignment`
-> because the row carries `<!-- gz-validate-skip: command-shape -->`: the marker
-> that lets a planned verb be documented is also what hid this collision.
+> **How the collision stayed invisible, recorded so the next one does not.** The
+> parent ADR's Fidelity Assertion invoked a command that did not exist, and
+> `gz validate --cli-alignment` could not say so because the row carried
+> `<!-- gz-validate-skip: command-shape -->` — the marker that lets a planned verb be
+> documented is also what hid it. With the amendment landed, the marker came OFF
+> § Decision item 2 and § Checklist item 2, and the validator immediately caught
+> three residual references (exit 1, *"'withdraw' is not a registered subcommand"*).
+> Those were reworded rather than re-marked: the marker asserts *planned-but-unlanded*,
+> and `withdraw` is no longer planned, so marking it would have stated something false.
 >
 > Note: `uv run gz obpi brief-drift OBPI-0.35.0-02-content-withdraw-verb` reports
 > **clean across all five dimensions**. This note is authored, never computed.
@@ -106,13 +115,13 @@ Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor
 
 ## Allowed Paths
 
-- `src/gzkit/commands/content/withdraw.py` — new command module **CREATE**
-- `src/gzkit/commands/content/__init__.py` — command export
-- `src/gzkit/cli/**` — parser registration for the `withdraw` subcommand only
-- `src/gzkit/governance/events.py` — the `corpus_entry_retired` ledger event
-- `tests/commands/test_content_withdraw.py` — new covering tests **CREATE**
-- `features/content_withdraw.feature`, `features/steps/**` — Gate 4 scenarios **CREATE**
-- `docs/user/manpages/content.md` — the `withdraw` section
+- `src/gzkit/commands/content/retire.py` — **EXTEND** the shipped module (`content_retire_cmd`): add `--attestor`, the empty-check, tier discrimination, the second ledger event, and recovery prose
+- `src/gzkit/commands/content/__init__.py` — command export (already present; touch only if the signature changes)
+- `src/gzkit/cli/**` — parser registration for the NEW `--attestor` flag on the existing `retire` subcommand only
+- `src/gzkit/ledger_events.py` — home of the shipped `corpus_entry_retired_event`; extend its payload with tier + attestor
+- `tests/commands/test_content_retire.py` — **EXTEND** the existing covering tests
+- `features/content_retire.feature`, `features/steps/**` — Gate 4 scenarios **CREATE** (no retire feature exists)
+- `docs/user/manpages/content.md` — the existing `### retire` section (line 127), updated for the new flags
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-02-content-withdraw-verb.md` — this brief's evidence sections
 
 ## Denied Paths
@@ -161,7 +170,7 @@ Ship the new verb gz content withdraw, taking `<surface> --entry <id> --attestor
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] OBPI-0.35.0-01 landed: `CorpusEntry.retires` exists and `effective_corpus()` folds it
+- [ ] OBPI-0.35.0-01 landed: **check `effective_corpus()`, not `CorpusEntry.retires`** — the field has existed since 2026-07-22 (`corpus.py:100`) and proves nothing about this prerequisite. The gate is that `effective_corpus()` exists and folds; today only a flat `Corpus.retired_ids()` does (`corpus.py:129-131`), and REQ-0.35.0-02-04 below asserts against `effective_corpus()` directly
 - [ ] `src/gzkit/commands/content/commit.py` exists (the Gate-5 fail-closed pattern to mirror, lines 47-54)
 - [ ] `src/gzkit/content/corpus_store.py::append_entry` exists
 - [ ] `src/gzkit/governance/events.py` exists and carries the emit-helper pattern for corpus events
@@ -229,9 +238,9 @@ uv run mkdocs build --strict
 
 <!-- gz-validate-skip: command-shape -->
 ```bash
-uv run gz content withdraw --help
-uv run gz content withdraw AGENTS.md --entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 --attestor "" --reason "probe"
-uv run gz content withdraw AGENTS.md --entry does-not-exist --attestor "g0" --reason "probe"
+uv run gz content retire --help
+uv run gz content retire AGENTS.md --entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 --attestor "" --reason "probe"
+uv run gz content retire AGENTS.md --entry does-not-exist --attestor "g0" --reason "probe"
 ```
 
 ## Acceptance Criteria
@@ -244,14 +253,14 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
   [structural-fence] -> proven ONLY by a parent-ADR ## Boundary Invariants entry
 -->
 
-- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content withdraw, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — Gate 5 is fail-closed on the invariant tier.
+- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — Gate 5 is fail-closed on the invariant tier.
 - [ ] REQ-0.35.0-02-02 [behavior]: Given the same invocation with a non-empty `--reason` but a whitespace-only `--attestor` (and the symmetric case), when the command runs, then it exits non-zero and writes nothing — whitespace is not attestation.
 - [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming a `compressible`-tier entry and NO `--attestor`/`--reason`, when the command runs, then it exits 0 and appends the tombstone — Gate 5 guards the 0-Kelvin floor, not routine retirement.
 - [ ] REQ-0.35.0-02-04 [behavior]: Given a valid invariant-tier retirement with a non-empty attestor and reason, when the command runs, then the raw corpus GROWS by exactly one row, the target entry is absent from `effective_corpus()`, and the target row itself is still present verbatim in the raw log.
 - [ ] REQ-0.35.0-02-05 [behavior]: Given `--entry` naming an unknown id, an already-retired id, or a surface with no corpus store, when the command runs, then it exits non-zero, writes nothing, and its stderr carries all three recovery parts (what failed, the cited rule, a runnable next step).
-- [ ] REQ-0.35.0-02-06 [behavior]: Given the registered parser, when gz content withdraw --help is invoked, then the option set contains `--entry` and contains NO text-valued selector — text-keyed retirement is unreachable from the CLI, not merely discouraged.
+- [ ] REQ-0.35.0-02-06 [behavior]: Given the registered parser, when gz content retire --help is invoked, then the option set contains `--entry` and contains NO text-valued selector — text-keyed retirement is unreachable from the CLI, not merely discouraged.
 - [ ] REQ-0.35.0-02-07 [behavior]: Given a successful retirement, when the ledger is read, then a `corpus_entry_appended` event exists for the tombstone row AND a `corpus_entry_retired` event exists carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason.
-- [ ] REQ-0.35.0-02-08 [support]: `docs/user/manpages/content.md` carries a `withdraw` section documenting the per-entry-id contract and the invariant-tier Gate-5 fail-close, — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md` — and `gz validate --cli-alignment` resolves every gz content withdraw reference it prescribes.
+- [ ] REQ-0.35.0-02-08 [support]: `docs/user/manpages/content.md` carries a `retire` section (already present at line 127, EXTENDED here) documenting the per-entry-id contract and the invariant-tier Gate-5 fail-close, — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md` — and `gz validate --cli-alignment` resolves every gz content retire reference it prescribes.
 
 ## Completion Checklist
 

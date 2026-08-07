@@ -60,8 +60,9 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 1. RETIREMENT IS AN APPENDED TOMBSTONE, NEVER A DELETION. `CorpusEntry` gains optional `supersedes: str | None` and `retires: str | None`. `effective_corpus()` folds the append log; `tier_policy.invariant_entries()` reads the effective view; the raw log is never mutated. Direct analogue of `gz obpi withdraw`/`repudiate` (ADR-0.0.71). The fold's algebra is specified in this ADR, not deferred to implementation -- it is the one genuinely irreversible commitment.
 
-<!-- gz-validate-skip: command-shape -->
-2. `gz content withdraw <surface> --entry <id>` retires by entry id, never by text. Retiring an invariant-tier entry is Gate 5: `--attestor` + `--reason`, fail closed on empty. Per-entry-id rather than per-text because six of the seven byte-identical groups address the same text to two different sections -- text-keyed retirement silently elects a section winner.
+2. `gz content retire <surface> --entry <id>` retires by entry id, never by text. Retiring an invariant-tier entry is Gate 5: `--attestor` + `--reason`, fail closed on empty. Per-entry-id rather than per-text because six of the seven byte-identical groups address the same text to two different sections -- text-keyed retirement silently elects a section winner.
+
+   **AMENDED 2026-08-07 (operator-ruled): the verb is `retire`, EXTENDED IN PLACE — not a new `withdraw`.** This item originally named a new verb, `content withdraw`. A retirement verb had already shipped ahead of this ADR under GHI #635 (`852e8a25`, 2026-07-22 — one day after the OBPI briefs were authored) as `gz content retire`, already carrying per-entry-id keying, append-only semantics, and fail-closed exits on unknown and already-retired targets. Implementing `withdraw` would have stood up a SECOND verb for one job. OBPI-0.35.0-02 therefore EXTENDS `retire` with the half it lacks: `--attestor`, the empty-check, tier discrimination (Gate 5 on `invariant` only), the `corpus_entry_appended` event, and three-part recovery prose. `gz obpi withdraw`/`repudiate` (ADR-0.0.71) remain the precedent for the SEMANTICS; they were never a claim on the verb string. The collision went unseen because `gz obpi brief-drift` checks existence, not relevance (GHI #581), and the Fidelity Assertion below carried a `gz-validate-skip: command-shape` marker — the marker that lets a planned verb be documented is also what hid it.
 
 3. SECTION OWNERSHIP + DECREASE-ONLY RATCHET. Sections declare `corpus-owned` or `unowned`. The generator materializes owned sections from the corpus and carries unowned sections forward verbatim. The unowned byte total is recorded in a decrease-only ratchet. Un-owning a section (which raises the ratchet) requires an attested raise-path, Gate 5, the same shape as the retire path -- an undefined reversal path is the one agents invent.
 
@@ -133,7 +134,7 @@ so the coverage figure is asserted here and re-measured on every run.
 |-------|---------|---------------|
 | Owned sections derive from the corpus; hand-authored prose in an owned section is refused. | `uv run gz validate --rendition-lineage` | 0 |
 | No invariant-tier entry is emitted twice into a rendition (the duplicate-emission regression this ADR retires). | `uv run gz validate --rendition-floor-coherence` | 0 |
-| Retiring an invariant-tier entry without an attestor is refused (Gate 5 fail-closed, empty `--attestor`). | `uv run gz content withdraw AGENTS.md --entry corpus-prime-directive-ownership-2026-06-19T22:55:06.046462+00:00 --attestor "" --reason "probe"` | 1 |
+| Retiring an invariant-tier entry without an attestor is refused (Gate 5 fail-closed, empty `--attestor`). | `uv run gz content retire AGENTS.md --entry corpus-prime-directive-ownership-2026-06-19T22:55:06.046462+00:00 --attestor "" --reason "probe"` | 1 |
 | Capture never refuses: `remember` appends and warns rather than blocking, so operator words are never lost. | `uv run gz content remember AGENTS.md --section fidelity-probe --tier compressible --text "fidelity probe"` | 0 |
 | The corpus materializes a candidate without agent hand-authoring (the `candidate_text` gap this ADR closes). | `uv run gz content land AGENTS.md --dry-run` | 0 |
 | Byte accounting is honest: `compressible_bytes_after` no longer reports a 63x inflation as compression. | `uv run gz validate --rendition-lineage` | 0 |
@@ -231,8 +232,13 @@ pool item (operator ruling, 2026-07-21).
                          artifact, new ratchet state, new ledger events.
      Logic/Engine 2    — `effective_corpus()` fold plus the generator
                          materializer constitute a new subsystem.
-     Interface 2       — two new CLI verbs (`content withdraw`, `content land`)
-                         plus a new `gz validate` scope.
+     Interface 2       — one new CLI verb (`content land`) plus a Gate-5
+                         extension of the shipped `content retire` (amended
+                         2026-08-07; was "two new CLI verbs (`content withdraw`,
+                         `content land`)"), plus a new `gz validate` scope. The
+                         score is UNCHANGED at 2 — extending a verb's contract
+                         is the same Interface dimension as adding one, and the
+                         `gz validate` scope alone tops the band.
      Observability 2   — lineage map, coverage %, ratchet, advisory prose.
      Lineage 2         — the tombstone fold is a historical lineage migration.
 
@@ -276,8 +282,7 @@ pool item (operator ruling, 2026-07-21).
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
 - [ ] `CorpusEntry.supersedes` / `.retires` fields + `effective_corpus()` fold (algebra specified, including retire-the-tombstone) + `tier_policy.invariant_entries()` reads the effective view
-<!-- gz-validate-skip: command-shape -->
-- [ ] `gz content withdraw` verb; Gate 5 fail-closed on invariant tier (`--attestor` / `--reason` refused when empty)
+- [ ] `gz content retire` — Gate-5 extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2.
 - [ ] Retire the 8 duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus 50 -> 42 (GHI #635)
 - [ ] Section ownership declaration + decrease-only unowned-byte ratchet + attested ratchet-raise path for un-owning
 - [ ] corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction
@@ -290,9 +295,17 @@ pool item (operator ruling, 2026-07-21).
 
 ## Q&A Transcript
 
-<!-- Interview transcript preserved for context -->
+<!-- Interview transcript preserved for context. Amended after interview per the Decision section (see the amendment dated 2026-08-07). -->
+
+> **SUPERSEDED IN PART — `## Decision` above is authoritative.** This transcript is
+> the interview as conducted and is preserved as history, not reconciled in place
+> (the ADR-0.0.74 / GHI #640 convention). Known divergence: transcript answers 2 and
+> the checklist item 2 name the verb `content withdraw`; § Decision item 2 was
+> **amended 2026-08-07** to `gz content retire`, extended in place. Read the verb
+> from § Decision, never from here.
 
 *Interview conducted: 2026-07-21T18:32:46.989426*
+*Amended: 2026-08-07 (verb is `content retire`, extended in place, not a new `content withdraw`)*
 
 ### Q: What is the ADR identifier? (canonical slug-form: ADR-<semver>-<slug>)
 

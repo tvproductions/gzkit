@@ -99,7 +99,7 @@ Add two optional tombstone fields to `CorpusEntry` and ship `effective_corpus()`
 
 ## Denied Paths
 
-- `src/gzkit/commands/content/**` — the `withdraw` CLI surface is OBPI-0.35.0-02
+- `src/gzkit/commands/content/**` — the `retire` CLI surface (its Gate-5 extension) is OBPI-0.35.0-02
 - `.gzkit/corpus/AGENTS.md.jsonl` — appending the eight tombstones is OBPI-0.35.0-03
 - `src/gzkit/content/composer.py` — generator and `ByteEvidence` work is OBPI-0.35.0-05
 - `src/gzkit/governance/trust_audits/**` — validator scopes are OBPI-0.35.0-06

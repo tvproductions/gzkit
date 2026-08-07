@@ -40,7 +40,8 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > ONE of this brief's eight retirements landed ahead of the chain as a direct fix:
 > commit `42ba6c25` retired the divergent-pair loser under GHI #635, using the
 > already-landed `gz content retire` verb (`852e8a25`) rather than the
-> `gz content withdraw` verb this brief's Prerequisites name. Re-measured
+> `content withdraw` verb this brief's Prerequisites originally named (that name
+> was retired from the ADR on 2026-08-07 — see below). Re-measured
 > 2026-08-07 at HEAD `6863f0555`:
 >
 > | Requirement | Target | Observed 2026-07-22 | Observed 2026-08-07 | State |
@@ -91,10 +92,14 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > Requirement 2's job.
 >
 > **This brief is correctly `PENDING` and must not be completed.** Its
-> Prerequisites are not met: `gz content withdraw` does not exist
-> (`gz content` admits `retire` but not `withdraw` — see OBPI-0.35.0-02's blocking
-> decision on the verb-name collision), so OBPI-0.35.0-02 has not landed, and the
-> tombstone fold of OBPI-0.35.0-01 is unproven here.
+> Prerequisites are not met. **Verb-name collision RULED 2026-08-07 (operator):
+> OBPI-0.35.0-02 extends the shipped `gz content retire` in place rather than
+> shipping a new `withdraw`,** and the parent ADR is amended to match. The verb
+> therefore exists — but its **Gate-5 half does not**: `content_retire_cmd` takes no
+> `--attestor`, does not empty-check `--reason`, and does not discriminate tier
+> (`retire.py:31`). Requirement 13 below demands a non-empty `--attestor` on all
+> eight invocations, so this brief cannot run until OBPI-0.35.0-02 lands that half.
+> The tombstone fold of OBPI-0.35.0-01 is likewise unproven here.
 >
 > Note: as on OBPI-0.35.0-08, `gz obpi brief-drift` cannot see pre-landed REQ
 > satisfaction — it reports **clean across all five dimensions** — so this note is
@@ -110,7 +115,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 ## Allowed Paths
 
-- `.gzkit/corpus/AGENTS.md.jsonl` — eight appended tombstone rows, written ONLY via gz content withdraw
+- `.gzkit/corpus/AGENTS.md.jsonl` — eight appended tombstone rows, written ONLY via gz content retire
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md` — this brief's evidence sections, including the eight entry ids and the operator ruling
 
 ## Denied Paths
@@ -118,7 +123,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 - `src/gzkit/**` — this OBPI writes NO code; the mechanism is OBPI-0.35.0-01 and OBPI-0.35.0-02
 - `tests/**` — a test asserting that this repository's corpus file holds 42 rows is a filesystem-grep that cannot fail when production behavior changes (`.gzkit/rules/tests.md` § REQ Scope Discipline). The fold's behavior is proven in OBPI-0.35.0-01; this OBPI's proof channels are the ledger and the parent ADR's Boundary Invariants.
 - `AGENTS.md`, `.gzkit/renditions/**` — recomposing the rendition is OBPI-0.35.0-05 and OBPI-0.35.0-07
-- Direct edits to `.gzkit/corpus/AGENTS.md.jsonl` by any means other than gz content withdraw — hand-editing an append-only store is alternative E under another name
+- Direct edits to `.gzkit/corpus/AGENTS.md.jsonl` by any means other than gz content retire — hand-editing an append-only store is alternative E under another name
 - Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
@@ -167,7 +172,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] OBPI-0.35.0-01 landed: `effective_corpus()` folds tombstones under the pinned algebra
-- [ ] OBPI-0.35.0-02 landed: gz content withdraw exists and is Gate-5 fail-closed on invariant tier
+- [ ] OBPI-0.35.0-02 landed: `gz content retire` accepts `--attestor` and is Gate-5 fail-closed on invariant tier. **Check the flag, not the verb** — the verb has shipped since 2026-07-22 and its mere existence proves nothing about this prerequisite (`uv run gz content retire --help` must list `--attestor`)
 - [ ] `.gzkit/corpus/AGENTS.md.jsonl` present and loading; 51 rows, 50 invariant + 1 compressible, re-measured at implementation time
 - [ ] All sixteen entry ids enumerated in Requirements resolve against the corpus on disk
 - [ ] A human attestor is available — all eight retirements are Gate 5 and there is no self-close path
@@ -230,7 +235,7 @@ uv run gz test
 
 <!-- gz-validate-skip: command-shape -->
 ```bash
-uv run gz content withdraw AGENTS.md --entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 --attestor "g0" --reason "GHI #635: divergent quote-style duplicate; the single-quote operator-doctrine-verbatim-canon row is canon by operator ruling."
+uv run gz content retire AGENTS.md --entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 --attestor "g0" --reason "GHI #635: divergent quote-style duplicate; the single-quote operator-doctrine-verbatim-canon row is canon by operator ruling."
 uv run python -c "from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.models.corpus import effective_corpus; from gzkit.content.tier_policy import invariant_entries; c = load_corpus(Path('.'), 'AGENTS.md'); print('raw rows', len(c.entries), '| live invariant', len(invariant_entries(c)))"
 uv run python -c "import collections; from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.tier_policy import invariant_entries; t = collections.Counter(e.text for e in invariant_entries(load_corpus(Path('.'), 'AGENTS.md'))); print('duplicate texts remaining:', sum(1 for v in t.values() if v > 1))"
 ```
