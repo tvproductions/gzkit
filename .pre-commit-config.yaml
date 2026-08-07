@@ -79,10 +79,14 @@ repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
+      # ADR appendices are evidentiary primary sources (transcripts, adversary
+      # verdicts, operator exhibits). A formatter that rewrites them makes the
+      # archived copy differ from the original it exists to preserve, which is
+      # the one property it must have. Exempt, not exempted-later.
       - id: end-of-file-fixer
-        exclude: ^site/
+        exclude: ^(site/|docs/design/adr/.*/appendices/)
       - id: trailing-whitespace
-        exclude: ^site/
+        exclude: ^(site/|docs/design/adr/.*/appendices/)
       - id: check-merge-conflict
 
   - repo: local

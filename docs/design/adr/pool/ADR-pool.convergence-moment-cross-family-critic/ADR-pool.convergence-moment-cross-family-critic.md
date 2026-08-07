@@ -291,6 +291,105 @@ The operator named the cost of this explicitly, and it is larger than this ADR:
 > decoupling is implausible againt our need for better reliability and determinism
 > with gzkit's behavior.**
 
+## Operator rulings, 2026-08-07 — R1–R4 (these resolve the promotion blockers)
+
+Made after reading the recovered verdicts. Each collapses a question this ADR had
+recorded as open; three of them dissolve the dichotomy rather than picking a side.
+
+### R1 — Scope AND conclusion. It was never a choice.
+
+> **why is this a choice? we want the adversary to get full context. measure twice,
+> cut once.**
+
+The ADR had framed scope-challenge and conclusion-challenge as alternatives
+because Codex framed them as an ordering problem (*"scope challenge comes first.
+The proposed system reverses that order"*). The operator rejects the framing: the
+critic receives **full context** and performs **both** challenges. "Measure twice,
+cut once" is the CRM reading — a cross-check is not a cheaper substitute for
+another cross-check.
+
+This also completes the pre-emption begun by the earlier raw-surface ruling.
+Codex's objection was that a critic fed a primary-curated bundle "is independent
+in inference but not in scope." Full context plus independent raw-surface access
+answers both halves. **What remains unresolved is not scope-vs-conclusion but
+whether an additional *earlier* firing is warranted** — and R2 makes that cheap to
+try rather than something to settle in advance.
+
+### R2 — It is a SKILL with three invocation paths.
+
+> **this is a skill but can be invoked by me, by agent, or at gate.**
+
+This dissolves the gate-vs-skill conflict that both critics raised against the
+operator's "every time" ruling. The critic is **one skill** with three doors:
+
+| Door | Invoked by | Transport |
+|---|---|---|
+| Operator | `/second-opinion` | skill → `codex:codex-rescue` subagent |
+| Agent | agent judges it warranted | skill → `codex:codex-rescue` subagent |
+| Gate | `PreToolUse` on `AskUserQuestion` | hook → `codex-companion.mjs` CLI helper |
+
+Consequences that retire recorded objections:
+
+- **Pass 1's alternative A5** ("ship it as an operator-invoked skill, not a gate")
+  is no longer an alternative — it is one of the three doors. Same for A7
+  (measure before gating): the gate door can stay dark while the other two run.
+- **The 0.57% coverage finding stops being disqualifying.** It measured the *gate*
+  door only. The operator and agent doors have no such ceiling and reach the
+  prose-delivered recommendations that make up the other 99.4%.
+- **ADR-0.44.0's prohibition** on a fail-closed invariant living solely in a vendor
+  hook is satisfied: the invariant lives in the skill; the hook is one adapter.
+- **Movement C accretion** shrinks: one skill, and the hook becomes optional
+  rather than the mechanism.
+
+### R3 — Resolution is operator + main agent, on the Step 4b pattern.
+
+> **operator and main agent work for resolution. obpi pipeline 4b already handles
+> this well - observe it.**
+
+Observed, in `src/gzkit/commands/obpi_complete.py`. Step 4b's existing transition
+is exactly the "explicit verdict transition" Pass 2 said was missing — it already
+exists one layer down:
+
+> `:2170` — "A known refutation must never be handed to the operator **dressed as
+> clean**."
+>
+> `:2196` — re-run with `--adversary-resolution '<what was fixed and how the
+> adversary's own check was re-run>'`
+
+The rule: a `refuted` verdict with no recorded resolution **blocks**, and the
+resolution must state both *what was fixed* and *how the critic's own check was
+re-run*. It is durable in the ledger, not a transcript.
+
+**This answers Pass 2's sharpest finding against the design.** Its objection was
+that verbatim passthrough "transfers adjudication back to an already exhausted
+operator" without a mandatory state transition. The transition exists; it simply
+was not carried up from 4b. Generalize the shape — do not invent one, and per the
+standing boundary, do not alter 4b itself.
+
+### R4 — Use the built-in Codex integration. Keep it simple.
+
+> **we just want to run the most up-to-date codex. Anthropic offers a built-in
+> feature to call a codex adversary, why not use that and keep it simple?**
+
+Adopted. The installed plugin (`openai-codex/codex/1.0.6`) already supplies both
+transports the three doors need — verified on disk:
+
+- `agents/codex-rescue.md` — the `codex:codex-rescue` subagent, for the operator
+  and agent doors.
+- `scripts/codex-companion.mjs` — a CLI helper, for the gate door. **This retires
+  the "must shell out by hand" constraint** that forced `type: "command"` reasoning
+  earlier: the hook calls the plugin's own helper, not a raw binary.
+
+**This is a ruling against Pass 2's port/adapter prescription for now**, and it is
+consistent with the operator's standing posture (*"I need forward momentum, not
+design niceties - they can come with the refactor"*). Pass 2's vendor-neutral
+critic-provider port is **deferred, not adopted** — recorded in § Adversarial
+review so the refactor has its design when platform stability arrives.
+
+It also softens the outstanding residual: "most up-to-date codex" becomes whatever
+the plugin resolves, rather than a hard-coded vendor-prefix list in the core. It
+does not eliminate that residual — see § Risks item 8.
+
 ## Adversarial review: TWO independent cross-family passes, BOTH returned PERFORATED
 
 **This is the single most important fact about this design, and the handoff chain
@@ -732,9 +831,37 @@ ruling and this finding are in direct tension and must be reconciled at promotio
    always provide is 'discuss this' … You almost always equivocate and hedge"*),
    which is the behavior the critic is meant to attack.
 
-   Recovery note: the cache directory is gone; the durable copy is the transcript.
-   Anyone re-recovering it should decode the `image` content block from
-   `d01f355f-362e-45ed-9ed8-4d30ad06d452.jsonl` rather than look for the file.
+   Recovery note: the cache directory is gone and the transcript itself expires
+   ~2026-09-05, so the durable copy is now
+   `appendices/A4-operator-exhibit-askuserquestion-picker.png` in this package. It
+   was decoded from the `image` content block of
+   `d01f355f-362e-45ed-9ed8-4d30ad06d452.jsonl`, not recovered from the file
+   system.
+
+8. **Residual: `_CROSS_VENDOR_ADVERSARY_PREFIXES` hard-codes vendor names in the
+   core.** Pass 2: *"The core must not equate 'cross-family' with the literal
+   string `codex`. It should require demonstrably distinct model-family
+   provenance."* GHI #765 (`cd4e14687`) discharged the *provenance* half — the tier
+   is proven from the argv ARB executed rather than an asserted name — but not the
+   *literal-string* half.
+
+   **Stated precisely, the sharper gap is not the hard-coding.** The receipt proves
+   **which binary ran, not which model family answered**. The chain is argv →
+   binary → *assumed* vendor → *assumed* model family; #765 hardened the first link
+   and left the last two. A `--model` flag appears in argv and is therefore
+   captured, but a model set in `~/.codex/config` never appears at all.
+
+   **Not filed, by deliberate choice.** For all realistic current usage the `codex`
+   binary means an OpenAI model, so the shipped surface substantially fulfils its
+   declared intent; the gap is prospective, not observed. Filing it now would be
+   the reflexive-GHI pattern the operator's moratorium targets, and the proper fix
+   is the vendor-neutral port that **R4 explicitly deferred**. It becomes real when
+   a second vendor is genuinely added or the refactor is undertaken.
+
+   **Cheap tightening available without touching the classifier:** require the
+   Step-4b adversary invocation to name the model in argv — e.g.
+   `codex exec --model <model>` — so the receipt records the model, not merely the
+   binary. Skill text only, no code, and it does not pre-judge the port design.
 
 ## Notes
 
@@ -785,6 +912,32 @@ Superseded routing artifact: **GHI #670**, closed `superseded` against this ADR.
 Sibling: **GHI #765** (Step-4b tier-1 corroboration) — distinct surface, same
 lesson: prefer a runtime artifact over a self-assertion.
 
+### Appendices — primary sources, carried in-package
+
+Operator ruling, 2026-08-07: *"allow transcripts to be copied as appenditures to
+an adr within its folder - these are vital original sources … they could be
+cleaned up to include only relevant passages - not condensed summaries, just
+trimmed."*
+
+**Why this ADR is a package.** Session transcripts are deleted on a ~30-day
+rolling window (no `cleanupPeriodDays` configured; oldest surviving transcript
+measured at exactly 30 days on 2026-08-07). The three design sessions expire
+around **2026-09-05**. A provenance table citing session IDs would therefore
+become a dangling pointer — the same defect as a Layer-2 `handoff_path` with no
+referent (GHI #759), one level up. The appendices make this ADR self-contained.
+
+| Appendix | Content | Trim applied |
+|---|---|---|
+| `appendices/A1-operator-turns-verbatim.txt` | All 29 operator turns across the three sessions, verbatim, spelling preserved | Removed four harness skill-file injections (`gz-session-handoff`, `ghi-author` SKILL.md pastes) that are tooling noise, not design. **No operator prose removed or condensed.** |
+| `appendices/A2-codex-verdict-pass1-perforated.txt` | Pass 1 verdict, complete | None — verbatim |
+| `appendices/A3-codex-verdict-pass2-perforated.txt` | Pass 2 verdict, complete | None — verbatim |
+| `appendices/A4-operator-exhibit-askuserquestion-picker.png` | The operator's exhibit, decoded from the transcript's base64 image block after the image cache had been cleared | None |
+
+These are **primary sources, not summaries**. Where this ADR's prose and an
+appendix disagree, the appendix governs — that is the whole point of carrying
+them. Appendices are deliberately non-`.md`: the pool tree is discovered by
+`pool_dir.rglob("*.md")`, so a Markdown appendix would be parsed as a pool ADR.
+
 ### What the critics themselves could not verify
 
 Recorded so their findings are not over-trusted in the direction their own
@@ -815,20 +968,23 @@ Pool ADRs carry no `semver:` or `kind:` frontmatter; promotion via
 shape: `feature` kind, `heavy` lane. Campaign placement is the **operator's
 decision** (stated 2026-08-07: *"I'll decide its campaign placement"*).
 
-**Three rulings are required before OBPI decomposition**, each of which changes
-the decomposition rather than merely its ordering:
+**The three blocking rulings were made 2026-08-07 — see § Operator rulings R1–R4.**
+Scope-vs-conclusion was dissolved (both, full context); gate-vs-skill was dissolved
+(one skill, three doors); the post-verdict transition was located in Step 4b rather
+than invented. R4 additionally fixed the transport on the built-in Codex plugin.
 
-1. **Scope-time vs conclusion-time.** Does a scope-first trigger (A1/A2)
-   accompany or replace the convergence moment? The operator has already ruled the
-   critic reads raw surface itself, which narrows but does not close this.
-2. **Gate or skill.** Both critics pushed toward A5 (operator-invoked) or A7
-   (measure first) over a fail-closed gate, on the 0.57% coverage number, the
-   allowlist-erosion precedent, and Movement C. The operator's *"every time"*
-   ruling points the other way. This is a genuine conflict between an operator
-   ruling and two independent measurements.
-3. **The post-verdict state transition.** What must happen when the critic returns
-   PERFORATED? Without this, the mechanism adds reading load to the person it
-   exists to protect — Pass 2's sharpest finding against the ruled design.
+What a promoting session still owes:
 
-A promoting session that does not resolve these three will rebuild the mechanism
-two critics already broke.
+1. **Decompose against the three doors, not the hook.** The skill is the unit; the
+   `PreToolUse` adapter is one OBPI among several and can land dark.
+2. **Generalize 4b's resolution shape without touching 4b** — the standing boundary
+   (*"we will NOT alter the OBPI process, at all"*) is unchanged by R3.
+3. **Carry the unadjudicated alternatives forward.** R1–R4 resolved the blockers,
+   not the whole critique. A3 (persistent decision envelope), A4 (risk tiering —
+   the one thing both passes independently reached), and the mechanism-hardening
+   list (strong subject binding, deterministic checks first) remain live and
+   unruled.
+4. **Re-run the adversary against the revised design.** Both prior verdicts
+   perforated a mechanism that R1–R4 materially changed; neither verdict has been
+   re-tested against what the design has become. Per this ADR's own thesis, that
+   re-test is the point.
