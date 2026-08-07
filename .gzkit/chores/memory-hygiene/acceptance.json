@@ -2,14 +2,15 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "uv run gz validate --instructions --instructions-files-budget",
+      "command": "uv run python .gzkit/chores/memory-hygiene/check_memory_drift.py",
       "expected": 0,
-      "description": "per-turn instruction surfaces are well-formed and within budget"
+      "description": "no auto-memory file postdates the last recorded hygiene pass"
     },
     {
       "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
-      "expected": 0
+      "expected": 0,
+      "description": "unit suite green (precondition, not the chore's discriminator)"
     }
   ]
 }
