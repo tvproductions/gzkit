@@ -149,10 +149,11 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 
 **Movement C — Reduce the accretion** *(deferral LIFTED 2026-07-18 — this is pre-1.0)*
 - [ ] **Surface mirroring** — 703 of 810 chore commits (47% of all commits) are `gz git-sync` regenerating five copies of every skill/rule across `.gzkit/`, `src/gzkit/`, `.claude/`, `.agents/`, `.github/`. One canonical location; generate at install, not at commit. Largest single line item on the board.
-- [ ] Collapse the `validate()` surface to the registry — **92 flags** today (GHI #618).
+- [ ] Collapse the `validate()` surface to the registry — **94 scopes** today (92 when this box was authored, 81 at GHI #618). **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live.
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
+- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance.
 
 **Movement D — Stop the re-adjudication** *(ruling lifecycle)*
 - [x] **Handoff-local repair** — every authored next step now survives the resume (`ResumeResult.next_steps`); the `continues_from` chain link is correct-by-construction. GHI #696, commit `5ec44ad1`, receipt `arb-step-unittest-430503d2`.
@@ -268,6 +269,49 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-07 (2) — Movement C gains a family-closure box; C2 retargeted off flag count (operator-ratified)
+
+Operator ruling, verbatim: *"ratify both, write handoff, git-sync"*.
+
+Two changes to Movement C. **No box removed, nothing resequenced**, no change to
+Movements A, B, or D, and no change to the post-1.0 pool ruling.
+
+**1. New box — close the doctrine-declared-without-mechanism family.**
+**2. C2 amended** — completion criterion is family closure, not flag count. The
+surface read 81 scopes at GHI #618, 92 when the box was authored, and **94** on
+2026-08-07: it grew while its reduction box waited. Collapsing the count without
+landing the enrollment fail-close (#744) leaves #704, #745, and #748 live.
+
+**Why this is a reframing, not an expansion.** "Reduce the accretion" invites
+shrinking 94 scopes, but most are load-bearing one-off checks over a genuinely
+large surface. The evidence says the target is **stopping two families from
+producing scope #95** — a different verb.
+
+**Evidence, and the instrument that produced it.** The operator declined to
+ratify against throwaway analysis (*"Build the class-of-failure index first"*),
+so the detector was built as a real surface first: chore `failure-class-index`,
+module `src/gzkit/insights/failure_classes.py`, commit `ae4e6dc8c`. It reports,
+over the 333 GHIs closed since 2026-05-09:
+
+| Measure | Value |
+|---|---|
+| Carrying an authored `## Class of failure` section | 288 of 333 (87%) |
+| Declaring themselves a recurrence of a named prior class | 71 of 288 (25%) |
+| Recurrence chains of depth ≥ 3 | 15 |
+| Deepest chain | 12 |
+
+**The precedent this box is modeled on.** Layer drift — the one family measurably
+*closing* (10 → 7 → 6 → 1 across May–Aug) — closed because it got three things:
+a doctrine (`state-doctrine.md`), a regenerator (`gz register-adrs`), and a
+fail-close (`gz validate --adr-status-fresh`). The doctrine family has the first
+two at best. That triple is the template.
+
+**Two limits recorded on the ratification, not hidden.** The ~19-member figure
+spans two chains that **no author has linked to each other** — treating them as
+one family is an operator judgment, not a measurement. And the index detects
+*declared* recurrence only, so it is a floor: a family nobody names stays
+invisible to it too.
 
 ### 2026-08-07 — Movement A count correction: ADR-0.35.0 is 0/10, not 0/9 (operator-ratified)
 
