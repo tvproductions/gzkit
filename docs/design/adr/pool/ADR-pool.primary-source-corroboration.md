@@ -215,7 +215,7 @@ corroboration**, not a cleanup. Order matters; the channel lands first.
 Pool, uncommitted, drawn later. The operator's standing sequencing discipline,
 verbatim: **"only one feature at a time, feature, finish, draw from pool."**
 `ADR-0.35.0-canon-entry-corpus-landing` is the in-flight feature (Movement A item 2,
-0/9 landed), so this ADR waits in pool and is drawn when that finishes. Placement
+0/10 landed), so this ADR waits in pool and is drawn when that finishes. Placement
 past that ordering is undecided — no promotion date, no semver, no kind is proposed
 here.
 
