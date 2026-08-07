@@ -156,6 +156,14 @@
       "timeoutSeconds": 120
     },
     {
+      "slug": "failure-class-index",
+      "title": "Failure-Class Index (GHI recurrence chains)",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/failure-class-index",
+      "lane": "lite",
+      "timeoutSeconds": 120
+    },
+    {
       "slug": "frontier-model-card-currency",
       "title": "Frontier Model Card Currency (System-Card Doctrine Refresh)",
       "version": "1.0.0",

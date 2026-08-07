@@ -1,0 +1,9 @@
+{
+  "chains": 46,
+  "chains_3_plus": 15,
+  "declaring_recurrence": 71,
+  "deepest_chain": 12,
+  "entries": 288,
+  "records_read": 333,
+  "recurrence_rate": 0.2465
+}
