@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-07
 metadata:
-  skill-version: "2.6.0"
+  skill-version: "2.7.0"
 model: opus
 ---
 
@@ -260,13 +260,28 @@ to produce one. Fix that instinct.
 
    a. **Commit trailer check.** `git log --all --grep="GHI #<N>\|Closes #<N>\|Fixes #<N>"` returns the fix commit(s). Missing trailer is a process defect — amend via a new trailer-bearing commit before continuing.
 
-   b. **Class-of-failure check.** Does the fix close the class the GHI body named, or only the specific instance? An instance fix with no coverage of adjacent inputs is `AGENTS.md` § DO IT RIGHT #1 violation — expand the fix or file a follow-up GHI and keep this one open with a parent/child link.
+   b. **Class-of-failure check — enumerate the family, then bind each member to its witness.** Does the fix close the class the GHI body named, or only the specific instance? An instance fix with no coverage of adjacent inputs is `AGENTS.md` § DO IT RIGHT #1 violation — expand the fix or file a follow-up GHI and keep this one open with a parent/child link.
+
+      **Naming tests is not the check.** Write the family out as a list of causes, and for each cause name the test that exercises *that cause*. A cause with no test of its own is uncovered no matter how many tests the fix added — and a family you cannot enumerate is a family you have not verified. Ask the inverse explicitly: *which input in this family does no test drive?* If the answer is "none", say how you determined that; if you cannot enumerate exhaustively, say so and scope the claim to the causes you did cover.
+
+      **Canonical regression (GHI #771, arm B).** GHI #708's 2026-07-21 close comment enumerated three causes and asserted *"All three now hit the same guard"* — while listing three tests by name one section up. The enumeration omitted the cause that was the entire premise of the flag the guard sat inside (an ordinary dirty worktree, nothing staged), and all nine tests stubbed the same git read. The defect sat marked-closed for seventeen days and re-landed as `57bd15f91`. Evidence was named; the family was wrong.
 
    c. **Test semantics check.** New tests assert REQ-derived semantics per `.gzkit/rules/tests.md` § Tests assert semantics, not strings. String-shape tests outside Invariant 3 fixture scope are the GHI #272 cosmetic-backfill pattern — re-derive before continuing.
 
    d. **Heavy-lane ARB receipts.** For heavy-lane or foundation-kind fixes, ARB receipts exist for lint/typecheck/tests/coverage/docs per `AGENTS.md` § Attestation. Cite receipt IDs in the close comment.
 
    e. **Observed output evidence.** For fixes touching CLI rendering, skill routing, or operator-facing output, the commit body contains observed output or a test reference per `.claude/rules/tool-skill-runbook-alignment.md` § Commit-message discipline.
+
+   f. **Reference-liveness check.** Resolve every `#N` the close comment will cite — including any carried forward from a prior close comment on this same GHI — against live state before writing it:
+
+      ```bash
+      gh issue view <N> --json number,state,stateReason,closedAt \
+        --jq '"#\(.number) \(.state)/\(.stateReason) \(.closedAt)"'
+      ```
+
+      A citation describing another GHI as open, blocked, or outstanding must be re-derived at *this* close, never transcribed. Annotate a settled reference rather than deleting it — citing and depending are different claims, and the historical link is usually still worth keeping.
+
+      **Canonical regression (GHI #771, arm A).** GHI #708's 2026-07-21 close comment noted *"**Note on #573:** that issue remains open and is unaffected by this fix"* — true when written. #573 closed 2026-07-24. The 2026-08-08 re-close carried the same claim into its `## Related` section, fifteen days after it stopped being true, because it was copied rather than resolved. The handoff surface closed this same gap in `ef3f9e0a2` via the `ReferenceChecker` port (`src/gzkit/handoff_api.py:168`); close comments have no such adapter, so the resolution is manual and belongs here.
 
 ### Phase 4 — Close
 
@@ -293,7 +308,23 @@ to produce one. Fix that instinct.
    - ARB receipts: <arb-step-unittest-...>, <arb-step-ruff-...>  (heavy/foundation only)
 
    **Class-of-failure coverage:** <one sentence — the class the GHI named, not the instance>
+
+   | Cause in the family | Covering test |
+   |---|---|
+   | <cause 1> | `<file::TestClass::test_name>` |
+   | <cause 2> | `<file::TestClass::test_name>` |
+
+   <one sentence: how you determined the enumeration is exhaustive — or which causes it deliberately does not claim>
    ```
+
+   The table is the step-7b answer made checkable: a row with an empty right cell
+   is an uncovered cause stated plainly, which is the honest close. Prose alone
+   cannot show a missing row. For a doc-only fix with no test tier, name the
+   observed-output check or the grep that stands in for each cause.
+
+   Every `#N` in `## Related` — and anywhere else in the comment — is resolved
+   per step 7f before the comment is written. Mark a settled reference inline
+   (e.g. `#573 — closed 2026-07-24`) rather than dropping it.
 
 9. **Close the issue.**
 
@@ -371,6 +402,8 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 | "The blocker was written by the operator, so it still binds" | Authorship makes it *authoritative about intent*, not *current about code*. The operator ruled on the tree they saw. Re-deriving honors that ruling; treating it as timeless outsources judgment to a stale snapshot. |
 | "The GHI has two proposed resolutions and I should ask which one" | Only if the options are genuinely balanced. Usually one option preserves reconciliation intent and the other discards it — pick the preserving one per DO IT RIGHT #3 and note the rationale in the close comment. |
 | "The commit clearly fixes it; I don't need to verify tests" | Verification is the point of Phase 3. If tests assert strings instead of semantics, the class is still open. |
+| "I listed the tests by name, so the class claim is backed" | **Naming is not covering.** GHI #708's close comment named three tests and asserted a three-member family — and the family omitted the cause that actually fired seventeen days later (GHI #771). Build the cause→test table (step 7b) and read it for empty right cells. The question is never "did I cite evidence", it is "which cause has no test". |
+| "The prior close comment said #N is still open, so I can carry that forward" | A prior comment describes the day it was written — the same hearsay problem as a stale blocker, one row up. Re-resolve every `#N` at *this* close (step 7f). GHI #708's note on #573 was true on 2026-07-21 and false when restated on 2026-08-08; nothing in between changed except the world. |
 | "I'll close it now and add the evidence later" | The close comment is the evidence. "Later" never comes. |
 | "This GHI is stale; just close it" | Stale GHIs get `withdrawn` (rule changed) or `won't-fix` (operator-approved risk), not silent closes. Name the disposition. |
 | "Multiple GHIs resolve together; let me close them all with one comment" | Each GHI has its own disposition. Batching conflates them. |
@@ -392,7 +425,9 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - **A recorded precondition is honored without being re-derived** — the GHI says "blocked on X" / "sequence after #M" and the agent accepts it rather than reading the surface it names. The blocker describes a past tree (Phase 1 step 1a)
 - Agent posts a long analysis comment and does not close, when no escalation blocker holds
 - Close comment is "Done" or "Fixed" with no artifact reference
-- Close happens before verification steps 7a–7e run
+- **Class-of-failure claim asserts a family in prose with no cause→test table** — "every path inherits it", "all three now hit the same guard", "closed at the root" are the signatures. A family worth claiming is a family worth enumerating; if it cannot be enumerated, say so and scope the claim (step 7b)
+- **A `#N` described as open, blocked, or outstanding that was copied from a prior comment rather than resolved** — especially in `## Related` on a re-close, where the citation is inherited from the close being superseded (step 7f)
+- Close happens before verification steps 7a–7f run
 - Multiple GHIs closed in a loop without individual re-evaluation
 - Disposition chosen by vibe rather than by the Phase 1 shape table
 - Commit claimed to fix but has no `(GHI #N)` trailer and no follow-up amendment
