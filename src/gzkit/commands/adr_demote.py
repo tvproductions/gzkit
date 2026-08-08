@@ -35,7 +35,11 @@ from gzkit.obpi_lifecycle import parkable_children
 from gzkit.sync import parse_artifact_metadata
 
 _DEMOTABLE_KINDS = {"feature", "foundation"}
-_FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date")
+#: Frontmatter keys a pool ADR must not carry. ``promoted_from`` joined the set
+#: because a pool ADR is an *origin* — carrying it left the demoted file claiming
+#: it was promoted from itself, since demotion reuses the very slug the promotion
+#: came from (observed on the first `take-demoted` run, GHI #775).
+_FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date", "promoted_from")
 _CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
 #: Pool-slug collision policies. ``take-demoted`` was added under GHI #775: a
 #: promote/demote round trip ALWAYS collides, because ``gz adr promote`` retains
@@ -131,6 +135,33 @@ def _reverse_pool_promotion_markers(content: str, demoted_id: str) -> str:
             break
     trailing = "\n" if updated.endswith("\n") else ""
     return "\n".join(lines) + trailing
+
+
+def _live_covers_into_deleted_briefs(project_root: Path, source_id: str) -> list[str]:
+    """Return ``@covers`` REQ ids under ``tests/`` belonging to *source_id*'s briefs.
+
+    Demotion deletes the whole ADR package, briefs included, and pool ADRs carry
+    no OBPIs by doctrine — so there is nowhere for those briefs to go. Meanwhile
+    ``@covers`` validates its REQ id at **import** time against the brief corpus:
+    delete the briefs and every test module holding one of those decorators
+    raises ``ValueError: Unknown REQ identifier`` and the suite stops loading.
+
+    Nothing coupled the two before (GHI #773). Demoting
+    ``ADR-0.44.0-vendor-alignment-codex`` broke 36 decorators across four test
+    modules — all of them covering an OBPI that was *attested complete* — and the
+    only signal was the suite failing to import afterwards.
+    """
+    semver = _CANONICAL_ID_RE.match(source_id)
+    prefix = source_id.split("-")[1] if not semver else source_id.split("-")[1]
+    tests_root = project_root / "tests"
+    if not tests_root.is_dir():
+        return []
+    pattern = re.compile(rf'@covers\(\s*["\'](REQ-{re.escape(prefix)}-[^"\']*)["\']')
+    found: dict[str, None] = {}
+    for path in tests_root.rglob("*.py"):
+        for match in pattern.finditer(path.read_text(encoding="utf-8", errors="replace")):
+            found.setdefault(match.group(1), None)
+    return sorted(found)
 
 
 def _find_dependent_children(project_root: Path, config: Any, demoted_id: str) -> list[str]:
@@ -433,6 +464,24 @@ def adr_demote_cmd(
             f"\n[red]Demotion blocked:[/red] {len(children)} ADR(s) reference this as parent: {rel}"
         )
         console.print("  Pass --force to override (orphans the children).")
+        raise SystemExit(3)
+    covered = _live_covers_into_deleted_briefs(project_root, cast(str, plan["source_id"]))
+    if covered and not force:
+        shown = ", ".join(covered[:5]) + ("…" if len(covered) > 5 else "")
+        console.print(
+            f"\n[red]Demotion blocked:[/red] {len(covered)} @covers decorator(s) under "
+            f"tests/ name REQs from briefs this demotion deletes: {shown}"
+        )
+        console.print(
+            "  Why: @covers validates its REQ id at IMPORT time against the brief corpus, "
+            "so deleting the briefs makes every one of those test modules raise "
+            "ValueError and the suite fails to load. Pool ADRs carry no OBPIs by "
+            "doctrine, so the briefs have no home to move to."
+        )
+        console.print(
+            "  Next step: remove or retarget those decorators, then re-run — or pass "
+            "--force if the REQ traceability is deliberately being discarded."
+        )
         raise SystemExit(3)
     result = _demote_result_payload(project_root, plan, dry_run)
     if as_json:

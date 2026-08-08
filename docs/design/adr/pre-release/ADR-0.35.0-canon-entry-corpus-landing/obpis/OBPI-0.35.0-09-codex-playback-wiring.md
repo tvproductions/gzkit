@@ -36,7 +36,7 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-- **Checklist Item:** #9 - "Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-0.44.0-vendor-alignment-codex"
+- **Checklist Item:** #9 - "Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-pool.vendor-alignment-codex"
 
 **Status:** Draft
 
@@ -44,7 +44,7 @@ verification:
 
 Play the committed `codex.md` rendition back to a real Codex-consumed contract surface, so the `lite` setpoint is falsifiable for the first time — `codex.md` (13,606 B) is composed, committed, attested and floor-gated today, and NOTHING consumes it because `sync_surfaces.py:374-376` and `governance/compose.py:28-29` both hardcode `("AGENTS.md", "claude")`.
 
-**Dependency order (ADR-0.35.0 § Scope Minimization):** 09 is independent of the 01 -> 02 -> 03 chain and may land at any point. Per § Scope Minimization it is NOT cuttable: codex playback is the only thing that makes the `lite` setpoint falsifiable, and its cross-ADR coordination with ADR-0.44.0 gets HARDER, not easier, if deferred into a window where that ADR has moved.
+**Dependency order (ADR-0.35.0 § Scope Minimization):** 09 is independent of the 01 -> 02 -> 03 chain and may land at any point. Per § Scope Minimization it is NOT cuttable: codex playback is the only thing that makes the `lite` setpoint falsifiable, and its cross-ADR coordination with `ADR-pool.vendor-alignment-codex` gets HARDER, not easier, if deferred into a window where that ADR has moved.
 
 ## Lane
 
@@ -65,20 +65,25 @@ Play the committed `codex.md` rendition back to a real Codex-consumed contract s
 
 ## Denied Paths
 
-- `.codex/config.toml` and `src/gzkit/sync_surfaces.py::render_codex_config` / `sync_codex_config` (lines 475-510) — Codex config generation is ADR-0.44.0-01, which OWNS that surface
-- Codex hook registration and vendor-native adapters — ADR-0.44.0-02
-- `.agents/personas/**`, `.agents/skills/**`, Codex subagent role definitions — ADR-0.44.0-03
-- `gz validate --surfaces` and its Codex drift scope — ADR-0.44.0-05
-- Codex instruction-budget proofs and the Codex runbook — ADR-0.44.0-06
+The owning design returned to pool on 2026-08-08 (GHI #773), so these name its
+checklist items rather than OBPI ids — pool ADRs carry no OBPIs by doctrine. The
+boundary is unchanged: `ADR-pool.vendor-alignment-codex` owns all five surfaces
+and this OBPI must not touch them.
+
+- `.codex/config.toml` and `src/gzkit/sync_surfaces.py::render_codex_config` / `sync_codex_config` (lines 475-510) — Codex config generation, checklist item 01
+- Codex hook registration and vendor-native adapters — checklist item 02
+- `.agents/personas/**`, `.agents/skills/**`, Codex subagent role definitions — checklist item 03
+- `gz validate --surfaces` and its Codex drift scope — checklist item 05
+- Codex instruction-budget proofs and the Codex runbook — checklist item 06
 - `src/gzkit/content/composer.py` — the generator is OBPI-0.35.0-05; this OBPI wires PLAYBACK, never composition
 - New dependencies, CI files, lockfiles
 - Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
-1. READ ADR-0.44.0-vendor-alignment-codex BEFORE SCOPING ANY EDIT. It owns the Codex surface. This OBPI coordinates; it does not collide. Its six checklist items — config generation, hooks policy, skills/personas/subagents, harness-aware pipeline runtime, surface validation, instruction budget and docs — are ALL out of scope here.
+1. READ ADR-pool.vendor-alignment-codex BEFORE SCOPING ANY EDIT. It owns the Codex surface. This OBPI coordinates; it does not collide. Its six checklist items — config generation, hooks policy, skills/personas/subagents, harness-aware pipeline runtime, surface validation, instruction budget and docs — are ALL out of scope here.
 2. ALWAYS resolve the playback consumer rather than hardcoding it. `sync_surfaces.py:374-376` and `governance/compose.py:28-29` both load `("AGENTS.md", "claude")` as a literal; the playback path must take the consumer as a parameter (Cockburn's rule, `.claude/rules/hexagonal-architecture.md` operative rule 4).
-3. ALWAYS resolve the Codex destination path from EXISTING configuration — `config.vendors.codex.surface_root` — never from a newly invented constant. Inventing a path here is the collision with ADR-0.44.0; if no suitable configured path exists, STOP and emit BLOCKERS naming the coordination point rather than choosing one.
+3. ALWAYS resolve the Codex destination path from EXISTING configuration — `config.vendors.codex.surface_root` — never from a newly invented constant. Inventing a path here is the collision with `ADR-pool.vendor-alignment-codex`; if no suitable configured path exists, STOP and emit BLOCKERS naming the coordination point rather than choosing one.
 4. NEVER regress the `claude` surface. AGENTS.md after this OBPI MUST be byte-identical to AGENTS.md before it. `gz validate --invariant-coherence` byte-compares a re-render against committed AGENTS.md and is in the default `gz check` scope.
 5. ALWAYS keep playback verbatim and deterministic — load the committed rendition bytes and write them; no LLM, no template substitution, no network (ADR § Alternatives L; the existing `render_agents_md` docstring contract).
 6. ALWAYS stay bootstrap-safe. An absent `codex.md` rendition MUST produce no write and no error, exactly as `rendition_exists` already guards the claude path.
@@ -107,7 +112,7 @@ Play the committed `codex.md` rendition back to a real Codex-consumed contract s
 
 - [ ] ADR § Decision item 8 and § Consequences (Positive) #5 — codex playback and `codex.md` becoming falsifiable.
 - [ ] `DESIGN_FORCING_FUNCTIONS.md` § 3 Constraint Archaeology, heavy/lite setpoint — "A setpoint with no playback cannot be wrong", and why item 9 belongs in this ADR rather than deferred.
-- [ ] `docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md` § Decision and § Checklist — the six items that are out of scope here; read in full before editing.
+- [ ] `docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md` § Decision and § Checklist — the six items that are out of scope here; read in full before editing.
 - [ ] `.claude/rules/hexagonal-architecture.md` operative rule 4 — never name the technology in the core; take it as a parameter.
 
 **Prerequisites (check existence, STOP if missing):**
@@ -115,14 +120,14 @@ Play the committed `codex.md` rendition back to a real Codex-consumed contract s
 - [ ] `.gzkit/renditions/AGENTS.md/codex.md` exists (13,606 B) with its `codex.corpus.json` provenance sidecar
 - [ ] `src/gzkit/sync_surfaces.py::sync_agents_md` exists and currently hardcodes the `claude` consumer
 - [ ] `src/gzkit/governance/compose.py::render_agents_md` exists and currently hardcodes the `claude` consumer
-- [ ] `config.vendors.codex.surface_root` resolves to an existing directory — the coordination point with ADR-0.44.0; if it does not, STOP and emit BLOCKERS
-- [ ] `docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/` present and read
+- [ ] `config.vendors.codex.surface_root` resolves to an existing directory — the coordination point with `ADR-pool.vendor-alignment-codex`; if it does not, STOP and emit BLOCKERS
+- [ ] `docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md` present and read
 
 **Existing Code (understand current state):**
 
 - [ ] `src/gzkit/sync_surfaces.py:372-380` — the hardcoded `rendition_exists(project_root, "AGENTS.md", "claude")` playback branch and its template bootstrap fallback
 - [ ] `src/gzkit/governance/compose.py:28-29` — the second hardcoded `("AGENTS.md", "claude")` load
-- [ ] `src/gzkit/sync_surfaces.py:475-510` — `render_codex_config` / `sync_codex_config`, the ADR-0.44.0-owned surface this OBPI must not touch
+- [ ] `src/gzkit/sync_surfaces.py:475-510` — `render_codex_config` / `sync_codex_config`, the `ADR-pool.vendor-alignment-codex`-owned surface this OBPI must not touch
 - [ ] `src/gzkit/config.py:26-60, 106-107` — `VendorConfig`, `vendors.codex`, and the existing `codex_skills` / `codex_config` path fields
 - [ ] `src/gzkit/governance/trust_audits/rendition_floor_coherence.py:59-72` — already iterates every consumer, so the `lite` floor binds the moment codex is consumed
 
@@ -203,7 +208,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-09-04 [behavior]: Given the surface sync before and after this OBPI, when AGENTS.md is compared, then it is BYTE-IDENTICAL — the `claude` playback path is unchanged in behavior by the consumer parameterization.
 - [ ] REQ-0.35.0-09-05 [behavior]: Given a `codex.md` rendition from which an invariant-tier corpus entry has been removed, when `gz validate --rendition-floor-coherence` runs fail-closed, then it exits 3 naming the codex consumer — the `lite` setpoint is now falsifiable because the rendition it grades is actually consumed.
 - [ ] REQ-0.35.0-09-06 [behavior]: Given identical committed renditions, when the surface sync is run twice, then both the claude and codex destination files are byte-identical across runs — playback stays deterministic.
-- [ ] REQ-0.35.0-09-07 [structural-fence]: ADR-0.35.0 makes NO change to the surfaces ADR-0.44.0-vendor-alignment-codex owns — `.codex/config.toml` generation, Codex hook registration and adapters, Codex subagent role definitions, the `gz validate --surfaces` Codex drift scope, and the Codex instruction-budget artifacts. This ADR wires playback of an existing committed rendition and nothing else. The boundary is cross-ADR and can only be audited once the whole ADR-0.35.0 diff is in hand, so it is a closeout-layer fence rather than a per-OBPI check.
+- [ ] REQ-0.35.0-09-07 [structural-fence]: ADR-0.35.0 makes NO change to the surfaces ADR-pool.vendor-alignment-codex owns — `.codex/config.toml` generation, Codex hook registration and adapters, Codex subagent role definitions, the `gz validate --surfaces` Codex drift scope, and the Codex instruction-budget artifacts. This ADR wires playback of an existing committed rendition and nothing else. The boundary is cross-ADR and can only be audited once the whole ADR-0.35.0 diff is in hand, so it is a closeout-layer fence rather than a per-OBPI check.
 
 ## Completion Checklist
 

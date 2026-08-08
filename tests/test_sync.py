@@ -25,7 +25,6 @@ from gzkit.sync import (
     scan_existing_artifacts,
     sync_all,
 )
-from gzkit.traceability import covers
 
 
 def _skill_markdown(
@@ -146,7 +145,6 @@ class TestDetectProjectName(unittest.TestCase):
 class TestGenerateManifest(unittest.TestCase):
     """Tests for manifest generation."""
 
-    @covers("REQ-0.44.0-01-03")
     def test_manifest_includes_default_codex_config_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             manifest = generate_manifest(Path(tmpdir), GzkitConfig())
@@ -156,7 +154,6 @@ class TestGenerateManifest(unittest.TestCase):
                 ".codex/config.toml",
             )
 
-    @covers("REQ-0.44.0-01-03")
     def test_shared_schema_keeps_v1_codex_config_optional(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             manifest = generate_manifest(Path(tmpdir), GzkitConfig())
@@ -172,7 +169,6 @@ class TestGenerateManifest(unittest.TestCase):
 
         self.assertEqual(errors, [], [error.message for error in errors])
 
-    @covers("REQ-0.44.0-01-03")
     def test_generated_v2_manifest_matches_shared_schema(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             manifest = generate_manifest(Path(tmpdir), GzkitConfig())

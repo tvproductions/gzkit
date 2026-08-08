@@ -29,7 +29,6 @@ def tearDownModule() -> None:
 class TestInitCommand(unittest.TestCase):
     """Tests for gz init command."""
 
-    @covers("REQ-0.44.0-01-01")
     def test_init_creates_codex_config_baseline(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -99,7 +98,6 @@ class TestInitCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Nothing to repair", result.output)
 
-    @covers("REQ-0.44.0-01-02")
     def test_init_repair_preserves_operator_codex_config(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

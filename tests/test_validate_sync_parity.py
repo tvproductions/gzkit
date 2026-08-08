@@ -7,7 +7,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.traceability import covers
 from gzkit.validate_pkg.sync_parity import check_sync_parity, snapshot_surfaces
 from tests.commands.common import CliRunner
 
@@ -166,7 +165,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
 
     _mutable_paths = (".codex/config.toml",)
 
-    @covers("REQ-0.44.0-01-04")
     def test_missing_managed_config_is_reported_and_remains_missing(self) -> None:
         config_path = Path(".codex/config.toml")
         config_path.unlink()
@@ -180,7 +178,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
         )
         self.assertFalse(config_path.exists(), "parity validation must restore missing state")
 
-    @covers("REQ-0.44.0-01-04")
     def test_marked_config_drift_is_reported_and_restored(self) -> None:
         config_path = Path(".codex/config.toml")
         drifted = config_path.read_text(encoding="utf-8").replace(
@@ -198,7 +195,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             "parity validation must restore the caller's drifted bytes",
         )
 
-    @covers("REQ-0.44.0-01-04")
     def test_custom_managed_config_path_is_reported_and_restored(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig
         from gzkit.sync_surfaces import render_codex_config, sync_all
@@ -223,7 +219,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             self.assertIn("config/codex.toml", [error.artifact for error in errors])
             self.assertEqual(config_path.read_text(encoding="utf-8"), drifted)
 
-    @covers("REQ-0.44.0-01-04")
     def test_unmarked_operator_config_is_not_managed_drift(self) -> None:
         from gzkit.config import GzkitConfig
         from gzkit.sync_surfaces import sync_all
@@ -242,7 +237,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             self.assertNotIn(".codex/config.toml", [error.artifact for error in errors])
             self.assertEqual(config_path.read_bytes(), operator_bytes)
 
-    @covers("REQ-0.44.0-01-04")
     def test_custom_path_reports_preserved_default_duplicate(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig
         from gzkit.sync_surfaces import render_codex_config, sync_all
@@ -265,7 +259,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             self.assertIn(".codex/config.toml", [error.artifact for error in errors])
             self.assertEqual(default_path.read_bytes(), customized)
 
-    @covers("REQ-0.44.0-01-04")
     def test_clean_parity_preserves_codex_config_mtime(self) -> None:
         config_path = Path(".codex/config.toml")
         fixed_timestamp = 1_000_000_000
@@ -276,7 +269,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
         self.assertNotIn(".codex/config.toml", [error.artifact for error in errors])
         self.assertEqual(config_path.stat().st_mtime_ns, fixed_timestamp)
 
-    @covers("REQ-0.44.0-01-04")
     def test_parity_restores_mode_and_removes_created_parent_directories(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig
         from gzkit.sync_surfaces import render_codex_config
@@ -302,7 +294,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             self.assertEqual(default_path.stat().st_mode & 0o777, mode_before)
             self.assertFalse((root / "generated").exists())
 
-    @covers("REQ-0.44.0-01-04")
     def test_exact_obsolete_default_reports_one_parity_error(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig
         from gzkit.sync_surfaces import render_codex_config
@@ -326,7 +317,6 @@ class CodexConfigSyncParityTest(_SyncParityBase):
             default_errors = [e for e in errors if e.artifact == ".codex/config.toml"]
             self.assertEqual(len(default_errors), 1, default_errors)
 
-    @covers("REQ-0.44.0-01-04")
     def test_directory_config_path_returns_validation_error(self) -> None:
         from gzkit.config import GzkitConfig
 

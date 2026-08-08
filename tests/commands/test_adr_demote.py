@@ -156,6 +156,103 @@ class CollisionWithRetainedIntake(unittest.TestCase):
                 pool_file.read_text(encoding="utf-8"),
             )
 
+    def test_promoted_from_does_not_survive_demotion(self) -> None:
+        """A pool ADR is an origin; it is not promoted from anything.
+
+        Pre-existing on every demotion path, surfaced by the first real
+        `take-demoted` run: `promoted_from:` survived the frontmatter strip, and
+        because demotion reuses the very slug the promotion came from, the
+        demoted file ended up claiming it was promoted from *itself*.
+
+        **The H1 is deliberately NOT rewritten here**, though it still names the
+        old feature id. `tests/test_sunset_migrate.py::test_pool_file_retains_adr_body_verbatim`
+        asserts "the ADR body must survive demotion byte-for-byte", and the H1
+        is inside that body. Retitling was tried and backed out: a tested,
+        deliberate preservation guarantee outranks a cosmetic id match, and
+        silently overriding it would have been the unilateral-resolution
+        anti-pattern. Frontmatter is outside the preserved body, so this strip
+        does not conflict.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_root = Path(config.paths.adrs) / "pre-release" / _SAMPLE_FEATURE_ADR_ID
+            _seed_feature_adr(config)
+            adr_file = adr_root / f"{_SAMPLE_FEATURE_ADR_ID}.md"
+            adr_file.write_text(
+                adr_file.read_text(encoding="utf-8").replace(
+                    "date: 2026-03-21\n",
+                    f"date: 2026-03-21\npromoted_from: {_SAMPLE_POOL_ID}\n",
+                ),
+                encoding="utf-8",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "775"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            landed = (Path(config.paths.adrs) / "pool" / f"{_SAMPLE_POOL_ID}.md").read_text(
+                encoding="utf-8"
+            )
+            self.assertNotIn(
+                "promoted_from:",
+                landed,
+                "a pool ADR is an origin; it is not promoted from anything",
+            )
+
+    def test_live_covers_into_deleted_briefs_blocks_the_demotion(self) -> None:
+        """Deleting a brief whose REQs live tests still `@covers` breaks the suite.
+
+        `@covers` validates its REQ id at IMPORT time against the brief corpus,
+        so a demotion that deletes the briefs makes every holding module raise
+        `ValueError: Unknown REQ identifier` and the whole suite stops loading.
+        Nothing coupled the two: demoting ADR-0.44.0 broke 36 decorators across
+        four modules -- all covering an OBPI that was attested complete -- and
+        the only signal was the suite failing to import afterwards (GHI #773).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = _seed_feature_adr(config)
+            Path("tests").mkdir(exist_ok=True)
+            Path("tests/test_probe.py").write_text(
+                'from gzkit.traceability import covers\n\n\n@covers("REQ-0.27.0-01-01")\ndef t():\n'
+                "    pass\n",
+                encoding="utf-8",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "773"])
+            self.assertEqual(result.exit_code, 3, msg=result.output)
+            self.assertIn("REQ-0.27.0-01-01", result.output)
+            self.assertTrue(adr_file.exists(), "a blocked demotion must not delete the source")
+
+    def test_force_overrides_the_covers_block(self) -> None:
+        """Discarding REQ traceability stays possible, but only deliberately."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = _seed_feature_adr(config)
+            Path("tests").mkdir(exist_ok=True)
+            Path("tests/test_probe.py").write_text(
+                'from gzkit.traceability import covers\n\n\n@covers("REQ-0.27.0-01-01")\ndef t():\n'
+                "    pass\n",
+                encoding="utf-8",
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "773", "--force"]
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertFalse(adr_file.exists())
+
     def test_fail_is_still_the_default(self) -> None:
         """Refusing remains the default: silent content loss must stay opt-in."""
         runner = CliRunner()

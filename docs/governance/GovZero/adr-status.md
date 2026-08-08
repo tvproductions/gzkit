@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-08-07 (count: 86 ADRs).
+Last regenerated: 2026-08-08 (count: 85 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -96,4 +96,3 @@ Last regenerated: 2026-08-07 (count: 86 ADRs).
 | [ADR-0.33.0-airlock-membrane](../../design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md) | the airlock — entry/exit membrane for agent sorties | feature | heavy | Validated | 2026-07-08 | `design/adr/pre-release/ADR-0.33.0-airlock-membrane/ADR-0.33.0-airlock-membrane.md` |
 | [ADR-0.34.0-foundation-sunset](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md) | Foundation Sunset | feature | heavy | Validated | 2026-07-12 | `design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md` |
 | [ADR-0.35.0-canon-entry-corpus-landing](../../design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md) | Canon Entry: Corpus Landing and Rendition Lineage | feature | heavy | Draft | 2026-07-21 | `design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md` |
-| [ADR-0.44.0-vendor-alignment-codex](../../design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md) | OpenAI Codex Vendor Alignment | feature | heavy | Proposed | 2026-07-10 | `design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md` |

@@ -16,7 +16,6 @@ from gzkit.sync_surfaces import (
     render_codex_config,
     sync_codex_config,
 )
-from gzkit.traceability import covers
 from gzkit.validate_pkg.surface import _validate_codex_config
 
 
@@ -31,7 +30,6 @@ def _write_codex_surface(root: Path, config_text: str | None) -> None:
 class TestCodexConfigSurface(unittest.TestCase):
     """Codex hooks must be enabled through the current feature flag."""
 
-    @covers("REQ-0.44.0-01-04")
     def test_missing_configured_codex_config_reports_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -43,7 +41,6 @@ class TestCodexConfigSurface(unittest.TestCase):
                 f"expected missing configured Codex config error, got {errors}",
             )
 
-    @covers("REQ-0.44.0-01-04")
     def test_unmarked_operator_config_remains_valid(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -55,14 +52,12 @@ class TestCodexConfigSurface(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
-    @covers("REQ-0.44.0-01-04")
     def test_crlf_marker_is_recognized_as_managed(self) -> None:
         content = render_codex_config().replace("\n", "\r\n")
 
         self.assertTrue(is_managed_codex_config(content))
         self.assertTrue(is_managed_codex_config(content.encode()))
 
-    @covers("REQ-0.44.0-01-04")
     def test_validation_resolves_custom_codex_config_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -82,7 +77,6 @@ class TestCodexConfigSurface(unittest.TestCase):
                 f"expected validation at configured Codex path, got {errors}",
             )
 
-    @covers("REQ-0.44.0-01-04")
     def test_validation_reports_preserved_default_duplicate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -102,7 +96,6 @@ class TestCodexConfigSurface(unittest.TestCase):
 
             self.assertIn(".codex/config.toml", [error.artifact for error in errors])
 
-    @covers("REQ-0.44.0-01-03")
     def test_default_path_alias_is_not_a_duplicate(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -116,7 +109,6 @@ class TestCodexConfigSurface(unittest.TestCase):
 
             self.assertEqual(errors, [])
 
-    @covers("REQ-0.44.0-01-04")
     def test_validation_rejects_codex_path_outside_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -128,7 +120,6 @@ class TestCodexConfigSurface(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("within the project root", errors[0].message)
 
-    @covers("REQ-0.44.0-01-04")
     def test_marked_generated_config_drift_reports_stale_error(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -206,7 +197,6 @@ class TestCodexConfigSurface(unittest.TestCase):
 class TestCodexConfigGeneration(unittest.TestCase):
     """Codex receives a usable project baseline during control-surface sync."""
 
-    @covers("REQ-0.44.0-01-01")
     def test_sync_creates_codex_config_baseline(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -220,7 +210,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertIs(config["sandbox_workspace_write"]["network_access"], True)
             self.assertIs(config["features"]["hooks"], True)
 
-    @covers("REQ-0.44.0-01-01")
     def test_sync_writes_codex_config_lf_byte_identical_to_render(self) -> None:
         """Synced .codex/config.toml is byte-identical to render_codex_config().
 
@@ -241,7 +230,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
                 "not CRLF-translated by text-mode write on Windows",
             )
 
-    @covers("REQ-0.44.0-01-02")
     def test_sync_preserves_nonempty_operator_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -254,7 +242,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
 
             self.assertEqual(config_path.read_bytes(), operator_config)
 
-    @covers("REQ-0.44.0-01-02")
     def test_sync_preserves_customized_marked_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -269,7 +256,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
 
             self.assertEqual(config_path.read_bytes(), operator_config)
 
-    @covers("REQ-0.44.0-01-02")
     def test_sync_preserves_marker_prefix_lookalike(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -286,7 +272,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
                 "a marker-prefix lookalike remains operator-owned",
             )
 
-    @covers("REQ-0.44.0-01-02")
     def test_sync_initializes_zero_byte_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -301,7 +286,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertIs(config["sandbox_workspace_write"]["network_access"], True)
             self.assertIs(config["features"]["hooks"], True)
 
-    @covers("REQ-0.44.0-01-03")
     def test_sync_writes_only_configured_codex_path(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -321,7 +305,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             manifest = json.loads((root / ".gzkit" / "manifest.json").read_text(encoding="utf-8"))
             self.assertEqual(manifest["control_surfaces"]["codex_config"], "config/codex.toml")
 
-    @covers("REQ-0.44.0-01-03")
     def test_sync_retires_managed_default_when_path_changes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -338,7 +321,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertFalse(default_path.exists())
             self.assertTrue((root / "config" / "codex.toml").is_file())
 
-    @covers("REQ-0.44.0-01-03")
     def test_sync_retires_zero_byte_default_when_path_changes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -355,7 +337,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertFalse(default_path.exists())
             self.assertTrue((root / "config" / "codex.toml").is_file())
 
-    @covers("REQ-0.44.0-01-03")
     def test_sync_treats_default_path_alias_as_the_default(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -373,7 +354,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
 
             self.assertEqual(config_path.stat().st_mtime_ns, fixed_timestamp)
 
-    @covers("REQ-0.44.0-01-03")
     def test_sync_rejects_codex_path_outside_project(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -385,7 +365,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "within the project root"):
                 sync_codex_config(root, config)
 
-    @covers("REQ-0.44.0-01-04")
     def test_sync_preserves_and_reports_marked_config_drift(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -406,7 +385,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
             self.assertNotEqual(config_path.read_text(encoding="utf-8"), render_codex_config())
             self.assertTrue(any("out of sync" in error.message for error in errors))
 
-    @covers("REQ-0.44.0-01-02")
     def test_sync_does_not_rewrite_current_managed_config(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -420,7 +398,6 @@ class TestCodexConfigGeneration(unittest.TestCase):
 
             self.assertEqual(config_path.stat().st_mtime_ns, fixed_timestamp)
 
-    @covers("REQ-0.44.0-01-04")
     def test_committed_codex_config_matches_renderer(self) -> None:
         config_path = Path(__file__).parents[1] / ".codex" / "config.toml"
 
