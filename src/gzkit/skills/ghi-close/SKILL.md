@@ -268,7 +268,13 @@ to produce one. Fix that instinct.
 
    c. **Test semantics check.** New tests assert REQ-derived semantics per `.gzkit/rules/tests.md` § Tests assert semantics, not strings. String-shape tests outside Invariant 3 fixture scope are the GHI #272 cosmetic-backfill pattern — re-derive before continuing.
 
-   d. **Heavy-lane ARB receipts.** For heavy-lane or foundation-kind fixes, ARB receipts exist for lint/typecheck/tests/coverage/docs per `AGENTS.md` § Attestation. Cite receipt IDs in the close comment.
+   d. **Heavy-lane ARB receipts — resolve, don't transcribe.** For heavy-lane or foundation-kind fixes, ARB receipts exist for lint/typecheck/tests/coverage/docs per `AGENTS.md` § Attestation. Cite receipt IDs in the close comment, and confirm each one resolves on disk before citing it:
+
+      ```bash
+      ls artifacts/receipts/<run-id>.json
+      ```
+
+      A receipt ID copied from a prior comment, a sibling GHI, or session recall is a string, not evidence — `AGENTS.md` § Attestation: *"Fabricating a receipt ID is the same failure as fabricating the claim."* Same family as steps 7b and 7f: the claim must be derived at this close, not restated.
 
    e. **Observed output evidence.** For fixes touching CLI rendering, skill routing, or operator-facing output, the commit body contains observed output or a test reference per `.claude/rules/tool-skill-runbook-alignment.md` § Commit-message discipline.
 
