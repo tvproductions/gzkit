@@ -374,6 +374,84 @@ def _unreachable_ruff_claim_errors(
     return errors
 
 
+#: A citation naming the specific clause a sentence is talking about:
+#: ``Invariant #10a``, ``Invariants 2 and 3``, ``row 29``, ``rows 29/30``. Its
+#: presence is what separates *assigning* a score to a named clause from
+#: *explaining* what the score means.
+_CLAUSE_CITATION_RE = re.compile(r"\b(?:Invariants?\s+#?\d+|rows?\s+\d+)", re.IGNORECASE)
+
+
+def _prose_promotable_errors(scorecard_text: str) -> list[ValidationError]:
+    """Fail when prose outside § Scorecard assigns **Promotable** to a named clause.
+
+    The rules arm drove the Scorecard's Promotable column to zero, and
+    :func:`_summary_drift_errors` fences the roll-up against those rows. Three
+    prose sites survived both and still asserted a live Promotable band:
+
+    * ``**Invariant #10a**`` ("When a skill step names a tool, invoke it in the
+      same turn") was declared **promotable** with no scorecard row at all — a
+      *skill* mandate sitting in the forbidden third state, invisible to the
+      family-closure criterion precisely because it was never a row to count.
+      The arm was reported "unmeasured" on the belief that skill mandates were
+      uncovered; the audit covers them (rows 28–33, 52, 62b). What was actually
+      missing was this one, hiding in prose outside the table.
+    * "The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook
+      rule, lazy imports, …)" — rows 29, 30 and 23 all read **Judgment**.
+    * "Invariants 2 and 3 … (rows 29/30 above) remain Promotable" — naming the
+      very rows that contradict it.
+
+    This is Architectural Boundary 6 one surface over from the Summary table: a
+    second, unfenced authority on scores. Fencing the roll-up while leaving prose
+    free to assign them would have moved the defect rather than closed it.
+
+    Two boundaries, each load-bearing:
+
+    * **A clause citation is required.** "A row returning to **Promotable** means
+      a clause was found declaring a discipline with neither a witness nor an
+      admission" explains what the score *means* and assigns it to nothing — it
+      is the sentence that makes the empty third state legible, and a fence that
+      cost it would trade the explanation for the enforcement.
+    * **Scored ROWS are exempt — not the § Scorecard section.** Rows 53, 60a, 61
+      and 62 each recount the Promotable score they used to carry and why it
+      moved, which is how a reader tells a corrected row from one that was always
+      right. Exempting the whole *section* instead would have missed the worst of
+      the three sites: `**Invariant #10a**` sits inside § Scorecard as free prose
+      between two subsections, which is precisely how a clause gets scored
+      without ever becoming a row anyone counts.
+
+    Scoped to **Promotable** on purpose: it is the third state the criterion
+    counts. A Mechanical or Judgment narration (the promotion-wave paragraph
+    cites a dozen) is history, not a live classification.
+    """
+    errors: list[ValidationError] = []
+    for number, line in enumerate(scorecard_text.splitlines(), start=1):
+        if "romotable" not in line or _SCORED_ROW_RE.match(line):
+            continue
+        citation = _CLAUSE_CITATION_RE.search(line)
+        if citation is None:
+            continue
+        errors.append(
+            ValidationError(
+                type="advisory_scorecard",
+                artifact=_SCORECARD_REL,
+                message=(
+                    f"Line {number} assigns **Promotable** to a named clause "
+                    f"({citation.group(0)}) in prose outside the § Scorecard section. A "
+                    "clause's score is assigned in a Scorecard ROW and nowhere else — prose "
+                    "that scores a named invariant is a second, unfenced authority on the "
+                    "same fact (Architectural Boundary 6: do not let derived views silently "
+                    "become source-of-truth), and it is how a skill mandate stayed in the "
+                    "forbidden third state while the fenced Summary reported zero Promotable "
+                    "rows. Either give the clause a real Scorecard row and score it there, or "
+                    "rewrite the sentence to explain what the score means rather than who "
+                    "carries it. Narration of a row's own Promotable history is exempt inside "
+                    "§ Scorecard, where rows 53 and 62 do exactly that."
+                ),
+            )
+        )
+    return errors
+
+
 def _grandfathered_rules(project_root: Path) -> dict[str, str]:
     """Return ``{rule filename: version at which its coverage debt froze}``.
 
@@ -438,6 +516,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     errors: list[ValidationError] = []
     errors.extend(_summary_drift_errors(text))
     errors.extend(_unreachable_ruff_claim_errors(text, project_root))
+    errors.extend(_prose_promotable_errors(text))
     for rule_md in canonical_rule_files(rules_root):
         artifact = rule_md.relative_to(project_root).as_posix()
         current = rule_version_of(rule_md.read_text(encoding="utf-8", errors="replace"))

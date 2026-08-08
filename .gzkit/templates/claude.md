@@ -6,7 +6,7 @@
 
 ### Invariant 10a — skill-tool-invoke-same-turn
 
-When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, etc.), invoke it in the same turn. Ending the turn with "Required next step" instead of calling the tool is a violation.
+When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, etc.), invoke it in the same turn. Ending the turn with "Required next step" instead of calling the tool is a violation. **(Advisory — no mechanical witness, and none is planned.)** A check would have to attribute a turn's tool calls to a skill step's semantics; gzkit models neither a turn nor a skill's step graph (the unmodelled-caller ground of `advisory-rules-audit.md` row 62b). Scored **Judgment** at row 53a; it had sat unrowed in that audit's prose as "promotable" with the signal-to-noise objection already recorded and no observed instance. Reclassify on a named session where a skill step named a tool, the turn ended without it, and nothing caught it.
 
 ### Model tuning
 

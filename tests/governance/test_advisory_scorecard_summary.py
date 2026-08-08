@@ -307,5 +307,100 @@ class MechanicalRowsCitingRuffCodes(unittest.TestCase):
         )
 
 
+class PromotableAssignedInProse(unittest.TestCase):
+    """A clause's score is assigned in a Scorecard ROW, never in prose about it.
+
+    The rules arm drove the Scorecard's Promotable column to zero and the Summary
+    roll-up is fenced against those rows. Three prose sites survived both, still
+    asserting a live Promotable band the fenced table denies:
+
+    * `**Invariant #10a**` ("When a skill step names a tool, invoke it in the same
+      turn") declared **promotable** with no scorecard row at ALL -- a *skill*
+      mandate in the forbidden third state, invisible to the criterion because it
+      was never a row to count.
+    * "The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook
+      rule, lazy imports, ...)" -- rows 29, 30 and 23 all read **Judgment**.
+    * "Invariants 2 and 3 ... (rows 29/30 above) remain Promotable" -- naming the
+      very rows that contradict it.
+
+    This is Architectural Boundary 6 one surface over from the Summary table: a
+    second, unfenced authority on scores. Fencing the roll-up while leaving prose
+    free to assign scores would have moved the defect rather than closed it.
+
+    Scoped to **Promotable** deliberately. It is the third state the family-closure
+    criterion counts, and a Mechanical/Judgment narration (the promotion-wave
+    paragraph cites a dozen) is history, not a live classification.
+    """
+
+    def _run(self, extra: str) -> list[str]:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rules = root / ".gzkit" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text(_RULE_BODY, encoding="utf-8")
+            doc = root / "docs" / "governance"
+            doc.mkdir(parents=True)
+            body = _scorecard("| 1 | Something binding | **Judgment** | prose |")
+            (doc / "advisory-rules-audit.md").write_text(f"{body}\n{extra}\n", encoding="utf-8")
+            return [e.message for e in audit_advisory_scorecard(root)]
+
+    def test_prose_scoring_a_named_invariant_is_refused(self) -> None:
+        """Line 210's exact shape: a named clause given a score outside any row."""
+        messages = self._run(
+            "**Invariant #10a** (skill-tool-invoke-same-turn) is **promotable** -- "
+            "could be detected via hook analysis."
+        )
+        self.assertTrue(any("Invariant #10a" in m or "Promotable" in m for m in messages), messages)
+
+    def test_prose_naming_rows_that_contradict_it_is_refused(self) -> None:
+        """Line 421's shape: prose citing the very rows that disagree with it."""
+        messages = self._run(
+            "Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) "
+            "remain Promotable."
+        )
+        self.assertTrue(messages, "prose asserting a live Promotable band must be refused")
+
+    def test_prose_about_the_score_itself_is_not_a_score_assignment(self) -> None:
+        """The fenced Summary's own conditional must survive.
+
+        "A row returning to **Promotable** means a clause was found declaring a
+        discipline with neither a witness nor an admission" explains what the
+        score MEANS. It assigns it to nothing, and it is the sentence that makes
+        the empty third state legible. A fence that cost this sentence would be
+        trading the explanation for the enforcement.
+        """
+        self.assertEqual(
+            self._run(
+                "A row returning to **Promotable** means a clause was found declaring "
+                "a discipline with neither a witness nor an admission."
+            ),
+            [],
+        )
+
+    def test_a_scorecard_row_may_narrate_its_own_promotable_history(self) -> None:
+        """Inside the Scorecard, "Scored **Promotable** until `0.4.0`" is the record.
+
+        Rows 53, 60a, 61 and 62 each recount the score they used to carry and why
+        it moved. That narration is how a reader tells a corrected row from one
+        that was always right, so the fence stops at the Scorecard boundary.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rules = root / ".gzkit" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text(_RULE_BODY, encoding="utf-8")
+            doc = root / "docs" / "governance"
+            doc.mkdir(parents=True)
+            (doc / "advisory-rules-audit.md").write_text(
+                _scorecard(
+                    "| 53 | Abandon categories are closed | **Mechanical** | "
+                    "Scored **Promotable** until `0.4.0`; row 53 was corrected when "
+                    "OBPI-0.0.41-02 landed. |"
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual([e.message for e in audit_advisory_scorecard(root)], [])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -207,7 +207,11 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
 - "When the operator course-corrects in flight, record an `improvement` via `gz insights remember` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); the schema-lock side is now mechanical via `gz validate --insights-shape` (GHI #358; see scorecard row 17a), and the governed author verb `gz insights remember` (GHI #575) constructs the record so it cannot drift from the schema
 
-**Invariant #10a** ("When a skill step names a tool, invoke it in the same turn") is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor.
+The Claude-specific invariant 10a is scored as a row rather than in prose:
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 53a | **Invariant 10a — skill-tool-invoke-same-turn.** When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, …), invoke it in the same turn; ending the turn with "Required next step" instead of calling the tool is a violation (`CLAUDE.md`) | **Judgment** | **Given a row 2026-08-08 (rule `CLAUDE.md`), Movement C skill arm — it had none.** This clause sat in free prose between two subsections of § Scorecard reading "is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor": a discipline declared with neither a witness nor an admission, which is the forbidden third state, and *invisible to the family-closure criterion because it was never a row to count*. Scored **Judgment**, not Promotable: the check would have to attribute a turn's tool calls to a skill step's semantics, and gzkit models neither a turn nor a skill's step graph — the same unmodelled-caller ground as row 62b. The § Recommended promotion order freeze (2026-06-08) admits a new check only on named, observed drift, and the original note recorded the opposite (poor signal-to-noise) without any observed instance. Reclassify on a named session where a skill step named a tool, the turn ended without it, and nothing caught it. Fenced by `gz validate --advisory-scorecard`, which now refuses prose assigning **Promotable** to a named clause outside a row. |
 
 ### Agent Rule Placement Invariant (`ADR-0.0.20`)
 
@@ -349,11 +353,11 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 99 |
+| Score | Rows | % of 100 |
 |-------|-------|---|
-| **Mechanical** | 64 | 65% |
+| **Mechanical** | 64 | 64% |
 | **Promotable** | 0 | 0% |
-| **Judgment** | 37 | 37% |
+| **Judgment** | 38 | 38% |
 | **Ambiguous** | 0 | 0% |
 
 **The third state is empty (2026-08-08).** Every scored clause now either carries
@@ -364,12 +368,12 @@ version whose text changed with it. A row returning to **Promotable** means a
 clause was found declaring a discipline with neither a witness nor an admission,
 which is the state this table exists to make visible.
 
-99 scored rows; the counts sum to 101 because rows 58 and 65 each score two
+100 scored rows; the counts sum to 102 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
 toward both. **There are zero `Ambiguous` rules** — the score is defined in the
 legend above and currently has no members.
 
-**The mechanical floor rose from a 30 % baseline** — see the fenced table above for where it stands now — under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). ADR-0.0.37 OBPI-05 added the **Mechanical**-classed brief-reconciliation invariant (CIC-2) rule, enforced by `gz validate --brief-reconcile`. ADR-0.0.54 OBPI-01 added the **Mechanical** (shape) / **Judgment** (per-section size) Map-Not-Encyclopedia doctrine rule, with shape enforcement forthcoming as `gz validate --agents-md-map-conformance` (OBPI-0.0.54-03) and budget tightening (AGENTS.md 40k→15k, CLAUDE.md 40k→4k) enforced now by `gz validate --instructions-files-budget`. ADR-0.0.59 OBPI-01 added the **Mechanical**-classed REQ Scope Discipline taxonomy rule (three-kind BEHAVIOR/SUPPORT/STRUCTURAL-FENCE with per-kind proof channels), with `gz validate --req-kind-discipline` forthcoming under OBPI-0.0.59-02. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+**The mechanical floor rose from a 30 % baseline** — see the fenced table above for where it stands now — under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). ADR-0.0.37 OBPI-05 added the **Mechanical**-classed brief-reconciliation invariant (CIC-2) rule, enforced by `gz validate --brief-reconcile`. ADR-0.0.54 OBPI-01 added the **Mechanical** (shape) / **Judgment** (per-section size) Map-Not-Encyclopedia doctrine rule, with shape enforcement forthcoming as `gz validate --agents-md-map-conformance` (OBPI-0.0.54-03) and budget tightening (AGENTS.md 40k→15k, CLAUDE.md 40k→4k) enforced now by `gz validate --instructions-files-budget`. ADR-0.0.59 OBPI-01 added the **Mechanical**-classed REQ Scope Discipline taxonomy rule (three-kind BEHAVIOR/SUPPORT/STRUCTURAL-FENCE with per-kind proof channels), with `gz validate --req-kind-discipline` forthcoming under OBPI-0.0.59-02. **The follow-up band this paragraph used to enumerate is gone (2026-08-08).** It named the tool-skill-runbook alignment invariants, lazy imports and runbook placeholders as awaiting later waves; every one of them now reads **Judgment** in its own row, each having stated its advisory posture in its own rule text during the Movement C rules arm. The fenced table above is the only authority on the current distribution — this paragraph records how the floor rose, never where it stands.
 
 ---
 
@@ -381,8 +385,9 @@ legend above and currently has no members.
 > little. Promotion is opt-in-with-justification: a new mechanical check is added
 > only when a *specific, observed* drift instance justifies it. The discipline
 > below still governs *how* to promote — it no longer implies that every
-> Promotable row *should* be promoted. The remaining Promotable rows stay
-> advisory by default.
+> Promotable row *should* be promoted. As of 2026-08-08 there are no Promotable
+> rows left to stay advisory: the third state is empty, so this backlog governs
+> only what a *future* Promotable row would owe.
 >
 > **Subtraction now has equal standing.** A mechanism that misfires, over-fires,
 > gives false assurance, or only guards other mechanism is removed with *named
@@ -418,7 +423,9 @@ Each promotion candidate has a tracking GHI. Close the GHI when the promotion la
 | 19 | brief-cross-references | [#436](https://github.com/tvproductions/gzkit/issues/436) | Bare `OBPI-X.Y.Z-NN` / `ADR-X.Y.Z` identifiers in briefs must resolve to on-disk artifacts; speculative-skip marker `<!-- gz-validate-skip: brief-cross-references -->` for forward-reference cases | `gz validate --brief-cross-references` |
 | 20 | brief-demo-section | [#431](https://github.com/tvproductions/gzkit/issues/431) | Heavy-lane CLI-shipping briefs (Allowed Paths intersect `src/gzkit/cli/parser_artifacts.py` or `src/gzkit/commands/*.py`) must carry a `## Demo` H2 section before completion so the closeout walkthrough does not fall back to `--help`; terminal-status briefs grandfathered; speculative-skip marker `<!-- gz-validate-skip: brief-demo-section -->` for genuine exemptions | `gz validate --brief-demo-section` |
 
-Invariants 2 and 3 of the tool-skill-runbook rule (rows 29/30 above) remain Promotable — Invariant 1 landed first to establish the waiver shape for the harder body/output-form scans.
+Invariant 1 landed first, to establish the waiver shape for the harder body/output-form scans. The two it was landing ahead of no longer wait on it: both re-scored **Judgment** on 2026-08-08 (see their rows), each turning on a term no repository surface represents — "the same operator moment", and a verb's rendered output form against a prose contract.
+
+Until that re-score this line asserted the opposite, in the same breath as citing the rows that contradicted it. `gz validate --advisory-scorecard` now refuses that shape.
 
 ---
 
