@@ -109,8 +109,8 @@ the ceremony trailer automatically.
 *Origin: GHI #263 (invariant 6g — verify runtime surface before recommending)
 and GHI #261 (invariant 6h — quote rules verbatim in violation reports).*
 
-Both are instances of **reporting-pathway drift** (`.gzkit/rules/attestation-enrichment.md`
-§ Rationale, citing Lindsey et al. 2025): the explanation pathway and the
+Both are instances of **reporting-pathway drift** ([`docs/governance/arb-middleware.md`](arb-middleware.md)
+§ Why receipts, not narrative, citing Lindsey et al. 2025): the explanation pathway and the
 execution pathway are structurally separate circuits, and a model can produce
 a plausible explanation of reasoning it did not perform.
 
@@ -135,7 +135,7 @@ a plausible-but-fabricated claim sitting in production until an operator
 catches it.
 
 This pattern is the same shape as the ARB receipt-ID requirement in
-`.gzkit/rules/attestation-enrichment.md` and the commit-message
+`AGENTS.md` § Attestation and the commit-message
 observed-output discipline in `.gzkit/rules/tool-skill-runbook-alignment.md`
 § "Commit-message discipline for skill-routing changes." Claims without
 observed evidence are post-hoc reasoning pathways, not verification

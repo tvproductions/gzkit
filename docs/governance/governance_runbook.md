@@ -478,7 +478,8 @@ The validate subverb exits 0 only when every `_[To be filled]_`
 block is closed; exit 1 lists which sections remain unfilled.
 Citing a validated walkthrough in OBPI Key Proof or ADR Evidence
 preserves the operator's pre-implementation reasoning rather than
-post-hoc reconstruction (per `.claude/rules/attestation-enrichment.md`).
+post-hoc reconstruction (per `docs/governance/arb-middleware.md`
+§ Why receipts, not narrative).
 
 See [`/gz-justify`](../user/skills/gz-justify.md) and
 [`commands/justify.md`](../user/commands/justify.md) for the full

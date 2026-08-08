@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-07
+last_reviewed: 2026-08-08
 metadata:
-  skill-version: "6.34.0"
+  skill-version: "6.34.1"
 model: sonnet
 ---
 
@@ -782,7 +782,7 @@ the reconcile output and ADR status refresh.
    **Key Proof** (will be written to ### Key Proof):
 
    <verbatim text — at least one concrete command + observed output,
-    with ARB receipt ID(s) cited inline per attestation-enrichment.md>
+    with ARB receipt ID(s) cited inline per AGENTS.md § Attestation>
 
    **Source:** [--implementation-summary flag | existing brief body at <line range>]
    **Source:** [--key-proof flag | existing brief body at <line range>]

@@ -42,12 +42,21 @@ BUCKET_3_ROOTS = (
     "docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/",
     "docs/design/adr/pool/ADR-pool.tdd-emission-and-graph-rot-remediation.md",
     "RELEASE_NOTES.md",
-    # Governance pedagogy + lineage docs.
-    "docs/governance/agent-contract-rationale.md",
-    "docs/governance/advisory-rules-audit.md",
-    "docs/governance/model-regression-taxonomy.md",
-    "docs/governance/trust-doctrine.md",
-    "docs/governance/governance_runbook.md",
+    # Governance lineage docs that narrate the fold rather than pointing at it.
+    #
+    # This list was five entries longer until GHI #778. Those five were blanket
+    # file-level grants covering *live pointers* — "rule documented in X",
+    # "per X", "the ARB receipt-ID requirement in X" — sentences that send an
+    # agent somewhere to read a rule, not sentences narrating that the rule
+    # moved. A file-level exemption cannot tell the two apart, so one
+    # legitimate narrative line bought the whole file immunity, and eight dead
+    # pointers accumulated behind it across four docs and three skills while
+    # this test stayed green. The pointers now resolve, so the grants are gone
+    # and these files are scanned like any other.
+    #
+    # The two that remain genuinely narrate: arb-middleware.md states its own
+    # consolidation lineage, and the manpage carries a HISTORY section. Both
+    # must contain the retired name to say what they say.
     "docs/governance/arb-middleware.md",
     # Manpage HISTORY section legitimately cites the lineage.
     "docs/user/manpages/arb.md",

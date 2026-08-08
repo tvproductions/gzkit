@@ -5,10 +5,10 @@ description: Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. In
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: "2026-07-21"
+last_reviewed: "2026-08-08"
 gz_command: justify
 metadata:
-  skill-version: "6.1.1"
+  skill-version: "6.1.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -52,7 +52,7 @@ Stop if any of the following apply. Each is a defect, not a judgment call.
 
 | Red Flag | Why it's a defect |
 |---|---|
-| You are about to fabricate a filled reasoning block — invent a rule citation, synthesize a commit reference, paraphrase an anchor quote that isn't actually there. | Fabrication poisons the trust chain. The walkthrough becomes a reporting-pathway artifact (Lindsey et al. 2025) that is structurally separate from execution — exactly the failure mode `attestation-enrichment.md` names. If the evidence isn't there, write `_[No evidence in gathered sources]_` instead of inventing. |
+| You are about to fabricate a filled reasoning block — invent a rule citation, synthesize a commit reference, paraphrase an anchor quote that isn't actually there. | Fabrication poisons the trust chain. The walkthrough becomes a reporting-pathway artifact (Lindsey et al. 2025) that is structurally separate from execution — exactly the failure mode `docs/governance/arb-middleware.md` § Why receipts, not narrative names. If the evidence isn't there, write `_[No evidence in gathered sources]_` instead of inventing. |
 | You are copy-pasting reasoning from a previous walkthrough and retargeting it to this anchor. | Cross-anchor reuse is the adjacent rationalization the CLI was built to prevent. If two anchors really do share reasoning, cite the first walkthrough's artifact path — don't restate the reasoning. |
 | You are filling blocks before reading the anchor body the CLI embedded in Section 1. | Section 1 pre-populates anchor-body citations specifically so your reasoning can ground in them. Skipping the read step is the defining move of vibe coding (see `AGENTS.md` § DO IT RIGHT, items 2 (6b) and 5 (6e)). |
 | You are declaring the walkthrough complete without running `gz justify validate <file>`. | The validator checks structural completeness (no unfilled ordinals). Skipping it means the artifact can silently ship with `_[To be filled]_` still in the body. |

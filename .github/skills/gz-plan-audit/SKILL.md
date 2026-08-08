@@ -5,10 +5,10 @@ description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope,
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-08-08
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.4.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -206,8 +206,8 @@ reconstruction of a destination already chosen — the audit passes because the
 plan matches the exploration, but the exploration was already motivated
 reasoning (Lindsey et al. 2025, rhyme experiment).
 
-**Self-introspection is not a verification pathway.** Per `attestation-enrichment.md`
-and Lindsey et al. 2025, the reporting pathway and the execution pathway are
+**Self-introspection is not a verification pathway.** Per `docs/governance/arb-middleware.md`
+§ Why receipts, not narrative and Lindsey et al. 2025, the reporting pathway and the execution pathway are
 structurally separate — a post-hoc answer to "did I enter plan mode early?"
 is reconstruction, not observation. Until the receipt-stream is available,
 this step requires the agent to record two narrative disclosures regardless

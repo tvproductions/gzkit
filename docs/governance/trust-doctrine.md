@@ -119,7 +119,7 @@ These invariants formalize the lessons as mechanical rules. Each has a regressio
 
 **Statement.** Any claim that names a canonical label (e.g. a receipt's `step.name == "typecheck"`) must carry the canonical invocation that corresponds to the label. Labels without bound provenance are not claims — they are assertions dressed as claims.
 
-**Instance:** `src/gzkit/arb/validator.py::CANONICAL_STEP_COMMANDS` maps canonical step names to their exact `step.command`. `gz arb validate` fails on provenance drift. Rule documented in `.gzkit/rules/attestation-enrichment.md` receipt-canonicalization table.
+**Instance:** `src/gzkit/arb/validator.py::CANONICAL_STEP_COMMANDS` maps canonical step names to their exact `step.command`. `gz arb validate` fails on provenance drift. Rule documented in `AGENTS.md` § Attestation — Canonical invocations (binding).
 
 **Anti-pattern caught:** An ARB receipt whose step name says "typecheck" but whose command measures a scope the governance gate does not. The claim and the evidence disagree; the label is wrong. *(Stated as a scope relation rather than by naming the two literal commands: the canonical scope widened from `src` to `. --exclude features/**` on 2026-08-08, and a doctrine statement that names today's strings goes stale the next time it moves. The gate and the receipt producer now both read `CANONICAL_STEP_COMMANDS`, so the pair cannot diverge by construction.)*
 
@@ -175,6 +175,7 @@ External corroboration tracks the **current** frontier cards in `data/frontier_m
 - `docs/governance/layer-three-derived-views.md` — L3 view inventory with canonical producers and current audit coverage (GHI #214)
 - `.gzkit/rules/tool-skill-runbook-alignment.md` — an early form of the same pattern applied to skill/CLI/doc alignment; Invariants 1–3 are exactly the skill-layer analog of T1–T3
 - `CLAUDE.md` § Architectural Boundaries — memo rule 6 ("derived views silently become source-of-truth") is this doctrine's storage-tier complement
-- `.gzkit/rules/attestation-enrichment.md` — ARB receipt middleware and canonical invocations; the provenance enforcement from Invariant T3 lives here (ARB rule absorbed into this home on 2026-04-21)
+- `AGENTS.md` § Attestation — the canonical invocations table and lane behavior; the provenance enforcement from Invariant T3 binds here
+- [`docs/governance/arb-middleware.md`](arb-middleware.md) — ARB receipt middleware deep-dive (schemas, commands, exit codes, storage paths), including § Why receipts, not narrative
 - [2026-04-18 ADR-0.0.16 session transcript] — original forensic record; GHIs #193, #197, #198, #199, #200, #201 close the instance taxonomy above
 - GHIs #202–#215 — the advisory-rules promotion wave that landed scorecard self-testing, pool-ADR isolation, skill alignment Invariant 1, and the hook-level ledger/sync guards
