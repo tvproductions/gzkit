@@ -10,7 +10,7 @@ complements:
   - ADR-0.0.60-harness-fitness-report
 ---
 
-# ADR-0.0.61-harness-factoring-minimal-init: Harness-Factoring with gz init --minimal
+# ADR-pool.harness-factoring-minimal-init: Harness-Factoring with gz init --minimal
 
 ## Persona
 

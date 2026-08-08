@@ -164,14 +164,16 @@ class CollisionWithRetainedIntake(unittest.TestCase):
         because demotion reuses the very slug the promotion came from, the
         demoted file ended up claiming it was promoted from *itself*.
 
-        **The H1 is deliberately NOT rewritten here**, though it still names the
-        old feature id. `tests/test_sunset_migrate.py::test_pool_file_retains_adr_body_verbatim`
-        asserts "the ADR body must survive demotion byte-for-byte", and the H1
-        is inside that body. Retitling was tried and backed out: a tested,
-        deliberate preservation guarantee outranks a cosmetic id match, and
-        silently overriding it would have been the unilateral-resolution
-        anti-pattern. Frontmatter is outside the preserved body, so this strip
-        does not conflict.
+        The H1 *is* rewritten as of GHI #776 — see `PoolH1Coherence`. This test
+        was authored while it deliberately was not: the retitle had been built
+        and backed out, because
+        `tests/test_sunset_migrate.py::test_pool_file_retains_adr_body_verbatim_below_the_h1`
+        (then named without the suffix) asserted the body survived byte-for-byte
+        and the H1 sits inside it. That
+        backout was right on the evidence then available. What was not known: the
+        mismatch spanned 38 pool files, and 8 of their stale H1s named ids since
+        reissued to *different* live ADRs. The operator ruled the class fix; the
+        preservation guarantee was narrowed by replacement, not weakened.
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -709,6 +711,118 @@ class TestAdrDemoteCommand(unittest.TestCase):
             )
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("--ghi", result.output)
+
+
+class PoolH1Coherence(unittest.TestCase):
+    """The demoted file's H1 names the id it now carries (GHI #776).
+
+    Demotion rewrites `id:` frontmatter, so leaving the H1 on the pre-demotion
+    id left the artifact asserting two disagreeing identities. That was latent
+    only until the freed number was reissued: 8 of 38 stale pool H1s named an id
+    belonging to a *different* live ADR, so `ADR-pool.pre-commit-hook-absorption`
+    announced itself as `# ADR-0.35.0` while ADR-0.35.0 was the in-flight
+    `canon-entry-corpus-landing`.
+
+    `gz adr promote` already holds this contract on the return leg — it renders
+    from the template, so the promoted H1 carries the new id. Demote is the
+    inverse verb and now holds the inverse of the same contract.
+    """
+
+    def _demote(self, config: GzkitConfig) -> str:
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+        result = CliRunner().invoke(main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "776"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        return (Path(config.paths.adrs) / "pool" / f"{_SAMPLE_POOL_ID}.md").read_text(
+            encoding="utf-8"
+        )
+
+    def test_h1_is_rewritten_to_the_pool_id_and_keeps_its_title(self) -> None:
+        """The id prefix moves to the pool id; the human title survives."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _seed_feature_adr(config)
+
+            landed = self._demote(config)
+
+            self.assertIn(f"# {_SAMPLE_POOL_ID}: Sample", landed)
+            self.assertNotIn(f"# {_SAMPLE_FEATURE_ADR_ID}:", landed)
+
+    def test_bare_h1_carrying_no_title_is_still_rewritten(self) -> None:
+        """A titleless `# ADR-0.27.0` heading is the shape 8 pool files carry.
+
+        The demoted corpus splits between `# <id>: <Title>` and a bare `# <id>`
+        with no separator, so a rewrite keyed on the colon would silently skip
+        exactly the cohort whose ids were reissued.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = _seed_feature_adr(config)
+            adr_file.write_text(
+                adr_file.read_text(encoding="utf-8").replace(
+                    f"# {_SAMPLE_FEATURE_ADR_ID}: Sample",
+                    "# ADR-0.27.0",
+                ),
+                encoding="utf-8",
+            )
+
+            landed = self._demote(config)
+
+            self.assertIn(f"# {_SAMPLE_POOL_ID}\n", landed)
+            self.assertNotIn("# ADR-0.27.0\n", landed)
+
+    def test_prose_naming_the_old_id_below_the_h1_survives_verbatim(self) -> None:
+        """Only the heading is an identity claim; body prose is design content.
+
+        A demoted ADR legitimately discusses the id it held — supersession notes,
+        decision history, cross-references. A blanket string replacement would
+        rewrite that history, which is the opposite of what demotion promises
+        (`REQ-0.34.0-04-01`: demotion is a re-homing, not a rewrite).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = _seed_feature_adr(config)
+            adr_file.write_text(
+                adr_file.read_text(encoding="utf-8").replace(
+                    "A seeded ADR for testing demotion.",
+                    f"Supersedes the decision recorded in {_SAMPLE_FEATURE_ADR_ID}.",
+                ),
+                encoding="utf-8",
+            )
+
+            landed = self._demote(config)
+
+            self.assertIn(
+                f"Supersedes the decision recorded in {_SAMPLE_FEATURE_ADR_ID}.",
+                landed,
+                "body prose naming the old id is design history, not an identity claim",
+            )
+            self.assertIn(f"# {_SAMPLE_POOL_ID}: Sample", landed)
+
+    def test_second_level_headings_are_not_treated_as_the_title(self) -> None:
+        """Only the first H1 is the identity claim; `##` headings are structure."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file = _seed_feature_adr(config)
+            adr_file.write_text(
+                adr_file.read_text(encoding="utf-8").replace(
+                    "## Intent\n",
+                    f"## {_SAMPLE_FEATURE_ADR_ID} history\n",
+                ),
+                encoding="utf-8",
+            )
+
+            landed = self._demote(config)
+
+            self.assertIn(f"## {_SAMPLE_FEATURE_ADR_ID} history", landed)
 
 
 if __name__ == "__main__":

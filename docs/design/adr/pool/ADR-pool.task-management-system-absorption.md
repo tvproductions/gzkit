@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.29.0: Task Management System Absorption
+# ADR-pool.task-management-system-absorption: Task Management System Absorption
 
 ## Tidy First Plan
 

@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.49-systematic-debugging-discipline: Systematic Debugging Discipline
+# ADR-pool.systematic-debugging-discipline: Systematic Debugging Discipline
 
 ## Persona
 

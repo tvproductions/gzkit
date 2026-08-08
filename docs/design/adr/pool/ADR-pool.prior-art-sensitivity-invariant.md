@@ -6,7 +6,7 @@ parent: PRD-GZKIT-1.0.0
 bounded_context: artifact-authoring
 ---
 
-# ADR-0.0.58-prior-art-sensitivity-invariant: Prior-Art Sensitivity Invariant for Artifact-Creating Surfaces
+# ADR-pool.prior-art-sensitivity-invariant: Prior-Art Sensitivity Invariant for Artifact-Creating Surfaces
 
 ## Persona
 

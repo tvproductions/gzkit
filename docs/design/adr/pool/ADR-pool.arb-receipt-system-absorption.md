@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.27.0: ARB Receipt System Absorption
+# ADR-pool.arb-receipt-system-absorption: ARB Receipt System Absorption
 
 ## Tidy First Plan
 

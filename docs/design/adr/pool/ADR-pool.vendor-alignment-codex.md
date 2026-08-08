@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.44.0-vendor-alignment-codex: OpenAI Codex Vendor Alignment
+# ADR-pool.vendor-alignment-codex: OpenAI Codex Vendor Alignment
 
 ## Persona
 

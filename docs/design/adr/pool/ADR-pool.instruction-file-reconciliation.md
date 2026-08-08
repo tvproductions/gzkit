@@ -9,7 +9,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.36.0: Instruction File Reconciliation
+# ADR-pool.instruction-file-reconciliation: Instruction File Reconciliation
 
 ## Tidy First Plan
 

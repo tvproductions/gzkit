@@ -5,7 +5,7 @@ lane: lite
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.1: Canonical GovZero Parity with AirlineOps
+# ADR-pool.canonical-govzero-parity: Canonical GovZero Parity with AirlineOps
 
 <!--
 ADR TEMPLATE: ADR_TEMPLATE_SEMVER.md

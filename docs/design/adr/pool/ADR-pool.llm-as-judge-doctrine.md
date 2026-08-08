@@ -6,7 +6,7 @@ parent: PRD-GZKIT-1.0.0
 promoted_from: ADR-pool.advisory-judge-surface
 ---
 
-# ADR-0.0.39-llm-as-judge-doctrine: LLM-as-Judge Doctrine
+# ADR-pool.llm-as-judge-doctrine: LLM-as-Judge Doctrine
 
 ## Persona
 

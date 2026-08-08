@@ -7,7 +7,7 @@ bounded_context: governance-triage
 promoted_from: ADR-pool.pool-triage-skill
 ---
 
-# ADR-0.0.48-gz-adr-pool-triage: gz ADR Pool Triage
+# ADR-pool.gz-adr-pool-triage: gz ADR Pool Triage
 
 ## Persona
 

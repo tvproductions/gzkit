@@ -5,7 +5,7 @@ lane: heavy
 parent:
 ---
 
-# ADR-0.46.0-captured-stdout-receipt-binding: Captured-Stdout Receipt Binding
+# ADR-pool.captured-stdout-receipt-binding: Captured-Stdout Receipt Binding
 
 ## Persona
 

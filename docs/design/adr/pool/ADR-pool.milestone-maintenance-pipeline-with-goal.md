@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.51-milestone-maintenance-pipeline-with-goal: ADR Milestone Maintenance Pipeline with /goal-first-class Convergence (gz-adr-milestone-maintenance)
+# ADR-pool.milestone-maintenance-pipeline-with-goal: ADR Milestone Maintenance Pipeline with /goal-first-class Convergence (gz-adr-milestone-maintenance)
 
 ## Persona
 

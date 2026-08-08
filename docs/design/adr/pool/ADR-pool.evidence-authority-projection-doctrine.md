@@ -6,7 +6,7 @@ parent: PRD-GZKIT-1.0.0
 promoted_from: ADR-pool.evidence-vs-authority-doctrine
 ---
 
-# ADR-0.0.38-evidence-authority-projection-doctrine: Evidence-Authority-Projection Doctrine
+# ADR-pool.evidence-authority-projection-doctrine: Evidence-Authority-Projection Doctrine
 
 ## Persona
 

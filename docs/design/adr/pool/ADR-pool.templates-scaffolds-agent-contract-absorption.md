@@ -9,7 +9,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.38.0: Templates, Scaffolds and Agent Contract Absorption
+# ADR-pool.templates-scaffolds-agent-contract-absorption: Templates, Scaffolds and Agent Contract Absorption
 
 ## Tidy First Plan
 

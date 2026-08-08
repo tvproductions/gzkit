@@ -11,7 +11,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.35.0: Pre-commit Hook Absorption
+# ADR-pool.pre-commit-hook-absorption: Pre-commit Hook Absorption
 
 ## Tidy First Plan
 

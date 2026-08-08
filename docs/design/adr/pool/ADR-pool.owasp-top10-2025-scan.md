@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.47.0-owasp-top10-2025-scan: OWASP Top 10:2025 Portable Security Scanner
+# ADR-pool.owasp-top10-2025-scan: OWASP Top 10:2025 Portable Security Scanner
 
 ## Persona
 

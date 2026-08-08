@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.43: DDD Domain Cascade
+# ADR-pool.ddd-domain-cascade: DDD Domain Cascade
 
 ## Persona
 

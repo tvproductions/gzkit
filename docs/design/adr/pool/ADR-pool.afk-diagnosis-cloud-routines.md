@@ -12,7 +12,7 @@ complements:
   - ADR-pool.managed-agents-outcome-integration
 ---
 
-# ADR-0.0.62-afk-diagnosis-cloud-routines: AFK-Diagnosis via Cloud Routines
+# ADR-pool.afk-diagnosis-cloud-routines: AFK-Diagnosis via Cloud Routines
 
 ## Persona
 

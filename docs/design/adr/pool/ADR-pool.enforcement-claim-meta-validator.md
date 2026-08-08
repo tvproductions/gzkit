@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.75-enforcement-claim-meta-validator: Enforcement-Claim Meta-Validator
+# ADR-pool.enforcement-claim-meta-validator: Enforcement-Claim Meta-Validator
 
 ## Persona
 

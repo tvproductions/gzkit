@@ -9,7 +9,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.39.0: Instruction Plugin Registry
+# ADR-pool.instruction-plugin-registry: Instruction Plugin Registry
 
 ## Tidy First Plan
 

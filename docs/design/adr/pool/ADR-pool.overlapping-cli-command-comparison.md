@@ -11,7 +11,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.32.0: Overlapping CLI Command Comparison
+# ADR-pool.overlapping-cli-command-comparison: Overlapping CLI Command Comparison
 
 ## Tidy First Plan
 

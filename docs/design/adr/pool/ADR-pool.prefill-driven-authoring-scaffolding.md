@@ -5,7 +5,7 @@ lane: heavy
 parent:
 ---
 
-# ADR-0.45.0-prefill-driven-authoring-scaffolding: Prefill-Driven Authoring Scaffolding
+# ADR-pool.prefill-driven-authoring-scaffolding: Prefill-Driven Authoring Scaffolding
 
 ## Persona
 

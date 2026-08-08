@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.55-package-import-direction-invariant: Package Import Direction Invariant
+# ADR-pool.package-import-direction-invariant: Package Import Direction Invariant
 
 ## Persona
 

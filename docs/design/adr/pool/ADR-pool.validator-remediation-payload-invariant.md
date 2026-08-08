@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.53-validator-remediation-payload-invariant: Validator Remediation Payload Invariant
+# ADR-pool.validator-remediation-payload-invariant: Validator Remediation Payload Invariant
 
 ## Persona
 

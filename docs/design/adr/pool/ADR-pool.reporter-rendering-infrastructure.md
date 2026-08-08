@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.40.0: Reporter Rendering Infrastructure
+# ADR-pool.reporter-rendering-infrastructure: Reporter Rendering Infrastructure
 
 ## Tidy First Plan
 

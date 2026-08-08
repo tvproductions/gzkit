@@ -5,7 +5,7 @@ lane: heavy
 parent: GHI-160
 ---
 
-# ADR-0.41.0: TDD Emission and Governance Graph Rot Remediation
+# ADR-pool.tdd-emission-and-graph-rot-remediation: TDD Emission and Governance Graph Rot Remediation
 
 ## Persona
 

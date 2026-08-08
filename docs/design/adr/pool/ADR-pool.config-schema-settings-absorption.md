@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.30.0: Config Schema and Settings Absorption
+# ADR-pool.config-schema-settings-absorption: Config Schema and Settings Absorption
 
 ## Tidy First Plan
 

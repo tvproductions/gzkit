@@ -5,7 +5,7 @@ lane: heavy
 parent:
 ---
 
-# ADR-0.0.52-artifact-staleness-propagation: Artifact Staleness Propagation
+# ADR-pool.artifact-staleness-propagation: Artifact Staleness Propagation
 
 ## Persona
 

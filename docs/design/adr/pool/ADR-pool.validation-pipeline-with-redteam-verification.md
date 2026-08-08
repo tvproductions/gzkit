@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.50-validation-pipeline-with-redteam-verification: ADR Validation Pipeline with Redteam Verification (gz-adr-validation-pipeline)
+# ADR-pool.validation-pipeline-with-redteam-verification: ADR Validation Pipeline with Redteam Verification (gz-adr-validation-pipeline)
 
 ## Persona
 

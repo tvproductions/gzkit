@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.66-deterministic-steering-substrate: Deterministic Steering Substrate
+# ADR-pool.deterministic-steering-substrate: Deterministic Steering Substrate
 
 ## Persona
 

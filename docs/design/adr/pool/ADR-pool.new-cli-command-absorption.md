@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.31.0: New CLI Command Absorption
+# ADR-pool.new-cli-command-absorption: New CLI Command Absorption
 
 ## Tidy First Plan
 

@@ -218,12 +218,19 @@ class TestDemotionPreservesBody(unittest.TestCase):
     """REQ-0.34.0-04-01 -- demotion is body-preserving."""
 
     @covers("REQ-0.34.0-04-01")
-    def test_pool_file_retains_adr_body_verbatim(self) -> None:
+    def test_pool_file_retains_adr_body_verbatim_below_the_h1(self) -> None:
         """The pooled ADR keeps its Intent/Decision prose byte-for-byte.
 
         Demotion is a re-homing, not a rewrite: a foundation demoted to pool must
         remain re-promotable as a feature later, which requires its design content
-        to survive intact. Only the taxonomy frontmatter changes.
+        to survive intact. The taxonomy frontmatter changes, and so does the H1's
+        id token — it is a second statement of the ``id:`` this migration
+        rewrites, not design content (GHI #776).
+
+        The assertion stays byte-for-byte over the whole body rather than
+        excluding the heading, so it can still fail if demotion mangles the H1.
+        Excluding the line would have bought the new behavior by making the test
+        blind to it.
         """
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -246,10 +253,15 @@ class TestDemotionPreservesBody(unittest.TestCase):
             pool_file = Path(config.paths.adrs) / "pool" / "ADR-pool.body.md"
             self.assertTrue(pool_file.is_file(), "demotion must produce the pool file")
             pooled = pool_file.read_text(encoding="utf-8")
+            expected_body = source_body.replace("# ADR-0.0.93-body:", "# ADR-pool.body:", 1)
+            self.assertNotEqual(
+                expected_body, source_body, "the fixture must carry an H1 to rewrite"
+            )
             self.assertEqual(
                 pooled.split("\n---\n", 1)[1],
-                source_body,
-                "the ADR body must survive demotion byte-for-byte",
+                expected_body,
+                "the ADR body must survive demotion byte-for-byte below the H1, "
+                "whose id token becomes the pool id",
             )
 
     @covers("REQ-0.34.0-04-01")

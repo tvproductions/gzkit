@@ -7,7 +7,7 @@ parent: PRD-GZKIT-1.0.0
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.28.0: Chores System Maturity Absorption
+# ADR-pool.chores-system-maturity-absorption: Chores System Maturity Absorption
 
 ## Tidy First Plan
 

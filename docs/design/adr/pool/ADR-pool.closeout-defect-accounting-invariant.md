@@ -5,7 +5,7 @@ lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-# ADR-0.0.56-closeout-defect-accounting-invariant: Closeout Defect-Accounting Invariant
+# ADR-pool.closeout-defect-accounting-invariant: Closeout Defect-Accounting Invariant
 
 ## Persona
 

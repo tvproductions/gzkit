@@ -9,7 +9,7 @@ dependencies:
 
 <!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
 
-# ADR-0.37.0: GovZero Methodology Documentation Absorption
+# ADR-pool.govzero-methodology-doc-absorption: GovZero Methodology Documentation Absorption
 
 ## Tidy First Plan
 

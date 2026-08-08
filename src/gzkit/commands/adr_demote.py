@@ -1,8 +1,9 @@
 """ADR demote command — inverse of ``gz adr promote``.
 
 Demotes a feature or foundation ADR back to the pool bucket: strips
-``kind``/``semver`` frontmatter, rewrites ``id`` and ``status``, moves the
-file from ``pre-release/`` or ``foundation/`` to ``pool/``, deletes the
+``kind``/``semver`` frontmatter, rewrites ``id`` and ``status`` (and the body
+H1's id token, which states that same identity a second time — GHI #776), moves
+the file from ``pre-release/`` or ``foundation/`` to ``pool/``, deletes the
 source package directory (briefs, closeout form, etc. per Q1=b of the
 2026-05-23 get-out-of-jail prequel), and emits an ``artifact_renamed``
 ledger event with ``reason="pool_demotion"`` (per Q5=a — reuses the
@@ -41,6 +42,10 @@ _DEMOTABLE_KINDS = {"feature", "foundation"}
 #: came from (observed on the first `take-demoted` run, GHI #775).
 _FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date", "promoted_from")
 _CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
+#: First-H1 identity claim. The id token stops at whitespace or ``:`` so both
+#: ``# ADR-0.27.0: Title`` and the bare ``# ADR-0.27.0`` are matched, and the
+#: separator (``:``, em dash, or nothing) rides along in ``rest`` untouched.
+_H1_ID_RE = re.compile(r"^(?P<prefix>#[ \t]+)(?P<id>ADR-[^\s:]+)(?P<rest>.*)$")
 #: Pool-slug collision policies. ``take-demoted`` was added under GHI #775: a
 #: promote/demote round trip ALWAYS collides, because ``gz adr promote`` retains
 #: the pool file as historical intake by design — and neither original policy
@@ -107,6 +112,45 @@ def _set_frontmatter_value(content: str, key: str, value: str) -> str:
             break
     else:
         lines.insert(end_idx, f"{key}: {value}")
+    trailing = "\n" if content.endswith("\n") else ""
+    return "\n".join(lines) + trailing
+
+
+def _body_start_index(lines: list[str]) -> int:
+    """Index of the first body line, skipping any leading frontmatter block."""
+    if not lines or lines[0].strip() != "---":
+        return 0
+    for idx in range(1, len(lines)):
+        if lines[idx].strip() == "---":
+            return idx + 1
+    return 0
+
+
+def _rewrite_h1_id_prefix(content: str, new_id: str) -> str:
+    """Retitle the first body H1 so its id token names ``new_id`` (GHI #776).
+
+    Demotion rewrites ``id:`` frontmatter, and the H1 is a second statement of
+    that same fact — leaving it behind made the artifact assert two disagreeing
+    identities. Latent only until the freed number was reissued: 8 of 38 stale
+    pool H1s named an id belonging to a *different* live ADR, so
+    ``ADR-pool.pre-commit-hook-absorption`` announced itself as ``# ADR-0.35.0``
+    while that id was the in-flight ``canon-entry-corpus-landing``.
+
+    Only the id token of the *first* body H1 moves. Everything after it on the
+    line survives, so both corpus shapes are handled — ``# <id>: <Title>`` and
+    the bare ``# <id>`` that 8 of the demoted files carry. Body prose naming the
+    old id is design history (supersession notes, decision records) and is left
+    alone: ``REQ-0.34.0-04-01`` makes demotion a re-homing, not a rewrite.
+    """
+    lines = content.splitlines()
+    for idx in range(_body_start_index(lines), len(lines)):
+        match = _H1_ID_RE.match(lines[idx])
+        if match is None:
+            continue
+        lines[idx] = f"{match.group('prefix')}{new_id}{match.group('rest')}"
+        break
+    else:
+        return content
     trailing = "\n" if content.endswith("\n") else ""
     return "\n".join(lines) + trailing
 
@@ -272,6 +316,7 @@ def _build_demote_plan(
     pool_content = _strip_frontmatter_keys(source_content, _FRONTMATTER_STRIP_KEYS)
     pool_content = _set_frontmatter_value(pool_content, "id", new_id)
     pool_content = _set_frontmatter_value(pool_content, "status", "Pool")
+    pool_content = _rewrite_h1_id_prefix(pool_content, new_id)
     children = _find_dependent_children(project_root, config, source_id)
     # Demoting a parent must transact over its OBPI children too: renaming the
     # ADR without disposing of them is what stranded 237 records at GHI #520.

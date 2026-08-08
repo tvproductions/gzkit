@@ -8,7 +8,7 @@ paired_ghis:
   - "#472"
 ---
 
-# ADR-0.0.45-cli-mode-density-doctrine: CLI Mode-Density Doctrine
+# ADR-pool.cli-mode-density-doctrine: CLI Mode-Density Doctrine
 
 ## Persona
 
