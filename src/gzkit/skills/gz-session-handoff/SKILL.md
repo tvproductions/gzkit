@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.25.0"
+  skill-version: "6.26.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-05
+last_reviewed: 2026-08-08
 model: sonnet
 ---
 
@@ -52,6 +52,27 @@ skipping any that are lock-coupled or are the `continues_from:` target of a
 still-canonical handoff, so the audit trail is preserved and no resume chain is
 orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 
+### Settled-citation annotation
+
+`create` resolves every GHI cited in a **prospective** section — `Immediate Next
+Steps` and `Pending Work / Open Loops` — against live issue state, and annotates a
+closed one `[settled]` in place. A handoff therefore cannot be *written* naming a
+settled issue as open work.
+
+Retrospective sections are never annotated: a closed GHI in `Current State
+Summary`, `Evidence / Artifacts`, `Decisions Made`, or `Settled Rulings` is the
+correct record of what the traversal did, and marking it would falsify the
+archive. `Pending Work / Open Loops` is in scope because that is where a handoff
+parks work for a *future* session — the longest-lived place a stale citation hides.
+
+It annotates, never refuses: citing and depending are different claims, and a step
+may name a closed GHI as provenance rather than as a precondition. Only `settled`
+marks — an unresolvable reference is `unknown`, which is missing evidence rather
+than evidence of a closed issue.
+
+**Do not hand-author around it.** Writing a handoff with `Write` instead of
+`gz handoff create` bypasses this check along with the whole fail-closed gate.
+
 ---
 
 ## Trust Model
@@ -59,6 +80,7 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 **Layer 3 — File Sync:** This tool creates files without verification.
 
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
+- **Reads (CREATE):** GHI state via `gh issue view` for every issue cited in a **prospective** section, to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
 - **Blocks (RESUME):** every mutating tool call until a `proceed` ruling is booked via `gz handoff decide` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)

@@ -101,6 +101,60 @@ uv run gz handoff create --mode CHECKPOINT --slug midflight-bookmark --agent g0 
 
 ---
 
+## Settled-citation annotation
+
+Every GHI cited in a **prospective** section is resolved against live issue state
+at authoring time. A closed one is annotated `[settled]` in place, so a handoff
+cannot be *written* naming a settled issue as open work.
+
+Two sections are in scope, and only two:
+
+| Section | In scope | Why |
+|---|---|---|
+| `Immediate Next Steps` | yes | names what the next session should pull |
+| `Pending Work / Open Loops` | yes | parks work for a future session — the longest-lived place a stale citation hides |
+| every other section | no | retrospective; a closed GHI there is the correct record of what the traversal did |
+
+Sections are typed by tense. Annotating a retrospective mention would falsify the
+archive, so `Current State Summary`, `Evidence / Artifacts`, `Decisions Made`, and
+`Settled Rulings` are never touched.
+
+Given these sections, with `#768` open and `#708` / `#573` closed:
+
+```markdown
+## Immediate Next Steps
+
+1. Give GHI #768 a remedy; rule on #708 [settled] first.
+
+## Pending Work / Open Loops
+
+1. GHI #573 [settled] is still open and needs a TDD redo.
+
+## Current State Summary
+
+Reopened and closed GHI #708 this session.
+```
+
+`#768` is untouched (open), both closed citations are marked, and the
+retrospective mention of `#708` is left alone.
+
+**It annotates; it never refuses.** Citing and depending are different claims and
+nothing can tell them apart — a step may name a closed GHI as provenance rather
+than as a precondition. The mark reports the citation and leaves the conclusion to
+the reader, the same contract `gz handoff resume` follows with `CITES SETTLED`.
+
+**Only `settled` marks.** An unresolvable reference — `gh` absent,
+unauthenticated, or offline — is `unknown`, which is missing evidence rather than
+evidence of a closed issue, and is never annotated. A missing `gh` latches the
+lookup off after one failed call, so offline authoring costs one subprocess, not
+one per citation. Re-authoring an already-annotated section does not double-mark.
+
+This closes the authoring arm of the check `gz handoff resume` has performed on
+the reading side since GHI #696. Previously a stale citation had to be written
+first and caught later — and only if the next session read the flag.
+
+---
+
 ## Decision attribution and settled rulings (GHI #696)
 
 Lead each `--decisions` entry with `[operator-ruled]` or `[agent-chose]`. Matching

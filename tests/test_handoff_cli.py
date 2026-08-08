@@ -50,6 +50,18 @@ class _HandoffCliCase(unittest.TestCase):
         # output, and console.quiet would empty their buffer.
         super().setUp()
         self.base = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        # Stub the `gh` boundary for EVERY CLI case, not only the ones that assert
+        # on reference state. `handoff_create_cmd` now resolves cited GHIs at
+        # authoring time, so any fixture carrying a `#123` would shell out for
+        # real — and the tier's hermeticity would depend on nobody ever writing a
+        # GHI number into a `--next-steps` fixture. A case needing specific states
+        # nests its own `mock.patch` over this one.
+        self.enterContext(
+            mock.patch(
+                "gzkit.commands.handoff._gh_issue_state",
+                side_effect=lambda _number, _root: ReferenceState.UNKNOWN,
+            )
+        )
 
     def _seed(
         self,

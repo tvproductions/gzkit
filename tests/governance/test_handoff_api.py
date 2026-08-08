@@ -33,6 +33,8 @@ from gzkit.handoff_api import (
     settled_rulings,
 )
 from gzkit.handoff_validation import (
+    PROSPECTIVE_SECTIONS,
+    REQUIRED_SECTIONS,
     SETTLED_SECTION,
     HandoffValidationError,
     parse_frontmatter,
@@ -1277,6 +1279,143 @@ class TestNoNetwork(unittest.TestCase):
                 timestamp="2026-07-12T10:00:00Z",
             )
             self.assertTrue(path.exists(), "create must run fully with no network available")
+
+
+class TestAuthoringAnnotatesSettledCitations(unittest.TestCase):
+    """A handoff cannot be WRITTEN naming a closed GHI as live work.
+
+    ``gz handoff resume`` has verified cited references since GHI #696, but only
+    on the READING side and only over ``Immediate Next Steps``. The authoring
+    side had no check at all, so a stale citation was created first and caught
+    later — if the next session happened to read the annotation.
+
+    Observed instances: the `20260808T005049Z` handoff advised five GHIs as
+    "still open" that were all CLOSED (#459 since 2026-05-12); its successor
+    then recorded under ``Pending Work / Open Loops`` that "GHI #573 is still
+    open and unaffected by the #708 repair" — #573 closed 2026-07-24, two weeks
+    before that handoff was written.
+
+    The #573 instance is why the section scope here is TWO sections, not the one
+    the resume side reads: ``Pending Work / Open Loops`` is where a handoff parks
+    work for a future session, so a stale citation there outlives every other
+    kind. Both arms of the same mechanism shared the same blind spot.
+    """
+
+    def _sections(self, **overrides: str) -> dict[str, str]:
+        return {**_SEVEN_SECTIONS, **overrides}
+
+    def _write(self, base: Path, sections: dict[str, str], checker: object = None) -> str:
+        path = create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="test-agent",
+            slug="annotated",
+            sections=sections,
+            base_path=base,
+            timestamp="2026-08-08T10:00:00Z",
+            reference_checker=checker,
+        )
+        return path.read_text(encoding="utf-8")
+
+    @staticmethod
+    def _settled(*numbers: str) -> object:
+        settled = set(numbers)
+
+        def check(reference: StepReference) -> ReferenceState:
+            if reference.kind is not ReferenceKind.GHI:
+                return ReferenceState.UNKNOWN
+            if reference.identifier in settled:
+                return ReferenceState.SETTLED
+            return ReferenceState.LIVE
+
+        return check
+
+    def test_settled_citation_in_next_steps_is_annotated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(**{"Immediate Next Steps": "1. Rule on GHI #693 before pulling."}),
+                checker=self._settled("693"),
+            )
+        self.assertIn("#693 [settled]", document)
+
+    def test_settled_citation_in_pending_work_is_annotated(self) -> None:
+        """The #573 instance: a closed GHI parked as future work for a later session."""
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(
+                    **{"Pending Work / Open Loops": "1. GHI #573 is still open; needs a TDD redo."}
+                ),
+                checker=self._settled("573"),
+            )
+        self.assertIn("#573 [settled]", document)
+
+    def test_retrospective_sections_are_never_annotated(self) -> None:
+        """A closed GHI in a record of finished work is CORRECT, not drift.
+
+        Sections are typed by tense. Only a prospective section can make a
+        liveness claim, so only a prospective section can make a stale one —
+        annotating the record of what a session DID would falsify the archive.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(
+                    **{
+                        "Current State Summary": "Reopened and closed GHI #708 this session.",
+                        "Evidence / Artifacts": "Commit 4c77192d8 closes GHI #708.",
+                        "Decisions Made": "- [agent-chose] Reopened GHI #708 over a fresh file.",
+                    }
+                ),
+                checker=self._settled("708"),
+            )
+        self.assertNotIn("[settled]", document)
+
+    def test_live_and_unknown_citations_are_left_alone(self) -> None:
+        """UNKNOWN is not a synonym for SETTLED — an unresolved ref is unverified."""
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(
+                    **{"Immediate Next Steps": "1. Give GHI #768 a remedy; see OBPI-0.35.0-05."}
+                ),
+                checker=self._settled("999"),
+            )
+        self.assertNotIn("[settled]", document)
+
+    def test_no_checker_annotates_nothing(self) -> None:
+        """The core is exercisable with no adapter (hexagonal § Operative rule 6)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(**{"Immediate Next Steps": "1. Rule on GHI #693 before pulling."}),
+            )
+        self.assertNotIn("[settled]", document)
+
+    def test_annotation_is_idempotent(self) -> None:
+        """Re-authoring an already-annotated citation must not double-mark it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            document = self._write(
+                Path(tmp),
+                self._sections(**{"Immediate Next Steps": "1. Rule on GHI #693 [settled]."}),
+                checker=self._settled("693"),
+            )
+        self.assertEqual(document.count("[settled]"), 1)
+
+
+class TestProspectiveSectionsAreRealSections(unittest.TestCase):
+    def test_every_prospective_section_is_a_required_section(self) -> None:
+        """A section rename must not silently orphan the annotation scope.
+
+        ``PROSPECTIVE_SECTIONS`` names sections by string. If one were renamed in
+        ``REQUIRED_SECTIONS`` alone, the annotation loop would look up a key that
+        never exists and quietly stop checking — a fail-open with no symptom.
+        """
+        self.assertTrue(
+            set(PROSPECTIVE_SECTIONS) <= set(REQUIRED_SECTIONS),
+            f"{set(PROSPECTIVE_SECTIONS) - set(REQUIRED_SECTIONS)} is not a required section",
+        )
 
 
 if __name__ == "__main__":

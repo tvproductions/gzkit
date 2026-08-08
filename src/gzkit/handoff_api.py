@@ -26,6 +26,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
 
 from gzkit.handoff_validation import (
+    PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
     SETTLED_SECTION,
     HandoffValidationError,
@@ -576,6 +577,62 @@ def _extract_references(text: str) -> tuple[StepReference, ...]:
     return tuple(found)
 
 
+#: Rendered after a settled citation in a prospective section. Chosen to survive
+#: a round-trip: ``_extract_references`` still reads ``#573`` out of
+#: ``#573 [settled]``, so an annotated handoff resumes exactly like a bare one.
+SETTLED_MARKER = "[settled]"
+
+
+def _mark_settled(body: str, identifier: str) -> str:
+    """Append the settled marker to every bare mention of one GHI number.
+
+    Idempotent by lookahead: a citation already carrying the marker is skipped,
+    so re-authoring an annotated section never double-marks it. Word-bounded so
+    ``#57`` cannot claim the ``#573`` it is a prefix of.
+    """
+    pattern = re.compile(
+        r"#" + re.escape(identifier) + r"\b(?!\s*" + re.escape(SETTLED_MARKER) + r")"
+    )
+    return pattern.sub(f"#{identifier} {SETTLED_MARKER}", body)
+
+
+def _annotate_settled_citations(
+    sections: dict[str, str], checker: ReferenceChecker | None
+) -> dict[str, str]:
+    """Mark every settled GHI cited as live work, at authoring time.
+
+    Resume-side verification has existed since GHI #696, but a stale citation
+    still had to be WRITTEN before anything could catch it — and only if the next
+    session read the flag. This closes the authoring arm, reusing the same
+    ``ReferenceChecker`` port rather than standing up a second resolver.
+
+    Scope is ``PROSPECTIVE_SECTIONS`` only. A closed GHI in a retrospective
+    section is the correct record of finished work; marking it would falsify the
+    archive, which is the failure GHI #768 names as the trap in any blanket
+    sweep. ``Pending Work / Open Loops`` is in scope because that is where a
+    handoff parks work for a future session — the longest-lived place a stale
+    citation can hide, and where the resume-side check never looked.
+
+    Annotates, never refuses: citing and depending are different claims and
+    nothing here can tell them apart (see :attr:`NextStep.cites_settled`). Only
+    ``SETTLED`` marks — ``UNKNOWN`` is missing evidence, not a closed reference.
+    With no ``checker`` the sections pass through untouched, so the core is
+    exercisable without an adapter (hexagonal § Operative rule 6).
+    """
+    if checker is None:
+        return sections
+    annotated = dict(sections)
+    for section in PROSPECTIVE_SECTIONS:
+        body = annotated.get(section, "")
+        if not body:
+            continue
+        for reference in _extract_references(body):
+            if reference.kind is ReferenceKind.GHI and checker(reference) is ReferenceState.SETTLED:
+                body = _mark_settled(body, reference.identifier)
+        annotated[section] = body
+    return annotated
+
+
 def _build_steps(content: str, checker: ReferenceChecker | None) -> list[NextStep]:
     """Pair every authored next step with the live state of what it cites.
 
@@ -670,6 +727,7 @@ def create_handoff(
     base_path: Path = Path("."),
     timestamp: str | None = None,
     mode: str = "CREATE",
+    reference_checker: ReferenceChecker | None = None,
 ) -> Path:
     """Write a handoff document, routing it through the validation gate.
 
@@ -683,6 +741,11 @@ def create_handoff(
     author supplies it: the predecessor's carried rulings plus the operator rulings
     it booked. A ruling booked once therefore keeps arriving without anyone
     remembering to re-state it (GHI #696 defect 3).
+
+    ``reference_checker`` closes the authoring arm of reference liveness: every
+    GHI cited as live work in a prospective section is resolved and, when
+    settled, annotated in place, so a handoff cannot be WRITTEN naming a closed
+    issue as open work. Omitted, nothing is annotated and the write is unchanged.
     """
     ts = timestamp or _now_iso()
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
@@ -692,6 +755,7 @@ def create_handoff(
             **sections,
             SETTLED_SECTION: "\n".join(f"- {entry}" for entry in composed_settled),
         }
+    sections = _annotate_settled_citations(sections, reference_checker)
     frontmatter: dict = {
         "mode": mode,
         "adr_id": adr_id,

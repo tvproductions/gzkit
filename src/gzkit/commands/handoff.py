@@ -334,6 +334,7 @@ def handoff_create_cmd(
             session_id=session_id,
             base_path=base_path,
             mode=mode,
+            reference_checker=_live_reference_checker(base_path),
         )
     except HandoffValidationError as exc:
         console.print(f"[red]Refusing to write handoff:[/red] {exc}", style="red")

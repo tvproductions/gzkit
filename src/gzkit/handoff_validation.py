@@ -37,6 +37,7 @@ from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
 __all__ = [
     "CHECKPOINT_MODE",
     "HANDOFF_SCHEMA_VERSION",
+    "PROSPECTIVE_SECTIONS",
     "REQUIRED_SECTIONS",
     "SETTLED_SECTION",
     "HandoffFrontmatter",
@@ -81,6 +82,21 @@ REQUIRED_SECTIONS = (
 #: and promotes operator rulings into it), so it is never a section an author
 #: must remember to fill — which is the failure mode GHI #696 documents.
 SETTLED_SECTION = "Settled Rulings"
+
+#: The sections whose citations assert LIVE work, and the only ones an authoring
+#: liveness check may annotate. Sections are typed by tense: these two are
+#: prospective — they name what a future session should pull — so a closed GHI
+#: cited here is a false claim. Every other section is retrospective, where a
+#: closed GHI is the correct record of what the traversal did, and annotating it
+#: would falsify the archive.
+#:
+#: Both names are members of ``REQUIRED_SECTIONS``; the membership is asserted by
+#: ``TestProspectiveSectionsAreRealSections`` rather than by an import-time check,
+#: so a section rename cannot silently orphan this tuple.
+PROSPECTIVE_SECTIONS = (
+    "Immediate Next Steps",
+    "Pending Work / Open Loops",
+)
 
 # ---------------------------------------------------------------------------
 # Compiled patterns
