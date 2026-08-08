@@ -41,6 +41,15 @@ _DEMOTABLE_KINDS = {"feature", "foundation"}
 #: it was promoted from itself, since demotion reuses the very slug the promotion
 #: came from (observed on the first `take-demoted` run, GHI #775).
 _FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date", "promoted_from")
+#: Body sections a pool ADR must not carry — the § body counterpart of
+#: ``_FRONTMATTER_STRIP_KEYS``. A pool ADR carries no OBPIs by doctrine and
+#: demotion deletes the briefs, so a Gate-5 ceremony section is invalid the
+#: moment the ADR lands in pool: every bullet presupposes an OBPI set and the
+#: last is a directive (``uv run gz gates --adr <id>``) that cannot succeed
+#: against a pool ADR whatever id it names. Found on 13 files, all under this
+#: exact heading. Closed list — a section is stripped because it is
+#: kind-invalid, never because it merely looks stale (GHI #777).
+_POOL_INVALID_SECTIONS = ("## OBPI Acceptance Note (Human Acknowledgment)",)
 _CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
 #: First-H1 identity claim. The id token stops at whitespace or ``:`` so both
 #: ``# ADR-0.27.0: Title`` and the bare ``# ADR-0.27.0`` are matched, and the
@@ -151,6 +160,36 @@ def _rewrite_h1_id_prefix(content: str, new_id: str) -> str:
         break
     else:
         return content
+    trailing = "\n" if content.endswith("\n") else ""
+    return "\n".join(lines) + trailing
+
+
+def _strip_pool_invalid_sections(content: str, headings: tuple[str, ...]) -> str:
+    """Remove body sections that are invalid for ``kind: pool`` (GHI #777).
+
+    Each named section is dropped from its heading up to the next ``##``
+    heading, which carries away the section's trailing horizontal rule with it
+    and leaves the preceding rule intact. Bounding on the next heading rather
+    than on end-of-file matters: in all 13 observed files the section sits
+    mid-document with an ``Evidence Ledger`` after it, so a stripper running to
+    EOF would silently truncate the ADR's remaining design content.
+
+    Only enumerated headings go. Body prose that merely *names* the old ADR is
+    left alone — interview transcripts and dated cross-reference notes are
+    records of what was true when written, and rewriting them would falsify a
+    source rather than re-home it (``REQ-0.34.0-04-01``).
+    """
+    lines = content.splitlines()
+    for heading in headings:
+        try:
+            start = lines.index(heading)
+        except ValueError:
+            continue
+        end = next(
+            (idx for idx in range(start + 1, len(lines)) if lines[idx].startswith("## ")),
+            len(lines),
+        )
+        del lines[start:end]
     trailing = "\n" if content.endswith("\n") else ""
     return "\n".join(lines) + trailing
 
@@ -317,6 +356,7 @@ def _build_demote_plan(
     pool_content = _set_frontmatter_value(pool_content, "id", new_id)
     pool_content = _set_frontmatter_value(pool_content, "status", "Pool")
     pool_content = _rewrite_h1_id_prefix(pool_content, new_id)
+    pool_content = _strip_pool_invalid_sections(pool_content, _POOL_INVALID_SECTIONS)
     children = _find_dependent_children(project_root, config, source_id)
     # Demoting a parent must transact over its OBPI children too: renaming the
     # ADR without disposing of them is what stranded 237 records at GHI #520.

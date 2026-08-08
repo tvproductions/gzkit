@@ -140,14 +140,6 @@ refreshes become chore entries with receipts, not ad-hoc reminders.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the comparison result and decision (Absorb/Confirm/Exclude)
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.28.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

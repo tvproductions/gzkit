@@ -134,15 +134,6 @@ validator-enforced.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each ADR checklist item maps to one brief (OBPI). Record a one-line acceptance note in the brief once Four Gates are green.
-- Include the exact command to reproduce the observed behavior, if applicable:
-
-`uv run gz status --table` (rendered via reporter presets)
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

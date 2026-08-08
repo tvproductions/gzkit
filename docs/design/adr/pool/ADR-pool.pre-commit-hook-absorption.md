@@ -145,14 +145,6 @@ and stale vendor-capability source dates once those surfaces land.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the comparison result and decision (Absorb-PreCommit/Absorb-Claude/Absorb-Both/Confirm/Exclude)
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.35.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

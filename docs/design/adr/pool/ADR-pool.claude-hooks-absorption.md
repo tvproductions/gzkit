@@ -136,14 +136,6 @@ without those fields is false assurance.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the comparison/absorption result and decision
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.34.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

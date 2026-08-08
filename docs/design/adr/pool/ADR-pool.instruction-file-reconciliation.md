@@ -138,14 +138,6 @@ imitation, and local mechanical witness.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the reconciliation result and decision (Absorb/Confirm/Extract)
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.36.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

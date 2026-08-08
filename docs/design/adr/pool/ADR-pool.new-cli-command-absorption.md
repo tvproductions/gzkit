@@ -130,14 +130,6 @@ manpage examples bound to captured output where ADR-0.46.0 applies.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the porting result with evidence of CLI convention compliance
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.31.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

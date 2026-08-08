@@ -125,14 +125,6 @@ completion gate state.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the evaluation result and decision (Absorb/Adapt/Exclude)
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.29.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance

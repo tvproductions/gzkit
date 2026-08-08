@@ -350,20 +350,6 @@ a New Verb is unchanged Heavy procedure.
   Attestation Matrix. Per-OBPI attestation also required (foundation-kind
   inheritance).
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-This ADR is **heavy-lane + foundation-kind**. Per AGENTS.md § OBPI Acceptance
-Protocol and § Lane & Kind & Sensitivity Attestation Matrix, **every** OBPI
-under this ADR requires explicit human attestation (`ATTEST` gate). None of
-the five OBPIs is self-closeable.
-
-Each OBPI brief records its acceptance note with:
-
-- The exact `uv run gz` reproduction command.
-- The canonical attestation invocation per AGENTS.md § Attestation.
-- The ARB receipt IDs (`arb-step-unittest-*`, `arb-step-mkdocs-*`,
-  `arb-step-typecheck-*`) — heavy-lane is fail-closed on missing receipt IDs.
-
 ## Evidence Ledger
 
 ### Provenance

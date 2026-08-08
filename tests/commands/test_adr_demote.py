@@ -825,5 +825,98 @@ class PoolH1Coherence(unittest.TestCase):
             self.assertIn(f"## {_SAMPLE_FEATURE_ADR_ID} history", landed)
 
 
+class PoolKindInvalidSections(unittest.TestCase):
+    """Gate-ceremony sections do not survive into a pool ADR (GHI #777).
+
+    A pool ADR carries no OBPIs by doctrine and demotion deletes the briefs, so
+    `## OBPI Acceptance Note (Human Acknowledgment)` — three bullets that each
+    presuppose an OBPI set, ending in `Attestation command: uv run gz gates
+    --adr <id>` — is invalid the moment the ADR lands in pool. This is the same
+    class as `_FRONTMATTER_STRIP_KEYS`: content meaningful only for a non-pool
+    kind.
+
+    Found on 13 pool files. Severity is *kind*, not id: the directive cannot
+    succeed against a pool ADR whatever id it names, so the 6 files whose old id
+    was never reissued were equally wrong — which is why the 8-collision figure
+    that surfaced this understated it.
+    """
+
+    _SECTION = (
+        "## OBPI Acceptance Note (Human Acknowledgment)\n\n"
+        "- Each OBPI documents the evaluation result and decision\n"
+        "- Human attestation required for all OBPIs (Heavy lane)\n"
+        f"- Attestation command: `uv run gz gates --adr {_SAMPLE_FEATURE_ADR_ID}`\n\n"
+        "---\n\n"
+    )
+
+    def _demote_with(self, config: GzkitConfig, extra_body: str) -> str:
+        adr_file = _seed_feature_adr(config)
+        adr_file.write_text(
+            adr_file.read_text(encoding="utf-8").replace("## Intent\n", f"{extra_body}## Intent\n"),
+            encoding="utf-8",
+        )
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+        result = CliRunner().invoke(main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "777"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        return (Path(config.paths.adrs) / "pool" / f"{_SAMPLE_POOL_ID}.md").read_text(
+            encoding="utf-8"
+        )
+
+    def test_obpi_acceptance_note_does_not_survive_demotion(self) -> None:
+        """The whole section goes — every bullet presupposes an OBPI set."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            landed = self._demote_with(config, self._SECTION)
+
+            self.assertNotIn("OBPI Acceptance Note", landed)
+            self.assertNotIn("Attestation command", landed)
+            self.assertNotIn("gz gates --adr", landed)
+
+    def test_sections_after_the_stripped_one_survive(self) -> None:
+        """Removal is bounded by the next `## ` heading, not the end of file.
+
+        The stripped section sits mid-document in all 13 real files, with an
+        `Evidence Ledger` section immediately after it. A stripper that ran to
+        EOF would silently truncate the ADR's remaining design content.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            landed = self._demote_with(config, self._SECTION)
+
+            self.assertIn("## Intent", landed)
+            self.assertIn("A seeded ADR for testing demotion.", landed)
+
+    def test_an_unlisted_section_is_left_alone(self) -> None:
+        """Only the enumerated kind-invalid sections go; the list is closed."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            landed = self._demote_with(config, "## Consequences\n\nSomething worth keeping.\n\n")
+
+            self.assertIn("## Consequences", landed)
+            self.assertIn("Something worth keeping.", landed)
+
+    def test_absent_section_is_a_no_op(self) -> None:
+        """Most ADRs never carried the section; demotion must not care."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+
+            landed = self._demote_with(config, "")
+
+            self.assertIn("## Intent", landed)
+            self.assertIn(f"# {_SAMPLE_POOL_ID}: Sample", landed)
+
+
 if __name__ == "__main__":
     unittest.main()

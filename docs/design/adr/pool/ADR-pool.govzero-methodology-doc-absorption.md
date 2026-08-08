@@ -146,14 +146,6 @@ ceremony, and show concrete paths through pool/open ADR destinations.
 
 ---
 
-## OBPI Acceptance Note (Human Acknowledgment)
-
-- Each OBPI documents the comparison result and decision (Absorb/Confirm/Merge)
-- Human attestation required for all OBPIs (Heavy lane, parent ADR is Heavy)
-- Attestation command: `uv run gz gates --adr ADR-0.37.0`
-
----
-
 ## Evidence Ledger (authoritative summary)
 
 ### Provenance
