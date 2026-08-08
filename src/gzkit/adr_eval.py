@@ -14,6 +14,13 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.adr_eval_dispatch import (
+    MANDATED_EVALUATION_PERSONAS,
+    PersonaDispatchRecord,
+    dispatch_channel_for_adr,
+    is_single_driver,
+    not_dispatched,
+)
 from gzkit.adr_eval_substance import SubstanceVerdict, substance_channel_for_adr
 from gzkit.config import GzkitConfig
 
@@ -79,6 +86,15 @@ class AdrEvalResult(BaseModel):
     - **Substance** (``substance``): graded ONLY by recorded, disciplined judge
       verdicts; ``UNGRADED`` absent one. Never derived from shape.
 
+    A THIRD channel records the ceremony's own conditions rather than the ADR's
+    (GHI #770):
+
+    - **Dispatch** (``dispatch``): whether each persona the ceremony mandates
+      produced independent input, credited ONLY by a recorded dispatch receipt
+      and ``NOT DISPATCHED`` absent one. Never inferred from the presence of
+      scores — a single-driver run and a dispatched one were byte-identical in
+      every artifact until this channel existed.
+
     The ``verdict`` is a structural-completeness summary, NOT an authoritative
     quality GO. Reading it as a substance verdict is the facade this ADR closes.
     """
@@ -94,6 +110,7 @@ class AdrEvalResult(BaseModel):
     action_items: list[str]
     timestamp: str
     substance: list[SubstanceVerdict] = Field(default_factory=list)
+    dispatch: list[PersonaDispatchRecord] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -282,6 +299,11 @@ def evaluate_adr(
     # Substance is a SEPARATE channel: graded only by recorded judge verdicts,
     # UNGRADED absent one. It is never derived from the deterministic scores above.
     substance = substance_channel_for_adr(project_root, adr_id)
+    # Dispatch is a THIRD channel on the same terms (GHI #770): credited only by
+    # a recorded dispatch receipt, NOT DISPATCHED absent one. It is never
+    # inferred from the presence of scores — output cannot evidence its own
+    # independence.
+    dispatch = dispatch_channel_for_adr(project_root, adr_id)
 
     return AdrEvalResult(
         adr_id=adr_id,
@@ -293,12 +315,49 @@ def evaluate_adr(
         action_items=action_items,
         timestamp=datetime.now(UTC).isoformat(),
         substance=substance,
+        dispatch=dispatch,
     )
 
 
 # ---------------------------------------------------------------------------
 # Scorecard renderer
 # ---------------------------------------------------------------------------
+
+
+def _render_dispatch_section(dispatch: list[PersonaDispatchRecord]) -> list[str]:
+    """Render the Persona Dispatch channel (GHI #770).
+
+    Emitted UNCONDITIONALLY, and defaulted to the full mandated roster when the
+    caller supplies none: the defect this closes is that an undispatched
+    ceremony was SILENT, so a missing channel must read NOT DISPATCHED rather
+    than vanish.
+    """
+    records = dispatch or [not_dispatched(p) for p in MANDATED_EVALUATION_PERSONAS]
+    lines = [
+        "",
+        "--- Persona Dispatch (mandated by the ceremony; never inferred) ---",
+        "",
+        "| Persona | Independent input | Source |",
+        "|---------|-------------------|--------|",
+    ]
+    for rec in records:
+        source = rec.receipt_id if rec.is_dispatched else "no dispatch receipt recorded"
+        lines.append(f"| {rec.persona_id} | {rec.state.value} | {source} |")
+    if not is_single_driver(records):
+        lines.extend(["", "DISPATCH MODE: DISPATCHED — every mandated persona is receipted."])
+        return lines
+    credited = sum(1 for r in records if r.is_dispatched)
+    lines.extend(
+        [
+            "",
+            f"DISPATCH MODE: SINGLE-DRIVER — {credited} of {len(records)} mandated "
+            "personas produced receipted independent input.",
+            "This scorecard is NOT an independent review. A single driver scoring its",
+            "own scoring is the optimistic-bias defect `spec-reviewer`'s anti-traits",
+            "name, and it is why the ceremony mandates the dispatch (GHI #770).",
+        ]
+    )
+    return lines
 
 
 def render_scorecard_markdown(result: AdrEvalResult) -> str:
@@ -387,6 +446,8 @@ def render_scorecard_markdown(result: AdrEvalResult) -> str:
             lines.append(f"| {sv.dimension} | {sv.grade.value} | {source} |")
     else:
         lines.append("| (substance dimensions) | UNGRADED | no judge verdict recorded |")
+
+    lines.extend(_render_dispatch_section(result.dispatch))
 
     lines.extend(
         [

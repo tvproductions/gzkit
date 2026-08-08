@@ -88,7 +88,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Line endings": ("line-endings", _mx_levels.ERROR),
     "Authorship policy": ("authorship", _mx_levels.ERROR),
     "Smoke tier": ("smoke-tier", _mx_levels.ERROR),
-    "Dispatch attestation": ("dispatch-attestation", _mx_levels.ERROR),
+    "Dispatch absorption marker": ("dispatch-absorption-marker", _mx_levels.ERROR),
     # §5 enforcement-claim meta-validator — pinned CRITICAL so a FACADE never
     # demotes to advisory inside the hangar (ADR-0.0.74 BI#3 / §5; GHI #651).
     "Enforcement floor": ("enforcement-floor", _mx_levels.CRITICAL),
@@ -400,7 +400,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_closeout_proof_audit,
         run_complexity_doctrine_links_audit,
         run_complexity_thresholds_audit,
-        run_dispatch_attestation_audit,
+        run_dispatch_absorption_marker_audit,
         run_enforcement_floor_audit,
         run_fidelity_presence_audit,
         run_format_check,
@@ -484,7 +484,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Line endings", run_line_endings_audit),
         ("Authorship policy", run_authorship_audit),
         ("Smoke tier", run_smoke_tier),
-        ("Dispatch attestation", run_dispatch_attestation_audit),
+        ("Dispatch absorption marker", run_dispatch_absorption_marker_audit),
         ("Enforcement floor", run_enforcement_floor_audit),
         # Foundation Sunset closure gate — LAST by design (ADR-0.34.0 OBPI-05):
         # wiring equals a terminal tree, so it lands green on first run.

@@ -281,9 +281,9 @@ Promotion into the active tree (foundation or feature) is performed via
 This pool item was absorbed into ADR-0.0.73-verification-layer-binding-audit
 as part of OBPI-0.0.73-05 (2026-06-17). The dispatch-attestation concern is
 the same "checker not bound" class that ADR-0.0.73 addresses. The concern is
-now registered as the `dispatch-attestation` bound QC step in
+now registered as the `dispatch-absorption-marker` bound QC step in
 `src/gzkit/qc_binding.py`, classified under `_STEP_CLASSIFICATION`, and
-enforced via `run_dispatch_attestation_audit` in `src/gzkit/quality.py`.
+enforced via `run_dispatch_absorption_marker_audit` in `src/gzkit/quality.py`.
 
 The full machinery scoped by the Target Scopes above (ledger events,
 bail-to-inline gates, validator scopes) remains as a future feature-kind ADR
@@ -291,4 +291,23 @@ work surface. This absorption closes the "floating unpromoted item" defect;
 the mechanism scope is tracked in the ADR-0.0.73 Feature Checklist item #5.
 
 `absorbed_into: ADR-0.0.73` is the machine-readable marker consumed by
-`run_dispatch_attestation_audit` in `gz check`.
+`run_dispatch_absorption_marker_audit` in `gz check`.
+
+**Naming correction, 2026-08-08 (GHI #770).** That step and function shipped as
+`dispatch-attestation` / `run_dispatch_attestation_audit` — a name asserting
+more than the subject. Their entire subject is the frontmatter marker above;
+they cannot answer *"did any subagent dispatch happen?"*, which is what
+Target Scopes #5/#6 exist to resolve and what § Notes already conceded remains
+unbuilt. A `gz check` step named for an attestation it does not perform is the
+facade signature ADR-0.0.73 exists to catch, so the name was corrected to its
+real subject. **The Target Scopes below are unchanged and still unbuilt.**
+
+What DID land in the same fix is the cheaper half GHI #770 named — a declared
+degraded mode with a mandatory marker in the emitted artifact.
+`gzkit.adr_eval_dispatch` reports, per mandated persona, whether a receipted
+dispatch exists, and the evaluation scorecard renders `NOT DISPATCHED` /
+`DISPATCH MODE: SINGLE-DRIVER` rather than staying silent. It reads a
+`persona_dispatched` event that **nothing emits yet** — the producer is
+precisely Target Scope #5 — so the channel truthfully reports SINGLE-DRIVER on
+every scorecard today and populates without further renderer change once this
+pool item is promoted.

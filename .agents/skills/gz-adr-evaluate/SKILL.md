@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.5.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-08-08
 model: sonnet
 ---
 
@@ -65,6 +65,18 @@ Evaluation is the highest-risk read-only judgment ceremony — the rubric's 8 di
 Personas not dispatched: `implementer` (evaluation is pre-implementation review — no code exists to write or evaluate).
 
 The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts.
+
+### Degraded mode — when dispatch cannot run (binding, GHI #770)
+
+**Dispatch is sometimes genuinely unavailable** — a session that forbids subagents, a headless or cron run, a harness without the Agent tool. Until GHI #770 there was no compliant path for those runs and no way to mark the output, so the mandate was simply skipped: on 2026-08-07 an evaluation of `ADR-0.35.0` ran single-driver, produced 8 dimension scores and a GO verdict, and **nothing recorded that the mandated dispatch had not happened.** An un-compliable mandate gets worked around.
+
+The degraded mode is therefore **declared and legitimate, never silent**:
+
+1. **Running single-driver is permitted.** Do not fabricate a dispatch, and do not abandon the evaluation.
+2. **The scorecard states it mechanically.** `render_scorecard_markdown` always emits a `--- Persona Dispatch ---` channel: one row per mandated persona, `NOT DISPATCHED / no dispatch receipt recorded` absent a receipt, plus a `DISPATCH MODE: SINGLE-DRIVER` verdict. This is not something you remember to write — the renderer emits it unconditionally, and `tests/test_adr_eval_dispatch.py` fails closed if a dispatched and an undispatched scorecard could ever render identically.
+3. **A single-driver scorecard is not an independent review.** Say so when relaying the verdict; do not present it as one.
+
+A dispatch is credited **only** from a recorded receipt (`gzkit.adr_eval_dispatch`), never inferred from the presence of scores — the same discipline the substance channel applies to judge verdicts (GHI #624). Nothing emits that receipt yet, so every scorecard truthfully reads SINGLE-DRIVER until the pool ADR's Target Scopes #5/#6 land; the channel populates then with no change here.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 

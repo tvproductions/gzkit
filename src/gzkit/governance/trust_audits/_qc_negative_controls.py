@@ -307,13 +307,13 @@ def _build_smoke_tier() -> Path:
     return root
 
 
-def _build_dispatch_attestation() -> Path:
+def _build_dispatch_absorption_marker() -> Path:
     """Present the pool ADR WITHOUT its absorption marker.
 
     The claim is that the ADR records `absorbed_into: ADR-0.0.73`. A missing file
     proves only that the path is checked, never that the marker is.
     """
-    root = _mkroot("dispatch-attestation")
+    root = _mkroot("dispatch-absorption-marker")
     pool = root / "docs" / "design" / "adr" / "pool"
     _write(
         pool / "ADR-pool.obpi-pipeline-dispatch-attestation.md",
@@ -1105,9 +1105,9 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("smoke-tier", _build_smoke_tier, _ep._ep_smoke_tier),
     (
-        "dispatch-attestation",
-        _build_dispatch_attestation,
-        _ep._ep_dispatch_attestation,
+        "dispatch-absorption-marker",
+        _build_dispatch_absorption_marker,
+        _ep._ep_dispatch_absorption_marker,
     ),
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),

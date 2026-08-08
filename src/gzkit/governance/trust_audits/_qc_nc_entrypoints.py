@@ -479,10 +479,10 @@ def _ep_authorship_policy(root: Path) -> list[ValidationError]:
     return audit_authorship(root)
 
 
-def _ep_dispatch_attestation(root: Path) -> int:
-    from gzkit.quality import run_dispatch_attestation_audit  # noqa: PLC0415
+def _ep_dispatch_absorption_marker(root: Path) -> int:
+    from gzkit.quality import run_dispatch_absorption_marker_audit  # noqa: PLC0415
 
-    return 1 if not run_dispatch_attestation_audit(root).success else 0
+    return 1 if not run_dispatch_absorption_marker_audit(root).success else 0
 
 
 def _ep_fidelity_presence(root: Path) -> list[ValidationError]:

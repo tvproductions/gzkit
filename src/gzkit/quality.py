@@ -1211,7 +1211,7 @@ _POOL_ADR_DISPATCH = "docs/design/adr/pool/ADR-pool.obpi-pipeline-dispatch-attes
 _DISPATCH_ABSORPTION_MARKER = "absorbed_into: ADR-0.0.73"
 
 
-def run_dispatch_attestation_audit(project_root: Path) -> QualityResult:
+def run_dispatch_absorption_marker_audit(project_root: Path) -> QualityResult:
     """Verify the dispatch-attestation pool ADR is annotated as absorbed (OBPI-0.0.73-05).
 
     Fails closed (exit 3) when the pool ADR lacks the absorption marker —
@@ -1220,12 +1220,23 @@ def run_dispatch_attestation_audit(project_root: Path) -> QualityResult:
     unannotated state.
     Recovery: ensure ADR-pool.obpi-pipeline-dispatch-attestation.md contains
     `absorbed_into: ADR-0.0.73` in its frontmatter.
+
+    **This audits the absorption MARKER, never a dispatch (GHI #770).** Its
+    entire subject is a frontmatter string; it cannot answer "did any subagent
+    dispatch happen?", which is the concern the pool ADR was absorbed to
+    resolve. It shipped as `run_dispatch_attestation_audit` / step
+    `dispatch-attestation` and was renamed because a step named for an
+    attestation it does not perform is the facade signature ADR-0.0.73 exists
+    to catch. Whether a mandated persona dispatch occurred is reported by
+    `gzkit.adr_eval_dispatch` in the evaluation scorecard; the receipt
+    machinery that would *cause* one to be recorded remains
+    `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6.
     """
     pool_adr = project_root / _POOL_ADR_DISPATCH
     if not pool_adr.exists():
         return QualityResult(
             success=False,
-            command="dispatch-attestation audit",
+            command="dispatch-absorption-marker audit",
             stdout="",
             stderr=(
                 f"Pool ADR not found: {_POOL_ADR_DISPATCH}. "
@@ -1237,7 +1248,7 @@ def run_dispatch_attestation_audit(project_root: Path) -> QualityResult:
     if _DISPATCH_ABSORPTION_MARKER not in content:
         return QualityResult(
             success=False,
-            command="dispatch-attestation audit",
+            command="dispatch-absorption-marker audit",
             stdout="",
             stderr=(
                 f"{_POOL_ADR_DISPATCH} is missing the absorption marker "
@@ -1248,7 +1259,7 @@ def run_dispatch_attestation_audit(project_root: Path) -> QualityResult:
         )
     return QualityResult(
         success=True,
-        command="dispatch-attestation audit",
+        command="dispatch-absorption-marker audit",
         stdout=f"Pool ADR annotated as absorbed into ADR-0.0.73 ({_DISPATCH_ABSORPTION_MARKER}).",
         stderr="",
         returncode=0,
