@@ -195,6 +195,38 @@ derivation by moving the canonical value and asserting both consumers follow.
 The pre-commit `ty-check` hook is the one copy that cannot derive (YAML, read
 before Python runs) and is pinned by equality in the same module.
 
+### The 8 non-canonical `unittest` receipts are accepted, not pending
+
+`uv run gz arb validate --limit 800` reports **8 receipts** whose `step.name` is
+`unittest` but whose `step.command` ran a test **subset** rather than the
+canonical `uv run -m unittest -q`. They are correctly flagged: a subset run
+cannot witness a "tests pass" claim, which is exactly the divergence § Why
+canonical commands exists to refuse.
+
+**Their disposition is ACCEPTED (operator ruling 2026-08-08, "record deferred
+postures as accepted"), and this section is where that is recorded.** They had
+been carried as an open loop across five successive handoffs, each time as
+"delete-versus-accept, set aside" — a queue nothing was advancing, restated as
+though it were pending work. Two facts settle it:
+
+* **They gate nothing.** `gz arb validate` is an on-demand provenance report and
+  is not a `gz check` step, so these 8 have never blocked a commit or a
+  completion. The only cost was a non-clean report.
+* **Deleting them would be worse.** The receipt store is append-only history.
+  A receipt that records what a command actually ran — subset and all — is an
+  accurate record of a real invocation; removing it to make a report read clean
+  would falsify the archive to improve a number, which is the shape this
+  middleware exists to refuse.
+
+The validator's flag is therefore **correct and permanent**: it names 8 receipts
+that may not be cited as "tests pass" evidence. That is the flag doing its job,
+not a backlog. Nothing may cite them at Gate 5 (`gz adr emit-receipt` and
+`gz obpi complete` read `CANONICAL_STEP_COMMANDS`, so they cannot).
+
+Reclassify only if the count **grows** — a new non-canonical `unittest` receipt
+means a live producer is emitting one, which is a defect in the producer rather
+than a fact about history.
+
 ### TDD RED evidence is not ARB-shaped (GHI #157)
 
 ARB step receipts encode `exit_status=0` as success and `exit_status=1` as
