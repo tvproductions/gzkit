@@ -36,6 +36,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | Rule file | Scored at rule-version |
 |---|---|
 | `guardrail-feedback-prose.md` | `0.2.0` |
+| `mx-mode.md` | `1.1.0` |
 | `tests.md` | `0.15.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
@@ -313,7 +314,9 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 62 | Honor the marker: when `.gzkit/mx.json` exists, most guards drop to advisory | **Promotable** | The marker-check is structural (file exists/not); the awareness hook (`src/gzkit/mx/awareness.py`) fires per-turn but liveness is advisory. Could promote to fail-closed via a `gz validate --mx-marker-coherence` scope that confirms guard fatality state is consistent with marker presence. Parent ADR-0.0.74. |
+| 62 | Honor the marker: when `.gzkit/mx.json` exists, most guards drop to advisory | **Mechanical** | **Re-scored 2026-08-08 (rule `1.1.0`), Movement C rules arm — nothing was built.** Demotion is decided in `gzkit.mx.checkpoint.resolve` / `gzkit.mx.disposition` and asserted by 45 tests across `tests/mx/test_checkpoint.py`, `test_disposition.py`, `test_gate5_invariants.py`, `test_check_step_checkpoint_seam.py` and the live un-forced controls in `test_gate5_invariants_live_nc.py` (OBPI-0.0.74-17, REQ-0.0.74-20-03). The **Promotable** score rested on "the marker-check is structural (file exists/not)" and a proposed `--mx-marker-coherence` scope — an accurate description of the rule *before* its own mechanism landed, never revisited afterwards. A Promotable row can outlive the reason it was Promotable; that is its own failure mode, distinct from a row that was never mechanized. Parent ADR-0.0.74. |
+| 62a | `gate5_invariants` remain **fail-closed**. Gate 5 is never advisory. | **Mechanical** | The marker carve-out's floor, pinned in **both** directions so it cannot silently invert: every `gate5_invariants` member stays fatal (returncode=3) *under* the marker (`test_check_step_checkpoint_seam.py::…pin CRITICAL and never demote`) and stays fatal *outside* it (the explicit no-regression case). A new guard inherits demotion by default and must opt into the floor, so the floor's membership is the reviewed surface rather than each new guard's default. Restates ADR-0.0.36 Gate-5 universality at the MX boundary. |
+| 62b | Operate the skill, not the shell — the operator uses `gz-mx`; agents do not shell out to `gz mx enter` / `gz mx exit` | **Judgment** | An agent-behavior prohibition with no artifact to inspect after the fact: a shelled-out `gz mx enter` and a skill-invoked one produce the same ledger event, so nothing downstream can tell them apart. Enforced at the point of routing by `.gzkit/skills/gz-mx/SKILL.md` and the AGENTS.md § SKILLS FIRST contract, both of which are agent-discipline surfaces. Mechanizing would require attributing a CLI invocation to its caller, which gzkit does not model. |
 | 63 | PRIME DIRECTIVE binds the entire hangar session — ownership never relaxes; operate the skill, not the shell | **Judgment** | "Fix what you know AND what you find; 'not my work' stays forbidden in the bay" requires agent judgment to apply. Mechanizing ownership is the broader gzkit mission, not a single validator scope. |
 
 ### Hexagonal Architecture (`.gzkit/rules/hexagonal-architecture.md`)
@@ -340,14 +343,14 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 94 |
+| Score | Rows | % of 96 |
 |-------|-------|---|
-| **Mechanical** | 62 | 66% |
-| **Promotable** | 5 | 5% |
-| **Judgment** | 29 | 31% |
+| **Mechanical** | 64 | 67% |
+| **Promotable** | 4 | 4% |
+| **Judgment** | 30 | 31% |
 | **Ambiguous** | 0 | 0% |
 
-94 scored rows; the counts sum to 96 because rows 58 and 65 each score two
+96 scored rows; the counts sum to 98 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
 toward both. **There are zero `Ambiguous` rules** — the score is defined in the
 legend above and currently has no members.
