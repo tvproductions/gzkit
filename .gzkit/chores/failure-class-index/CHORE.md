@@ -57,25 +57,29 @@ gh issue list --state closed --limit 800 --search 'closed:>=YYYY-MM-DD' \
   --json number,title,body > "${TMPDIR:-/tmp}/ghi-snapshot.json"
 ```
 
-**The date window is the bigger lever, not the state filter.** Widening to
-`--state all` and dropping `--search 'closed:>=…'` on 2026-08-08 took the corpus
-from 333 records to 766 and surfaced exactly one new chain — depth 8,
-`#114, #128, #139, #140, #142, #187, #188, #564` — whose members are **all
-closed**, seven of them in April 2026, outside the prior run's window. No new
-open membership appeared.
+**Widening does not reveal hidden membership — a cited GHI is already a member.**
+`resolve_chains` unions each entry's number with its `cites`, so any GHI a
+declaring entry names is in `members` whether or not the snapshot contains it.
+The 2026-08-07 closed-only run already carried `#669`, `#581`, and `#533` that
+way. Widening to `--state all` and dropping `--search 'closed:>=…'` on 2026-08-08
+took the corpus from 333 records to 766 and added **no** open membership; what it
+bought was **titles and outbound edges** — those members' own class statements
+became readable, so they can *link* families rather than only be linked to
+(+60 statements indexed, +6 declaring recurrence).
 
-That is because a cited GHI is already a chain **member** whether or not it is in
-the snapshot: `resolve_chains` unions each entry's number with its `cites`, so an
-open GHI named by a closed one shows up as a bare number rendered
-`(outside the indexed window)`. The 2026-08-07 closed-only run already carried
-`#669`, `#581`, and `#533` that way.
+**A member rendered `(no class statement indexed)` is not necessarily outside the
+snapshot.** It may be present and simply carry no `## Class of failure` section —
+GHIs closed before the `/ghi-author` convention generally do not. `render_report`
+cannot distinguish the two cases and deliberately names neither (GHI #772). To
+find out which, check the snapshot directly:
 
-So `--state all` buys **titles and outbound edges** for those members — their own
-class statements become readable, so they can *link* families rather than only be
-linked to (+60 statements indexed, +6 declaring recurrence on the 2026-08-08 run).
-It does not reveal membership that a closed-only run was hiding. Use a wide date
-window when the question is "what families exist"; use `--state all` when the
-question is "what does an open GHI's own diagnosis connect to".
+```bash
+uv run python -c "import json,sys; d=json.load(open(sys.argv[1])); b={r['number']:r for r in d}; n=int(sys.argv[2]); r=b.get(n); print(f'#{n}: ' + ('ABSENT' if r is None else 'present, section=' + str('## Class of failure' in (r.get('body') or ''))))" "$SNAPSHOT" 114
+```
+
+Use a wide date window when the question is "what families exist"; use
+`--state all` when the question is "what does an open GHI's own diagnosis connect
+to". Neither surfaces a family that citations had not already drawn.
 
 **Write the snapshot outside the repo.** It is a regenerable adapter input, not a
 proof: the 2026-08-07 snapshot of 333 closed GHIs was **1.4 MB** of verbatim issue

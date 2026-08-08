@@ -79,11 +79,37 @@ class RecurrenceChain(BaseModel):
     declared: tuple[int, ...] = Field(
         ..., description="Members whose own statement declared the recurrence"
     )
+    authored: tuple[int, ...] = Field(
+        (), description="Members carrying a `## Class of failure` section of their own"
+    )
 
     @property
     def depth(self) -> int:
-        """Number of GHIs in the chain."""
+        """Span of GHI numbers the family touches, cited ancestors included."""
         return len(self.members)
+
+    @property
+    def authored_depth(self) -> int:
+        """Number of members that contributed a diagnosis of their own (GHI #772).
+
+        This is the ranking and cut currency, not :attr:`depth`. A citation target
+        with no class statement is evidence *about* a family, never a member *of*
+        it — it named no cause, so it cannot be closed as part of one. Measured
+        2026-08-08, 22 of 82 members across depth>=3 chains were such targets, and
+        one pair citing six statement-less ancestors from April 2026 outranked two
+        chains carrying five real diagnoses each.
+
+        ``depth`` deliberately keeps its old meaning rather than being redefined in
+        place: figures already transcribed from prior runs would otherwise change
+        meaning silently, which is the drift GHI #768 names on a different surface.
+        """
+        return len(self.authored)
+
+    @property
+    def cited_only(self) -> tuple[int, ...]:
+        """Members named by a declaring entry that carry no statement themselves."""
+        authored = set(self.authored)
+        return tuple(n for n in self.members if n not in authored)
 
 
 def extract_class_statement(body: str | None) -> str | None:
@@ -159,14 +185,18 @@ def resolve_chains(entries: Sequence[FailureClassEntry]) -> tuple[RecurrenceChai
         groups.setdefault(find(entry.number), set()).update({entry.number, *entry.cites})
 
     declared_numbers = {e.number for e in declaring}
+    indexed_numbers = {e.number for e in entries}
     chains = [
         RecurrenceChain(
             members=tuple(sorted(members)),
             declared=tuple(sorted(n for n in members if n in declared_numbers)),
+            authored=tuple(sorted(n for n in members if n in indexed_numbers)),
         )
         for members in groups.values()
     ]
-    return tuple(sorted(chains, key=lambda c: (-c.depth, c.members)))
+    # Rank by authored diagnoses first; span breaks ties only. Ranking by span
+    # promoted a two-member pair over five-member families (GHI #772).
+    return tuple(sorted(chains, key=lambda c: (-c.authored_depth, -c.depth, c.members)))
 
 
 def summarize(
@@ -179,8 +209,12 @@ def summarize(
         "declaring_recurrence": len(declaring),
         "recurrence_rate": round(len(declaring) / len(entries), 4) if entries else 0.0,
         "chains": len(chains),
-        "chains_3_plus": sum(1 for c in chains if c.depth >= 3),
+        # Counted on authored depth: a chain is "worth attention" when three GHIs
+        # diagnosed it, not when three numbers appear in it (GHI #772).
+        "chains_3_plus": sum(1 for c in chains if c.authored_depth >= 3),
         "deepest_chain": max((c.depth for c in chains), default=0),
+        "deepest_authored": max((c.authored_depth for c in chains), default=0),
+        "cited_only_members": sum(len(c.cited_only) for c in chains),
     }
 
 
@@ -199,20 +233,26 @@ def render_report(
         f"- GHIs carrying `## Class of failure`: **{stats['entries']}**",
         f"- Declaring a recurrence of a prior class: **{stats['declaring_recurrence']}**"
         f" ({stats['recurrence_rate']:.0%})",
-        f"- Chains: **{stats['chains']}** ({stats['chains_3_plus']} of depth >= {min_depth})",
-        f"- Deepest chain: **{stats['deepest_chain']}**",
+        f"- Chains: **{stats['chains']}** ({stats['chains_3_plus']} with"
+        f" >= {min_depth} authored diagnoses)",
+        f"- Deepest chain: **{stats['deepest_authored']}** authored"
+        f" (spanning {stats['deepest_chain']} GHI numbers)",
+        f"- Cited-only members across all chains: **{stats['cited_only_members']}**",
         "",
-        f"## Chains of depth >= {min_depth}",
+        f"## Chains with >= {min_depth} authored diagnoses",
         "",
     ]
-    deep = [c for c in chains if c.depth >= min_depth]
+    deep = [c for c in chains if c.authored_depth >= min_depth]
     if not deep:
         lines.append("_None._")
     for chain in deep:
         members = ", ".join(f"#{n}" for n in chain.members)
-        lines.append(f"### depth {chain.depth} — {members}")
+        lines.append(f"### {chain.authored_depth} authored of {chain.depth} — {members}")
         for number in chain.members:
-            title = titles.get(number, "(outside the indexed window)")
+            # State only what is knowable here. A member missing from `titles` is
+            # either outside the snapshot or in it with no class section, and this
+            # function cannot tell which — naming either cause misleads (GHI #772).
+            title = titles.get(number, "(no class statement indexed)")
             marker = "*" if number in chain.declared else " "
             lines.append(f"- {marker} #{number} {title}")
         lines.append("")
@@ -291,17 +331,19 @@ def main(argv: list[str] | None = None) -> int:
     # chain is a different fact from a run that read an empty snapshot, and only
     # stdout can carry that under --dry-run (the GHI #614 negative-signal shape).
     sys.stdout.write(
-        f"failure-class-index: {stats['chains_3_plus']} chain(s) of depth >= {args.min_depth}\n"
+        f"failure-class-index: {stats['chains_3_plus']} chain(s) with "
+        f">= {args.min_depth} authored diagnoses\n"
     )
     sys.stdout.write(
         f"  read {len(records)} record(s), indexed {stats['entries']} class statement(s), "
         f"{stats['declaring_recurrence']} declaring recurrence "
-        f"({stats['recurrence_rate']:.0%}), deepest chain {stats['deepest_chain']}\n"
+        f"({stats['recurrence_rate']:.0%}), deepest {stats['deepest_authored']} authored "
+        f"({stats['cited_only_members']} cited-only members across all chains)\n"
     )
     for chain in chains:
-        if chain.depth >= args.min_depth:
+        if chain.authored_depth >= args.min_depth:
             members = ", ".join(f"#{n}" for n in chain.members)
-            sys.stdout.write(f"  [depth {chain.depth}] {members}\n")
+            sys.stdout.write(f"  [{chain.authored_depth} authored of {chain.depth}] {members}\n")
 
     if args.dry_run:
         return 0

@@ -1,7 +1,9 @@
 {
   "chains": 51,
-  "chains_3_plus": 16,
+  "chains_3_plus": 12,
+  "cited_only_members": 26,
   "declaring_recurrence": 77,
+  "deepest_authored": 9,
   "deepest_chain": 12,
   "entries": 348,
   "records_read": 766,
