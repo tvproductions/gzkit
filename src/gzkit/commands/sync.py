@@ -512,43 +512,73 @@ def _run_post_sync_lint(
 _SWEEP_GUARDED_PREFIXES = ("src/", "tests/")
 
 
-def _filter_governed_staged(names: Iterable[str]) -> list[str]:
-    """Return the staged names that sit in trailer-governed scope."""
+def _filter_governed_paths(names: Iterable[str]) -> list[str]:
+    """Return the names that sit in trailer-governed scope, deduplicated.
+
+    Set semantics, not list: the probes overlap by design — a file both staged
+    and further modified is reported by two of them — and the guard's subject is
+    *which* paths are governed, never how many reads mentioned each one.
+    """
     return sorted(
-        stripped
-        for name in names
-        if (stripped := name.strip()) and stripped.startswith(_SWEEP_GUARDED_PREFIXES)
+        {
+            stripped
+            for name in names
+            if (stripped := name.strip()) and stripped.startswith(_SWEEP_GUARDED_PREFIXES)
+        }
     )
 
 
-def _staged_governed_paths(project_root: Path) -> list[str]:
-    """Return `src/`/`tests/` paths already staged in the index.
+# The three reads whose union is exactly what `git add -A` would stage: the
+# index, the tracked-but-unstaged worktree, and untracked files. Each emits a
+# bare path per line, so `_filter_governed_paths` consumes all three with one
+# scope test — `git status --porcelain` would pack a status prefix, ` -> ` rename
+# arrows, and `core.quotePath` escaping into one stream and buy three parsing
+# hazards for a single call saved.
+_SWEEP_SCOPE_PROBES: tuple[tuple[str, ...], ...] = (
+    ("diff", "--cached", "--name-only"),
+    ("diff", "--name-only"),
+    ("ls-files", "--others", "--exclude-standard"),
+)
 
-    Fails **open** on a git error: this guard defends against an uncommon
-    interrupted-commit state, and failing closed on an unreadable index would
-    strand every sync in a repo it cannot inspect.
+
+def _sweep_governed_paths(project_root: Path) -> list[str]:
+    """Return the `src/`/`tests/` paths `git add -A` would stage.
+
+    Reads what is *about to be* staged, not what is already staged. The
+    narrower index-only predicate shipped under GHI #708 and defended only the
+    aborted-commit cause; an ordinary dirty worktree — the premise of the
+    `--auto-add` flag this guard sits inside — walked past it, and `57bd15f91`
+    swept six governed files eighteen days later.
+
+    Fails **open** on a git error from any probe, preserving GHI #708's ratified
+    tradeoff: failing closed on an unreadable worktree would strand every sync
+    in a repo the guard cannot inspect.
     """
-    rc, out, _err = git_cmd(project_root, "diff", "--cached", "--name-only")
-    if rc != 0:
-        return []
-    return _filter_governed_staged(out.splitlines())
+    names: list[str] = []
+    for probe in _SWEEP_SCOPE_PROBES:
+        rc, out, _err = git_cmd(project_root, *probe)
+        if rc != 0:
+            return []
+        names.extend(out.splitlines())
+    return _filter_governed_paths(names)
 
 
-def _sweep_guard_message(staged: list[str]) -> str:
+def _sweep_guard_message(governed: list[str]) -> str:
     """Three-part recovery prose per `.gzkit/rules/guardrail-feedback-prose.md`."""
-    listed = "\n".join(f"    {path}" for path in staged)
+    listed = "\n".join(f"    {path}" for path in governed)
     return (
-        "Refusing `git add -A`: the index already holds staged changes in "
+        "Refusing `git add -A`: the sweep would stage changes in "
         f"trailer-governed scope:\n{listed}\n"
-        "This is the signature of a commit that aborted — a non-zero pre-commit "
-        "hook is the usual cause — leaving its work staged. Sweeping it now would "
-        "record it under the sync ceremony's `Task: TASK-gz-git-sync` trailer, but "
-        "`.gzkit/rules/tests.md` § TASK-Driven Workflow scopes the mandatory `Task:` "
-        "trailer to exactly `src/**` and `tests/**`: 'Ceremony: and "
-        "Eval-feedback-source: no longer substitute for Task: on src/tests scope'. "
-        "`gz validate --commit-trailers` would still exit 0, so the mis-attribution "
-        "is invisible to enforcement (GHI #708).\n"
-        "Next step: commit the staged work under its own message — "
+        "`gz git-sync` commits under `chore: … (gz git-sync)` with "
+        "`Task: TASK-gz-git-sync`, but `.gzkit/rules/tests.md` § TASK-Driven "
+        "Workflow scopes the mandatory `Task:` trailer to exactly `src/**` and "
+        "`tests/**`: 'Ceremony: and Eval-feedback-source: no longer substitute "
+        "for Task: on src/tests scope'. `gz validate --commit-trailers` would "
+        "still exit 0, so the mis-attribution is invisible to enforcement — and "
+        "`git log --grep='^fix('`, the precedent query AGENTS.md § Defect-fix "
+        "routing prescribes for its own routing decision, cannot see the result "
+        "(GHI #708).\n"
+        "Next step: commit the governed work under its own message — "
         "`git commit -m 'fix(<scope>): <summary> (GHI #N)'` with a `Task:` trailer, "
         "confirming it succeeded — then re-run `gz git-sync --apply`."
     )
@@ -577,9 +607,9 @@ def _execute_git_sync(
         return executed
 
     if dirty and auto_add:
-        staged_governed = _staged_governed_paths(project_root)
-        if staged_governed:
-            blockers.append(_sweep_guard_message(staged_governed))
+        governed = _sweep_governed_paths(project_root)
+        if governed:
+            blockers.append(_sweep_guard_message(governed))
             return executed
         rc_add, _out_add, err_add = git_cmd(project_root, "add", "-A")
         if rc_add == 0:

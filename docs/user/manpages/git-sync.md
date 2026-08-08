@@ -53,6 +53,49 @@ unsynced repository state.
 
 ---
 
+## Governed-scope sweep guard
+
+The ceremony commits under an auto-generated `chore: … (gz git-sync)` subject
+carrying `Task: TASK-gz-git-sync`. That attribution is correct for what the
+ceremony produces — generated mirrors, `.gzkit/` state, the ledger — and wrong
+for `src/**` / `tests/**` work, which
+[`.gzkit/rules/tests.md` § TASK-Driven Workflow](../../../.gzkit/rules/tests.md)
+scopes a real `Task:` trailer to.
+
+So before `git add -A`, sync reads the three sets that sweep would stage — the
+index, tracked-but-unstaged changes, and untracked files — and **refuses** if any
+path lands in `src/` or `tests/`. Scope is exactly those two roots: guarding the
+generated surfaces would disarm the verb rather than defend it. The guard fails
+**open** on a git error, so an unreadable worktree never strands a sync.
+
+Recovery is what the message says: commit the governed work under its own typed
+subject, then re-run sync.
+
+```console
+$ uv run gz git-sync --apply
+Git sync execution
+  Branch: main
+  Remote: origin
+  ahead=0 behind=0 diverged=False dirty=True
+  Actions:
+    - git add -A
+    - git fetch --prune origin
+    - git push origin main
+  Blockers:
+    - Refusing `git add -A`: the sweep would stage changes in trailer-governed
+scope:
+    src/gzkit/commands/sync.py
+    tests/commands/test_sync_sweep_guard.py
+...
+Next step: commit the governed work under its own message — `git commit -m
+'fix(<scope>): <summary> (GHI #N)'` with a `Task:` trailer, confirming it
+succeeded — then re-run `gz git-sync --apply`.
+```
+
+Exit code `1`; nothing is staged, committed, or pushed.
+
+---
+
 ## Examples
 
 ```bash
@@ -60,5 +103,9 @@ unsynced repository state.
 gz git-sync
 
 # Full ritual with guardrails
+gz git-sync --apply --lint --test
+
+# Governed work present — commit it first, then sync the ceremony surfaces
+git commit -m 'fix(sync): <summary> (GHI #N)'
 gz git-sync --apply --lint --test
 ```
