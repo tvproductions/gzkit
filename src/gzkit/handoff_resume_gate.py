@@ -251,7 +251,22 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
 #: here means the head was matched by something that should not have been. Trusting
 #: this guard AS the predicate is what admitted `find` — whose write primitives
 #: (`-fprint`, `-fls`, `-fprintf`) were never in this set — for three releases.
-_MUTATING_FLAGS: frozenset[str] = frozenset({"-i", "--in-place", "-delete", "-exec", "--fix"})
+#:
+#: That premise is also the membership test for THIS set, and it is why `-i` was
+#: removed (2026-08-08). `-i` means in-place for `sed` and `perl` — both excluded
+#: by the predicate, both refused at the HEAD before any flag is read — while for
+#: `grep`, `rg`, and `git log` it means case-insensitive, an ordinary read. So the
+#: entry could not reach the verbs it was written for and blocked only the ones it
+#: was not: `grep -rn -i "skill" <file>` was refused mid-resume while the same grep
+#: without `-i` was permitted. A flag an admitted verb can LEGALLY carry falsifies
+#: the premise above and does not belong here. This is the `find` miss mirrored —
+#: there the guard was trusted to cover a verb whose writes it could not see, here
+#: it fired for a verb that was not present. Both read the flag set as the predicate.
+#:
+#: Membership test, stated: a flag belongs here only when some verb ADMITTED by
+#: `_PERMITTED_BASH` could carry it to perform a write. Judge a candidate against
+#: that, never against the write meaning it happens to have for some excluded verb.
+_MUTATING_FLAGS: frozenset[str] = frozenset({"--in-place", "-delete", "-exec", "--fix"})
 
 #: Shell control operators that make a command compound. `shlex` with
 #: ``punctuation_chars=True`` emits each as its own token, so a metacharacter

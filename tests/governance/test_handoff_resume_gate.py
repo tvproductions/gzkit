@@ -725,6 +725,60 @@ class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
 
+    def test_case_insensitive_search_is_a_read(self) -> None:
+        """`-i` is a write flag only for verbs this gate already excludes.
+
+        Dogfooding regression (2026-08-08): `grep -rn -i "skill" <file>` was
+        refused mid-resume while the identical grep without `-i` was permitted.
+        `_MUTATING_FLAGS` carried `-i` for its `sed`/`perl` in-place meaning —
+        but the membership predicate (read-only BY CONSTRUCTION) already excludes
+        every verb for which `-i` means in-place, and `sed -i` is refused at the
+        HEAD, never at the flag. What remained was a guard that could not reach
+        the verbs it was written for while blocking the two admitted verbs where
+        `-i` means case-insensitive.
+
+        This is the `find` over-grant mirrored: there, the guard was trusted to
+        cover a verb whose writes it could not see; here, it fired for a verb
+        that was not there. Both are the flag set being read as the predicate.
+
+        The guard's own docstring states the premise this test pins — "every verb
+        in `_PERMITTED_BASH` is read-only by construction, so nothing admitted can
+        legally carry one of these". A flag that an admitted verb DOES legally
+        carry falsifies that premise and does not belong in the set.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                'grep -rn -i "skill" docs/governance/advisory-rules-audit.md',
+                "grep -i pattern file",
+                "rg -i foo src/",
+                "git log -i --grep='^fix('",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(
+                        self._verdict(base, command).blocked,
+                        f"{command!r} is a case-insensitive READ and must be permitted",
+                    )
+
+    def test_in_place_edit_stays_blocked_at_the_head(self) -> None:
+        """Removing `-i` from the flag guard does not admit any in-place editor.
+
+        The companion to `test_case_insensitive_search_is_a_read`: it would be a
+        real weakening if `-i`'s removal let an in-place edit through. It cannot,
+        because every verb that HAS an in-place form fails the membership
+        predicate first — the flag guard was never what stopped them.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in ("sed -i s/a/b/ f", "perl -i -pe s/a/b/ f", "ruff check . --fix"):
+                with self.subTest(command=command):
+                    self.assertTrue(
+                        self._verdict(base, command).blocked,
+                        f"{command!r} edits in place and must stay blocked",
+                    )
+
     def test_branch_sync_claims_are_verifiable(self) -> None:
         """An "origin/main in sync" claim needs a counting instrument.
 
