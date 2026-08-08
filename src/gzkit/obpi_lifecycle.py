@@ -131,8 +131,51 @@ def parked_at(events: Iterable[Mapping[str, Any]], pool_id: str) -> list[tuple[s
     return [(obpi_id, parent) for obpi_id, parent in origins.items() if parked.get(obpi_id, False)]
 
 
+def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
+    """Fold ``(old_id, new_id)`` renames temporally into ``id -> current id``.
+
+    The single definition of *where is this artifact now*. Callers supply their
+    own event-shape extraction and get identical semantics, so the two readers
+    of this question cannot drift apart again.
+
+    For each rename ``A -> B`` in temporal order: repoint every key already
+    resolving to A's current target onto B, then map A itself to B. Propagating
+    is what makes a **cycle** resolve correctly — on ``A -> B -> A`` the second
+    hop repoints B *and* A to A, so both land where the artifact actually sits.
+
+    A flat last-write-wins dict cannot do this: it stores ``{A: B, B: A}`` and
+    leaves the reader to walk it, which either loops or must stop early, and
+    stopping early is stopping one hop short of the answer. That was the shape
+    GHI #557 removed from :class:`~gzkit.ledger.Ledger` — and the shape that
+    survived here, unnoticed, because nothing compared the two.
+
+    Unrenamed ids are **absent** rather than self-mapped: the result is a pure
+    delta, and the caller supplies the identity default.
+    """
+    canonical: dict[str, str] = {}
+    for old_id, new_id in pairs:
+        if not old_id or not new_id or old_id == new_id:
+            continue
+        previous = canonical.get(old_id, old_id)
+        if previous != new_id:
+            for key, target in canonical.items():
+                if target == previous:
+                    canonical[key] = new_id
+        canonical[old_id] = new_id
+    return canonical
+
+
+def rename_events(events: Iterable[Mapping[str, Any]]) -> list[tuple[str, str]]:
+    """Extract ``(old_id, new_id)`` pairs from mapping-shaped ledger events."""
+    return [
+        (str(event.get("id", "")), _field(event, "new_id"))
+        for event in events
+        if _event_type(event) == "artifact_renamed"
+    ]
+
+
 def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -> str:
-    """Follow ``artifact_renamed`` events to the terminal id for ``artifact_id``.
+    """Resolve ``artifact_id`` to the id it currently carries.
 
     An ``obpi_created`` record names whatever its parent was called that day.
     Promotion, demotion, and slug corrections all rename ADRs, so a parent id
@@ -140,23 +183,10 @@ def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -
     separates *renamed* from *missing* — conflating the two is what made 20 of
     this census's findings false.
 
-    Cycle-safe: a malformed chain resolves to its last unvisited id rather than
-    looping (a validator that hangs is a validator nobody runs).
+    A shape adapter over :func:`fold_renames`; the semantics live there, shared
+    with :meth:`gzkit.ledger.Ledger._build_rename_map`.
     """
-    renames: dict[str, str] = {}
-    for event in events:
-        if _event_type(event) != "artifact_renamed":
-            continue
-        new_id = _field(event, "new_id")
-        old_id = str(event.get("id", ""))
-        if old_id and new_id:
-            renames[old_id] = new_id
-    current = artifact_id
-    seen = {current}
-    while current in renames and renames[current] not in seen:
-        current = renames[current]
-        seen.add(current)
-    return current
+    return fold_renames(rename_events(events)).get(artifact_id, artifact_id)
 
 
 def park_coherence_violations(

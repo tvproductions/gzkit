@@ -12,6 +12,8 @@ from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
+from gzkit.obpi_lifecycle import fold_renames
+
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
 _OBPI_BARE_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-.*)?$")
 
@@ -378,27 +380,23 @@ class Ledger:
     def _build_rename_map(events: list[LedgerEvent]) -> dict[str, str]:
         """Fold rename events temporally to map every observed ID to its latest canonical form.
 
-        For each rename A→B in temporal order: propagate every prior key whose
-        canonical pointer matches A's current canonical onto B, then map A
-        itself to B. This correctly handles cyclical chains (e.g. promote→
-        demote-back) where a flat last-write-wins dict would leave both
-        directions in the map and surface orphan entries in the artifact
-        graph (GHI #557).
+        Extraction only — the fold itself is :func:`gzkit.obpi_lifecycle.fold_renames`,
+        shared with :func:`~gzkit.obpi_lifecycle.rename_chain_target` so the two
+        readers of "where is this artifact now" cannot answer differently. They
+        did: GHI #557 repaired the cycle handling here and never knew the second
+        implementation existed, so a promote→demote round trip resolved to the
+        pre-demotion id there for a year while resolving correctly here.
+
+        Pairs are extracted from the typed events directly rather than via
+        ``model_dump()`` — this runs on every ``canonicalize_id`` and gate-status
+        read, so the whole event list is not re-serialized per call.
         """
-        canonical: dict[str, str] = {}
-        for event in events:
-            if event.event != "artifact_renamed":
-                continue
-            new_id = event.extra.get("new_id")
-            if not isinstance(new_id, str) or not new_id or new_id == event.id:
-                continue
-            old_canonical = canonical.get(event.id, event.id)
-            if old_canonical != new_id:
-                for key in canonical:
-                    if canonical[key] == old_canonical:
-                        canonical[key] = new_id
-            canonical[event.id] = new_id
-        return canonical
+        return fold_renames(
+            (event.id, new_id)
+            for event in events
+            if event.event == "artifact_renamed"
+            and isinstance(new_id := event.extra.get("new_id"), str)
+        )
 
     @staticmethod
     def _canonicalize_with_map(artifact_id: str, rename_map: dict[str, str]) -> str:
