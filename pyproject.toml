@@ -121,6 +121,22 @@ select = [
     # be noticed while the rule was off. Adopted 2026-08-08 (operator ruling) on
     # that observed drift, which is the evidence the promotion freeze requires.
     "BLE",
+    # flake8-bandit, ONE code: S602 (subprocess-popen-with-shell-equals-true) —
+    # the witness advisory-scorecard row 44 has claimed since it was written
+    # ("No `shell=True` in subprocess", **Mechanical**, "ruff S602/S603"). `S`
+    # was never in this list, so the row was the fifth false-Mechanical of the
+    # class row 18 named, and the single `shell=True` site in the package
+    # (`governance/stage4_evidence.py`) already carried a justified
+    # `# noqa: S602` that suppressed nothing because the rule never ran — the
+    # `# noqa: BLE0001` failure one rule over. Enabling it costs zero fixes.
+    #
+    # The code is named individually rather than selecting `S`, and row 44's
+    # other citation is dropped: S603 is `subprocess-without-shell-equals-true`,
+    # which fires on subprocess calls that do NOT use a shell — the near-inverse
+    # of the clause it was cited for, with 35 live hits. `S` wholesale adds 80
+    # findings from rules no gzkit rule declares. Adopted 2026-08-08 on that
+    # observed drift, which is the evidence the promotion freeze requires.
+    "S602",
 ]
 ignore = [
     # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every

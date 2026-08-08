@@ -577,6 +577,50 @@ def _build_advisory_scorecard_counts() -> Path:
     return root
 
 
+def _build_advisory_scorecard_ruff_reachability() -> Path:
+    """Violation: a **Mechanical** row citing a ruff code ruff would not run.
+
+    The fixture plants all three poles, because a control that only plants an
+    unreachable citation passes equally well against an audit that flags every
+    row naming ruff:
+
+    * Row 1 is **Mechanical** and cites a SELECTED code — must NOT be flagged.
+    * Row 2 is **Mechanical** and cites an unselected one — the violation, and
+      row 44's exact shape before `S602` was added to the select list.
+    * Row 3 is **Judgment** and cites the same unselected code — must NOT be
+      flagged. Naming a code you are not claiming to enforce is the honest
+      disclosure this whole family exists to produce (`pythonic.md` § Imports
+      does it with PLC0415's measured violations); a control without this pole
+      cannot tell the score gate from a keyword scan.
+
+    A `pyproject.toml` must be planted: with no readable ruff configuration
+    `_ruff_selection` returns None and the arm reports nothing, which would make
+    an otherwise-correct fixture a hollow control.
+    """
+    root = _mkroot("advisory-scorecard-ruff-reachability")
+    _write(
+        root / ".gzkit" / "rules" / "sample-rule.md",
+        "<!-- rule-version: 1.2.3 -->\n\n"
+        "> **Rule version:** `1.2.3` — fixture.\n\n"
+        "## Invariant\n\n**Something binding.**\n",
+    )
+    _write(root / "pyproject.toml", '[tool.ruff.lint]\nselect = ["E", "F", "BLE"]\n')
+    _write(
+        root / "docs" / "governance" / "advisory-rules-audit.md",
+        "# Advisory Rules Audit\n\n"
+        "## Coverage Ledger\n\n"
+        "| Rule file | Scored at rule-version |\n|---|---|\n"
+        "| `sample-rule.md` | `1.2.3` |\n\n"
+        "## Scorecard\n\n"
+        "### Sample Rule (`.gzkit/rules/sample-rule.md`)\n\n"
+        "| # | Rule | Score | Notes |\n|---|------|-------|-------|\n"
+        "| 1 | No bare except | **Mechanical** | enforced by ruff BLE001 |\n"
+        "| 2 | No shell=True | **Mechanical** | enforced by ruff S602 |\n"
+        "| 3 | No lazy imports | **Judgment** | ruff PLC0415 is not enabled |\n",
+    )
+    return root
+
+
 def _build_adr_taxonomy() -> Path:
     """Violation: a `kind: foundation` ADR carrying a feature semver.
 
@@ -1118,6 +1162,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_advisory_scorecard_counts,
         _ep._ep_advisory_scorecard,
         "Mechanical says 9, rows show 1",
+    ),
+    (
+        "advisory-scorecard-ruff-reachability",
+        _build_advisory_scorecard_ruff_reachability,
+        _ep._ep_advisory_scorecard,
+        "row 2 is scored **Mechanical** and cites ruff S602",
     ),
     (
         "validate-default-scopes",

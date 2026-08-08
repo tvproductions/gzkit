@@ -202,5 +202,110 @@ class SummaryDriftThroughTheAudit(unittest.TestCase):
         self.assertEqual(self._run("| **Judgment** | 1 | 100% |"), [])
 
 
+_PYPROJECT = """[tool.ruff.lint]
+select = ["E", "F", "BLE"]
+ignore = ["D203"]
+"""
+
+
+class MechanicalRowsCitingRuffCodes(unittest.TestCase):
+    """A **Mechanical** row naming a ruff code must name one that actually runs.
+
+    The Movement C rules arm found four rows asserting enforcement that did not
+    exist, and named the class: *a false Mechanical row is strictly worse than a
+    Promotable one*. Promotable is honest -- it says no witness yet. A Mechanical
+    row naming a lint rule that is not enabled reports green while blind, and the
+    family-closure criterion counts only Promotable, so driving that count to zero
+    leaves every false row untouched and makes the number look better.
+
+    Row 18 claimed "ruff BLE001 enforces" with `BLE` absent from
+    `[tool.ruff.lint] select`; six live violations sat unreported, one behind a
+    `# noqa: BLE0001` typo that suppressed nothing and *could not be noticed while
+    the rule was off*. All six wrong rows were found by opening the enforcement
+    surface by hand, because nothing in gzkit compares a row's claim against the
+    thing it names.
+
+    This is the narrow tractable arm of that gap: a row cannot claim a ruff code
+    that ruff would not run. It clears the § Recommended promotion order freeze on
+    named observed drift, not on a backlog.
+    """
+
+    def _run(self, row: str, *, pyproject: str | None = _PYPROJECT) -> list[str]:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rules = root / ".gzkit" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text(_RULE_BODY, encoding="utf-8")
+            doc = root / "docs" / "governance"
+            doc.mkdir(parents=True)
+            (doc / "advisory-rules-audit.md").write_text(_scorecard(row), encoding="utf-8")
+            if pyproject is not None:
+                (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+            return [e.message for e in audit_advisory_scorecard(root)]
+
+    def test_a_mechanical_row_citing_an_unselected_code_fails(self) -> None:
+        """Row 18's exact shape, before `BLE` was added to the select list."""
+        messages = self._run("| 1 | No bare except | **Mechanical** | ruff PLC0415 enforces |")
+        self.assertTrue(any("PLC0415" in m for m in messages), messages)
+
+    def test_a_mechanical_row_citing_a_selected_code_is_clean(self) -> None:
+        self.assertEqual(
+            self._run("| 1 | No bare except | **Mechanical** | ruff BLE001 enforces |"),
+            [],
+        )
+
+    def test_a_selected_code_that_is_then_ignored_is_not_reachable(self) -> None:
+        """`select = ["D"]` plus `ignore = ["D203"]` means D203 does not run.
+
+        Reachability is the conjunction, not the select list alone. A row could
+        otherwise cite a code whose family is selected while the code itself is
+        switched off one table down -- the same report-green-while-blind state,
+        arrived at from the other direction.
+        """
+        messages = self._run("| 1 | Docstring shape | **Mechanical** | ruff D203 enforces |")
+        self.assertTrue(any("D203" in m for m in messages), messages)
+
+    def test_a_judgment_row_may_name_a_disabled_code(self) -> None:
+        """Naming a code you are NOT claiming to enforce is the honest posture.
+
+        `.gzkit/rules/pythonic.md` § Imports records "PLC0415 is not enabled" with
+        its 138-violation measurement, and scorecard row 23 carries that as
+        **Judgment**. Flagging it would punish the disclosure this whole family
+        exists to produce -- the check must fire on the CLAIM, never on the code.
+        """
+        self.assertEqual(
+            self._run("| 1 | No lazy imports | **Judgment** | ruff PLC0415 is not enabled |"),
+            [],
+        )
+
+    def test_a_non_ruff_code_shape_is_not_read_as_a_ruff_code(self) -> None:
+        """`MD013` is markdownlint. Without the ruff anchor it is not this scope's.
+
+        Extraction is anchored on the row mentioning ruff at all, because the
+        bare code shape (`[A-Z]{1,4}` + digits) is shared by markdownlint,
+        pydocstyle and others. An unanchored scan would invent findings against
+        tools this project configures elsewhere.
+        """
+        self.assertEqual(
+            self._run("| 1 | Line length | **Mechanical** | markdownlint MD013 configured |"),
+            [],
+        )
+
+    def test_an_unreadable_ruff_config_reports_nothing(self) -> None:
+        """No pyproject means no reachability answer -- and no invented one.
+
+        Silence here is correct rather than lenient: the check's whole subject is
+        whether a claim matches the config, so with no config there is no
+        disagreement to report. `--distribution` covers a missing pyproject.
+        """
+        self.assertEqual(
+            self._run(
+                "| 1 | No bare except | **Mechanical** | ruff PLC0415 enforces |",
+                pyproject=None,
+            ),
+            [],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

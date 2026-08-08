@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+import tomllib
 from collections import Counter
 from pathlib import Path
 
@@ -241,6 +242,138 @@ def _summary_drift_errors(scorecard_text: str) -> list[ValidationError]:
     ]
 
 
+#: A ruff diagnostic code as it appears in prose: ``BLE001``, ``PLC0415``, ``F401``.
+#: The shape is shared with markdownlint (``MD013``) and others, which is why
+#: extraction is anchored on the row naming ruff — see
+#: :func:`_unreachable_ruff_claim_errors`.
+_RUFF_CODE_RE = re.compile(r"\b([A-Z]{1,4}\d{3,4})\b")
+
+
+def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
+    """Return ``(select, ignore)`` from ``[tool.ruff.lint]``, or None if unreadable.
+
+    None means "no answer available", never "clean": with no parseable config
+    there is no configuration for a row's claim to disagree with, so the caller
+    reports nothing rather than inventing a verdict from a default it guessed.
+    """
+    path = project_root / "pyproject.toml"
+    if not path.is_file():
+        return None
+    try:
+        payload = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (tomllib.TOMLDecodeError, OSError, UnicodeDecodeError):
+        return None
+    lint = payload.get("tool", {}).get("ruff", {}).get("lint", {})
+    select = lint.get("select")
+    if not isinstance(select, list):
+        return None
+    ignore = lint.get("ignore", [])
+    return (
+        [s for s in select if isinstance(s, str)],
+        [i for i in ignore if isinstance(i, str)] if isinstance(ignore, list) else [],
+    )
+
+
+def _ruff_code_is_reachable(code: str, select: list[str], ignore: list[str]) -> bool:
+    """Report whether ruff runs *code*: some ``select`` prefixes it, no ``ignore`` does.
+
+    Reachability is the *conjunction*. Reading ``select`` alone would pass a code
+    whose family is selected while the code itself is switched off one table
+    down — the same report-green-while-blind state row 18 was in, reached from
+    the other direction.
+    """
+    if any(code.startswith(entry) for entry in ignore):
+        return False
+    return any(entry == "ALL" or code.startswith(entry) for entry in select)
+
+
+def _unreachable_ruff_claim_errors(
+    scorecard_text: str, project_root: Path
+) -> list[ValidationError]:
+    """Fail when a **Mechanical** row cites a ruff code ruff would not run.
+
+    **A false Mechanical row is strictly worse than a Promotable one, and the
+    Movement C family-closure criterion counts only the latter.** Promotable is
+    honest — it says no witness yet. A Mechanical row naming a lint rule that is
+    not enabled reports green while blind, and is invisible to the criterion, so
+    driving Promotable to zero leaves every false row untouched while making the
+    number look better. Four such rows shipped: rows 18 and 23 named ruff families
+    (``BLE``, ``PL``) absent from ``select``, so both ran nowhere — six live blind
+    excepts sat unreported, one behind a ``# noqa: BLE0001`` typo that suppressed
+    nothing and *could not be noticed while the rule was off*.
+
+    All six wrong rows found in that pass were found by opening the enforcement
+    surface by hand. Nothing compared a row's claim against the thing it named;
+    this is the narrow, mechanically decidable arm of that gap.
+
+    Two boundaries keep it a truth check rather than a keyword scan:
+
+    * **The score gates it.** Only a **Mechanical** row is asserting enforcement.
+      A **Judgment** row naming a disabled code is *disclosing* it — exactly what
+      ``.gzkit/rules/pythonic.md`` § Imports does with PLC0415's 138 measured
+      violations — and flagging that would punish the disclosure this family
+      exists to produce.
+    * **The ruff anchor gates extraction.** The bare code shape is shared with
+      markdownlint and pydocstyle, so a row is read for codes only when it names
+      ruff at all. An unanchored scan would invent findings against tools
+      configured elsewhere.
+
+    Two limits, stated so a green is not read as total:
+
+    * **Reachability is not existence.** ``BLE0001`` (the typo row 18 carried) is
+      reachable under ``select = ["BLE"]`` because the prefix matches, so this
+      check would pass it. Proving a code *exists* means asking ruff, which is a
+      subprocess this validator does not own.
+    * **A Mechanical row cannot narrate a disabled code by its bare token.** The
+      check reads every code in the row and cannot tell a witness citation from a
+      disclaimer, so "we also considered X, which is off" reads as a false claim.
+      That constraint is accepted rather than worked around: a Mechanical row's
+      job is to name its witness, and commentary about non-witnesses belongs in
+      the rule's own text or in a Judgment row. Name the ruff *rule* instead of
+      the code when narrating one — row 44 does, and it is the clearer prose.
+    """
+    selection = _ruff_selection(project_root)
+    if selection is None:
+        return []
+    select, ignore = selection
+    errors: list[ValidationError] = []
+    for line in _scorecard_section(scorecard_text).splitlines():
+        if not _SCORED_ROW_RE.match(line):
+            continue
+        cells = _CELL_SPLIT_RE.split(line)
+        if len(cells) < 5 or "**Mechanical**" not in cells[3]:
+            continue
+        claim = "|".join(cells[2:])
+        if "ruff" not in claim.lower():
+            continue
+        cited = set(_RUFF_CODE_RE.findall(claim))
+        unreachable = sorted(c for c in cited if not _ruff_code_is_reachable(c, select, ignore))
+        if not unreachable:
+            continue
+        row_id = cells[1].strip()
+        errors.append(
+            ValidationError(
+                type="advisory_scorecard",
+                artifact=_SCORECARD_REL,
+                message=(
+                    f"Scorecard row {row_id} is scored **Mechanical** and cites ruff "
+                    f"{', '.join(unreachable)}, which ruff would not run under the current "
+                    "`tool.ruff.lint` configuration in `pyproject.toml` — no `select` entry "
+                    "reaches the code, or an `ignore` entry switches it off. A Mechanical row "
+                    "claims a fail-closed witness exists; when the named rule runs nowhere the "
+                    "row reports green while blind, which is strictly worse than a Promotable "
+                    "row that honestly says there is no witness yet (and invisible to the "
+                    "family-closure criterion, which counts only Promotable). Either add the "
+                    "code to the `select` list under `tool.ruff.lint` and fix the violations it "
+                    f"surfaces, or re-score row {row_id} to the posture that is actually true "
+                    f"and state it in the rule's own text — see `{_SCORECARD_REL}` row 18 for "
+                    "the worked correction."
+                ),
+            )
+        )
+    return errors
+
+
 def _grandfathered_rules(project_root: Path) -> dict[str, str]:
     """Return ``{rule filename: version at which its coverage debt froze}``.
 
@@ -304,6 +437,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     grandfathered = _grandfathered_rules(project_root)
     errors: list[ValidationError] = []
     errors.extend(_summary_drift_errors(text))
+    errors.extend(_unreachable_ruff_claim_errors(text, project_root))
     for rule_md in canonical_rule_files(rules_root):
         artifact = rule_md.relative_to(project_root).as_posix()
         current = rule_version_of(rule_md.read_text(encoding="utf-8", errors="replace"))
