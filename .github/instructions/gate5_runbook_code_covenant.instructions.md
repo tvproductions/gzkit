@@ -5,9 +5,9 @@ applyTo: "docs/**, src/gzkit/**"
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
-<!-- rule-version: 0.2.1 -->
+<!-- rule-version: 0.3.0 -->
 
-> **Rule version:** `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.36 — attestation is universal and the validation bundle must cite ARB-wrapped invocations (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd). Binding rules unchanged.
+> **Rule version:** `0.3.0` — Movement C family closure, rules arm: the placeholder-output-examples prohibition now states its advisory posture in its own text, with the measurement behind it. Scored **Promotable** on a proposed regex scan; the probe that would have justified building it found zero placeholder tokens in scope and eight legitimate elision lines that a scan would have demanded be edited. Re-scored `Judgment` at `docs/governance/advisory-rules-audit.md` row 49; re-scoring without this text edit would have been laundering (operator ruling 2026-08-08). Prior `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.36 — attestation is universal and the validation bundle must cite ARB-wrapped invocations (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd). Binding rules unchanged.
 
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 
@@ -37,7 +37,7 @@ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 
 ## Do Not
 
-- Do not leave placeholder output examples.
+- Do not leave placeholder output examples. **(Advisory — no mechanical witness, and none is planned.)** The scorecard carried this as a promotion candidate reading *"could regex-scan for `<…>` / `TODO` placeholders in runbook/manpages"*. Measured 2026-08-08 across `docs/user/manpages/**`, `docs/user/runbook.md` and `docs/governance/governance_runbook.md`: **zero** `TODO` / `TBD` / `FIXME` / `XXX` / `<output>` tokens. The eight hits the probe returned were all `...` elision lines inside genuine captured output — correct prose a scan would have demanded be edited. `<…>` is unusable as a signal because manpage usage syntax is built from it (`gz obpi status <OBPI-ID>`). With no observed drift, the § Recommended promotion order freeze in `docs/governance/advisory-rules-audit.md` (2026-06-08, opt-in-with-justification) says do not add the check. Reclassify on a named instance of a placeholder example that actually shipped.
 - Do not update code without docs when command output changes.
 - Do not declare completion without explicit human attestation. Attestation is **universal** — required for every OBPI completion regardless of kind, lane, or sensitivity (ADR-0.0.36). The prior "for heavy/foundation scope" qualifier described branching collapsed at ADR-0.0.36 and is retired.
 - Do not cite bare `uv run gz lint` / `uv run mkdocs build --strict` as attestation evidence — they produce no `arb-*` receipt.

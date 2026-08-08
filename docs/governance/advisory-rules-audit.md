@@ -35,6 +35,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
+| `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.1.0` |
 | `tests.md` | `0.15.0` |
@@ -173,8 +174,10 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 48 | Docs update when command output changes | **Judgment** | Correlation between code change and doc change is not reliably mechanizable |
-| 49 | Do not leave placeholder output examples | **Promotable** | Could regex-scan for `<…>` / `TODO` placeholders in runbook/manpages |
-| 50 | Heavy/foundation lane requires explicit human attestation before completion | **Mechanical** | Enforced by `gz closeout` pipeline (rule 15 in this scorecard) |
+| 49 | Do not leave placeholder output examples | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm.** The proposed scan was probed before being built: **zero** `TODO`/`TBD`/`FIXME`/`XXX`/`<output>` tokens across `docs/user/manpages/**`, `docs/user/runbook.md`, `docs/governance/governance_runbook.md`. All eight hits were `...` elision inside genuine captured output — correct prose the scan would have demanded be edited. `<…>` cannot serve as the signal because manpage usage syntax is built from it (`gz obpi status <OBPI-ID>`). Whether an example is a *placeholder* or a real capture is a reading of intent, not a token match. |
+| 50 | Do not declare completion without explicit human attestation. | **Mechanical** | Enforced unconditionally by `_requires_human_obpi_attestation` (ADR-0.0.36) and the `gz closeout` pipeline (row 15). **Row text corrected 2026-08-08:** it read "Heavy/foundation lane requires explicit human attestation", which is the pre-ADR-0.0.36 branching the rule's own § Do Not explicitly retires — *"The prior 'for heavy/foundation scope' qualifier described branching collapsed at ADR-0.0.36 and is retired."* A scorecard row asserting a lane condition on a universal gate is the scorecard contradicting the rule it scores. |
+| 50a | Do not cite bare `uv run gz lint` / `uv run mkdocs build --strict` as attestation evidence — they produce no `arb-*` receipt. | **Mechanical** | Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; `gz arb validate` flags drift, and on Heavy lane / `foundation` kind a missing receipt ID is fail-closed — `gz adr emit-receipt` exits 3 before the attestation is recorded. Provenance resolves as of each receipt's own `timestamp_utc` via `RETIRED_STEP_COMMANDS`, so widening a canonical scope cannot retroactively invalidate sealed evidence. |
+| 50b | Three-layer documentation model — operator runbook, governance runbook, command docs | **Judgment** | A map of which surface owns which audience, not a checkable claim. It tells an author where a behavior change must land; whether the landing is *correct* is row 48, which is already Judgment for the same reason (correlating a code change to its doc change is not reliably mechanizable). |
 
 ### GitHub CLI Guardrails (`.gzkit/rules/gh-cli.md`)
 
@@ -343,14 +346,14 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 96 |
+| Score | Rows | % of 98 |
 |-------|-------|---|
-| **Mechanical** | 64 | 67% |
-| **Promotable** | 4 | 4% |
-| **Judgment** | 30 | 31% |
+| **Mechanical** | 65 | 66% |
+| **Promotable** | 3 | 3% |
+| **Judgment** | 32 | 33% |
 | **Ambiguous** | 0 | 0% |
 
-96 scored rows; the counts sum to 98 because rows 58 and 65 each score two
+98 scored rows; the counts sum to 100 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
 toward both. **There are zero `Ambiguous` rules** — the score is defined in the
 legend above and currently has no members.
