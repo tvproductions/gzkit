@@ -19,6 +19,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
+            [--status-writer-coverage]
             [--tautological-test-audit]
             [--closeout-proof] [--okf-conformance] [--ontology-purity]
             [--deprecated-verb-prescription]
@@ -1609,6 +1610,72 @@ gz validate --router-tables
 
 **Related:** ADR-0.27.0 / OBPI-0.27.0-03 (router-tables validator).
 
+### `--status-writer-coverage`
+
+Discovers every writer of a frontmatter `status:` key under `src/gzkit/**` and
+requires each to consult the single invariant monitor — or to carry a registered
+reason naming its scope.
+
+`ADR-0.31.0` § Decision item 4 declares *"A single invariant monitor. Every read
+or write to the artifact graph passes through one monitor."* GHI #668 routed
+every writer that existed at the time through that monitor and an independent
+audit confirmed the result COHERENT — but the routing was enforced by
+**convention**. Nothing discovered writers, so the next one could bypass the
+monitor and silently reintroduce the GHI #348 terminal-clobber class. This scope
+is that discovery (GHI #669).
+
+**What counts as a writer.** A call to `_upsert_frontmatter_value` or
+`rewrite_governed_keys_in_place` that reaches a `status:` scalar — either through
+a literal `"status"` argument, or through a `rewrite_governed_keys_in_place` call
+whose edits mapping is opaque. The opaque case is refused deliberately: the audit
+cannot prove such a mapping excludes `status`, and assuming the benign reading of
+an unprovable case is how a convention-only guard decays in the first place.
+
+**What discharges the obligation.** Referencing any sanctioned monitor inside the
+writing function:
+
+| Monitor | Role |
+|---|---|
+| `obpi_status_write_refusal` | the monitor itself — returns refusal prose or `None` |
+| `guarded_obpi_status_write` | wraps the monitor with the write |
+| `_should_refuse_rewrite` | the reconcile path's **stricter** gate — enforces the whole `CANONICAL_TRANSITIONS` table, which subsumes the terminal rule |
+
+Admitting the third is not a loophole: a superset of the monitor's refusals is a
+stronger guarantee, not a weaker one.
+
+**The register is a record, not an escape hatch.** A writer that legitimately
+does not consult the monitor — because it builds content without writing, or
+because it writes an ADR rather than an OBPI brief — is listed in
+`_REGISTERED_WRITERS` with a reason that must state its **scope**. Scope is
+exactly what was unrecorded in this audit's class of failure: GHI #607 shipped a
+gate whose reach nobody had written down and broke an adopter's build for two
+months. An empty reason is refused.
+
+**Inert entries fail too.** An entry no live call site needs exits 3. GHI #727
+found the sole `_DATACLASS_WAIVERS` entry exempting nothing, because its
+staleness predicate asked *does this class still exist* rather than *does it
+still need the exemption*. This scope asks the stronger question.
+
+**Usage:**
+
+```bash
+gz validate --status-writer-coverage
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every `status:` writer consults the monitor or carries a live registered reason | — |
+| 3 | A writer bypasses the monitor, a reason is empty, or a register entry is inert | Route the write through `guarded_obpi_status_write`; or consult `obpi_status_write_refusal` directly and supply your own consequence; or register the writer with a reason naming its scope in `src/gzkit/governance/trust_audits/status_writer_coverage.py` |
+
+Enrolled in `gz check` as the **Status writer coverage** step. Its teeth are
+proven by the `status-writer-coverage` live negative control, which plants a
+bypassing writer the audit must go red on.
+
+**Related:** ADR-0.31.0 Decision item 4 (the single-monitor thesis), GHI #348
+(the clobber class), GHI #668 (the routing this makes mechanical), GHI #669.
+
 ### `--req-kind-discipline`
 
 Enforces the ADR-0.0.59 REQ kind discipline: every REQ in an OBPI brief's `## Acceptance
@@ -1980,6 +2047,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--bullet-retention` | opt-in | Tier-scoped retention for every Mechanical/Promotable bullet in advisory-rules-audit.md: invariant-tier verbatim in per-turn surface; compressible-tier witnessed by a valid advisor-QC receipt + attestation (ADR-0.0.33-01; tier-scoped amendment OBPI-0.0.37-25) |
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
+| `--status-writer-coverage` | opt-in | Fail closed (exit 3) when a function under `src/gzkit/**` writes a frontmatter `status:` key without consulting the single invariant monitor and without a registered reason; also refuses inert register entries (ADR-0.31.0 Decision item 4, GHI #669) |
 | `--brief-command-shape` | opt-in | Fail closed (exit 3) when a brief Verification block contains non-shell-less commands (OBPI-0.0.63-07, GHI #550) |
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, layer-drift across channels, or obpi_id divergence on one task_id (ADR-0.0.64 / OBPI-04, GHI #653) |

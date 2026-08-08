@@ -235,6 +235,21 @@ def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     return _collect_errors(root, {})
 
 
+def _ep_status_writer_coverage(root: Path) -> list[ValidationError]:
+    """Return ONLY the planted-bypass findings, never the register's own noise.
+
+    The audit also reports inert register entries, and in a synthetic tree
+    EVERY real entry is inert — so an unfiltered control would go green on
+    findings that have nothing to do with the bypass it plants. A control that
+    can pass on the wrong evidence is not a control.
+    """
+    from gzkit.governance.trust_audits.status_writer_coverage import (  # noqa: PLC0415
+        audit_status_writer_coverage,
+    )
+
+    return [e for e in audit_status_writer_coverage(root) if "rogue_writer.py" in e.artifact]
+
+
 def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.taxonomy import audit_adr_status_fresh  # noqa: PLC0415
 

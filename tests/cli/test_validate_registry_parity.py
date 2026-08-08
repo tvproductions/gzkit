@@ -85,8 +85,20 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
 #   why the registry's "single source of validate dispatch" header was false. The
 #   hatch is still the honest home: the golden set is measured evidence of the
 #   pre-collapse runner dict, and these were never in it.
+#   status_writer_coverage — genuinely new (GHI #669), not merely newly
+#   registered. It audits that every `status:` writer under `src/gzkit/**`
+#   consults the single invariant monitor ADR-0.31.0 Decision item 4 declares.
+#   Explicit tier because it is a src/-scoped structural audit, like its
+#   neighbours, and it is `in_check` from the outset — a scope that discovers
+#   convention-only enforcement would be an odd thing to leave outside the gate.
 _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
-    {"persona_witness", "qc_binding", "fidelity_presence", "waiver_ratchet"}
+    {
+        "persona_witness",
+        "qc_binding",
+        "fidelity_presence",
+        "waiver_ratchet",
+        "status_writer_coverage",
+    }
 )
 
 _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(

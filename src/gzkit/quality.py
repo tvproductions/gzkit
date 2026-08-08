@@ -847,6 +847,20 @@ def run_req_kind_discipline_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --req-kind-discipline", cwd=project_root)
 
 
+def run_status_writer_coverage_audit(project_root: Path) -> QualityResult:
+    """Run the OBPI-status writer-coverage audit (GHI #669).
+
+    Fails closed (exit 3) when a function under ``src/gzkit/**`` writes a
+    frontmatter ``status:`` key without consulting the single invariant monitor
+    ADR-0.31.0 Decision item 4 declares, and without a registered reason.
+    Recovery: route the write through ``guarded_obpi_status_write``, or consult
+    ``obpi_status_write_refusal`` directly and supply your own consequence, or —
+    if the writer does not touch an OBPI brief — register it with a reason
+    naming its scope in ``trust_audits/status_writer_coverage.py``.
+    """
+    return run_command("uv run gz validate --status-writer-coverage", cwd=project_root)
+
+
 def run_insights_shape_audit(project_root: Path) -> QualityResult:
     """Run the agent-insights.jsonl record-shape audit (GHI #358).
 

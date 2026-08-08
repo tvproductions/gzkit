@@ -1098,6 +1098,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail closed (exit 3) on OBPI briefs with missing [kind] tags (ADR-0.0.59-02).",
     )
     p_validate.add_argument(
+        "--status-writer-coverage",
+        dest="check_status_writer_coverage",
+        action="store_true",
+        default=False,
+        help="Fail closed (exit 3) on a status: writer bypassing the monitor (GHI #669).",
+    )
+    p_validate.add_argument(
         "--ontology-purity",
         dest="check_ontology_purity",
         action="store_true",
@@ -1222,6 +1229,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_structure=a.check_brief_structure,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
+            check_status_writer_coverage=a.check_status_writer_coverage,
             check_ontology_purity=a.check_ontology_purity,
             check_brief_command_shape=a.check_brief_command_shape,
             check_tautological_test_audit=a.check_tautological_test_audit,

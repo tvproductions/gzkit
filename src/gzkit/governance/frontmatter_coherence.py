@@ -195,12 +195,53 @@ def obpi_status_is_terminal(status_term: str) -> bool:
     canonical transition. A lifecycle auto-fix must never silently move an OBPI
     out of one — that is the GHI #348 clobber class (GHI #668). Unmapped terms
     return ``False`` (not terminal), so legitimate non-terminal → completed
-    syncs are unaffected. This is the shared gate the reconcile chokepoint and
-    the ``closeout_form`` auto-fix path both consult, so one monitor governs
-    every governed-key writer (ADR-0.31.0 Decision item 4).
+    syncs are unaffected.
+
+    This is the RULE, not the monitor. Writers consult
+    :func:`obpi_status_write_refusal`, which owns the verdict and its recovery
+    prose. Until GHI #669 this docstring claimed to be *"the shared gate the
+    reconcile chokepoint and the closeout_form auto-fix path both consult"* —
+    the reconcile chokepoint never consulted it, enforcing the full
+    ``CANONICAL_TRANSITIONS`` table via :func:`_should_refuse_rewrite` instead.
+    A doctrine claim naming a consumer it did not have is the drift ADR-0.31.0
+    Decision item 4 exists to prevent, stated inside the function that was
+    supposed to embody it.
     """
     state = _map_vocab_to_obpi_state(status_term)
     return state is not None and OBPI_STATES[state].terminal
+
+
+def obpi_status_write_refusal(
+    *, brief_name: str, current_status: str, target_status: str
+) -> str | None:
+    """Rule on one OBPI-brief ``status:`` write — the single invariant monitor.
+
+    Returns three-part recovery prose when the write must be refused, or
+    ``None`` when it may proceed. ADR-0.31.0 Decision item 4 declares *"a
+    single invariant monitor"*; before GHI #669 the terminal-clobber verdict
+    was implemented twice — inside ``guarded_obpi_status_write`` and again
+    inline in ``gz obpi complete`` — so the declared property held by
+    convention. Two implementations of one rule drift silently; one drifts
+    visibly.
+
+    The verdict is shared; the CONSEQUENCE stays with the caller. A CLI verb
+    exits non-zero, a lifecycle auto-fix returns ``False`` and continues. That
+    seam is deliberate — collapsing consequence too would force every writer
+    into one failure mode.
+
+    ``gz validate --status-writer-coverage`` fails closed on any writer
+    under ``src/gzkit/**`` that reaches an OBPI brief's ``status:`` key without
+    routing through here or carrying a documented exemption.
+    """
+    if not obpi_status_is_terminal(current_status):
+        return None
+    return (
+        f"refused: {brief_name} carries terminal OBPI status '{current_status}' "
+        f"(no outgoing canonical transition); will not silently write it to "
+        f"'{target_status}' — that is the GHI #348 clobber class. Recover with an "
+        f"explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or "
+        f"correct the ledger event, then re-run."
+    )
 
 
 def _status_is_valid_obpi_transition(
@@ -577,6 +618,8 @@ __all__ = [
     "ReconciliationReceipt",
     "SkipNote",
     "UnmappedStatusBlocker",
+    "obpi_status_is_terminal",
+    "obpi_status_write_refusal",
     "reconcile_frontmatter",
     "rewrite_governed_keys_in_place",
 ]

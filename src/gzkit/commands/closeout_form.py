@@ -15,29 +15,27 @@ _COMPLETED_RUNTIME_STATES = {"completed", "attested_completed", "validated"}
 def guarded_obpi_status_write(obpi_file: Path, target_status: str) -> bool:
     """Single guarded chokepoint for OBPI-brief ``status:`` writes.
 
-    Every governed OBPI-status writer routes through here so the terminal-clobber
-    refusal (the GHI #348 class) lives in ONE place rather than being
-    re-implemented per call site — the "one monitor governs every write" property
-    ADR-0.31.0 Decision item 4 declares. A terminal current status
-    (``withdrawn`` / ``superseded``) has no outgoing canonical transition, so
-    refuse to silently move an OBPI out of it. Returns True iff a write landed
-    (False on a no-op or a refused terminal clobber). The refusal surfaces
-    three-part recovery prose to stderr (guardrail-feedback-prose).
+    Every governed OBPI-status writer that rewrites only the ``status:`` key
+    routes through here; writers that rebuild a whole brief consult the same
+    verdict directly. Either way the terminal-clobber decision lives in ONE
+    place — :func:`gzkit.governance.frontmatter_coherence.obpi_status_write_refusal`
+    — rather than being re-implemented per call site, which is the "one monitor
+    governs every write" property ADR-0.31.0 Decision item 4 declares and GHI
+    #669 made mechanical. Returns True iff a write landed (False on a no-op or
+    a refused clobber). The refusal surfaces the monitor's three-part recovery
+    prose to stderr (guardrail-feedback-prose).
     """
-    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
+    from gzkit.governance.frontmatter_coherence import obpi_status_write_refusal
 
     content = obpi_file.read_text(encoding="utf-8")
     current = (parse_frontmatter_value(content, "status") or "").strip().lower()
     if current == target_status.strip().lower():
         return False
-    if obpi_status_is_terminal(current):
-        sys.stderr.write(
-            f"refused: {obpi_file.name} carries terminal OBPI status '{current}' "
-            f"(no outgoing transition); will not silently write it to "
-            f"'{target_status}' (GHI #348 clobber class). Recover with an explicit "
-            f"transition (`gz obpi repudiate` / `gz obpi supersede`) or correct "
-            f"the ledger event, then re-run.\n"
-        )
+    refusal = obpi_status_write_refusal(
+        brief_name=obpi_file.name, current_status=current, target_status=target_status
+    )
+    if refusal is not None:
+        sys.stderr.write(f"{refusal}\n")
         return False
     obpi_file.write_text(
         _upsert_frontmatter_value(content, "status", target_status), encoding="utf-8"

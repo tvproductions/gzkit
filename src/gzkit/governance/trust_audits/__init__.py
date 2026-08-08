@@ -143,6 +143,9 @@ from gzkit.governance.trust_audits.sensitivity import (
 )
 from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
 from gzkit.governance.trust_audits.setpoint_coherence import validate_setpoint_coherence
+from gzkit.governance.trust_audits.status_writer_coverage import (
+    audit_status_writer_coverage,
+)
 from gzkit.governance.trust_audits.surface_delivery_witness import (
     audit_surface_delivery_witness,
 )
@@ -206,6 +209,7 @@ __all__ = [
     "audit_persona_witness",
     "audit_instructions_files_budget",
     "audit_surface_delivery_witness",
+    "audit_status_writer_coverage",
     "audit_orientation_freshness",
     "audit_qc_binding",
     "audit_fidelity_presence",

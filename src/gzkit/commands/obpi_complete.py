@@ -874,22 +874,21 @@ def _resolve_and_validate(
     if current_status == "completed":
         _fail("Brief is already Completed.", exit_code=1, as_json=as_json, obpi_id=obpi_id)
 
-    # GHI #668 class-fix: `gz obpi complete` is a governed OBPI-status writer
-    # (_build_completed_brief upserts `status: Completed`). Consult the shared
-    # terminal rule so this primary verb refuses to promote a terminal
-    # (withdrawn/superseded) OBPI — the GHI #348 clobber class — the same as the
-    # reconcile chokepoint and the auto-fix path (ADR-0.31.0 Decision item 4).
-    from gzkit.governance.frontmatter_coherence import obpi_status_is_terminal
+    # GHI #668 class-fix, GHI #669 collapse: `gz obpi complete` is a governed
+    # OBPI-status writer (_build_completed_brief upserts `status: Completed`).
+    # It cannot use `guarded_obpi_status_write` — that helper rewrites the
+    # status key alone, while completion rebuilds the whole brief — so it
+    # consults the same MONITOR and supplies its own consequence (exit 1 rather
+    # than a silent False). Until GHI #669 this site re-implemented the verdict
+    # and its prose inline, which is the convention-only state ADR-0.31.0
+    # Decision item 4 forbids.
+    from gzkit.governance.frontmatter_coherence import obpi_status_write_refusal
 
-    if obpi_status_is_terminal(current_status):
-        _fail(
-            f"Brief carries terminal OBPI status '{current_status}' (no outgoing "
-            f"transition); refusing to complete it (GHI #348 clobber class). "
-            f"Recover with `gz obpi repudiate` or correct the ledger, then re-run.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
+    refusal = obpi_status_write_refusal(
+        brief_name=obpi_file.name, current_status=current_status, target_status="Completed"
+    )
+    if refusal is not None:
+        _fail(refusal, exit_code=1, as_json=as_json, obpi_id=obpi_id)
 
     graph = ledger.get_artifact_graph()
     obpi_info = graph.get(obpi_id, {})

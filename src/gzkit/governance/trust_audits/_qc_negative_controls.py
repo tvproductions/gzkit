@@ -418,6 +418,24 @@ def _build_unscoped_rules() -> Path:
     return root
 
 
+def _build_status_writer_coverage() -> Path:
+    """Plant a ``status:`` writer that bypasses the single invariant monitor.
+
+    GHI #669 is about a guard whose coverage was ASSERTED rather than
+    demonstrated — every writer routed through the monitor by convention, and
+    nothing would have noticed the next one that did not. An audit for that
+    class which only ever runs on a clean tree would reproduce the defect it
+    was built to close, so it ships with a tree it must go red on.
+    """
+    root = _mkroot("status-writer-coverage")
+    _write(
+        root / "src" / "gzkit" / "commands" / "rogue_writer.py",
+        "def promote_brief(content: str) -> str:\n"
+        '    return _upsert_frontmatter_value(content, "status", "Completed")\n',
+    )
+    return root
+
+
 def _build_obpi_lifecycle_coherence() -> Path:
     """Seed one undisposed OBPI whose parent does not resolve and whose brief is absent.
 
@@ -1028,6 +1046,11 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_validate_default_scopes,
         _ep._ep_validate_default_scopes,
         "marker=1.0.1 disagrees with block quote=1.0.0",
+    ),
+    (
+        "status-writer-coverage",
+        _build_status_writer_coverage,
+        _ep._ep_status_writer_coverage,
     ),
     (
         "obpi-lifecycle-coherence",
