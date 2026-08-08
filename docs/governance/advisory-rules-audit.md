@@ -39,6 +39,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.1.0` |
 | `pythonic.md` | `0.3.0` |
+| `tool-skill-runbook-alignment.md` | `0.3.0` |
 | `tests.md` | `0.15.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
@@ -110,8 +111,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 28 | Invariant 1 — Every CLI tool has at least one skill that wields it | **Mechanical** | Enforced by `gz validate --skill-alignment` (GHI #202) — scans every top-level CLI verb; requires at least one skill under `.gzkit/skills/**` unless explicitly waived in `_NO_SKILL_VERBS` |
-| 29 | Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool | **Promotable** | Invariant 1 landed under GHI #202; Invariants 2 and 3 remain advisory until the skill→runbook cross-reference and output-form fixtures are mechanized |
-| 30 | Invariant 3 — Destination verb's default output form | **Promotable** | Requires per-skill output-form fixtures; tracked for a follow-up after #202's Invariant 1 baseline |
+| 29 | Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm.** The old note said these "remain advisory *until* the skill→runbook cross-reference is mechanized", which reads as a queue. It is not one: the invariant turns on **"the same operator moment"**, and no repository surface represents an operator moment as a comparable object — the runbook prescribes verbs in prose, so a checker would score the agreement of two prose surfaces, which is grading by shape (the `shape-graded-not-substance` signature ADR-0.0.73 refuses). The *renamed-verb* half is already mechanical elsewhere: `gz validate --cli-alignment` fail-closes on any `gz <verb>` reference that does not resolve to a registered parser verb, so what stays advisory is the same-moment judgment alone. |
+| 30 | Invariant 3 — Destination verb's default output form | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), same reasoning as row 29 plus a second unmodelled term.** A verb's "default human-readable output form" is established by running it and reading the result, and the skill Output Contract it must honor is prose. Mechanizing means asserting that observed rendering satisfies a prose promise — two judgments, not one check. Related but distinct enforcement exists: row 69 (`gz test-shape`) governs where output-form *assertions* may live in tests, which is a different subject from whether a verb's rendering matches its skill's contract. |
 
 ### Skill & Surface Sync (`.gzkit/rules/skill-surface-sync.md`)
 
@@ -351,9 +352,17 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of 99 |
 |-------|-------|---|
 | **Mechanical** | 64 | 65% |
-| **Promotable** | 2 | 2% |
-| **Judgment** | 35 | 35% |
+| **Promotable** | 0 | 0% |
+| **Judgment** | 37 | 37% |
 | **Ambiguous** | 0 | 0% |
+
+**The third state is empty (2026-08-08).** Every scored clause now either carries
+a mechanical witness or says in its own rule text that it is advisory and names
+what would reclassify it — the Movement C family-closure criterion, on the rules
+arm. Re-scoring alone was not permitted: each row below that moved cites the rule
+version whose text changed with it. A row returning to **Promotable** means a
+clause was found declaring a discipline with neither a witness nor an admission,
+which is the state this table exists to make visible.
 
 99 scored rows; the counts sum to 101 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
