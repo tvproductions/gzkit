@@ -35,7 +35,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
-| `tests.md` | `0.14.0` |
+| `tests.md` | `0.15.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
 
@@ -129,9 +129,9 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 66 | **Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. | **Mechanical** | **Promoted 2026-08-05 (rule `0.14.0`).** `verifier-pipe-gate.py`, a `PreToolUse` hook on `Bash`, refuses a verifier in any non-final pipeline stage; decision in `src/gzkit/verifier_pipe_gate.py` (`decide`), live negative control `verifier-exit-status-masked` wired into `_ensure_production_claims_registered`. The named promotion path said "refusing `<verifier> \| <filter>`"; that was built one step wider **on purpose** — the shell reports the LAST stage's exit whatever it is, so a filter allowlist would pass `gz check \| cat`, the identical defect renamed. Verifier set is READ from `CANONICAL_STEP_COMMANDS`, not restated. Quote-aware `shlex` parsing single-sourced into `src/gzkit/shell_reading.py`, shared with `handoff_resume_gate._is_compound` so the two gates cannot disagree about what a pipe is. `set -o pipefail` and `${PIPESTATUS[0]}` opt out. Coverage limits declared in `UNWITNESSABLE`. |
 | 67 | **RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". | **Mechanical** | `uv run gz arb red --req <REQ-ID>` emits `gzkit.arb.red_receipt.v1` + a `red_receipt_emitted` ledger event carrying `failure_class`; `gz validate --red-parity` is a bound QC step. A `none` verdict (test passes without its implementation) fail-closes as the § 6f defect (GHI #642). |
 | 68 | **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. | **Mechanical** | `gz validate --commit-trailers` (GHI #552 strict mode); `has_task_trailer()` in `src/gzkit/tasks.py`. Auto-stamped by `.gzkit/hooks/prepare-commit-msg-task-trailers`. Accepted forms single-sourced through `_ANY_TASK_TRAILER_RE`; the `-#<ghi>` anchor is OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). |
-| 69 | **Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. | **Promotable** | `gz test-shape` reads the markers, but an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported **advisory, never fail-closed** (GHI #571). Promotion = flipping that arm closed once the declared-marker backlog drains. |
+| 69 | **Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. | **Judgment** | `gz test-shape` reads the markers, but an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported **advisory, never fail-closed** (GHI #571). **Re-scored 2026-08-08 (rule `0.15.0`), Movement C rules arm.** The former promotion path — "flip that arm closed once the declared-marker backlog drains" — is not observed-drift evidence, and flipping it would fail-close the whole legacy corpus at once, which is why the arm was left open. The rule now states the advisory posture as settled in its own text; this row is not a re-score alone. |
 | 70 | **Prefer structured assertion targets** / **the discriminator** (*if behavior changed but text did not, would this test fail?*) | **Judgment** | The discriminator is an authoring question no static check decides — a `grep`-a-doc assertion is structurally legal Python. Partial mechanical arm: `gz validate --tautological-test-audit` (bound QC step) catches the degenerate end (`assertEqual(x, x)`), and `theater_signature_scan` catches `copy-vs-self` in validator source. The middle band — a test that asserts real strings that happen not to track behavior — stays judgment by construction. |
-| 71 | **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names | **Promotable** | Naming convention with no reader today. Tractable check: flag helpers named `assert_*audit*passes*` under `tests/**`. Low catch-rate expected; listed for completeness rather than urgency. |
+| 71 | **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names | **Judgment** | **Re-scored 2026-08-08 (rule `0.15.0`), Movement C rules arm.** The tractable check (flag helpers named `assert_*audit*passes*` under `tests/**`) was scored a promotion candidate for months and never built, because nothing has been observed for it to catch — the row's own note said "low catch-rate expected; listed for completeness rather than urgency." Under the § Recommended promotion order freeze that is a reason not to build it, not a backlog item. The rule now states the clause binds at authoring and review time only, and names what would reclassify it: a named, observed instance. |
 | 72 | **Derivation rule** / **per-increment rhythm** / **unit-test purpose** — tests derive from OBPI acceptance criteria, one test → one observed RED → minimum code to GREEN | **Judgment** | "Derived from the REQ rather than from a run of the code" is not recoverable from the artifact after the fact; the RED witness (row 67) is the closest mechanical proxy and covers the rhythm's observable half only. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
@@ -316,7 +316,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 64 | **Dependencies live in adapters, never in the core.** Any third-party import (networkx, tree-sitter, future deps) is confined to an adapter module behind a port. Core domain logic imports **stdlib + Pydantic ONLY** | **Promotable** | Core-purity ("no third-party import in a core/domain module outside adapter packages") is a tractable `gz validate` scope; `tests/policy/test_import_boundaries.py` already gives partial AST enforcement of the ports/core boundary. The Protocol-over-ABC, composition-over-inheritance, and encapsulate-first (formalize the port only when a second adapter is real) guidance stays Judgment. Full Cockburn reference enshrined in `docs/governance/hexagonal-architecture.md`; rule at `.gzkit/rules/hexagonal-architecture.md`; operator ruling 2026-07-06. |
+| 64 | **Dependencies live in adapters, never in the core.** Any third-party import (networkx, tree-sitter, future deps) is confined to an adapter module behind a port. Core domain logic imports **stdlib + Pydantic ONLY** | **Mechanical** | **Promoted 2026-08-08 (Movement C rules arm).** Core purity is enforced by `tests/policy/test_import_boundaries.py::CorePurityIsAnAllowlist` as the **allowlist the rule declares** — `sys.stdlib_module_names` + `pydantic` + `gzkit`, everything else refused. It was a two-name denylist (`("rich", "argparse")`), which cannot express "ONLY": all four third-party deps added since (`networkx`, `radon`, `lizard`, `cohesion`) were free to enter core, and so was any future one. Derivation from `sys.stdlib_module_names` means enforcement needs no upkeep when a dependency lands. The predicate is extracted as `_core_violations` and exercised against synthetic modules, because `core/` is clean and a check read only over a passing tree cannot be told from one that returns nothing. Rules 3–9 (domain-typed ports, Protocol-over-ABC, encapsulate-first, core-testable-without-adapter, no folder partitions) remain **Judgment** — unscored as separate rows, carried in this rule's pre-ledger grandfather debt (`data/advisory_scorecard_grandfather.json`), which must be drained the next time the rule file is edited. Rule at `.gzkit/rules/hexagonal-architecture.md`; operator ruling 2026-07-06. |
 
 ### Changelog & Release Notes (`.gzkit/rules/changelog-release-notes.md`)
 
@@ -338,9 +338,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of 91 |
 |-------|-------|---|
-| **Mechanical** | 60 | 66% |
-| **Promotable** | 9 | 10% |
-| **Judgment** | 24 | 26% |
+| **Mechanical** | 61 | 67% |
+| **Promotable** | 6 | 7% |
+| **Judgment** | 26 | 29% |
 | **Ambiguous** | 0 | 0% |
 
 91 scored rows; the counts sum to 93 because rows 58 and 65 each score two

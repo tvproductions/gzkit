@@ -7,8 +7,10 @@ with the `ast` module to verify hexagonal architecture boundaries are respected.
 from __future__ import annotations
 
 import ast
+import sys
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -28,7 +30,22 @@ CORE_FORBIDDEN_PREFIXES = (
     "gzkit.adapters",
     "gzkit.commands",
 )
-CORE_FORBIDDEN_TOP_LEVEL = ("rich", "argparse")
+#: Top-level modules core/ may import despite not being stdlib.
+#:
+#: `.gzkit/rules/hexagonal-architecture.md` rule 1 says core imports "stdlib +
+#: Pydantic ONLY", and rule 2 names Pydantic the single ratified exception. That
+#: is an ALLOWLIST, and it cannot be expressed as a denylist: the previous
+#: `("rich", "argparse")` pair enforced "not these two", so every third-party
+#: dependency the project has added since — networkx, radon, lizard, cohesion —
+#: was free to enter core, and a dependency added tomorrow would be too. A check
+#: whose subject is narrower than its name is the validator-side arm of the
+#: doctrine-declared-without-mechanism family (GHI #537).
+CORE_ALLOWED_THIRD_PARTY = frozenset({"pydantic"})
+
+#: Stdlib modules core/ must still refuse. `argparse` is stdlib, so the
+#: stdlib test admits it — but it is the CLI layer's technology, and rule 4
+#: ("never name the technology in the core") fences it regardless of who ships it.
+CORE_FORBIDDEN_STDLIB = frozenset({"argparse"})
 
 COMMANDS_DIR = SRC_ROOT / "commands"
 
@@ -166,26 +183,98 @@ def _collect_command_env_violations(
 # ---------------------------------------------------------------------------
 
 
+def _core_violations(path: Path) -> list[str]:
+    """Return every core/ import-boundary violation in *path*.
+
+    Extracted from the assertion so the predicate can be exercised against a
+    synthetic module. A boundary check that is only ever run over a tree that
+    already satisfies it cannot distinguish "enforces the rule" from "returns
+    the empty list" -- and the denylist this replaced had been in exactly that
+    state, admitting four third-party dependencies while passing every run.
+    """
+    tree = _parse_file(path)
+    imports = _collect_imports(tree)
+    violations: list[str] = []
+
+    for _kind, module in imports:
+        # Check forbidden gzkit sub-package prefixes
+        for forbidden_prefix in CORE_FORBIDDEN_PREFIXES:
+            if module == forbidden_prefix or module.startswith(forbidden_prefix + "."):
+                violations.append(
+                    f"{path.name}: imports '{module}' (forbidden prefix '{forbidden_prefix}')"
+                )
+
+        # Core purity, stated as the allowlist the rule actually declares:
+        # stdlib + Pydantic + gzkit internals, and nothing else.
+        top = _top_level_module(module)
+        if top in CORE_FORBIDDEN_STDLIB:
+            violations.append(f"{path.name}: imports '{module}' (forbidden top-level module)")
+        elif not (
+            top in sys.stdlib_module_names or top in CORE_ALLOWED_THIRD_PARTY or top == "gzkit"
+        ):
+            violations.append(
+                f"{path.name}: imports '{module}' — core/ is stdlib + Pydantic ONLY "
+                "(.gzkit/rules/hexagonal-architecture.md rules 1-2); put the dependency "
+                "behind an adapter and take it as a parameter"
+            )
+
+    return violations
+
+
+class CorePurityIsAnAllowlist(unittest.TestCase):
+    """The core-purity check refuses any non-stdlib import, not a fixed pair.
+
+    These exercise the predicate against synthetic modules because `core/` is
+    clean: a test that only reads the real tree passes identically whether the
+    check enforces the rule or returns nothing.
+    """
+
+    def _violations(self, source: str) -> list[str]:
+        with TemporaryDirectory() as tmp:
+            path = Path(tmp) / "sample.py"
+            path.write_text(source, encoding="utf-8")
+            return _core_violations(path)
+
+    def test_every_declared_runtime_dependency_is_refused(self) -> None:
+        """The four deps added after the denylist was written are now fenced.
+
+        `networkx`, `radon`, `lizard` and `cohesion` all entered `pyproject.toml`
+        while `CORE_FORBIDDEN_TOP_LEVEL` still read `("rich", "argparse")`, so
+        each could have been imported into core without failing a single test.
+        """
+        for dep in ("networkx", "radon", "lizard", "cohesion", "jinja2", "structlog"):
+            with self.subTest(dependency=dep):
+                self.assertTrue(self._violations(f"import {dep}\n"))
+
+    def test_a_dependency_nobody_has_added_yet_is_refused(self) -> None:
+        """The allowlist binds by construction, so it needs no upkeep.
+
+        This is the property a denylist cannot have: enforcement must not depend
+        on someone remembering to add a name when a dependency lands.
+        """
+        self.assertTrue(self._violations("import some_future_dependency\n"))
+
+    def test_stdlib_pydantic_and_gzkit_are_admitted(self) -> None:
+        clean = "import enum\nimport re\nfrom typing import Any\nfrom pydantic import BaseModel\n"
+        self.assertEqual(self._violations(clean), [])
+
+    def test_argparse_stays_refused_although_it_is_stdlib(self) -> None:
+        """Rule 4 fences the CLI's technology out of core regardless of shipper."""
+        self.assertTrue(self._violations("import argparse\n"))
+
+    def test_the_message_names_the_rule_and_the_recovery(self) -> None:
+        """Three-part recovery prose (`.gzkit/rules/guardrail-feedback-prose.md`)."""
+        message = self._violations("import networkx\n")[0]
+        self.assertIn("networkx", message)
+        self.assertIn("hexagonal-architecture.md", message)
+        self.assertIn("behind an adapter", message)
+
+
 class TestCoreImportBoundaries(unittest.TestCase):
-    """core/ must not import from CLI, adapters, commands, rich, or argparse."""
+    """core/ imports stdlib + Pydantic only, and never the CLI/commands layers."""
 
     def _assert_file_clean(self, path: Path) -> None:
-        tree = _parse_file(path)
-        imports = _collect_imports(tree)
-        violations: list[str] = []
-
-        for _kind, module in imports:
-            # Check forbidden gzkit sub-package prefixes
-            for forbidden_prefix in CORE_FORBIDDEN_PREFIXES:
-                if module == forbidden_prefix or module.startswith(forbidden_prefix + "."):
-                    violations.append(
-                        f"{path.name}: imports '{module}' (forbidden prefix '{forbidden_prefix}')"
-                    )
-
-            # Check forbidden top-level modules
-            if _top_level_module(module) in CORE_FORBIDDEN_TOP_LEVEL:
-                violations.append(f"{path.name}: imports '{module}' (forbidden top-level module)")
-
+        violations = _core_violations(path)
         if violations:
             self.fail("core/ import boundary violations:\n" + "\n".join(violations))
 
