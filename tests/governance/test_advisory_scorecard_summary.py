@@ -307,6 +307,236 @@ class MechanicalRowsCitingRuffCodes(unittest.TestCase):
         )
 
 
+class MechanicalRowsCitingRuffFamilies(unittest.TestCase):
+    """A **Mechanical** row may cite a ruff *family* as well as a code.
+
+    The code arm reads `[A-Z]{1,4}` + digits, so it is blind by construction to a
+    row that names the family instead: row 41 ("All file operations use
+    `pathlib.Path`", **Mechanical**, "ruff PTH rules enforce") sat green while
+    `PTH` has never been in `[tool.ruff.lint] select`. That is the same
+    report-green-while-blind state as rows 18/23/44, reached through a citation
+    shape the check could not see -- found by hand 2026-08-08, which is the
+    observed drift the § Recommended promotion order freeze requires.
+
+    Family reachability is **not** the code rule with a shorter string. A family
+    is reachable when selection and family overlap in *either* direction: `PTH`
+    against `select = ["PTH"]` (the family is selected outright) and `S` against
+    `select = ["S602"]` (one member is). Testing only `family.startswith(entry)`
+    would report `S` unreachable while S602 runs -- a false finding against row
+    44, which cites S602 by name and is correct.
+    """
+
+    def _run(self, row: str, *, pyproject: str = _PYPROJECT) -> list[str]:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rules = root / ".gzkit" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text(_RULE_BODY, encoding="utf-8")
+            doc = root / "docs" / "governance"
+            doc.mkdir(parents=True)
+            (doc / "advisory-rules-audit.md").write_text(_scorecard(row), encoding="utf-8")
+            (root / "pyproject.toml").write_text(pyproject, encoding="utf-8")
+            return [e.message for e in audit_advisory_scorecard(root)]
+
+    def test_a_mechanical_row_citing_an_unselected_family_fails(self) -> None:
+        """Row 41's exact shape: `PTH` named as the witness, never selected."""
+        messages = self._run("| 1 | Use pathlib.Path | **Mechanical** | ruff PTH rules enforce |")
+        self.assertTrue(any("PTH" in m for m in messages), messages)
+
+    def test_a_mechanical_row_citing_a_selected_family_is_clean(self) -> None:
+        """Row 23a's shape: ``enforced by ruff `I` (isort)``, with `I` selected.
+
+        The backticks around the family are part of the citation as authored and
+        must not defeat extraction -- the row would otherwise pass for the wrong
+        reason, which is indistinguishable from passing for the right one.
+        """
+        self.assertEqual(
+            self._run(
+                "| 1 | Import order | **Mechanical** | enforced by ruff `I` (isort) |",
+                pyproject='[tool.ruff.lint]\nselect = ["E", "F", "I"]\n',
+            ),
+            [],
+        )
+
+    def test_a_family_reachable_only_through_one_selected_code_is_clean(self) -> None:
+        """`select = ["S602"]` means the `S` family is partially reachable.
+
+        Row 44 selects S602 individually and deliberately, on the stated ground
+        that `S` wholesale adds 80 findings from rules no gzkit rule declares.
+        A one-directional prefix test would call that row false.
+        """
+        self.assertEqual(
+            self._run(
+                "| 1 | No shell=True | **Mechanical** | ruff S rules enforce |",
+                pyproject='[tool.ruff.lint]\nselect = ["S602"]\n',
+            ),
+            [],
+        )
+
+    def test_a_judgment_row_may_name_an_unselected_family(self) -> None:
+        """Naming a family you are not claiming to enforce is disclosure.
+
+        The score gates this arm for the same reason it gates the code arm: a
+        Judgment row naming a disabled family is the honest posture the whole
+        family exists to produce.
+        """
+        self.assertEqual(
+            self._run("| 1 | Use pathlib.Path | **Judgment** | ruff PTH is not enabled |"),
+            [],
+        )
+
+    def test_a_numeric_code_is_not_also_read_as_a_family(self) -> None:
+        """`ruff BLE001` is a code citation, not a citation of family `BLE`.
+
+        Extracting both would report one claim twice whenever the two arms
+        disagreed, and the code arm is the more precise reading.
+        """
+        messages = self._run("| 1 | No bare except | **Mechanical** | ruff PLC0415 enforces |")
+        self.assertEqual(len(messages), 1, messages)
+
+
+class MechanicalRowsCitingWitnessPaths(unittest.TestCase):
+    """A **Mechanical** row's cited *executable* witness must exist on disk.
+
+    Four rows cited enforcement surfaces that are simply gone (found by hand
+    2026-08-08). Two of them are the serious kind -- they claim a fail-closed
+    pre-commit guard that has not existed for as long as `.githooks/` has been
+    absent from this repository:
+
+    * row 16 -- "Do not edit `.gzkit/ledger.jsonl` manually", witness
+      `.githooks/pre-commit-ledger-guard`
+    * row 33 -- mirror-sync discipline, witness `.githooks/pre-commit-sync-guard`
+    * row 7 -- semver ordering, witness `tests/test_adr_status.py` (the nearest
+      survivor, `tests/governance/test_adr_status_index.py`, is a different
+      subject: index regeneration, GHI #322)
+    * row 48 -- security sensitivity, witness
+      `src/gzkit/governance/trust_audits.py`, which became a *package*
+
+    Three of the four are refactor residue: a file moved and its citation stayed,
+    which is why this arm generalizes the ruff arm rather than repeating it. The
+    scorecard is the only surface asserting these witnesses exist, and nothing
+    read it.
+
+    **The boundary is "a witness is something that RUNS."** Only Python modules
+    under `src/`/`tests/`, hook scripts under the three hook roots, and
+    `.feature` files are checked. A data file, a rule document, or a runtime
+    artifact cited in a Mechanical row is context the witness *reads*, not the
+    witness -- and the distinction is load-bearing, not decorative: row 62 cites
+    `.gzkit/mx.json` correctly, and that marker's normal state is **absent**.
+    Checking every backticked path would fail that row for being right.
+    """
+
+    def _run(self, row: str, *, present: tuple[str, ...] = ()) -> list[str]:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            rules = root / ".gzkit" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text(_RULE_BODY, encoding="utf-8")
+            doc = root / "docs" / "governance"
+            doc.mkdir(parents=True)
+            (doc / "advisory-rules-audit.md").write_text(_scorecard(row), encoding="utf-8")
+            for rel in present:
+                target = root / rel
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("", encoding="utf-8")
+            return [e.message for e in audit_advisory_scorecard(root)]
+
+    def test_a_mechanical_row_citing_a_missing_hook_fails(self) -> None:
+        """Rows 16 and 33's exact shape: a fail-closed guard that is not there."""
+        messages = self._run(
+            "| 1 | No manual ledger edits | **Mechanical** | "
+            "Enforced by `.githooks/pre-commit-ledger-guard` (GHI #207) |"
+        )
+        self.assertTrue(any("pre-commit-ledger-guard" in m for m in messages), messages)
+
+    def test_a_mechanical_row_citing_a_missing_source_module_fails(self) -> None:
+        """Row 48's shape: the module became a package and the citation stayed."""
+        messages = self._run(
+            "| 1 | Security review | **Mechanical** | "
+            "`audit_sensitivity_binding` in `src/gzkit/governance/trust_audits.py` |"
+        )
+        self.assertTrue(any("trust_audits.py" in m for m in messages), messages)
+
+    def test_a_mechanical_row_citing_a_missing_test_module_fails(self) -> None:
+        """Row 7's shape: "tests in `X` lock the order", where `X` is gone."""
+        messages = self._run(
+            "| 1 | Semver ordering | **Mechanical** | tests in `tests/test_adr_status.py` lock it |"
+        )
+        self.assertTrue(any("test_adr_status.py" in m for m in messages), messages)
+
+    def test_a_present_witness_is_clean(self) -> None:
+        self.assertEqual(
+            self._run(
+                "| 1 | Semver ordering | **Mechanical** | tests in `tests/test_order.py` lock it |",
+                present=("tests/test_order.py",),
+            ),
+            [],
+        )
+
+    def test_a_class_suffix_does_not_defeat_the_lookup(self) -> None:
+        """Rows 64 and 74 cite `path.py::ClassName`; the file is the checkable half.
+
+        Resolving the class as well would need an AST walk per citation, and the
+        four observed defects are all missing *files*. Truncating at `::` is what
+        keeps this a lookup rather than a second, weaker import check.
+        """
+        self.assertEqual(
+            self._run(
+                "| 1 | Core purity | **Mechanical** | `tests/policy/test_imports.py::CoreIsPure` |",
+                present=("tests/policy/test_imports.py",),
+            ),
+            [],
+        )
+
+    def test_a_glob_is_not_a_path(self) -> None:
+        """Rows 21, 25, 33 and 60 cite scopes (`src/gzkit/**`), never files.
+
+        A scope names where a check looks; it is not a witness whose absence
+        means anything. Resolving it would need a filesystem walk to decide
+        whether "no matches" is drift or an empty-by-design directory.
+        """
+        self.assertEqual(
+            self._run("| 1 | Class size | **Mechanical** | AST scan over `src/gzkit/**` |"),
+            [],
+        )
+
+    def test_a_runtime_artifact_is_not_a_witness(self) -> None:
+        """Row 62 cites `.gzkit/mx.json`, whose normal state is absent.
+
+        The MX marker is the rule's *subject* -- "when `.gzkit/mx.json` exists,
+        most guards drop to advisory" -- not the thing enforcing it. A check over
+        every backticked path fails that row precisely because the row is right,
+        which is why the arm is scoped to surfaces that execute.
+        """
+        self.assertEqual(
+            self._run("| 1 | Honor the marker | **Mechanical** | when `.gzkit/mx.json` exists |"),
+            [],
+        )
+
+    def test_a_bare_hook_directory_is_not_a_witness(self) -> None:
+        """A script enforces; the directory it would live in does not.
+
+        Found while correcting rows 16 and 33: a row that mentions the hook root
+        alongside the script reported the root as a second missing witness, which
+        is one defect counted twice and sends the reader looking for a file that
+        was never claimed to be one.
+        """
+        row = "| 1 | No manual ledger edits | **Mechanical** | a guard under `.githooks/` |"
+        self.assertEqual(self._run(row), [])
+
+    def test_a_judgment_row_may_cite_a_missing_surface(self) -> None:
+        """The score gates this arm, exactly as it gates the ruff arm.
+
+        A Judgment row naming a surface that no longer exists is recording
+        history -- row 20 does this, citing "a pre-commit check" it says in the
+        same breath does not exist.
+        """
+        self.assertEqual(
+            self._run("| 1 | Module size | **Judgment** | no `.githooks/pre-commit-size` exists |"),
+            [],
+        )
+
+
 class PromotableAssignedInProse(unittest.TestCase):
     """A clause's score is assigned in a Scorecard ROW, never in prose about it.
 

@@ -107,7 +107,7 @@ def _load_inputs(
     """Load pyproject.toml include globs and baseline manifest.  Raises SystemExit(2) on failure."""
     pyproject = project_root / "pyproject.toml"
     try:
-        with open(pyproject, "rb") as f:
+        with pyproject.open("rb") as f:
             data = tomllib.load(f)
     except FileNotFoundError as exc:
         print(f"distribution-audit: pyproject.toml not found: {exc}", file=sys.stderr)
@@ -127,7 +127,7 @@ def _load_inputs(
 
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
     try:
-        with open(manifest_path, encoding="utf-8") as f:
+        with manifest_path.open(encoding="utf-8") as f:
             manifest = json.load(f)
     except FileNotFoundError as exc:
         print(f"distribution-audit: baseline manifest not found: {exc}", file=sys.stderr)

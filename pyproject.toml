@@ -137,6 +137,19 @@ select = [
     # findings from rules no gzkit rule declares. Adopted 2026-08-08 on that
     # observed drift, which is the evidence the promotion freeze requires.
     "S602",
+    # flake8-use-pathlib — the witness advisory-scorecard row 41 has claimed
+    # since it was written ("All file operations use `pathlib.Path`",
+    # **Mechanical**, "ruff PTH rules enforce"), and `.gzkit/rules/cross-platform.md`
+    # § Quick Reference has declared since `0.1.0`. `PTH` was never in this list,
+    # so the rule ran nowhere and 17 live violations stood in `src/gzkit`.
+    #
+    # This is the SIXTH false-Mechanical row of the class row 18 named, and the
+    # first found by machine rather than by hand — it cites its witness by
+    # FAMILY rather than by code, which the reachability check could not see
+    # until the family arm landed alongside this line. Adopted 2026-08-08
+    # (operator ruling) on that observed drift, which is the evidence the
+    # § Recommended promotion order freeze requires.
+    "PTH",
 ]
 ignore = [
     # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every
@@ -173,11 +186,18 @@ ignore = [
 # written where the diagnostic fires, the same constraint the E501 entry above
 # records. The six live violations inside `src/gzkit` were FIXED, not excluded
 # (2026-08-08 operator ruling: enable BLE001, defer PLC0415).
-"tests/**/*.py" = ["D", "BLE"]
-"features/**/*.py" = ["D", "BLE"]
-"scripts/**/*.py" = ["D", "BLE"]
-".claude/hooks/*.py" = ["BLE"]
-".github/copilot/hooks/*.py" = ["BLE"]
+#
+# PTH rides these same keys, for the shipped-package-only reason alone — 102 of
+# its 119 tree-wide findings sit outside the package (87 in tests, 7 in the
+# generated `.claude/hooks` mirrors, 3 in behave steps, 2 in profiling scripts),
+# and adopting them in one step is a separate decision, not a side effect of
+# making row 41 true. The 17 inside `src/gzkit` were FIXED, not excluded
+# (2026-08-08 operator ruling: enable PTH, package-scoped).
+"tests/**/*.py" = ["D", "BLE", "PTH"]
+"features/**/*.py" = ["D", "BLE", "PTH"]
+"scripts/**/*.py" = ["D", "BLE", "PTH"]
+".claude/hooks/*.py" = ["BLE", "PTH"]
+".github/copilot/hooks/*.py" = ["BLE", "PTH"]
 # Canonical skill helper scripts and their generated vendor mirrors, plus the
 # generated hook scripts. Mirrors are written by `gz agent sync control-surfaces`
 # and must never be hand-edited (.gzkit/rules/skill-surface-sync.md #4/#5), so a

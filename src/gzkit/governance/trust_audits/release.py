@@ -248,6 +248,13 @@ def _summary_drift_errors(scorecard_text: str) -> list[ValidationError]:
 #: :func:`_unreachable_ruff_claim_errors`.
 _RUFF_CODE_RE = re.compile(r"\b([A-Z]{1,4}\d{3,4})\b")
 
+#: A ruff *family* as a row cites it: ``ruff PTH rules enforce``, ``ruff `I```.
+#: Anchored on the literal word so a bare capitalized token cannot be read as a
+#: family, and closed on the right by a non-alphanumeric so ``ruff PLC0415``
+#: yields the code alone — reporting it as both a code and family ``PLC`` would
+#: state one claim twice whenever the two readings disagreed.
+_RUFF_FAMILY_RE = re.compile(r"ruff\s+`?([A-Z]{1,4})`?(?![A-Za-z0-9])")
+
 
 def _ruff_selection(project_root: Path) -> tuple[list[str], list[str]] | None:
     """Return ``(select, ignore)`` from ``[tool.ruff.lint]``, or None if unreadable.
@@ -287,10 +294,31 @@ def _ruff_code_is_reachable(code: str, select: list[str], ignore: list[str]) -> 
     return any(entry == "ALL" or code.startswith(entry) for entry in select)
 
 
+def _ruff_family_is_reachable(family: str, select: list[str], ignore: list[str]) -> bool:
+    """Report whether ruff runs *any* member of *family*.
+
+    Overlap is tested in **both** directions, which is what separates a family
+    from a code. ``PTH`` against ``select = ["PTH"]`` matches because the family
+    is selected outright; ``S`` against ``select = ["S602"]`` matches because a
+    member is. Reusing :func:`_ruff_code_is_reachable` would test one direction
+    only and report ``S`` unreachable while S602 runs — a false finding against
+    row 44, which names S602 individually and deliberately.
+
+    An ``ignore`` entry disables the family only when it covers the whole
+    family (``ignore = ["D"]`` kills ``D``); ``ignore = ["D203"]`` switches off
+    one member and leaves the family running, which is this repository's state.
+    """
+    if any(family.startswith(entry) for entry in ignore):
+        return False
+    return any(
+        entry == "ALL" or family.startswith(entry) or entry.startswith(family) for entry in select
+    )
+
+
 def _unreachable_ruff_claim_errors(
     scorecard_text: str, project_root: Path
 ) -> list[ValidationError]:
-    """Fail when a **Mechanical** row cites a ruff code ruff would not run.
+    """Fail when a **Mechanical** row cites a ruff code or family ruff would not run.
 
     **A false Mechanical row is strictly worse than a Promotable one, and the
     Movement C family-closure criterion counts only the latter.** Promotable is
@@ -320,6 +348,13 @@ def _unreachable_ruff_claim_errors(
 
     Two limits, stated so a green is not read as total:
 
+    **Families are read as well as codes.** Row 41 ("All file operations use
+    ``pathlib.Path``", **Mechanical**, *"ruff PTH rules enforce"*) named its
+    witness by family, and ``PTH`` has never been in ``select`` — the same
+    green-while-blind state as rows 18/23/44, in a citation shape the code regex
+    cannot see. Overlap is directional for a code and bidirectional for a family;
+    see :func:`_ruff_family_is_reachable`.
+
     * **Reachability is not existence.** ``BLE0001`` (the typo row 18 carried) is
       reachable under ``select = ["BLE"]`` because the prefix matches, so this
       check would pass it. Proving a code *exists* means asking ruff, which is a
@@ -346,8 +381,18 @@ def _unreachable_ruff_claim_errors(
         claim = "|".join(cells[2:])
         if "ruff" not in claim.lower():
             continue
-        cited = set(_RUFF_CODE_RE.findall(claim))
-        unreachable = sorted(c for c in cited if not _ruff_code_is_reachable(c, select, ignore))
+        unreachable = sorted(
+            {
+                code
+                for code in _RUFF_CODE_RE.findall(claim)
+                if not _ruff_code_is_reachable(code, select, ignore)
+            }
+            | {
+                family
+                for family in _RUFF_FAMILY_RE.findall(claim)
+                if not _ruff_family_is_reachable(family, select, ignore)
+            }
+        )
         if not unreachable:
             continue
         row_id = cells[1].strip()
@@ -368,6 +413,139 @@ def _unreachable_ruff_claim_errors(
                     f"surfaces, or re-score row {row_id} to the posture that is actually true "
                     f"and state it in the rule's own text — see `{_SCORECARD_REL}` row 18 for "
                     "the worked correction."
+                ),
+            )
+        )
+    return errors
+
+
+#: Any backtick-quoted span in a row. Paths are the subset of these that name an
+#: executable witness — see :func:`_is_executable_witness`.
+_BACKTICKED_RE = re.compile(r"`([^`]+)`")
+
+#: Directories whose contents are, by construction, scripts that run: a file
+#: cited under one of these IS the guard the row claims. Membership is by
+#: location rather than extension because hook scripts carry no suffix.
+_HOOK_ROOTS: tuple[str, ...] = (".githooks/", ".gzkit/hooks/", ".claude/hooks/")
+
+#: Glob metacharacters. A token carrying one names a *scope* the witness searches
+#: (``src/gzkit/**``), never a witness — and "no matches" cannot be told from
+#: "empty by design" without a walk this check does not own.
+_GLOB_CHARS = frozenset("*?{}[]")
+
+
+def _is_executable_witness(token: str) -> bool:
+    """Report whether *token* names a surface that RUNS, and is therefore a witness.
+
+    This predicate is the arm's whole boundary, and it is narrower than "a path
+    that appears in a Mechanical row" on purpose. A **Mechanical** row cites
+    three kinds of path: the thing that enforces (a validator module, a covering
+    test, a hook script), the configuration that thing reads
+    (``data/instructions_files_budget.json``), and the artifact the *rule* is
+    about (``.gzkit/ledger.jsonl``, ``.gzkit/mx.json``). Only the first is a
+    witness whose absence falsifies the row.
+
+    Row 62 is why the distinction is load-bearing rather than tidy: it cites
+    ``.gzkit/mx.json`` correctly, and that marker's normal state is **absent** —
+    it exists only inside an MX session. A check over every backticked path
+    would fail that row for being right, and a check that then carved out the
+    marker by name would be tuned to its corpus instead of stating a rule.
+    """
+    if _GLOB_CHARS & set(token):
+        return False
+    if any(token.startswith(root) and len(token) > len(root) for root in _HOOK_ROOTS):
+        return True
+    if token.startswith(("src/", "tests/")) and token.endswith(".py"):
+        return True
+    return token.startswith("features/") and token.endswith(".feature")
+
+
+def _missing_witness_path_errors(scorecard_text: str, project_root: Path) -> list[ValidationError]:
+    """Fail when a **Mechanical** row cites an executable witness that is not there.
+
+    The ruff arm asks whether a named lint rule runs. This asks the same question
+    of every *other* enforcement surface a row can name, because the gap it
+    closed was never ruff-shaped: nothing in gzkit compares a row's claim against
+    the thing it names, and ruff was merely the first citation family anyone
+    mechanized. Four rows were found citing surfaces that do not exist (by hand,
+    2026-08-08), and three of the four are refactor residue — a file moved and
+    its citation stayed:
+
+    * rows 16 and 33 — ``.githooks/pre-commit-ledger-guard`` and
+      ``.githooks/pre-commit-sync-guard``. **The directory does not exist**, and
+      neither guard appears in ``.pre-commit-config.yaml`` or anywhere else in
+      the repository. Both rows claim a fail-closed guard: one over manual ledger
+      edits, one over unmirrored skill/rule commits.
+    * row 7 — ``tests/test_adr_status.py`` "locks the order". The nearest
+      surviving module, ``tests/governance/test_adr_status_index.py``, is about
+      index regeneration (GHI #322), which is a different subject.
+    * row 48 — ``src/gzkit/governance/trust_audits.py``, which became a package.
+
+    A missing witness is the row-18 failure with the tool swapped out: the row
+    reports green, the family-closure criterion counts only **Promotable** so it
+    is invisible there, and the surface it claims to guard is unguarded. Rows 16
+    and 33 are the sharp end — the ledger is the system of record.
+
+    Two boundaries, matching the ruff arm's:
+
+    * **The score gates it.** Only a **Mechanical** row asserts a witness. Row 20
+      is **Judgment** and cites "a pre-commit check under
+      ``.pre-commit-config.yaml``" while saying in the same cell that no such
+      hook exists — a disclosure, which this must not punish.
+    * **Only executables count** (:func:`_is_executable_witness`). Scopes, config
+      files, rule documents and runtime markers are not witnesses.
+
+    A ``::ClassName`` suffix (rows 64, 74) is truncated to the file. Resolving the
+    class would need an AST walk per citation, and all four observed defects are
+    missing *files* — truncating keeps this a lookup rather than a weaker second
+    import check. A bare hook *directory* is not a witness either: a script is,
+    and ``.githooks/`` names where one would live.
+
+    **A Mechanical row cannot narrate a dead path by its backticked token**, and
+    this is the same accepted constraint the ruff arm carries one citation family
+    over. The check reads every path in the row and cannot tell a witness from a
+    post-mortem, so "the row used to name ``X``, which is gone" reads as a live
+    claim on ``X``. It was demonstrated immediately: the first draft of rows 7,
+    16 and 33's corrections narrated their own dead pointers in backticks and
+    this check refused all three. The constraint is not worked around — a
+    Mechanical row's job is to name the witness that runs *today*, and the
+    history of the pointer belongs in prose that does not wear the citation form.
+    Row 44 reached the same discipline from the ruff side by naming the ruff
+    *rule* instead of its code.
+    """
+    errors: list[ValidationError] = []
+    for line in _scorecard_section(scorecard_text).splitlines():
+        if not _SCORED_ROW_RE.match(line):
+            continue
+        cells = _CELL_SPLIT_RE.split(line)
+        if len(cells) < 5 or "**Mechanical**" not in cells[3]:
+            continue
+        claim = "|".join(cells[2:])
+        cited = {t.strip().split("::", 1)[0] for t in _BACKTICKED_RE.findall(claim)}
+        missing = sorted(
+            path
+            for path in cited
+            if _is_executable_witness(path) and not (project_root / path).exists()
+        )
+        if not missing:
+            continue
+        row_id = cells[1].strip()
+        errors.append(
+            ValidationError(
+                type="advisory_scorecard",
+                artifact=_SCORECARD_REL,
+                message=(
+                    f"Scorecard row {row_id} is scored **Mechanical** and names "
+                    f"{', '.join(f'`{p}`' for p in missing)} as its enforcement surface, but "
+                    "no such file exists. A Mechanical row claims a fail-closed witness is "
+                    "already running; when the file it names is absent the row reports green "
+                    "while nothing enforces the rule — strictly worse than a Promotable row "
+                    "that honestly says there is no witness yet, and invisible to the "
+                    "family-closure criterion, which counts only Promotable. Either repoint "
+                    "the citation at the surface that actually enforces the rule today (a "
+                    "moved or renamed module is the usual cause), or re-score row "
+                    f"{row_id} to the posture that is true and state it in the rule's own "
+                    f"text — see `{_SCORECARD_REL}` rows 19 and 20 for the worked correction."
                 ),
             )
         )
@@ -516,6 +694,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     errors: list[ValidationError] = []
     errors.extend(_summary_drift_errors(text))
     errors.extend(_unreachable_ruff_claim_errors(text, project_root))
+    errors.extend(_missing_witness_path_errors(text, project_root))
     errors.extend(_prose_promotable_errors(text))
     for rule_md in canonical_rule_files(rules_root):
         artifact = rule_md.relative_to(project_root).as_posix()

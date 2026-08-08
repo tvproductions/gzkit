@@ -438,9 +438,7 @@ def _find_drifted_path(
     for pattern in allowed_paths:
         direct = project_root / pattern
         if direct.exists():
-            import os  # noqa: PLC0415
-
-            mtime = datetime.fromtimestamp(os.path.getmtime(direct), tz=UTC)
+            mtime = datetime.fromtimestamp(direct.stat().st_mtime, tz=UTC)
             if mtime > receipt_ts:
                 return pattern
         elif pattern.removeprefix("./").rstrip("/") in creates:

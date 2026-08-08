@@ -62,7 +62,7 @@ def handoff_list_cmd(
     *,
     adr: str | None = None,
     as_json: bool = False,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
 ) -> None:
     """List handoffs newest-first, optionally scoped by ADR (REQ-0.0.65-03-01).
 
@@ -225,7 +225,7 @@ def handoff_resume_cmd(
     adr: str | None = None,
     as_json: bool = False,
     now: str | None = None,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
 ) -> None:
     """Resume the newest handoff for ``adr`` with staleness (REQ-0.0.65-03-02).
 
@@ -236,7 +236,7 @@ def handoff_resume_cmd(
     extracted next step with the live state of the references it cites.
     """
     resolved_now = now if now is not None else datetime.now(UTC).isoformat()
-    root = get_project_root() if base_path == Path(".") else base_path
+    root = get_project_root() if base_path == Path() else base_path
     result = resume_handoff(
         adr_id=adr,
         base_path=base_path,
@@ -255,7 +255,7 @@ def _current_branch(base_path: Path) -> str:
     An empty branch is not silently tolerated: it fails the downstream
     frontmatter gate (fail-closed), which is the correct refusal.
     """
-    root = get_project_root() if base_path == Path(".") else base_path
+    root = get_project_root() if base_path == Path() else base_path
     rc, out, _ = git_cmd(root, "rev-parse", "--abbrev-ref", "HEAD")
     return out.strip() if rc == 0 else ""
 
@@ -279,7 +279,7 @@ def handoff_create_cmd(
     settled: list[str] | None = None,
     mode: str = "CREATE",
     as_json: bool = False,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
 ) -> None:
     """Write a handoff through the fail-closed gate (REQ-0.0.65-03-03).
 
@@ -392,7 +392,7 @@ def handoff_authorize_cmd(
     decision: str = "proceed",
     set_aside: list[str] | None = None,
     as_json: bool = False,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
 ) -> None:
     """Book the operator's transit decision on a resumed handoff (GHI #574, #757).
 
@@ -461,7 +461,7 @@ def handoff_authorize_cmd(
         )
         raise SystemExit(1)
 
-    root = get_project_root() if base_path == Path(".") else base_path
+    root = get_project_root() if base_path == Path() else base_path
     handoff_path = Path(handoff)
     resolved = handoff_path if handoff_path.is_absolute() else root / handoff
     if not resolved.is_file():

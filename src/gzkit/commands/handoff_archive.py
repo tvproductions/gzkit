@@ -71,7 +71,7 @@ def handoff_archive_cmd(
     older_than: str,
     dry_run: bool = False,
     as_json: bool = False,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
     now: datetime | None = None,
 ) -> None:
     """Archive handoffs older than ``--older-than`` (move-not-delete, REQ-01..05).
@@ -80,7 +80,7 @@ def handoff_archive_cmd(
     injectable so age classification can be asserted deterministically; the CLI
     path leaves it ``None`` and uses the wall clock.
     """
-    root = get_project_root() if base_path == Path(".") else base_path
+    root = get_project_root() if base_path == Path() else base_path
     days = _parse_older_than(older_than)
     resolved_now = now if now is not None else datetime.now(UTC)
     plan = plan_archive(base_path=root, older_than_days=days, now=resolved_now)

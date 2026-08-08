@@ -158,7 +158,7 @@ def write_lock(project_root: Path, lock: LockData) -> Path:
     """
     path = lock_path(project_root, lock.obpi_id)
     payload = lock.model_dump(exclude={"is_expired", "elapsed_minutes"})
-    with open(path, "x", encoding="utf-8") as f:
+    with path.open("x", encoding="utf-8") as f:
         f.write(json.dumps(payload, indent=2))
     return path
 

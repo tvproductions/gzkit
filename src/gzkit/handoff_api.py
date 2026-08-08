@@ -724,7 +724,7 @@ def create_handoff(
     obpi_id: str | None = None,
     continues_from: str | None = None,
     session_id: str | None = None,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
     timestamp: str | None = None,
     mode: str = "CREATE",
     reference_checker: ReferenceChecker | None = None,
@@ -835,7 +835,7 @@ def scaffold_handoff(
     }
 
 
-def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path(".")) -> list[HandoffInfo]:
+def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> list[HandoffInfo]:
     """Return frontmatter-filtered handoffs, newest-first, optionally scoped by ADR.
 
     Scans ``<base_path>/.gzkit/handoffs/*.md``, keeps only files whose
@@ -887,7 +887,7 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path(".")) -> 
     return infos
 
 
-def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path(".")) -> list[Path]:
+def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path()) -> list[Path]:
     """Follow ``continues_from`` links, returning the chain oldest-first.
 
     Traversal is depth-limited (``≤20``) and cycle-safe: a visited set means a
@@ -920,7 +920,7 @@ def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path(".")) -> li
 def resume_handoff(
     *,
     adr_id: str | None = None,
-    base_path: Path = Path("."),
+    base_path: Path = Path(),
     now: str,
     reference_checker: ReferenceChecker | None = None,
 ) -> ResumeResult:
