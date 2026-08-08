@@ -123,7 +123,7 @@ Confirm no active locks: `uv run gz obpi lock list` expects No active locks.
 - `docs/governance/build-to-1.0-campaign-2026-07-18.md` — ADR-0.44.0 parked with the operator's verbatim ruling and the demotion arm flagged as residual.
 - `.gzkit/templates/claude.md` and `CLAUDE.md` — Invariant 10a's advisory posture stated in its own text, authored canonically and synced.
 - `.gzkit/handoffs/20260808T181726Z-session-exit-bookmark.md` — the floor bookmark, now tracked (GHI #759).
-- Commits: 5b921277f (resume-gate flag guard), 79774e620 (ruff reachability, row 44, bookmark), 21fc2f7a6 (prose fence, row 53a, skill arm), plus the postures-accepted commit.
+- Commits: 5b921277f (resume-gate flag guard), 79774e620 (ruff reachability, row 44, bookmark), f8389e6da (prose fence, row 53a, skill arm), 21fc2f7a6 (three postures accepted), 8ce3568c9 (sync). The third and fourth SHAs were transposed at authoring — `21fc2f7a6` was read from HEAD *after* the postures commit and captioned as the prose fence, so a reader tracing "prose fence" would have landed on the wrong commit. Corrected in place.
 - ARB receipts, each confirmed to resolve on disk before citation: arb-ruff-59d2f9c2130d40a298134434b33f6b6b, arb-step-typecheck-943d4ff615f84b3bbcdf34d30fee5ecc, arb-step-unittest-e7312188b7e14eaf910a7fd7e7a7a814 (8194 tests).
 
 ## Settled Rulings
