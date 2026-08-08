@@ -35,6 +35,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
+| `guardrail-feedback-prose.md` | `0.2.0` |
 | `tests.md` | `0.15.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
@@ -303,7 +304,10 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 61 | Every fail-closed hook and validator emits agent-actionable three-part recovery prose: what failed, why it is forbidden (cited rule/invariant), the governed next step (runnable command or named ceremony) | **Promotable** | Authored under ADR-0.0.70 (Buetow adoption: "the feedback encodes the prompt you would write as a human"). First enforcement consumer is `stop-turn-feedback.py`, whose block prose is asserted against the bar by `tests/hooks/test_stop_turn_feedback.py` (REQ-0.0.70-03-02). Promotion path named in the rule: a `gz validate` scope asserting the three-part shape on hook/validator output fixtures once catch evidence accumulates — deliberately deferred (an inferential prose-grader is weaker than a real enforcement consumer; ADR-0.0.70 § Decision). |
+| 61 | § Invariant — every fail-closed hook and validator emits agent-actionable three-part recovery prose: what failed, why it is forbidden (cited rule/invariant), the governed next step (runnable command or named ceremony) | **Judgment** | **Re-scored 2026-08-08 (rule `0.2.0`), Movement C rules arm.** Whether prose actually tells an agent what to do is not decidable from its shape, and a shape-grader is the `shape-graded-not-substance` signature ADR-0.0.73 refuses — grading this rule mechanically would instance the defect the rule names. ADR-0.0.70 § Decision already declined to ship the scope on that ground while the rule still called itself "Promotable", which is the third state. The rule now states the advisory disposition and names the reclassifying evidence: a fail-closed surface that shipped with no recovery prose and was caught late. |
+| 61a | Each fail-closed surface asserts its own prose against this bar in its own covering test | **Mechanical** | This is the rule's real enforcement channel, at the point of use rather than over a corpus. `tests/hooks/test_stop_turn_feedback.py` (REQ-0.0.70-03-02) asserts `stop-turn-feedback.py`'s block prose carries all three parts; the same shape is asserted for other fail-closed surfaces in their own covering tests (e.g. `CorePurityIsAnAllowlist::test_the_message_names_the_rule_and_the_recovery`, row 64). Per-surface rather than global by design — the global grader was rejected, not deferred. |
+| 61b | § Scope — the bar binds blocking hooks, `gz validate` scopes, ceremony gates, and pre-commit/pre-push guards; advisory surfaces SHOULD follow but are not bound | **Judgment** | A scope statement, not an independently checkable claim: it tells an author which surfaces owe a covering-test assertion under row 61a. "Which surfaces are fail-closed" is decidable, but the obligation it creates is the authoring duty row 61 already scores. |
+| 61c | § Do Not — no bare non-zero exit without stderr prose; no raw findings without the cited rule; no unrunnable next step; no inlined sub-tool stderr past ~20 lines | **Judgment** | Four authoring prohibitions, each the negative form of the § Invariant and enforced through the same per-surface channel (row 61a). The ~20-line trim is the only numerically checkable one, and it is a soft ceiling by its own wording ("~20"), set by the ADR-0.0.69 closeout-proof re-run-command ruling rather than measured. |
 
 ### MX Mode (`.gzkit/rules/mx-mode.md`)
 
@@ -336,14 +340,14 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 91 |
+| Score | Rows | % of 94 |
 |-------|-------|---|
-| **Mechanical** | 61 | 67% |
-| **Promotable** | 6 | 7% |
-| **Judgment** | 26 | 29% |
+| **Mechanical** | 62 | 66% |
+| **Promotable** | 5 | 5% |
+| **Judgment** | 29 | 31% |
 | **Ambiguous** | 0 | 0% |
 
-91 scored rows; the counts sum to 93 because rows 58 and 65 each score two
+94 scored rows; the counts sum to 96 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
 toward both. **There are zero `Ambiguous` rules** — the score is defined in the
 legend above and currently has no members.

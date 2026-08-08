@@ -7,11 +7,22 @@ paths:
 description: Fail-closed guardrail output must be agent-actionable three-part prose
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
 # Guardrail Feedback Prose (gzkit)
 
-> **Rule version:** `0.1.0` — initial authoring under ADR-0.0.70 (Buetow
+> **Rule version:** `0.2.0` — Movement C family closure, rules arm: § Mechanical
+> promotion path is replaced by § Enforcement posture, which states the advisory
+> disposition **in the rule's own text** and names what would reclassify it. The
+> section had declared *"This rule is **Promotable**"* while describing, in the
+> same paragraph, why the mechanism it promised was deliberately not built — a
+> discipline declared with no witness and no statement that none is coming, which
+> is the third state the family-closure criterion forbids. Nothing is being
+> weakened: the per-surface covering-test channel that actually enforces this bar
+> is now named as the enforcement rather than as an interim measure. Re-scored
+> `Judgment` at `docs/governance/advisory-rules-audit.md` row 61; re-scoring
+> without this text edit would have been laundering (operator ruling 2026-08-08).
+> Prior `0.1.0` — initial authoring under ADR-0.0.70 (Buetow
 > adoption): the feedback text IS the prompt a human would otherwise have
 > typed; engineer it as one.
 
@@ -54,10 +65,28 @@ their covering tests.
 - Do not inline full sub-tool stderr past ~20 lines — trim and name the re-run
   command instead (precedent: closeout-proof re-run-command ruling, ADR-0.0.69)
 
-## Mechanical promotion path
+## Enforcement posture — advisory by design, per-surface witness
 
-This rule is **Promotable**: a future `gz validate` scope can assert the
-three-part shape on hook/validator output fixtures once catch evidence
-accumulates (named future candidate in ADR-0.0.70 § Decision; deliberately not
-shipped there — an inferential prose-grader is weaker than a real enforcement
-consumer). Until then the bar binds at authoring time and via covering tests.
+**This rule is ADVISORY at the global level, and that is the settled
+disposition rather than a waiting room.** No `gz validate` scope asserts the
+three-part shape across every fail-closed surface, and none is planned. ADR-0.0.70
+§ Decision named such a scope a future candidate and deliberately did not ship
+it, on the stated ground that *an inferential prose-grader is weaker than a real
+enforcement consumer* — a grader would score the **shape** of the prose while the
+rule is about whether the prose actually tells an agent what to do, which is the
+`shape-graded-not-substance` theater signature ADR-0.0.73 exists to refuse.
+Grading this mechanically would be an instance of the defect this rule names.
+
+**What does bind mechanically is per-surface, and it is the real channel.** Each
+fail-closed surface asserts its own prose against this bar in its own covering
+test — `tests/hooks/test_stop_turn_feedback.py` (REQ-0.0.70-03-02) is the
+worked exemplar, and a new fail-closed surface adds an equivalent assertion. That
+is enforcement by a real consumer at the point of use, which is what the rejected
+global grader was rejected in favour of.
+
+Reclassify only on named, observed evidence: a fail-closed surface that shipped
+without recovery prose and was *caught late* because no per-surface assertion
+existed. A backlog of unasserted surfaces is not that evidence — under the
+§ Recommended promotion order freeze in `docs/governance/advisory-rules-audit.md`
+(2026-06-08, opt-in-with-justification), a new fail-closed check is added only on
+a specific observed drift instance.
