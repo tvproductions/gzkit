@@ -502,6 +502,41 @@ def _live_adr_ids(project_root: Path) -> set[str]:
     return live
 
 
+def non_pool_brief_owners(project_root: Path) -> dict[str, str]:
+    """Return ``{obpi_id: owning ADR id}`` for briefs living outside the pool bucket.
+
+    Layer-1 placement, read straight off disk. This is the input park coherence
+    needs, and deliberately *not* a set of ADR ids compared against a resolved
+    ``obpi_created`` parent:
+
+    * :func:`_live_adr_ids` registers every bucket, because its question is
+      "does this parent resolve at all" — right for the orphan census, wrong
+      here, where pool membership is the whole subject. Using it flagged all 371
+      parked OBPIs, since every ordinary park points at a pool ADR that is of
+      course on disk.
+    * Resolving the parent through ``rename_chain_target`` hides the very cases
+      that matter: a demote-then-promote round trip is a rename cycle, which that
+      function resolves to the *pool* id while the file sits in ``pre-release/``.
+
+    A brief's directory needs no inference, and the set it yields is exactly what
+    ``gz adr demote`` would delete.
+    """
+    adr_root = project_root / "docs" / "design" / "adr"
+    if not adr_root.is_dir():
+        return {}
+    owners: dict[str, str] = {}
+    for brief in adr_root.rglob("OBPI-*.md"):
+        if "pool" in brief.parts:
+            continue
+        package = brief.parent.parent if brief.parent.name == "obpis" else brief.parent
+        adr_files = sorted(package.glob("ADR-*.md"))
+        if not adr_files:
+            continue
+        meta = _parse_adr_frontmatter(adr_files[0]) or {}
+        owners[brief.stem] = str(meta.get("id") or adr_files[0].stem)
+    return owners
+
+
 def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
     """Flag ``obpi_created`` records with no disposition and no resolvable parent.
 
@@ -517,15 +552,19 @@ def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
     the class cannot recur silently on the next bulk transition.
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415
-    from gzkit.obpi_lifecycle import orphaned_obpi_ids  # noqa: PLC0415
+    from gzkit.obpi_lifecycle import (  # noqa: PLC0415
+        orphaned_obpi_ids,
+        park_coherence_violations,
+    )
 
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
         return []
     events = [event.model_dump() for event in Ledger(ledger_path).read_all()]
     brief_ids = {p.stem for p in (project_root / "docs" / "design" / "adr").rglob("OBPI-*.md")}
-    orphans = orphaned_obpi_ids(events, _live_adr_ids(project_root), brief_ids=brief_ids)
-    return [
+    live_adr_ids = _live_adr_ids(project_root)
+    orphans = orphaned_obpi_ids(events, live_adr_ids, brief_ids=brief_ids)
+    errors = [
         ValidationError(
             type="obpi_lifecycle_coherence",
             artifact=f".gzkit/ledger.jsonl::{obpi_id}",
@@ -539,6 +578,31 @@ def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
         )
         for obpi_id in orphans
     ]
+    # The other half of the same incoherence (GHI #774). Park is one of the
+    # dispositions the orphan census excludes, so parking an orphan SILENCES it —
+    # and nothing re-checked that the disposition stayed true. This scope owns
+    # both directions rather than a second `--park-coherence` flag: one subject,
+    # one witness (hexagonal-architecture.md rule 8, prefer subsumption).
+    errors.extend(
+        ValidationError(
+            type="obpi_lifecycle_coherence",
+            artifact=f".gzkit/ledger.jsonl::{obpi_id}",
+            message=(
+                f"OBPI is parked while its parent `{live_parent}` is a live non-pool ADR. "
+                "Parked means the parent went back to pool, so this asserts two "
+                "contradictory things at once. It also disarms two gates: "
+                "`parkable_children` skips already-parked OBPIs, so `gz adr demote` on "
+                "this parent emits no park events while still deleting every brief, and "
+                "the orphan census above excludes parked OBPIs so the deletion raises "
+                "nothing. Recovery: `uv run python -m gzkit.governance.obpi_park_backfill "
+                "--release` to review, then `--release --apply-release --attestor <name>`."
+            ),
+        )
+        for obpi_id, live_parent in park_coherence_violations(
+            events, non_pool_brief_owners(project_root)
+        )
+    )
+    return errors
 
 
 def audit_adr_status_fresh(project_root: Path) -> list[ValidationError]:

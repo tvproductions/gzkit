@@ -59,6 +59,118 @@ def _seed_feature_adr(
     return adr_file
 
 
+class CollisionWithRetainedIntake(unittest.TestCase):
+    """Demoting an ADR whose pool intake was retained on promotion (GHI #775).
+
+    `gz adr promote` keeps the pool file as historical intake, so any
+    promote/demote round trip collides. Both original policies lost something:
+    `fail` refused outright, and `keep-pool` preserved the pre-promotion intake
+    while `rmtree` deleted the evolved package -- silently, exit 0, discarding
+    every decision recorded after promotion. Observed on
+    `ADR-0.44.0-vendor-alignment-codex`, where the two documents had diverged by
+    139 insertions / 140 deletions.
+    """
+
+    def _seed_with_intake(self, config: GzkitConfig) -> tuple[Path, Path]:
+        adr_file = _seed_feature_adr(config)
+        pool_file = Path(config.paths.adrs) / "pool" / f"{_SAMPLE_POOL_ID}.md"
+        pool_file.parent.mkdir(parents=True, exist_ok=True)
+        pool_file.write_text(
+            "---\n"
+            f"id: {_SAMPLE_POOL_ID}\n"
+            "status: Superseded\n"
+            f"promoted_to: {_SAMPLE_FEATURE_ADR_ID}\n"
+            "---\n\n"
+            f"# {_SAMPLE_POOL_ID}: Sample\n\n"
+            "STALE INTAKE FROM BEFORE PROMOTION\n",
+            encoding="utf-8",
+        )
+        return adr_file, pool_file
+
+    def test_take_demoted_writes_the_evolved_content_to_pool(self) -> None:
+        """The policy the round trip actually needs: current thinking wins."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _adr_file, pool_file = self._seed_with_intake(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "775",
+                    "--on-collision",
+                    "take-demoted",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            landed = pool_file.read_text(encoding="utf-8")
+            self.assertIn(
+                "A seeded ADR for testing demotion.",
+                landed,
+                "the demoted ADR's body must become the pool file",
+            )
+            self.assertNotIn(
+                "STALE INTAKE FROM BEFORE PROMOTION",
+                landed,
+                "the superseded intake must not survive over live content",
+            )
+            self.assertIn(f"id: {_SAMPLE_POOL_ID}", landed)
+
+    def test_keep_pool_still_preserves_the_intake(self) -> None:
+        """The existing policy is unchanged -- this adds a third, replaces none.
+
+        Without this pole the new policy could have been implemented by quietly
+        redefining `keep-pool`, which would change behaviour for every caller
+        that already relies on it.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            _adr_file, pool_file = self._seed_with_intake(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(
+                main,
+                [
+                    "adr",
+                    "demote",
+                    _SAMPLE_FEATURE_ADR_ID,
+                    "--ghi",
+                    "775",
+                    "--on-collision",
+                    "keep-pool",
+                ],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn(
+                "STALE INTAKE FROM BEFORE PROMOTION",
+                pool_file.read_text(encoding="utf-8"),
+            )
+
+    def test_fail_is_still_the_default(self) -> None:
+        """Refusing remains the default: silent content loss must stay opt-in."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            adr_file, _pool_file = self._seed_with_intake(config)
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(adr_created_event(_SAMPLE_FEATURE_ADR_ID, "", "heavy"))
+
+            result = runner.invoke(main, ["adr", "demote", _SAMPLE_FEATURE_ADR_ID, "--ghi", "775"])
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertTrue(adr_file.exists(), "a refused demotion must not delete the source")
+
+
 class TestAdrDemoteCommand(unittest.TestCase):
     """``gz adr demote`` — universal queue-collapse tooling."""
 

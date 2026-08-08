@@ -37,7 +37,13 @@ from gzkit.sync import parse_artifact_metadata
 _DEMOTABLE_KINDS = {"feature", "foundation"}
 _FRONTMATTER_STRIP_KEYS = ("kind", "semver", "date")
 _CANONICAL_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+-(?P<slug>.+)$")
-_ON_COLLISION_CHOICES = ("fail", "keep-pool")
+#: Pool-slug collision policies. ``take-demoted`` was added under GHI #775: a
+#: promote/demote round trip ALWAYS collides, because ``gz adr promote`` retains
+#: the pool file as historical intake by design — and neither original policy
+#: could return an ADR that had been worked. ``fail`` refuses; ``keep-pool``
+#: preserves the pre-promotion intake while ``rmtree`` deletes the evolved
+#: package, exit 0, discarding every decision recorded after promotion.
+_ON_COLLISION_CHOICES = ("fail", "keep-pool", "take-demoted")
 
 
 def _derive_pool_slug_from_adr_id(adr_id: str) -> str:
@@ -209,13 +215,25 @@ def _build_demote_plan(
     if target_file.exists():
         if on_collision == "fail":
             rel = target_file.relative_to(project_root).as_posix()
-            msg = f"Pool slug collision: target file already exists: {rel}"
+            msg = (
+                f"Pool slug collision: target file already exists: {rel}. "
+                "Choose --on-collision keep-pool (preserve the existing pool file; the "
+                "demoted package is deleted) or --on-collision take-demoted (the demoted "
+                "ADR's current content becomes the pool file). Prefer take-demoted when "
+                "the ADR was worked after promotion — keep-pool would discard that work."
+            )
             raise GzCliError(msg)
-        collision_keep_pool = True
-        existing_target_content = target_file.read_text(encoding="utf-8")
-        candidate = _reverse_pool_promotion_markers(existing_target_content, source_id)
-        if candidate != existing_target_content:
-            reversed_pool_content = candidate
+        # `take-demoted` leaves `collision_keep_pool` False so the normal
+        # (non-collision) write path puts the demoted content at the pool slug,
+        # overwriting the retained intake. That intake is `status: Superseded`
+        # and stays in git history, which is where an artifact whose own
+        # frontmatter says so belongs (GHI #775).
+        collision_keep_pool = on_collision == "keep-pool"
+        if collision_keep_pool:
+            existing_target_content = target_file.read_text(encoding="utf-8")
+            candidate = _reverse_pool_promotion_markers(existing_target_content, source_id)
+            if candidate != existing_target_content:
+                reversed_pool_content = candidate
     source_dir = source_file.parent
     if source_dir == project_root / config.paths.adrs:
         # Defensive: a top-level loose .md should not have a parent dir to remove.

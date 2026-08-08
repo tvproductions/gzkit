@@ -24,7 +24,7 @@ gz adr demote <ADR-ID> --ghi <NUMBER> [OPTIONS]
 | `--dry-run` | flag | Show planned actions without writing files or ledger events. |
 | `--json` | flag | Emit a structured JSON result payload to stdout. |
 | `--force` | flag | Override the dependent-children safety check (exit 3). Orphans any ADRs whose `parent:` frontmatter points at the demoted ADR. |
-| `--on-collision` | choice | How to handle a pre-existing pool file at the target slug. `fail` (default) blocks; `keep-pool` deletes the source feature/foundation package and keeps the existing pool ADR — reversing any stale `status: Superseded` / `promoted_to:` / promotion-note markers that name the ADR now being demoted (GHI #558), and leaving an unrelated pool file at the same slug untouched. The ledger event records `collision_resolution: "keep-pool"` when this path is taken. |
+| `--on-collision` | choice | How to handle a pre-existing pool file at the target slug. `fail` (default) blocks; `keep-pool` deletes the source feature/foundation package and keeps the existing pool ADR — reversing any stale `status: Superseded` / `promoted_to:` / promotion-note markers that name the ADR now being demoted (GHI #558), and leaving an unrelated pool file at the same slug untouched; `take-demoted` writes the demoted ADR's **current** content to the pool slug, overwriting the retained intake (GHI #775). The ledger event records `collision_resolution: "keep-pool"` when that path is taken. |
 
 ---
 
@@ -33,7 +33,7 @@ gz adr demote <ADR-ID> --ghi <NUMBER> [OPTIONS]
 1. Source ADR must be `feature` or `foundation` kind with a valid `semver` field. Pool ADRs are rejected (already pool — nothing to demote).
 2. Pool target id is derived as `ADR-pool.<slug>`, where `<slug>` comes from the source ADR's id (`ADR-X.Y.Z-<slug>` → `<slug>`).
 3. Target file path: `docs/design/adr/pool/ADR-pool.<slug>.md`.
-4. **Collision check.** If the pool target file already exists, the demotion is rejected (exit 1) by default. Passing `--on-collision keep-pool` resolves the collision by deleting the source feature/foundation package. If the kept pool ADR's `promoted_to:` still names the ADR being demoted (i.e. this demotion reverses that prior promotion), its `status`/`promoted_to`/promotion-note markers are reversed to their canonical pre-promotion state (`status: Pool`, `promoted_to:` stripped, the `> Promoted to ...` note removed) — this is the symmetric inverse of what `gz adr promote` writes on the pool side (GHI #558). A pool file colliding on slug but promoted to a *different* ADR is left untouched. The ledger event records the resolution either way.
+4. **Collision check.** If the pool target file already exists, the demotion is rejected (exit 1) by default. **A promote/demote round trip always collides**, because `gz adr promote` retains the pool file as historical intake by design — so the choice of policy is the choice of which document survives. Pass `--on-collision take-demoted` when the ADR was *worked* after promotion: it writes the demoted ADR's current content to the pool slug, so what gets drawn from the queue later is the thinking as it stands. `keep-pool` is correct only when the promoted ADR did not diverge from its intake — otherwise it exits 0 having silently discarded every decision recorded after promotion (GHI #775). The superseded intake remains in git history either way. Passing `--on-collision keep-pool` resolves the collision by deleting the source feature/foundation package. If the kept pool ADR's `promoted_to:` still names the ADR being demoted (i.e. this demotion reverses that prior promotion), its `status`/`promoted_to`/promotion-note markers are reversed to their canonical pre-promotion state (`status: Pool`, `promoted_to:` stripped, the `> Promoted to ...` note removed) — this is the symmetric inverse of what `gz adr promote` writes on the pool side (GHI #558). A pool file colliding on slug but promoted to a *different* ADR is left untouched. The ledger event records the resolution either way.
 5. **Frontmatter strip.** `kind`, `semver`, and frontmatter `date` are removed. `id` is rewritten to the pool id. `status` is set to `Pool`. Other fields (`lane`, `parent`, `inspired_by`, etc.) are preserved.
 6. **OBPI briefs deleted.** Per the 2026-05-23 get-out-of-jail prequel Q1=b decision, pool ADRs carry no OBPIs by doctrine; brief files under `<source-dir>/obpis/` are deleted via the source-dir removal. Briefs are re-authored if the ADR is later re-promoted.
 7. **Source directory removed.** The entire `docs/design/adr/{pre-release,foundation}/<source-id>/` directory is deleted (taking the briefs, closeout form, and any other authoring artifacts with it).
@@ -86,6 +86,10 @@ gz adr demote ADR-0.27.0 --ghi 520 --force
 
 # Resolve a pool-slug collision by keeping the existing pool ADR
 gz adr demote ADR-0.42.0 --ghi 520 --on-collision keep-pool
+
+# Round-trip an ADR that was worked after promotion: its current content
+# becomes the pool file, replacing the retained pre-promotion intake
+gz adr demote ADR-0.44.0 --ghi 773 --on-collision take-demoted --operator g0
 ```
 
 ---

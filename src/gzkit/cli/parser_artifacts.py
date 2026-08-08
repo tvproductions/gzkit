@@ -753,9 +753,9 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_adr_demote.add_argument(
         "--on-collision",
-        choices=("fail", "keep-pool"),
+        choices=("fail", "keep-pool", "take-demoted"),
         default="fail",
-        help="Pool-slug collision policy: fail (default) or keep-pool",
+        help="Pool-slug collision policy: fail (default), keep-pool, take-demoted",
     )
     p_adr_demote.set_defaults(
         func=lambda a: _lazy("adr_demote_cmd")(

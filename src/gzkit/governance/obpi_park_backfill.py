@@ -20,14 +20,18 @@ import argparse
 import sys
 from pathlib import Path
 
-from gzkit.governance.trust_audits.taxonomy import _live_adr_ids
+from gzkit.governance.trust_audits.taxonomy import _live_adr_ids, non_pool_brief_owners
 from gzkit.ledger import Ledger
-from gzkit.ledger_events import obpi_parked_event
+from gzkit.ledger_events import obpi_parked_event, obpi_unparked_event
 from gzkit.obpi_lifecycle import (
     orphaned_obpi_ids,
+    park_coherence_violations,
     parkable_children,
     rename_chain_target,
 )
+
+#: The park event type, read when resolving what an unpark releases *from*.
+_PARK_EVENT = "obpi_parked"
 
 _DEMOTION_REASON = "pool_demotion"
 
@@ -65,19 +69,29 @@ def plan_backfill(ledger: Ledger, project_root: Path | None = None) -> list[tupl
        actually names ("no on-disk briefs"); parent-resolution alone misses it.
     """
     events = [event.model_dump() for event in ledger.read_all()]
+    root = project_root or Path()
+    adr_root = root / "docs" / "design" / "adr"
+    brief_ids = {p.stem for p in adr_root.rglob("OBPI-*.md")} if adr_root.is_dir() else set()
+    live_adr_ids = _live_adr_ids(root)
+
     planned: list[tuple[str, str, str]] = []
     already: set[str] = set()
     for old_id, new_id in _demotion_cohort(events):
+        # A demotion a later promotion reversed is not a demotion to replay
+        # (GHI #774). The first cut collected every `pool_demotion` rename
+        # unconditionally, so `ADR-0.44.0` — demoted 2026-05-23, promoted back
+        # 2026-07-10 — had its children parked by this backfill on 2026-07-22,
+        # twelve days after the promotion that should have released them.
+        # Promotion could not unpark events that did not yet exist, and with
+        # `obpi_unparked` never emitted since, the state is permanent.
+        if rename_chain_target(events, old_id) in live_adr_ids:
+            continue
         for obpi_id in parkable_children(events, old_id):
             if obpi_id in already:
                 continue
             already.add(obpi_id)
             planned.append((obpi_id, old_id, new_id))
 
-    root = project_root or Path()
-    adr_root = root / "docs" / "design" / "adr"
-    brief_ids = {p.stem for p in adr_root.rglob("OBPI-*.md")} if adr_root.is_dir() else set()
-    live_adr_ids = _live_adr_ids(root)
     for obpi_id in orphaned_obpi_ids(events, live_adr_ids, brief_ids=brief_ids):
         if obpi_id in already:
             continue
@@ -110,6 +124,98 @@ def apply_backfill(ledger: Ledger, planned: list[tuple[str, str, str]], attestor
     return len(planned)
 
 
+def _parked_to(events: list[dict[str, object]], obpi_id: str) -> str:
+    """Return the pool id the latest ``obpi_parked`` event sent *obpi_id* to."""
+    destination = ""
+    for event in events:
+        if event.get("event") != _PARK_EVENT or str(event.get("id", "")) != obpi_id:
+            continue
+        extra = event.get("extra")
+        value = event.get("parked_to")
+        if value is None and isinstance(extra, dict):
+            value = extra.get("parked_to")
+        if value:
+            destination = str(value)
+    return destination
+
+
+def plan_release(ledger: Ledger, project_root: Path | None = None) -> list[tuple[str, str, str]]:
+    """Return ``(obpi_id, live_parent, parked_from)`` for OBPIs parked under a live ADR.
+
+    The release half of the protocol (GHI #774). ``obpi_parked`` had been
+    emitted 371 times and ``obpi_unparked`` zero times, so park state could only
+    ever accumulate — :func:`gzkit.obpi_lifecycle.park_state` composes the two as
+    forward corrective events, and a sequence with no unparks nets to "parked
+    forever".
+
+    This plans the corrective events reconciling park state to where each parent
+    ADR actually lives. Append-only throughout: nothing is rewritten
+    (``AGENTS.md`` Never #2). ``parked_from`` is read off the park event being
+    released rather than reconstructed, so the pair reads as a matched
+    park/unpark on replay.
+    """
+    events = [event.model_dump() for event in ledger.read_all()]
+    violations = park_coherence_violations(events, non_pool_brief_owners(project_root or Path()))
+    return [
+        (obpi_id, live_parent, _parked_to(events, obpi_id)) for obpi_id, live_parent in violations
+    ]
+
+
+def apply_release(ledger: Ledger, planned: list[tuple[str, str, str]], attestor: str) -> int:
+    """Append one ``obpi_unparked`` event per planned release. Returns the count."""
+    for obpi_id, live_parent, parked_from in planned:
+        event = obpi_unparked_event(
+            obpi_id,
+            parent=live_parent,
+            unparked_from=parked_from,
+            reason="park_coherence_repair",
+        )
+        event.extra["attestor"] = attestor
+        event.extra["ghi"] = "ghi-774"
+        ledger.append(event)
+    return len(planned)
+
+
+def _run_release(ledger: Ledger, *, apply_release_mode: bool, attestor: str) -> int:
+    """Report, and optionally apply, the park-coherence release plan (GHI #774)."""
+    planned = plan_release(ledger)
+    if not planned:
+        print("No OBPIs parked under a live ADR — park state is coherent.")  # noqa: T201
+        return 0
+
+    by_parent: dict[str, int] = {}
+    for _obpi_id, live_parent, _parked_from in planned:
+        by_parent[live_parent] = by_parent.get(live_parent, 0) + 1
+    print(  # noqa: T201
+        f"Parked under a LIVE ADR: {len(planned)} across {len(by_parent)} parent ADRs"
+    )
+    for parent, count in sorted(by_parent.items()):
+        print(f"  {parent}: {count}")  # noqa: T201
+
+    if not apply_release_mode:
+        print(  # noqa: T201
+            "\nReport only — no events written. "
+            "Re-run with --release --apply-release --attestor <name>."
+        )
+        return 0
+
+    if not attestor.strip():
+        print(  # noqa: T201
+            "\nRelease refused: --attestor is required with --apply-release.\n"
+            "  Why: this appends governance events reversing a recorded disposition;\n"
+            "  an unattested bulk ledger write is the unwitnessed-mutation failure\n"
+            "  AGENTS.md Never #2 guards against.\n"
+            "  Next step: uv run python -m gzkit.governance.obpi_park_backfill "
+            "--release --apply-release --attestor <name>",
+            file=sys.stderr,
+        )
+        return 1
+
+    written = apply_release(ledger, planned, attestor.strip())
+    print(f"\nUnparked {written} OBPIs (attestor: {attestor.strip()}).")  # noqa: T201
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI entrypoint for the one-shot backfill."""
     parser = argparse.ArgumentParser(
@@ -119,6 +225,16 @@ def main(argv: list[str] | None = None) -> int:
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true", help="Report the plan; write nothing.")
     mode.add_argument("--apply", action="store_true", help="Append the park events.")
+    mode.add_argument(
+        "--release",
+        action="store_true",
+        help="Report OBPIs parked under a live ADR; add --apply-release to unpark them.",
+    )
+    parser.add_argument(
+        "--apply-release",
+        action="store_true",
+        help="With --release: append the obpi_unparked events (requires --attestor).",
+    )
     parser.add_argument(
         "--attestor",
         default="",
@@ -132,6 +248,10 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     ledger = Ledger(Path(args.ledger))
+
+    if args.release:
+        return _run_release(ledger, apply_release_mode=args.apply_release, attestor=args.attestor)
+
     planned = plan_backfill(ledger)
 
     if not planned:

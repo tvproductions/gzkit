@@ -159,6 +159,50 @@ def rename_chain_target(events: Iterable[Mapping[str, Any]], artifact_id: str) -
     return current
 
 
+def park_coherence_violations(
+    events: Iterable[Mapping[str, Any]],
+    brief_owners: Mapping[str, str],
+) -> list[tuple[str, str]]:
+    """Return ``(obpi_id, owning_adr)`` for OBPIs parked while living outside pool.
+
+    ``brief_owners`` maps an OBPI id to the **non-pool** ADR whose package
+    currently holds its brief on disk. Parked means "this OBPI's parent went back
+    to pool", so a parked OBPI whose brief sits in a live ADR's package is
+    asserting two contradictory things at once (GHI #774).
+
+    **Why it went unwitnessed for so long.** Park is one of the dispositions
+    :func:`orphaned_obpi_ids` excludes from its census, so parking an orphan
+    *silences* it — and nothing then re-checked that the disposition was still
+    true. The GHI #584 backfill wrote 356 park events to quiet 233 orphans
+    without consulting where each parent actually lived. With ``obpi_unparked``
+    never once emitted in the repository's history, nothing could clear them.
+
+    The consequence is destructive rather than cosmetic: :func:`parkable_children`
+    skips already-parked OBPIs, so ``gz adr demote`` on such a parent emits *no*
+    park events while still deleting every brief — and this census's exclusion of
+    parked OBPIs means the deletion raises no finding. A hollow exit 0.
+
+    **Grounded in Layer-1 placement, not the rename chain.** The obvious
+    implementation — resolve the ``obpi_created`` parent through
+    :func:`rename_chain_target` and test it against the non-pool ADR ids — is
+    wrong for exactly the ADRs that matter. A demote-then-promote round trip is a
+    rename *cycle* (``A -> B -> A``), and that function seeds ``seen = {current}``
+    and halts when the next hop is already seen, so it resolves such an ADR to its
+    **pool** id while the file sits in ``pre-release/``. Round-tripped ADRs are
+    precisely the population this check exists to find, so the chain would have
+    hidden them. Where the brief *is* needs no inference, and it is also exactly
+    the set ``gz adr demote`` would delete.
+
+    Completion does not exempt a violation: completion is a disposition, not a
+    location, and the most consequential instance (a Gate-5-attested brief in a
+    package ``demote`` would delete) is precisely a completed one.
+    """
+    parked = park_state(list(events))
+    return sorted(
+        (obpi_id, owner) for obpi_id, owner in brief_owners.items() if parked.get(obpi_id, False)
+    )
+
+
 def orphaned_obpi_ids(
     events: Iterable[Mapping[str, Any]],
     live_parent_ids: set[str],
