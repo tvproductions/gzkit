@@ -274,7 +274,8 @@ pool item (operator ruling, 2026-07-21).
        is Interface/Observability work on the section-ownership seam item 3
        already scored at 2/2. What changed is how many narrative units that
        fixed dimension profile is being asked to carry, which is the baseline's
-       job. Folded into an unstarted ADR (0/10 landed) rather than retrofitted
+       job. Folded into an ADR with no OBPIs landed at authoring time rather
+       than retrofitted
        after its OBPIs land over the same corpus surface. -->
 
 ## Checklist

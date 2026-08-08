@@ -20,6 +20,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
+            [--transcribed-adr-counts]
             [--tautological-test-audit]
             [--closeout-proof] [--okf-conformance] [--ontology-purity]
             [--deprecated-verb-prescription]
@@ -1676,6 +1677,64 @@ bypassing writer the audit must go red on.
 **Related:** ADR-0.31.0 Decision item 4 (the single-monitor thesis), GHI #348
 (the clobber class), GHI #668 (the routing this makes mechanical), GHI #669.
 
+### `--transcribed-adr-counts`
+
+Refuse a transcribed ADR OBPI count in live governance prose.
+
+An ADR's OBPI count is **computed** — `gz adr status` derives it from the ledger
+and the briefs on disk. Typed into prose it becomes a Layer-3 value with no
+reconciliation path, which `docs/governance/state-doctrine.md` forbids and
+AGENTS.md § Architectural Boundaries 6 names outright. The filed instance:
+`c5a2614db` folded a tenth OBPI into `ADR-0.35.0` and left three prose sites
+reading `0/9` — one of them **authored five days later**, because it quoted the
+campaign instead of the command. The stale figure propagated into a new artifact
+by transcription.
+
+The remedy is subtractive by operator ruling (2026-08-08): stop writing the
+number down. This scope is the fence that keeps the subtraction from decaying
+back into a convention.
+
+**Scope is opt-in.** Only surfaces declared in
+`data/transcribed_count_surfaces.json` are scanned. 135 files under `docs/`
+carry an `N/M` figure and most are dated amendment records, audit forms, and
+sealed briefs where the count is **correct as history** — the filed GHI's own
+constraint is that *"a blanket sweep would falsify the archive."*
+
+Two opt-outs exist for records inside a scanned surface:
+
+| Opt-out | Use |
+|---|---|
+| `historical_sections` in the registry | A whole section that is a dated record (e.g. `Amendments`, `Archive`, `Rulings Register`). Matched as a substring of the heading, so ordinals and parentheticals are tolerated. Nested subsections inherit it. |
+| `<!-- historical-count -->` on the line | A single dated line sitting inside an otherwise-live section. |
+
+A count is flagged only when its line also names an ADR **and** a progress cue
+(`landed`, `OBPI`, `IN_PROGRESS`, `Draft`, `Pending`, `Validated`, `Completed`)
+sits within 24 characters of it. Identifier-embedded forms like `OBPI-02/03` are
+brief ranges, not counts, and are excluded — an ADR must stay free to name its
+own increments.
+
+```bash
+gz validate --transcribed-adr-counts
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | No live surface transcribes an ADR OBPI count | — |
+| 3 | A live count was found, or a declared surface does not exist | Delete the number and cite `uv run gz adr status <ADR-ID>`. If the line is a dated record, move it under a declared historical section or mark it `<!-- historical-count -->` — never rewrite a historical count to match today |
+
+Enrolled in `gz check` as the **Transcribed ADR counts** step. Its teeth are
+proven by the `transcribed-adr-counts` live negative control, which plants
+**both** poles — a live claim the audit must catch and a historical one under a
+declared section it must leave alone. A control planting only the violation
+would pass equally well against an audit that flagged everything, which is the
+blanket sweep the issue forbids.
+
+**Related:** GHI #768, AGENTS.md § Architectural Boundaries 6,
+`docs/governance/state-doctrine.md`, `gz validate --adr-status-fresh` (the
+existing fail-closed precedent one surface over).
+
 ### `--req-kind-discipline`
 
 Enforces the ADR-0.0.59 REQ kind discipline: every REQ in an OBPI brief's `## Acceptance
@@ -2048,6 +2107,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--surface-fidelity` | opt-in | Composite: run all four surface-fidelity invariants in declared order; exit code is worst-of-four (ADR-0.0.33-05) |
 | `--req-kind-discipline` | opt-in | Fail closed (exit 3) on OBPI briefs with mixed-state [kind] tags or per-kind proof-citation gaps (ADR-0.0.59-02) |
 | `--status-writer-coverage` | opt-in | Fail closed (exit 3) when a function under `src/gzkit/**` writes a frontmatter `status:` key without consulting the single invariant monitor and without a registered reason; also refuses inert register entries (ADR-0.31.0 Decision item 4, GHI #669) |
+| `--transcribed-adr-counts` | opt-in | Fail closed (exit 3) when a surface declared live in `data/transcribed_count_surfaces.json` states an ADR's OBPI count as a number; dated records opt out by section or inline marker (GHI #768) |
 | `--brief-command-shape` | opt-in | Fail closed (exit 3) when a brief Verification block contains non-shell-less commands (OBPI-0.0.63-07, GHI #550) |
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, layer-drift across channels, or obpi_id divergence on one task_id (ADR-0.0.64 / OBPI-04, GHI #653) |

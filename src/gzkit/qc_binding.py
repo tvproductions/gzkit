@@ -108,6 +108,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Complexity-thresholds": ("audit", "docs/", "bound", "python_function"),
     "REQ kind discipline": ("audit", "docs/", "bound", "python_function"),
     "Status writer coverage": ("audit", "src/", "bound", "python_function"),
+    "Transcribed ADR counts": ("audit", "docs/", "bound", "python_function"),
     "tautological test audit": ("audit", "tests/", "bound", "python_function"),
     "Task envelope coherence": ("audit", "docs/", "bound", "python_function"),
     "Lock-exchange coupling": ("audit", ".gzkit/", "bound", "python_function"),

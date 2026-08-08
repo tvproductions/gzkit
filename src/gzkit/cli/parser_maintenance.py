@@ -971,6 +971,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Derived closeout-proof view (ADR-0.0.69). Exit 0: all proven; 3: unproven.",
     )
     p_validate.add_argument(
+        "--transcribed-adr-counts",
+        dest="check_transcribed_adr_counts",
+        action="store_true",
+        default=False,
+        help="Live prose must not transcribe an ADR OBPI count. Exit 3 on any (#768).",
+    )
+    p_validate.add_argument(
         "--deprecated-verb-prescription",
         dest="check_deprecated_verb_prescription",
         action="store_true",
@@ -1236,6 +1243,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_task_envelope_coherence=a.check_task_envelope_coherence,
             check_closeout_proof=a.check_closeout_proof,
             check_okf_conformance=a.check_okf_conformance,
+            check_transcribed_adr_counts=a.check_transcribed_adr_counts,
             check_deprecated_verb_prescription=a.check_deprecated_verb_prescription,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,

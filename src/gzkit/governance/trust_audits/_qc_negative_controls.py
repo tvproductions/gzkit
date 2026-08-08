@@ -436,6 +436,39 @@ def _build_status_writer_coverage() -> Path:
     return root
 
 
+def _build_transcribed_adr_counts() -> Path:
+    """Plant a live transcribed OBPI count, plus the record that must survive.
+
+    GHI #768's binding constraint is that a remedy must not falsify the
+    archive: most of the 135 `N/M` figures under `docs/` are dated records that
+    are CORRECT as history. So this control plants both poles — a live claim the
+    audit must catch, and a historical one under a declared section that it must
+    leave alone. A control planting only the violation would pass just as well
+    against an audit that flagged everything, which is the blanket sweep the
+    issue forbids.
+    """
+    root = _mkroot("transcribed-adr-counts")
+    _write(
+        root / "data" / "transcribed_count_surfaces.json",
+        json.dumps(
+            {
+                "surfaces": [
+                    {"path": "docs/governance/live.md", "historical_sections": ["Amendments"]}
+                ]
+            }
+        ),
+    )
+    _write(
+        root / "docs" / "governance" / "live.md",
+        "# Campaign\n\n"
+        "## Queue\n\n"
+        "- [ ] `ADR-0.35.0-canon-entry-corpus-landing` is `Draft` 0/10 landed.\n\n"
+        "## 9. Amendments (carried forward)\n\n"
+        "- 2026-07-29: `ADR-0.35.0-canon-entry-corpus-landing` read 0/9 landed.\n",
+    )
+    return root
+
+
 def _build_obpi_lifecycle_coherence() -> Path:
     """Seed one undisposed OBPI whose parent does not resolve and whose brief is absent.
 
@@ -1051,6 +1084,11 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "status-writer-coverage",
         _build_status_writer_coverage,
         _ep._ep_status_writer_coverage,
+    ),
+    (
+        "transcribed-adr-counts",
+        _build_transcribed_adr_counts,
+        _ep._ep_transcribed_adr_counts,
     ),
     (
         "obpi-lifecycle-coherence",

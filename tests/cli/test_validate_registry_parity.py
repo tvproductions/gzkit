@@ -91,6 +91,14 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
 #   Explicit tier because it is a src/-scoped structural audit, like its
 #   neighbours, and it is `in_check` from the outset — a scope that discovers
 #   convention-only enforcement would be an odd thing to leave outside the gate.
+#   transcribed_adr_counts — genuinely new (GHI #768). It refuses a transcribed
+#   ADR OBPI count in prose declared live, the Layer-3-becomes-source-of-truth
+#   shape AGENTS.md § Architectural Boundaries 6 names. Explicit tier rather than
+#   default because its subject is an opt-in registry of docs/ surfaces, not a
+#   whole-tree sweep — the filed GHI's binding constraint is that most of the 135
+#   `N/M` figures in docs/ are dated records that must NOT be rewritten, so a
+#   default-tier whole-corpus scope would be the wrong shape. `in_check` from the
+#   outset: a fence that only runs when asked is the convention it replaces.
 _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
     {
         "persona_witness",
@@ -98,6 +106,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "fidelity_presence",
         "waiver_ratchet",
         "status_writer_coverage",
+        "transcribed_adr_counts",
     }
 )
 

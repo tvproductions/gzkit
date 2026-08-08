@@ -868,6 +868,20 @@ def run_status_writer_coverage_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --status-writer-coverage", cwd=project_root)
 
 
+def run_transcribed_adr_counts_audit(project_root: Path) -> QualityResult:
+    """Run the transcribed-ADR-count audit (GHI #768).
+
+    Fails closed (exit 3) when a surface declared live in
+    ``data/transcribed_count_surfaces.json`` states an ADR's OBPI count as a
+    number. The count is computed by ``gz adr status``; a second copy in prose
+    has no reconciliation path and goes stale on the next add, withdraw, park,
+    or fold. Recovery: delete the number and cite the command. A DATED RECORD
+    belongs under a declared historical section or carries the inline
+    ``<!-- historical-count -->`` marker — never rewrite history to match today.
+    """
+    return run_command("uv run gz validate --transcribed-adr-counts", cwd=project_root)
+
+
 def run_insights_shape_audit(project_root: Path) -> QualityResult:
     """Run the agent-insights.jsonl record-shape audit (GHI #358).
 

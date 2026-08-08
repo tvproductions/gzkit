@@ -156,6 +156,9 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_obpi_lifecycle_coherence,
     audit_pool_adr_isolation,
 )
+from gzkit.governance.trust_audits.transcribed_counts import (
+    audit_transcribed_counts,
+)
 from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manifest
 from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
 
@@ -210,6 +213,7 @@ __all__ = [
     "audit_instructions_files_budget",
     "audit_surface_delivery_witness",
     "audit_status_writer_coverage",
+    "audit_transcribed_counts",
     "audit_orientation_freshness",
     "audit_qc_binding",
     "audit_fidelity_presence",

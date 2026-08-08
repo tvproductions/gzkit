@@ -466,6 +466,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         True,
         lambda r, _f: _ta().audit_status_writer_coverage(r),
     ),
+    _ScopeEntry(
+        "transcribed_adr_counts",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_transcribed_counts(r),
+    ),
     _ScopeEntry("ontology_purity", "explicit", True, lambda r, _f: _ontology_purity_runner(r)),
     _ScopeEntry(
         "brief_command_shape", "explicit", True, lambda r, _f: _ta().audit_brief_command_shape(r)
@@ -1141,6 +1147,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "router_tables",
         "req_kind_discipline",
         "status_writer_coverage",
+        "transcribed_adr_counts",
         "ontology_purity",
         "brief_command_shape",
         "foundation_kind_closed",
@@ -1468,6 +1475,7 @@ def validate(
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_status_writer_coverage: bool = False,
+    check_transcribed_adr_counts: bool = False,
     check_ontology_purity: bool = False,
     check_brief_command_shape: bool = False,
     check_tautological_test_audit: bool = False,
@@ -1580,6 +1588,7 @@ def validate(
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "status_writer_coverage": check_status_writer_coverage,
+        "transcribed_adr_counts": check_transcribed_adr_counts,
         "ontology_purity": check_ontology_purity,
         "brief_command_shape": check_brief_command_shape,
         "tautological_test_audit": check_tautological_test_audit,
