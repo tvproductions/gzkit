@@ -153,7 +153,16 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
-- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance.
+- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.**
+
+  **All six exemplars are CLOSED** — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`, `#620` (verified 2026-08-08 via `gh issue view`). They are **evidence the class exists, not a checklist**: the box's own text says *"it closes the family rather than the instance."* Six closed instances do not discharge a class-level criterion, and checking the box on their strength is the enumerate-the-exemplars habit the criterion was written to resist.
+
+  **The criterion is measurable, and the instrument already exists.** `docs/governance/advisory-rules-audit.md` scores every clause of `CLAUDE.md` + `.gzkit/rules/**` on four values, self-tested by `gz validate --advisory-scorecard`. Those four values ARE the criterion: **Mechanical** = carries a witness; **Judgment** = advisory by its own text; **Promotable** and **Ambiguous** = *the third state this box forbids*. Measured 2026-08-08 — 63 Mechanical, 27 Judgment, **12 Promotable + 2 Ambiguous = 14 rows in the third state**.
+
+  **Done means all three arms hold:**
+  1. **Rules arm** — the 14 `Promotable`/`Ambiguous` rows reach zero: each is either mechanized (→ Mechanical) or its rule text amended to state it is advisory (→ Judgment). Re-scoring alone, without the text edit, is laundering.
+  2. **Skill arm** — the scorecard covers **no** `.gzkit/skills/**/SKILL.md` mandate, which is where all three agent-side exemplars lived (`#459`, `#574`, `#620` were each a skill mandate with no receipt). Extend coverage to skill mandates, or record in the audit why skills are structurally out of scope. Today the arm is not failing — it is unmeasured, which is the same blindness one surface over.
+  3. **Debt arm** — already mechanized and needs no new work: the 23 pre-ledger rules are pinned in `data/advisory_scorecard_grandfather.json` and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 BI #8), so debt cannot grow or follow a rule forward silently.
 
 **Movement D — Stop the re-adjudication** *(ruling lifecycle)*
 - [x] **Handoff-local repair** — every authored next step now survives the resume (`ResumeResult.next_steps`); the `continues_from` chain link is correct-by-construction. GHI #696, commit `5ec44ad1`, receipt `arb-step-unittest-430503d2`.
@@ -269,6 +278,53 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-08 (2) — the family-closure box is re-scoped, not checked off (operator-ratified)
+
+Operator ruling: **"Keep open, re-scope to the criterion."** Selected from a
+three-option picker; the alternatives were *check it off* and *split the box*.
+No box removed, nothing resequenced, no change to Movements A, B, or D, and no
+change to the post-1.0 pool ruling.
+
+**What prompted the question.** All six issues the box names by number are
+CLOSED — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`,
+`#620` (verified via `gh issue view`, 2026-08-08). The corrected failure-class
+index puts live work in three other chains. On the enumerated reading the box
+was dischargeable.
+
+**Why it is not.** The box's own completion criterion is class-level and says so
+in its last sentence: *"it closes the family rather than the instance."* The six
+numbers are exemplars proving the class exists. Checking the box on their
+strength would be the enumerate-the-exemplars habit the criterion was written to
+resist — and it is the failure shape §9a records for the 06-14 rulings that were
+*"booked and never rendered"*: work marked done because its visible instances
+closed, while the discipline it declared went unwitnessed.
+
+**The re-scope, and the instrument that makes it measurable.** No new machinery
+is proposed. `docs/governance/advisory-rules-audit.md` already scores every
+clause of `CLAUDE.md` + `.gzkit/rules/**` on four values and is self-tested by
+`gz validate --advisory-scorecard`. Those four values *are* this box's criterion,
+which nobody had noticed:
+
+| Scorecard score | Criterion state |
+|---|---|
+| **Mechanical** | carries a mechanical witness ✓ |
+| **Judgment** | demoted to advisory in its own text ✓ |
+| **Promotable** | **the third state — declared, no witness, not marked advisory** |
+| **Ambiguous** | **the third state — scope unclear enough that nothing can witness it** |
+
+Measured 2026-08-08 over the audit: 63 Mechanical, 27 Judgment, **12 Promotable
++ 2 Ambiguous = 14 rows in the forbidden third state**. The box now completes
+against that number and two named arms — the rules arm (drive 14 → 0, by
+mechanizing or by amending the rule text; re-scoring alone is laundering) and
+the skill arm (`.gzkit/skills/**/SKILL.md` mandates have **zero** scorecard
+coverage, which is exactly where all three agent-side exemplars lived). The debt
+arm is already mechanized and carries no new work.
+
+**One limit recorded, not hidden.** The skill arm is not *failing* today — it is
+**unmeasured**. Stating it as an open arm rather than a clean one is deliberate:
+an uncovered surface reported as green is the same defect this whole family
+names, and the box would otherwise inherit it.
 
 ### 2026-08-08 — C2 checked off; the "single source" claim made true (operator-ratified)
 
