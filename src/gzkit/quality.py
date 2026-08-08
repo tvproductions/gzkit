@@ -1701,17 +1701,26 @@ def _check_closeout_artifact_proof(allowed_paths: list[str], project_root: Path)
     """Check if a closeout-kind artifact in allowed paths exists with substantive content.
 
     Closeout-only OBPIs (whose work is external GHI filings, grep sweeps, and
-    foundation walkthroughs) name ``ADR-CLOSEOUT-FORM.md`` and
-    ``EVALUATION_SCORECARD.md`` under ``docs/design/adr/**/`` in their allowed
-    paths. Those files are the durable artifacts that OBPI produces; without
-    this classifier they trip the product-proof MISSING gate despite being
-    substantive evidence.
+    foundation walkthroughs) name ``ADR-CLOSEOUT-FORM.md``,
+    ``EVALUATION_SCORECARD.md``, and ``EVALUATION_SUBSTANCE.md`` under
+    ``docs/design/adr/**/`` in their allowed paths. Those files are the durable
+    artifacts that OBPI produces; without this classifier they trip the
+    product-proof MISSING gate despite being substantive evidence.
+
+    ``EVALUATION_SUBSTANCE.md`` joined the set with GHI #769, which split the
+    judge's scorecard off the machine-regenerated one. It is the more
+    substantive of the two by construction — the scorecard is a deterministic
+    structural lint, the substance file is the recorded judgment.
     """
     for path_str in allowed_paths:
         if not path_str.startswith("docs/design/adr/"):
             continue
         filename = Path(path_str).name
-        if filename not in {"ADR-CLOSEOUT-FORM.md", "EVALUATION_SCORECARD.md"}:
+        if filename not in {
+            "ADR-CLOSEOUT-FORM.md",
+            "EVALUATION_SCORECARD.md",
+            "EVALUATION_SUBSTANCE.md",
+        }:
             continue
         artifact_path = project_root / path_str
         if not artifact_path.is_file():

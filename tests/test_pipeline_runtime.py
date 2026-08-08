@@ -776,6 +776,107 @@ class TestCheckAdrEvaluationVerdict(unittest.TestCase):
             self.assertIn("NO GO", errors[0])
 
 
+class TestCheckAdrEvaluationVerdictSubstanceChannel(unittest.TestCase):
+    """The NO-GO gate reads the judge-authored file, not the machine-owned one.
+
+    ``gz adr evaluate`` rewrites ``EVALUATION_SCORECARD.md`` wholesale, and the
+    verdict marker this gate matches (``**Overall Verdict:**``) is emitted only
+    by the judge's template — ``render_scorecard_markdown`` renders checkbox
+    lines and no such marker. So before GHI #769 every evaluate run silently
+    DISARMED this gate: a recorded NO GO became no verdict at all, and the
+    caller saw a clean list.
+
+    ``EVALUATION_SUBSTANCE.md`` is the judge's home and takes precedence. The
+    scorecard fallback is retained deliberately rather than as a courtesy: 46
+    of 55 scorecards on disk at the cutover carried judge verdicts, and reading
+    substance-only would have disarmed the gate for all of them — the same
+    defect this change exists to close, arriving from the other direction.
+    """
+
+    def test_substance_file_no_go_returns_blocker(self) -> None:
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SUBSTANCE.md").write_text(
+                "# Substance\n\n**Overall Verdict:** NO GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("NO GO", errors[0])
+
+    def test_substance_verdict_wins_over_stale_scorecard(self) -> None:
+        """A regenerated structural scorecard cannot overturn a judged NO GO."""
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SUBSTANCE.md").write_text(
+                "# Substance\n\n**Overall Verdict:** NO GO\n",
+                encoding="utf-8",
+            )
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n**Overall Verdict:** GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("NO GO", errors[0])
+
+    def test_scorecard_fallback_survives_for_pre_cutover_packages(self) -> None:
+        """The 46 packages whose verdict lives only in the scorecard stay gated."""
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                "# Scorecard\n\n**Overall Verdict:** NO GO\n",
+                encoding="utf-8",
+            )
+            errors = check_adr_evaluation_verdict(adr_dir)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("NO GO", errors[0])
+
+    def test_machine_rendered_scorecard_alone_yields_no_verdict(self) -> None:
+        """The structural render carries no verdict marker — it cannot gate.
+
+        This pins the premise of the whole change: a scorecard containing only
+        the CLI's checkbox render must produce no blocker, so a NO GO recorded
+        by a judge and then overwritten is observably a lost gate rather than a
+        preserved one.
+        """
+        from gzkit.adr_eval import render_scorecard_markdown
+        from gzkit.pipeline_runtime import check_adr_evaluation_verdict
+
+        result = _structurally_incomplete_eval_result()
+        with tempfile.TemporaryDirectory() as tmpdir:
+            adr_dir = Path(tmpdir)
+            (adr_dir / "EVALUATION_SCORECARD.md").write_text(
+                render_scorecard_markdown(result), encoding="utf-8"
+            )
+            self.assertEqual(check_adr_evaluation_verdict(adr_dir), [])
+
+
+def _structurally_incomplete_eval_result():  # type: ignore[no-untyped-def]
+    from gzkit.adr_eval import AdrEvalResult, DimensionScore, EvalVerdict
+
+    return AdrEvalResult(
+        adr_id="ADR-0.1.0",
+        adr_dimensions=[
+            DimensionScore(
+                dimension="Problem Clarity", weight=0.15, score=1, weighted=0.15, findings=[]
+            )
+        ],
+        adr_weighted_total=1.0,
+        obpi_scores=[],
+        red_team_results=None,
+        verdict=EvalVerdict.NO_GO,
+        action_items=[],
+        timestamp="2026-03-21T00:00:00+00:00",
+    )
+
+
 _VALID_PERSONA = (
     "---\nname: implementer\ntraits:\n  - methodical\n"
     "anti-traits:\n  - shortcuts\ngrounding: Craft.\n---\n\n"

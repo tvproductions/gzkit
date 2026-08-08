@@ -526,31 +526,47 @@ def validate_brief_for_pipeline(project_root: Path, brief_path: Path) -> list[st
 
 
 def check_adr_evaluation_verdict(adr_dir: Path) -> list[str]:
-    """Check for a NO GO evaluation scorecard in the ADR directory.
+    """Check for a NO GO evaluation verdict in the ADR directory.
 
-    Returns a list of blocking errors if a NO GO verdict is found.
-    Returns an empty list if no scorecard exists (advisory, not required)
-    or if the verdict is GO or CONDITIONAL GO.
+    Reads the judge-authored ``EVALUATION_SUBSTANCE.md`` first, falling back to
+    ``EVALUATION_SCORECARD.md``. Returns a list of blocking errors if a NO GO
+    verdict is found; an empty list if neither file exists (advisory, not
+    required) or if the verdict is GO or CONDITIONAL GO.
+
+    Precedence is load-bearing (GHI #769). The verdict marker matched below is
+    emitted only by the judge's template — ``render_scorecard_markdown`` renders
+    checkbox lines and no ``**Verdict:**`` — while ``gz adr evaluate`` rewrites
+    the scorecard wholesale on every run. Reading the machine-owned file first
+    therefore let a regenerated structural scorecard erase a recorded NO GO, so
+    the gate reported clean precisely when it had most to say.
+
+    The scorecard fallback is retained because 46 of the 55 scorecards on disk
+    at the cutover carried judge verdicts; dropping it would disarm the gate for
+    every one of them, which is the same defect arriving from the other side.
     """
-    scorecard_path = adr_dir / "EVALUATION_SCORECARD.md"
-    if not scorecard_path.exists():
-        return []
+    for filename in ("EVALUATION_SUBSTANCE.md", "EVALUATION_SCORECARD.md"):
+        verdict_path = adr_dir / filename
+        if not verdict_path.exists():
+            continue
 
-    try:
-        content = scorecard_path.read_text(encoding="utf-8")
-    except OSError:
-        return []
+        try:
+            content = verdict_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
 
-    verdict_match = re.search(r"\*\*(?:Overall\s+)?Verdict[:\s]*\*\*\s*(\S+(?:\s+\S+)*)", content)
-    if not verdict_match:
-        return []
+        verdict_match = re.search(
+            r"\*\*(?:Overall\s+)?Verdict[:\s]*\*\*\s*(\S+(?:\s+\S+)*)", content
+        )
+        if not verdict_match:
+            continue
 
-    verdict = verdict_match.group(1).strip().upper()
-    if "NO GO" in verdict or "NO_GO" in verdict or "NOGO" in verdict:
-        return [
-            f"ADR evaluation scorecard verdict is NO GO ({scorecard_path.name}). "
-            "Revise the ADR or OBPIs and re-run: uv run gz adr evaluate <ADR-ID>"
-        ]
+        verdict = verdict_match.group(1).strip().upper()
+        if "NO GO" in verdict or "NO_GO" in verdict or "NOGO" in verdict:
+            return [
+                f"ADR evaluation verdict is NO GO ({verdict_path.name}). "
+                "Revise the ADR or OBPIs and re-run: uv run gz adr evaluate <ADR-ID>"
+            ]
+        return []
     return []
 
 

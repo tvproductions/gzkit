@@ -35,7 +35,7 @@ _ADR_PACKAGE_MARKER = "design/adr"
 # Ceremony artifacts inside an ADR package that record what was true at audit or
 # closeout time. Sealed on the same ground as a terminal brief (GHI #532).
 _SEALED_ADR_ARTIFACTS: frozenset[str] = frozenset(
-    {"EVALUATION_SCORECARD.md", "ADR-CLOSEOUT-FORM.md"}
+    {"EVALUATION_SCORECARD.md", "EVALUATION_SUBSTANCE.md", "ADR-CLOSEOUT-FORM.md"}
 )
 
 # CLI verbs that legitimately have no wielding skill (e.g. bootstrap and

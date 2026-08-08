@@ -465,4 +465,11 @@ def render_scorecard_markdown(result: AdrEvalResult) -> str:
         for i, item in enumerate(result.action_items, 1):
             lines.append(f"{i}. {item}")
 
-    return "\n".join(lines) + "\n"
+    # Normalize to exactly one trailing newline rather than appending one
+    # unconditionally: the separator above is emitted whether or not the
+    # action-items block follows it, so an empty `action_items` left a blank
+    # line at EOF that `end-of-file-fixer` stripped, failing every first
+    # `gz git-sync --apply` after an evaluate (GHI #769). `rstrip` closes the
+    # class — any future conditional tail block leaving a dangling separator
+    # is normalized here rather than re-fixed at its own site.
+    return "\n".join(lines).rstrip("\n") + "\n"

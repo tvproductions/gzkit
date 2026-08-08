@@ -475,6 +475,76 @@ class TestScorecardRendering(unittest.TestCase):
         self.assertIn("3.00/4.0", md)
 
 
+class TestScorecardEndOfFileContract(unittest.TestCase):
+    """The emitted scorecard must satisfy the repo's own commit contract.
+
+    A first-party ``gz`` writer that reliably trips a pre-commit hook is the
+    runtime disagreeing with its own gates (GHI #769). ``end-of-file-fixer``
+    requires exactly one trailing newline, and it normalizes BOTH absence and
+    excess — so its "files were modified" message is direction-neutral and
+    cannot be read as a diagnosis. GHI #769 read it as a missing newline; the
+    measured defect was a trailing blank line, so the remedy the issue body
+    proposed would have deepened it.
+
+    Asserted for every action-items branch, because the blank line came from a
+    section separator whose following block is conditional: with action items
+    present the separator is consumed, and the defect disappears. A test that
+    exercised only the populated branch would pass against the broken writer.
+    """
+
+    def _result(self, action_items: list[str]) -> AdrEvalResult:
+        return AdrEvalResult(
+            adr_id="ADR-0.1.0",
+            adr_dimensions=[
+                DimensionScore(
+                    dimension="Problem Clarity",
+                    weight=0.15,
+                    score=3,
+                    weighted=0.45,
+                    findings=[],
+                )
+            ],
+            adr_weighted_total=3.0,
+            obpi_scores=[
+                ObpiDimensionScores(
+                    obpi_id="OBPI-0.1.0-01",
+                    independence=3,
+                    testability=3,
+                    value=3,
+                    size=3,
+                    clarity=3,
+                    average=3.0,
+                )
+            ],
+            red_team_results=None,
+            verdict=EvalVerdict.GO,
+            action_items=action_items,
+            timestamp="2026-03-21T00:00:00+00:00",
+        )
+
+    @covers("REQ-0.0.5-04-04")
+    def test_emitted_scorecard_ends_with_exactly_one_newline_without_action_items(
+        self,
+    ) -> None:
+        md = render_scorecard_markdown(self._result([]))
+
+        self.assertTrue(md.endswith("\n"), "scorecard must end with a newline")
+        self.assertFalse(
+            md.endswith("\n\n"),
+            "scorecard must not end with a blank line — end-of-file-fixer "
+            "strips it and reports the file as modified, failing the commit",
+        )
+
+    @covers("REQ-0.0.5-04-04")
+    def test_emitted_scorecard_ends_with_exactly_one_newline_with_action_items(
+        self,
+    ) -> None:
+        md = render_scorecard_markdown(self._result(["revise OBPI-01 scope"]))
+
+        self.assertTrue(md.endswith("\n"), "scorecard must end with a newline")
+        self.assertFalse(md.endswith("\n\n"), "scorecard must not end with a blank line")
+
+
 class TestEvaluateAdr(unittest.TestCase):
     def _make_project(self, adr_content: str, obpi_contents: list[str]) -> Path:
         import tempfile
