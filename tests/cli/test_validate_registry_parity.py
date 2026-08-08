@@ -78,7 +78,16 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
 #   include a Persona") for ADRs. The MUST was convention-only while its sibling
 #   section `## Why foundation tier?` was mechanically enforced; 44 ADRs reached
 #   the grandfather roster, 42 of them past Gate 5 (GHI #741).
-_POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset({"persona_witness"})
+#
+#   qc_binding, fidelity_presence, waiver_ratchet — newly REGISTERED, not newly
+#   created. They predate the snapshot but were never in `_explicit_scope_runners`
+#   because they dispatched through the early-return chain alone, which is exactly
+#   why the registry's "single source of validate dispatch" header was false. The
+#   hatch is still the honest home: the golden set is measured evidence of the
+#   pre-collapse runner dict, and these were never in it.
+_POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
+    {"persona_witness", "qc_binding", "fidelity_presence", "waiver_ratchet"}
+)
 
 _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
     {
@@ -177,6 +186,21 @@ _GOLDEN_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
     }
 )
 
+# Stems excluded from `_other_scopes_active` AFTER the snapshot was taken. Same
+# doctrine as `_POST_SNAPSHOT_EXPLICIT_ADDITIONS` (GHI #741): the golden above is
+# measured evidence of the pre-collapse predicate, so appending to it would erase
+# the boundary between what the collapse had to reproduce and what came later.
+#
+#   qc_binding, fidelity_presence, waiver_ratchet — registered so the registry is
+#   genuinely the single source of validate dispatch. Each owns a solo
+#   early-return lifecycle exactly as `sensitivity` and `unscoped_rules` do, so
+#   each is excluded for the SAME legitimate reason: counting itself as "another
+#   scope active" would make the #704 combined-scope refusal fire against a solo
+#   invocation.
+_POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
+    {"qc_binding", "fidelity_presence", "waiver_ratchet"}
+)
+
 
 class TestValidatorRegistryParity(unittest.TestCase):
     """The collapsed registry reproduces the pre-collapse dispatch exactly."""
@@ -229,10 +253,17 @@ class TestValidatorRegistryParity(unittest.TestCase):
     def test_other_scopes_active_membership_preserved(self) -> None:
         excluded = frozenset(e.stem for e in self._registry() if not e.in_other_scopes)
         self.assertEqual(
-            excluded,
+            excluded - _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED,
             _GOLDEN_OTHER_SCOPES_EXCLUDED,
             "the `_other_scopes_active` exclusion set must be preserved byte-for-byte "
             "— changing it alters whether a solo early-return scope runs solo",
+        )
+        self.assertEqual(
+            excluded & _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED,
+            _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED,
+            "a stem excluded from `_other_scopes_active` after the snapshot must be "
+            "declared in `_POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED` — an undeclared one "
+            "is drift, and a declared-but-included one means the exclusion was lost",
         )
 
     def test_derived_runner_dicts_match_registry_tiers(self) -> None:

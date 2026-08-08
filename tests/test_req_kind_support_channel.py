@@ -462,9 +462,15 @@ class TestRecursionFence(unittest.TestCase):
 class TestEarlyReturnScopeDispatch(unittest.TestCase):
     """REQ-0.0.69-01-01 extended (GHI #630): SUPPORT proofs citing early-return
     validator scopes (qc-binding, fidelity-presence, waiver-ratchet) — which own
-    their full lifecycle in validate_cmd and are absent from the aggregate runner
-    maps — must dispatch via their trust-audit fn instead of fail-closing as
-    unproven regardless of truth.
+    their full 0/2/3 lifecycle in validate_cmd — must dispatch via their
+    trust-audit fn instead of fail-closing as unproven regardless of truth.
+
+    GHI #630 met this by hand-wiring a `_early_return_scope_audit` map, because
+    the three were absent from VALIDATOR_REGISTRY and so from the aggregate
+    runner maps. They are now registered, so dispatch resolves them through
+    `_explicit_scope_runners` like every other scope and that map is retired.
+    The behavior these tests pin is unchanged; the patch target follows the
+    dispatch path, which now reads the `trust_audits` package export.
     """
 
     _QC_BINDING_REQ = (
@@ -481,7 +487,7 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
             with patch(
-                "gzkit.governance.trust_audits.qc_binding.audit_qc_binding",
+                "gzkit.governance.trust_audits.audit_qc_binding",
                 return_value=[],
             ):
                 result = resolve_support_proof(self._QC_BINDING_REQ, project_root)
@@ -498,7 +504,7 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
             project_root = Path(tmp)
             _make_ledger(project_root, "artifact_edited")
             with patch(
-                "gzkit.governance.trust_audits.qc_binding.audit_qc_binding",
+                "gzkit.governance.trust_audits.audit_qc_binding",
                 return_value=[object()],  # one error → scope not clean
             ):
                 result = resolve_support_proof(self._QC_BINDING_REQ, project_root)

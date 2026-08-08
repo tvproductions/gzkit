@@ -149,7 +149,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 
 **Movement C — Reduce the accretion** *(deferral LIFTED 2026-07-18 — this is pre-1.0)*
 - [ ] **Surface mirroring** — 703 of 810 chore commits (47% of all commits) are `gz git-sync` regenerating five copies of every skill/rule across `.gzkit/`, `src/gzkit/`, `.claude/`, `.agents/`, `.github/`. One canonical location; generate at install, not at commit. Largest single line item on the board.
-- [ ] Collapse the `validate()` surface to the registry — **94 scopes** today (92 when this box was authored, 81 at GHI #618). **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live.
+- [x] Collapse the `validate()` surface to the registry — **DONE 2026-08-08** against the amended criterion. **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live. **All three sub-claims now hold, each fenced:** *(a)* enrollment landed 2026-08-02 (`0f671b31c`, GHI #744) — `data/check_scope_membership.json` declares membership and `tests/governance/test_check_scope_parity.py` recomputes it from source via AST, so drift in either direction fails and a default-tier scope outside the gate fails closed; *(b)* the registry is **now** genuinely the single source — `--qc-binding`, `--fidelity-presence` and `--waiver-ratchet` had dispatched through the early-return chain alone since the #618 collapse, contradicting the `VALIDATOR_REGISTRY` header's own "Single source of validate dispatch" claim, and that gap had already cost GHI #630 (every SUPPORT REQ citing one read `unproven-support` regardless of truth) which was patched with a *third* hand-maintained map rather than closed; registering the three retired that map (**net −18 source lines**) and the fence now asserts `reached − registry == ∅` instead of accommodating the exception; *(c)* #704, #745 and #748 all closed 2026-08-02 with standing fences, #704 with a genuine class-level fix replacing the per-scope guards that had been copied forward onto every new scope. **Count correction:** the "94 scopes" this box carried matched no enforced surface — `VALIDATOR_REGISTRY` holds **85**, the roster classifies 85 (44 `in_check` / 41 `out_of_check`), and `gz validate --help` prints 99 *flag* lines including non-scope flags. The retargeting off counting is exactly why that stale figure changed nothing about completion.
 - [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
@@ -269,6 +269,66 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-08 — C2 checked off; the "single source" claim made true (operator-ratified)
+
+Operator rulings, verbatim, in order: *"Determine C2 status first"*, then
+*"Close the residual now (Recommended)"*, then *"Check C2 + sync"*.
+
+**Why this amendment exists at all.** The resumed handoff advised *"Land the C2
+enrollment fail-close (GHI #744)"* as its second next step. **That step was
+stale on the day it was authored** — #744 closed `COMPLETED` 2026-08-02 at
+`0f671b31c`, six days earlier. The handoff had read the `(GHI #744)` parenthetical
+in this box — a citation for the criterion the 2026-08-07 amendment adopted — as
+unlanded scope. The agent's own recommendation was to set that step aside and pull
+GHI #770 instead; the operator overrode it to verify this box's criterion against
+source first. That verification is what found the residual below. Recorded as an
+`improvement` insight under scope `campaign-item-verification`.
+
+**What the determination found.** Two of the three sub-claims already held. The
+third did not, and had not since the #618 collapse: `VALIDATOR_REGISTRY`'s header
+called itself *"Single source of validate dispatch"* while `--qc-binding`,
+`--fidelity-presence` and `--waiver-ratchet` reached `gz check` without ever
+appearing in it. The roster **accommodated** them (`reached_outside_registry`)
+rather than closing the gap, and `tests/governance/test_check_scope_parity.py`
+documented the contradiction in its own docstring while asserting only that the
+exceptions were *classified*.
+
+**This residual was a member of the family the 2026-08-07 amendment ratified a box
+to close** — a declared discipline with no mechanism behind it, the same shape as
+#770, #692 and #693. It had already produced one real defect: GHI #630 found every
+SUPPORT REQ citing one of the three resolving `unproven-support` regardless of
+truth, because `_dispatch_validator_scope` resolves scopes through the
+registry-derived runner maps. That was patched by hand-wiring a **third** copy of
+the scope→audit knowledge (`_early_return_scope_audit`) — fixing the instance, not
+the class.
+
+**The fix is reductive, which is the point of Movement C.** Registering the three
+(tier `explicit`, `in_other_scopes=False`, matching the `sensitivity` /
+`unscoped_rules` / `evaluation_justify_binding` precedent) retired that map:
+**+27 source lines, −45, net −18**. The fence now asserts `reached − registry == ∅`
+rather than accommodating the exception, and the exclusion-set golden gained a
+`_POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED` hatch mirroring the GHI #741 pattern, so the
+pre-collapse snapshot stays measured evidence rather than being edited.
+
+**Observed behavior is unchanged in every case** — `_dispatch_early_return_scopes`
+still fires first and short-circuits, so each flag keeps its solo 0/2/3 lifecycle
+and custom prose: the three solo invocations exit 0, `--qc-binding --documents`
+still exits 1 with the GHI #704 refusal verbatim, and bare `gz validate` still runs
+13 default scopes.
+
+| Verification | Result |
+|---|---|
+| `uv run gz arb ruff` | exit 0 · `arb-ruff-317c63275e4b4da09715b23f44238a27` |
+| `uv run gz arb typecheck` | exit 0 · `arb-step-typecheck-23d951968d684fdeb626cabf3296cb6f` |
+| `uv run gz arb step --name unittest -- uv run -m unittest -q` | 8089 tests OK, exit 0 · `arb-step-unittest-32be07bf2f2545f8b92fc95b674b8ae7` |
+| `uv run gz check` | exit 0 |
+
+**One limit recorded, not hidden.** The stale "94 scopes" figure this box carried
+matched no enforced surface, and nothing coupled it to one. That is
+**GHI #768's exact shape** (*transcribed counts couple to nothing*) sitting inside
+the campaign that governs sequencing — the same class of defect as the stale
+advised step that opened this session. #768 remains open with no remedy selected.
 
 ### 2026-08-07 (2) — Movement C gains a family-closure box; C2 retargeted off flag count (operator-ratified)
 

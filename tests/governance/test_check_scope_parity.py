@@ -327,20 +327,36 @@ class TestCommittedCheckMembership(unittest.TestCase):
             sorted(self._reached - self._registry),
         )
 
-    def test_second_dispatch_path_scopes_are_accounted(self) -> None:
-        """Scopes wired outside VALIDATOR_REGISTRY are still classified.
+    def test_the_registry_is_the_single_source_of_validate_dispatch(self) -> None:
+        """No scope reaches `gz check` from outside VALIDATOR_REGISTRY.
 
-        `--qc-binding`, `--fidelity-presence` and `--waiver-ratchet` dispatch
-        through the early-return chain in `validate_cmd.py` and never reach
-        VALIDATOR_REGISTRY, despite its header calling itself the "Single source
-        of validate dispatch". A registry-only fence would miss them, so the
-        roster's universe is the registry UNION what check actually reaches.
+        `validate_cmd.py`'s registry header has called itself the "Single source
+        of validate dispatch" since the #618 collapse while three scopes
+        contradicted it: `--qc-binding`, `--fidelity-presence` and
+        `--waiver-ratchet` dispatched through the early-return chain alone and
+        never reached the registry.
+
+        The accommodation was not free. GHI #630 found every SUPPORT REQ citing
+        one of them resolving `unproven-support` regardless of truth, because
+        `_dispatch_validator_scope` resolves a scope through the
+        registry-derived runner maps — and it was patched with a third
+        hand-maintained map (`_early_return_scope_audit`) rather than by closing
+        the gap. Registering the three keeps their solo 0/2/3 lifecycle intact
+        (the early-return chain still fires first and short-circuits) while
+        making the header's claim true, and retires that map.
+
+        This asserts the claim. The prior form asserted only that the exceptions
+        were classified, which accommodated the contradiction instead of closing
+        it — the Movement C `doctrine-declared-without-mechanism` shape.
         """
-        outside_registry = self._reached - self._registry
-        self.assertTrue(
-            outside_registry <= self._in_check,
-            f"Scopes reached by gz check but absent from VALIDATOR_REGISTRY are "
-            f"unclassified: {sorted(outside_registry - self._in_check)}",
+        self.assertEqual(
+            self._reached - self._registry,
+            set(),
+            "Scope(s) reach gz check without appearing in VALIDATOR_REGISTRY, so "
+            "the registry is not the single source of validate dispatch its header "
+            "claims to be. Register them (tier `explicit`, in_other_scopes=False "
+            "for a scope owning a solo early-return lifecycle) rather than widening "
+            "the roster to accommodate the second path.",
         )
 
 

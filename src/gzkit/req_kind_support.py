@@ -16,16 +16,11 @@ from __future__ import annotations
 import json
 import re
 from pathlib import Path
-from typing import TYPE_CHECKING, get_args
+from typing import get_args
 
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.events import TypedLedgerEvent
-
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-    from gzkit.core.validation_rules import ValidationError
 
 # Regex to extract the scope from "gz validate --<scope>" in REQ text.
 _GZ_VALIDATE_SCOPE_RE: re.Pattern[str] = re.compile(r"gz\s+validate\s+--([a-zA-Z][\w-]*)")
@@ -245,46 +240,16 @@ def _support_proof_grandfather(project_root: Path) -> frozenset[str]:
     return frozenset(model.grandfathered_reqs)
 
 
-def _early_return_scope_audit(
-    scope: str,
-) -> Callable[[Path], list[ValidationError]] | None:
-    """Return the trust-audit fn for an early-return validator scope, or None.
-
-    qc-binding, fidelity-presence, and waiver-ratchet own their full 0/2/3
-    lifecycle in ``validate_cmd._dispatch_early_return_scopes`` and are absent
-    from the aggregate runner maps, so ``_dispatch_validator_scope`` could never
-    dispatch them — every SUPPORT REQ citing one resolved ``unproven-support``
-    regardless of truth. Wire them here explicitly. Imports are function-local
-    to avoid an import cycle (trust_audits -> closeout_proof -> req_kind) (GHI
-    #630).
-    """
-    if scope == "qc_binding":
-        from gzkit.governance.trust_audits.qc_binding import (  # noqa: PLC0415
-            audit_qc_binding,
-        )
-
-        return audit_qc_binding
-    if scope == "fidelity_presence":
-        from gzkit.governance.trust_audits.fidelity_presence import (  # noqa: PLC0415
-            audit_fidelity_presence,
-        )
-
-        return audit_fidelity_presence
-    if scope == "waiver_ratchet":
-        from gzkit.governance.trust_audits.waiver_ratchet import (  # noqa: PLC0415
-            audit_waiver_ratchet,
-        )
-
-        return audit_waiver_ratchet
-    return None
-
-
 def _dispatch_validator_scope(scope: str, project_root: Path) -> bool:
-    """Dispatch a validator scope in-process.  Returns True when no errors (exit 0)."""
-    early_audit = _early_return_scope_audit(scope)
-    if early_audit is not None:
-        return len(early_audit(project_root)) == 0
+    """Dispatch a validator scope in-process.  Returns True when no errors (exit 0).
 
+    Every scope resolves through the registry-derived runner maps. GHI #630
+    needed a hand-maintained ``_early_return_scope_audit`` map here because
+    qc-binding, fidelity-presence and waiver-ratchet were absent from
+    ``VALIDATOR_REGISTRY`` — so a SUPPORT REQ citing one read
+    ``unproven-support`` regardless of truth. That map was a third copy of the
+    scope->audit knowledge; registering the three retired it.
+    """
     from gzkit.commands.validate_cmd import (  # noqa: PLC0415
         _default_scope_runners,
         _explicit_scope_runners,

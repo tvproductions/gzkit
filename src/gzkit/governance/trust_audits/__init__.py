@@ -99,6 +99,7 @@ from gzkit.governance.trust_audits.events import (
     audit_event_schemas,
     audit_validator_fields,
 )
+from gzkit.governance.trust_audits.fidelity_presence import audit_fidelity_presence
 from gzkit.governance.trust_audits.insights import audit_insights_shape
 from gzkit.governance.trust_audits.instructions_files_budget import (
     audit_instructions_files_budget,
@@ -153,6 +154,7 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_pool_adr_isolation,
 )
 from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manifest
+from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
 
 
 def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
@@ -206,6 +208,8 @@ __all__ = [
     "audit_surface_delivery_witness",
     "audit_orientation_freshness",
     "audit_qc_binding",
+    "audit_fidelity_presence",
+    "audit_waiver_ratchet",
     "audit_deprecated_verb_prescription",
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",

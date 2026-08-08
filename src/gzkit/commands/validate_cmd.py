@@ -389,6 +389,19 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         False,
         lambda r, _f: _evaluation_justify_binding_runner(r, None),
     ),
+    # The three scopes below own a solo early-return lifecycle like the entries
+    # above, but were the only ones never registered — so this registry's
+    # "single source" header was false and `_dispatch_validator_scope` could not
+    # resolve them, which is why every SUPPORT REQ citing one read
+    # `unproven-support` regardless of truth (GHI #630). Registering them does
+    # not re-route the flag: `_dispatch_early_return_scopes` still fires first
+    # and short-circuits, preserving the 0/2/3 lifecycle and the custom prose.
+    # `in_other_scopes=False` is what keeps them solo (#704).
+    _ScopeEntry("qc_binding", "explicit", False, lambda r, _f: _ta().audit_qc_binding(r)),
+    _ScopeEntry(
+        "fidelity_presence", "explicit", False, lambda r, _f: _ta().audit_fidelity_presence(r)
+    ),
+    _ScopeEntry("waiver_ratchet", "explicit", False, lambda r, _f: _ta().audit_waiver_ratchet(r)),
     _ScopeEntry(
         "intrinsic_attestation",
         "explicit",
