@@ -23,6 +23,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.governance.trust_audits import (
     audit_attestation_receipts,
     validate_attestation_receipts,
@@ -58,7 +59,9 @@ def _write_step_receipt(root: Path, run_id: str, name: str, *, exit_status: int 
         "stderr_truncated": False,
         "stdout_tail": "ok\n",
         "stdout_truncated": False,
-        "step": {"command": ["uv", "run", "ty", "check", "src"], "name": name},
+        # Read from canon rather than restated: this fixture had carried a
+        # literal `ty check src` that went stale the moment the scope widened.
+        "step": {"command": list(CANONICAL_STEP_COMMANDS["typecheck"]), "name": name},
         "timestamp_utc": "2026-05-02T00:00:00Z",
     }
     (root / f"{run_id}.json").write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")

@@ -16,6 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (
@@ -346,6 +347,12 @@ def run_format(project_root: Path) -> QualityResult:
 def run_typecheck(project_root: Path) -> QualityResult:
     """Run type checking (ty check).
 
+    The command is READ from ``CANONICAL_STEP_COMMANDS["typecheck"]`` rather
+    than re-spelled here. GHI #199 was an ARB receipt labelled ``typecheck``
+    measuring a different scope than this gate; re-spelling the command in both
+    places is what made that divergence possible, and a test asserting the two
+    agree would only detect it after the fact. Deriving makes it unrepresentable.
+
     Args:
         project_root: Project root directory.
 
@@ -353,7 +360,7 @@ def run_typecheck(project_root: Path) -> QualityResult:
         QualityResult from type checking.
 
     """
-    return run_command("uv run ty check src", cwd=project_root)
+    return run_command(CANONICAL_STEP_COMMANDS["typecheck"], cwd=project_root)
 
 
 def run_tests(project_root: Path) -> QualityResult:

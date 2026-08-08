@@ -121,7 +121,7 @@ These invariants formalize the lessons as mechanical rules. Each has a regressio
 
 **Instance:** `src/gzkit/arb/validator.py::CANONICAL_STEP_COMMANDS` maps canonical step names to their exact `step.command`. `gz arb validate` fails on provenance drift. Rule documented in `.gzkit/rules/attestation-enrichment.md` receipt-canonicalization table.
 
-**Anti-pattern caught:** An ARB receipt whose step name says "typecheck" but whose command runs `ty check .` instead of `ty check src`. The claim and the evidence disagree; the label is wrong.
+**Anti-pattern caught:** An ARB receipt whose step name says "typecheck" but whose command measures a scope the governance gate does not. The claim and the evidence disagree; the label is wrong. *(Stated as a scope relation rather than by naming the two literal commands: the canonical scope widened from `src` to `. --exclude features/**` on 2026-08-08, and a doctrine statement that names today's strings goes stale the next time it moves. The gate and the receipt producer now both read `CANONICAL_STEP_COMMANDS`, so the pair cannot diverge by construction.)*
 
 ---
 

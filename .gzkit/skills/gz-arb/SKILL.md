@@ -5,11 +5,11 @@ description: Wrap QA commands in ARB receipts for attestation evidence. Use when
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-06
+last_reviewed: 2026-08-08
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.2.1"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -36,8 +36,11 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
    by `CANONICAL_STEP_COMMANDS` and divergence is flagged by
    `gz arb validate` as non-canonical provenance (GHI #199).
    - `uv run gz arb ruff <paths>` — ruff lint (canonical for lint claims)
-   - `uv run gz arb typecheck` — wraps `ty check src`, the same target as
-     `gz typecheck` and `gz closeout` (canonical for type-check claims)
+   - `uv run gz arb typecheck` — wraps `ty check . --exclude features/**`,
+     the same target as `gz typecheck` and `gz closeout` (canonical for
+     type-check claims). Do not restate the scope from memory: the verb
+     and the gate both READ `CANONICAL_STEP_COMMANDS["typecheck"]`, so
+     the table is the answer whenever this line disagrees with it.
    - `uv run gz arb step --name unittest -- uv run -m unittest -q` —
      canonical for tests-pass claims
    - `uv run gz arb coverage run -m unittest discover -s tests -t .` —
@@ -46,7 +49,8 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
      in the canonical table (diagnostic or bespoke QA only; not valid
      attestation provenance)
    - `uv run gz arb ty` — raw `uvx ty check` passthrough; **not** an alias
-     of `gz arb typecheck` (which wraps `ty check src` with the ARB schema).
+     of `gz arb typecheck` (which wraps the canonical scope with the ARB
+     schema).
      Use `gz arb ty` when you need the raw `ty` output without ARB receipt
      emission, or to pass custom `ty` flags directly.
 2. **Validate the emitted receipts** — `uv run gz arb validate --limit 20`

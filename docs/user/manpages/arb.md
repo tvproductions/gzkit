@@ -69,7 +69,9 @@ gz arb coverage run -m unittest discover
 
 ### typecheck
 
-Canonical Heavy-lane type-check receipt producer. Wraps the exact command `gz typecheck` runs (`uv run ty check src`) so ARB receipts cannot diverge from the governance gate's scope. Use this for attestation evidence rather than `gz arb ty check <custom-scope>`.
+Canonical Heavy-lane type-check receipt producer. Wraps the exact command `gz typecheck` runs (`uv run ty check . --exclude features/**`) so ARB receipts cannot diverge from the governance gate's scope. Use this for attestation evidence rather than `gz arb ty check <custom-scope>`.
+
+Both this verb and the gate READ `CANONICAL_STEP_COMMANDS["typecheck"]` rather than spelling the command, so they cannot drift apart — the GHI #199 failure. The scope covers the whole tree except `features/`, which is excluded because `behave` step functions annotate `context` attributes that `ty` rejects by design. It was `src`-only until 2026-08-08; widening it brought `scripts/` under the gate, including the SessionStart orientation hook that runs before every agent's first response.
 
 ```bash
 gz arb typecheck

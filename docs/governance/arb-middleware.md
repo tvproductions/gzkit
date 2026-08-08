@@ -180,11 +180,20 @@ perform). The only faithful record of a QA step is the wrapped-command receipt.
 ### Why canonical commands
 
 GHI #199 traces the class of failure where an ARB receipt reported exit 0
-against `ty check .` while the governance gate (`gz typecheck` → `ty check src`)
-reported exit 1. Parallel approximations (different scope, different target
-tree, different flags) drift from the gate. `gz arb typecheck` (GHI #199)
-wraps `uv run ty check src` — the same command `gz typecheck` and
-`gz closeout` invoke.
+against `ty check .` while the governance gate (`gz typecheck`, then scoped to
+`ty check src`) reported exit 1. Parallel approximations (different scope,
+different target tree, different flags) drift from the gate.
+
+**The defect was the divergence, never the particular scope.** Both sides now
+run `uv run ty check . --exclude features/**` — widened from `src` on
+2026-08-08 so the SessionStart orientation hook under `scripts/` stops being
+structurally unchecked. What makes that safe is that neither side spells the
+command any more: `gz arb typecheck` and `quality.run_typecheck` both READ
+`CANONICAL_STEP_COMMANDS["typecheck"]`, so they cannot disagree by
+construction, and `tests/arb/test_typecheck_scope_lockstep.py` proves the
+derivation by moving the canonical value and asserting both consumers follow.
+The pre-commit `ty-check` hook is the one copy that cannot derive (YAML, read
+before Python runs) and is pinned by equality in the same module.
 
 ### TDD RED evidence is not ARB-shaped (GHI #157)
 

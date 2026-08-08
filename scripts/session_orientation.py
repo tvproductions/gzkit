@@ -25,6 +25,7 @@ import os
 import re
 import subprocess
 import sys
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -262,7 +263,7 @@ def floor_bookmark_agent() -> str | None:
     return FLOOR_BOOKMARK_AGENT
 
 
-def handoff_delta_rule() -> tuple[str, object] | None:
+def handoff_delta_rule() -> tuple[str, Callable[[str | None], str]] | None:
     """Return `(exclusion pathspec, commits_since_range)`, or None without gzkit.
 
     Imported for the same reason as the writer identity above, and guarded the
@@ -614,7 +615,8 @@ def _render_handoff_account(lines: list[str], payload: object) -> None:
         lines.append("- Commits since: UNKNOWN — git could not be queried, not verified clean.")
     else:
         total = payload.get("commits_total", 0)
-        commits = payload.get("commits") or []
+        raw_commits = payload.get("commits")
+        commits: Sequence[object] = raw_commits if isinstance(raw_commits, list) else []
         lines.append(f"- Commits since: {total}")
         for commit in commits:
             if isinstance(commit, dict):
@@ -623,7 +625,8 @@ def _render_handoff_account(lines: list[str], payload: object) -> None:
         if isinstance(total, int) and total > len(commits):
             lines.append(f"  - … {total - len(commits)} older commit(s) not shown")
 
-    events = payload.get("events") or []
+    raw_events = payload.get("events")
+    events: Sequence[object] = raw_events if isinstance(raw_events, list) else []
     lines.append(f"- Ledger events since: {payload.get('events_total', 0)}")
     for entry in events:
         if isinstance(entry, (list, tuple)) and len(entry) == 2:

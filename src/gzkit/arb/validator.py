@@ -7,6 +7,7 @@ code and schema, and surfaces unknown schema IDs early.
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -46,12 +47,28 @@ class ArbReceiptValidationResult(BaseModel):
 # claims to be a heavy-lane attestation label while measuring a different
 # scope. Extending this table widens the provenance net; do not shrink it.
 #
-# Each canonical command mirrors the exact invocation the corresponding
-# governance gate runs (``run_typecheck``, ``run_tests``, ``run_coverage``,
-# ``run_mkdocs`` under ``src/gzkit/quality.py``) so ARB receipts cannot
-# drift from the gate's scope — the GHI #199 class of failure.
+# ``typecheck`` is the one entry whose gate mirrors it *by construction*:
+# ``quality.run_typecheck`` reads this list rather than re-spelling the command,
+# so the GHI #199 divergence cannot recur there. The claim used to be made of
+# all four gates in prose with nothing asserting it — and it was already false
+# for ``run_tests``, which deliberately runs the ``unittest-parallel``
+# accelerator while this table holds the serial attestation form. State the
+# coupling per entry, never as a blanket:
+#
+#   typecheck -> ``quality.run_typecheck`` DERIVES from this entry
+#   unittest  -> ``quality.run_tests`` deliberately DIFFERS (parallel runner)
+#   coverage  -> operator-invoked; no ``gz check`` gate runs it
+#   mkdocs    -> ``quality.run_mkdocs`` runs the same command, re-spelled
 CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
-    "typecheck": ["uv", "run", "ty", "check", "src"],
+    # Scope widened 2026-08-08 from ``src`` to the whole tree minus ``features``
+    # (operator ruling). ``src``-only left the SessionStart orientation hook —
+    # which runs before every agent's first response — structurally unchecked,
+    # carrying five live diagnostics including a ``call-non-callable``. GHI #199
+    # is not regressed by this: its defect was the ARB and gate scopes
+    # DISAGREEING, not the particular scope they agreed on. ``features/`` stays
+    # excluded because ``behave`` step functions annotate ``context`` attributes,
+    # which ``ty`` rejects by design.
+    "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features/**"],
     "unittest": ["uv", "run", "-m", "unittest", "-q"],
     "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
@@ -69,6 +86,35 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # not produced by a user-runnable invocation; provenance is enforced by
     # ``step.command == []`` on the emitted receipt.
     "meta-receipt-bind": [],
+}
+
+# Canonical commands that USED to be canonical, with the instant they stopped
+# being so. A receipt is immutable evidence of what was actually run; a receipt
+# emitted under a prior canon truthfully records the scope in force at its
+# timestamp, and judging it against today's canon makes the validator assert a
+# falsehood about history. That is the same write-forward-only violation the
+# operator ruled on for ``.gzkit/schemas/ledger_events.json`` — evidence is
+# superseded forward, never retroactively invalidated.
+#
+# Format: step name -> list of (retired_at ISO-8601 UTC, command). A receipt
+# matching a retired command is canonical iff its ``timestamp_utc`` is STRICTLY
+# BEFORE that command's ``retired_at``. So a stale invocation run *after* the
+# change is still caught — which is the whole point of the check — while the
+# 749 receipts that predate it stay valid.
+#
+# Append here whenever a CANONICAL_STEP_COMMANDS value changes. Do not edit or
+# remove an existing row: that re-invalidates the history this table exists to
+# protect.
+RETIRED_STEP_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
+    "typecheck": [
+        # Widened to the whole tree minus ``features`` (operator ruling) so the
+        # SessionStart orientation hook under ``scripts/`` stops being unchecked.
+        # 10:00Z is the real transition boundary, not a rounded date: the last
+        # receipt emitted under the `src` scope is 09:30:12Z and the first under
+        # the widened scope is ~10:20Z. Picking midnight would have re-invalidated
+        # every receipt from this session's earlier work.
+        ("2026-08-08T10:00:00Z", ["uv", "run", "ty", "check", "src"]),
+    ],
 }
 
 
@@ -189,12 +235,40 @@ def validate_receipts(
     )
 
 
+def _matches_retired_canon(name: str, observed: Any, timestamp: Any) -> bool:
+    """Return True when ``observed`` was canonical for ``name`` at ``timestamp``.
+
+    Fails closed on an unreadable or absent timestamp: a receipt that cannot
+    prove it predates the change gets today's canon, so the grandfather clause
+    can never be claimed by simply omitting the field.
+    """
+    retired = RETIRED_STEP_COMMANDS.get(name)
+    if not retired or not isinstance(timestamp, str):
+        return False
+    try:
+        emitted_at = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    for retired_at_text, command in retired:
+        if observed != command:
+            continue
+        retired_at = datetime.fromisoformat(retired_at_text.replace("Z", "+00:00"))
+        if emitted_at < retired_at:
+            return True
+    return False
+
+
 def _provenance_error(payload: dict[str, Any]) -> str | None:
     """Return a provenance-mismatch message, or None if the receipt is canonical.
 
     A step receipt whose ``step.name`` matches a canonical attestation label
     MUST carry the canonical ``step.command``. Otherwise it is an attestation
     claim of the wrong scope — the exact class GHI #199 documented.
+
+    "Canonical" is evaluated **as of the receipt's own timestamp**, not as of
+    now: a receipt emitted before a scope change carries the command that was
+    canonical when it ran, and it is valid evidence of that run. See
+    ``RETIRED_STEP_COMMANDS``.
     """
     step = payload.get("step")
     if not isinstance(step, dict):
@@ -205,6 +279,8 @@ def _provenance_error(payload: dict[str, Any]) -> str | None:
     expected = CANONICAL_STEP_COMMANDS[name]
     observed = step.get("command")
     if observed == expected:
+        return None
+    if _matches_retired_canon(name, observed, payload.get("timestamp_utc")):
         return None
     return (
         f"non-canonical provenance: step.name='{name}' requires "

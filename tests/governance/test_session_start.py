@@ -28,7 +28,7 @@ class AdvisementTests(unittest.TestCase):
     """
 
     def _seed(self, root: Path, *, next_steps: str = "1. Work the queue.") -> Path:
-        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections: dict[str, str] = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
         sections["Decisions Made"] = "- [operator-ruled] Chose the thin-adapter shape."
         sections["Immediate Next Steps"] = next_steps
         return create_handoff(

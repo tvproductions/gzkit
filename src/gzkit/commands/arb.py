@@ -20,7 +20,11 @@ from gzkit.arb.advisor import collect_arb_advice, render_arb_advice_text
 from gzkit.arb.patterns import collect_patterns, render_patterns_compact, render_patterns_markdown
 from gzkit.arb.ruff_reporter import run_ruff_via_arb
 from gzkit.arb.step_reporter import run_step_via_arb
-from gzkit.arb.validator import render_validation_text, validate_receipts
+from gzkit.arb.validator import (
+    CANONICAL_STEP_COMMANDS,
+    render_validation_text,
+    validate_receipts,
+)
 
 _INTERNAL_ERROR = 2
 
@@ -162,8 +166,14 @@ def arb_typecheck_cmd(*, quiet: bool = False) -> int:
     the exact command ``gz typecheck`` (and therefore ``gz closeout``) runs,
     so ARB receipts cannot claim "types clean" against a scope that diverges
     from the governance gate. See GHI #199.
+
+    The argv is READ from ``CANONICAL_STEP_COMMANDS`` for the same reason
+    ``quality.run_typecheck`` reads it: a third hand-spelled copy of the command
+    is a third place the #199 divergence can re-enter.
     """
-    return arb_step_cmd(name="typecheck", argv=["uv", "run", "ty", "check", "src"], quiet=quiet)
+    return arb_step_cmd(
+        name="typecheck", argv=list(CANONICAL_STEP_COMMANDS["typecheck"]), quiet=quiet
+    )
 
 
 def arb_coverage_cmd(*, argv: list[str], quiet: bool = False) -> int:
