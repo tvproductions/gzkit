@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.2.1 -->
+<!-- rule-version: 0.3.0 -->
 
-> **Rule version:** `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
+> **Rule version:** `0.3.0` — Movement C family closure, rules arm. Scoring this rule's clauses for real found **four advisory-scorecard rows asserting enforcement that did not exist**, which is a worse state than the Promotable rows the campaign box counts: a Promotable row honestly says "no witness yet", while a false **Mechanical** row reports green while blind and is invisible to the criterion. Row 18 claimed "ruff BLE001 enforces" with `BLE` absent from `[tool.ruff.lint] select` (6 live violations, one behind a `# noqa: BLE0001` typo that suppressed nothing); row 23 claimed PLC0415 was "partially enforced" with `PL` equally absent (138 live violations); rows 19 and 20 claimed line-count enforcement that § Size Limits has said was unbacked since `0.2.0`. `BLE001` is now enabled and the six sites fixed with cited justifications (operator ruling 2026-08-08); PLC0415 is deferred because its 138 sites need per-site readings against this rule's own optional-dependency and cycle-avoidance carve-outs. Rows 19/20/23 re-scored `Judgment` with the measurements recorded here. Prior `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -20,7 +20,7 @@ description: Pythonic standards and idiomatic code contract
 5. **Context managers** — for files, DBs, sessions, progress phases
 6. **No mutable defaults** — use `None` + factory
 7. **Pydantic BaseModel for data** — TypedDict for shapes; see models policy
-8. **Explicit exceptions** — typed errors; **no bare `except:` / `except Exception:`**
+8. **Explicit exceptions** — typed errors; **no bare `except:` / `except Exception:`** (enforced by ruff `BLE001` on `src/gzkit`; see § Error Handling)
 9. **Small units** — <=50 lines/function, <=600 lines/module, <=300 lines/class
 10. **No implicit globals** — explicit configuration and state
 
@@ -58,12 +58,16 @@ description: Pythonic standards and idiomatic code contract
 ## Imports (PEP 8)
 
 - **Top-level imports only.** Standard library, third-party, then local.
-- **No lazy imports** unless required for optional dependencies or cycle avoidance.
+- **No lazy imports** unless required for optional dependencies or cycle avoidance. **(Advisory — PLC0415 is not enabled.)** The ordering half above is enforced by ruff `I`; this half is not. The advisory scorecard claimed it was "partially enforced by ruff PLC0415" — `PL` has never been in `[tool.ruff.lint] select`, so the rule ran nowhere and **138 live violations** stand in `src/gzkit` (measured 2026-08-08). Deferred deliberately: the carve-outs named in this very bullet are what most of those sites claim, so separating a legitimate deferred import from a lazy one is a per-site reading, not a switch. Enabling PLC0415 today would either fail the build or bury 138 blanket `noqa`s — and a blanket suppression reproduces exactly the blindness the disabled rule already produced.
 
 ## Error Handling
 
 - Catch specific exceptions, translate to `core.errors`.
 - **No bare `except:` / `except Exception:`** outside CLI boundaries.
+
+**Mechanized 2026-08-08 by ruff `BLE001`, after running nowhere for as long as this clause has existed.** `BLE` was absent from `[tool.ruff.lint] select` while the advisory scorecard recorded row 18 as **Mechanical**, "ruff BLE001 enforces" — a rule declared, scored as witnessed, and enforced by nothing. Six live violations sat in `src/gzkit`, one of them behind a `# noqa: BLE0001` typo that suppressed nothing and was undetectable precisely *because* the rule was off: a wrong suppression code is invisible when the rule it names never runs.
+
+Scope is the shipped package. The `per-file-ignores` exclusions are boundary surfaces this clause already exempts by its own "outside CLI boundaries" wording — never-raise SessionStart hooks, orientation scripts, red-phase test scaffolding — plus the generated hook mirrors, which cannot carry an inline `# noqa` because they are emitted from string templates in `src/gzkit/hooks/scripts/`. Inside the package, a genuine boundary catch carries `# noqa: BLE001` with a cited reason; the breadth is justified in place, never assumed.
 
 ## Toolchain (Astral)
 

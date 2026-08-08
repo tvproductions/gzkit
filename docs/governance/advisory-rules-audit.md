@@ -38,6 +38,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.1.0` |
+| `pythonic.md` | `0.3.0` |
 | `tests.md` | `0.15.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
@@ -87,12 +88,13 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 18 | No bare `except:` / `except Exception:` | **Mechanical** | ruff BLE001 enforces |
-| 19 | Functions <=50 lines | **Mechanical** | xenon complexity + pre-commit hooks |
-| 20 | Modules <=600 lines | **Mechanical** | Pre-commit check under `.pre-commit-config.yaml` |
+| 18 | **No bare `except:` / `except Exception:`** | **Mechanical** | **Made true 2026-08-08 (rule `0.3.0`), Movement C rules arm — the row was false when written.** It claimed "ruff BLE001 enforces" while `BLE` was absent from `[tool.ruff.lint] select` in `pyproject.toml`, so the rule ran nowhere and **6 live violations** sat in `src/gzkit` unreported by `gz check` — one of them behind a `# noqa: BLE0001` typo that suppressed nothing and *could not be noticed while the rule was off*. `BLE` is now selected, the six sites carry cited justifications, and the fence is proven by planting a blind `except` and observing BLE001 catch it. Scoped to the shipped package via `per-file-ignores`; boundary surfaces (never-raise hooks, orientation scripts, red-phase test scaffolding) and the generated hook mirrors are excluded with stated reasons. |
+| 19 | Functions <=50 lines | **Judgment** | **Corrected 2026-08-08 — the Mechanical claim was unbacked, and the rule said so.** It cited "xenon complexity + pre-commit hooks"; xenon measures *cyclomatic rank*, never line count, so nothing has ever enforced this number. `.gzkit/rules/pythonic.md` § Size Limits states it outright — *"`docs/governance/advisory-rules-audit.md` miscodes this as 'Mechanical \| xenon complexity' — xenon measures cyclomatic rank, never line count; that Mechanical claim is unbacked"* — and its own table lists the enforcer as "nothing / authoring-time guidance only". Additionally unreconciled with the canonical threshold table, which blocks `lizard_nloc` at 37.0; resolving that needs a distillation pass, not a prose fix. |
+| 20 | Modules <=600 lines | **Judgment** | **Corrected 2026-08-08 — same class as row 19.** It cited a "pre-commit check under `.pre-commit-config.yaml`"; no such hook exists. The rule's own table lists the enforcer as "nothing / authoring-time guidance only", and the canonical threshold table's `radon_raw_nloc` block band is 1031.9 with a *warn* band at 733.2 — so a 700-line module is `advise` there and a violation here. Two authorities disagreeing in both directions, neither of them running. |
 | 21 | Classes <=300 lines | **Mechanical** | Enforced by `gz validate --class-size` (GHI #204) — AST scan over `src/gzkit/**`, with explicit `_CLASS_SIZE_WAIVERS` for documented exceptions |
 | 22 | No `Optional`/`List` (use `\| None` / `list[]`) | **Mechanical** | ruff UP007, UP006 |
-| 23 | no lazy imports | **Promotable** | Partially enforced by ruff PLC0415; inventory of exceptions documented |
+| 23 | **No lazy imports** unless required for optional dependencies or cycle avoidance | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm — and the old note was false, not merely optimistic.** "Partially enforced by ruff PLC0415" was untrue: `PL` is absent from `[tool.ruff.lint] select`, so PLC0415 ran nowhere and **138 live violations** stand in `src/gzkit`. Deferred by operator ruling 2026-08-08 (enable BLE001, defer PLC0415) because the rule's own carve-outs — optional dependencies and cycle avoidance — are exactly what most of those 138 sites claim, and each needs a per-site reading to separate a legitimate deferred import from a lazy one. Enabling PLC0415 without that pass would either fail the build or bury 138 blanket `noqa`s, and a blanket suppression is the same blindness the disabled rule already produced. Reclassify by working the 138, not by flipping the switch. |
+| 23a | **Top-level imports only.** Standard library, third-party, then local. | **Mechanical** | The ordering half is enforced by ruff `I` (isort), which **is** selected. Only the top-level-only half (row 23) is unenforced — worth separating, because the row's single-line form let a genuinely-enforced clause and an unenforced one share one score. |
 | 24 | `# type: ignore` (bare) | **Mechanical** | Enforced by `gz validate --type-ignores` (this audit's direct outcome, GHI #197) |
 
 ### Data Models (`.gzkit/rules/models.md`)
@@ -346,14 +348,14 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 98 |
+| Score | Rows | % of 99 |
 |-------|-------|---|
-| **Mechanical** | 65 | 66% |
-| **Promotable** | 3 | 3% |
-| **Judgment** | 32 | 33% |
+| **Mechanical** | 64 | 65% |
+| **Promotable** | 2 | 2% |
+| **Judgment** | 35 | 35% |
 | **Ambiguous** | 0 | 0% |
 
-98 scored rows; the counts sum to 100 because rows 58 and 65 each score two
+99 scored rows; the counts sum to 101 because rows 58 and 65 each score two
 halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
 toward both. **There are zero `Ambiguous` rules** — the score is defined in the
 legend above and currently has no members.

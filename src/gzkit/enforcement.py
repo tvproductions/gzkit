@@ -243,7 +243,12 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
         fixture_result = record.fixture()
         if isinstance(fixture_result, Path):
             fixture_path = fixture_result
-    except Exception as exc:
+    # `record.fixture` is an arbitrary registered callable, so its raisable set
+    # is open by construction. Catching broadly is what turns a broken fixture
+    # into a reported TEST_BUG instead of an aborted enforcement-floor run —
+    # distinguishing "the control is broken" from "the control caught nothing"
+    # is this function's entire job.
+    except Exception as exc:  # noqa: BLE001
         return ClaimRunResult(
             claim_id=record.claim_id,
             outcome="TEST_BUG",
@@ -258,7 +263,10 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     try:
         ep_result = record.entrypoint(fixture_result)
         caught = bool(ep_result)
-    except Exception as exc:
+    # Same open raisable set as the fixture above: `record.entrypoint` is a
+    # registered audit callable, and an entrypoint that raises is a TEST_BUG to
+    # report, never an exception to propagate out of the floor run.
+    except Exception as exc:  # noqa: BLE001
         return ClaimRunResult(
             claim_id=record.claim_id,
             outcome="TEST_BUG",

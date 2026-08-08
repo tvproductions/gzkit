@@ -63,7 +63,7 @@ def build_advisement(project_root: Path, *, now: str) -> Advisement:
         from gzkit.handoff_api import resume_handoff  # noqa: PLC0415
 
         result = resume_handoff(adr_id=None, base_path=project_root, now=now)
-    except Exception:  # noqa: BLE0001 — see docstring: no failure may escape here
+    except Exception:  # noqa: BLE001 — see docstring: no failure may escape here
         return Advisement(present=False)
 
     if result is None:

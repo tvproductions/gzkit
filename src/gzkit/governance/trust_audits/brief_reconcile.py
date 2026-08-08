@@ -49,7 +49,12 @@ def _is_structured_brief(brief_path: Path) -> bool:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", DeprecationWarning)
             return isinstance(parse_brief(brief_path), BriefStructure)
-    except Exception:
+    # Shape predicate over the whole brief corpus: any failure to parse means
+    # "not structured", which is the answer this function exists to give. The
+    # raisable set spans pydantic, yaml and OSError across 500+ authored briefs;
+    # enumerating it would make an unlisted error crash the audit instead of
+    # classifying one brief as legacy.
+    except Exception:  # noqa: BLE001
         return False
 
 
@@ -69,7 +74,10 @@ def validate_brief_reconcile(root: Path) -> list[ValidationError]:
             continue
         try:
             result = reconcile_brief(brief_path, root)
-        except Exception as exc:
+        # Per-brief isolation: a brief that cannot be reconciled becomes a
+        # reported finding, never an aborted audit. Narrowing would let one
+        # unlisted error type suppress the findings for every brief after it.
+        except Exception as exc:  # noqa: BLE001
             errors.append(
                 ValidationError(
                     type="brief_reconcile",

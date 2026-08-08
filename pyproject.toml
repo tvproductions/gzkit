@@ -112,6 +112,15 @@ select = [
     "UP",     # pyupgrade
     "SIM",    # flake8-simplify
     "D",      # pydocstyle — adopted 2026-08-01 (operator ruling); see ignore below
+    # flake8-blind-except — enables BLE001, which `.gzkit/rules/pythonic.md`
+    # § Error Handling has named since it was written ("no bare `except:` /
+    # `except Exception:`") and which advisory-scorecard row 18 recorded as
+    # **Mechanical**, "ruff BLE001 enforces". It was never in this list, so the
+    # rule ran nowhere: six live violations sat unreported in `src/gzkit`,
+    # including a `# noqa: BLE0001` typo that suppressed nothing and could not
+    # be noticed while the rule was off. Adopted 2026-08-08 (operator ruling) on
+    # that observed drift, which is the evidence the promotion freeze requires.
+    "BLE",
 ]
 ignore = [
     # D203/D211 and D212/D213 are mutually exclusive pairs; ruff warns on every
@@ -136,9 +145,23 @@ ignore = [
 # `pep257-docstring-compliance` chore gates (`ruff check src/gzkit --select D`).
 # Extending it to tests/features/scripts would surface 6321 pre-existing findings
 # in one step, which is a separate decision, not a side effect of this one.
-"tests/**/*.py" = ["D"]
-"features/**/*.py" = ["D"]
-"scripts/**/*.py" = ["D"]
+#
+# BLE001 rides these same three keys, for the same shipped-package-only reason
+# plus one specific to it. `.gzkit/rules/pythonic.md` § Error Handling scopes the
+# prohibition "outside CLI boundaries", and every surface excluded here IS such a
+# boundary: SessionStart hooks and orientation scripts are documented never-raise
+# ("a hook that dies takes the orientation down with it"), and test scaffolding
+# catches broadly to assert a red phase. The generated hook mirrors below are
+# additionally UNFIXABLE at their own path — they are emitted from string
+# templates in `src/gzkit/hooks/scripts/`, so an inline `# noqa` cannot be
+# written where the diagnostic fires, the same constraint the E501 entry above
+# records. The six live violations inside `src/gzkit` were FIXED, not excluded
+# (2026-08-08 operator ruling: enable BLE001, defer PLC0415).
+"tests/**/*.py" = ["D", "BLE"]
+"features/**/*.py" = ["D", "BLE"]
+"scripts/**/*.py" = ["D", "BLE"]
+".claude/hooks/*.py" = ["BLE"]
+".github/copilot/hooks/*.py" = ["BLE"]
 # Canonical skill helper scripts and their generated vendor mirrors, plus the
 # generated hook scripts. Mirrors are written by `gz agent sync control-surfaces`
 # and must never be hand-edited (.gzkit/rules/skill-surface-sync.md #4/#5), so a

@@ -121,7 +121,11 @@ def _run_with_timer[T](callable_: Callable[[], T], timeout_s: float) -> T | obje
     def _target() -> None:
         try:
             result_holder.append(callable_())
-        except BaseException as e:
+        # Thread boundary: the breadth IS the correctness. An exception raised in
+        # a thread is lost unless it is marshalled back, and the caller re-raises
+        # from `exc_holder`, so nothing is swallowed here — narrowing would drop
+        # the un-enumerated half on the floor silently.
+        except BaseException as e:  # noqa: BLE001
             exc_holder.append(e)
 
     thread = threading.Thread(target=_target, daemon=True)
