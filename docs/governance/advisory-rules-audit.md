@@ -328,16 +328,27 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 
 ## Summary
 
-Counts updated 2026-05-26 after REQ Scope Discipline taxonomy added as Mechanical (OBPI-0.0.59-01 / ADR-0.0.59). Per-section size targets remain Judgment.
+**Fenced, not transcribed (2026-08-08).** These counts are machine-checked against
+the § Scorecard rows by `gz validate --advisory-scorecard`, which fails closed on
+any disagreement. They had been hand-maintained and last stamped 2026-05-26,
+describing 69 rows of what is now a 91-row scorecard; a re-measurement taken by
+substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
+row and this table's own row as if they were rules. A count with no producer
+decays in whichever direction the next reader's grep happens to point.
 
-| Score | Count | % |
+| Score | Rows | % of 91 |
 |-------|-------|---|
-| **Mechanical** | 43 | 62% |
-| **Promotable** | 7 | 10% |
-| **Judgment** | 19 | 28% |
+| **Mechanical** | 60 | 66% |
+| **Promotable** | 9 | 10% |
+| **Judgment** | 24 | 26% |
 | **Ambiguous** | 0 | 0% |
 
-**The mechanical floor rose from 30 % to 62 %** under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). ADR-0.0.37 OBPI-05 added the **Mechanical**-classed brief-reconciliation invariant (CIC-2) rule, enforced by `gz validate --brief-reconcile`. ADR-0.0.54 OBPI-01 added the **Mechanical** (shape) / **Judgment** (per-section size) Map-Not-Encyclopedia doctrine rule, with shape enforcement forthcoming as `gz validate --agents-md-map-conformance` (OBPI-0.0.54-03) and budget tightening (AGENTS.md 40k→15k, CLAUDE.md 40k→4k) enforced now by `gz validate --instructions-files-budget`. ADR-0.0.59 OBPI-01 added the **Mechanical**-classed REQ Scope Discipline taxonomy rule (three-kind BEHAVIOR/SUPPORT/STRUCTURAL-FENCE with per-kind proof channels), with `gz validate --req-kind-discipline` forthcoming under OBPI-0.0.59-02. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
+91 scored rows; the counts sum to 93 because rows 58 and 65 each score two
+halves of one rule (`**Mechanical**` shape / `**Judgment**` judgment) and count
+toward both. **There are zero `Ambiguous` rules** — the score is defined in the
+legend above and currently has no members.
+
+**The mechanical floor rose from a 30 % baseline** — see the fenced table above for where it stands now — under the #202–#215 promotion wave plus ADR-0.0.20's rule-placement invariant. Eleven advisory rules were mechanized as `gz validate --<scope>` flags and two became pre-commit guards under `gzkit.hooks.guards`. ADR-0.0.22 added the security-sensitivity third axis as `gz validate --sensitivity`, lifting the floor by a further point. ADR-0.0.23 OBPI-02 added the **Judgment**-classed agent failure-mode taxonomy as shared reviewer vocabulary (mechanical promotion `gz validate --failure-mode-coverage` tracked under follow-up GHIs #308–#312). ADR-0.0.27 OBPI-01 added the **Mechanical**-classed exemplar-corpus doctrine rule. ADR-0.0.28 OBPI-01 added the **Mechanical**-classed complexity-thresholds rule (forthcoming `gz validate --complexity-thresholds` validator under OBPI-0.0.28-03). ADR-0.0.30 OBPI-04 added the **Mechanical**-classed editor/IDE protocol surface rule, with envelope validation enforced by JSON Schema. ADR-0.0.31 OBPI-02 added the T0 distribution invariant rule, promoted to **Mechanical** in OBPI-0.0.32-07 via `gz validate --distribution` (static check: pyproject.toml include + baseline manifest + on-disk canonical trees, exit 3 on any drift class). ADR-0.0.37 OBPI-05 added the **Mechanical**-classed brief-reconciliation invariant (CIC-2) rule, enforced by `gz validate --brief-reconcile`. ADR-0.0.54 OBPI-01 added the **Mechanical** (shape) / **Judgment** (per-section size) Map-Not-Encyclopedia doctrine rule, with shape enforcement forthcoming as `gz validate --agents-md-map-conformance` (OBPI-0.0.54-03) and budget tightening (AGENTS.md 40k→15k, CLAUDE.md 40k→4k) enforced now by `gz validate --instructions-files-budget`. ADR-0.0.59 OBPI-01 added the **Mechanical**-classed REQ Scope Discipline taxonomy rule (three-kind BEHAVIOR/SUPPORT/STRUCTURAL-FENCE with per-kind proof channels), with `gz validate --req-kind-discipline` forthcoming under OBPI-0.0.59-02. The remaining Promotable band (Invariants 2/3 of the tool-skill-runbook rule, lazy imports, runbook placeholders, etc.) is tracked for follow-up waves.
 
 ---
 

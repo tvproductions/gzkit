@@ -157,10 +157,12 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 
   **All six exemplars are CLOSED** — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`, `#620` (verified 2026-08-08 via `gh issue view`). They are **evidence the class exists, not a checklist**: the box's own text says *"it closes the family rather than the instance."* Six closed instances do not discharge a class-level criterion, and checking the box on their strength is the enumerate-the-exemplars habit the criterion was written to resist.
 
-  **The criterion is measurable, and the instrument already exists.** `docs/governance/advisory-rules-audit.md` scores every clause of `CLAUDE.md` + `.gzkit/rules/**` on four values, self-tested by `gz validate --advisory-scorecard`. Those four values ARE the criterion: **Mechanical** = carries a witness; **Judgment** = advisory by its own text; **Promotable** and **Ambiguous** = *the third state this box forbids*. Measured 2026-08-08 — 63 Mechanical, 27 Judgment, **12 Promotable + 2 Ambiguous = 14 rows in the third state**.
+  **The criterion is measurable, and the instrument already exists.** `docs/governance/advisory-rules-audit.md` scores every clause of `CLAUDE.md` + `.gzkit/rules/**` on four values, self-tested by `gz validate --advisory-scorecard`. Those four values ARE the criterion: **Mechanical** = carries a witness; **Judgment** = advisory by its own text; **Promotable** and **Ambiguous** = *the third state this box forbids*. **The live count is the scorecard's own fenced Summary table — deliberately not restated here.** Run `uv run gz validate --advisory-scorecard`; it fails closed when that table disagrees with the rows beneath it.
+
+  > **Count correction, 2026-08-08 (measurement only — the ratified criterion is unchanged).** This paragraph first read *"63 Mechanical, 27 Judgment, **12 Promotable + 2 Ambiguous = 14 rows in the third state**."* None of those four figures reproduce against the file, which had not been modified since 2026-08-06. The measurement was taken by counting *mentions* rather than *rows*: `grep -c 'Ambiguous'` returns exactly 2 — the scorecard's legend row and its own Summary row, neither of which is a rule. The true third state is **9 `Promotable` and 0 `Ambiguous`**, and `Ambiguous` has no members at all, so one of the two arms the criterion named was empty from the start. Per the GHI #768 ruling on this same class — *stop writing the number down; add a narrow check so it cannot decay back into a convention* — the figure is now fenced at the scorecard and cited here rather than transcribed.
 
   **Done means all three arms hold:**
-  1. **Rules arm** — the 14 `Promotable`/`Ambiguous` rows reach zero: each is either mechanized (→ Mechanical) or its rule text amended to state it is advisory (→ Judgment). Re-scoring alone, without the text edit, is laundering.
+  1. **Rules arm** — every `Promotable`/`Ambiguous` row reaches zero: each is either mechanized (→ Mechanical) or its rule text amended to state it is advisory (→ Judgment). Re-scoring alone, without the text edit, is laundering. **Read the freeze before choosing an arm:** the scorecard's § Recommended promotion order is FROZEN (2026-06-08, governance-subtraction) — *"Promotion is opt-in-with-justification ... The remaining Promotable rows stay advisory by default."* Under that freeze the default disposition is the **amend-the-text-and-re-score** arm; mechanization is reserved for a row carrying named, observed drift evidence. That reading makes this box a subtraction move, which is what Movement C is for.
   2. **Skill arm** — the scorecard covers **no** `.gzkit/skills/**/SKILL.md` mandate, which is where all three agent-side exemplars lived (`#459`, `#574`, `#620` were each a skill mandate with no receipt). Extend coverage to skill mandates, or record in the audit why skills are structurally out of scope. Today the arm is not failing — it is unmeasured, which is the same blindness one surface over.
   3. **Debt arm** — already mechanized and needs no new work: the 23 pre-ledger rules are pinned in `data/advisory_scorecard_grandfather.json` and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 BI #8), so debt cannot grow or follow a rule forward silently.
 
@@ -313,13 +315,25 @@ which nobody had noticed:
 | **Promotable** | **the third state — declared, no witness, not marked advisory** |
 | **Ambiguous** | **the third state — scope unclear enough that nothing can witness it** |
 
-Measured 2026-08-08 over the audit: 63 Mechanical, 27 Judgment, **12 Promotable
-+ 2 Ambiguous = 14 rows in the forbidden third state**. The box now completes
-against that number and two named arms — the rules arm (drive 14 → 0, by
-mechanizing or by amending the rule text; re-scoring alone is laundering) and
-the skill arm (`.gzkit/skills/**/SKILL.md` mandates have **zero** scorecard
-coverage, which is exactly where all three agent-side exemplars lived). The debt
-arm is already mechanized and carries no new work.
+The box completes against that criterion and two named arms — the rules arm
+(drive the third state to zero, by mechanizing or by amending the rule text;
+re-scoring alone is laundering) and the skill arm (`.gzkit/skills/**/SKILL.md`
+mandates have **zero** scorecard coverage, which is exactly where all three
+agent-side exemplars lived). The debt arm is already mechanized and carries no
+new work.
+
+> **Count corrected 2026-08-08 — the ratified criterion above stands unchanged;
+> only the measurement under it was wrong.** As first written this paragraph read
+> *"Measured 2026-08-08 over the audit: 63 Mechanical, 27 Judgment, **12
+> Promotable + 2 Ambiguous = 14 rows in the forbidden third state**"* and the
+> rules arm read *"drive 14 → 0."* No figure reproduces: the audit had not been
+> touched since 2026-08-06, and the third state is **9 `Promotable`, 0
+> `Ambiguous`**. The `2 Ambiguous` was the legend row plus the Summary row
+> counted as rules — a `grep -c` over a rendered table, which is the exact
+> failure the same session recorded in its own handoff as *"an existence check
+> wearing a truth check's clothes."* The live count now lives only in the
+> scorecard's Summary table and is fenced there by
+> `gz validate --advisory-scorecard`, per the GHI #768 ruling on this class.
 
 **One limit recorded, not hidden.** The skill arm is not *failing* today — it is
 **unmeasured**. Stating it as an open arm rather than a clean one is deliberate:

@@ -6,12 +6,15 @@
 * ``audit_advisory_scorecard`` — every rule under ``.gzkit/rules/`` must be
   scored in ``docs/governance/advisory-rules-audit.md`` *at its current
   rule-version*, so the scorecard remains a complete index. GHI #212, GHI #754.
+  The same scope also fences the Summary roll-up against the rows it summarizes,
+  so the transcribed counts cannot drift from the scorecard they describe.
 """
 
 from __future__ import annotations
 
 import json
 import re
+from collections import Counter
 from pathlib import Path
 
 from gzkit.validate import ValidationError
@@ -123,10 +126,119 @@ _SCORECARD_REL = "docs/governance/advisory-rules-audit.md"
 _SCORES = "Mechanical / Promotable / Judgment / Ambiguous"
 _GRANDFATHER_REL = Path("data") / "advisory_scorecard_grandfather.json"
 
+#: The four scores a rule row may carry. A row may name *two* — row 65 scores
+#: changelog structure ``**Mechanical**`` and release-notes curation
+#: ``**Judgment**`` — in which case it counts toward both. Splitting is the
+#: honest reading of a rule whose halves genuinely score differently; the
+#: consequence is that the four counts sum above the row total, which the
+#: Summary table states rather than hides.
+_SCORE_NAMES: tuple[str, ...] = ("Mechanical", "Promotable", "Judgment", "Ambiguous")
+
+#: A scored rule row: ``| 23 | no lazy imports | **Promotable** | ... |``. The
+#: id may carry a letter suffix (``6a``, ``45a``, ``60a``).
+_SCORED_ROW_RE = re.compile(r"^\|\s*\d+[a-z]?\s*\|", re.MULTILINE)
+
+#: A cell boundary — a pipe the row author did **not** escape. Rows 22, 27 and
+#: 52 carry ``\|`` inside a code span (``` `str \| None` ```), and a naive
+#: ``line.split("|")`` reads those as column breaks, shifting the Score cell
+#: rightward and silently dropping all three from the count. That is a
+#: three-row undercount that looks exactly like a correct answer.
+_CELL_SPLIT_RE = re.compile(r"(?<!\\)\|")
+
+#: A Summary roll-up row: ``| **Promotable** | 9 | 10% |``. Requiring the count
+#: cell to be a bare integer is what separates a roll-up row from the legend row
+#: (``| **Promotable** | Could become mechanical; ... |``) without the regex
+#: needing to know where either table sits in the document.
+_SUMMARY_ROW_RE = re.compile(
+    r"^\|\s*\*\*(?P<score>" + "|".join(_SCORE_NAMES) + r")\*\*\s*\|\s*(?P<count>\d+)\s*\|",
+    re.MULTILINE,
+)
+
 
 def _scorecard_coverage_ledger(scorecard_text: str) -> dict[str, str]:
     """Return ``{rule filename: scored-at rule-version}`` from the scorecard."""
     return {m.group("file"): m.group("version") for m in _LEDGER_ROW_RE.finditer(scorecard_text)}
+
+
+def _scorecard_section(scorecard_text: str) -> str:
+    """Return the ``## Scorecard`` body only, stopping at the next H2.
+
+    Slicing is load-bearing: ``## Recommended promotion order`` is *also* a
+    numbered table, so a document-wide row scan counts its 20 rows as scored
+    rules and inflates every total.
+    """
+    marker = "\n## Scorecard\n"
+    start = scorecard_text.find(marker)
+    if start < 0:
+        return ""
+    rest = scorecard_text[start + len(marker) :]
+    end = rest.find("\n## ")
+    return rest if end < 0 else rest[:end]
+
+
+def _scorecard_row_scores(scorecard_text: str) -> Counter[str]:
+    """Count scored rule rows per score, reading only the Score column.
+
+    Reading the Score cell rather than the whole line is what makes this a
+    truth check instead of an existence check: row 53's *Notes* recount that it
+    "Scored **Promotable** until ``0.4.0``" while scoring **Mechanical** today,
+    and row 60a's notes argue against a **Promotable** score it does not carry.
+    A substring scan over the line counts both as Promotable — which is exactly
+    how the 2026-08-08 measurement reported two ``Ambiguous`` rules that do not
+    exist, having counted the legend row and the Summary row as rules.
+    """
+    counts: Counter[str] = Counter()
+    for line in _scorecard_section(scorecard_text).splitlines():
+        if not _SCORED_ROW_RE.match(line):
+            continue
+        cells = _CELL_SPLIT_RE.split(line)
+        if len(cells) < 4:
+            continue
+        for name in _SCORE_NAMES:
+            if f"**{name}**" in cells[3]:
+                counts[name] += 1
+    return counts
+
+
+def _scorecard_summary_counts(scorecard_text: str) -> dict[str, int]:
+    """Return ``{score: transcribed count}`` from the Summary roll-up table."""
+    matches = _SUMMARY_ROW_RE.finditer(scorecard_text)
+    return {m.group("score"): int(m.group("count")) for m in matches}
+
+
+def _summary_drift_errors(scorecard_text: str) -> list[ValidationError]:
+    """Fail when the Summary roll-up disagrees with the rows it summarizes.
+
+    A scorecard with no Summary table is clean by construction — there is no
+    transcribed count to be wrong. The check fences a claim that was made, and
+    never demands the claim be made.
+    """
+    summary = _scorecard_summary_counts(scorecard_text)
+    if not summary:
+        return []
+    measured = _scorecard_row_scores(scorecard_text)
+    drifted = sorted(name for name, claimed in summary.items() if claimed != measured[name])
+    if not drifted:
+        return []
+    detail = "; ".join(
+        f"{name} says {summary[name]}, rows show {measured[name]}" for name in drifted
+    )
+    return [
+        ValidationError(
+            type="advisory_scorecard",
+            artifact=_SCORECARD_REL,
+            message=(
+                f"The Summary roll-up disagrees with the scored rows beneath it — {detail}. "
+                "A hand-maintained count inside the document it summarizes is a derived view "
+                "with no regenerator (Architectural Boundary 6 — do not let derived views "
+                "silently become source-of-truth), and the Promotable/Ambiguous figures are "
+                "the completion criterion of the Movement C family-closure box, so a wrong "
+                "count retargets real work. Recount the Score column of "
+                f"`{_SCORECARD_REL}` § Scorecard and correct the Summary table — or delete "
+                "the roll-up, which is a valid disposition, rather than restate it by hand."
+            ),
+        )
+    ]
 
 
 def _grandfathered_rules(project_root: Path) -> dict[str, str]:
@@ -173,14 +285,25 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     ``gz validate --rule-version-markers`` already enforces as present on every
     canonical rule. Bumping a rule without re-scoring it is unreviewed coverage
     and fails closed.
+
+    **The Summary roll-up is fenced against its own rows.** The scorecard
+    carries a hand-maintained count table summarizing the rows beneath it — a
+    derived view living inside its own source, with no regenerator. It went
+    stale (last stamped 2026-05-26, describing 69 rows of a 91-row scorecard)
+    and a 2026-08-08 re-measurement taken by substring grep reported figures
+    that reproduce against neither. Those Promotable/Ambiguous figures are the
+    completion criterion of the Movement C family-closure box, so a wrong count
+    retargets real work. The roll-up is optional; transcribing it wrongly is not.
     """
     scorecard = project_root / _SCORECARD_REL
     rules_root = project_root / ".gzkit" / "rules"
     if not scorecard.is_file() or not rules_root.is_dir():
         return []
-    ledger = _scorecard_coverage_ledger(scorecard.read_text(encoding="utf-8"))
+    text = scorecard.read_text(encoding="utf-8")
+    ledger = _scorecard_coverage_ledger(text)
     grandfathered = _grandfathered_rules(project_root)
     errors: list[ValidationError] = []
+    errors.extend(_summary_drift_errors(text))
     for rule_md in canonical_rule_files(rules_root):
         artifact = rule_md.relative_to(project_root).as_posix()
         current = rule_version_of(rule_md.read_text(encoding="utf-8", errors="replace"))

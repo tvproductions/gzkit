@@ -538,6 +538,45 @@ def _build_advisory_scorecard() -> Path:
     return root
 
 
+def _build_advisory_scorecard_counts() -> Path:
+    """Violation: a Summary roll-up whose counts contradict the rows beneath it.
+
+    The fixture plants **both** poles, because a control that only plants a wrong
+    count passes equally well against an audit that flags every scorecard. The
+    `Promotable` row is transcribed correctly (1, and one row scores it) and must
+    NOT be flagged; the `Mechanical` row claims 9 where the rows show 1.
+
+    One scored row deliberately carries an escaped pipe inside a code span, which
+    is what shifted the Score column and silently dropped three real rows from
+    the first cut of this count. A fixture without one cannot tell a correct
+    parse from a three-row undercount.
+    """
+    root = _mkroot("advisory-scorecard-counts")
+    _write(
+        root / ".gzkit" / "rules" / "sample-rule.md",
+        "<!-- rule-version: 1.2.3 -->\n\n"
+        "> **Rule version:** `1.2.3` — fixture.\n\n"
+        "## Invariant\n\n**Something binding.**\n",
+    )
+    _write(
+        root / "docs" / "governance" / "advisory-rules-audit.md",
+        "# Advisory Rules Audit\n\n"
+        "## Coverage Ledger\n\n"
+        "| Rule file | Scored at rule-version |\n|---|---|\n"
+        "| `sample-rule.md` | `1.2.3` |\n\n"
+        "## Scorecard\n\n"
+        "### Sample Rule (`.gzkit/rules/sample-rule.md`)\n\n"
+        "| # | Rule | Score | Notes |\n|---|------|-------|-------|\n"
+        "| 1 | Use `str \\| None` not `Optional[str]` | **Mechanical** | ruff UP007 |\n"
+        "| 2 | Something tractable | **Promotable** | no reader yet |\n\n"
+        "## Summary\n\n"
+        "| Score | Rows | % |\n|---|---|---|\n"
+        "| **Mechanical** | 9 | 90% |\n"
+        "| **Promotable** | 1 | 10% |\n",
+    )
+    return root
+
+
 def _build_adr_taxonomy() -> Path:
     """Violation: a `kind: foundation` ADR carrying a feature semver.
 
@@ -1074,6 +1113,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     ("advisory-scorecard-coverage", _build_advisory_scorecard, _ep._ep_advisory_scorecard),
+    (
+        "advisory-scorecard-summary-drift",
+        _build_advisory_scorecard_counts,
+        _ep._ep_advisory_scorecard,
+        "Mechanical says 9, rows show 1",
+    ),
     (
         "validate-default-scopes",
         _build_validate_default_scopes,
