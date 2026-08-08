@@ -57,7 +57,25 @@ gh issue list --state closed --limit 800 --search 'closed:>=YYYY-MM-DD' \
   --json number,title,body > "${TMPDIR:-/tmp}/ghi-snapshot.json"
 ```
 
-Widen with `--state all` to include open GHIs when triaging what to pull next.
+**The date window is the bigger lever, not the state filter.** Widening to
+`--state all` and dropping `--search 'closed:>=…'` on 2026-08-08 took the corpus
+from 333 records to 766 and surfaced exactly one new chain — depth 8,
+`#114, #128, #139, #140, #142, #187, #188, #564` — whose members are **all
+closed**, seven of them in April 2026, outside the prior run's window. No new
+open membership appeared.
+
+That is because a cited GHI is already a chain **member** whether or not it is in
+the snapshot: `resolve_chains` unions each entry's number with its `cites`, so an
+open GHI named by a closed one shows up as a bare number rendered
+`(outside the indexed window)`. The 2026-08-07 closed-only run already carried
+`#669`, `#581`, and `#533` that way.
+
+So `--state all` buys **titles and outbound edges** for those members — their own
+class statements become readable, so they can *link* families rather than only be
+linked to (+60 statements indexed, +6 declaring recurrence on the 2026-08-08 run).
+It does not reveal membership that a closed-only run was hiding. Use a wide date
+window when the question is "what families exist"; use `--state all` when the
+question is "what does an open GHI's own diagnosis connect to".
 
 **Write the snapshot outside the repo.** It is a regenerable adapter input, not a
 proof: the 2026-08-07 snapshot of 333 closed GHIs was **1.4 MB** of verbatim issue
