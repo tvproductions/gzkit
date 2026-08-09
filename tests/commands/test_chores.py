@@ -256,6 +256,37 @@ class TestChoresCommands(unittest.TestCase):
             self.assertTrue(log_path.exists())
             self.assertIn("Status: FAIL", log_path.read_text(encoding="utf-8"))
 
+    def test_chores_advise_failing_criterion_exits_policy_breach(self) -> None:
+        """chore advise reports a failing criterion through its exit status (GHI #781)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _setup_demo_chore(
+                slug="failing-advise",
+                chore_path=".gzkit/chores/failing-advise",
+                command=f'{_PYTHON} -c "import sys; sys.exit(3)"',
+            )
+
+            result = runner.invoke(main, ["chores", "advise", "failing-advise"])
+            # The verdict must reach the exit status, not only the rendered
+            # output: `gz chores` documents 3 as Policy breach, and a caller
+            # that reads $? is the documented Step 4 of gz-chore-runner.
+            self.assertEqual(result.exit_code, 3)
+
+    def test_chores_advise_all_passing_exits_zero(self) -> None:
+        """chore advise stays exit 0 when every criterion passes (GHI #781)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _setup_demo_chore(
+                slug="passing-advise",
+                chore_path=".gzkit/chores/passing-advise",
+                command=f'{_PYTHON} -c "print(42)"',
+            )
+
+            result = runner.invoke(main, ["chores", "advise", "passing-advise"])
+            self.assertEqual(result.exit_code, 0)
+
     def test_chores_run_missing_executable(self) -> None:
         """chore run fails closed when criterion executable is missing."""
         runner = CliRunner()

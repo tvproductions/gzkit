@@ -403,6 +403,11 @@ def chores_advise(slug: str) -> None:
         )
         chore_md = project_root / chore.path / "CHORE.md"
         console.print(f"  {chore_md.relative_to(project_root).as_posix()}")
+        # A failing criterion is the policy breach `gz chores --help` documents
+        # as exit 3. Rendering the verdict without encoding it leaves every
+        # programmatic caller -- including gz-chore-runner's Step 4 -- reading
+        # success from a failed dry run (GHI #781).
+        raise SystemExit(3)
 
 
 def chores_run(slug: str) -> None:
