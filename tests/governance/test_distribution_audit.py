@@ -512,5 +512,142 @@ class TestPackageOnlyExemption(unittest.TestCase):
         )
 
 
+class TestSurfaceDomainIsNotSelfSupplied(unittest.TestCase):
+    """The audit's domain is the canonical surface set, never the manifest's own keys.
+
+    A checker whose scope comes from an artifact it also validates can report that
+    a listed member is wrong but never that a member is missing.  ``surface_roots``
+    was derived from ``manifest["surfaces"]``, so a canonical surface absent from the
+    manifest was outside the audit's domain entirely — ``src/gzkit/chores`` was never
+    walked, and the ``chores`` branch of ``_get_surface_classifier`` was unreachable.
+    Residual disclosed on GHI #783; the class named in the 2026-08-09 handoff.
+    """
+
+    def test_canonical_surface_absent_from_manifest_is_still_audited(self) -> None:
+        """A chores file on disk and wheel-included is reported, not silently skipped."""
+        from gzkit.governance.trust_audits import audit_distribution
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            skill = root / "src" / "gzkit" / "skills" / "test-skill" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            skill.write_text("# Test skill\n", encoding="utf-8")
+
+            chore = root / "src" / "gzkit" / "chores" / "demo-slug" / "CHORE.md"
+            chore.parent.mkdir(parents=True)
+            chore.write_text("# Demo chore\n", encoding="utf-8")
+
+            _write_pyproject(root, ["src/gzkit/**/*.md"])
+            # The manifest declares only `skills`.  The chores surface is real,
+            # on disk, and shipped by the include glob — but unlisted.
+            _write_manifest(root, {"skills": ["test-skill/SKILL.md"]})
+
+            errors = audit_distribution(root)
+
+            flagged = [e.artifact for e in errors]
+            self.assertIn(
+                "src/gzkit/chores/demo-slug/CHORE.md",
+                flagged,
+                "A canonical surface missing from the baseline manifest must be "
+                "reported; deriving surface_roots from the manifest's own keys makes "
+                "its absence unobservable.",
+            )
+
+    def test_authored_chore_gate_script_is_not_exempted_as_package_only(self) -> None:
+        """The exemption check must classify on the path form the classifier expects.
+
+        ``_classify_chore_file`` resolves a ``.py`` file's class by locating its
+        ``.gzkit/`` counterpart via ``relative_to(project_root / 'src' / 'gzkit' /
+        'chores')``, which raises on a relative path and falls through to
+        ``package_only``.  An authored chore gate script silently exempted from
+        drift reporting is the blindness this audit exists to close.
+        """
+        from gzkit.governance.trust_audits.distribution import _is_package_only
+
+        project_root = Path(__file__).resolve().parents[2]
+        gate_script = "src/gzkit/chores/module-sloc-cap-radon/check_module_size.py"
+
+        self.assertFalse(
+            _is_package_only(gate_script, project_root),
+            f"{gate_script} is an authored canonical gate script; exempting it "
+            "would hide its absence from the wheel.",
+        )
+
+    def test_package_root_py_file_is_modelled_as_shipped(self) -> None:
+        """A .py file under a `packages` root ships even with no include glob.
+
+        hatchling ships ``packages`` as package modules independently of
+        ``include``; modelling only the include globs makes the audit report a
+        shipped file as not-shipped.  Verified against a real wheel build of
+        0.34.2, where 7 .py files shipped that the include globs did not cover.
+        """
+        from gzkit.governance.trust_audits import audit_distribution
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            chore_dir = root / "src" / "gzkit" / "chores" / "demo-slug"
+            chore_dir.mkdir(parents=True)
+            (chore_dir / "CHORE.md").write_text("# Demo\n", encoding="utf-8")
+            (chore_dir / "check_thing.py").write_text("x = 1\n", encoding="utf-8")
+
+            # The authored counterpart is what makes the script `canonical` rather
+            # than `package_only` — without it the exemption fires first and the
+            # include-modelling this test targets is never reached.
+            canonical_dir = root / ".gzkit" / "chores" / "demo-slug"
+            canonical_dir.mkdir(parents=True)
+            (canonical_dir / "check_thing.py").write_text("x = 1\n", encoding="utf-8")
+
+            (root / "pyproject.toml").write_text(
+                "[tool.hatch.build.targets.wheel]\n"
+                'packages = ["src/gzkit"]\n'
+                'include = [\n    "src/gzkit/chores/**/*.md",\n]\n',
+                encoding="utf-8",
+            )
+            _write_manifest(
+                root,
+                {"chores": ["demo-slug/CHORE.md", "demo-slug/check_thing.py"]},
+            )
+
+            errors = audit_distribution(root)
+
+            flagged = [e.artifact for e in errors]
+            self.assertNotIn(
+                "src/gzkit/chores/demo-slug/check_thing.py",
+                flagged,
+                "A .py file under a `packages` root ships as a package module; "
+                "reporting it as not-included models only half the build config.",
+            )
+
+    def test_regenerator_recovers_a_surface_the_manifest_omits(self) -> None:
+        """Regeneration is from on-disk truth, so it adds a surface the manifest lacks."""
+        from gzkit.governance.trust_audits.distribution import (
+            regenerate_distribution_baseline,
+        )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+
+            chore = root / "src" / "gzkit" / "chores" / "demo-slug" / "CHORE.md"
+            chore.parent.mkdir(parents=True)
+            chore.write_text("# Demo chore\n", encoding="utf-8")
+
+            _write_pyproject(root, ["src/gzkit/**/*.md"])
+            _write_manifest(root, {})
+
+            regenerate_distribution_baseline(root)
+
+            rewritten = json.loads(
+                (root / "data" / "distribution_baseline_manifest.json").read_text(encoding="utf-8")
+            )
+            self.assertIn(
+                "chores",
+                rewritten["surfaces"],
+                "regenerate_distribution_baseline documents on-disk truth as its sole "
+                "input; a surface it cannot discover makes that claim false.",
+            )
+
+
 if __name__ == "__main__":
     unittest.main()

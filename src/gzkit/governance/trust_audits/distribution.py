@@ -20,6 +20,7 @@ import sys
 import tempfile
 import tomllib
 from collections.abc import Callable
+from importlib import import_module
 from pathlib import Path
 from typing import Any
 
@@ -29,30 +30,33 @@ _EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
     {"__pycache__", ".venv", "dist", "build", "node_modules"}
 )
 
+# The audit's domain.  Deriving it from the baseline manifest's own keys made the
+# audit blind to any canonical surface the manifest omitted — it could report that
+# a listed member was wrong but never that a member was missing, so `src/gzkit/chores`
+# was never walked and the chores classifier was unreachable (residual of GHI #783).
+# The surface list belongs to `.gzkit/rules/skill-surface-sync.md` § Surface layout,
+# never to the artifact under audit.
+_CANONICAL_SURFACES: tuple[str, ...] = (
+    "personas",
+    "rules",
+    "skills",
+    "templates",
+    "chores",
+)
+
 
 def _get_surface_classifier(surface: str) -> Callable[[Path], str] | None:
-    """Return the per-surface classifier for a canonical surface, or None."""
-    if surface == "rules":
-        from gzkit.rules import _classify_rule_file  # noqa: PLC0415
+    """Return the per-surface classifier for a canonical surface, or None.
 
-        return _classify_rule_file
-    if surface == "skills":
-        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
-
-        return _classify_skill_file
-    if surface == "personas":
-        from gzkit.personas import _classify_persona_file  # noqa: PLC0415
-
-        return _classify_persona_file
-    if surface == "templates":
-        from gzkit.templates import _classify_template_file  # noqa: PLC0415
-
-        return _classify_template_file
-    if surface == "chores":
-        from gzkit.chores import _classify_chore_file  # noqa: PLC0415
-
-        return _classify_chore_file
-    return None
+    Both the classifier and its module are derived from ``_CANONICAL_SURFACES``
+    so the audit's domain and its dispatch cannot drift apart: a surface added
+    to the tuple gains a walk and a classifier in the same edit.  Imported
+    lazily because each surface module pulls in its own runtime.
+    """
+    if surface not in _CANONICAL_SURFACES:
+        return None
+    module = import_module(f"gzkit.{surface}")
+    return getattr(module, f"_classify_{surface.removesuffix('s')}_file", None)
 
 
 def _surface_from_posix(rel_posix: str) -> str | None:
@@ -76,7 +80,10 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
     classifier = _get_surface_classifier(surface)
     if classifier is None:
         return False
-    path = Path(rel_posix)
+    # Absolute, because a classifier locates a file's `.gzkit/` counterpart with
+    # `relative_to(project_root / ...)`, which raises on a relative path and falls
+    # through to package_only — silently exempting authored chore gate scripts.
+    path = project_root / rel_posix if project_root is not None else Path(rel_posix)
     try:
         result = classifier(path, project_root=project_root)  # type: ignore
     except TypeError:
@@ -88,22 +95,22 @@ def audit_distribution(project_root: Path) -> list[ValidationError]:
     """Run the static T0 distribution audit — no wheel build required.
 
     Loads ``pyproject.toml`` include globs and ``data/distribution_baseline_manifest.json``,
-    derives surface roots from manifest keys, walks on-disk files, and detects drift.
+    walks every root in ``_CANONICAL_SURFACES``, and detects drift.
     Raises ``SystemExit(2)`` on IO/parse failures so callers can distinguish system
     errors (exit 2) from policy breaches (exit 3).
     """
-    include_globs, baseline_entries, surface_roots = _load_inputs(project_root)
+    include_globs, baseline_entries, surface_roots, package_roots = _load_inputs(project_root)
 
     on_disk_files = _walk_surface_files(project_root, surface_roots)
 
-    included_files = _expand_includes(project_root, include_globs)
+    included_files = _expand_includes(project_root, include_globs, package_roots)
 
     return _collect_errors(on_disk_files, included_files, baseline_entries, project_root)
 
 
 def _load_inputs(
     project_root: Path,
-) -> tuple[list[str], set[str], list[str]]:
+) -> tuple[list[str], set[str], list[str], list[str]]:
     """Load pyproject.toml include globs and baseline manifest.  Raises SystemExit(2) on failure."""
     pyproject = project_root / "pyproject.toml"
     try:
@@ -116,14 +123,11 @@ def _load_inputs(
         print(f"distribution-audit: cannot parse pyproject.toml: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
 
-    include_globs: list[str] = (
-        data.get("tool", {})
-        .get("hatch", {})
-        .get("build", {})
-        .get("targets", {})
-        .get("wheel", {})
-        .get("include", [])
+    wheel_target: dict[str, Any] = (
+        data.get("tool", {}).get("hatch", {}).get("build", {}).get("targets", {}).get("wheel", {})
     )
+    include_globs: list[str] = wheel_target.get("include", [])
+    package_roots: list[str] = wheel_target.get("packages", [])
 
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
     try:
@@ -142,8 +146,8 @@ def _load_inputs(
         for entry in entries:
             baseline_entries.add(f"src/gzkit/{surface}/{entry}")
 
-    surface_roots = [f"src/gzkit/{surface}" for surface in surfaces]
-    return include_globs, baseline_entries, surface_roots
+    surface_roots = [f"src/gzkit/{surface}" for surface in _CANONICAL_SURFACES]
+    return include_globs, baseline_entries, surface_roots, package_roots
 
 
 def _walk_surface_files(project_root: Path, surface_roots: list[str]) -> set[str]:
@@ -167,13 +171,26 @@ def _is_excluded(parts: tuple[str, ...]) -> bool:
     return any(seg in _EXCLUDED_SEGMENTS or seg.startswith("__") for seg in parts)
 
 
-def _expand_includes(project_root: Path, include_globs: list[str]) -> set[str]:
-    """Expand include globs against project_root to get the set of included files."""
+def _expand_includes(
+    project_root: Path, include_globs: list[str], package_roots: list[str]
+) -> set[str]:
+    """Return every file the wheel ships, from BOTH build mechanisms.
+
+    ``include`` globs carry data files; ``packages`` ships ``.py`` modules under
+    each root independently of any glob.  Modelling the globs alone reported
+    seven shipped modules as not-shipped when measured against a real 0.34.2
+    wheel — a predictor blind to half its own build config.
+    """
     included: set[str] = set()
     for glob_pattern in include_globs:
         for matched in project_root.glob(glob_pattern):
             if matched.is_file():
                 included.add(matched.relative_to(project_root).as_posix())
+    for package_root in package_roots:
+        for module in (project_root / package_root).rglob("*.py"):
+            rel = module.relative_to(project_root)
+            if not _is_excluded(rel.parts):
+                included.add(rel.as_posix())
     return included
 
 
@@ -252,7 +269,7 @@ def regenerate_distribution_baseline(project_root: Path) -> dict[str, Any]:
     Returns a dict with keys ``surfaces_walked``, ``file_count``,
     ``manifest_hash_before``, ``manifest_hash_after``.
     """
-    include_globs, _baseline, surface_roots = _load_inputs(project_root)
+    include_globs, _baseline, surface_roots, _package_roots = _load_inputs(project_root)
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
 
     hash_before = _manifest_hash(manifest_path)

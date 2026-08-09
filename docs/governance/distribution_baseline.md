@@ -30,7 +30,8 @@ or an installed `.gzkit/` artifact not in the baseline manifest.
     "skills": ["<slug>/SKILL.md", ...],
     "rules": ["<filename>.md", ...],
     "personas": ["<filename>.md", ...],
-    "templates": ["<filename>.md", ...]
+    "templates": ["<filename>.md", ...],
+    "chores": ["<slug>/CHORE.md", ...]
   }
 }
 ```
@@ -44,6 +45,17 @@ or an installed `.gzkit/` artifact not in the baseline manifest.
   - Skill entries are `"<slug>/SKILL.md"` (relative to `src/gzkit/skills/`).
   - Rule, persona, and template entries are bare filenames (relative to
     `src/gzkit/<surface>/`).
+  - Chore entries are slug-relative paths (relative to `src/gzkit/chores/`),
+    covering every file the slug ships — `CHORE.md`, `acceptance.json`, and
+    authored gate scripts alike.
+
+**The surface set is `_CANONICAL_SURFACES` in
+`src/gzkit/governance/trust_audits/distribution.py`, never this manifest's own
+keys.** Deriving the audit's domain from the keys made it a fixed point: it could
+report that a listed member was wrong, but never that a member was missing. The
+`chores` surface was absent, so 119 shipped chore files were outside the audit
+entirely and its own `chores` classifier branch was unreachable (residual of
+GHI #783).
 
 ## Retired-skill filtering
 
@@ -76,10 +88,16 @@ Triggers requiring a refresh:
    `"<new-name>.md"` to `surfaces.personas`.
 4. **New template landed** at `src/gzkit/templates/<new-name>.md`. Add
    `"<new-name>.md"` to `surfaces.templates`.
-5. **New surface introduced** (e.g. agents, hooks-as-canonical). Add a new
-   top-level key under `surfaces` and bump `schema_version` if the entry
-   shape differs from existing surfaces.
-6. **gzkit version bumped** in `pyproject.toml`. Update `gzkit_version`
+5. **New chore landed** at `.gzkit/chores/<new-slug>/` and propagated to
+   `src/gzkit/chores/<new-slug>/`. Add each shipped file as a slug-relative
+   path to `surfaces.chores`. A slug declaring `"projectLocal": true` in
+   `.gzkit/chores/registry.json` ships nothing and is correctly absent.
+6. **New surface introduced** (e.g. agents, hooks-as-canonical). Add the
+   surface name to `_CANONICAL_SURFACES` in
+   `src/gzkit/governance/trust_audits/distribution.py` — that tuple, not this
+   manifest, is what the audit walks — then regenerate, and bump
+   `schema_version` if the entry shape differs from existing surfaces.
+7. **gzkit version bumped** in `pyproject.toml`. Update `gzkit_version`
    string to match.
 
 The unit tests at `tests/distribution/test_baseline_manifest.py` enforce
