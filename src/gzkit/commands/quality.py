@@ -391,6 +391,24 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
 
     Module-scope-importable so tests and external callers can introspect the
     aggregator without invoking the full check pipeline (REQ-0.0.27-07-06).
+
+    ADDING A STEP HERE IS NOT ONE EDIT. This list is the derived source for the
+    ADR-0.0.73 QC registry, so a new entry obliges, in the same commit:
+
+    1. ``_STEP_CLASSIFICATION`` in ``gzkit.qc_binding`` — ``build_qc_registry()``
+       raises ``KeyError`` on an unclassified step and every QC test fails at
+       once. That is the design working: no step ships unaccounted.
+    2. If classified ``bound``, an ``@enforces`` negative control — there is no
+       debt escape (ADR-0.0.74 Boundary Invariants #6/#8).
+    3. An ``_ep_<claim>`` entrypoint in ``_qc_nc_entrypoints``.
+    4. A ``_build_<claim>`` fixture in ``_qc_negative_controls``, which must fail
+       for the claim's OWN reason — a fixture that trips a neighbouring check
+       proves nothing about this one.
+
+    Enumerated in GHI #744's close ("worth recording for the next person") and
+    restated here because that record lived only in a closed issue: wiring the
+    module-size step (GHI-less, ``59931cb07``) re-derived the whole list by
+    breaking 23 tests. Point of use is the only placement that binds.
     """
     from gzkit.quality import (
         run_adr_status_fresh_audit,
