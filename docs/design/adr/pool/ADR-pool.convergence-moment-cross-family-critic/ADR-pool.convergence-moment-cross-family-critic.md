@@ -440,6 +440,74 @@ It does not. Measured while discharging § Promotion plan item 4, on plugin
 
 Tracked at **GHI #786** so the transport question survives this ADR's own lifecycle.
 
+### The transport that must exist, scoped (measured 2026-08-09, GHI #786)
+
+**It composes entirely from surfaces that already ship. No new CLI verb, and none
+may be scoped here** — a `gz` verb is a CLI-contract change, which AGENTS.md
+§ Defect-fix routing sends through OBPI ceremony under a *promoted* ADR. This ADR
+is `Pool`. Scoping a verb here would pre-empt the promotion this section exists to
+inform.
+
+Measured on `codex-cli 0.147.0`:
+
+| Need | Surface | Evidence |
+|---|---|---|
+| Carry a **decision**, not a diff | `codex exec [PROMPT]` — *"If not provided as an argument (or if `-` is used), instructions are read from stdin"* | `codex exec --help`. Its subject is whatever the prompt carries. The diff-shaped path is the separate `codex exec review` subcommand, *"Run a code review against the current repository"* — the split is in the CLI itself. |
+| Bound blast radius | `-s, --sandbox read-only` | `[possible values: read-only, workspace-write, danger-full-access]` |
+| Return a **structured verdict**, not prose | `--output-schema <FILE>` — *"Path to a JSON Schema file describing the model's final response shape"*, plus `-o, --output-last-message <FILE>` | `codex exec --help` |
+| **Prove** the adversary was cross-family | `uv run gz arb step --name <n> -- codex exec …` | The receipt records `step.command` as argv (`gzkit.arb.step_receipt.v1`), which is the channel GHI #780's resolver reads. Verified on a live receipt: `"step": {"command": ["uv","run","-m","unittest","-q"], "name": "unittest"}` |
+| Operator / agent / gate doors | The **skill** R2 already ruled | No new surface |
+
+**The ARB wrapper is not optional, and this is already ruled.** GHI #780 (closed)
+established that a cross-vendor claim is `PROVEN (receipt) > DECLARED (tier) >
+INFERRED (name)`, and the operator widened it: the requirement rides **any**
+resolved cross-vendor claim, not only a declared tier 1. A critic verdict is a
+cross-vendor claim. Invoking `codex` outside `gz arb step` therefore produces a
+verdict that cannot be proven cross-family — the exact self-assertion #765/#780
+closed. The wrapper is what makes the verdict *evidence* rather than narration.
+
+**What this changes about the live objections.** The re-run verdict records
+*"strong subject binding — prompt hash, scope manifest, primary-output hash — is
+explicitly unbuilt."* `--output-schema` makes it buildable rather than aspirational:
+those become required fields of the verdict schema, and a response missing them
+fails the schema rather than being accepted as prose. That does not dissolve axis 3
+(inverted coverage) or axis 4 (campaign accretion), which remain live.
+
+**This is DEMONSTRATED, not scoped on paper.** The composition was run end to end
+2026-08-09, which is § DO IT RIGHT 6g applied to the replacement rather than only
+to the thing it replaces — the same discipline whose absence produced R4's
+original error:
+
+```
+$ uv run gz arb step --name adversaryprobe -- \
+    codex exec --sandbox read-only "Reply with exactly the token PROBE-OK and nothing else."
+REAL EXIT: 0
+arb-step-adversaryprobe-45bc3c72076246ec92e05d9b60d7fdbd
+
+$ # reading that receipt back through the production resolver:
+step.command: ['codex', 'exec', '--sandbox', 'read-only', 'Reply with exactly the token PROBE-OK...']
+exit_status : 0
+PROVEN cross-vendor from argv: True
+stdout_tail : 'PROBE-OK\n'
+```
+
+The verdict came back, and `_receipt_proves_cross_vendor` resolved it **PROVEN**
+from the argv — not DECLARED from a tier, not INFERRED from a name.
+
+**One constraint the probe surfaced, recorded so the promoting session does not
+rediscover it:** ARB step names must match `[a-z][a-z0-9]*` — no hyphens,
+underscores, or leading digit — because the run_id binds against the canonical
+receipt regex `arb-(?:ruff|step-[a-z][a-z0-9]*)-[a-f0-9]{32}`. `--name
+adversary-transport-probe` is refused at exit 2. The critic's step name must
+therefore be a bare token such as `adversary`.
+
+**What is still owed, and is NOT scoped here.** The verdict JSON Schema's own
+fields; where it lives (`src/gzkit/schemas/` by convention); whether the skill
+emits a ledger event; and the calibrated pilot the campaign's staged-delivery
+amendment requires before the automatic `AskUserQuestion` door is lit. Those are
+OBPI-shaped and belong to the promoted ADR's decomposition — item (i) of
+§ Promotion plan, decomposed against the THREE DOORS.
+
 ## Adversarial review: TWO independent cross-family passes, BOTH returned PERFORATED
 
 **This is the single most important fact about this design, and the handoff chain
