@@ -390,6 +390,56 @@ It also softens the outstanding residual: "most up-to-date codex" becomes whatev
 the plugin resolves, rather than a hard-coded vendor-prefix list in the core. It
 does not eliminate that residual — see § Risks item 8.
 
+### R4 transport correction (measured 2026-08-09) — the ruling stands, its premise does not
+
+**R4's ruling is unchanged: run the most up-to-date Codex, keep it simple. What is
+corrected is the belief that the shipped plugin already supplies this transport.**
+It does not. Measured while discharging § Promotion plan item 4, on plugin
+`openai-codex/codex/1.0.6` with `codex-cli 0.147.0` present on PATH:
+
+1. **The plugin's `adversarial-review` command reviews BRANCH DIFFS, not decisions.**
+   Invoked against this repository it returned:
+
+   ```
+   # Codex Adversarial Review
+   Target: branch diff against main
+   Verdict: approve
+   No branch diff against main was provided or present, so no substantive
+   --help regression can be supported.
+   ```
+
+   Its subject is a code change. This ADR's subject is *a decision at a
+   convergence moment*. They are different objects, and no configuration of the
+   diff reviewer turns it into the other.
+
+2. **The `codex:codex-rescue` subagent is a forwarder that fails silently by
+   contract.** Its runtime skill states: *"Return the stdout of the `task` command
+   exactly as-is. If the Bash call fails or Codex cannot be invoked, return
+   nothing."* Two dispatches returned nothing; the second drifted into an
+   unrelated filesystem search. The forwarder is also explicitly *"not an
+   orchestrator"* and is forbidden from calling `adversarial-review` at all.
+
+3. **What DID work is the plain CLI**, `codex exec --sandbox read-only`, driven
+   from the main session with the prompt as stdin. That is what produced the
+   re-run verdict recorded below.
+
+**Consequences for this design, stated plainly:**
+
+- The "just use the built-in" reading of R4 is not available. Some gzkit-owned
+  surface must exist to carry a *decision* to the adversary and carry a verdict
+  back, because the shipped plugin carries *diffs*. This is an argument FOR the
+  skill R2 ruled, not against it.
+- § Risks item 8's residual is larger than recorded: the gap is not only which
+  binary the plugin resolves, it is that the plugin's adversarial surface has the
+  wrong subject.
+- **It weakens the strongest no-build argument.** That argument rests on "the
+  installed plugin supplies both transports" and on A5 calling the manual path an
+  "existence proof". The first half is now falsified by measurement. The manual
+  path remains a genuine existence proof — but it is manual, which is the thing
+  the operator asked to stop being.
+
+Tracked at **GHI #786** so the transport question survives this ADR's own lifecycle.
+
 ## Adversarial review: TWO independent cross-family passes, BOTH returned PERFORATED
 
 **This is the single most important fact about this design, and the handoff chain
