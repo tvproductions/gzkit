@@ -24,14 +24,20 @@ The ratchet does not solve that directly; it bounds it, by refusing to keep a gr
 alive once the narration it was written for is gone.
 
 **Bare-filename citations were invisible regardless of any grant.** ``legacy_paths``
-matched full paths only, so *"per attestation-enrichment.md"* — three of the ten
+matched full paths only, so a bare *"per <retired-rule>.md"* — three of the ten
 pointers repaired under GHI #778 — passed every guard. Widening to bare filenames
-naively is wrong: ``docs/governance/defect-fix-routing.md`` is a **live** file, so
-flagging every bare mention of that basename would fire on legitimate references.
-The predicate is therefore resolution-based and self-adjusting: a bare citation is
-dead only when **no tracked file carries that basename**. That is SAFE for
-``attestation-enrichment.md`` (retired, no live counterpart) and correctly inert for
-``defect-fix-routing.md`` (retired at the rules path, alive under docs/governance/).
+naively is wrong: the defect-fix-routing basename is **live** under
+``docs/governance/``, so flagging every bare mention of it would fire on legitimate
+references. The predicate is therefore resolution-based and self-adjusting: a bare
+citation is dead only when **no tracked file carries that basename**. That makes it
+active for the attestation-enrichment name (retired, no live counterpart) and
+correctly inert for the defect-fix-routing one (retired at the rules path, alive
+under docs/governance/).
+
+Note this module names no retired basename literally, and is therefore NOT exempt
+from the guards it powers — deliberately. A shared helper carrying its own
+blanket exemption would be the first stale grant in a mechanism built to refuse
+them.
 """
 
 from __future__ import annotations
@@ -110,14 +116,13 @@ def _is_exempt(rel: str, roots: tuple[str, ...]) -> bool:
 def bare_citation_pattern(basename: str) -> re.Pattern[str]:
     """Match *basename* as a citation, never as the tail of a longer filename.
 
-    The lookbehind is load-bearing. A plain substring test reports
-    ``OBPI-0.0.20-03-fold-attestation-enrichment.md`` — a **live** OBPI brief
-    whose slug merely ends with the retired basename — as a dead pointer, which
-    is a false positive on a real governed file (observed in
-    ``data/sensitivity_floor_grandfather.json`` while building this guard).
-    Requiring the preceding character to be a non-filename character keeps
-    ``per attestation-enrichment.md`` and `` `attestation-enrichment.md` `` while
-    dropping ``fold-attestation-enrichment.md``.
+    The lookbehind is load-bearing. A plain substring test reports the **live**
+    OBPI brief ``OBPI-0.0.20-03-fold-<retired-name>.md`` — whose slug merely ends
+    with the retired basename — as a dead pointer, which is a false positive on a
+    real governed file (observed in ``data/sensitivity_floor_grandfather.json``
+    while building this guard). Requiring the preceding character to be a
+    non-filename character keeps ``per <retired-name>.md`` and
+    `` `<retired-name>.md` `` while dropping ``fold-<retired-name>.md``.
     """
     return re.compile(r"(?<![\w.-])" + re.escape(basename))
 

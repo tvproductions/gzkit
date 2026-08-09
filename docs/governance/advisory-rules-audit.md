@@ -40,7 +40,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mx-mode.md` | `1.1.0` |
 | `pythonic.md` | `0.4.0` |
 | `tool-skill-runbook-alignment.md` | `0.3.0` |
-| `tests.md` | `0.15.0` |
+| `tests.md` | `0.16.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
 
@@ -139,6 +139,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 70 | **Prefer structured assertion targets** / **the discriminator** (*if behavior changed but text did not, would this test fail?*) | **Judgment** | The discriminator is an authoring question no static check decides — a `grep`-a-doc assertion is structurally legal Python. Partial mechanical arm: `gz validate --tautological-test-audit` (bound QC step) catches the degenerate end (`assertEqual(x, x)`), and `theater_signature_scan` catches `copy-vs-self` in validator source. The middle band — a test that asserts real strings that happen not to track behavior — stays judgment by construction. |
 | 71 | **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names | **Judgment** | **Re-scored 2026-08-08 (rule `0.15.0`), Movement C rules arm.** The tractable check (flag helpers named `assert_*audit*passes*` under `tests/**`) was scored a promotion candidate for months and never built, because nothing has been observed for it to catch — the row's own note said "low catch-rate expected; listed for completeness rather than urgency." Under the § Recommended promotion order freeze that is a reason not to build it, not a backlog item. The rule now states the clause binds at authoring and review time only, and names what would reclassify it: a named, observed instance. |
 | 72 | **Derivation rule** / **per-increment rhythm** / **unit-test purpose** — tests derive from OBPI acceptance criteria, one test → one observed RED → minimum code to GREEN | **Judgment** | "Derived from the REQ rather than from a run of the code" is not recoverable from the artifact after the fact; the RED witness (row 67) is the closest mechanical proxy and covers the rhythm's observable half only. |
+| 75 | **Do not slice horizontally.** Authoring every test for a brief and then every implementation is not TDD with a long cycle — it produces tests insensitive to change. | **Judgment** | **Added 2026-08-09 (rule `0.16.0`), GHI #567 Move 2(b).** Authoring ORDER leaves no artifact to inspect: the committed tree is identical whether the tests were written one-at-a-time or in a batch, so no scan over `tests/**` can recover which happened. The nearest mechanical proxy is the RED witness (row 67), and it is per-REQ by construction — `gz arb red --req <REQ-ID>` proves one test failed without its implementation, which is exactly the evidence a horizontal slice never produces, but its absence is equally consistent with the REQ simply not having been run. **No mechanical witness, and none is planned.** Reclassify on a named, observed instance of a batch-authored suite that shipped and was caught late. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
@@ -353,12 +354,18 @@ substring grep then reported *12 Promotable + 2 Ambiguous*, counting the legend
 row and this table's own row as if they were rules. A count with no producer
 decays in whichever direction the next reader's grep happens to point.
 
-| Score | Rows | % of 100 |
+| Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 64 | 64% |
+| **Mechanical** | 64 | 62% |
 | **Promotable** | 0 | 0% |
-| **Judgment** | 38 | 38% |
+| **Judgment** | 39 | 38% |
 | **Ambiguous** | 0 | 0% |
+
+<!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
+     the percentage column is not. The header read "% of 100" while the rows
+     summed to 102, so the denominator was a rounder number than the data —
+     corrected to the actual scored-row total (103) when row 75 landed. -->
+
 
 **The third state is empty (2026-08-08).** Every scored clause now either carries
 a mechanical witness or says in its own rule text that it is advisory and names

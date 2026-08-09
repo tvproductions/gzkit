@@ -28,6 +28,40 @@ The doctrine is **pool freely, promote deliberately**. A pool ADR that has sat f
 
 ---
 
+## Is it ADR-shaped at all? (the three-gate filter)
+
+Upstream of every criterion below sits a question this policy left unasked: **is
+this an ADR at all?** Entry criteria answer *"is it ready to pool?"*, which
+presumes the answer. Without the prior filter the pool accretes entries that were
+never decisions — restatements of existing doctrine, obvious calls nobody would
+make differently, and preferences with no losing alternative.
+
+Offer an ADR only when **all three** hold:
+
+1. **Hard to reverse.** Undoing the decision later costs real work — a migration,
+   a re-attestation, a coupled-surface sweep. A choice that can be changed by
+   editing one file next week is not ADR-shaped.
+2. **Surprising without context.** A reader who does not know the history would
+   plausibly do it differently, and be wrong. If the decision is what any
+   competent implementer would have picked anyway, the ADR records nothing.
+3. **The result of a real tradeoff.** A named alternative was considered and
+   declined for a stated reason. If nothing was given up, there is no decision to
+   record — only a description.
+
+**When it fails a gate, route it rather than dropping it.** A defect that fails
+gate 1 is a GHI direct fix (operator canon: *"GHIs are AUTHORIZED for direct
+repair, always"*). A binding constraint that fails gate 2 is a `.gzkit/rules/`
+clause. An observation that fails gate 3 is an insight (`gz insights remember`).
+Failing the filter is a routing signal, never a reason to discard the finding —
+AGENTS.md § PRIME DIRECTIVE #6 requires every defect be trackable somewhere.
+
+Adopted from Matt Pocock's `grill-with-docs` ADR-worthiness test (external-catalog
+alignment scan, GHI #567). gzkit routed ADRs by kind and lane but carried no crisp
+is-this-even-ADR-worthy filter; this is that filter, and it sits before the kind
+question rather than beside it.
+
+---
+
 ## Entry criteria
 
 An idea belongs in the pool when **all three** of the following hold:
