@@ -436,7 +436,19 @@ _FIXTURE_KEY_PROOF = "uv run -m unittest tests/test_fixture.py -v passes 1/1."
 # Heavy-lane completion fails closed without a Step-4b adversary verdict (GHI #676).
 # These scenarios are about receipt binding, not Step 4b, so they satisfy the gate
 # rather than exercise it — its own behaviour is covered in tests/.
-_ADVERSARY_ARGS = ["--adversary-verdict", "not-refuted", "--adversary", "codex/gpt-5.4"]
+#
+# The tier-2 shape is deliberate (GHI #780): a cross-vendor claim now requires an
+# ARB receipt, so naming a codex adversary here would make these scenarios assert
+# an unproven tier-1 claim in passing. A recorded fallback reason is the honest
+# way to satisfy a gate you are not exercising.
+_ADVERSARY_ARGS = [
+    "--adversary-verdict",
+    "not-refuted",
+    "--adversary",
+    "claude/general-purpose",
+    "--adversary-fallback-reason",
+    "codex setup reported ready=false",
+]
 
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" using attestor-present')
