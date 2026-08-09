@@ -342,6 +342,35 @@ def _build_format() -> Path:
     return root
 
 
+def _build_module_size() -> Path:
+    """Violation: a module over the block band with no grandfather entry.
+
+    The band is planted at 3 rather than the corpus p95 so the fixture module
+    can be six lines instead of a thousand — the gate reads its threshold from
+    the table, so a small table exercises the same code path a large one does.
+    Omitting ``data/module_size_grandfather.json`` leaves the listed set empty,
+    which isolates the "over the band and NOT listed" direction; the other three
+    directions are driven by the gate's own ``--self-test``.
+    """
+    root = _mkroot("module-size")
+    _write(
+        root / ".gzkit" / "rules" / "complexity-thresholds.json",
+        json.dumps(
+            {
+                "bands": [
+                    {
+                        "metric": "radon_raw_nloc",
+                        "trigger_semantic": "block",
+                        "absolute_number": 3,
+                    }
+                ]
+            }
+        ),
+    )
+    _write(root / "src" / "big.py", "".join(f"x{i} = {i}\n" for i in range(6)))
+    return root
+
+
 def _build_typecheck() -> Path:
     root = _mkroot("typecheck")
     _minimal_pyproject(root)
@@ -1180,6 +1209,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("lint", _build_lint, _ep._ep_lint),
     ("format", _build_format, _ep._ep_format),
     ("typecheck", _build_typecheck, _ep._ep_typecheck),
+    ("module-size", _build_module_size, _ep._ep_module_size),
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
     ("docs-build", _build_docs_build, _ep._ep_docs_build),

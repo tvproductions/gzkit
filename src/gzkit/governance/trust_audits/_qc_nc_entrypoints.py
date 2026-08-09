@@ -112,6 +112,33 @@ def _ep_typecheck(root: Path) -> int:
     return _command_fails("uv run ty check .", root, expected_exit=1)
 
 
+def _ep_module_size(root: Path) -> int:
+    """Run the production module-size gate script against the fixture root.
+
+    The script resolves its own project root as ``Path.cwd()``, so pointing the
+    subprocess cwd at the fixture is what aims it at the planted violation while
+    the script itself stays the real one — never a copy. Resolution goes through
+    ``_resolve_chore_dir`` (project-first, package-fallback) rather than a
+    literal path, so the control follows the chore wherever it resolves.
+
+    ``expect_output`` is required here for the same reason it is on gz verbs: the
+    script exits 3 for a policy breach, but a missing thresholds table also
+    raises ``SystemExit`` with a message, and exit code alone cannot tell the
+    verdict from the bail-out.
+    """
+    import sys  # noqa: PLC0415
+
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+
+    script = _resolve_chore_dir("module-sloc-cap-radon").path / "check_module_size.py"
+    return _command_fails_argv(
+        [sys.executable, str(script)],
+        root,
+        expected_exit=3,
+        expect_output="not grandfathered",
+    )
+
+
 def _ep_test(root: Path) -> int:
     return _command_fails("uv run -m unittest discover tests", root, expected_exit=1)
 

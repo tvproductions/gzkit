@@ -1247,6 +1247,36 @@ def run_smoke_tier(project_root: Path) -> QualityResult:
     return run_command("uv run gz smoke", cwd=project_root)
 
 
+def run_module_size_audit(project_root: Path) -> QualityResult:
+    """Run the shrink-only module-size ratchet as an automatic gate.
+
+    The ratchet has had teeth since its 2026-08-01 cutover and no automatic
+    caller: it spoke only when a human ran
+    `gz chores advise module-sloc-cap-radon`. That is how a 297-SLOC breach
+    shipped in v0.34.2 with every gate green — the gate was not wrong, it was
+    never asked.
+
+    Invokes the chore's own script rather than re-implementing the band check.
+    A second implementation would be a second threshold authority, which
+    `.gzkit/rules/complexity-thresholds.md` § Invariant names outright as
+    "doctrine drift by another name" — the very drift that script was written
+    to remove.
+
+    The `--self-test` arm runs first because a gate with no automatic caller
+    and a gate whose teeth are never verified are the same failure class: the
+    self-test drives all four breach directions over synthetic data and costs
+    no radon run. The chore's remaining criterion (the full unit suite) is
+    deliberately NOT run here — `gz check` already runs it as its own step.
+    """
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+
+    script = _resolve_chore_dir("module-sloc-cap-radon").path / "check_module_size.py"
+    self_test = run_command(["uv", "run", "python", str(script), "--self-test"], cwd=project_root)
+    if not self_test.success:
+        return self_test
+    return run_command(["uv", "run", "python", str(script)], cwd=project_root)
+
+
 def run_authorship_audit(project_root: Path) -> QualityResult:
     """Run the commit-authorship policy audit (GHI #725).
 

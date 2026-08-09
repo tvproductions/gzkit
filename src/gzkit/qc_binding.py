@@ -67,6 +67,13 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Lint": ("lint", "src/", "bound", "subprocess"),
     "Format": ("format", "src/", "bound", "subprocess"),
     "Typecheck": ("typecheck", "src/", "bound", "subprocess"),
+    # Enrolled here in the same commit it joined `gz check`, matching the
+    # precedent the "Advisory scorecard coverage" and "Pool interview schema"
+    # comments below record. Subject is `src/` — the population it measures is
+    # every module under it. `bound`: the gate exits 3 on a breach and gates the
+    # `gz check` exit code; the ratchet's whole defect was having no caller, so
+    # classifying it advisory would re-create that hole under a different name.
+    "Module size": ("audit", "src/", "bound", "subprocess"),
     "Test": ("test", "tests/", "bound", "subprocess"),
     "Behave": ("bdd", "features/", "bound", "subprocess"),
     "Docs build": ("audit", "docs/", "bound", "subprocess"),

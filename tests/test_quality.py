@@ -660,3 +660,67 @@ class TestDocsBuildInCheckPipeline(unittest.TestCase):
         invoked = run_command.call_args.args[0]
         self.assertIn("mkdocs build", invoked)
         self.assertIn("--strict", invoked, f"Docs build must be strict; got {invoked!r}")
+
+
+class TestModuleSizeInCheckPipeline(unittest.TestCase):
+    """The shrink-only module-size ratchet must run inside `gz check`.
+
+    Same class as the Docs build gap above: the ratchet had teeth from its
+    2026-08-01 cutover and no automatic caller, so it spoke only when a human
+    ran `gz chores advise module-sloc-cap-radon`. A 297-SLOC breach shipped in
+    v0.34.2 with every gate green — the gate was not wrong, it was never asked.
+    """
+
+    def test_module_size_gate_in_check_steps(self) -> None:
+        from gzkit.commands.quality import _build_check_steps
+
+        step_names = [name for name, _ in _build_check_steps()]
+        self.assertIn(
+            "Module size",
+            step_names,
+            "gz check aggregator must include the Module size step",
+        )
+
+    def test_self_test_failure_short_circuits_before_the_band_run(self) -> None:
+        """A gate whose teeth are unverified is the same failure class as an uncalled gate.
+
+        The `--self-test` arm drives all four breach directions over synthetic
+        data. If it fails, `compute_breaches` is broken and the band run's
+        verdict is worthless — so the band run must not be reached, and its
+        green must never be what the caller sees.
+        """
+        from gzkit.quality import run_module_size_audit
+
+        failed = QualityResult(
+            success=False, command="self-test", stdout="", stderr="", returncode=3
+        )
+        with patch.object(quality, "run_command", return_value=failed) as run_command:
+            result = run_module_size_audit(Path("."))
+
+        self.assertFalse(result.success, "A toothless gate must not report success")
+        self.assertEqual(
+            run_command.call_count,
+            1,
+            "The band run must not execute once the self-test has failed",
+        )
+
+    def test_gate_delegates_to_the_chore_script_rather_than_reimplementing(self) -> None:
+        """One threshold authority only.
+
+        `.gzkit/rules/complexity-thresholds.md` § Invariant calls a second
+        threshold authority "doctrine drift by another name". This step must
+        therefore invoke the chore's own script; a re-implementation here would
+        be the drift the script was written to remove.
+        """
+        from gzkit.quality import run_module_size_audit
+
+        passed = QualityResult(success=True, command="", stdout="", stderr="", returncode=0)
+        with patch.object(quality, "run_command", return_value=passed) as run_command:
+            run_module_size_audit(Path("."))
+
+        invoked = run_command.call_args.args[0]
+        self.assertIn(
+            "check_module_size.py",
+            " ".join(invoked),
+            f"Module size step must run the chore's own gate script; got {invoked!r}",
+        )
