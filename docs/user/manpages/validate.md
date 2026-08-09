@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--gate-callers] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
@@ -1247,6 +1247,52 @@ uv run gz validate --waiver-ratchet --json
 |------|---------|----------|
 | 0 | Every registered waiver surface carries a valid honesty mechanism | — |
 | 3 | A waiver surface is unratcheted, violates its mechanism (e.g. a shrink-ratchet list grew), or an on-disk waiver file is unregistered | Add/repair the mechanism in `data/waiver_ratchet_registry.json` (or remove the added waiver entries); re-run `uv run gz validate --waiver-ratchet` |
+
+### `--gate-callers`
+
+Uncalled-gate inventory and disclosure (GHI #785). A gate can exist, be correct,
+have teeth, and never be asked — and an uncalled gate reports nothing, so its
+evidence of absence is indistinguishable from a green run. Two instances landed
+in one week: the `module-sloc-cap-radon` shrink ratchet had teeth and no caller,
+so a 297-SLOC breach shipped in v0.34.2 with every gate green; and
+`gz validate --sensitivity` was red on a live brief while `gz check` stayed green.
+
+Every other reachability mechanism polices its **own** membership — the QC
+registry fail-closes on an unclassified `gz check` step, the enforcement floor on
+an enrolled claim with no negative control, the default-tier fence on a
+default-tier scope outside the gate. Each is sound; none can ask *"what exists
+that is in none of us?"*. This scope asks it.
+
+Two populations are inventoried: every `explicit`-tier `VALIDATOR_REGISTRY` scope,
+and every chore under `.gzkit/chores/` shipping a `.py` gate script. A gate counts
+as **called** when any automatic caller surface invokes it — `src/gzkit/quality.py`
+(the `gz check` steps), `.pre-commit-config.yaml`, or `.github/workflows/**`. All
+three are scanned deliberately: measuring only `gz check` reproduces, one level up,
+the single-membership blindness this scope exists to catch.
+
+This is **inventory and disclosure, not enrollment**. Enrolling every uncalled
+scope into `gz check` would be wrong — several are deliberately explicit because
+they are expensive or single-artifact scoped. Accepted gates are recorded in
+`data/uncalled_gate_grandfather.json` with a stated reason, ratcheted shrink-only
+via `data/waiver_ratchet_registry.json`. An acceptance records a *disclosed*
+absence, not a justified one: the per-scope "does this deserve a caller" ruling is
+still owed.
+
+Fails closed (exit 3) on three findings: a gate with no caller and no acceptance;
+an accepted gate that has since **gained** a caller (stale acceptance — surrender
+it, which is what makes the list drain); and an accepted gate that no longer
+exists. Wired into the default `gz check` pipeline, so the inventory is not itself
+an uncalled gate.
+
+```bash
+uv run gz validate --gate-callers
+uv run gz validate --gate-callers --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every gate has an automatic caller or a recorded acceptance | — |
+| 3 | A gate has no automatic caller and no acceptance, or an acceptance is stale | Wire a caller, or add the gate to `data/uncalled_gate_grandfather.json` with a reason and raise `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --gate-callers` |
 
 ### `--closeout-proof`
 

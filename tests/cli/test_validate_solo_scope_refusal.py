@@ -23,7 +23,8 @@ from pathlib import Path
 
 from gzkit.commands import validate_cmd
 
-# The six scopes that own their full 0/2/3 lifecycle and early-return.
+# The scopes that own their full 0/2/3 lifecycle and early-return. Six at
+# GHI #704; `check_gate_callers` joined under GHI #785.
 SOLO_ONLY_KWARGS: dict[str, object] = {
     "check_evaluation_justify_binding": "some-adr",
     "check_unscoped_rules": True,
@@ -31,6 +32,7 @@ SOLO_ONLY_KWARGS: dict[str, object] = {
     "check_qc_binding": True,
     "check_fidelity_presence": True,
     "check_waiver_ratchet": True,
+    "check_gate_callers": True,
 }
 
 _DISPATCH_DEFAULTS: dict[str, object] = {
@@ -47,6 +49,7 @@ _DISPATCH_DEFAULTS: dict[str, object] = {
     "check_qc_binding": False,
     "check_fidelity_presence": False,
     "check_waiver_ratchet": False,
+    "check_gate_callers": False,
     "as_json": False,
 }
 
@@ -68,7 +71,7 @@ class TestSoloScopeCombinationRefused(unittest.TestCase):
     """A solo-only scope combined with another scope must fail closed."""
 
     def test_every_solo_only_scope_refuses_when_combined(self) -> None:
-        """Each of the six exits non-zero rather than being silently dropped.
+        """Each of them exits non-zero rather than being silently dropped.
 
         Pre-fix, the dispatcher returned ``False`` (fall through to the
         aggregate path), so the run reported success for a scope never executed.

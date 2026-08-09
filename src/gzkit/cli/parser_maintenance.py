@@ -689,6 +689,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Waiver-ratchet honesty gate (ADR-0.0.73). Exit 0: ratcheted; 3: unratcheted.",
     )
     p_validate.add_argument(
+        "--gate-callers",
+        dest="check_gate_callers",
+        action="store_true",
+        default=False,
+        help="Uncalled-gate inventory (GHI #785). Exit 0: all called/accepted; 3: uncalled.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -956,6 +963,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_qc_binding=a.check_qc_binding,
             check_fidelity_presence=a.check_fidelity_presence,
             check_waiver_ratchet=a.check_waiver_ratchet,
+            check_gate_callers=a.check_gate_callers,
             check_invariant_coherence=a.check_invariant_coherence,
             check_invariant_witness=a.check_invariant_witness,
             check_brief_reconcile=a.check_brief_reconcile,

@@ -409,6 +409,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "fidelity_presence", "explicit", False, lambda r, _f: _ta().audit_fidelity_presence(r)
     ),
     _ScopeEntry("waiver_ratchet", "explicit", False, lambda r, _f: _ta().audit_waiver_ratchet(r)),
+    _ScopeEntry("gate_callers", "explicit", False, lambda r, _f: _ta().audit_gate_callers(r)),
     _ScopeEntry(
         "intrinsic_attestation",
         "explicit",
@@ -705,6 +706,39 @@ def _run_waiver_ratchet_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print("[bold]Validated:[/bold] waiver-ratchet\n")
     console.print(f"[red]❌ {len(errors)} unratcheted waiver surface(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
+
+
+def _run_gate_callers_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for `gz validate --gate-callers` (exit 0/3).
+
+    The green line reports the accepted COUNT rather than a bare tick: the whole
+    point of GHI #785 is that "this gate has no automatic caller" becomes a
+    visible, counted fact, and a green run that hides the number would restore
+    exactly the silence the inventory exists to break.
+    """
+    from gzkit.governance.trust_audits.gate_callers import (  # noqa: PLC0415
+        audit_gate_callers,
+        uncalled_gates,
+    )
+
+    errors = audit_gate_callers(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    console.print("[bold]Validated:[/bold] gate-callers\n")
+    if not errors:
+        report = uncalled_gates(project_root)
+        accepted = sum(1 for g in report if not g.called)
+        console.print(
+            f"[green]✓ {len(report)} gates inventoried; "
+            f"{len(report) - accepted} have an automatic caller, "
+            f"{accepted} accepted as uncalled.[/green]"
+        )
+        raise SystemExit(0)
+    console.print(f"[red]❌ {len(errors)} gate-caller finding(s):[/red]\n")
     for e in errors:
         console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
     raise SystemExit(3)
@@ -1200,6 +1234,7 @@ def _dispatch_early_return_scopes(
     check_qc_binding: bool,
     check_fidelity_presence: bool,
     check_waiver_ratchet: bool,
+    check_gate_callers: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1247,6 +1282,7 @@ def _dispatch_early_return_scopes(
                 ("--qc-binding", check_qc_binding),
                 ("--fidelity-presence", check_fidelity_presence),
                 ("--waiver-ratchet", check_waiver_ratchet),
+                ("--gate-callers", check_gate_callers),
             )
             if requested
         ]
@@ -1281,6 +1317,9 @@ def _dispatch_early_return_scopes(
         return True
     if check_waiver_ratchet:
         _run_waiver_ratchet_scope(project_root, as_json=as_json)
+        return True
+    if check_gate_callers:
+        _run_gate_callers_scope(project_root, as_json=as_json)
         return True
     return False
 
@@ -1376,6 +1415,7 @@ def validate(
     check_qc_binding: bool = False,
     check_fidelity_presence: bool = False,
     check_waiver_ratchet: bool = False,
+    check_gate_callers: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1506,6 +1546,7 @@ def validate(
         check_qc_binding=check_qc_binding,
         check_fidelity_presence=check_fidelity_presence,
         check_waiver_ratchet=check_waiver_ratchet,
+        check_gate_callers=check_gate_callers,
         as_json=as_json,
     ):
         return

@@ -115,6 +115,13 @@
    "baseline_count": 5
   },
   {
+   "data_file": "data/uncalled_gate_grandfather.json",
+   "gates_step": "uncalled-gate inventory (gz validate --gate-callers)",
+   "mechanism": "shrink-ratchet",
+   "entries_path": "accepted_gates",
+   "baseline_count": 40
+  },
+  {
    "data_file": "data/advisory_scorecard_grandfather.json",
    "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
    "mechanism": "shrink-ratchet",

@@ -85,6 +85,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "QC binding": ("qc-binding", _mx_levels.ERROR),
     "Fidelity presence": ("fidelity-presence", _mx_levels.ERROR),
     "Waiver ratchet": ("waiver-ratchet", _mx_levels.ERROR),
+    "Gate callers": ("gate-callers", _mx_levels.ERROR),
     "Handoff documents": ("handoff-documents", _mx_levels.ERROR),
     "Preflight": ("preflight", _mx_levels.ERROR),
     "Surface fidelity": ("surface-fidelity", _mx_levels.ERROR),
@@ -392,23 +393,67 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     Module-scope-importable so tests and external callers can introspect the
     aggregator without invoking the full check pipeline (REQ-0.0.27-07-06).
 
-    ADDING A STEP HERE IS NOT ONE EDIT. This list is the derived source for the
-    ADR-0.0.73 QC registry, so a new entry obliges, in the same commit:
+    ADDING A STEP HERE IS NOT ONE EDIT. The obligations fall in TWO families, and
+    conflating them is what let the earlier version of this list read as complete
+    while naming only the first (GHI #787).
 
-    1. ``_STEP_CLASSIFICATION`` in ``gzkit.qc_binding`` — ``build_qc_registry()``
-       raises ``KeyError`` on an unclassified step and every QC test fails at
-       once. That is the design working: no step ships unaccounted.
-    2. If classified ``bound``, an ``@enforces`` negative control — there is no
-       debt escape (ADR-0.0.74 Boundary Invariants #6/#8).
-    3. An ``_ep_<claim>`` entrypoint in ``_qc_nc_entrypoints``.
-    4. A ``_build_<claim>`` fixture in ``_qc_negative_controls``, which must fail
-       for the claim's OWN reason — a fixture that trips a neighbouring check
-       proves nothing about this one.
+    A. STEP obligations — a new entry in the returned list. This list is the
+       derived source for the ADR-0.0.73 QC registry, so a new entry obliges:
+
+       1. ``_STEP_CLASSIFICATION`` in ``gzkit.qc_binding`` — ``build_qc_registry()``
+          raises ``KeyError`` on an unclassified step and every QC test fails at
+          once. That is the design working: no step ships unaccounted.
+       2. If classified ``bound``, an ``@enforces`` negative control — there is no
+          debt escape (ADR-0.0.74 Boundary Invariants #6/#8).
+       3. An ``_ep_<claim>`` entrypoint in ``_qc_nc_entrypoints``.
+       4. A ``_build_<claim>`` fixture in ``_qc_negative_controls``, which must fail
+          for the claim's OWN reason — a fixture that trips a neighbouring check
+          proves nothing about this one.
+
+    B. SCOPE obligations — when the step wraps a NEW ``gz validate`` scope, which
+       is the overwhelmingly common case and the reason family A alone reads as
+       the whole duty. Registering the scope additionally obliges:
+
+       5. ``data/check_scope_membership.json`` — add the stem to ``in_check`` AND
+          bump ``_counts.registry_scopes`` / ``_counts.in_check``
+          (``tests/governance/test_check_scope_parity.py``).
+       6. ``_POST_SNAPSHOT_EXPLICIT_ADDITIONS`` in
+          ``tests/cli/test_validate_registry_parity.py`` — plus
+          ``_POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED`` if the scope owns a solo
+          early-return lifecycle. The goldens beside them are measured evidence of
+          the pre-collapse truth; a new scope is DECLARED alongside, never appended
+          to them.
+       7. ``SOLO_ONLY_KWARGS`` and ``_DISPATCH_DEFAULTS`` in
+          ``tests/cli/test_validate_solo_scope_refusal.py``, for a solo scope —
+          ``_dispatch_early_return_scopes`` takes keyword-only args, so a new one
+          breaks every case in that suite until declared.
+       8. A per-flag section in ``docs/user/manpages/validate.md``
+          (``uv run gz cli audit``, exit 1).
+
+    NOT an obligation: ``_STEP_GUARD_META`` above. ``check()`` derives a
+    kebab-case guard name at ``ERROR`` level for an unlisted step, and that
+    fallback is documented at the dict. Adding an entry is a refinement, not a
+    duty — naming it here would overstate the list in the other direction, which
+    is the same defect mirrored.
+
+    THIS LIST IS A MAP, NOT THE ENFORCEMENT. Every surface above carries its own
+    fail-closed witness, and they work: landing the ``Gate callers`` step
+    (GHI #785) against the four-item version produced 14 loud test failures plus a
+    ``cli audit`` refusal, each naming its own remedy. Nothing was silently wrong
+    — the cost of an incomplete map is a wasted round-trip, never a false green.
+    That is also why nothing grades this docstring: asserting prose mentions each
+    consumer would grep content rather than exercise behavior, the shape
+    ``gz validate --tautological-test-audit`` rejects and
+    ``.claude/rules/guardrail-feedback-prose.md`` § Enforcement posture refuses on
+    the stated ground that an inferential prose-grader is weaker than a real
+    enforcement consumer. Keep the map accurate by hand; the territory is guarded.
 
     Enumerated in GHI #744's close ("worth recording for the next person") and
     restated here because that record lived only in a closed issue: wiring the
     module-size step (GHI-less, ``59931cb07``) re-derived the whole list by
-    breaking 23 tests. Point of use is the only placement that binds.
+    breaking 23 tests. Family B was added under GHI #787, after the next person
+    re-derived it again by breaking 14. Point of use is the only placement that
+    binds.
     """
     from gzkit.quality import (
         run_adr_status_fresh_audit,
@@ -425,6 +470,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_enforcement_floor_audit,
         run_fidelity_presence_audit,
         run_format_check,
+        run_gate_callers_audit,
         run_handoff_document_audit,
         run_insights_shape_audit,
         run_instructions_files_budget_audit,
@@ -507,6 +553,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("QC binding", run_qc_binding_audit),
         ("Fidelity presence", run_fidelity_presence_audit),
         ("Waiver ratchet", run_waiver_ratchet_audit),
+        ("Gate callers", run_gate_callers_audit),
         ("Handoff documents", run_handoff_document_audit),
         ("Preflight", run_preflight),
         ("Surface fidelity", run_surface_fidelity_audit),

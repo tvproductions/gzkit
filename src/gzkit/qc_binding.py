@@ -127,6 +127,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "QC binding": ("audit", "src/", "bound", "python_function"),
     "Fidelity presence": ("audit", "docs/", "bound", "python_function"),
     "Waiver ratchet": ("audit", "data/", "bound", "python_function"),
+    "Gate callers": ("audit", "src/", "bound", "python_function"),
     "Handoff documents": ("audit", "docs/", "bound", "python_function"),
     "Preflight": ("audit", ".gzkit/", "bound", "python_function"),
     "Surface fidelity": ("audit", "docs/", "bound", "python_function"),

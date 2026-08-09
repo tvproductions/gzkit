@@ -1153,6 +1153,19 @@ def _build_waiver_ratchet() -> Path:
     return root
 
 
+def _build_gate_callers() -> Path:
+    root = _mkroot("gate-callers")
+    # A chore shipping a gate script that no automatic surface invokes, and an
+    # EMPTY accepted-list: the audit MUST flag it. The chore population is used
+    # rather than the validate-scope population so the control fails for THIS
+    # claim's own reason -- an uncalled gate -- instead of incidentally tripping
+    # on the live registry's 75 explicit scopes being absent from a bare fixture.
+    _write(root / "data" / "uncalled_gate_grandfather.json", '{"accepted_gates":[]}')
+    _write(root / ".gzkit" / "chores" / "orphan-gate" / "check_thing.py", "# gate script\n")
+    _write(root / "src" / "gzkit" / "quality.py", "# no caller here\n")
+    return root
+
+
 def _nc_facade_ep(_v: object) -> int:
     """FACADE entrypoint for enforcement-floor NC probe — always returns 0 (does not catch)."""
     return 0
@@ -1336,6 +1349,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),
+    ("gate-callers", _build_gate_callers, _ep._ep_gate_callers),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
     (
         "theater-signature-scan",

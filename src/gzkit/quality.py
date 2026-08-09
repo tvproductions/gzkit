@@ -1072,6 +1072,19 @@ def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --waiver-ratchet", cwd=project_root)
 
 
+def run_gate_callers_audit(project_root: Path) -> QualityResult:
+    """Run the uncalled-gate inventory (GHI #785).
+
+    Fails closed (exit 3) when a validate scope or chore gate script has no
+    automatic caller and is not recorded in data/uncalled_gate_grandfather.json,
+    or when an acceptance has gone stale (the gate gained a caller, or no longer
+    exists). This is the only mechanism that asks which gates nothing invokes;
+    every other reachability check polices its own membership.
+    Recovery: uv run gz validate --gate-callers to see the offending gates.
+    """
+    return run_command("uv run gz validate --gate-callers", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

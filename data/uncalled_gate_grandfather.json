@@ -1,0 +1,173 @@
+{
+  "_doc": "Shrink-only accepted-list of gates that exist, have teeth, and have NO automatic caller (GHI #785). Seeded 2026-08-09 at the population measured on main across ALL automatic caller surfaces -- src/gzkit/quality.py (the `gz check` steps), .pre-commit-config.yaml, and .github/workflows/**. An entry records a DISCLOSED absence, never a justified one: acceptance means the count is visible and the per-scope 'does this deserve a caller' ruling is still owed, not that the gate is fine uncalled. NEVER add an entry to silence a newly-authored gate -- wire its caller instead; that is the laundering ADR-0.0.73 Boundary Invariant #8 forbids. An entry MUST be surrendered the moment its gate gains a caller (gz validate --gate-callers fails closed on a stale acceptance), which is what makes the list shrink-only. Enforced by src/gzkit/governance/trust_audits/gate_callers.py and ratcheted via data/waiver_ratchet_registry.json.",
+  "cutover": "2026-08-09",
+  "measurement": {
+    "candidates_inventoried": 44,
+    "with_automatic_caller": 4,
+    "accepted_uncalled": 40,
+    "population_derivation": "Candidates = the 41 scopes in data/check_scope_membership.json out_of_check (GHI #744's declaration, the single authority for `gz check` membership) plus the 3 chores shipping a .py gate script. Scopes in in_check are called by definition and are NOT re-derived here -- a second reader of the same membership would be free to disagree with the first (operator ruling 2026-08-09).",
+    "note": "GHI #785's body reported 41 explicit-tier scopes unreached. That figure scanned src/gzkit/quality.py alone; bullet_retention, pointer_anchors and surface_weight are invoked by .pre-commit-config.yaml on every commit, and module-sloc-cap-radon's chore script is invoked from quality.py. Measured against every automatic caller surface, 40 of the 44 candidates have no caller."
+  },
+  "accepted_gates": [
+    {
+      "gate": "validate:cli_alignment",
+      "reason": "DISCLOSED FINDING, ruling owed. .gzkit/rules/governance-core.md Operator-doc verb resolution states 'Enforced by gz validate --cli-alignment. Exit 3 on any unresolvable reference' -- but the `gz check` step named 'CLI audit' runs `gz cli audit`, a different verb. The doctrine claims a mechanical witness that nothing invokes."
+    },
+    {
+      "gate": "validate:skill_alignment",
+      "reason": "DISCLOSED FINDING, ruling owed. .claude/rules/tool-skill-runbook-alignment.md Enforcement posture names this the mechanical arm for Invariant 1, but the `gz check` step named 'Skill audit' runs `gz skill audit`, a different verb. Same shape as cli_alignment."
+    },
+    {
+      "gate": "validate:sensitivity",
+      "reason": "Named in GHI #785 as observed instance 2: explicit tier, unreached, and red on a live brief (GHI #784) while `gz check` stayed green throughout the session that found it. Caller ruling owed alongside #784's authoring call."
+    },
+    {
+      "gate": "validate:brief_reconcile",
+      "reason": "GHI #785 names this one of the scopes deliberately kept explicit because it is expensive -- it reconciles every OBPI brief against current project shape. A per-scope ruling on cost vs. cadence is owed before it joins a per-commit gate."
+    },
+    {
+      "gate": "validate:class_size",
+      "reason": "GHI #785 names this deliberately explicit. .claude/rules/pythonic.md Size Limits records it as the live class-size gate; whether it belongs in `gz check` or pre-commit is a cadence ruling, not an oversight."
+    },
+    {
+      "gate": "validate:distribution",
+      "reason": "Walks the built wheel against the authored canonical surfaces (ADR-0.0.31), so it is expensive and meaningful mainly at release time. AGENTS.md Governance doctrine surfaces cites it as binding; release-time vs. commit-time caller ruling owed."
+    },
+    {
+      "gate": "validate:brief_headings",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:brief_cross_references",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:brief_demo_section",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:brief_command_shape",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:decomposition",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:requirements",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:commit_trailers",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Note the trailer contract is separately enforced at commit time by .gzkit/hooks/prepare-commit-msg-task-trailers, so the absence here may be correct."
+    },
+    {
+      "gate": "validate:type_ignores",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. tests/governance/test_type_ignore_syntax.py covers the adjacent syntax invariant."
+    },
+    {
+      "gate": "validate:event_handlers",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:event_schemas",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:validator_fields",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:utf8_prefix",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. .claude/rules/cross-platform.md cites it as the mechanical witness for the UTF-8 prefix prohibition."
+    },
+    {
+      "gate": "validate:test_tiers",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:pydantic_models",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:version_release",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Plausibly release-time by nature."
+    },
+    {
+      "gate": "validate:pool_adr_isolation",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:behave_req_tags",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Fires on Completed/Validated briefs only, so its natural caller may be closeout rather than `gz check`."
+    },
+    {
+      "gate": "validate:reconcile_freshness",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:chores_layout",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:doc_surface_parity",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:absorption_duplicates",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:orphaned_implementation",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Reachable via the --audits composite, which is itself explicit."
+    },
+    {
+      "gate": "validate:evaluation_justify_binding",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Takes an optional ARTIFACT_ID (const __all__), so a bare caller is structurally possible."
+    },
+    {
+      "gate": "validate:intrinsic_attestation",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:advisor_proof_binding",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. AGENTS.md Governance doctrine surfaces cites it as the binding witness for Field(min_length=1) on AdvisorDiagnosis.proof."
+    },
+    {
+      "gate": "validate:changelog",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending. Plausibly release-time by nature."
+    },
+    {
+      "gate": "validate:vendor_manifest",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:setpoint_coherence",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:router_tables",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:ontology_purity",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:okf_conformance",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "validate:deprecated_verb_prescription",
+      "reason": "Unreviewed. Inventoried 2026-08-09 under GHI #785; per-scope caller ruling pending."
+    },
+    {
+      "gate": "chore:memory-hygiene",
+      "reason": "Chore gate script check_memory_drift.py has no automatic caller -- it runs when a human runs the chore. Named in GHI #785 as one of the two of three chore gate scripts with no caller; the third (module-sloc-cap-radon) was wired 2026-08-09 in 59931cb07 after a 297-SLOC breach shipped in v0.34.2 with every gate green."
+    },
+    {
+      "gate": "chore:pythonic-design-pattern-detection",
+      "reason": "Chore gate script scan.py has no automatic caller -- it runs when a human runs the chore. Detection-only by design (it surfaces refactor candidates rather than gating), so a caller ruling should decide whether an advisory scan belongs in an automatic surface at all."
+    }
+  ]
+}

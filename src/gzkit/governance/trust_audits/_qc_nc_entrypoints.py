@@ -568,6 +568,17 @@ def _ep_waiver_ratchet(root: Path) -> list[ValidationError]:
     return audit_waiver_ratchet(root)
 
 
+def _ep_gate_callers(root: Path) -> list[ValidationError]:
+    """Drive the production uncalled-gate audit against the fixture root.
+
+    ``explicit_scopes=[]`` isolates the chore population the fixture plants; the
+    audit function itself is the real one, never a copy.
+    """
+    from gzkit.governance.trust_audits.gate_callers import audit_gate_callers  # noqa: PLC0415
+
+    return audit_gate_callers(root, gz_check_uncalled_scopes=[])
+
+
 def _ep_enforcement_floor(records: list) -> int:
     """NC entrypoint for enforcement-floor: meta-validator must detect FACADE claims.
 
