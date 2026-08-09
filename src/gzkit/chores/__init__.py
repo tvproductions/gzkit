@@ -121,6 +121,14 @@ def _classify_chore_file(
     if slug is not None and slug in _project_local_slugs(project_root):
         return "project_local"
 
+    # A slug is DEFINED by its CHORE.md. A bare directory under the chores
+    # surface carrying neither a CHORE.md nor a registry entry is an orphan, not
+    # a chore: `_iter_canonical_chore_slugs` will not walk it and `gz chores
+    # list` cannot resolve it, so claiming its files as canonical would assert a
+    # delivery that no code path performs (`owasp-top10-2025-scan`, 2026-08-09).
+    if slug is not None and project_root is not None and not _slug_has_chore_md(project_root, slug):
+        return "package_only"
+
     # runtime_state: proofs/ contents, .gitkeep, CHORE-LOG.md
     if "proofs" in parts or name in (".gitkeep", "CHORE-LOG.md"):
         return "runtime_state"
@@ -145,6 +153,35 @@ def _classify_chore_file(
 
     # Default: canonical (CHORE.md, AGENTS.md, *.md, acceptance.json, registry.json, etc.)
     return "canonical"
+
+
+def _slug_has_chore_md(project_root: Path, slug: str) -> bool:
+    """Return True when either surface carries a ``CHORE.md`` for ``slug``."""
+    return any(
+        (project_root / surface / "chores" / slug / "CHORE.md").is_file()
+        for surface in (".gzkit", "src/gzkit")
+    )
+
+
+def _iter_slug_files(
+    slug_resource: Traversable, prefix: Path | None = None
+) -> Iterator[tuple[Traversable, Path]]:
+    """Yield ``(source, rel_path)`` for every file a chore slug ships.
+
+    Replaces a hardcoded three-name allowlist.  A list of filenames cannot
+    report the file it omits, so a slug's gate script or auxiliary data file
+    shipped in the wheel and never reached an adopter; the class membership is
+    decided by ``_classify_chore_file`` at the call site instead.
+    """
+    prefix = prefix or Path()
+    for entry in slug_resource.iterdir():
+        if entry.name.startswith("__"):
+            continue
+        rel = prefix / entry.name
+        if entry.is_dir():
+            yield from _iter_slug_files(entry, rel)
+        elif entry.is_file():
+            yield entry, rel
 
 
 def _iter_canonical_chore_slugs() -> Iterator[Traversable]:
@@ -195,15 +232,21 @@ def scaffold_core_chores(
         if skip_existing and target_dir.exists():
             continue
         target_dir.mkdir(parents=True, exist_ok=True)
-        for filename in _PER_SLUG_FILES:
-            source = slug_resource.joinpath(filename)
-            if not source.is_file():
+        for source, rel in _iter_slug_files(slug_resource):
+            # Classify against the DESTINATION spelling: `.gzkit/chores/...` is
+            # canonical by definition, so a gate script resolves without the
+            # `.gzkit/` counterpart test — which can never succeed at adopter
+            # init time, because the counterpart is what init is creating.
+            if _classify_chore_file(Path(".gzkit/chores") / slug / rel) != "canonical":
                 continue
-            target = target_dir / filename
+            target = target_dir / rel
+            target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())
         chore_md = target_dir / "CHORE.md"
         if chore_md.exists():
             created.append(chore_md)
+
+    _scaffold_surface_level_files(chores_dir)
 
     if not (chores_dir / _REGISTRY_FILE).exists():
         canonical_registry = importlib.resources.files(_CANONICAL_RESOURCE).joinpath(_REGISTRY_FILE)
@@ -211,6 +254,25 @@ def scaffold_core_chores(
             (chores_dir / _REGISTRY_FILE).write_bytes(canonical_registry.read_bytes())
 
     return created
+
+
+def _scaffold_surface_level_files(chores_dir: Path) -> None:
+    """Deliver the chores surface's own documents, which sit outside any slug.
+
+    A slug walk cannot reach them: `_iter_canonical_chore_slugs` admits only
+    directories carrying a `CHORE.md`. `.gzkit/rules/chores.md` names
+    `README.md` as the authoring contract, so an adopter without it is pointed
+    at a file they were never sent.
+    """
+    root = importlib.resources.files(_CANONICAL_RESOURCE)
+    for entry in root.iterdir():
+        if entry.is_dir() or entry.name.startswith("__") or entry.name == _REGISTRY_FILE:
+            continue
+        if _classify_chore_file(Path(".gzkit/chores") / entry.name) != "canonical":
+            continue
+        target = chores_dir / entry.name
+        if not target.exists():
+            target.write_bytes(entry.read_bytes())
 
 
 class RegistryMergeReport(BaseModel):

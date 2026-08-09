@@ -943,3 +943,76 @@ class TestChoresDoctorOutputForm(unittest.TestCase):
                 any(ch in result.output for ch in box_chars),
                 msg=f"doctor output lacks Rich-table box chars: {result.output!r}",
             )
+
+
+class TestScaffoldDeliversEveryCanonicalSlugFile(unittest.TestCase):
+    """`gz init` must deliver every canonical file a chore slug ships.
+
+    `scaffold_core_chores` copied only the three names in `_PER_SLUG_FILES`
+    (`CHORE.md`, `acceptance.json`, `README.md`), so a slug's gate script or an
+    auxiliary data file could ship in the wheel and never reach an adopter — the
+    T0 delivery invariant (ADR-0.0.31) violated silently, because the baseline
+    manifest that would have witnessed it did not cover the chores surface until
+    the 2026-08-09 `--distribution` repair.
+    """
+
+    def test_gate_scripts_reach_the_adopter(self) -> None:
+        """A chore that ships a .py gate script is undeliverable without it."""
+        from gzkit.chores import scaffold_core_chores
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            scaffold_core_chores(Path.cwd())
+
+            script = (
+                Path.cwd() / ".gzkit" / "chores" / "module-sloc-cap-radon" / "check_module_size.py"
+            )
+            self.assertTrue(
+                script.is_file(),
+                "module-sloc-cap-radon ships a gate script its CHORE.md executes; "
+                "an adopter that never receives it cannot run the chore at all.",
+            )
+
+    def test_surface_level_authoring_contract_reaches_the_adopter(self) -> None:
+        """The chores surface ships its own docs, which no slug walk can reach.
+
+        `.gzkit/rules/chores.md` names `src/gzkit/chores/README.md` as "the full
+        agent contract for authoring chores", so an adopter who never receives it
+        is told to read a file they do not have.
+        """
+        from gzkit.chores import scaffold_core_chores
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            scaffold_core_chores(Path.cwd())
+
+            readme = Path.cwd() / ".gzkit" / "chores" / "README.md"
+            self.assertTrue(
+                readme.is_file(),
+                "The chores authoring contract is surface-level, not slug-level; "
+                "a walk that only visits slugs can never deliver it.",
+            )
+
+    def test_a_directory_without_a_chore_md_is_not_delivered_as_a_chore(self) -> None:
+        """A slug is defined by its CHORE.md; a bare data directory is not one.
+
+        `owasp-top10-2025-scan` carries `mapping.json` and `mapping.schema.json`
+        on both surfaces with no `CHORE.md` and no registry entry — an orphan
+        under the chores surface, not a chore. Delivering it would ship an
+        adopter a chore that cannot be listed, planned, or run.
+        """
+        from gzkit.chores import scaffold_core_chores
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            scaffold_core_chores(Path.cwd())
+
+            orphan = Path.cwd() / ".gzkit" / "chores" / "owasp-top10-2025-scan"
+            self.assertFalse(
+                orphan.exists(),
+                "A directory with no CHORE.md is not a chore; delivering it "
+                "would advertise a slug `gz chores list` cannot resolve.",
+            )
