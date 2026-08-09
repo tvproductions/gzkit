@@ -411,6 +411,72 @@ its § Scorecard row and nowhere else.
 
 ---
 
+## Self-referential scope domains (measured 2026-08-09)
+
+**A checker whose scope comes from an artifact it also validates can never report
+an omission from that artifact.** It is a fixed point: it can say a listed member
+is wrong, never that a member is missing. Six instances were found one at a time
+across the 2026-08-09 sessions and nothing counted them; this section is the
+count, not a checker. **No validator was built for this class**, per the
+§ Recommended promotion order freeze — two of the nine candidates below are
+already defeated, which is evidence against a general check rather than for one.
+
+Counted from the domain side, because the class requires a domain-supplying
+artifact. All 33 `data/*.json` files, classified:
+
+| Class | Count | Membership in the class |
+|-------|------:|-------------------------|
+| Waiver / grandfather / shrink-ratchet | 17 | **No.** These *subtract* from a domain derived elsewhere. Their failure mode is laundering, already governed by the shrink-only ratchet (ADR-0.0.73 BI#8) |
+| Threshold / config | 7 | **No.** Supplies numbers, not work-items |
+| **Domain list** | **9** | **Yes** — the file enumerates what gets checked |
+
+The nine, by witness status:
+
+| Domain list | Status |
+|-------------|--------|
+| `check_scope_membership.json` | **Defeated** — `test_declared_membership_matches_source` compares it to the registry source. Measured 89/89, gap 0 in both directions |
+| `distribution_baseline_manifest.json` | **Defeated** — the audit's domain moved to `_CANONICAL_SURFACES`; the manifest is no longer an input to its own scope |
+| `waiver_ratchet_registry.json` | Gap measured **0** (18 registered + 1 excluded + itself = all 20 waiver-shaped files). No witness found that a *new* waiver surface must be registered |
+| `frontier_model_cards.json` | **Zero test references** — the weakest of the nine |
+| `agents_md_survival_declaration.json` | Unread |
+| `instructions_files_budget.json` | Unread |
+| `transcribed_count_surfaces.json` | Unread |
+| `security_surfaces.json` | Unread |
+| `exemplar_corpus.json` | Unread |
+
+*Unread* means: the file has test references, but **referenced by a test is not
+the same as completeness witnessed.** A test asserting that listed members are
+valid is exactly what a fixed point permits; the question is whether anything
+asserts a member cannot be *missing*. Six such readings are owed.
+
+**The two defeated instances carry two different remedies, and the difference is
+the useful part.** `check_scope_membership.json` keeps the file and adds a test
+comparing it against an independent source — cheap, and the file stays the
+declaration. `distribution_baseline_manifest.json` removed the file from the
+domain path entirely, so the fixed point cannot re-form — stronger, and it cost a
+source change. Prefer the second where the domain has a real independent source;
+the first where the declaration *is* the intent.
+
+**The measuring instrument has the defect it hunts.** The waiver-shaped files
+above were found by name pattern (`waiver` / `grandfather` / `baseline`). A waiver
+surface named otherwise is invisible to that sweep, so "gap 0" is a statement
+about the files the pattern found, not about the population. Recorded because a
+disclosed limit is the difference between a measurement and a claim.
+
+### Scorecard binding — the inverse direction
+
+Of the 89 registered validator scopes, **51 bind no scorecard row** (strict:
+some row among the 126 cites the scope's `--flag`). A looser reading — the scope
+name appearing anywhere in this document — leaves 41 unbound. **The figure of 54
+carried across several handoffs does not reproduce under either method**; it is
+superseded by the two above, each stated with its rule.
+
+Whether the inverse direction gets an owner is an open operator question, not a
+finding. A scope with no row is not thereby unenforced — most are mechanical by
+construction — it means this scorecard makes no claim about it.
+
+---
+
 ## Recommended promotion order (highest leverage first)
 
 > **FROZEN — 2026-06-08 (governance-subtraction, track 2 / reading A).** This
