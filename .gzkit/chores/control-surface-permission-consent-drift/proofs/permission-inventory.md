@@ -1,33 +1,12 @@
-# Permission Inventory - Pass D run 2026-08-01
+# Permission Inventory — Pass D
 
-Both settings surfaces present this run. `.claude/settings.local.json` is gitignored
-(`.gitignore:54`) - see `unwitnessable.md` UW-3: its rules are invisible to CI and to every
-other machine.
+> Chore: `control-surface-permission-consent-drift` (Lite lane, audit-only)
+> Run: **2026-08-09**. Generated mechanically from the two surfaces; verbatim.
+> `deny` takes precedence over `allow`.
 
-| Surface | Committed? | allow | deny | Last commit |
-|---|---|---|---|---|
-| `.claude/settings.json` | yes | 0 | 6 | `758e33524` 2026-07-16 |
-| `.claude/settings.local.json` | **no** (gitignored) | 180 | 0 | n/a - never committed |
-| `_PERMITTED_BASH` (`src/gzkit/handoff_resume_gate.py:96-145`) | yes | 36 | (fail-closed default) | `44f7aac2e` 2026-08-01 |
+## `.claude/settings.json`
 
-Deny takes precedence over allow, so the 6 committed deny rules bind every allow rule below.
-
-## Diff vs the 2026-07-16 run
-
-```
-$ diff <prior-run inventory allow block> <live .claude/settings.local.json allow>
-(no output - IDENTICAL, 180 rules, 180 unique)
-```
-
-**The settings surfaces have not moved since the prior run.** `.claude/settings.json` last
-committed 2026-07-16 (`758e33524`); the local file's mtime is 2026-07-16 09:37. Every new
-finding in `consent-drift.md` this run comes from doctrine moving underneath a static
-permission surface - `.gzkit/rules` last committed 2026-07-29 (`4b9db7592`). That is the
-drift direction this chore's freshness gate was built to expose: nothing clicked
-"always allow" since 2026-07-16; the rules that would have justified those clicks changed
-anyway, and a `test -f` acceptance could never see it.
-
-## .claude/settings.json (committed - policy)
+allow: **0** | deny: **6** | ask: **0**
 
 ### deny (6)
 
@@ -40,15 +19,9 @@ Bash(git *hooksPath=*)
 Bash(git *config *hooksPath *)
 ```
 
-### allow
+## `.claude/settings.local.json`
 
-_(none - deny-only by design: policy travels, convenience does not)_
-
-Coverage note for CF-2: these six deny rules close `--no-verify` (2 forms), `git commit -n`
-(2 forms), and `core.hooksPath` override (2 forms). They do **not** close `SKIP=<hook-id>`,
-pre-commit's own per-hook bypass. See `consent-drift.md` row D-1.
-
-## .claude/settings.local.json (machine-local - convenience)
+allow: **180** | deny: **0** | ask: **0**
 
 ### allow (180)
 
@@ -235,80 +208,14 @@ Bash(kill -9 3820 3525 3816 3521)
 Bash(ps -Ao pid,rss,args)
 ```
 
-## Extended surface (parent-task scope): `_PERMITTED_BASH`
+## Totals
 
-Not named by CHORE.md v1.0.0 § Overview, which scopes the pass to the two settings files.
-Added this run on the dispatching operator's instruction (2026-08-01): *"the permission
-surface includes `.claude/settings.json` (and any `settings.local.json`), the hook allowlists
-under `.claude/hooks/`, and the standing-consent doctrine in `AGENTS.md` and `.gzkit/rules/`"*.
-Recorded as an explicit scope extension rather than silently folded in.
+| Surface | allow | deny |
+|---|---|---|
+| `.claude/settings.json` | 0 | 6 |
+| `.claude/settings.local.json` | 180 | 0 |
 
-Survey of `.claude/hooks/*.py` (15 hooks) found **exactly one** allowlist: none of the 15
-adapters carries an `ALLOW` / `PERMITTED` / `SAFE_` / `WHITELIST` constant (grep returned no
-matches). `handoff-resume-gate.py` is a thin adapter over `gzkit.handoff_resume_gate`, where
-the allowlist actually lives. It is a **committed, doctrine-derived** standing-consent
-surface - unlike `settings.local.json` it IS visible to CI and to every clone, which makes
-it the one part of this pass that is reproducible off the authoring machine.
-
-### `_PERMITTED_BASH` allow (36 command prefixes; unmatched command = refused)
-
-```
-gz handoff authorize
-gz obpi status
-gz obpi lock list
-gz gates
-gz state
-gz status
-gz adr status
-gz context
-gz handoff list
-gz handoff resume
-gh issue view
-gh issue list
-gh issue status
-gh pr view
-gh pr list
-gh pr diff
-gh pr status
-gh release view
-gh release list
-git status
-git log
-git diff
-git show
-git branch
-git rev-parse
-git ls-files
-grep
-rg
-ls
-cat
-head
-tail
-wc
-find
-jq
-pwd
-```
-
-### `_MUTATING_FLAGS` (revokes an otherwise-allowlisted head)
-
-```
--i   --in-place   -delete   -exec   --fix
-```
-
-## Fossil grants (no doctrine contradiction - recorded, not routed)
-
-These carry no drift row: no doctrine forbids them. They are logged because each is a
-one-time "always allow" click frozen into a permanent rule, which is the accretion mechanism
-CHORE.md § Overview names - *"Every 'always allow' click converts a one-time situational
-judgment into a permanent rule that outlives the context that justified it."*
-
-| Allow rule (verbatim) | Why it is dead |
-|---|---|
-| `Bash(kill -9 3820 3525 3816 3521)` | Pinned to four PIDs from a past session. PIDs are recycled by the OS, so the grant now names whatever processes happen to hold those numbers. |
-| `Bash(mv docs/design/adr/pre-release/ADR-0.42.0-frontmatter-ledger-coherence-guard docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard)` | One-shot semver migration, completed. Source path no longer exists. |
-| `Bash(rmdir docs/user/commands/)` | Directory removed; `docs/user/manpages/` is the live surface. |
-| `Bash(rm -rf /tmp/gz-personas-demo2)`, `Bash(rm -rf /tmp/gz-templates-demo)` | Demo scratch dirs from a one-off `gz init` run. |
-| `Bash(bash /tmp/time_tests.sh)` | Script lived in `/tmp` and is long gone; the rule now grants execution of whatever next occupies that path. |
-| `Bash(cp .github/skills/gz-obpi-pipeline/{DISPATCH,VERIFICATION,REFERENCE}.md ...)` | Source files no longer exist (the skill's aux docs moved under `references/`). Dead **and** doctrine-contradicting - see `consent-drift.md` rows D-3..D-5. |
+**Every `deny` rule in the project lives in the committed surface; the local surface
+carries none.** That asymmetry is what lets a project-level deny override a local
+blanket allow (drift row D6) — and it is why a gap in the deny list (row D1) is not
+recoverable from the local side.
