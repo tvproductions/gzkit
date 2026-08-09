@@ -23,7 +23,7 @@
 | 11 | `.gzkit/rules/cross-platform.md` | `0.5.0` | 51 | - "src/**/*.py" | 4e8ccaccb 2026-07-01 |
 | 12 | `.gzkit/rules/gate5-runbook-code-covenant.md` | `0.3.0` | 46 | - "docs/**" | fd00423e0 2026-08-08 |
 | 13 | `.gzkit/rules/gh-cli.md` | `0.3.1` | 49 | - ".github/**" | b89754166 2026-08-02 |
-| 14 | `.gzkit/rules/governance-core.md` | `0.8.1` | 97 | - "**/*" | b89754166 2026-08-02 |
+| 14 | `.gzkit/rules/governance-core.md` | `0.9.0` | 97 | - "**/*" | 1c36e0c4b 2026-08-09 |
 | 15 | `.gzkit/rules/guardrail-feedback-prose.md` | `0.2.0` | 92 | - "src/gzkit/hooks/**" | f1b45adf2 2026-08-08 |
 | 16 | `.gzkit/rules/hexagonal-architecture.md` | `0.2.1` | 125 | - "**/*.py" | b89754166 2026-08-02 |
 | 17 | `.gzkit/rules/model-selection.md` | `0.5.1` | 75 | - "src/gzkit/pipeline_runtime.py" | d3fb2aa12 2026-08-02 |
