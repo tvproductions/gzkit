@@ -113,12 +113,24 @@ def run_command(
         )
 
 
-def _find_parents_subscript_lines(source: str) -> list[int]:
-    """Find line numbers where Path(__file__).parents[N] appears in code.
+def _find_parents_access_lines(source: str) -> list[int]:
+    """Find line numbers where ``Path(__file__).parents`` is accessed in code.
 
-    Uses AST to detect actual subscript access on .parents attributes
-    chained from Path(__file__) calls. String literals and comments
-    containing the pattern text are not flagged.
+    Uses AST to detect ``.parents`` attribute access chained from a
+    ``Path(__file__)`` call. String literals and comments containing the
+    pattern text are not flagged.
+
+    BOTH forms are positional root derivations and both are flagged: the
+    subscripted ``Path(__file__).parents[2]`` and the bare
+    ``for p in Path(__file__).parents``. Matching only ``ast.Subscript`` left
+    the bare form uncovered, which is why `hardcoded-root-eradication` had to
+    carry text-matching greps over ``src/gzkit/eval/`` and ``src/gzkit/hooks/``
+    as its only witness for it — greps that could not tell code from a comment
+    and failed on one (GHI #782). Widening here is what made those greps safe
+    to delete without losing coverage.
+
+    ``Path(__file__).parent`` (singular) is a different attribute, is not a
+    positional walk, and is not flagged.
     """
     try:
         tree = ast.parse(source)
@@ -127,11 +139,9 @@ def _find_parents_subscript_lines(source: str) -> list[int]:
 
     violations: list[int] = []
     for node in ast.walk(tree):
-        if not isinstance(node, ast.Subscript):
+        if not isinstance(node, ast.Attribute) or node.attr != "parents":
             continue
-        if not isinstance(node.value, ast.Attribute) or node.value.attr != "parents":
-            continue
-        inner = node.value.value
+        inner = node.value
         while isinstance(inner, ast.Call) and isinstance(inner.func, ast.Attribute):
             inner = inner.func.value
         if not (isinstance(inner, ast.Call) and isinstance(inner.func, ast.Name)):
@@ -140,7 +150,7 @@ def _find_parents_subscript_lines(source: str) -> list[int]:
             continue
         if inner.args and isinstance(inner.args[0], ast.Name) and inner.args[0].id == "__file__":
             violations.append(node.lineno)
-    return violations
+    return sorted(set(violations))
 
 
 def run_parents_pattern_lint(project_root: Path) -> QualityResult:
@@ -169,7 +179,7 @@ def run_parents_pattern_lint(project_root: Path) -> QualityResult:
             source = py_file.read_text(encoding="utf-8")
         except OSError:
             continue
-        hit_lines = _find_parents_subscript_lines(source)
+        hit_lines = _find_parents_access_lines(source)
         if not hit_lines:
             continue
         rel_path = py_file.relative_to(project_root).as_posix()

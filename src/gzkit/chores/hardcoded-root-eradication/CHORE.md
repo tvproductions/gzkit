@@ -133,28 +133,39 @@ uv run gz check-config-paths
 
 | Type | Command | Expected |
 |------|---------|----------|
-| outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/eval/` | `parents` |
-| outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` | `parents` |
 | exitCodeEquals | `uv run gz lint` | 0 (includes parents-pattern lint) |
 | exitCodeEquals | `uv run gz check-config-paths` | 0 (includes source path literal scan) |
 | exitCodeEquals | `uv run -m unittest -q` | 0 |
 
-> **Do not re-add a repo-wide `grep` for `Path(__file__).*parents\[` (GHI #782).**
-> `gz lint` — the third criterion above — already asserts that property, and
-> asserts it better: `gzkit.quality._find_parents_subscript_lines` walks the AST
-> over the identical scope (`src/gzkit/**/*.py`), so it matches the *expression*
-> and never the text. Its own docstring states the difference: *"String literals
-> and comments containing the pattern text are not flagged."*
+> **Do not re-add any `grep` for `Path(__file__).*parents` (GHI #782).** All three
+> are gone — the repo-wide one and the two per-directory ones over
+> `src/gzkit/eval/` and `src/gzkit/hooks/`.
 >
-> The grep was a strictly weaker duplicate of it. It needed `--exclude=quality.py`
-> because the detector necessarily contains the pattern it detects, and it failed
-> on a comment in `check_module_size.py` that documented *compliance* with this
-> very chore — so complying with the rule and explaining the compliance broke its
-> checker. Tightening the regex to skip `#` lines would only have moved the blind
-> spot into docstrings; adding a second `--exclude` would have bought one file an
-> exemption and left the next author to buy their own (the shape GHI #779 argued
-> against). The property is not weakened by this deletion, only asserted once, by
-> the check that can actually tell code from prose.
+> `gz lint` — the first criterion above — asserts the property, and asserts it
+> better: `gzkit.quality._find_parents_access_lines` walks the AST over
+> `src/gzkit/**/*.py`, a scope that strictly contains every directory the greps
+> covered, so it matches the *expression* and never the text. Its docstring states
+> the difference: *"String literals and comments containing the pattern text are
+> not flagged."*
+>
+> The repo-wide grep was a strictly weaker duplicate and went first. It needed
+> `--exclude=quality.py` because the detector necessarily contains the pattern it
+> detects, and it failed on a comment in `check_module_size.py` documenting
+> *compliance* with this very chore — so complying with the rule and explaining the
+> compliance broke its checker. Tightening the regex to skip `#` lines would only
+> have moved the blind spot into docstrings; a second `--exclude` would have bought
+> one file an exemption and left the next author to buy their own (the shape
+> GHI #779 argued against).
+>
+> **The two per-directory greps were NOT redundant when the first was deleted, and
+> that distinction is the point.** The detector matched only `ast.Subscript`, so
+> `Path(__file__).parents[2]` was caught while `for p in Path(__file__).parents:`
+> was not — and the greps caught both. Deleting them on the redundancy argument
+> alone would have silently dropped real coverage. The detector was widened to flag
+> `.parents` attribute access whether or not it is subscripted
+> (`test_non_subscript_parents_access_detected`) FIRST; only then did the greps
+> become safe to remove. `Path(__file__).parent` (singular) is a different
+> attribute, is not a positional walk, and is still allowed.
 
 ## Evidence Commands
 

@@ -54,6 +54,32 @@ class TestParentsPatternLint(unittest.TestCase):
             self.assertIn("parents[", result.stdout)
             self.assertIn("bad.py:2", result.stdout)
 
+    def test_non_subscript_parents_access_detected(self):
+        """`Path(__file__).parents` without a subscript is still a positional walk.
+
+        The detector originally matched only `ast.Subscript`, so iterating or
+        indexing the sequence later slipped past it while the chore's grep
+        caught it. That coverage gap is why `hardcoded-root-eradication` had to
+        keep two prose-blind greps over `src/gzkit/eval/` and `src/gzkit/hooks/`;
+        closing it here is what makes them safe to delete (GHI #782 follow-on).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
+            (src / "walk.py").write_text(
+                "from pathlib import Path\nfor p in Path(__file__).resolve().parents:\n"
+                "    print(p)\n",
+                encoding="utf-8",
+            )
+            result = run_parents_pattern_lint(root)
+            self.assertFalse(
+                result.success,
+                "A non-subscript .parents walk is the same defect as .parents[N]",
+            )
+            self.assertEqual(result.returncode, 1)
+            self.assertIn("walk.py:2", result.stdout)
+
     def test_parent_without_bracket_allowed(self):
         """Path(__file__).parent (no bracket index) is not flagged."""
         with tempfile.TemporaryDirectory() as tmp:

@@ -1,22 +1,10 @@
 {
   "criteria": [
     {
-      "type": "outputNotContains",
-      "command": "grep -rn \"Path(__file__).*parents\" src/gzkit/eval/",
-      "notContains": "parents",
-      "description": "No hardcoded root derivations in eval modules"
-    },
-    {
-      "type": "outputNotContains",
-      "command": "grep -rn \"Path(__file__).*parents\" src/gzkit/hooks/",
-      "notContains": "parents",
-      "description": "No hardcoded root derivations in hooks modules"
-    },
-    {
       "type": "exitCodeEquals",
       "command": "uv run gz lint",
       "expected": 0,
-      "description": "Lint passes including parents-pattern lint rule"
+      "description": "Lint passes including parents-pattern lint rule (AST; covers subscripted and bare .parents access across all of src/gzkit/, superseding the former per-directory greps)"
     },
     {
       "type": "exitCodeEquals",
