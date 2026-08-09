@@ -21,7 +21,7 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
-from gzkit.commands.obpi_complete import (
+from gzkit.commands.obpi_complete_adversarial import (
     ADVERSARY_VERDICTS,
     _build_adversarial_event,
     _enforce_adversarial_validation,
