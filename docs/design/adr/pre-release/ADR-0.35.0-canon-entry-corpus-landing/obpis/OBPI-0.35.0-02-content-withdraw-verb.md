@@ -3,6 +3,7 @@ id: OBPI-0.35.0-02-content-withdraw-verb
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 2
 lane: Heavy
+sensitivity: security
 status: Draft
 allowlist:
 - src/gzkit/commands/content/retire.py
