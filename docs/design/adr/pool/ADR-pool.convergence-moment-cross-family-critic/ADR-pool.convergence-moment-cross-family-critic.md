@@ -981,6 +981,83 @@ ruling and this finding are in direct tension and must be reconciled at promotio
    `codex exec --model <model>` — so the receipt records the model, not merely the
    binary. Skill text only, no code, and it does not pre-judge the port design.
 
+## Target Scope
+
+**The unit of delivery is a SKILL, not a hook.** R2 dissolved the gate-vs-skill
+conflict: the critic is one skill with three invocation doors — operator, agent,
+and gate — and the `PreToolUse` adapter is one door among three, not the
+mechanism. A decomposition organized around the hook would rebuild the design the
+adversary perforated; a decomposition organized around the doors carries R2's
+ruling into the brief set. This section therefore names nine units, of which the
+hook is exactly one, and that one **lands dark**.
+
+**Delivery is staged, and the cost of staging is stated rather than softened.**
+The 2026-08-09 adversary re-run returned `PERFORATED-BUT-NARROWABLE` against the
+R1–R4 design. What still perforates is specific: the automatic door binds to a UI
+event that also carries *mandatory clarification*, so it can prevent the very
+question those rules require; prose recommendations bypass it entirely; strong
+subject binding is unbuilt; and R1 left the scope-time-versus-conclusion-time
+question live. The operator-ratified consequence (*"Amend to staged delivery,
+keep the pull-ahead"*) is that the skill, the three doors, the scope-first
+challenge, the A3 envelope, the R3 transition and provenance binding ship
+**first**, and the automatic `AskUserQuestion` door ships **dark** — lit only
+after a calibrated pilot measures *"false blocks, latency, operator reading time,
+and decisions changed."* **Until that door lights, this ADR does not deliver a
+second opinion at every structured choice.** That is sequencing, not abandonment,
+and it must not be narrated as completion.
+
+**Two boundaries bind every unit below.** First, the OBPI pipeline is untouched:
+R3 generalizes Step 4b's resolution *shape* and never edits 4b (*"we will NOT
+alter the OBPI process, at all"*). Second, the transport composes shipped
+surfaces and adds no `gz` verb — a new verb would be a CLI-contract change
+routed through OBPI ceremony under a promoted ADR, which is circular while this
+ADR is `Pool`, and the 2026-08-09 measurement demonstrated the composed
+transport end to end rather than asserting it (GHI #786).
+
+- **critic-skill-contract** — The `second-opinion` skill as one unit: both mandatory questions (*"what question should be asked"* and *"is the encountered conclusion strong?"*), a full-context read of the raw surface rather than a primary-curated digest, and a schema-pinned verdict shape.
+- **cross-family-transport** — The composed transport: `gz arb step --name adversary -- codex exec --sandbox read-only <decision>`, carrying a decision rather than a branch diff, returning a schema-pinned verdict, and making the cross-vendor property *proven* from the receipt's `step.command` argv rather than declared.
+- **operator-door** — The operator-invoked door, `/second-opinion`, callable at any moment on any decision.
+- **agent-door** — The agent-invoked door, fired on the A4 tier rules rather than on the agent's own unvalidated confidence.
+- **decision-envelope** — A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as explicitly unbuilt.
+- **risk-tiering** — A4 narrowed: mandatory for the enumerated consequential categories and for explicit operator requests, sampling the routine, with the primary agent's own confidence barred from setting the tier.
+- **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b: a `refuted` verdict with no recorded resolution blocks, and the resolution must state both what was fixed and how the critic's own check was re-run, durable in the ledger rather than in a transcript.
+- **pilot-instrumentation** — The four measurements that alone can light the dark door: false blocks, latency, operator reading time, and decisions changed.
+- **asked-question-gate-dark** — The `PreToolUse` adapter on `AskUserQuestion`, wired and tested but **off by default**, lit only by a measured pilot result and never by a promotion narrative.
+
+### Why nine, and where the Matrix of Four forced a split
+
+The Rule of Three baseline is Registry (`01`, `02`), Core Execution (`03`, `04`,
+`05`, `06`), and Lifecycle/Operations (`07`, `08`, `09`). Three units were split
+further by the refining overlay rather than by taste:
+
+- **Surface Boundary** split the transport (`02`) from the skill (`01`). The
+  skill is gzkit-owned canon; the transport crosses a vendor boundary whose
+  premise has already been measured wrong once (§ R4 transport correction). A
+  unit spanning both would let a vendor-surface change fail a governance-surface
+  claim.
+- **State Anchor** split the envelope (`05`) from the doors (`03`, `04`). The
+  envelope is durable state with a hash contract; a door is a stateless entry
+  point. Bundling them would anchor a schema to an invocation path.
+- **Testability Ceiling** split the dark gate (`09`) from the pilot (`08`). The
+  pilot's output is the *precondition* for lighting the gate — merging them makes
+  the gate's own OBPI the judge of whether it should be on, which is the
+  self-referential shape `docs/governance/advisory-rules-audit.md`
+  § Self-referential scope domains names.
+
+## Proposed OBPI Decomposition
+
+| # | Slug | Description | Lane |
+|---|------|-------------|------|
+| 01 | critic-skill-contract | The `second-opinion` skill as one unit — both mandatory questions (scope challenge and conclusion challenge), a full-context read of the raw surface, and a schema-pinned verdict shape | Heavy |
+| 02 | cross-family-transport | The composed ARB-wrapped `codex exec --sandbox read-only` transport carrying a decision, returning a schema-pinned verdict, with the cross-vendor property proven from the receipt's `step.command` argv | Heavy |
+| 03 | operator-door | The operator-invoked door `/second-opinion`, callable on any decision at any moment | Heavy |
+| 04 | agent-door | The agent-invoked door, fired on the A4 tier rules and never on the agent's own unvalidated confidence | Heavy |
+| 05 | decision-envelope | A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as unbuilt | Heavy |
+| 06 | risk-tiering | A4 narrowed — mandatory for the enumerated consequential categories and explicit operator requests, sampling the routine | Heavy |
+| 07 | verdict-resolution-transition | Step 4b's resolution shape generalized without touching 4b — a refuted verdict with no recorded resolution blocks, and the resolution names what was fixed and how the critic's check was re-run | Heavy |
+| 08 | pilot-instrumentation | The calibrated pilot measuring false blocks, latency, operator reading time, and decisions changed | Heavy |
+| 09 | asked-question-gate-dark | The `PreToolUse` adapter on `AskUserQuestion` — wired, tested, and off by default, lit only by OBPI-08's measured result | Heavy |
+
 ## Notes
 
 ### Derived work: hook-surface currency (separable, and probably a chore)
