@@ -756,7 +756,8 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
                 key_proof="gz obpi complete OBPI-0.0.14-01 exits 0",
                 # Heavy lane fails closed without a Step-4b verdict (GHI #676).
                 adversary_verdict="not-refuted",
-                adversary="codex/gpt-5.4",
+                adversary="claude/general-purpose",
+                adversary_fallback_reason="codex setup reported ready=false",
                 as_json=False,
                 dry_run=False,
             )
@@ -852,7 +853,8 @@ class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
                     # about — and the failing `ledger.append` it trips is now the
                     # adversarial_validation write, which must roll back like any other.
                     adversary_verdict="not-refuted",
-                    adversary="codex/gpt-5.4",
+                    adversary="claude/general-purpose",
+                    adversary_fallback_reason="codex setup reported ready=false",
                     as_json=False,
                     dry_run=False,
                 )
@@ -937,7 +939,8 @@ class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
                 key_proof="gz obpi complete exits 0",
                 # Heavy lane fails closed without a Step-4b verdict (GHI #676).
                 adversary_verdict="not-refuted",
-                adversary="codex/gpt-5.4",
+                adversary="claude/general-purpose",
+                adversary_fallback_reason="codex setup reported ready=false",
                 as_json=False,
                 dry_run=False,
             )

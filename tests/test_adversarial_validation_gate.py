@@ -36,13 +36,41 @@ def _enforce(**overrides: object) -> None:
         "obpi_id": "OBPI-0.33.0-01-airlock-data-model-and-events",
         "parent_lane": "heavy",
         "verdict": "not-refuted",
-        "adversary": "codex/gpt-5.4",
+        "adversary": "claude/general-purpose",
         "resolution": None,
         "as_json": False,
-        "fallback_reason": None,
+        "fallback_reason": "codex setup reported ready=false (not authenticated)",
     }
     kwargs.update(overrides)
     _enforce_adversarial_validation(**kwargs)
+
+
+class _ReceiptFixture(unittest.TestCase):
+    """Write real ARB step receipts under a temp root.
+
+    Shared because three suites need receipts since GHI #780: a cross-vendor claim
+    is admissible only on receipt proof, so every test that exercises an admissible
+    tier-1 path must produce the artifact rather than assert around it.
+    """
+
+    def setUp(self) -> None:
+        self._dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._dir.cleanup)
+        self.root = Path(self._dir.name)
+
+    def _write(self, run_id: str, command: list[str], *, exit_status: int = 0) -> str:
+        payload = {
+            "schema": "gzkit.arb.step_receipt.v1",
+            "run_id": run_id,
+            "exit_status": exit_status,
+            "step": {"name": "codexadversary", "command": command},
+        }
+        (self.root / f"{run_id}.json").write_text(json.dumps(payload), encoding="utf-8")
+        return run_id
+
+    def _codex_receipt(self, suffix: str = "a") -> str:
+        """Return a receipt id proving a genuine Codex run."""
+        return self._write("arb-step-codexadversary-" + suffix * 32, ["codex", "exec"])
 
 
 class TestAdversarialValidationGate(unittest.TestCase):
@@ -102,7 +130,7 @@ class TestAdversarialValidationGate(unittest.TestCase):
         self.assertIn("--adversary-resolution", error)
 
 
-class TestStep4bTierBindingGate(unittest.TestCase):
+class TestStep4bTierBindingGate(_ReceiptFixture):
     """GHI #678: a tier-2 (Claude-family) adversary verdict must justify the fallback.
 
     Codex (tier 1, a different vendor) is REQUIRED first — a Claude validating Claude
@@ -110,9 +138,16 @@ class TestStep4bTierBindingGate(unittest.TestCase):
     Codex was genuinely unavailable, and that reason must be recorded, not assumed.
     """
 
-    def test_cross_vendor_adversary_needs_no_fallback_reason(self) -> None:
-        # codex/... is the tier-1 cross-vendor adversary — always admissible.
-        _enforce(adversary="codex/gpt-5.4", fallback_reason=None)
+    def test_proven_cross_vendor_adversary_needs_no_fallback_reason(self) -> None:
+        # A tier-1 adversary owes no unavailability reason — but since GHI #780 the
+        # tier-1 claim itself must be PROVEN, so the receipt is what makes this path
+        # admissible. The name alone no longer buys the exemption.
+        _enforce(
+            adversary="codex/gpt-5.4",
+            receipt=self._codex_receipt(),
+            receipts_root=self.root,
+            fallback_reason=None,
+        )
 
     def test_human_floor_needs_no_fallback_reason(self) -> None:
         # The degraded floor is already explicit via its verdict — no reason demanded.
@@ -144,7 +179,7 @@ class TestStep4bTierBindingGate(unittest.TestCase):
         self.assertIn("--adversary-fallback-reason", error)
 
 
-class TestDeclaredTierGovernsOverNameInference(unittest.TestCase):
+class TestDeclaredTierGovernsOverNameInference(_ReceiptFixture):
     """GHI #678 reopened: tier was INFERRED from a caller-supplied string, never recorded.
 
     `_is_cross_vendor_adversary` prefix-scans the adversary name, so "names something
@@ -152,10 +187,19 @@ class TestDeclaredTierGovernsOverNameInference(unittest.TestCase):
     required. A declared tier is the recorded claim; these assertions derive from the
     requirement that the declaration governs and that a declaration contradicting the
     name fails closed — the contradiction the name scan cannot see by construction.
+
+    Since GHI #780 the declaration governs but no longer AUTHORIZES: precedence still
+    reads proven > declared > inferred, and only the proven rung admits a tier-1 claim.
     """
 
-    def test_declared_tier_1_with_cross_vendor_name_passes(self) -> None:
-        _enforce(adversary="codex/gpt-5.4", tier=1, fallback_reason=None)
+    def test_declared_tier_1_with_cross_vendor_name_passes_on_proof(self) -> None:
+        _enforce(
+            adversary="codex/gpt-5.4",
+            tier=1,
+            receipt=self._codex_receipt(),
+            receipts_root=self.root,
+            fallback_reason=None,
+        )
 
     def test_declared_tier_1_with_claude_family_name_blocks(self) -> None:
         # Claiming a different vendor re-derived the completion while naming a
@@ -177,11 +221,19 @@ class TestDeclaredTierGovernsOverNameInference(unittest.TestCase):
             fallback_reason="codex setup reported ready=false (not authenticated)",
         )
 
-    def test_undeclared_tier_preserves_name_inference(self) -> None:
-        # Backward compatibility is load-bearing: events recorded before the flag
-        # existed carry no tier, and must keep resolving by name rather than
-        # retroactively failing closed.
-        _enforce(adversary="codex/gpt-5.4", tier=None, fallback_reason=None)
+    def test_undeclared_tier_no_longer_authorizes_by_name_alone(self) -> None:
+        # REVERSED by GHI #780. This asserted the opposite until 2026-08-09: an
+        # undeclared tier resolved cross-vendor from the NAME, on the stated ground
+        # that "backward compatibility is load-bearing" for events predating the flag.
+        # Measurement retired that ground — of 17 recorded adversarial_validation
+        # events, ZERO carry a tier and 14 resolved cross-vendor by name, so the
+        # compatibility path was not a legacy tail, it was the only path in use and
+        # the whole of the self-assertion surface GHI #765 named.
+        #
+        # The gate is a completion-time check over the invocation in hand; it never
+        # re-reads historical events, so nothing recorded is retroactively invalidated.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="codex/gpt-5.4", tier=None, fallback_reason=None)
         with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(adversary="claude/general-purpose", tier=None, fallback_reason=None)
 
@@ -456,7 +508,7 @@ class TestReceiptProvesCrossVendorFromArgv(unittest.TestCase):
                 self.assertFalse(_receipt_proves_cross_vendor(receipt))
 
 
-class TestReceiptGovernsTheDeclaredTier(unittest.TestCase):
+class TestReceiptGovernsTheDeclaredTier(_ReceiptFixture):
     """GHI #765: a receipt that contradicts the declared tier fails closed.
 
     Precedence is proven > declared > inferred. A caller declaring tier 1 while
@@ -464,23 +516,8 @@ class TestReceiptGovernsTheDeclaredTier(unittest.TestCase):
     evidence it supplied itself; that contradiction must block, not pass.
     """
 
-    def setUp(self) -> None:
-        self._dir = tempfile.TemporaryDirectory()
-        self.addCleanup(self._dir.cleanup)
-        self.root = Path(self._dir.name)
-
-    def _write(self, run_id: str, command: list[str], *, exit_status: int = 0) -> str:
-        payload = {
-            "schema": "gzkit.arb.step_receipt.v1",
-            "run_id": run_id,
-            "exit_status": exit_status,
-            "step": {"name": "codexadversary", "command": command},
-        }
-        (self.root / f"{run_id}.json").write_text(json.dumps(payload), encoding="utf-8")
-        return run_id
-
     def test_receipt_proving_codex_admits_tier_1_without_fallback_reason(self) -> None:
-        run_id = self._write("arb-step-codexadversary-" + "a" * 32, ["codex", "exec"])
+        run_id = self._codex_receipt()
         _enforce(
             adversary="independent Codex subagent",
             tier=1,
@@ -518,6 +555,90 @@ class TestReceiptGovernsTheDeclaredTier(unittest.TestCase):
         error = json.loads(buffer.getvalue())["error"]
         self.assertIn("--adversary-receipt", error)
         self.assertIn("gz arb step", error)
+
+
+class TestCrossVendorClaimRequiresReceipt(_ReceiptFixture):
+    """GHI #780: a cross-vendor claim is admissible ONLY on receipt proof.
+
+    GHI #765 made the receipt channel authoritative when cited and left it optional
+    when absent, which closed nothing: the gate cannot tell "no receipt because the
+    adversary could not be wrapped" from "no receipt because none was run", so the
+    honest and the hollow completion remained the same input. These assertions derive
+    from that requirement — every rung of the precedence ladder below `proven` is a
+    string the claiming agent typed, so neither may authorize on its own.
+
+    Scope is the resolved claim, not the declared one. Gating `--adversary-tier 1`
+    alone would fence a path no recorded completion has ever used: of 17
+    `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor
+    through the name scan.
+    """
+
+    def test_cross_vendor_name_without_receipt_blocks(self) -> None:
+        # The 14-of-17 shape: a codex-shaped name, no tier, no receipt.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="codex/gpt-5.4", tier=None, fallback_reason=None)
+
+    def test_declared_tier_1_without_receipt_blocks(self) -> None:
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(adversary="codex/gpt-5.4", tier=1, fallback_reason=None)
+
+    def test_a_fallback_reason_does_not_buy_a_tier_1_claim(self) -> None:
+        # Recording why Codex was unavailable is the tier-2 path; it must not
+        # launder an unproven tier-1 claim into admissibility.
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(
+                adversary="codex/gpt-5.4",
+                tier=1,
+                fallback_reason="codex setup reported ready=false",
+            )
+
+    def test_proven_cross_vendor_claim_passes(self) -> None:
+        _enforce(
+            adversary="codex/gpt-5.4",
+            tier=1,
+            receipt=self._codex_receipt(),
+            receipts_root=self.root,
+            fallback_reason=None,
+        )
+
+    def test_tier_2_fallback_remains_usable_without_any_receipt(self) -> None:
+        # Load-bearing: an unavailable Codex must stay RECORDABLE. If the only
+        # admissible shape required a receipt, the honest degraded run would have
+        # no path and the gate would push callers toward a false tier-1 claim.
+        _enforce(
+            adversary="claude/general-purpose",
+            tier=2,
+            fallback_reason="codex setup reported ready=false (not authenticated)",
+        )
+
+    def test_human_degraded_floor_remains_exempt(self) -> None:
+        _enforce(verdict="degraded-human-only", adversary="human", fallback_reason=None)
+
+    def test_receipt_proving_a_claude_family_run_still_demands_a_reason(self) -> None:
+        # A receipt resolves the claim DOWN as well as up: argv that ran a
+        # same-family tool proves not-cross-vendor, which lands on the tier-2 rule.
+        run_id = self._write("arb-step-codexadversary-" + "d" * 32, ["claude", "-p", "refute"])
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(
+                adversary="claude/general-purpose",
+                tier=None,
+                receipt=run_id,
+                receipts_root=self.root,
+                fallback_reason=None,
+            )
+
+    def test_block_message_names_the_receipt_flag_and_the_tier_2_escape(self) -> None:
+        # .claude/rules/guardrail-feedback-prose.md: name what failed, why it is
+        # forbidden, and a runnable next step — here BOTH exits, since a caller
+        # who genuinely cannot wrap the run needs the fallback path spelled out.
+        buffer = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(buffer):
+            _enforce(adversary="codex/gpt-5.4", tier=None, fallback_reason=None, as_json=True)
+        error = json.loads(buffer.getvalue())["error"]
+        self.assertIn("--adversary-receipt", error)
+        self.assertIn("gz arb step", error)
+        self.assertIn("--adversary-tier 2", error)
+        self.assertIn("--adversary-fallback-reason", error)
 
 
 class TestReceiptReachesTheLedger(unittest.TestCase):

@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-08
+last_reviewed: 2026-08-09
 metadata:
-  skill-version: "6.34.1"
+  skill-version: "6.35.0"
 model: sonnet
 ---
 
@@ -688,11 +688,11 @@ Step 4a is authored by the same agent that may have fabricated it. Step 4b adds 
 
 > **⚠ Clear prop before firing up the tier-1 Codex adversary.** The Codex runtime (`openai/codex-plugin-cc`) routes every rescue through a long-lived, shared broker process that can silently wedge — a stale/hung broker is reused without a health check, and the adversarial job then **hangs indefinitely with no output** (the job log reaches "Turn started" and never completes; upstream `openai/codex-plugin-cc` #509). Before dispatching, *clear prop*: if a prior run may have left one wedged, reset it — `rm -f ~/.claude/plugins/data/codex-openai-codex/state/<workspace-slug>/broker.json` and kill any stray `app-server-broker` / `codex app-server` processes — then run `codex:setup` and confirm `ready: true`. **A wedged broker is NOT a genuine tier-1 unavailability.** `codex:setup` checks only the binary + auth, so it reports `ready: true` even when the broker is hung; the true signature is `ready: true` but a `task` that emits nothing within ~30s. In that case clear prop and retry tier 1 — do **not** record it as `ready: false` and drop to tier 2, which would be a tier-order bypass (GHI #678).
 
-**Record the tier and why.** The tier is recorded on the **completion call**, not on a dispatch record: pass `--adversary-tier {1,2,3}` to `gz obpi complete`, plus — for tier 2/3 — `--adversary-fallback-reason` naming the observed unavailability. Both land on the `adversarial_validation` ledger event, which is the verdict's durable home (GHI #676). **The declared tier GOVERNS**: `gz obpi complete` fail-closes when tier 1 is declared while the named adversary is not a recognized different-vendor model, and when a tier-2/3 verdict carries no fallback reason. "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
+**Record the tier and why.** The tier is recorded on the **completion call**, not on a dispatch record: pass `--adversary-tier {1,2,3}` to `gz obpi complete`, plus — for tier 2/3 — `--adversary-fallback-reason` naming the observed unavailability. Both land on the `adversarial_validation` ledger event, which is the verdict's durable home (GHI #676). **The declared tier GOVERNS but does not AUTHORIZE**: `gz obpi complete` fail-closes when tier 1 is declared while the named adversary is not a recognized different-vendor model, when a tier-1 claim cites no `--adversary-receipt` (GHI #780), and when a tier-2/3 verdict carries no fallback reason. "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
 
-**Prove the tier; do not merely declare it (GHI #765).** A declared tier is a second
-assertion from the same caller — as is `--adversary-job-id`, which **nothing resolves**.
-Run the tier-1 adversary under ARB and cite the receipt:
+**Prove the tier; a declaration will not pass (GHI #765, #780).** A declared tier is a
+second assertion from the same caller — as is `--adversary-job-id`, which **nothing
+resolves**. Run the tier-1 adversary under ARB and cite the receipt:
 
 ```bash
 uv run gz arb step --name codexadversary -- codex exec '<refute-framed prompt>'
@@ -704,8 +704,18 @@ uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
 The gate **resolves** the receipt: it must exist, record `exit_status: 0`, and its
 `step.command[0]` must be a recognized different-vendor binary. Precedence is
 **proven > declared > inferred**, and a receipt contradicting a declared tier 1 fails
-closed. The receipt is not yet mandatory — supply it whenever the adversary ran through
-a shell, which is every tier-1 run you can wrap.
+closed.
+
+**The receipt is MANDATORY for any cross-vendor claim (GHI #780).** It was optional
+until 2026-08-09, which closed nothing: the gate cannot tell *"no receipt because the
+adversary could not be wrapped"* from *"no receipt because none was run"*, so an honest
+tier-1 run and a hollow one arrived as the same input. A tier-1 claim now fails closed
+without one — and the requirement rides the **resolved** claim, not the declared one, so
+naming a codex-shaped adversary while omitting `--adversary-tier` is refused too. If you
+genuinely cannot wrap the run, that is a tier-2 outcome and must be recorded as one:
+`--adversary-tier 2 --adversary-fallback-reason '<observed unavailability>'`. Do not
+report an unwrappable Codex run as tier 1; that is the substitution the gate exists to
+catch.
 
 > **Why the name scan is left conservative rather than "fixed."** `_is_cross_vendor_adversary`
 > prefix-scans, so `"independent Codex subagent"` reads as NOT cross-vendor and demands a
@@ -714,7 +724,7 @@ a shell, which is every tier-1 run you can wrap.
 > `independent-claude-subagent (codex-unavailable; degraded tier)` as tier 1 — failing OPEN
 > on the exact substitution Step 4b exists to catch. A name can mention; an argv ran.
 
-> This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` preserves the older name-inference behavior, so records predating the flag still resolve.
+> This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` no longer preserves name inference for a tier-1 claim — GHI #780 retired that path after measuring that it was not a legacy tail but the only route in use (of 17 recorded `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor by name).
 
 **Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to REFUTE — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real. Require a verdict — `REFUTED` | `NOT-REFUTED` | `REFUTED-WITH-CAVEATS` — with pasted output per check and a "Weakest point" section. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
 

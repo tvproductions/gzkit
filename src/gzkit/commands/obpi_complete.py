@@ -2247,6 +2247,38 @@ def _enforce_adversarial_validation(
         is_cross_vendor = tier == 1
     else:
         is_cross_vendor = name_is_cross_vendor
+
+    # A cross-vendor claim is admissible ONLY on receipt proof (GHI #780). GHI #765
+    # made the receipt authoritative when cited and optional when absent, which closed
+    # nothing: the gate cannot tell "no receipt because the adversary could not be
+    # wrapped" from "no receipt because none was run", so the honest and the hollow
+    # completion stayed the same input. Both rungs below `proven` are strings the
+    # claiming agent typed, and their agreement is self-agreement.
+    #
+    # Scope is the RESOLVED claim, not the declared one. Gating `--adversary-tier 1`
+    # alone would fence a path no completion has used: of 17 recorded
+    # adversarial_validation events, zero declare a tier and 14 resolved cross-vendor
+    # through the name scan. The tier-2 path below stays reachable without a receipt
+    # so an unavailable Codex remains recordable rather than pushed into a false tier 1.
+    if is_cross_vendor and proven_cross_vendor is None:
+        claimed_by = "--adversary-tier 1" if tier == 1 else f"the adversary name '{adversary}'"
+        _fail(
+            f"Completion blocked: Step 4b for {obpi_id} claims a cross-vendor (tier-1) "
+            f"adversary via {claimed_by}, with no ARB receipt proving one ran. Tier 1 is "
+            "the claim that a DIFFERENT vendor re-derived the completion, and a name and "
+            "a declared tier are both typed by the agent making that claim — their "
+            "agreement is self-agreement, not corroboration (GHI #765/#780). A receipt is "
+            "written by ARB at invocation time and records the argv that actually ran. "
+            "Wrap the adversary run and cite it: uv run gz arb step --name codexadversary "
+            "-- codex exec '<refute prompt>', then re-run with --adversary-receipt "
+            "<RUN_ID>. If Codex was genuinely unavailable, record the degraded run "
+            "honestly instead: --adversary-tier 2 --adversary-fallback-reason '<observed "
+            "Codex unavailability>'.",
+            exit_code=1,
+            as_json=as_json,
+            obpi_id=obpi_id,
+        )
+
     if not is_cross_vendor and not (fallback_reason and fallback_reason.strip()):
         _fail(
             f"Completion blocked: Step 4b for {obpi_id} used a non-cross-vendor "

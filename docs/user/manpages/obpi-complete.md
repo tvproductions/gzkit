@@ -29,11 +29,11 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--adversary-verdict {refuted,not-refuted,refuted-with-caveats,degraded-human-only}` | Step-4b independent adversarial validation verdict. **Required on the heavy lane** (GHI #676). Emits an `adversarial_validation` ledger event before the completion receipt. |
 | `--adversary IDENTITY` | Adversary identity — vendor/model (e.g. `codex/gpt-5.4`), or `human` in degraded mode. Required whenever `--adversary-verdict` is given. |
 | `--adversary-job-id ID` | Adversary run id, when the runtime supplies one (e.g. a Codex `task-*` id). Recorded as provenance only — **nothing resolves it**, so it is never proof of the tier (GHI #765). |
-| `--adversary-receipt RUN_ID` | ARB step receipt `run_id` proving the tier from the argv that actually ran (GHI #765). Unlike `--adversary-job-id`, the gate **resolves** this: the receipt must exist, record `exit_status: 0`, and its `step.command[0]` must be a recognized different-vendor binary. Precedence is **proven > declared > inferred** — a receipt contradicting `--adversary-tier 1` fails closed. Produce one with `gz arb step --name codexadversary -- codex exec '<refute prompt>'`. |
+| `--adversary-receipt RUN_ID` | ARB step receipt `run_id` proving the tier from the argv that actually ran (GHI #765). **Required for any cross-vendor (tier-1) claim** (GHI #780) — a tier-1 completion citing no receipt is blocked. Unlike `--adversary-job-id`, the gate **resolves** this: the receipt must exist, record `exit_status: 0`, and its `step.command[0]` must be a recognized different-vendor binary. Precedence is **proven > declared > inferred**, and only the `proven` rung admits tier 1 — a receipt contradicting `--adversary-tier 1` fails closed. Produce one with `gz arb step --name codexadversary -- codex exec '<refute prompt>'`. |
 | `--refuted-claim TEXT` | The specific claim the adversary broke, verbatim. |
 | `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict refuted`** — a known refutation may never be handed to the operator dressed as clean. |
 | `--adversary-fallback-reason TEXT` | Why Codex (tier 1, cross-vendor) was unavailable, when a Claude-family (tier-2) adversary ran. **Required for a non-cross-vendor adversary** (GHI #678) — Codex is required first because a Claude validating Claude shares this agent's blind spots; "it was convenient" is not a reason. |
-| `--adversary-tier {1,2,3}` | Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded. **The declaration governs**: tier 1 named against an adversary that is not a recognized different-vendor model fails closed, and tier 2/3 still requires `--adversary-fallback-reason` even when the adversary is named after a tier-1 vendor. Omit it to fall back to name-based inference, which is how records predating the flag resolve (GHI #678). |
+| `--adversary-tier {1,2,3}` | Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded. **The declaration governs but does not authorize**: tier 1 named against an adversary that is not a recognized different-vendor model fails closed, tier 1 with no `--adversary-receipt` fails closed (GHI #780), and tier 2/3 still requires `--adversary-fallback-reason` even when the adversary is named after a tier-1 vendor. Omitting it no longer falls back to name-based inference for a tier-1 claim — an unproven cross-vendor name is refused whether or not a tier is declared (GHI #678, #780). |
 | `--json` | Machine-readable JSON output |
 | `--dry-run` | Show plan without writing files |
 
@@ -51,19 +51,32 @@ and writes it to the ledger as an `adversarial_validation` event **before** the
 completion receipt, so a receipt can never exist without the finding that gated it.
 
 ```bash
-# The adversary found nothing.
+# The adversary found nothing. A cross-vendor claim carries its receipt (GHI #780);
+# --adversary-job-id is provenance only and never substitutes for one.
 uv run gz obpi complete OBPI-0.33.0-01-airlock-data-model-and-events \
   --attestor 'g0' --attestation-text 'attest completed' \
   --adversary-verdict not-refuted --adversary codex/gpt-5.4 \
+  --adversary-tier 1 \
+  --adversary-receipt arb-step-codexadversary-c2f59259604a42d68ba594842a624794 \
   --adversary-job-id task-mrcrhhaq-dambrd
 
 # The adversary refuted the work; the gap was fixed and re-verified.
 uv run gz obpi complete OBPI-0.33.0-01-airlock-data-model-and-events \
   --attestor 'g0' --attestation-text 'attest completed' \
   --adversary-verdict refuted --adversary codex/gpt-5.4 \
+  --adversary-tier 1 \
+  --adversary-receipt arb-step-codexadversary-c2f59259604a42d68ba594842a624794 \
   --refuted-claim 'closed enum vocabularies are not fail-closed' \
   --adversary-resolution 'membership assertions added to REQ-03/04; the adversary
    mutation (Authority.MATE + Decision.DEFER + Verdict.REVIEW) now FAILS'
+
+# Codex was genuinely unavailable, so an independent same-vendor subagent ran.
+# The tier-2 path needs no receipt — it claims no cross-vendor property.
+uv run gz obpi complete OBPI-0.0.99-01-example \
+  --attestor 'g0' --attestation-text 'attest completed' \
+  --adversary-verdict not-refuted --adversary claude/general-purpose \
+  --adversary-tier 2 \
+  --adversary-fallback-reason 'codex setup reported ready=false (not authenticated)'
 
 # Neither a different-vendor adversary nor an independent subagent could run.
 # The degraded floor is explicit and attested — never silence.
@@ -75,7 +88,7 @@ uv run gz obpi complete OBPI-0.0.99-01-example \
 `--adversary-verdict refuted` without `--adversary-resolution` is blocked. The lite
 lane is exempt, matching the lane that already carries fail-closed Gate 3 and Gate 4.
 
-### Proving the tier instead of asserting it (GHI #765)
+### Proving the tier rather than asserting it (GHI #765, #780)
 
 Run the adversary **under ARB**, then cite the receipt it prints. ARB records the
 argv at invocation time, so the cross-vendor property is read from what ran rather
@@ -106,6 +119,27 @@ distinguish mention from use — two adversary identities already in the ledger 
 `codex-unavailable`, and any scan admitting a *mentioned* vendor would classify
 those degraded Claude-family runs as tier 1, failing open on the exact substitution
 Step 4b exists to catch.
+
+#### The receipt is required, not merely available (GHI #780)
+
+GHI #765 made the receipt channel authoritative when cited and optional when
+absent, which closed nothing: the gate cannot tell *"no receipt because the
+adversary could not be wrapped"* from *"no receipt because none was run"*, so the
+honest and the hollow completion arrived as the same input. Every rung of the
+precedence ladder below `proven` is a string the claiming agent typed, and their
+agreement is self-agreement rather than corroboration.
+
+A **resolved** cross-vendor claim now requires the receipt — not merely a declared
+`--adversary-tier 1`. Gating the declaration alone would have fenced a path no
+completion has ever used: of the 17 `adversarial_validation` events on the ledger,
+**zero** declare a tier and **14** resolved cross-vendor through the name scan, so
+the inference path was not a legacy tail but the whole of the surface.
+
+This raises the bar on future completions; it invalidates no record. The gate is a
+completion-time check over the invocation in hand and never re-reads history. The
+tier-2 path stays reachable with no receipt, deliberately: an unavailable Codex must
+remain **recordable**, because a gate whose only admissible shape demanded a receipt
+would push an honest degraded run into claiming a false tier 1.
 
 ## The waiver refuses every REQ it can reach (GHI #537)
 
