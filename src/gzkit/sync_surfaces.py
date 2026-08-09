@@ -683,6 +683,49 @@ def _copy_if_changed(
     _write_bytes_if_changed(src_file.read_bytes(), dest_file, project_root, updated)
 
 
+# Content classes that must never exist under the wheel-shipping package tree.
+# `canonical` ships; `package_only` legitimately lives there with no `.gzkit/`
+# counterpart (`__init__.py`, `_scaffolder.py`) and MUST survive the prune.
+_UNSHIPPABLE_CHORE_CLASSES = frozenset({"runtime_state", "project_local"})
+
+
+def _prune_unshippable_chores(pkg_chores: Path, project_root: Path, updated: list[str]) -> None:
+    """Remove package-side chore files whose class must never ship (GHI #783).
+
+    THE MISSING DIRECTION. ``sync_pkg_surfaces`` walks the CANONICAL side and
+    copies ``canonical`` files, so it can only ever add — it cannot remove a
+    package-side file it declines to touch. ``gz validate --distribution`` exempts
+    ``runtime_state`` from both error classes, so the exemption that stops it
+    demanding these files be in the baseline manifest is the same exemption that
+    stops it noticing they are on disk in the wheel path. Skip plus exempt compose
+    into invisible, and 71 proof files across 29 slugs shipped that way with a
+    green validator.
+
+    Keying on the classifier rather than a ``proofs/`` glob is deliberate: the
+    class definition is the contract, and a glob would restate one shape of it and
+    then drift. It is also what keeps ``package_only`` modules alive — a prune
+    written as "delete anything without a canonical counterpart" would take
+    ``__init__.py`` with it.
+
+    Empty directories are removed too: an empty ``proofs/`` still ships a
+    directory the doctrine forbids.
+    """
+    from gzkit.chores import _classify_chore_file  # noqa: PLC0415
+
+    if not pkg_chores.is_dir():
+        return
+    for path in sorted(pkg_chores.rglob("*")):
+        if not path.is_file() or "__pycache__" in path.parts:
+            continue
+        if _classify_chore_file(path, project_root=project_root) in _UNSHIPPABLE_CHORE_CLASSES:
+            path.unlink()
+            updated.append(path.relative_to(project_root).as_posix())
+    # Bottom-up so a directory emptied by the pass above is itself collected.
+    for path in sorted(pkg_chores.rglob("*"), reverse=True):
+        if path.is_dir() and "__pycache__" not in path.parts and not any(path.iterdir()):
+            path.rmdir()
+
+
 def _sync_classified_flat(
     canonical_dir: Path,
     pkg_dir: Path,
@@ -804,6 +847,11 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
                 )
                 continue
             _copy_if_changed(src_file, dest_file, project_root, updated)
+
+    # Converge, do not only add: remove package-side files whose class must never
+    # ship. Runs unconditionally on the package tree — a canonical tree that has
+    # gone missing must not strand residue in the wheel (GHI #783).
+    _prune_unshippable_chores(pkg_chores, project_root, updated)
 
     return updated
 
