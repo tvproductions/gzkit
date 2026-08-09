@@ -17,19 +17,25 @@ overwhelmingly from the 2026-08-08 "score the advisory rules for real" pass.
 
 | Severity | Definition | 2026-08-01 | **2026-08-09** |
 |----------|-----------|------|------|
-| `blocking` | Agent hits this monthly or more often; live mid-work surface | 4 | **6** |
+| `blocking` | Agent hits this monthly or more often; live mid-work surface | 4 | **4** |
 | `episodic` | Hit during a specific ADR or change-shape class | 9 | **9** |
 | `theoretical` | Pair could disagree on a misread; canonical reading reconciles | 4 | **4** |
 | `refuted` | Prior row's claim verified false; retained out-of-matrix | 1 | 1 (unchanged) |
-| **Total in matrix** | | **17** | **19** |
+| **Total in matrix** | | **17** | **17** |
+
+**Two rows were authored and closed inside this run.** `R18` and `R19` — both
+`blocking`, both against the unscoped tool-output bullet — were surfaced by the walk,
+ruled on by the operator, and closed by `1c36e0c4b` before the run ended. The peak
+count was 19. They are retained in § Retired rather than deleted: a row that existed
+long enough to change the tree belongs to the trail.
 
 ### Row provenance — all 17 prior rows accounted for
 
 | Class | Count | Rows |
 |---|---|---|
-| **New this run** | 3 | R18, R19, R20 |
+| **New this run** | 3 | R18, R19, R20 — **R18 and R19 closed before the run ended** |
 | **Carried — still live** | 16 | R01, R02, R03, R04, R05, R07, R08, R09, R10, R11, R12, R13, R14, R15, R16, R17 |
-| **Retired — conflict no longer exists** | 1 | R06 (closed by `1ddbfaaa1`) |
+| **Retired — conflict no longer exists** | 3 | R06 (`1ddbfaaa1`), R18 and R19 (`1c36e0c4b`) |
 | **Refuted, kept out of matrix** | 1 | prior row 10 (Never #1 vs Universal OBPI Attestation), unchanged |
 
 **Severity changes:** R16 `episodic` → `blocking` (see headline 2). No other row moved band.
