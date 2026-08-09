@@ -11,42 +11,44 @@ observed state.
 from __future__ import annotations
 
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
 from gzkit.validators.unscoped_rules import run_unscoped_rules
 
+from . import _fold_guard
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Bucket-3 historical roots that are allowed to reference the legacy path by
-# narrative (session plan snapshots, OBPI briefs describing the migration,
-# release notes for the prior release, the rationale doc describing its own
-# origin, and the advisory scorecard entry documenting the fold).
-BUCKET_3_ROOTS = (
-    ".git/",
-    ".claude/plans/",
-    # Local git worktrees mirror the working tree under the parent repo path;
-    # scanning into them creates duplicate-path false positives identical to
-    # the canonical surface they shadow. Worktree contents are never source-
-    # of-truth for this audit (state lives in the parent repo).
-    ".claude/worktrees/",
+LEGACY_PATHS = (
+    ".gzkit/rules/agent-contract.md",
+    ".claude/rules/agent-contract.md",
+    ".github/instructions/agent_contract.instructions.md",
+    ".agents/rules/agent-contract.md",
+)
+
+# Beyond the shared not-live set: this guard holds the retired path as a
+# detection target by construction.
+NON_LIVE_ROOTS = _fold_guard.NON_LIVE_ROOTS + (
+    "tests/governance/test_agent_contract_fold.py",
+    # Validator fixtures use the retired path as data, matching the sibling
+    # routing guard's exemption for the same file and the same reason.
+    "tests/validators/test_unscoped_rules.py",
+)
+
+# Live files granted an exemption because they NARRATE the fold rather than
+# pointing at it. These can rot — see `test_no_stale_narration_grants`, the
+# GHI #779 ratchet that refuses to keep a grant past its narration.
+NARRATION_GRANTS = (
     "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/",
     "RELEASE_NOTES.md",
     "docs/governance/agent-contract-rationale.md",
     "docs/governance/advisory-rules-audit.md",
-    "tests/governance/test_agent_contract_fold.py",
-    # ARB receipts are immutable evidentiary records; their stderr_tail can
-    # legitimately quote retired path names from the failure messages they
-    # captured. Scanning them creates a self-perpetuating false positive.
-    "artifacts/receipts/",
-    # mkdocs build artifact; regenerated from sources
-    "site/",
-    # local venv / build caches
-    ".venv/",
-    "dist/",
-    "build/",
+    # Surfaced by the GHI #779 bare-citation widening: the pool ADR's Baseline
+    # note states which three rule files ADR-0.0.20 deleted, and cannot say so
+    # without naming them.
+    "docs/design/adr/pool/ADR-pool.instruction-file-reconciliation.md",
 )
 
 
@@ -222,8 +224,8 @@ class TestAgentContractFold(unittest.TestCase):
         """No Bucket-1 (live) file may reference the retired paths.
 
         REQ 7: inbound references must point at AGENTS.md sections, the
-        CLAUDE.md addendum, or the rationale doc. Historical roots listed
-        in ``BUCKET_3_ROOTS`` are preserved as-is and excluded from the scan.
+        CLAUDE.md addendum, or the rationale doc. Roots listed in
+        ``NON_LIVE_ROOTS`` and files in ``NARRATION_GRANTS`` are excluded.
 
         "Live" is operationalized as git-tracked files — the committed governed
         surface. Untracked caches (``.ruff_cache``), the virtualenv, mkdocs
@@ -231,42 +233,40 @@ class TestAgentContractFold(unittest.TestCase):
         excluded by definition; scanning them also produced the whole-tree
         ``rglob`` blow-up (261k paths) that pushed this test past the
         test-health budget (test-isolation chore).
+
+        Since GHI #779 the scan also catches a **bare** citation
+        (``per agent-contract.md``) and covers ``.py`` alongside ``.md``/
+        ``.json`` — this guard scanned two suffixes where its siblings scanned
+        three, with no stated reason for the difference.
         """
-        legacy_patterns = (
-            ".gzkit/rules/agent-contract.md",
-            ".claude/rules/agent-contract.md",
-            ".github/instructions/agent_contract.instructions.md",
-            ".agents/rules/agent-contract.md",
+        offenders = _fold_guard.dead_pointer_offenders(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            non_live_roots=NON_LIVE_ROOTS,
+            repo_root=REPO_ROOT,
         )
-
-        tracked = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=True,
-        ).stdout.split("\0")
-
-        offenders: list[str] = []
-        for rel in tracked:
-            if not rel or not rel.endswith((".md", ".json")):
-                continue
-            if any(rel.startswith(root) or rel == root for root in BUCKET_3_ROOTS):
-                continue
-            try:
-                text = (REPO_ROOT / rel).read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            for pattern in legacy_patterns:
-                if pattern in text:
-                    offenders.append(f"{rel} contains {pattern!r}")
-                    break
-
         self.assertFalse(
             offenders,
             "live files still reference retired agent-contract paths:\n"
             + "\n".join(f"  - {o}" for o in offenders),
+        )
+
+    def test_no_stale_narration_grants(self) -> None:
+        """Every narration grant must still protect a real reference (GHI #779).
+
+        A grant earned by a sentence that must name the retired file outlives
+        that sentence, staying as a blanket file-level exemption over a live
+        surface where the next dead pointer is invisible.
+        """
+        stale = _fold_guard.stale_narration_grants(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            repo_root=REPO_ROOT,
+        )
+        self.assertFalse(
+            stale,
+            "narration grants that protect nothing — remove them so the files "
+            "are scanned like any other:\n" + "\n".join(f"  - {s}" for s in stale),
         )
 
     @covers("REQ-0.0.20-02-08")
@@ -353,6 +353,10 @@ class TestAgentContractFold(unittest.TestCase):
             "import unittest",
             "from pathlib import Path",
             "from gzkit.",
+            # Sibling test helper, not a dependency (GHI #779). This clause's
+            # stated bar is "stdlib + gzkit-internal (no new dep)", which an
+            # intra-package import satisfies exactly.
+            "from . import _fold_guard",
         )
         non_conforming = [
             line for line in import_lines if not any(line.startswith(p) for p in allowed_prefixes)

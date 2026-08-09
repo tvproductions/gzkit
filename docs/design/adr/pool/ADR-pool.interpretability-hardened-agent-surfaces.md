@@ -137,9 +137,10 @@ Three sibling GHIs landed doctrine-only updates in the same patch release:
 - **GHI #148** — OBPI increment-size reframed as a safety property (gate
   firing point) in `gz-obpi-specify`; new constraint row in
   `constraints.md` Pipeline Lifecycle.
-- **GHI #145 (rule half)** — `attestation-enrichment.md` now carries a
-  Receipt-ID Requirement section with Lite/Heavy lane semantics. The CLI
-  enforcement half (OBPI 1 above) is what this pool entry promotes.
+- **GHI #145 (rule half)** — a Receipt-ID Requirement with Lite/Heavy lane
+  semantics, authored into the then-live attestation-enrichment rule file and
+  since consolidated into `AGENTS.md` § Attestation (ADR-0.0.20 OBPI-03). The
+  CLI enforcement half (OBPI 1 above) is what this pool entry promotes.
 
 Those updates establish the doctrinal baseline. This pool entry, when
 promoted, mechanizes the three surfaces that cannot rely on doctrine alone.

@@ -11,75 +11,61 @@ observed state.
 from __future__ import annotations
 
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
 from gzkit.validators.unscoped_rules import run_unscoped_rules
 
+from . import _fold_guard
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Bucket-3 historical roots that are allowed to reference the legacy path by
-# narrative (session plan snapshots, OBPI briefs describing the migration,
-# release notes, the advisory scorecard entry documenting the fold, and this
-# very test file which holds the legacy path as a detection target).
-BUCKET_3_ROOTS = (
-    ".git/",
-    ".claude/plans/",
-    # Local git worktrees mirror the working tree under the parent repo path;
-    # scanning into them creates duplicate-path false positives identical to
-    # the canonical surface they shadow. Worktree contents are never source-
-    # of-truth for this audit (state lives in the parent repo).
-    ".claude/worktrees/",
+LEGACY_PATHS = (
+    ".gzkit/rules/attestation-enrichment.md",
+    ".claude/rules/attestation-enrichment.md",
+    ".github/instructions/attestation_enrichment.instructions.md",
+    ".agents/rules/attestation-enrichment.md",
+)
+
+# Not-live roots beyond the shared set: these hold the retired path as a
+# detection target by construction, so they must contain it to do their job.
+NON_LIVE_ROOTS = _fold_guard.NON_LIVE_ROOTS + (
+    "tests/governance/test_attestation_fold.py",
+    "tests/governance/test_agent_contract_fold.py",
+)
+
+# Live files granted an exemption because they NARRATE the fold rather than
+# pointing at it. Unlike NON_LIVE_ROOTS these can rot — a file stops narrating
+# and the blanket grant survives, covering whatever pointer lands there next.
+# `test_no_stale_narration_grants` is the ratchet that refuses to keep one.
+#
+# This list was five entries longer until GHI #778. Those five were blanket
+# grants covering *live pointers* — "rule documented in X", "per X", "the ARB
+# receipt-ID requirement in X" — sentences that send an agent somewhere to read
+# a rule, not sentences narrating that the rule moved. A file-level exemption
+# cannot tell the two apart, so one legitimate narrative line bought the whole
+# file immunity and ten dead pointers accumulated behind it while this test
+# stayed green. GHI #779 is the mechanism that let them accumulate undetected.
+NARRATION_GRANTS = (
     # Closed / historical ADRs that reference the legacy path in narrative.
     "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/",
     "docs/design/adr/foundation/ADR-0.0.19-pre-execution-reasoning-walkthrough/",
     "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/",
     "docs/design/adr/pool/ADR-pool.tdd-receipt-stream.md",
-    "docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md",
     "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/",
-    "docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/",
     "docs/design/adr/pool/ADR-pool.tdd-emission-and-graph-rot-remediation.md",
     "RELEASE_NOTES.md",
-    # Governance lineage docs that narrate the fold rather than pointing at it.
-    #
-    # This list was five entries longer until GHI #778. Those five were blanket
-    # file-level grants covering *live pointers* — "rule documented in X",
-    # "per X", "the ARB receipt-ID requirement in X" — sentences that send an
-    # agent somewhere to read a rule, not sentences narrating that the rule
-    # moved. A file-level exemption cannot tell the two apart, so one
-    # legitimate narrative line bought the whole file immunity, and eight dead
-    # pointers accumulated behind it across four docs and three skills while
-    # this test stayed green. The pointers now resolve, so the grants are gone
-    # and these files are scanned like any other.
-    #
-    # The two that remain genuinely narrate: arb-middleware.md states its own
-    # consolidation lineage, and the manpage carries a HISTORY section. Both
-    # must contain the retired name to say what they say.
+    # arb-middleware.md states its own consolidation lineage and the manpage
+    # carries a HISTORY section; both must name the retired file to say so.
     "docs/governance/arb-middleware.md",
-    # Manpage HISTORY section legitimately cites the lineage.
     "docs/user/manpages/arb.md",
-    # Historical chore proof records and one-shot audit artifacts.
-    # Chores tree relocated from ops/chores/ to src/gzkit/chores/ under
-    # ADR-0.0.21 (OBPI-0.0.21-01-physical-migration). Historical proof
-    # files preserve their legacy-path references by design.
-    "src/gzkit/chores/",
-    "artifacts/audits/",
-    # ARB receipts are immutable evidentiary records; their stderr_tail can
-    # legitimately quote retired path names from the failure messages they
-    # are tailing — that's exactly what an ARB receipt is supposed to
-    # capture. Mirrors the sibling exclusion in
-    # tests/governance/test_defect_fix_routing_fold.py BUCKET_3_ROOTS.
-    "artifacts/receipts/",
-    "tests/governance/test_attestation_fold.py",
-    "tests/governance/test_agent_contract_fold.py",
-    # mkdocs build artifact; regenerated from sources
-    "site/",
-    # local venv / build caches
-    ".venv/",
-    "dist/",
-    "build/",
+    # Surfaced by the GHI #779 bare-citation widening; both genuinely narrate.
+    # The OBPI-0.0.22-06 scorecard records that it REWROTE a citation of the
+    # retired path, and the pool ADR's Baseline note states which three rule
+    # files ADR-0.0.20 deleted — neither can say that without the name.
+    "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/",
+    "docs/design/adr/pool/ADR-pool.instruction-file-reconciliation.md",
 )
 
 
@@ -265,8 +251,8 @@ class TestAttestationFold(unittest.TestCase):
         """No Bucket-1 (live) file may reference the retired rule path.
 
         REQ-05/06/07: inbound references must point at AGENTS.md § Attestation
-        or docs/governance/arb-middleware.md. Historical roots listed in
-        ``BUCKET_3_ROOTS`` are preserved as-is and excluded from the scan.
+        or docs/governance/arb-middleware.md. Roots listed in ``NON_LIVE_ROOTS``
+        and files in ``NARRATION_GRANTS`` are excluded from the scan.
 
         "Live" is operationalized as git-tracked files — the committed governed
         surface. Untracked caches (``.ruff_cache``), the virtualenv, mkdocs
@@ -274,42 +260,48 @@ class TestAttestationFold(unittest.TestCase):
         excluded by definition; scanning them also produced the whole-tree
         ``rglob`` blow-up (261k paths) that pushed this test past the
         test-health budget (test-isolation chore).
+
+        Since GHI #779 the scan also catches a **bare** citation
+        (``per attestation-enrichment.md``), which matched no full path and was
+        therefore invisible regardless of any grant — three of the ten pointers
+        repaired under GHI #778 had that shape.
         """
-        legacy_patterns = (
-            ".gzkit/rules/attestation-enrichment.md",
-            ".claude/rules/attestation-enrichment.md",
-            ".github/instructions/attestation_enrichment.instructions.md",
-            ".agents/rules/attestation-enrichment.md",
+        offenders = _fold_guard.dead_pointer_offenders(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            non_live_roots=NON_LIVE_ROOTS,
+            repo_root=REPO_ROOT,
         )
-
-        tracked = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=True,
-        ).stdout.split("\0")
-
-        offenders: list[str] = []
-        for rel in tracked:
-            if not rel or not rel.endswith((".md", ".json", ".py")):
-                continue
-            if any(rel.startswith(root) or rel == root for root in BUCKET_3_ROOTS):
-                continue
-            try:
-                text = (REPO_ROOT / rel).read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            for pattern in legacy_patterns:
-                if pattern in text:
-                    offenders.append(f"{rel} contains {pattern!r}")
-                    break
-
         self.assertFalse(
             offenders,
             "live files still reference retired attestation-enrichment paths:\n"
             + "\n".join(f"  - {o}" for o in offenders),
+        )
+
+    def test_no_stale_narration_grants(self) -> None:
+        """Every narration grant must still protect a real reference (GHI #779).
+
+        A grant is earned by a sentence that must name the retired file to say
+        what it says. When that sentence goes, the grant does not — it stays as a
+        blanket file-level exemption over a live surface, and the next dead
+        pointer to land in that file is invisible. Measured at authoring: six of
+        the seven ``docs/governance/`` grants on the sibling routing guard
+        protected a string their file no longer contained, and two grants named
+        paths that had been deleted from disk entirely.
+
+        This does not make a file-level grant able to tell a live pointer from
+        narration — that is the open half of GHI #779. It bounds the damage by
+        refusing to keep a grant alive past the narration that justified it.
+        """
+        stale = _fold_guard.stale_narration_grants(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            repo_root=REPO_ROOT,
+        )
+        self.assertFalse(
+            stale,
+            "narration grants that protect nothing — remove them so the files "
+            "are scanned like any other:\n" + "\n".join(f"  - {s}" for s in stale),
         )
 
     @covers("REQ-0.0.20-03-08")
@@ -413,6 +405,12 @@ class TestAttestationFold(unittest.TestCase):
             "import unittest",
             "from pathlib import Path",
             "from gzkit.",
+            # Sibling test helper, not a dependency (GHI #779). The three fold
+            # guards carried a byte-identical scan and grant block; the shared
+            # module is where the ratchet and the bare-citation predicate live.
+            # This clause's stated bar is "stdlib + gzkit-internal (no new dep)",
+            # which an intra-package import satisfies exactly.
+            "from . import _fold_guard",
         )
         non_conforming = [
             line for line in import_lines if not any(line.startswith(p) for p in allowed_prefixes)

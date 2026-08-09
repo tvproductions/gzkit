@@ -11,79 +11,52 @@ observed state.
 from __future__ import annotations
 
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
 from gzkit.validators.unscoped_rules import run_unscoped_rules
 
+from . import _fold_guard
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
-# Bucket-3 historical roots allowed to reference the legacy path by narrative
-# (session plan snapshots, OBPI briefs describing the migration, release
-# notes, the advisory scorecard entry, historical ADRs, and the fold test
-# files which hold the legacy path as a detection target).
-BUCKET_3_ROOTS = (
-    ".git/",
-    ".claude/plans/",
-    # Session handoffs are historical narrative snapshots (same category as
-    # .claude/plans/ above) that legitimately quote retired path names when
-    # describing past work. ADR-0.0.65 / OBPI-0.0.65-01 canonized
-    # .gzkit/handoffs/ as their single home; before that migration these files
-    # lived under per-ADR handoffs/ dirs already exempt below (e.g. the
-    # ADR-0.0.17 root). Exempting the canonical store preserves that exemption.
-    ".gzkit/handoffs/",
-    # Local git worktrees mirror the working tree under the parent repo path;
-    # scanning into them creates duplicate-path false positives identical to
-    # the canonical surface they shadow. Worktree contents are never source-
-    # of-truth for this audit (state lives in the parent repo).
-    ".claude/worktrees/",
-    # Closed / historical ADRs that reference the legacy path in narrative.
-    "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/",
-    "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/",
-    "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/",
-    "docs/design/adr/foundation/ADR-0.0.19-pre-execution-reasoning-walkthrough/",
-    "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/",
-    "docs/design/adr/pool/ADR-pool.tdd-receipt-stream.md",
-    "docs/design/adr/pool/ADR-pool.interpretability-hardened-agent-surfaces.md",
-    "docs/design/adr/pre-release/ADR-0.25.0-core-infrastructure-pattern-absorption/",
-    "docs/design/adr/pre-release/ADR-0.36.0-instruction-file-reconciliation/",
-    "docs/design/adr/pre-release/ADR-0.41.0-tdd-emission-and-graph-rot-remediation/",
-    "RELEASE_NOTES.md",
-    # Governance pedagogy + lineage docs.
-    "docs/governance/agent-contract-rationale.md",
-    "docs/governance/advisory-rules-audit.md",
-    "docs/governance/model-regression-taxonomy.md",
-    "docs/governance/trust-doctrine.md",
-    "docs/governance/governance_runbook.md",
-    "docs/governance/arb-middleware.md",
-    # The new pedagogy doc for this fold legitimately holds the rule name in
-    # its "When this rule was authored" and "Related" sections.
-    "docs/governance/defect-fix-routing.md",
-    # Manpage HISTORY section legitimately cites the lineage.
-    "docs/user/manpages/arb.md",
-    # Historical chore proof records and one-shot audit artifacts.
-    # Chores tree relocated from ops/chores/ to src/gzkit/chores/ under
-    # ADR-0.0.21 (OBPI-0.0.21-01-physical-migration). Historical proof
-    # files preserve their legacy-path references by design.
-    "src/gzkit/chores/",
-    "artifacts/audits/",
-    # ARB receipts are immutable evidentiary records; their stderr_tail can
-    # legitimately quote retired path names from the failure messages they
-    # captured. Scanning them creates a self-perpetuating false positive.
-    "artifacts/receipts/",
+LEGACY_PATHS = (
+    ".gzkit/rules/defect-fix-routing.md",
+    ".claude/rules/defect-fix-routing.md",
+    ".github/instructions/defect_fix_routing.instructions.md",
+    ".agents/rules/defect-fix-routing.md",
+)
+
+# Beyond the shared not-live set: files holding a retired path as a detection
+# target or as validator fixture data, which must contain it to do their job.
+NON_LIVE_ROOTS = _fold_guard.NON_LIVE_ROOTS + (
     "tests/governance/test_attestation_fold.py",
     "tests/governance/test_agent_contract_fold.py",
     "tests/governance/test_defect_fix_routing_fold.py",
-    # Validator test fixtures legitimately use the legacy path as data.
     "tests/validators/test_unscoped_rules.py",
-    # mkdocs build artifact; regenerated from sources.
-    "site/",
-    # local venv / build caches.
-    ".venv/",
-    "dist/",
-    "build/",
+)
+
+# Live files granted an exemption because they NARRATE the fold rather than
+# pointing at it. Ratcheted by `test_no_stale_narration_grants` (GHI #779):
+# measured at authoring, SIX of the seven `docs/governance/` grants below
+# protected a string their file no longer contained, and two named paths that
+# had been deleted from disk. Those are removed here; what remains still hits.
+#
+# Note the bare-citation widening is deliberately INERT for this guard's main
+# basename: `docs/governance/defect-fix-routing.md` is a LIVE file, so a bare
+# `defect-fix-routing.md` citation resolves and is not a dead pointer. Only
+# `defect_fix_routing.instructions.md` has no live counterpart.
+NARRATION_GRANTS = (
+    "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/",
+    "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/",
+    "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/",
+    "docs/design/adr/pool/ADR-pool.tdd-receipt-stream.md",
+    "RELEASE_NOTES.md",
+    "docs/governance/advisory-rules-audit.md",
+    # The pedagogy doc for this fold holds the rule name in its "When this rule
+    # was authored" and "Related" sections.
+    "docs/governance/defect-fix-routing.md",
 )
 
 
@@ -257,9 +230,8 @@ class TestDefectFixRoutingFold(unittest.TestCase):
         """No Bucket-1 (live) file may reference the retired rule path.
 
         REQ-05: inbound references must point at AGENTS.md § Defect-fix
-        routing or docs/governance/defect-fix-routing.md. Historical roots
-        listed in ``BUCKET_3_ROOTS`` are preserved as-is and excluded from
-        the scan.
+        routing or docs/governance/defect-fix-routing.md. Roots listed in
+        ``NON_LIVE_ROOTS`` and files in ``NARRATION_GRANTS`` are excluded.
 
         "Live" is operationalized as git-tracked files — the committed governed
         surface. Untracked caches (``.ruff_cache``), the virtualenv, mkdocs
@@ -267,42 +239,40 @@ class TestDefectFixRoutingFold(unittest.TestCase):
         excluded by definition; scanning them also produced the whole-tree
         ``rglob`` blow-up (261k paths) that pushed this test past the
         test-health budget (test-isolation chore).
+
+        The GHI #779 bare-citation widening is inert here by design: this
+        guard's basename is alive at ``docs/governance/defect-fix-routing.md``,
+        so a bare citation of it resolves and is not a dead pointer.
         """
-        legacy_patterns = (
-            ".gzkit/rules/defect-fix-routing.md",
-            ".claude/rules/defect-fix-routing.md",
-            ".github/instructions/defect_fix_routing.instructions.md",
-            ".agents/rules/defect-fix-routing.md",
+        offenders = _fold_guard.dead_pointer_offenders(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            non_live_roots=NON_LIVE_ROOTS,
+            repo_root=REPO_ROOT,
         )
-
-        tracked = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "ls-files", "-z"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=True,
-        ).stdout.split("\0")
-
-        offenders: list[str] = []
-        for rel in tracked:
-            if not rel or not rel.endswith((".md", ".json", ".py")):
-                continue
-            if any(rel.startswith(root) or rel == root for root in BUCKET_3_ROOTS):
-                continue
-            try:
-                text = (REPO_ROOT / rel).read_text(encoding="utf-8")
-            except (OSError, UnicodeDecodeError):
-                continue
-            for pattern in legacy_patterns:
-                if pattern in text:
-                    offenders.append(f"{rel} contains {pattern!r}")
-                    break
-
         self.assertFalse(
             offenders,
             "live files still reference retired defect-fix-routing paths:\n"
             + "\n".join(f"  - {o}" for o in offenders),
+        )
+
+    def test_no_stale_narration_grants(self) -> None:
+        """Every narration grant must still protect a real reference (GHI #779).
+
+        This guard is where the rot was measured: six of its seven
+        ``docs/governance/`` grants protected a string their file no longer
+        contained, and two named ADR directories deleted from disk. A grant
+        that protects nothing is a blanket exemption over a live surface.
+        """
+        stale = _fold_guard.stale_narration_grants(
+            legacy_paths=LEGACY_PATHS,
+            narration_grants=NARRATION_GRANTS,
+            repo_root=REPO_ROOT,
+        )
+        self.assertFalse(
+            stale,
+            "narration grants that protect nothing — remove them so the files "
+            "are scanned like any other:\n" + "\n".join(f"  - {s}" for s in stale),
         )
 
     @covers("REQ-0.0.20-04-06")
@@ -387,6 +357,10 @@ class TestDefectFixRoutingFold(unittest.TestCase):
             "import unittest",
             "from pathlib import Path",
             "from gzkit.",
+            # Sibling test helper, not a dependency (GHI #779). This clause's
+            # stated bar is "stdlib + gzkit-internal (no new dep)", which an
+            # intra-package import satisfies exactly.
+            "from . import _fold_guard",
         )
         non_conforming = [
             line for line in import_lines if not any(line.startswith(p) for p in allowed_prefixes)
