@@ -740,6 +740,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Pool ADRs never receive runtime-track lifecycle/gate events",
     )
     p_validate.add_argument(
+        "--pool-interview",
+        dest="check_pool_interview",
+        action="store_true",
+        help="Pool ADR interview JSON must satisfy the answers schema (GHI #719)",
+    )
+    p_validate.add_argument(
         "--behave-req-tags",
         dest="check_behave_req_tags",
         action="store_true",
@@ -1195,6 +1201,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_class_size=a.check_class_size,
             check_version_release=a.check_version_release,
             check_pool_adr_isolation=a.check_pool_adr_isolation,
+            check_pool_interview=a.check_pool_interview,
             check_behave_req_tags=a.check_behave_req_tags,
             check_skill_alignment=a.check_skill_alignment,
             check_advisory_scorecard=a.check_advisory_scorecard,

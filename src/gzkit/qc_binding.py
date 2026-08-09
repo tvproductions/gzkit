@@ -99,6 +99,11 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Kind invariance": ("audit", "docs/", "bound", "python_function"),
     "Persona witness": ("audit", "docs/", "bound", "python_function"),
     "Interview transcripts": ("audit", "docs/", "bound", "python_function"),
+    # GHI #719: enrolled here in the same commit it joined `gz check`, matching
+    # the precedent the "Advisory scorecard coverage" comment above records.
+    # Subject is `docs/` — the population it audits is
+    # `docs/design/adr/pool/*-interview.json`.
+    "Pool interview schema": ("audit", "docs/", "bound", "python_function"),
     "Receipt shape": ("audit", ".gzkit/", "bound", "python_function"),
     "Orientation freshness": ("audit", ".gzkit/", "bound", "python_function"),
     "Insights shape": ("audit", ".gzkit/", "bound", "python_function"),

@@ -99,6 +99,15 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
 #   `N/M` figures in docs/ are dated records that must NOT be rewritten, so a
 #   default-tier whole-corpus scope would be the wrong shape. `in_check` from the
 #   outset: a fence that only runs when asked is the convention it replaces.
+#   pool_interview — genuinely new (GHI #719). A pool ADR's Step-0 interview JSON
+#   had no reader at all, while the non-pool path (`gz interview adr --from`)
+#   fails closed on every use — the same artifact type carrying a different
+#   governance guarantee purely by kind. Explicit tier because its subject is one
+#   named directory (`docs/design/adr/pool/*-interview.json`), not a whole-tree
+#   sweep, so it sits beside `pool_adr_isolation` rather than in the default tier.
+#   `in_check` from the outset: the defect IS the asymmetry, and a pool-side gate
+#   that runs only when an operator remembers the flag would leave the two
+#   guarantees exactly as unequal as the GHI found them.
 _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
     {
         "persona_witness",
@@ -107,6 +116,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "waiver_ratchet",
         "status_writer_coverage",
         "transcribed_adr_counts",
+        "pool_interview",
     }
 )
 

@@ -275,6 +275,14 @@ def _ep_adr_status_freshness(root: Path) -> list[ValidationError]:
     return audit_adr_status_fresh(root)
 
 
+def _ep_pool_interview_schema(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+        audit_pool_interview_schema,
+    )
+
+    return audit_pool_interview_schema(root)
+
+
 def _ep_advisory_scorecard(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.release import audit_advisory_scorecard  # noqa: PLC0415
 

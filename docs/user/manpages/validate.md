@@ -2073,6 +2073,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--class-size` | opt-in | Classes under `src/gzkit/` ≤300 lines unless explicitly waived |
 | `--version-release` | opt-in | `pyproject.toml` version has a matching `vX.Y.Z` git tag |
 | `--pool-adr-isolation` | opt-in | Pool ADRs never receive runtime-track lifecycle / gate events |
+| `--pool-interview` | opt-in | Every `docs/design/adr/pool/*-interview.json` record must satisfy the same answers schema `gz interview adr --from` enforces — key membership and per-question validators are delegated to `answer_payload_problems`, the function the CLI loader itself calls, so the two readers cannot drift. Adds the pool-artifact obligations on top: `ADR-pool.<slug>` id, filename slug agreeing with the id slug, literal `semver: pool`, string-valued answers, and a filled required set. A record that cannot be read is a finding, never a skip (GHI #719) |
 | `--behave-req-tags` | opt-in | Heavy-lane / Completed OBPI REQs have matching `@REQ-X.Y.Z-NN-MM` scenario tags under `features/` (GHI #323 lifecycle scope) |
 | `--skill-alignment` | opt-in | Every CLI verb has a wielding skill (Tool / Skill / Runbook Alignment Invariant 1) |
 | `--advisory-scorecard` | opt-in | Every `.gzkit/rules/*` file appears in the advisory-rules-audit scorecard |

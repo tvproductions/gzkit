@@ -94,6 +94,134 @@ def audit_pool_adr_isolation(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+_INTERVIEW_SUFFIX = "-interview.json"
+
+
+def _interview_error(rel: str, message: str) -> ValidationError:
+    return ValidationError(type="pool_interview_schema", artifact=rel, message=message)
+
+
+def _pool_identity_problems(
+    payload: dict[str, object], file_slug: str, known_keys: frozenset[str]
+) -> list[str]:
+    """Return the pool-artifact obligations *payload* fails, beyond answers grammar.
+
+    These are obligations of a *committed pool record*, not of the answers
+    grammar, which is why they live here rather than in
+    :func:`answer_payload_problems`: an interactive ``gz interview adr`` session
+    legitimately produces a non-pool id, and the CLI loader must keep accepting
+    one. All four records on disk already hold every rule below; the convention
+    existed and was simply undeclared.
+    """
+    problems: list[str] = []
+    adr_id = payload.get("id", "")
+    if not (isinstance(adr_id, str) and adr_id.startswith(_POOL_ID_PREFIX)):
+        problems.append(
+            f"`id` is {adr_id!r}; a pool interview record must carry an "
+            f"`{_POOL_ID_PREFIX}<slug>` id (ADR-0.0.17 derives the pool kind "
+            "from that prefix)."
+        )
+    elif adr_id[len(_POOL_ID_PREFIX) :] != file_slug:
+        problems.append(
+            f"`id` slug {adr_id[len(_POOL_ID_PREFIX) :]!r} disagrees with the "
+            f"filename slug {file_slug!r}. The record is addressed by filename, "
+            "so a disagreement means one of the two names a record that is not this one."
+        )
+    semver = payload.get("semver")
+    if semver != "pool":
+        problems.append(
+            f"`semver` is {semver!r}; a pool record carries the literal `pool` "
+            "(ADR-0.0.17: pool ADRs have no semver position)."
+        )
+    # Known keys only: an unknown key is already reported by the answers
+    # grammar, and adding a type finding for it would name one defect twice.
+    problems.extend(
+        f"`{key}` must be a JSON string, got {type(payload[key]).__name__}"
+        for key in sorted(known_keys & set(payload))
+        if not isinstance(payload[key], str)
+    )
+    return problems
+
+
+def audit_pool_interview_schema(project_root: Path) -> list[ValidationError]:
+    """Fail on pool ADR interview records that drift from the answers schema.
+
+    A pool ADR's Step-0 interview is hand-authored JSON in the pool bucket. The
+    non-pool path (``gz interview adr --from``) deserializes and fails closed on
+    a malformed payload, while the pool bucket had **no reader at all** — the
+    same artifact type carrying a different governance guarantee purely by kind
+    (GHI #719).
+
+    The grammar is delegated to :func:`answer_payload_problems`, the function
+    the CLI loader itself uses, so the two cannot diverge. Only the
+    pool-artifact obligations (id prefix, filename agreement, ``semver: pool``,
+    string-valued answers) and required-set completeness are added here.
+
+    The observed drift this closes is dated: commit ``8b0a2f32`` found two
+    records carrying an invented ``forcing_functions`` nested key that no reader
+    consumed and that the CLI loader would have rejected — repaired by hand,
+    with no guard left behind. Never mutates files.
+    """
+    from gzkit.interview import (  # noqa: PLC0415 — lazy: avoids a CLI-layer import cycle
+        answer_payload_problems,
+        check_interview_complete,
+        get_interview_questions,
+    )
+
+    known_keys = frozenset(q.id for q in get_interview_questions("adr"))
+
+    pool_dir = project_root / "docs" / "design" / "adr" / "pool"
+    if not pool_dir.is_dir():
+        return []
+
+    errors: list[ValidationError] = []
+    for path in sorted(pool_dir.glob(f"*{_INTERVIEW_SUFFIX}")):
+        rel = path.relative_to(project_root).as_posix()
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            # A record the audit cannot READ is a finding, never a skip — the
+            # same correction GHI #736 applied to `_audit_one_adr_taxonomy`
+            # above. "Cannot read" must not resolve to "nothing to check".
+            errors.append(
+                _interview_error(
+                    rel,
+                    f"pool interview record could not be read: {exc}. Re-save it "
+                    "as UTF-8 JSON, then re-run "
+                    "`uv run gz validate --pool-interview`.",
+                )
+            )
+            continue
+
+        problems = answer_payload_problems("adr", payload)
+        if isinstance(payload, dict):
+            problems.extend(
+                _pool_identity_problems(payload, path.name[: -len(_INTERVIEW_SUFFIX)], known_keys)
+            )
+            # Coerce rather than drop non-string values, matching the loader.
+            # Dropping them made one defect raise two findings — the type error
+            # AND a spurious "missing required answer" for a key that is
+            # plainly present. One defect, one finding, per the census rule
+            # `audit_foundation_closure` states below.
+            complete = check_interview_complete(
+                "adr", {k: v if isinstance(v, str) else str(v) for k, v in payload.items()}
+            )
+            problems.extend(
+                f"missing required answer `{field}`" for field in sorted(complete.missing)
+            )
+        errors.extend(
+            _interview_error(
+                rel,
+                f"{problem} Pool interview records are Layer-1 authorship canon and "
+                "must satisfy the same answers schema `gz interview adr --from` "
+                "enforces (GHI #719). Recovery: correct the record, then re-run "
+                "`uv run gz validate --pool-interview`.",
+            )
+            for problem in problems
+        )
+    return errors
+
+
 _NESTED_ADR_DIRS: frozenset[str] = frozenset({"obpis", "briefs", "audit"})
 
 

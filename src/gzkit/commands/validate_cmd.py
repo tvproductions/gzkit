@@ -284,6 +284,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "pool_adr_isolation", "explicit", True, lambda r, _f: _ta().audit_pool_adr_isolation(r)
     ),
+    _ScopeEntry(
+        "pool_interview", "explicit", True, lambda r, _f: _ta().audit_pool_interview_schema(r)
+    ),
     _ScopeEntry("behave_req_tags", "explicit", True, lambda r, _f: _ta().audit_behave_req_tags(r)),
     _ScopeEntry("skill_alignment", "explicit", True, lambda r, _f: _ta().audit_skill_alignment(r)),
     _ScopeEntry(
@@ -1425,6 +1428,7 @@ def validate(
     check_class_size: bool = False,
     check_version_release: bool = False,
     check_pool_adr_isolation: bool = False,
+    check_pool_interview: bool = False,
     check_behave_req_tags: bool = False,
     check_skill_alignment: bool = False,
     check_advisory_scorecard: bool = False,
@@ -1539,6 +1543,7 @@ def validate(
         "class_size": check_class_size,
         "version_release": check_version_release,
         "pool_adr_isolation": check_pool_adr_isolation,
+        "pool_interview": check_pool_interview,
         "behave_req_tags": check_behave_req_tags,
         "skill_alignment": check_skill_alignment,
         "advisory_scorecard": check_advisory_scorecard,

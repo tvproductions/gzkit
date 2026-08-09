@@ -508,6 +508,39 @@ def _build_adr_status_freshness() -> Path:
     return root
 
 
+def _build_pool_interview_schema() -> Path:
+    """Violation: a pool interview record carrying the invented nested key.
+
+    Plants the REAL drift shape rather than a degenerate one, per the doctrine
+    ``_build_theater_signature_scan`` records: commit ``8b0a2f32`` found exactly
+    this ``forcing_functions`` nested key on two committed records, where the
+    CLI loader would have rejected it and the pool bucket had no reader to. It
+    was repaired by hand with no guard left behind — PASS-on-violation here
+    means the audit catches the actual class that shipped (GHI #719).
+    """
+    root = _mkroot("pool-interview")
+    _write(
+        root / "docs" / "design" / "adr" / "pool" / "sample-thing-interview.json",
+        json.dumps(
+            {
+                "id": "ADR-pool.sample-thing",
+                "title": "Sample Thing",
+                "semver": "pool",
+                "lane": "heavy",
+                "parent": "ADR-0.8.0",
+                "intent": "why",
+                "decision": "what",
+                "positive_consequences": "good",
+                "negative_consequences": "bad",
+                "checklist": "steps",
+                "alternatives": "rejected",
+                "forcing_functions": {"pre_mortem": "the shape 8b0a2f32 repaired"},
+            }
+        ),
+    )
+    return root
+
+
 def _build_advisory_scorecard() -> Path:
     """Violation: a canonical rule absent from the scorecard's Coverage Ledger.
 
@@ -1156,6 +1189,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
+    (
+        "pool-interview-schema",
+        _build_pool_interview_schema,
+        _ep._ep_pool_interview_schema,
+        "forcing_functions",
+    ),
     ("advisory-scorecard-coverage", _build_advisory_scorecard, _ep._ep_advisory_scorecard),
     (
         "advisory-scorecard-summary-drift",

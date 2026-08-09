@@ -155,6 +155,7 @@ from gzkit.governance.trust_audits.taxonomy import (
     audit_adr_taxonomy,
     audit_obpi_lifecycle_coherence,
     audit_pool_adr_isolation,
+    audit_pool_interview_schema,
 )
 from gzkit.governance.trust_audits.transcribed_counts import (
     audit_transcribed_counts,
@@ -221,6 +222,7 @@ __all__ = [
     "audit_deprecated_verb_prescription",
     "audit_orphaned_implementation",
     "audit_pool_adr_isolation",
+    "audit_pool_interview_schema",
     "audit_okf_conformance",
     "audit_pydantic_models",
     "audit_receipt_shape",

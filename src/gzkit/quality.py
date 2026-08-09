@@ -668,6 +668,22 @@ def run_adr_status_fresh_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --adr-status-fresh", cwd=project_root)
 
 
+def run_pool_interview_audit(project_root: Path) -> QualityResult:
+    """Run the pool ADR interview schema audit (GHI #719).
+
+    Fails closed when a `docs/design/adr/pool/*-interview.json` record drifts
+    from the answers schema `gz interview adr --from` already enforces.
+
+    Enrolled as a `gz check` step rather than left flag-gated, for the reason
+    GHI #754 records one function below: a gate nobody pulls cannot fail. The
+    defect this closes IS the asymmetry — the non-pool path validates on every
+    single use, so a pool-side check that runs only when an operator remembers
+    the flag would leave the two guarantees exactly as unequal as GHI #719
+    found them.
+    """
+    return run_command("uv run gz validate --pool-interview", cwd=project_root)
+
+
 def run_advisory_scorecard_audit(project_root: Path) -> QualityResult:
     """Run the advisory-scorecard coverage audit (GHI #212 / GHI #754).
 

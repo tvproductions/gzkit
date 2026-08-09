@@ -516,6 +516,56 @@ def get_interview_questions(document_type: str) -> list[Question]:
     return INTERVIEWS[document_type]
 
 
+def answer_payload_problems(document_type: str, raw: object) -> list[str]:
+    """Return every grammar problem in a decoded interview-answers payload.
+
+    An empty list means *raw* is a well-formed answers object for
+    *document_type*. This is the answers **grammar** only — key membership and
+    per-question validators — deliberately not completeness: whether the
+    required set is filled is :func:`check_interview_complete`'s question, and
+    the two callers want different answers to it (the CLI offers to scaffold
+    anyway; a committed pool record does not get that latitude).
+
+    Extracted so the pool-interview audit and ``gz interview <type> --from``
+    answer to ONE authority (GHI #719). ``ADR_QUESTIONS`` already is the schema
+    for this artifact; a second JSON-schema file would be a parallel model free
+    to drift from it, which ``.claude/rules/hexagonal-architecture.md`` rule 8
+    forbids. Same shape as the ``tasks:`` channel, where every reader derives
+    from ``TaskId.parse`` rather than restating the grammar.
+
+    Args:
+        document_type: Type of document (prd, adr, obpi).
+        raw: The already-decoded payload. Decoding and IO belong to the caller
+            — this function is pure so both readers can share it.
+
+    Returns:
+        Human-readable problem descriptions, one per defect, in report order.
+
+    """
+    if not isinstance(raw, dict):
+        return [f"Answers payload must be a JSON object, got {type(raw).__name__}"]
+
+    questions = get_interview_questions(document_type)
+    problems: list[str] = []
+
+    unknown = set(raw) - {q.id for q in questions}
+    if unknown:
+        problems.append(f"Unknown answer keys for {document_type}: {', '.join(sorted(unknown))}")
+
+    for q in questions:
+        if not q.validator:
+            continue
+        value = raw.get(q.id, "")
+        # Coerce before validating, matching the loader's long-standing
+        # behaviour: a JSON number in a validated slot must still be judged
+        # against the validator rather than slipping past it untyped. The
+        # pool audit reports the type defect separately.
+        text = value if isinstance(value, str) else str(value)
+        if text and not q.validator(text):
+            problems.append(f"Invalid answer for '{q.id}': failed validation")
+    return problems
+
+
 def validate_answer(question: Question, answer: str) -> bool:
     """Validate an answer against question constraints.
 

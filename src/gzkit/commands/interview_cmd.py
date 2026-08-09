@@ -20,6 +20,7 @@ from gzkit.commands.plan import (
     register_adr_in_ledger,
 )
 from gzkit.interview import (
+    answer_payload_problems,
     check_interview_complete,
     format_answers_for_template,
     get_interview_questions,
@@ -102,28 +103,19 @@ def _load_answers_from_file(from_file: str, document_type: str) -> dict[str, str
         msg = f"BLOCKERS:\n- Invalid JSON in {from_file}: {exc.msg}"
         raise GzCliError(msg) from exc  # noqa: TRY003
 
-    if not isinstance(raw, dict):
-        msg = f"BLOCKERS:\n- Answers file must be a JSON object, got {type(raw).__name__}"
+    # The grammar lives in `gzkit.interview` so this loader and the pool
+    # interview audit answer to one authority (GHI #719). Before the split the
+    # pool bucket had no reader at all, which is how an invented nested key
+    # reached two committed records that this very function would have refused.
+    problems = answer_payload_problems(document_type, raw)
+    if problems:
+        msg = "BLOCKERS:\n" + "\n".join(f"- {problem}" for problem in problems)
         raise GzCliError(msg)  # noqa: TRY003
 
-    questions = get_interview_questions(document_type)
-    valid_ids = {q.id for q in questions}
-    unknown = set(raw.keys()) - valid_ids
-    if unknown:
-        msg = f"BLOCKERS:\n- Unknown answer keys for {document_type}: {', '.join(sorted(unknown))}"
-        raise GzCliError(msg)  # noqa: TRY003
-
-    # Validate typed answers
     answers: dict[str, str] = {}
-    for q in questions:
+    for q in get_interview_questions(document_type):
         value = raw.get(q.id, "")
-        if not isinstance(value, str):
-            value = str(value)
-        if q.validator and value and not q.validator(value):
-            msg = f"BLOCKERS:\n- Invalid answer for '{q.id}': failed validation"
-            raise GzCliError(msg)  # noqa: TRY003
-        answers[q.id] = value
-
+        answers[q.id] = value if isinstance(value, str) else str(value)
     return answers
 
 
