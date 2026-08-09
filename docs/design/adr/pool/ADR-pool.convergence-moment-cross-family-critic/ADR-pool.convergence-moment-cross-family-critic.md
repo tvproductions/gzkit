@@ -1,16 +1,19 @@
 ---
 id: ADR-pool.convergence-moment-cross-family-critic
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: heavy
 enabler: null
+promoted_to: ADR-0.36.0-convergence-moment-cross-family-critic
 ---
 
 # ADR-pool.convergence-moment-cross-family-critic: CRM Second Opinion — Cross-Family Critic at the Convergence Moment
+> Promoted to `ADR-0.36.0-convergence-moment-cross-family-critic` on 2026-08-09. This pool file is retained as historical intake context.
+
 
 ## Status
 
-Pool
+Superseded
 
 > **Fidelity note.** This ADR was recovered from the three design-session
 > transcripts (`882dfc48`, `d01f355f`, `8e5c43b1`, 2026-08-06/07), not from the
@@ -1016,7 +1019,7 @@ transport end to end rather than asserting it (GHI #786).
 
 - **critic-skill-contract** — The `second-opinion` skill as one unit: both mandatory questions (*"what question should be asked"* and *"is the encountered conclusion strong?"*), a full-context read of the raw surface rather than a primary-curated digest, and a schema-pinned verdict shape.
 - **cross-family-transport** — The composed transport: `gz arb step --name adversary -- codex exec --sandbox read-only <decision>`, carrying a decision rather than a branch diff, returning a schema-pinned verdict, and making the cross-vendor property *proven* from the receipt's `step.command` argv rather than declared.
-- **operator-door** — The operator-invoked door, `/second-opinion`, callable at any moment on any decision.
+- **operator-door** — The operator-invoked door: the `second-opinion` slash command, callable at any moment on any decision.
 - **agent-door** — The agent-invoked door, fired on the A4 tier rules rather than on the agent's own unvalidated confidence.
 - **decision-envelope** — A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as explicitly unbuilt.
 - **risk-tiering** — A4 narrowed: mandatory for the enumerated consequential categories and for explicit operator requests, sampling the routine, with the primary agent's own confidence barred from setting the tier.
@@ -1050,7 +1053,7 @@ further by the refining overlay rather than by taste:
 |---|------|-------------|------|
 | 01 | critic-skill-contract | The `second-opinion` skill as one unit — both mandatory questions (scope challenge and conclusion challenge), a full-context read of the raw surface, and a schema-pinned verdict shape | Heavy |
 | 02 | cross-family-transport | The composed ARB-wrapped `codex exec --sandbox read-only` transport carrying a decision, returning a schema-pinned verdict, with the cross-vendor property proven from the receipt's `step.command` argv | Heavy |
-| 03 | operator-door | The operator-invoked door `/second-opinion`, callable on any decision at any moment | Heavy |
+| 03 | operator-door | The operator-invoked door: the `second-opinion` slash command, callable on any decision at any moment | Heavy |
 | 04 | agent-door | The agent-invoked door, fired on the A4 tier rules and never on the agent's own unvalidated confidence | Heavy |
 | 05 | decision-envelope | A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as unbuilt | Heavy |
 | 06 | risk-tiering | A4 narrowed — mandatory for the enumerated consequential categories and explicit operator requests, sampling the routine | Heavy |
