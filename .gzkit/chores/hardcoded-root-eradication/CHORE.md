@@ -135,10 +135,26 @@ uv run gz check-config-paths
 |------|---------|----------|
 | outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/eval/` | `parents` |
 | outputNotContains | `grep -rn "Path(__file__).*parents" src/gzkit/hooks/` | `parents` |
-| outputNotContains | `grep -rn "Path(__file__).*parents\[" src/gzkit/` | `parents[` |
 | exitCodeEquals | `uv run gz lint` | 0 (includes parents-pattern lint) |
 | exitCodeEquals | `uv run gz check-config-paths` | 0 (includes source path literal scan) |
 | exitCodeEquals | `uv run -m unittest -q` | 0 |
+
+> **Do not re-add a repo-wide `grep` for `Path(__file__).*parents\[` (GHI #782).**
+> `gz lint` — the third criterion above — already asserts that property, and
+> asserts it better: `gzkit.quality._find_parents_subscript_lines` walks the AST
+> over the identical scope (`src/gzkit/**/*.py`), so it matches the *expression*
+> and never the text. Its own docstring states the difference: *"String literals
+> and comments containing the pattern text are not flagged."*
+>
+> The grep was a strictly weaker duplicate of it. It needed `--exclude=quality.py`
+> because the detector necessarily contains the pattern it detects, and it failed
+> on a comment in `check_module_size.py` that documented *compliance* with this
+> very chore — so complying with the rule and explaining the compliance broke its
+> checker. Tightening the regex to skip `#` lines would only have moved the blind
+> spot into docstrings; adding a second `--exclude` would have bought one file an
+> exemption and left the next author to buy their own (the shape GHI #779 argued
+> against). The property is not weakened by this deletion, only asserted once, by
+> the check that can actually tell code from prose.
 
 ## Evidence Commands
 
