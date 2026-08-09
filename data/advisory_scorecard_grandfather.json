@@ -51,10 +51,6 @@
    "version": "0.3.1"
   },
   {
-   "file": "governance-core.md",
-   "version": "0.8.1"
-  },
-  {
    "file": "hexagonal-architecture.md",
    "version": "0.2.1"
   },
