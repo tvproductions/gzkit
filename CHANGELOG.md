@@ -17,6 +17,53 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.2 (2026-08-08)
+
+### Release highlights
+
+- Ten of the thirty closed GHIs move session continuity off agent recall and into the runtime: an exit-time bookmark with a producer, a recorded resume decision, and one single-sourced answer to "what changed since the last handoff" (GHI #756)
+- Cross-vendor adversarial review claims must resolve to a receipt proving a different vendor ran, closing the tier-1 self-assertion path at both the pipeline and the completion gate (GHI #780)
+
+### Added
+
+- Exit-time handoff bookmark written by the session-exit path, giving the handoff write surface a trigger instead of depending on agent recall (GHI #756)
+- Mechanical audit that every OBPI-status writer consults the terminal-status rule, which was convention-only with no witness (GHI #669)
+- `gz arb archive` relocates aged, uncited receipts into `artifacts/receipts/archive/` as a move-not-delete retention half; the `purge` half and the unified retention doctrine covering handoffs remain unbuilt, so GHI #594 stays open (GHI #594)
+- Resume decisions are recorded — including declines and per-step set-asides — and SessionStart seeds handoff review as a real first turn rather than a passive listing (GHI #757)
+- Schema validation for pool ADR interview JSON, which was unschema'd while the non-pool path was validated, plus capture and rendering of forcing-function answers into the ADR (GHI #719)
+
+### Changed
+
+- The advisory scorecard scores each rule by version rather than by filename, so a new binding clause cannot land inside an already-scored file without being scored itself (GHI #754)
+- Step-4b tier-1 must resolve to a receipt rather than being asserted by the caller (GHI #765)
+- `gz obpi complete` refuses a tier-1 cross-vendor claim carrying no receipt, closing the class GHI #765 named but left open (GHI #780)
+- The Step-4b adversary tier must be declared, and unsupported cross-vendor claims are rejected instead of accepted on preference (GHI #678)
+- Dispatch attestation audits whether the mandated independent reviewer personas actually ran, rather than checking an absorption marker that dispatch does not imply (GHI #770)
+- `ghi-close` re-derives every cited issue, receipt, and failure cause at close time instead of restating claims made earlier in the session (GHI #771)
+- Verifier commands piped into another process are refused, since the shell reports the filter's exit status and can mask a failing suite as green; `set -o pipefail` and `${PIPESTATUS[0]}` are the explicit opt-ins (GHI #589)
+- The handoff delta computation is single-sourced, so exit, orientation, and account surfaces cannot disagree about what changed since the last handoff (GHI #762)
+- Token-block register entries are named and stored as exchange records, distinct from session handoffs, per the transit/exchange/handoff separation (GHI #763)
+- Exchange records carry the brief's value narrative and its tracked defects instead of four boilerplate sections out of seven (GHI #764)
+- Governance docs cite `gz adr status` for OBPI counts, and `gz check` fails closed on transcribed counts that no surface reconciles (GHI #768)
+- The failure-class index ranks families by authored diagnoses rather than bare citations, so depth reflects real analysis (GHI #772)
+- Brief reconciliation records that its checks are existence-only and detect neither dead surfaces nor code couplings (GHI #581)
+- `gz adr demote` applies a non-lossy collision policy, preserving the promoted ADR's current content instead of failing or restoring the stale pool intake it diverged from (GHI #775)
+
+### Fixed
+
+- `gz git-sync` no longer absorbs staged `src/` and `tests/` work into a generated ceremony chore commit (GHI #708)
+- The handoff resume gate's read allowlist uses a membership predicate, closing the fourth narrow miss in which file-writing verbs were admitted while harmless reads were refused (GHI #732)
+- The memory-hygiene chore no longer passes regardless of actual drift, and its acceptance check runs on machines other than the maintainer's (GHI #743)
+- A session that authored a handoff is no longer challenged to attest its own document (GHI #755)
+- Machine-floor auto-bookmarks no longer shadow an authored handoff in session orientation (GHI #758)
+- The session-exit skip predicate accounts for the handoff's own landing commit, so a redundant exit bookmark is not written when an authored handoff already accounts for the work (GHI #760)
+- `gz adr evaluate` no longer overwrites the reviewer's scorecard, which silenced recorded NO-GO verdicts and blocked the next commit (GHI #769)
+- ADR-0.44.0 is returned to pool, restoring one-feature-at-a-time, and demotion no longer silently breaks tests (GHI #773)
+- OBPIs parked under an active parent are unparked, closing the path where a parked brief could be deleted with no ledger trace (GHI #774)
+- Demoted pool ADRs no longer keep their pre-demotion id in the H1, which resolved to a different live ADR for 8 of them (GHI #776)
+- Demoted pool ADRs no longer carry runnable attestation commands aimed at a different, now-live ADR (GHI #777)
+- Governance docs and skills no longer point readers at a retired attestation-enrichment rules file that does not exist; the guidance is rehomed to a live surface (GHI #778)
+
 ## v0.34.1 (2026-08-04)
 
 ### Release highlights

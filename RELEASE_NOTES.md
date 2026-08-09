@@ -1,5 +1,124 @@
 # gzkit Release Notes
 
+## v0.34.2 (2026-08-08)
+
+### Highlights
+
+This release is mostly about **the session handoff becoming a mechanism instead
+of a habit.** Ten of the thirty fixes move continuity off an agent's memory and
+into the runtime — bookmarks written at exit, a resume decision that is recorded
+even when it declines, and one shared answer to "what changed since the last
+handoff." The second thread: adversarial-review claims that were previously
+asserted must now produce a receipt.
+
+### New features
+
+- **#756** — Sessions book a handoff bookmark automatically at exit. Continuity
+  no longer depends on an agent remembering to write one.
+- **#669** — A new audit checks that every code path writing an OBPI's status
+  honors the terminal-status rule, which until now was convention only.
+- **#594 (partial)** — `gz arb archive` relocates aged, uncited receipts out of
+  the active store. The purge half is not built and the issue stays open.
+
+### Improvements
+
+**Session continuity**
+
+- **#757** — Session start seeds handoff review as a real first turn, and
+  resuming records a decision — including a decision to decline.
+- **#762** — Every surface reporting what changed since a handoff computes it
+  identically, so exit and orientation cannot disagree.
+- **#763** — OBPI completion records are named and stored as exchange records,
+  kept distinct from session handoffs.
+- **#764** — Exchange records carry the brief's value narrative and its tracked
+  defects instead of identical boilerplate.
+
+**Review claims that now carry proof**
+
+- **#765**, **#780** — A cross-vendor adversarial review must resolve to a
+  receipt proving a different vendor actually ran. A self-declared claim no
+  longer passes.
+- **#770** — Evaluation scorecards report whether the mandated independent
+  reviewer personas ran, rather than inferring it from the scores.
+- **#678** — The Step-4b adversary tier must be declared, and unsupported
+  cross-vendor claims are rejected.
+- **#771** — Closing an issue re-checks every cited issue, receipt, and failure
+  cause instead of restating earlier claims.
+- **#589** — Piping a verifier through `tail` or `grep` is refused: the shell
+  reports the filter's exit status, which can mask a failing suite as green.
+
+**Surfaces that measure what they declare**
+
+- **#754** — The rules scorecard scores each rule by version, so a new binding
+  clause cannot land unscored.
+- **#768** — Governance docs cite `gz adr status` for OBPI counts, and
+  `gz check` fails on transcribed ones.
+- **#772** — Recurring-failure families rank by authored diagnoses rather than
+  bare citations, so the deepest real families surface first.
+- **#581** — Brief reconciliation records that it only checks cited files exist,
+  never whether they are still live.
+- **#719** — Pool ADR interviews are validated, and forcing-function answers are
+  captured and rendered into the ADR.
+- **#775** — Demoting an ADR to the backlog preserves its current content
+  instead of failing or restoring a stale version.
+
+### Bug fixes
+
+**Session handoff and resume**
+
+- **#755** — Sessions were challenged to attest a handoff they had just written
+  themselves.
+- **#758** — Orientation presented an empty auto-bookmark instead of the
+  detailed handoff written earlier in the same session.
+- **#760** — Sessions wrote a redundant exit bookmark even when an authored
+  handoff already accounted for the work.
+- **#732** — The resume gate admitted file-writing commands while refusing
+  harmless reads.
+
+**The ADR backlog**
+
+- **#773** — A second feature ADR was live alongside the declared in-flight one.
+- **#774** — Work items sat permanently parked under active parents, where their
+  briefs could be deleted without a trace.
+- **#776** — Backlog ADRs kept an old identifier in their title, so searching by
+  ADR id returned the wrong document.
+- **#777** — Demoted ADRs still carried runnable attestation instructions aimed
+  at a different, unrelated ADR.
+
+**Commands and guidance**
+
+- **#708** — `gz git-sync` swept in-progress source and test changes into a
+  generated chore commit.
+- **#743** — The memory-hygiene chore passed regardless of actual drift, and on
+  every machine but the maintainer's.
+- **#769** — `gz adr evaluate` erased the reviewer's scorecard, silencing
+  recorded NO-GO verdicts and blocking the next commit.
+- **#778** — Governance docs and skills pointed readers at a deleted rules file.
+
+### Gate Evidence
+
+- **Qualifier:** 30 behavior-level GHIs closed since `v0.34.1`, each carrying the
+  `runtime` label and a `src/gzkit/` diff. No foundation closeouts in range.
+- **#773 and #777 label-backfilled** under Step 1a — both are closed defects
+  whose remedy landed in `src/gzkit/commands/adr_demote.py`, so the runtime
+  predicate fires.
+- **#533 and #779 excluded** as `diff_only`. #533 is a parked dependency tracker
+  with no runtime remedy. #779's fix is confined to `tests/governance/`; its
+  `src/gzkit/` diff belongs to a separate docs commit that merely co-cites it.
+- **#761 excluded** as `label_only` — carries `runtime` but no `src/gzkit/` diff
+  in range.
+- **#594 left open** under Step 1b — `gz arb archive` landed; the `purge` half
+  and the unified retention doctrine did not. Only the landed half is described
+  above, and it is not counted in Stats.
+- Version sync via `gz patch release`: `pyproject.toml`, `src/gzkit/__init__.py`,
+  README badge. Manifest at `docs/releases/PATCH-v0.34.2.md`.
+- `uv run gz check` exit 0 on the release tree.
+- Operator approval recorded 2026-08-08 (attestor `g0`).
+
+### Stats
+
+- 30 GHIs closed
+
 ## v0.34.1 (2026-08-04)
 
 ### Highlights
