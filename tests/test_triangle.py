@@ -74,11 +74,11 @@ class TestReqIdParsing(unittest.TestCase):
     def test_frozen_immutability(self) -> None:
         req = ReqId.parse("REQ-0.15.0-03-02")
         with self.assertRaises(ValidationError):
-            req.semver = "1.0.0"  # type: ignore[misc]
+            req.semver = "1.0.0"  # ty: ignore[invalid-assignment]
 
     def test_extra_fields_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
-            ReqId(semver="0.1.0", obpi_item="01", criterion_index="01", extra="bad")  # type: ignore[call-arg]
+            ReqId(semver="0.1.0", obpi_item="01", criterion_index="01", extra="bad")
 
 
 class TestReqIdParsingInvalid(unittest.TestCase):
@@ -142,7 +142,7 @@ class TestReqEntity(unittest.TestCase):
             parent_obpi="OBPI-0.15.0-03",
         )
         with self.assertRaises(ValidationError):
-            entity.status = ReqStatus.UNCHECKED  # type: ignore[misc]
+            entity.status = ReqStatus.UNCHECKED  # ty: ignore[invalid-assignment]
 
 
 class TestVertexTypes(unittest.TestCase):
@@ -261,7 +261,7 @@ class TestLinkageRecord(unittest.TestCase):
     def test_frozen_immutability(self) -> None:
         record = self._make_linkage()
         with self.assertRaises(ValidationError):
-            record.edge_type = EdgeType.PROVES  # type: ignore[misc]
+            record.edge_type = EdgeType.PROVES  # ty: ignore[invalid-assignment]
 
     def test_linkage_without_evidence(self) -> None:
         record = LinkageRecord(
@@ -646,7 +646,7 @@ class TestDiscoveredReqModel(unittest.TestCase):
             source_path="test.md",
         )
         with self.assertRaises(ValidationError):
-            req.source_path = "other.md"  # type: ignore[misc]
+            req.source_path = "other.md"  # ty: ignore[invalid-assignment]
 
 
 # ---------------------------------------------------------------------------
@@ -842,7 +842,7 @@ class TestDriftReportModel(unittest.TestCase):
     def test_frozen_immutability(self) -> None:
         report = detect_drift([], [], [], FIXED_TIMESTAMP)
         with self.assertRaises(ValidationError):
-            report.scan_timestamp = "changed"  # type: ignore[misc]
+            report.scan_timestamp = "changed"  # ty: ignore[invalid-assignment]
 
     def test_summary_counts_correct(self) -> None:
         """Summary counts match list lengths."""
@@ -936,7 +936,7 @@ class TestDriftSummaryModel(unittest.TestCase):
             total_drift_count=6,
         )
         with self.assertRaises(ValidationError):
-            summary.total_drift_count = 0  # type: ignore[misc]
+            summary.total_drift_count = 0  # ty: ignore[invalid-assignment]
 
     def test_summary_extra_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
@@ -945,7 +945,7 @@ class TestDriftSummaryModel(unittest.TestCase):
                 orphan_test_count=0,
                 unjustified_code_change_count=0,
                 total_drift_count=0,
-                extra=1,  # type: ignore[call-arg]
+                extra=1,
             )
 
 

@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import subprocess
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 
 @given('a fixture git remote "{remote_url}"')

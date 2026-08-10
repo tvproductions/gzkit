@@ -7,7 +7,7 @@ import tempfile
 import time
 from pathlib import Path
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 
 
 @given("a synthetic timeout environment with a slow callable exceeding {timeout}s timeout")

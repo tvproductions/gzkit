@@ -163,7 +163,7 @@ class TestWalkthroughSection(unittest.TestCase):
     def test_section_is_frozen(self) -> None:
         section = _section(1)
         with self.assertRaises(ValidationError):
-            section.reasoning = "mutated"  # type: ignore[misc]
+            section.reasoning = "mutated"  # ty: ignore[invalid-assignment]
 
 
 class TestWalkthroughModel(unittest.TestCase):

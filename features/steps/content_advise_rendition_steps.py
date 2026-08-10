@@ -17,7 +17,7 @@ import json
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
-from behave import then, when  # type: ignore[import-untyped]
+from behave import then, when
 
 from gzkit.cli import main
 
@@ -55,7 +55,7 @@ def _advise_args(surface: str, consumer: str, score: str, explanation: str) -> l
     'I run advise-rendition for "{surface}" consumer "{consumer}" '
     'score "{score}" explanation "{explanation}"'
 )
-def step_run_advise(context, surface, consumer, score, explanation) -> None:  # type: ignore[no-untyped-def]
+def step_run_advise(context, surface, consumer, score, explanation) -> None:
     # The project-init step (shared with compose) created .gzkit/; the ledger
     # append target exists. Receipts land under cwd/artifacts/receipts.
     code, output = _invoke(_advise_args(surface, consumer, score, explanation))
@@ -67,7 +67,7 @@ def step_run_advise(context, surface, consumer, score, explanation) -> None:  # 
     'I run advise-rendition twice for "{surface}" consumer "{consumer}" '
     'score "{score}" explanation "{explanation}"'
 )
-def step_run_advise_twice(context, surface, consumer, score, explanation) -> None:  # type: ignore[no-untyped-def]
+def step_run_advise_twice(context, surface, consumer, score, explanation) -> None:
     args = _advise_args(surface, consumer, score, explanation)
     code1, _ = _invoke(args)
     code2, _ = _invoke(args)
@@ -76,19 +76,19 @@ def step_run_advise_twice(context, surface, consumer, score, explanation) -> Non
 
 
 @then("an advisor-QC receipt is written")
-def step_receipt_written(_context) -> None:  # type: ignore[no-untyped-def]
+def step_receipt_written(_context) -> None:
     receipts = _receipts()
     assert receipts, "expected an arb-step-judge-*.json receipt but none was written"
 
 
 @then("no advisor-QC receipt is written")
-def step_no_receipt(_context) -> None:  # type: ignore[no-untyped-def]
+def step_no_receipt(_context) -> None:
     receipts = _receipts()
     assert not receipts, f"expected no receipt but found: {[p.name for p in receipts]}"
 
 
 @then('the ledger has no "{event_type}" event')
-def step_ledger_no_event(_context, event_type) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_no_event(_context, event_type) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     if not ledger_path.exists():
         return
@@ -102,13 +102,13 @@ def step_ledger_no_event(_context, event_type) -> None:  # type: ignore[no-untyp
 
 
 @then("both advise-rendition runs exit 0")
-def step_both_advise_runs_exit_0(context) -> None:  # type: ignore[no-untyped-def]
+def step_both_advise_runs_exit_0(context) -> None:
     assert context.first_exit_code == 0, f"first run exit {context.first_exit_code}"
     assert context.exit_code == 0, f"second run exit {context.exit_code}"
 
 
 @then("the two advisor-QC receipts are byte-identical")
-def step_two_receipts_identical(_context) -> None:  # type: ignore[no-untyped-def]
+def step_two_receipts_identical(_context) -> None:
     receipts = _receipts()
     assert len(receipts) == 2, f"expected exactly two receipts, got {len(receipts)}"
     # Each receipt carries a deliberately-unique run_id + timestamp_utc (the

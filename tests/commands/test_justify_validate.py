@@ -28,7 +28,7 @@ MALFORMED_FIXTURE = FIXTURES / "walkthrough_malformed.md"
 def _invoke_via_cmd(**kwargs: object) -> int:
     """Invoke justify_cmd; collapse the SystemExit to an int return."""
     try:
-        return justify_cmd(**kwargs)  # type: ignore[arg-type]
+        return justify_cmd(**kwargs)
     except SystemExit as exc:
         if isinstance(exc.code, int):
             return exc.code

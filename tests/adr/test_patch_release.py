@@ -1333,7 +1333,7 @@ class TestPatchManifestModel(unittest.TestCase):
         from gzkit.commands.patch_release import PatchManifest
 
         with self.assertRaises(ValidationError):
-            PatchManifest(previous_version="0.0.14", date="2026-04-08", ghis=[])
+            PatchManifest(previous_version="0.0.14", date="2026-04-08", ghis=[])  # ty: ignore[missing-argument]
 
     def test_empty_ghis_allowed(self) -> None:
         from gzkit.commands.patch_release import PatchManifest

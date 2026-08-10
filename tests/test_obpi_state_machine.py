@@ -86,7 +86,7 @@ class TestTransitionModel(unittest.TestCase):
             witness=WitnessRequirement.SELF_CLOSE,
         )
         with self.assertRaises(pydantic.ValidationError):
-            transition.to_state = OBPIState.IMPLEMENTING  # type: ignore[misc]
+            transition.to_state = OBPIState.IMPLEMENTING  # ty: ignore[invalid-assignment]
 
 
 class TestStateModel(unittest.TestCase):
@@ -97,7 +97,7 @@ class TestStateModel(unittest.TestCase):
         state = State(terminal=True)
         self.assertTrue(state.terminal)
         with self.assertRaises(pydantic.ValidationError):
-            state.terminal = False  # type: ignore[misc]
+            state.terminal = False  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.31.0-01-03")
     def test_obpi_states_has_exactly_one_entry_per_member(self) -> None:

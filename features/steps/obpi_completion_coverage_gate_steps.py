@@ -61,7 +61,7 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 # ---------------------------------------------------------------------------
 
 
-def _receipts_root(context) -> Path:  # type: ignore[no-untyped-def]
+def _receipts_root(context) -> Path:
     if not hasattr(context, "_orig_arb_receipts_root"):
         context._orig_arb_receipts_root = os.environ.get("GZKIT_ARB_RECEIPTS_ROOT")
     root = Path.cwd() / "artifacts" / "receipts"
@@ -420,32 +420,32 @@ def _complete_args(
 
 
 @given('a heavy-foundation OBPI "{obpi_id}" with REQ "{req_id}" exists')
-def step_seed_heavy_foundation_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_heavy_foundation_single_req(context, obpi_id: str, req_id: str) -> None:
     adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
     _seed_brief(adr_id, obpi_id, kind="foundation", lane="heavy", req_ids=[req_id])
     context._last_obpi_req = req_id
 
 
 @given('a heavy-foundation OBPI "{obpi_id}" with REQs "{req_a}" and "{req_b}" exists')
-def step_seed_heavy_foundation_two_reqs(context, obpi_id: str, req_a: str, req_b: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_heavy_foundation_two_reqs(context, obpi_id: str, req_a: str, req_b: str) -> None:
     adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
     _seed_brief(adr_id, obpi_id, kind="foundation", lane="heavy", req_ids=[req_a, req_b])
 
 
 @given('a foundation-lite OBPI "{obpi_id}" with REQ "{req_id}" exists')
-def step_seed_foundation_lite_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_foundation_lite_single_req(context, obpi_id: str, req_id: str) -> None:
     adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
     _seed_brief(adr_id, obpi_id, kind="foundation", lane="lite", req_ids=[req_id])
 
 
 @given('a lite-feature OBPI "{obpi_id}" with REQ "{req_id}" exists')
-def step_seed_lite_feature_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_lite_feature_single_req(context, obpi_id: str, req_id: str) -> None:
     adr_id = f"ADR-FIXTURE-{obpi_id[-5:]}"
     _seed_brief(adr_id, obpi_id, kind="feature", lane="lite", req_ids=[req_id])
 
 
 @given('a heavy-feature OBPI "{obpi_id}" with REQ "{req_id}" exists')
-def step_seed_heavy_feature_single_req(context, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_heavy_feature_single_req(context, obpi_id: str, req_id: str) -> None:
     """Heavy-feature brief: lane=heavy still triggers fail-closed REQ-coverage,
     but parent_kind=feature lets ``--attestor-present`` pass the GHI #412
     narrowing (foundation/security must use TTY)."""
@@ -454,21 +454,21 @@ def step_seed_heavy_feature_single_req(context, obpi_id: str, req_id: str) -> No
 
 
 @given('a covering test for "{req_id}" that passes exists')
-def step_seed_passing_test(context, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_passing_test(context, req_id: str) -> None:
     tests_dir = _ensure_tests_dir()
     fname = _test_filename(req_id)
     (tests_dir / fname).write_text(_PASSING_TEST_TEMPLATE.format(req_id=req_id), encoding="utf-8")
 
 
 @given('a covering test for "{req_id}" that fails exists')
-def step_seed_failing_test(context, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_failing_test(context, req_id: str) -> None:
     tests_dir = _ensure_tests_dir()
     fname = _test_filename(req_id)
     (tests_dir / fname).write_text(_FAILING_TEST_TEMPLATE.format(req_id=req_id), encoding="utf-8")
 
 
 @given('a second covering test for "{req_id}" that fails exists')
-def step_seed_second_failing_test(context, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_second_failing_test(context, req_id: str) -> None:
     tests_dir = _ensure_tests_dir()
     fname = _test_filename(req_id, suffix="_second")
     (tests_dir / fname).write_text(
@@ -477,7 +477,7 @@ def step_seed_second_failing_test(context, req_id: str) -> None:  # type: ignore
 
 
 @given('a valid arb step receipt "{run_id}" exists')
-def step_valid_arb_receipt(context, run_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_valid_arb_receipt(context, run_id: str) -> None:
     root = _receipts_root(context)
     _write_step_receipt(root, run_id, exit_status=0)
 
@@ -485,7 +485,7 @@ def step_valid_arb_receipt(context, run_id: str) -> None:  # type: ignore[no-unt
 @given(
     'a heavy ADR "{adr_id}" with a completed OBPI "{obpi_id}" carrying unwaived REQ "{req_id}" exists'  # noqa: E501
 )
-def step_seed_completed_obpi_with_gap(context, adr_id: str, obpi_id: str, req_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_completed_obpi_with_gap(context, adr_id: str, obpi_id: str, req_id: str) -> None:
     # resolve_adr_file uses config.paths.adrs (design/adr in _quick_init).
     # _check_adr_obpi_coverage_gaps hardcodes docs/design/adr/** in the search.
     # Write once for ledger and config-based path; mirror brief for closeout check.
@@ -508,7 +508,7 @@ def step_seed_completed_obpi_with_gap(context, adr_id: str, obpi_id: str, req_id
 
 
 @when('I complete coverage-gate OBPI "{obpi_id}" citing receipt "{run_id}" using attestor-present')
-def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:
     args = _complete_args(obpi_id, run_id, attestor_present=True)
     context.exit_code, context.output = _invoke(args)
 
@@ -516,7 +516,7 @@ def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> N
 @when(
     'I complete coverage-gate OBPI "{obpi_id}" accepting "{req_id}" reason "{reason}" citing "{run_id}" using attestor-present'  # noqa: E501
 )
-def step_complete_accept_uncovered_with_marker(  # type: ignore[no-untyped-def]
+def step_complete_accept_uncovered_with_marker(
     context, obpi_id: str, req_id: str, reason: str, run_id: str
 ) -> None:
     args = _complete_args(
@@ -532,7 +532,7 @@ def step_complete_accept_uncovered_with_marker(  # type: ignore[no-untyped-def]
 @when(
     'I complete coverage-gate OBPI "{obpi_id}" accepting "{req_id}" reason "{reason}" citing "{run_id}" without attestor-present'  # noqa: E501
 )
-def step_complete_accept_uncovered_headless(  # type: ignore[no-untyped-def]
+def step_complete_accept_uncovered_headless(
     context, obpi_id: str, req_id: str, reason: str, run_id: str
 ) -> None:
     args = _complete_args(
@@ -548,7 +548,7 @@ def step_complete_accept_uncovered_headless(  # type: ignore[no-untyped-def]
 @when(
     'I complete coverage-gate OBPI "{obpi_id}" accepting only "{req_id}" reason "{reason}" citing "{run_id}" using attestor-present'  # noqa: E501
 )
-def step_complete_partial_accept(  # type: ignore[no-untyped-def]
+def step_complete_partial_accept(
     context, obpi_id: str, req_id: str, reason: str, run_id: str
 ) -> None:
     args = _complete_args(
@@ -564,9 +564,7 @@ def step_complete_partial_accept(  # type: ignore[no-untyped-def]
 @when(
     'I complete coverage-gate OBPI "{obpi_id}" accepting "{req_id}" without reason citing "{run_id}" using attestor-present'  # noqa: E501
 )
-def step_complete_accept_no_reason(  # type: ignore[no-untyped-def]
-    context, obpi_id: str, req_id: str, run_id: str
-) -> None:
+def step_complete_accept_no_reason(context, obpi_id: str, req_id: str, run_id: str) -> None:
     args = [
         "obpi",
         "complete",
@@ -588,9 +586,7 @@ def step_complete_accept_no_reason(  # type: ignore[no-untyped-def]
 
 
 @when('I emit ADR receipt for "{adr_id}" event "{event}" attestor "{attestor}" text "{text}"')
-def step_emit_adr_receipt(  # type: ignore[no-untyped-def]
-    context, adr_id: str, event: str, attestor: str, text: str
-) -> None:
+def step_emit_adr_receipt(context, adr_id: str, event: str, attestor: str, text: str) -> None:
     args = [
         "adr",
         "emit-receipt",
@@ -609,7 +605,7 @@ def step_emit_adr_receipt(  # type: ignore[no-untyped-def]
 
 
 @then("the exit code is {code:d}")
-def step_exit_code(context, code: int) -> None:  # type: ignore[no-untyped-def]
+def step_exit_code(context, code: int) -> None:
     actual = getattr(context, "exit_code", None)
     assert actual == code, (
         f"Expected exit code {code}, got {actual}.\nOutput:\n{getattr(context, 'output', '')}"
@@ -617,13 +613,13 @@ def step_exit_code(context, code: int) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('the output mentions "{text}"')
-def step_output_mentions(context, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_output_mentions(context, text: str) -> None:
     output = getattr(context, "output", "")
     assert text in output, f"Expected {text!r} in output.\nOutput:\n{output}"
 
 
 @then('the ledger contains an "{event_name}" event')
-def step_ledger_event(context, event_name: str) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_event(context, event_name: str) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     assert ledger_path.is_file(), "Ledger file not found"
     events = [
@@ -636,7 +632,7 @@ def step_ledger_event(context, event_name: str) -> None:  # type: ignore[no-unty
 
 
 @then('AGENTS.md "{section}" section mentions "{text}"')
-def step_agents_md_section_mentions(context, section: str, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_section_mentions(context, section: str, text: str) -> None:
     agents_path = Path("AGENTS.md")
     assert agents_path.is_file(), "AGENTS.md not found"
     content = agents_path.read_text(encoding="utf-8")
@@ -656,7 +652,7 @@ def step_agents_md_section_mentions(context, section: str, text: str) -> None:  
 
 
 @then('the ledger does not contain an "{event_name}" event')
-def step_ledger_event_absent(context, event_name: str) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_event_absent(context, event_name: str) -> None:
     """A refused waiver must leave no durable trace (GHI #537).
 
     The inverse of `step_ledger_event`. Asserting only the exit code would pass even

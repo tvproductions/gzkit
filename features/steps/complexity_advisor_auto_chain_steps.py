@@ -29,7 +29,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 
 _HOOK_ID = "complexity-advisor-auto-chain"
 

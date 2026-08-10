@@ -210,14 +210,14 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
             # Extract YAML frontmatter (between first two ---)
             fm_match = _re.match(r"^---\n(.*?)\n---", text, _re.DOTALL)
             self.assertIsNotNone(fm_match, f"No frontmatter found in {rel_path}")
-            fm_text = fm_match.group(1)  # type: ignore[union-attr]
+            fm_text = fm_match.group(1)
             # skill-version may be at top-level or nested under metadata:
             sv_match = _re.search(r'skill-version[:\s]+"?([^"\n]+)"?', fm_text)
             self.assertIsNotNone(
                 sv_match,
                 f"skill-version not found in {rel_path}",
             )
-            actual = sv_match.group(1).strip().strip('"')  # type: ignore[union-attr]
+            actual = sv_match.group(1).strip().strip('"')
             self.assertGreaterEqual(
                 _parse_semver(actual),
                 _parse_semver(baseline_version),

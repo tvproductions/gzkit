@@ -18,7 +18,7 @@ import json
 from pathlib import Path
 
 import yaml
-from behave import given, then  # type: ignore[import-untyped]
+from behave import given, then
 
 # Resolve the canonical project root (parent of features/) so the skill-amendment
 # scenarios can read .gzkit/skills/gz-justify/SKILL.md regardless of the per-scenario
@@ -122,7 +122,7 @@ def _write_obpi_brief(cwd: Path, identifier: str, allowed_paths_lines: list[str]
 
 
 @given("a justify fixture with .py allowed paths and an advise-band Python source")
-def step_fixture_with_py_paths_and_crossings(_context) -> None:  # type: ignore[no-untyped-def]
+def step_fixture_with_py_paths_and_crossings(_context) -> None:
     cwd = Path.cwd()
     complexity_dir = cwd / "docs/governance/complexity"
     complexity_dir.mkdir(parents=True, exist_ok=True)
@@ -135,13 +135,13 @@ def step_fixture_with_py_paths_and_crossings(_context) -> None:  # type: ignore[
 
 
 @given("a justify fixture with no .py allowed paths")
-def step_fixture_without_py_paths(_context) -> None:  # type: ignore[no-untyped-def]
+def step_fixture_without_py_paths(_context) -> None:
     cwd = Path.cwd()
     _write_obpi_brief(cwd, "OBPI-0.99.1-02", ["docs/user/runbook.md"])
 
 
 @given("a justify fixture with .py allowed paths but engine unavailable")
-def step_fixture_with_py_paths_engine_unavailable(_context) -> None:  # type: ignore[no-untyped-def]
+def step_fixture_with_py_paths_engine_unavailable(_context) -> None:
     cwd = Path.cwd()
     subject = cwd / "subject.py"
     subject.write_text(_ADVISE_SOURCE, encoding="utf-8")
@@ -150,7 +150,7 @@ def step_fixture_with_py_paths_engine_unavailable(_context) -> None:  # type: ig
 
 
 @given("the canonical gz-justify skill amendment is in place")
-def step_skill_amendment_in_place(context) -> None:  # type: ignore[no-untyped-def]
+def step_skill_amendment_in_place(context) -> None:
     """Read canonical SKILL.md once and stash content/frontmatter on context."""
     canonical = _CANONICAL_SKILL.read_text(encoding="utf-8")
     end = canonical.find("\n---\n", 4)
@@ -160,7 +160,7 @@ def step_skill_amendment_in_place(context) -> None:  # type: ignore[no-untyped-d
 
 
 @then('the gz-justify skill version is at least "{version}"')
-def step_skill_version_at_least(context, version: str) -> None:  # type: ignore[no-untyped-def]
+def step_skill_version_at_least(context, version: str) -> None:
     """Assert the amendment baseline has not regressed.
 
     The REQ requires the amendment to have landed with a *bumped* version, not
@@ -182,12 +182,12 @@ def step_skill_version_at_least(context, version: str) -> None:  # type: ignore[
 
 
 @then('the gz-justify skill body contains "{token}"')
-def step_skill_body_contains(context, token: str) -> None:  # type: ignore[no-untyped-def]
+def step_skill_body_contains(context, token: str) -> None:
     assert token in context._skill_canonical, f"skill body missing required token {token!r}"
 
 
 @then("the gz-justify vendor mirrors are byte-identical to the canonical")
-def step_vendor_mirrors_byte_identical(context) -> None:  # type: ignore[no-untyped-def]
+def step_vendor_mirrors_byte_identical(context) -> None:
     canonical = context._skill_canonical
     for mirror in _VENDOR_MIRRORS:
         assert mirror.exists(), f"vendor mirror missing: {mirror}"

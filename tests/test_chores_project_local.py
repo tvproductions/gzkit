@@ -195,7 +195,7 @@ class TestSyncWithholdsProjectLocalSlugs(unittest.TestCase):
             pkg_chores.mkdir(parents=True)
             (pkg_chores / "__init__.py").write_text("", encoding="utf-8")
 
-            config = GzkitConfig(project_name="t")  # type: ignore[call-arg]
+            config = GzkitConfig(project_name="t")
             sync_pkg_surfaces(root, config)
 
             self.assertFalse(

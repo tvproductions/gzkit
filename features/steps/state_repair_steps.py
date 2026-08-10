@@ -12,7 +12,7 @@ from gzkit.ledger import Ledger, obpi_created_event, obpi_receipt_emitted_event
 
 
 @given('an OBPI brief exists with frontmatter status "{status}"')
-def step_create_obpi_brief(context, status: str) -> None:  # type: ignore[no-untyped-def]
+def step_create_obpi_brief(context, status: str) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_dir = Path(config.paths.adrs) / "obpis"
     obpi_dir.mkdir(parents=True, exist_ok=True)
@@ -27,7 +27,7 @@ def step_create_obpi_brief(context, status: str) -> None:  # type: ignore[no-unt
 
 
 @given("the ledger marks OBPI-0.1.0-01 as completed")
-def step_ledger_mark_completed(context) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_mark_completed(context) -> None:
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
     ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
     ledger.append(
@@ -46,7 +46,7 @@ def step_ledger_mark_completed(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('the OBPI brief frontmatter status is "{expected}"')
-def step_check_brief_status(context, expected: str) -> None:  # type: ignore[no-untyped-def]
+def step_check_brief_status(context, expected: str) -> None:
     content = context.obpi_brief_path.read_text(encoding="utf-8")
     assert f"status: {expected}" in content, (
         f"Expected 'status: {expected}' in frontmatter, got:\n{content}"
@@ -54,7 +54,7 @@ def step_check_brief_status(context, expected: str) -> None:  # type: ignore[no-
 
 
 @then('the JSON output field "{field}" equals {expected:d}')
-def step_json_field_equals(context, field: str, expected: int) -> None:  # type: ignore[no-untyped-def]
+def step_json_field_equals(context, field: str, expected: int) -> None:
     payload = json.loads(context.output)
     actual = payload[field]
     assert actual == expected, (

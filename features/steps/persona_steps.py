@@ -9,7 +9,7 @@ from behave import given
 
 
 @given('a persona file "{name}" exists')
-def step_persona_file_exists(_context, name: str) -> None:  # type: ignore[no-untyped-def]
+def step_persona_file_exists(_context, name: str) -> None:
     personas_dir = Path(".gzkit/personas")
     personas_dir.mkdir(parents=True, exist_ok=True)
     persona_file = personas_dir / f"{name}.md"
@@ -29,7 +29,7 @@ def step_persona_file_exists(_context, name: str) -> None:  # type: ignore[no-un
 
 
 @given("the ledger contains governance events")
-def step_ledger_governance_events(_context) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_governance_events(_context) -> None:
     ledger = Path(".gzkit/ledger.jsonl")
     events = [
         {"schema": "gzkit.ledger.v1", "event": "gate_checked", "ts": "2026-01-01T00:00:00Z"},

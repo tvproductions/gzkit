@@ -36,7 +36,7 @@ def _registry(
 
 
 @given("a project where every registered waiver surface is ratcheted")
-def step_ratcheted(context) -> None:  # type: ignore[no-untyped-def]
+def step_ratcheted(context) -> None:
     root: Path = context._tmpdir
     _registry(
         root,
@@ -54,7 +54,7 @@ def step_ratcheted(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a project with a waiver surface grown past its committed baseline")
-def step_grown(context) -> None:  # type: ignore[no-untyped-def]
+def step_grown(context) -> None:
     root: Path = context._tmpdir
     _registry(
         root,
@@ -72,7 +72,7 @@ def step_grown(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a project with an unregistered waiver data file")
-def step_unregistered(context) -> None:  # type: ignore[no-untyped-def]
+def step_unregistered(context) -> None:
     root: Path = context._tmpdir
     _registry(root, [])
     _write(root, "data/sneaky_waivers.json", {"waivers": ["a"]})

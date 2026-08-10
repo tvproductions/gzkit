@@ -1664,7 +1664,7 @@ class TestEventAnchor(unittest.TestCase):
 
         anchor = EventAnchor(commit="abc1234", semver="0.25.0")
         with self.assertRaises(PydanticValidationError):
-            anchor.commit = "def5678"  # type: ignore[misc]
+            anchor.commit = "def5678"  # ty: ignore[invalid-assignment]
 
     def test_audit_receipt_event_accepts_typed_anchor(self) -> None:
         """AuditReceiptEmittedEvent parses a dict-shaped anchor into EventAnchor."""

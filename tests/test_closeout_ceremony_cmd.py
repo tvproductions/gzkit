@@ -65,12 +65,12 @@ class TestCeremonyStepRecord(unittest.TestCase):
     def test_frozen(self):
         rec = CeremonyStepRecord(step=2, presented_at="2026-03-30T00:00:00Z")
         with self.assertRaises(ValidationError):
-            rec.step = 3  # type: ignore[misc]
+            rec.step = 3  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.23.0-04-15")
     def test_extra_forbid(self):
         with self.assertRaises(ValidationError):
-            CeremonyStepRecord(step=2, presented_at="t", bogus="x")  # type: ignore[call-arg]
+            CeremonyStepRecord(step=2, presented_at="t", bogus="x")
 
 
 class TestCeremonyState(unittest.TestCase):
@@ -101,7 +101,7 @@ class TestCeremonyState(unittest.TestCase):
             updated_at="t",
         )
         with self.assertRaises(ValidationError):
-            state.current_step = 3  # type: ignore[misc]
+            state.current_step = 3  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.23.0-04-15")
     def test_attempt_and_paused_fields(self):

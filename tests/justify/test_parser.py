@@ -33,7 +33,7 @@ _TAXONOMY_REFERENCE_PATH = "docs/governance/model-regression-taxonomy.md"
 
 def _make_anchor(*, kind: str = "ghi", identifier: str | None = "GHI-232") -> AnchorRef:
     return AnchorRef(
-        kind=kind,  # type: ignore[arg-type]
+        kind=kind,
         identifier=identifier,
         title=None,
         body=None,
@@ -349,7 +349,7 @@ class TestValidateResultContract(unittest.TestCase):
             parse_error=None,
         )
         with self.assertRaises(ValidationError):
-            result.file_path = "y.md"  # type: ignore[misc]
+            result.file_path = "y.md"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.19-03-09")
     def test_validate_result_forbids_extra_fields(self) -> None:
@@ -360,7 +360,7 @@ class TestValidateResultContract(unittest.TestCase):
                 is_complete=True,
                 unfilled_ordinals=[],
                 parse_error=None,
-                extra_field="nope",  # type: ignore[call-arg]
+                extra_field="nope",
             )
 
     @covers("REQ-0.0.19-03-09")

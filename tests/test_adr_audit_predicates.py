@@ -18,7 +18,7 @@ from gzkit.commands.adr_audit import (
 def covers(target: str):  # noqa: D401
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity
@@ -55,8 +55,8 @@ class TestRequiresSecurityReviewAttestation(unittest.TestCase):
     def test_non_mapping_input_returns_false(self):
         # The predicate must tolerate odd inputs without crashing — the call
         # site reads frontmatter from arbitrary brief content.
-        self.assertFalse(_requires_security_review_attestation("sensitivity: security"))  # type: ignore[arg-type]
-        self.assertFalse(_requires_security_review_attestation(["sensitivity"]))  # type: ignore[arg-type]
+        self.assertFalse(_requires_security_review_attestation("sensitivity: security"))
+        self.assertFalse(_requires_security_review_attestation(["sensitivity"]))
 
 
 @covers("OBPI-0.0.22-04")

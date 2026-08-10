@@ -237,7 +237,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
             self.assertIsNotNone(fm_status, "ADR frontmatter has no status: field")
             self.assertEqual(
                 "Completed",
-                fm_status.group(1).strip(),  # type: ignore[union-attr]
+                fm_status.group(1).strip(),
                 msg="closeout left ADR frontmatter status drifted from the ledger",
             )
 

@@ -19,7 +19,7 @@ from gzkit.commands.adr_audit import (
 
 
 def covers(target: str):
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity

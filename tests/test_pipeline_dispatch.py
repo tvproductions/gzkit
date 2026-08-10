@@ -133,12 +133,12 @@ class TestComposeImplementerPrompt(unittest.TestCase):
 
     def _make_task(self, **overrides: object) -> DispatchTask:
         return DispatchTask(
-            task_id=overrides.get("task_id", 1),  # type: ignore[arg-type]
-            description=overrides.get("description", "Add feature X"),  # type: ignore[arg-type]
-            allowed_paths=overrides.get("allowed_paths", ["src/gzkit/example.py"]),  # type: ignore[arg-type]
-            test_expectations=overrides.get("test_expectations", ["test_feature_x passes"]),  # type: ignore[arg-type]
-            complexity=overrides.get("complexity", TaskComplexity.SIMPLE),  # type: ignore[arg-type]
-            model=overrides.get("model", "haiku"),  # type: ignore[arg-type]
+            task_id=overrides.get("task_id", 1),
+            description=overrides.get("description", "Add feature X"),
+            allowed_paths=overrides.get("allowed_paths", ["src/gzkit/example.py"]),
+            test_expectations=overrides.get("test_expectations", ["test_feature_x passes"]),
+            complexity=overrides.get("complexity", TaskComplexity.SIMPLE),
+            model=overrides.get("model", "haiku"),
         )
 
     @covers("REQ-0.14.0-06-04")

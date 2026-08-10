@@ -87,7 +87,7 @@ def _receipt_event(
 
 
 @given("a minimal project with a post-cutoff receipt having attestation_requirement optional")
-def step_post_cutoff_optional(context) -> None:  # type: ignore[no-untyped-def]
+def step_post_cutoff_optional(context) -> None:
     """Post-cutoff receipt with deprecated attestation_requirement: optional."""
     root: Path = context._tmpdir
     _write_minimal_project(
@@ -106,7 +106,7 @@ def step_post_cutoff_optional(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a minimal project with a post-cutoff receipt having obpi_completion completed")
-def step_post_cutoff_bare_completed(context) -> None:  # type: ignore[no-untyped-def]
+def step_post_cutoff_bare_completed(context) -> None:
     """Post-cutoff receipt with deprecated obpi_completion: completed (no prefix)."""
     root: Path = context._tmpdir
     _write_minimal_project(
@@ -125,7 +125,7 @@ def step_post_cutoff_bare_completed(context) -> None:  # type: ignore[no-untyped
 
 
 @given("a minimal project with a post-cutoff receipt having attestor agent:claude-code")
-def step_post_cutoff_agent_attestor(context) -> None:  # type: ignore[no-untyped-def]
+def step_post_cutoff_agent_attestor(context) -> None:
     """Post-cutoff receipt with deprecated attestor: agent:claude-code."""
     root: Path = context._tmpdir
     _write_minimal_project(
@@ -144,7 +144,7 @@ def step_post_cutoff_agent_attestor(context) -> None:  # type: ignore[no-untyped
 
 
 @given("a minimal project with a pre-cutoff receipt and a matching waiver entry")
-def step_pre_cutoff_waivered(context) -> None:  # type: ignore[no-untyped-def]
+def step_pre_cutoff_waivered(context) -> None:
     """Pre-cutoff receipt with all deprecated shapes, covered by a waiver entry."""
     root: Path = context._tmpdir
     receipt_id = "OBPI-legacy-pre-cutoff-01"
@@ -182,7 +182,7 @@ def step_pre_cutoff_waivered(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a minimal project with a pre-cutoff receipt and a waiver entry with bad added_under")
-def step_pre_cutoff_with_bad_added_under_waiver(context) -> None:  # type: ignore[no-untyped-def]
+def step_pre_cutoff_with_bad_added_under_waiver(context) -> None:
     """Pre-cutoff receipt with waiver entry having invalid added_under value."""
     root: Path = context._tmpdir
     receipt_id = "OBPI-bad-added-under-01"
@@ -224,7 +224,7 @@ def step_pre_cutoff_with_bad_added_under_waiver(context) -> None:  # type: ignor
     "a minimal project with a pre-cutoff receipt and a "
     "matching waiver entry having valid added_under"
 )
-def step_pre_cutoff_with_valid_waiver(context) -> None:  # type: ignore[no-untyped-def]
+def step_pre_cutoff_with_valid_waiver(context) -> None:
     """Pre-cutoff receipt with waiver entry having valid added_under."""
     root: Path = context._tmpdir
     receipt_id = "OBPI-valid-waiver-01"
@@ -264,7 +264,7 @@ def step_pre_cutoff_with_valid_waiver(context) -> None:  # type: ignore[no-untyp
 @given("a minimal project with a pre-cutoff receipt and a waiver file lacking that receipt")
 def step_pre_cutoff_with_waiver_file_missing_receipt(
     context,
-) -> None:  # type: ignore[no-untyped-def]
+) -> None:
     """Unwaivered pre-cutoff receipt (waiver file present but missing this receipt)."""
     root: Path = context._tmpdir
     receipt_id = "OBPI-unwaivered-pre-cutoff-01"

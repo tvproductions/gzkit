@@ -21,7 +21,6 @@ Behavior contract:
 from __future__ import annotations
 
 import re
-from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -166,18 +165,17 @@ def _reconstruct_anchor(anchor_kind: str, anchor_id: str) -> AnchorRef:
         raise WalkthroughParseError(
             f"frontmatter anchor_kind must be one of 'ghi', 'obpi', 'draft'; got {anchor_kind!r}"
         )
-    typed_kind = cast(Literal["ghi", "obpi", "draft"], kind)
     if kind == "draft":
         slug = anchor_id[len("draft-") :] if anchor_id.startswith("draft-") else anchor_id
         return AnchorRef(
-            kind=typed_kind,
+            kind=kind,
             identifier=None,
             title=None,
             body=None,
             draft_slug=slug or "unnamed",
         )
     return AnchorRef(
-        kind=typed_kind,
+        kind=kind,
         identifier=anchor_id,
         title=None,
         body=None,

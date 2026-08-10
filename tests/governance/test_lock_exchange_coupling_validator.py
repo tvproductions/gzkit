@@ -29,7 +29,7 @@ def covers(target: str):  # noqa: D401
     tests/governance/test_token_block_discipline.py.
     """
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity

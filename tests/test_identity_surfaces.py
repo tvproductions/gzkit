@@ -41,11 +41,11 @@ class TestAdrId(unittest.TestCase):
     def test_frozen(self) -> None:
         adr = AdrId.parse("ADR-0.1.0")
         with self.assertRaises(ValidationError):
-            adr.raw = "ADR-0.2.0"  # type: ignore[misc]
+            adr.raw = "ADR-0.2.0"  # ty: ignore[invalid-assignment]
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            AdrId(raw="ADR-0.0.1", extra="nope")  # type: ignore[call-arg]
+            AdrId(raw="ADR-0.0.1", extra="nope")
 
 
 class TestObpiId(unittest.TestCase):
@@ -68,11 +68,11 @@ class TestObpiId(unittest.TestCase):
     def test_frozen(self) -> None:
         obpi = ObpiId.parse("OBPI-0.1.0-01")
         with self.assertRaises(ValidationError):
-            obpi.raw = "OBPI-0.2.0-01"  # type: ignore[misc]
+            obpi.raw = "OBPI-0.2.0-01"  # ty: ignore[invalid-assignment]
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            ObpiId(raw="OBPI-0.0.1-01", extra="x")  # type: ignore[call-arg]
+            ObpiId(raw="OBPI-0.0.1-01", extra="x")
 
 
 class TestReqIdSurface(unittest.TestCase):
@@ -96,7 +96,7 @@ class TestReqIdSurface(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            ReqId(raw="REQ-0.0.1-01-01", extra="x")  # type: ignore[call-arg]
+            ReqId(raw="REQ-0.0.1-01-01", extra="x")
 
 
 class TestTaskIdSurface(unittest.TestCase):
@@ -125,7 +125,7 @@ class TestTaskIdSurface(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            TaskId(raw="TASK-0.0.1-01-01-01", extra="x")  # type: ignore[call-arg]
+            TaskId(raw="TASK-0.0.1-01-01-01", extra="x")
 
 
 class TestEvidenceId(unittest.TestCase):
@@ -147,7 +147,7 @@ class TestEvidenceId(unittest.TestCase):
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            EvidenceId(raw="EV-0.0.1-01-001", extra="x")  # type: ignore[call-arg]
+            EvidenceId(raw="EV-0.0.1-01-001", extra="x")
 
 
 class TestIdentityModelsMapping(unittest.TestCase):

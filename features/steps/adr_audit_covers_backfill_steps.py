@@ -21,7 +21,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 from gzkit.config import GzkitConfig
 from gzkit.event_evidence import EventAnchor

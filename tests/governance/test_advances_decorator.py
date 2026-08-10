@@ -119,7 +119,7 @@ class TestAdvancesRegistry(unittest.TestCase):
 
         record = get_task_registry()[0]
         with self.assertRaises(ValidationError):
-            record.task_id = "TASK-other"
+            record.task_id = "TASK-other"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.64-02-02")
     def test_record_extra_forbid(self):

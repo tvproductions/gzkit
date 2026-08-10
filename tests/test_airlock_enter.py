@@ -411,7 +411,7 @@ class TestAirlockEnforcementClaimRegistration(unittest.TestCase):
         root = airlock_mod._build_unaccounted_seam_violation()
         try:
 
-            def sentinel_special_case(unaccounted, override):  # type: ignore[no-untyped-def]
+            def sentinel_special_case(unaccounted, override):
                 # Recognizes the OLD fixed sentinel; blind to the runtime-unique id.
                 fixed = any(edge.target == "DEP-UNACCOUNTED-NC" for edge in unaccounted)
                 if fixed and (override is None or override.revoked):

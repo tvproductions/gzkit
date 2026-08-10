@@ -71,7 +71,7 @@ def _run(cmd: list[str], cwd: Path) -> tuple[int, str]:
 
 
 @given("an empty distribution-test project directory")
-def step_fresh_empty(context) -> None:  # type: ignore[no-untyped-def]
+def step_fresh_empty(context) -> None:
     cwd = Path.cwd()
     assert not (cwd / ".gzkit").exists(), f"tempdir {cwd} is not fresh"
     context.project_root = cwd
@@ -80,7 +80,7 @@ def step_fresh_empty(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given('the gzkit baseline manifest at "{rel_path}"')
-def step_baseline_manifest(context, rel_path: str) -> None:  # type: ignore[no-untyped-def]
+def step_baseline_manifest(context, rel_path: str) -> None:
     context.gzkit_root = _gzkit_project_root()
     manifest_path = context.gzkit_root / rel_path
     assert manifest_path.is_file(), f"baseline manifest missing: {manifest_path}"
@@ -89,7 +89,7 @@ def step_baseline_manifest(context, rel_path: str) -> None:  # type: ignore[no-u
 
 
 @when("I build the wheel with uv build")
-def step_uv_build(context) -> None:  # type: ignore[no-untyped-def]
+def step_uv_build(context) -> None:
     # Clean prior wheels so we pick the freshly built one
     dist = context.gzkit_root / "dist"
     if dist.exists():
@@ -103,7 +103,7 @@ def step_uv_build(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when("I install the built wheel into a fresh temporary venv")
-def step_install_into_venv(context) -> None:  # type: ignore[no-untyped-def]
+def step_install_into_venv(context) -> None:
     venv_path = context.project_root / ".smoke-venv"
 
     def _cleanup_venv() -> None:
@@ -136,7 +136,7 @@ def step_install_into_venv(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when('I run "{command}" in the project directory using the venv\'s gz binary')
-def step_run_venv_gz(context, command: str) -> None:  # type: ignore[no-untyped-def]
+def step_run_venv_gz(context, command: str) -> None:
     parts = command.split()
     assert parts and parts[0] == "gz", f"expected 'gz ...' command, got: {command}"
     cmd = [str(context.venv_gz), *parts[1:], "--no-skeleton"]
@@ -147,7 +147,7 @@ def step_run_venv_gz(context, command: str) -> None:  # type: ignore[no-untyped-
 
 
 @then("every baseline manifest entry is present in the project's .gzkit tree")
-def step_baseline_entries_present(context) -> None:  # type: ignore[no-untyped-def]
+def step_baseline_entries_present(context) -> None:
     missing: list[str] = []
     for surface, entries in context.baseline["surfaces"].items():
         for entry in entries:
@@ -163,7 +163,7 @@ def step_baseline_entries_present(context) -> None:  # type: ignore[no-untyped-d
 
 
 @then("no installed .gzkit artifact under a tracked surface is absent from the baseline manifest")
-def step_no_extra_artifacts(context) -> None:  # type: ignore[no-untyped-def]
+def step_no_extra_artifacts(context) -> None:
     # Reverse-direction drift check: scan .gzkit/<surface>/ for any artifact
     # matching the surface's expected file shape; flag anything not in baseline.
     extras: list[str] = []
@@ -191,19 +191,19 @@ def step_no_extra_artifacts(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('the manifest has schema_version "{version}"')
-def step_schema_version(context, version: str) -> None:  # type: ignore[no-untyped-def]
+def step_schema_version(context, version: str) -> None:
     assert context.baseline["schema_version"] == version, (
         f"schema_version mismatch: expected {version}, got {context.baseline['schema_version']}"
     )
 
 
 @then('the manifest surfaces include "{surface}"')
-def step_surface_present(context, surface: str) -> None:  # type: ignore[no-untyped-def]
+def step_surface_present(context, surface: str) -> None:
     assert surface in context.baseline["surfaces"], f"surface {surface!r} missing from manifest"
 
 
 @then('each "{surface}" entry resolves to a real file under "{rel_root}"')
-def step_entries_resolve(context, surface: str, rel_root: str) -> None:  # type: ignore[no-untyped-def]
+def step_entries_resolve(context, surface: str, rel_root: str) -> None:
     root = context.gzkit_root / rel_root
     missing: list[str] = []
     for entry in context.baseline["surfaces"][surface]:

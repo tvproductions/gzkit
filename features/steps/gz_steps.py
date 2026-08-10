@@ -58,14 +58,14 @@ def _init_with_agent_surfaces(mode: str) -> None:
 
 
 @given("the workspace is initialized in heavy mode")
-def step_init_heavy(_context) -> None:  # type: ignore[no-untyped-def]
+def step_init_heavy(_context) -> None:
     from tests.commands.common import _quick_init  # noqa: PLC0415
 
     _quick_init(mode="heavy")
 
 
 @given("the project has closed the foundation kind")
-def step_close_foundation_kind(_context) -> None:  # type: ignore[no-untyped-def]
+def step_close_foundation_kind(_context) -> None:
     """Record the project-local decision to sunset `foundation` (ADR-0.34.0).
 
     Closure is project-local, not framework-wide: the presence of
@@ -94,43 +94,43 @@ def step_close_foundation_kind(_context) -> None:  # type: ignore[no-untyped-def
 
 
 @given("the workspace is initialized")
-def step_init_default(_context) -> None:  # type: ignore[no-untyped-def]
+def step_init_default(_context) -> None:
     from tests.commands.common import _quick_init  # noqa: PLC0415
 
     _quick_init(mode="lite")
 
 
 @given("the workspace is initialized with agent surfaces in heavy mode")
-def step_init_heavy_with_surfaces(_context) -> None:  # type: ignore[no-untyped-def]
+def step_init_heavy_with_surfaces(_context) -> None:
     _init_with_agent_surfaces(mode="heavy")
 
 
 @given("the workspace is initialized with agent surfaces")
-def step_init_default_with_surfaces(_context) -> None:  # type: ignore[no-untyped-def]
+def step_init_default_with_surfaces(_context) -> None:
     _init_with_agent_surfaces(mode="lite")
 
 
 @given("a heavy ADR exists")
-def step_plan_heavy_adr(_context) -> None:  # type: ignore[no-untyped-def]
+def step_plan_heavy_adr(_context) -> None:
     code, output = _invoke(["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
     assert code == 0, output
 
 
 @given("ADR-0.1.0 exists")
-def step_plan_default_adr(_context) -> None:  # type: ignore[no-untyped-def]
+def step_plan_default_adr(_context) -> None:
     code, output = _invoke(["plan", "create", "f", "--kind", "feature"])
     assert code == 0, output
 
 
 @given("gate 2 and gate 3 are marked pass for ADR-0.1.0")
-def step_mark_gate23(_context) -> None:  # type: ignore[no-untyped-def]
+def step_mark_gate23(_context) -> None:
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
     ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
     ledger.append(gate_checked_event("ADR-0.1.0-f", 3, "pass", "docs", 0))
 
 
 @given("a completed OBPI with anchor-tracked receipt exists for OBPI-0.1.0-01-demo")
-def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
+def step_completed_anchor_obpi(context) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
     obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -222,7 +222,7 @@ def step_completed_anchor_obpi(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the tracked module changes after the completion anchor")
-def step_anchor_drift(context) -> None:  # type: ignore[no-untyped-def]
+def step_anchor_drift(context) -> None:
     module_path = Path("src/module.py")
     module_path.write_text("value = 2\n", encoding="utf-8")
     subprocess.run(["git", "add", "src/module.py"], check=True, capture_output=True, text=True)
@@ -236,18 +236,18 @@ def step_anchor_drift(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when('I run the gz command "{command}"')
-def step_run_command(context, command: str) -> None:  # type: ignore[no-untyped-def]
+def step_run_command(context, command: str) -> None:
     args = shlex.split(command)
     context.exit_code, context.output = _invoke(args)
 
 
 @then("the command exits non-zero")
-def step_nonzero(context) -> None:  # type: ignore[no-untyped-def]
+def step_nonzero(context) -> None:
     assert context.exit_code != 0, context.output
 
 
 @then("the command exits with code {expected:d}")
-def step_exit_code(context, expected: int) -> None:  # type: ignore[no-untyped-def]
+def step_exit_code(context, expected: int) -> None:
     assert context.exit_code == expected, context.output
 
 
@@ -264,36 +264,36 @@ def _unwrapped(value: str) -> str:
 
 
 @then('the output contains "{text}"')
-def step_output_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_output_contains(context, text: str) -> None:
     assert _unwrapped(text) in _unwrapped(context.output), context.output
 
 
 @then('the output does not contain "{text}"')
-def step_output_not_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_output_not_contains(context, text: str) -> None:
     assert _unwrapped(text) not in _unwrapped(context.output), (
         f"Expected output to not contain {text!r}: {context.output}"
     )
 
 
 @then('the file "{path}" exists')
-def step_file_exists(_context, path: str) -> None:  # type: ignore[no-untyped-def]
+def step_file_exists(_context, path: str) -> None:
     assert Path(path).exists(), f"Expected {path} to exist"
 
 
 @then('the file "{path}" contains "{text}"')
-def step_file_contains(_context, path: str, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_file_contains(_context, path: str, text: str) -> None:
     content = Path(path).read_text(encoding="utf-8")
     assert text in content, content
 
 
 @then('the file "{path}" does not contain "{text}"')
-def step_file_not_contains(_context, path: str, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_file_not_contains(_context, path: str, text: str) -> None:
     content = Path(path).read_text(encoding="utf-8")
     assert text not in content, f"Expected {path!r} to not contain {text!r}"
 
 
 @then('JSON path "{path}" equals "{expected}"')
-def step_json_path_equals(context, path: str, expected: str) -> None:  # type: ignore[no-untyped-def]
+def step_json_path_equals(context, path: str, expected: str) -> None:
     payload = json.loads(context.output)
     value = payload
     for segment in path.split("."):
@@ -302,12 +302,12 @@ def step_json_path_equals(context, path: str, expected: str) -> None:  # type: i
 
 
 @then('the file "{path}" does not exist')
-def step_file_not_exists(_context, path: str) -> None:  # type: ignore[no-untyped-def]
+def step_file_not_exists(_context, path: str) -> None:
     assert not Path(path).exists(), f"Expected {path} to NOT exist"
 
 
 @then('ledger event "{event}" has field "{key}" equal to "{value}"')
-def step_ledger_event_field(_context, event: str, key: str, value: str) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_event_field(_context, event: str, key: str, value: str) -> None:
     ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
     matches = [
         json.loads(line)
@@ -323,7 +323,7 @@ def step_ledger_event_field(_context, event: str, key: str, value: str) -> None:
 
 
 @given('a pool ADR "{adr_id}" with target scope exists')
-def step_seed_pool_adr_with_scope(_context, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_pool_adr_with_scope(_context, adr_id: str) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     pool_dir = Path(config.paths.adrs) / "pool"
     pool_dir.mkdir(parents=True, exist_ok=True)

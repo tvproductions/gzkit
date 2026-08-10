@@ -5,9 +5,9 @@ applyTo: "**/*.py"
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
-> **Rule version:** `0.4.0` — § Imports records the PLC0415 posture as **accepted** rather than deferred (operator ruling 2026-08-08, "record deferred postures as accepted"). "Deferred" named a queue nothing was advancing, and the clause had been carried as an open loop across five handoffs on that word alone; the honest state is a measured, disclosed advisory whose reclassifying evidence is now named. Re-measured at the acceptance: still 138 sites. No binding rule changed. Prior `0.3.0` — Movement C family closure, rules arm. Scoring this rule's clauses for real found **four advisory-scorecard rows asserting enforcement that did not exist**, which is a worse state than the Promotable rows the campaign box counts: a Promotable row honestly says "no witness yet", while a false **Mechanical** row reports green while blind and is invisible to the criterion. Row 18 claimed "ruff BLE001 enforces" with `BLE` absent from `[tool.ruff.lint] select` (6 live violations, one behind a `# noqa: BLE0001` typo that suppressed nothing); row 23 claimed PLC0415 was "partially enforced" with `PL` equally absent (138 live violations); rows 19 and 20 claimed line-count enforcement that § Size Limits has said was unbacked since `0.2.0`. `BLE001` is now enabled and the six sites fixed with cited justifications (operator ruling 2026-08-08); PLC0415 is deferred because its 138 sites need per-site readings against this rule's own optional-dependency and cycle-avoidance carve-outs. Rows 19/20/23 re-scored `Judgment` with the measurements recorded here. Prior `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
+> **Rule version:** `0.5.0` — § Type-check suppression syntax gains the two forms ty actually honors that this rule had never listed: `# type: ignore[ty:<code>]` and the interop `# type: ignore[<foreign-code>, ty:<ty-code>]`. The omission was not cosmetic — the rule's own enforcement regex matched *any* bracketed `type: ignore[`, so `gz validate --type-ignores` flagged two **working** suppressions as violations, and a reader following the two-row table would delete a live suppression to satisfy the gate. The prohibition is unchanged and now stated at its real cause: ty skips codes lacking a `ty:` prefix, so an all-foreign directive suppresses nothing — which is *also* why a shared comment works, making deletion the wrong fix whenever another checker reads the line. Verified against ty 0.0.69 rather than inferred from this file (`# type: ignore[misc]` left an `invalid-assignment` error standing; both `ty:`-bearing forms suppressed it). Scope widened with the corrected predicate: `src` alone had let 512 inert markers accumulate across `tests` and `features`. Prior `0.4.0` — § Imports records the PLC0415 posture as **accepted** rather than deferred (operator ruling 2026-08-08, "record deferred postures as accepted"). "Deferred" named a queue nothing was advancing, and the clause had been carried as an open loop across five handoffs on that word alone; the honest state is a measured, disclosed advisory whose reclassifying evidence is now named. Re-measured at the acceptance: still 138 sites. No binding rule changed. Prior `0.3.0` — Movement C family closure, rules arm. Scoring this rule's clauses for real found **four advisory-scorecard rows asserting enforcement that did not exist**, which is a worse state than the Promotable rows the campaign box counts: a Promotable row honestly says "no witness yet", while a false **Mechanical** row reports green while blind and is invisible to the criterion. Row 18 claimed "ruff BLE001 enforces" with `BLE` absent from `[tool.ruff.lint] select` (6 live violations, one behind a `# noqa: BLE0001` typo that suppressed nothing); row 23 claimed PLC0415 was "partially enforced" with `PL` equally absent (138 live violations); rows 19 and 20 claimed line-count enforcement that § Size Limits has said was unbacked since `0.2.0`. `BLE001` is now enabled and the six sites fixed with cited justifications (operator ruling 2026-08-08); PLC0415 is deferred because its 138 sites need per-site readings against this rule's own optional-dependency and cycle-avoidance carve-outs. Rows 19/20/23 re-scored `Judgment` with the measurements recorded here. Prior `0.2.1` — names the unreconciled three-way threshold conflict in § Size Limits & Refactoring (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).
 
 ## Core Principles
 
@@ -78,18 +78,19 @@ Scope is the shipped package. The `per-file-ignores` exclusions are boundary sur
 
 ## Type-check suppression syntax (ty — binding)
 
-`ty` does not honor mypy-style bracketed codes. `# type: ignore[override]`,
-`# type: ignore[union-attr]`, `# type: ignore[arg-type]`, etc. look valid but
-suppress nothing — the diagnostic still fires. This silently accumulated
-across 12 lines in 6 files before ADR-0.0.16 closeout exposed them (GHI #197).
+- **Type-check suppression syntax** — a bracketed `# type: ignore[...]` must name a `ty:`-prefixed code
 
-Use exactly one of:
+`ty` skips every code lacking a `ty:` prefix, so an all-foreign directive suppresses nothing while
+reading exactly like a suppression (GHI #197). That same skipping lets one comment serve two
+checkers: when another tool reads the line, add ty's code rather than deleting the foreign one.
 
 | Form | When |
 |------|------|
-| `# type: ignore` (bare) | When the suppression is unconditional and precise narrowing is unnecessary |
-| `# ty: ignore[<ty-code>]` | When you want specificity — cite ty's own error code (e.g. `invalid-method-override`, `no-matching-overload`, `invalid-assignment`, `unresolved-attribute`, `call-non-callable`, `invalid-argument-type`) |
+| `# type: ignore` (bare) | Unconditional; precise narrowing unnecessary |
+| `# ty: ignore[<ty-code>]` | Specificity — cite ty's own code (`invalid-assignment`, `unresolved-attribute`, `no-matching-overload`, …) |
+| `# type: ignore[ty:<ty-code>]` | Equivalent; only when a `type:`-shaped comment must be kept for another tool |
+| `# type: ignore[<foreign-code>, ty:<ty-code>]` | Interop — one comment serving ty and another checker |
 
-`tests/governance/test_type_ignore_syntax.py` fail-closes on any
-`# type: ignore[<code>]` under `src/**`. Fix the suppression syntax rather than
-disabling the test.
+Map foreign codes with ty's [mypy/pyright table](https://docs.astral.sh/ty/coming-from-mypy-or-pyright/#mapping-pyrightmypy-rules-to-tyruff-rules); `no-untyped-def`,
+`import-untyped`, and `no-any-return` have no ty equivalent, so those markers are deleted rather than
+translated. Fail-closed by `gz validate --type-ignores` over `_TYPE_IGNORE_AUDIT_ROOTS`. Background: [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd).

@@ -60,7 +60,7 @@ def _gz_subprocess(command: str, cwd: Path) -> tuple[int, str]:
 
 
 @given("a fresh empty project directory")
-def step_fresh_empty_dir(context) -> None:  # type: ignore[no-untyped-def]
+def step_fresh_empty_dir(context) -> None:
     cwd = Path.cwd()
     assert not (cwd / ".gzkit").exists(), f"Tempdir {cwd} is not fresh"
     context.project_root = cwd
@@ -69,13 +69,13 @@ def step_fresh_empty_dir(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the workspace has been initialized via gz init")
-def step_init_via_gz_init(context) -> None:  # type: ignore[no-untyped-def]
+def step_init_via_gz_init(context) -> None:
     code, output = _gz_subprocess("gz init --no-skeleton", context.project_root)
     assert code == 0, f"gz init failed (exit {code}):\n{output}"
 
 
 @given('the operator edits "{relpath}" with marker "{marker}"')
-def step_operator_edits_chore(context, relpath: str, marker: str) -> None:  # type: ignore[no-untyped-def]
+def step_operator_edits_chore(context, relpath: str, marker: str) -> None:
     target = context.project_root / Path(relpath)
     assert target.exists(), f"Expected {target} to exist before operator edit"
     existing = target.read_text(encoding="utf-8")
@@ -83,7 +83,7 @@ def step_operator_edits_chore(context, relpath: str, marker: str) -> None:  # ty
 
 
 @given('the slug "{slug}" has been removed from "{relpath}"')
-def step_remove_slug_from_registry(context, slug: str, relpath: str) -> None:  # type: ignore[no-untyped-def]
+def step_remove_slug_from_registry(context, slug: str, relpath: str) -> None:
     registry_path = context.project_root / Path(relpath)
     payload = json.loads(registry_path.read_text(encoding="utf-8"))
     chores = payload.get("chores", [])
@@ -96,14 +96,14 @@ def step_remove_slug_from_registry(context, slug: str, relpath: str) -> None:  #
 
 
 @when('I run "{command}" as a subprocess')
-def step_run_subprocess(context, command: str) -> None:  # type: ignore[no-untyped-def]
+def step_run_subprocess(context, command: str) -> None:
     code, output = _gz_subprocess(command, context.project_root)
     context.subprocess_exit_code = code
     context.subprocess_output = (context.subprocess_output or "") + output
 
 
 @then("the subprocess exits with code {expected:d}")
-def step_subprocess_exit_code(context, expected: int) -> None:  # type: ignore[no-untyped-def]
+def step_subprocess_exit_code(context, expected: int) -> None:
     assert context.subprocess_exit_code == expected, (
         f"Expected exit {expected}, got {context.subprocess_exit_code}\n"
         f"Output:\n{context.subprocess_output}"
@@ -111,14 +111,14 @@ def step_subprocess_exit_code(context, expected: int) -> None:  # type: ignore[n
 
 
 @then('the subprocess output contains "{text}"')
-def step_subprocess_output_contains(context, text: str) -> None:  # type: ignore[no-untyped-def]
+def step_subprocess_output_contains(context, text: str) -> None:
     assert text in context.subprocess_output, (
         f"Expected {text!r} in subprocess output:\n{context.subprocess_output}"
     )
 
 
 @then('every chore row in the subprocess output reports "{source}" source')
-def step_every_chore_row_reports_source(context, source: str) -> None:  # type: ignore[no-untyped-def]
+def step_every_chore_row_reports_source(context, source: str) -> None:
     output = context.subprocess_output
     other_labels = {"project", "package", "missing"} - {source}
     found_target = False
@@ -133,7 +133,7 @@ def step_every_chore_row_reports_source(context, source: str) -> None:  # type: 
 
 
 @then('the registry "{relpath}" contains slug "{slug}"')
-def step_registry_contains_slug(context, relpath: str, slug: str) -> None:  # type: ignore[no-untyped-def]
+def step_registry_contains_slug(context, relpath: str, slug: str) -> None:
     registry_path = context.project_root / Path(relpath)
     payload = json.loads(registry_path.read_text(encoding="utf-8"))
     slugs = {entry.get("slug") for entry in payload.get("chores", [])}

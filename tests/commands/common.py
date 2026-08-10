@@ -307,7 +307,7 @@ def _quick_init(mode: str = "lite") -> None:
     gzkit_dir = project_root / ".gzkit"
     gzkit_dir.mkdir(exist_ok=True)
 
-    config = GzkitConfig(mode=mode, project_name="test-project")  # type: ignore[arg-type]
+    config = GzkitConfig(mode=mode, project_name="test-project")
     config.save(project_root / ".gzkit.json")
 
     manifest = {

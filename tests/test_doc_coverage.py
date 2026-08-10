@@ -217,7 +217,7 @@ class TestCheckSurfaces(unittest.TestCase):
                 if s.surface == surface_name:
                     return s
         self.fail(f"Surface '{surface_name}' not found in coverage results")
-        return None  # type: ignore[return-value]
+        return None
 
     @covers("REQ-0.0.6-01-03")
     def test_manpage_present(self) -> None:
@@ -389,7 +389,7 @@ class TestModels(unittest.TestCase):
     def test_coverage_report_frozen(self) -> None:
         report = self._make_report()
         with self.assertRaises((TypeError, ValidationError)):
-            report.commands_discovered = 99  # type: ignore[misc]
+            report.commands_discovered = 99  # ty: ignore[invalid-assignment]
 
     def test_coverage_report_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
@@ -400,7 +400,7 @@ class TestModels(unittest.TestCase):
                 coverage=[],
                 orphaned=[],
                 passed=True,
-                unknown_field="forbidden",  # type: ignore[call-arg]
+                unknown_field="forbidden",
             )
 
     def test_report_passed_when_fully_covered(self) -> None:
@@ -506,7 +506,7 @@ class TestManifestModels(unittest.TestCase):
     def test_surface_requirements_frozen(self) -> None:
         surfaces = self._make_surfaces()
         with self.assertRaises((TypeError, ValidationError)):
-            surfaces.manpage = False  # type: ignore[misc]
+            surfaces.manpage = False  # ty: ignore[invalid-assignment]
 
     def test_surface_requirements_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
@@ -516,21 +516,21 @@ class TestManifestModels(unittest.TestCase):
                 operator_runbook=True,
                 governance_runbook=False,
                 docstring=True,
-                extra_field=True,  # type: ignore[call-arg]
+                extra_field=True,
             )
 
     @covers("REQ-0.0.6-02-02")
     def test_command_entry_frozen(self) -> None:
         entry = self._make_entry()
         with self.assertRaises((TypeError, ValidationError)):
-            entry.governance_relevant = True  # type: ignore[misc]
+            entry.governance_relevant = True  # ty: ignore[invalid-assignment]
 
     def test_command_entry_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
             CommandEntry(
                 surfaces=self._make_surfaces(),
                 governance_relevant=False,
-                unknown=True,  # type: ignore[call-arg]
+                unknown=True,
             )
 
     def test_manifest_frozen(self) -> None:
@@ -540,7 +540,7 @@ class TestManifestModels(unittest.TestCase):
             commands={"init": self._make_entry()},
         )
         with self.assertRaises((TypeError, ValidationError)):
-            manifest.version = "2.0.0"  # type: ignore[misc]
+            manifest.version = "2.0.0"  # ty: ignore[invalid-assignment]
 
     def test_manifest_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
@@ -548,7 +548,7 @@ class TestManifestModels(unittest.TestCase):
                 version="1.0.0",
                 description="Test",
                 commands={"init": self._make_entry()},
-                extra_field="forbidden",  # type: ignore[call-arg]
+                extra_field="forbidden",
             )
 
     @covers("REQ-0.0.6-02-04")
@@ -773,7 +773,7 @@ class TestGapReportModels(unittest.TestCase):
 
         gap = GapItem(command="lint", surface="manpage", detail="Missing lint.md")
         with self.assertRaises((TypeError, ValidationError)):
-            gap.command = "format"  # type: ignore[misc]
+            gap.command = "format"  # ty: ignore[invalid-assignment]
 
     def test_gap_item_extra_forbid(self) -> None:
         from gzkit.doc_coverage.models import GapItem
@@ -783,7 +783,7 @@ class TestGapReportModels(unittest.TestCase):
                 command="lint",
                 surface="manpage",
                 detail="Missing",
-                extra="forbidden",  # type: ignore[call-arg]
+                extra="forbidden",
             )
 
     def test_orphaned_doc_item_frozen(self) -> None:
@@ -791,7 +791,7 @@ class TestGapReportModels(unittest.TestCase):
 
         item = OrphanedDocItem(surface="manpage", reference="ghost.md", detail="No match")
         with self.assertRaises((TypeError, ValidationError)):
-            item.surface = "index"  # type: ignore[misc]
+            item.surface = "index"  # ty: ignore[invalid-assignment]
 
     def test_gap_report_frozen(self) -> None:
         from gzkit.doc_coverage.models import DocCoverageGapReport
@@ -806,7 +806,7 @@ class TestGapReportModels(unittest.TestCase):
             orphaned_docs=[],
         )
         with self.assertRaises((TypeError, ValidationError)):
-            report.passed = False  # type: ignore[misc]
+            report.passed = False  # ty: ignore[invalid-assignment]
 
     def test_gap_report_extra_forbid(self) -> None:
         from gzkit.doc_coverage.models import DocCoverageGapReport
@@ -820,7 +820,7 @@ class TestGapReportModels(unittest.TestCase):
                 gaps=[],
                 undeclared_commands=[],
                 orphaned_docs=[],
-                extra="forbidden",  # type: ignore[call-arg]
+                extra="forbidden",
             )
 
     @covers("REQ-0.0.6-03-02")

@@ -28,7 +28,7 @@ class TestRolesDefaultOutput(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _create_agent_files(root)
-            mock_root.return_value = root  # type: ignore[union-attr]
+            mock_root.return_value = root
             # Capture console output via --json for easier assertion
             with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 roles_cmd(as_json=True)
@@ -50,7 +50,7 @@ class TestRolesJsonOutput(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _create_agent_files(root)
-            mock_root.return_value = root  # type: ignore[union-attr]
+            mock_root.return_value = root
             with patch("sys.stdout", new_callable=StringIO) as mock_stdout:
                 roles_cmd(as_json=True)
                 output = mock_stdout.getvalue()
@@ -74,7 +74,7 @@ class TestRolesPipelineOutput(unittest.TestCase):
             root = Path(tmp)
             plans_dir = root / ".claude" / "plans"
             plans_dir.mkdir(parents=True)
-            mock_root.return_value = root  # type: ignore[union-attr]
+            mock_root.return_value = root
 
             # Create a dispatch summary
             obpi_id = "OBPI-0.18.0-05"
@@ -101,7 +101,7 @@ class TestRolesPipelineOutput(unittest.TestCase):
             root = Path(tmp)
             plans_dir = root / ".claude" / "plans"
             plans_dir.mkdir(parents=True)
-            mock_root.return_value = root  # type: ignore[union-attr]
+            mock_root.return_value = root
 
             quiet_console = Console(file=StringIO(), quiet=True)
             with (

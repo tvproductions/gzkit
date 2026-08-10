@@ -62,7 +62,7 @@ class TestFlagSpecCreation(unittest.TestCase):
     def test_frozen_model(self) -> None:
         spec = FlagSpec.model_validate(_base_spec())
         with self.assertRaises(ValidationError):
-            spec.key = "changed"  # type: ignore[misc]
+            spec.key = "changed"  # ty: ignore[invalid-assignment]
 
     def test_extra_fields_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
@@ -190,11 +190,11 @@ class TestFlagEvaluation(unittest.TestCase):
     def test_frozen(self) -> None:
         ev = FlagEvaluation(key="ops.test", value=False, source="env")
         with self.assertRaises(ValidationError):
-            ev.value = True  # type: ignore[misc]
+            ev.value = True  # ty: ignore[invalid-assignment]
 
     def test_extra_forbidden(self) -> None:
         with self.assertRaises(ValidationError):
-            FlagEvaluation(key="ops.test", value=True, source="env", extra="bad")  # type: ignore[call-arg]
+            FlagEvaluation(key="ops.test", value=True, source="env", extra="bad")
 
     def test_roundtrip_json(self) -> None:
         ev = FlagEvaluation(key="ops.test", value=True, source="config")

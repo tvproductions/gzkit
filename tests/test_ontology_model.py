@@ -37,7 +37,7 @@ def _valid_node(**overrides: object) -> OntologyNode:
         "plane": Plane.PRODUCT,
     }
     kwargs.update(overrides)
-    return OntologyNode(**kwargs)  # type: ignore[arg-type]
+    return OntologyNode(**kwargs)
 
 
 class TestOntologyModelImmutability(unittest.TestCase):
@@ -51,7 +51,7 @@ class TestOntologyModelImmutability(unittest.TestCase):
                 object_type=ObjectType.ADR,
                 ownership=Ownership.HARNESS,
                 plane=Plane.PRODUCT,
-                bogus=1,  # type: ignore[call-arg]
+                bogus=1,
             )
 
     @covers("REQ-0.32.0-01-01")
@@ -62,14 +62,14 @@ class TestOntologyModelImmutability(unittest.TestCase):
                 target_id="b",
                 link_type=LinkType.PARENT,
                 provenance=Provenance.INTENT,
-                bogus=1,  # type: ignore[call-arg]
+                bogus=1,
             )
 
     @covers("REQ-0.32.0-01-01")
     def test_node_is_frozen(self) -> None:
         node = _valid_node()
         with self.assertRaises(pydantic.ValidationError):
-            node.node_id = "mutated"  # type: ignore[misc]
+            node.node_id = "mutated"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.32.0-01-01")
     def test_edge_is_frozen(self) -> None:
@@ -77,7 +77,7 @@ class TestOntologyModelImmutability(unittest.TestCase):
             source_id="a", target_id="b", link_type=LinkType.PARENT, provenance=Provenance.INTENT
         )
         with self.assertRaises(pydantic.ValidationError):
-            edge.source_id = "mutated"  # type: ignore[misc]
+            edge.source_id = "mutated"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.32.0-01-01")
     def test_linktype_is_closed_strenum(self) -> None:
@@ -139,7 +139,7 @@ class TestOntologyTwoAxis(unittest.TestCase):
             OntologyNode(
                 node_id="n1",
                 object_type=ObjectType.ADR,
-                ownership="neither",  # type: ignore[arg-type]
+                ownership="neither",
                 plane=Plane.PRODUCT,
             )
 

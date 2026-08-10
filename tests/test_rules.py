@@ -419,7 +419,7 @@ class TestRuleFrontmatter(unittest.TestCase):
 
         fm = RuleFrontmatter(id="x", paths=["*"], description="d")
         with self.assertRaises(ValidationError):
-            fm.id = "changed"
+            fm.id = "changed"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.17.0-02-01")
     def test_extra_forbid(self) -> None:
@@ -432,7 +432,7 @@ class TestRuleFrontmatter(unittest.TestCase):
                 id="x",
                 paths=["*"],
                 description="d",
-                bogus="y",  # type: ignore[call-arg]
+                bogus="y",
             )
 
     @covers("REQ-0.17.0-02-01")
@@ -451,7 +451,7 @@ class TestRuleFrontmatter(unittest.TestCase):
         from gzkit.rules import RuleFrontmatter
 
         with self.assertRaises(ValidationError):
-            RuleFrontmatter(id="x")
+            RuleFrontmatter(id="x")  # ty: ignore[missing-argument]
 
 
 class TestCanonicalRule(unittest.TestCase):
@@ -478,7 +478,7 @@ class TestCanonicalRule(unittest.TestCase):
         fm = RuleFrontmatter(id="test", paths=["*"], description="d")
         rule = CanonicalRule(frontmatter=fm, body="# Body", source_path="test.md")
         with self.assertRaises(ValidationError):
-            rule.body = "changed"
+            rule.body = "changed"  # ty: ignore[invalid-assignment]
 
 
 class TestRenderRulesToDirPathForm(unittest.TestCase):

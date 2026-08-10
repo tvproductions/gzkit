@@ -46,7 +46,7 @@ from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
 # ---------------------------------------------------------------------------
 
 
-def _receipts_root(context) -> Path:  # type: ignore[no-untyped-def]
+def _receipts_root(context) -> Path:
     """Return (creating if needed) the per-scenario ARB receipts root.
 
     Sets ``GZKIT_ARB_RECEIPTS_ROOT`` so ``gzkit.arb.paths.receipts_root``
@@ -367,7 +367,7 @@ def _seed_pipeline_marker(obpi_id: str, parent_adr: str | None = None) -> None:
 
 
 @given('an arb step receipt "{run_id}" with exit_status {status:d} exists')
-def step_arb_step_receipt(context, run_id: str, status: int) -> None:  # type: ignore[no-untyped-def]
+def step_arb_step_receipt(context, run_id: str, status: int) -> None:
     root = _receipts_root(context)
     if run_id.startswith("arb-step-"):
         _write_step_receipt(root, run_id, exit_status=status)
@@ -379,7 +379,7 @@ def step_arb_step_receipt(context, run_id: str, status: int) -> None:  # type: i
 
 
 @given("no arb receipts exist in the receipts root")
-def step_no_arb_receipts(context) -> None:  # type: ignore[no-untyped-def]
+def step_no_arb_receipts(context) -> None:
     root = _receipts_root(context)
     for entry in root.iterdir():
         if entry.is_file():
@@ -387,32 +387,32 @@ def step_no_arb_receipts(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given('a heavy-lane brief "{obpi_id}" under feature ADR "{adr_id}" exists on disk')
-def step_seed_heavy_feature(context, obpi_id: str, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_heavy_feature(context, obpi_id: str, adr_id: str) -> None:
     _seed_adr_and_brief(adr_id, obpi_id, kind="feature", lane="heavy")
 
 
 @given('a lite-feature brief "{obpi_id}" under feature ADR "{adr_id}" exists on disk')
-def step_seed_lite_feature(context, obpi_id: str, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_lite_feature(context, obpi_id: str, adr_id: str) -> None:
     _seed_adr_and_brief(adr_id, obpi_id, kind="feature", lane="lite")
 
 
 @given('a lite-foundation brief "{obpi_id}" under foundation ADR "{adr_id}" exists on disk')
-def step_seed_lite_foundation(context, obpi_id: str, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_lite_foundation(context, obpi_id: str, adr_id: str) -> None:
     _seed_adr_and_brief(adr_id, obpi_id, kind="foundation", lane="lite")
 
 
 @given('a heavy feature ADR "{adr_id}" exists on disk')
-def step_seed_heavy_adr_only(context, adr_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_heavy_adr_only(context, adr_id: str) -> None:
     _seed_adr_only(adr_id, kind="feature", lane="heavy")
 
 
 @given('a pipeline marker for "{obpi_id}" is active')
-def step_seed_marker(context, obpi_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_marker(context, obpi_id: str) -> None:
     _seed_pipeline_marker(obpi_id)
 
 
 @given("the workspace is the live repository")
-def step_use_live_repo(context) -> None:  # type: ignore[no-untyped-def]
+def step_use_live_repo(context) -> None:
     """Restore cwd to the original repository root for live-surface scenarios.
 
     The behave environment chdirs into a per-scenario tempdir; the
@@ -452,7 +452,7 @@ _ADVERSARY_ARGS = [
 
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" using attestor-present')
-def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:
     args = [
         "obpi",
         "complete",
@@ -472,7 +472,7 @@ def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> N
 
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" without attestor-present')
-def step_complete_without_attestor_present(context, obpi_id: str, run_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_complete_without_attestor_present(context, obpi_id: str, run_id: str) -> None:
     args = [
         "obpi",
         "complete",
@@ -494,9 +494,7 @@ def step_complete_without_attestor_present(context, obpi_id: str, run_id: str) -
     'I emit ADR receipt for "{adr_id}" event "{event}" '
     'attestor "{attestor}" attestation citing "{run_id}"'
 )
-def step_emit_adr_receipt(  # type: ignore[no-untyped-def]
-    context, adr_id: str, event: str, attestor: str, run_id: str
-) -> None:
+def step_emit_adr_receipt(context, adr_id: str, event: str, attestor: str, run_id: str) -> None:
     args = [
         "adr",
         "emit-receipt",
@@ -517,9 +515,7 @@ def step_emit_adr_receipt(  # type: ignore[no-untyped-def]
     'the ledger contains an event with field "event" equal to "{event_name}" '
     'whose extra.receipt_event is "{receipt_event}"'
 )
-def step_ledger_has_meta_event(  # type: ignore[no-untyped-def]
-    context, event_name: str, receipt_event: str
-) -> None:
+def step_ledger_has_meta_event(context, event_name: str, receipt_event: str) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     text = ledger_path.read_text(encoding="utf-8") if ledger_path.is_file() else ""
     matches = []
@@ -537,7 +533,7 @@ def step_ledger_has_meta_event(  # type: ignore[no-untyped-def]
 
 
 @then('the ledger contains an event with field "event" equal to "{event_name}"')
-def step_ledger_has_event(context, event_name: str) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_has_event(context, event_name: str) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     text = ledger_path.read_text(encoding="utf-8") if ledger_path.is_file() else ""
     matches = [
@@ -549,9 +545,7 @@ def step_ledger_has_event(context, event_name: str) -> None:  # type: ignore[no-
 
 
 @then('the ledger contains an event for "{obpi_id}" with receipt_event "{receipt_event}"')
-def step_ledger_has_completion_event(  # type: ignore[no-untyped-def]
-    context, obpi_id: str, receipt_event: str
-) -> None:
+def step_ledger_has_completion_event(context, obpi_id: str, receipt_event: str) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     text = ledger_path.read_text(encoding="utf-8") if ledger_path.is_file() else ""
     matches = []
@@ -572,9 +566,7 @@ def step_ledger_has_completion_event(  # type: ignore[no-untyped-def]
 
 
 @then('the ledger does not contain an event for "{obpi_id}" with receipt_event "{receipt_event}"')
-def step_ledger_no_completion_event(  # type: ignore[no-untyped-def]
-    context, obpi_id: str, receipt_event: str
-) -> None:
+def step_ledger_no_completion_event(context, obpi_id: str, receipt_event: str) -> None:
     ledger_path = Path(".gzkit") / "ledger.jsonl"
     if not ledger_path.is_file():
         return

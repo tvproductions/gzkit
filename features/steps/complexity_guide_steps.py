@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 _PRACTITIONER_EYE_SENTINEL = "Refactor signal: extract the responsibility seam and re-test."
 
@@ -125,10 +125,10 @@ def _build_synthetic_environment(source: str) -> None:
 
 
 @given("a synthetic complexity-guide environment with a clean Python source")
-def step_synthetic_clean_env(_context) -> None:  # type: ignore[no-untyped-def]
+def step_synthetic_clean_env(_context) -> None:
     _build_synthetic_environment(CLEAN_SOURCE)
 
 
 @given("a synthetic complexity-guide environment with an advise-band Python source")
-def step_synthetic_advise_env(_context) -> None:  # type: ignore[no-untyped-def]
+def step_synthetic_advise_env(_context) -> None:
     _build_synthetic_environment(ADVISE_SOURCE)

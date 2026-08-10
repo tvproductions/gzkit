@@ -60,7 +60,7 @@ class TestPersonaFrontmatter(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            PersonaFrontmatter(name="x", traits=["a"])  # type: ignore[call-arg]
+            PersonaFrontmatter(name="x", traits=["a"])  # ty: ignore[missing-argument]
 
     @covers("REQ-0.0.11-02-01")
     def test_extra_field_rejected(self) -> None:
@@ -72,7 +72,7 @@ class TestPersonaFrontmatter(unittest.TestCase):
                 traits=["a"],
                 anti_traits=["b"],
                 grounding="g",
-                unknown="bad",  # type: ignore[call-arg]
+                unknown="bad",
             )
 
 

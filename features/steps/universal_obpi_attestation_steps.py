@@ -28,7 +28,7 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 
 
 @when('I emit-receipt for OBPI "{obpi_id}" with attestor "{attestor}" and evidence')
-def step_emit_receipt_with_evidence(context, obpi_id: str, attestor: str) -> None:  # type: ignore[no-untyped-def]
+def step_emit_receipt_with_evidence(context, obpi_id: str, attestor: str) -> None:
     """Invoke ``gz obpi emit-receipt --dry-run`` with evidence from docstring.
 
     The JSON evidence payload is supplied as a Gherkin multiline string

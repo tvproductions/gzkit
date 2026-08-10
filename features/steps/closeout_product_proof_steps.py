@@ -49,7 +49,7 @@ def _git_init() -> str:
 
 
 @given("a heavy ADR exists with an OBPI brief")
-def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
+def step_heavy_adr_with_obpi(context) -> None:
     code, output = _invoke(["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
     assert code == 0, output
 
@@ -137,7 +137,7 @@ def step_heavy_adr_with_obpi(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the OBPI source file has public docstrings")
-def step_obpi_source_with_docstrings(context) -> None:  # type: ignore[no-untyped-def]
+def step_obpi_source_with_docstrings(context) -> None:
     src_dir = Path("src") / "gzkit"
     src_dir.mkdir(parents=True, exist_ok=True)
     demo_file = src_dir / "demo.py"

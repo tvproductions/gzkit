@@ -35,7 +35,7 @@ def _invoke_justify(**kwargs: object) -> int:
     exit code, so this helper collapses both paths into a returned int.
     """
     try:
-        return justify_cmd(**kwargs)  # type: ignore[arg-type]
+        return justify_cmd(**kwargs)
     except SystemExit as exc:
         if isinstance(exc.code, int):
             return exc.code

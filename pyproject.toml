@@ -51,7 +51,7 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
     "mkdocs==1.6.1",
-    "mkdocs-material==9.7.6",
+    "mkdocs-material==9.7.7",
 ]
 
 [project.scripts]
@@ -210,23 +210,37 @@ ignore = [
 [tool.ruff.format]
 quote-style = "double"
 indent-style = "space"
+# ruff 0.16 began formatting Python code blocks inside Markdown. gzkit's Markdown
+# is not incidental prose — `.gzkit/rules/**`, its vendor mirrors, and the ADR/OBPI
+# corpus ARE governed surfaces, budgeted by `gz validate --surface-fidelity`
+# against `data/surface_weight_floor.json`. Letting the formatter insert blank
+# lines into their fenced examples grew the corpus by 742 lines in one pass and
+# pushed it from the floor (1859) into the yellow band (2601), which demands a
+# waiver for churn that carries no governance meaning. Excluded so the formatter
+# owns Python files and the surface budget owns Markdown.
+exclude = ["*.md"]
 
 [dependency-groups]
 dev = [
     "bandit>=1.9.4",
     "behave>=1.3.3",
     "cohesion>=1.2.0",
-    "coverage>=7.14.3",
+    "coverage>=7.15.4",
     "detect-secrets>=1.5.0",
     "interrogate>=1.7.0",
     "lizard>=1.23.0",
     "mkdocs==1.6.1",
-    "mkdocs-material==9.7.6",
+    "mkdocs-material==9.7.7",
     "pygount>=3.2.0",
-    "pyinstaller>=6.21.0",
+    "pyinstaller>=6.22.0",
     "radon>=6.0.1",
-    "ruff>=0.15.20",
-    "ty>=0.0.52",
+    "ruff>=0.16.2",
+    # Tracks ty forward, never pinned backward. Operator ruling 2026-08-09: "we
+    # progress as Ty progresses, if it has become more strict, then we tighten
+    # up, do not avoid hard work by clinging to older version of Ty." The 88
+    # diagnostics 0.0.69 surfaced were latent defects the older release could not
+    # see, so the checker moving is the signal to fix the code (GHI #789).
+    "ty>=0.0.69",
     "vulture>=2.16",
     "wily>=1.12.2",
     "xenon>=0.9.3",

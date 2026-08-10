@@ -34,7 +34,7 @@ def _write_adr(root: Path, adr_id: str, *, with_block: bool) -> None:
 
 
 @given("a project with a block-less non-pool ADR Decision")
-def step_block_less_adr(context) -> None:  # type: ignore[no-untyped-def]
+def step_block_less_adr(context) -> None:
     """A foundation ADR Decision with no ## Fidelity Assertions block."""
     root: Path = context._tmpdir
     _write_adr(root, "ADR-0.0.1-blockless", with_block=False)
@@ -42,7 +42,7 @@ def step_block_less_adr(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a project where every non-pool ADR Decision carries a Fidelity Assertions block")
-def step_compliant_corpus(context) -> None:  # type: ignore[no-untyped-def]
+def step_compliant_corpus(context) -> None:
     """Every non-pool ADR Decision ships a parseable block."""
     root: Path = context._tmpdir
     _write_adr(root, "ADR-0.0.1-compliant", with_block=True)

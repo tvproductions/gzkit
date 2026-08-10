@@ -11,7 +11,7 @@ from gzkit.config import GzkitConfig
 
 
 @given("an OBPI brief with one REQ and a decorator-covered test exists")
-def step_brief_with_decorator_covered_test(_context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_with_decorator_covered_test(_context) -> None:
     """Create an OBPI brief and a test that uses @covers decorator syntax."""
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -48,7 +48,7 @@ def step_brief_with_decorator_covered_test(_context) -> None:  # type: ignore[no
 
 
 @given("an OBPI brief with covered and uncovered REQs exists")
-def step_brief_with_mixed_coverage(_context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_with_mixed_coverage(_context) -> None:
     """Create an OBPI brief with 2 REQs and a test covering only one."""
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
@@ -86,7 +86,7 @@ def step_brief_with_mixed_coverage(_context) -> None:  # type: ignore[no-untyped
 
 
 @then('JSON path "{path}" is not empty')
-def step_json_path_not_empty(context, path: str) -> None:  # type: ignore[no-untyped-def]
+def step_json_path_not_empty(context, path: str) -> None:
     """Verify a JSON path resolves to a non-empty value."""
     payload = json.loads(context.output)
     value = payload

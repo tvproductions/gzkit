@@ -69,8 +69,8 @@ try:
     from gzkit.testing import covers  # ty: ignore[unresolved-import]
 except ImportError:
 
-    def covers(*_ids: str):  # type: ignore[misc]
-        def decorator(fn):  # type: ignore[no-untyped-def]
+    def covers(*_ids: str):
+        def decorator(fn):
             return fn
 
         return decorator

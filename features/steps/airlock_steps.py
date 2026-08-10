@@ -12,11 +12,11 @@ verbatim from ``chores_distribution_steps.py``.
 
 from __future__ import annotations
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 
 @given("the gzkit repository working tree")
-def step_repo_working_tree(context) -> None:  # type: ignore[no-untyped-def]
+def step_repo_working_tree(context) -> None:
     context.project_root = context._original_cwd
     context.subprocess_exit_code = None
     context.subprocess_output = ""

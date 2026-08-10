@@ -62,7 +62,7 @@ def _dispatch(*, other_scopes_active: bool, **overrides: object) -> tuple[bool, 
         handled = validate_cmd._dispatch_early_return_scopes(
             Path("."),
             other_scopes_active=other_scopes_active,
-            **kwargs,  # type: ignore[arg-type]
+            **kwargs,
         )
     return handled, buf.getvalue()
 
@@ -101,7 +101,7 @@ class TestSoloScopeCombinationRefused(unittest.TestCase):
             validate_cmd._dispatch_early_return_scopes(
                 Path("."),
                 other_scopes_active=True,
-                **{**_DISPATCH_DEFAULTS, "check_fidelity_presence": True},  # type: ignore[arg-type]
+                **{**_DISPATCH_DEFAULTS, "check_fidelity_presence": True},
             )
         output = buf.getvalue()
         self.assertIn("--fidelity-presence", output)

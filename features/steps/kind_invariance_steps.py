@@ -56,7 +56,7 @@ def _write_adr(
 
 
 @given("a minimal project with a foundation ADR carrying a substantive Why-foundation-tier section")
-def step_foundation_adr_substantive(context) -> None:  # type: ignore[no-untyped-def]
+def step_foundation_adr_substantive(context) -> None:
     """Foundation ADR with the heading and a substantive body."""
     root: Path = context._tmpdir
     body = f"## Why foundation tier?\n\n{_SUBSTANTIVE_BODY}\n## Intent\n\nTest intent.\n"
@@ -65,7 +65,7 @@ def step_foundation_adr_substantive(context) -> None:  # type: ignore[no-untyped
 
 
 @given("a minimal project with a foundation ADR missing the Why-foundation-tier section")
-def step_foundation_adr_missing_section(context) -> None:  # type: ignore[no-untyped-def]
+def step_foundation_adr_missing_section(context) -> None:
     """Foundation ADR without the heading."""
     root: Path = context._tmpdir
     body = "## Intent\n\nTest intent without the required section.\n"
@@ -77,7 +77,7 @@ def step_foundation_adr_missing_section(context) -> None:  # type: ignore[no-unt
     "a minimal project with a foundation ADR carrying a placeholder-only "
     "Why-foundation-tier section"
 )
-def step_foundation_adr_placeholder_body(context) -> None:  # type: ignore[no-untyped-def]
+def step_foundation_adr_placeholder_body(context) -> None:
     """Foundation ADR with the heading but only unfilled author prompts."""
     root: Path = context._tmpdir
     body = f"## Why foundation tier?\n\n{_PLACEHOLDER_BODY}\n## Intent\n\nTest intent.\n"
@@ -86,7 +86,7 @@ def step_foundation_adr_placeholder_body(context) -> None:  # type: ignore[no-un
 
 
 @given("a minimal project with only a feature ADR")
-def step_feature_adr_only(context) -> None:  # type: ignore[no-untyped-def]
+def step_feature_adr_only(context) -> None:
     """Feature-kind ADR -- should not be enumerated by the validator."""
     root: Path = context._tmpdir
     body = "## Intent\n\nFeature ADR has no section requirement.\n"

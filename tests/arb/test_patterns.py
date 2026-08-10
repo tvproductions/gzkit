@@ -100,7 +100,7 @@ class TestCollectPatterns(unittest.TestCase):
 
         report = PatternReport(scanned_receipts=0, total_findings=0, candidates=[])
         with self.assertRaises(ValidationError):
-            report.scanned_receipts = 99
+            report.scanned_receipts = 99  # ty: ignore[invalid-assignment]
 
     def test_render_patterns_markdown_produces_table(self) -> None:
         from gzkit.arb.patterns import collect_patterns, render_patterns_markdown

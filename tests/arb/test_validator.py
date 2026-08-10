@@ -177,4 +177,4 @@ class TestValidateReceipts(unittest.TestCase):
             scanned=0, valid=0, invalid=0, unknown_schema=0, errors=[]
         )
         with self.assertRaises(ValidationError):
-            result.scanned = 99
+            result.scanned = 99  # ty: ignore[invalid-assignment]

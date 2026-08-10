@@ -41,7 +41,7 @@ from tests.test_obpi_lock_cmd import _make_lock, _mock_config, _setup_project
 def covers(target: str):  # noqa: D401
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity

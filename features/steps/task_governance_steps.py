@@ -26,24 +26,24 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 
 
 @given("an OBPI exists for ADR-0.1.0")
-def step_create_obpi(context) -> None:  # type: ignore[no-untyped-def]
+def step_create_obpi(context) -> None:
     ledger = Ledger(Path(".gzkit/ledger.jsonl"))
     ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
 
 
 @given('I run the gz command "{command}"')
-def step_given_run_command(context, command: str) -> None:  # type: ignore[no-untyped-def]
+def step_given_run_command(context, command: str) -> None:
     args = shlex.split(command)
     context.exit_code, context.output = _invoke(args)
 
 
 @given("a pending task {task_id} exists")
-def step_create_pending_task(context, task_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_create_pending_task(context, task_id: str) -> None:
     """No-op: pending is the default state (no ledger event needed)."""
 
 
 @then("the output is valid JSON")
-def step_output_is_valid_json(context) -> None:  # type: ignore[no-untyped-def]
+def step_output_is_valid_json(context) -> None:
     try:
         json.loads(context.output)
     except (json.JSONDecodeError, ValueError) as exc:

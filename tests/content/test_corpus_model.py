@@ -39,7 +39,7 @@ def _entry(**overrides: object) -> CorpusEntry:
         "ts": "2026-06-05T00:00:00Z",
     }
     base.update(overrides)
-    return CorpusEntry(**base)  # type: ignore[arg-type]
+    return CorpusEntry(**base)
 
 
 def _contract() -> AgentContract:
@@ -123,7 +123,7 @@ class TestCorpusEntryModel(unittest.TestCase):
         """An entry is immutable — reassigning a field fails closed."""
         e = _entry()
         with self.assertRaises(ValidationError):
-            e.text = "mutated"  # type: ignore[misc]
+            e.text = "mutated"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.37-18-01")
     def test_extra_field_forbidden(self) -> None:

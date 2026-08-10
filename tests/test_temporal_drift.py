@@ -130,7 +130,7 @@ class TestClassifyDriftFrozen(unittest.TestCase):
         sha = "a" * 40
         result = classify_drift("ADR-0.25.0", sha, sha, True, 0)
         with self.assertRaises(ValidationError):
-            result.status = "diverged"  # type: ignore[misc]
+            result.status = "diverged"  # ty: ignore[invalid-assignment]
 
 
 # ---------------------------------------------------------------------------

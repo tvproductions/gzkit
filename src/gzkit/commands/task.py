@@ -6,6 +6,7 @@ Subcommands: list, start, complete, block, escalate.
 import json
 import re
 from pathlib import Path
+from typing import TypedDict
 
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
@@ -627,10 +628,26 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
     _render_envelope_diagnose_table(brief.id, channels, drift)
 
 
-def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[dict[str, object]]:
+class FanoutRow(TypedDict):
+    """One per-TASK fan-out row as rendered by ``gz task fanout``.
+
+    A ``TypedDict`` rather than a model: these rows are a JSON transport shape
+    serialised verbatim by ``--json``, and the heterogeneous value types
+    (``str`` vs ``int``) are what make ``seq`` sortable.
+    """
+
+    task_id: str
+    seq: int
+    status: str
+    files_touched: int
+    edits: int
+    attribution_check: str
+
+
+def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[FanoutRow]:
     """Build per-TASK fan-out rows for a REQ-ID from ledger events.
 
-    Returns a list of dicts sorted by seq, each with:
+    Returns a list of :class:`FanoutRow` sorted by seq, each with:
     task_id, seq, status, files_touched, edits, attribution_check.
     """
     m = _REQ_PARTS_RE.match(req_id)
@@ -670,7 +687,7 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[dict[str, object]]:
                 task_files.setdefault(tid, set()).add(path)
             task_edits[tid] = task_edits.get(tid, 0) + 1
 
-    rows: list[dict[str, object]] = []
+    rows: list[FanoutRow] = []
     for tid in sorted(task_status):
         seq_str = tid.rsplit("-", 1)[-1]
         try:

@@ -40,7 +40,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             kind="foundation",
             parent="OBPI-core",
             date="2026-01-01",
-            custom_field="allowed",  # type: ignore[unknown-argument]
+            custom_field="allowed",
         )
         self.assertEqual(fm.id, "ADR-0.1.0-test-feature")
 
@@ -55,7 +55,7 @@ class TestAdrFrontmatter(unittest.TestCase):
             date="2026-01-01",
         )
         with self.assertRaises(PydanticValidationError):
-            fm.id = "ADR-0.2.0-other"
+            fm.id = "ADR-0.2.0-other"  # ty: ignore[invalid-assignment]
 
     def test_invalid_id_pattern(self) -> None:
         with self.assertRaises(PydanticValidationError) as ctx:
@@ -74,7 +74,7 @@ class TestAdrFrontmatter(unittest.TestCase):
         with self.assertRaises(PydanticValidationError) as ctx:
             AdrFrontmatter(
                 id="ADR-0.1.0",
-                status="Invalid",  # type: ignore[invalid-argument-type]
+                status="Invalid",
                 semver="0.1.0",
                 lane="lite",
                 kind="foundation",
@@ -89,7 +89,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                 id="ADR-0.1.0",
                 status="Draft",
                 semver="0.1.0",
-                lane="Lite",  # type: ignore[invalid-argument-type]
+                lane="Lite",
                 kind="foundation",
                 parent="OBPI-core",
                 date="2026-01-01",
@@ -145,7 +145,7 @@ class TestAdrFrontmatter(unittest.TestCase):
                     status="Draft",
                     semver="0.1.0",
                     lane="lite",
-                    kind=bad_value,  # type: ignore[invalid-argument-type]
+                    kind=bad_value,
                     parent="OBPI-core",
                     date="2026-01-01",
                 )
@@ -223,7 +223,7 @@ class TestObpiFrontmatter(unittest.TestCase):
                 parent="ADR-0.1.0",
                 item="1",
                 lane="lite",
-                status="Closed",  # type: ignore[invalid-argument-type]
+                status="Closed",
             )
 
     def test_all_status_values(self) -> None:
@@ -263,7 +263,7 @@ class TestPrdFrontmatter(unittest.TestCase):
         with self.assertRaises(PydanticValidationError):
             PrdFrontmatter(
                 id="PRD-GZKIT-1.0.0",
-                status="Active",  # type: ignore[invalid-argument-type]
+                status="Active",
                 semver="1.0.0",
                 date="2026-01-01",
             )

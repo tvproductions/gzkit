@@ -23,7 +23,7 @@ from gzkit.traceability import covers
 class TestAdrEvaluationEventFactory(unittest.TestCase):
     """Verify the ``adr_evaluation_event`` factory produces the canonical shape."""
 
-    def _make_event(self, **overrides):  # type: ignore[return]
+    def _make_event(self, **overrides):
         defaults: dict = {
             "artifact_id": "ADR-0.0.26",
             "artifact_type": "ADR",

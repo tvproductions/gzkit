@@ -133,4 +133,4 @@ class TestCollectArbAdvice(unittest.TestCase):
             recommendations=[],
         )
         with self.assertRaises(ValidationError):
-            advice.scanned_receipts = 5
+            advice.scanned_receipts = 5  # ty: ignore[invalid-assignment]

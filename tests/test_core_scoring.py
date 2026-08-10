@@ -33,7 +33,7 @@ class TestCoreDecompositionScorecard(unittest.TestCase):
         )
         self.assertIsInstance(card, DecompositionScorecard)
         with self.assertRaises(ValidationError):
-            card.data_state = 2
+            card.data_state = 2  # ty: ignore[invalid-assignment]
 
 
 class TestCoreBaselineRange(unittest.TestCase):

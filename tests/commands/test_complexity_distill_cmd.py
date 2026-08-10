@@ -49,7 +49,7 @@ def _invoke(**kwargs: object) -> tuple[int, str, str]:
     code = 0
     try:
         with redirect_stdout(out), redirect_stderr(err):
-            complexity_distill_cmd(**kwargs)  # type: ignore[arg-type]
+            complexity_distill_cmd(**kwargs)
     except SystemExit as exc:
         code = int(exc.code) if isinstance(exc.code, int) else 1
     return code, out.getvalue(), err.getvalue()

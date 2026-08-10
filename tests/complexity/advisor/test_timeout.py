@@ -41,13 +41,13 @@ class TestTimeoutResult(unittest.TestCase):
     def test_timeout_ok_is_frozen(self) -> None:
         result = TimeoutOk(value="hello")
         with self.assertRaises(ValidationError):
-            result.value = "world"  # type: ignore[misc]
+            result.value = "world"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.29-09-02")
     def test_timeout_timed_out_is_frozen(self) -> None:
         result = TimeoutTimedOut(elapsed_s=5.0, callable_name="my_func")
         with self.assertRaises(ValidationError):
-            result.elapsed_s = 10.0  # type: ignore[misc]
+            result.elapsed_s = 10.0  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.29-09-02")
     def test_timeout_ok_fields(self) -> None:

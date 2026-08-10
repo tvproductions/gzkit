@@ -163,7 +163,7 @@ class TestCoverageScopedToBriefUnit(unittest.TestCase):
         include = ["src/gzkit/commands/obpi_audit_cmd.py", "src/gzkit/governance/widgets/*"]
         report_calls: list[list[str]] = []
 
-        def fake_run(cmd, *args, **kwargs):  # type: ignore[no-untyped-def]
+        def fake_run(cmd, *args, **kwargs):
             if "report" in cmd:
                 report_calls.append(list(cmd))
                 return mock.Mock(returncode=0, stdout="73.0\n", stderr="")

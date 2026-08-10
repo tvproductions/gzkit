@@ -151,7 +151,7 @@ class TestVendorConfig(unittest.TestCase):
 
         config = VendorConfig(enabled=True, surface_root=".claude")
         with self.assertRaises(ValidationError):
-            config.enabled = False
+            config.enabled = False  # ty: ignore[invalid-assignment]
 
 
 class TestArbConfig(unittest.TestCase):
@@ -176,7 +176,7 @@ class TestArbConfig(unittest.TestCase):
 
         config = ArbConfig()
         with self.assertRaises(ValidationError):
-            config.receipts_root = "other/path"
+            config.receipts_root = "other/path"  # ty: ignore[invalid-assignment]
 
     def test_gzkit_config_exposes_arb(self) -> None:
         """GzkitConfig has an arb section with defaults."""
@@ -209,7 +209,7 @@ class TestArbConfig(unittest.TestCase):
         from gzkit.config import VendorConfig
 
         with self.assertRaises(ValidationError):
-            VendorConfig(enabled=True, unknown_field="x")  # type: ignore[call-arg]
+            VendorConfig(enabled=True, unknown_field="x")
 
 
 class TestVendorsConfig(unittest.TestCase):
@@ -291,7 +291,7 @@ class TestGzkitConfigVendors(unittest.TestCase):
             config = GzkitConfig.load(Path(f.name))
             self.assertTrue(config.vendors.claude.enabled)
             self.assertTrue(config.vendors.copilot.enabled)
-            self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None  # type: ignore[unresolved-attribute]
+            self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None
             # Unspecified vendors get defaults
             self.assertFalse(config.vendors.codex.enabled)
 

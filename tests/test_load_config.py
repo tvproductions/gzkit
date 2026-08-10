@@ -35,7 +35,7 @@ class TestLoadConfigDefaults(unittest.TestCase):
 
         config = load_config(path=Path("/nonexistent/.gzkit.json"))
         with self.assertRaises(ValidationError):
-            config.mode = "heavy"  # type: ignore[misc]
+            config.mode = "heavy"  # ty: ignore[invalid-assignment]
 
 
 class TestLoadConfigPrecedence(unittest.TestCase):

@@ -33,7 +33,7 @@ class TestOutputFormatterInit(unittest.TestCase):
 
     def test_invalid_mode_raises_value_error(self) -> None:
         with self.assertRaises(ValueError):
-            OutputFormatter("invalid")  # type: ignore[arg-type]
+            OutputFormatter("invalid")
 
     def test_valid_modes_frozenset(self) -> None:
         self.assertEqual(VALID_MODES, frozenset({"human", "json", "quiet", "verbose", "debug"}))
@@ -813,7 +813,7 @@ class TestEmitBlocker(unittest.TestCase):
     def test_blockers_prefix_always_present(self) -> None:
         """The 'BLOCKERS: ' prefix must always appear, in every mode."""
         for mode in ("human", "json", "quiet", "verbose", "debug"):
-            fmt = OutputFormatter(mode)  # type: ignore[arg-type]
+            fmt = OutputFormatter(mode)
             with patch("sys.stderr", new_callable=io.StringIO) as mock_err:
                 fmt.emit_blocker("check this")
                 self.assertIn(

@@ -17,7 +17,7 @@ from behave import given
 
 
 @given("a minimal project with a skills surface file not covered by any include glob")
-def step_minimal_project_on_disk_not_included(context) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_project_on_disk_not_included(context) -> None:
     """Set up a temp project where a skill file exists but no include glob covers it."""
     root: Path = context._tmpdir
 
@@ -42,7 +42,7 @@ def step_minimal_project_on_disk_not_included(context) -> None:  # type: ignore[
 
 
 @given("a minimal clean distribution baseline project")
-def step_minimal_clean_distribution_project(context) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_clean_distribution_project(context) -> None:
     """Set up a temp project where --distribution --regenerate has valid inputs."""
     root: Path = context._tmpdir
 

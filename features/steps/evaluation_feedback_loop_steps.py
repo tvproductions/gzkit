@@ -26,7 +26,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import mock
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 
 from gzkit.chores.eval_feedback_cluster_lib import ProposalRecord, run_cluster
 from gzkit.ledger import Ledger
@@ -195,7 +195,7 @@ def _make_gh_run_dispatcher(context):
     """Return a subprocess.run side_effect that intercepts gh and delegates everything else."""
     real_run = subprocess.run
 
-    def fake_run(cmd, *args, **kwargs):  # type: ignore[no-untyped-def]
+    def fake_run(cmd, *args, **kwargs):
         if isinstance(cmd, (list, tuple)) and cmd and cmd[0] == "gh":
             sub = list(cmd[1:])
             if sub[:2] == ["issue", "create"]:
@@ -229,7 +229,7 @@ def _make_gh_run_dispatcher(context):
 
 
 @given("the workspace is initialized for the evaluation-feedback loop")
-def step_workspace_init(context) -> None:  # type: ignore[no-untyped-def]
+def step_workspace_init(context) -> None:
     from tests.commands.common import _quick_init  # noqa: PLC0415
 
     _quick_init(mode="heavy")
@@ -251,7 +251,7 @@ _EVENT_WITH_TOTAL = (
 
 
 @given(_EVENT_WITH_TOTAL)
-def step_event_with_total(context, artifact_id: str, weighted: float, timestamp: str) -> None:  # type: ignore[no-untyped-def]
+def step_event_with_total(context, artifact_id: str, weighted: float, timestamp: str) -> None:
     _append_event(
         _make_event(artifact_id, score=weighted, weighted_total=weighted, timestamp=timestamp)
     )
@@ -264,7 +264,7 @@ _LOW_SCORE_EVENT = (
 
 
 @given(_LOW_SCORE_EVENT)
-def step_low_score_event(context, artifact_id: str, dimension: str, score: float) -> None:  # type: ignore[no-untyped-def]
+def step_low_score_event(context, artifact_id: str, dimension: str, score: float) -> None:
     _append_event(
         _make_event(
             artifact_id,
@@ -277,7 +277,7 @@ def step_low_score_event(context, artifact_id: str, dimension: str, score: float
 
 
 @given('an adr-evaluation event for "{artifact_id}" with dimension "{dimension}" scoring {score:f}')
-def step_dimension_event(context, artifact_id: str, dimension: str, score: float) -> None:  # type: ignore[no-untyped-def]
+def step_dimension_event(context, artifact_id: str, dimension: str, score: float) -> None:
     _append_event(
         _make_event(
             artifact_id,
@@ -290,7 +290,7 @@ def step_dimension_event(context, artifact_id: str, dimension: str, score: float
 
 
 @given('an adr-evaluation event for "{artifact_id}" firing red-team challenges "{challenges}"')
-def step_redteam_event(context, artifact_id: str, challenges: str) -> None:  # type: ignore[no-untyped-def]
+def step_redteam_event(context, artifact_id: str, challenges: str) -> None:
     challenge_ids = [c.strip() for c in challenges.split(",") if c.strip()]
     _append_event(
         _make_event(
@@ -304,7 +304,7 @@ def step_redteam_event(context, artifact_id: str, challenges: str) -> None:  # t
 
 
 @when('I attempt to record a malformed adr-evaluation for "{artifact_id}"')
-def step_malformed_event(context, artifact_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_malformed_event(context, artifact_id: str) -> None:
     """REQ-0.0.26-01-02: a malformed evaluation must not reach the ledger.
 
     Production path validates payloads through the ``AdrEvaluationEvent``
@@ -335,7 +335,7 @@ def step_malformed_event(context, artifact_id: str) -> None:  # type: ignore[no-
 
 
 @then('the ledger contains {count:d} "{event_name}" events for "{artifact_id}"')
-def step_ledger_event_count(context, count: int, event_name: str, artifact_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_ledger_event_count(context, count: int, event_name: str, artifact_id: str) -> None:
     path = _ledger_path()
     events = []
     if path.exists():
@@ -360,7 +360,7 @@ def step_ledger_event_count(context, count: int, event_name: str, artifact_id: s
 
 
 @given('a complete justify scaffold exists for "{artifact_id}"')
-def step_justify_scaffold(context, artifact_id: str) -> None:  # type: ignore[no-untyped-def]
+def step_justify_scaffold(context, artifact_id: str) -> None:
     src = _FIXTURES_DIR / "justify-scaffold.md"
     dst_dir = Path("artifacts") / "justify"
     dst_dir.mkdir(parents=True, exist_ok=True)
@@ -371,7 +371,7 @@ def step_justify_scaffold(context, artifact_id: str) -> None:  # type: ignore[no
 
 
 @given('the eval-feedback threshold "{key}" is set to {value:f}')
-def step_set_threshold(context, key: str, value: float) -> None:  # type: ignore[no-untyped-def]
+def step_set_threshold(context, key: str, value: float) -> None:
     if key == "low_score_threshold":
         _write_thresholds(low_score=value)
     elif key == "cluster_min_recurrence":
@@ -385,13 +385,13 @@ def step_set_threshold(context, key: str, value: float) -> None:  # type: ignore
 
 @when("the eval-feedback-cluster chore runs")
 @when("the eval-feedback-cluster chore runs again")
-def step_run_cluster_chore(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_cluster_chore(context) -> None:
     run_cluster(Path.cwd())
 
 
 @then('{count:d} proposal records exist under "{rel_dir}"')
 @then('{count:d} proposal record exists under "{rel_dir}"')
-def step_proposal_count(context, count: int, rel_dir: str) -> None:  # type: ignore[no-untyped-def]
+def step_proposal_count(context, count: int, rel_dir: str) -> None:
     proofs = Path(rel_dir)
     files = sorted(proofs.glob("proposal-*.json")) if proofs.exists() else []
     assert len(files) == count, (
@@ -405,7 +405,7 @@ def step_proposal_count(context, count: int, rel_dir: str) -> None:  # type: ign
 
 
 @given('a proposal record for cluster "{cluster_key}" exists in the eval-feedback-cluster proofs')
-def step_seed_proposal(context, cluster_key: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_proposal(context, cluster_key: str) -> None:
     proofs = _proofs_dir()
     proofs.mkdir(parents=True, exist_ok=True)
     template = json.loads((_FIXTURES_DIR / "proposal-template.json").read_text(encoding="utf-8"))
@@ -416,7 +416,7 @@ def step_seed_proposal(context, cluster_key: str) -> None:  # type: ignore[no-un
 
 
 @given('a filed proposal record for cluster "{cluster_key}" exists with url "{url}"')
-def step_seed_filed_proposal(context, cluster_key: str, url: str) -> None:  # type: ignore[no-untyped-def]
+def step_seed_filed_proposal(context, cluster_key: str, url: str) -> None:
     proofs = _proofs_dir()
     proofs.mkdir(parents=True, exist_ok=True)
     template = json.loads((_FIXTURES_DIR / "proposal-template.json").read_text(encoding="utf-8"))
@@ -429,7 +429,7 @@ def step_seed_filed_proposal(context, cluster_key: str, url: str) -> None:  # ty
 
 
 @given("the environment is interactive")
-def step_env_interactive(context) -> None:  # type: ignore[no-untyped-def]
+def step_env_interactive(context) -> None:
     fake_sys = mock.MagicMock(wraps=sys)
     fake_sys.stdin.isatty.return_value = True
     fake_sys.stdout.isatty.return_value = True
@@ -437,7 +437,7 @@ def step_env_interactive(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the environment is headless")
-def step_env_headless(context) -> None:  # type: ignore[no-untyped-def]
+def step_env_headless(context) -> None:
     fake_sys = mock.MagicMock(wraps=sys)
     fake_sys.stdin.isatty.return_value = False
     fake_sys.stdout.isatty.return_value = False
@@ -445,13 +445,13 @@ def step_env_headless(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given('the operator confirms with "{response}"')
-def step_operator_input(context, response: str) -> None:  # type: ignore[no-untyped-def]
+def step_operator_input(context, response: str) -> None:
     setattr(context, _INPUT_RESPONSE_KEY, response)
     _register_patcher(context, mock.patch("builtins.input", return_value=response))
 
 
 @given('gh issue create returns "{url}"')
-def step_gh_create_returns(context, url: str) -> None:  # type: ignore[no-untyped-def]
+def step_gh_create_returns(context, url: str) -> None:
     setattr(context, _GH_RESPONSE_KEY, url)
     fake_run = _make_gh_run_dispatcher(context)
     _register_patcher(
@@ -460,7 +460,7 @@ def step_gh_create_returns(context, url: str) -> None:  # type: ignore[no-untype
 
 
 @when('I invoke chores_propose_ghi for "{slug}"')
-def step_invoke_propose_ghi(context, slug: str) -> None:  # type: ignore[no-untyped-def]
+def step_invoke_propose_ghi(context, slug: str) -> None:
     from gzkit.commands.chores import chores_propose_ghi  # noqa: PLC0415
 
     output = io.StringIO()
@@ -470,19 +470,19 @@ def step_invoke_propose_ghi(context, slug: str) -> None:  # type: ignore[no-unty
 
 
 @then('the most recent proposal record has "{field}" equal to true')
-def step_proposal_field_true(context, field: str) -> None:  # type: ignore[no-untyped-def]
+def step_proposal_field_true(context, field: str) -> None:
     record = _read_proposal(_newest_proposal_path())
     assert record.get(field) is True, f"Expected {field}=true; record: {record}"
 
 
 @then('the most recent proposal record has "{field}" equal to false')
-def step_proposal_field_false(context, field: str) -> None:  # type: ignore[no-untyped-def]
+def step_proposal_field_false(context, field: str) -> None:
     record = _read_proposal(_newest_proposal_path())
     assert record.get(field) is False, f"Expected {field}=false; record: {record}"
 
 
 @then('the most recent proposal record has "{field}" equal to "{expected}"')
-def step_proposal_field_equals(context, field: str, expected: str) -> None:  # type: ignore[no-untyped-def]
+def step_proposal_field_equals(context, field: str, expected: str) -> None:
     record = _read_proposal(_newest_proposal_path())
     assert record.get(field) == expected, f"Expected {field}={expected!r}; record: {record}"
 
@@ -493,7 +493,7 @@ def step_proposal_field_equals(context, field: str, expected: str) -> None:  # t
 
 
 @given("a minimal proposal record without filed, ghi_url, or advisory fields")
-def step_minimal_proposal_record(context) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_proposal_record(context) -> None:
     payload = {
         "cluster_key": "dim:clarity:low",
         "recurrence_count": 3,
@@ -511,13 +511,13 @@ def step_minimal_proposal_record(context) -> None:  # type: ignore[no-untyped-de
 
 
 @then('the proposal record deserializes with "{field}" equal to false')
-def step_minimal_proposal_field_false(context, field: str) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_proposal_field_false(context, field: str) -> None:
     value = getattr(context.minimal_proposal, field)
     assert value is False, f"Expected {field}=false on minimal record; got {value!r}"
 
 
 @then('the proposal record deserializes with "{field}" equal to None')
-def step_minimal_proposal_field_none(context, field: str) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_proposal_field_none(context, field: str) -> None:
     value = getattr(context.minimal_proposal, field)
     assert value is None, f"Expected {field}=None on minimal record; got {value!r}"
 
@@ -552,7 +552,7 @@ _RULE_EDIT_NO_TRAILER = (
 
 
 @given(_RULE_EDIT_NO_TRAILER)
-def step_rule_edit_no_trailer(context, number: int) -> None:  # type: ignore[no-untyped-def]
+def step_rule_edit_no_trailer(context, number: int) -> None:
     _bootstrap_git_repo()
     rules_dir = Path(".gzkit") / "rules"
     rules_dir.mkdir(parents=True, exist_ok=True)
@@ -568,7 +568,7 @@ _RULE_EDIT_WITH_TRAILER = (
 
 
 @given(_RULE_EDIT_WITH_TRAILER)
-def step_rule_edit_with_trailer(context, number: int) -> None:  # type: ignore[no-untyped-def]
+def step_rule_edit_with_trailer(context, number: int) -> None:
     _bootstrap_git_repo()
     rules_dir = Path(".gzkit") / "rules"
     rules_dir.mkdir(parents=True, exist_ok=True)
@@ -586,7 +586,7 @@ def step_rule_edit_with_trailer(context, number: int) -> None:  # type: ignore[n
 
 
 @given('gh issue view labels for {number:d} include "{label}"')
-def step_gh_issue_labels(context, number: int, label: str) -> None:  # type: ignore[no-untyped-def]
+def step_gh_issue_labels(context, number: int, label: str) -> None:
     labels_map = getattr(context, _GH_LABELS_KEY, {})
     labels_map.setdefault(str(number), []).append(label)
     setattr(context, _GH_LABELS_KEY, labels_map)

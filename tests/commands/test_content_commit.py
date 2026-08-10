@@ -35,7 +35,7 @@ def _entry(entry_id: str, *, tier: str = "compressible", text: str = "body") -> 
         id=entry_id,
         surface="AGENTS.md",
         section="behavior-rules",
-        tier=tier,  # type: ignore[arg-type]
+        tier=tier,
         classification="Mechanical",
         text=text,
         origin="test",

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import io
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 from rich.console import Console
 
 from gzkit.reporter import ColumnDef, ceremony_panel, kv_table, list_table, status_table

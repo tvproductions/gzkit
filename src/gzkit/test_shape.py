@@ -201,8 +201,9 @@ def build_inventory(project_root: Path) -> TestShapeInventory:
         )
         for op in scan_test_tree(tests_path)
     ]
+    ops.sort(key=lambda o: (o.file_path, o.line_number))
     return TestShapeInventory(
-        tautological=sorted(ops, key=lambda o: (o.file_path, o.line_number)),
+        tautological=ops,
         output_assertions=scan_output_assertions(tests_path, project_root),
     )
 

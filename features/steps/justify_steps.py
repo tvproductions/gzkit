@@ -16,7 +16,7 @@ import json
 from pathlib import Path
 from unittest import mock
 
-from behave import given, then  # type: ignore[import-untyped]
+from behave import given, then
 
 from gzkit.justify.walkthrough import SECTION_HEADINGS, SECTION_PROMPTS
 

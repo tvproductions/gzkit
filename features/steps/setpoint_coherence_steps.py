@@ -27,7 +27,7 @@ def _write_manifest(root: Path, payload: dict) -> None:
 
 
 @given("a project whose vendor manifest declares a setpoint for every routed pair")
-def step_manifest_coherent(context) -> None:  # type: ignore[no-untyped-def]
+def step_manifest_coherent(context) -> None:
     """Every (content_type, vendor) pair in routes has a legal setpoint."""
     _write_manifest(
         context._tmpdir,
@@ -39,7 +39,7 @@ def step_manifest_coherent(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("a project whose vendor manifest routes a pair with no declared setpoint")
-def step_manifest_missing_setpoint(context) -> None:  # type: ignore[no-untyped-def]
+def step_manifest_missing_setpoint(context) -> None:
     """A routed pair (AgentContract, codex) has no setpoint declared."""
     _write_manifest(
         context._tmpdir,
@@ -51,7 +51,7 @@ def step_manifest_missing_setpoint(context) -> None:  # type: ignore[no-untyped-
 
 
 @given("a project whose vendor manifest declares an illegal setpoint token")
-def step_manifest_illegal_token(context) -> None:  # type: ignore[no-untyped-def]
+def step_manifest_illegal_token(context) -> None:
     """A declared setpoint token is outside {lite, medium, heavy}."""
     _write_manifest(
         context._tmpdir,

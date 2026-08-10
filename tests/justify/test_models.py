@@ -28,17 +28,17 @@ class TestAnchorRefModel(unittest.TestCase):
             author="octocat",
         )
         with self.assertRaises(ValidationError):
-            anchor.identifier = "GHI-999"  # type: ignore[misc]
+            anchor.identifier = "GHI-999"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.19-01-01")
     def test_anchor_ref_forbids_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            AnchorRef(kind="ghi", identifier="GHI-1", mystery="value")  # type: ignore[call-arg]
+            AnchorRef(kind="ghi", identifier="GHI-1", mystery="value")
 
     @covers("REQ-0.0.19-01-02")
     def test_anchor_rejects_adr_kind(self) -> None:
         with self.assertRaises(ValidationError) as ctx:
-            AnchorRef(kind="adr", identifier="ADR-0.0.19")  # type: ignore[arg-type]
+            AnchorRef(kind="adr", identifier="ADR-0.0.19")
         self.assertIn("adr", str(ctx.exception).lower())
 
     @covers("REQ-0.0.19-01-02")
@@ -60,9 +60,9 @@ class TestEvidenceBundleModel(unittest.TestCase):
             warnings=(),
         )
         with self.assertRaises(ValidationError):
-            bundle.taxonomy_reference = "other.md"  # type: ignore[misc]
+            bundle.taxonomy_reference = "other.md"  # ty: ignore[invalid-assignment]
         with self.assertRaises(ValidationError):
-            EvidenceBundle(  # type: ignore[call-arg]
+            EvidenceBundle(
                 anchor=anchor,
                 matching_rules=(),
                 ledger_events=(),

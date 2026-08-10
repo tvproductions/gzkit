@@ -36,7 +36,7 @@ def _entry(
         id=entry_id,
         surface="AGENTS.md",
         section="behavior-rules",
-        tier=tier,  # type: ignore[arg-type]
+        tier=tier,
         classification="Mechanical",
         text=text,
         origin="test",
@@ -241,7 +241,7 @@ class TestRenditionProvenanceSidecar(unittest.TestCase):
                 committed_ts="t",
                 attestor="a",
                 attestation_text="b",
-                bogus="nope",  # type: ignore[call-arg]
+                bogus="nope",
             )
 
 

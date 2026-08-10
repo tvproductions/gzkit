@@ -10,7 +10,7 @@ from gzkit.config import GzkitConfig
 
 
 @given("an OBPI brief with one REQ and a matching test exists")
-def step_brief_with_matching_test(_context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_with_matching_test(_context) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
     obpi_path.parent.mkdir(parents=True, exist_ok=True)
@@ -45,7 +45,7 @@ def step_brief_with_matching_test(_context) -> None:  # type: ignore[no-untyped-
 
 
 @given("an OBPI brief with one REQ and no matching test exists")
-def step_brief_without_matching_test(_context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_without_matching_test(_context) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
     obpi_path.parent.mkdir(parents=True, exist_ok=True)

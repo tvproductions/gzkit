@@ -41,7 +41,7 @@ from gzkit.tasks import (
 def covers(target: str):  # noqa: D401
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity
@@ -104,7 +104,7 @@ class TestTaskId(unittest.TestCase):
 
         tid = TaskId.parse("TASK-0.20.0-01-01-01")
         with self.assertRaises(ValidationError):
-            tid.semver = "1.0.0"  # type: ignore[misc]
+            tid.semver = "1.0.0"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.22.0-01-01")
     @covers("REQ-0.22.0-01-06")
@@ -115,7 +115,7 @@ class TestTaskId(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskId(semver="0.1.0", obpi_item="01", req_index="01", seq="01", extra="bad")  # type: ignore[call-arg]
+            TaskId(semver="0.1.0", obpi_item="01", req_index="01", seq="01", extra="bad")
 
 
 class TestTaskStatus(unittest.TestCase):
@@ -240,7 +240,7 @@ class TestTaskEntity(unittest.TestCase):
 
         task = self._make_task()
         with self.assertRaises(ValidationError):
-            task.status = TaskStatus.IN_PROGRESS  # type: ignore[misc]
+            task.status = TaskStatus.IN_PROGRESS  # ty: ignore[invalid-assignment]
 
     def test_extra_forbid(self) -> None:
         from pydantic import ValidationError
@@ -252,7 +252,7 @@ class TestTaskEntity(unittest.TestCase):
                 status=TaskStatus.PENDING,
                 parent_req="REQ-0.20.0-01-01",
                 parent_obpi="OBPI-0.20.0-01",
-                extra_field="bad",  # type: ignore[call-arg]
+                extra_field="bad",
             )
 
 
@@ -424,7 +424,7 @@ class TestTaskBlockedEvent(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskBlockedEvent(event="task_blocked", **_TASK_FIELDS)  # type: ignore[arg-type]
+            TaskBlockedEvent(event="task_blocked", **_TASK_FIELDS)
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-02")
@@ -469,7 +469,7 @@ class TestTaskEscalatedEvent(unittest.TestCase):
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            TaskEscalatedEvent(event="task_escalated", **_TASK_FIELDS)  # type: ignore[arg-type]
+            TaskEscalatedEvent(event="task_escalated", **_TASK_FIELDS)
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")

@@ -858,7 +858,7 @@ class TestCheckAdrEvaluationVerdictSubstanceChannel(unittest.TestCase):
             self.assertEqual(check_adr_evaluation_verdict(adr_dir), [])
 
 
-def _structurally_incomplete_eval_result():  # type: ignore[no-untyped-def]
+def _structurally_incomplete_eval_result():
     from gzkit.adr_eval import AdrEvalResult, DimensionScore, EvalVerdict
 
     return AdrEvalResult(

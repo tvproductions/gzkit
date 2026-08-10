@@ -17,7 +17,7 @@ from gzkit.commands.config_paths import (
 def covers(target: str):  # noqa: D401
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity

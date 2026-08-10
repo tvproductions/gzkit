@@ -28,7 +28,7 @@ class TestCoreTransitionRule(unittest.TestCase):
     def test_transition_rule_immutable(self) -> None:
         rule = TransitionRule(from_state="Draft", to_state="Proposed")
         with self.assertRaises(ValidationError):
-            rule.from_state = "Active"
+            rule.from_state = "Active"  # ty: ignore[invalid-assignment]
 
 
 class TestCoreTransitionTables(unittest.TestCase):

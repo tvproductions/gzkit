@@ -74,7 +74,7 @@ class TestFoundationGrandfatherManifestValidation(unittest.TestCase):
     def test_model_is_frozen(self) -> None:
         entry = FoundationGrandfatherManifest(**VALID_ENTRY)
         with self.assertRaises(ValidationError):
-            entry.id = "ADR-0.0.2"  # type: ignore[misc]
+            entry.id = "ADR-0.0.2"  # ty: ignore[invalid-assignment]
 
 
 class TestGoldenFileTamperGuard(unittest.TestCase):

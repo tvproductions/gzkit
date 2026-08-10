@@ -60,7 +60,7 @@ class TestAdrFrontmatterSensitivity(unittest.TestCase):
     def test_field_is_immutable(self) -> None:
         model = AdrFrontmatter(**_adr_kwargs(sensitivity="security"))
         with self.assertRaises(ValidationError):
-            model.sensitivity = None  # type: ignore[misc]
+            model.sensitivity = None  # ty: ignore[invalid-assignment]
 
 
 class TestObpiFrontmatterSensitivity(unittest.TestCase):
@@ -79,7 +79,7 @@ class TestObpiFrontmatterSensitivity(unittest.TestCase):
     def test_field_is_immutable(self) -> None:
         model = ObpiFrontmatter(**_obpi_kwargs(sensitivity="security"))
         with self.assertRaises(ValidationError):
-            model.sensitivity = None  # type: ignore[misc]
+            model.sensitivity = None  # ty: ignore[invalid-assignment]
 
 
 if __name__ == "__main__":

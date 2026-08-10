@@ -79,13 +79,13 @@ class TestAirlockModel(unittest.TestCase):
 
         # Mutation post-construction is rejected (frozen=True).
         with self.assertRaises(pydantic.ValidationError):
-            edge.source = "z"
+            edge.source = "z"  # ty: ignore[invalid-assignment]
         with self.assertRaises(pydantic.ValidationError):
-            seam_map.bodies = ()
+            seam_map.bodies = ()  # ty: ignore[invalid-assignment]
         with self.assertRaises(pydantic.ValidationError):
-            preflight.blast_radius = 2
+            preflight.blast_radius = 2  # ty: ignore[invalid-assignment]
         with self.assertRaises(pydantic.ValidationError):
-            drift.verdict = Verdict.BLOCK
+            drift.verdict = Verdict.BLOCK  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.33.0-01-02")
     def test_seam_map_two_layer(self) -> None:
@@ -143,7 +143,7 @@ class TestAirlockModel(unittest.TestCase):
         # (b) Reassigning provenance on a constructed edge is rejected (frozen).
         edge = _edge()
         with self.assertRaises(pydantic.ValidationError):
-            edge.provenance = Provenance.OBSERVED
+            edge.provenance = Provenance.OBSERVED  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.33.0-01-04")
     def test_preflight_and_driftdiff_shape(self) -> None:

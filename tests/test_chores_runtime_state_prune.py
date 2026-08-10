@@ -69,7 +69,7 @@ def _project(root: Path) -> tuple[Path, Path]:
 
 def _sync(root: Path) -> list[str]:
     """Run the production sync and return the paths it reports changing."""
-    return sync_pkg_surfaces(root, GzkitConfig(project_name="t"))  # type: ignore[call-arg]
+    return sync_pkg_surfaces(root, GzkitConfig(project_name="t"))
 
 
 def _pkg_files(root: Path) -> set[str]:

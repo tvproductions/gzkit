@@ -46,12 +46,12 @@ class TestPromiseAssessment(unittest.TestCase):
     def test_frozen(self) -> None:
         pa = PromiseAssessment(requirement="REQ-1", met=True)
         with self.assertRaises(ValidationError):
-            pa.met = False  # type: ignore[misc]
+            pa.met = False  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.23.0-03-06")
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
-            PromiseAssessment(requirement="R", met=True, extra_field="bad")  # type: ignore[call-arg]
+            PromiseAssessment(requirement="R", met=True, extra_field="bad")
 
 
 class TestReviewerAssessment(unittest.TestCase):
@@ -71,7 +71,7 @@ class TestReviewerAssessment(unittest.TestCase):
             "verdict": ReviewVerdict.PASS,
         }
         defaults.update(overrides)
-        return ReviewerAssessment(**defaults)  # type: ignore[arg-type]
+        return ReviewerAssessment(**defaults)
 
     @covers("REQ-0.23.0-03-06")
     def test_pass_verdict(self) -> None:
@@ -105,7 +105,7 @@ class TestReviewerAssessment(unittest.TestCase):
     def test_frozen(self) -> None:
         a = self._make_assessment()
         with self.assertRaises(ValidationError):
-            a.verdict = ReviewVerdict.FAIL  # type: ignore[misc]
+            a.verdict = ReviewVerdict.FAIL  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.23.0-03-06")
     def test_multiple_promises(self) -> None:
@@ -371,7 +371,7 @@ class TestFormatReviewerForCeremony(unittest.TestCase):
             "verdict": ReviewVerdict.CONCERNS,
         }
         defaults.update(overrides)
-        return ReviewerAssessment(**defaults)  # type: ignore[arg-type]
+        return ReviewerAssessment(**defaults)
 
     @covers("REQ-0.23.0-03-10")
     def test_contains_verdict(self) -> None:

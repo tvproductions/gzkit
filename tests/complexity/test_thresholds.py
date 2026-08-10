@@ -174,7 +174,7 @@ class ThresholdBandModel(unittest.TestCase):
             trigger_semantic="warn",
         )
         with self.assertRaises(ValidationError):
-            band.metric = "radon_mi"  # type: ignore[misc]
+            band.metric = "radon_mi"  # ty: ignore[invalid-assignment]
 
 
 class ThresholdTableModel(unittest.TestCase):
@@ -255,13 +255,13 @@ class ThresholdTableModel(unittest.TestCase):
     def test_table_is_frozen(self) -> None:
         table = self._make_radon_cc_table()
         with self.assertRaises(ValidationError):
-            table.corpus_revision = 2  # type: ignore[misc]
+            table.corpus_revision = 2  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.28-02-07")
     def test_bands_is_immutable_tuple(self) -> None:
         table = self._make_radon_cc_table()
         with self.assertRaises(ValidationError):
-            table.bands = ()  # type: ignore[misc]
+            table.bands = ()  # ty: ignore[invalid-assignment]
 
 
 class LoaderParser(unittest.TestCase):

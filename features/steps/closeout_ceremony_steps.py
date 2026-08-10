@@ -10,7 +10,7 @@ from gzkit.config import GzkitConfig
 
 
 @given("the OBPI brief has a closing argument")
-def step_obpi_has_closing_argument(_context) -> None:  # type: ignore[no-untyped-def]
+def step_obpi_has_closing_argument(_context) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     obpi_dir = Path(config.paths.adrs) / "obpis"
     brief_path = obpi_dir / "OBPI-0.1.0-01-demo-feature.md"
@@ -33,7 +33,7 @@ def step_obpi_has_closing_argument(_context) -> None:  # type: ignore[no-untyped
 
 
 @given("a reviewer assessment exists for the OBPI")
-def step_reviewer_assessment_exists(_context) -> None:  # type: ignore[no-untyped-def]
+def step_reviewer_assessment_exists(_context) -> None:
     config = GzkitConfig.load(Path(".gzkit.json"))
     adr_dir = Path(config.paths.adrs)
 

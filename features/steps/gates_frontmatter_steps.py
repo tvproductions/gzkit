@@ -15,7 +15,7 @@ from gzkit.config import GzkitConfig
 
 
 @given('ADR-{adr_id} has drifted status frontmatter "{drifted_status}"')
-def step_drift_adr_status(context, adr_id: str, drifted_status: str) -> None:  # type: ignore[no-untyped-def]
+def step_drift_adr_status(context, adr_id: str, drifted_status: str) -> None:
     """Overwrite an existing ADR's frontmatter to include a drifted status value."""
     _ = context
     config = GzkitConfig.load(Path(".gzkit.json"))

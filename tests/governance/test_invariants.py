@@ -53,7 +53,7 @@ class TestConstitutionalInvariantModel(unittest.TestCase):
                 claim="A test claim.",
                 structural_witness=["gz validate --test"],
                 composition_targets=[],
-                unknown_field="should fail",  # type: ignore[call-arg]
+                unknown_field="should fail",
             )
 
     @covers("REQ-0.0.37-01-01")

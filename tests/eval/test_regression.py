@@ -110,7 +110,7 @@ class TestBaselineStore(unittest.TestCase):
             dataset_version="1.0.0",
         )
         with self.assertRaises(ValidationError):
-            baseline.surface = "modified"  # type: ignore[misc]
+            baseline.surface = "modified"  # ty: ignore[invalid-assignment]
 
     def test_baseline_model_forbids_extra(self) -> None:
         """EvalBaseline rejects extra fields."""
@@ -121,7 +121,7 @@ class TestBaselineStore(unittest.TestCase):
                 timestamp="2026-01-01T00:00:00Z",
                 dimension_scores={"x": 1.0},
                 dataset_version="1.0.0",
-                extra_field="should fail",  # type: ignore[call-arg]
+                extra_field="should fail",
             )
 
 
@@ -232,7 +232,7 @@ class TestComparisonEngine(unittest.TestCase):
             passed=True,
         )
         with self.assertRaises(ValidationError):
-            report.passed = False  # type: ignore[misc]
+            report.passed = False  # ty: ignore[invalid-assignment]
 
     def test_report_model_forbids_extra(self) -> None:
         """RegressionReport rejects extra fields (extra='forbid')."""
@@ -241,7 +241,7 @@ class TestComparisonEngine(unittest.TestCase):
                 timestamp="2026-01-01T00:00:00Z",
                 commit_hash="abc",
                 passed=True,
-                extra_field="bad",  # type: ignore[call-arg]
+                extra_field="bad",
             )
 
     def test_deltas_include_all_dimensions(self) -> None:
@@ -389,7 +389,7 @@ class TestArbReceiptCompatibility(unittest.TestCase):
         """Receipt model is immutable."""
         receipt = RegressionReceiptPayload(commit_hash="abc", passed=True)
         with self.assertRaises(ValidationError):
-            receipt.passed = False  # type: ignore[misc]
+            receipt.passed = False  # ty: ignore[invalid-assignment]
 
 
 class TestExplicitUpdateControl(unittest.TestCase):

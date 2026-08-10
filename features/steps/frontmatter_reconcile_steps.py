@@ -50,13 +50,13 @@ def _set_frontmatter_field(adr_path: Path, key: str, value: str) -> None:
 
 
 @given('ADR-{adr_id} has drifted lane frontmatter "{drifted_lane}"')
-def step_drift_adr_lane(context, adr_id: str, drifted_lane: str) -> None:  # type: ignore[no-untyped-def]
+def step_drift_adr_lane(context, adr_id: str, drifted_lane: str) -> None:
     _ = context
     _set_frontmatter_field(_adr_file_for(adr_id), "lane", drifted_lane)
 
 
 @then('ADR-{adr_id} frontmatter "{key}" equals "{expected}"')
-def step_assert_fm_equals(context, adr_id: str, key: str, expected: str) -> None:  # type: ignore[no-untyped-def]
+def step_assert_fm_equals(context, adr_id: str, key: str, expected: str) -> None:
     _ = context
     content = _adr_file_for(adr_id).read_text(encoding="utf-8")
     assert f"{key}: {expected}" in content, (
@@ -65,7 +65,7 @@ def step_assert_fm_equals(context, adr_id: str, key: str, expected: str) -> None
 
 
 @then("a frontmatter-coherence receipt exists")
-def step_receipt_exists(context) -> None:  # type: ignore[no-untyped-def]
+def step_receipt_exists(context) -> None:
     _ = context
     receipts_dir = Path("artifacts") / "receipts" / "frontmatter-coherence"
     assert receipts_dir.is_dir(), f"{receipts_dir} must exist after reconcile"

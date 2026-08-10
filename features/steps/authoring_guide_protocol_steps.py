@@ -17,7 +17,7 @@ import json
 import tempfile
 from pathlib import Path
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 
 from gzkit.complexity.authoring.protocol import read_message, run_server
 
@@ -145,7 +145,7 @@ def _collect_responses(messages: list[bytes]) -> list[dict]:
 
 
 @given("a complexity guide protocol server is started")
-def step_server_started(context) -> None:  # type: ignore[no-untyped-def]
+def step_server_started(context) -> None:
     _build_synthetic_environment()
     context.protocol_messages: list[bytes] = []
     context.protocol_fixture: Path | None = None
@@ -153,7 +153,7 @@ def step_server_started(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when('a client sends an initialize request with version "{version}"')
-def step_send_initialize(context, version: str) -> None:  # type: ignore[no-untyped-def]
+def step_send_initialize(context, version: str) -> None:
     body = json.dumps(
         {"id": 1, "method": "initialize", "params": {"clientVersion": version}}
     ).encode("utf-8")
@@ -162,7 +162,7 @@ def step_send_initialize(context, version: str) -> None:  # type: ignore[no-unty
 
 
 @when("a client sends an analyze request for a Python fixture file")
-def step_send_analyze(context) -> None:  # type: ignore[no-untyped-def]
+def step_send_analyze(context) -> None:
     with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False, encoding="utf-8") as f:
         f.write(_ADVISE_SOURCE)
         context.protocol_fixture = Path(f.name)
@@ -181,7 +181,7 @@ def step_send_analyze(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when("a client sends a shutdown request")
-def step_send_shutdown(context) -> None:  # type: ignore[no-untyped-def]
+def step_send_shutdown(context) -> None:
     body = json.dumps({"id": 3, "method": "shutdown", "params": {}}).encode("utf-8")
     header = f"Content-Length: {len(body)}\r\n\r\n".encode("ascii")
     context.protocol_messages.append(header + body)
@@ -202,7 +202,7 @@ def step_send_shutdown(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('the server responds with protocol version "{version}" and supported capabilities')
-def step_check_initialize_response(context, version: str) -> None:  # type: ignore[no-untyped-def]
+def step_check_initialize_response(context, version: str) -> None:
     # Run server with queued messages so far (just initialize) + synthetic shutdown
     # to get the initialize response before the analyze and shutdown messages are queued.
     responses = _collect_responses(context.protocol_messages + [_SYNTHETIC_SHUTDOWN])
@@ -218,7 +218,7 @@ def step_check_initialize_response(context, version: str) -> None:  # type: igno
 
 
 @then("the server responds with a hints list")
-def step_check_analyze_response(context) -> None:  # type: ignore[no-untyped-def]
+def step_check_analyze_response(context) -> None:
     # Run server with queued messages so far (initialize + analyze) + synthetic shutdown.
     responses = _collect_responses(context.protocol_messages + [_SYNTHETIC_SHUTDOWN])
     assert len(responses) >= 2, (
@@ -232,7 +232,7 @@ def step_check_analyze_response(context) -> None:  # type: ignore[no-untyped-def
 
 
 @then("the server exits cleanly")
-def step_check_shutdown(context) -> None:  # type: ignore[no-untyped-def]
+def step_check_shutdown(context) -> None:
     assert context.protocol_exit_code == 0, (
         f"Expected exit code 0, got {context.protocol_exit_code}"
     )
@@ -241,7 +241,7 @@ def step_check_shutdown(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when("a client sends an analyze request for a clean Python fixture file")
-def step_send_analyze_clean(context) -> None:  # type: ignore[no-untyped-def]
+def step_send_analyze_clean(context) -> None:
     with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False, encoding="utf-8") as f:
         f.write("def simple(): pass\n")
         context.protocol_fixture = Path(f.name)
@@ -260,7 +260,7 @@ def step_send_analyze_clean(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the server responds with an empty hints list")
-def step_check_empty_hints_response(context) -> None:  # type: ignore[no-untyped-def]
+def step_check_empty_hints_response(context) -> None:
     responses = _collect_responses(context.protocol_messages + [_SYNTHETIC_SHUTDOWN])
     assert len(responses) >= 1, f"Expected at least 1 response, got {len(responses)}"
     resp = responses[0]
@@ -270,7 +270,7 @@ def step_check_empty_hints_response(context) -> None:  # type: ignore[no-untyped
 
 
 @when("a client sends a malformed envelope")
-def step_send_malformed(context) -> None:  # type: ignore[no-untyped-def]
+def step_send_malformed(context) -> None:
     context.protocol_messages.append(b"not json\r\n")
     stdin = io.BytesIO(b"".join(context.protocol_messages))
     stdout = io.BytesIO()
@@ -286,7 +286,7 @@ def step_send_malformed(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the server responds with parse error code -32700")
-def step_check_parse_error(context) -> None:  # type: ignore[no-untyped-def]
+def step_check_parse_error(context) -> None:
     assert len(context.protocol_responses) >= 1, "Expected an error response"
     resp = context.protocol_responses[0]
     assert "error" in resp, f"Expected 'error' in response, got: {resp}"
@@ -296,7 +296,7 @@ def step_check_parse_error(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the server responds with version mismatch error code -32099")
-def step_check_version_mismatch_error(context) -> None:  # type: ignore[no-untyped-def]
+def step_check_version_mismatch_error(context) -> None:
     responses = _collect_responses(context.protocol_messages + [_SYNTHETIC_SHUTDOWN])
     assert len(responses) >= 1, f"Expected at least 1 response, got {len(responses)}"
     resp = responses[0]

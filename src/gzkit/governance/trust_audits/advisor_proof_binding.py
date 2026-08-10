@@ -156,7 +156,7 @@ def _nested_dict(root: dict[str, object], *keys: str) -> dict[str, object]:
         value = cursor.get(key)
         if not isinstance(value, dict):
             return {}
-        cursor = value  # type: ignore
+        cursor = value
     return cursor
 
 
@@ -176,7 +176,7 @@ def _read_json_dict(path: Path) -> dict[str, object] | None:
     """Read a JSON object; return ``None`` for unreadable, malformed, or non-object payloads."""
     payload = _read_json(path)
     if isinstance(payload, dict):
-        return payload  # type: ignore
+        return payload
     return None
 
 

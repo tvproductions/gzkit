@@ -15,7 +15,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 _SURFACE = """# Test Agent Contract
 

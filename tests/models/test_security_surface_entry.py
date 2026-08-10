@@ -43,7 +43,7 @@ class TestSecuritySurfaceEntryConfig(unittest.TestCase):
     def test_assignment_after_construction_raises(self) -> None:
         entry = SecuritySurfaceEntry(**_valid_kwargs())
         with self.assertRaises(ValidationError):
-            entry.rationale = "altered"  # type: ignore[misc]
+            entry.rationale = "altered"  # ty: ignore[invalid-assignment]
 
 
 class TestSecuritySurfaceEntryRejection(unittest.TestCase):

@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from unittest.mock import patch
 
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.models.corpus import Corpus, CorpusEntry

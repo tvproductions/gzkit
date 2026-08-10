@@ -75,7 +75,7 @@ def _invoke(**kwargs: object) -> tuple[int, str, str]:
     code = 0
     try:
         with redirect_stdout(out), redirect_stderr(err):
-            code = complexity_guide_cmd(**kwargs) or 0  # type: ignore[arg-type]
+            code = complexity_guide_cmd(**kwargs) or 0
     except SystemExit as exc:
         raw = exc.code
         code = raw if isinstance(raw, int) else 1
@@ -251,10 +251,10 @@ class TestComplexityGuideCliAuditParity(unittest.TestCase):
             msg="`complexity guide` not present in cross-coverage scan",
         )
         self.assertTrue(
-            complexity_guide.all_passed,  # type: ignore[union-attr]
+            complexity_guide.all_passed,
             msg=(
                 f"complexity guide coverage gaps: "
-                f"{[s.surface for s in complexity_guide.surfaces if not s.passed]}"  # type: ignore[union-attr]
+                f"{[s.surface for s in complexity_guide.surfaces if not s.passed]}"
             ),
         )
 

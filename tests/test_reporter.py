@@ -53,13 +53,13 @@ class TestColumnDef(unittest.TestCase):
 
         col = ColumnDef(header="Name")
         with self.assertRaises(ValidationError):
-            col.header = "Changed"  # type: ignore[misc]
+            col.header = "Changed"  # ty: ignore[invalid-assignment]
 
     def test_extra_field_rejected(self) -> None:
         from pydantic import ValidationError
 
         with self.assertRaises(ValidationError):
-            ColumnDef(header="Name", bogus="value")  # type: ignore[call-arg]
+            ColumnDef(header="Name", bogus="value")
 
 
 class TestStatusTable(unittest.TestCase):

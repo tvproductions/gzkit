@@ -131,7 +131,7 @@ def _invoke(**kwargs: object) -> tuple[int, str, str]:
     code = 0
     try:
         with redirect_stdout(out), redirect_stderr(err):
-            code = complexity_advise_cmd(**kwargs) or 0  # type: ignore[arg-type]
+            code = complexity_advise_cmd(**kwargs) or 0
     except SystemExit as exc:
         raw = exc.code
         code = raw if isinstance(raw, int) else 1
@@ -410,10 +410,10 @@ class TestComplexityAdviseCliAuditParity(unittest.TestCase):
             msg="`complexity advise` not present in cross-coverage scan",
         )
         self.assertTrue(
-            complexity_advise.all_passed,  # type: ignore[union-attr]
+            complexity_advise.all_passed,
             msg=(
                 f"complexity advise coverage gaps: "
-                f"{[s.surface for s in complexity_advise.surfaces if not s.passed]}"  # type: ignore[union-attr]
+                f"{[s.surface for s in complexity_advise.surfaces if not s.passed]}"
             ),
         )
 
@@ -428,7 +428,7 @@ class TestComplexityAdviseHelpManpageParity(unittest.TestCase):
 
         parser = _build_parser()
         advise_parser = _resolve_advise_subparser(parser)
-        help_text = advise_parser.format_help()  # type: ignore[attr-defined]
+        help_text = advise_parser.format_help()
         self.assertIn("usage:", help_text.lower())
         self.assertIn("--json", help_text)
         self.assertIn("--quiet", help_text)

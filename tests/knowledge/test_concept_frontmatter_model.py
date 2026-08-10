@@ -35,7 +35,7 @@ class TestConceptFrontmatterModel(unittest.TestCase):
     def test_missing_type_is_rejected(self) -> None:
         """REQ-02: a mapping missing `type` fails validation."""
         with self.assertRaises(ValidationError):
-            ConceptFrontmatter()
+            ConceptFrontmatter()  # ty: ignore[missing-argument]
 
     @covers("REQ-0.30.0-01-02")
     def test_empty_type_is_rejected(self) -> None:

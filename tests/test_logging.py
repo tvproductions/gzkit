@@ -39,7 +39,7 @@ class TestConfigureLogging(unittest.TestCase):
     def test_configure_logging_accepts_all_verbosities(self) -> None:
         for verbosity in ("quiet", "normal", "verbose", "debug"):
             buf = io.StringIO()
-            configure_logging(verbosity, console_stream=buf)  # type: ignore[arg-type]
+            configure_logging(verbosity, console_stream=buf)
 
     def test_default_verbosity_is_normal(self) -> None:
         buf = io.StringIO()

@@ -33,7 +33,7 @@ class TestHistoricalAttestationWaiverFrozen(unittest.TestCase):
             added_under="OBPI-0.0.36-04-historical-self-close-waivers",
         )
         with self.assertRaises(ValidationError):
-            waiver.receipt_id = "different-id"  # type: ignore[misc]
+            waiver.receipt_id = "different-id"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.36-04-06")
     def test_waiver_extra_field_forbidden(self) -> None:
@@ -45,19 +45,19 @@ class TestHistoricalAttestationWaiverFrozen(unittest.TestCase):
                 deprecated_shape="attestation_requirement: optional",
                 rationale="Pre-cutoff self-close receipt.",
                 added_under="OBPI-0.0.36-04-historical-self-close-waivers",
-                extra_field="should fail",  # type: ignore[call-arg]
+                extra_field="should fail",
             )
 
     @covers("REQ-0.0.36-04-06")
     def test_waiver_required_field_absence_raises(self) -> None:
         """Omitting receipt_id from HistoricalAttestationWaiver raises ValidationError."""
         with self.assertRaises(ValidationError):
-            HistoricalAttestationWaiver(
+            HistoricalAttestationWaiver(  # ty: ignore[missing-argument]
                 obpi_id="OBPI-0.0.36-04",
                 deprecated_shape="attestation_requirement: optional",
                 rationale="Pre-cutoff self-close receipt.",
                 added_under="OBPI-0.0.36-04-historical-self-close-waivers",
-            )  # type: ignore[call-arg]
+            )
 
     @covers("REQ-0.0.36-04-01")
     @covers("REQ-0.0.36-04-06")
@@ -87,7 +87,7 @@ class TestHistoricalAttestationWaiverFile(unittest.TestCase):
         with self.assertRaises(ValidationError):
             HistoricalAttestationWaiverFile(
                 waivers=[],
-                extra_field="should fail",  # type: ignore[call-arg]
+                extra_field="should fail",
             )
 
     @covers("REQ-0.0.36-04-06")

@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 _SCHEMA = "gzkit.ledger.v1"
 _CUTOVER_TS = "2026-06-07T11:00:00+00:00"

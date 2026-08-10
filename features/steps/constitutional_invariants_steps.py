@@ -32,7 +32,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 
 import jsonschema
-from behave import given, then, when  # type: ignore[import-untyped]
+from behave import given, then, when
 from pydantic import ValidationError
 
 from gzkit.cli import main
@@ -100,25 +100,25 @@ def _commit_rendition(root: Path, content: bytes) -> None:
 
 
 @given("the constitutional invariant registry has at least one entry")
-def step_seed_registry(context) -> None:  # type: ignore[no-untyped-def]
+def step_seed_registry(context) -> None:
     _seed_registry(Path.cwd())
 
 
 @given("AGENTS.md contains the current rendered output")
-def step_agents_md_matches(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_matches(context) -> None:
     rendered = _render_bytes(Path.cwd())
     (Path.cwd() / "AGENTS.md").write_bytes(rendered)
 
 
 @given("AGENTS.md contains stale content")
-def step_agents_md_stale(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_stale(context) -> None:
     (Path.cwd() / "AGENTS.md").write_text(
         "stale content — does not match rendered output", encoding="utf-8"
     )
 
 
 @when('I run "gz governance render --target agents-md --stdout" twice')
-def step_run_stdout_twice(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_stdout_twice(context) -> None:
     code1, out1 = _invoke_capture("governance", "render", "--target", "agents-md", "--stdout")
     code2, out2 = _invoke_capture("governance", "render", "--target", "agents-md", "--stdout")
     context.stdout_run1 = out1
@@ -127,40 +127,40 @@ def step_run_stdout_twice(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when('I run "gz governance render --target agents-md --check"')
-def step_run_check(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_check(context) -> None:
     code, output = _invoke_capture("governance", "render", "--target", "agents-md", "--check")
     context.exit_code = code
     context.output = output
 
 
 @when('I run "gz governance render --target agents-md"')
-def step_run_write(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_write(context) -> None:
     code, output = _invoke_capture("governance", "render", "--target", "agents-md")
     context.exit_code = code
     context.output = output
 
 
 @when('I run "gz governance render --target skill-readme"')
-def step_run_unsupported_target(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_unsupported_target(context) -> None:
     code, output = _invoke_capture("governance", "render", "--target", "skill-readme")
     context.exit_code = code
     context.output = output
 
 
 @when('I run "gz governance render --help"')
-def step_run_help(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_help(context) -> None:
     code, output = _invoke_capture("governance", "render", "--help")
     context.exit_code = code
     context.output = output
 
 
 @then("AGENTS.md exists in the workspace")
-def step_agents_md_exists(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_exists(context) -> None:
     assert (Path.cwd() / "AGENTS.md").exists(), "AGENTS.md was not written"
 
 
 @then("the two outputs are byte-identical")
-def step_outputs_byte_identical(context) -> None:  # type: ignore[no-untyped-def]
+def step_outputs_byte_identical(context) -> None:
     assert context.stdout_run1 == context.stdout_run2, (
         f"Outputs are not byte-identical. Run 1 length={len(context.stdout_run1)}, "
         f"Run 2 length={len(context.stdout_run2)}"
@@ -178,14 +178,14 @@ def step_outputs_byte_identical(context) -> None:  # type: ignore[no-untyped-def
 
 
 @given("AGENTS.md matches the rendered registry output")
-def step_agents_md_matches_registry(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_matches_registry(context) -> None:
     root = Path.cwd()
     _commit_rendition(root, _TEST_RENDITION)
     (root / "AGENTS.md").write_bytes(_TEST_RENDITION)
 
 
 @given("AGENTS.md differs from the rendered registry output")
-def step_agents_md_differs_registry(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_differs_registry(context) -> None:
     root = Path.cwd()
     _commit_rendition(root, _TEST_RENDITION)
     (root / "AGENTS.md").write_text(
@@ -194,19 +194,19 @@ def step_agents_md_differs_registry(context) -> None:  # type: ignore[no-untyped
 
 
 @given("a committed AGENTS.md rendition exists")
-def step_committed_rendition_exists(context) -> None:  # type: ignore[no-untyped-def]
+def step_committed_rendition_exists(context) -> None:
     _commit_rendition(Path.cwd(), _TEST_RENDITION)
 
 
 @when('I run "gz validate --invariant-coherence"')
-def step_run_invariant_coherence(context) -> None:  # type: ignore[no-untyped-def]
+def step_run_invariant_coherence(context) -> None:
     code, output = _invoke_capture("validate", "--invariant-coherence")
     context.exit_code = code
     context.output = output
 
 
 @then('a "composition_rendered" event is appended to the ledger')
-def step_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-untyped-def]
+def step_composition_rendered_in_ledger(context) -> None:
     ledger_path = Path.cwd() / ".gzkit" / "ledger.jsonl"
     assert ledger_path.exists(), "ledger.jsonl does not exist"
     found = False
@@ -224,7 +224,7 @@ def step_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-unt
 
 
 @then('no "composition_rendered" event is appended to the ledger')
-def step_no_composition_rendered_in_ledger(context) -> None:  # type: ignore[no-untyped-def]
+def step_no_composition_rendered_in_ledger(context) -> None:
     # Read-only contract (REQ-0.0.37-03-03, amended): the validator no longer
     # emits composition_rendered on any run — removed (no consumer; the per-run
     # emission broke the gz check / pre-push gate). Regression lock.
@@ -278,17 +278,17 @@ _VALID_BRIEF_FIELDS = {
 
 
 @given("a valid BriefStructure field set")
-def step_valid_brief_field_set(context) -> None:  # type: ignore[no-untyped-def]
+def step_valid_brief_field_set(context) -> None:
     context.brief_fields = dict(_VALID_BRIEF_FIELDS)
 
 
 @when("I construct a BriefStructure instance")
-def step_construct_brief_structure(context) -> None:  # type: ignore[no-untyped-def]
+def step_construct_brief_structure(context) -> None:
     context.brief = BriefStructure(**context.brief_fields)
 
 
 @then("the model is frozen and mutation raises an error")
-def step_brief_is_frozen(context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_is_frozen(context) -> None:
     try:
         context.brief.id = "MUTATED"
     except (ValueError, TypeError):
@@ -297,7 +297,7 @@ def step_brief_is_frozen(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("constructing with an empty allowlist raises ValidationError")
-def step_empty_allowlist_rejected(context) -> None:  # type: ignore[no-untyped-def]
+def step_empty_allowlist_rejected(context) -> None:
     try:
         BriefStructure(**{**_VALID_BRIEF_FIELDS, "allowlist": []})
     except ValidationError:
@@ -306,7 +306,7 @@ def step_empty_allowlist_rejected(context) -> None:  # type: ignore[no-untyped-d
 
 
 @then("constructing with an empty reqs list raises ValidationError")
-def step_empty_reqs_rejected(context) -> None:  # type: ignore[no-untyped-def]
+def step_empty_reqs_rejected(context) -> None:
     try:
         BriefStructure(**{**_VALID_BRIEF_FIELDS, "reqs": []})
     except ValidationError:
@@ -315,12 +315,12 @@ def step_empty_reqs_rejected(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the obpi_brief_structure.json schema file")
-def step_brief_schema_file(context) -> None:  # type: ignore[no-untyped-def]
+def step_brief_schema_file(context) -> None:
     context.brief_schema = json.loads(_BRIEF_SCHEMA.read_text(encoding="utf-8"))
 
 
 @when("I validate a compliant brief instance against it")
-def step_validate_compliant_instance(context) -> None:  # type: ignore[no-untyped-def]
+def step_validate_compliant_instance(context) -> None:
     context.schema_error = None
     try:
         jsonschema.validate(dict(_VALID_BRIEF_FIELDS), context.brief_schema)
@@ -329,14 +329,14 @@ def step_validate_compliant_instance(context) -> None:  # type: ignore[no-untype
 
 
 @then("validation succeeds")
-def step_schema_validation_succeeds(context) -> None:  # type: ignore[no-untyped-def]
+def step_schema_validation_succeeds(context) -> None:
     assert context.schema_error is None, (
         f"compliant instance failed schema validation: {context.schema_error}"
     )
 
 
 @then("an instance missing the reqs field fails validation")
-def step_schema_rejects_missing_reqs(context) -> None:  # type: ignore[no-untyped-def]
+def step_schema_rejects_missing_reqs(context) -> None:
     incomplete = {k: v for k, v in _VALID_BRIEF_FIELDS.items() if k != "reqs"}
     try:
         jsonschema.validate(incomplete, context.brief_schema)
@@ -346,13 +346,13 @@ def step_schema_rejects_missing_reqs(context) -> None:  # type: ignore[no-untype
 
 
 @given("a legacy OBPI brief file without structured frontmatter fields")
-def step_legacy_brief_file(context) -> None:  # type: ignore[no-untyped-def]
+def step_legacy_brief_file(context) -> None:
     context.brief_path = _BRIEF_FIXTURES / "legacy.md"
     assert context.brief_path.is_file(), f"missing fixture: {context.brief_path}"
 
 
 @when("I call parse_brief on it in permissive mode")
-def step_parse_brief_permissive(context) -> None:  # type: ignore[no-untyped-def]
+def step_parse_brief_permissive(context) -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         context.parsed = parse_brief(context.brief_path)
@@ -360,20 +360,20 @@ def step_parse_brief_permissive(context) -> None:  # type: ignore[no-untyped-def
 
 
 @then("the result is a LegacyBriefShape instance")
-def step_result_is_legacy_shape(context) -> None:  # type: ignore[no-untyped-def]
+def step_result_is_legacy_shape(context) -> None:
     assert isinstance(context.parsed, LegacyBriefShape), (
         f"expected LegacyBriefShape, got {type(context.parsed).__name__}"
     )
 
 
 @then("a DeprecationWarning is emitted")
-def step_deprecation_warning_emitted(context) -> None:  # type: ignore[no-untyped-def]
+def step_deprecation_warning_emitted(context) -> None:
     deprecations = [w for w in context.warnings if issubclass(w.category, DeprecationWarning)]
     assert deprecations, "parse_brief emitted no DeprecationWarning for a legacy brief"
 
 
 @when("I call parse_brief on it with strict=True")
-def step_parse_brief_strict(context) -> None:  # type: ignore[no-untyped-def]
+def step_parse_brief_strict(context) -> None:
     context.parse_error = None
     try:
         parse_brief(context.brief_path, strict=True)
@@ -382,20 +382,20 @@ def step_parse_brief_strict(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("a ValueError is raised")
-def step_value_error_raised(context) -> None:  # type: ignore[no-untyped-def]
+def step_value_error_raised(context) -> None:
     assert isinstance(context.parse_error, ValueError), (
         "parse_brief(strict=True) did not raise ValueError on a legacy brief"
     )
 
 
 @given("the OBPI-0.0.37-04 brief file with structured frontmatter")
-def step_obpi_0_0_37_04_brief(context) -> None:  # type: ignore[no-untyped-def]
+def step_obpi_0_0_37_04_brief(context) -> None:
     context.brief_path = _OBPI_0_0_37_04_BRIEF
     assert context.brief_path.is_file(), f"missing brief: {context.brief_path}"
 
 
 @when("I call parse_brief on it")
-def step_parse_brief_default(context) -> None:  # type: ignore[no-untyped-def]
+def step_parse_brief_default(context) -> None:
     with warnings.catch_warnings(record=True) as caught:
         warnings.simplefilter("always")
         context.parsed = parse_brief(context.brief_path)
@@ -403,14 +403,14 @@ def step_parse_brief_default(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the result is a BriefStructure instance")
-def step_result_is_brief_structure(context) -> None:  # type: ignore[no-untyped-def]
+def step_result_is_brief_structure(context) -> None:
     assert isinstance(context.parsed, BriefStructure), (
         f"expected BriefStructure, got {type(context.parsed).__name__}"
     )
 
 
 @then("no DeprecationWarning is emitted")
-def step_no_deprecation_warning(context) -> None:  # type: ignore[no-untyped-def]
+def step_no_deprecation_warning(context) -> None:
     deprecations = [w for w in context.warnings if issubclass(w.category, DeprecationWarning)]
     assert not deprecations, f"unexpected DeprecationWarning(s): {deprecations}"
 
@@ -422,13 +422,13 @@ _AGENTS_MD_PATH = _PROJECT_ROOT / "AGENTS.md"
 
 
 @given("the AGENTS.md file in the project root")
-def step_agents_md_from_project_root(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_from_project_root(context) -> None:
     context.parse_source_path = str(_AGENTS_MD_PATH)
     context.parse_source_text = _AGENTS_MD_PATH.read_text(encoding="utf-8")
 
 
 @when("I parse the file as AgentContract")
-def step_parse_file_as_agent_contract(context) -> None:  # type: ignore[no-untyped-def]
+def step_parse_file_as_agent_contract(context) -> None:
     from gzkit.content.parse import parse  # noqa: PLC0415
 
     context.agent_contract = parse(
@@ -437,13 +437,13 @@ def step_parse_file_as_agent_contract(context) -> None:  # type: ignore[no-untyp
 
 
 @then("the model has more than 5 pillars")
-def step_model_has_more_than_5_pillars(context) -> None:  # type: ignore[no-untyped-def]
+def step_model_has_more_than_5_pillars(context) -> None:
     count = len(context.agent_contract.pillars)
     assert count > 5, f"expected > 5 pillars, got {count}"
 
 
 @then('a pillar with title "Behavior Rules" exists with non-empty bullets')
-def step_behavior_rules_pillar_has_bullets(context) -> None:  # type: ignore[no-untyped-def]
+def step_behavior_rules_pillar_has_bullets(context) -> None:
     titles = {p.title for p in context.agent_contract.pillars}
     assert "Behavior Rules" in titles, f"Behavior Rules pillar missing; found: {sorted(titles)}"
     behavior = next(p for p in context.agent_contract.pillars if p.title == "Behavior Rules")
@@ -451,7 +451,7 @@ def step_behavior_rules_pillar_has_bullets(context) -> None:  # type: ignore[no-
 
 
 @then('a bullet containing "{text1}" and "{text2}" has classification "{classification}"')
-def step_bullet_has_classification(context, text1, text2, classification) -> None:  # type: ignore[no-untyped-def]
+def step_bullet_has_classification(context, text1, text2, classification) -> None:
     bullets = [b for p in context.agent_contract.pillars for b in p.bullets]
     match = next((b for b in bullets if text1 in b.text and text2 in b.text), None)
     assert match is not None, f"no bullet containing both {text1!r} and {text2!r}"
@@ -461,13 +461,13 @@ def step_bullet_has_classification(context, text1, text2, classification) -> Non
 
 
 @then('a pillar line containing "{text}" is present in the model')
-def step_pillar_line_present(context, text) -> None:  # type: ignore[no-untyped-def]
+def step_pillar_line_present(context, text) -> None:
     rows = "\n".join(line for p in context.agent_contract.pillars for line in p.lines)
     assert text in rows, f"no pillar line containing {text!r} in the imported model"
 
 
 @then("the model round-trips losslessly through JSON serialization")
-def step_model_json_round_trip_lossless(context) -> None:  # type: ignore[no-untyped-def]
+def step_model_json_round_trip_lossless(context) -> None:
     from gzkit.content.models.agent_contract import AgentContract  # noqa: PLC0415
 
     model = context.agent_contract
@@ -476,7 +476,7 @@ def step_model_json_round_trip_lossless(context) -> None:  # type: ignore[no-unt
 
 
 @given("a minimal markdown document with an unmatchable rule")
-def step_minimal_doc_with_unmatchable_rule(context) -> None:  # type: ignore[no-untyped-def]
+def step_minimal_doc_with_unmatchable_rule(context) -> None:
     context.parse_source_text = (
         "# Contract\n\nPurpose line.\n\n## Custom Section\n\n- zzz unmatchable qpwoeiruty rule\n"
     )
@@ -484,14 +484,14 @@ def step_minimal_doc_with_unmatchable_rule(context) -> None:  # type: ignore[no-
 
 
 @when("I parse it as AgentContract via the content API")
-def step_parse_minimal_as_agent_contract(context) -> None:  # type: ignore[no-untyped-def]
+def step_parse_minimal_as_agent_contract(context) -> None:
     from gzkit.content.parse import parse  # noqa: PLC0415
 
     context.agent_contract = parse(context.parse_source_text, "AgentContract")
 
 
 @then('the custom-section bullet classification is "{classification}"')
-def step_custom_section_bullet_classification(context, classification) -> None:  # type: ignore[no-untyped-def]
+def step_custom_section_bullet_classification(context, classification) -> None:
     custom = next((p for p in context.agent_contract.pillars if p.title == "Custom Section"), None)
     assert custom is not None, "Custom Section pillar not found"
     assert len(custom.bullets) == 1, f"expected 1 bullet, got {len(custom.bullets)}"
@@ -513,12 +513,12 @@ def _sync_agents_md_via_model(root: Path) -> None:
 
 
 @when("I sync AGENTS.md via the model pipeline")
-def step_sync_agents_md_via_model(context) -> None:  # type: ignore[no-untyped-def]
+def step_sync_agents_md_via_model(context) -> None:
     _sync_agents_md_via_model(Path.cwd())
 
 
 @given("AGENTS.md has been synced via the model pipeline")
-def step_agents_md_synced_via_model(context) -> None:  # type: ignore[no-untyped-def]
+def step_agents_md_synced_via_model(context) -> None:
     root = Path.cwd()
     _sync_agents_md_via_model(root)
     # The repointed validator (OBPI-0.0.37-22) diffs the committed rendition,
@@ -528,7 +528,7 @@ def step_agents_md_synced_via_model(context) -> None:  # type: ignore[no-untyped
 
 
 @then("the committed AGENTS.md matches the model render")
-def step_committed_agents_md_matches_model(context) -> None:  # type: ignore[no-untyped-def]
+def step_committed_agents_md_matches_model(context) -> None:
     from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
         validate_invariant_coherence,
     )
@@ -538,7 +538,7 @@ def step_committed_agents_md_matches_model(context) -> None:  # type: ignore[no-
 
 
 @then("the rendered AGENTS.md contains the project purpose value")
-def step_rendered_contains_purpose(context) -> None:  # type: ignore[no-untyped-def]
+def step_rendered_contains_purpose(context) -> None:
     from gzkit.config import GzkitConfig  # noqa: PLC0415
     from gzkit.sync_surfaces import get_project_context  # noqa: PLC0415
 
@@ -550,14 +550,14 @@ def step_rendered_contains_purpose(context) -> None:  # type: ignore[no-untyped-
 
 
 @when("I hand-edit AGENTS.md outside the render path")
-def step_hand_edit_agents_md(context) -> None:  # type: ignore[no-untyped-def]
+def step_hand_edit_agents_md(context) -> None:
     agents_path = Path.cwd() / "AGENTS.md"
     original = agents_path.read_bytes()
     agents_path.write_bytes(original + b"\n\nHAND_EDITED_MARKER_SHOULD_NOT_SURVIVE\n")
 
 
 @then('"gz validate --invariant-coherence" reports a coherence error')
-def step_invariant_coherence_reports_error(context) -> None:  # type: ignore[no-untyped-def]
+def step_invariant_coherence_reports_error(context) -> None:
     from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
         validate_invariant_coherence,
     )
@@ -568,7 +568,7 @@ def step_invariant_coherence_reports_error(context) -> None:  # type: ignore[no-
 
 
 @then('the rendered AGENTS.md contains the section "{section}"')
-def step_rendered_contains_section(context, section) -> None:  # type: ignore[no-untyped-def]
+def step_rendered_contains_section(context, section) -> None:
     rendered = (Path.cwd() / "AGENTS.md").read_text(encoding="utf-8")
     assert section in rendered, f"section {section!r} not found in rendered AGENTS.md"
 
@@ -579,7 +579,7 @@ def step_rendered_contains_section(context, section) -> None:  # type: ignore[no
 
 
 @given("a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy")
-def step_manifest_with_temperatures(context) -> None:  # type: ignore[no-untyped-def]
+def step_manifest_with_temperatures(context) -> None:
     import json
     import tempfile
 
@@ -596,7 +596,7 @@ def step_manifest_with_temperatures(context) -> None:  # type: ignore[no-untyped
 
 
 @when("I call temperature_for for AgentContract and claude")
-def step_call_temperature_for_claude(context) -> None:  # type: ignore[no-untyped-def]
+def step_call_temperature_for_claude(context) -> None:
     from gzkit.content.vendors import temperature_for
 
     context.temperature_result = temperature_for(
@@ -606,7 +606,7 @@ def step_call_temperature_for_claude(context) -> None:  # type: ignore[no-untype
 
 
 @when("I call temperature_for for AgentContract and an unknown vendor")
-def step_call_temperature_for_unknown(context) -> None:  # type: ignore[no-untyped-def]
+def step_call_temperature_for_unknown(context) -> None:
     from gzkit.content.vendors import temperature_for
 
     context.temperature_result = None
@@ -618,20 +618,20 @@ def step_call_temperature_for_unknown(context) -> None:  # type: ignore[no-untyp
 
 
 @then('the resolved temperature is "{temperature}"')
-def step_resolved_temperature(context, temperature) -> None:  # type: ignore[no-untyped-def]
+def step_resolved_temperature(context, temperature) -> None:
     assert context.temperature_result == temperature, (
         f"expected {temperature!r}, got {context.temperature_result!r}"
     )
 
 
 @then("a temperature ValueError is raised")
-def step_temperature_value_error_raised(context) -> None:  # type: ignore[no-untyped-def]
+def step_temperature_value_error_raised(context) -> None:
     assert context.temperature_error is not None, "expected ValueError but none was raised"
     assert isinstance(context.temperature_error, ValueError)
 
 
 @given("an AgentContract with a Judgment bullet and a plain bullet")
-def step_agent_contract_with_mixed_bullets(context) -> None:  # type: ignore[no-untyped-def]
+def step_agent_contract_with_mixed_bullets(context) -> None:
     import json
     import tempfile
 
@@ -660,7 +660,7 @@ def step_agent_contract_with_mixed_bullets(context) -> None:  # type: ignore[no-
 
 
 @when("I render the contract for codex at lite temperature")
-def step_render_codex_lite(context) -> None:  # type: ignore[no-untyped-def]
+def step_render_codex_lite(context) -> None:
     from gzkit.content.render import render
 
     context.codex_render = render(
@@ -669,14 +669,14 @@ def step_render_codex_lite(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the Judgment bullet is present in the rendered output")
-def step_judgment_bullet_present(context) -> None:  # type: ignore[no-untyped-def]
+def step_judgment_bullet_present(context) -> None:
     assert b"judgment-bullet" in context.codex_render, (
         "Judgment bullet must appear in codex lite render (0-Kelvin floor)"
     )
 
 
 @then("the plain bullet is also present in the rendered output")
-def step_plain_bullet_present(context) -> None:  # type: ignore[no-untyped-def]
+def step_plain_bullet_present(context) -> None:
     assert b"plain-bullet" in context.codex_render, (
         "Plain bullet must also appear in codex lite render — the density-projection "
         "filter was retired (OBPI-0.0.37-27), so all bullets render at every temperature"
@@ -684,7 +684,7 @@ def step_plain_bullet_present(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @when("I render the contract for codex at lite and codex at heavy")
-def step_render_both_vendors(context) -> None:  # type: ignore[no-untyped-def]
+def step_render_both_vendors(context) -> None:
     from gzkit.content.render import render
 
     # Per-vendor render selection-via-temperature retired (OBPI-0.0.37-27): render the
@@ -701,7 +701,7 @@ def step_render_both_vendors(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then("the two rendered outputs are identical")
-def step_renders_identical(context) -> None:  # type: ignore[no-untyped-def]
+def step_renders_identical(context) -> None:
     # Pins only temperature-inertness PER VENDOR — deliberately NOT cross-harness
     # byte-identity. Per-harness behavioral tuning is undesigned space the
     # committed-rendition store leaves open (operator ruling, 2026-06-15).
@@ -724,7 +724,7 @@ _CORPUS_SCHEMA_PATH = (
 )
 
 
-def _corpus_entry(**overrides):  # type: ignore[no-untyped-def]
+def _corpus_entry(**overrides):
     """Build a conformant CorpusEntry for the corpus scenarios."""
     from gzkit.content.models import CorpusEntry  # noqa: PLC0415
 
@@ -743,12 +743,12 @@ def _corpus_entry(**overrides):  # type: ignore[no-untyped-def]
 
 
 @given("a corpus entry with all ten addressed fields populated")
-def step_corpus_entry_full(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_entry_full(context) -> None:
     context.corpus_entry = _corpus_entry(anchor="a1", witness="gz validate --foo")
 
 
 @then("the corpus entry model carries exactly its declared fields")
-def step_corpus_entry_declared_fields(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_entry_declared_fields(context) -> None:
     """The ten ADR-0.0.37-18 fields plus ``retires`` (GHI #635 retirement pointer).
 
     Set equality, not a count: the fence is against fields arriving by
@@ -772,7 +772,7 @@ def step_corpus_entry_declared_fields(context) -> None:  # type: ignore[no-untyp
 
 
 @then("constructing a corpus entry with an unknown field fails closed")
-def step_corpus_entry_extra_forbidden(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_entry_extra_forbidden(context) -> None:
     try:
         _corpus_entry(unexpected="x")
     except ValidationError:
@@ -781,34 +781,34 @@ def step_corpus_entry_extra_forbidden(context) -> None:  # type: ignore[no-untyp
 
 
 @given("an empty corpus")
-def step_empty_corpus(context) -> None:  # type: ignore[no-untyped-def]
+def step_empty_corpus(context) -> None:
     from gzkit.content.models import Corpus  # noqa: PLC0415
 
     context.corpus = Corpus()
 
 
 @when("two corpus entries are appended")
-def step_corpus_append_two(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_append_two(context) -> None:
     context.corpus_appended = context.corpus.append(_corpus_entry(id="a")).append(
         _corpus_entry(id="b")
     )
 
 
 @then("the corpus holds two entries and the original empty corpus is unchanged")
-def step_corpus_append_immutability(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_append_immutability(context) -> None:
     assert len(context.corpus_appended.entries) == 2
     assert len(context.corpus.entries) == 0
 
 
 @then("the corpus round-trips losslessly through JSONL")
-def step_corpus_round_trip(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_round_trip(context) -> None:
     from gzkit.content.models import Corpus  # noqa: PLC0415
 
     assert Corpus.loads(context.corpus_appended.dumps()) == context.corpus_appended
 
 
 @given('an agent contract whose only section is "prime-directive"')
-def step_corpus_contract(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_contract(context) -> None:
     from gzkit.content.models import AgentContract, Pillar  # noqa: PLC0415
 
     context.corpus_contract = AgentContract(
@@ -819,7 +819,7 @@ def step_corpus_contract(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('a corpus entry in section "prime-directive" validates against the contract')
-def step_corpus_conformant(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_conformant(context) -> None:
     from gzkit.content.models import Corpus  # noqa: PLC0415
 
     Corpus().append(_corpus_entry(section="prime-directive")).validate_against(
@@ -828,7 +828,7 @@ def step_corpus_conformant(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @then('a corpus entry in section "no-such-section" fails validation')
-def step_corpus_nonconformant(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_nonconformant(context) -> None:
     from gzkit.content.models import Corpus  # noqa: PLC0415
 
     try:
@@ -841,17 +841,17 @@ def step_corpus_nonconformant(context) -> None:  # type: ignore[no-untyped-def]
 
 
 @given("the corpus_entry JSON Schema")
-def step_corpus_schema(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_schema(context) -> None:
     context.corpus_schema = json.loads(_CORPUS_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
 @then("the schema accepts a conformant corpus entry")
-def step_corpus_schema_accepts(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_schema_accepts(context) -> None:
     jsonschema.validate(_corpus_entry().model_dump(), context.corpus_schema)
 
 
 @then("the schema rejects a corpus entry with an out-of-enum tier")
-def step_corpus_schema_rejects(context) -> None:  # type: ignore[no-untyped-def]
+def step_corpus_schema_rejects(context) -> None:
     bad = _corpus_entry().model_dump()
     bad["tier"] = "ephemeral"
     try:

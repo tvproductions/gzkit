@@ -18,7 +18,7 @@ from tests.commands.common import SilencedConsoleTestCase
 def _obpi_scope(target: str):  # noqa: D401
     """Identity decorator for class-level OBPI scope annotation."""
 
-    def _identity(obj):  # type: ignore[no-untyped-def]
+    def _identity(obj):
         return obj
 
     return _identity

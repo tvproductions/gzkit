@@ -370,7 +370,7 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
-            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            config = GzkitConfig(mode="lite", project_name="test-project")
             created = scaffold_core_skills(project_root, config, skip_existing=False)
             self.assertGreaterEqual(
                 len(created),
@@ -392,7 +392,7 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
         sentinel = "OPERATOR-EDIT-SENTINEL-OBPI-32-02"
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
-            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            config = GzkitConfig(mode="lite", project_name="test-project")
             created = scaffold_core_skills(project_root, config, skip_existing=False)
             self.assertGreater(len(created), 0, "first scaffold must create files")
             target = created[0]
@@ -421,7 +421,7 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
-            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            config = GzkitConfig(mode="lite", project_name="test-project")
             created = scaffold_core_skills(project_root, config, skip_existing=False)
             for skill_path in created[:10]:
                 content = skill_path.read_text(encoding="utf-8")
@@ -492,7 +492,7 @@ class TestSkillsScaffolderRefactor(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
-            config = GzkitConfig(mode="lite", project_name="test-project")  # type: ignore[arg-type]
+            config = GzkitConfig(mode="lite", project_name="test-project")
             created = scaffold_core_skills(project_root, config, skip_existing=False)
             scaffolded_names = {p.parent.name for p in created}
             self.assertNotIn(

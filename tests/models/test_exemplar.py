@@ -112,16 +112,16 @@ class TestExemplarProjectFrozenContract(unittest.TestCase):
     def test_mutation_of_exemplar_project_field_raises(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
-        proj = ExemplarProject(**_minimal_project())  # type: ignore[arg-type]
+        proj = ExemplarProject(**_minimal_project())
         with self.assertRaises(ValidationError):
-            proj.name = "altered"  # type: ignore[misc]
+            proj.name = "altered"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.27-02-07")
     def test_extra_key_on_exemplar_project_raises(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(unknown_field="extra"))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(unknown_field="extra"))
 
 
 class TestExemplarProjectShaValidation(unittest.TestCase):
@@ -132,35 +132,35 @@ class TestExemplarProjectShaValidation(unittest.TestCase):
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha="main"))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha="main"))
 
     @covers("REQ-0.0.27-02-02")
     def test_tag_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha="v1.0"))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha="v1.0"))
 
     @covers("REQ-0.0.27-02-02")
     def test_short_hash_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha="abc1234"))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha="abc1234"))
 
     @covers("REQ-0.0.27-02-02")
     def test_39_char_hex_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha="a" * 39))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha="a" * 39))
 
     @covers("REQ-0.0.27-02-02")
     def test_41_char_hex_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha="a" * 41))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha="a" * 41))
 
     @covers("REQ-0.0.27-02-02")
     def test_non_hex_40_char_rejected(self) -> None:
@@ -168,13 +168,13 @@ class TestExemplarProjectShaValidation(unittest.TestCase):
 
         sha = "g" + "a" * 39  # 'g' is not a hex character
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(commit_sha=sha))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(commit_sha=sha))
 
     @covers("REQ-0.0.27-02-02")
     def test_valid_40_char_lowercase_hex_accepted(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
-        proj = ExemplarProject(**_minimal_project(commit_sha="a" * 40))  # type: ignore[arg-type]
+        proj = ExemplarProject(**_minimal_project(commit_sha="a" * 40))
         self.assertEqual(proj.commit_sha, "a" * 40)
 
 
@@ -186,7 +186,7 @@ class TestExemplarProjectPathFilterRequired(unittest.TestCase):
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(included_paths=()))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(included_paths=()))
 
     @covers("REQ-0.0.27-02-03")
     def test_missing_excluded_paths_raises(self) -> None:
@@ -195,14 +195,14 @@ class TestExemplarProjectPathFilterRequired(unittest.TestCase):
         kwargs = _minimal_project()
         del kwargs["excluded_paths_with_rationale"]
         with self.assertRaises(ValidationError):
-            ExemplarProject(**kwargs)  # type: ignore[arg-type]
+            ExemplarProject(**kwargs)
 
     @covers("REQ-0.0.27-02-03")
     def test_empty_string_path_filter_rationale_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(path_filter_rationale=""))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(path_filter_rationale=""))
 
     @covers("REQ-0.0.27-02-03")
     def test_excluded_path_empty_glob_rejected(self) -> None:
@@ -227,35 +227,35 @@ class TestExemplarProjectFieldBounds(unittest.TestCase):
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(archetypal_cell=0))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(archetypal_cell=0))
 
     @covers("REQ-0.0.27-02-04")
     def test_archetypal_cell_eleven_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(archetypal_cell=11))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(archetypal_cell=11))
 
     @covers("REQ-0.0.27-02-04")
     def test_archetypal_cell_negative_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(archetypal_cell=-1))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(archetypal_cell=-1))
 
     @covers("REQ-0.0.27-02-04")
     def test_pure_python_loc_ratio_negative_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(pure_python_loc_ratio=-0.1))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(pure_python_loc_ratio=-0.1))
 
     @covers("REQ-0.0.27-02-04")
     def test_pure_python_loc_ratio_above_one_rejected(self) -> None:
         from gzkit.models.exemplar import ExemplarProject
 
         with self.assertRaises(ValidationError):
-            ExemplarProject(**_minimal_project(pure_python_loc_ratio=1.5))  # type: ignore[arg-type]
+            ExemplarProject(**_minimal_project(pure_python_loc_ratio=1.5))
 
 
 class TestVacantCellModel(unittest.TestCase):
@@ -293,7 +293,7 @@ class TestExemplarCorpusShape(unittest.TestCase):
     def test_exemplar_corpus_fields_present(self) -> None:
         from gzkit.models.exemplar import ExemplarCorpus, ExemplarProject, VacantCell
 
-        proj = ExemplarProject(**_minimal_project())  # type: ignore[arg-type]
+        proj = ExemplarProject(**_minimal_project())
         vc = VacantCell(archetypal_cell=7, vacancy_rationale="No candidate found.")
         corpus = ExemplarCorpus(
             schema_version="1.0.0",
@@ -364,7 +364,7 @@ class TestExemplarCorpusLoader(unittest.TestCase):
             corpus_path.write_text(json.dumps(_minimal_corpus()), encoding="utf-8")
             result = load_corpus(corpus_path)
             with self.assertRaises(ValidationError):
-                result.schema_version = "2.0.0"  # type: ignore[misc]
+                result.schema_version = "2.0.0"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.0.27-02-01")
     def test_loader_malformed_json_raises_validation_error(self) -> None:

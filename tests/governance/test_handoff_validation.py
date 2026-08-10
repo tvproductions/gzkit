@@ -151,7 +151,7 @@ class TestHandoffFrontmatter(unittest.TestCase):
     def test_model_is_frozen(self) -> None:
         fm = HandoffFrontmatter(**_valid_frontmatter_dict())
         with self.assertRaises(ValidationError):
-            fm.mode = "RESUME"  # type: ignore[misc]
+            fm.mode = "RESUME"  # ty: ignore[invalid-assignment]
 
     @covers("REQ-0.25.0-32-03")
     def test_schema_version_constant(self) -> None:

@@ -165,7 +165,7 @@ class TestRetireLnConsumerChain(unittest.TestCase):
             TypeError,
             msg="render_step_6_attestation still accepts ln_entries — not retired (GHI #601)",
         ):
-            render_step_6_attestation("ADR-0.0.99-test", ln_entries=[])  # type: ignore[call-arg]
+            render_step_6_attestation("ADR-0.0.99-test", ln_entries=[])
 
 
 if __name__ == "__main__":

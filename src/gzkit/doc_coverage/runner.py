@@ -55,12 +55,14 @@ def build_gap_report(project_root: Path | None = None) -> DocCoverageGapReport:
         for o in report.orphaned
     ]
 
+    gaps.sort(key=lambda g: (g.command, g.surface))
+
     return DocCoverageGapReport(
         passed=len(gaps) == 0 and len(undeclared) == 0 and len(orphaned) == 0,
         commands_discovered=report.commands_discovered,
         commands_checked=len(manifest.commands),
         commands_with_gaps=len(commands_with_gaps),
-        gaps=sorted(gaps, key=lambda g: (g.command, g.surface)),
+        gaps=gaps,
         undeclared_commands=undeclared,
         orphaned_docs=orphaned,
     )

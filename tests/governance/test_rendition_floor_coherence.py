@@ -33,7 +33,7 @@ def _entry(text: str, *, tier: str = "invariant", entry_id: str = "corpus-x") ->
         id=entry_id,
         surface="AGENTS.md",
         section="attestation",
-        tier=tier,  # type: ignore[arg-type]
+        tier=tier,
         classification="Judgment",
         text=text,
         origin="test",

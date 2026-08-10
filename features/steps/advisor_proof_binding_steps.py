@@ -14,7 +14,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from behave import given  # type: ignore[import-untyped]
+from behave import given
 
 
 def _empty_proof_diagnosis(diag_id: str | None = None) -> dict:
@@ -51,7 +51,7 @@ def _conforming_schema() -> dict:
 
 
 @given('an advisor diagnosis fixture "{name}" with empty proof')
-def step_empty_proof_fixture(_context, name: str) -> None:  # type: ignore[no-untyped-def]
+def step_empty_proof_fixture(_context, name: str) -> None:
     fixtures_dir = Path.cwd() / "tests" / "fixtures" / "advisor"
     fixtures_dir.mkdir(parents=True, exist_ok=True)
     (fixtures_dir / name).write_text(
@@ -61,7 +61,7 @@ def step_empty_proof_fixture(_context, name: str) -> None:  # type: ignore[no-un
 
 
 @given('an advisor diagnosis fixture "{name}" with id "{diag_id}" and empty proof')
-def step_empty_proof_fixture_with_id(  # type: ignore[no-untyped-def]
+def step_empty_proof_fixture_with_id(
     _context,
     name: str,
     diag_id: str,
@@ -75,7 +75,7 @@ def step_empty_proof_fixture_with_id(  # type: ignore[no-untyped-def]
 
 
 @given('an intrinsic-complexity-attestation event "{event_id}" cites "{diag_id}"')
-def step_ica_event_cites(  # type: ignore[no-untyped-def]
+def step_ica_event_cites(
     _context,
     event_id: str,
     diag_id: str,
@@ -94,7 +94,7 @@ def step_ica_event_cites(  # type: ignore[no-untyped-def]
 
 
 @given("a conforming advisor diagnosis schema")
-def step_conforming_schema(_context) -> None:  # type: ignore[no-untyped-def]
+def step_conforming_schema(_context) -> None:
     schema_path = Path.cwd() / "src" / "gzkit" / "schemas" / "advisor_diagnosis.json"
     schema_path.parent.mkdir(parents=True, exist_ok=True)
     schema_path.write_text(json.dumps(_conforming_schema(), indent=2), encoding="utf-8")

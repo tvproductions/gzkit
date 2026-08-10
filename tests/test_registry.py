@@ -31,14 +31,14 @@ class TestContentTypeModel(unittest.TestCase):
             canonical_path_pattern="test/**/*.md",
         )
         with self.assertRaises(ValidationError):
-            ct.name = "Changed"
+            ct.name = "Changed"  # ty: ignore[invalid-assignment]
 
     def test_extra_forbid(self) -> None:
         with self.assertRaises(ValidationError):
             ContentType(
                 name="Test",
                 canonical_path_pattern="test/**/*.md",
-                bogus_field="x",  # type: ignore[call-arg]
+                bogus_field="x",
             )
 
     def test_optional_fields_default_none(self) -> None:
