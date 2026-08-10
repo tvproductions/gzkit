@@ -32,13 +32,20 @@ def _obpi_completion_validator_script() -> str:
 
 
             def find_project_root() -> Path:
-                \"\"\"Find the project root by looking for .gzkit directory.\"\"\"
-                current = Path.cwd()
+                \"\"\"Find the project root by looking for .gzkit directory.
+
+                Resolved, because callers compare it against a resolved
+                target path. On Windows an 8.3 short-name cwd
+                (C:/Users/RUNNER~1/...) and its resolved long form share no
+                prefix, so relative_to() raises and the caller loses the
+                path it was about to gate.
+                \"\"\"
+                current = Path.cwd().resolve()
                 while current != current.parent:
                     if (current / ".gzkit").is_dir():
                         return current
                     current = current.parent
-                return Path.cwd()
+                return Path.cwd().resolve()
 
 
             def find_parent_adr_dir(brief_path: Path) -> Path | None:
@@ -323,11 +330,39 @@ def _obpi_completion_validator_script() -> str:
 
                 # Normalize path
                 try:
-                    project_root = find_project_root()
                     abs_path = Path(file_path).resolve()
-                    rel_path = abs_path.relative_to(project_root)
-                    rel_str = rel_path.as_posix()
+                except (ValueError, TypeError, OSError):
+                    sys.exit(0)
+
+                # Brief-shape is read from the absolute path so it survives a
+                # failure to place the file against the project root. This
+                # hook fires on EVERY Edit/Write, so the fail-closed arm below
+                # must stay scoped to the surface it guards — blocking every
+                # unplaceable path would refuse scratchpad and system edits.
+                abs_str = abs_path.as_posix()
+                looks_like_brief = "/obpis/OBPI-" in abs_str and abs_str.endswith(".md")
+
+                try:
+                    project_root = find_project_root()
+                    rel_str = abs_path.relative_to(project_root).as_posix()
                 except (ValueError, TypeError):
+                    if looks_like_brief:
+                        print(
+                            "BLOCKED: OBPI brief edit refused — cannot place "
+                            f"{abs_str} against project root.\\n\\n"
+                            "WHY: this hook gates the Completed transition on "
+                            "Implementation Summary and Key Proof. A brief it "
+                            "cannot resolve cannot be checked, and an "
+                            "unverifiable completion must fail closed, never "
+                            "open (AGENTS.md Never #8; ADR-0.0.36 makes Gate 5 "
+                            "universal).\\n\\n"
+                            "NEXT STEP: edit the brief from inside its own "
+                            "project root so the hook can resolve it, then "
+                            "re-run `uv run gz obpi status <OBPI-ID>` to "
+                            "confirm the brief the gate sees.",
+                            file=sys.stderr,
+                        )
+                        sys.exit(2)
                     sys.exit(0)
 
                 # 1. Is this an OBPI brief file? (gzkit uses /obpis/, airlineops uses /briefs/)
@@ -462,13 +497,20 @@ def _ledger_writer_script() -> str:
 
 
             def find_project_root() -> Path:
-                \"\"\"Find the project root by looking for .gzkit directory.\"\"\"
-                current = Path.cwd()
+                \"\"\"Find the project root by looking for .gzkit directory.
+
+                Resolved, because callers compare it against a resolved
+                target path. On Windows an 8.3 short-name cwd
+                (C:/Users/RUNNER~1/...) and its resolved long form share no
+                prefix, so relative_to() raises and the caller loses the
+                path it was about to gate.
+                \"\"\"
+                current = Path.cwd().resolve()
                 while current != current.parent:
                     if (current / ".gzkit").is_dir():
                         return current
                     current = current.parent
-                return Path.cwd()
+                return Path.cwd().resolve()
 
 
             def main() -> int:
@@ -493,8 +535,8 @@ def _ledger_writer_script() -> str:
                 # Make path relative to project root
                 project_root = find_project_root()
                 try:
-                    rel_path = Path(file_path).relative_to(project_root)
-                except ValueError:
+                    rel_path = Path(file_path).resolve().relative_to(project_root)
+                except (ValueError, OSError):
                     return 0
 
                 # Import gzkit and record edit/validate

@@ -1986,6 +1986,67 @@ class TestObpiCompletionValidatorHook(unittest.TestCase):
             self.assertIn("Implementation Summary", result.stderr)
             self.assertIn("Key Proof", result.stderr)
 
+    def test_blocks_brief_whose_root_cannot_be_resolved(self) -> None:
+        """A brief the hook cannot place against the project root fails CLOSED.
+
+        The handler previously exited 0 on any unresolvable path, so whenever
+        path normalization disagreed with the project root the completion gate
+        was inert rather than merely wrong. Observed on windows-latest, where
+        the 8.3 short-name temp dir made ``relative_to`` raise for every brief
+        (CI run 31376372401, 4 failures).
+        """
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            tempfile.TemporaryDirectory() as elsewhere,
+        ):
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+
+            stray = Path(elsewhere) / "docs" / "design" / "adr" / "ADR-0.99.0-x" / "obpis"
+            stray.mkdir(parents=True)
+            brief = stray / "OBPI-0.99.0-01-stray.md"
+            brief.write_text("# OBPI-0.99.0-01 — stray\n", encoding="utf-8")
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(brief),
+                old_string="**Brief Status:** Draft",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 2)
+
+    def test_allows_non_brief_file_outside_project_root(self) -> None:
+        """Fail-closed is scoped to briefs; unrelated outside files stay allowed.
+
+        This hook is a PreToolUse on every Edit/Write, so blocking every path
+        that cannot be made relative to the project root would refuse scratchpad
+        and system-file edits wholesale. The fence belongs around the surface
+        the hook guards, not around the whole filesystem.
+        """
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            tempfile.TemporaryDirectory() as elsewhere,
+        ):
+            project_root = Path(tmpdir)
+            self._setup_gzkit(project_root)
+            script_path = self._create_hook(project_root)
+
+            scratch = Path(elsewhere) / "notes.md"
+            scratch.write_text("scratch\n", encoding="utf-8")
+
+            result = self._run_hook(
+                script_path,
+                project_root,
+                file_path=str(scratch),
+                old_string="scratch",
+                new_string="**Brief Status:** Completed",
+            )
+
+            self.assertEqual(result.returncode, 0)
+
     def test_allows_completion_with_substantive_content(self) -> None:
         """Hook allows status change when both sections have substantive content.
 

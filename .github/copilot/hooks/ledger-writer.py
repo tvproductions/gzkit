@@ -11,13 +11,18 @@ from pathlib import Path
 
 
 def find_project_root() -> Path:
-    """Find the project root by looking for .gzkit directory."""
-    current = Path.cwd()
+    """Find the project root by looking for .gzkit directory.
+
+    Resolved, because callers compare it against a resolved target path.
+    On Windows an 8.3 short-name cwd and its resolved long form share no
+    prefix, so relative_to() raises and the caller silently loses the path.
+    """
+    current = Path.cwd().resolve()
     while current != current.parent:
         if (current / ".gzkit").is_dir():
             return current
         current = current.parent
-    return Path.cwd()
+    return Path.cwd().resolve()
 
 
 def main() -> int:
@@ -42,8 +47,8 @@ def main() -> int:
     # Make path relative to project root
     project_root = find_project_root()
     try:
-        rel_path = Path(file_path).relative_to(project_root)
-    except ValueError:
+        rel_path = Path(file_path).resolve().relative_to(project_root)
+    except (ValueError, OSError):
         return 0
 
     # Import gzkit and record edit/validate
