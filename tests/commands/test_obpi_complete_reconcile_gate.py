@@ -166,7 +166,7 @@ class _ReconcileGateFixture(unittest.TestCase):
 
         def _capture(*args: object, **kwargs: object) -> None:
             recorded.append(" ".join(str(a) for a in args))
-            return original_print(*args, **kwargs)  # type: ignore
+            return original_print(*args, **kwargs)
 
         rec_console.print = _capture  # ty: ignore[invalid-assignment]
 

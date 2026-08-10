@@ -12,7 +12,7 @@ import yaml
 def covers(target: str):  # noqa: D401
     """Identity decorator linking test to ADR/OBPI target for traceability."""
 
-    def _identity(obj):  # type: ignore
+    def _identity(obj):
         return obj
 
     return _identity

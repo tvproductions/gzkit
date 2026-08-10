@@ -1132,7 +1132,7 @@ class TestChainLinkIsCorrectByConstruction(unittest.TestCase):
             sections=_SEVEN_SECTIONS,
             base_path=base,
             timestamp=ts,
-            **kwargs,  # type: ignore
+            **kwargs,
         )
 
     def test_successor_auto_links_to_newest_predecessor(self) -> None:

@@ -60,7 +60,7 @@ class TestUpgradeRegistration(unittest.TestCase):
         parser = _build_parser()
         # Subparsers action stores choices in _subparsers._group_actions
         choices: set[str] = set()
-        for action_group in parser._subparsers._group_actions:  # type: ignore
+        for action_group in parser._subparsers._group_actions:
             if hasattr(action_group, "choices") and action_group.choices:
                 choices.update(action_group.choices.keys())
         self.assertIn(

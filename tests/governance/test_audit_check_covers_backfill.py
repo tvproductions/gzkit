@@ -127,7 +127,7 @@ class TestAuditThresholds(unittest.TestCase):
             AuditThresholds(
                 max_covers_backfill_commits=3,
                 max_covers_backfill_days=7,
-                bonus_field=42,  # type: ignore
+                bonus_field=42,
             )
 
     @covers("REQ-0.0.23-05-06")

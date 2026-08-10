@@ -40,9 +40,9 @@ def _make_hint(
     """Build a synthetic AuthoringHint for mocking."""
     return AuthoringHint(
         metric="radon_cc",
-        precedence_band=precedence_band,  # type: ignore
+        precedence_band=precedence_band,
         crossing_value=5.0,
-        archetype=archetype,  # type: ignore
+        archetype=archetype,
         doctrinal_frame_headline="Function decomposition signal.",
         recommended_move="Extract the inner branches into separate functions.",
         file_path=file_path,

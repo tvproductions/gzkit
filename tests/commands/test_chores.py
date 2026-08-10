@@ -700,7 +700,7 @@ class TestChoreResolver(unittest.TestCase):
         self.assertEqual(ok_project.source, "project")
         self.assertEqual(ok_package.source, "package")
         with self.assertRaises(ValueError):
-            ResolvedPath(path=Path("."), source="bogus")  # type: ignore
+            ResolvedPath(path=Path("."), source="bogus")
 
     @covers("REQ-0.0.21-04-07")
     def test_chores_list_default_no_source_column(self) -> None:

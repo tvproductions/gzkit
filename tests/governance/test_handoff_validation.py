@@ -1058,9 +1058,7 @@ class TestCompletionHandoffFidelity(unittest.TestCase):
             "brief_rel_path": "docs/design/adr/x/obpis/y.md",
         }
         kwargs.update(overrides)
-        return write_completion_exchange(Path(tmp), **kwargs).read_text(  # type: ignore
-            encoding="utf-8"
-        )
+        return write_completion_exchange(Path(tmp), **kwargs).read_text(encoding="utf-8")
 
     def test_gate5_attestation_is_recorded_as_an_operator_ruling(self) -> None:
         """The attestation is operator canon and must carry `[operator-ruled]`.

@@ -331,7 +331,7 @@ class PerMetricTripleModelTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             triple.metric_key = "other"  # type: ignore
         with self.assertRaises(ValidationError):
-            PerMetricTriple(  # type: ignore
+            PerMetricTriple(
                 metric_key="radon_cc",
                 percentile="p90",
                 absolute=12.0,

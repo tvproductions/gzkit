@@ -193,7 +193,7 @@ class TestExpectedFindingDiscriminatesTheReason(unittest.TestCase):
         """
         from gzkit.enforcement import _run_single_claim
 
-        result = _run_single_claim(self._record("LF-normalization", 1))  # type: ignore
+        result = _run_single_claim(self._record("LF-normalization", 1))
 
         self.assertEqual(result.outcome, "FACADE", result.message)
 

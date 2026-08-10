@@ -59,7 +59,7 @@ class TestTautologicalTestModels(unittest.TestCase):
                 operation_kind="open",
                 function_name="test_something",
                 assertion_kind="assertEqual",
-                extra_field="bad",  # type: ignore
+                extra_field="bad",
             )
 
     @covers("REQ-0.0.59-04-06")
@@ -87,7 +87,7 @@ class TestTautologicalTestModels(unittest.TestCase):
                 file_path="tests/foo.py",
                 rationale_key="key1",
                 waived_count=1,
-                unknown="bad",  # type: ignore
+                unknown="bad",
             )
 
     @covers("REQ-0.0.59-04-06")
@@ -110,7 +110,7 @@ class TestTautologicalTestModels(unittest.TestCase):
             Baseline(
                 operations=[],
                 generated_at="2026-01-01T00:00:00+00:00",
-                extra_field="bad",  # type: ignore
+                extra_field="bad",
             )
 
     @covers("REQ-0.0.59-04-06")
@@ -364,7 +364,7 @@ class TestDispositionEngine(unittest.TestCase):
         from gzkit.tautological_tests import propose_disposition
 
         op = self._make_op()
-        result = propose_disposition(op)  # type: ignore
+        result = propose_disposition(op)
         self.assertIsInstance(result, ProposedDisposition)
 
     @covers("REQ-0.0.59-04-02")
@@ -405,7 +405,7 @@ class TestDispositionEngine(unittest.TestCase):
         from gzkit.tautological_tests import propose_disposition
 
         op = self._make_op(function_name="setUp")
-        result = propose_disposition(op)  # type: ignore
+        result = propose_disposition(op)
         self.assertEqual(result, ProposedDisposition.keep_as_fixture)
 
     @covers("REQ-0.0.59-04-02")
@@ -414,7 +414,7 @@ class TestDispositionEngine(unittest.TestCase):
         from gzkit.tautological_tests import propose_disposition
 
         op = self._make_op()
-        result = propose_disposition(op)  # type: ignore
+        result = propose_disposition(op)
         self.assertEqual(result, ProposedDisposition.convert)
 
 

@@ -82,7 +82,7 @@ class TestBriefStructureModel(unittest.TestCase):
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_extra_fields(self) -> None:
         with self.assertRaises(ValidationError):
-            BriefStructure(**_VALID_FIELDS, unexpected_field="bad")  # type: ignore
+            BriefStructure(**_VALID_FIELDS, unexpected_field="bad")
 
     @covers("REQ-0.0.37-04-01")
     def test_model_rejects_invalid_id(self) -> None:

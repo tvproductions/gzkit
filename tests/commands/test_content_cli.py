@@ -97,7 +97,7 @@ class TestContentCliSubcommands(unittest.TestCase):
         rule_path = self._canonical_rule_path()
         original_bytes = rule_path.read_bytes()
 
-        def fake_editor(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess:  # type: ignore
+        def fake_editor(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess:
             # args[-1] is the temp file path the edit command passes to $EDITOR
             temp_path = Path(args[-1])
             temp_path.write_bytes(b"INVALID YAML CONTENT NOT A RULE")

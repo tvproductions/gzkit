@@ -81,7 +81,7 @@ class TestUnscopedAllowlistEntryModel(unittest.TestCase):
                 rationale="Long enough rationale string.",
                 tracking_ref="ADR-0.0.20",
                 added_date=date(2026, 4, 21),
-                extra_key="nope",  # type: ignore
+                extra_key="nope",
             )
 
     @covers("REQ-0.0.20-01-02")
@@ -115,7 +115,7 @@ class TestViolationModel(unittest.TestCase):
         with self.assertRaises(PydanticValidationError):
             Violation(
                 file="x.md",
-                reason="invalid-reason",  # type: ignore
+                reason="invalid-reason",
                 allowlisted=False,
             )
 
@@ -146,7 +146,7 @@ class TestUnscopedRulesResultModel(unittest.TestCase):
     def test_result_literal_enforced(self) -> None:
         with self.assertRaises(PydanticValidationError):
             UnscopedRulesResult(
-                result="bogus",  # type: ignore
+                result="bogus",
                 violations=[],
                 allowlist_entries=[],
                 canonical_root=".gzkit/rules",

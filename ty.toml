@@ -7,6 +7,33 @@ python-version = "3.13"
 # understand Pydantic alias/populate_by_name semantics.  Suppress the
 # resulting false-positives in test code rather than littering every test
 # with inline ignore comments.
+#
+# Measured 2026-08-10 at ty 0.0.69, `ty check --python-platform linux tests`.
+# Record the count AND the ty version with any change here: without both, this
+# block is a posture nobody can re-check. (The figures a predecessor carried in
+# prose -- 1185 total / 915 invalid-argument-type / 7 unused-type-ignore-comment
+# -- reproduce under none of these runs and are superseded by measurement.)
+#
+#   every rule below re-enabled       1231 diagnostics
+#     invalid-argument-type            958  the Pydantic false-positive class
+#     unresolved-attribute             192  the assertIsNotNone narrowing class
+#     unknown-argument                  65
+#     not-subscriptable                 16
+#     possibly-missing-attribute         0  (measured at "warn")
+#   => blanket strictness is not worth it at ty 0.0.x; the two named
+#      false-positive classes are 93% of the total.
+#
+#   unused-type-ignore-comment          36  ALL genuinely dead, so ENABLED
+#
+# unused-type-ignore-comment is deliberately absent below. It is the detector
+# for the dead-suppression class, and switching it off in the tree where those
+# accumulate is what let 188 pile up. The 36 it found were cleared rather than
+# re-suppressed; each was a bare blanket `# type: ignore` (no bracketed form,
+# so no second checker could be relying on it -- ty skips codes lacking a
+# `ty:` prefix, which is why a bracketed directive may be load-bearing even
+# when ty calls it unused), and the diagnostic set was byte-identical under
+# --python-platform win32 and linux, so none was platform-load-bearing in the
+# way the timeout.py block below documents.
 [[overrides]]
 include = ["tests/**"]
 
@@ -15,7 +42,6 @@ unresolved-attribute = "ignore"
 unknown-argument = "ignore"
 invalid-argument-type = "ignore"
 not-subscriptable = "ignore"
-unused-type-ignore-comment = "ignore"
 possibly-missing-attribute = "ignore"
 
 # behave's @given/@when/@then resolve to _StepDecorator instances that ty

@@ -158,7 +158,7 @@ class TestFailClosedExitPaths(unittest.TestCase):
         # empty for the purposes of testing the rejection branch.
         project = ExemplarProject.model_construct(
             name="empty",
-            canonical_url="https://example.invalid/empty",  # type: ignore
+            canonical_url="https://example.invalid/empty",
             commit_sha="0" * 40,
             archetypal_cell=1,
             cell_label="x",

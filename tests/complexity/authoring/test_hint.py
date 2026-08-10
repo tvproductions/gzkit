@@ -71,7 +71,7 @@ def _diagnosis(
 ) -> AdvisorDiagnosis:
     return AdvisorDiagnosis(
         metric="radon_cc",
-        crossing_band=crossing_band,  # type: ignore
+        crossing_band=crossing_band,
         crossing_value=crossing_value,
         archetype=RefactorArchetype.LONG_PARAMETER_LIST,
         doctrinal_frame=_frame(excerpt) if excerpt is not None else _frame(),

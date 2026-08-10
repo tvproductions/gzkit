@@ -124,7 +124,7 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
                 metric="radon_cc",
                 crossing_band="warn",
                 crossing_value=8.5,
-                archetype="not_a_valid_archetype",  # type: ignore
+                archetype="not_a_valid_archetype",
                 doctrinal_frame=frame,
                 proof=(proof_range,),
                 recommended_move="Introduce Parameter Object",
@@ -135,7 +135,7 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
         """Given authority outside the four-value enum, ValidationError is raised."""
         with self.assertRaises(ValidationError):
             DoctrinalFrame(
-                authority="beck",  # type: ignore
+                authority="beck",
                 citation="Test citation",
                 excerpt="Test excerpt",
             )
@@ -148,7 +148,7 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
         with self.assertRaises(ValidationError):
             AdvisorDiagnosis(
                 metric="radon_cc",
-                crossing_band="critical",  # type: ignore
+                crossing_band="critical",
                 crossing_value=8.5,
                 archetype=RefactorArchetype.LONG_PARAMETER_LIST,
                 doctrinal_frame=frame,

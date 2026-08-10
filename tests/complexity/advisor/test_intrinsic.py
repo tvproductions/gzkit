@@ -60,8 +60,8 @@ class TestIntrinsicComplexityDecorator(unittest.TestCase):
             return shared_name
 
         inner_fn = make_inner()
-        inner_file = inspect.getfile(inner_fn)  # type: ignore
-        inner_qualname = inner_fn.__qualname__  # type: ignore
+        inner_file = inspect.getfile(inner_fn)
+        inner_qualname = inner_fn.__qualname__
 
         outer_result = get_attestation(outer_file, outer_qualname)
         inner_result = get_attestation(inner_file, inner_qualname)
@@ -70,8 +70,8 @@ class TestIntrinsicComplexityDecorator(unittest.TestCase):
         self.assertIsNotNone(outer_result)
         self.assertIsNotNone(inner_result)
         self.assertNotEqual(outer_qualname, inner_qualname)
-        self.assertEqual(outer_result[0], "outer reason")  # type: ignore
-        self.assertEqual(inner_result[0], "inner reason")  # type: ignore
+        self.assertEqual(outer_result[0], "outer reason")
+        self.assertEqual(inner_result[0], "inner reason")
 
     @covers("REQ-0.0.29-07-02")
     def test_decorator_is_noop_at_runtime(self) -> None:

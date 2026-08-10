@@ -338,7 +338,7 @@ class TestEditSaveHookWired(unittest.TestCase):
 
         valid_bytes = render(_make_agent_contract(), "claude")
 
-        def fake_editor(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess:  # type: ignore
+        def fake_editor(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess:
             temp_path = Path(args[-1])
             temp_path.write_bytes(valid_bytes)
             return subprocess.CompletedProcess(args=args, returncode=0)

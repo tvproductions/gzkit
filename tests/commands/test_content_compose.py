@@ -34,7 +34,7 @@ def _make_entry(
         id=entry_id,
         surface="AGENTS.md",
         section="behavior-rules",
-        tier=tier,  # type: ignore
+        tier=tier,
         classification="Ambiguous",
         text=text,
         origin="test",
