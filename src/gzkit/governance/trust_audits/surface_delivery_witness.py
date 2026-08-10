@@ -145,15 +145,29 @@ def _observe_delivery(
                 f"not delivered to the agent at all under {vendor}, so content there "
                 f"is silently absent rather than merely late. {_DELIVERY_REMEDIATION}"
             )
-        for name, offset in rendered:
-            if name in must_survive and offset >= cap:
-                _warn(
-                    f"{relpath}: section {name!r} is declared must-survive but begins "
-                    f"at byte {offset}, past the {vendor} delivery cap {cap} B — at "
-                    f"risk of silent loss. A declared-unrecoverable section that is "
-                    f"not delivered is not in force (AGENTS.md § Behavior Rules — "
-                    f"Always #4). {_DELIVERY_REMEDIATION}"
-                )
+        # Survival is about the whole section, not its heading. A section whose
+        # heading sits under the cap while its body runs past it is truncated
+        # just as completely as one that begins past it, and asking only about
+        # the offset cannot see that case — which is the case the committed
+        # tree actually hits.
+        for index, (name, offset) in enumerate(rendered):
+            if name not in must_survive:
+                continue
+            end = rendered[index + 1][1] if index + 1 < len(rendered) else surface_bytes
+            if end <= cap:
+                continue
+            placement = (
+                f"begins at byte {offset}, past"
+                if offset >= cap
+                else f"begins at byte {offset} but runs to {end}, straddling"
+            )
+            _warn(
+                f"{relpath}: section {name!r} is declared must-survive but "
+                f"{placement} the {vendor} delivery cap {cap} B — at "
+                f"risk of silent loss. A declared-unrecoverable section that is "
+                f"not delivered is not in force (AGENTS.md § Behavior Rules — "
+                f"Always #4). {_DELIVERY_REMEDIATION}"
+            )
 
 
 def _audit_surface(project_root: Path, relpath: str, entry: object) -> list[ValidationError]:

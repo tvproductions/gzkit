@@ -211,6 +211,28 @@ class DeliveryCapIsObservedNeverGated(unittest.TestCase):
         self.assertEqual(errors, [])
         self.assertIn("beta", output)
 
+    def test_must_survive_section_straddling_the_cap_is_named(self) -> None:
+        """A section that BEGINS under the cap but RUNS PAST it is not delivered.
+
+        The predicate used to ask whether the heading offset was past the cap,
+        which is a weaker question than whether the section survives. The
+        straddling case is both the one the committed tree actually hits —
+        AGENTS.md § Architectural Boundaries begins at 32558 against a 32768 B
+        codex cap and runs to 33153, losing boundaries 3 through 6 — and the
+        one a heading-offset test cannot see.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_surface(root, [("Beta", 400), ("Alpha", 10)])
+            # Beta is must-survive (rank 1) and renders FIRST, so its heading is
+            # under the cap while its body is not.
+            _write_declaration(root, ["beta", "alpha"], 1)
+            _write_manifest(root, {"codex": 200})
+            errors, output = _run(root)
+        self.assertEqual(errors, [], "the vendor cap must never change the exit code")
+        self.assertIn("beta", output)
+        self.assertIn("at risk", output)
+
     def test_must_survive_section_within_cap_is_not_named_at_risk(self) -> None:
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
