@@ -436,11 +436,17 @@ class ResumeGatePermitsTheMandatedVerificationTests(unittest.TestCase):
                     self.assertTrue(verdict.blocked, f"{command!r} is not a read")
 
     def test_a_gz_ceremony_verb_is_still_blocked(self) -> None:
-        """The allowlist is reads only — `gz` ceremony is named in the contract."""
+        """The allowlist is reads only — `gz` ceremony is named in the contract.
+
+        `gz git-sync` used to be asserted here and is deliberately gone: it is
+        the one ceremony the operator ruled is NEVER gated on a handoff, proven
+        by `GitSyncIsNeverGatedOnAHandoffTests`. The two verbs left are ordinary
+        ceremony and stay blocked, so this case still discriminates.
+        """
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
-            for command in ("gz obpi complete OBPI-x", "gz git-sync --apply", "gz adr promote x"):
+            for command in ("gz obpi complete OBPI-x", "gz adr promote x"):
                 with self.subTest(command=command):
                     verdict = decide(
                         base,
@@ -449,6 +455,83 @@ class ResumeGatePermitsTheMandatedVerificationTests(unittest.TestCase):
                         tool_input={"command": command},
                     )
                     self.assertTrue(verdict.blocked, f"{command!r} is ceremony, not a read")
+
+
+class GitSyncIsNeverGatedOnAHandoffTests(unittest.TestCase):
+    """A git-sync is ALWAYS authorized, ruled handoff or not.
+
+    Operator canon, verbatim 2026-07-26: "a git-sync will ALWAYS be authorized -
+    think about it, if we need to sync with remote, your local handoff is almost
+    always likely to have been superseded by something on remote. Challenging me
+    on a handoff for a git-sync is silly." The ruling was booked as handoff prose
+    and mechanized by nothing, so the gate kept refusing syncs and every session
+    re-litigated a closed question — reaffirmed 2026-08-09 after it blocked a
+    `/git-sync` again: "handoffs should never, never, never, ever, block
+    git-sync. NEVER."
+
+    Assertions derive from that ruling, not from the implementation. The permit
+    cases are paired with block cases below so an always-allow implementation
+    cannot false-pass them.
+    """
+
+    def test_git_sync_is_permitted_while_unauthorized(self) -> None:
+        """Every invocation form of the sync ceremony lifts, with no ledger ruling."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "gz git-sync",
+                "gz git-sync --apply",
+                "gz git-sync --apply --lint --test",
+                # `uv run` is stripped before matching, so the operator's actual
+                # spelling must lift too — not just the normalized head.
+                "uv run gz git-sync --apply",
+            ):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertFalse(
+                        verdict.blocked,
+                        f"{command!r} is the sync ceremony the operator ruled is never gated",
+                    )
+
+    def test_the_exemption_does_not_generalize_to_other_ceremony(self) -> None:
+        """Scoped to the sync verb — a blanket ceremony permit would gut the gate."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in ("gz obpi complete OBPI-x", "gz adr promote x", "gz attest"):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertTrue(verdict.blocked, f"{command!r} is ordinary ceremony")
+
+    def test_nothing_rides_in_chained_onto_a_sync(self) -> None:
+        """The ruling covers the sync, not whatever is chained onto its prefix."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "gz git-sync --apply && rm -rf docs",
+                "gz git-sync; gz obpi complete OBPI-x",
+                "gz git-sync --apply | tee out.log",
+            ):
+                with self.subTest(command=command):
+                    verdict = decide(
+                        base,
+                        session_id=_SESSION,
+                        tool_name="Bash",
+                        tool_input={"command": command},
+                    )
+                    self.assertTrue(verdict.blocked, f"{command!r} is compound")
 
 
 class FloorBookmarkIsAFloorNotAPreferenceTests(unittest.TestCase):

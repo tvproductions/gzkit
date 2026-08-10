@@ -245,6 +245,34 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("pwd",),
 )
 
+#: Ceremonies that are ALWAYS authorized, ruled handoff or not. Held SEPARATE
+#: from `_PERMITTED_BASH` on purpose: a git-sync writes, and filing it under a
+#: constant named "read-only" would be a lie the next reader has to unpick.
+#:
+#: Operator canon, verbatim 2026-07-26: "a git-sync will ALWAYS be authorized -
+#: think about it, if we need to sync with remote, your local handoff is almost
+#: always likely to have been superseded by something on remote. Challenging me
+#: on a handoff for a git-sync is silly." Reaffirmed 2026-08-09 after this gate
+#: blocked a `/git-sync` anyway: "handoffs should never, never, never, ever,
+#: block git-sync. NEVER."
+#:
+#: Derived from the OBLIGATION, not enumerated — the correction this module's
+#: own allowlist has needed four times. The gate exists so an unruled handoff
+#: cannot DRIVE work. A sync does not act on the handoff's advice; it replaces
+#: the state the handoff describes, which is the precondition for ruling on it
+#: at all. Gating the sync on the handoff is circular, and worst exactly where
+#: it bites hardest: the clone most in need of a sync is the one whose handoff
+#: is most likely already superseded on the remote. Borne out in the 2026-07-26
+#: session, where the 24 pulled commits had already landed all five advised
+#: steps of the handoff being gated on.
+#:
+#: This opens no quality hole. `gz git-sync` runs its commit through the
+#: pre-commit hook and its push through the pre-push `gz check` gate, so every
+#: gate still fires; what lifts is the handoff-ruling precondition alone.
+#: Compound commands stay refused by `_is_compound`, so nothing rides in on a
+#: `gz git-sync && ...` prefix.
+_ALWAYS_AUTHORIZED_BASH: tuple[tuple[str, ...], ...] = (("gz", "git-sync"),)
+
 #: Flags that turn an otherwise-read-only command into a mutation. DEFENSE IN
 #: DEPTH, never the membership test: every verb in `_PERMITTED_BASH` is read-only
 #: by construction, so nothing admitted can legally carry one of these and a hit
@@ -543,6 +571,18 @@ def _bash_is_read_only(command: str) -> bool:
     return not any(token in _MUTATING_FLAGS for token in tokens)
 
 
+def _bash_is_always_authorized(command: str) -> bool:
+    """Return True for a ceremony the operator ruled is never gated on a handoff.
+
+    Compound commands are refused here exactly as in :func:`_bash_is_read_only`:
+    the standing ruling covers the sync ceremony, not anything chained onto it.
+    """
+    if _is_compound(command):
+        return False
+    tokens = _tokens(command)
+    return any(tuple(tokens[: len(allowed)]) == allowed for allowed in _ALWAYS_AUTHORIZED_BASH)
+
+
 def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: str) -> str:
     """Three-part guardrail prose: what failed, why forbidden, governed next step.
 
@@ -603,7 +643,8 @@ def decide(
     session did not AUTHOR that handoff, and no operator authorization is on the
     ledger for this session. Read-only Bash named by the skill's § Trust Model is
     permitted so the mandated Claim Verification Gate can run before the operator
-    is asked to rule.
+    is asked to rule, and the git-sync ceremony is permitted unconditionally per
+    the standing operator ruling on :data:`_ALWAYS_AUTHORIZED_BASH`.
     """
     if tool_name not in MUTATING_TOOLS:
         return Verdict(blocked=False)
@@ -619,7 +660,7 @@ def decide(
         return Verdict(blocked=False)
     if tool_name == "Bash":
         command = str((tool_input or {}).get("command", ""))
-        if _bash_is_read_only(command):
+        if _bash_is_always_authorized(command) or _bash_is_read_only(command):
             return Verdict(blocked=False)
     return Verdict(blocked=True, reason=_block_prose(handoff, tool_name, project_root, session_id))
 
