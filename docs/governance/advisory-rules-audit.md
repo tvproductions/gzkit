@@ -23,6 +23,16 @@ This audit scores every rule by:
 | **Judgment** | Requires human or agent judgment by its nature. Mechanical enforcement would overconstrain. |
 | **Ambiguous** | Scope is unclear enough that the first step is rule clarification, not mechanization. |
 
+### A **Mechanical** score must cite its witness (binding — operator ruling 2026-08-10)
+
+Scoring a row **Mechanical** asserts that a fail-closed check already covers *that row*. Nothing witnessed the assertion, and five Mechanical rows were found false in the two days before this ruling.
+
+The enforcement-floor negative controls (`gz validate --enforcement-floor`) are the repo's mutation witness, but they are **scope**-granular while these rows are **property**-granular: 64 Mechanical rows cite 46 distinct validator flags, six flags carry two or three rows each, and one scope routinely enforces several properties. A scope passes its single control while any of its other properties is broken — observed 2026-08-10 on `--instructions-files-budget`, whose control plants a per-file char-budget violation and stayed green throughout a broken must-survive delivery predicate in the same scope. **Counting scope-level coverage would have scored that row witnessed.**
+
+So a new or re-scored **Mechanical** row discharges the claim by citing a registered negative control inline as `NC:<claim-id>`. Rows predating the ruling are frozen in [`data/mechanical_witness_grandfather.json`](../../data/mechanical_witness_grandfather.json) — shrink-only under the waiver ratchet, so the debt drains as rows are touched and can never grow. Enforced by `gz validate --advisory-scorecard`, exit 3.
+
+> **Row numbers are not unique.** 31 of them recur across the three tables below, so "row 49" addresses two different rows and every prior ruling citing a bare number is ambiguous. The freeze keys on `<section-id>#<row>` for that reason; prefer the same form when citing a row.
+
 ---
 
 ## Coverage Ledger (binding — GHI #754)

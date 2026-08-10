@@ -1,0 +1,360 @@
+{
+  "schema_version": 1,
+  "rationale": "Every row scored **Mechanical** claims a fail-closed check already enforces it. Nothing witnesses that claim: gz validate --advisory-scorecard checks that each rule is scored at its current version, never that the cited gate catches a violation of THAT row. The enforcement-floor negative controls are the repo mutation witness, but they are SCOPE-granular while these rows are PROPERTY-granular: 64 rows cite 46 distinct validator flags, 6 flags carry 2-3 rows each, and one scope routinely enforces several properties. Demonstrated 2026-08-10: --instructions-files-budget is cited by two Mechanical rows and has a live negative control that plants a per-file char-budget violation; it passed green the entire time the must-survive delivery predicate of the same scope was broken (fixed f9e9a4618). Scope-level coverage would have scored that row witnessed. Five Mechanical rows were found false in the two days before this freeze. Operator ruling 2026-08-10: ratchet forward - a row NEWLY scored or RE-SCORED Mechanical must cite a property-level negative control as NC:<claim-id>; the rows below are frozen as today debt and the list may only shrink. Keys are <section-id>#<row> because bare row numbers are NOT unique - 31 of them appear twice across the three tables, so every prior ruling citing a bare row number is an ambiguous reference.",
+  "gates_step": "advisory scorecard mechanical-row witness (gz validate --advisory-scorecard)",
+  "mechanism": "shrink-ratchet",
+  "entries_path": "unwitnessed_mechanical_rows",
+  "baseline_count": 64,
+  "unwitnessed_mechanical_rows": [
+    {
+      "key": "architectural-boundaries-claude-md-architectural-boundaries#1",
+      "gates": [
+        "--pool-adr-isolation"
+      ]
+    },
+    {
+      "key": "architectural-boundaries-claude-md-architectural-boundaries#2",
+      "gates": []
+    },
+    {
+      "key": "architectural-boundaries-claude-md-architectural-boundaries#4",
+      "gates": [
+        "--reconcile-freshness"
+      ]
+    },
+    {
+      "key": "architectural-boundaries-claude-md-architectural-boundaries#6",
+      "gates": [
+        "--event-handlers",
+        "--frontmatter",
+        "--validator-fields"
+      ]
+    },
+    {
+      "key": "architectural-boundaries-claude-md-architectural-boundaries#6a",
+      "gates": [
+        "--taxonomy"
+      ]
+    },
+    {
+      "key": "local-agent-rules-claude-md-local-agent-rules#7",
+      "gates": []
+    },
+    {
+      "key": "local-agent-rules-claude-md-local-agent-rules#9",
+      "gates": [
+        "--utf8-prefix"
+      ]
+    },
+    {
+      "key": "local-agent-rules-claude-md-local-agent-rules#10",
+      "gates": []
+    },
+    {
+      "key": "local-agent-rules-claude-md-local-agent-rules#11",
+      "gates": [
+        "--version-release"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#14",
+      "gates": [
+        "--cli-alignment"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#15",
+      "gates": []
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#16",
+      "gates": []
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#17a",
+      "gates": [
+        "--insights-shape"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#17b",
+      "gates": [
+        "--instructions-files-budget"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#17e",
+      "gates": [
+        "--cli-alignment",
+        "--help"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#17f",
+      "gates": [
+        "--adr-status-fresh"
+      ]
+    },
+    {
+      "key": "governance-core-gzkit-rules-governance-core-md#17g",
+      "gates": [
+        "--attestor",
+        "--cause",
+        "--reason"
+      ]
+    },
+    {
+      "key": "pythonic-standards-gzkit-rules-pythonic-md#18",
+      "gates": []
+    },
+    {
+      "key": "pythonic-standards-gzkit-rules-pythonic-md#21",
+      "gates": [
+        "--class-size"
+      ]
+    },
+    {
+      "key": "pythonic-standards-gzkit-rules-pythonic-md#23a",
+      "gates": []
+    },
+    {
+      "key": "pythonic-standards-gzkit-rules-pythonic-md#24",
+      "gates": [
+        "--type-ignores"
+      ]
+    },
+    {
+      "key": "data-models-gzkit-rules-models-md#25",
+      "gates": [
+        "--pydantic-models"
+      ]
+    },
+    {
+      "key": "data-models-gzkit-rules-models-md#26",
+      "gates": [
+        "--pydantic-models"
+      ]
+    },
+    {
+      "key": "tool-skill-runbook-alignment-gzkit-rules-tool-skill-runbook-alignment-md#28",
+      "gates": [
+        "--skill-alignment"
+      ]
+    },
+    {
+      "key": "skill-surface-sync-gzkit-rules-skill-surface-sync-md#31",
+      "gates": []
+    },
+    {
+      "key": "skill-surface-sync-gzkit-rules-skill-surface-sync-md#32",
+      "gates": []
+    },
+    {
+      "key": "skill-surface-sync-gzkit-rules-skill-surface-sync-md#33",
+      "gates": []
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#35",
+      "gates": [
+        "--commit-trailers"
+      ]
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#36",
+      "gates": []
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#37",
+      "gates": [
+        "--bdd-only",
+        "--e2e",
+        "--integration",
+        "--slow",
+        "--test-tiers"
+      ]
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#38",
+      "gates": []
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#39",
+      "gates": [
+        "--behave-req-tags"
+      ]
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#66",
+      "gates": []
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#67",
+      "gates": [
+        "--red-parity",
+        "--req"
+      ]
+    },
+    {
+      "key": "tests-policy-gzkit-rules-tests-md#68",
+      "gates": [
+        "--commit-trailers"
+      ]
+    },
+    {
+      "key": "chores-workflow-gzkit-rules-chores-md#55",
+      "gates": []
+    },
+    {
+      "key": "cross-platform-gzkit-rules-cross-platform-md#41",
+      "gates": []
+    },
+    {
+      "key": "cross-platform-gzkit-rules-cross-platform-md#42",
+      "gates": []
+    },
+    {
+      "key": "cross-platform-gzkit-rules-cross-platform-md#44",
+      "gates": [
+        "--advisory-scorecard"
+      ]
+    },
+    {
+      "key": "cross-platform-gzkit-rules-cross-platform-md#45",
+      "gates": [
+        "--utf8-prefix"
+      ]
+    },
+    {
+      "key": "cross-platform-gzkit-rules-cross-platform-md#45a",
+      "gates": [
+        "--utf8-prefix"
+      ]
+    },
+    {
+      "key": "gate-5-runbook-code-covenant-gzkit-rules-gate5-runbook-code-covenant-md#50",
+      "gates": []
+    },
+    {
+      "key": "gate-5-runbook-code-covenant-gzkit-rules-gate5-runbook-code-covenant-md#50a",
+      "gates": []
+    },
+    {
+      "key": "agent-rule-placement-invariant-adr-0-0-20#47",
+      "gates": [
+        "--audits",
+        "--unscoped-rules"
+      ]
+    },
+    {
+      "key": "security-sensitivity-gzkit-rules-security-sensitivity-md#48",
+      "gates": [
+        "--sensitivity"
+      ]
+    },
+    {
+      "key": "verdict-proof-binding-validator-only-binding-declared-by-src-gzkit-schemas-advisor-diagnosis-json-src-gzkit-complexity-advisor-diagnosis-py#54",
+      "gates": [
+        "--advisor-proof-binding",
+        "--all"
+      ]
+    },
+    {
+      "key": "constitutional-invariant-composition-adr-0-0-37-obpi-0-0-37-03#58",
+      "gates": [
+        "--invariant-coherence"
+      ]
+    },
+    {
+      "key": "brief-reconciliation-invariant-cic-2-adr-0-0-37-obpi-0-0-37-05#59",
+      "gates": [
+        "--brief-reconcile"
+      ]
+    },
+    {
+      "key": "token-block-discipline-gzkit-rules-token-block-discipline-md#53",
+      "gates": []
+    },
+    {
+      "key": "token-block-discipline-gzkit-rules-token-block-discipline-md#73",
+      "gates": []
+    },
+    {
+      "key": "token-block-discipline-gzkit-rules-token-block-discipline-md#74",
+      "gates": []
+    },
+    {
+      "key": "exemplar-corpus-doctrine-gzkit-rules-complexity-doctrine-md#50",
+      "gates": [
+        "--complexity-doctrine-links"
+      ]
+    },
+    {
+      "key": "complexity-thresholds-gzkit-rules-complexity-thresholds-md-json#51",
+      "gates": [
+        "--complexity-thresholds"
+      ]
+    },
+    {
+      "key": "editor-ide-protocol-surface-gzkit-schemas-authoring-guide-protocol-json#55",
+      "gates": [
+        "--server"
+      ]
+    },
+    {
+      "key": "distribution-invariant-doctrine-t0-docs-governance-trust-doctrine-md-t0-layer-adr-0-0-31#57",
+      "gates": [
+        "--distribution"
+      ]
+    },
+    {
+      "key": "map-not-encyclopedia-doctrine-gzkit-rules-agents-md-map-doctrine-md#58",
+      "gates": [
+        "--agents-md-map-conformance",
+        "--instructions-files-budget"
+      ]
+    },
+    {
+      "key": "req-scope-discipline-gzkit-rules-tests-md-req-scope-discipline#59",
+      "gates": [
+        "--req-kind-discipline"
+      ]
+    },
+    {
+      "key": "task-discovery-gzkit-rules-task-discovery-md#60",
+      "gates": [
+        "--commit-trailers",
+        "--task-envelope-coherence"
+      ]
+    },
+    {
+      "key": "task-discovery-gzkit-rules-task-discovery-md#60b",
+      "gates": [
+        "--task-envelope-coherence"
+      ]
+    },
+    {
+      "key": "guardrail-feedback-prose-gzkit-rules-guardrail-feedback-prose-md#61a",
+      "gates": []
+    },
+    {
+      "key": "mx-mode-gzkit-rules-mx-mode-md#62",
+      "gates": [
+        "--mx-marker-coherence"
+      ]
+    },
+    {
+      "key": "mx-mode-gzkit-rules-mx-mode-md#62a",
+      "gates": []
+    },
+    {
+      "key": "hexagonal-architecture-gzkit-rules-hexagonal-architecture-md#64",
+      "gates": []
+    },
+    {
+      "key": "changelog-release-notes-gzkit-rules-changelog-release-notes-md#65",
+      "gates": [
+        "--changelog"
+      ]
+    }
+  ]
+}

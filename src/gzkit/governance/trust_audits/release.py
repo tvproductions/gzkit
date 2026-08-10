@@ -126,6 +126,9 @@ _LEDGER_ROW_RE = re.compile(
 _SCORECARD_REL = "docs/governance/advisory-rules-audit.md"
 _SCORES = "Mechanical / Promotable / Judgment / Ambiguous"
 _GRANDFATHER_REL = Path("data") / "advisory_scorecard_grandfather.json"
+_MECH_WITNESS_REL = Path("data") / "mechanical_witness_grandfather.json"
+_NC_CITATION_RE = re.compile(r"NC:([a-z][a-z0-9-]*)")
+_SCORECARD_ROW_RE = re.compile(r"^\|\s*(\d+[a-z]?)\s*\|(.+?)\|(.+?)\|(.*)\|\s*$")
 
 #: The four scores a rule row may carry. A row may name *two* — row 65 scores
 #: changelog structure ``**Mechanical**`` and release-notes curation
@@ -460,6 +463,101 @@ def _is_executable_witness(token: str) -> bool:
     return token.startswith("features/") and token.endswith(".feature")
 
 
+def _mechanical_rows(scorecard_text: str) -> list[tuple[str, str]]:
+    """Return ``(key, notes)`` for every row scored **Mechanical**.
+
+    The key is ``<section-id>#<row>``: bare row numbers are NOT unique — 31 of
+    them recur across the scorecard's three tables — so a bare number addresses
+    two different rows and cannot key a freeze.
+    """
+    from gzkit.content.parse import section_id  # noqa: PLC0415
+
+    rows: list[tuple[str, str]] = []
+    section = "(preamble)"
+    for line in scorecard_text.splitlines():
+        if line.startswith(("## ", "### ")):
+            section = section_id(line.lstrip("#").strip())
+            continue
+        match = _SCORECARD_ROW_RE.match(line)
+        if match and "Mechanical" in match.group(3):
+            rows.append((f"{section}#{match.group(1)}", match.group(4).strip()))
+    return rows
+
+
+def _frozen_mechanical_keys(project_root: Path) -> set[str]:
+    path = project_root / _MECH_WITNESS_REL
+    if not path.is_file():
+        return set()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return set()
+    entries = payload.get("unwitnessed_mechanical_rows", [])
+    return {e["key"] for e in entries if isinstance(e, dict) and "key" in e}
+
+
+def _unwitnessed_mechanical_row_errors(
+    scorecard_text: str, project_root: Path
+) -> list[ValidationError]:
+    """Require every **Mechanical** row to cite a property-level witness or be frozen.
+
+    Scoring a row Mechanical asserts a fail-closed check already covers it, and
+    nothing witnessed that assertion: this audit checks rule *versions*, and the
+    enforcement-floor negative controls are SCOPE-granular while these rows are
+    PROPERTY-granular. One scope routinely carries several properties, so its
+    single control passes while any of the others is broken — observed
+    2026-08-10 on ``--instructions-files-budget``, whose control plants a
+    per-file char-budget violation and stayed green through a broken
+    must-survive delivery predicate in the same scope.
+
+    A row discharges the claim by citing a registered negative control as
+    ``NC:<claim-id>``. Rows predating the ruling are frozen in
+    ``data/mechanical_witness_grandfather.json``, shrink-only.
+    """
+    from gzkit.enforcement import (  # noqa: PLC0415
+        _ensure_production_claims_registered,
+        registered_claims,
+    )
+
+    if not (project_root / _MECH_WITNESS_REL).is_file():
+        # The freeze file is this binding's adoption marker, not a bypass:
+        # gzkit's own copy is registered in the waiver ratchet, which fails
+        # closed (exit 3) if a registered surface is deleted. Absence therefore
+        # means an adopter has not adopted the binding — `gz init` ships the
+        # scorecard, and failing every adopter's `gz check` on a freeze they
+        # were never given would be gzkit's defect, not theirs.
+        return []
+    frozen = _frozen_mechanical_keys(project_root)
+    rows = [(key, notes) for key, notes in _mechanical_rows(scorecard_text) if key not in frozen]
+    if not rows:
+        return []
+    _ensure_production_claims_registered()
+    known = set(registered_claims())
+    errors: list[ValidationError] = []
+    for key, notes in rows:
+        cited = set(_NC_CITATION_RE.findall(notes))
+        if cited & known:
+            continue
+        unresolved = f" Cited claim(s) {sorted(cited)} resolve to nothing." if cited else ""
+        errors.append(
+            ValidationError(
+                type="advisory_scorecard",
+                artifact=_SCORECARD_REL,
+                message=(
+                    f"Row {key} is scored **Mechanical** but cites no registered "
+                    f"property-level witness.{unresolved} A Mechanical score claims a "
+                    "fail-closed check already enforces THAT row; a scope-level negative "
+                    "control proves the gate is alive, never that this property is "
+                    "covered. Cite one as `NC:<claim-id>` from the enforcement registry "
+                    "(`gz validate --enforcement-floor` runs them), or — if this is "
+                    "pre-ruling debt — add its key to "
+                    f"`{_MECH_WITNESS_REL.as_posix()}`, which may only shrink."
+                ),
+            )
+        )
+    return errors
+
+
 def _missing_witness_path_errors(scorecard_text: str, project_root: Path) -> list[ValidationError]:
     """Fail when a **Mechanical** row cites an executable witness that is not there.
 
@@ -695,6 +793,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     errors.extend(_summary_drift_errors(text))
     errors.extend(_unreachable_ruff_claim_errors(text, project_root))
     errors.extend(_missing_witness_path_errors(text, project_root))
+    errors.extend(_unwitnessed_mechanical_row_errors(text, project_root))
     errors.extend(_prose_promotable_errors(text))
     for rule_md in canonical_rule_files(rules_root):
         artifact = rule_md.relative_to(project_root).as_posix()

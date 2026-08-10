@@ -24,6 +24,7 @@ signature this audit exists to catch (ADR-0.0.73; `theater_signature_scan`
 
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -128,6 +129,90 @@ class AdvisoryScorecardClauseCoverage(unittest.TestCase):
             "Filename presence must not satisfy the audit -- that is the "
             "shape-graded-not-substance proxy GHI #754 removed.",
         )
+
+
+_MECH_LEDGER = """# Advisory Rules Audit
+
+## Coverage Ledger
+
+| Rule file | Scored at rule-version |
+|---|---|
+| `sample.md` | `{version}` |
+
+### Sample (`.gzkit/rules/sample.md`)
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 1 | Something binding | **Mechanical** | {notes} |
+"""
+
+
+def _build_mech(root: Path, *, notes: str, grandfathered: bool) -> None:
+    """One rule, one **Mechanical** row, and optionally a grandfather freeze."""
+    rules = root / ".gzkit" / "rules"
+    rules.mkdir(parents=True)
+    (rules / "sample.md").write_text(_RULE_BODY.format(version="0.1.0"), encoding="utf-8")
+    gov = root / "docs" / "governance"
+    gov.mkdir(parents=True)
+    (gov / "advisory-rules-audit.md").write_text(
+        _MECH_LEDGER.format(version="0.1.0", notes=notes), encoding="utf-8"
+    )
+    data = root / "data"
+    data.mkdir(parents=True)
+    entries = [{"key": "sample-gzkit-rules-sample-md#1", "gates": []}] if grandfathered else []
+    (data / "mechanical_witness_grandfather.json").write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "entries_path": "unwitnessed_mechanical_rows",
+                "baseline_count": len(entries),
+                "unwitnessed_mechanical_rows": entries,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
+class MechanicalRowsCarryAPropertyWitness(unittest.TestCase):
+    """A **Mechanical** score claims a gate enforces THAT row, and must prove it.
+
+    The claim was previously unwitnessed in both directions: this audit checked
+    only that a rule was scored at its current version, and the enforcement-floor
+    negative controls are scope-granular while these rows are property-granular.
+    A scope carrying several properties passes its one control while any of the
+    others is broken — observed 2026-08-10 on ``--instructions-files-budget``.
+    """
+
+    def test_unwitnessed_mechanical_row_fails_closed(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _build_mech(root, notes="enforced by `gz validate --whatever`", grandfathered=False)
+            errors = audit_advisory_scorecard(root)
+        self.assertTrue(
+            errors, "a Mechanical row citing no property-level witness must fail closed"
+        )
+
+    def test_row_citing_a_registered_negative_control_is_clean(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _build_mech(root, notes="enforced by lint (NC:lint)", grandfathered=False)
+            errors = audit_advisory_scorecard(root)
+        self.assertEqual(errors, [], "a cited registered negative control is the witness")
+
+    def test_row_citing_an_unregistered_negative_control_fails_closed(self) -> None:
+        """A claim id that resolves to nothing is a citation, not a witness."""
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _build_mech(root, notes="enforced by magic (NC:no-such-claim)", grandfathered=False)
+            errors = audit_advisory_scorecard(root)
+        self.assertTrue(errors, "an unregistered claim id must not satisfy the witness")
+
+    def test_grandfathered_row_is_frozen_debt_not_a_finding(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _build_mech(root, notes="enforced by `gz validate --whatever`", grandfathered=True)
+            errors = audit_advisory_scorecard(root)
+        self.assertEqual(errors, [], "frozen debt must not gate; it may only shrink")
 
 
 class AdvisoryScorecardLiveTree(unittest.TestCase):
