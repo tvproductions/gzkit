@@ -68,7 +68,18 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # DISAGREEING, not the particular scope they agreed on. ``features/`` stays
     # excluded because ``behave`` step functions annotate ``context`` attributes,
     # which ``ty`` rejects by design.
-    "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features/**"],
+    #
+    # The exclude is spelled as the BARE DIRECTORY, not ``features/**``. The glob
+    # form does not match on Windows — ``ty`` reports paths with the platform
+    # separator (``features\steps\foo.py``) and the forward-slash pattern never
+    # fires, so all 25 in-``features`` diagnostics reached the gate and the
+    # pre-push ``gz check`` failed on a tree CI had just passed. Measured
+    # 2026-08-09: ``features`` exits 0 while ``features/**``, ``./features/**``,
+    # ``**/features/**`` and ``features/**/*.py`` all exit 1. Linux never saw it
+    # because the glob matches there, which is why six months of green CI did not
+    # catch a gate that is red on a co-equal supported platform
+    # (`.gzkit/rules/cross-platform.md`: "Windows, macOS, Linux — co-equal").
+    "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features"],
     "unittest": ["uv", "run", "-m", "unittest", "-q"],
     "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
@@ -114,6 +125,12 @@ RETIRED_STEP_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
         # the widened scope is ~10:20Z. Picking midnight would have re-invalidated
         # every receipt from this session's earlier work.
         ("2026-08-08T10:00:00Z", ["uv", "run", "ty", "check", "src"]),
+        # Re-spelled to the bare directory so the exclude fires on Windows too;
+        # scope is UNCHANGED (whole tree minus ``features``), so no receipt's
+        # coverage claim shifts — only the spelling that achieves it. Boundary is
+        # the commit that landed the fix, not midnight: receipts emitted earlier
+        # today under the glob form ran on Linux, where it did exclude correctly.
+        ("2026-08-09T23:47:55Z", ["uv", "run", "ty", "check", ".", "--exclude", "features/**"]),
     ],
 }
 

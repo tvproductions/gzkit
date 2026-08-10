@@ -127,7 +127,7 @@ def scaffold_default_personas(project_root: Path) -> list[Path]:
     for name, content in DEFAULT_PERSONAS.items():
         target = personas_dir / f"{name}.md"
         if not target.exists():
-            target.write_text(content, encoding="utf-8")
+            target.write_text(content, encoding="utf-8", newline="\n")
             created.append(target)
     return created
 

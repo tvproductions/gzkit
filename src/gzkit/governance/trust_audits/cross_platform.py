@@ -541,3 +541,99 @@ def audit_subprocess_errors(project_root: Path) -> list[ValidationError]:
                         )
                     )
     return errors
+
+
+#: Modules that write repository-committed generated surfaces — canonical copies,
+#: vendor mirrors, and nested ``AGENTS.md``. Scoped by what the module PRODUCES,
+#: not by where it lives: these are the writes whose bytes a raw-byte parity gate
+#: reads back. Widen when a new module starts writing a committed surface.
+_SURFACE_WRITER_MODULES: tuple[str, ...] = (
+    "sync_surfaces.py",
+    "rules/__init__.py",
+    "skills/__init__.py",
+    "personas/__init__.py",
+    "governance/adr_status_index.py",
+)
+
+_SURFACE_NEWLINE_MESSAGE = (
+    'Text-mode write without newline="\\n" in a generated-surface writer. '
+    "Python translates \\n to os.linesep on write when newline is unset, so this "
+    "emits CRLF on Windows and LF elsewhere — two byte strings for one surface. "
+    "gz validate --surfaces compares raw bytes, so the writer reports drift it "
+    'created itself (GHI #681). Pin newline="\\n".'
+)
+
+
+def _writes_text_without_newline(node: ast.Call) -> str | None:
+    """Return a label when the call writes text and does not pin ``newline=``.
+
+    ``write_bytes`` and binary ``open`` modes are exempt by construction: they
+    perform no newline translation, which is why ``sync_parity._restore`` is
+    correct without a pin.
+    """
+    if any(kw.arg == "newline" for kw in node.keywords):
+        return None
+    func = node.func
+    if isinstance(func, ast.Attribute) and func.attr == "write_text":
+        return "write_text"
+    if isinstance(func, ast.Name) and func.id == "open":
+        mode = ""
+        if len(node.args) > 1 and isinstance(node.args[1], ast.Constant):
+            mode = str(node.args[1].value)
+        for kw in node.keywords:
+            if kw.arg == "mode" and isinstance(kw.value, ast.Constant):
+                mode = str(kw.value.value)
+        if "w" in mode and "b" not in mode:
+            return f"open(mode={mode!r})"
+    return None
+
+
+def audit_generated_surface_newlines(project_root: Path) -> list[ValidationError]:
+    r"""Flag generated-surface writers that do not pin ``newline="\n"``.
+
+    ``.claude/rules/cross-platform.md`` holds "Windows, macOS, Linux — co-equal",
+    and ``gz validate --surfaces`` / ``--distribution`` compare generated surfaces
+    by RAW BYTES. An unpinned text-mode write emits CRLF on Windows, so the same
+    surface has two byte representations and the byte-comparison gate fails on one
+    platform only.
+
+    This audit exists because the GHI #681 fix was scoped to a MODULE while the
+    defect is a CLASS. That issue's own § Class of failure enumerated "8 write
+    sites in ``src/gzkit/sync_surfaces.py``"; that module was fixed and four other
+    surface writers were left translating, which resurfaced 28 days later as 43
+    self-inflicted drift errors and a validator that dirtied a clean tree. Per
+    ``AGENTS.md`` § DO IT RIGHT #1 — fix the class, not the instance.
+
+    Asserted as a PROPERTY of every write in scope rather than as a list of
+    known-good line numbers: a line-number allowlist is what let #681 close while
+    four modules still drifted. Invoked by
+    ``tests/governance/test_generated_surface_line_endings.py``.
+    """
+    errors: list[ValidationError] = []
+    for rel in _SURFACE_WRITER_MODULES:
+        py_path = project_root / "src" / "gzkit" / rel
+        try:
+            tree = ast.parse(py_path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            # A renamed module must not silently pass by scanning nothing.
+            errors.append(
+                ValidationError(
+                    type="generated_surface_newlines",
+                    artifact=f"src/gzkit/{rel}",
+                    message="Surface-writer module is unreadable or unparseable.",
+                )
+            )
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            label = _writes_text_without_newline(node)
+            if label is not None:
+                errors.append(
+                    ValidationError(
+                        type="generated_surface_newlines",
+                        artifact=f"src/gzkit/{rel}:{node.lineno} {label}",
+                        message=_SURFACE_NEWLINE_MESSAGE,
+                    )
+                )
+    return errors

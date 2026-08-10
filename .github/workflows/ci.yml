@@ -13,7 +13,24 @@ permissions:
 
 jobs:
   check:
-    runs-on: ubuntu-latest
+    # Windows is in the matrix because `.claude/rules/cross-platform.md` declares
+    # "Windows, macOS, Linux — co-equal" and, until 2026-08-09, CI ran only
+    # ubuntu-latest. Four separate cross-platform defects reached main behind that
+    # gap — GHI #383 (backslashes in compared paths), #275 (Windows console
+    # encoding), #582 (cp1252 subprocess decode), #681 (CRLF in generated
+    # surfaces) — each found by hand on an operator's Windows clone, each
+    # catchable by one Windows run. `release.yml` already builds windows-latest
+    # binaries, so the platform was shipped without its gate ever running.
+    #
+    # macOS is deliberately absent: it bills at 10x Linux minutes against
+    # Windows's 2x, and shares POSIX path/newline semantics with Linux, so it
+    # would add cost without covering a distinct failure class. Revisit if a
+    # macOS-only defect is ever observed.
+    strategy:
+      fail-fast: false # a Windows-only failure must not mask a Linux one
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -37,11 +54,15 @@ jobs:
         with:
           python-version: "3.13"
 
+      # Astral's own action rather than the shell installer: the `install.sh`
+      # curl form is POSIX-only, and hand-rolling the PowerShell branch plus its
+      # PATH export is the kind of per-platform special-casing this matrix exists
+      # to stop writing. Same vendor as uv/ruff/ty, so it adds no new trust
+      # boundary the toolchain does not already sit behind.
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Add uv to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
 
       - name: Sync dependencies
         run: uv sync --frozen --all-extras

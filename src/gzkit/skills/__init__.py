@@ -414,7 +414,7 @@ def scaffold_skill(
     skill_path = project_root / skills_dir / dir_name
     skill_path.mkdir(parents=True, exist_ok=True)
     skill_file = skill_path / "SKILL.md"
-    skill_file.write_text(content, encoding="utf-8")
+    skill_file.write_text(content, encoding="utf-8", newline="\n")
 
     return skill_file
 

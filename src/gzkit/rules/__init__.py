@@ -369,7 +369,7 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
                 output = f"---\npaths:\n{paths_yaml}\n---\n{body}"
 
             target = rules_dir / target_name
-            target.write_text(output, encoding="utf-8")
+            target.write_text(output, encoding="utf-8", newline="\n")
             updated.append(target.relative_to(project_root).as_posix())
 
     if rules_dir.exists():
@@ -378,6 +378,35 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
                 existing.unlink()
 
     return updated
+
+
+def _shared_subtree_rules(project_root: Path) -> dict[str, list[ClassifiedRule]]:
+    """Group shared, non-global rules by the subtree each one applies to."""
+    subtree_rules: dict[str, list[ClassifiedRule]] = {}
+    for rule in classify_instruction_rules(project_root):
+        if rule.audience != "shared" or rule.is_global:
+            continue
+        for prefix in rule.subtree_prefixes:
+            subtree_rules.setdefault(prefix, []).append(rule)
+    return subtree_rules
+
+
+def nested_agents_md_paths(project_root: Path) -> set[Path]:
+    """Return every nested ``AGENTS.md`` path :func:`sync_nested_agents_md` may write.
+
+    Derived from the same rule classification the writer uses, so a caller that
+    must know the write set cannot fall out of step with it. Callers that snapshot
+    before a sync (``validate_pkg.sync_parity``) need exactly this set: a
+    hand-maintained list is what let ``gz validate --surfaces`` leave 16 files
+    modified after a read-only run — the tuple named 3 paths while the writer
+    touched ~19, so restore could only put back the 3 it knew about.
+    """
+    paths: set[Path] = set()
+    for subtree in _shared_subtree_rules(project_root):
+        subtree_dir = project_root / subtree
+        if subtree_dir.is_dir():
+            paths.add(subtree_dir / "AGENTS.md")
+    return paths
 
 
 def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
@@ -394,14 +423,7 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    rules = classify_instruction_rules(project_root)
-
-    subtree_rules: dict[str, list[ClassifiedRule]] = {}
-    for rule in rules:
-        if rule.audience != "shared" or rule.is_global:
-            continue
-        for prefix in rule.subtree_prefixes:
-            subtree_rules.setdefault(prefix, []).append(rule)
+    subtree_rules = _shared_subtree_rules(project_root)
 
     updated: list[str] = []
     expected_paths: set[Path] = set()
@@ -431,7 +453,7 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
             + "\n"
         )
 
-        agents_path.write_text(content, encoding="utf-8")
+        agents_path.write_text(content, encoding="utf-8", newline="\n")
         updated.append(agents_path.relative_to(project_root).as_posix())
 
     _cleanup_stale_nested_agents(project_root, expected_paths)
@@ -668,7 +690,7 @@ def render_rules_to_dir(
         expected_names.add(filename)
         output = render_fn(rule)
         target = target_dir / filename
-        target.write_text(output, encoding="utf-8")
+        target.write_text(output, encoding="utf-8", newline="\n")
         written.append(_render_path_str(target, project_root))
 
     for existing in target_dir.iterdir():
@@ -705,6 +727,7 @@ __all__ = [
     "render_rules_to_dir",
     "scaffold_core_rules",
     "sync_claude_rules",
+    "nested_agents_md_paths",
     "sync_nested_agents_md",
     "validate_rule_placement",
 ]

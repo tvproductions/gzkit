@@ -142,7 +142,33 @@ class TypecheckScopeCoversTheOrientationHook(unittest.TestCase):
         """`behave` step functions annotate `context` attributes; ty rejects that."""
         command = CANONICAL_STEP_COMMANDS["typecheck"]
         self.assertIn("--exclude", command)
-        self.assertIn("features/**", command)
+        pattern = command[command.index("--exclude") + 1]
+        self.assertIn("features", pattern)
+
+    def test_the_exclude_is_spelled_so_it_fires_on_every_platform(self) -> None:
+        """A `**` glob silently excludes nothing on Windows.
+
+        `ty` reports paths with the platform separator (`features\\steps\\foo.py`),
+        so a forward-slash glob never matches and every in-`features` diagnostic
+        reaches the gate — `gz check` fails on a tree CI just passed. Measured
+        2026-08-09: bare `features` exits 0 while `features/**`, `./features/**`,
+        `**/features/**` and `features/**/*.py` all exit 1.
+
+        Asserted as a property of the SPELLING rather than as the old literal,
+        because the literal was the defect. `.gzkit/rules/cross-platform.md`
+        holds Windows, macOS and Linux co-equal, so a gate that is green on one
+        and red on another is broken, not merely unlucky.
+        """
+        command = CANONICAL_STEP_COMMANDS["typecheck"]
+        pattern = command[command.index("--exclude") + 1]
+        self.assertNotIn(
+            "*",
+            pattern,
+            msg=(
+                f"typecheck exclude {pattern!r} uses a glob; globs with a path "
+                "separator do not match on Windows. Use the bare directory name."
+            ),
+        )
 
 
 if __name__ == "__main__":

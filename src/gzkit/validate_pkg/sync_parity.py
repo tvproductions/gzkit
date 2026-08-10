@@ -22,6 +22,7 @@ from gzkit.config import (
     resolve_codex_config_path,
 )
 from gzkit.core.validation_rules import ValidationError
+from gzkit.rules import nested_agents_md_paths
 from gzkit.sync_surfaces import is_managed_codex_config, render_codex_config, sync_all
 
 SURFACE_ROOTS: tuple[str, ...] = (
@@ -40,11 +41,22 @@ SURFACE_ROOTS: tuple[str, ...] = (
     ".copilotignore",
 )
 
-_NESTED_AGENTS_MD: tuple[str, ...] = (
-    "src/gzkit/AGENTS.md",
-    "src/gzkit/commands/AGENTS.md",
-    "tests/AGENTS.md",
-)
+
+def _nested_agents_md(project_root: Path) -> list[str]:
+    """Every nested ``AGENTS.md`` a sync may write, derived from the writer itself.
+
+    This was a hand-maintained 3-entry tuple, and that was the defect: ``sync_all``
+    writes one nested ``AGENTS.md`` per shared-rule subtree — ~19 on this tree —
+    so ``_snapshot`` captured 3 and ``_restore`` could put back only those 3. A
+    read-only ``gz validate --surfaces`` therefore left 16 files modified, and
+    reported as drift the very bytes it had just written. Deriving the set from
+    :func:`gzkit.rules.nested_agents_md_paths` makes snapshot/restore complete by
+    construction rather than by remembering to extend a literal.
+    """
+    return sorted(
+        path.relative_to(project_root).as_posix() for path in nested_agents_md_paths(project_root)
+    )
+
 
 _SYNC_DATE_LINE = re.compile(rb"^- \*\*Updated\*\*: \d{4}-\d{2}-\d{2}", re.MULTILINE)
 _PYTHON_RUNTIME_CACHE_SUFFIXES = frozenset({".pyc", ".pyo"})
@@ -67,7 +79,7 @@ def _collect_files(project_root: Path, config: GzkitConfig | None = None) -> set
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
     collected: set[Path] = set()
-    candidates: list[str] = [*SURFACE_ROOTS, *_NESTED_AGENTS_MD]
+    candidates: list[str] = [*SURFACE_ROOTS, *_nested_agents_md(project_root)]
     for rel in candidates:
         abs_path = project_root / rel
         if abs_path.is_file():
@@ -114,7 +126,7 @@ def _snapshot(files: set[Path]) -> dict[Path, _FileSnapshot]:
 def _existing_surface_dirs(project_root: Path, config: GzkitConfig) -> set[Path]:
     """Capture directories under tracked roots so restore removes only new ones."""
     project_root = project_root.resolve()
-    roots = [*SURFACE_ROOTS, *_NESTED_AGENTS_MD, config.paths.codex_config]
+    roots = [*SURFACE_ROOTS, *_nested_agents_md(project_root), config.paths.codex_config]
     existing = {project_root}
     for rel in roots:
         path = project_root / rel
