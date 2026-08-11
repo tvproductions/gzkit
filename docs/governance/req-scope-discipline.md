@@ -45,10 +45,41 @@ Every REQ in an OBPI brief's `## Acceptance Criteria` MUST declare exactly one k
 using the bracketed inline tag syntax:
 
 ```text
-REQ-X.Y.Z-NN-01 [behavior]: the system does X when Y
-REQ-X.Y.Z-NN-02 [support]: the rule file carries subsection Z
-REQ-X.Y.Z-NN-03 [structural-fence]: cross-OBPI boundary invariant P holds
+REQ-X.Y.Z-NN-01 [BEHAVIOR]: the system does X when Y
+REQ-X.Y.Z-NN-02 [SUPPORT]: the rule file carries subsection Z
+REQ-X.Y.Z-NN-03 [STRUCTURAL-FENCE]: cross-OBPI boundary invariant P holds
 ```
+
+### Tag case (operator ruling 2026-08-11)
+
+**Tag case carries no meaning; author UPPERCASE; existing lowercase tags are
+correct and are NOT to be rewritten.** The binding one-liner lives at
+`.gzkit/rules/tests.md` § REQ Scope Discipline; this is its rationale.
+
+Case was never a correctness question. Both readers have always been
+case-insensitive — `_REQ_KIND_TAG` (`src/gzkit/governance/trust_audits/briefs.py`)
+and `_REQ_KIND_TAG_RE` (`src/gzkit/governance/req_coverage.py`) are both
+`re.IGNORECASE`, and the first canonicalizes via `.lower()`.
+
+What owed a ruling was that the *documenting* surfaces disagreed, and one of them
+disagreed with itself: until 2026-08-11 this document gave lowercase at § The
+invariant and UPPERCASE at § Tag syntax, so an agent consulting the canonical
+expansion got both answers from one source and the question recurred per brief.
+
+UPPERCASE wins as the authored form because it is what the majority of every
+surface already does, measured 2026-08-11:
+
+| Surface | Case |
+|---|---|
+| ADR brief corpus | 597 UPPERCASE / 370 lowercase (86 files upper-only, 55 lower-only, 1 mixed) |
+| `gz-obpi-specify` SKILL.md | UPPERCASE — the authoring skill agents actually read |
+| AGENTS.md § Governance doctrine surfaces | UPPERCASE in prose |
+
+The 370 lowercase tags across 55 briefs are **correct and out of scope for
+rewriting**. A ~970-tag sweep buys nothing mechanical — the validators accept
+both — and is exactly the taste-driven cleanup `AGENTS.md` § DO IT RIGHT #11
+forbids. The ruling settles which form a *new* brief is authored in; it does not
+license a migration.
 
 REQs MUST NOT:
 
@@ -75,8 +106,8 @@ pattern, unchanged. The test MUST assert semantics (per `.gzkit/rules/tests.md`
 § invariant 6f), not strings.
 
 **Examples:**
-- `REQ-0.0.59-02-01 [behavior]: gz validate --req-kind-discipline exits 3 when a brief REQ is missing the [kind] tag`
-- `REQ-0.0.3-01-02 [behavior]: the FileStore adapter raises StorageError on permission-denied writes`
+- `REQ-0.0.59-02-01 [BEHAVIOR]: gz validate --req-kind-discipline exits 3 when a brief REQ is missing the [kind] tag`
+- `REQ-0.0.3-01-02 [BEHAVIOR]: the FileStore adapter raises StorageError on permission-denied writes`
 
 **Anti-pattern:** A test that `grep`s a production doc for the presence of a substring
 is NOT a BEHAVIOR proof. It is a SUPPORT artifact asserting nothing about code behavior.
@@ -105,8 +136,8 @@ Neither signal alone is sufficient. The ledger event proves the artifact was tou
 the validator proves it passes structural acceptance.
 
 **Examples:**
-- `REQ-0.0.59-01-01 [support]: .gzkit/rules/tests.md carries a new ## REQ Scope Discipline subsection`
-- `REQ-0.0.54-01-03 [support]: docs/governance/advisory-rules-audit.md gains scorecard row 58`
+- `REQ-0.0.59-01-01 [SUPPORT]: .gzkit/rules/tests.md carries a new ## REQ Scope Discipline subsection`
+- `REQ-0.0.54-01-03 [SUPPORT]: docs/governance/advisory-rules-audit.md gains scorecard row 58`
 
 **Anti-pattern:** A Python test that does `subprocess.run(["grep", "-q", "## REQ Scope Discipline", ".gzkit/rules/tests.md"])` is NOT a SUPPORT proof. It is a tautological filesystem operation that fails only when a human deletes the heading — zero code regression value.
 
@@ -136,8 +167,8 @@ implies the OBPI. Enforced by `resolve_fence_proof` (`src/gzkit/req_kind_fence.p
 `gz validate --req-kind-discipline`.
 
 **Examples:**
-- `REQ-0.0.59-NN-NN [structural-fence]: after OBPI-02 and OBPI-03 both complete, gz covers OBPI-X --json correctly routes per-kind proof channels for all three kinds`
-- `REQ-0.0.3-NN-NN [structural-fence]: all adapters in gzkit/adapters/ import only from gzkit/core/ports/, never from gzkit/commands/`
+- `REQ-0.0.59-NN-NN [STRUCTURAL-FENCE]: after OBPI-02 and OBPI-03 both complete, gz covers OBPI-X --json correctly routes per-kind proof channels for all three kinds`
+- `REQ-0.0.3-NN-NN [STRUCTURAL-FENCE]: all adapters in gzkit/adapters/ import only from gzkit/core/ports/, never from gzkit/commands/`
 
 **Origin:** Path D from ADR-pool.obpi-req-taxonomy-scope-fence: "promote scope-fence
 REQs to parent-ADR REQs, audited at the parent layer." Adopted as the STRUCTURAL-FENCE

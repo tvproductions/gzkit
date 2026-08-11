@@ -51,7 +51,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mx-mode.md` | `1.1.0` |
 | `pythonic.md` | `0.5.0` |
 | `tool-skill-runbook-alignment.md` | `0.3.0` |
-| `tests.md` | `0.16.0` |
+| `tests.md` | `0.17.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
 
@@ -318,6 +318,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
+| 59a | Tag case carries no meaning (both readers are `re.IGNORECASE`); author UPPERCASE, and do NOT rewrite existing lowercase tags | **Judgment** | **Added 2026-08-11 (rule `0.17.0`), operator ruling.** The case-insensitivity half is mechanically true and asserted where it lives — `_REQ_KIND_TAG` (`briefs.py`) and `_REQ_KIND_TAG_RE` (`req_coverage.py`) both carry `re.IGNORECASE`, and the first canonicalizes via `.lower()`; nothing further to witness. The authoring half is deliberately unwitnessed **and no witness is planned**: a case scan over `docs/design/adr/**` is trivially tractable, but it would flag 370 tags the same ruling declares CORRECT, so the only check anyone could build here fails on compliant input. That is not a promotion candidate; it is a check whose premise the rule denies. Under § Recommended promotion order freeze (2026-06-08) a new check needs observed drift, and the observed condition was documentation disagreement — repaired by editing the three surfaces, not by adding mechanism. Reclassify only if a *reader* is ever added that is case-sensitive, which would make case a correctness property for the first time. Rationale and the measured split: `docs/governance/req-scope-discipline.md` § Tag case. |
 | 59 | Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`; each kind has exactly one proof channel (BEHAVIOR → `@covers` test; SUPPORT → ledger event + structural validator; STRUCTURAL-FENCE → parent-ADR `## Boundary Invariants` entry) | **Mechanical** | `gz validate --req-kind-discipline` (OBPI-0.0.59-02 scope) fail-closes brief-time on missing `[kind]` tags and per-kind proof-citation gaps. Three-kind taxonomy is a closed StrEnum; brief-authoring scaffold prompts for kind (OBPI-0.0.59-02); parity gate consumes per-kind proof channels (OBPI-0.0.59-03). Added by OBPI-0.0.59-01 (2026-05-26). ADR-0.0.59. Canonical expansion: `docs/governance/req-scope-discipline.md`. |
 
 ### TASK Discovery (`.gzkit/rules/task-discovery.md`)
@@ -372,9 +373,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 67 | 62% |
+| **Mechanical** | 67 | 61% |
 | **Promotable** | 0 | 0% |
-| **Judgment** | 41 | 38% |
+| **Judgment** | 42 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
