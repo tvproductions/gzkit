@@ -80,7 +80,7 @@ uv run gz obpi validate --adr ADR-0.35.0-canon-entry-corpus-landing --authored
 uv run gz check
 ```
 
-Expect `ADR-0.35.0` at 0/10 with ten `draft` briefs, `ADR-0.36.0` at 0/9, and 10/10 PASS on the authored gate. Neither feature has landed an OBPI; the asymmetry is readiness, not progress. Read the campaign's Movement A boxes and its newest § Amendments entry directly rather than trusting the summary above.
+Read the landed counts off `gz adr status` rather than from any prose copy — this document deliberately carries none, because a transcribed figure has no reconciliation path and goes stale the next time an OBPI is added, withdrawn, parked or folded. The semantic claim to check is that NEITHER feature has landed an OBPI, and that the asymmetry between them is readiness rather than progress. Read the campaign's Movement A boxes and its newest § Amendments entry directly rather than trusting the summary above.
 
 The clip witness from earlier in the session is independent and mechanical:
 
