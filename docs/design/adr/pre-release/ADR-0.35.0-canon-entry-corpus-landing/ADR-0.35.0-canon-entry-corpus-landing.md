@@ -75,7 +75,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 7. `gz content remember` gains a POST-APPEND ADVISORY -- three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`, never a refusal, exit stays 0. Capture must never be blocked: losing the operator's words is strictly worse than a red tree. The tree going red is correct; GHI #654's defect is the SILENCE, not the redness.
 
-8. Codex playback wires to a real surface, coordinating with ADR-0.44.0-vendor-alignment-codex (which owns that surface). This makes the `lite` setpoint falsifiable for the first time.
+8. Codex playback wires to a real surface, coordinating with ADR-pool.vendor-alignment-codex (which owns that surface). This makes the `lite` setpoint falsifiable for the first time.
 
 9. `classification` IS CORPUS-OWNED WHERE THE CORPUS OWNS THE SECTION (operator-ruled 2026-08-02, GHI #737). `CorpusEntry.classification` is schema-required and part of the baseline identity fingerprint but has NO reader anywhere in `src/` -- every hit is a declaration or a writer. The binding copy lives instead in `docs/governance/advisory-rules-audit.md`, which `bullet_retention.py:141-163` parses. Two differently-typed representations of one governance concept, the structured one inert and the markdown one binding, is precisely the shape `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids. Resolution: `bullet_retention` resolves a bullet's classification from the corpus when that bullet's section is corpus-owned, and from the scorecard otherwise -- one reader, declared precedence. Pointing the audit wholesale at the corpus (the shape GHI #737 proposed) is REJECTED on measurement: the scorecard carries 144 rows against the corpus's 52 over 8 sections, so a wholesale swap is a ~64% coverage REGRESSION, not a clean substitution. The two surfaces classify overlapping but unequal populations, which is why the field went inert rather than being wired up. This is item 3's section-ownership seam applied to the classification axis: owning a section makes its entries' classification BINDING, so the 36 `Ambiguous` capture-defaults (all `origin: cli:content-remember`, never revisited) must be reconciled BEFORE ownership binds, not after. The field is never dropped -- it is baseline identity, and removal re-fingerprints every committed rendition.
 
@@ -98,7 +98,7 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
 
 1. 31.2% FAIL-CLOSED COVERAGE IS HONEST BUT THIN, and thinner than the headline suggests. Corrected during OBPI authoring (2026-07-21): the corpus addresses 8 sections but only **7 carry `invariant`-tier entries** -- `governance-doctrine-surfaces` holds the corpus's single `compressible` entry, so it is not on the invariant floor at all. Of those 7, **two carry exactly one entry each** (`obpi-acceptance-protocol`, `defect-fix-routing`). The floor therefore binds meaningfully over five sections plus two tokens, not "8 of 22". The 31.2% byte figure is unaffected -- it counts bytes, not sections; what is corrected is the section-count gloss. The section histogram is an accretion curve, not a curation -- coverage is concentrated where someone happened to run `gz content remember`, not where the contract is load-bearing.
 
-2. THE RATCHET HAS NO FORCING FUNCTION. Decrease-only permits never decreasing. This is the top-ranked pre-mortem failure precisely because it requires nobody to do anything wrong: 18 months out the total reads 22,100 B while "31.2% witnessed" has been printed in Fidelity Assertions forty times, laundering a mostly-unwitnessed contract as a governed one. Cadence, owner, and scheduled floor-raise are UNDECIDED and forced onward (see Forced Decisions).
+2. THE RATCHET HAS NO FORCING FUNCTION. Decrease-only permits never decreasing. This is the top-ranked pre-mortem failure precisely because it requires nobody to do anything wrong: 18 months out the total reads 22,100 B while "31.2% witnessed" has been printed in Fidelity Assertions forty times, laundering a mostly-unwitnessed contract as a governed one. Cadence, owner, and scheduled floor-raise are UNDECIDED and forced onward (see `DESIGN_FORCING_FUNCTIONS.md` § Closing items 3 and 4).
 
 3. A SINGLE ATTESTATION OVER N CONSUMERS IS STRUCTURALLY A BUNDLE -- the shape AGENTS.md section MAKE LLM STOCHASTIC VIBES INERT names as a vibing signature. Accepted deliberately on determinism grounds, but it needs a per-consumer repudiation story it does not yet have: ADR-0.0.71 gives `repudiate` at OBPI granularity, so unwinding one consumer means unwinding the attestation for all.
 
@@ -110,7 +110,7 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
 
 7. CLAUDE.md REMAINS OUTSIDE THE SEAM. `sync_claude_md` renders from a template plus `.gzkit/agents.local.md`, entirely outside the corpus. Once AGENTS.md owned sections are fail-closed, `agents.local.md` stays a viable ungoverned route to put doctrine in front of every Claude session. Accepted deliberately for scope; named here rather than left silent, and forced onward as a follow-on ADR. This is the only scenario in which this ADR ends up retrospectively performative.
 
-8. THE TIER DIAL IS DEGENERATE AND THIS ADR DOES NOT FIX IT. 50 invariant / 1 compressible is a dial with one notch on one side. The real 57% reduction in `codex.md` is produced by the agent's freehand judgment (`composer.py` docstring line 6), not by tier policy operating on 354 declared compressible bytes. Named as a forced decision.
+8. THE TIER DIAL IS DEGENERATE AND THIS ADR DOES NOT FIX IT. 50 invariant / 1 compressible is a dial with one notch on one side. The real 57% reduction in `codex.md` is produced by the agent's freehand judgment (`composer.py` docstring line 6), not by tier policy operating on 354 declared compressible bytes. Named as a forced decision (`DESIGN_FORCING_FUNCTIONS.md` § Closing item 3).
 
 ## Fidelity Assertions
 
@@ -193,7 +193,7 @@ tempted to add a precondition to `remember` to keep it green. Losing the
 operator's words is strictly worse than a red tree; the defect this ADR fixes is
 the SILENCE, not the redness. *Proves REQ-0.35.0-08-07.*
 
-**BI-07 — ADR-0.35.0 makes no change to the surfaces ADR-0.44.0 owns.**
+**BI-07 — ADR-0.35.0 makes no change to the surfaces ADR-pool.vendor-alignment-codex owns.**
 Specifically: `.codex/config.toml` generation, Codex hook registration and
 adapters, Codex subagent role definitions, the `gz validate --surfaces` Codex
 drift scope, and the Codex instruction-budget artifacts. This ADR wires playback
@@ -291,7 +291,7 @@ pool item (operator ruling, 2026-07-21).
 <!-- gz-validate-skip: command-shape -->
 - [ ] `gz content land <surface>` orchestrator -- atomic multi-consumer write, single Gate 5 on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
 - [ ] `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
-- [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-0.44.0-vendor-alignment-codex
+- [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-pool.vendor-alignment-codex
 - [ ] `classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)
 
 ## Q&A Transcript
