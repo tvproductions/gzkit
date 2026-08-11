@@ -3,7 +3,11 @@
   "surfaces": [
     {
       "path": "docs/governance/build-to-1.0-campaign-2026-07-18.md",
-      "historical_sections": ["Amendments", "Archive", "Rulings Register"],
+      "historical_sections": [
+        "Amendments",
+        "Archive",
+        "Rulings Register"
+      ],
       "note": "The campaign is both live (the Queue) and archival (Amendments). Section granularity is required, not optional: a whole-file rule would either falsify the amendment record or exempt the banner that started GHI #768."
     },
     {
@@ -11,5 +15,15 @@
       "historical_sections": [],
       "note": "Quoted the campaign rather than gz adr status and carried 0/9 into a document authored five days after the count changed. The propagation instance in the filed GHI."
     }
-  ]
+  ],
+  "newest_handoff": {
+    "historical_sections": [
+      "current state summary",
+      "important context",
+      "decisions made",
+      "evidence",
+      "settled rulings"
+    ],
+    "note": "Only the NEWEST handoff is scanned: it is the document newest_handoff() hands the resume gate, so its figures are the ones a next session acts on. ~205 handoffs sit on disk and every older one is a dated record by construction. Section granularity is required because a handoff is half record and half live claim - Immediate Next Steps, Pending Work / Open Loops and Verification Checklist are LIVE (a next session acts on them); the sections listed here are retrospective. Armed 2026-08-10 after the newest handoff was found carrying two ADR counts that were both wrong against Layer-2."
+  }
 }

@@ -69,6 +69,84 @@ class LiveCountsAreRefused(_Tree):
         self.assertIn("never", message.lower())
 
 
+class TheNewestHandoffIsALiveSurface(unittest.TestCase):
+    """Handoffs produce most of this drift and were scanned by nothing.
+
+    The registry takes literal paths, and there are ~205 handoffs on disk, so
+    listing the corpus would refuse a mountain of dated records. Only the
+    NEWEST is live: it is the one ``newest_handoff`` hands the resume gate, and
+    therefore the one whose numbers a next session acts on.
+    """
+
+    def _build(self, body: str, *, ts: str = "2026-08-10T01:44:01Z") -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / "data").mkdir()
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        (root / "data" / "transcribed_count_surfaces.json").write_text(
+            json.dumps(
+                {
+                    "surfaces": [],
+                    "newest_handoff": {"historical_sections": ["current state summary"]},
+                }
+            ),
+            encoding="utf-8",
+        )
+        (root / ".gzkit" / "handoffs" / "20260810T014401Z-x.md").write_text(
+            f"---\nmode: CREATE\nbranch: main\ntimestamp: '{ts}'\n---\n\n{body}",
+            encoding="utf-8",
+        )
+        return root
+
+    def test_a_live_count_in_the_newest_handoff_is_flagged(self) -> None:
+        root = self._build("## Pending Work\n\ncampaign Movement A (ADR-0.35.0 at 0 of 9).\n")
+        self.assertEqual(len(audit_transcribed_counts(root)), 1)
+
+    def test_a_count_under_a_declared_historical_section_is_left_alone(self) -> None:
+        root = self._build("## Current State Summary\n\nADR-0.35.0 at 0 of 9 when written.\n")
+        self.assertEqual(audit_transcribed_counts(root), [])
+
+    def test_no_handoffs_is_not_a_finding(self) -> None:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / "data").mkdir()
+        (root / "data" / "transcribed_count_surfaces.json").write_text(
+            json.dumps({"surfaces": []}), encoding="utf-8"
+        )
+        self.assertEqual(audit_transcribed_counts(root), [])
+
+
+class StructuralProgressFormsAreRefused(_Tree):
+    """``ADR-<id> at N of M`` is a progress claim by shape, cue words or not.
+
+    Both halves of the cue-and-slash test missed the form observed on
+    2026-08-10, where a handoff carried "campaign Movement A (ADR-0.35.0 at 0
+    of 9, ADR-0.34.0 at 2 of 5)" and both figures were wrong against Layer-2
+    the next morning: the spelling is ``N of M`` rather than ``N/M``, and the
+    nearest words are "campaign Movement A", none of them a progress cue. The
+    ``at`` binds the number to the identifier, so no cue is needed to know it
+    is a progress claim.
+    """
+
+    def test_at_n_of_m_beside_an_adr_id_is_flagged(self) -> None:
+        root = self._build("# Q\n\ncampaign Movement A (ADR-0.35.0 at 0 of 9).\n")
+        self.assertEqual(len(audit_transcribed_counts(root)), 1)
+
+    def test_at_n_slash_m_without_a_cue_is_flagged(self) -> None:
+        root = self._build("# Q\n\ncampaign Movement A (ADR-0.34.0 at 2/5).\n")
+        self.assertEqual(len(audit_transcribed_counts(root)), 1)
+
+    def test_prose_of_without_the_at_binding_is_not_a_claim(self) -> None:
+        """``of`` is far too common to read as a count on its own."""
+        root = self._build("# Q\n\n`ADR-0.35.0` is one of 9 features in the queue.\n")
+        self.assertEqual(audit_transcribed_counts(root), [])
+
+    def test_a_dated_record_keeps_its_structural_count(self) -> None:
+        root = self._build(
+            "# Q\n\n## Archive\n\nADR-0.35.0 at 0 of 9.\n",
+            historical=["archive"],
+        )
+        self.assertEqual(audit_transcribed_counts(root), [])
+
+
 class DatedRecordsAreLeftAlone(_Tree):
     """The half that keeps the remedy from falsifying the archive."""
 

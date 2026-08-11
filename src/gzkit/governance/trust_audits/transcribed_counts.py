@@ -54,6 +54,23 @@ _ADR_ID_RE = re.compile(r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)")
 #: increments. ``\b`` alone admitted it.
 _COUNT_RE = re.compile(r"(?<![-\w])\d+/\d+\b")
 
+#: ``ADR-<id> … at N/M`` or ``… at N of M`` — a progress claim by SHAPE.
+#:
+#: The ``at`` binds the number to the identifier, so this form needs no nearby
+#: cue word. Observed 2026-08-10: a handoff carried "campaign Movement A
+#: (ADR-0.35.0 at 0 of 9, ADR-0.34.0 at 2 of 5)" and BOTH figures were wrong
+#: against Layer-2 the next morning — 0.34.0 was 5/5 Validated and 0.35.0's
+#: denominator had moved to 10. The cue-and-slash test below missed it twice
+#: over: the spelling is ``N of M``, and the nearest words are "campaign
+#: Movement A", none of them a cue.
+#:
+#: Bare ``of`` WITHOUT the ``at`` is deliberately not matched — "one of 9
+#: features" is ordinary prose, and reading it as a count would be the blanket
+#: sweep the filed GHI forbids.
+_ADR_AT_COUNT_RE = re.compile(
+    r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)\b[^\n]{0,24}?\bat\s+\d+(?:\s*/\s*|\s+of\s+)\d+"
+)
+
 #: Words that make a nearby ``N/M`` an ADR-PROGRESS claim rather than any ratio.
 #:
 #: Required because governance prose is full of unrelated ``N/M`` figures — a
@@ -87,16 +104,21 @@ _RECOVERY = (
 )
 
 
-def _load_surfaces(project_root: Path) -> list[dict[str, object]]:
-    """Return the declared live surfaces, or [] when the registry is absent."""
+def _registry_payload(project_root: Path) -> dict[str, object]:
+    """Return the parsed registry, or an empty mapping when absent/unreadable."""
     registry = project_root / REGISTRY_PATH
     if not registry.is_file():
-        return []
+        return {}
     try:
         payload = json.loads(registry.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return []
-    surfaces = payload.get("surfaces")
+        return {}
+    return payload if isinstance(payload, dict) else {}
+
+
+def _load_surfaces(project_root: Path) -> list[dict[str, object]]:
+    """Return the declared live surfaces, or [] when the registry is absent."""
+    surfaces = _registry_payload(project_root).get("surfaces")
     return [s for s in surfaces if isinstance(s, dict)] if isinstance(surfaces, list) else []
 
 
@@ -144,15 +166,58 @@ def _scan(text: str, historical: set[str]) -> list[tuple[int, str]]:
             continue
         if historical_depth is not None or HISTORICAL_MARKER in line:
             continue
-        if _ADR_ID_RE.search(line) and _has_progress_claim(line):
+        structural = _ADR_AT_COUNT_RE.search(line) is not None
+        if structural or (_ADR_ID_RE.search(line) and _has_progress_claim(line)):
             findings.append((number, line.strip()))
 
     return findings
 
 
+def _newest_handoff_errors(project_root: Path) -> list[ValidationError]:
+    """Scan the one handoff a resuming session actually reads.
+
+    Handoffs are the largest producer of this drift and were scanned by
+    nothing. The registry takes literal paths and there are ~205 handoffs on
+    disk, so listing the corpus would refuse a mountain of dated records —
+    exactly the blanket sweep the filed GHI forbids.
+
+    Only the NEWEST is live. It is the document ``newest_handoff`` hands the
+    resume gate, so its figures are the ones a next session acts on; every
+    older handoff is a dated record by construction, superseded by definition.
+    Section granularity still applies within it, because a handoff is itself
+    half record (what this session did) and half live claim (what the next
+    session should expect).
+    """
+    from gzkit.handoff_resume_gate import newest_handoff  # noqa: PLC0415
+
+    payload = _registry_payload(project_root)
+    entry = payload.get("newest_handoff")
+    if not isinstance(entry, dict):
+        return []
+    handoff = newest_handoff(project_root)
+    if handoff is None:
+        return []
+    raw = entry.get("historical_sections")
+    historical = {str(h).strip().lower() for h in raw} if isinstance(raw, list) else set()
+    relative = handoff.relative_to(project_root).as_posix()
+    text = handoff.read_text(encoding="utf-8", errors="replace")
+    return [
+        ValidationError(
+            type="surface",
+            artifact=f"{relative}:{number}",
+            message=(
+                f"Live transcribed ADR count in the newest handoff: {line!r}. "
+                "This is the handoff a resuming session reads, so a stale figure "
+                f"here is acted on. {_RECOVERY}"
+            ),
+        )
+        for number, line in _scan(text, historical)
+    ]
+
+
 def audit_transcribed_counts(project_root: Path) -> list[ValidationError]:
     """Return an error per live transcribed ADR OBPI count."""
-    errors: list[ValidationError] = []
+    errors: list[ValidationError] = list(_newest_handoff_errors(project_root))
 
     for surface in _load_surfaces(project_root):
         relative = str(surface.get("path", "")).strip()
