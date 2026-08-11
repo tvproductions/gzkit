@@ -110,9 +110,17 @@ THE BEHAVE TIER still carries the log noise GHI #723 fixed for unittest, carried
 unresolved from the predecessor handoff. THE g0 AUTHORSHIP GUARD IS STILL PER-CLONE, also
 carried forward.
 
-CARRIED AND UNWORKED: GHI #719; campaign Movement A (ADR-0.35.0 at 0 of 9, ADR-0.34.0 at
-2 of 5); promotion of the two pool ADRs with the ephemeral-worktree carve-out ratified
-first. SPEC-TEST DRIFT ADVISORY stands at 698 unlinked specs, advisory only.
+CARRIED AND UNWORKED: GHI #719; campaign Movement A (run `uv run gz adr status ADR-0.35.0`
+and `uv run gz adr status ADR-0.34.0` for the landed counts); promotion of the two pool ADRs
+with the ephemeral-worktree carve-out ratified first. SPEC-TEST DRIFT ADVISORY stands at 698
+unlinked specs, advisory only.
+
+CORRECTION 2026-08-10: this line previously read "ADR-0.35.0 at 0 of 9, ADR-0.34.0 at 2 of
+5". Both were wrong against Layer-2 when checked the next morning — ADR-0.34.0 is 5/5 and
+Validated, and ADR-0.35.0's denominator had moved to 10. The numbers are removed rather than
+rewritten, per the `--transcribed-adr-counts` recovery: a count in prose has no
+reconciliation path. Note the spelling "0 of 9" also EVADES that check's `\d+/\d+` pattern,
+and handoffs are not a registered surface, so nothing could have caught either figure.
 
 ## Verification Checklist
 
