@@ -431,6 +431,42 @@ further by the refining overlay rather than by taste:
   self-referential shape `docs/governance/advisory-rules-audit.md`
   § Self-referential scope domains names.
 
+## Boundary Invariants
+
+<!-- Cross-OBPI properties that can only be audited at ADR closeout, never
+     per-OBPI. Each entry names the OBPI combination it fences via the anchor
+     token `(OBPI-NN[, OBPI-MM, …])` — the proof channel for every
+     [STRUCTURAL-FENCE] REQ in this ADR's briefs. -->
+
+These are the two boundaries § Target Scope declares bind *every* unit, restated
+here as auditable invariants because neither can be proven inside a single
+brief — each is a property of the delivered set.
+
+1. **The OBPI pipeline is untouched (OBPI-07, OBPI-09).** No brief under this ADR
+   modifies `src/gzkit/commands/obpi_complete_adversarial.py`, the `gz obpi`
+   parser surface, or any Step-4b gate. OBPI-07 generalizes Step 4b's resolution
+   *shape* by reading it; OBPI-09 adapts a `PreToolUse` event without routing
+   through pipeline mechanism. Operator canon, verbatim: *"we will NOT alter the
+   OBPI process, at all!"* Audited at closeout by diffing the delivered set
+   against that path. A brief that edits 4b to make its own claim pass has
+   inverted the ADR.
+
+2. **No new `gz` verb is introduced (OBPI-02, OBPI-03, OBPI-04).** The transport
+   and all three doors compose shipped surfaces — `gz arb step`, the skill
+   runtime, the slash-command surface. A new verb would be a CLI-contract change
+   requiring its own OBPI ceremony, which § Target Scope names circular here. The
+   2026-08-09 measurement demonstrated the composed transport end to end rather
+   than asserting it (GHI #786). Audited at closeout against the registered
+   parser verb set.
+
+3. **The dark door stays dark until the pilot speaks (OBPI-08, OBPI-09).**
+   OBPI-09 ships the `AskUserQuestion` adapter off by default; only OBPI-08's four
+   measurements — false blocks, latency, operator reading time, decisions changed
+   — can light it. Neither brief may light it on its own evidence: OBPI-09 lighting
+   itself makes the gate's own OBPI the judge of whether it should be on, the
+   self-referential shape `docs/governance/advisory-rules-audit.md`
+   § Self-referential scope domains names, and the reason § Why nine split them.
+
 ## Notes
 
 ### Derived work: hook-surface currency (separable, and probably a chore)
