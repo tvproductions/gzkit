@@ -17,6 +17,35 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.3 (2026-08-12)
+
+### Release highlights
+
+- Six of the thirteen fixes are gates that reported success while structurally unable to see their own subject: an advisory verb whose verdict never reached its exit status, a mandatory ledger ceremony no registered command could emit, and a negative control that reported working enforcement as theater (GHI #781, GHI #785, GHI #791, GHI #792, GHI #793, GHI #794)
+- Windows returns to co-equal support: a Windows clone could not complete `gz git-sync` because the typecheck gate's exclusion never matched and generated surfaces were written with translated line endings (GHI #788, GHI #681)
+
+### Added
+
+- `gz validate --gate-callers` inventories gates with no automatic caller — 44 candidates surveyed, 40 disclosed as uncalled with a stated reason each, shrink-only via the waiver ratchet; wired as `gz check` step 45/54 (GHI #785)
+- `gz validate --surface-weight --recalibrate` emits the `surface_weight_recalibrated` ledger event and rewrites `data/surface_weight_floor.json` in one transaction; the event was mandatory under ADR-0.0.33 and had no producer in any registered verb (GHI #791)
+
+### Changed
+
+- Surface-weight band constants are compared against the bands recorded on the most recent recalibration event and fail closed on disagreement, replacing enforcement by agent goodwill (GHI #792)
+- `HandoffFrontmatter.continues_from` accepts multiple ancestors, so a forked handoff chain that re-merges inherits booked operator rulings from every parent instead of one (GHI #790)
+- Toolchain and dependencies move to current upstream; the `ty` pin at 0.0.55 is lifted and the 88 latent diagnostics it was hiding are resolved (GHI #789)
+- Surface sync prunes `runtime_state` from the package tree rather than only declining to propagate it, removing 71 chore proof files that shipped in the wheel against their own declared classification (GHI #783)
+- `_build_check_steps`' coupling checklist splits STEP obligations from SCOPE obligations and names all eight, where it had named four (GHI #787)
+
+### Fixed
+
+- `ty check --exclude` uses a spelling that matches on Windows, so the 25 `features/` diagnostics no longer reach the gate and block `gz git-sync` on a Windows clone (GHI #788)
+- Generated surfaces are written with pinned LF at all eight write sites in `sync_surfaces.py`, so raw-byte parity and distribution checks no longer report drift on a freshly synced Windows tree (GHI #681)
+- `gz chores advise` exits 3 when a criterion fails, instead of printing `FAIL` and returning 0 — 7 of 39 registered chores were failing invisibly to any programmatic caller (GHI #781)
+- Negative-control subprocesses pin colour off, so an `expect_output` substring assertion no longer flips its verdict on the invoking shell's `FORCE_COLOR` and report a false FACADE against working enforcement (GHI #793)
+- The `hardcoded-root-eradication` chore criterion no longer counts a comment documenting compliance as a violation of the rule it documents (GHI #782)
+- `_GHI_SUBJECT_CLOSURE_PATTERN` matches the `(GHI #N, GHI #M)` multi-issue subject spelling alongside `(GHI #N, #M)`; the unmatched spelling dropped both cited GHIs from release discovery with no warning bucket (GHI #794)
+
 ## v0.34.2 (2026-08-08)
 
 ### Release highlights

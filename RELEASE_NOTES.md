@@ -1,5 +1,97 @@
 # gzkit Release Notes
 
+## v0.34.3 (2026-08-12)
+
+### Highlights
+
+This release is about **gates that were green while blind.** Six of the thirteen
+fixes are checks that reported success while structurally unable to see the thing
+they existed to check — a chore runner that printed `FAIL` and exited 0, a
+recalibration ceremony no registered command could perform, a negative control
+that accused working enforcement of being theater. The second thread: **Windows
+is a supported platform again** — a Windows clone could not complete
+`gz git-sync` at all.
+
+### New features
+
+- **#785** — `gz validate --gate-callers` inventories every gate that no
+  automatic caller ever invokes. 44 gates surveyed, 40 disclosed as uncalled
+  with a stated reason each, shrink-only against a ratchet.
+- **#791** — `gz validate --surface-weight --recalibrate` records a
+  threshold-band change as a ledger event and rewrites the floor in the same
+  transaction. Recalibration was mandatory doctrine that no registered command
+  could perform.
+
+### Improvements
+
+- **#792** — Surface-weight band constants must agree with the recalibration
+  event that witnessed them; disagreement fails closed.
+- **#790** — A handoff chain that forks and re-merges inherits operator rulings
+  from every ancestor, not just the first.
+- **#789** — Toolchain and dependencies move to current upstream; the `ty` pin
+  at 0.0.55 lifts and 88 latent type diagnostics are resolved.
+- **#783** — Chore execution evidence no longer ships in the wheel; surface sync
+  converges the package tree rather than only adding to it.
+- **#787** — The `gz check` step-registration checklist names all eight
+  obligations it requires, not four.
+
+### Bug fixes
+
+- **#788** — On Windows the typecheck gate excluded nothing, so 25 diagnostics
+  reached it and a Windows clone could not complete `gz git-sync`.
+- **#681** — Generated surfaces were written with Windows line endings, so
+  surface validation reported drift on a freshly synced tree and 20-plus mirror
+  files showed as modified.
+- **#781** — `gz chores advise` printed per-criterion `FAIL` and exited 0.
+  Across all 39 registered chores, 7 were failing invisibly.
+- **#793** — The preflight negative control reported working enforcement as
+  theater whenever the invoking shell forced colour.
+- **#782** — The `hardcoded-root-eradication` chore counted a comment
+  documenting compliance as a violation of the rule it documented.
+- **#794 (partial)** — Release discovery recognized only one of the two
+  multi-issue commit spellings in use, so two GHIs in this release were dropped
+  from it. The separate `chore(...)`-closure gap found alongside it is a design
+  ruling and the issue stays open.
+
+### Known issues
+
+- **#794** — A GHI whose only closure commit is `chore(...)`-prefixed is still
+  invisible to `gz patch release --dry-run` — absent from every bucket rather
+  than mis-bucketed, so nothing warns. Dependency and toolchain upgrades are the
+  recurring member of that family. Workaround: read `git log <tag>..HEAD`
+  against the enumeration before publishing.
+
+### Gate Evidence
+
+- **Qualifier:** 10 behavior-level GHIs qualified (`runtime` label ∩
+  `src/gzkit/` diff in `v0.34.2..HEAD`). No foundation-ADR closeouts in range.
+- **#782 — `diff_only`, no backfill (SKILL.md § Step 1a).** The `runtime` label
+  is deliberately omitted by the author; the remedy lands in `.gzkit/chores/**`
+  and reaches `src/gzkit/chores/**` only as a generated mirror written by
+  `sync_pkg_surfaces`. Adjudicated per the #750 precedent recorded in v0.34.1
+  § Gate Evidence.
+- **#794 — `open_upstream`, left open (SKILL.md § Step 1b).** Part of the scope
+  landed; the tracker intentionally remains open for the `chore(...)`-closure
+  ruling. Described above as only-what-landed and excluded from the Stats count.
+- **#784, #786 — excluded.** Governance-artifact repairs (a brief's sensitivity
+  declaration; an ADR's transport scope) with no shipped-surface change.
+- **#785, #787 — recovered mid-ceremony.** Both were absent from the initial
+  enumeration; the `(GHI #N, GHI #M)` spelling fix under #794 restored them
+  (11 GHIs discovered before, 13 after). **#789 was reconciled by hand** — the
+  `chore(...)`-closure gap has no fix yet.
+- **Version sync:** `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `gz patch release`. Manifest at `docs/releases/PATCH-v0.34.3.md`.
+- **Operator approval:** release notes approved 2026-08-12 by g0, with the
+  discovery-gap routing ruled in the same pass ("fix regex now, GHI the chore
+  rule").
+- **Git-sync gates:** `uv run gz git-sync --apply` run immediately before the
+  GitHub release, per SKILL.md § Step 4c.
+
+### Stats
+
+- 12 user-visible GHIs closed (14 closed in range; 2 governance-artifact repairs
+  excluded, 1 open tracker not counted)
+
 ## v0.34.2 (2026-08-08)
 
 ### Highlights
