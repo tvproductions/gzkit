@@ -438,6 +438,25 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
         self.assertEqual(refs, {261, 263})
 
     @patch("gzkit.commands.patch_release.git_cmd")
+    def test_subject_form_multi_ghi_tail_repeats_the_ghi_token(self, mock_git: object) -> None:
+        """`(GHI #N, GHI #M)` closes both, like the bare-`#M` spelling.
+
+        Both spellings are live in this repo's history and neither is
+        prescribed anywhere, so a discovery that recognizes only one drops
+        every GHI in a commit written the other way — silently, because an
+        unmatched subject produces no warning bucket.
+        """
+        from gzkit.commands.patch_release import _collect_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix(gates): inventory gates with no automatic caller (GHI #785, GHI #787)\n\x00",
+            "",
+        )
+        refs = _collect_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0")
+        self.assertEqual(refs, {785, 787})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
     def test_docs_cc_prefix_with_ghi_tail_is_not_a_closure(self, mock_git: object) -> None:
         """`docs(<scope>): ... (GHI #N)` is a design citation, not closure (GHI #280)."""
         from gzkit.commands.patch_release import _collect_ghi_refs_in_range

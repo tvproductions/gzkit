@@ -259,7 +259,11 @@ _GHI_SUBJECT_CLOSURE_TYPES = ("fix", "feat", "perf", "refactor", "revert")
 _GHI_SUBJECT_CLOSURE_PATTERN = re.compile(
     r"^(?:"
     + "|".join(_GHI_SUBJECT_CLOSURE_TYPES)
-    + r")(?:\([^)]*\))?!?:\s+.*\(GHI\s+(#\d+(?:\s*,\s*#\d+)*)\)\s*$"
+    # The multi-issue tail admits both live spellings — `(GHI #1, #2)` and
+    # `(GHI #1, GHI #2)`. Neither is prescribed, both occur, and an
+    # unmatched subject produces no warning bucket, so recognizing one
+    # spelling drops the other's GHIs silently.
+    + r")(?:\([^)]*\))?!?:\s+.*\(GHI\s+(#\d+(?:\s*,\s*(?:GHI\s+)?#\d+)*)\)\s*$"
 )
 _GHI_NUMBER_PATTERN = re.compile(r"#(\d+)")
 
