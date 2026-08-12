@@ -88,6 +88,59 @@ class TestExitPreservingEscapes(unittest.TestCase):
         command = 'uv run -m unittest -q | tail -5; echo "REAL EXIT: ${PIPESTATUS[0]}"'
         self.assertIsNone(masked_verifier(command))
 
+    def test_set_with_combined_flags_still_sets_pipefail(self) -> None:
+        """`set -euo pipefail` is the common spelling and must keep working."""
+        command = "set -euo pipefail; uv run -m unittest -q | tail -5"
+        self.assertIsNone(masked_verifier(command))
+
+
+class TestEscapesMustBeUsedNotNamedTests(unittest.TestCase):
+    """An escape is honored when USED, never when merely mentioned (GHI #796).
+
+    The module states the principle these assert (`verifier_pipe_gate.py`
+    § Design notes): *"A verifier is what a segment RUNS, not a name that
+    appears in it. A substring or token-presence check would refuse
+    `grep -rn "unittest" src/`, which mentions a verifier and runs none."*
+
+    That standard was applied to the REFUSE half and not to the EXCUSE half,
+    so the fail-open direction was the lexical one. These derive from the
+    module's own claim that the two escapes are *"explicit operator opt-ins"* —
+    a word inside a grep pattern opts in to nothing.
+    """
+
+    def test_grepping_for_the_word_does_not_disarm_the_gate(self) -> None:
+        """Searching the docs for the escape's name is ordinary work.
+
+        Doing it in the same command as a piped verifier must not turn the
+        gate off — this is the likeliest real-world route to the bypass,
+        because reading this very rule is what puts the word on the line.
+        """
+        command = 'grep -rn "pipefail" docs/ ; uv run gz check | tail -5'
+        self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_echoing_the_word_does_not_disarm_the_gate(self) -> None:
+        command = "echo pipefail; uv run -m unittest -q | tail -5"
+        self.assertEqual(masked_verifier(command), "unittest")
+
+    def test_a_filename_containing_the_marker_does_not_disarm_the_gate(self) -> None:
+        """`PIPESTATUS.md` is a bare word, not a parameter reference."""
+        command = "cat PIPESTATUS.md; uv run gz check | tail -3"
+        self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_a_flag_value_containing_the_marker_does_not_disarm_the_gate(self) -> None:
+        command = "gz state --note=pipefail; uv run ruff check . | head -5"
+        self.assertEqual(masked_verifier(command), "ruff")
+
+    def test_pipefail_set_after_the_pipeline_does_not_protect_it(self) -> None:
+        """Order is semantics, not decoration.
+
+        A shell option set after a pipeline has already run cannot have
+        reported that pipeline's status. Permitting it would swap one lexical
+        check for a slightly better lexical check.
+        """
+        command = "uv run gz check | tail -5; set -o pipefail"
+        self.assertEqual(masked_verifier(command), "gz check")
+
 
 class TestVerifierInvocationForms(unittest.TestCase):
     """A verifier is recognized by what it RUNS, not by where its name appears."""

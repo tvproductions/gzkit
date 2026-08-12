@@ -43,6 +43,16 @@ Design notes that are load-bearing:
   named remedy. Both are explicit operator opt-ins; refusing them would make the
   gate un-compliable for the one correct way to pipe a verifier.
 
+* **An escape counts when it is USED, never when it is NAMED** — the bullet above
+  applied to the excuse half (GHI #796). The escape predicate was a substring scan
+  over every token in the command, so ``grep -rn "pipefail" docs/ ; gz check | tail``
+  disarmed the gate: the word had only to appear, not to set anything. That is the
+  same token-presence test the bullet below rejects for verifiers, applied to the
+  fail-OPEN half — the gate resolved what it REFUSED semantically and what it
+  EXCUSED lexically, and only the lexical half leaked. Resolution is now
+  head-based for ``set`` and reference-based for ``PIPESTATUS``, and ordered:
+  shell state protects what follows it, never what already ran.
+
 Coverage limits are declared, not hidden — see :data:`UNWITNESSABLE`.
 """
 
@@ -77,10 +87,20 @@ _STATEMENT_SEPARATORS: frozenset[str] = frozenset({";", "&&", "||", "&", "\n"})
 #: Interpreters whose ``-m <module>`` form names the real program.
 _PYTHON_RUNNERS: frozenset[str] = frozenset({"python", "python3", "python3.13", "py"})
 
-#: Shell constructs that genuinely preserve an upstream exit status through a
-#: pipe. ``pipefail`` reports the first failing stage; ``PIPESTATUS[0]`` is the
-#: remedy `.gzkit/rules/tests.md` names in the clause itself.
-_EXIT_PRESERVING_MARKERS: tuple[str, ...] = ("pipefail", "PIPESTATUS")
+#: The builtin that actually enables ``pipefail``. The HEAD is the
+#: discriminator, exactly as it is on the verifier side: ``pipefail`` reaching
+#: the shell any other way — a ``grep`` pattern, an ``echo`` argument, a flag
+#: value — changes no shell state at all (GHI #796).
+_SET_BUILTIN = "set"
+
+#: The operand that names the option, in either spelling the shell accepts:
+#: ``set -o pipefail`` and ``set -euo pipefail`` both leave it a bare token.
+_PIPEFAIL_OPERAND = "pipefail"
+
+#: A parameter REFERENCE, not a bare word. ``${PIPESTATUS[0]}`` and
+#: ``$PIPESTATUS`` read the array the clause names; ``PIPESTATUS.md`` is a
+#: filename and reads nothing.
+_PIPESTATUS_REFERENCES: tuple[str, ...] = ("${PIPESTATUS", "$PIPESTATUS")
 
 #: `gz` sub-verbs that run a verification tier. `gz` alone is far too coarse —
 #: `gz state | grep ADR-x` is an ordinary read and must stay permitted.
@@ -103,8 +123,11 @@ UNWITNESSABLE: tuple[str, ...] = (
     "in turn.",
     "Non-Bash execution surfaces (MCP tool calls, IDE-run tasks) never reach the "
     "Bash matcher, so a verifier piped there is unseen.",
-    "`pipefail` / `PIPESTATUS` are honored as escapes on presence, not on correct "
-    "use — a command that sets pipefail and then ignores the status is permitted.",
+    "`pipefail` / `PIPESTATUS` are honored on USE but not on CORRECT use: a "
+    "command that genuinely sets pipefail, or reads PIPESTATUS after some other "
+    "pipeline, and then ignores the value is permitted. Scoping the read to the "
+    "pipeline it describes needs dataflow the token stream does not carry. "
+    "Merely NAMING an escape no longer disarms the gate (GHI #796).",
 )
 
 
@@ -160,6 +183,28 @@ def _strip_env_assignments(tokens: list[str]) -> list[str]:
     return tokens[index:]
 
 
+def _sets_pipefail(statement: list[str]) -> bool:
+    """Return True when this statement is a ``set`` builtin enabling ``pipefail``.
+
+    Head-resolved on purpose (GHI #796). ``grep -rn "pipefail" docs/`` and
+    ``set -o pipefail`` are indistinguishable by token presence — posix
+    tokenization strips the quotes, so both leave a bare ``pipefail`` operand —
+    and only one of them changes how the shell reports a pipeline.
+    """
+    tokens = _strip_env_assignments(statement)
+    return bool(tokens) and tokens[0] == _SET_BUILTIN and _PIPEFAIL_OPERAND in tokens[1:]
+
+
+def _reads_pipestatus(statement: list[str]) -> bool:
+    """Return True when a token READS the ``PIPESTATUS`` array.
+
+    A reference (``${PIPESTATUS[0]}``, ``$PIPESTATUS``) retrieves the upstream
+    status; a bare word that merely contains the name — a path, a flag value —
+    retrieves nothing.
+    """
+    return any(ref in token for token in statement for ref in _PIPESTATUS_REFERENCES)
+
+
 def _module_verifier(rest: list[str]) -> str | None:
     """Return the verifier named by a ``-m <module>`` invocation, if any."""
     if not rest:
@@ -208,17 +253,31 @@ def masked_verifier(command: str) -> str | None:
     the shell reports only the final process's status, so every upstream exit is
     thrown away. Returns the verifier's display name so the block prose can name
     what was actually silenced rather than echoing the whole command.
+
+    Both escapes are honored only where they are USED, and ORDER is part of
+    that (GHI #796). ``pipefail`` is shell state, so it protects the pipelines
+    that FOLLOW the ``set``, never one that already ran; ``PIPESTATUS`` is read
+    back after the pipeline it describes. The predicate was previously a
+    substring scan over every token in the command, which let any mention of
+    either name — a ``grep`` pattern, a filename — disarm the gate wholesale.
     """
     tokens = tokenize_shell(command)
     if tokens is None:
         # Unbalanced quotes. The shell will reject this too; a gate that guesses
         # at unparseable input refuses commands nobody could have run anyway.
         return None
-    if any(marker in token for token in tokens for marker in _EXIT_PRESERVING_MARKERS):
-        return None
-    for statement in split_on(tokens, _STATEMENT_SEPARATORS):
+    statements = split_on(tokens, _STATEMENT_SEPARATORS)
+    pipefail_active = False
+    for index, statement in enumerate(statements):
+        if _sets_pipefail(statement):
+            pipefail_active = True
+            continue
+        if pipefail_active:
+            continue
         stages = split_on(statement, frozenset({_PIPE}))
         if len(stages) < 2:
+            continue
+        if any(_reads_pipestatus(later) for later in statements[index + 1 :]):
             continue
         for upstream in stages[:-1]:
             name = _verifier_name(upstream)
