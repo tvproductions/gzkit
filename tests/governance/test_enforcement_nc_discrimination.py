@@ -523,5 +523,105 @@ class TestFloorDiscoversProductionClaims(unittest.TestCase):
         ensure.assert_called_once_with()
 
 
+class TestSubstringChannelIsInvariantUnderColour(unittest.TestCase):
+    """The `expect_output` channel must not change verdict with terminal colour (GHI #793).
+
+    GHI #699 established `expect_output` as the ONLY channel that can
+    discriminate a genuine finding from an unrelated exit-1 on a gz verb, because
+    `GzCliError`, an uncaught exception, and a real finding all exit 1. A channel
+    whose answer flips on a presentation setting discriminates nothing.
+
+    Observed 2026-08-12 with `FORCE_COLOR=3` in the environment: `gz preflight`
+    caught its planted violation and exited 1, but Rich's number highlighter had
+    written SGR codes INSIDE the identifier — `OBPI-[1;36m0.0[0m.[1;36m1[0m-...`
+    — so the literal `OBPI-0.0.1-01-demo` did not occur in the captured output and
+    the meta-validator reported FACADE against a check that works. `FORCE_COLOR`
+    defeats the usual "not a TTY, so no colour" defence precisely because
+    `capture_output=True` means the child never has a TTY to begin with.
+
+    A FALSE facade is worse than a silent NC: it argues for deleting working
+    enforcement, and it blocked `git commit` through the pre-commit floor, which
+    is pressure toward `--no-verify`.
+    """
+
+    def test_child_runs_with_colour_disabled_even_when_the_parent_forces_it(self) -> None:
+        """The class fix: every `_command_fails_argv` child is pinned colour-off.
+
+        Asserted at the CHANNEL, not at the preflight fixture. Only one of the six
+        `expect_output` controls carries a digit-bearing substring today; the other
+        five survive by luck of phrasing, and the next NC to assert on a version,
+        count, or identifier would reintroduce this without a channel-level pin.
+        """
+        import os
+        import sys
+        from unittest.mock import patch
+
+        from gzkit.governance.trust_audits._qc_nc_entrypoints import _command_fails_argv
+
+        root = Path(tempfile.mkdtemp(prefix="gzkit-nc-colour-"))
+        probe = (
+            "import os, sys;"
+            "sys.stdout.write("
+            "  os.environ.get('FORCE_COLOR', '<unset>') + '|' "
+            "+ os.environ.get('NO_COLOR', '<unset>'));"
+            "raise SystemExit(1)"
+        )
+
+        with patch.dict(os.environ, {"FORCE_COLOR": "3", "COLORTERM": "truecolor"}):
+            signal = _command_fails_argv(
+                [sys.executable, "-c", probe],
+                root,
+                expected_exit=1,
+                expect_output="<unset>|1",
+            )
+
+        self.assertEqual(
+            signal,
+            1,
+            "A negative-control child must run with colour disabled regardless of "
+            "the parent environment. Observed child env was not "
+            "FORCE_COLOR=<unset>, NO_COLOR=1 — so Rich may rewrite the very text "
+            "the `expect_output` channel matches on, and the control's verdict "
+            "becomes a function of the operator's terminal (GHI #793).",
+        )
+
+    def test_preflight_verdict_is_the_same_with_and_without_forced_colour(self) -> None:
+        """The instance that proved it: same fixture, same claim, both environments.
+
+        Derived from §5 clause (c) — the control asserts the production path fails
+        for the reason the claim names — plus the observation that the reason did
+        not change when the colour setting did. Asserts EQUALITY of the two
+        verdicts and that both are `caught`, so the test fails if the channel
+        regains an environmental dependence in either direction.
+        """
+        import os
+        from unittest.mock import patch
+
+        from gzkit.governance.trust_audits._qc_nc_entrypoints import _ep_preflight
+        from gzkit.governance.trust_audits._qc_negative_controls import _build_preflight
+
+        with patch.dict(os.environ, {"FORCE_COLOR": "3", "COLORTERM": "truecolor"}):
+            forced = _ep_preflight(_build_preflight())
+
+        scrubbed_env = {k: v for k, v in os.environ.items() if k != "FORCE_COLOR"}
+        with patch.dict(os.environ, scrubbed_env, clear=True):
+            plain = _ep_preflight(_build_preflight())
+
+        self.assertEqual(
+            forced,
+            plain,
+            "The preflight control returned different verdicts under forced colour "
+            "versus plain output. The subject did not change between these two "
+            "runs — only the presentation did (GHI #793).",
+        )
+        self.assertEqual(
+            forced,
+            1,
+            "`gz preflight` does catch its planted stale marker and exits 1, so "
+            "the control must score CAUGHT. A falsy verdict here is the false "
+            "FACADE that accused a working check of being theater.",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

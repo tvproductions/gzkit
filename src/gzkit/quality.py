@@ -9,7 +9,7 @@ import os
 import re
 import shlex
 import subprocess
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -51,6 +51,8 @@ class QualityResult(BaseModel):
 def run_command(
     command: str | Sequence[str],
     cwd: Path | None = None,
+    *,
+    env_overrides: Mapping[str, str | None] | None = None,
 ) -> QualityResult:
     """Run a command without shell interpretation and capture output.
 
@@ -65,6 +67,14 @@ def run_command(
         command: Command to run, either as a string (tokenized via shlex)
             or as a pre-built argv sequence.
         cwd: Working directory.
+        env_overrides: Per-call child-environment adjustments layered over the
+            inherited environment. A ``None`` value UNSETS the variable, which a
+            plain ``{**os.environ, ...}`` merge cannot express — the distinction
+            matters for variables whose mere presence is the signal (GHI #793:
+            ``FORCE_COLOR`` forces Rich colour when set to *anything*, so
+            blanking it is not the same as removing it). Callers that need the
+            child's behaviour pinned rather than inherited use this; the default
+            inherits, unchanged.
 
     Returns:
         QualityResult with command output.
@@ -84,7 +94,15 @@ def run_command(
     # companion of the read-side errors="replace" decode (GHI #582). This makes
     # the child's own sys.stdout UTF-8 regardless of console code page; it is a
     # no-op where the locale is already UTF-8.
-    child_env = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    # Annotated rather than inferred: the override loop below assigns from a
+    # `str | None` mapping, and without the annotation the dict widens to
+    # `dict[str, str | None]`, which matches no `subprocess.run` overload.
+    child_env: dict[str, str] = {**os.environ, "PYTHONIOENCODING": "utf-8"}
+    for key, value in (env_overrides or {}).items():
+        if value is None:
+            child_env.pop(key, None)
+        else:
+            child_env[key] = value
     try:
         result = subprocess.run(
             argv,

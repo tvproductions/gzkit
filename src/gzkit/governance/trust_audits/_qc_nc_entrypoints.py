@@ -79,6 +79,24 @@ def _gz_command_fails(
     )
 
 
+#: Child-environment pins making captured NC output machine-comparable (GHI #793).
+#:
+#: ``expect_output`` compares a literal against captured stdout, and Rich's
+#: highlighter rewrites that text — its number rule wrapped SGR codes INSIDE an
+#: identifier (``OBPI-\x1b[1;36m0.0\x1b[0m.…``), so the literal no longer occurred
+#: and the control reported FACADE against a check that had caught its violation.
+#:
+#: ``capture_output=True`` means the child never owns a TTY, so Rich's own
+#: is-a-terminal test would normally disable colour by itself. ``FORCE_COLOR``
+#: overrides exactly that test, which is why inheriting the parent environment is
+#: not safe: the verdict becomes a function of the operator's terminal, green in
+#: CI and red on a developer machine. Both pins are needed and neither is
+#: redundant — ``FORCE_COLOR`` is honoured for ANY value including the empty
+#: string, so it must be UNSET rather than blanked, and ``NO_COLOR`` then states
+#: the intent positively for other renderers.
+_NC_PRESENTATION_PINS = {"FORCE_COLOR": None, "NO_COLOR": "1"}
+
+
 def _command_fails_argv(
     argv: list[str],
     root: Path,
@@ -86,10 +104,18 @@ def _command_fails_argv(
     expected_exit: int,
     expect_output: str | None = None,
 ) -> int:
-    """Sequence-form companion to ``_command_fails`` (same discrimination contract)."""
+    """Sequence-form companion to ``_command_fails`` (same discrimination contract).
+
+    The child runs with colour pinned OFF (``_NC_PRESENTATION_PINS``) so the
+    ``expect_output`` channel compares against the text the CLI emits, not
+    against a presentation-decorated rendering of it. Pinned here rather than at
+    each fixture because the exposure belongs to the channel: only one of the six
+    ``expect_output`` controls carries a digit-bearing substring today, and the
+    other five survive by phrasing rather than by construction (GHI #793).
+    """
     from gzkit.quality import run_command  # noqa: PLC0415
 
-    result = run_command(argv, cwd=root)
+    result = run_command(argv, cwd=root, env_overrides=_NC_PRESENTATION_PINS)
     if result.returncode != expected_exit:
         return 0
     if expect_output is not None and expect_output not in (result.stdout + result.stderr):
