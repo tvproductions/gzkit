@@ -84,6 +84,113 @@ def _authorize(base: Path, *, session_id: str = _SESSION, handoff: str = "h.md")
         fh.write(json.dumps(event) + "\n")
 
 
+class BookingIsCoupledToTheArmedHandoffTests(unittest.TestCase):
+    """A ruling must name the document the gate actually armed on (GHI #795).
+
+    `handoff_path` is written into every decision event and read back by
+    nothing, so consent recorded against document A discharged a gate armed on
+    document B. These assertions derive from § RESUME's clause — "until the
+    operator rules" is a claim about a specific document's advised steps — not
+    from the implementation.
+
+    The coupling is enforced at BOOKING time deliberately. See
+    `LiftTimeStaysSessionScopedTests` for the pole that forbids the
+    lift-time form of the same check.
+    """
+
+    def test_booking_on_a_handoff_the_gate_did_not_arm_on_is_refused(self) -> None:
+        """The defect, stated: rule on A while the gate armed on B."""
+        from gzkit.handoff_resume_gate import booking_targets_the_armed_handoff
+
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            older = _seed_handoff(base, "20260716T000000Z-older.md")
+            _seed_handoff(base, "20260812T000000Z-armed.md", timestamp="2026-08-12T00:00:00Z")
+            self.assertFalse(
+                booking_targets_the_armed_handoff(base, older),
+                "a ruling on the older document does not discharge the armed one",
+            )
+
+    def test_booking_on_the_armed_handoff_is_accepted(self) -> None:
+        """The permit pole — without it an always-refuse impl would false-pass."""
+        from gzkit.handoff_resume_gate import booking_targets_the_armed_handoff
+
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, "20260716T000000Z-older.md")
+            armed = _seed_handoff(
+                base, "20260812T000000Z-armed.md", timestamp="2026-08-12T00:00:00Z"
+            )
+            self.assertTrue(booking_targets_the_armed_handoff(base, armed))
+
+    def test_booking_is_permitted_when_no_handoff_is_armed(self) -> None:
+        """Nothing armed means nothing to mismatch.
+
+        Refusing here would block a harmless no-op booking, and the gate's
+        standing rule is that it never blocks its own recovery.
+        """
+        from gzkit.handoff_resume_gate import booking_targets_the_armed_handoff
+
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            self.assertTrue(booking_targets_the_armed_handoff(base, base / "anything.md"))
+
+    def test_a_relative_path_resolves_against_the_project_root(self) -> None:
+        """The block prose prints a repo-relative path; that spelling must match.
+
+        A predicate that compared only absolute paths would refuse the exact
+        string its own recovery command tells the operator to run.
+        """
+        from gzkit.handoff_resume_gate import booking_targets_the_armed_handoff
+
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base, "20260812T000000Z-armed.md", timestamp="2026-08-12T00:00:00Z")
+            self.assertTrue(
+                booking_targets_the_armed_handoff(
+                    base, Path(".gzkit/handoffs/20260812T000000Z-armed.md")
+                )
+            )
+
+
+class LiftTimeStaysSessionScopedTests(unittest.TestCase):
+    """Lift-time granularity is session-scoped, and that is load-bearing (GHI #795).
+
+    The obvious fix for GHI #795 — comparing `handoff_path` inside
+    `_lifts_the_gate` — is per-handoff arming reached from the other
+    direction, and it reintroduces GHI #619 and GHI #755: the moment any new
+    handoff becomes `newest_handoff()` mid-session, an already-granted
+    clearance would stop matching and the gate would re-arm against a session
+    the operator already cleared.
+
+    This test is the fence. It fails if a future reader "helpfully" adds the
+    equality check the module docstring warns against.
+    """
+
+    def test_a_handoff_authored_after_the_ruling_does_not_rearm_the_gate(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            ruled_on = _seed_handoff(base, "20260716T000000Z-ruled.md")
+            _authorize(base, handoff=ruled_on.name)
+
+            # A completion record / exit bookmark lands mid-session and becomes
+            # the newest document — the GHI #619 shape.
+            _seed_handoff(base, "20260812T000000Z-later.md", timestamp="2026-08-12T00:00:00Z")
+
+            self.assertTrue(
+                is_resume_authorized(base, _SESSION),
+                "a clearance is AMENDED mid-flight, never revoked by a newer document",
+            )
+
+    def test_the_ruling_still_does_not_leak_across_sessions(self) -> None:
+        """Session scope is the granularity that DOES bind."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            _authorize(base, session_id="some-other-session")
+            self.assertFalse(is_resume_authorized(base, _SESSION))
+
+
 class ResumeGateBlocksUnauthorizedExecutionTests(unittest.TestCase):
     """The declared clause: no mutation until the operator rules."""
 

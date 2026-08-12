@@ -210,9 +210,43 @@ Everything else fails **closed**:
 
 ---
 
+## The ruling must name the handoff the gate armed on
+
+`--handoff` is compared against the document the resume gate is currently
+armed on, and a mismatch is refused before anything is written.
+
+A ruling is consent to *a specific document's advised steps*. Until GHI #795
+the `handoff_path` on the decision event was written and never read back, so a
+ruling booked against document A lifted a gate armed on document B — recording
+operator consent for steps nobody was shown. Any path typo, stale copy-paste,
+or handoff authored between the block message and the booking reached that
+state.
+
+The refusal names the armed path and prints a runnable recovery, so the fix is
+always a copy-paste:
+
+```console
+$ uv run gz handoff decide --handoff .gzkit/handoffs/20260716T000000Z-older.md \
+    --session-id session-xyz --decision proceed --operator-text "go ahead"
+Refusing to book: .gzkit/handoffs/20260716T000000Z-older.md is not the handoff
+this session resumed.
+WHY: the gate armed on .gzkit/handoffs/20260812T000000Z-armed.md, and a ruling
+names the advised steps the operator actually read. ...
+NEXT STEP: re-run against the armed handoff, or rule on it explicitly:
+  uv run gz handoff decide --handoff .gzkit/handoffs/20260812T000000Z-armed.md \
+    --session-id session-xyz --decision proceed --operator-text "<their exact words>"
+```
+
+**The check is at booking time, not lift time, and that is deliberate.** The
+gate still lifts on `session_id` alone. Comparing paths when the gate is *read*
+would re-arm it against an already-cleared session the moment any new handoff
+lands mid-flight — a completion record, an exit bookmark, a checkpoint — which
+is the regression GHI #619 and GHI #755 closed. A clearance is amended
+mid-flight, never revoked.
+
 ## Exit codes
 
 | Code | Meaning |
 |------|---------|
 | 0 | Ruling booked; the gate is lifted for this session. |
-| 1 | No session id, or the named handoff does not exist (nothing written). |
+| 1 | No session id; the named handoff does not exist; or it is not the handoff the gate armed on. Nothing written in every case. |

@@ -66,6 +66,7 @@ __all__ = [
     "RESUME_GATE_CLAIM_IDS",
     "UNWITNESSABLE",
     "Verdict",
+    "booking_targets_the_armed_handoff",
     "decide",
     "is_resume_authorized",
     "newest_handoff",
@@ -401,6 +402,45 @@ def newest_handoff(project_root: Path) -> Path | None:
     return floor
 
 
+def booking_targets_the_armed_handoff(project_root: Path, handoff: Path) -> bool:
+    """Return True when *handoff* is the document the gate is currently armed on.
+
+    The coupling `handoff_path` was always supposed to express, enforced at the
+    moment the record is CREATED (GHI #795). The field was written into every
+    decision event and read back by nothing, so a ruling booked against document
+    A discharged a gate armed on document B — consent recorded for advised steps
+    the operator never read. A near-miss is recorded in
+    ``.gzkit/handoffs/20260812T073455Z-…md`` § Important Context, where the
+    advisement printed one path directly beside a recovery command for another.
+
+    **Booking time, NOT lift time — and that placement is the whole design.**
+    Comparing paths inside :func:`_lifts_the_gate` is per-handoff arming reached
+    from the other direction, and it reintroduces the two regressions this module
+    already closed: the instant any new handoff becomes :func:`newest_handoff`
+    mid-session — `gz obpi complete`'s mechanically written completion record
+    (GHI #619), an exit bookmark, a mid-flight checkpoint — an already-granted
+    clearance stops matching and the gate re-arms against a session the operator
+    cleared minutes earlier (GHI #755). A clearance is AMENDED mid-flight, never
+    revoked. `LiftTimeStaysSessionScopedTests` is the fence that keeps it so.
+
+    Nothing is armed → True. There is no document to mismatch, so refusing would
+    block a harmless no-op, and the gate's standing rule is that it never blocks
+    its own recovery.
+
+    Relative paths resolve against *project_root*, because the repo-relative
+    spelling is what the block prose prints — a predicate that compared only
+    absolute paths would refuse the exact command it tells the operator to run.
+    """
+    armed = newest_handoff(project_root)
+    if armed is None:
+        return True
+    candidate = handoff if handoff.is_absolute() else project_root / handoff
+    try:
+        return candidate.resolve() == armed.resolve()
+    except OSError:
+        return False
+
+
 def is_resume_authorized(project_root: Path, session_id: str) -> bool:
     """Return True when this session carries an operator authorization on the ledger.
 
@@ -408,6 +448,10 @@ def is_resume_authorized(project_root: Path, session_id: str) -> bool:
     opens when it cannot read its own evidence is not a gate. Scans raw JSONL
     rather than through the typed reader so a single malformed line elsewhere in
     the ledger cannot make the gate un-liftable.
+
+    Matching is on ``session_id`` ALONE, deliberately — see
+    :func:`booking_targets_the_armed_handoff` for why the event's
+    ``handoff_path`` is not compared here and what breaks if it is.
     """
     if not session_id:
         return False

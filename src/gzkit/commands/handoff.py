@@ -432,6 +432,10 @@ def handoff_authorize_cmd(
     """
     from gzkit.airlock.model import Decision  # noqa: PLC0415
     from gzkit.commands.common import ensure_initialized  # noqa: PLC0415
+    from gzkit.handoff_resume_gate import (  # noqa: PLC0415
+        booking_targets_the_armed_handoff,
+        newest_handoff,
+    )
     from gzkit.ledger import Ledger  # noqa: PLC0415
     from gzkit.ledger_events import handoff_resume_decided_event  # noqa: PLC0415
 
@@ -479,6 +483,34 @@ def handoff_authorize_cmd(
         raise SystemExit(1)
 
     rel = resolved.relative_to(root).as_posix() if resolved.is_relative_to(root) else handoff
+
+    # The coupling `handoff_path` asserts, enforced where the record is created
+    # (GHI #795). Booking is the only place it CAN be enforced: the gate lifts on
+    # `session_id` alone by design, because comparing paths at lift time re-arms
+    # an already-cleared session the moment any new handoff lands (GHI #619,
+    # #755). Refusing here means the wrong consent record is never written to an
+    # append-only ledger, rather than written and later disbelieved.
+    if not booking_targets_the_armed_handoff(root, resolved):
+        armed = newest_handoff(root)
+        armed_rel = (
+            armed.relative_to(root).as_posix()
+            if armed is not None and armed.is_relative_to(root)
+            else str(armed)
+        )
+        console.print(
+            f"[red]Refusing to book:[/red] {rel} is not the handoff this session resumed.\n"
+            f"WHY: the gate armed on {armed_rel}, and a ruling names the advised steps "
+            f"the operator actually read. Booking against a different document would "
+            f"record consent for steps nobody was shown, and would lift the gate anyway "
+            f"— the gate matches on session id, not on path (GHI #795).\n"
+            f"NEXT STEP: re-run against the armed handoff, or rule on it explicitly:\n"
+            f"  uv run gz handoff decide --handoff {armed_rel} \\\n"
+            f"    --session-id {resolved_session} --decision {resolved_decision} "
+            f'--operator-text "<their exact words>"',
+            style="red",
+        )
+        raise SystemExit(1)
+
     config = ensure_initialized()
     Ledger(root / config.paths.ledger).append(
         handoff_resume_decided_event(

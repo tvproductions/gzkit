@@ -25,6 +25,7 @@ from unittest import mock
 from gzkit.cli.main import _build_parser
 from gzkit.commands.handoff import (
     SECTION_PARAMS,
+    handoff_authorize_cmd,
     handoff_create_cmd,
     handoff_list_cmd,
     handoff_resume_cmd,
@@ -343,6 +344,60 @@ class TestHandoffResumeDecisionRendering(_HandoffCliCase):
 
         self.assertIn("settled — do NOT re-open", out)
         self.assertIn("Do NOT promote sensitivity into GATE5.", out)
+
+
+class TestHandoffDecideRefusesAMisTargetedBooking(_HandoffCliCase, SilencedConsoleTestCase):
+    """`gz handoff decide` refuses a ruling on a handoff the gate did not arm on.
+
+    The predicate is unit-tested in `tests/governance/test_handoff_resume_gate.py`;
+    these assert the WIRING — that the command consults it, refuses non-zero, and
+    writes nothing. The wiring is where the operator meets the rule, and a
+    predicate nobody calls is the facade shape gzkit refuses (GHI #795).
+    """
+
+    def test_booking_on_a_stale_path_exits_non_zero_and_writes_no_event(self) -> None:
+        older = self._seed(adr_id="ADR-0.0.65", slug="older", timestamp="2026-07-16T00:00:00Z")
+        self._seed(adr_id="ADR-0.0.65", slug="armed", timestamp="2026-08-12T00:00:00Z")
+
+        with self.assertRaises(SystemExit) as raised:
+            handoff_authorize_cmd(
+                handoff=str(older),
+                operator_text="go ahead",
+                session_id="session-xyz",
+                base_path=self.base,
+            )
+
+        self.assertEqual(raised.exception.code, 1)
+        self.assertFalse(
+            (self.base / ".gzkit" / "ledger.jsonl").exists(),
+            "the wrong consent record must never reach an append-only ledger",
+        )
+
+
+class TestHandoffDecideRefusalRendering(_HandoffCliCase):
+    """The refusal's prose IS the recovery path (GHI #795).
+
+    Deliberately does NOT mix in `SilencedConsoleTestCase` — per this file's
+    convention, a class asserting on rendered output cannot silence the console
+    it reads.
+    """
+
+    def test_the_refusal_names_the_armed_handoff_so_recovery_is_runnable(self) -> None:
+        older = self._seed(adr_id="ADR-0.0.65", slug="older", timestamp="2026-07-16T00:00:00Z")
+        armed = self._seed(adr_id="ADR-0.0.65", slug="armed", timestamp="2026-08-12T00:00:00Z")
+
+        buf = io.StringIO()
+        with redirect_stdout(buf), self.assertRaises(SystemExit):
+            handoff_authorize_cmd(
+                handoff=str(older),
+                operator_text="go ahead",
+                session_id="session-xyz",
+                base_path=self.base,
+            )
+
+        # output-contract: an operator who cannot read the armed path off the
+        # refusal has no way to comply with it.
+        self.assertIn(armed.name, buf.getvalue())
 
 
 class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase):
