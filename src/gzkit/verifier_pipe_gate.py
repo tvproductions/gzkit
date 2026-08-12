@@ -69,7 +69,9 @@ from gzkit.shell_reading import program_name, split_on, strip_uv_run, tokenize_s
 __all__ = [
     "GZ_VERIFIER_VERBS",
     "UNWITNESSABLE",
+    "VERIFIER_ESCAPE_CLAIM_ID",
     "VERIFIER_PIPE_CLAIM_ID",
+    "VERIFIER_PIPE_CLAIM_IDS",
     "VERIFIER_PROGRAMS",
     "Verdict",
     "decide",
@@ -338,6 +340,18 @@ def decide(tool_name: str, tool_input: dict | None = None) -> Verdict:
 
 VERIFIER_PIPE_CLAIM_ID = "verifier-exit-status-masked"
 
+#: The gate's OTHER half (GHI #797). ``verifier-exit-status-masked`` proves the
+#: rule fires; this proves the ESCAPE admits only a used escape. The distinction
+#: is not academic — the rule claim was registered, enrolled, and passing on
+#: every ``gz check`` for the entire life of GHI #796's bypass, because it never
+#: touched the exemption. A gate with an exemption makes two claims, and only
+#: one of them was ever controlled.
+VERIFIER_ESCAPE_CLAIM_ID = "verifier-escape-must-be-used"
+
+VERIFIER_PIPE_CLAIM_IDS: frozenset[str] = frozenset(
+    {VERIFIER_PIPE_CLAIM_ID, VERIFIER_ESCAPE_CLAIM_ID}
+)
+
 
 def _build_masked_verifier_violation() -> Path:
     """Return a temp root whose NAME seeds a runtime-unique command string.
@@ -367,6 +381,26 @@ def _ep_verifier_pipe_gate(root: Path) -> int:
     return 1 if (refused and permitted) else 0
 
 
+def _ep_verifier_escape_must_be_used(root: Path) -> int:
+    """Assert the EXEMPTION differential: refuse a NAMED escape, permit a USED one.
+
+    The second half of this gate's contract (GHI #797). ``_ep_verifier_pipe_gate``
+    proves the rule fires on a piped verifier; nothing proved the escape admits
+    only an escape that was actually used, and that is the half that broke.
+
+    Both poles are required, for the same reason the rule control needs both: an
+    always-refuse mutation would make the gate un-compliable for the one correct
+    way to pipe a verifier, and an always-permit mutation is the bypass itself.
+    The mention-only command carries a runtime-unique token so a broken predicate
+    cannot special-case a fixed sentinel.
+    """
+    named = {"command": f'grep -rn "pipefail" docs-{root.name}/ ; uv run gz check | tail -5'}
+    used = {"command": f"set -o pipefail; uv run gz check --nc-{root.name} | tail -5"}
+    refused = decide("Bash", named).blocked
+    permitted = not decide("Bash", used).blocked
+    return 1 if (refused and permitted) else 0
+
+
 def _verifier_pipe_marker() -> None:
     """Inert carrier for the verifier-pipe ``@enforces`` registration."""
 
@@ -380,6 +414,7 @@ def _ensure_verifier_pipe_claims_registered() -> None:
     """
     from gzkit.airlock.enter import _AIRLOCK_CLAIM_IDS  # noqa: PLC0415
     from gzkit.enforcement import (  # noqa: PLC0415
+        EXEMPTS_NONE,
         enforces,
         get_enforcement_registry,
         set_known_claims,
@@ -390,7 +425,7 @@ def _ensure_verifier_pipe_claims_registered() -> None:
     from gzkit.handoff_resume_gate import RESUME_GATE_CLAIM_IDS  # noqa: PLC0415
 
     set_known_claims(
-        _KNOWN_QC_CLAIM_IDS | _AIRLOCK_CLAIM_IDS | RESUME_GATE_CLAIM_IDS | {VERIFIER_PIPE_CLAIM_ID}
+        _KNOWN_QC_CLAIM_IDS | _AIRLOCK_CLAIM_IDS | RESUME_GATE_CLAIM_IDS | VERIFIER_PIPE_CLAIM_IDS
     )
     existing = {r.claim_id for r in get_enforcement_registry()}
     if VERIFIER_PIPE_CLAIM_ID not in existing:
@@ -398,4 +433,12 @@ def _ensure_verifier_pipe_claims_registered() -> None:
             VERIFIER_PIPE_CLAIM_ID,
             _build_masked_verifier_violation,
             _ep_verifier_pipe_gate,
+            exempts=VERIFIER_ESCAPE_CLAIM_ID,
+        )(_verifier_pipe_marker)
+    if VERIFIER_ESCAPE_CLAIM_ID not in existing:
+        enforces(
+            VERIFIER_ESCAPE_CLAIM_ID,
+            _build_masked_verifier_violation,
+            _ep_verifier_escape_must_be_used,
+            exempts=EXEMPTS_NONE,
         )(_verifier_pipe_marker)

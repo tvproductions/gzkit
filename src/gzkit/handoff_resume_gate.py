@@ -721,8 +721,20 @@ def decide(
 # point: you cannot write a negative control for a surface you did not hook.
 # ---------------------------------------------------------------------------
 
+#: This gate's EXEMPTION half (GHI #797). The two claims below prove the rule
+#: fires on an unauthorized mutation; this one proves the clearance admits only
+#: a ruling on the document the gate armed on. The distinction is not academic —
+#: both rule claims were registered, enrolled, and passing on every `gz check`
+#: for the entire life of GHI #795's coupling gap, because neither ever asked
+#: WHICH document a ruling named.
+RESUME_GATE_COUPLING_CLAIM_ID = "handoff-resume-booking-coupling"
+
 RESUME_GATE_CLAIM_IDS: frozenset[str] = frozenset(
-    {"handoff-resume-unauthorized-write", "handoff-resume-unauthorized-bash"}
+    {
+        "handoff-resume-unauthorized-write",
+        "handoff-resume-unauthorized-bash",
+        RESUME_GATE_COUPLING_CLAIM_ID,
+    }
 )
 
 
@@ -799,6 +811,48 @@ def _ep_resume_gate_bash(root: Path) -> int:
     return _ep_resume_gate_differential(root, "Bash", {"command": "gz obpi complete OBPI-x"})
 
 
+def _build_mis_targeted_booking_violation() -> Path:
+    """Plant TWO resumable handoffs so one of them is provably not the armed one.
+
+    A single-handoff fixture cannot express this violation at all: with one
+    document on disk, every booking targets the armed one and the control would
+    pass against a gate that never compares anything — the facade shape §5
+    exists to refuse. The runtime-random root name keeps both paths unknowable
+    at mutation-authoring time.
+    """
+    root = Path(tempfile.mkdtemp(prefix="gzkit-booking-nc-"))
+    handoffs = root / ".gzkit" / "handoffs"
+    handoffs.mkdir(parents=True, exist_ok=True)
+    for name, stamp in (
+        ("20260716T000000Z-older.md", "2026-07-16T00:00:00Z"),
+        ("20260812T000000Z-armed.md", "2026-08-12T00:00:00Z"),
+    ):
+        (handoffs / name).write_text(
+            "---\n"
+            "mode: CREATE\n"
+            "adr_id: ADR-0.0.65\n"
+            "branch: main\n"
+            f"timestamp: '{stamp}'\n"
+            "agent: g0\n"
+            "---\n\n## Decisions Made\n\nnc\n",
+            encoding="utf-8",
+        )
+    return root
+
+
+def _ep_resume_gate_booking_coupling(root: Path) -> int:
+    """Assert the EXEMPTION differential: refuse a stale target, permit the armed one.
+
+    Truthy only when BOTH hold. An always-refuse mutation blocks the gate's own
+    recovery path; an always-permit mutation is GHI #795 itself — consent
+    recorded against a document the operator never read.
+    """
+    handoffs = root / ".gzkit" / "handoffs"
+    refused = not booking_targets_the_armed_handoff(root, handoffs / "20260716T000000Z-older.md")
+    permitted = booking_targets_the_armed_handoff(root, handoffs / "20260812T000000Z-armed.md")
+    return 1 if (refused and permitted) else 0
+
+
 def _resume_gate_marker() -> None:
     """Inert carrier for the resume-gate ``@enforces`` registrations."""
 
@@ -813,6 +867,7 @@ def _ensure_resume_gate_claims_registered() -> None:
     """
     from gzkit.airlock.enter import _AIRLOCK_CLAIM_IDS  # noqa: PLC0415
     from gzkit.enforcement import (  # noqa: PLC0415
+        EXEMPTS_NONE,
         enforces,
         get_enforcement_registry,
         set_known_claims,
@@ -828,10 +883,19 @@ def _ensure_resume_gate_claims_registered() -> None:
             "handoff-resume-unauthorized-write",
             _build_unauthorized_resume_violation,
             _ep_resume_gate_write,
+            exempts=RESUME_GATE_COUPLING_CLAIM_ID,
         )(_resume_gate_marker)
     if "handoff-resume-unauthorized-bash" not in existing:
         enforces(
             "handoff-resume-unauthorized-bash",
             _build_unauthorized_resume_violation,
             _ep_resume_gate_bash,
+            exempts=RESUME_GATE_COUPLING_CLAIM_ID,
+        )(_resume_gate_marker)
+    if RESUME_GATE_COUPLING_CLAIM_ID not in existing:
+        enforces(
+            RESUME_GATE_COUPLING_CLAIM_ID,
+            _build_mis_targeted_booking_violation,
+            _ep_resume_gate_booking_coupling,
+            exempts=EXEMPTS_NONE,
         )(_resume_gate_marker)

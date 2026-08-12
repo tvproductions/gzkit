@@ -142,6 +142,44 @@ class TestEscapesMustBeUsedNotNamedTests(unittest.TestCase):
         self.assertEqual(masked_verifier(command), "gz check")
 
 
+class TestExemptionControlIsRegisteredAndCatches(unittest.TestCase):
+    """This gate's exemption half carries its own control (GHI #797).
+
+    `verifier-exit-status-masked` was registered, enrolled, and passing on every
+    `gz check` for the whole life of GHI #796's bypass, because it asserts
+    refuse-piped / permit-unpiped and never touches the escape. A gate with an
+    exemption makes two claims; only one of them was controlled.
+    """
+
+    def test_the_rule_claim_declares_which_control_covers_its_exemption(self) -> None:
+        from gzkit.enforcement import get_enforcement_registry
+        from gzkit.verifier_pipe_gate import (
+            VERIFIER_ESCAPE_CLAIM_ID,
+            VERIFIER_PIPE_CLAIM_ID,
+            _ensure_verifier_pipe_claims_registered,
+        )
+
+        _ensure_verifier_pipe_claims_registered()
+        declared = {r.claim_id: r.exempts for r in get_enforcement_registry()}
+        self.assertEqual(declared.get(VERIFIER_PIPE_CLAIM_ID), VERIFIER_ESCAPE_CLAIM_ID)
+        self.assertIn(VERIFIER_ESCAPE_CLAIM_ID, declared, "the named control must be registered")
+
+    def test_the_exemption_control_catches_a_named_but_unused_escape(self) -> None:
+        """The differential the rule control cannot express."""
+        import shutil
+
+        from gzkit.verifier_pipe_gate import (
+            _build_masked_verifier_violation,
+            _ep_verifier_escape_must_be_used,
+        )
+
+        root = _build_masked_verifier_violation()
+        try:
+            self.assertEqual(_ep_verifier_escape_must_be_used(root), 1)
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+
+
 class TestVerifierInvocationForms(unittest.TestCase):
     """A verifier is recognized by what it RUNS, not by where its name appears."""
 

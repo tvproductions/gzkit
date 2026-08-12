@@ -191,6 +191,64 @@ class LiftTimeStaysSessionScopedTests(unittest.TestCase):
             self.assertFalse(is_resume_authorized(base, _SESSION))
 
 
+class ResumeGateExemptionControlTests(unittest.TestCase):
+    """The clearance half carries its own control (GHI #797).
+
+    Both rule claims were registered, enrolled, and passing on every `gz check`
+    for the whole life of GHI #795's coupling gap, because they assert
+    refuse-unauthorized / permit-authorized and never ask WHICH document a
+    ruling named.
+    """
+
+    def test_the_rule_claims_declare_which_control_covers_their_exemption(self) -> None:
+        from gzkit.enforcement import get_enforcement_registry
+        from gzkit.handoff_resume_gate import (
+            RESUME_GATE_COUPLING_CLAIM_ID,
+            _ensure_resume_gate_claims_registered,
+        )
+
+        _ensure_resume_gate_claims_registered()
+        declared = {r.claim_id: r.exempts for r in get_enforcement_registry()}
+        for rule_claim in (
+            "handoff-resume-unauthorized-write",
+            "handoff-resume-unauthorized-bash",
+        ):
+            self.assertEqual(declared.get(rule_claim), RESUME_GATE_COUPLING_CLAIM_ID)
+        self.assertIn(RESUME_GATE_COUPLING_CLAIM_ID, declared)
+
+    def test_the_exemption_control_catches_a_mis_targeted_booking(self) -> None:
+        import shutil
+
+        from gzkit.handoff_resume_gate import (
+            _build_mis_targeted_booking_violation,
+            _ep_resume_gate_booking_coupling,
+        )
+
+        root = _build_mis_targeted_booking_violation()
+        try:
+            self.assertEqual(_ep_resume_gate_booking_coupling(root), 1)
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+
+    def test_the_fixture_plants_two_handoffs_so_the_control_can_discriminate(self) -> None:
+        """A one-handoff fixture would pass against a gate comparing nothing.
+
+        With a single document on disk every booking targets the armed one, so
+        the control could not tell a working coupling from an absent one — the
+        facade shape the enforcement floor exists to refuse.
+        """
+        import shutil
+
+        from gzkit.handoff_resume_gate import _build_mis_targeted_booking_violation
+
+        root = _build_mis_targeted_booking_violation()
+        try:
+            planted = sorted(p.name for p in (root / ".gzkit" / "handoffs").glob("*.md"))
+            self.assertEqual(len(planted), 2, f"need two candidates to discriminate: {planted}")
+        finally:
+            shutil.rmtree(root, ignore_errors=True)
+
+
 class ResumeGateBlocksUnauthorizedExecutionTests(unittest.TestCase):
     """The declared clause: no mutation until the operator rules."""
 

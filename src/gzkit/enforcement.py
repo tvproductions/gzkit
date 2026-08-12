@@ -29,6 +29,14 @@ _EF = TypeVar("_EF")
 # lowercase letters, digits, and hyphens.
 _CLAIM_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 
+#: The declared-no-exemption token. Deliberately a real value rather than the
+#: absence of one: "this gate has no exemption surface" and "nobody has looked"
+#: are different facts, and collapsing them into ``None`` is what made the
+#: exemption half of every claim invisible (GHI #797). GHI #728 settled the same
+#: point for chores — the property must be DECLARED, not inferred, because
+#: inference reads a state some other surface is free to overwrite.
+EXEMPTS_NONE = "none"
+
 _ENFORCEMENT_REGISTRY: list[EnforcementClaimRecord] = []
 _KNOWN_CLAIMS: frozenset[str] | None = None
 
@@ -62,6 +70,16 @@ class EnforcementClaimRecord(BaseModel):
         description=(
             "Substring the caught finding MUST contain. When set, the runner requires "
             "the entrypoint to fail for THIS reason, not merely to fail (GHI #699)."
+        ),
+    )
+    exempts: str | None = Field(
+        None,
+        description=(
+            "Three-state exemption declaration (GHI #797). None = UNDECLARED, and the "
+            "claim is disclosed by `gz validate --exemption-controls`. "
+            f"{EXEMPTS_NONE!r} = this gate has no exemption surface, nothing is owed. "
+            "Any other value = a claim id whose control exercises this gate's "
+            "exemption, and it must be registered."
         ),
     )
 
@@ -106,6 +124,7 @@ def enforces(
     fixture: Callable[[], Any],
     entrypoint: Callable[..., Any],
     expect: str | None = None,
+    exempts: str | None = None,
 ) -> Callable[[_EF], _EF]:
     """Declare that a production callable enforces an enforcement claim.
 
@@ -113,6 +132,21 @@ def enforces(
     decoration time, then registers an :class:`EnforcementClaimRecord` into
     the module-level registry. Returns the decorated callable unchanged —
     registration is metadata-only.
+
+    ``exempts`` declares the gate's OTHER half (GHI #797). A gate with an
+    exemption makes two claims — *this is refused* and *this is admitted* — and
+    the enforcement floor only ever proved the first. Four gates failed on the
+    second half in a single session, two of them while their controls were
+    registered, enrolled, and passing.
+
+    The declaration is a claim id rather than a description, so it is checkable
+    without grading prose: a gate with an exemption registers TWO claims, and
+    the rule claim names the control that exercises its exemption. The floor
+    already fail-closes on an enrolled claim with no control, so the exemption
+    control gets its own negative control by construction. Membership of the
+    named id is validated at AUDIT time, not here — the exemption claim may
+    register after the rule claim, and ordering is not a property worth
+    constraining.
 
     Raises:
         ValueError: If ``claim`` has an invalid format or is not in the
@@ -149,6 +183,7 @@ def enforces(
             source_file=source_file,
             source_line=source_line,
             expect=expect,
+            exempts=exempts,
         )
         _ENFORCEMENT_REGISTRY.append(record)
         return fn
