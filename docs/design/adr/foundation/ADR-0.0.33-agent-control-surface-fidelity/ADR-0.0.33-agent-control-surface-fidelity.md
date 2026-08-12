@@ -215,6 +215,18 @@ directive. The override is recorded rather than silent — which is the entire
 function of the event this amendment now makes emittable. It is not a precedent
 for silent adjustment; it is the first time the discipline has had a mechanism.
 
+**Enforcement followed the producer, as its own cut (GHI #792).** Building the
+emitter made compliance possible without making non-compliance detectable: the
+band values rode on the event, and nothing read them back. `gz validate
+--surface-weight` now fail-closes when the live constants disagree with the bands
+on the most recent recalibration event. It compares STATE rather than detecting
+an edit — a diff-watcher would need git awareness, would fire only at commit
+time, and would be defeated by any path bypassing that hook, whereas
+disagreement is a standing property checkable on a fresh clone or in CI. The
+recovery is self-healing: `--recalibrate` emits an event carrying the current
+constants, restoring agreement. Only the newest event binds; a superseded band
+generation is history, not drift.
+
 ## Comparator Uplift (2026-05-07)
 
 Competitors with polished workflows still depend on agents correctly reading
@@ -241,7 +253,13 @@ shortcuts:
 3. **Recalibrating warning bands silently.** Adjusting the surface-weight
    green/yellow/red thresholds without an attested recalibration event
    reproduces the doctrine-drift failure the ADR exists to prevent. Band
-   changes are ledger events, not config tweaks.
+   changes are ledger events, not config tweaks. **Mechanical since 2026-08-12
+   (GHI #791 producer, GHI #792 witness):** emit the event with
+   `gz validate --surface-weight --recalibrate`, and `gz validate
+   --surface-weight` fail-closes when the live constants disagree with the bands
+   recorded on the most recent event. Before that pair this clause was enforced
+   by agent goodwill — the posture item 2 rejects by name — and it was violated
+   on 2026-06-30 for 42 undetected days.
 4. **Treating Era-1 advisory checks as optional.** Scenario reachability is
    advisory in Era 1 because the registry isn't authored yet — not because
    the invariant is soft. An orphan bullet warning that's ignored is a

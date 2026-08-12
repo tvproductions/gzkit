@@ -424,6 +424,7 @@ $ echo $?
 | 3 | Corpus in yellow band without active waiver | Update the covering waiver in `data/surface_weight_waivers.json` (the list is shrink-only — see `--waiver-ratchet`) or reduce corpus size |
 | 3 | Corpus in red band (> 3400) | Reduce corpus size; no waiver dispensation in red band |
 | 3 | Floor drift detected | Run `uv run gz validate --surface-weight --recalibrate --attestor "<name>" --reason "<evidence>"` |
+| 3 | Band drift detected — the `_GREEN_CEILING` / `_YELLOW_CEILING` constants disagree with the most recent `surface_weight_recalibrated` event | Either re-witness with `--recalibrate` (if the band change was intended), or revert the constants to the witnessed values (if it was not) |
 
 ### `--pointer-anchors`
 

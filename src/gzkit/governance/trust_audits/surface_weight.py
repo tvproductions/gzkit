@@ -56,10 +56,17 @@ def validate_surface_weight(project_root: Path) -> list[ValidationError]:
     if floor is None:
         return []
 
-    # Check floor drift first (REQ-05)
+    # Witness-integrity arms first: while the Layer-2 record disagrees with the
+    # Layer-1 surfaces it witnesses, a band verdict computed from those surfaces
+    # is a number nobody should act on. Floor drift (REQ-05), then band drift
+    # (GHI #792) — the same early-return shape, one per witnessed surface.
     drift_errors = _check_floor_drift(floor, project_root)
     if drift_errors:
         return drift_errors
+
+    band_errors = _check_band_coherence(project_root)
+    if band_errors:
+        return band_errors
 
     current = _count_surface_lines(project_root)
     floor_lines = floor.get("lines", 0)
@@ -251,33 +258,106 @@ def _has_active_waiver(waivers: list[dict], delta: int) -> bool:
     return False
 
 
-def _check_floor_drift(floor: dict, project_root: Path) -> list[ValidationError]:
-    """Check if the floor timestamp predates the most recent recalibration event by >24h."""
+def _newest_recalibration(project_root: Path) -> tuple[datetime, dict] | None:
+    """Return the most recent recalibration event and its parsed timestamp, or None.
+
+    One ledger scan serving both consumers — :func:`_check_floor_drift` (which
+    reads the timestamp) and :func:`_check_band_coherence` (which reads the band
+    ceilings). They were never going to agree about "most recent" if each walked
+    the ledger with its own copy of the comparison.
+
+    ``None`` means bootstrap: no recalibration has ever been witnessed, so there
+    is no baseline for either consumer to measure against.
+    """
     ledger_path = project_root / _LEDGER_PATH
     if not ledger_path.exists():
-        return []
+        return None
 
-    last_recalibration_ts: datetime | None = None
+    newest: tuple[datetime, dict] | None = None
     try:
         for line in ledger_path.read_text(encoding="utf-8").strip().splitlines():
             if not line.strip():
                 continue
             event = json.loads(line)
-            if event.get("event") == _RECALIBRATION_EVENT_TYPE:
-                ts_str = event.get("ts", "")
-                try:
-                    ts = datetime.fromisoformat(ts_str)
-                    if ts.tzinfo is None:
-                        ts = ts.replace(tzinfo=UTC)
-                    if last_recalibration_ts is None or ts > last_recalibration_ts:
-                        last_recalibration_ts = ts
-                except (ValueError, TypeError):
-                    pass
+            if event.get("event") != _RECALIBRATION_EVENT_TYPE:
+                continue
+            try:
+                ts = datetime.fromisoformat(event.get("ts", ""))
+            except (ValueError, TypeError):
+                continue
+            if ts.tzinfo is None:
+                ts = ts.replace(tzinfo=UTC)
+            if newest is None or ts > newest[0]:
+                newest = (ts, event)
     except (OSError, json.JSONDecodeError):
+        return None
+    return newest
+
+
+def _check_band_coherence(project_root: Path) -> list[ValidationError]:
+    """Fail closed when the live band constants disagree with their newest witness.
+
+    The mechanical arm of ADR-0.0.33 § Anti-Patterns item 3 — *"Adjusting the
+    surface-weight green/yellow/red thresholds without an attested recalibration
+    event ... Band changes are ledger events, not config tweaks"* (GHI #792).
+    GHI #791 gave that ceremony a producer; nothing made SKIPPING it detectable,
+    so the 2026-06-30 change (green 1800->2600) went 42 days undetected across
+    every ``gz check`` run in the window and was found only because a human went
+    looking at the ceremony.
+
+    **Compares state, never detects an edit.** A checker watching for a diff on
+    the constants would need git awareness, would fire only at commit time, and
+    would be defeated by any path not routed through that hook. Disagreement
+    between the constants and the newest witness is a standing property: true or
+    false at any moment, on a fresh clone, in CI, or mid-session. The recovery is
+    the verb that already exists, and it is self-healing — recalibrating emits an
+    event carrying the current constants, which restores agreement.
+
+    Only the NEWEST witness binds. A superseded band generation is history, not
+    drift; reading "any event" would redden every repo that has recalibrated
+    twice.
+    """
+    newest = _newest_recalibration(project_root)
+    if newest is None:
+        return []  # Bootstrap: no witnessed baseline, so the constants ARE the baseline.
+
+    _, event = newest
+    witnessed_green = event.get("green_ceiling")
+    witnessed_yellow = event.get("yellow_ceiling")
+
+    # A witness that carries NO band claim is silent about bands, not evidence of
+    # drift. Reporting drift here would fail for a reason the finding does not
+    # name — the FACADE shape `_qc_negative_controls` exists to catch — and the
+    # honest diagnosis of a bandless event is "this says nothing", not "these
+    # disagree". It is not a bypass: `schemas/ledger.json` marks both ceilings
+    # REQUIRED on this event type, so `gz validate --ledger` fail-closes on a
+    # bandless one and no governed path can emit it.
+    if witnessed_green is None and witnessed_yellow is None:
         return []
 
-    if last_recalibration_ts is None:
+    if witnessed_green == _GREEN_CEILING and witnessed_yellow == _YELLOW_CEILING:
+        return []
+
+    msg = (
+        f"Band drift detected: the code carries green <= {_GREEN_CEILING} / "
+        f"yellow <= {_YELLOW_CEILING}, but the most recent "
+        f"{_RECALIBRATION_EVENT_TYPE} event witnesses green <= {witnessed_green} / "
+        f"yellow <= {witnessed_yellow}. ADR-0.0.33 Anti-Pattern 3 forbids a silent "
+        f"band change ('Band changes are ledger events, not config tweaks'); the "
+        f"constants in src/gzkit/governance/trust_audits/surface_weight.py moved "
+        f"without an attested event. Re-witness via: uv run gz validate "
+        f'--surface-weight --recalibrate --attestor "<name>" --reason '
+        f'"<operational evidence>" — or revert the constants to the witnessed values.'
+    )
+    return [_make_error(msg)]
+
+
+def _check_floor_drift(floor: dict, project_root: Path) -> list[ValidationError]:
+    """Check if the floor timestamp predates the most recent recalibration event by >24h."""
+    newest = _newest_recalibration(project_root)
+    if newest is None:
         return []  # Bootstrap: no recalibration events
+    last_recalibration_ts = newest[0]
 
     floor_ts_str = floor.get("timestamp", "")
     if not floor_ts_str:

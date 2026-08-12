@@ -65,6 +65,28 @@ def _make_tree(tmp: str, *, corpus_lines: int, floor_lines: int, floor_age_hours
     return root
 
 
+def _append_recalibration(
+    root: Path, *, green: int, yellow: int, age_hours: int, floor_lines: int = 0
+) -> None:
+    """Append a recalibration event asserting the given bands were in force."""
+    ts = (datetime.now(tz=UTC) - timedelta(hours=age_hours)).isoformat()
+    event = {
+        "schema": "gzkit.ledger.v1",
+        "event": "surface_weight_recalibrated",
+        "id": f"surface-weight-{ts}",
+        "ts": ts,
+        "attestor": "g0",
+        "reason": "fixture",
+        "floor_lines": floor_lines,
+        "previous_floor_lines": floor_lines,
+        "green_ceiling": green,
+        "yellow_ceiling": yellow,
+    }
+    path = root / ".gzkit" / "ledger.jsonl"
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(event) + "\n")
+
+
 def _read_floor(root: Path) -> dict:
     return json.loads((root / "data" / "surface_weight_floor.json").read_text(encoding="utf-8"))
 
@@ -188,6 +210,114 @@ class TestRecalibrationClosesTheDriftCoupling(unittest.TestCase):
                 [],
                 "Recalibration must leave the surface-weight gate green, not merely "
                 "append an event that trips floor drift",
+            )
+
+
+class TestBandsCannotDriftFromTheirWitness(unittest.TestCase):
+    """ADR-0.0.33 Anti-Pattern 3 gains its mechanical arm (GHI #792).
+
+    #791 gave the ceremony a producer; nothing yet made SKIPPING it detectable.
+    The band values already ride on the event — they were put there so "which
+    thresholds were in force at time T" is answerable from Layer 2 — and this
+    reads them back. Disagreement between the live constants and the newest
+    witness is the drift; the 2026-06-30 change went 42 days undetected for
+    exactly this reason.
+
+    Band values are DERIVED from the production constants here, never written as
+    literals: a test pinning 3000/3400 would fail on the next legitimate ruling
+    and would be asserting the doctrine's current answer rather than its rule.
+    """
+
+    def test_agreement_is_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            _append_recalibration(root, green=_GREEN_CEILING, yellow=_YELLOW_CEILING, age_hours=1)
+            self.assertEqual(validate_surface_weight(root), [])
+
+    def test_green_ceiling_edited_without_recalibrating_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            # The witness records a DIFFERENT green ceiling than the code carries —
+            # exactly the state a constant edit with no recalibration produces.
+            _append_recalibration(
+                root, green=_GREEN_CEILING - 100, yellow=_YELLOW_CEILING, age_hours=1
+            )
+            errors = validate_surface_weight(root)
+            self.assertEqual(len(errors), 1)
+            self.assertEqual(errors[0].type, "surface_weight")
+
+    def test_yellow_ceiling_edited_without_recalibrating_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            _append_recalibration(
+                root, green=_GREEN_CEILING, yellow=_YELLOW_CEILING - 100, age_hours=1
+            )
+            self.assertEqual(len(validate_surface_weight(root)), 1)
+
+    def test_error_names_the_recovery_verb(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            _append_recalibration(
+                root, green=_GREEN_CEILING - 100, yellow=_YELLOW_CEILING, age_hours=1
+            )
+            message = validate_surface_weight(root)[0].message
+            self.assertIn("--recalibrate", message)
+
+    def test_only_the_newest_witness_governs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            # An older generation legitimately recorded different bands; it is
+            # history, not drift. Reading "any event" instead of "the newest"
+            # would redden every repo that has ever recalibrated twice.
+            _append_recalibration(
+                root, green=_GREEN_CEILING - 800, yellow=_YELLOW_CEILING - 800, age_hours=48
+            )
+            _append_recalibration(root, green=_GREEN_CEILING, yellow=_YELLOW_CEILING, age_hours=1)
+            self.assertEqual(
+                validate_surface_weight(root),
+                [],
+                "A superseded band generation is history; only the newest witness binds",
+            )
+
+    def test_witness_silent_about_bands_is_not_read_as_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            ts = datetime.now(tz=UTC).isoformat()
+            bandless = {"event": "surface_weight_recalibrated", "ts": ts}
+            (root / ".gzkit" / "ledger.jsonl").write_text(
+                json.dumps(bandless) + "\n", encoding="utf-8"
+            )
+            self.assertEqual(
+                validate_surface_weight(root),
+                [],
+                "An event carrying no band claim says nothing about bands. Reporting "
+                "drift would fail for a reason the finding does not name — and the "
+                "ledger schema marks both ceilings required, so no governed path "
+                "emits one",
+            )
+
+    def test_bootstrap_with_no_witness_is_clean(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            self.assertEqual(
+                validate_surface_weight(root),
+                [],
+                "With no witnessed baseline there is nothing to disagree with; the "
+                "shipped constants ARE the baseline",
+            )
+
+    def test_recalibrating_clears_the_drift(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(tmp, corpus_lines=10, floor_lines=10, floor_age_hours=1)
+            _append_recalibration(
+                root, green=_GREEN_CEILING - 100, yellow=_YELLOW_CEILING, age_hours=1
+            )
+            self.assertTrue(validate_surface_weight(root), "precondition: drift is present")
+            recalibrate_surface_weight(root, attestor="g0", reason="re-witness the bands")
+            self.assertEqual(
+                validate_surface_weight(root),
+                [],
+                "The recovery the error names must actually clear the error",
             )
 
 
