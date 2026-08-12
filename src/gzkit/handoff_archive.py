@@ -47,7 +47,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.handoff_api import resolve_continues_from
-from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
+from gzkit.handoff_validation import HandoffValidationError, continues_from_refs, parse_frontmatter
 
 _ARCHIVE_NAME = "archive"
 
@@ -197,21 +197,26 @@ def _resolve_pointer_key(ref: str, referrer: Path, base_path: Path) -> str:
 
 
 def _chain_target_keys(handoffs: list[Path], base_path: Path) -> set[str]:
-    """Return resolved keys of every continues_from target across the given handoffs."""
+    """Return resolved keys of every continues_from target across the given handoffs.
+
+    Every ref, not the first (GHI #790). ``continues_from`` now holds a list when a
+    fork collapses, and a guard that read one pointer would leave the second
+    ancestor unprotected — archivable while it is still a live chain participant,
+    which is the precise harm this guard exists to prevent.
+    """
     keys: set[str] = set()
     for path in handoffs:
         frontmatter = _frontmatter(path)
         if frontmatter is None:
             continue
-        pointer = str(frontmatter.get("continues_from") or "").strip()
-        if pointer:
+        for pointer in continues_from_refs(frontmatter.get("continues_from")):
             keys.add(_resolve_pointer_key(pointer, path, base_path))
     return keys
 
 
 def _has_pointer(path: Path) -> bool:
     frontmatter = _frontmatter(path)
-    return bool(frontmatter and str(frontmatter.get("continues_from") or "").strip())
+    return bool(frontmatter and continues_from_refs(frontmatter.get("continues_from")))
 
 
 def plan_archive(

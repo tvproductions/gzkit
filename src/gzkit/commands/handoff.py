@@ -34,7 +34,11 @@ from gzkit.handoff_api import (
     list_handoffs,
     resume_handoff,
 )
-from gzkit.handoff_validation import SETTLED_SECTION, HandoffValidationError
+from gzkit.handoff_validation import (
+    SETTLED_SECTION,
+    HandoffValidationError,
+    continues_from_refs,
+)
 from gzkit.utils import git_cmd, run_exec
 
 # Required section -> the handoff_create_cmd parameter that fills it. Every
@@ -274,7 +278,7 @@ def handoff_create_cmd(
     verification: str | None = None,
     evidence: str | None = None,
     obpi: str | None = None,
-    continues_from: str | None = None,
+    continues_from: str | list[str] | None = None,
     session_id: str | None = None,
     settled: list[str] | None = None,
     mode: str = "CREATE",
@@ -347,7 +351,7 @@ def handoff_create_cmd(
 
 
 def _warn_on_silent_chain_root(
-    *, adr: str | None, continues_from: str | None, base_path: Path
+    *, adr: str | None, continues_from: str | list[str] | None, base_path: Path
 ) -> None:
     """Speak up when this handoff will inherit no settled rulings (GHI #717).
 
@@ -368,7 +372,7 @@ def _warn_on_silent_chain_root(
     Advisory by design: an unlinked handoff can be a genuine chain root, so this
     warns and proceeds rather than fail-closing on a legitimate shape.
     """
-    if continues_from is not None:
+    if continues_from_refs(continues_from):
         return
     prior = list_handoffs(adr_id=adr, base_path=base_path)
     if not prior:

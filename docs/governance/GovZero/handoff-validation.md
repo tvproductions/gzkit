@@ -40,7 +40,7 @@ Validates the parsed frontmatter against `HandoffFrontmatter` (Pydantic model):
 | `agent` | string | Required, non-empty |
 | `obpi_id` | string or null | Matches `OBPI-X.Y.Z-NN` |
 | `session_id` | string or null | Optional |
-| `continues_from` | string or null | Optional |
+| `continues_from` | string, list of strings, or null | Optional |
 
 Extra fields are forbidden (`extra="forbid"`). Model is frozen (immutable after creation).
 

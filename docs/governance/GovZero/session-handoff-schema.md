@@ -61,7 +61,7 @@ Every handoff document begins with YAML frontmatter between `---` delimiters.
 | `agent` | string | Yes | Agent that created the document (e.g., `claude-code`) |
 | `obpi_id` | string | No | Current OBPI being worked (format: `OBPI-X.Y.Z-NN`) |
 | `session_id` | string | No | Session grouping identifier |
-| `continues_from` | string | No | Relative path to predecessor handoff (chaining) |
+| `continues_from` | string or list of strings | No | Relative path to predecessor handoff (chaining). A **list** names several ancestors where a forked chain collapsed; the successor inherits every named ancestor's settled rulings (GHI #790) |
 
 ### Example
 

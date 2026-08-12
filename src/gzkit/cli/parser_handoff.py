@@ -187,7 +187,12 @@ def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
     p_create.add_argument("--evidence", default=None, help="Evidence / Artifacts section body")
     p_create.add_argument("--obpi", default=None, help="OBPI id this handoff scopes to")
     p_create.add_argument(
-        "--continues-from", dest="continues_from", default=None, help="Prior handoff reference"
+        "--continues-from",
+        dest="continues_from",
+        action="append",
+        default=None,
+        metavar="REF",
+        help="Prior handoff reference (repeatable; repeat to collapse a forked chain)",
     )
     p_create.add_argument("--session-id", dest="session_id", default=None, help="Session id")
     p_create.add_argument(

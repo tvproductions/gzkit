@@ -33,7 +33,7 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
                   [--summary TEXT] [--context TEXT] [--next-steps TEXT]
                   [--pending TEXT] [--verification TEXT] [--evidence TEXT]
                   [--branch BRANCH] [--obpi OBPI]
-                  [--continues-from REF] [--session-id ID]
+                  [--continues-from REF] ... [--session-id ID]
                   [--mode {CREATE,RESUME,CHECKPOINT}] [--json]
 ```
 
@@ -53,7 +53,7 @@ gz handoff create --slug SLUG --agent AGENT --decisions TEXT [--adr ADR]
 | `--evidence TEXT` | `Evidence / Artifacts` section body. Backtick-quoted paths must exist in committed state. |
 | `--branch BRANCH` | Branch name (default: current git branch). |
 | `--obpi OBPI` | OBPI id this handoff scopes to. |
-| `--continues-from REF` | Prior handoff reference (chain link). Omitting it in a directory that already holds handoffs makes this handoff a chain root inheriting **zero** settled rulings — the command warns and names the newest candidate (GHI #717). |
+| `--continues-from REF` | Prior handoff reference (chain link). **Repeatable** — repeat it to collapse a forked chain, and the successor inherits the settled rulings of *every* named ancestor, deduplicated (GHI #790). A single ref is written to frontmatter as a scalar, so existing documents keep their shape; the list form appears only on a genuine merge. Omitting it in a directory that already holds handoffs makes this handoff a chain root inheriting **zero** settled rulings — the command warns and names the newest candidate (GHI #717). |
 | `--session-id ID` | Session id. |
 | `--mode {CREATE,RESUME,CHECKPOINT}` | Register-entry class (default `CREATE`). `CHECKPOINT` is a **mid-flight bookmark** — see § Checkpoint mode. |
 | `--json` | Emit `{"path": "..."}` instead of the human path line. |

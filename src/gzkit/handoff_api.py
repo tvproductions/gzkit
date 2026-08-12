@@ -30,6 +30,7 @@ from gzkit.handoff_validation import (
     REQUIRED_SECTIONS,
     SETTLED_SECTION,
     HandoffValidationError,
+    continues_from_refs,
     parse_frontmatter,
     validate_handoff_document,
 )
@@ -467,7 +468,7 @@ def _dedup_rulings(entries: list[str]) -> list[str]:
     return composed
 
 
-def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
+def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> list[str]:
     """Compose the successor's Settled Rulings from its predecessor.
 
     Two sources, in order: the predecessor's own carried rulings, then the
@@ -491,22 +492,35 @@ def _carried_settled(predecessor: str | None, base_path: Path) -> list[str]:
 
     ``None`` still inherits nothing: an unlinked handoff is a genuine chain root,
     and the newest handoff overall is not its lineage.
+
+    **EVERY ancestor contributes, not just the first (GHI #790).** A fork that
+    later collapses has two genuine parents, and the 2026-08-11 collapse proved
+    the corpora can be DISJOINT — 145 rulings against 72, measured intersection
+    zero — so reading one pointer silently dropped an entire booked corpus and
+    the union had to be assembled by hand. Ancestors are folded in declaration
+    order, so the ruled anchor's rulings read first, and ``_dedup_rulings``
+    collapses what converging lineage would otherwise deliver twice.
     """
-    if predecessor is None:
+    refs = continues_from_refs(predecessor)
+    if not refs:
         return []
     referrer = _handoffs_dir(base_path) / "successor.md"
-    try:
-        previous = resolve_continues_from(predecessor, referrer, base_path).read_text(
-            encoding="utf-8"
+    entries: list[str] = []
+    for ref in refs:
+        try:
+            previous = resolve_continues_from(ref, referrer, base_path).read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        entries.extend(settled_rulings(previous))
+        entries.extend(
+            decision.text for decision in parse_decisions(previous) if decision.is_settled
         )
-    except (OSError, UnicodeDecodeError):
-        return []
-    carried = settled_rulings(previous)
-    booked = [decision.text for decision in parse_decisions(previous) if decision.is_settled]
-    return _dedup_rulings([*carried, *booked])
+    return _dedup_rulings(entries)
 
 
-def _compose_settled(authored: str, predecessor: str | None, base_path: Path) -> list[str]:
+def _compose_settled(
+    authored: str, predecessor: str | list[str] | None, base_path: Path
+) -> list[str]:
     """Union the carried settled rulings with any the author seats explicitly.
 
     UNION, never replace. A ruling can arrive AFTER a handoff is authored — the
@@ -722,7 +736,7 @@ def create_handoff(
     slug: str,
     sections: dict[str, str],
     obpi_id: str | None = None,
-    continues_from: str | None = None,
+    continues_from: str | list[str] | None = None,
     session_id: str | None = None,
     base_path: Path = Path(),
     timestamp: str | None = None,
@@ -767,8 +781,15 @@ def create_handoff(
         frontmatter["obpi_id"] = obpi_id
     if session_id is not None:
         frontmatter["session_id"] = session_id
-    if link is not None:
-        frontmatter["continues_from"] = link
+    # Scalar in, scalar out (GHI #790): a single-parent handoff keeps writing the
+    # form 297 authored documents already carry, so widening the READ side never
+    # churns the corpus into a mix. The list form appears only where it means
+    # something — a genuine merge.
+    link_refs = continues_from_refs(link)
+    if len(link_refs) == 1:
+        frontmatter["continues_from"] = link_refs[0]
+    elif link_refs:
+        frontmatter["continues_from"] = link_refs
 
     document = _render_document(frontmatter, sections)
     violations = validate_handoff_document(document, base_path)
@@ -890,29 +911,33 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
 def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path()) -> list[Path]:
     """Follow ``continues_from`` links, returning the chain oldest-first.
 
-    Traversal is depth-limited (``≤20``) and cycle-safe: a visited set means a
+    Traversal is bounded (``≤20`` nodes) and cycle-safe: a visited set means a
     self- or loop-reference terminates rather than looping forever. The start
     handoff is included; the returned list is ordered oldest-to-newest.
+
+    Lineage is a DAG, not a list (GHI #790): a collapsed fork has two genuine
+    parents, so this walks EVERY ``continues_from`` ref breadth-first rather than
+    following the first. Discovery order is start-then-parents-then-grandparents,
+    reversed on return — which reproduces the previous ordering exactly for the
+    linear case that had been the only expressible one, while a merged node now
+    lists both ancestors instead of silently omitting one side.
     """
     chain: list[Path] = []
     visited: set[Path] = set()
-    current: Path | None = handoff_path
-    depth = 0
-    while current is not None and depth < _MAX_CHAIN_DEPTH:
+    queue: list[Path] = [handoff_path]
+    while queue and len(chain) < _MAX_CHAIN_DEPTH:
+        current = queue.pop(0)
         resolved = current.resolve()
         if resolved in visited:
-            break
+            continue
         visited.add(resolved)
         chain.append(current)
         try:
             fm = parse_frontmatter(current.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, HandoffValidationError):
-            break
-        ref = fm.get("continues_from") if isinstance(fm, dict) else None
-        if not ref:
-            break
-        current = resolve_continues_from(str(ref), current, base_path)
-        depth += 1
+            continue
+        refs = continues_from_refs(fm.get("continues_from") if isinstance(fm, dict) else None)
+        queue.extend(resolve_continues_from(ref, current, base_path) for ref in refs)
     chain.reverse()
     return chain
 

@@ -138,6 +138,32 @@ _SECRET_RE = re.compile(
 # ---------------------------------------------------------------------------
 
 
+def continues_from_refs(value: object) -> list[str]:
+    """Fold a ``continues_from`` frontmatter value into its list of parent refs.
+
+    The single place that decides what the field means (GHI #790). Every reader
+    delegates here — the model, the chain walk, the settled-ruling composer, and
+    the archive chain-integrity guard — because the alternative is four call sites
+    each branching on ``isinstance`` and drifting apart. That is the same
+    subsumption the ``rename_chain_target`` repair took: one shared fold, both
+    readers delegating.
+
+    Accepts the scalar form unchanged, so the 297 authored handoffs already on
+    disk keep resolving with no migration. Blank and whitespace-only entries are
+    dropped rather than returned: an empty pointer is not a parent, and passing
+    one through would turn into a resolution attempt against the handoffs
+    directory itself.
+    """
+    if value is None:
+        return []
+    if isinstance(value, str):
+        ref = value.strip()
+        return [ref] if ref else []
+    if isinstance(value, list):
+        return [ref.strip() for ref in value if isinstance(ref, str) and ref.strip()]
+    return []
+
+
 class HandoffFrontmatter(BaseModel):
     """Pydantic model for handoff document YAML frontmatter."""
 
@@ -159,7 +185,13 @@ class HandoffFrontmatter(BaseModel):
     agent: str
     obpi_id: str | None = None
     session_id: str | None = None
-    continues_from: str | None = None
+    # `str | list[str]` — lineage cardinality is {0, 1, N}, not {0, 1} (GHI #790).
+    # A fork that later collapses has two genuine ancestors; the scalar form held
+    # one, so the second head's rulings arrived only when a human hand-seated them.
+    # The scalar is KEPT readable rather than migrated: 297 authored handoffs carry
+    # it, and they are append-only historical records. Read via
+    # `continues_from_refs` — never branch on the type at a call site.
+    continues_from: str | list[str] | None = None
     # Min-info fields the lock-exchange coupling consumer requires
     # (_MIN_INFO_FRONTMATTER_FIELDS, alongside the already-declared `branch`).
     last_lock_event_timestamp: str | None = None
