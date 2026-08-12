@@ -1,30 +1,41 @@
 """One ranking rule for choosing which handoff to present (GHI #758).
 
-Three independent readers select over `.gzkit/handoffs/`, and each learned the
+Four independent readers select over `.gzkit/handoffs/`, and each learned the
 same lesson separately:
 
 * `gzkit.handoff_resume_gate.newest_handoff` — what the resume gate arms on.
 * `scripts.session_orientation.collect_handoff` — what renders as "Most-recent
   handoff" at session start.
+* `gzkit.handoff_api.resume_handoff` — what the SessionStart advisement names as
+  the handoff to resume, and what `gz handoff resume` returns.
 * `gzkit.exchange_records.find_exchange_for_release` — what may discharge a token
   surrender.
 
-The first two answer *"which document describes the current state?"* and rank an
-AUTHORED handoff above a mechanical floor bookmark. The third answers a different
-question — *"may this document discharge a surrender?"* — and since GHI #763 it
-does not even read this corpus: exchange records live in `.gzkit/locks/exchange/`
-and its predicate is default-DENY (token-block § Sub-Invariant 5). It is
-deliberately NOT a caller here: sharing a rule across two questions that merely
-look alike is how the wrong filter gets applied to the wrong arm.
+The first three answer *"which document describes the current state?"* and rank
+an AUTHORED handoff above a mechanical floor bookmark. The fourth answers a
+different question — *"may this document discharge a surrender?"* — and since
+GHI #763 it does not even read this corpus: exchange records live in
+`.gzkit/locks/exchange/` and its predicate is default-DENY (token-block
+§ Sub-Invariant 5). It is deliberately NOT a caller here: sharing a rule across
+two questions that merely look alike is how the wrong filter gets applied to the
+wrong arm.
 
-What the two selection readers share is this module: the writer identity and the
-predicate over it. They do NOT share one function, because their iteration shapes
-genuinely differ — one early-exits over an already-sorted list (a PreToolUse hot
-path that should not read 200 files to answer), the other holds `(ts, path, text)`
-tuples and takes a `max()`. Forcing one signature would have made one of them
-worse. `tests/governance/test_handoff_selection.py` closes the gap the shared
-constant cannot: a DIFFERENTIAL test asserting both readers pick the same
-document from the same corpus, which is the property that actually matters.
+`resume_handoff` was added to this list on 2026-08-12, having been missed by the
+GHI #758 fix that taught the other two — it took `list_handoffs()[0]`, plain
+recency, so the advisement named the exit beat's own bookmark while the gate
+armed on the authored handoff beneath it. That is the failure this module exists
+to prevent, recurring in a reader nobody had counted. The lesson is that
+enumerating readers in prose is not a fence: the DIFFERENTIAL is.
+
+What the three selection readers share is this module: the writer identity and
+the predicate over it. They do NOT share one function, because their iteration
+shapes genuinely differ — one early-exits over an already-sorted list (a
+PreToolUse hot path that should not read 200 files to answer), one holds
+`(ts, path, text)` tuples and takes a `max()`, and one ranks the `HandoffInfo`
+records `list_handoffs` already parsed. Forcing one signature would have made
+some of them worse. `tests/governance/test_handoff_selection.py` closes the gap
+the shared constant cannot: a DIFFERENTIAL test asserting every reader picks the
+same document from the same corpus, which is the property that actually matters.
 
 Why the identity and not `mode`: a floor bookmark and an operator-authored
 mid-flight checkpoint are BOTH `mode: CHECKPOINT`, so a mode test on the

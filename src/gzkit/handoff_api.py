@@ -25,6 +25,7 @@ from typing import Protocol
 import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
 
+from gzkit.handoff_selection import selection_rank
 from gzkit.handoff_validation import (
     PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
@@ -206,6 +207,11 @@ class HandoffInfo(BaseModel):
     adr_id: str | None = None
     obpi_id: str | None = None
     timestamp: str
+    # Writer identity — the SELECTION discriminator, not decoration. Carried on
+    # the record so a caller ranking these can call `selection_rank` without
+    # re-reading the file it already parsed. None for the pre-`agent` corpus,
+    # which `is_floor_bookmark` deliberately reads as authored.
+    agent: str | None = None
 
 
 class ResumeResult(BaseModel):
@@ -888,12 +894,14 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
         fm_adr = fm.get("adr_id")
         if adr_id is not None and fm_adr != adr_id:
             continue
+        agent = fm.get("agent")
         infos.append(
             HandoffInfo(
                 path=path.as_posix(),
                 adr_id=str(fm_adr) if fm_adr else None,
                 obpi_id=fm.get("obpi_id"),
                 timestamp=str(fm.get("timestamp", "")),
+                agent=str(agent) if agent else None,
             )
         )
     # The path is a tie-break, not a recency signal: it makes the order TOTAL.
@@ -966,13 +974,27 @@ def resume_handoff(
     ``adr_id=None`` resumes the newest handoff regardless of scope, which is the
     only way to reach an ADR-less handoff (GHI #709) — authoring one that could
     never be resumed would leave the surface half-built.
+
+    Selection applies `selection_rank`, NOT plain recency. This function renders
+    the SessionStart advisement, and a floor bookmark is written at every session
+    end — so `infos[0]` handed back the exit beat's own precaution as "the
+    handoff to resume" whenever a session had ended since the last authored one,
+    which is nearly always. The resume gate and the orientation script had both
+    learned this under GHI #758; this reader was missed, so the advisement named
+    one document while the gate armed on another and printed the
+    `gz handoff decide --handoff <path>` recipe next to the wrong one.
     """
     infos = list_handoffs(adr_id=adr_id, base_path=base_path)
     if not infos:
         scope = adr_id or "this repository"
         raise HandoffValidationError(f"No handoff found for {scope}")
 
-    newest = infos[0]
+    # `max` over an already-total order: ties fall to the earliest element, which
+    # `list_handoffs` has already ordered newest-first with a path tie-break, so
+    # the answer is deterministic across platforms rather than `readdir`-shaped.
+    newest = max(
+        infos, key=lambda info: selection_rank(info.agent, _timestamp_sort_key(info.timestamp))
+    )
     path = Path(newest.path)
     content = path.read_text(encoding="utf-8")
     staleness = _classify_staleness(now, newest.timestamp)

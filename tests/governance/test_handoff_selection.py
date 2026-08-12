@@ -1,15 +1,25 @@
-"""The two handoff SELECTION readers must not drift apart (GHI #758).
+"""The handoff SELECTION readers must not drift apart (GHI #758).
 
-WHY: three independent readers select over `.gzkit/handoffs/`, and the same
+WHY: independent readers select over `.gzkit/handoffs/`, and the same
 displacement bug was fixed in each of them separately — the release arm under
 GHI #756, the resume gate and the orientation script under GHI #758. Nothing
 coupled them, so each fix had to be rediscovered. The operator ruled that the
 residual be closed rather than recorded as a note.
 
+`handoff_api.resume_handoff` was the reader the GHI #758 fix never reached: it
+took `list_handoffs()[0]`, pure newest-first, and it is the one that renders the
+SessionStart advisement — so the first document a fresh session was told to read
+was the exit bookmark, while the resume gate armed on the authored handoff
+beneath it. Observed 2026-08-12: the advisement named a 39-line bookmark reading
+"Unknown to the writer" AND printed the `gz handoff decide --handoff <path>`
+recipe beside it, so a ruling would have been booked against a document that was
+not the one gating. The differential now covers all three readers, which is what
+makes "a fourth reader must call the rule" checkable rather than remembered.
+
 These assertions derive from the declared rule in `gzkit.handoff_selection`
 (authored above floor, recency within class, deprioritize never drop), not from
-either implementation — so a change to one reader that silently diverges from the
-other fails here rather than in a future session's orientation.
+any implementation — so a change to one reader that silently diverges from the
+others fails here rather than in a future session's orientation.
 """
 
 from __future__ import annotations
@@ -22,8 +32,10 @@ import unittest
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from gzkit.handoff_api import resume_handoff
 from gzkit.handoff_resume_gate import newest_handoff
 from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT, is_floor_bookmark, selection_rank
+from gzkit.handoff_validation import HandoffValidationError
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ORIENTATION = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -81,27 +93,51 @@ class TestSelectionRankIsTheDeclaredRule(unittest.TestCase):
 class TestBothSelectionReadersAgree(unittest.TestCase):
     """The differential: same corpus in, same document out.
 
-    This is the assertion the shared constant cannot make. The two readers have
+    This is the assertion the shared constant cannot make. The three readers have
     genuinely different iteration shapes — early exit over a pre-sorted list on a
-    hot path, versus `max()` over parsed tuples — so they are two implementations
-    of one rule by necessity. Only a differential holds them together.
+    hot path, `max()` over parsed tuples, and a pick over an already-sorted
+    `list_handoffs()` — so they are three implementations of one rule by
+    necessity. Only a differential holds them together.
     """
 
     def setUp(self) -> None:
         self.orientation = _load_orientation()
         self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
 
+    def _resume_pick(self, root: Path) -> str | None:
+        """What the SessionStart advisement would name, or None on an empty corpus.
+
+        `resume_handoff` signals "nothing to resume" by raising rather than
+        returning None, so the empty case is translated here instead of being
+        allowed to error the differential out.
+        """
+        try:
+            return Path(
+                resume_handoff(base_path=root, now=self.now.isoformat().replace("+00:00", "Z")).path
+            ).name
+        except HandoffValidationError:
+            return None
+
     def _agree_on(self, root: Path) -> None:
         gate_pick = newest_handoff(root)
         orientation_pick = self.orientation.collect_handoff(root, self.now)
+        resume_pick = self._resume_pick(root)
         if gate_pick is None:
             self.assertIsNone(orientation_pick)
+            self.assertIsNone(resume_pick)
             return
         assert orientation_pick is not None
         self.assertEqual(
             Path(gate_pick).name,
             Path(str(orientation_pick["path"])).name,
             "the resume gate and session orientation selected different handoffs",
+        )
+        self.assertEqual(
+            Path(gate_pick).name,
+            resume_pick,
+            "the resume gate and the SessionStart advisement selected different "
+            "handoffs — the advisement would point the operator at one document "
+            "while the gate arms on another",
         )
 
     def test_agree_when_a_newer_floor_shadows_an_authored_handoff(self) -> None:
