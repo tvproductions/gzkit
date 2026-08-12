@@ -502,6 +502,110 @@ class TestCollectGhiRefsInRange(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
+# Test: _collect_unclassified_ghi_refs_in_range (GHI #794)
+# ---------------------------------------------------------------------------
+
+
+class TestCollectUnclassifiedGhiRefsInRange(unittest.TestCase):
+    """Verify the disclosure bucket's collector.
+
+    A GHI cited in a non-closure-type subject tail and claimed by no
+    closure commit in the same range is REFERENCED but UNCLASSIFIABLE.
+    Before GHI #794 there was no such state: every bucket was computed
+    from the closure ref set, so a GHI absent from it rendered as a
+    shorter list rather than a warning.
+
+    @covers GHI-794 (disclosure, not a closure-type change)
+    """
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_chore_cited_ghi_with_no_closure_commit_is_unclassified(self, mock_git: object) -> None:
+        """The observed instance: a dependency upgrade IS its own remedy.
+
+        `chore` is excluded from the closure types on the premise that such
+        commits ceremonialize work closed elsewhere. When no such commit
+        exists, the premise is false and the GHI must still surface.
+        """
+        from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nchore(deps): upgrade toolchain to current upstream (GHI #789)\n\x00",
+            "",
+        )
+        refs = _collect_unclassified_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0", closure_refs=set())
+        self.assertEqual(refs, {789})
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_ghi_already_claimed_by_a_closure_commit_is_not_reported(
+        self, mock_git: object
+    ) -> None:
+        """Dedup against the closure set is what keeps the bucket quiet.
+
+        A GHI routinely gets both a `fix(...)` remedy and a `docs(...)`
+        commit citing it. Reporting the citation when the closure exists
+        would warn on the normal case and drown the real miss.
+        """
+        from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\ndocs(campaign): pull the critic ahead of ADR-0.35.0 (GHI #785)\n\x00",
+            "",
+        )
+        refs = _collect_unclassified_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0", closure_refs={785})
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_body_prose_citation_is_not_an_unclassified_reference(self, mock_git: object) -> None:
+        """The bucket reads the subject tail only, never body prose.
+
+        Commit bodies on this project routinely cite prior GHIs for
+        context (the GHI #233 root cause). Admitting them here would
+        re-import exactly the noise the closure regex was written to
+        exclude, on the disclosure side instead of the counting side.
+        """
+        from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nchore(ledger): reconcile\n\nSame class as #200, similar to #201.\n\x00",
+            "",
+        )
+        refs = _collect_unclassified_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0", closure_refs=set())
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_closure_type_subject_is_not_an_unclassified_reference(self, mock_git: object) -> None:
+        """A `fix(...)` tail is a closure; the closure collector owns it."""
+        from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\nfix(scope): real closure (GHI #300)\n\x00",
+            "",
+        )
+        refs = _collect_unclassified_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0", closure_refs=set())
+        self.assertEqual(refs, set())
+
+    @patch("gzkit.commands.patch_release.git_cmd")
+    def test_multi_ghi_tail_on_a_non_closure_type_reports_every_number(
+        self, mock_git: object
+    ) -> None:
+        """Both multi-issue spellings apply on the disclosure side too."""
+        from gzkit.commands.patch_release import _collect_unclassified_ghi_refs_in_range
+
+        mock_git.return_value = (
+            0,
+            "abc1\ndocs(adr): pool two verbs (GHI #747, #567)\n\x00"
+            "abc2\ndocs(adr): home the critic design (GHI #670, GHI #671)\n\x00",
+            "",
+        )
+        refs = _collect_unclassified_ghi_refs_in_range(_PROJECT_ROOT, "v1.0.0", closure_refs=set())
+        self.assertEqual(refs, {567, 670, 671, 747})
+
+
+# ---------------------------------------------------------------------------
 # Test: _ghi_has_src_commits
 # ---------------------------------------------------------------------------
 

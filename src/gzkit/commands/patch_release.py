@@ -41,7 +41,14 @@ from gzkit.utils import git_cmd, run_exec
 # Models
 # ---------------------------------------------------------------------------
 
-GhiStatus = Literal["qualified", "label_only", "diff_only", "open_upstream", "excluded"]
+GhiStatus = Literal[
+    "qualified",
+    "label_only",
+    "diff_only",
+    "open_upstream",
+    "unclassified_reference",
+    "excluded",
+]
 
 
 class GhiRecord(BaseModel):
@@ -200,8 +207,20 @@ def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
     # an OPEN GHI is downgraded to the ``open_upstream`` warned bucket rather
     # than dropped. The marker cannot distinguish "awaiting push" from "work
     # under a still-open tracker", so the operator adjudicates (GHI #714).
+    return _fetch_ghi_records(project_root, in_range_refs)
+
+
+def _fetch_ghi_records(project_root: Path, numbers: set[int]) -> list[GhiRecord]:
+    """Pull upstream metadata for *numbers*, sorted ascending.
+
+    Shared by the closure path (:func:`_discover_ghis`) and the disclosure
+    path (GHI #794), so an unclassified reference arrives carrying the same
+    title, labels, and state the operator needs to adjudicate it — a bare
+    number would move the investigation off the report and back into
+    ``gh issue view``.
+    """
     records: list[GhiRecord] = []
-    for number in sorted(in_range_refs):
+    for number in sorted(numbers):
         cmd = [
             "gh",
             "issue",
@@ -255,15 +274,23 @@ _GHI_CLOSURE_PATTERN = re.compile(
     r"(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)",
     re.IGNORECASE,
 )
+# The multi-issue tail admits both live spellings — `(GHI #1, #2)` and
+# `(GHI #1, GHI #2)`. Neither is prescribed and both occur, so a pattern
+# recognizing only one drops the other's GHIs (GHI #794).
+_GHI_MULTI_ISSUE_TAIL = r"\(GHI\s+(#\d+(?:\s*,\s*(?:GHI\s+)?#\d+)*)\)\s*$"
+
 _GHI_SUBJECT_CLOSURE_TYPES = ("fix", "feat", "perf", "refactor", "revert")
 _GHI_SUBJECT_CLOSURE_PATTERN = re.compile(
     r"^(?:"
     + "|".join(_GHI_SUBJECT_CLOSURE_TYPES)
-    # The multi-issue tail admits both live spellings — `(GHI #1, #2)` and
-    # `(GHI #1, GHI #2)`. Neither is prescribed, both occur, and an
-    # unmatched subject produces no warning bucket, so recognizing one
-    # spelling drops the other's GHIs silently.
-    + r")(?:\([^)]*\))?!?:\s+.*\(GHI\s+(#\d+(?:\s*,\s*(?:GHI\s+)?#\d+)*)\)\s*$"
+    + r")(?:\([^)]*\))?!?:\s+.*"
+    + _GHI_MULTI_ISSUE_TAIL
+)
+# The same tail under ANY Conventional-Commits type: group(1) is the type,
+# group(2) the number list. Single-sourced from the tail above so the
+# disclosure side cannot drift from the counting side (GHI #794).
+_GHI_SUBJECT_ANY_TYPE_PATTERN = re.compile(
+    r"^([a-z]+)(?:\([^)]*\))?!?:\s+.*" + _GHI_MULTI_ISSUE_TAIL
 )
 _GHI_NUMBER_PATTERN = re.compile(r"#(\d+)")
 
@@ -303,6 +330,56 @@ def _collect_ghi_refs_in_range(project_root: Path, base_ref: str | None) -> set[
         for match in _GHI_CLOSURE_PATTERN.finditer(body):
             refs.add(int(match.group(1)))
     return refs
+
+
+def _collect_unclassified_ghi_refs_in_range(
+    project_root: Path, base_ref: str | None, closure_refs: set[int]
+) -> set[int]:
+    """Extract GHIs cited in range that no closure rule claimed (GHI #794).
+
+    A GHI whose only in-range commit carries a non-closure Conventional-
+    Commits type is invisible to :func:`_collect_ghi_refs_in_range` —
+    ``chore(deps)`` for a dependency upgrade, ``docs(adr)`` for a finding
+    routed to a pool ADR. Every qualification bucket is computed FROM that
+    set, so the omission renders as a shorter list rather than a warning:
+    there was no state for *referenced but unclassifiable*.
+
+    This is **disclosure, not a widening of the closure types.** Admitting
+    ``chore`` as a closure would re-import the GHI #233 double-counting the
+    exclusion exists to prevent; whether such a commit shipped release
+    content is the operator's call, made per GHI, not the collector's.
+
+    Two narrowings keep the bucket quiet enough to read:
+
+    1. **Subject tail only.** Body-prose citations are the GHI #233 noise
+       the closure regex was written to exclude; admitting them here would
+       re-import it on the disclosure side.
+    2. **Dedup against *closure_refs*.** A citation alongside a real
+       closure is the normal case — a ``fix(...)`` remedy plus a
+       ``docs(...)`` commit naming the same GHI. Measured over five
+       releases, these two narrowings yield ~1.4 reports per release.
+    """
+    log_args = ["log", "--format=%H%n%B%x00"]
+    if base_ref is not None:
+        log_args.append(f"{base_ref}..HEAD")
+    rc, stdout, _err = git_cmd(project_root, *log_args)
+    if rc != 0 or not stdout:
+        return set()
+
+    cited: set[int] = set()
+    for commit_blob in stdout.split("\x00"):
+        commit_blob = commit_blob.strip("\n")
+        if not commit_blob:
+            continue
+        _sha, _, message = commit_blob.partition("\n")
+        subject, _, _body = message.partition("\n")
+
+        match = _GHI_SUBJECT_ANY_TYPE_PATTERN.match(subject)
+        if match is None or match.group(1) in _GHI_SUBJECT_CLOSURE_TYPES:
+            continue
+        for num_match in _GHI_NUMBER_PATTERN.finditer(match.group(2)):
+            cited.add(int(num_match.group(1)))
+    return cited - closure_refs
 
 
 def _ghi_has_src_commits(project_root: Path, ghi_number: int, base_ref: str | None) -> bool:
@@ -361,6 +438,52 @@ def _classify_ghi(project_root: Path, ghi: GhiRecord, base_ref: str | None) -> G
         status=status,
         warning=warning,
     )
+
+
+def _classify_unclassified_reference(
+    project_root: Path, ghi: GhiRecord, base_ref: str | None
+) -> GhiQualification:
+    """Build the disclosure-bucket entry for a cited-but-unclaimed GHI (GHI #794).
+
+    The label and src-diff facts are still computed — they are what the
+    operator reads to decide whether the citing commit shipped release
+    content — but they do not select the status. The bucket's claim is
+    narrower than the other four: not *this qualifies* or *this is
+    excluded*, only *no closure rule matched this, and you should look*.
+    """
+    return GhiQualification(
+        ghi=ghi,
+        has_runtime_label="runtime" in ghi.labels,
+        has_src_diff=_ghi_has_src_commits(project_root, ghi.number, base_ref),
+        status="unclassified_reference",
+        warning=(
+            f"GHI #{ghi.number} is cited in range by a commit whose type is not a "
+            f"closure type; no closure commit claims it. Adjudicate per SKILL.md "
+            f"§ Step 1c before publishing"
+        ),
+    )
+
+
+def _build_qualifications(project_root: Path, base_ref: str | None) -> list[GhiQualification]:
+    """Assemble every bucket for the release range, sorted by GHI number.
+
+    Two passes, in order, because the second depends on the first: closure
+    classification establishes which GHIs a closure commit claims, and the
+    disclosure pass (GHI #794) reports only what is left over. Running them
+    the other way round would warn on the normal case — a ``fix(...)``
+    remedy plus a ``docs(...)`` commit naming the same GHI.
+    """
+    closure = [
+        _classify_ghi(project_root, ghi, base_ref) for ghi in _discover_ghis(project_root, base_ref)
+    ]
+    unclassified = _collect_unclassified_ghi_refs_in_range(
+        project_root, base_ref, {q.ghi.number for q in closure}
+    )
+    disclosed = [
+        _classify_unclassified_reference(project_root, record, base_ref)
+        for record in _fetch_ghi_records(project_root, unclassified)
+    ]
+    return sorted(closure + disclosed, key=lambda q: q.ghi.number)
 
 
 # A foundation ADR carries a 0.0.x semver (AGENTS.md § Kinds). The patch-Z
@@ -440,6 +563,7 @@ _STATUS_STYLE: dict[str, str] = {
     "label_only": "[yellow]label_only[/yellow]",
     "diff_only": "[yellow]diff_only[/yellow]",
     "open_upstream": "[yellow]open_upstream[/yellow]",
+    "unclassified_reference": "[yellow]unclassified_reference[/yellow]",
     "excluded": "[dim]excluded[/dim]",
 }
 
@@ -763,8 +887,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     _ensure_gh_available(project_root)
 
     tag, tag_date = _get_latest_tag(project_root)
-    ghis = _discover_ghis(project_root, tag)
-    qualifications = [_classify_ghi(project_root, ghi, tag) for ghi in ghis]
+    qualifications = _build_qualifications(project_root, tag)
 
     # The ledger is the source-of-truth for foundation-ADR closeouts — a
     # release qualifier equal to behavior-level GHIs (GHI #490). Constructed

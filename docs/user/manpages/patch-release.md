@@ -20,6 +20,30 @@ doctrine, foundation ADRs (ports) ship code surfaces just as feature ADRs
 (adapters) do, so a foundation closeout is a release-worthy event in its
 own right.
 
+## QUALIFICATION BUCKETS
+
+Every discovered GHI lands in exactly one bucket. The first four are
+computed from the `runtime` label and the `src/gzkit/` diff; the last two
+report a state rather than a verdict.
+
+| Bucket | Meaning |
+|---|---|
+| `qualified` | `runtime` label AND src diff in range, closed upstream — release content |
+| `label_only` | `runtime` label, no src diff in range |
+| `diff_only` | src diff in range, no `runtime` label — adjudicate per skill § Step 1a |
+| `open_upstream` | Would qualify, but still OPEN on GitHub — adjudicate per skill § Step 1b |
+| `unclassified_reference` | Cited in range by a commit whose Conventional-Commits type is not a closure type, and claimed by no closure commit — adjudicate per skill § Step 1c |
+| `excluded` | Neither label nor src diff — not release content |
+
+`unclassified_reference` is **disclosure, not qualification** (GHI #794).
+Closure detection keys on the commit type, so a GHI whose only remedy
+landed as `chore(deps): … (GHI #N)` — a dependency upgrade is its own
+remedy, with no separate code commit — was previously absent from every
+bucket rather than mis-bucketed, and nothing warned. The bucket does not
+decide whether such a commit shipped release content; it makes the
+question visible. Body-prose citations are not admitted, and a GHI a
+closure commit already claims is not reported.
+
 ## OPTIONS
 
 `--dry-run`

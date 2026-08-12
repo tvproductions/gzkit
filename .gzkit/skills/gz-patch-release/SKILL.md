@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.9.0"
+  skill-version: "1.10.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-12
 model: sonnet
 ---
 
@@ -202,6 +202,51 @@ The operator adjudicates, per GHI:
 release narrative stops asserting closures that did not happen; closing an
 open tracker to make the warning disappear reintroduces the exact defect
 (canonical instances: GHI #533 and #615 during the v0.33.2 ceremony).
+
+#### Step 1c: Unclassified-reference adjudication (binding when `unclassified_reference` GHIs surface)
+
+`unclassified_reference` means a GHI is cited in the release range by a
+commit whose Conventional-Commits type is **not** a closure type
+(`fix`/`feat`/`perf`/`refactor`/`revert`), and no closure commit in the
+range claims it. Discovery cannot decide this alone: `chore` and `docs`
+are excluded from the closure types on the premise that such commits
+ceremonialize work closed by a separate code-change commit, and when no
+such commit exists the premise is false.
+
+The bucket is **disclosure, not qualification** — it exists because the
+prior state was silence. Every other bucket is computed from the closure
+ref set, so a GHI absent from that set rendered as a shorter list rather
+than a warning, and there was no "referenced but unclassifiable" state to
+render (GHI #794).
+
+1. Enumerate them:
+
+   ```bash
+   uv run gz patch release --dry-run --json > /tmp/patch-release.json
+   jq -r '.qualifications[] | select(.status == "unclassified_reference") | .ghi.number' /tmp/patch-release.json
+   ```
+
+2. For each, determine which case it is:
+
+   | Case | Signal | Action |
+   |------|--------|--------|
+   | The citing commit IS the remedy | A dependency or toolchain upgrade, a generated-surface regeneration — `chore(deps): … (GHI #N)` with no separate code commit. `has_runtime_label` and `has_src_diff` are usually both true | Treat as release content. Write it into the Step 2 narrative and the changelog by hand; the enumeration will not do it for you |
+   | The GHI was routed, not shipped | `docs(adr): … (GHI #N)` authoring a pool ADR the finding was closed `superseded` against, per `ghi-author` § Doctrine | Not release content. Leave it out of the narrative |
+   | The citing commit is context only | The GHI's real remedy shipped in a prior tag; this commit merely references it | Not release content |
+
+3. Record the adjudication in the release notes' `### Gate Evidence`,
+   naming which case fired. The bucket surfaces the question every
+   release; a decision made and not written down gets re-made next
+   release from scratch.
+
+4. Proceed to Step 2.
+
+**Do not suppress a report by re-typing the commit.** Rewriting
+`chore(deps):` as `fix(deps):` to clear the bucket makes the symptom
+vanish and leaves the next non-code-typed remedy exposed — the same shape
+§ Step 1a refuses for `diff_only`. If the closure-type set itself should
+change, that is an operator ruling against GHI #794, not a commit-message
+edit.
 
 ### Step 2: Narrative Drafting
 
