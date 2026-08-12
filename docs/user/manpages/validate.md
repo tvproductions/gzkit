@@ -13,7 +13,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--gate-callers] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--gate-callers] [--exemption-controls] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
@@ -1317,6 +1317,42 @@ uv run gz validate --gate-callers --json
 |------|---------|----------|
 | 0 | Every gate has an automatic caller or a recorded acceptance | — |
 | 3 | A gate has no automatic caller and no acceptance, or an acceptance is stale | Wire a caller, or add the gate to `data/uncalled_gate_grandfather.json` with a reason and raise `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --gate-callers` |
+
+### `--exemption-controls`
+
+Exemption-control inventory (GHI #797). A gate with an exemption makes **two**
+claims — *this is refused* and *this is admitted* — and the enforcement floor
+only ever proved the first. Measured at the 2026-08-12 cutover: 28 source files
+carried an exemption surface, 55 negative controls were registered, and **0**
+exercised an exemption.
+
+Four gates failed on the exemption half in one session — GHI #791, #792, #795,
+#796. Two of them (`handoff-resume-unauthorized-*`, `verifier-exit-status-masked`)
+had registered, enrolled, **passing** controls for the entire life of their
+holes, because those controls assert the rule and never touch the exemption.
+
+`@enforces` carries a three-state `exempts` declaration:
+
+| Value | Meaning |
+|---|---|
+| *(omitted)* | UNDECLARED — nobody has looked; disclosed in `data/exemption_control_grandfather.json` |
+| `"none"` | This gate has no exemption surface; nothing is owed |
+| *claim id* | The registered control that exercises this gate's exemption |
+
+The declaration is a claim id rather than prose, so this scope checks a
+**reference** rather than grading a description. **Inventory and disclosure, not
+enrollment**: the accepted-list is shrink-only, and an entry records a disclosed
+absence of a declaration, never a justified one.
+
+```console
+uv run gz validate --exemption-controls
+uv run gz validate --exemption-controls --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every claim declares its exemption half, or is disclosed | — |
+| 3 | A claim is undeclared and undisclosed, a declaration names an unregistered control, or an acceptance is stale | Declare it — `exempts="none"`, or the claim id of a control that exercises the exemption. Only if the ruling is genuinely owed, add the claim to `data/exemption_control_grandfather.json` with a reason and raise `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --exemption-controls` |
 
 ### `--closeout-proof`
 

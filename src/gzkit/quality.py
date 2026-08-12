@@ -1103,6 +1103,21 @@ def run_gate_callers_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --gate-callers", cwd=project_root)
 
 
+def run_exemption_controls_audit(project_root: Path) -> QualityResult:
+    """Run the exemption-control inventory (GHI #797).
+
+    Fails closed (exit 3) when an enforcement claim has not declared whether
+    its gate has an exemption surface and is not recorded in
+    data/exemption_control_grandfather.json, when a declaration names a
+    control that is not registered, or when an acceptance has gone stale.
+    A gate with an exemption makes two claims and the floor proved only the
+    first; four gates failed on the second half in one session, two of them
+    while their controls were registered, enrolled and passing.
+    Recovery: uv run gz validate --exemption-controls to see the claims.
+    """
+    return run_command("uv run gz validate --exemption-controls", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

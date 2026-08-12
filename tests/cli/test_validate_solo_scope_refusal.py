@@ -33,6 +33,7 @@ SOLO_ONLY_KWARGS: dict[str, object] = {
     "check_fidelity_presence": True,
     "check_waiver_ratchet": True,
     "check_gate_callers": True,
+    "check_exemption_controls": True,
 }
 
 _DISPATCH_DEFAULTS: dict[str, object] = {
@@ -50,6 +51,7 @@ _DISPATCH_DEFAULTS: dict[str, object] = {
     "check_fidelity_presence": False,
     "check_waiver_ratchet": False,
     "check_gate_callers": False,
+    "check_exemption_controls": False,
     "as_json": False,
 }
 

@@ -696,6 +696,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Uncalled-gate inventory (GHI #785). Exit 0: all called/accepted; 3: uncalled.",
     )
     p_validate.add_argument(
+        "--exemption-controls",
+        dest="check_exemption_controls",
+        action="store_true",
+        default=False,
+        help="Exemption-control inventory (GHI #797). Exit 0: declared; 3: undeclared.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -982,6 +989,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_fidelity_presence=a.check_fidelity_presence,
             check_waiver_ratchet=a.check_waiver_ratchet,
             check_gate_callers=a.check_gate_callers,
+            check_exemption_controls=a.check_exemption_controls,
             check_invariant_coherence=a.check_invariant_coherence,
             check_invariant_witness=a.check_invariant_witness,
             check_brief_reconcile=a.check_brief_reconcile,

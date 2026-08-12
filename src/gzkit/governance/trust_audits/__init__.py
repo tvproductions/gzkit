@@ -99,6 +99,7 @@ from gzkit.governance.trust_audits.events import (
     audit_event_schemas,
     audit_validator_fields,
 )
+from gzkit.governance.trust_audits.exemption_controls import audit_exemption_controls
 from gzkit.governance.trust_audits.fidelity_presence import audit_fidelity_presence
 from gzkit.governance.trust_audits.gate_callers import audit_gate_callers
 from gzkit.governance.trust_audits.insights import audit_insights_shape
@@ -219,6 +220,7 @@ __all__ = [
     "audit_orientation_freshness",
     "audit_qc_binding",
     "audit_fidelity_presence",
+    "audit_exemption_controls",
     "audit_gate_callers",
     "audit_waiver_ratchet",
     "audit_deprecated_verb_prescription",

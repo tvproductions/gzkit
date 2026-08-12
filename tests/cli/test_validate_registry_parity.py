@@ -118,6 +118,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "transcribed_adr_counts",
         "pool_interview",
         "gate_callers",
+        "exemption_controls",
     }
 )
 
@@ -233,7 +234,7 @@ _GOLDEN_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
 #   counting itself as "another scope active" would fire the #704 refusal
 #   against `gz validate --gate-callers` run alone.
 _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
-    {"qc_binding", "fidelity_presence", "waiver_ratchet", "gate_callers"}
+    {"qc_binding", "fidelity_presence", "waiver_ratchet", "gate_callers", "exemption_controls"}
 )
 
 

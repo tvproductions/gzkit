@@ -1,0 +1,297 @@
+{
+  "_doc": "Shrink-only disclosed list of enforcement claims that have NOT declared whether their gate has an exemption surface (GHI #797). Seeded 2026-08-12 at the population measured on main. An entry records a DISCLOSED absence of a declaration, never a justified one: acceptance means the count is visible and the per-claim ruling is still owed, not that the claim is fine undeclared. NEVER add an entry to silence a newly-authored claim -- declare it instead (exempts='none', or the claim id of the control that exercises the exemption); that is the laundering ADR-0.0.73 Boundary Invariant #8 forbids. An entry MUST be surrendered the moment its claim declares (gz validate --exemption-controls fails closed on a stale acceptance), which is what makes the list shrink-only. The 'reason' is UNIFORM across every entry because the fact is uniform: nobody has looked. A per-claim hint was attempted at the cutover and DROPPED -- it scanned each claim's EnforcementClaimRecord.source_file for an exemption-surface naming convention and matched 0 of 70, because source_file points at the negative-control shim in _qc_nc_entrypoints.py rather than at the gate the shim delegates to. A hint that measures the wrong file is decoration, and shipping it would have dressed 70 identical unknowns as 70 findings. Enforced by src/gzkit/governance/trust_audits/exemption_controls.py and ratcheted via data/waiver_ratchet_registry.json.",
+  "cutover": "2026-08-12",
+  "measurement": {
+    "claims_registered": 76,
+    "declared": 5,
+    "undeclared_accepted": 71,
+    "population_derivation": "Every claim in the @enforces registry after _ensure_production_claims_registered(). The registry is the single authority for what an enforcement claim IS; re-deriving the population by scanning for decorators would be a second reader free to disagree with the first (.claude/rules/hexagonal-architecture.md rule 8).",
+    "note": "The 5 declared claims are the two exemplar gates seeded with the mechanism: the verifier-pipe gate (GHI #796) and the handoff resume gate (GHI #795). Both had registered, enrolled, PASSING controls throughout the life of their exemption holes, which is the evidence this inventory exists on."
+  },
+  "accepted_claims": [
+    {
+      "claim": "adr-status-freshness",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "adr-taxonomy",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "adversarial-validation",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "advisory-scorecard-coverage",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "advisory-scorecard-ruff-reachability",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "advisory-scorecard-summary-drift",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "agents-md-map-conformance",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "airlock-in-unaccounted-seam",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "authorship-policy",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "behave",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "brief-structure",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "cli-audit",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "closeout-proof",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "complexity-doctrine-links",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "complexity-thresholds",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "dispatch-absorption-marker",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "docs-build",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "enforcement-floor",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "exemption-controls",
+      "reason": "UNDECLARED, ruling owed. This gate's OWN exemption surface is the accepted_claims list in this file -- a claim on it is excused from the undeclared finding -- so by this gate's own rule it owes a control proving the list admits only a genuinely undeclared claim. The stale-acceptance and deleted-claim arms are covered by unit tests today; promoting one to a registered exemption control needs the _QC_NEGATIVE_CONTROL_TABLE to carry an exempts field, which is a separate change. Disclosed rather than silently exempted."
+    },
+    {
+      "claim": "fidelity-presence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "format",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "gate-callers",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "gate5-attestation-absence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "gate5-ledger",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "grader-gaming",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "handoff-documents",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "handoff-documents-populated-sections",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "insights-shape",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "instructions-files-budget",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "interview-transcripts",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "invariant-coherence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "kind-invariance",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "line-endings",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "lint",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "lock-exchange-coupling",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "module-size",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "obpi-lifecycle-coherence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "orientation-freshness",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "parity-check",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "persona-witness",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "pool-interview-schema",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "preflight",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "qc-binding",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "readiness-audit",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "receipt-shape",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "red-parity",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "rendition-floor-coherence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "rendition-freshness",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "req-kind-discipline",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "session-green-gate",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "skill-audit",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "smoke-tier",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "status-writer-coverage",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "surface-fidelity",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "surface-fidelity-bullet-retention",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "surface-fidelity-surface-weight",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "task-envelope-coherence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "task-envelope-layer-drift",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "task-envelope-obpi-divergence",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "task-envelope-subdivision",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "tautological-test-audit",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "test",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "theater-signature-scan",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "transcribed-adr-counts",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "typecheck",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "unscoped-rules",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "validate-default-scopes",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "waiver-ratchet",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "waiver-ratchet-closed-set-lock",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "waiver-ratchet-dated-cutover",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    },
+    {
+      "claim": "waiver-ratchet-silent-bypass",
+      "reason": "UNDECLARED, ruling owed. Nobody has stated whether this gate has an exemption surface. Resolve by reading the gate this claim's entrypoint delegates to, then declare exempts='none' or the id of a control that exercises its exemption."
+    }
+  ]
+}

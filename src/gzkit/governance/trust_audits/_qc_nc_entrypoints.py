@@ -594,6 +594,22 @@ def _ep_waiver_ratchet(root: Path) -> list[ValidationError]:
     return audit_waiver_ratchet(root)
 
 
+def _ep_exemption_controls(root: Path) -> list[ValidationError]:
+    """Drive the production exemption-control audit against the fixture root.
+
+    ``declarations`` injects a one-claim population so the control fails for
+    THIS claim's own reason -- an undeclared claim absent from the disclosed
+    list -- rather than incidentally tripping on the live registry's 75
+    claims being absent from a bare fixture. The audit function itself is the
+    real one, never a copy.
+    """
+    from gzkit.governance.trust_audits.exemption_controls import (  # noqa: PLC0415
+        audit_exemption_controls,
+    )
+
+    return audit_exemption_controls(root, declarations={"nc-undeclared-claim": None})
+
+
 def _ep_gate_callers(root: Path) -> list[ValidationError]:
     """Drive the production uncalled-gate audit against the fixture root.
 

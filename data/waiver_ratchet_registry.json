@@ -134,6 +134,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "unwitnessed_mechanical_rows",
       "baseline_count": 64
+    },
+    {
+      "data_file": "data/exemption_control_grandfather.json",
+      "gates_step": "Exemption controls (gz validate --exemption-controls)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "accepted_claims",
+      "baseline_count": 71
     }
   ],
   "excluded": [

@@ -1153,6 +1153,17 @@ def _build_waiver_ratchet() -> Path:
     return root
 
 
+def _build_exemption_controls() -> Path:
+    root = _mkroot("exemption-controls")
+    # An EMPTY disclosed-list against a claim that has declared nothing: the
+    # audit MUST flag it. Planting the list is what makes the fixture a
+    # violation of THIS claim rather than of the audit's unreadable-evidence
+    # arm -- a missing file would fail for the wrong reason and prove nothing
+    # about the undeclared-claim rule.
+    _write(root / "data" / "exemption_control_grandfather.json", '{"accepted_claims":[]}')
+    return root
+
+
 def _build_gate_callers() -> Path:
     root = _mkroot("gate-callers")
     # A chore shipping a gate script that no automatic surface invokes, and an
@@ -1350,6 +1361,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),
     ("gate-callers", _build_gate_callers, _ep._ep_gate_callers),
+    ("exemption-controls", _build_exemption_controls, _ep._ep_exemption_controls),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
     (
         "theater-signature-scan",

@@ -411,6 +411,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry("waiver_ratchet", "explicit", False, lambda r, _f: _ta().audit_waiver_ratchet(r)),
     _ScopeEntry("gate_callers", "explicit", False, lambda r, _f: _ta().audit_gate_callers(r)),
     _ScopeEntry(
+        "exemption_controls", "explicit", False, lambda r, _f: _ta().audit_exemption_controls(r)
+    ),
+    _ScopeEntry(
         "intrinsic_attestation",
         "explicit",
         False,
@@ -706,39 +709,6 @@ def _run_waiver_ratchet_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print("[bold]Validated:[/bold] waiver-ratchet\n")
     console.print(f"[red]❌ {len(errors)} unratcheted waiver surface(s):[/red]\n")
-    for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
-    raise SystemExit(3)
-
-
-def _run_gate_callers_scope(project_root: Path, *, as_json: bool) -> None:
-    """Dedicated handler for `gz validate --gate-callers` (exit 0/3).
-
-    The green line reports the accepted COUNT rather than a bare tick: the whole
-    point of GHI #785 is that "this gate has no automatic caller" becomes a
-    visible, counted fact, and a green run that hides the number would restore
-    exactly the silence the inventory exists to break.
-    """
-    from gzkit.governance.trust_audits.gate_callers import (  # noqa: PLC0415
-        audit_gate_callers,
-        uncalled_gates,
-    )
-
-    errors = audit_gate_callers(project_root)
-    if as_json:
-        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
-        raise SystemExit(3 if errors else 0)
-    console.print("[bold]Validated:[/bold] gate-callers\n")
-    if not errors:
-        report = uncalled_gates(project_root)
-        accepted = sum(1 for g in report if not g.called)
-        console.print(
-            f"[green]✓ {len(report)} gates inventoried; "
-            f"{len(report) - accepted} have an automatic caller, "
-            f"{accepted} accepted as uncalled.[/green]"
-        )
-        raise SystemExit(0)
-    console.print(f"[red]❌ {len(errors)} gate-caller finding(s):[/red]\n")
     for e in errors:
         console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
     raise SystemExit(3)
@@ -1217,6 +1187,13 @@ def _refuse_combined_solo_scopes(combined: list[str]) -> None:
     raise SystemExit(1)
 
 
+def _inventory():  # noqa: ANN202  (module handle; mirrors `_ta()`)
+    """Lazily resolve the inventory-scope handler module."""
+    from gzkit.commands import validate_inventory_scopes  # noqa: PLC0415
+
+    return validate_inventory_scopes
+
+
 def _dispatch_early_return_scopes(
     project_root: Path,
     *,
@@ -1235,6 +1212,7 @@ def _dispatch_early_return_scopes(
     check_fidelity_presence: bool,
     check_waiver_ratchet: bool,
     check_gate_callers: bool,
+    check_exemption_controls: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1283,6 +1261,7 @@ def _dispatch_early_return_scopes(
                 ("--fidelity-presence", check_fidelity_presence),
                 ("--waiver-ratchet", check_waiver_ratchet),
                 ("--gate-callers", check_gate_callers),
+                ("--exemption-controls", check_exemption_controls),
             )
             if requested
         ]
@@ -1319,7 +1298,9 @@ def _dispatch_early_return_scopes(
         _run_waiver_ratchet_scope(project_root, as_json=as_json)
         return True
     if check_gate_callers:
-        _run_gate_callers_scope(project_root, as_json=as_json)
+        _inventory().run_gate_callers_scope(project_root, as_json=as_json)
+    if check_exemption_controls:
+        _inventory().run_exemption_controls_scope(project_root, as_json=as_json)
         return True
     return False
 
@@ -1419,6 +1400,7 @@ def validate(
     check_fidelity_presence: bool = False,
     check_waiver_ratchet: bool = False,
     check_gate_callers: bool = False,
+    check_exemption_controls: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1563,6 +1545,7 @@ def validate(
         check_fidelity_presence=check_fidelity_presence,
         check_waiver_ratchet=check_waiver_ratchet,
         check_gate_callers=check_gate_callers,
+        check_exemption_controls=check_exemption_controls,
         as_json=as_json,
     ):
         return
