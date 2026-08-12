@@ -841,6 +841,53 @@ class ResumeGateProseTests(unittest.TestCase):
             reason = decide(base, session_id=_SESSION, tool_name="Write").reason
             self.assertIn(f"--session-id {_SESSION}", reason)
 
+    def test_block_prose_names_shape_as_the_cause_when_every_part_was_admissible(self) -> None:
+        """A shape refusal must not read as an authorization refusal.
+
+        Dogfooding regression (2026-08-12): a session opened a resume with
+        `git status --short && uv run gz git-sync`. Both halves are admitted —
+        the first by `_PERMITTED_BASH`, the second unconditionally by
+        `_ALWAYS_AUTHORIZED_BASH` — and the refusal came entirely from the `&&`.
+        Every reason the prose then gave was about the operator not having ruled,
+        so the session concluded the standing "never gate a git-sync" ruling had
+        regressed and asked the operator to re-fix a defect that had landed three
+        days earlier. The prose must name the cause it actually acted on.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            reason = decide(
+                base,
+                session_id=_SESSION,
+                tool_name="Bash",
+                tool_input={"command": 'git status --short && echo "x" && uv run gz git-sync'},
+            ).reason
+            self.assertIn("SHAPE", reason, "the prose must name the cause it acted on")
+            # The admissible parts are quoted back so the caller can reissue them
+            # without re-deriving the allowlist it cannot read.
+            self.assertIn("git status --short", reason)
+            self.assertIn("uv run gz git-sync", reason)
+            # `echo` is not on any allowlist, so the note must not offer it back.
+            self.assertNotIn('echo "x"', reason)
+
+    def test_shape_note_is_withheld_when_no_part_would_be_admitted(self) -> None:
+        """The note is driven by the predicates, not printed for every compound.
+
+        Without this, "refused for its SHAPE, not its verbs" would be asserted
+        over a chained `rm -rf` — false, and an invitation to reissue it bare.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            reason = decide(
+                base,
+                session_id=_SESSION,
+                tool_name="Bash",
+                tool_input={"command": "rm -rf build && chmod 777 dist"},
+            ).reason
+            self.assertNotIn("SHAPE", reason)
+            self.assertIn("BLOCKED", reason, "the ordinary refusal still stands")
+
 
 class ResumeGateNewestHandoffSelectionTests(unittest.TestCase):
     """Recency is a frontmatter-timestamp property, never a filename sort.

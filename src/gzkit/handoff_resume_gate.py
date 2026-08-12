@@ -59,7 +59,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
-from gzkit.shell_reading import strip_uv_run, tokenize_shell
+from gzkit.shell_reading import split_on, strip_uv_run, tokenize_shell
 
 __all__ = [
     "MUTATING_TOOLS",
@@ -627,7 +627,65 @@ def _bash_is_always_authorized(command: str) -> bool:
     return any(tuple(tokens[: len(allowed)]) == allowed for allowed in _ALWAYS_AUTHORIZED_BASH)
 
 
-def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: str) -> str:
+def _admissible_segments(command: str) -> list[str]:
+    """Return the parts of a compound command each predicate would admit alone.
+
+    Derived by re-running the REAL predicates on each segment, never by re-reading
+    the allowlists: a second copy of the membership test is how this prose would
+    come to promise an admission the gate then refuses. Segments carry no operator
+    by construction, so :func:`_is_compound` is inert inside each call.
+    """
+    tokens = tokenize_shell(command)
+    if tokens is None:
+        return []
+    operators = frozenset(token for token in tokens if _is_shell_operator(token))
+    segments = (shlex.join(part) for part in split_on(tokens, operators) if part)
+    return [
+        segment
+        for segment in segments
+        if _bash_is_read_only(segment) or _bash_is_always_authorized(segment)
+    ]
+
+
+def _shape_refusal_note(command: str) -> str:
+    """Name a SHAPE refusal when the parts were each admissible on their own.
+
+    A compound command is refused before any verb is read (:func:`_is_compound`),
+    so a caller who batched admitted reads onto an admitted ceremony sees a block
+    whose every stated reason is about AUTHORIZATION, and concludes the ceremony
+    itself is gated. Dogfooded 2026-08-12: a session opened with
+    ``git status --short && uv run gz git-sync``, read the refusal as the
+    already-fixed git-sync block (:data:`_ALWAYS_AUTHORIZED_BASH`) recurring, and
+    asked the operator to re-fix a defect that had landed three days earlier.
+
+    Emitted ONLY when some segment is admissible. With none, shape is not what
+    made the command surprising and the ordinary prose is already correct —
+    claiming "refused for its shape, not its verbs" over a chained ``rm -rf``
+    would be false.
+    """
+    if not command or not _is_compound(command):
+        return ""
+    admissible = _admissible_segments(command)
+    if not admissible:
+        return ""
+    listed = "\n".join(f"    {segment}" for segment in admissible)
+    return (
+        "WHAT YOU RAN was refused for its SHAPE, not its verbs — it chains, "
+        "redirects, or substitutes, and a compound command is refused before any "
+        "verb is read so nothing rides in on an allowlisted prefix. Reissue each "
+        "part as its own bare call. These parts are permitted RIGHT NOW, with no "
+        "ruling and exactly as written:\n"
+        f"{listed}\n\n"
+    )
+
+
+def _block_prose(
+    handoff: Path,
+    tool_name: str,
+    project_root: Path,
+    session_id: str,
+    command: str = "",
+) -> str:
     """Three-part guardrail prose: what failed, why forbidden, governed next step.
 
     Per `.claude/rules/guardrail-feedback-prose.md` — the feedback IS the prompt
@@ -646,6 +704,7 @@ def _block_prose(handoff: Path, tool_name: str, project_root: Path, session_id: 
     return (
         f"BLOCKED: {tool_name} refused — this session resumed a handoff "
         f"({rel}) and the operator has not ruled on it.\n\n"
+        f"{_shape_refusal_note(command)}"
         "WHY: `gz-session-handoff` SKILL.md § RESUME declares a universal Operator "
         "Authorization Gate — 'Every resume requires explicit operator authorization "
         "before any execution, at every freshness level — Fresh included ... no file "
@@ -702,11 +761,13 @@ def decide(
         return Verdict(blocked=False)
     if is_resume_authorized(project_root, session_id):
         return Verdict(blocked=False)
-    if tool_name == "Bash":
-        command = str((tool_input or {}).get("command", ""))
-        if _bash_is_always_authorized(command) or _bash_is_read_only(command):
-            return Verdict(blocked=False)
-    return Verdict(blocked=True, reason=_block_prose(handoff, tool_name, project_root, session_id))
+    command = str((tool_input or {}).get("command", "")) if tool_name == "Bash" else ""
+    if command and (_bash_is_always_authorized(command) or _bash_is_read_only(command)):
+        return Verdict(blocked=False)
+    return Verdict(
+        blocked=True,
+        reason=_block_prose(handoff, tool_name, project_root, session_id, command),
+    )
 
 
 # ---------------------------------------------------------------------------
