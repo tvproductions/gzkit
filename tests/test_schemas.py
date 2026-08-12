@@ -68,6 +68,7 @@ from gzkit.events import (
     RenditionCommittedEvent,
     SecurityFloorOverriddenEvent,
     SessionExitBookmarkSkippedEvent,
+    SurfaceWeightRecalibratedEvent,
     TaskBlockedEvent,
     TaskCompletedEvent,
     TaskEscalatedEvent,
@@ -323,6 +324,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # Successor carrying a transit decision rather than a consent boolean (GHI #757)
     "handoff_resume_decided": HandoffResumeDecidedEvent,
     "session_exit_bookmark_skipped": SessionExitBookmarkSkippedEvent,
+    # Surface-weight band/floor recalibration witness (ADR-0.0.33 AP#3, GHI #791)
+    "surface_weight_recalibrated": SurfaceWeightRecalibratedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_unparked": ObpiUnparkedEvent,

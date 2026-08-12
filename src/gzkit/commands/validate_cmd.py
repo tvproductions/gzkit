@@ -1388,6 +1388,9 @@ def validate(
     check_changelog: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
+    surface_weight_recalibrate: bool = False,
+    recalibrate_attestor: str = "",
+    recalibrate_reason: str = "",
     check_pointer_anchors: bool = False,
     check_surface_fidelity: bool = False,
     check_vendor_manifest: bool = False,
@@ -1433,6 +1436,19 @@ def validate(
         * 3 — frontmatter-ledger policy breach (drift found)
     """
     project_root = get_project_root()
+
+    if surface_weight_recalibrate:
+        from gzkit.commands.validate_surface_weight import (  # noqa: PLC0415
+            run_surface_weight_recalibrate,
+        )
+
+        run_surface_weight_recalibrate(
+            project_root,
+            scoped=check_surface_weight,
+            attestor=recalibrate_attestor,
+            reason=recalibrate_reason,
+            as_json=as_json,
+        )
 
     # --explain implies --frontmatter and scope (must precede _other_scopes_active).
     if frontmatter_explain:

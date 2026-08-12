@@ -853,6 +853,39 @@ class AirlockOutEvent(_EventBase):
     event: Literal["airlock_out"]
 
 
+class SurfaceWeightRecalibratedEvent(_EventBase):
+    """surface_weight_recalibrated event — the per-turn surface bands and/or floor moved.
+
+    ADR-0.0.33 § Anti-Patterns item 3 makes this event mandatory: *"Adjusting the
+    surface-weight green/yellow/red thresholds without an attested recalibration
+    event reproduces the doctrine-drift failure the ADR exists to prevent. Band
+    changes are ledger events, not config tweaks."*
+
+    It had no producer for the project's entire life (GHI #791).
+    ``OBPI-0.0.33-02`` REQ 4 named ``gz adr emit-receipt`` as the emitter, whose
+    ``--event`` is a closed enum of ``{completed, validated, closed}``; no other
+    verb could emit it and hand-writing the ledger is forbidden. The ledger
+    therefore carried zero of these while the bands moved once anyway, as exactly
+    the config tweak the anti-pattern names. ``gz validate --surface-weight
+    --recalibrate`` is now the producer.
+
+    The band ceilings ride on the event rather than being left implicit in the
+    source constants, so "which thresholds were in force at time T" is answerable
+    from Layer 2 instead of from a commit diff — the doctrine being witnessed is
+    about the thresholds themselves. ``previous_floor_lines`` keeps the superseded
+    floor legible after ``surface_weight_floor.json`` overwrites it, which is the
+    only durable record of how much the corpus accreted between calibrations.
+    """
+
+    event: Literal["surface_weight_recalibrated"]
+    attestor: str = Field(..., min_length=1, description="Who attests the recalibration")
+    reason: str = Field(..., min_length=1, description="Operational evidence for the change")
+    floor_lines: int = Field(..., description="Newly snapshotted corpus line count")
+    previous_floor_lines: int = Field(..., description="The floor this recalibration superseded")
+    green_ceiling: int = Field(..., description="Green band ceiling in force at recalibration")
+    yellow_ceiling: int = Field(..., description="Yellow band ceiling in force at recalibration")
+
+
 class SessionExitBookmarkSkippedEvent(_EventBase):
     """session_exit_bookmark_skipped event — the exit beat chose not to book.
 

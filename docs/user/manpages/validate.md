@@ -353,19 +353,41 @@ Band constants (pinned by ADR-0.0.33 Decision):
 
 | Band | Range | Exit Code |
 |------|-------|-----------|
-| Green | ≤ 1800 lines | 0 (clean) |
-| Yellow | 1801–2200 lines | 3 unless an active waiver in `data/surface_weight_waivers.json` covers the delta |
-| Red | > 2200 lines | 3 — no waiver dispensation |
+| Green | ≤ 3000 lines | 0 (clean) |
+| Yellow | 3001–3400 lines | 3 unless an active waiver in `data/surface_weight_waivers.json` covers the delta |
+| Red | > 3400 lines | 3 — no waiver dispensation |
 
 The validator also detects **floor drift**: if the floor snapshot timestamp
 predates the most recent `surface_weight_recalibrated` ledger event by more
 than 24 hours, the check exits 3 citing drift. Floor recalibration is a
-ledger event (`uv run gz adr emit-receipt` with `event
-surface_weight_recalibrated`); silent floor mutation is never permitted.
+ledger event; silent floor mutation is never permitted.
 
 ```bash
 # Check surface weight against the floor snapshot
 uv run gz validate --surface-weight
+```
+
+#### `--recalibrate`
+
+Re-snapshots `data/surface_weight_floor.json` to the measured corpus and
+appends the witnessing `surface_weight_recalibrated` ledger event. Requires
+`--surface-weight`; both `--attestor` and `--reason` are required and fail
+closed when empty (exit 1, no write to either surface).
+
+This is the producer ADR-0.0.33 § Anti-Patterns item 3 requires — *"Band
+changes are ledger events, not config tweaks."* Before GHI #791 the event had
+no producer at all: this manpage and the validator's own recovery prose both
+named `gz adr emit-receipt`, whose `--event` is a closed enum of
+`{completed, validated, closed}`.
+
+The two writes are one fail-safe-ordered transaction: **the floor is written
+before the event is appended.** A failed append leaves a green gate and a
+re-runnable command; the reverse order would strand a red gate that only
+hand-editing the ledger could clear, which is forbidden.
+
+```bash
+uv run gz validate --surface-weight --recalibrate \
+  --attestor "g0" --reason "bands raised to 3000/3400; corpus at ceiling"
 ```
 
 **Clean state (corpus at or below floor):**
@@ -388,8 +410,8 @@ Validated: surface_weight
 ❌ Validation failed with 1 error(s):
 
    → [surface_weight] data/surface_weight_floor.json
-    Surface weight in yellow band: 1850 lines (delta +82 from floor 1768).
-    Yellow band (1801–2200) requires an active waiver.
+    Surface weight in yellow band: 3050 lines (delta +450 from floor 2600).
+    Yellow band (3001–3400) requires an active waiver.
     Add an entry to data/surface_weight_waivers.json or reduce the surface corpus.
 $ echo $?
 3
@@ -398,9 +420,10 @@ $ echo $?
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Corpus at or below floor, or waiver covers yellow-band delta | — |
-| 3 | Corpus in yellow band without active waiver | Add waiver entry to `data/surface_weight_waivers.json` or reduce corpus size |
-| 3 | Corpus in red band (> 2200) | Reduce corpus size; no waiver dispensation in red band |
-| 3 | Floor drift detected | Run `uv run gz adr emit-receipt` with `surface_weight_recalibrated` event, then update `data/surface_weight_floor.json` |
+| 1 | `--recalibrate` without `--surface-weight`, or empty `--attestor` / `--reason` | Re-run scoped, with both fields supplied |
+| 3 | Corpus in yellow band without active waiver | Update the covering waiver in `data/surface_weight_waivers.json` (the list is shrink-only — see `--waiver-ratchet`) or reduce corpus size |
+| 3 | Corpus in red band (> 3400) | Reduce corpus size; no waiver dispensation in red band |
+| 3 | Floor drift detected | Run `uv run gz validate --surface-weight --recalibrate --attestor "<name>" --reason "<evidence>"` |
 
 ### `--pointer-anchors`
 

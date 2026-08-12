@@ -61,11 +61,15 @@ Four invariants, mechanically validated:
    Pydantic content model (Era 2 onward, per ADR-0.0.34). Validator:
    `gz validate --bullet-retention`. **(Amended 2026-06-03 — tier-scoped; see § Amendment below.)**
 2. **Surface weight regression** — direction-binding (no growth past current
-   snapshot 1768 lines) is fail-closed. Provisional warning bands grounded in
-   2026 literature: green ≤ 1800, yellow 1801–2200 (waiver required), red
-   > 2200 (fail closed). Recalibration cadence: 6 months minimum, against
-   operational evidence. Validator: `gz validate --surface-weight`. Snapshot
-   file: `data/surface_weight_floor.json`.
+   snapshot) is fail-closed. Warning bands: green ≤ 3000, yellow 3001–3400
+   (waiver required), red > 3400 (fail closed). Recalibration cadence: 6 months
+   minimum, against operational evidence; an override is legitimate only when
+   recorded as a `surface_weight_recalibrated` event. Validator:
+   `gz validate --surface-weight`. Producer:
+   `gz validate --surface-weight --recalibrate`. Snapshot file:
+   `data/surface_weight_floor.json`. **(Amended 2026-08-11 — bands recalibrated
+   from the original 1800/2200 and the unrecorded 2600/3000; ceremony given a
+   producer. See § Amendment (2026-08-11).)**
 3. **Pointer integrity** — every `> See [...](path#anchor)` lift pointer in
    the per-turn surface resolves to an existing destination heading anchor;
    every lifted-pedagogy page carries a `<!-- lifted-from: <path>#<anchor> -->`
@@ -164,6 +168,52 @@ Retirement does not forbid the capability. If a scenario model is later wanted,
 it lands under its own ADR carrying its own registry, as designed work rather
 than as an inherited debt no package claimed. Tracked at GHI #716, closed
 `withdrawn` against this amendment.
+
+### Amendment (2026-08-11): Invariant 2 bands recalibrated, and its ceremony given a producer
+
+**Invariant 2's warning bands become green ≤ 3000, yellow 3001–3400 (waiver
+required), red > 3400.** The prior generation — green ≤ 2600, yellow 2601–3000 —
+is superseded. Witnessed by a `surface_weight_recalibrated` ledger event
+attested by g0, the first such event ever emitted.
+
+**Two prior band changes went unrecorded here, and that is the deeper finding.**
+This section still read *"green ≤ 1800, yellow 1801–2200"* until this amendment,
+while `_GREEN_CEILING` had been 2600 since 2026-06-30. The source comment
+accompanying that change asserted *"ADR-0.0.33 Decision is amended to match"* —
+an amendment that was never written. § Anti-Patterns item 3 forbids exactly
+this: *"Band changes are ledger events, not config tweaks."*
+
+**The ceremony was unperformable, which is why nobody performed it.**
+`OBPI-0.0.33-02` REQ 4 named `gz adr emit-receipt` as the event's producer. That
+verb's `--event` is a closed enum of `{completed, validated, closed}` and cannot
+accept `surface_weight_recalibrated`; no other registered verb could emit it,
+and hand-writing the ledger is forbidden (`AGENTS.md` Never #2). The ledger
+carried zero such events across the project's life. Anti-pattern 3 was therefore
+not a discipline anyone violated — it was a discipline nothing could satisfy.
+Diagnosed and closed under GHI #791, which lands
+`gz validate --surface-weight --recalibrate` as the producer: it re-snapshots
+`data/surface_weight_floor.json` and appends the witnessing event in one
+fail-safe-ordered transaction, floor first.
+
+A self-concealing property made this durable. `_check_floor_drift` returns clean
+when zero recalibration events exist, so the gate was silent *exactly while its
+producer was missing* and would only have begun speaking after the first event
+landed. A check that fails open until its own producer exists cannot report that
+producer's absence.
+
+**Operational evidence for the raise.** The corpus stood at exactly 2600 of 2600,
+so the next rule edit adding one line would have failed `gz check` closed with no
+available remedy: the largest live waiver covers 340 against a delta of 742, and
+the shrink-only waiver ratchet (ADR-0.0.73 BI#8, `baseline_count: 6`) forbids
+adding a seventh entry. Measured growth was 1859 → 2600 over 88 days (~8.4
+lines/day), so +400 buys roughly 47 days. The 400-line yellow-band width is
+preserved from both prior generations.
+
+**The 6-month recalibration cadence was explicitly overridden**, 42 days after
+the 2026-06-30 change, by the canon owner who also set the prior bands by
+directive. The override is recorded rather than silent — which is the entire
+function of the event this amendment now makes emittable. It is not a precedent
+for silent adjustment; it is the first time the discipline has had a mechanism.
 
 ## Comparator Uplift (2026-05-07)
 

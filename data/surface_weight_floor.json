@@ -1,5 +1,5 @@
 {
-  "lines": 1859,
-  "timestamp": "2026-05-15T12:50:00+00:00",
-  "note": "Initial snapshot bootstrapped at OBPI-0.0.33-02 completion. Recalibrate via: uv run gz adr emit-receipt with event surface_weight_recalibrated, then update this file."
+  "lines": 2600,
+  "timestamp": "2026-08-12T01:03:46.150467+00:00",
+  "note": "Recalibrated by g0: Override the cadence, raise now; 3000 green / 3400 yellow (operator ruling 2026-08-11, verbatim selections) \u2014 corpus stood at exactly 2600/2600 so the next rule edit would fail gz check closed, with the largest live waiver covering 340 against a delta of 742 and the shrink-only ratchet at baseline_count 6 forbidding a seventh entry; measured growth 1859->2600 over 88 days (~8.4 lines/day) makes +400 roughly 47 days of headroom. First recalibration event ever emitted (GHI #791); supersedes the unwitnessed 2026-06-30 config tweak. (superseded floor 1859; bands green <= 3000, yellow <= 3400). Re-snapshot via: uv run gz validate --surface-weight --recalibrate."
 }

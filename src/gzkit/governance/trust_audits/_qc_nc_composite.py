@@ -34,6 +34,8 @@ import json
 import tempfile
 from pathlib import Path
 
+from gzkit.governance.trust_audits.surface_weight import _YELLOW_CEILING
+
 # Every ledger timestamp here must post-date the task-envelope enforcement epoch
 # (2026-05-30T14:44:00+00:00) and, for obpi_id divergence, the canonical cutover
 # (2026-07-10T10:14:00+00:00) — before those the validator grandfathers the shape.
@@ -78,10 +80,21 @@ def build_bullet_retention() -> Path:
 
 
 def build_surface_weight() -> Path:
-    """Build a per-turn surface in the fail-closed red band against a zero floor."""
+    """Build a per-turn surface in the fail-closed red band against a zero floor.
+
+    The line count is DERIVED from ``_YELLOW_CEILING`` rather than written as a
+    literal. It was hard-coded at 3001 — one past the red threshold of the band
+    generation in force when this fixture was authored — so the 2026-08-11
+    recalibration to 3000/3400 silently demoted the planted violation from red to
+    yellow, and the control reported FACADE: it still failed, but for the wrong
+    reason. That is precisely the discrimination this module exists to preserve,
+    turned against itself by a magic number. ``tests/governance/test_surface_weight.py``
+    had already taken the derived approach for the same reason; this fixture is now
+    consistent with it and survives the next recalibration by construction.
+    """
     root = _root("surface-weight")
     _put(root / "data" / "surface_weight_floor.json", json.dumps({"lines": 0}) + "\n")
-    _put(root / "AGENTS.md", "x\n" * 3001)
+    _put(root / "AGENTS.md", "x\n" * (_YELLOW_CEILING + 1))
     return root
 
 

@@ -1668,6 +1668,38 @@
     "airlock_out": {
       "required": []
     },
+    "surface_weight_recalibrated": {
+      "required": [
+        "attestor",
+        "reason",
+        "floor_lines",
+        "previous_floor_lines",
+        "green_ceiling",
+        "yellow_ceiling"
+      ],
+      "properties": {
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "floor_lines": {
+          "type": "integer"
+        },
+        "previous_floor_lines": {
+          "type": "integer"
+        },
+        "green_ceiling": {
+          "type": "integer"
+        },
+        "yellow_ceiling": {
+          "type": "integer"
+        }
+      }
+    },
     "session_exit_bookmark_skipped": {
       "required": [
         "session_id",

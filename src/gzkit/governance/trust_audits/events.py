@@ -19,6 +19,16 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "surface_weight_recalibrated": (
+        "Witness that the surface-weight bands and/or floor moved (GHI #791), required "
+        "by ADR-0.0.33 § Anti-Patterns item 3 — 'Band changes are ledger events, not "
+        "config tweaks'. It records a THRESHOLD change, not an artifact relationship: "
+        "the subject is a pair of integers in `surface_weight.py` and a snapshot in "
+        "`data/surface_weight_floor.json`, neither of which is a graph node, so there "
+        "is nothing to link. Its consumer is `_check_floor_drift`, which reads only the "
+        "event's timestamp to decide whether the floor was re-snapshotted alongside it. "
+        "Drawing an edge would model a doctrine calibration as artifact lineage."
+    ),
     "session_exit_bookmark_skipped": (
         "The exit beat fired and deliberately booked nothing, because an authored "
         "handoff already covers the session and provably nothing has happened since "

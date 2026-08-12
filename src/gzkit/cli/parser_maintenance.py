@@ -774,6 +774,24 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Surface-weight audit: direction-binding floor + warning bands (ADR-0.0.33-02).",
     )
     p_validate.add_argument(
+        "--recalibrate",
+        dest="surface_weight_recalibrate",
+        action="store_true",
+        help="With --surface-weight: re-snapshot the floor and emit the witnessing event.",
+    )
+    p_validate.add_argument(
+        "--attestor",
+        dest="recalibrate_attestor",
+        default="",
+        help="With --recalibrate: who attests the band/floor change (required).",
+    )
+    p_validate.add_argument(
+        "--reason",
+        dest="recalibrate_reason",
+        default="",
+        help="With --recalibrate: the operational evidence for the change (required).",
+    )
+    p_validate.add_argument(
         "--pointer-anchors",
         dest="check_pointer_anchors",
         action="store_true",
@@ -984,6 +1002,9 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_changelog=a.check_changelog,
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,
+            surface_weight_recalibrate=a.surface_weight_recalibrate,
+            recalibrate_attestor=a.recalibrate_attestor,
+            recalibrate_reason=a.recalibrate_reason,
             check_pointer_anchors=a.check_pointer_anchors,
             check_surface_fidelity=a.check_surface_fidelity,
             check_vendor_manifest=a.check_vendor_manifest,

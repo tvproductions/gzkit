@@ -13,16 +13,29 @@ import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from gzkit.core.validation_rules import ValidationError
 
 # Band constants — pinned by ADR-0.0.33 Decision. ALWAYS read from this block.
-# Recalibrated 2026-06-30 by operator directive (GovZero canon owner): the prior
-# bands (green 1800 / yellow 2200) were ruled wrong while feature work lands, and
-# raised to give headroom. The 15k corpus-split shrink (GHI #533 / ADR-0.0.37) remains
-# the durable reduction path; revisit these bands at that closeout. ADR-0.0.33 Decision
-# is amended to match (provisional bands, recalibration was always anticipated).
-_GREEN_CEILING = 2600
-_YELLOW_CEILING = 3000
+# Recalibrated 2026-08-11 by operator ruling (GovZero canon owner), witnessed by a
+# `surface_weight_recalibrated` ledger event — the FIRST such event ever emitted, because
+# until GHI #791 no verb could produce one and the prescribed `gz adr emit-receipt`
+# carried a closed `--event` enum. Operational evidence: the corpus stood at exactly
+# 2600/2600, so the next rule edit adding a line would have failed `gz check` closed with
+# no waiver able to cover it (largest live waiver 340 against a delta of 742, and the
+# shrink-only ratchet at baseline_count 6 forbids adding a seventh entry). Measured growth
+# 1859 -> 2600 over 88 days (~8.4 lines/day), so +400 buys ~47 days. The 400-line
+# yellow-band width is preserved from both prior generations (1800/2200, 2600/3000).
+# The operator explicitly overrode ADR-0.0.33's 6-month recalibration cadence, 42 days
+# after the 2026-06-30 change; that override is recorded rather than silent, which is the
+# whole point of the event. The 15k corpus-split shrink (GHI #533 / ADR-0.0.37) remains
+# the durable reduction path; revisit these bands at that closeout.
+#
+# Prior generation: green 2600 / yellow 3000, set 2026-06-30 by operator directive as an
+# unwitnessed config tweak — the ADR anti-pattern 3 breach GHI #791 diagnosed and closed.
+_GREEN_CEILING = 3000
+_YELLOW_CEILING = 3400
 
 _FLOOR_PATH = Path("data") / "surface_weight_floor.json"
 _WAIVERS_PATH = Path("data") / "surface_weight_waivers.json"
@@ -80,8 +93,112 @@ def validate_surface_weight(project_root: Path) -> list[ValidationError]:
         )
         return [_make_error(msg)]
 
-    # Above floor but still in green band (floor < current ≤ 1800)
+    # Above floor but still in green band (floor < current <= _GREEN_CEILING)
     return []
+
+
+class RecalibrationOutcome(BaseModel):
+    """What a completed recalibration changed. Returned by :func:`recalibrate_surface_weight`."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    floor_lines: int = Field(..., description="The newly snapshotted corpus line count")
+    previous_floor_lines: int = Field(..., description="The floor this recalibration superseded")
+    green_ceiling: int = Field(..., description="Green band ceiling in force at recalibration")
+    yellow_ceiling: int = Field(..., description="Yellow band ceiling in force at recalibration")
+
+
+def recalibrate_surface_weight(
+    project_root: Path, *, attestor: str, reason: str
+) -> RecalibrationOutcome:
+    """Re-snapshot the surface-weight floor and witness it on the ledger (GHI #791).
+
+    This is the producer ADR-0.0.33 § Anti-patterns item 3 requires and that no
+    registered verb supplied: *"Band changes are ledger events, not config
+    tweaks."* OBPI-0.0.33-02 REQ 4 named ``gz adr emit-receipt`` as the emitter,
+    whose ``--event`` is a closed enum that cannot accept
+    ``surface_weight_recalibrated`` — so the ledger held zero such events and the
+    bands had already moved once unwitnessed.
+
+    **The write order is load-bearing, not incidental.** The floor is committed
+    BEFORE the event is appended. :func:`_check_floor_drift` fails closed once a
+    recalibration event postdates the floor snapshot by more than
+    ``_DRIFT_THRESHOLD_HOURS``, so the two surfaces validate each other and the
+    failure modes are asymmetric: a written floor with a failed append leaves a
+    green gate and a re-runnable command, while an appended event with a failed
+    floor write strands a RED gate that no operator action short of hand-editing
+    the ledger could clear — and hand-editing is forbidden (``AGENTS.md``
+    Never #2). Fail-safe therefore means floor-first.
+
+    Attestation is fail-closed on both fields, mirroring ``gz obpi repudiate``:
+    an unattested band change is the silent recalibration the anti-pattern names,
+    and a blank reason makes the ledger record unreadable as evidence later.
+
+    Raises:
+        ValueError: if ``attestor`` or ``reason`` is empty or whitespace-only.
+            Neither surface is mutated.
+
+    """
+    from gzkit.ledger import Ledger  # noqa: PLC0415 — avoids an import cycle
+    from gzkit.ledger_events import surface_weight_recalibrated_event  # noqa: PLC0415
+
+    if not attestor.strip():
+        msg = (
+            "Recalibration requires --attestor. ADR-0.0.33 § Anti-patterns item 3 forbids "
+            "an unattested band change ('Band changes are ledger events, not config tweaks'); "
+            "an anonymous event cannot discharge it. Re-run with --attestor '<name>'."
+        )
+        raise ValueError(msg)
+    if not reason.strip():
+        msg = (
+            "Recalibration requires --reason. The ledger event is the only durable record of "
+            "WHY the bands moved; without it the witness is indistinguishable from the silent "
+            "tweak it exists to replace. Re-run with --reason '<operational evidence>'."
+        )
+        raise ValueError(msg)
+
+    current = _count_surface_lines(project_root)
+    floor_path = project_root / _FLOOR_PATH
+    existing = _load_floor(floor_path) or {}
+    previous_lines = int(existing.get("lines", 0))
+
+    # Floor first — see the write-order note above.
+    floor_path.parent.mkdir(parents=True, exist_ok=True)
+    floor_path.write_text(
+        json.dumps(
+            {
+                "lines": current,
+                "timestamp": datetime.now(tz=UTC).isoformat(),
+                "note": (
+                    f"Recalibrated by {attestor}: {reason} "
+                    f"(superseded floor {previous_lines}; bands "
+                    f"green <= {_GREEN_CEILING}, yellow <= {_YELLOW_CEILING}). "
+                    "Re-snapshot via: uv run gz validate --surface-weight --recalibrate."
+                ),
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    Ledger(project_root / _LEDGER_PATH).append(
+        surface_weight_recalibrated_event(
+            attestor=attestor,
+            reason=reason,
+            floor_lines=current,
+            previous_floor_lines=previous_lines,
+            green_ceiling=_GREEN_CEILING,
+            yellow_ceiling=_YELLOW_CEILING,
+        )
+    )
+
+    return RecalibrationOutcome(
+        floor_lines=current,
+        previous_floor_lines=previous_lines,
+        green_ceiling=_GREEN_CEILING,
+        yellow_ceiling=_YELLOW_CEILING,
+    )
 
 
 def _count_surface_lines(project_root: Path) -> int:
@@ -177,8 +294,9 @@ def _check_floor_drift(floor: dict, project_root: Path) -> list[ValidationError]
             f"Floor drift detected: floor snapshot timestamped {floor_ts.isoformat()} "
             f"predates most recent recalibration event at "
             f"{last_recalibration_ts.isoformat()} by more than {_DRIFT_THRESHOLD_HOURS}h. "
-            f"Recalibrate via: uv run gz adr emit-receipt with event "
-            f"surface_weight_recalibrated, then update data/surface_weight_floor.json."
+            f"Recalibrate via: uv run gz validate --surface-weight --recalibrate "
+            f'--attestor "<name>" --reason "<operational evidence>" — it re-snapshots '
+            f"data/surface_weight_floor.json and appends the witnessing event together."
         )
         return [_make_error(msg)]
 

@@ -1081,6 +1081,50 @@ def session_exit_bookmark_skipped_event(
     )
 
 
+def surface_weight_recalibrated_event(
+    *,
+    attestor: str,
+    reason: str,
+    floor_lines: int,
+    previous_floor_lines: int,
+    green_ceiling: int,
+    yellow_ceiling: int,
+) -> LedgerEvent:
+    """Witness a surface-weight band/floor recalibration (GHI #791).
+
+    ADR-0.0.33 § Anti-patterns item 3 declares this event mandatory — *"Band
+    changes are ledger events, not config tweaks"* — and OBPI-0.0.33-02 REQ 4
+    named ``gz adr emit-receipt`` as its producer. That verb's ``--event`` is a
+    closed enum of ``{completed, validated, closed}``, so the event had no
+    producer at all and the ledger carried zero of them; the 2026-06-30 band
+    change (green 1800->2600, yellow 2200->3000) therefore landed as exactly the
+    config tweak the anti-pattern forbids, not through negligence but because
+    the ceremony was unperformable.
+
+    The band values are carried on the event rather than left implicit in the
+    source constants. An event that recorded only *that* a recalibration
+    happened would leave "which bands were in force at time T" answerable only
+    by reading a commit diff — and the doctrine this witnesses is about the
+    thresholds themselves, so the thresholds are the payload.
+
+    ``previous_floor_lines`` makes the accretion delta legible at Layer 2: the
+    superseded floor is otherwise overwritten in ``surface_weight_floor.json``
+    and recoverable only from git history.
+    """
+    return LedgerEvent(
+        event="surface_weight_recalibrated",
+        id=f"surface-weight-{datetime.now(UTC).isoformat()}",
+        extra={
+            "attestor": attestor,
+            "reason": reason,
+            "floor_lines": floor_lines,
+            "previous_floor_lines": previous_floor_lines,
+            "green_ceiling": green_ceiling,
+            "yellow_ceiling": yellow_ceiling,
+        },
+    )
+
+
 def handoff_resume_decided_event(
     *,
     session_id: str,
