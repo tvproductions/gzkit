@@ -41,7 +41,7 @@ READ THE FOLD ALGEBRA FROM THE ADR, NOT FROM MEMORY. For OBPI-0.35.0-01 the ADR'
 
 ## Immediate Next Steps
 
-1. PULL OBPI-0.35.0-01-corpus-tombstone-schema-and-fold. The campaign spine and the topmost unchecked Movement A item whose gate is met. Now set aside FOUR sessions running, every time by explicit ruling rather than neglect. Verified live this session as unstarted: gz adr status reports 0/10 with every brief pending and draft, and the ADR at Draft, which the 2026-08-12 lifecycle ruling settled as correct through implementation. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count rather than trusting a figure transcribed here. Read the fold algebra from the ADR's Decision section rather than re-deriving it.
+1. PULL OBPI-0.35.0-01-corpus-tombstone-schema-and-fold. The campaign spine and the topmost unchecked Movement A item whose gate is met. Now set aside FOUR sessions running, every time by explicit ruling rather than neglect. Verified live this session as unstarted, with every brief pending and draft and the ADR at Draft, which the 2026-08-12 lifecycle ruling settled as correct through implementation. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count rather than trusting a figure transcribed here. Read the fold algebra from the ADR's Decision section rather than re-deriving it.
 
 2. ATTACH GZKIT.ORG TO GITHUB PAGES, THEN CLOSE GHI #802. The operator-only action of this cycle, replacing the RTD flip that discharged it. Two credentialed steps: GitHub Pages settings, custom domain = gzkit.org (a repo settings mutation, prohibited to agents without explicit approval), then registrar DNS repointing gzkit.org and www off 68.183.108.119 to the GitHub Pages apex targets. Closing evidence needs no credentials: curl the last-modified header at the site root and expect a current date rather than 2026-05-28, and curl gzkit.org/config/gz-cookiecutter-python-stack/ and expect 200 where it returns 404 today. Nothing repo-side is outstanding.
 
@@ -84,7 +84,7 @@ curl -s -o /dev/null -w "%{http_code}" https://gzkit.org/config/gz-cookiecutter-
 curl -s -o /dev/null -w "%{http_code}" https://tvproductions.github.io/gzkit/config/gz-cookiecutter-python-stack/  # 200, Pages is current
 dig +short gzkit.org                                          # 68.183.108.119 (DigitalOcean, not RTD)
 gh issue view 802 --json number,state                         # OPEN, operator-only Pages + DNS
-uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing    # read the landed count from Layer-2; 0/10, all briefs pending and draft
+uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing    # read the landed count and brief states from Layer-2; do not transcribe them here
 grep -c "claim" data/exemption_control_grandfather.json       # 71 accepted_claims entries
 
 ## Evidence / Artifacts
