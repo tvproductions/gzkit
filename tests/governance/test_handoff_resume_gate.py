@@ -417,6 +417,74 @@ class ResumeGateCannotBeDefeatedTests(unittest.TestCase):
             self.assertFalse(decide(base, session_id=_SESSION, tool_name="Write").blocked)
 
 
+class ResumeGateAdmitsAWhollyAdmittedCompoundTests(unittest.TestCase):
+    """A chain whose EVERY segment is admitted is a read, not a shape to refuse.
+
+    Operator ruling 2026-08-13 (GHI #800), reversing the 2026-08-12 disposition-1
+    ruling that `_is_compound`'s docstring had recorded as "RULED CORRECT AS
+    DESIGNED". Verbatim: "I want this fixed now, highest priority, I can't
+    tolerate this". The refusal's cost was not abstract — the block prose listed
+    the very segments it refused back to the caller as "permitted RIGHT NOW",
+    so the gate spent its own recovery text proving it had the information to
+    admit and declined to use it.
+
+    The disposition-1 rationale claimed narrowing "would reopen both holes" named
+    by the two lexer facts. It does not, and GHI #800's own body says so: admission
+    is computed by re-running the REAL predicates per segment, and
+    `_bash_is_read_only` calls `_is_compound` internally. So substitution is caught
+    by `_can_expand` INSIDE each segment's check, and a redirect refuses because
+    its target (`out.txt`) is a segment matching no allowlisted head — never
+    because of the operator token. `test_one_unadmitted_segment_refuses_the_whole_command`
+    is the paired negative that keeps this honest, per this module's docstring.
+    """
+
+    def _verdict(self, base: Path, command: str):
+        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
+
+    def test_a_chain_of_admitted_reads_is_permitted(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                # The 2026-08-13 refusal, verbatim from the operator's report.
+                'git log --oneline -12 && echo "---STATUS---" && git status --short',
+                # GHI #800's own canonical example. Its `uv run gz git-sync`
+                # segment is admitted UNCONDITIONALLY by `_ALWAYS_AUTHORIZED_BASH`,
+                # so refusing this chain also refused the standing operator ruling
+                # that a git-sync is "never, never, never, ever" gated.
+                'git status --short && echo "---" && uv run gz git-sync',
+                "ls && git log",
+                "git status; git diff",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_one_unadmitted_segment_refuses_the_whole_command(self) -> None:
+        """Admission is unanimous or it is nothing.
+
+        The redirect and pipe cases are the load-bearing ones: they now refuse
+        because the redirect TARGET and the filter are segments matching no
+        allowlisted head, not because an operator token was seen. That is the
+        same verdict by a different route, which is why it needs its own witness.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git status --short && rm -rf src",
+                "ls && git log && sed -i s/a/b/ f",
+                # Redirect: `out.txt` is a segment, and it is not admitted.
+                "git log --oneline && git status > out.txt",
+                # Pipe: `tee` is not an admitted verb.
+                "git status && git log | tee /tmp/x",
+                # Substitution inside an otherwise wholly-admitted chain.
+                "git status && echo `rm -rf src`",
+                'git status && echo "$(rm -rf src)"',
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+
 class ResumeGateDoesNotRevokeTheAuthorsClearanceTests(unittest.TestCase):
     """Authoring a handoff is not resuming one (GHI #755).
 
@@ -841,8 +909,8 @@ class ResumeGateProseTests(unittest.TestCase):
             reason = decide(base, session_id=_SESSION, tool_name="Write").reason
             self.assertIn(f"--session-id {_SESSION}", reason)
 
-    def test_block_prose_names_shape_as_the_cause_when_every_part_was_admissible(self) -> None:
-        """A shape refusal must not read as an authorization refusal.
+    def test_block_prose_names_the_refused_part_of_a_mixed_command(self) -> None:
+        """A mixed chain must name WHICH part refused, not just that one did.
 
         Dogfooding regression (2026-08-12): a session opened a resume with
         `git status --short && uv run gz git-sync`. Both halves are admitted —
@@ -851,7 +919,12 @@ class ResumeGateProseTests(unittest.TestCase):
         Every reason the prose then gave was about the operator not having ruled,
         so the session concluded the standing "never gate a git-sync" ruling had
         regressed and asked the operator to re-fix a defect that had landed three
-        days earlier. The prose must name the cause it actually acted on.
+        days earlier. **That exact command is now permitted outright** (GHI #800,
+        operator ruling 2026-08-13), which is the stronger fix; what survives here
+        is the residual case the note still owns — a genuinely MIXED command.
+
+        The refused segment is the one fact the caller cannot derive: it can see
+        its own command, but not the allowlist that judged it.
         """
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -860,21 +933,19 @@ class ResumeGateProseTests(unittest.TestCase):
                 base,
                 session_id=_SESSION,
                 tool_name="Bash",
-                tool_input={"command": 'git status --short && echo "x" && uv run gz git-sync'},
+                tool_input={"command": "git status --short && rm -rf build && uv run gz git-sync"},
             ).reason
-            self.assertIn("SHAPE", reason, "the prose must name the cause it acted on")
-            # The admissible parts are quoted back so the caller can reissue them
+            self.assertIn("rm -rf build", reason, "the prose must name what refused")
+            # The admitted parts are quoted back so the caller can reissue them
             # without re-deriving the allowlist it cannot read.
             self.assertIn("git status --short", reason)
             self.assertIn("uv run gz git-sync", reason)
-            # `echo` is not on any allowlist, so the note must not offer it back.
-            self.assertNotIn('echo "x"', reason)
 
-    def test_shape_note_is_withheld_when_no_part_would_be_admitted(self) -> None:
+    def test_mixed_note_is_withheld_when_no_part_would_be_admitted(self) -> None:
         """The note is driven by the predicates, not printed for every compound.
 
-        Without this, "refused for its SHAPE, not its verbs" would be asserted
-        over a chained `rm -rf` — false, and an invitation to reissue it bare.
+        Without this, "these parts are permitted RIGHT NOW" would be printed over
+        a chained `rm -rf` — false, and an invitation to reissue it bare.
         """
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -885,7 +956,8 @@ class ResumeGateProseTests(unittest.TestCase):
                 tool_name="Bash",
                 tool_input={"command": "rm -rf build && chmod 777 dist"},
             ).reason
-            self.assertNotIn("SHAPE", reason)
+            self.assertNotIn("permitted RIGHT NOW", reason)
+            self.assertNotIn("mixed admitted and unadmitted", reason)
             self.assertIn("BLOCKED", reason, "the ordinary refusal still stands")
 
 

@@ -244,6 +244,13 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
     ("wc",),
     ("jq",),
     ("pwd",),
+    # Read-only by construction in the strictest sense: `echo` has no write form
+    # at all — it writes to stdout, and directing that at a file takes a redirect
+    # whose TARGET is then its own segment matching no head here (GHI #800).
+    # Admitted because a chain's separator prose (`echo "---"`) is the shape
+    # operators actually type, and without it the all-segments-admitted rule
+    # below could not discharge GHI #800's own canonical example.
+    ("echo",),
 )
 
 #: Ceremonies that are ALWAYS authorized, ruled handoff or not. Held SEPARATE
@@ -591,11 +598,20 @@ def _is_compound(command: str) -> bool:
     the same two facts, and a second copy of them is how the two gates would come
     to disagree about what a pipe is.
 
-    **This breadth is RULED CORRECT AS DESIGNED** — operator, 2026-08-12, GHI #800,
-    verbatim: *"disposition 1 — record the ruling, no code change"*. A command whose
-    every segment is individually admitted is STILL refused, and that is intended:
-    the two lexer facts above are the reason, and narrowing to "admit when all
-    segments are admitted" would reopen both holes they name. Do not re-derive this.
+    **This predicate no longer decides admission on its own — SUPERSEDED in part by
+    the operator ruling of 2026-08-13** (GHI #800, verbatim: *"I want this fixed
+    now, highest priority, I can't tolerate this"*), which reversed the 2026-08-12
+    disposition-1 ruling (*"record the ruling, no code change"*) recorded here
+    previously. A command whose every segment is individually admitted is now
+    PERMITTED — see :func:`_compound_is_wholly_admitted`, which owns that decision.
+
+    The superseded rationale claimed narrowing "would reopen both holes" named by
+    the two lexer facts above. **That claim was wrong**, and GHI #800's own body had
+    already said so: admission re-enters the real predicates per segment, so
+    :func:`_can_expand` still fires on substitution INSIDE each segment and a
+    redirect still refuses because its target matches no allowlisted head. This
+    function remains the sole authority on *what is compound*; it is simply no
+    longer the last word on *what is refused*.
 
     The ruling is recorded HERE, in the function it governs, because the question
     had been re-litigated at least five times across three sessions with no home:
@@ -647,24 +663,80 @@ def _bash_is_always_authorized(command: str) -> bool:
     return any(tuple(tokens[: len(allowed)]) == allowed for allowed in _ALWAYS_AUTHORIZED_BASH)
 
 
-def _admissible_segments(command: str) -> list[str]:
-    """Return the parts of a compound command each predicate would admit alone.
+def _segments(command: str) -> list[str]:
+    """Split a compound command into its individually-checkable parts.
 
-    Derived by re-running the REAL predicates on each segment, never by re-reading
-    the allowlists: a second copy of the membership test is how this prose would
-    come to promise an admission the gate then refuses. Segments carry no operator
-    by construction, so :func:`_is_compound` is inert inside each call.
+    ONE splitter, two readers — :func:`_compound_is_wholly_admitted` decides with
+    it and :func:`_shape_refusal_note` explains with it. A second copy is how the
+    gate would come to refuse a command its own prose promised was admissible.
     """
     tokens = tokenize_shell(command)
     if tokens is None:
         return []
     operators = frozenset(token for token in tokens if _is_shell_operator(token))
-    segments = (shlex.join(part) for part in split_on(tokens, operators) if part)
-    return [
-        segment
-        for segment in segments
-        if _bash_is_read_only(segment) or _bash_is_always_authorized(segment)
-    ]
+    return [shlex.join(part) for part in split_on(tokens, operators) if part]
+
+
+def _segment_is_admitted(segment: str) -> bool:
+    """Return True when a lone segment is admitted by the REAL predicates.
+
+    Never by re-reading the allowlists: a second copy of the membership test is
+    how this would come to promise an admission the gate then refuses. Segments
+    carry no operator by construction, so :func:`_is_compound` inside each call
+    is checking only for what tokenization cannot see — substitution.
+    """
+    return _bash_is_read_only(segment) or _bash_is_always_authorized(segment)
+
+
+def _compound_is_wholly_admitted(command: str) -> bool:
+    """Return True when EVERY segment of a compound command is admitted alone.
+
+    **Operator ruling 2026-08-13 (GHI #800), verbatim: "I want this fixed now,
+    highest priority, I can't tolerate this."** This REVERSES the 2026-08-12
+    disposition-1 ruling ("record the ruling, no code change") that
+    :func:`_is_compound`'s docstring had recorded as settled.
+
+    That rationale claimed narrowing "would reopen both holes" named by the two
+    lexer facts. **It does not**, and GHI #800's own body already said so:
+    admission is decided by re-entering :func:`_segment_is_admitted`, which calls
+    :func:`_bash_is_read_only`, which calls :func:`_is_compound` — so
+    :func:`_can_expand` still fires on a backtick or ``$(`` INSIDE each segment.
+    A redirect refuses on the same route by a different fact: ``git log > out.txt``
+    splits to ``git log`` and ``out.txt``, and ``out.txt`` matches no allowlisted
+    head. Neither hole is reached by the operator token at all.
+
+    The friction being removed was measured, not theoretical: the refusal prose
+    listed the refused segments back to the caller as "permitted RIGHT NOW", so
+    the gate spent its own recovery text proving it held the information to admit
+    and declined to use it. Observed at least six times across four sessions
+    (GHI #800 § Class of failure, plus the 2026-08-13 report that produced this).
+
+    **Still refused, deliberately:** a redirect (its target is never an admitted
+    head), a pipe into an unadmitted filter, any substitution, and ``2>&1`` —
+    whose ``1`` is a segment matching no head. Admitting a redirect would require
+    modeling targets, which is a different question from chaining and is not
+    ruled.
+    """
+    if not _is_compound(command):
+        return False
+    segments = _segments(command)
+    return bool(segments) and all(_segment_is_admitted(segment) for segment in segments)
+
+
+def _admissible_segments(command: str) -> list[str]:
+    """Return the parts of a compound command each predicate would admit alone."""
+    return [segment for segment in _segments(command) if _segment_is_admitted(segment)]
+
+
+def _refused_segments(command: str) -> list[str]:
+    """Return the parts that are NOT admitted — the actionable half of the prose.
+
+    Since GHI #800 a wholly-admitted compound is permitted outright, so any
+    command still reaching :func:`_shape_refusal_note` has at least one refused
+    segment. Naming it is what makes the note a recovery instead of an
+    observation (`.gzkit/rules/guardrail-feedback-prose.md` § Invariant).
+    """
+    return [segment for segment in _segments(command) if not _segment_is_admitted(segment)]
 
 
 def _shape_refusal_note(command: str) -> str:
@@ -682,19 +754,28 @@ def _shape_refusal_note(command: str) -> str:
     made the command surprising and the ordinary prose is already correct —
     claiming "refused for its shape, not its verbs" over a chained ``rm -rf``
     would be false.
+
+    Since GHI #800 a WHOLLY-admitted chain is permitted outright, so anything
+    reaching here is a genuine mix: at least one segment is admitted and at least
+    one is not. The note therefore names the REFUSED segment first — that is the
+    single fact the caller needs and the one the pre-#800 prose never carried,
+    which is why it read as an unexplained shape refusal.
     """
     if not command or not _is_compound(command):
         return ""
     admissible = _admissible_segments(command)
-    if not admissible:
+    refused = _refused_segments(command)
+    if not admissible or not refused:
         return ""
+    blocked_list = "\n".join(f"    {segment}" for segment in refused)
     listed = "\n".join(f"    {segment}" for segment in admissible)
     return (
-        "WHAT YOU RAN was refused for its SHAPE, not its verbs — it chains, "
-        "redirects, or substitutes, and a compound command is refused before any "
-        "verb is read so nothing rides in on an allowlisted prefix. Reissue each "
-        "part as its own bare call. These parts are permitted RIGHT NOW, with no "
-        "ruling and exactly as written:\n"
+        "WHAT YOU RAN mixed admitted and unadmitted parts. A chain whose every "
+        "part is admitted runs as-is; this one does not, so it was refused whole "
+        "rather than partly executed. THIS is the part that is not admitted:\n"
+        f"{blocked_list}\n"
+        "These parts are permitted RIGHT NOW, with no ruling and exactly as "
+        "written — reissue them without the part above:\n"
         f"{listed}\n\n"
     )
 
@@ -782,7 +863,13 @@ def decide(
     if is_resume_authorized(project_root, session_id):
         return Verdict(blocked=False)
     command = str((tool_input or {}).get("command", "")) if tool_name == "Bash" else ""
-    if command and (_bash_is_always_authorized(command) or _bash_is_read_only(command)):
+    if command and (
+        _bash_is_always_authorized(command)
+        or _bash_is_read_only(command)
+        # A chain whose every segment is admitted alone (GHI #800, operator
+        # ruling 2026-08-13 reversing the 2026-08-12 disposition).
+        or _compound_is_wholly_admitted(command)
+    ):
         return Verdict(blocked=False)
     return Verdict(
         blocked=True,
