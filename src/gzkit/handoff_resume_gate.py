@@ -590,6 +590,26 @@ def _is_compound(command: str) -> bool:
     — the verifier-exit-status gate (GHI #589) reads the same command strings with
     the same two facts, and a second copy of them is how the two gates would come
     to disagree about what a pipe is.
+
+    **This breadth is RULED CORRECT AS DESIGNED** — operator, 2026-08-12, GHI #800,
+    verbatim: *"disposition 1 — record the ruling, no code change"*. A command whose
+    every segment is individually admitted is STILL refused, and that is intended:
+    the two lexer facts above are the reason, and narrowing to "admit when all
+    segments are admitted" would reopen both holes they name. Do not re-derive this.
+
+    The ruling is recorded HERE, in the function it governs, because the question
+    had been re-litigated at least five times across three sessions with no home:
+    twice concluding *"correct behavior and not a defect"*
+    (`.gzkit/handoffs/20260802T235444Z-…:17`), once *"a refusal caused by the
+    caller, not a gate defect"* (`…20260802T181052Z-…:17`), and once filed as
+    *"[tracked] … Open, untouched"* (`…20260802T082457Z-…:64`) against GHI #732 —
+    which then closed on the unrelated verb-membership arm, taking the concern with
+    it. A ruling kept in handoff prose is invisible to the close review of the issue
+    it was filed against; kept in the docstring, the next reader finds it first.
+
+    Callers are not left to infer the refusal: :func:`_shape_refusal_note` names
+    shape as the cause and quotes back the segments that would each be admitted
+    bare, so the friction is a re-read rather than a misdiagnosis.
     """
     tokens = tokenize_shell(command)
     if tokens is None:
