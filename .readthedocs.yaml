@@ -29,6 +29,10 @@
 # (cheap). The pre_build hook below remains as belt-and-suspenders so the
 # file-level contract is enforced even if the admin config drifts.
 #
+# The four toggles above are tracked at GHI #801 — open by credential boundary,
+# not by omission. They are dashboard-only: RTD's config-file v2 schema has no
+# `default_version` key, so no edit to THIS file can apply them.
+#
 # MEASURED 2026-08-13 (none of the toggles above had been applied):
 #   - 71 tag versions exist; every one is active=False, built=False.
 #   - `stable` (type=tag) builds successfully on each new tag — last success
