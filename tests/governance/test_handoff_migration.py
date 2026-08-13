@@ -17,7 +17,11 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
+from gzkit.handoff_validation import (
+    HandoffValidationError,
+    continues_from_refs,
+    parse_frontmatter,
+)
 from gzkit.traceability import covers
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -115,6 +119,16 @@ class HandoffMigrationStateTests(unittest.TestCase):
         stay wholly canonical and this invariant is not affected by archiving;
         the production resolver is exercised directly in
         ``test_handoff_archive.py::test_chain_survives_real_resolver_after_archive``.
+
+        EVERY ref, not the first, and never by branching on the type here.
+        ``continues_from`` became ``str | list[str]`` under GHI #790 so a handoff
+        collapsing a forked chain can name all its parents, and this reader was
+        the one consumer left reading it as a scalar — it called ``.strip()`` on
+        the value and raised ``AttributeError`` the first time a multi-parent
+        handoff reached the corpus, so the whole invariant went unchecked rather
+        than reporting a broken pointer. ``handoff_validation`` states the rule
+        at the field itself: *"never branch on the type at a call site"*; the
+        fold is the single reader for both shapes.
         """
         broken: list[str] = []
         for path in _canonical_handoffs():
@@ -124,14 +138,12 @@ class HandoffMigrationStateTests(unittest.TestCase):
                 # Some legacy handoffs predate the frontmatter schema; with no
                 # frontmatter there is no continues_from pointer to resolve.
                 continue
-            pointer = (frontmatter.get("continues_from") or "").strip()
-            if not pointer:
-                continue
-            # A pointer either names a repo-relative path or a bare filename
-            # resolved against the canonical store.
-            target = _REPO_ROOT / pointer if "/" in pointer else _CANONICAL_DIR / pointer
-            if not target.is_file():
-                broken.append(f"{path.name} -> {pointer}")
+            for pointer in continues_from_refs(frontmatter.get("continues_from")):
+                # A pointer either names a repo-relative path or a bare filename
+                # resolved against the canonical store.
+                target = _REPO_ROOT / pointer if "/" in pointer else _CANONICAL_DIR / pointer
+                if not target.is_file():
+                    broken.append(f"{path.name} -> {pointer}")
         self.assertEqual(
             broken,
             [],
