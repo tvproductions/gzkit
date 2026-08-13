@@ -97,10 +97,38 @@ def _registry_declarations() -> dict[str, str | None]:
     return {record.claim_id: record.exempts for record in get_enforcement_registry()}
 
 
+def _registry_gate_hints() -> dict[str, str]:
+    """Return ``{claim_id: where to read this claim's gate}`` (GHI #798).
+
+    Draining one disclosed entry means DECLARING ``exempts`` for it, and that
+    judgment needs the gate the claim actually enforces. The registry used to
+    record only the claim's witness -- ``source_file`` pointing at the
+    negative-control shim -- so the reader walked the delegation chain by hand,
+    71 times, and two heuristics that tried to shortcut it matched 0 of 70 and
+    7 of 71.
+
+    ``gate_targets`` carries the delegation when the entrypoint is a shim. When it
+    is empty the entrypoint either IS the gate (co-located, e.g. the resume-gate
+    controls) or drives a subprocess, and ``source_fn`` is the honest place to
+    send the reader in both cases.
+    """
+    from gzkit.enforcement import (  # noqa: PLC0415  (avoids an import cycle)
+        _ensure_production_claims_registered,
+        get_enforcement_registry,
+    )
+
+    _ensure_production_claims_registered()
+    return {
+        record.claim_id: ", ".join(record.gate_targets) if record.gate_targets else record.source_fn
+        for record in get_enforcement_registry()
+    }
+
+
 def audit_exemption_controls(
     project_root: Path,
     *,
     declarations: dict[str, str | None] | None = None,
+    gate_hints: dict[str, str] | None = None,
 ) -> list[ValidationError]:
     """Flag every undeclared claim not on the accepted-list, and every stale acceptance.
 
@@ -122,6 +150,8 @@ def audit_exemption_controls(
         return [load_error]
 
     declared = _registry_declarations() if declarations is None else declarations
+    if gate_hints is None:
+        gate_hints = _registry_gate_hints() if declarations is None else {}
     if not declared:
         return [
             _err(
@@ -173,13 +203,15 @@ def audit_exemption_controls(
     for claim, exempts in sorted(declared.items()):
         if exempts is None:
             if claim not in accepted_ids:
+                hint = gate_hints.get(claim, "")
+                where = f" Its gate is {hint} — read that surface for an exemption." if hint else ""
                 errors.append(
                     _err(
                         "enforcement-registry",
                         f"Enforcement claim {claim!r} has not declared whether its gate has an "
-                        f"exemption surface, and is not on the disclosed list. Declare it: pass "
-                        f"exempts={EXEMPTS_NONE!r} if the gate has no exemption, or the claim id "
-                        f"of the control that exercises it. NEVER add an entry to "
+                        f"exemption surface, and is not on the disclosed list.{where} Declare it: "
+                        f"pass exempts={EXEMPTS_NONE!r} if the gate has no exemption, or the claim "
+                        f"id of the control that exercises it. NEVER add an entry to "
                         f"{ACCEPTED_REL.name} to silence a newly-authored claim — declare it "
                         f"instead; that is the laundering ADR-0.0.73 Boundary Invariant #8 "
                         f"forbids. Re-run `{_RECOVER}`.",

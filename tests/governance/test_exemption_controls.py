@@ -18,6 +18,7 @@ from tempfile import TemporaryDirectory
 from gzkit.enforcement import EXEMPTS_NONE
 from gzkit.governance.trust_audits.exemption_controls import (
     ACCEPTED_REL,
+    _registry_gate_hints,
     audit_exemption_controls,
 )
 
@@ -71,6 +72,49 @@ class UndeclaredClaimsAreDisclosedTests(unittest.TestCase):
             # output-contract: this prose IS the next agent's prompt.
             self.assertIn("NEVER add an entry", message)
             self.assertIn("exempts=", message)
+
+
+class TheDisclosureNamesWhereToReadTheGateTests(unittest.TestCase):
+    """Disclosure must be a work order, not just a count (GHI #798).
+
+    Draining one entry means declaring `exempts` for it, and that decision needs
+    the gate the claim's entrypoint delegates to. Until the record carried its
+    subject, the reader had to walk `_qc_nc_entrypoints.py` by hand -- 71 times.
+    """
+
+    def test_the_finding_names_the_gate_to_read(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_accepted(root, [])
+            message = audit_exemption_controls(
+                root,
+                declarations={"new-claim": None},
+                gate_hints={"new-claim": "gzkit.governance.trust_audits.taxonomy:audit_x"},
+            )[0].message
+            self.assertIn("gzkit.governance.trust_audits.taxonomy:audit_x", message)
+
+    def test_an_unresolvable_gate_leaves_the_finding_intact(self) -> None:
+        """No hint must not degrade the finding into a dangling clause."""
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_accepted(root, [])
+            message = audit_exemption_controls(
+                root, declarations={"new-claim": None}, gate_hints={}
+            )[0].message
+            self.assertIn("new-claim", message)
+            self.assertNotIn("Its gate is .", message)
+
+    def test_a_delegating_claim_resolves_to_the_gate_it_calls(self) -> None:
+        hints = _registry_gate_hints()
+        self.assertIn("taxonomy:audit_foundation_closure", hints["adr-taxonomy"])
+
+    def test_a_claim_that_is_its_own_gate_resolves_to_itself(self) -> None:
+        """A co-located entrypoint has no delegation to read, and `source_fn`
+        already names the gate -- so the hint falls back to it rather than
+        reporting the claim as unresolvable.
+        """
+        hints = _registry_gate_hints()
+        self.assertIn("verifier_pipe_gate", hints["verifier-exit-status-masked"])
 
 
 class DeclarationsMustResolveTests(unittest.TestCase):

@@ -14,6 +14,7 @@ kwarg (§ Boundary Invariants #7; the runner in OBPI-16 invokes it).
 
 from __future__ import annotations
 
+import dis
 import re
 import shutil
 import types
@@ -36,6 +37,11 @@ _CLAIM_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 #: point for chores — the property must be DECLARED, not inferred, because
 #: inference reads a state some other surface is free to overwrite.
 EXEMPTS_NONE = "none"
+
+#: Package prefix identifying an import as a gzkit gate rather than a stdlib
+#: helper. A subprocess-backed entrypoint imports ``sys``/``pathlib`` to build its
+#: argv, and naming those as gates would be worse than naming nothing.
+_GATE_PACKAGE_PREFIX = "gzkit."
 
 _ENFORCEMENT_REGISTRY: list[EnforcementClaimRecord] = []
 _KNOWN_CLAIMS: frozenset[str] | None = None
@@ -82,6 +88,16 @@ class EnforcementClaimRecord(BaseModel):
             "exemption, and it must be registered."
         ),
     )
+    gate_targets: tuple[str, ...] = Field(
+        default=(),
+        description=(
+            "The claim's SUBJECT: gzkit callables the entrypoint delegates to, as "
+            "'module:name', derived from its own imports at decoration time (GHI #798). "
+            "Empty when the entrypoint IS the gate (read `source_fn`) or delegates to a "
+            "subprocess. Producer-stamped because the delegation is a runtime fact, "
+            "unlike `exempts`, which is an authoring judgment."
+        ),
+    )
 
 
 def _qualified_fn_name(fn: object) -> str:
@@ -89,6 +105,42 @@ def _qualified_fn_name(fn: object) -> str:
     module = getattr(fn, "__module__", None) or "<unknown>"
     qualname = getattr(fn, "__qualname__", None) or getattr(fn, "__name__", "<unknown>")
     return f"{module}.{qualname}"
+
+
+def _derive_gate_targets(entrypoint: object) -> tuple[str, ...]:
+    """Return the gzkit callables ``entrypoint`` delegates to, as ``module:name``.
+
+    **Reads the delegation; does not infer it (GHI #798).** The registry recorded a
+    claim's WITNESS -- ``source_file`` points at the negative-control shim -- but
+    never its SUBJECT, so every consumer asking "what does this claim gate?" walked
+    the chain by hand. Two heuristics failed at that: a naming-convention scan over
+    ``source_file`` matched 0 of 70, and correlating claim ids against module stems
+    matched 7 of 71, missing known-true pairs because claim ids are not derived from
+    gate module names.
+
+    Both asked the registry what it had STORED. This asks the callable the registry
+    HOLDS: the shim's own ``from gzkit.… import …`` statements ARE the delegation, so
+    reading its bytecode reports a fact rather than a convention about one. That is
+    the same producer-vs-judgment split ``.claude/rules/task-discovery.md`` draws --
+    ``exempts`` stays DECLARED because no runtime can decide whether a gate has an
+    exemption surface, while the delegated gate is runtime-known and is stamped.
+
+    An empty result is honest silence, never a failure: an entrypoint co-located with
+    its gate is already named by ``source_fn``, and a subprocess-backed one delegates
+    to a command (``uv run ruff check .``) with no gzkit callable to name.
+    """
+    code = getattr(entrypoint, "__code__", None)
+    if not isinstance(code, types.CodeType):
+        return ()
+
+    targets: list[str] = []
+    module: str | None = None
+    for instruction in dis.get_instructions(code):
+        if instruction.opname == "IMPORT_NAME":
+            module = str(instruction.argval)
+        elif instruction.opname == "IMPORT_FROM" and module is not None:
+            targets.append(f"{module}:{instruction.argval}")
+    return tuple(t for t in targets if t.startswith(_GATE_PACKAGE_PREFIX))
 
 
 def _load_known_claims() -> frozenset[str]:
@@ -173,6 +225,7 @@ def enforces(
         source_line = code.co_firstlineno
 
     source_fn = _qualified_fn_name(entrypoint)
+    gate_targets = _derive_gate_targets(entrypoint)
 
     def decorator(fn: _EF) -> _EF:
         record = EnforcementClaimRecord(
@@ -184,6 +237,7 @@ def enforces(
             source_line=source_line,
             expect=expect,
             exempts=exempts,
+            gate_targets=gate_targets,
         )
         _ENFORCEMENT_REGISTRY.append(record)
         return fn

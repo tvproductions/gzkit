@@ -251,6 +251,146 @@ class TestEnforcesMetadataOnly(unittest.TestCase):
         self.assertNotIsInstance(record.fixture, functools.partial)
 
 
+class ClaimRecordsItsDelegatedGateTests(unittest.TestCase):
+    """A claim record names the gate its entrypoint delegates to (GHI #798).
+
+    The registry recorded a claim's WITNESS (the negative-control shim) but never
+    its SUBJECT (the gate the shim calls), so every consumer asking "what does
+    claim X actually gate?" had to walk the delegation chain by hand. Two
+    heuristics failed on it -- naming-convention scan 0 of 70, module-stem
+    correlation 7 of 71 -- because both asked the registry what it had STORED.
+    The delegation is recoverable because the registry HOLDS the live callable.
+    """
+
+    def setUp(self) -> None:
+        reset_enforcement_registry()
+        set_known_claims(_TEST_CLAIMS)
+
+    def tearDown(self) -> None:
+        reset_enforcement_registry()
+
+    def test_shim_entrypoint_names_the_gate_it_delegates_to(self) -> None:
+        def _fixture() -> str:
+            return "v"
+
+        def _shim(root: Any) -> list[Any]:
+            from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+                audit_adr_status_fresh,
+            )
+
+            return audit_adr_status_fresh(root)
+
+        @enforces("lint", _fixture, _shim)
+        def _marker() -> None:
+            pass
+
+        record = get_enforcement_registry()[0]
+        self.assertEqual(
+            record.gate_targets,
+            ("gzkit.governance.trust_audits.taxonomy:audit_adr_status_fresh",),
+        )
+
+    def test_a_shim_delegating_to_several_gates_names_all_of_them(self) -> None:
+        """Multi-gate delegation is real -- adr-taxonomy calls two."""
+
+        def _fixture() -> str:
+            return "v"
+
+        def _shim(root: Any) -> list[Any]:
+            from gzkit.governance.trust_audits.taxonomy import (  # noqa: PLC0415
+                audit_foundation_closure,
+                audit_obpi_lifecycle_coherence,
+            )
+
+            return audit_foundation_closure(root) + audit_obpi_lifecycle_coherence(root)
+
+        @enforces("lint", _fixture, _shim)
+        def _marker() -> None:
+            pass
+
+        self.assertEqual(
+            get_enforcement_registry()[0].gate_targets,
+            (
+                "gzkit.governance.trust_audits.taxonomy:audit_foundation_closure",
+                "gzkit.governance.trust_audits.taxonomy:audit_obpi_lifecycle_coherence",
+            ),
+        )
+
+    def test_a_non_delegating_entrypoint_names_no_gate(self) -> None:
+        """Silence is honest: `source_fn` already IS the gate for a co-located
+        entrypoint, and a subprocess-backed one has no gzkit callable at all.
+        Naming the shim's own module here would assert a gate that does not exist.
+        """
+
+        def _fixture() -> str:
+            return "v"
+
+        def _entrypoint(v: Any) -> list[Any]:
+            return []
+
+        @enforces("lint", _fixture, _entrypoint)
+        def _marker() -> None:
+            pass
+
+        self.assertEqual(get_enforcement_registry()[0].gate_targets, ())
+
+    def test_non_gzkit_imports_are_not_mistaken_for_gates(self) -> None:
+        """A shim importing stdlib to drive a subprocess delegates to no gate."""
+
+        def _fixture() -> str:
+            return "v"
+
+        def _shim(root: Any) -> int:
+            import sys  # noqa: PLC0415
+            from pathlib import Path  # noqa: PLC0415
+
+            return len(str(Path(sys.executable)))
+
+        @enforces("lint", _fixture, _shim)
+        def _marker() -> None:
+            pass
+
+        self.assertEqual(get_enforcement_registry()[0].gate_targets, ())
+
+
+class LiveRegistryResolvesTheKnownTruePairsTests(unittest.TestCase):
+    """The production population resolves the pairs both heuristics missed (GHI #798).
+
+    `adr-taxonomy` -> `taxonomy.py` and `surface-fidelity-surface-weight` ->
+    the surface-fidelity gate are the two the issue names as known-true misses of
+    the module-stem correlation. They are the regression witness: if a future
+    change re-breaks resolution, these are what silently stop resolving.
+    """
+
+    def test_the_two_pairs_the_stem_heuristic_missed_now_resolve(self) -> None:
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        by_id = {r.claim_id: r for r in get_enforcement_registry()}
+
+        self.assertIn(
+            "gzkit.governance.trust_audits.taxonomy:audit_foundation_closure",
+            by_id["adr-taxonomy"].gate_targets,
+        )
+        self.assertIn(
+            "gzkit.governance.trust_audits:validate_surface_fidelity",
+            by_id["surface-fidelity-surface-weight"].gate_targets,
+        )
+
+    def test_most_of_the_live_population_resolves_to_a_gate(self) -> None:
+        """A resolution that covers a handful of claims would not have discharged
+        the drain. The floor is stated as a proportion of the live population so
+        it tracks the registry rather than pinning a count that rots.
+        """
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        records = get_enforcement_registry()
+        resolved = [r for r in records if r.gate_targets]
+
+        self.assertGreater(len(resolved) / len(records), 0.5)
+
+
 class TestEnforcesStructuralFence(unittest.TestCase):
     """Single enforcement-claim surface — no second NC framework forked (REQ-15-04)."""
 
