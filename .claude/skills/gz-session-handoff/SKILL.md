@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.26.0"
+  skill-version: "6.27.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-08
+last_reviewed: 2026-08-13
 model: sonnet
 ---
 
@@ -410,10 +410,21 @@ with, and an un-compliable gate gets worked around.
 forbidden by AGENTS.md § Behavior Rules — Always #13 (author GHIs through
 `/ghi-author`), and `gh api` is excluded because `-X POST` mutates.
 
-Everything else fails closed — including compound commands (`gz state && rm -rf x`
-is not a read of `gz state`), command substitution in **any** quoting form
+**A chain whose EVERY part is admitted runs as-is** (operator ruling 2026-08-13,
+GHI #800) — `git log --oneline -12 && echo "---" && git status --short` is three
+admitted reads and is permitted, as is `git status --short && uv run gz git-sync`,
+whose second half is admitted unconditionally. Admission is decided per part by
+re-entering the same predicates, so nothing rides in on an allowlisted prefix:
+a *mixed* chain (`git status && rm -rf src`) is refused **whole**, never partly
+executed, and the refusal names the offending part. This reverses the earlier
+disposition that refused every compound on shape alone.
+
+Everything else still fails closed — command substitution in **any** quoting form
 (`"$(…)"` expands under bash, and posix tokenization cannot tell it from the
-inert `'$(…)'`, so both are refused), and any verb carrying a write form at all
+inert `'$(…)'`, so both are refused, including inside an otherwise-admitted
+chain), redirection (`> out.txt` — the target is a part, and it matches no
+allowlisted head, which is also why `2>&1` is still refused), a pipe into an
+unadmitted filter, and any verb carrying a write form at all
 (`find`, `sed`, `awk`, `tee` — refused at the head, not merely flag-guarded; the
 mutating-flag set is defense in depth beneath the predicate, never the membership
 test). Shell metacharacters *inside quotes* are data, not
