@@ -4,45 +4,56 @@
 # Trigger contract (release-only docs builds): mirrors the GitHub Actions
 # `.github/workflows/docs.yml` `on: release: published` trigger. Achieving
 # parity with GH Actions requires BOTH the file-level backstop below AND
-# three one-time toggles in the RTD project admin UI — RTD's webhook
+# admin-side configuration in the RTD project UI — RTD's webhook
 # subscription is admin-side, not file-side, so .readthedocs.yaml alone
 # cannot prevent webhook ingestion.
 #
-# RTD admin (one-time, https://app.readthedocs.org/projects/gzkit/):
-#   1. Settings → Default version = `stable`  ← DO THIS ONE FIRST
+# RTD admin (https://app.readthedocs.org/projects/gzkit/):
+#   1. Settings → Default version = `stable`  ← APPLIED 2026-08-13
 #      `latest` tracks a BRANCH, and the pre_build hook below cancels every
 #      branch build — so an active `latest` can never rebuild and freezes at
 #      whatever it held when the hook landed. Leaving it as the default points
-#      both front doors (gzkit.readthedocs.io AND the gzkit.org custom domain,
-#      which serves default_version) at permanently stale docs.
-#   2. Settings → uncheck "Build versions automatically"
-#      (stops RTD from auto-building newly pushed branches at ingestion)
-#   3. Versions → mark every branch-version Inactive, `latest` INCLUDED.
+#      gzkit.readthedocs.io at permanently stale docs.
+#   2. Versions → mark every branch-version Inactive, `latest` INCLUDED.
 #      Activate only the tag versions you want published.
-#   4. Automation Rules → add rule: match=tag, version-type=tag,
-#      action="Activate version + Build". OPTIONAL: this publishes per-version
-#      archives at /en/vX.Y.Z/. `stable` already rebuilds on every new tag
-#      without it, because `stable` is version-type=tag and so survives the
-#      pre_build cancel.
+#   3. Automation Rules → add rule: match=tag, version-type=tag,
+#      action="Activate version + Build". This is ALSO how the cancelled-build
+#      stream is stopped: once any enabled rule carries a build action, builds
+#      are GATED by the rules, so a branch push matching none triggers nothing.
+#      There is NO "Build versions automatically" checkbox — a prior revision of
+#      this runbook instructed unchecking one, and no such setting exists
+#      (verified 2026-08-13 against the API v3 project object, which exposes no
+#      such field, and RTD's own automation-rules documentation). OPTIONAL
+#      beyond stopping the stream: it publishes per-version archives at
+#      /en/vX.Y.Z/. `stable` already rebuilds on every new tag without it,
+#      because `stable` is version-type=tag and so survives the pre_build cancel.
 #
-# After those toggles, RTD short-circuits non-release webhooks at ingestion
-# (cheap). The pre_build hook below remains as belt-and-suspenders so the
-# file-level contract is enforced even if the admin config drifts.
+# The pre_build hook below remains as belt-and-suspenders so the file-level
+# contract is enforced even if the admin config drifts.
 #
-# The four toggles above are tracked at GHI #801 — open by credential boundary,
-# not by omission. They are dashboard-only: RTD's config-file v2 schema has no
-# `default_version` key, so no edit to THIS file can apply them.
+# gzkit.org is NOT a Read the Docs custom domain, and nothing in this file or in
+# the RTD admin reaches it. It is a self-hosted DigitalOcean VPS running Caddy,
+# deployed BY HAND (`git pull && uv run mkdocs build`) — see
+# docs/developer/deployment.md. Verified 2026-08-13: it resolves to
+# 68.183.108.119 and serves no /en/<version>/ path structure at all (both
+# /en/stable/ and /en/latest/ return 404). The `server: Caddy` response header
+# is what prior revisions mis-read as an RTD identification; RTD uses Caddy, but
+# so does any self-hosted Caddy box. `/en/<version>/` is the discriminator.
 #
-# MEASURED 2026-08-13 (none of the toggles above had been applied):
+# Item 1 was tracked at GHI #801, closed 2026-08-13. It was dashboard-only: RTD's
+# config-file v2 schema has no `default_version` key, so no edit to THIS file
+# could apply it.
+#
+# MEASURED 2026-08-13, after item 1 was applied:
+#   - default_version = `stable`. gzkit.readthedocs.io/ now 302s to /en/stable/,
+#     and a post-2026-05-05 page returns 200 there where it returned 404 before.
 #   - 71 tag versions exist; every one is active=False, built=False.
 #   - `stable` (type=tag) builds successfully on each new tag — last success
-#     2026-08-12. It is the ONLY current surface, and the README badge is
-#     correctly pointed at /en/stable/.
-#   - `latest` (type=branch, and default_version) has had EVERY build cancelled
-#     since the pre_build hook landed 2026-05-05 (f643fcab6). A doc page added
-#     after that date returns 404 on /en/latest/ and 200 on /en/stable/.
+#     2026-08-12. The README badge is correctly pointed at /en/stable/.
+#   - `latest` (type=branch) has had EVERY build cancelled since the pre_build
+#     hook landed 2026-05-05 (f643fcab6).
 #   - Every push to main still triggers a build that is then cancelled — 1383
-#     builds recorded, which is toggle 2 not being applied.
+#     builds recorded, which is item 3 above not yet being applied.
 #
 # The RTD API v3 is PUBLICLY READABLE for this project; no token is needed to
 # re-measure any of the above, and an earlier claim that it returns 403
