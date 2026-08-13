@@ -63,7 +63,7 @@ THE SESSION COMMIT SPLIT IS A STANDING FENCE, NOT A PREFERENCE. gz git-sync fail
 
 1. FLIP THE RTD DEFAULT VERSION, THEN CLOSE GHI #801. Operator-only and the single highest-value action available: Settings, Default version = stable, at the Read the Docs project admin page. Both documentation front doors have served 2026-05-05 content for roughly 100 days and this one toggle unfreezes them. Closing evidence needs no credentials -- curl the site root and expect a redirect to /en/stable/ rather than /en/latest/, and curl gzkit.org/config/gz-cookiecutter-python-stack/ and expect 200 where it currently returns 404. The other two toggles in the issue are hygiene and an optional per-version archive feature.
 
-2. PULL OBPI-0.35.0-01-corpus-tombstone-schema-and-fold. This is the campaign spine and it remains the topmost unchecked Movement A item whose gate is met. It was set aside twice in a row now, both times by explicit ruling rather than by neglect. Verified this session at 0 of 10 landed with all ten briefs in draft state and the ADR at Draft, which the 2026-08-12 lifecycle ruling settled as correct through implementation. Read the fold algebra from the ADR's Decision section rather than re-deriving it: single reverse pass, never a fixpoint iteration, and unset tombstone fields MUST be omitted from serialization or corpus_fingerprint re-fingerprints the whole corpus on the landing commit.
+2. PULL OBPI-0.35.0-01-corpus-tombstone-schema-and-fold. This is the campaign spine and it remains the topmost unchecked Movement A item whose gate is met. It was set aside twice in a row now, both times by explicit ruling rather than by neglect. Verified this session as unstarted with every brief still in draft state and the ADR at Draft, which the 2026-08-12 lifecycle ruling settled as correct through implementation; run uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing for the live landed count. Read the fold algebra from the ADR's Decision section rather than re-deriving it: single reverse pass, never a fixpoint iteration, and unset tombstone fields MUST be omitted from serialization or corpus_fingerprint re-fingerprints the whole corpus on the landing commit.
 
 3. DRAIN THE EXEMPTION CLAIMS NOW THAT THE MAPPING EXISTS. The 71 disclosed undeclared claims in data/exemption_control_grandfather.json are unblocked but undrained. Each entry now resolves to a named gate through the gz validate --exemption-controls finding itself, which states where to read. Drain by declaring exempts on each claim, either the no-exemption token or the claim id of the control that exercises it, and decrement baseline_count in data/waiver_ratchet_registry.json as entries are surrendered. Do not add entries to silence anything.
 
@@ -79,7 +79,7 @@ THE 71 DISCLOSED EXEMPTION CLAIMS REMAIN DISCLOSED. GHI #798 [settled] was the m
 
 THE EXEMPTION-CONTROLS GATE STILL OWES ITS OWN CONTROL. Its exemption surface is the accepted_claims list; promoting the covering unit tests to a registered exemption control needs the negative-control table to carry an exempts field. Disclosed with that reason in data/exemption_control_grandfather.json rather than silently exempted. Independent of GHI #798 [settled] and not fixed by it.
 
-ADR-0.35.0 IS UNSTARTED AT 0 OF 10 and was set aside by explicit ruling in each of the last two sessions. Its status is Draft and that is RULED correct through implementation; the Lifecycle column reading Pending is Layer-3 derived from the absence of completion events and is not drift.
+ADR-0.35.0 IS UNSTARTED, with no OBPI landed, and was set aside by explicit ruling in each of the last two sessions. Run uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing for the live count rather than trusting a figure transcribed here. Its status is Draft and that is RULED correct through implementation; the Lifecycle column reading Pending is Layer-3 derived from the absence of completion events and is not drift.
 
 GHI #799 IS OPEN AND BLOCKED ON THE CAMPAIGN SPINE, specifically ADR-0.35.0's OBPI-05 corpus-to-candidate generator and OBPI-07 orchestrator. Its blocker comment records all three declined arms so a future session cannot re-argue them cheaply.
 
@@ -94,7 +94,7 @@ THE VERIFIER-PIPE GATE'S SIBLING SURFACES WERE NOT AUDITED. This session fixed o
 uv run gz check                                            # exit 0, 55 steps; QC binding 42/55, Exemption controls 46/55, Enforcement floor 54/55 all green
 uv run -m unittest tests.governance.test_enforces_registry # 23 tests OK; includes the two GHI #798 known-true-pair regression witnesses
 uv run -m unittest tests.hooks.test_verifier_pipe_gate     # 34 tests OK
-uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing # 0/10 landed, frontmatter Draft, Lifecycle Pending -- different axes, RULED not drift
+uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing # read the landed count from Layer-2; frontmatter Draft vs Lifecycle Pending are different axes, RULED not drift
 git rev-list --left-right --count origin/main...HEAD       # 0 0
 git log --oneline -1                                       # 3a6a0771e
 gh issue view 798 --json number,state                      # CLOSED, fixed at 5494b4822
