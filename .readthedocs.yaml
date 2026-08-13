@@ -9,16 +9,43 @@
 # cannot prevent webhook ingestion.
 #
 # RTD admin (one-time, https://app.readthedocs.org/projects/gzkit/):
-#   1. Settings → uncheck "Build versions automatically"
+#   1. Settings → Default version = `stable`  ← DO THIS ONE FIRST
+#      `latest` tracks a BRANCH, and the pre_build hook below cancels every
+#      branch build — so an active `latest` can never rebuild and freezes at
+#      whatever it held when the hook landed. Leaving it as the default points
+#      both front doors (gzkit.readthedocs.io AND the gzkit.org custom domain,
+#      which serves default_version) at permanently stale docs.
+#   2. Settings → uncheck "Build versions automatically"
 #      (stops RTD from auto-building newly pushed branches at ingestion)
-#   2. Versions → mark every branch-version Inactive; activate only `latest`
-#      and the tag versions you want published
-#   3. Automation Rules → add rule: match=tag, version-type=tag,
-#      action="Activate version + Build" (auto-activates new tags)
+#   3. Versions → mark every branch-version Inactive, `latest` INCLUDED.
+#      Activate only the tag versions you want published.
+#   4. Automation Rules → add rule: match=tag, version-type=tag,
+#      action="Activate version + Build". OPTIONAL: this publishes per-version
+#      archives at /en/vX.Y.Z/. `stable` already rebuilds on every new tag
+#      without it, because `stable` is version-type=tag and so survives the
+#      pre_build cancel.
 #
 # After those toggles, RTD short-circuits non-release webhooks at ingestion
 # (cheap). The pre_build hook below remains as belt-and-suspenders so the
 # file-level contract is enforced even if the admin config drifts.
+#
+# MEASURED 2026-08-13 (none of the toggles above had been applied):
+#   - 71 tag versions exist; every one is active=False, built=False.
+#   - `stable` (type=tag) builds successfully on each new tag — last success
+#     2026-08-12. It is the ONLY current surface, and the README badge is
+#     correctly pointed at /en/stable/.
+#   - `latest` (type=branch, and default_version) has had EVERY build cancelled
+#     since the pre_build hook landed 2026-05-05 (f643fcab6). A doc page added
+#     after that date returns 404 on /en/latest/ and 200 on /en/stable/.
+#   - Every push to main still triggers a build that is then cancelled — 1383
+#     builds recorded, which is toggle 2 not being applied.
+#
+# The RTD API v3 is PUBLICLY READABLE for this project; no token is needed to
+# re-measure any of the above, and an earlier claim that it returns 403
+# unauthenticated is false (it blocked this check twice):
+#   curl -s https://app.readthedocs.org/api/v3/projects/gzkit/versions/?active=true
+#   curl -s https://app.readthedocs.org/api/v3/projects/gzkit/builds/
+# Only the WRITE side (applying the toggles) needs operator credentials.
 
 version: 2
 
