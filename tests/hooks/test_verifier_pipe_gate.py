@@ -265,5 +265,48 @@ class TestDecideContract(unittest.TestCase):
         self.assertIn("PIPESTATUS", reason, "next step: names the escape the clause allows")
 
 
+class TheRecoveryIsTheCallersOwnCommandTests(unittest.TestCase):
+    """The next step must be paste-ready, not a shape to translate.
+
+    `.claude/rules/guardrail-feedback-prose.md` — the feedback IS the prompt the
+    operator would otherwise have typed. Two permitted routes preserve the status;
+    the prose used to lead with the two-call file-capture one and demote the
+    one-call `pipefail` form to a clause behind "if you genuinely need the pipe",
+    so the reader took the expensive route 11 times in one session while the cheap
+    one sat unread. Both routes are still offered -- the ordering is the fix, and
+    the refusal predicate is untouched.
+    """
+
+    def test_the_next_step_hands_back_the_command_with_pipefail_prepended(self) -> None:
+        command = "uv run -m unittest tests.governance.test_enforces_registry -v 2>&1 | tail -30"
+        reason = decide("Bash", {"command": command}).reason
+        self.assertIn(f"set -o pipefail; {command}", reason)
+
+    def test_the_cheap_route_is_named_before_the_expensive_one(self) -> None:
+        """Ordering IS the defect: whichever route NEXT STEP names first is taken."""
+        reason = decide("Bash", {"command": "uv run gz check | tail -5"}).reason
+        self.assertLess(
+            reason.index("pipefail"),
+            reason.index("out.log"),
+            "the one-call escape must precede the two-call file capture",
+        )
+
+    def test_the_file_capture_route_survives_as_the_alternative(self) -> None:
+        """Reordering must not delete a working route -- inspecting a long
+        capture separately is legitimate, and only its precedence was wrong.
+        """
+        reason = decide("Bash", {"command": "uv run gz check | tail -5"}).reason
+        self.assertIn("out.log", reason)
+        self.assertIn("REAL EXIT", reason)
+
+    def test_a_multi_statement_command_is_handed_back_whole(self) -> None:
+        """Prepending to the whole command is what runs; rewriting only the
+        piped statement would hand back something the caller never typed.
+        """
+        command = 'grep -rn "x" docs/ ; uv run gz check | tail -5'
+        reason = decide("Bash", {"command": command}).reason
+        self.assertIn(f"set -o pipefail; {command}", reason)
+
+
 if __name__ == "__main__":
     unittest.main()

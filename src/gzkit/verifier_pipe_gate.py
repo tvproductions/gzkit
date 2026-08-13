@@ -288,12 +288,26 @@ def masked_verifier(command: str) -> str | None:
     return None
 
 
-def _block_prose(verifier: str) -> str:
+def _block_prose(verifier: str, command: str) -> str:
     """Three-part guardrail prose: what failed, why forbidden, governed next step.
 
     Per `.claude/rules/guardrail-feedback-prose.md` — the feedback IS the prompt
-    the operator would otherwise have typed, so it hands back the corrected
-    command shape rather than pointing at documentation.
+    the operator would otherwise have typed, so it hands back the caller's OWN
+    command corrected, never a shape to translate.
+
+    **Both permitted routes preserve the status; the ORDER is what gets acted on.**
+    This prose used to lead its ``NEXT STEP`` with the two-call file capture and
+    demote ``pipefail`` to a clause behind *"if you genuinely need the pipe"* —
+    phrasing that reads as a carve-out for an unusual need when wanting a tail of
+    the output is the normal case. Observed cost: an agent took the two-call route
+    eleven times in one session while the one-call escape sat unread in the same
+    message. Nothing is relaxed here — ``masked_verifier`` refuses exactly what it
+    refused before, and the file-capture route survives as the alternative it
+    always was.
+
+    ``command`` is prepended-to whole rather than rewritten per statement: what the
+    caller re-runs is the whole line, and ``pipefail`` is shell state that protects
+    every pipeline following the ``set``.
     """
     return (
         f"BLOCKED: Bash refused — this command pipes `{verifier}` into another "
@@ -305,12 +319,14 @@ def _block_prose(verifier: str) -> str:
         "always 0), masking a failing suite as a green run.' A harness 'exit code 0' "
         "on a piped verifier attests the filter, not the verifier, and that false "
         "green is what then gets relayed as attestation evidence.\n\n"
-        "NEXT STEP: capture to a file and read the real status:\n"
-        '  <your command> > out.log 2>&1; echo "REAL EXIT: $?"\n'
-        "then inspect `out.log` separately. If you genuinely need the pipe, opt in "
-        "explicitly with `set -o pipefail` or read `${PIPESTATUS[0]}` — both preserve "
-        "the verifier's status and are permitted. For attestation evidence, cite the "
-        "ARB receipt's `exit_status` (`uv run gz arb step ...`), never a piped run."
+        "NEXT STEP: re-run with pipefail, which keeps the pipe AND reports "
+        f"`{verifier}`'s own status. This is your command, corrected — paste it:\n"
+        f"  set -o pipefail; {command}\n\n"
+        "Or capture to a file if you would rather inspect the output separately:\n"
+        '  <your command> > out.log 2>&1; echo "REAL EXIT: $?"\n\n'
+        "Reading `${PIPESTATUS[0]}` after the pipeline is equally permitted. For "
+        "attestation evidence, cite the ARB receipt's `exit_status` "
+        "(`uv run gz arb step ...`), never a piped run."
     )
 
 
@@ -326,7 +342,7 @@ def decide(tool_name: str, tool_input: dict | None = None) -> Verdict:
     verifier = masked_verifier(command)
     if verifier is None:
         return Verdict(blocked=False)
-    return Verdict(blocked=True, reason=_block_prose(verifier))
+    return Verdict(blocked=True, reason=_block_prose(verifier, command))
 
 
 # ---------------------------------------------------------------------------
