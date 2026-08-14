@@ -6,7 +6,9 @@ Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-07-18).
 Supersedes [`build-to-1.0-campaign-2026-06-30.md`](build-to-1.0-campaign-2026-06-30.md);
 priors are retained for audit and no longer steer.
 
-> **Topmost (sequenced):** **Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
+> **Topmost (sequenced) — AMENDED 2026-08-14: Movement B is topmost; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). Movement B needs a feature ADR extending `ADR-0.33.0`; none is authored yet. See § Amendments 2026-08-14 and § Movement B.
+>
+> **HELD — Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
 >
 > **Ordering note (corrected 2026-08-12).** This banner had continued to assert the 2026-08-09 pull-ahead of `ADR-0.36.0` for a day after the 2026-08-11 amendment (§ Amendments, *"the pull-ahead is WITHDRAWN"*) withdrew it, contradicting items 2 and 3 below and the amendment itself — three surfaces in one file, the stale one read first. `scripts/session_orientation.py` transcribes this line into every session's orientation, so the topmost-item line a fresh session was handed named the wrong feature. Architectural Boundary 6 in the same terms: a transcribed view is Layer 3 and never source-of-truth. **When the sequence changes, this banner is part of the amendment, not a follow-up.**
 
@@ -134,7 +136,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] **Disposition `foundation-adr-registers-invariant`** — **RULED 2026-08-02: retire the claim as superseded by the Foundation Sunset.** The entry declared structural witness `gz validate --foundation-registers-invariant`, which never existed, and the claim was unenforceable as written — `constitutional_invariant.json` carries no field naming which ADR registered an entry (fields are `id`, `claim`, `structural_witness`, `composition_targets`, `classification`). The ruling turns on what OBPI-0.34.0-05 sealed: the foundation kind is **closed** at both `adr_created` ingresses, so the claim's subject set is permanently frozen at the 51-entry grandfathered roster and can never be exercised again. The entry now states that sealed reality, witnessed by `gz validate --taxonomy` (exists; already the last step of `gz check`; exits 0 on the terminal tree). The **file is retained, not deleted** — `REQ-0.0.37-01-03` (attested, OBPI-0.0.37-01) asserts only that the three seed files exist, load via `load_invariants`, and validate against the schema, never that the claim text is true; rewriting `claim` + `structural_witness` preserves attested canon exactly, deleting the file would falsify it. `tests/governance/test_invariant_witness.py` fence drops to `frozenset()` and stays shrink-only: a new vapor witness fails immediately. *Two corrections to this item's own prior text:* the "74 foundation ADRs" figure was the `--taxonomy` **findings** count from OBPI-04 (line above), not an ADR count — the roster is **51**; and `--invariant-witness` was described as staying "out of `gz check` until this is ruled", but **that flag has never existed either** — `validate_invariant_witnesses` is a function in `governance/trust_audits/invariant_witness.py` whose only caller is the fence test, with no CLI wiring. Enrolling it was separate work, tracked at GHI #746 and **landed 2026-08-03**: `--invariant-witness` is now a registered default-tier scope, so it runs under bare `gz validate` and therefore inside `gz check` — no separate step entry was needed, because GHI #744's collapse made one bare `gz validate` gate the whole default tier. The scope is now nameable as a `structural_witness` in its own right, which it could not be while unregistered.
 - [x] `ADR-0.34.0-foundation-sunset` capstone — **`Validated` 2026-07-31**, released [v0.34.0](https://github.com/tvproductions/gzkit/releases/tag/v0.34.0), tag on the bump commit `551366064`. Closeout ceremony (11 steps, `g0` verbatim *"attest completed"*) then audit ceremony (`g0` verbatim *"accept audit"*); receipts `arb-step-unittest-f02e079a9c5c4fce83433f15d1ace4b1` (7685 OK), `arb-ruff-9b11bcbc647c4b9a9ddb6282f7fc34b4`, `arb-step-typecheck-4c8436dc00e842b8847ebcacb7dc866c`, `arb-step-mkdocs-3f31717e44a04a46821f35433f53b0c2`; bound fidelity gate 2/2. Audit record and three recorded-open shortfalls: `docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/audit/AUDIT.md`. All 5 OBPIs `attested_completed`. OBPI-01 2026-07-19: grandfather manifest + closed-kind assertion · OBPI-02: authoring-time kind rejection at all three CLI doors · OBPI-03 2026-07-29 (`f6088fabc`): terminal-partition gate reading grandfathered-foundation terminality from the Layer-2 `foundation_grandfathered` event and never frontmatter, plus `ADR-0.0.18` frozen-historic · OBPI-04 2026-07-30 (`d521ace53`): **the migration executed** — `--taxonomy` moved exit 3 / 74 findings → exit 0, 23 genuinely-unstarted foundations demoted to pool (136 briefs removed, lineage preserved by `obpi_parked` per child), 51 manifest entries bijective with 51 `foundation_grandfathered` ledger events, re-sensed with zero orphans (seams 119→119) · OBPI-05 2026-07-31: the permanent `--taxonomy` gate wired as the **last** step of `gz check`, and the registration membrane sealed at the two manifest-membrane `adr_created` ingresses (GHI #706 discharged). *Audit qualification:* exactly three `adr_created` emission sites exist; the third is the shared helper `register_adr_in_ledger`, whose two callers are both separately guarded — a latent surface (GHI #734), not an open hole. Movement A's capstone is closed; items 2 and 3 remain.
 
-**Movement B — Put the membrane on the real doors** *(new feature ADR extending `ADR-0.33.0`; heavy)*
+**Movement B — Put the membrane on the real doors** *(new feature ADR extending `ADR-0.33.0`; heavy)* — **TOPMOST as of 2026-08-14 (operator-ratified; § Amendments)**
 
 > **The doors mostly exist. They do not fire.** `gz permitted-entry` shipped with
 > `ADR-0.33.0` (OBPI-05) and has **2** recorded transits. `gz airlock in` is wired into
@@ -144,10 +146,11 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > as governing entry, and does not bite. **Operator ruling 2026-07-18: GHI and ad-hoc
 > (permitted) entry MUST trigger the airlock mechanism.**
 
+- [ ] **0. CALIBRATE THE SEAM-MAP BEFORE WIDENING ANY DOOR.** *(added 2026-08-14; sequenced ahead of the five below.)* The gate is not theater — it bit 3 times — but **20 of 23 transits computed an EMPTY seam-map and auto-proceeded** (measured live 2026-08-14: `decision` 20 `proceed` / 3 `hold`; `unaccounted` 20×`0`, then 3, 4, 7). `ADR-0.33.0`'s own calibration-frontier note states the cause: `gz ontology reach(<obpi-id>)` returns transitive **dependents**, of which a leaf OBPI has none, so `push_edges` is empty; and the gate never passes `parent_invariants`, so `pull_edges` is empty too. **This is WWHTBT-(a), the ADR's self-declared load-bearing condition, deferred past the FC-2 tracer and never landed.** Widening to three more doors first would install three more inert gates and put transit ceremony on 524 commits/quarter with no membrane behind it — `ADR-0.33.0` § Negative #1 (*"Theater… seam-maps rubber-stamped, GO always reached… the membrane exists but does not bite"*) arriving through the front door. Done means: a real entry on a real OBPI computes a non-empty seam-map, and the existing NC still cannot be forced.
 - [ ] **GHI direct-fix triggers the airlock.** `GHI : MX :: OBPI : Build` — the MX door must carry the same membrane the Build door does. A `fix(...)` landing without a transit is an unaccounted entry. This is the single highest-volume ungoverned door: **470 `fix` commits in 90 days, zero transits** (90d to 2026-07-18; **481** on the same measure to 2026-08-08). **The door is wider than either figure reports.** Measured 2026-08-08 subject-anchored: 546 commits touched `src/**/*.py`, **193 of them (35%) under a `chore` subject**, and **187 of those 193 (97%) were `gz git-sync`-authored** — invisible to `git log --grep='^fix('`, which is both the source of this figure and the precedent query AGENTS.md § Defect-fix routing prescribes for its own routing decision. Fenced at the sweep 2026-08-08 (GHI #708 reopened), so the count is honest going forward and undercounts by an unrecovered amount before it. Measure subjects via `git log --format='%s'`, never `--grep='^chore'` — `--grep` matches the whole message and admits `fix(chores):` commits whose body has a line starting with "chore".
 - [ ] **Ad-hoc / permitted entry triggers the airlock.** Make `permitted-entry` fire on ad-hoc reconnaissance and light repair rather than waiting to be invoked — the reason selects the door, never *whether* the gate fires (`ADR-0.33.0` door principle).
 - [ ] **Session entry triggers the airlock.** A model entering the project is a transit. The SessionStart hook already runs orientation; it should seat a seam-map and a go/no-go. Evidence this is the live hole: the 2026-07-18 session ran a full corpus survey, filed 2 GHIs, changed 3 source files, and rewrote Magna Carta across **zero** transits.
-- [ ] Close the transit-accounting gap: **23 `airlock_in` vs 10 `airlock_out`** — 13 transits never accounted for on exit. Failure-atomic pairing precedent: GHI #679 / `89c5ee9a`.
+- [ ] Close the transit-accounting gap: **23 `airlock_in` vs 5 `airlock_out`** — **18** transits never accounted for on exit. Failure-atomic pairing precedent: GHI #679 / `89c5ee9a`. **Count corrected 2026-08-14** from the 23/10 this box carried; re-measure rather than transcribe. Sequence it **second, after item 0** — do not widen what you cannot yet account for. This is the third instance of one paired-event family found on 2026-08-14: the resume gate recorded 160 lifts and 0 blocks (fixed, `2a326f042`), `session_exit` records 37 skips and 0 writes (GHI #766, open), and the airlock pairs 23 entries to 5 exits. Consider dispositioning the family once rather than three times.
 - [ ] Bind with a §4 live NC on each widened door: **un-triggered entry → the claim fails**. Not "un-accounted seam → GO unreachable" (that is `ADR-0.33.0`'s existing NC, and it only fires once you are already inside the airlock). The new NC must catch *never entering at all* — the failure mode that let ~97% of commits through.
 
 **Movement C — Reduce the accretion** *(deferral LIFTED 2026-07-18 — this is pre-1.0)*
@@ -286,6 +289,57 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-14 — Movement B is TOPMOST; Movement A is HELD; calibration precedes widening (operator-ratified)
+
+Operator ruling: **"the airlock's incompletemess is a problem that needs priority
+address."**, ratified **"yes, ratify"** (spelling preserved).
+
+**What changed.** Movement B (put the membrane on the real doors) moves ahead of
+Movement A (close the Foundation Sunset). `ADR-0.35.0-canon-entry-corpus-landing`
+is HELD in the in-flight position at 0/10 — not withdrawn, not superseded, and
+still the next feature when B releases the queue. One-feature-at-a-time is
+unchanged. A new **item 0 — calibrate the seam-map** is added ahead of Movement
+B's five existing checkboxes, and the accounting-gap box's count is corrected.
+
+**Why this is new evidence, not a change of mind.** The session that produced this
+ruling started as a false-refusal complaint against the handoff resume gate and
+ended by reading `ADR-0.33.0` properly. Three findings, each measured live rather
+than transcribed:
+
+1. **The airlock is BUILT, not unfinished.** `ADR-0.33.0` is `Validated`, 6/6
+   `attested_completed`. "Incomplete" means *installed on one door*, which is what
+   Movement B has always said: *"The doors mostly exist. They do not fire… an
+   opt-in gate is not a gate."* Nothing about the mechanism needs re-designing.
+2. **It does not bite where it does fire.** 20 of 23 transits computed an EMPTY
+   seam-map and auto-proceeded; 3 bit correctly (3/4/7 unaccounted → `hold`). The
+   cause is `ADR-0.33.0`'s own calibration-frontier note — `reach()` returns
+   dependents, a leaf OBPI has none, and `parent_invariants` is never passed. This
+   is **WWHTBT-(a)**, the ADR's self-declared load-bearing condition, deferred past
+   the FC-2 tracer and never landed. It is not in Movement B's checklist at all;
+   item 0 adds it. **Widening before calibrating installs three more inert gates**
+   and is § Negative #1 arriving through the front door.
+3. **The accounting gap is worse than recorded** — 23 in / **5** out, not 23/10.
+
+**What this ruling does NOT do.** It does not reopen `ADR-0.33.0`, whose
+attestations stand. It does not make the airlock a `gz validate` scope (BI #6: the
+L3 projection informs the gate, never gates). It does not disturb Movements C or
+D, which remain after B and A.
+
+**Sequencing within Movement B (agent-proposed under this ratification; operator
+may reorder).** 0 calibrate → accounting gap → the "never entered at all" NC →
+GHI/MX door (highest volume) → session entry → ad-hoc/permitted. The two NC-first
+alternatives were considered and rejected: the new NC cannot be written until
+"should have entered" is defined per door, and it would fail on 524 commits/quarter
+before any door exists to close.
+
+**Collateral now correctly homed.** The `handoff-resume-gate` hook's `Bash` arm was
+removed earlier the same day (`bc9b72f67`) as a forked fourth door — an
+un-extracted variant with its own copy of the airlock's `proceed|pause|hold|revert`
+grammar, triggering on artifact-presence rather than on entry. Its surviving
+`Write|Edit|NotebookEdit` arm is an improvisation of **Movement B item 3**
+(*"Session entry triggers the airlock"*) and retires **into** that item rather than
+as a loose direct fix, so no gap opens in front of the governed door.
 
 ### 2026-08-11 — the pull-ahead is WITHDRAWN; `ADR-0.35.0` returns to the in-flight position (operator-ratified)
 
