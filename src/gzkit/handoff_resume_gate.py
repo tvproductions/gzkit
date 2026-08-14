@@ -62,8 +62,10 @@ from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
 from gzkit.shell_reading import (
     PIPE,
     STATEMENT_SEPARATORS,
+    runs_no_command,
     split_on,
     strip_nonwriting_redirections,
+    strip_reserved_words,
     strip_uv_run,
     tokenize_shell,
 )
@@ -291,7 +293,35 @@ _PERMITTED_BASH: tuple[tuple[str, ...], ...] = (
 #: gate still fires; what lifts is the handoff-ruling precondition alone.
 #: Compound commands stay refused by `_is_compound`, so nothing rides in on a
 #: `gz git-sync && ...` prefix.
-_ALWAYS_AUTHORIZED_BASH: tuple[tuple[str, ...], ...] = (("gz", "git-sync"),)
+#: `git fetch` sits here for the same reason and by the same ruling, NOT in
+#: `_PERMITTED_BASH`. It fails that constant's predicate outright — `git fetch
+#: origin main:main` writes a local ref and `--prune` deletes remote-tracking
+#: ones — and admitting it there would be the `find` over-grant repeated, a
+#: write-capable verb filed under a name that says read-only.
+#:
+#: What puts it here is an OBLIGATION the gate already carries. The third
+#: allowlist fix admitted `git rev-list --left-right --count origin/main...HEAD`
+#: as the instrument for an "in sync with origin" claim, but that counts against
+#: `origin/main` AS LAST FETCHED. Admitting the counter while refusing the
+#: refresh leaves the § Claim Verification Gate satisfiable only by a
+#: staleness-blind count — the gate mandating a verification it has disarmed,
+#: which is the shape of the third miss itself (`rev-parse` in, `rev-list` out).
+#:
+#: The operator's stated reason for the sync ruling reaches fetch more directly
+#: than the ceremony it was written for: "if we need to sync with remote, your
+#: local handoff is almost always likely to have been superseded by something on
+#: remote". A fetch is how that supersession is DISCOVERED. It also cannot drive
+#: an advised step, which is the whole thing this gate exists to prevent — no
+#: working-tree file changes, no HEAD movement, no checked-out branch touched.
+#:
+#: Residual, stated rather than hidden: the refspec write form rides in on the
+#: prefix match. That is a smaller surface than the sync ceremony already
+#: admitted beside it, and narrowing it would take a flag/operand model this
+#: module has twice been burned trusting (`_MUTATING_FLAGS`).
+_ALWAYS_AUTHORIZED_BASH: tuple[tuple[str, ...], ...] = (
+    ("gz", "git-sync"),
+    ("git", "fetch"),
+)
 
 #: Flags that turn an otherwise-read-only command into a mutation. DEFENSE IN
 #: DEPTH, never the membership test: every verb in `_PERMITTED_BASH` is read-only
@@ -549,17 +579,34 @@ def _authored_by_session(handoff: Path, session_id: str) -> bool:
     return frontmatter.get("session_id") == session_id
 
 
+def _raw_tokens(command: str) -> list[str]:
+    """Split a Bash command with NOTHING stripped, or `[]` when unparseable.
+
+    :func:`runs_no_command` must see the reserved words to recognize them, and
+    :func:`_tokens` has already removed them by the time it returns. The empty
+    list on a lexer failure is the fail-closed answer both readers rely on.
+    """
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return []
+
+
 def _tokens(command: str) -> list[str]:
     """Split a Bash command into leading tokens, `uv run` stripped.
 
     `shlex` failures (unbalanced quotes) yield an empty token list, which matches
     no allowlist entry and therefore fails CLOSED.
+
+    Reserved words come off BEFORE `uv run`, because they nest that way: the body
+    of a loop is `do uv run gz status`, so stripping in the other order leaves
+    `do` at the head and the `uv run` prefix unreached.
     """
     try:
         parts = shlex.split(command)
     except ValueError:
         return []
-    return strip_uv_run(parts)
+    return strip_uv_run(strip_reserved_words(parts))
 
 
 def _is_shell_operator(token: str) -> bool:
@@ -653,9 +700,19 @@ def _bash_is_read_only(command: str) -> bool:
     compound command (``&&``, ``;``, ``|``, redirection, substitution) is never
     read-only regardless of its head — ``gz state && rm -rf x`` must not ride in
     on its prefix.
+
+    Pure syntax is admitted ahead of the allowlist because it invokes nothing
+    (:func:`gzkit.shell_reading.runs_no_command`). This is not a widening: a
+    stream that runs no program has no verb for the allowlist to judge, and
+    refusing it was the gate reporting ``for`` and ``done`` as unadmitted
+    *commands* (operator report 2026-08-14). Anything a reserved word introduces
+    is still judged — :func:`_tokens` strips only the syntax, so ``do rm -rf x``
+    arrives here as ``rm -rf x``.
     """
     if _is_compound(command):
         return False
+    if runs_no_command(_raw_tokens(command)):
+        return True
     tokens = _tokens(command)
     if not any(tuple(tokens[: len(allowed)]) == allowed for allowed in _PERMITTED_BASH):
         return False
@@ -886,6 +943,10 @@ def _block_prose(
         "gh issue|pr read verbs, and git/grep/cat reads; quoted metacharacters like "
         'grep "A\\|B" are data, not pipes) — the gate blocks execution, never the '
         "verification that precedes it, and never its own recovery.\n"
+        "Batch them freely: a chain whose every command is admitted runs as one call, "
+        "and shell syntax invokes nothing, so `for`/`while`/`if` over admitted reads is "
+        "admitted too. `git fetch` is permitted so an origin-sync count is not read off "
+        "a stale ref.\n"
         "Admitted Bash reads are read-only BY CONSTRUCTION, so a verb with any write "
         "form is refused even in a read shape: `sed` writes in-script (`1,2w FILE`) "
         "and `find` writes via `-fprint`/`-fls`. Use the Read/Grep/Glob tools — never "

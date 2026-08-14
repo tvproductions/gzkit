@@ -488,6 +488,172 @@ class ResumeGateAdmitsAWhollyAdmittedCompoundTests(unittest.TestCase):
                     self.assertTrue(self._verdict(base, command).blocked, command)
 
 
+class ResumeGateReadsShellKeywordsAsSyntaxTests(unittest.TestCase):
+    """A shell reserved word is syntax, not a command — it executes nothing.
+
+    Operator report 2026-08-14, verbatim: "this is ridiculous, and keeps
+    triggering almost each run, FIX IT", quoting a refusal of a `for` loop over
+    `gh issue view` — five admitted reads batched the way an operator actually
+    types them. The gate named `for n in 803 802 766 767 799`, `do echo -n ...`
+    and `done` as "the part that is not admitted", which reads as a claim that
+    `for` is a command whose write form the gate is guarding. It is not a
+    command at all.
+
+    This is the enumerate-the-examples miss in its purest form, and the sixth on
+    this surface. `_PERMITTED_BASH` answers "which PROGRAMS may run"; a reserved
+    word names no program, so the allowlist was being asked a question it cannot
+    hold an answer to, and every reserved word failed it for the same reason an
+    unknown binary would. The predicate is not another allowlist row — it is
+    that bash's reserved-word set is CLOSED and specified (`compgen -k`), so the
+    membership test can be complete rather than exemplary.
+
+    Admission is unchanged for anything that runs: stripping a reserved word
+    re-enters the real predicates on whatever remains, so `do rm -rf src`
+    refuses on `rm` exactly as it always did, and `for n in $(rm -rf src)`
+    refuses on `_can_expand` inside its own segment.
+    """
+
+    def _verdict(self, base: Path, command: str):
+        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
+
+    def test_a_loop_over_admitted_reads_is_permitted(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                # The 2026-08-14 refusal, reduced to its keyword arm.
+                "for n in 803 802 766; do gh issue view $n --json state; done",
+                # `while`/`until` take a COMMAND whose status drives the loop —
+                # a different shape from `for`, and it must reach that command.
+                "while git status; do git log; done",
+                "until git status; do git diff; done",
+                # `if`/`then`/`else`/`fi`: four keywords, one admitted command.
+                "if git status; then git log; else git diff; fi",
+                # `!` and `time` prefix a command rather than heading a block.
+                "! git status",
+                "time git log",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_a_keyword_does_not_launder_the_command_it_introduces(self) -> None:
+        """The paired negative: stripping syntax must not strip the verb check.
+
+        Each case pairs with a permitted one above and differs only in the
+        program the keyword introduces. If these passed, the fix would have
+        turned every reserved word into a universal bypass prefix — which is
+        exactly the `find` over-grant this module has already made once.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "for n in 1 2 3; do rm -rf src; done",
+                "while git status; do rm -rf src; done",
+                "if git status; then rm -rf src; fi",
+                "! rm -rf src",
+                "time rm -rf src",
+                # A function definition names a program the allowlist never saw.
+                "function f { git status; }",
+                # Substitution inside the word list is still substitution.
+                "for n in $(rm -rf src); do git status; done",
+                "for n in `rm -rf src`; do git status; done",
+                # The body is admitted; the chain appends a real command.
+                "for n in 1; do git status; done && rm -rf src",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+    def test_case_and_double_bracket_are_excluded_on_purpose(self) -> None:
+        """The stated omission, given a witness so it cannot be re-read as a bug.
+
+        `_WORD_LIST_HEADS` names `for`/`in`/`select` and NOT `case`/`[[`. Both
+        excluded ones lex with punctuation the separator set does not split on
+        (`)`, `;;`, `]]`), so the operator tokens stay inside the segment and
+        `_is_compound` refuses it whatever the head says. Admitting them means
+        teaching the splitter two more separators for a shape no verification
+        command in this repo has used.
+
+        This asserts the CURRENT boundary, not a desirable one. If a session
+        ever needs `case` in a verification command, that is the observed
+        instance which reopens the question — and this test is what will have to
+        change, deliberately, rather than the omission being discovered by
+        someone reading a refusal as a policy (the `2>&1` grouping's lesson).
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "case $n in *) git status;; esac",
+                "[[ -f README.md ]] && git status",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+
+class GitFetchIsTheReadHalfOfAnAlwaysAuthorizedSyncTests(unittest.TestCase):
+    """Refreshing the ref a sync claim is counted against is part of counting it.
+
+    `git rev-list --left-right --count origin/main...HEAD` was admitted in the
+    third allowlist fix as the instrument for an "in sync with origin" claim.
+    But it counts against `origin/main` AS LAST FETCHED, so without a fetch the
+    gate admitted the counter and refused the only thing that makes its answer
+    current — an agent verifying "0 0" against a week-old ref reports a sync
+    that may not exist. The § Claim Verification Gate demands the claim be
+    verified; a staleness-blind count does not verify it. Same shape as the
+    third miss itself, where `rev-parse` was admitted and `rev-list` refused.
+
+    `git fetch` is NOT read-only by construction and so is NOT admitted to
+    `_PERMITTED_BASH`: `git fetch origin main:main` writes a local ref and
+    `--prune` deletes remote-tracking ones. It belongs in
+    `_ALWAYS_AUTHORIZED_BASH`, the constant held separate precisely for things
+    that write and are ruled authorized anyway — filing it under a name that
+    says "read-only" is the lie that constant's own comment refuses.
+
+    The ruling it rides on is the operator's, verbatim 2026-07-26: "a git-sync
+    will ALWAYS be authorized - think about it, if we need to sync with remote,
+    your local handoff is almost always likely to have been superseded by
+    something on remote." Fetch is how that supersession is DISCOVERED, so the
+    stated reason reaches it more directly than the ceremony it was written for.
+    Reaffirmed 2026-08-09: "handoffs should never, never, never, ever, block
+    git-sync. NEVER."
+    """
+
+    def _verdict(self, base: Path, command: str):
+        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
+
+    def test_fetch_is_permitted_before_a_ruling(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git fetch",
+                "git fetch -q origin",
+                "git fetch --all",
+                # The shape the claim actually takes: refresh, then count.
+                "git fetch -q origin; git rev-list --left-right --count origin/main...HEAD",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_fetch_does_not_carry_a_chained_mutation(self) -> None:
+        """The paired negative: the ruling covers fetch, not its prefix position.
+
+        Identical in form to the git-sync negative — an always-authorized verb
+        is a segment, never a licence for the segments beside it.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git fetch && rm -rf src",
+                "git fetch origin && git push --force",
+                "git fetch; sed -i s/a/b/ f",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+
 class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
     """`2>&1` duplicates a descriptor; it names no file and writes nothing.
 
