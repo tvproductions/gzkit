@@ -163,7 +163,7 @@ unread. Each admit path below was found by reading the gate.
 | `surface-fidelity` (composite) | Inherits the above **and** `data/surface_weight_waivers.json` (already recorded). Both arms, not one. |
 | `airlock-in-unaccounted-seam` | A live (non-revoked) `CaptainOverride` in `_decide`. The docstring states it: *"the only way past a NO-GO."* The authorization-booking shape, same family as `handoff-resume-*`. |
 | `enforcement-floor` | `_GATE5_NAMED_NOT_ENFORCED` — `unenrolled_gate5_members` iterates `GATE5_INVARIANTS - _GATE5_NAMED_NOT_ENFORCED`, so `secrets` and `operator-pii` are subtracted from the floor's own declared population. The code's own word is *"exempt by design."* Deliberate and ADR-backed, and still an exemption. |
-| `docs-build` | `mkdocs.yml` `validation:` downgrades. This repo currently sets `links.not_found: ignore`, so a dead link raises no warning for `--strict` to promote — see § Observations 5. |
+| `docs-build` | `mkdocs.yml` `validation:` downgrades. This repo sets `links.not_found: ignore`, so a dead link raises no warning for `--strict` to promote — filed as GHI #803; see § Observations 5. |
 | `skill-audit` | `_skill_audit_success` passes non-blocking warnings unless `--strict`, which is **off by default** and off in the control's own invocation. |
 | `cli-audit` | Manifest `surfaces.manpage: false` — the per-command loop `continue`s past the manpage, heading, and index checks for any command carrying it. |
 | `parity-check` | `enforced = template_path.exists() or bool(report_paths)`; when both are absent the gate returns `valid: True` and exits 0. The discriminator is **itself** a member of `required_files`, so removing the surfaces both disables the check and hides the removal. |
@@ -218,20 +218,29 @@ than most in the table. It is recorded here only as a worked illustration of the
 disclosed GHI #797 class (the admit half of a two-claim gate goes unexercised),
 never as a criticism of the control.
 
-**5. `docs-build`'s admit path is live in this repo, and it is worth an operator
-ruling rather than a silent Tier-A row.** `run_mkdocs`'s own docstring states the
-gate exists so that *"broken nav and dead links fail closed."* This repository's
-`mkdocs.yml` § `validation` currently sets `links.not_found: ignore`, which
-suppresses the warning entirely — so `--strict` has nothing to promote and dead
-links do **not** fail closed today. `nav.omitted_files`, `absolute_links`,
-`unrecognized_links`, and `anchors` are all set to `info` on the same block.
+**5. `docs-build`'s admit path is live in this repo — filed as GHI #803.**
+`run_mkdocs`'s own docstring (`src/gzkit/quality.py:612`) states the gate exists so
+that *"broken nav and dead links fail closed."* This repository's `mkdocs.yml:218-225`
+sets `links.not_found: ignore`, which suppresses the diagnostic entirely, and pins
+`nav.omitted_files`, `absolute_links`, `unrecognized_links`, and `anchors` at `info`.
+`--strict` promotes *warnings*; nothing in that block ever reaches warning level.
 
-Recorded here rather than repaired: changing those settings is a behavior change to
-a live gate, outside the ruled scope of this pass (*read the 17, declare the honest
-`'none'`s*), and it would very likely surface a backlog of existing dead links in one
-step. It is a **coupled-surface incoherence** — a docstring asserting an enforcement
-the config withdraws — not merely an exemption, which is why it is called out rather
-than left as a table cell. Routing is the operator's.
+Observed 2026-08-14 (receipt `arb-step-mkdocs-19b4d350af194ae98883e2ae9301a5c0`):
+`mkdocs build --strict` exits **0** while reporting ~280 pages omitted from nav at
+`INFO`, including all of `docs/user/manpages/`, `docs/user/skills/`, and
+`docs/governance/`.
+
+**Precision, so the row is not overclaimed:** the docstring's *stated origin
+incident* — a nav entry pointing at a renamed manpage — is `validation.nav.not_found`,
+which that block does **not** set, so it keeps its default and is still caught. What
+the config withdraws is the other half of the same sentence.
+
+Recorded here rather than repaired: changing those settings is a behavior change to a
+live gate, outside this pass's ruled scope (*read the 17, declare the honest
+`'none'`s*), and the backlog it would surface is unmeasured. It is a **coupled-surface
+incoherence** — a docstring asserting enforcement the config withdraws — not merely an
+exemption, which is why it earned a GHI rather than a table cell. Disposition is open
+on #803.
 
 ## Verification
 
