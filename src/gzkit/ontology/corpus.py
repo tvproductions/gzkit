@@ -112,6 +112,12 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # was ruled and which counsel was declined; neither is an edge between
         # artifacts.
         "handoff_resume_decided",
+        # The refusal half of the same gate (operator report 2026-08-14), added
+        # because the two above recorded every lift and nothing recorded a block.
+        # Dispositioned identically and then some: session-scoped, the handoff is
+        # already a node via its frontmatter, and the payload is command SHAPE
+        # rather than an artifact — there is no second node to draw an edge to.
+        "handoff_resume_blocked",
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
         "mx_session_closed",

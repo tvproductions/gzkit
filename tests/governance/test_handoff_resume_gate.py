@@ -26,6 +26,7 @@ from gzkit.handoff_resume_gate import (
     decide,
     is_resume_authorized,
     newest_handoff,
+    record_refusal,
 )
 from gzkit.session_exit import FLOOR_BOOKMARK_AGENT
 
@@ -486,6 +487,127 @@ class ResumeGateAdmitsAWhollyAdmittedCompoundTests(unittest.TestCase):
             ):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
+
+
+class ResumeGateRecordsWhatItRefusedTests(unittest.TestCase):
+    """A refusal that leaves no trace cannot be counted, so it recurs.
+
+    Operator report 2026-08-14, verbatim: "that class of error is happening
+    frequently - why is it recurring?" and "I am this close to removing that
+    hook". The answer was measurable: the ledger held 107
+    `handoff_resume_authorized` plus 53 `handoff_resume_decided` events — 160
+    records, every one of them the gate being LIFTED — and ZERO records of the
+    gate blocking anything. The hook printed to stderr and exited 2.
+
+    That asymmetry is the whole recurrence mechanism. A false PERMIT leaves a
+    trace and can be audited after the fact; a false REFUSAL left none, so the
+    only discovery channel was an operator getting annoyed enough to report it.
+    Every dated observation in this module arrived that way, and a predicate
+    ruled correct on 2026-08-12 was reversed on 2026-08-13 because the ruling
+    had no measurement to be wrong against.
+
+    The argument for recording is already written in this codebase, applied to
+    the sibling half: `session_exit_bookmark_skipped_event` records a
+    deliberate no-op because "a silent skip is indistinguishable from a crashed
+    hook". A silent refusal is indistinguishable from a gate nobody tripped.
+
+    SHAPE, never command text. The event carries per-segment program names
+    (`git fetch`, `gh issue`, `rm`) and never operands — commands carry paths
+    and the operator-PII prohibition is absolute. Shape is also the thing worth
+    counting: the question is which verb families are being refused.
+    """
+
+    def _refusals(self, base: Path) -> list[dict]:
+        ledger = base / ".gzkit" / "ledger.jsonl"
+        if not ledger.exists():
+            return []
+        return [
+            json.loads(line)
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.strip() and json.loads(line).get("event") == "handoff_resume_blocked"
+        ]
+
+    def test_a_refusal_is_recorded_with_its_shape(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            command = "git status && rm -rf src"
+            self.assertTrue(
+                decide(
+                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+                ).blocked
+            )
+            record_refusal(
+                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+            )
+
+            events = self._refusals(base)
+            self.assertEqual(len(events), 1)
+            event = events[0]
+            self.assertEqual(event["session_id"], _SESSION)
+            self.assertEqual(event["tool_name"], "Bash")
+            # The actionable half: what was refused, by shape.
+            self.assertIn("rm", event["refused_shape"])
+            self.assertIn("git status", event["admitted_shape"])
+
+    def test_the_record_carries_no_operand_text(self) -> None:
+        """Shape, never text — the operator-PII prohibition is absolute.
+
+        A refused command routinely names a path. If the ledger stored command
+        strings, the gate would turn every refusal into a durable, committed
+        record of whatever the agent happened to type.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            command = "git status && rm -rf /Users/someone/private/secrets.env"
+            record_refusal(
+                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+            )
+            written = (base / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+            self.assertNotIn("secrets.env", written)
+            self.assertNotIn("/Users/someone", written)
+            self.assertIn("rm", written)
+
+    def test_a_permitted_command_records_nothing(self) -> None:
+        """The paired negative. A counter that counts permits too counts nothing."""
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            command = "git status && git log"
+            self.assertFalse(
+                decide(
+                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+                ).blocked
+            )
+            record_refusal(
+                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+            )
+            self.assertEqual(self._refusals(base), [])
+
+    def test_recording_never_changes_the_verdict(self) -> None:
+        """Telemetry is fail-open; the gate is fail-closed. Never let one break the other.
+
+        An unwritable ledger is a plumbing failure. If it could raise, the hook
+        would crash and the harness would see a hook error instead of a block —
+        turning a measurement improvement into a way to defeat the gate.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            # A directory where the ledger file must go: every write raises.
+            (base / ".gzkit" / "ledger.jsonl").mkdir(parents=True, exist_ok=True)
+            command = "git status && rm -rf src"
+            self.assertFalse(
+                record_refusal(
+                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+                )
+            )
+            self.assertTrue(
+                decide(
+                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+                ).blocked
+            )
 
 
 class ResumeGateReadsShellKeywordsAsSyntaxTests(unittest.TestCase):

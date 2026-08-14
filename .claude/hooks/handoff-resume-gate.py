@@ -41,7 +41,7 @@ def main() -> None:
         sys.exit(0)
 
     try:
-        from gzkit.handoff_resume_gate import decide
+        from gzkit.handoff_resume_gate import decide, record_refusal
     except ImportError:
         # Fail-open: gzkit unavailable is a plumbing failure, not a
         # governance signal. The gate's evidence read fails CLOSED
@@ -49,13 +49,28 @@ def main() -> None:
         sys.exit(0)
 
     root = _find_project_root(Path(cwd).resolve())
+    session_id = str(payload.get("session_id") or "")
+    tool_name = str(payload.get("tool_name") or "")
+    tool_input = payload.get("tool_input") or {}
     verdict = decide(
         root,
-        session_id=str(payload.get("session_id") or ""),
-        tool_name=str(payload.get("tool_name") or ""),
-        tool_input=payload.get("tool_input") or {},
+        session_id=session_id,
+        tool_name=tool_name,
+        tool_input=tool_input,
     )
     if verdict.blocked:
+        # Layer-2 record of the refusal, by SHAPE only. Before this
+        # the ledger held 160 lift records and zero blocks, so the
+        # gate's dominant failure mode — refusing a read it should
+        # admit — was discoverable only by an operator complaining.
+        # `record_refusal` is fail-open by contract and cannot raise;
+        # the block below runs whatever it returns.
+        record_refusal(
+            root,
+            session_id=session_id,
+            tool_name=tool_name,
+            tool_input=tool_input,
+        )
         print(verdict.reason, file=sys.stderr)
         sys.exit(2)
     sys.exit(0)

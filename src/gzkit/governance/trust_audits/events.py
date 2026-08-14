@@ -56,6 +56,15 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "ruled and which counsel was declined — they do not make the ruling a durable "
         "relationship between artifacts."
     ),
+    "handoff_resume_blocked": (
+        "Refusal telemetry for the same gate (operator report 2026-08-14), the missing "
+        "half of the two events above: they record every LIFT and nothing recorded a "
+        "BLOCK, so the gate's false-refusal rate was unmeasurable and each instance was "
+        "rediscovered by an operator hitting it. Waived for the same reason as its "
+        "siblings and one more of its own: it is session-scoped, the handoff it names is "
+        "already a graph node via its own frontmatter, and it carries command SHAPE "
+        "rather than any artifact — there is no second node for an edge to reach."
+    ),
     "red_receipt_emitted": (
         "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "
         "that the REQ's covering test fails without its implementation; read by "

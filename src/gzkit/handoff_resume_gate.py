@@ -62,6 +62,7 @@ from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
 from gzkit.shell_reading import (
     PIPE,
     STATEMENT_SEPARATORS,
+    program_name,
     runs_no_command,
     split_on,
     strip_nonwriting_redirections,
@@ -359,6 +360,10 @@ UNWITNESSABLE: tuple[str, ...] = (
     "so a connector that writes is unseen by this gate.",
     "Harness-native mutation outside the tool layer (e.g. an IDE edit by the "
     "operator) is not a resuming agent's execution and is deliberately out of scope.",
+    "Refusal CORRECTNESS: `handoff_resume_blocked` records that a call was "
+    "refused and its shape, never whether refusing was right. A rising count is "
+    "a prompt to read the shapes, not a defect measure — some refusals are the "
+    "gate working. What it removes is the blindness, not the judgment.",
 )
 
 
@@ -853,6 +858,97 @@ def _refused_segments(command: str) -> list[str]:
     observation (`.gzkit/rules/guardrail-feedback-prose.md` § Invariant).
     """
     return [segment for segment in _segments(command) if not _segment_is_admitted(segment)]
+
+
+def _is_bare_word(token: str) -> bool:
+    """Return True for a token that is a subcommand name and cannot be an operand.
+
+    The PII fence for :func:`_segment_shape`, and it is a WHITELIST of shape
+    rather than a blacklist of path characters on purpose. Admits `fetch`,
+    `issue`, `status`, `rev-list`; refuses anything carrying `/`, `.`, `=`, `~`,
+    a leading `-`, a digit-first form, or any uppercase — so a path, a flag, a
+    value, an ID, and a token-looking secret are all excluded by not matching,
+    never by being enumerated.
+    """
+    return bool(token) and token[0].isalpha() and token.replace("-", "").isalnum()
+
+
+def _segment_shape(segment: str) -> str:
+    """Render one segment as SHAPE — a program and maybe a subcommand, never operands.
+
+    This is what makes a refusal countable without making it a disclosure. A
+    refused command routinely names a path, and the operator-PII prohibition is
+    absolute, so the ledger records `rm` and `gh issue` — never what followed
+    them. Shape is also the field a recurrence question actually wants: "which
+    verb families is the gate refusing" is answerable from it, and "what exactly
+    did the agent type" is not a question the ledger should be able to answer.
+
+    The second token is admitted only when :func:`_is_bare_word` accepts it,
+    which is why `gh issue view 803` yields `gh issue` and never reaches `803`.
+    """
+    tokens = _raw_tokens(segment)
+    if not tokens:
+        return "<unparseable>"
+    head = program_name(tokens[0])
+    if len(tokens) > 1 and _is_bare_word(tokens[1]):
+        return f"{head} {tokens[1]}"
+    return head
+
+
+def record_refusal(
+    project_root: Path,
+    *,
+    session_id: str,
+    tool_name: str,
+    tool_input: dict | None = None,
+) -> bool:
+    """Write the Layer-2 record of a refusal. Returns True when one was written.
+
+    **Fail-open by contract, and this is the load-bearing property.** Every
+    failure path returns False rather than raising: an unwritable ledger is a
+    plumbing problem, and if it could raise, the hook would die with an error
+    instead of a block — converting a telemetry improvement into a way to defeat
+    the gate. The gate stays fail-CLOSED; only the measurement is fail-open.
+
+    Records nothing when the call was not actually blocked, so the count means
+    what it says. :func:`decide` is re-entered rather than trusted from a
+    caller-supplied flag — a second copy of "was this blocked" is how the
+    counter would come to disagree with the gate it counts.
+
+    Advisory telemetry, never a gate: nothing reads this to make a decision. It
+    exists so the question "what is this gate refusing?" has an answer that is
+    not a session transcript (operator report 2026-08-14, *"that class of error
+    is happening frequently - why is it recurring?"*).
+    """
+    verdict = decide(
+        project_root, session_id=session_id, tool_name=tool_name, tool_input=tool_input
+    )
+    if not verdict.blocked:
+        return False
+    handoff = newest_handoff(project_root)
+    if handoff is None:
+        return False
+    try:
+        rel = handoff.relative_to(project_root).as_posix()
+    except ValueError:
+        rel = handoff.as_posix()
+    command = str((tool_input or {}).get("command") or "")
+    try:
+        from gzkit.ledger import Ledger  # noqa: PLC0415 — hot path; hook pays import cost once
+        from gzkit.ledger_events import handoff_resume_blocked_event  # noqa: PLC0415
+
+        Ledger(project_root / _LEDGER_REL).append(
+            handoff_resume_blocked_event(
+                session_id=session_id,
+                handoff_path=rel,
+                tool_name=tool_name,
+                refused_shape=[_segment_shape(s) for s in _refused_segments(command)],
+                admitted_shape=[_segment_shape(s) for s in _admissible_segments(command)],
+            )
+        )
+    except (OSError, ValueError):
+        return False
+    return True
 
 
 def _shape_refusal_note(command: str) -> str:

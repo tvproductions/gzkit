@@ -972,6 +972,49 @@ class HandoffResumeDecidedEvent(_EventBase):
     )
 
 
+class HandoffResumeBlockedEvent(_EventBase):
+    """handoff_resume_blocked event — the gate refused a tool call.
+
+    The missing half of a binary decision. Before this event the ledger held 160
+    records of the gate being LIFTED (`handoff_resume_authorized` +
+    `handoff_resume_decided`) and none of it blocking, so any Layer-2 question
+    about refusals was structurally guaranteed to answer "never" — while
+    `docs/governance/state-doctrine.md` makes Layer-2 the system of record. The
+    false-refusal rate was therefore unmeasurable, and the gate accumulated
+    thirteen admission-breadth corrections in twenty-nine days, each discovered
+    by an operator hitting it rather than by anyone counting.
+
+    Same class as GHI #766's session-exit inversion, in a second module: an
+    event authored for one branch of a two-branch decision. The argument for
+    recording is already in this codebase, applied to the sibling half —
+    `session_exit_bookmark_skipped_event` records a deliberate no-op because
+    *"a silent skip is indistinguishable from a crashed hook"*.
+
+    ``refused_shape`` and ``admitted_shape`` carry per-segment SHAPE — a program
+    name plus a bare subcommand word (`git fetch`, `gh issue`, `rm`) — and never
+    operands. Two reasons, both binding: commands routinely name paths and the
+    operator-PII prohibition is absolute, and shape is the thing worth counting
+    anyway, since the question a recurrence asks is *which verb families are
+    being refused*.
+
+    Advisory telemetry, never a gate. Writing it is fail-open by contract
+    (:func:`gzkit.handoff_resume_gate.record_refusal`): a ledger that cannot be
+    written must never convert a refusal into a hook crash, which would turn a
+    measurement improvement into a way to defeat the gate.
+    """
+
+    event: Literal["handoff_resume_blocked"]
+    session_id: str = Field(..., min_length=1, description="Harness session that was refused")
+    handoff_path: str = Field(..., min_length=1, description="Armed handoff the gate cited")
+    tool_name: str = Field(..., min_length=1, description="Tool whose call was refused")
+    refused_shape: list[str] = Field(
+        default_factory=list, description="Shape of each refused segment; never operand text"
+    )
+    admitted_shape: list[str] = Field(
+        default_factory=list, description="Shape of each segment that would have been admitted"
+    )
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1032,6 +1075,7 @@ TypedLedgerEvent = Annotated[
     | AirlockOutEvent
     | HandoffResumeAuthorizedEvent
     | HandoffResumeDecidedEvent
+    | HandoffResumeBlockedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent
     | FoundationGrandfatheredEvent,

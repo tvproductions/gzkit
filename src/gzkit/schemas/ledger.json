@@ -1776,6 +1776,33 @@
         }
       }
     },
+    "handoff_resume_blocked": {
+      "required": [
+        "session_id",
+        "handoff_path",
+        "tool_name"
+      ],
+      "properties": {
+        "session_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "handoff_path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "tool_name": {
+          "type": "string",
+          "min_length": 1
+        },
+        "refused_shape": {
+          "type": "array"
+        },
+        "admitted_shape": {
+          "type": "array"
+        }
+      }
+    },
     "obpi_parked": {
       "required": [
         "parked_to",

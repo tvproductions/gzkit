@@ -1169,3 +1169,41 @@ def handoff_resume_decided_event(
             "set_aside": list(set_aside or []),
         },
     )
+
+
+def handoff_resume_blocked_event(
+    *,
+    session_id: str,
+    handoff_path: str,
+    tool_name: str,
+    refused_shape: list[str] | None = None,
+    admitted_shape: list[str] | None = None,
+) -> LedgerEvent:
+    """Record that the resume gate REFUSED a tool call.
+
+    The counterpart to :func:`handoff_resume_decided_event`, which records the
+    gate being lifted. Until this existed the ledger carried 160 lift records
+    and zero refusal records, so the gate's false-refusal rate — its dominant
+    real-world failure mode, thirteen corrections in twenty-nine days — could
+    not be queried at all, and each instance was rediscovered by an operator.
+
+    ``refused_shape`` is the actionable field: per-segment program shape, so a
+    recurrence can be counted by verb family rather than reconstructed from
+    session transcripts. Operands are deliberately absent — see
+    :class:`gzkit.events.HandoffResumeBlockedEvent` for the PII and
+    countability reasons, which are both binding.
+
+    ``id`` is the handoff path, matching its sibling events, so a refusal joins
+    to the ruling that eventually lifted it.
+    """
+    return LedgerEvent(
+        event="handoff_resume_blocked",
+        id=handoff_path,
+        extra={
+            "session_id": session_id,
+            "handoff_path": handoff_path,
+            "tool_name": tool_name,
+            "refused_shape": list(refused_shape or []),
+            "admitted_shape": list(admitted_shape or []),
+        },
+    )
