@@ -267,13 +267,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "matcher": "Bash",
                     "hooks": [
                         {
-                            # First: § RESUME names "gz ceremony / migration",
-                            # which only reach the harness through Bash.
-                            "type": "command",
-                            "command": _expected_hook_command("handoff-resume-gate.py"),
-                        },
-                        {
-                            # Second: authorization outranks verification hygiene.
+                            # `handoff-resume-gate.py` was FIRST here and is gone
+                            # (operator ruling 2026-08-14): it is registered on
+                            # Write|Edit|NotebookEdit only, so leaving it would pay
+                            # an interpreter start per shell command for a verdict
+                            # that is always "allow".
                             "type": "command",
                             "command": _expected_hook_command("verifier-pipe-gate.py"),
                         },
@@ -337,11 +335,11 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        # 14 = 12 + the resume gate registered on BOTH mutating matchers
-        # (`Write|Edit|NotebookEdit` and `Bash`), since the § RESUME contract
-        # names "no file mutation / gz ceremony / migration" and ceremony only
-        # reaches the harness through Bash (GHI #574).
-        self.assertEqual(len(commands), 14, commands)
+        # 13 = 12 + the resume gate, registered on `Write|Edit|NotebookEdit`
+        # ONLY. It was 14 while the gate was also on `Bash`; that arm was removed
+        # 2026-08-14 by operator ruling — the § RESUME contract's "gz ceremony"
+        # clause is no longer enforced here (see `MUTATING_TOOLS`).
+        self.assertEqual(len(commands), 13, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -634,10 +632,8 @@ class TestSetupClaudeHooks(unittest.TestCase):
                     {
                         "matcher": "Bash",
                         "hooks": [
-                            {
-                                "type": "command",
-                                "command": _expected_hook_command("handoff-resume-gate.py"),
-                            },
+                            # `handoff-resume-gate.py` was first here until the
+                            # 2026-08-14 narrowing removed the Bash arm.
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("verifier-pipe-gate.py"),

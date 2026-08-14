@@ -1794,12 +1794,6 @@
         "tool_name": {
           "type": "string",
           "min_length": 1
-        },
-        "refused_shape": {
-          "type": "array"
-        },
-        "admitted_shape": {
-          "type": "array"
         }
       }
     },

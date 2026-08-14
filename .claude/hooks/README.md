@@ -3,11 +3,13 @@
 Current hook surface in gzkit:
 
 - `handoff-resume-gate.py`
-  PreToolUse (`Write|Edit|NotebookEdit` and `Bash`) hook that
-  refuses execution while this session has resumed a handoff the
-  operator has not ruled on. Mechanizes the universal Operator
-  Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);
-  lifted by `gz handoff authorize` (GHI #574).
+  PreToolUse (`Write|Edit|NotebookEdit`) hook that refuses FILE
+  MUTATION while this session has resumed a handoff the operator
+  has not ruled on. Mechanizes the Operator Authorization Gate
+  (`gz-session-handoff` SKILL.md § RESUME); lifted by
+  `gz handoff decide` (GHI #574). Bash is NOT gated — that arm was
+  removed 2026-08-14; shell commands run freely on an unruled
+  handoff so a resume can verify its claims.
 - `verifier-pipe-gate.py`
   PreToolUse (`Bash`) hook that refuses a command piping a verifier
   (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any
@@ -75,8 +77,7 @@ Current hook surface in gzkit:
 - `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,
   then `session-staleness-check.py`, then `pipeline-gate.py`,
   then `obpi-completion-validator.py`, then `instruction-router.py`
-- `PreToolUse` `Bash`: `handoff-resume-gate.py`,
-  then `verifier-pipe-gate.py`,
+- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,
   then `pipeline-completion-reminder.py`,
   then `ghi-triage-chat-silence.py`
 - `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,

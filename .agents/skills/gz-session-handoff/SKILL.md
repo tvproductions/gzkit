@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "6.27.0"
+  skill-version: "6.28.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-13
+last_reviewed: 2026-08-14
 model: sonnet
 ---
 
@@ -45,8 +45,9 @@ uv run gz handoff archive --older-than 30d            # move handoffs older than
 its own flag, and an unsupplied section is a refusal, not an empty heading
 (GHI #692). `decide` books the operator's transit decision on a resumed handoff;
 a `proceed` decision is what lifts the § Operator Authorization Gate for the
-session (GHI #574, #757), and until one is booked every mutating tool call is
-refused. `authorize` is a retained deprecated alias. `archive` is move-not-delete: it
+session (GHI #574, #757), and until one is booked `Write` / `Edit` /
+`NotebookEdit` are refused (Bash is not gated — see § Operator Authorization
+Gate). `authorize` is a retained deprecated alias. `archive` is move-not-delete: it
 relocates handoffs older than `--older-than` into `.gzkit/handoffs/archive/`,
 skipping any that are lock-coupled or are the `continues_from:` target of a
 still-canonical handoff, so the audit trail is preserved and no resume chain is
@@ -83,8 +84,9 @@ than evidence of a closed issue.
 - **Reads (CREATE):** GHI state via `gh issue view` for every issue cited in a **prospective** section, to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
-- **Blocks (RESUME):** every mutating tool call until a `proceed` ruling is booked via `gz handoff decide` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
-- **Reads (RESUME only, read-only):** Ledger and `gz` state surfaces (`gz obpi status`, `gz obpi lock list`, `gz status`, `gz state`), GitHub issue/PR/release state via `gh` read verbs (`gh issue view|list`, `gh pr view|list|diff`, `gh release view|list`), and plain shell reads (`git`, `grep`, `rg`, `cat`, …) to verify a handoff's claims against Layer-2 (§ Claim Verification Gate). **This list is illustrative, not the allowlist's authority** — the allowlist derives from the § Claim Verification Gate's *obligation* to verify every claim. Enumerating examples here is what under-covered it twice (GHI #574 follow-ups).
+- **Blocks (RESUME):** `Write` / `Edit` / `NotebookEdit` until a `proceed` ruling is booked via `gz handoff decide` (§ Operator Authorization Gate; `.claude/hooks/handoff-resume-gate.py`)
+- **Does NOT block (RESUME):** Bash. **There is no read allowlist any more** (operator ruling 2026-08-14: *"it is a reminder of what we were doing and what to do next, not a nanny"*). Run whatever the § Claim Verification Gate obliges you to run — `gz` verbs, `gh`, `git`, pipes, loops, `git-sync` — nothing about shell is inspected. The prior allowlist enumerated permitted READS over an unbounded domain and needed 13 corrections in 29 days, every one a false refusal of a mandated verification; a handoff is a *synthetic memory refresh*, so blocking execution off it was the wrong axis (entry/exit authorization is transit's subject, ADR-0.33.0).
+- **Give-up, stated:** `gz obpi complete`, `gz attest` and commits run via Bash are no longer refused on an unruled handoff. Gate 5, the pre-commit hook and the pre-push `gz check` still bind them; only the unruled-handoff precondition lifts.
 - **Does NOT write:** Ledger files, ADR status, OBPI brief status
 
 ---
@@ -342,22 +344,32 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
    - Validation errors and context warnings
    - Chain of predecessor handoffs
 
-### Operator Authorization Gate (universal) — MECHANIZED
+### Operator Authorization Gate — MECHANIZED, SCOPED TO FILE MUTATION
 
-**Every resume requires explicit operator authorization before any execution, at
-every freshness level — Fresh included.** The agent presents the advised next
-steps and current state, then waits for the operator to rule. This is the
-human-as-final-witness doctrine applied to session resumption: the agent advises,
-the operator rules, the agent notes variance and stops.
+**Every resume requires explicit operator authorization before changing
+anything, at every freshness level — Fresh included.** The agent presents the
+advised next steps and current state, then waits for the operator to rule. This
+is the human-as-final-witness doctrine applied to session resumption: the agent
+advises, the operator rules, the agent notes variance and stops.
 
 **This gate binds mechanically (GHI #574).** It was prose plus a template banner
 until 2026-07-16 — an agent could read the banner and proceed, and nothing
 stopped it. `.claude/hooks/handoff-resume-gate.py` (PreToolUse on
-`Write|Edit|NotebookEdit` **and** `Bash`) now refuses every mutating tool call
-while this session has resumed a handoff with no operator ruling on the ledger.
-The decision is `gzkit.handoff_resume_gate.decide`; two live negative controls
-(`handoff-resume-unauthorized-write` / `-bash`) fail `gz check` if it stops
-refusing.
+`Write|Edit|NotebookEdit`) refuses file mutation while this session has resumed a
+handoff with no operator ruling on the ledger. The decision is
+`gzkit.handoff_resume_gate.decide`; the live negative control
+`handoff-resume-unauthorized-write` fails `gz check` if it stops refusing.
+
+**Bash is NOT gated (operator ruling 2026-08-14).** The word "execution" in this
+section once covered every shell command, enforced by a 44-entry allowlist of
+permitted reads. That arm is removed — verbatim: *"why is the handoff gate so
+picky? it is a reminder of what we were doing and what to do next, not a
+nanny"*. Verify freely on resume; the § Claim Verification Gate below is an
+obligation, and it was the thing most often refused. What is given up is named
+in § Trust Model rather than hidden: `gz` ceremony run through Bash is no longer
+refused here, and Gate 5 / pre-commit / pre-push still bind it. The `-bash`
+negative control is retired with the arm — a control asserting enforcement that
+no longer happens is worse than no control.
 
 **Booking the ruling.** When the operator rules, record their VERBATIM words:
 

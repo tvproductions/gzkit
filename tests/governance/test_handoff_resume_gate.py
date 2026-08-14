@@ -13,7 +13,6 @@ track AUTHORIZATION, not any fixed answer.
 from __future__ import annotations
 
 import json
-import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -21,8 +20,6 @@ from tempfile import TemporaryDirectory
 from gzkit.handoff_resume_gate import (
     MUTATING_TOOLS,
     UNWITNESSABLE,
-    _refused_segments,
-    _segments,
     decide,
     is_resume_authorized,
     newest_handoff,
@@ -213,12 +210,15 @@ class ResumeGateExemptionControlTests(unittest.TestCase):
 
         _ensure_resume_gate_claims_registered()
         declared = {r.claim_id: r.exempts for r in get_enforcement_registry()}
-        for rule_claim in (
-            "handoff-resume-unauthorized-write",
-            "handoff-resume-unauthorized-bash",
-        ):
-            self.assertEqual(declared.get(rule_claim), RESUME_GATE_COUPLING_CLAIM_ID)
+        self.assertEqual(
+            declared.get("handoff-resume-unauthorized-write"), RESUME_GATE_COUPLING_CLAIM_ID
+        )
         self.assertIn(RESUME_GATE_COUPLING_CLAIM_ID, declared)
+        # `handoff-resume-unauthorized-bash` was the second rule claim and is
+        # RETIRED with the Bash arm (2026-08-14). A control still asserting that
+        # `gz obpi complete` is refused would report enforcement the gate no
+        # longer performs — the facade shape the NC system exists to refuse.
+        self.assertNotIn("handoff-resume-unauthorized-bash", declared)
 
     def test_the_exemption_control_catches_a_mis_targeted_booking(self) -> None:
         import shutil
@@ -272,25 +272,26 @@ class ResumeGateBlocksUnauthorizedExecutionTests(unittest.TestCase):
             self.assertFalse(decide(base, session_id=_SESSION, tool_name="Write").blocked)
 
     def test_every_mutating_tool_is_gated(self) -> None:
-        """The contract says 'no file mutation', not 'no Write'.
-
-        A Write|Edit-only gate would enforce one third of the declared clause —
-        `gz` ceremony and migration both run through Bash.
-        """
+        """The contract's surviving half: 'no file mutation'."""
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
             for tool in sorted(MUTATING_TOOLS):
-                tool_input = {"command": "rm -rf src"} if tool == "Bash" else {}
                 with self.subTest(tool=tool):
-                    verdict = decide(
-                        base, session_id=_SESSION, tool_name=tool, tool_input=tool_input
-                    )
+                    verdict = decide(base, session_id=_SESSION, tool_name=tool, tool_input={})
                     self.assertTrue(verdict.blocked, f"{tool} must be gated")
 
-    def test_bash_is_in_the_gated_set(self) -> None:
-        """Pin the clause that was nearly scoped out for being harder to hook."""
-        self.assertIn("Bash", MUTATING_TOOLS)
+    def test_bash_is_not_in_the_gated_set(self) -> None:
+        """Pin the 2026-08-14 narrowing at the set itself.
+
+        This assertion is the inverse of the one it replaces, which read "pin
+        the clause that was nearly scoped out for being harder to hook." The
+        clause was right about the contract and wrong about the artifact — see
+        `BashIsNotGatedOnAHandoffTests` and `MUTATING_TOOLS` for the ruling.
+        Re-adding Bash re-opens 13 corrections' worth of false refusals.
+        """
+        self.assertNotIn("Bash", MUTATING_TOOLS)
+        self.assertEqual(MUTATING_TOOLS, frozenset({"Write", "Edit", "NotebookEdit"}))
 
     def test_read_only_tool_is_never_gated(self) -> None:
         with TemporaryDirectory() as tmp:
@@ -346,72 +347,6 @@ class ResumeGateCannotBeDefeatedTests(unittest.TestCase):
             _authorize(base)
             self.assertTrue(is_resume_authorized(base, _SESSION))
 
-    def test_compound_command_cannot_ride_in_on_an_allowlisted_prefix(self) -> None:
-        """`gz state && rm -rf x` is not a read of gz state."""
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "gz state && rm -rf src",
-                "gz state; rm -rf src",
-                "gz state | tee /tmp/x",
-                "gz state > out.txt",
-                "echo $(rm -rf src)",
-                "gz state `rm -rf src`",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} must not pass as read-only")
-
-    def test_command_substitution_is_blocked_regardless_of_quoting(self) -> None:
-        """`$(...)` and backticks are refused in EVERY quoting form — deliberately.
-
-        Paired with `test_quoted_metacharacters_are_not_compound_operators`: quote
-        awareness must not decay into "anything quoted is a read". Two facts force
-        the conservative line, both observed against the real lexer:
-
-        * Double quotes do NOT make substitution inert — bash expands
-          `"$(rm -rf x)"` and ``"`rm -rf x`"`` exactly as it would bare.
-        * `shlex` in posix mode (required, so that a quote opening mid-token like
-          `--grep='^fix('` parses at all) STRIPS quotes, so the single- and
-          double-quoted forms are indistinguishable by the time we see tokens.
-
-        Given that ambiguity the gate refuses both. The cost is a false refusal on
-        a literal `$(`-in-a-search-pattern — which no claim verification needs. A
-        false PERMIT on a live subshell is the strictly worse trade.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                'grep "$(rm -rf src)" f',
-                "grep '$(rm -rf src)' f",
-                'grep "`rm -rf src`" f',
-                "gz state `rm -rf src`",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} can spawn a subshell")
-
-    def test_unparseable_command_fails_closed(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            verdict = decide(
-                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": 'gz state "'}
-            )
-            self.assertTrue(verdict.blocked)
-
     def test_abandoned_register_entry_does_not_arm_the_gate(self) -> None:
         """Abandoned entries are a surrendered token, not context to resume."""
         with TemporaryDirectory() as tmp:
@@ -421,72 +356,79 @@ class ResumeGateCannotBeDefeatedTests(unittest.TestCase):
             self.assertFalse(decide(base, session_id=_SESSION, tool_name="Write").blocked)
 
 
-class ResumeGateAdmitsAWhollyAdmittedCompoundTests(unittest.TestCase):
-    """A chain whose EVERY segment is admitted is a read, not a shape to refuse.
+class BashIsNotGatedOnAHandoffTests(unittest.TestCase):
+    """The gate stops silent file edits. It does not police shell commands.
 
-    Operator ruling 2026-08-13 (GHI #800), reversing the 2026-08-12 disposition-1
-    ruling that `_is_compound`'s docstring had recorded as "RULED CORRECT AS
-    DESIGNED". Verbatim: "I want this fixed now, highest priority, I can't
-    tolerate this". The refusal's cost was not abstract — the block prose listed
-    the very segments it refused back to the caller as "permitted RIGHT NOW",
-    so the gate spent its own recovery text proving it had the information to
-    admit and declined to use it.
+    Operator ruling 2026-08-14, verbatim: *"why is the handoff gate so picky? it
+    is a reminder of what we were doing and what to do next, not a nanny"*,
+    followed by *"i say the word"* authorizing this scope narrowing.
 
-    The disposition-1 rationale claimed narrowing "would reopen both holes" named
-    by the two lexer facts. It does not, and GHI #800's own body says so: admission
-    is computed by re-running the REAL predicates per segment, and
-    `_bash_is_read_only` calls `_is_compound` internally. So substitution is caught
-    by `_can_expand` INSIDE each segment's check, and a redirect refuses because
-    its target (`out.txt`) is a segment matching no allowlisted head — never
-    because of the operator token. `test_one_unadmitted_segment_refuses_the_whole_command`
-    is the paired negative that keeps this honest, per this module's docstring.
+    The Bash arm was the whole recurrence. All thirteen admission-breadth
+    corrections in twenty-nine days were Bash refusals — `rev-list`, the
+    read-only git class, `find`, `-i`, `git-sync`, compound chains, `2>&1`,
+    separators, `/dev/null`, reserved words, `fetch`. The `Write`/`Edit`/
+    `NotebookEdit` arm needed none, because it has no allowlist to be
+    incomplete. Removing the arm removes the defect's source rather than its
+    latest instance.
+
+    WHY the arm was wrong in principle, not merely noisy: a handoff is a
+    *synthetic memory refresh* by operator canon (AGENTS.md, `invariant` tier,
+    2026-08-06) — entry/exit authorization is TRANSIT's subject, the airlock's
+    (ADR-0.33.0). A memory artifact has no natural blast radius, so "what should
+    reading a reminder prevent?" had no principled answer; the answer invented
+    was "every mutating tool call", then whittled by 44 read-exceptions. The
+    gate's own charter (GHI #574) had quoted the remedy it was meant to apply:
+    *"place the human at a mechanical gate, **not at every keystroke**."*
+
+    What is retained is exactly what matches the artifact: an agent that reads a
+    handoff and silently starts editing files is the failure worth a speed bump,
+    and that arm needs no list.
     """
 
     def _verdict(self, base: Path, command: str):
         return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
 
-    def test_a_chain_of_admitted_reads_is_permitted(self) -> None:
+    def test_no_bash_command_is_ever_gated(self) -> None:
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
             for command in (
-                # The 2026-08-13 refusal, verbatim from the operator's report.
-                'git log --oneline -12 && echo "---STATUS---" && git status --short',
-                # GHI #800's own canonical example. Its `uv run gz git-sync`
-                # segment is admitted UNCONDITIONALLY by `_ALWAYS_AUTHORIZED_BASH`,
-                # so refusing this chain also refused the standing operator ruling
-                # that a git-sync is "never, never, never, ever" gated.
-                'git status --short && echo "---" && uv run gz git-sync',
-                "ls && git log",
-                "git status; git diff",
+                # Reads that the allowlist admitted only after a live incident.
+                "git rev-list --left-right --count origin/main...HEAD",
+                "for n in 803 802; do gh issue view $n --json state; done",
+                "uv run gz adr status ADR-0.35.0 2>&1 | head -60",
+                "git status --short && echo '---' && git log --oneline -5",
+                # Ceremony the arm used to refuse. No longer this gate's job:
+                # Gate 5, pre-commit and pre-push still bind it.
+                "uv run gz obpi complete OBPI-x",
+                # Mutation via shell. Deliberately ungated here — see the class
+                # docstring; the Write/Edit arm is where mutation is caught.
+                "rm -rf src",
             ):
                 with self.subTest(command=command):
                     self.assertFalse(self._verdict(base, command).blocked, command)
 
-    def test_one_unadmitted_segment_refuses_the_whole_command(self) -> None:
-        """Admission is unanimous or it is nothing.
+    def test_file_mutation_tools_are_still_gated(self) -> None:
+        """The paired negative — the retained arm, which is the whole point.
 
-        The redirect and pipe cases are the load-bearing ones: they now refuse
-        because the redirect TARGET and the filter are segments matching no
-        allowlisted head, not because an operator token was seen. That is the
-        same verdict by a different route, which is why it needs its own witness.
+        If this ever passes-through, the narrowing became a removal and the gate
+        no longer does the one job its artifact supports.
         """
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
-            for command in (
-                "git status --short && rm -rf src",
-                "ls && git log && sed -i s/a/b/ f",
-                # Redirect: `out.txt` is a segment, and it is not admitted.
-                "git log --oneline && git status > out.txt",
-                # Pipe: `tee` is not an admitted verb.
-                "git status && git log | tee /tmp/x",
-                # Substitution inside an otherwise wholly-admitted chain.
-                "git status && echo `rm -rf src`",
-                'git status && echo "$(rm -rf src)"',
+            for tool, payload in (
+                ("Write", {"file_path": "src/x.py", "content": "x"}),
+                ("Edit", {"file_path": "src/x.py"}),
+                ("NotebookEdit", {"notebook_path": "n.ipynb"}),
             ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
+                with self.subTest(tool=tool):
+                    self.assertTrue(
+                        decide(
+                            base, session_id=_SESSION, tool_name=tool, tool_input=payload
+                        ).blocked,
+                        tool,
+                    )
 
 
 class ResumeGateRecordsWhatItRefusedTests(unittest.TestCase):
@@ -511,10 +453,11 @@ class ResumeGateRecordsWhatItRefusedTests(unittest.TestCase):
     deliberate no-op because "a silent skip is indistinguishable from a crashed
     hook". A silent refusal is indistinguishable from a gate nobody tripped.
 
-    SHAPE, never command text. The event carries per-segment program names
-    (`git fetch`, `gh issue`, `rm`) and never operands — commands carry paths
-    and the operator-PII prohibition is absolute. Shape is also the thing worth
-    counting: the question is which verb families are being refused.
+    IDENTITY ONLY, never payload. The event carries session, handoff and tool
+    name — never the `file_path` the refused call named. A refused Write
+    routinely names a path, and the operator-PII prohibition is absolute; the
+    count is also the whole question, since every refusal now has the same
+    subject (an edit) rather than a verb family to distinguish.
     """
 
     def _refusals(self, base: Path) -> list[dict]:
@@ -527,62 +470,59 @@ class ResumeGateRecordsWhatItRefusedTests(unittest.TestCase):
             if line.strip() and json.loads(line).get("event") == "handoff_resume_blocked"
         ]
 
-    def test_a_refusal_is_recorded_with_its_shape(self) -> None:
+    def test_a_refusal_is_recorded(self) -> None:
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
-            command = "git status && rm -rf src"
+            payload = {"file_path": "src/x.py", "content": "x"}
             self.assertTrue(
-                decide(
-                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-                ).blocked
+                decide(base, session_id=_SESSION, tool_name="Write", tool_input=payload).blocked
             )
-            record_refusal(
-                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-            )
+            record_refusal(base, session_id=_SESSION, tool_name="Write", tool_input=payload)
 
             events = self._refusals(base)
             self.assertEqual(len(events), 1)
             event = events[0]
             self.assertEqual(event["session_id"], _SESSION)
-            self.assertEqual(event["tool_name"], "Bash")
-            # The actionable half: what was refused, by shape.
-            self.assertIn("rm", event["refused_shape"])
-            self.assertIn("git status", event["admitted_shape"])
+            self.assertEqual(event["tool_name"], "Write")
+            self.assertTrue(event["handoff_path"].endswith("20260716T000000Z-work.md"))
 
-    def test_the_record_carries_no_operand_text(self) -> None:
-        """Shape, never text — the operator-PII prohibition is absolute.
+    def test_the_record_carries_no_payload_text(self) -> None:
+        """Identity, never payload — the operator-PII prohibition is absolute.
 
-        A refused command routinely names a path. If the ledger stored command
-        strings, the gate would turn every refusal into a durable, committed
-        record of whatever the agent happened to type.
+        A refused Write routinely names a path. If the ledger stored tool input,
+        the gate would turn every refusal into a durable, committed record of
+        whatever the agent happened to be editing.
         """
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
-            command = "git status && rm -rf /Users/someone/private/secrets.env"
             record_refusal(
-                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
+                base,
+                session_id=_SESSION,
+                tool_name="Write",
+                tool_input={
+                    "file_path": "/Users/someone/private/secrets.env",
+                    "content": "API_KEY=hunter2",
+                },
             )
             written = (base / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
             self.assertNotIn("secrets.env", written)
             self.assertNotIn("/Users/someone", written)
-            self.assertIn("rm", written)
+            self.assertNotIn("hunter2", written)
+            self.assertIn("handoff_resume_blocked", written)
 
-    def test_a_permitted_command_records_nothing(self) -> None:
+    def test_an_unblocked_call_records_nothing(self) -> None:
         """The paired negative. A counter that counts permits too counts nothing."""
         with TemporaryDirectory() as tmp:
             base = Path(tmp)
             _seed_handoff(base)
-            command = "git status && git log"
+            # Bash is no longer gated at all, so it is the natural permit case.
+            payload = {"command": "rm -rf src"}
             self.assertFalse(
-                decide(
-                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-                ).blocked
+                decide(base, session_id=_SESSION, tool_name="Bash", tool_input=payload).blocked
             )
-            record_refusal(
-                base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-            )
+            record_refusal(base, session_id=_SESSION, tool_name="Bash", tool_input=payload)
             self.assertEqual(self._refusals(base), [])
 
     def test_recording_never_changes_the_verdict(self) -> None:
@@ -597,368 +537,13 @@ class ResumeGateRecordsWhatItRefusedTests(unittest.TestCase):
             _seed_handoff(base)
             # A directory where the ledger file must go: every write raises.
             (base / ".gzkit" / "ledger.jsonl").mkdir(parents=True, exist_ok=True)
-            command = "git status && rm -rf src"
+            payload = {"file_path": "src/x.py", "content": "x"}
             self.assertFalse(
-                record_refusal(
-                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-                )
+                record_refusal(base, session_id=_SESSION, tool_name="Write", tool_input=payload)
             )
             self.assertTrue(
-                decide(
-                    base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command}
-                ).blocked
+                decide(base, session_id=_SESSION, tool_name="Write", tool_input=payload).blocked
             )
-
-
-class ResumeGateReadsShellKeywordsAsSyntaxTests(unittest.TestCase):
-    """A shell reserved word is syntax, not a command — it executes nothing.
-
-    Operator report 2026-08-14, verbatim: "this is ridiculous, and keeps
-    triggering almost each run, FIX IT", quoting a refusal of a `for` loop over
-    `gh issue view` — five admitted reads batched the way an operator actually
-    types them. The gate named `for n in 803 802 766 767 799`, `do echo -n ...`
-    and `done` as "the part that is not admitted", which reads as a claim that
-    `for` is a command whose write form the gate is guarding. It is not a
-    command at all.
-
-    This is the enumerate-the-examples miss in its purest form, and the sixth on
-    this surface. `_PERMITTED_BASH` answers "which PROGRAMS may run"; a reserved
-    word names no program, so the allowlist was being asked a question it cannot
-    hold an answer to, and every reserved word failed it for the same reason an
-    unknown binary would. The predicate is not another allowlist row — it is
-    that bash's reserved-word set is CLOSED and specified (`compgen -k`), so the
-    membership test can be complete rather than exemplary.
-
-    Admission is unchanged for anything that runs: stripping a reserved word
-    re-enters the real predicates on whatever remains, so `do rm -rf src`
-    refuses on `rm` exactly as it always did, and `for n in $(rm -rf src)`
-    refuses on `_can_expand` inside its own segment.
-    """
-
-    def _verdict(self, base: Path, command: str):
-        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
-
-    def test_a_loop_over_admitted_reads_is_permitted(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                # The 2026-08-14 refusal, reduced to its keyword arm.
-                "for n in 803 802 766; do gh issue view $n --json state; done",
-                # `while`/`until` take a COMMAND whose status drives the loop —
-                # a different shape from `for`, and it must reach that command.
-                "while git status; do git log; done",
-                "until git status; do git diff; done",
-                # `if`/`then`/`else`/`fi`: four keywords, one admitted command.
-                "if git status; then git log; else git diff; fi",
-                # `!` and `time` prefix a command rather than heading a block.
-                "! git status",
-                "time git log",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_a_keyword_does_not_launder_the_command_it_introduces(self) -> None:
-        """The paired negative: stripping syntax must not strip the verb check.
-
-        Each case pairs with a permitted one above and differs only in the
-        program the keyword introduces. If these passed, the fix would have
-        turned every reserved word into a universal bypass prefix — which is
-        exactly the `find` over-grant this module has already made once.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "for n in 1 2 3; do rm -rf src; done",
-                "while git status; do rm -rf src; done",
-                "if git status; then rm -rf src; fi",
-                "! rm -rf src",
-                "time rm -rf src",
-                # A function definition names a program the allowlist never saw.
-                "function f { git status; }",
-                # Substitution inside the word list is still substitution.
-                "for n in $(rm -rf src); do git status; done",
-                "for n in `rm -rf src`; do git status; done",
-                # The body is admitted; the chain appends a real command.
-                "for n in 1; do git status; done && rm -rf src",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-    def test_case_and_double_bracket_are_excluded_on_purpose(self) -> None:
-        """The stated omission, given a witness so it cannot be re-read as a bug.
-
-        `_WORD_LIST_HEADS` names `for`/`in`/`select` and NOT `case`/`[[`. Both
-        excluded ones lex with punctuation the separator set does not split on
-        (`)`, `;;`, `]]`), so the operator tokens stay inside the segment and
-        `_is_compound` refuses it whatever the head says. Admitting them means
-        teaching the splitter two more separators for a shape no verification
-        command in this repo has used.
-
-        This asserts the CURRENT boundary, not a desirable one. If a session
-        ever needs `case` in a verification command, that is the observed
-        instance which reopens the question — and this test is what will have to
-        change, deliberately, rather than the omission being discovered by
-        someone reading a refusal as a policy (the `2>&1` grouping's lesson).
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "case $n in *) git status;; esac",
-                "[[ -f README.md ]] && git status",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-
-class GitFetchIsTheReadHalfOfAnAlwaysAuthorizedSyncTests(unittest.TestCase):
-    """Refreshing the ref a sync claim is counted against is part of counting it.
-
-    `git rev-list --left-right --count origin/main...HEAD` was admitted in the
-    third allowlist fix as the instrument for an "in sync with origin" claim.
-    But it counts against `origin/main` AS LAST FETCHED, so without a fetch the
-    gate admitted the counter and refused the only thing that makes its answer
-    current — an agent verifying "0 0" against a week-old ref reports a sync
-    that may not exist. The § Claim Verification Gate demands the claim be
-    verified; a staleness-blind count does not verify it. Same shape as the
-    third miss itself, where `rev-parse` was admitted and `rev-list` refused.
-
-    `git fetch` is NOT read-only by construction and so is NOT admitted to
-    `_PERMITTED_BASH`: `git fetch origin main:main` writes a local ref and
-    `--prune` deletes remote-tracking ones. It belongs in
-    `_ALWAYS_AUTHORIZED_BASH`, the constant held separate precisely for things
-    that write and are ruled authorized anyway — filing it under a name that
-    says "read-only" is the lie that constant's own comment refuses.
-
-    The ruling it rides on is the operator's, verbatim 2026-07-26: "a git-sync
-    will ALWAYS be authorized - think about it, if we need to sync with remote,
-    your local handoff is almost always likely to have been superseded by
-    something on remote." Fetch is how that supersession is DISCOVERED, so the
-    stated reason reaches it more directly than the ceremony it was written for.
-    Reaffirmed 2026-08-09: "handoffs should never, never, never, ever, block
-    git-sync. NEVER."
-    """
-
-    def _verdict(self, base: Path, command: str):
-        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
-
-    def test_fetch_is_permitted_before_a_ruling(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git fetch",
-                "git fetch -q origin",
-                "git fetch --all",
-                # The shape the claim actually takes: refresh, then count.
-                "git fetch -q origin; git rev-list --left-right --count origin/main...HEAD",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_fetch_does_not_carry_a_chained_mutation(self) -> None:
-        """The paired negative: the ruling covers fetch, not its prefix position.
-
-        Identical in form to the git-sync negative — an always-authorized verb
-        is a segment, never a licence for the segments beside it.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git fetch && rm -rf src",
-                "git fetch origin && git push --force",
-                "git fetch; sed -i s/a/b/ f",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-
-class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
-    """`2>&1` duplicates a descriptor; it names no file and writes nothing.
-
-    Operator report 2026-08-14, verbatim: "once again this bullshit", quoting a
-    refusal of `uv run gz adr status <ADR> 2>&1 | head -60` — a read of a read
-    verb. The gate answered by naming `1` as the unadmitted part, which is not a
-    command the caller wrote: `shlex` with `punctuation_chars` lexes `2>&1` as
-    `['2', '>', '&1']`, `_is_shell_operator` accepts the bare `>`, and
-    `_segments` derives its separators from that character shape — so the
-    duplication's target became a phantom segment matching no allowlisted head.
-
-    This was a KNOWN state, not an oversight, and that is the defect worth
-    naming. `_compound_is_wholly_admitted`'s docstring carried it under "Still
-    refused, deliberately: ... and `2>&1` -- whose `1` is a segment matching no
-    head", filed beside the genuine redirect case on the strength of a shared
-    `>` character. The two are not the same question: a redirect takes a FILE
-    operand and its target is unmodelled (correctly still refused, per the
-    paired negative below), while a duplication takes a DESCRIPTOR and can
-    create no file under any target model. Grouping them made an lexer artifact
-    read as a policy.
-
-    Reading combined output is how an agent verifies before it is authorized to
-    act, so refusing it taxes exactly the pre-ruling verification the resume
-    gate's own recovery prose demands.
-    """
-
-    def _verdict(self, base: Path, command: str):
-        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
-
-    def test_fd_duplication_does_not_refuse_an_otherwise_admitted_read(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                # The 2026-08-14 refusal, verbatim from the operator's report.
-                "uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing 2>&1 | head -60",
-                # Duplication with no pipe at all — refused on shape alone before.
-                "git status --short 2>&1",
-                # The reverse direction, and the target-only form.
-                "git log --oneline 1>&2",
-                "git status >&2",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_input_redirection_is_admitted_because_no_form_of_it_writes(self) -> None:
-        """`< path` is the duplication's sibling, found by asking for the class.
-
-        The reported instance was `2>&1`. Fixing only it would have left the
-        other operator that cannot write still refusing reads — the shape
-        AGENTS.md § DO IT RIGHT #1 names, where the instance is patched and the
-        family is not. `<<` and `<<<` are deliberately excluded: they are
-        distinct tokens whose body is not in this command string.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            self.assertFalse(self._verdict(base, "grep -c foo < README.md").blocked)
-            self.assertTrue(self._verdict(base, "cat <<EOF").blocked)
-
-    def test_a_real_redirect_is_still_refused_alongside_a_duplication(self) -> None:
-        """The paired negative: dropping `2>&1` must not drop the file write.
-
-        `git log 2>&1 > out.txt` carries both forms. Reading the duplication
-        correctly is worthless if it also swallows the `> out.txt` that follows
-        it — the failure mode a token-dropping fix invites, and the reason this
-        witness sits next to the positive rather than trusting it.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git log --oneline 2>&1 > out.txt",
-                "git status 2>&1 && rm -rf src",
-                "git status 2>&1 | tee /tmp/x",
-                # `>&` with a FILE target is csh-style both-streams redirection,
-                # a genuine write sharing the duplication's operator token. The
-                # digit target is the discriminator, not the operator.
-                "git status >& out.txt",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-
-class ResumeGateAdmitsDiscardRedirectionTests(unittest.TestCase):
-    """A write to the null device persists nothing, so it is not a mutation.
-
-    Operator ruling 2026-08-14, verbatim: "fix it now". This is the member the
-    two preceding fixes deliberately left standing, because it is decided on a
-    different axis: `<` and `2>&1` are admitted by their OPERATOR, which has no
-    writing form at all, while `> /dev/null` wears an operator that writes and
-    is admitted only by its TARGET. The gate had modelled no targets, so the
-    question was left for a ruling rather than settled by an agent widening a
-    security surface on its own judgment.
-
-    The target set is exactly two devices and nothing generalizes from it. Any
-    other path is a real write and still refuses — that is the paired negative,
-    and it is what keeps this from becoming "the gate models paths now".
-    """
-
-    def _verdict(self, base: Path, command: str):
-        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
-
-    def test_every_write_operator_is_admitted_when_it_targets_the_null_device(self) -> None:
-        """All five write operators, because enumerating a subset is the miss.
-
-        `_PERMITTED_BASH`'s own docstring records four consecutive misses from
-        admitting one example at a time. `>`, `>>`, `>&`, `&>` and `&>>` all
-        reach the same device; covering `2>` alone would repeat that habit.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git log --oneline 2>/dev/null",
-                "git status >/dev/null",
-                "git status >>/dev/null",
-                "git status >& /dev/null",
-                "git status &>/dev/null",
-                "git status &>> /dev/null",
-                # Discard combined with duplication, the ordinary silencing idiom.
-                "git log --oneline > /dev/null 2>&1",
-                # And inside a chain, where each segment is checked alone.
-                "git log 2>/dev/null | head -5",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_a_real_path_is_still_a_write_and_still_refuses(self) -> None:
-        """The set is two devices, not a target model.
-
-        `nul` is the load-bearing case: it is the null device on Windows and an
-        ORDINARY RELATIVE FILENAME on POSIX, where admitting it would create a
-        file through the gate. Admission is therefore keyed to the host that
-        will actually run the command — the one place this module reads the
-        platform rather than the string, and it reads it because being wrong
-        here writes to disk.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git log --oneline > out.txt",
-                "git status >& dump.log",
-                "git status 2>> /var/log/gz.log",
-                # Near-misses that are plain files on every platform.
-                "git status > /dev/null2",
-                "git status > dev/null",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-            windows = os.name == "nt"
-            self.assertEqual(self._verdict(base, "git status 2>NUL").blocked, not windows)
-            self.assertEqual(self._verdict(base, "git status > nul").blocked, not windows)
-
-
-class ResumeGateNamesACommandTheCallerWroteTests(unittest.TestCase):
-    """A refusal must point at a command, never at a redirection's operand.
-
-    This is the CAUSE the `2>&1` fix reached only one instance of. `_segments`
-    derived its separator set by character shape — anything built from `;|&<>()`
-    — so a redirection operator split a command from its own OPERAND, and the
-    gate then reported the operand as the part that was not admitted. `2>&1`
-    made it a wrong verdict; `> out.txt` keeps the right verdict and names a
-    FILENAME as an unadmitted command, which is the same incoherence surviving
-    in the prose.
-
-    Verdicts are deliberately unchanged here: a redirect still refuses, now from
-    inside its segment via `_is_compound`. Only the part named back to the
-    caller changes, which is why this needs a witness of its own — nothing in
-    the blocked/not-blocked assertions elsewhere can see it.
-    """
-
-    def test_a_refused_redirect_names_the_command_not_the_filename(self) -> None:
-        for command, operand in (
-            ("git log --oneline > out.txt", "out.txt"),
-            ("git status >& dump.log", "dump.log"),
-        ):
-            with self.subTest(command=command):
-                self.assertEqual(_segments(command), [command])
-                self.assertNotIn(operand, _refused_segments(command))
-                self.assertEqual(_refused_segments(command), [command])
 
 
 class ResumeGateDoesNotRevokeTheAuthorsClearanceTests(unittest.TestCase):
@@ -1050,122 +635,6 @@ class ResumeGateNeverBlocksItsOwnRecoveryTests(unittest.TestCase):
             self.assertFalse(verdict.blocked)
 
 
-class ResumeGatePermitsTheMandatedVerificationTests(unittest.TestCase):
-    """§ Trust Model requires reading Layer-2 BEFORE presenting to the operator.
-
-    Blocking these would make the skill's own Claim Verification Gate
-    unexecutable — the agent could not verify the handoff's claims in order to
-    present them, so it could never reach the ruling that lifts the gate.
-    """
-
-    def test_declared_layer2_read_surfaces_are_permitted(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "gz obpi status",
-                "gz obpi lock list",
-                "gz gates",
-                "gz state",
-                "gz handoff list",
-                "gz handoff resume --adr ADR-0.0.65",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertFalse(verdict.blocked, f"{command!r} is a declared RESUME read")
-
-    def test_github_issue_state_reads_are_permitted(self) -> None:
-        """A GHI-state claim is verifiable through `gh` and nothing else.
-
-        The § Claim Verification Gate mandates verifying EVERY completion claim a
-        handoff makes before presenting it. Handoffs routinely claim "GHI #N
-        CLOSED" and advise "rule on GHI #M" as a next step — claims whose only
-        Layer-2 surface is GitHub. The first allowlist was derived from the
-        § Trust Model's four example `gz` verbs rather than from that obligation,
-        so `gh` was refused and those claims were structurally unverifiable
-        (operator ruling, 2026-07-17: "this is essential").
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "gh issue view 693",
-                "gh issue view 693 --json state,title",
-                "gh issue list --state open --limit 200",
-                "gh pr view 42",
-                "gh pr list",
-                "gh pr diff 42",
-                # The jq filter's `|` is single-quoted: inert, and the canonical
-                # form of the very query that verifies a batch of GHI claims.
-                "gh issue list --json number,state -q '.[] | select(.state == \"OPEN\")'",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertFalse(verdict.blocked, f"{command!r} is a GHI-state read")
-
-    def test_github_mutating_verbs_are_still_blocked(self) -> None:
-        """Paired with the read case: `gh` is admitted as a READ surface only.
-
-        `gh issue create` is independently forbidden by AGENTS.md § Behavior Rules
-        — Always #13 (author GHIs through `/ghi-author`, never `gh` directly), so
-        an allowlist that admitted it would put the gate in conflict with the
-        contract it serves.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "gh issue create --title x --body y",
-                "gh issue close 693",
-                "gh issue comment 693 --body x",
-                "gh issue edit 693 --add-label x",
-                "gh pr merge 42",
-                "gh pr create --fill",
-                "gh release create v1.0.0",
-                # `gh api` is write-capable via `-X POST`; it is not an admitted head.
-                "gh api -X POST /repos/x/y/issues",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} is not a read")
-
-    def test_a_gz_ceremony_verb_is_still_blocked(self) -> None:
-        """The allowlist is reads only — `gz` ceremony is named in the contract.
-
-        `gz git-sync` used to be asserted here and is deliberately gone: it is
-        the one ceremony the operator ruled is NEVER gated on a handoff, proven
-        by `GitSyncIsNeverGatedOnAHandoffTests`. The two verbs left are ordinary
-        ceremony and stay blocked, so this case still discriminates.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in ("gz obpi complete OBPI-x", "gz adr promote x"):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} is ceremony, not a read")
-
-
 class GitSyncIsNeverGatedOnAHandoffTests(unittest.TestCase):
     """A git-sync is ALWAYS authorized, ruled handoff or not.
 
@@ -1178,9 +647,19 @@ class GitSyncIsNeverGatedOnAHandoffTests(unittest.TestCase):
     `/git-sync` again: "handoffs should never, never, never, ever, block
     git-sync. NEVER."
 
-    Assertions derive from that ruling, not from the implementation. The permit
-    cases are paired with block cases below so an always-allow implementation
-    cannot false-pass them.
+    Assertions derive from that ruling, not from the implementation.
+
+    **This class is now a REGRESSION PIN, and that is its main job** (operator
+    ruling 2026-08-14, verbatim: *"I EXPLICITLY want this: 'gz git-sync is
+    unconditionally permitted'"*). Since the Bash arm's removal these commands
+    lift trivially — there is nothing to allowlist. That makes the assertions
+    look redundant and they are not: if anyone re-introduces Bash gating, this
+    is what fails first, and the paired
+    `ResumeGateBlocksUnauthorizedExecutionTests.test_bash_is_not_in_the_gated_set`
+    pins the set itself. The block-case pairings that used to live here
+    (`gz git-sync && rm -rf docs`, `gz obpi complete`) are GONE, deliberately —
+    they asserted refusals this gate no longer makes, and keeping them would
+    have been asserting enforcement that does not exist.
     """
 
     def test_git_sync_is_permitted_while_unauthorized(self) -> None:
@@ -1207,40 +686,6 @@ class GitSyncIsNeverGatedOnAHandoffTests(unittest.TestCase):
                         verdict.blocked,
                         f"{command!r} is the sync ceremony the operator ruled is never gated",
                     )
-
-    def test_the_exemption_does_not_generalize_to_other_ceremony(self) -> None:
-        """Scoped to the sync verb — a blanket ceremony permit would gut the gate."""
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in ("gz obpi complete OBPI-x", "gz adr promote x", "gz attest"):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} is ordinary ceremony")
-
-    def test_nothing_rides_in_chained_onto_a_sync(self) -> None:
-        """The ruling covers the sync, not whatever is chained onto its prefix."""
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "gz git-sync --apply && rm -rf docs",
-                "gz git-sync; gz obpi complete OBPI-x",
-                "gz git-sync --apply | tee out.log",
-            ):
-                with self.subTest(command=command):
-                    verdict = decide(
-                        base,
-                        session_id=_SESSION,
-                        tool_name="Bash",
-                        tool_input={"command": command},
-                    )
-                    self.assertTrue(verdict.blocked, f"{command!r} is compound")
 
 
 class FloorBookmarkIsAFloorNotAPreferenceTests(unittest.TestCase):
@@ -1385,57 +830,6 @@ class ResumeGateProseTests(unittest.TestCase):
             reason = decide(base, session_id=_SESSION, tool_name="Write").reason
             self.assertIn(f"--session-id {_SESSION}", reason)
 
-    def test_block_prose_names_the_refused_part_of_a_mixed_command(self) -> None:
-        """A mixed chain must name WHICH part refused, not just that one did.
-
-        Dogfooding regression (2026-08-12): a session opened a resume with
-        `git status --short && uv run gz git-sync`. Both halves are admitted —
-        the first by `_PERMITTED_BASH`, the second unconditionally by
-        `_ALWAYS_AUTHORIZED_BASH` — and the refusal came entirely from the `&&`.
-        Every reason the prose then gave was about the operator not having ruled,
-        so the session concluded the standing "never gate a git-sync" ruling had
-        regressed and asked the operator to re-fix a defect that had landed three
-        days earlier. **That exact command is now permitted outright** (GHI #800,
-        operator ruling 2026-08-13), which is the stronger fix; what survives here
-        is the residual case the note still owns — a genuinely MIXED command.
-
-        The refused segment is the one fact the caller cannot derive: it can see
-        its own command, but not the allowlist that judged it.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            reason = decide(
-                base,
-                session_id=_SESSION,
-                tool_name="Bash",
-                tool_input={"command": "git status --short && rm -rf build && uv run gz git-sync"},
-            ).reason
-            self.assertIn("rm -rf build", reason, "the prose must name what refused")
-            # The admitted parts are quoted back so the caller can reissue them
-            # without re-deriving the allowlist it cannot read.
-            self.assertIn("git status --short", reason)
-            self.assertIn("uv run gz git-sync", reason)
-
-    def test_mixed_note_is_withheld_when_no_part_would_be_admitted(self) -> None:
-        """The note is driven by the predicates, not printed for every compound.
-
-        Without this, "these parts are permitted RIGHT NOW" would be printed over
-        a chained `rm -rf` — false, and an invitation to reissue it bare.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            reason = decide(
-                base,
-                session_id=_SESSION,
-                tool_name="Bash",
-                tool_input={"command": "rm -rf build && chmod 777 dist"},
-            ).reason
-            self.assertNotIn("permitted RIGHT NOW", reason)
-            self.assertNotIn("mixed admitted and unadmitted", reason)
-            self.assertIn("BLOCKED", reason, "the ordinary refusal still stands")
-
 
 class ResumeGateNewestHandoffSelectionTests(unittest.TestCase):
     """Recency is a frontmatter-timestamp property, never a filename sort.
@@ -1498,287 +892,6 @@ class ResumeGateNewestHandoffSelectionTests(unittest.TestCase):
                 abandoned=True,
             )
             self.assertEqual(newest_handoff(base), resumable)
-
-
-class ResumeGatePermitsPlainShellReadsTests(unittest.TestCase):
-    """The § Claim Verification Gate's real instrument when no Grep/Glob tool exists.
-
-    Dogfooding regression (2026-07-16): the first allowlist permitted only `gz`
-    verbs, on the false premise that "Read/Grep/Glob are never gated, so Bash is
-    not the read path". In the harness this skill runs in, Grep/Glob may be
-    absent — making Bash `grep`/`cat`/`git log` the ONLY way to satisfy the
-    verification this same skill MANDATES before presenting. A gate that forbids
-    the verification its own skill requires cannot be complied with.
-    """
-
-    def _verdict(self, base: Path, command: str):
-        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
-
-    def test_plain_reads_are_permitted(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git status -sb",
-                "git log --oneline -5",
-                "grep -rn pattern src/",
-                "rg pattern",
-                "cat src/gzkit/handoff_api.py",
-                "ls -la",
-                "head -20 file.md",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_quoted_metacharacters_are_not_compound_operators(self) -> None:
-        """A `|` inside a quoted search pattern is data, not a pipe.
-
-        Dogfooding regression (2026-07-17): compound detection ran a regex over the
-        RAW command string before any tokenization, so `grep -n "A\\|B" file` — an
-        alternation pattern, the most ordinary instrument the § Claim Verification
-        Gate has — was refused as a compound command. Three of the first four
-        verification calls of a resume died on it. A gate whose read path forbids
-        ordinary reads gets worked around; `shlex` was already imported one
-        function away and knows quoting.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                'grep -n "READ_ONLY\\|ALLOW\\|MUTATING" src/gzkit/handoff_resume_gate.py',
-                "grep -rn 'a|b' src/",
-                'rg "foo|bar" src/',
-                'git log --grep="^fix(\\|^feat(" --oneline',
-                # AGENTS.md § Defect-fix routing MANDATES running exactly this to
-                # compute the precedent count. A gate that refuses it puts the
-                # agent in an unsatisfiable position between two binding rules.
-                "git log --since='60 days ago' --oneline --grep='^fix('",
-                # The canonical batch GHI-state query: `|` inside a jq filter.
-                "gh issue list --json number,state -q '.[] | select(.state == \"OPEN\")'",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_write_capable_flags_defeat_the_read_allowlist(self) -> None:
-        """An allowlisted head does not license a mutation wearing a read's name."""
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in ("find . -delete", "find . -exec rm {} ;", "grep x y --fix"):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-    def test_case_insensitive_search_is_a_read(self) -> None:
-        """`-i` is a write flag only for verbs this gate already excludes.
-
-        Dogfooding regression (2026-08-08): `grep -rn -i "skill" <file>` was
-        refused mid-resume while the identical grep without `-i` was permitted.
-        `_MUTATING_FLAGS` carried `-i` for its `sed`/`perl` in-place meaning —
-        but the membership predicate (read-only BY CONSTRUCTION) already excludes
-        every verb for which `-i` means in-place, and `sed -i` is refused at the
-        HEAD, never at the flag. What remained was a guard that could not reach
-        the verbs it was written for while blocking the two admitted verbs where
-        `-i` means case-insensitive.
-
-        This is the `find` over-grant mirrored: there, the guard was trusted to
-        cover a verb whose writes it could not see; here, it fired for a verb
-        that was not there. Both are the flag set being read as the predicate.
-
-        The guard's own docstring states the premise this test pins — "every verb
-        in `_PERMITTED_BASH` is read-only by construction, so nothing admitted can
-        legally carry one of these". A flag that an admitted verb DOES legally
-        carry falsifies that premise and does not belong in the set.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                'grep -rn -i "skill" docs/governance/advisory-rules-audit.md',
-                "grep -i pattern file",
-                "rg -i foo src/",
-                "git log -i --grep='^fix('",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(
-                        self._verdict(base, command).blocked,
-                        f"{command!r} is a case-insensitive READ and must be permitted",
-                    )
-
-    def test_in_place_edit_stays_blocked_at_the_head(self) -> None:
-        """Removing `-i` from the flag guard does not admit any in-place editor.
-
-        The companion to `test_case_insensitive_search_is_a_read`: it would be a
-        real weakening if `-i`'s removal let an in-place edit through. It cannot,
-        because every verb that HAS an in-place form fails the membership
-        predicate first — the flag guard was never what stopped them.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in ("sed -i s/a/b/ f", "perl -i -pe s/a/b/ f", "ruff check . --fix"):
-                with self.subTest(command=command):
-                    self.assertTrue(
-                        self._verdict(base, command).blocked,
-                        f"{command!r} edits in place and must stay blocked",
-                    )
-
-    def test_branch_sync_claims_are_verifiable(self) -> None:
-        """An "origin/main in sync" claim needs a counting instrument.
-
-        Dogfooding regression (2026-08-02): a handoff asserted "origin/main in
-        sync" and prescribed `git rev-list --left-right --count
-        origin/main...HEAD` in its OWN Verification Checklist — and the gate
-        refused it. `rev-parse` was allowlisted; `rev-list`, the only verb that
-        counts ahead/behind, was not. Third instance of the same root: the
-        allowlist was derived from example commands rather than from the
-        § Claim Verification Gate's obligation to verify EVERY readiness claim.
-
-        Read-only by construction — `rev-list` has no write form.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git rev-list --left-right --count origin/main...HEAD",
-                "git rev-list --count HEAD",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_read_only_git_plumbing_is_permitted(self) -> None:
-        """The whole read-only git family, not one verb at a time.
-
-        GHI #732 named the CLASS — "read-only git plumbing/porcelain verbs absent
-        from an allowlist that advertises 'git reads' generically ... The instance
-        is `rev-list`; the class is enumerate-the-examples scoping" — and listed
-        these six. The rev-list fix took the instance, so the class stayed open and
-        would have produced a fourth narrow miss.
-
-        Every verb here is read-only BY CONSTRUCTION: none has a write form. That
-        is the membership predicate, and it is what makes the set closable rather
-        than extendable-on-demand.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "git blame src/gzkit/handoff_resume_gate.py",
-                "git shortlog -sn",
-                "git describe --tags",
-                "git merge-base origin/main HEAD",
-                "git cat-file -p HEAD",
-                "git for-each-ref refs/heads",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_plain_mutators_remain_blocked(self) -> None:
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in ("rm -rf src", "mv a b", "sed -i s/a/b/ f", "git commit -m x"):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
-
-    def test_a_plain_verb_with_any_write_form_is_refused(self) -> None:
-        """The plain-shell arm is closed by the SAME predicate as the git arm.
-
-        GHI #732 reopened for a fourth miss: the git arm got a stated membership
-        predicate ("read-only by construction") while the plain-shell arm stayed a
-        bare enumeration, so judging a candidate meant asking "is it in the list?"
-        — answerable only by discovering a miss.
-
-        The reopened issue proposed a WEAKER predicate for this arm — admit a
-        write-capable verb when "every write-enabling flag is in `_MUTATING_FLAGS`"
-        — on the premise that `find`'s admission proved the flag guard was the
-        intended pattern. Probing the real tools disproved the premise: a verb's
-        write surface is not reachable only through flags.
-
-        * `find . -fprint FILE` / `-fls` / `-fprintf` write via unguarded PRIMITIVES,
-          not flags. Observed writing a file 2026-08-05 while this gate permitted it.
-        * `sed -n '1,2w FILE'` and `sed -n 's/a/z/w FILE'` write via a command INSIDE
-          the script operand, where no flag set can see it. `-i` is not sed's only
-          write form, only its most famous one.
-
-        So `find`'s grant was the hole, not the precedent — and one predicate governs
-        both arms: a verb is admitted only when it has NO write form at all. Flags are
-        defense-in-depth beneath that, never a substitute for it.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                # find: write primitives that `_MUTATING_FLAGS` never enumerated.
-                "find . -fprint /tmp/out",
-                "find . -fls /tmp/out",
-                "find . -fprintf /tmp/out %p",
-                "find . -name x -delete",
-                # sed: in-script writes, invisible to any flag guard.
-                "sed -n '1,2w /tmp/out' f",
-                "sed -n 's/a/z/w /tmp/out' f",
-                "sed -i s/a/b/ f",
-                # The rest of the family the predicate excludes, each for a stated
-                # reason: in-program redirect, a write flag that collides with an
-                # admitted verb's read syntax, a positional output operand, writing
-                # by definition, and arbitrary-command execution.
-                "awk '{print > \"/tmp/out\"}' f",
-                "sort -o /tmp/out f",
-                "uniq f /tmp/out",
-                "tee /tmp/out",
-                "env rm -rf src",
-                "xargs rm",
-            ):
-                with self.subTest(command=command):
-                    self.assertTrue(
-                        self._verdict(base, command).blocked,
-                        f"{command!r} has a write form and must not be admitted",
-                    )
-
-    def test_read_only_by_construction_plain_verbs_stay_permitted(self) -> None:
-        """Closing the predicate must not cost the reads the Gate actually mandates.
-
-        These have no write form in any flag or script combination, so the same
-        predicate that excludes `find`/`sed` admits every one of them. `rg --files`
-        and `git ls-files` are the file-location instruments that make `find`'s
-        removal a no-op for the § Claim Verification Gate's obligation.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            for command in (
-                "rg --files src/",
-                "git ls-files src/gzkit",
-                "wc -l src/gzkit/handoff_resume_gate.py",
-                "tail -40 .gzkit/ledger.jsonl",
-                "jq .event .gzkit/ledger.jsonl",
-                "pwd",
-            ):
-                with self.subTest(command=command):
-                    self.assertFalse(self._verdict(base, command).blocked, command)
-
-    def test_a_readiness_read_is_admitted_but_its_ceremony_successor_is_not(self) -> None:
-        """`gz gates` is a readiness READ; `gz closeout` writes in its bare form.
-
-        Recorded on GHI #732 by the #743 control-surface audit as an over-grant /
-        under-grant pair: the allowlist admits `gz gates` (deprecated under #705,
-        successor `gz closeout`) while refusing the successor. Re-derived here rather
-        than inherited — the pair is CORRECT under the obligation predicate, and the
-        reason has to be recorded or the next audit re-files it.
-
-        Deprecation governs what docs may PRESCRIBE, not what this gate may READ:
-        `gz gates` still runs and still answers a gate-status claim. `gz closeout`
-        is ceremony — only `--dry-run` is a read, and `_PERMITTED_BASH` matches
-        LEADING tokens, so admitting the head would license the write form. Its
-        dry-run is an advised step requiring authorization, not a claim-verification
-        read; `gz status` answers the claim.
-        """
-        with TemporaryDirectory() as tmp:
-            base = Path(tmp)
-            _seed_handoff(base)
-            self.assertFalse(self._verdict(base, "gz gates").blocked, "gz gates is a read")
-            for command in ("gz closeout ADR-0.0.1", "gz closeout ADR-0.0.1 --dry-run"):
-                with self.subTest(command=command):
-                    self.assertTrue(self._verdict(base, command).blocked, command)
 
 
 class ResumeDecisionIsATransitNotAnAttestationTests(unittest.TestCase):

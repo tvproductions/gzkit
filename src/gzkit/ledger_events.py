@@ -1176,8 +1176,6 @@ def handoff_resume_blocked_event(
     session_id: str,
     handoff_path: str,
     tool_name: str,
-    refused_shape: list[str] | None = None,
-    admitted_shape: list[str] | None = None,
 ) -> LedgerEvent:
     """Record that the resume gate REFUSED a tool call.
 
@@ -1187,14 +1185,11 @@ def handoff_resume_blocked_event(
     real-world failure mode, thirteen corrections in twenty-nine days — could
     not be queried at all, and each instance was rediscovered by an operator.
 
-    ``refused_shape`` is the actionable field: per-segment program shape, so a
-    recurrence can be counted by verb family rather than reconstructed from
-    session transcripts. Operands are deliberately absent — see
-    :class:`gzkit.events.HandoffResumeBlockedEvent` for the PII and
-    countability reasons, which are both binding.
-
     ``id`` is the handoff path, matching its sibling events, so a refusal joins
-    to the ruling that eventually lifted it.
+    to the ruling that eventually lifted it. Since the Bash arm's removal
+    (2026-08-14) ``tool_name`` is always a file-mutation tool, which makes a
+    rising count a straightforward question: is the gate stopping edits the
+    operator would have wanted to make anyway?
     """
     return LedgerEvent(
         event="handoff_resume_blocked",
@@ -1203,7 +1198,5 @@ def handoff_resume_blocked_event(
             "session_id": session_id,
             "handoff_path": handoff_path,
             "tool_name": tool_name,
-            "refused_shape": list(refused_shape or []),
-            "admitted_shape": list(admitted_shape or []),
         },
     )

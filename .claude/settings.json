@@ -72,10 +72,6 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/handoff-resume-gate.py\""
-          },
-          {
-            "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/verifier-pipe-gate.py\""
           },
           {

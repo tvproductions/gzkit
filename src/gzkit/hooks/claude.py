@@ -46,11 +46,13 @@ def _claude_hooks_readme() -> str:
             "Current hook surface in gzkit:",
             "",
             "- `handoff-resume-gate.py`",
-            "  PreToolUse (`Write|Edit|NotebookEdit` and `Bash`) hook that",
-            "  refuses execution while this session has resumed a handoff the",
-            "  operator has not ruled on. Mechanizes the universal Operator",
-            "  Authorization Gate (`gz-session-handoff` SKILL.md § RESUME);",
-            "  lifted by `gz handoff authorize` (GHI #574).",
+            "  PreToolUse (`Write|Edit|NotebookEdit`) hook that refuses FILE",
+            "  MUTATION while this session has resumed a handoff the operator",
+            "  has not ruled on. Mechanizes the Operator Authorization Gate",
+            "  (`gz-session-handoff` SKILL.md § RESUME); lifted by",
+            "  `gz handoff decide` (GHI #574). Bash is NOT gated — that arm was",
+            "  removed 2026-08-14; shell commands run freely on an unruled",
+            "  handoff so a resume can verify its claims.",
             "- `verifier-pipe-gate.py`",
             "  PreToolUse (`Bash`) hook that refuses a command piping a verifier",
             "  (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any",
@@ -118,8 +120,7 @@ def _claude_hooks_readme() -> str:
             "- `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,",
             "  then `session-staleness-check.py`, then `pipeline-gate.py`,",
             "  then `obpi-completion-validator.py`, then `instruction-router.py`",
-            "- `PreToolUse` `Bash`: `handoff-resume-gate.py`,",
-            "  then `verifier-pipe-gate.py`,",
+            "- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,",
             "  then `pipeline-completion-reminder.py`,",
             "  then `ghi-triage-chat-silence.py`",
             "- `PostToolUse` `Edit|Write`: `post-edit-ruff.py`,",
@@ -265,18 +266,12 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                 {
                     "matcher": "Bash",
                     "hooks": [
+                        # `handoff-resume-gate.py` was FIRST in this chain and is
+                        # removed (operator ruling 2026-08-14). It is registered on
+                        # Write|Edit|NotebookEdit only now, so leaving it here would
+                        # pay a ~300ms interpreter start on every shell command to
+                        # compute a verdict that is always "allow".
                         {
-                            # First in the chain: the § RESUME contract names
-                            # "gz ceremony / migration", which only reach the
-                            # harness through Bash. A Write|Edit-only resume gate
-                            # would enforce one third of the declared clause.
-                            "type": "command",
-                            "command": _hook_command(hooks_dir, "handoff-resume-gate.py"),
-                        },
-                        {
-                            # Second: authorization outranks verification hygiene.
-                            # An unauthorized resume must be refused before the
-                            # command's SHAPE is ever considered.
                             "type": "command",
                             "command": _hook_command(hooks_dir, "verifier-pipe-gate.py"),
                         },

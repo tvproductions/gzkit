@@ -990,12 +990,11 @@ class HandoffResumeBlockedEvent(_EventBase):
     `session_exit_bookmark_skipped_event` records a deliberate no-op because
     *"a silent skip is indistinguishable from a crashed hook"*.
 
-    ``refused_shape`` and ``admitted_shape`` carry per-segment SHAPE — a program
-    name plus a bare subcommand word (`git fetch`, `gh issue`, `rm`) — and never
-    operands. Two reasons, both binding: commands routinely name paths and the
-    operator-PII prohibition is absolute, and shape is the thing worth counting
-    anyway, since the question a recurrence asks is *which verb families are
-    being refused*.
+    ``tool_name`` is the whole payload beyond identity, and deliberately so. The
+    event briefly carried command-shape fields for the Bash arm; that arm was
+    removed on 2026-08-14 (see :data:`gzkit.handoff_resume_gate.MUTATING_TOOLS`)
+    and the fields went with it rather than remaining as columns that could only
+    ever be empty. No on-disk event ever carried them.
 
     Advisory telemetry, never a gate. Writing it is fail-open by contract
     (:func:`gzkit.handoff_resume_gate.record_refusal`): a ledger that cannot be
@@ -1007,12 +1006,6 @@ class HandoffResumeBlockedEvent(_EventBase):
     session_id: str = Field(..., min_length=1, description="Harness session that was refused")
     handoff_path: str = Field(..., min_length=1, description="Armed handoff the gate cited")
     tool_name: str = Field(..., min_length=1, description="Tool whose call was refused")
-    refused_shape: list[str] = Field(
-        default_factory=list, description="Shape of each refused segment; never operand text"
-    )
-    admitted_shape: list[str] = Field(
-        default_factory=list, description="Shape of each segment that would have been admitted"
-    )
 
 
 TypedLedgerEvent = Annotated[
