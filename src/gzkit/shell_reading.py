@@ -34,6 +34,7 @@ apart on the same input, so both import from here — the single-reader discipli
 
 from __future__ import annotations
 
+import os
 import shlex
 from collections.abc import Iterable
 
@@ -70,6 +71,20 @@ _FD_DUP_OPERATOR = ">&"
 #: or modify anything. Exact-match: ``<<`` and ``<<<`` are their own tokens and
 #: are deliberately NOT admitted here — a heredoc's body is not in this string.
 _STDIN_OPERATOR = "<"
+
+#: Every operator that WRITES, so every operator whose target decides whether
+#: anything persists. All five lex whole (probed: ``&>>`` is one token), and
+#: enumerating a subset is the miss :data:`gzkit.handoff_resume_gate._PERMITTED_BASH`
+#: records four consecutive times — ``2>`` alone would have left ``&>`` refusing.
+_WRITE_OPERATORS: frozenset[str] = frozenset({">", ">>", ">&", "&>", "&>>"})
+
+#: The discard sinks, per platform. ``NUL`` is the null device on Windows and an
+#: ORDINARY RELATIVE FILENAME on POSIX, where ``> nul`` creates a file — so this
+#: is keyed to the host that will RUN the command rather than to the string.
+#: That is a deliberate exception to this module's read-the-command-not-the-
+#: filesystem stance (cf. :func:`program_name`, which reduces a Windows path on a
+#: POSIX host): name reduction is safe when wrong, and admission is not.
+_NULL_DEVICES: frozenset[str] = frozenset({"nul"} if os.name == "nt" else {"/dev/null"})
 
 
 def tokenize_shell(command: str) -> list[str] | None:
@@ -120,20 +135,30 @@ def split_on(tokens: Iterable[str], separators: frozenset[str]) -> list[list[str
 
 
 def strip_nonwriting_redirections(tokens: Iterable[str]) -> list[str]:
-    """Return tokens with the redirections that CANNOT write removed.
+    """Return tokens with the redirections that PERSIST NOTHING removed.
 
-    Two members, and membership is a property of the operator rather than a
-    judgment about the target:
+    Three members, decided on two different axes — which is the part worth
+    reading, because conflating them is what produced the defects this function
+    exists to close:
 
-    * ``2>&1`` — descriptor duplication. Points one descriptor at another and
-      names no file, so it can create nothing and truncate nothing. A DIGIT
-      target is what makes it a duplication, not the operator alone: ``>&``
-      also carries csh-style ``cmd >& out.txt``, a genuine write left standing.
-    * ``< path`` — input redirection. Feeds a file to stdin; there is no form
-      of it that writes. ``<<`` and ``<<<`` are distinct tokens and stay.
+    * ``2>&1`` — descriptor duplication, admitted by its OPERATOR. Points one
+      descriptor at another and names no file. A DIGIT target is what makes it
+      a duplication: ``>&`` also carries csh-style ``cmd >& out.txt``, a
+      genuine write left standing.
+    * ``< path`` — input redirection, admitted by its OPERATOR. Feeds a file to
+      stdin; no form of it writes. ``<<`` and ``<<<`` are distinct tokens and
+      stay.
+    * ``> /dev/null`` and the other four write operators — admitted by their
+      TARGET, and only for the sinks in :data:`_NULL_DEVICES`. The operator
+      here genuinely writes; the device discards. Any other path is a real
+      write and is left standing, so this is a two-element set rather than a
+      path model, and nothing generalizes from it.
 
-    Deliberately absent: ``> /dev/null``. Whether a write TARGET is inert is a
-    question about the path, not the operator, and no caller here models paths.
+    The target axis was left unruled through two prior fixes on purpose: it
+    widens what the gate admits on a judgment about a path, which is an
+    operator's call and not an agent's (ruled 2026-08-14, verbatim "fix it
+    now"). The operator axis needed no ruling because an operator with no
+    writing form cannot widen anything.
 
     Removal rather than classification, because these tokens actively mislead a
     reader downstream: split a command on operator-shaped tokens and ``2>&1``
@@ -152,9 +177,11 @@ def strip_nonwriting_redirections(tokens: Iterable[str]) -> list[str]:
     while index < len(parts):
         token = parts[index]
         target = parts[index + 1] if index + 1 < len(parts) else ""
-        if token == _FD_DUP_OPERATOR and target.isdigit():
+        duplication = token == _FD_DUP_OPERATOR and target.isdigit()
+        discard = token in _WRITE_OPERATORS and target.lower() in _NULL_DEVICES
+        if duplication or discard:
             if kept and kept[-1].isdigit():
-                kept.pop()  # the source descriptor: the `2` of `2>&1`
+                kept.pop()  # the source descriptor: the `2` of `2>&1`, `2>/dev/null`
             index += 2
             continue
         if token == _STDIN_OPERATOR and target:

@@ -13,6 +13,7 @@ track AUTHORIZATION, not any fixed answer.
 from __future__ import annotations
 
 import json
+import os
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -569,6 +570,79 @@ class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
             ):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
+
+
+class ResumeGateAdmitsDiscardRedirectionTests(unittest.TestCase):
+    """A write to the null device persists nothing, so it is not a mutation.
+
+    Operator ruling 2026-08-14, verbatim: "fix it now". This is the member the
+    two preceding fixes deliberately left standing, because it is decided on a
+    different axis: `<` and `2>&1` are admitted by their OPERATOR, which has no
+    writing form at all, while `> /dev/null` wears an operator that writes and
+    is admitted only by its TARGET. The gate had modelled no targets, so the
+    question was left for a ruling rather than settled by an agent widening a
+    security surface on its own judgment.
+
+    The target set is exactly two devices and nothing generalizes from it. Any
+    other path is a real write and still refuses — that is the paired negative,
+    and it is what keeps this from becoming "the gate models paths now".
+    """
+
+    def _verdict(self, base: Path, command: str):
+        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
+
+    def test_every_write_operator_is_admitted_when_it_targets_the_null_device(self) -> None:
+        """All five write operators, because enumerating a subset is the miss.
+
+        `_PERMITTED_BASH`'s own docstring records four consecutive misses from
+        admitting one example at a time. `>`, `>>`, `>&`, `&>` and `&>>` all
+        reach the same device; covering `2>` alone would repeat that habit.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git log --oneline 2>/dev/null",
+                "git status >/dev/null",
+                "git status >>/dev/null",
+                "git status >& /dev/null",
+                "git status &>/dev/null",
+                "git status &>> /dev/null",
+                # Discard combined with duplication, the ordinary silencing idiom.
+                "git log --oneline > /dev/null 2>&1",
+                # And inside a chain, where each segment is checked alone.
+                "git log 2>/dev/null | head -5",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_a_real_path_is_still_a_write_and_still_refuses(self) -> None:
+        """The set is two devices, not a target model.
+
+        `nul` is the load-bearing case: it is the null device on Windows and an
+        ORDINARY RELATIVE FILENAME on POSIX, where admitting it would create a
+        file through the gate. Admission is therefore keyed to the host that
+        will actually run the command — the one place this module reads the
+        platform rather than the string, and it reads it because being wrong
+        here writes to disk.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git log --oneline > out.txt",
+                "git status >& dump.log",
+                "git status 2>> /var/log/gz.log",
+                # Near-misses that are plain files on every platform.
+                "git status > /dev/null2",
+                "git status > dev/null",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+            windows = os.name == "nt"
+            self.assertEqual(self._verdict(base, "git status 2>NUL").blocked, not windows)
+            self.assertEqual(self._verdict(base, "git status > nul").blocked, not windows)
 
 
 class ResumeGateNamesACommandTheCallerWroteTests(unittest.TestCase):

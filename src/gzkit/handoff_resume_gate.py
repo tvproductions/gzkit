@@ -757,20 +757,24 @@ def _compound_is_wholly_admitted(command: str) -> bool:
     and declined to use it. Observed at least six times across four sessions
     (GHI #800 § Class of failure, plus the 2026-08-13 report that produced this).
 
-    **Still refused, deliberately:** a redirect to a FILE (its target is never an
-    admitted head), a pipe into an unadmitted filter, and any substitution.
-    Admitting a file redirect would require modeling targets, which is a
-    different question from chaining and is not ruled.
+    **Still refused, deliberately:** a redirect to a real FILE, a pipe into an
+    unadmitted filter, and any substitution. A redirect now refuses from INSIDE
+    its segment, where :func:`_bash_is_read_only` re-enters :func:`_is_compound`
+    and sees the operator — not, as it once did, because the redirect's operand
+    was split off into a phantom segment matching no allowlisted head.
 
     **``2>&1`` was on that list until 2026-08-14 and should not have been**
     (operator report, verbatim: *"once again this bullshit"*). It was filed
     beside the file redirect on the strength of a shared ``>`` character, with
     the rationale *"whose ``1`` is a segment matching no head"* — describing a
-    lexer artifact as though it were a policy. A duplication points one
-    descriptor at another and names no file, so no target model could ever refuse
-    it; :func:`gzkit.shell_reading.strip_fd_duplications` now removes the group
-    before either reader sees it. The csh-style ``>& out.txt``, whose target IS a
-    file, still refuses — the digit target is the discriminator, not ``>&``.
+    lexer artifact as though it were a policy. Three members left with it, each
+    for a reason the grouping had hidden, and
+    :func:`gzkit.shell_reading.strip_nonwriting_redirections` now removes all
+    three before either reader sees them: descriptor duplication and ``< path``
+    because their OPERATOR cannot write, and ``> /dev/null`` because its TARGET
+    discards (that last one ruled 2026-08-14, verbatim *"fix it now"*, because
+    admitting on a judgment about a path is an operator's call). ``>& out.txt``
+    and ``> nul`` on POSIX still refuse: the target is the discriminator.
     """
     if not _is_compound(command):
         return False
