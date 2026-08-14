@@ -40,9 +40,16 @@ from collections.abc import Iterable
 __all__ = [
     "program_name",
     "split_on",
+    "strip_fd_duplications",
     "strip_uv_run",
     "tokenize_shell",
 ]
+
+#: The duplication operator, which ``punctuation_chars`` emits whole and
+#: DISTINCT from the plain ``>`` of a file redirect. Probed, not assumed:
+#: ``2>&1`` lexes as ``['2', '>&', '1']`` while ``> out.txt`` lexes as
+#: ``['>', 'out.txt']``, so the operator token alone separates the two.
+_FD_DUP_OPERATOR = ">&"
 
 
 def tokenize_shell(command: str) -> list[str] | None:
@@ -90,6 +97,43 @@ def split_on(tokens: Iterable[str], separators: frozenset[str]) -> list[list[str
             current.append(token)
     segments.append(current)
     return segments
+
+
+def strip_fd_duplications(tokens: Iterable[str]) -> list[str]:
+    """Return tokens with file-descriptor duplications (``2>&1``) removed.
+
+    A duplication points one descriptor at another. It names no file, so it can
+    create nothing and truncate nothing — unlike ``> out.txt``, whose operand is
+    a path. Both wear a ``>``, and that shared character is the whole reason a
+    reader classifying by character shape confuses them.
+
+    A DIGIT target is what makes it a duplication, not the operator alone:
+    ``>&`` also carries the csh-style ``cmd >& out.txt`` that redirects both
+    streams to a FILE, which is a genuine write and is left standing here.
+
+    Removal rather than classification, because the tokens mislead every
+    downstream reader: a caller splitting on operator-shaped tokens reads the
+    target as a command named ``1`` that nobody wrote (observed refusing
+    ``gz adr status <ADR> 2>&1 | head``, 2026-08-14). Deleting the group leaves
+    the pipeline structure the caller actually expressed.
+
+    The leading source descriptor is consumed only when bare, and dropping it
+    cannot widen anyone's admission: prefix matching reads *leading* tokens, and
+    a bare integer is neither an allowlisted head nor a mutating flag.
+    """
+    parts = list(tokens)
+    kept: list[str] = []
+    index = 0
+    while index < len(parts):
+        target = parts[index + 1] if index + 1 < len(parts) else ""
+        if parts[index] == _FD_DUP_OPERATOR and target.isdigit():
+            if kept and kept[-1].isdigit():
+                kept.pop()  # the source descriptor: the `2` of `2>&1`
+            index += 2
+            continue
+        kept.append(parts[index])
+        index += 1
+    return kept
 
 
 def program_name(token: str) -> str:

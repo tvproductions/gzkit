@@ -59,7 +59,12 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
-from gzkit.shell_reading import split_on, strip_uv_run, tokenize_shell
+from gzkit.shell_reading import (
+    split_on,
+    strip_fd_duplications,
+    strip_uv_run,
+    tokenize_shell,
+)
 
 __all__ = [
     "MUTATING_TOOLS",
@@ -630,6 +635,7 @@ def _is_compound(command: str) -> bool:
     tokens = tokenize_shell(command)
     if tokens is None:
         return True  # unbalanced quotes → unparseable → fail closed
+    tokens = strip_fd_duplications(tokens)
     return any(_is_shell_operator(token) or _can_expand(token) for token in tokens)
 
 
@@ -673,6 +679,7 @@ def _segments(command: str) -> list[str]:
     tokens = tokenize_shell(command)
     if tokens is None:
         return []
+    tokens = strip_fd_duplications(tokens)
     operators = frozenset(token for token in tokens if _is_shell_operator(token))
     return [shlex.join(part) for part in split_on(tokens, operators) if part]
 
@@ -711,11 +718,20 @@ def _compound_is_wholly_admitted(command: str) -> bool:
     and declined to use it. Observed at least six times across four sessions
     (GHI #800 § Class of failure, plus the 2026-08-13 report that produced this).
 
-    **Still refused, deliberately:** a redirect (its target is never an admitted
-    head), a pipe into an unadmitted filter, any substitution, and ``2>&1`` —
-    whose ``1`` is a segment matching no head. Admitting a redirect would require
-    modeling targets, which is a different question from chaining and is not
-    ruled.
+    **Still refused, deliberately:** a redirect to a FILE (its target is never an
+    admitted head), a pipe into an unadmitted filter, and any substitution.
+    Admitting a file redirect would require modeling targets, which is a
+    different question from chaining and is not ruled.
+
+    **``2>&1`` was on that list until 2026-08-14 and should not have been**
+    (operator report, verbatim: *"once again this bullshit"*). It was filed
+    beside the file redirect on the strength of a shared ``>`` character, with
+    the rationale *"whose ``1`` is a segment matching no head"* — describing a
+    lexer artifact as though it were a policy. A duplication points one
+    descriptor at another and names no file, so no target model could ever refuse
+    it; :func:`gzkit.shell_reading.strip_fd_duplications` now removes the group
+    before either reader sees it. The csh-style ``>& out.txt``, whose target IS a
+    file, still refuses — the digit target is the discriminator, not ``>&``.
     """
     if not _is_compound(command):
         return False

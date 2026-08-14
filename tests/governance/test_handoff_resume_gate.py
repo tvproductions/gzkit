@@ -485,6 +485,75 @@ class ResumeGateAdmitsAWhollyAdmittedCompoundTests(unittest.TestCase):
                     self.assertTrue(self._verdict(base, command).blocked, command)
 
 
+class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
+    """`2>&1` duplicates a descriptor; it names no file and writes nothing.
+
+    Operator report 2026-08-14, verbatim: "once again this bullshit", quoting a
+    refusal of `uv run gz adr status <ADR> 2>&1 | head -60` — a read of a read
+    verb. The gate answered by naming `1` as the unadmitted part, which is not a
+    command the caller wrote: `shlex` with `punctuation_chars` lexes `2>&1` as
+    `['2', '>', '&1']`, `_is_shell_operator` accepts the bare `>`, and
+    `_segments` derives its separators from that character shape — so the
+    duplication's target became a phantom segment matching no allowlisted head.
+
+    This was a KNOWN state, not an oversight, and that is the defect worth
+    naming. `_compound_is_wholly_admitted`'s docstring carried it under "Still
+    refused, deliberately: ... and `2>&1` -- whose `1` is a segment matching no
+    head", filed beside the genuine redirect case on the strength of a shared
+    `>` character. The two are not the same question: a redirect takes a FILE
+    operand and its target is unmodelled (correctly still refused, per the
+    paired negative below), while a duplication takes a DESCRIPTOR and can
+    create no file under any target model. Grouping them made an lexer artifact
+    read as a policy.
+
+    Reading combined output is how an agent verifies before it is authorized to
+    act, so refusing it taxes exactly the pre-ruling verification the resume
+    gate's own recovery prose demands.
+    """
+
+    def _verdict(self, base: Path, command: str):
+        return decide(base, session_id=_SESSION, tool_name="Bash", tool_input={"command": command})
+
+    def test_fd_duplication_does_not_refuse_an_otherwise_admitted_read(self) -> None:
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                # The 2026-08-14 refusal, verbatim from the operator's report.
+                "uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing 2>&1 | head -60",
+                # Duplication with no pipe at all — refused on shape alone before.
+                "git status --short 2>&1",
+                # The reverse direction, and the target-only form.
+                "git log --oneline 1>&2",
+                "git status >&2",
+            ):
+                with self.subTest(command=command):
+                    self.assertFalse(self._verdict(base, command).blocked, command)
+
+    def test_a_real_redirect_is_still_refused_alongside_a_duplication(self) -> None:
+        """The paired negative: dropping `2>&1` must not drop the file write.
+
+        `git log 2>&1 > out.txt` carries both forms. Reading the duplication
+        correctly is worthless if it also swallows the `> out.txt` that follows
+        it — the failure mode a token-dropping fix invites, and the reason this
+        witness sits next to the positive rather than trusting it.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            for command in (
+                "git log --oneline 2>&1 > out.txt",
+                "git status 2>&1 && rm -rf src",
+                "git status 2>&1 | tee /tmp/x",
+                # `>&` with a FILE target is csh-style both-streams redirection,
+                # a genuine write sharing the duplication's operator token. The
+                # digit target is the discriminator, not the operator.
+                "git status >& out.txt",
+            ):
+                with self.subTest(command=command):
+                    self.assertTrue(self._verdict(base, command).blocked, command)
+
+
 class ResumeGateDoesNotRevokeTheAuthorsClearanceTests(unittest.TestCase):
     """Authoring a handoff is not resuming one (GHI #755).
 
