@@ -64,7 +64,14 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
-from gzkit.shell_reading import program_name, split_on, strip_uv_run, tokenize_shell
+from gzkit.shell_reading import (
+    PIPE,
+    STATEMENT_SEPARATORS,
+    program_name,
+    split_on,
+    strip_uv_run,
+    tokenize_shell,
+)
 
 __all__ = [
     "GZ_VERIFIER_VERBS",
@@ -78,13 +85,13 @@ __all__ = [
     "masked_verifier",
 ]
 
-#: Token that opens a new pipeline stage. Exact-match only — ``punctuation_chars``
-#: emits ``||`` as a single token, so a logical-or is never read as a pipe.
-_PIPE = "|"
-
 #: Tokens that END a pipeline. A verifier in an earlier statement is not upstream
-#: of a later statement's pipe: ``gz check; ls | head`` masks nothing.
-_STATEMENT_SEPARATORS: frozenset[str] = frozenset({";", "&&", "||", "&", "\n"})
+#: of a later statement's pipe: ``gz check; ls | head`` masks nothing. Read from
+#: :mod:`gzkit.shell_reading` rather than restated — the resume gate splits on
+#: the same grammar, and a second copy is how the two would come to disagree
+#: about what ends a command (GHI #800 residual, 2026-08-14).
+_STATEMENT_SEPARATORS = STATEMENT_SEPARATORS
+_PIPE = PIPE
 
 #: Interpreters whose ``-m <module>`` form names the real program.
 _PYTHON_RUNNERS: frozenset[str] = frozenset({"python", "python3", "python3.13", "py"})

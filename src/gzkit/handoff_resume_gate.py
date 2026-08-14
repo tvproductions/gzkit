@@ -60,11 +60,18 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
 from gzkit.shell_reading import (
+    PIPE,
+    STATEMENT_SEPARATORS,
     split_on,
-    strip_fd_duplications,
+    strip_nonwriting_redirections,
     strip_uv_run,
     tokenize_shell,
 )
+
+#: Every token that ends one command and begins another. The resume gate checks
+#: each command in a chain, so a pipeline stage is a command boundary here —
+#: unlike the verifier gate, which needs stages *within* a statement.
+_COMMAND_SEPARATORS: frozenset[str] = STATEMENT_SEPARATORS | {PIPE}
 
 __all__ = [
     "MUTATING_TOOLS",
@@ -635,7 +642,7 @@ def _is_compound(command: str) -> bool:
     tokens = tokenize_shell(command)
     if tokens is None:
         return True  # unbalanced quotes → unparseable → fail closed
-    tokens = strip_fd_duplications(tokens)
+    tokens = strip_nonwriting_redirections(tokens)
     return any(_is_shell_operator(token) or _can_expand(token) for token in tokens)
 
 
@@ -669,19 +676,51 @@ def _bash_is_always_authorized(command: str) -> bool:
     return any(tuple(tokens[: len(allowed)]) == allowed for allowed in _ALWAYS_AUTHORIZED_BASH)
 
 
+def _rejoin(tokens: list[str]) -> str:
+    """Render a segment back as the caller would have typed it.
+
+    :func:`shlex.join` quotes every token, which was invisible while separators
+    were derived by shape — an operator could never appear *inside* a segment.
+    Now that a redirect stays with its command, quoting it would render
+    ``git log > out.txt`` as ``git log '>' out.txt``: a DIFFERENT command, since
+    the quotes make the operator a literal argument. The gate would be naming
+    back a command the caller never wrote, which is the defect this whole fix
+    exists to remove — reintroduced one layer down.
+    """
+    return " ".join(token if _is_shell_operator(token) else shlex.quote(token) for token in tokens)
+
+
 def _segments(command: str) -> list[str]:
     """Split a compound command into its individually-checkable parts.
 
     ONE splitter, two readers — :func:`_compound_is_wholly_admitted` decides with
     it and :func:`_shape_refusal_note` explains with it. A second copy is how the
     gate would come to refuse a command its own prose promised was admissible.
+
+    **Separators are DECLARED, not derived (GHI #800 residual, 2026-08-14).**
+    This function used to split on every token :func:`_is_shell_operator`
+    accepted — that is, on anything built from ``;|&<>()``. But a redirection
+    operator separates a command from its OPERAND, never from another command,
+    so ``git log > out.txt`` split into ``git log`` and ``out.txt`` and the gate
+    then reported a FILENAME as the part that was not admitted. That is the same
+    incoherence as the ``2>&1`` refusal that produced this fix, surviving in the
+    prose after the verdict was corrected.
+
+    Redirections are not thereby admitted: they stay inside their segment, where
+    :func:`_bash_is_read_only` calls :func:`_is_compound` and refuses them on the
+    operator it still sees. Verdicts are unchanged; what changes is that the part
+    named back to the caller is a command they actually wrote.
+
+    :mod:`gzkit.verifier_pipe_gate` has always declared its separators this way.
+    Both now read the one set in :mod:`gzkit.shell_reading`, which is the point:
+    two gates disagreeing about what ends a command is precisely the drift that
+    module exists to prevent.
     """
     tokens = tokenize_shell(command)
     if tokens is None:
         return []
-    tokens = strip_fd_duplications(tokens)
-    operators = frozenset(token for token in tokens if _is_shell_operator(token))
-    return [shlex.join(part) for part in split_on(tokens, operators) if part]
+    tokens = strip_nonwriting_redirections(tokens)
+    return [_rejoin(part) for part in split_on(tokens, _COMMAND_SEPARATORS) if part]
 
 
 def _segment_is_admitted(segment: str) -> bool:

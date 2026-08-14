@@ -20,6 +20,8 @@ from tempfile import TemporaryDirectory
 from gzkit.handoff_resume_gate import (
     MUTATING_TOOLS,
     UNWITNESSABLE,
+    _refused_segments,
+    _segments,
     decide,
     is_resume_authorized,
     newest_handoff,
@@ -530,6 +532,21 @@ class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
                 with self.subTest(command=command):
                     self.assertFalse(self._verdict(base, command).blocked, command)
 
+    def test_input_redirection_is_admitted_because_no_form_of_it_writes(self) -> None:
+        """`< path` is the duplication's sibling, found by asking for the class.
+
+        The reported instance was `2>&1`. Fixing only it would have left the
+        other operator that cannot write still refusing reads — the shape
+        AGENTS.md § DO IT RIGHT #1 names, where the instance is patched and the
+        family is not. `<<` and `<<<` are deliberately excluded: they are
+        distinct tokens whose body is not in this command string.
+        """
+        with TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _seed_handoff(base)
+            self.assertFalse(self._verdict(base, "grep -c foo < README.md").blocked)
+            self.assertTrue(self._verdict(base, "cat <<EOF").blocked)
+
     def test_a_real_redirect_is_still_refused_alongside_a_duplication(self) -> None:
         """The paired negative: dropping `2>&1` must not drop the file write.
 
@@ -552,6 +569,34 @@ class ResumeGateReadsFdDuplicationAsNotARedirectTests(unittest.TestCase):
             ):
                 with self.subTest(command=command):
                     self.assertTrue(self._verdict(base, command).blocked, command)
+
+
+class ResumeGateNamesACommandTheCallerWroteTests(unittest.TestCase):
+    """A refusal must point at a command, never at a redirection's operand.
+
+    This is the CAUSE the `2>&1` fix reached only one instance of. `_segments`
+    derived its separator set by character shape — anything built from `;|&<>()`
+    — so a redirection operator split a command from its own OPERAND, and the
+    gate then reported the operand as the part that was not admitted. `2>&1`
+    made it a wrong verdict; `> out.txt` keeps the right verdict and names a
+    FILENAME as an unadmitted command, which is the same incoherence surviving
+    in the prose.
+
+    Verdicts are deliberately unchanged here: a redirect still refuses, now from
+    inside its segment via `_is_compound`. Only the part named back to the
+    caller changes, which is why this needs a witness of its own — nothing in
+    the blocked/not-blocked assertions elsewhere can see it.
+    """
+
+    def test_a_refused_redirect_names_the_command_not_the_filename(self) -> None:
+        for command, operand in (
+            ("git log --oneline > out.txt", "out.txt"),
+            ("git status >& dump.log", "dump.log"),
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(_segments(command), [command])
+                self.assertNotIn(operand, _refused_segments(command))
+                self.assertEqual(_refused_segments(command), [command])
 
 
 class ResumeGateDoesNotRevokeTheAuthorsClearanceTests(unittest.TestCase):
