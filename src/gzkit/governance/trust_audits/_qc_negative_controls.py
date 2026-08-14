@@ -28,7 +28,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from gzkit.enforcement import enforces, get_enforcement_registry
+from gzkit.enforcement import EXEMPTS_NONE, enforces, get_enforcement_registry
 
 from . import _qc_nc_composite as _cx
 from . import _qc_nc_entrypoints as _ep
@@ -1438,6 +1438,54 @@ _KNOWN_QC_CLAIM_IDS: frozenset[str] = frozenset(
 )
 
 
+# Claims whose gate was READ END-TO-END and found to carry no exemption surface
+# (the ``exempts`` three-state declaration, GHI #797). Kept beside the table rather
+# than as a fifth positional column: ``expect`` is optional, so a positional slot
+# would need a ``None`` placeholder on every entry that declares one but not the
+# other, and the judgment would scatter across 70 rows instead of reading as a list.
+#
+# Membership is an AUTHORING JUDGMENT backed by a full read of the gate, never a
+# scan. Two heuristics have already failed at this question (0 of 70 and 7 of 71,
+# per ``_derive_gate_targets``), and a wrong entry here is worse than an absent
+# one: it launders an unexercised admit path into "nothing is owed", the exact
+# laundering ADR-0.0.73 Boundary Invariant #8 forbids. The bar applied was
+# "does any input make this gate ADMIT an item it has judged in violation" —
+# a waiver/grandfather table, an ``excluded`` list, an escape marker, an opt-in
+# arm, or an authorization booking. Scope predicates (which artifacts the gate
+# examines), threshold parameters, and artifact-absent returns are NOT exemptions.
+#
+# A gate WITH an exemption is deliberately absent here and stays on the disclosed
+# list in ``data/exemption_control_grandfather.json`` until a control exercises its
+# admit path — declaring one ``none`` to shrink the list would be the laundering
+# the list's own ``_doc`` forbids.
+_QC_CLAIM_EXEMPTS: dict[str, str] = {
+    # Diffs on-disk ADR canon against the derived index; every drift entry is a
+    # finding and nothing suppresses one.
+    "adr-status-freshness": EXEMPTS_NONE,
+    # Char budget per file. The budget is project-overridable, but a threshold
+    # defines what a violation IS — it never admits one it has found.
+    "instructions-files-budget": EXEMPTS_NONE,
+    # Byte-compares rendition playback against committed AGENTS.md. The only
+    # non-finding return is "no committed rendition exists" — nothing to compare.
+    "invariant-coherence": EXEMPTS_NONE,
+    # Requires a substantive `## Why foundation tier?` on every foundation ADR.
+    # The sidecar filter selects WHICH files are ADRs; it admits no ADR that fails.
+    "kind-invariance": EXEMPTS_NONE,
+    # Two arms, both fail-closed: `.gitattributes` must carry the LF directive,
+    # and no tracked text surface may be committed CRLF. No per-file waiver.
+    "line-endings": EXEMPTS_NONE,
+    # Asserts the SessionStart orientation hook stays wired in both harnesses.
+    # Every arm yields a finding; a missing script is an error, not a pass.
+    "orientation-freshness": EXEMPTS_NONE,
+    # Mechanism arms of the ratchet. The umbrella `waiver-ratchet` claim and its
+    # silent-bypass arm DO carry an exemption (the registry's `excluded` list),
+    # which is why only these two appear here — `excluded` is consulted solely by
+    # the unregistered-file scan, never by these per-surface mechanism checks.
+    "waiver-ratchet-closed-set-lock": EXEMPTS_NONE,
+    "waiver-ratchet-dated-cutover": EXEMPTS_NONE,
+}
+
+
 def _register_marker() -> None:
     """Inert carrier for @enforces registration (the fixture/entrypoint are the contract)."""
 
@@ -1454,7 +1502,9 @@ def register_qc_negative_controls() -> None:
         expect = entry[3] if len(entry) > 3 else None
         if claim_id in existing:
             continue
-        enforces(claim_id, fixture, entrypoint, expect)(_register_marker)
+        enforces(claim_id, fixture, entrypoint, expect, exempts=_QC_CLAIM_EXEMPTS.get(claim_id))(
+            _register_marker
+        )
 
 
 register_qc_negative_controls()

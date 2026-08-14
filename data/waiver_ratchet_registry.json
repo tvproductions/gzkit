@@ -140,7 +140,7 @@
       "gates_step": "Exemption controls (gz validate --exemption-controls)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_claims",
-      "baseline_count": 71
+      "baseline_count": 63
     }
   ],
   "excluded": [
