@@ -23,6 +23,27 @@ These are NOT: scope predicates (which artifacts the gate examines), threshold
 parameters (a budget defines what a violation *is*), artifact-absent returns
 (nothing to compare), and error-path returns.
 
+**The severity line, sharpened by the Tier-B pass (2026-08-14).** Eight of the
+seventeen gates read in that pass turned on a distinction the five bullets above
+do not settle on their own: a gate that FINDS something and does not exit
+non-zero on it. The line that separates the two cases is WHO CONTROLS THE
+ADMISSION.
+
+* A finding the gate classifies as advisory/non-blocking by a **fixed code
+  property** — a separate finding type, a ``required: False`` in an in-code check
+  table, a question that declares no validator — is OUTSIDE the judged set. The
+  gate never claimed to enforce it, so there is nothing to admit.
+* A finding the gate WOULD fail on, admitted by a **project-controllable input**
+  — a flag whose default is off, a manifest entry, a config value, a data file,
+  a marker, a ledger booking — is an exemption, however well justified.
+
+That line is what separates ``readiness-audit`` (in-code ``required`` bits plus a
+score threshold, declared ``'none'`` below) from ``skill-audit`` (identical
+blocking/non-blocking split, but gated on ``--strict``, which is off by default —
+disclosed, control owed). Justification is irrelevant to membership: the
+``enforcement-floor`` exclusion is deliberate and ADR-backed and is STILL an
+exemption, because the disclosed list is an inventory, not an accusation.
+
 **Membership is a reading, never a scan.** Two heuristics have already failed this
 exact question — a naming-convention scan over ``source_file`` matched 0 of 70, and
 correlating claim ids against module stems matched 7 of 71 (see
@@ -69,4 +90,47 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # consulted solely by the unregistered-file scan, never by these checks.
     "waiver-ratchet-closed-set-lock": EXEMPTS_NONE,
     "waiver-ratchet-dated-cutover": EXEMPTS_NONE,
+    # --- Tier-B pass, 2026-08-14 (GHI #797) --------------------------------
+    # Criteria (a)-(d) over the AGENTS.md template and rendered file. Table rows
+    # and fenced blocks are excluded from paragraph counting because neither IS a
+    # paragraph (scope), and the budget overlay is a threshold. The prohibited-title
+    # match is case-insensitive precisely so authoring case is not an escape. The
+    # `_advisory` finding type is a SEPARATE heuristic ADR-0.0.54 reserves from hard
+    # rejection, not a downgrade of criteria a/b/c/d.
+    "agents-md-map-conformance": EXEMPTS_NONE,
+    # Schema/shape conformance over ledger lines. An unreadable line, a non-object
+    # entry, and an UNKNOWN EVENT TYPE are each findings — the three shapes that
+    # would otherwise be the skip. A missing ledger and a missing schema are findings
+    # too, which is stronger than the artifact-absent carve-out requires. Gate 5 is
+    # never demoted by the MX marker (mx-mode.md § Honor the marker).
+    "gate5-ledger": EXEMPTS_NONE,
+    # `_requires_human_obpi_attestation` returns True unconditionally — ADR-0.0.36
+    # collapsed the kind/lane/sensitivity branching, so there is no arm to take.
+    # `_validate_obpi_human_attestation_fields` fails closed on a placeholder
+    # attestor, a non-true human_attestation, empty text, and a malformed date.
+    "gate5-attestation-absence": EXEMPTS_NONE,
+    # Counts `obpi_completion_repudiated` events whose cause is model-induced
+    # fabrication. A detector that reports every match, not a gate that judges then
+    # admits: the cause filter selects which events ARE the signal.
+    "grader-gaming": EXEMPTS_NONE,
+    # Asserts one frontmatter marker on one pool ADR. Both arms return exit 3 — a
+    # MISSING pool ADR is a finding, not a skip, so even the artifact-absent path
+    # fails closed.
+    "dispatch-absorption-marker": EXEMPTS_NONE,
+    # Scans for stale pipeline markers, orphan receipts, and expired locks. An
+    # unreadable receipt is reported as an orphan and an unreadable lock as expired,
+    # so the error paths accuse rather than excuse. `--apply` cleans up; it never
+    # suppresses.
+    "preflight": EXEMPTS_NONE,
+    # Scores four disciplines against an IN-CODE check table and exits non-zero on
+    # any required failure or a sub-2.0 overall score. The `required` bit is a fixed
+    # property of each check definition and the floor is a threshold — neither is
+    # project-settable, and every failure is reported in `issues` regardless. Contrast
+    # `skill-audit`, whose identical split is gated on an off-by-default `--strict`.
+    "readiness-audit": EXEMPTS_NONE,
+    # Grammar + completeness over committed pool interview records. A record the
+    # audit CANNOT READ is a finding by explicit design (the GHI #736 correction).
+    # `question.required` and the per-question validator set are fixed in
+    # ADR_QUESTIONS, the single authority the CLI loader also reads.
+    "pool-interview-schema": EXEMPTS_NONE,
 }

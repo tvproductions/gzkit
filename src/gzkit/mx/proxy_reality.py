@@ -18,7 +18,12 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
-from gzkit.enforcement import enforces, get_enforcement_registry, set_known_claims
+from gzkit.enforcement import (
+    EXEMPTS_NONE,
+    enforces,
+    get_enforcement_registry,
+    set_known_claims,
+)
 from gzkit.ledger import Ledger
 
 # ---------------------------------------------------------------------------
@@ -159,4 +164,17 @@ def _ensure_grader_gaming_registered() -> None:
     set_known_claims(_KNOWN_QC_CLAIM_IDS | _PROXY_REALITY_CLAIM_IDS)
     existing = {r.claim_id for r in get_enforcement_registry()}
     if "grader-gaming" not in existing:
-        enforces("grader-gaming", _build_proxy_reality_violation, _ep_proxy_reality)(_marker)
+        # ``exempts='none'`` declared at registration (GHI #797 drain, 2026-08-14).
+        # ``scan`` is a DETECTOR, not a judge-then-admit gate: it reports every
+        # ``obpi_completion_repudiated`` event whose cause is model-induced
+        # fabrication, and the cause filter selects which events ARE the signal
+        # rather than forgiving one it found. No waiver table, allowlist, escape
+        # marker, off-by-default arm, or authorization booking reaches it. The claim
+        # registers here rather than through the qc table, so ``_QC_CLAIM_EXEMPTS``
+        # does not reach it — the declaration has to be made at this call site.
+        enforces(
+            "grader-gaming",
+            _build_proxy_reality_violation,
+            _ep_proxy_reality,
+            exempts=EXEMPTS_NONE,
+        )(_marker)

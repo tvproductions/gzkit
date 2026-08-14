@@ -18,7 +18,12 @@ from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
-from gzkit.enforcement import enforces, get_enforcement_registry, set_known_claims
+from gzkit.enforcement import (
+    EXEMPTS_NONE,
+    enforces,
+    get_enforcement_registry,
+    set_known_claims,
+)
 
 GATE5_INVARIANTS: frozenset[str] = frozenset(
     {
@@ -131,6 +136,18 @@ def _ep_gate5_attestation_absence(scenario: dict[str, Any]) -> bool:
     return False
 
 
+# Both gate5 claims declare ``exempts='none'`` at registration (GHI #797 drain,
+# 2026-08-14). They register HERE rather than through the qc table, so the
+# ``_QC_CLAIM_EXEMPTS`` map does not reach them — declaring in that map alone left
+# ``gz validate --exemption-controls`` failing on both, which is the coupled-surface
+# check working as intended. The readings: ``validate_ledger`` treats an unreadable
+# line, a non-object entry, an unknown event type, a missing ledger, and a missing
+# schema each as a FINDING, so none of the usual skip shapes exists; and
+# ``_requires_human_obpi_attestation`` returns True unconditionally (ADR-0.0.36
+# collapsed the kind/lane/sensitivity branching) while the field validator fails
+# closed on a placeholder attestor, empty attestation text, and a malformed date.
+# Gate 5 is never demoted by the MX marker (`.claude/rules/mx-mode.md` § Honor the
+# marker), so the hangar is not an admit path either.
 _GATE5_ENFORCEMENT_TABLE: tuple[tuple[str, Callable[[], Any], Callable[[Any], Any]], ...] = (
     ("gate5-ledger", _build_gate5_ledger_violation, _ep_gate5_ledger),
     ("gate5-attestation-absence", _build_gate5_attestation_absence, _ep_gate5_attestation_absence),
@@ -163,7 +180,7 @@ def _ensure_gate5_claims_registered() -> None:
     for claim_id, fixture, entrypoint in _GATE5_ENFORCEMENT_TABLE:
         if claim_id in existing:
             continue
-        enforces(claim_id, fixture, entrypoint)(_gate5_marker)
+        enforces(claim_id, fixture, entrypoint, exempts=EXEMPTS_NONE)(_gate5_marker)
 
 
 # ---------------------------------------------------------------------------
