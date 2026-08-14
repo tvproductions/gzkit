@@ -1323,3 +1323,41 @@ class TestHandoffAccountSynthesis(unittest.TestCase):
             assert account is not None and bookmarks is not None
             self.assertIn("new-authored.md", account["anchor"])
             self.assertEqual(account["bookmarks"], len(bookmarks["entries"]))
+
+
+class LiveCampaignCarriesItsSteeringMarkerTests(unittest.TestCase):
+    """The ACTIVE campaign plan must carry a machine-readable topmost marker.
+
+    Every other test in this module exercises the extractor against FIXTURES,
+    so they pass whether or not the real Magna Carta carries the marker. That
+    gap is not theoretical: on 2026-08-14 an amendment rewrote the banner from
+    `**Topmost (sequenced):**` to `**Topmost (sequenced) - AMENDED ...:**`,
+    the regex stopped matching, `topmost` silently became None, and the
+    orientation fell back to document order - surfacing the HELD movement's
+    items ahead of the ratified one. Nothing failed; the steering line just
+    vanished from every future session's boot digest.
+
+    That is the exact defect the campaign's own 2026-08-12 ordering note names
+    (*"a transcribed view is Layer 3 and never source-of-truth ... the stale one
+    read first"*) reappearing one layer down - in the transcriber rather than
+    the transcript. `AGENTS.md` section Architectural Boundaries 6 governs.
+
+    The assertion is deliberately about PRESENCE, not content: which movement is
+    topmost is an operator ruling that changes by amendment, and pinning the text
+    would make every legitimate amendment fail this test. What must never change
+    silently is that the line remains machine-readable.
+    """
+
+    def test_the_active_campaign_plan_exposes_a_topmost_line(self) -> None:
+        mod = _load_orientation_module()
+        campaign = mod.collect_campaign(REPO_ROOT)
+        self.assertIsNotNone(campaign, "no active campaign plan discovered")
+        assert campaign is not None
+        self.assertIsNotNone(
+            campaign.get("topmost"),
+            "the active campaign plan carries no extractable "
+            "`**Topmost (sequenced):**` marker - the orientation script would "
+            "fall back to document order and hand every session the wrong "
+            "next item. Restore the exact marker; amendment prose goes AFTER it.",
+        )
+        self.assertTrue(str(campaign["topmost"]).strip())
