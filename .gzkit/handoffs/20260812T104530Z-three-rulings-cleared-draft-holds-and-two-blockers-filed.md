@@ -69,7 +69,7 @@ git rev-list --left-right --count origin/main...HEAD         # 0 0
 git log --oneline -1                              # a00bb5b77 (gz git-sync)
 gh issue view 798 --json number,state             # OPEN, blocker comment recorded
 gh issue view 799 --json number,state             # OPEN, blocker comment recorded
-grep -c undeclared_accepted data/exemption_control_grandfather.json   # still 71 of 76 by ruling
+jq '.accepted_claims | length' data/exemption_control_grandfather.json   # still 71 of 76 by ruling. CORRECTED 2026-08-14 by operator ruling: the form written here was `grep -c undeclared_accepted`, which returns 1 — that string is a measurement key whose VALUE is 71, not a per-entry field, so the check never tested the claim it asserted.
 
 ## Evidence / Artifacts
 
