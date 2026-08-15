@@ -7,7 +7,7 @@ Status: Active
 
 Source-of-truth: filesystem under `docs/design/adr/{foundation,pre-release}/`; this table is a Layer 3 derived view per `docs/governance/state-doctrine.md`. Regenerate via `gz register-adrs` (which calls `regenerate_adr_status_md` after ledger reconciliation); drift is fail-closed by `gz validate --adr-status-fresh`.
 
-Last regenerated: 2026-08-09 (count: 86 ADRs).
+Last regenerated: 2026-08-15 (count: 87 ADRs).
 
 | ID | Title | Kind | Lane | Status | Date | Path |
 |---|---|---|---|---|---|---|
@@ -97,3 +97,4 @@ Last regenerated: 2026-08-09 (count: 86 ADRs).
 | [ADR-0.34.0-foundation-sunset](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md) | Foundation Sunset | feature | heavy | Validated | 2026-07-12 | `design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md` |
 | [ADR-0.35.0-canon-entry-corpus-landing](../../design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md) | Canon Entry: Corpus Landing and Rendition Lineage | feature | heavy | Draft | 2026-07-21 | `design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md` |
 | [ADR-0.36.0-convergence-moment-cross-family-critic](../../design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md) | CRM Second Opinion — Cross-Family Critic at the Convergence Moment | feature | heavy | Proposed | 2026-08-09 | `design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md` |
+| [ADR-0.37.0-airlock-calibration-and-compulsion](../../design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md) | Airlock Calibration and Compulsion | feature | heavy | Draft | 2026-08-14 | `design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` |
