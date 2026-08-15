@@ -12,10 +12,13 @@ Covers the six acceptance criteria in the OBPI brief:
 from __future__ import annotations
 
 import json
-import re
 import unittest
 from pathlib import Path
 
+from gzkit.governance.trust_audits import (
+    audit_agents_md_map_conformance,
+    audit_instructions_files_budget,
+)
 from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -43,46 +46,27 @@ def _budget_within_ceiling(char_budget: int) -> bool:
     return char_budget <= _PROJECT_DOC_BUDGET_CEILING_BYTES
 
 
-_PROHIBITED_TITLES = frozenset(
-    {"anti-patterns", "rationale", "worked example", "why this is canon"}
-)
-_PROHIBITED_TITLE_PATTERN = re.compile(r"^why\s+.+\s+is\s+canon$", re.IGNORECASE)
-_HEADING_RE = re.compile(r"^#{2,}\s+(.+?)\s*$", re.MULTILINE)
-
-
-def _has_prohibited_title(text: str) -> list[str]:
-    hits = []
-    for m in _HEADING_RE.finditer(text):
-        title = m.group(1).strip().lower()
-        if title in _PROHIBITED_TITLES or _PROHIBITED_TITLE_PATTERN.match(title):
-            hits.append(m.group(0).strip())
-    return hits
-
-
 class ClaudeMdCleanAudit(unittest.TestCase):
     """REQ-0.0.54-04-01: CLAUDE.md has no prohibited shapes."""
 
     @covers("REQ-0.0.54-04-01")
-    def test_claude_md_has_no_prohibited_headings(self) -> None:
-        text = _CLAUDE_MD.read_text(encoding="utf-8")
-        hits = _has_prohibited_title(text)
-        self.assertEqual(
-            hits,
-            [],
-            f"CLAUDE.md contains prohibited heading(s): {hits}. "
-            "Map-not-encyclopedia doctrine violated.",
-        )
+    def test_claude_md_passes_the_conformance_validator(self) -> None:
+        """Delegate to the validator instead of re-implementing its rule.
 
-    @covers("REQ-0.0.54-04-01")
-    def test_claude_md_within_budget(self) -> None:
-        budget = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
-        char_limit = budget["files"].get("CLAUDE.md", 40000)
-        actual = len(_CLAUDE_MD.read_text(encoding="utf-8"))
-        self.assertLessEqual(
-            actual,
-            char_limit,
-            f"CLAUDE.md is {actual} chars, exceeds budget {char_limit}",
-        )
+        Folded under the `decommission-tautological-tests` chore. This replaced
+        two tests that read CLAUDE.md and re-derived the doctrine check locally
+        via `_has_prohibited_title` — a SECOND implementation of a rule that
+        already ships as `gz validate --agents-md-map-conformance`. That is worse
+        than a tautology: a local copy keeps passing against the OLD rule after
+        the validator changes, so the test reports green precisely when the
+        doctrine it guards has moved.
+        """
+        errors = [
+            e
+            for e in audit_agents_md_map_conformance(_PROJECT_ROOT)
+            if "CLAUDE.md" in str(e.artifact)
+        ]
+        self.assertEqual(errors, [], [e.message for e in errors])
 
 
 class RuleFilesProhibitedShapesLifted(unittest.TestCase):
@@ -92,16 +76,15 @@ class RuleFilesProhibitedShapesLifted(unittest.TestCase):
         return [f for f in _RULES_DIR.glob("*.md") if f.name != "AGENTS.md"]
 
     @covers("REQ-0.0.54-04-02")
-    def test_no_rule_file_has_prohibited_heading(self) -> None:
-        for rule_file in self._canonical_rule_files():
-            with self.subTest(rule=rule_file.name):
-                text = rule_file.read_text(encoding="utf-8")
-                hits = _has_prohibited_title(text)
-                self.assertEqual(
-                    hits,
-                    [],
-                    f"{rule_file.name}: prohibited heading(s) {hits}. Lift to docs/governance/.",
-                )
+    def test_rule_files_pass_the_conformance_validator(self) -> None:
+        """Delegate rather than re-derive — same fold as REQ-04-01.
+
+        The corpus is asserted non-empty so a validator that silently stopped
+        covering the rules tree cannot pass this by examining nothing.
+        """
+        self.assertTrue(self._canonical_rule_files(), "no canonical rule files to check")
+        errors = audit_agents_md_map_conformance(_PROJECT_ROOT)
+        self.assertEqual(errors, [], [e.message for e in errors])
 
     @covers("REQ-0.0.54-04-02")
     def test_model_selection_rationale_expansion_doc_exists(self) -> None:
@@ -146,65 +129,38 @@ class BudgetJsonFinalized(unittest.TestCase):
     """REQ-0.0.54-04-03: budget JSON tightened for rule-file glob after diet pass."""
 
     @covers("REQ-0.0.54-04-03")
-    def test_rule_files_fit_their_glob_budget(self) -> None:
-        """REQ-04-03 (semantic): every ``.claude/rules/*.md`` file fits the
-        configured per-file glob budget.
+    def test_configured_budgets_are_met(self) -> None:
+        """Delegate to `gz validate --instructions-files-budget`.
 
-        Replaces the prior ``assertEqual(max_chars_per_file, 15000)`` literal pin
-        (config-SSOT / tautological-test anti-pattern; return-to-health plan item
-        2.5) with the invariant the budget exists to enforce: the rule files
-        actually stay within their configured cap. The budget value's single
-        source of truth is the JSON, not a copy pasted into this assertion.
+        The two tests replaced here re-read the budget JSON and re-derived the
+        per-file and per-glob comparisons the shipped validator already performs
+        — a third copy of the same arithmetic, free to drift from the gate that
+        actually blocks a commit.
         """
-        payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
-        rule_glob = next(g for g in payload["globs"] if g["pattern"] == ".claude/rules/*.md")
-        limit = rule_glob["max_chars_per_file"]
-        self.assertIsInstance(limit, int, "rule-file glob budget must be a configured int")
-
-        rule_files = sorted(_RULES_GLOB_DIR.glob("*.md"))
-        self.assertTrue(rule_files, "expected .claude/rules/*.md files to exist")
-        for path in rule_files:
-            actual = len(path.read_text(encoding="utf-8"))
-            with self.subTest(rule=path.name):
-                self.assertLessEqual(
-                    actual, limit, f"{path.name} is {actual} chars, exceeds glob budget {limit}"
-                )
+        errors = audit_instructions_files_budget(_PROJECT_ROOT)
+        self.assertEqual(errors, [], [e.message for e in errors])
 
     @covers("REQ-0.0.54-04-03")
-    def test_agents_md_and_claude_md_fit_budget_and_codex_cap(self) -> None:
-        """REQ-04-03 (semantic).
+    def test_agents_md_fits_the_codex_project_doc_cap(self) -> None:
+        """KEPT as a real assertion — no validator covers it.
 
-        The original REQ fenced that OBPI-0.0.54-04's diet pass left the AGENTS.md /
-        CLAUDE.md budgets *unchanged*. Later operator budget moves
-        (32000→33000→30000) made that "unchanged" claim false, so re-pinning the
-        current literal was the config-SSOT / tautological-test anti-pattern
-        (return-to-health plan item 2.5). The "unchanged" fence is superseded; the
-        durable invariant it existed to protect is that both surfaces stay within
-        their configured budgets and AGENTS.md fits Codex's project-doc byte cap
-        (no silent truncation; GHI #519).
+        The budget validator enforces the CONFIGURED budget; this fence is about
+        a vendor cap the configuration is deliberately decoupled from (operator
+        ruling 2026-07-06: an adapter limit must not gate the core). Codex still
+        truncates at 32768 B at runtime, so this is a behavioural claim about a
+        surface no gz scope owns (GHI #519).
         """
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
-        files = payload["files"]
-        for name, path in (("AGENTS.md", _AGENTS_MD), ("CLAUDE.md", _CLAUDE_MD)):
-            budget = files.get(name)
-            self.assertIsInstance(budget, int, f"{name} budget must be a configured int")
-            actual = len(path.read_text(encoding="utf-8"))
-            with self.subTest(file=name):
-                self.assertLessEqual(
-                    actual, budget, f"{name} is {actual} chars, exceeds budget {budget}"
-                )
-
         self.assertTrue(
-            _budget_within_ceiling(files["AGENTS.md"]),
-            f"AGENTS.md budget {files['AGENTS.md']} exceeds Codex project-doc cap "
-            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B",
+            _budget_within_ceiling(payload["files"]["AGENTS.md"]),
+            f"AGENTS.md budget {payload['files']['AGENTS.md']} exceeds the Codex cap",
         )
         agents_bytes = len(_AGENTS_MD.read_text(encoding="utf-8").encode("utf-8"))
         self.assertLessEqual(
             agents_bytes,
             _PROJECT_DOC_BUDGET_CEILING_BYTES,
-            f"AGENTS.md is {agents_bytes} B, exceeds Codex project-doc cap "
-            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B (silent-truncation risk; GHI #519)",
+            f"AGENTS.md is {agents_bytes} B, over the Codex project-doc cap "
+            f"{_PROJECT_DOC_BUDGET_CEILING_BYTES} B (silent truncation; GHI #519)",
         )
 
 
@@ -277,37 +233,25 @@ class ConformanceValidatorGreen(unittest.TestCase):
     """REQ-0.0.54-04-06: gz validate --agents-md-map-conformance green across named scope."""
 
     @covers("REQ-0.0.54-04-06")
-    def test_no_claude_md_prohibited_headings(self) -> None:
-        text = _CLAUDE_MD.read_text(encoding="utf-8")
-        hits = _has_prohibited_title(text)
-        self.assertEqual(hits, [], f"CLAUDE.md prohibited heading(s): {hits}")
+    def test_the_conformance_scope_is_green(self) -> None:
+        """Call the validator the REQ names.
+
+        Folded under the `decommission-tautological-tests` chore. This class was
+        named `ConformanceValidatorGreen` and contained three tests that NEVER
+        INVOKED THE VALIDATOR — they re-derived its heading rule via the local
+        `_has_prohibited_title` and re-derived the budget arithmetic from the
+        budget JSON. A test asserting "the validator is green" that never runs
+        the validator cannot fail when the validator does, which is the exact
+        facade shape gzkit's negative-control system exists to refuse.
+        """
+        errors = audit_agents_md_map_conformance(_PROJECT_ROOT)
+        self.assertEqual(errors, [], [e.message for e in errors])
 
     @covers("REQ-0.0.54-04-06")
-    def test_no_rule_files_prohibited_headings(self) -> None:
-        for rule_file in [f for f in _RULES_DIR.glob("*.md") if f.name != "AGENTS.md"]:
-            with self.subTest(rule=rule_file.name):
-                text = rule_file.read_text(encoding="utf-8")
-                hits = _has_prohibited_title(text)
-                self.assertEqual(
-                    hits,
-                    [],
-                    f"{rule_file.name} prohibited heading(s): {hits}",
-                )
-
-    @covers("REQ-0.0.54-04-06")
-    def test_rule_files_within_tightened_budget(self) -> None:
-        budget = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
-        rule_glob = next(g for g in budget["globs"] if g["pattern"] == ".claude/rules/*.md")
-        limit = rule_glob["max_chars_per_file"]
-        mirrors_dir = _PROJECT_ROOT / ".claude" / "rules"
-        for mirror in mirrors_dir.glob("*.md"):
-            size = len(mirror.read_text(encoding="utf-8"))
-            with self.subTest(mirror=mirror.name):
-                self.assertLessEqual(
-                    size,
-                    limit,
-                    f"{mirror.name}: {size} chars exceeds {limit}-char budget",
-                )
+    def test_the_budget_scope_is_green(self) -> None:
+        """The other half of the same REQ, delegated the same way."""
+        errors = audit_instructions_files_budget(_PROJECT_ROOT)
+        self.assertEqual(errors, [], [e.message for e in errors])
 
 
 if __name__ == "__main__":

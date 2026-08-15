@@ -78,3 +78,29 @@ Ran 40 tests in 0.105s
 
 OK
 ```
+## 2026-08-15T17:59:59-05:00
+- Status: PASS
+- Chore: decommission-tautological-tests
+- Title: Decommission Tautological Tests (ADR-0.0.59-04)
+- Lane: heavy
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run gz validate --tautological-test-audit` => rc=0 (2.82s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --chores-layout` => rc=0 (0.97s) -- exit 0 == 0
+  - [PASS] `uv run -m unittest tests/governance/test_tautological_tests.py -q` => rc=0 (0.98s) -- exit 0 == 0
+
+```text
+[uv run gz validate --tautological-test-audit] stdout:
+Validated: tautological_test_audit
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --chores-layout] stdout:
+Validated: chores_layout
+
+✓ All validations passed (1 scopes).
+[uv run -m unittest tests/governance/test_tautological_tests.py -q] stderr:
+----------------------------------------------------------------------
+Ran 43 tests in 0.465s
+
+OK
+```
