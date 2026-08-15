@@ -5,14 +5,19 @@ item: 5
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-05-session-entry-door.md
+  - src/gzkit/hooks/claude.py
+  - src/gzkit/hooks/scripts/handoff.py
+  - src/gzkit/handoff_resume_gate.py
+  - tests/test_session_entry_door.py
+  - tests/governance/test_handoff_resume_gate.py
 reqs:
   - REQ-0.37.0-05-01
   - REQ-0.37.0-05-02
   - REQ-0.37.0-05-03
+  - REQ-0.37.0-05-04
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+  - uv run -m unittest tests.test_session_entry_door -q
 ---
 
 # OBPI-0.37.0-05-session-entry-door: Session Entry Door
@@ -25,8 +30,6 @@ verification:
 **Status:** Draft
 
 ## Objective
-
-<!-- One-sentence concrete outcome. What does "done" look like? -->
 
 OBPI-0.37.0-05 session-entry-door -- SessionStart fires airlock-IN; the handoff-resume-gate Write|Edit|NotebookEdit arm retires into it.
 
@@ -42,17 +45,23 @@ OBPI-0.37.0-05 session-entry-door -- SessionStart fires airlock-IN; the handoff-
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**` — parent ADR package scope
-
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-05-session-entry-door.md` — this brief
+- `src/gzkit/hooks/claude.py` — generates the SessionStart hook; gains the airlock-IN call
+- `src/gzkit/hooks/scripts/handoff.py` — the resume-gate template whose `Write|Edit|NotebookEdit` arm retires here
+- `src/gzkit/handoff_resume_gate.py` — the gate module backing that arm
+- `tests/test_session_entry_door.py` — new covering tests (flat convention) **CREATE**
+- `tests/governance/test_handoff_resume_gate.py` — existing 49-test suite, updated as the arm retires
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- **`docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — the parent ADR. BINDING, parent ADR § Boundary Invariants #9:** pull edges for this brief are computed FROM that file's `## Boundary Invariants` section, so write access would let this OBPI grant itself accounting. Read it; never edit it. (The scaffold carried the parent ADR and a `…/**` glob in its allowlist; removed 2026-08-15.)
+- Retiring the `Write|Edit|NotebookEdit` arm BEFORE the session-entry door is live. Removing it first opens a gap in front of the door; the improvisation and the hole close in ONE move or not at all.
+- `gz git-sync` — exempt unconditionally (parent ADR § Boundary Invariants #5).
+- Any local weight, profile, or decision grammar. The door CALLS `gzkit.airlock.enter.airlock_enter` (§ Boundary Invariants #2).
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
-
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
@@ -91,10 +100,11 @@ OBPI-0.37.0-05 session-entry-door -- SessionStart fires airlock-IN; the handoff-
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/hooks/claude.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/hooks/scripts/handoff.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/handoff_resume_gate.py`
+- [ ] Parent ADR § Boundary Invariants parses and each invariant carries an `(OBPI-NN)` binding token
+- [ ] Parent ADR § Flip Criteria baselines re-measured rather than transcribed from this brief
 **Existing Code (understand current state):**
 
 - [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
@@ -156,7 +166,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+uv run -m unittest tests.test_session_entry_door -q
 ```
 
 ## Demo
@@ -169,7 +179,11 @@ test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsio
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Session entry is now a transit: the airlock fires and the encounter reaches L2.
+uv run python scripts/session_orientation.py
+
+# The transit is readable from the ledger, not from agent narrative.
+uv run gz state --json
 ```
 
 ## Acceptance Criteria
@@ -180,10 +194,10 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.37.0-05-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.37.0-05-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.37.0-05-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
-
+- [ ] REQ-0.37.0-05-01 [BEHAVIOR]: Given a session entering the project, when SessionStart runs, then airlock-IN fires and the encounter is booked to L2. Evidence the gap is real and this is its closure: the 2026-07-18 session ran a full corpus survey, filed 2 GHIs, changed 3 source files and rewrote the campaign plan across ZERO transits.
+- [ ] REQ-0.37.0-05-02 [BEHAVIOR]: Given the session-entry door is live, when the handoff-resume-gate's `Write|Edit|NotebookEdit` arm is retired, then no window exists in which neither mechanism is active. The two changes land together; a retirement that precedes the door is a regression, not an increment.
+- [ ] REQ-0.37.0-05-03 [BEHAVIOR]: Given the session-entry door, when it decides, then it consumes `gzkit.airlock.enter.airlock_enter` and defines no local weight, profile, or decision grammar of its own. The arm it retires WAS a forked variant; retiring it must not create a second one.
+- [ ] REQ-0.37.0-05-04 [STRUCTURAL-FENCE]: The session-entry door requires no TTY, PTY, or interactive terminal, and its acknowledge-and-decide outcome is never recorded, rendered, or counted as a Gate-5 completion attestation. Proof channel is the parent ADR's `## Boundary Invariants` #6 and #8, both of which name OBPI-05; audited at ADR closeout.
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->

@@ -5,14 +5,20 @@ item: 3
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-03-seam-accounting-predicate.md
+  - src/gzkit/airlock/enter.py
+  - src/gzkit/airlock/model.py
+  - src/gzkit/events.py
+  - src/gzkit/schemas/ledger.json
+  - tests/test_airlock_severity_ladder.py
+  - tests/test_airlock_events.py
 reqs:
   - REQ-0.37.0-03-01
   - REQ-0.37.0-03-02
   - REQ-0.37.0-03-03
+  - REQ-0.37.0-03-04
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+  - uv run -m unittest tests.test_airlock_severity_ladder -q
 ---
 
 # OBPI-0.37.0-03-seam-accounting-predicate: Seam Accounting Predicate
@@ -20,15 +26,13 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- **Checklist Item:** #3 - "OBPI-0.37.0-03 seam-accounting-predicate -- accounting keys on the brief's declarative sections rather than any substring occurrence"
+- **Checklist Item:** #3 - "OBPI-0.37.0-03 seam-accounting-predicate -- the graduated severity ladder: unaccounted law WARNs (pending the § Flip Criteria threshold), a parent declaring NO `## Boundary Invariants` section PROCEEDs and emits a counted L2 warning naming the gap; plus override-frequency tracking, so Negative #1's mitigation has an owner"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.37.0-03 seam-accounting-predicate -- accounting keys on the brief's declarative sections rather than any substring occurrence.
+OBPI-0.37.0-03 seam-accounting-predicate -- the graduated severity ladder: unaccounted law WARNs (pending the § Flip Criteria threshold), a parent declaring NO `## Boundary Invariants` section PROCEEDs and emits a counted L2 warning naming the gap; plus override-frequency tracking, so Negative #1's mitigation has an owner.
 
 ## Lane
 
@@ -42,23 +46,29 @@ OBPI-0.37.0-03 seam-accounting-predicate -- accounting keys on the brief's decla
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**` — parent ADR package scope
-
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-03-seam-accounting-predicate.md` — this brief
+- `src/gzkit/airlock/enter.py` — `_decide` (:154-166) and the warning channel ONLY — the accounting predicate in `_reconcile` belongs to OBPI-02.
+- `src/gzkit/airlock/model.py` — severity/warning fields on the seam-map or preflight snapshot
+- `src/gzkit/events.py` — the `airlock_in` event carries the law-absent warning and the override signal
+- `src/gzkit/schemas/ledger.json` — L2 schema for the same
+- `tests/test_airlock_severity_ladder.py` — new covering tests (flat convention) **CREATE**
+- `tests/test_airlock_events.py` — existing airlock event tests
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- **`docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — the parent ADR. BINDING, parent ADR § Boundary Invariants #9:** pull edges for this brief are computed FROM that file's `## Boundary Invariants` section, so write access would let this OBPI grant itself accounting. Read it; never edit it. (The scaffold carried the parent ADR and a `…/**` glob in its allowlist; removed 2026-08-15.)
+- `src/gzkit/airlock/enter.py::_reconcile` (:116-151) — the accounting predicate is OBPI-02's. This OBPI changes what an unaccounted edge DOES, never what `accounted` MEANS.
+- Flipping either gate fail-closed — that is OBPI-06, gated on § Flip Criteria. This OBPI ships the ladder in its WARN posture.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
-
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-03 seam-accounting-predicate -- accounting keys on the brief's declarative sections rather than any substring occurrence.
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-03 seam-accounting-predicate -- the graduated severity ladder: unaccounted law WARNs (pending the § Flip Criteria threshold), a parent declaring NO `## Boundary Invariants` section PROCEEDs and emits a counted L2 warning naming the gap; plus override-frequency tracking, so Negative #1's mitigation has an owner.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
@@ -91,10 +101,12 @@ OBPI-0.37.0-03 seam-accounting-predicate -- accounting keys on the brief's decla
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/airlock/enter.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/airlock/model.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/events.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/schemas/ledger.json`
+- [ ] Parent ADR § Boundary Invariants parses and each invariant carries an `(OBPI-NN)` binding token
+- [ ] Parent ADR § Flip Criteria baselines re-measured rather than transcribed from this brief
 **Existing Code (understand current state):**
 
 - [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
@@ -156,7 +168,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+uv run -m unittest tests.test_airlock_severity_ladder -q
 ```
 
 ## Demo
@@ -169,7 +181,12 @@ test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsio
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Parent declares law, an invariant is unaccounted: WARNs, does not yet HOLD.
+uv run gz airlock in --target OBPI-0.37.0-06-transit-gate-flip --dry-run --json
+
+# Parent declares NO Boundary Invariants section: proceeds, and the gap is
+# COUNTED rather than invisible. 147 of 166 ADRs are in this state today.
+uv run gz airlock in --target OBPI-0.30.0-01-okf-inventory-and-classification --dry-run --json
 ```
 
 ## Acceptance Criteria
@@ -180,10 +197,10 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.37.0-03-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.37.0-03-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.37.0-03-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
-
+- [ ] REQ-0.37.0-03-01 [BEHAVIOR]: Given a parent ADR that DECLARES `## Boundary Invariants` and an entry with at least one unaccounted invariant, when the gate decides, then the outcome is a WARNING and the transit proceeds — it does not HOLD. Derived from the ADR's § Flip Criteria, not from convenience: modelled across the 19 law-declaring ADRs, 89 of 93 entries carry at least one unaccounted invariant, so shipping HOLD would put ~95% of entries at NO-GO on day one and make CaptainOverride the default verb — parent ADR § Negative #1 by construction.
+- [ ] REQ-0.37.0-03-02 [BEHAVIOR]: Given a parent ADR that declares NO `## Boundary Invariants` section, when the gate decides, then the transit PROCEEDS and a warning naming the missing-law gap is emitted. Holding here instead would put ~88% of the corpus (147 of 166 ADRs) at NO-GO for a condition the entering work cannot fix from inside the entry.
+- [ ] REQ-0.37.0-03-03 [SUPPORT]: The `airlock_in` L2 event and `src/gzkit/schemas/ledger.json` carry the law-absent warning and the override signal, so both are countable from the ledger rather than from agent narrative — `uv run gz validate --documents` + `airlock_in` event.
+- [ ] REQ-0.37.0-03-04 [BEHAVIOR]: Given a CaptainOverride on an airlock entry, when the transit is booked, then the override is recorded such that its FREQUENCY is queryable from L2. This closes the parent ADR § Negative #1 mitigation (*'override frequency is a tracked signal rather than a free escape'*), which was asserted in Consequences with no owning checklist item until the 2026-08-15 amendment.
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->

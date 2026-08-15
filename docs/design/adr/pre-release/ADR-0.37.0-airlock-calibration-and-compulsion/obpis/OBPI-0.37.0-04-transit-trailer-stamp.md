@@ -5,14 +5,18 @@ item: 4
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-04-transit-trailer-stamp.md
+  - .gzkit/hooks/prepare-commit-msg-task-trailers
+  - src/gzkit/tasks.py
+  - src/gzkit/commands/validate_commit_trailers.py
+  - tests/test_transit_trailer.py
 reqs:
   - REQ-0.37.0-04-01
   - REQ-0.37.0-04-02
   - REQ-0.37.0-04-03
+  - REQ-0.37.0-04-04
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+  - uv run -m unittest tests.test_transit_trailer -q
 ---
 
 # OBPI-0.37.0-04-transit-trailer-stamp: Transit Trailer Stamp
@@ -20,15 +24,13 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- **Checklist Item:** #4 - "OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it"
+- **Checklist Item:** #4 - "OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it; carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today); carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today)"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it.
+OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it; carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today); carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today).
 
 ## Lane
 
@@ -42,23 +44,28 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**` — parent ADR package scope
-
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-04-transit-trailer-stamp.md` — this brief
+- `.gzkit/hooks/prepare-commit-msg-task-trailers` — the producer that already stamps `Task:`; gains the `Transit:` stamp
+- `src/gzkit/tasks.py` — trailer parsing and the `src/`+`tests/` scope roots the `Task:` floor already uses
+- `src/gzkit/commands/validate_commit_trailers.py` — the validator surface that warns on a missing trailer
+- `tests/test_transit_trailer.py` — new covering tests (flat convention) **CREATE**
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- **`docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — the parent ADR. BINDING, parent ADR § Boundary Invariants #9:** pull edges for this brief are computed FROM that file's `## Boundary Invariants` section, so write access would let this OBPI grant itself accounting. Read it; never edit it. (The scaffold carried the parent ADR and a `…/**` glob in its allowlist; removed 2026-08-15.)
+- Flipping the trailer gate fail-closed — OBPI-06 owns that, gated on § Flip Criteria gate 2, whose (b) conjunct is this OBPI's recovery path.
+- `gz git-sync` — exempt unconditionally (parent ADR § Boundary Invariants #5, standing operator ruling).
+- Widening or altering the existing `Task:` trailer invariant — `Transit:` is a separate key alongside it, never a replacement.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
-
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it.
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it; carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today); carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today).
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
@@ -91,10 +98,11 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
+- [ ] Allowed Path resolves on disk before implementation begins: `.gzkit/hooks/prepare-commit-msg-task-trailers`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/tasks.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/commands/validate_commit_trailers.py`
+- [ ] Parent ADR § Boundary Invariants parses and each invariant carries an `(OBPI-NN)` binding token
+- [ ] Parent ADR § Flip Criteria baselines re-measured rather than transcribed from this brief
 **Existing Code (understand current state):**
 
 - [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
@@ -156,7 +164,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+uv run -m unittest tests.test_transit_trailer -q
 ```
 
 ## Demo
@@ -169,7 +177,11 @@ test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsio
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# A src/** commit now carries a door-stamped Transit: trailer alongside Task:.
+git log -1 --format=%B -- src/
+
+# The validator warns (does not yet refuse) on a src/** commit with no transit.
+uv run gz validate --commit-trailers
 ```
 
 ## Acceptance Criteria
@@ -180,10 +192,10 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.37.0-04-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.37.0-04-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.37.0-04-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
-
+- [ ] REQ-0.37.0-04-01 [BEHAVIOR]: Given a commit touching `src/**` or `tests/**` and a transit recorded for the working session, when the commit message is prepared, then a `Transit:` trailer is stamped by the producer — never asked of the author. Scope matches the existing `Task:` floor exactly; an authored `Transit:` trailer of any form suppresses the stamp, as `Task:` does.
+- [ ] REQ-0.37.0-04-02 [BEHAVIOR]: Given a `src/**` or `tests/**` commit carrying no `Transit:` trailer, when `gz validate --commit-trailers` runs, then it WARNS and exits 0. Fail-closed is OBPI-06's, not this increment's.
+- [ ] REQ-0.37.0-04-03 [BEHAVIOR]: Given a stamping failure, when the operator inspects the result, then the failure is visible and recoverable WITHOUT the operator needing to know a transit id. Derived from the parent ADR § Negative #5: the producer's every failure path is a silent no-op — correct for an advisory trailer, and stranding under a fail-closed consumer. This REQ is the (b) conjunct § Flip Criteria gate 2 will not flip without.
+- [ ] REQ-0.37.0-04-04 [STRUCTURAL-FENCE]: `gz git-sync` is never gated, warned, or refused by the trailer mechanism. Proof channel is the parent ADR's `## Boundary Invariants` #5, which names OBPI-04; audited at ADR closeout.
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->

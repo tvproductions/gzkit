@@ -5,14 +5,20 @@ item: 1
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-ontology-inverse-reach.md
+  - src/gzkit/airlock/enter.py
+  - src/gzkit/pipeline_runtime.py
+  - src/gzkit/commands/airlock.py
+  - src/gzkit/commands/mx_cmd.py
+  - src/gzkit/commands/permitted_entry.py
+  - tests/test_airlock_parent_invariants.py
+  - tests/test_airlock_enter.py
 reqs:
   - REQ-0.37.0-01-01
   - REQ-0.37.0-01-02
   - REQ-0.37.0-01-03
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+  - uv run -m unittest tests.test_airlock_parent_invariants -q
 ---
 
 # OBPI-0.37.0-01-ontology-inverse-reach: Ontology Inverse Reach
@@ -20,15 +26,13 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- **Checklist Item:** #1 - "OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning set[str] (networkx ancestors), the inverse of reachable_from; core exercisable with no projection built"
+- **Checklist Item:** #1 - "OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning set[str] (networkx ancestors), the inverse of reachable_from; core exercisable with no projection built.
+OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
 
 ## Lane
 
@@ -42,13 +46,22 @@ OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning 
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**` — parent ADR package scope
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-ontology-inverse-reach.md` — this brief
+- `src/gzkit/airlock/enter.py` — `airlock_enter` signature and `_reconcile`'s pull-edge construction
+- `src/gzkit/pipeline_runtime.py` — call sites at `:590` and `:592`
+- `src/gzkit/commands/airlock.py` — call site at `:95`, the door `gz airlock in` uses (the omitted fifth)
+- `src/gzkit/commands/mx_cmd.py` — call site at `:108`
+- `src/gzkit/commands/permitted_entry.py` — call site at `:243`
+- `tests/test_airlock_parent_invariants.py` — new covering tests for the threading (flat `tests/test_airlock_*.py` convention, matching test_airlock_enter/exit/model/events) **CREATE**
+- `tests/test_airlock_enter.py` — existing enter tests, updated for the new signature usage
 
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- **`docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — the parent ADR. BINDING, parent ADR § Boundary Invariants #9:** this brief's pull edges are computed FROM that file's `## Boundary Invariants` section, so write access would let this OBPI grant itself accounting. Read it; never edit it. (The brief carried the parent ADR and a `…/**` glob in its allowlist at authoring; removed 2026-08-15.)
+- `src/gzkit/airlock/exit.py` — carries the identical empty-`parent_invariants` defect but is NOT scoped here; tracked separately
+- `src/gzkit/req_kind_fence.py` — `_fence_obpi_anchored` is REUSED UNCHANGED by OBPI-02; this OBPI does not modify it
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
@@ -58,7 +71,7 @@ OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning set[str] (networkx ancestors), the inverse of reachable_from; core exercisable with no projection built.
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
@@ -91,8 +104,9 @@ OBPI-0.37.0-01 ontology-inverse-reach -- add OntologyGraph.reaching() returning 
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**`
+- [ ] All FIVE `airlock_enter` call sites still resolve — re-derive rather than trust this list: `grep -rn "airlock_enter(" src/ | grep -v "def airlock_enter"`
+- [ ] `src/gzkit/airlock/enter.py` `airlock_enter` still accepts `parent_invariants: tuple[str, ...] = ()`
+- [ ] Parent ADR § Boundary Invariants section parses and each invariant carries an `(OBPI-NN)` binding token
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
 
 **Existing Code (understand current state):**
@@ -156,8 +170,13 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+uv run -m unittest tests.test_airlock_parent_invariants -q
 ```
+
+> **The scaffold's `test -f <the parent ADR>` was removed 2026-08-15.** It was true
+> before any work began, so it could never fail and the pipeline verify stage would
+> have passed vacuously. A verification command that cannot go RED is not a
+> verification command.
 
 ## Demo
 
@@ -169,7 +188,12 @@ test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsio
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# The observing door now carries LAW. Before this OBPI this printed "pull": []
+uv run gz airlock in --target OBPI-0.37.0-02-airlock-seam-calibration --dry-run --json
+
+# The same door under a parent that declares NO Boundary Invariants — pull is
+# legitimately empty here, and OBPI-03 is what makes that state visible.
+uv run gz airlock in --target OBPI-0.30.0-01-okf-inventory-and-classification --dry-run --json
 ```
 
 ## Acceptance Criteria
@@ -180,9 +204,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.37.0-01-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.37.0-01-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.37.0-01-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.37.0-01-01 [BEHAVIOR]: Given an OBPI whose parent ADR declares a `## Boundary Invariants` section, when `airlock_enter` is invoked through ANY of the five call sites — `pipeline_runtime.py` (both), `commands/permitted_entry.py`, `commands/mx_cmd.py`, and `commands/airlock.py` — then the resulting `SeamMap.pull_edges` carries one edge per numbered invariant. **The fifth site is the REQ's point:** a threading that covers only the four sites named in the ADR's original text leaves `gz airlock in` reporting `pull: []`, so the test asserts the invariant across all five, enumerated from source rather than from a hardcoded list.
+- [ ] REQ-0.37.0-01-02 [BEHAVIOR]: Given a parent ADR whose invariants are multi-line prose paragraphs, when pull edges are constructed, then each `SeamEdge.target` carries the invariant's `(OBPI-NN)` binding identity and NEVER the paragraph text. Rationale the assertion derives from, not from a run: `SeamEdge.target` is persisted to the L2 ledger, and ADR-0.33.0's invariants run to five lines including verbatim operator quotes — carrying prose there would put paragraphs in the append-only record and make an entry's identity unstable under any prose edit.
+- [ ] REQ-0.37.0-01-03 [STRUCTURAL-FENCE]: This OBPI never acquires write access to its own parent ADR. Proof channel is the parent ADR's `## Boundary Invariants` #9 (*"No OBPI may hold write access to the ADR that grants its accounting"*), which names OBPI-01; audited at ADR closeout, not by a per-OBPI test.
 
 ## Completion Checklist
 

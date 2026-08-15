@@ -5,14 +5,16 @@ item: 6
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-06-transit-gate-flip.md
+  - src/gzkit/airlock/enter.py
+  - src/gzkit/commands/validate_commit_trailers.py
+  - tests/test_transit_gate_flip.py
 reqs:
   - REQ-0.37.0-06-01
   - REQ-0.37.0-06-02
   - REQ-0.37.0-06-03
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+  - uv run -m unittest tests.test_transit_gate_flip -q
 ---
 
 # OBPI-0.37.0-06-transit-gate-flip: Transit Gate Flip
@@ -20,15 +22,13 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- **Checklist Item:** #6 - "OBPI-0.37.0-06 transit-gate-flip -- flip item 4 fail-closed against the written criterion; live NC asserts un-triggered entry makes the claim fail"
+- **Checklist Item:** #6 - "OBPI-0.37.0-06 transit-gate-flip -- flip items 3 and 4 fail-closed against § Flip Criteria; live NC asserts un-triggered entry makes the claim fail"
 
 **Status:** Draft
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
-
-OBPI-0.37.0-06 transit-gate-flip -- flip item 4 fail-closed against the written criterion; live NC asserts un-triggered entry makes the claim fail.
+OBPI-0.37.0-06 transit-gate-flip -- flip items 3 and 4 fail-closed against § Flip Criteria; live NC asserts un-triggered entry makes the claim fail.
 
 ## Lane
 
@@ -42,23 +42,26 @@ OBPI-0.37.0-06 transit-gate-flip -- flip item 4 fail-closed against the written 
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**` — parent ADR package scope
-
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-06-transit-gate-flip.md` — this brief
+- `src/gzkit/airlock/enter.py` — the severity flag OBPI-03 shipped in its WARN posture
+- `src/gzkit/commands/validate_commit_trailers.py` — the trailer gate's warn/refuse posture
+- `tests/test_transit_gate_flip.py` — new covering tests, including the live negative control **CREATE**
 ## Denied Paths
 
 <!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
 
+- **`docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md` — the parent ADR. BINDING, parent ADR § Boundary Invariants #9:** pull edges for this brief are computed FROM that file's `## Boundary Invariants` section, so write access would let this OBPI grant itself accounting. Read it; never edit it. (The scaffold carried the parent ADR and a `…/**` glob in its allowlist; removed 2026-08-15.)
+- Flipping either gate before its § Flip Criteria threshold is MEASURED and met. A flip proposed on elapsed time, on a count of landed OBPIs, or on a judgment that the corpus 'looks ready' is the defect § Flip Criteria exists to prevent.
+- Re-deriving or re-negotiating the thresholds. They are written in the parent ADR with measured baselines; this OBPI reads them.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
-
 ## Requirements (FAIL-CLOSED)
 
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-06 transit-gate-flip -- flip item 4 fail-closed against the written criterion; live NC asserts un-triggered entry makes the claim fail.
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-06 transit-gate-flip -- flip items 3 and 4 fail-closed against § Flip Criteria; live NC asserts un-triggered entry makes the claim fail.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
@@ -91,10 +94,10 @@ OBPI-0.37.0-06 transit-gate-flip -- flip item 4 fail-closed against the written 
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/airlock/enter.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/commands/validate_commit_trailers.py`
+- [ ] Parent ADR § Boundary Invariants parses and each invariant carries an `(OBPI-NN)` binding token
+- [ ] Parent ADR § Flip Criteria baselines re-measured rather than transcribed from this brief
 **Existing Code (understand current state):**
 
 - [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
@@ -156,7 +159,7 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md
+uv run -m unittest tests.test_transit_gate_flip -q
 ```
 
 ## Demo
@@ -169,7 +172,11 @@ test -f docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsio
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# Both gates are fail-closed: an unaccounted invariant now blocks the crossing.
+uv run gz airlock in --target OBPI-0.37.0-06-transit-gate-flip --dry-run --json
+
+# And a src/** commit with no transit is refused rather than warned.
+uv run gz validate --commit-trailers
 ```
 
 ## Acceptance Criteria
@@ -180,10 +187,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.37.0-06-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.37.0-06-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.37.0-06-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
-
+- [ ] REQ-0.37.0-06-01 [BEHAVIOR]: Given the § Flip Criteria gate-1 threshold is met — the modeled would-hold rate across law-declaring ADRs below 25%, against the measured 2026-08-15 baseline of 95% (89 of 93 entries) — when the pull-arm severity flips, then an unaccounted invariant makes PROCEED unreachable on the default path. Before the threshold is met the flip does not land; the criterion is read from the parent ADR, never re-derived here.
+- [ ] REQ-0.37.0-06-02 [BEHAVIOR]: Given § Flip Criteria gate 2 — ≥90% of `src/**` and `tests/**` commits in a trailing 30-day window carrying a door-stamped `Transit:` trailer, AND OBPI-04's stamp-failure recovery path landed and exercised — when the trailer gate flips, then a commit with no transit is refused. The conjunction is binding: flipping on the percentage alone converts a silent producer failure into an unrecoverable commit refusal.
+- [ ] REQ-0.37.0-06-03 [BEHAVIOR]: Given a unit of work that never entered a door at all, when the flipped gate evaluates it, then the claim FAILS. This is the live negative control and it targets the failure the parent ADR was written for — not 'un-accounted seam → GO unreachable' (that is ADR-0.33.0's existing NC, which only fires once you are already inside the airlock) but NEVER ENTERING, the mode that let 525 fix commits through in 90 days across zero transits.
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
