@@ -44,6 +44,16 @@ _AUDITED_SURFACES: dict[str, tuple[str, ...]] = {
         "src/gzkit/governance/trust_audits",
     ),
     "control-surface-permission-consent-drift": (".gzkit/rules", ".claude/settings.json"),
+    # Pass D audits what *invokes* a validator, so its evidence goes stale when a
+    # caller surface moves — the CLI parser (which scopes exist), the `gz check`
+    # step registry, or any of the three gating surfaces.
+    "control-surface-validator-reachability": (
+        "src/gzkit/cli",
+        "src/gzkit/commands/quality.py",
+        ".pre-commit-config.yaml",
+        ".github/workflows",
+        ".claude/hooks",
+    ),
 }
 
 

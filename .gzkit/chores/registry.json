@@ -60,7 +60,7 @@
     },
     {
       "slug": "control-surface-permission-consent-drift",
-      "title": "Control Surface Audit — Rule Prose vs. Permission Standing Consent (Pass D)",
+      "title": "Control Surface Audit \u2014 Rule Prose vs. Permission Standing Consent (Pass D)",
       "version": "1.0.0",
       "path": ".gzkit/chores/control-surface-permission-consent-drift",
       "lane": "lite",
@@ -68,7 +68,7 @@
     },
     {
       "slug": "control-surface-rule-conflicts",
-      "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
+      "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
       "version": "1.0.0",
       "path": ".gzkit/chores/control-surface-rule-conflicts",
       "lane": "lite",
@@ -76,7 +76,7 @@
     },
     {
       "slug": "control-surface-rule-vs-check-drift",
-      "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
+      "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
       "version": "1.0.0",
       "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
       "lane": "lite",
@@ -84,11 +84,19 @@
     },
     {
       "slug": "control-surface-skill-rule-reachability",
-      "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
+      "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
       "version": "1.0.0",
       "path": ".gzkit/chores/control-surface-skill-rule-reachability",
       "lane": "lite",
       "timeoutSeconds": 120
+    },
+    {
+      "slug": "control-surface-validator-reachability",
+      "title": "Control Surface Audit \u2014 Validator Reachability & Ungated Ratchet (Pass D)",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/control-surface-validator-reachability",
+      "lane": "lite",
+      "timeoutSeconds": 300
     },
     {
       "slug": "coverage-40pct",
@@ -302,7 +310,7 @@
     },
     {
       "slug": "test-consolidation-subtest-sweep",
-      "title": "Test Consolidation — subTest Sweep & Slow-Tier Quarantine (GHI #644)",
+      "title": "Test Consolidation \u2014 subTest Sweep & Slow-Tier Quarantine (GHI #644)",
       "version": "1.0.0",
       "path": ".gzkit/chores/test-consolidation-subtest-sweep",
       "lane": "lite",

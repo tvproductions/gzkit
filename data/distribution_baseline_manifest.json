@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.34.2",
+  "gzkit_version": "0.34.3",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -152,6 +152,10 @@
       "control-surface-skill-rule-reachability/CHORE.md",
       "control-surface-skill-rule-reachability/README.md",
       "control-surface-skill-rule-reachability/acceptance.json",
+      "control-surface-validator-reachability/CHORE.md",
+      "control-surface-validator-reachability/README.md",
+      "control-surface-validator-reachability/acceptance.json",
+      "control-surface-validator-reachability/check_reachability.py",
       "coverage-40pct/CHORE.md",
       "coverage-40pct/README.md",
       "coverage-40pct/acceptance.json",
