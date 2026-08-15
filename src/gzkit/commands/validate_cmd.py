@@ -1213,6 +1213,7 @@ def _dispatch_early_return_scopes(
     check_waiver_ratchet: bool,
     check_gate_callers: bool,
     check_exemption_controls: bool,
+    check_audits: bool,
     as_json: bool,
 ) -> bool:
     """Handle scopes that own their full 0/2/3 lifecycle and return immediately.
@@ -1220,6 +1221,14 @@ def _dispatch_early_return_scopes(
     Returns True when one of these scopes handled the invocation — the caller
     must then return without running the aggregate validation path.
     """
+    if check_audits:
+        # The umbrella owns its own 0/2/3 lifecycle: it runs each solo-only
+        # member in a pass of its own, so it belongs here beside them rather
+        # than on the aggregate path that the solo-only fence refuses (#704).
+        from gzkit.commands.validate_audits import run_audits_umbrella  # noqa: PLC0415
+
+        run_audits_umbrella(as_json=as_json)
+        return True
     if check_distribution_regenerate:
         if not check_distribution:
             console.print(
@@ -1401,6 +1410,7 @@ def validate(
     check_waiver_ratchet: bool = False,
     check_gate_callers: bool = False,
     check_exemption_controls: bool = False,
+    check_audits: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
     attestation_kind: str = "feature",
@@ -1546,6 +1556,7 @@ def validate(
         check_waiver_ratchet=check_waiver_ratchet,
         check_gate_callers=check_gate_callers,
         check_exemption_controls=check_exemption_controls,
+        check_audits=check_audits,
         as_json=as_json,
     ):
         return

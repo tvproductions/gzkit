@@ -172,41 +172,56 @@ class TestSensitivityJson(unittest.TestCase):
 
 
 class TestSensitivityAll(unittest.TestCase):
-    """`gz validate --audits` includes the sensitivity scope."""
+    """`gz validate --audits` runs the sensitivity scope in a pass of its own."""
 
     @covers("REQ-0.0.22-03-07")
-    def test_audits_umbrella_threads_check_sensitivity(self):
-        parser = _build_parser()
-        ns = parser.parse_args(["validate", "--audits"])
-        # The umbrella surfaces check_sensitivity via its dispatcher kwargs.
-        # Patching the cached validate handler in the shared handler manifest
-        # is the only intercept site that doesn't fight the lazy-import cache;
-        # we restore the cached entry on exit so other tests aren't affected.
-        # (GHI #617 collapsed the per-parser _HANDLER_CACHE into one module.)
-        from gzkit.cli import parser_handler_manifest
-        from gzkit.commands import validate_cmd
+    def test_audits_umbrella_runs_sensitivity_in_a_solo_pass(self):
+        # This assertion used to read `captured["check_sensitivity"] is True`
+        # against the dispatcher kwargs — wiring, not behavior. GHI #704 then
+        # made --sensitivity solo-only, so the very kwarg this asserted was what
+        # made `gz validate --audits` refuse itself (exit 1, nothing run). The
+        # test stayed green because the wiring was never what broke. Assert the
+        # decomposition instead: sensitivity must be run, and run ALONE.
+        from gzkit.commands import validate_audits
 
-        captured: dict[str, object] = {}
+        passes: list[dict[str, bool]] = []
 
-        def fake_validate(**kwargs: object) -> None:
-            captured.update(kwargs)
+        def fake_pass(scopes: dict[str, bool], *, as_json: bool) -> int:
+            passes.append(dict(scopes))
+            return 0
 
-        prior_cache = parser_handler_manifest._HANDLER_CACHE.get("validate")
-        parser_handler_manifest._HANDLER_CACHE["validate"] = fake_validate
-        try:
-            ns.func(ns)
-        finally:
-            if prior_cache is None:
-                parser_handler_manifest._HANDLER_CACHE.pop("validate", None)
-            else:
-                parser_handler_manifest._HANDLER_CACHE["validate"] = prior_cache
+        with mock.patch.object(validate_audits, "run_audits_pass", fake_pass):
+            validate_audits.run_audits_umbrella(as_json=False)
 
-        # Sanity-check: the cache restoration leaves the live module intact.
-        assert callable(validate_cmd.validate)
-        self.assertTrue(
-            captured.get("check_sensitivity"),
-            f"--audits must thread check_sensitivity=True; got {captured}",
+        sensitivity = [p for p in passes if p.get("check_sensitivity")]
+        self.assertEqual(
+            len(sensitivity),
+            1,
+            f"--audits must run the sensitivity scope exactly once; got {passes}",
         )
+        self.assertEqual(
+            sorted(sensitivity[0]),
+            ["check_sensitivity"],
+            "--audits must run --sensitivity with no other scope active: it is "
+            "solo-only, and combining it is refused outright (GHI #704). "
+            f"Got {sensitivity[0]}.",
+        )
+
+    @covers("REQ-0.0.22-03-07")
+    def test_audits_umbrella_propagates_worst_member_exit_code(self):
+        # A member's policy breach must surface as the umbrella's own status;
+        # otherwise the umbrella reports a green its members did not earn.
+        from gzkit.commands import validate_audits
+
+        def fake_pass(scopes: dict[str, bool], *, as_json: bool) -> int:
+            return 3 if scopes.get("check_unscoped_rules") else 0
+
+        with (
+            mock.patch.object(validate_audits, "run_audits_pass", fake_pass),
+            self.assertRaises(SystemExit) as ctx,
+        ):
+            validate_audits.run_audits_umbrella(as_json=False)
+        self.assertEqual(ctx.exception.code, 3)
 
 
 if __name__ == "__main__":

@@ -52,6 +52,7 @@ _DISPATCH_DEFAULTS: dict[str, object] = {
     "check_waiver_ratchet": False,
     "check_gate_callers": False,
     "check_exemption_controls": False,
+    "check_audits": False,
     "as_json": False,
 }
 
