@@ -763,11 +763,11 @@ paths/commands only; no outcomes or interpretation.
 Use CLI commands only (no raw SQL evidence).
 
 ```bash
-# Primary product surface command
-uv run -m airlineops [command]
+# Primary product surface command this OBPI delivers
+uv run gz [verb] [target]
 
 # Secondary verification (if applicable)
-uv run -m airlineops [command]
+uv run gz [verb] [target] --json
 ```
 
 **Awaiting human attestation.** Human must execute above and respond:
@@ -803,7 +803,7 @@ Summarize the OBPI's delivery in three parts:
 **Attestor:** [human name/handle]
 **Response:** [Completed | Completed — Partial | Dropped]
 **CLI Commands Executed:**
-- `uv run -m airlineops [command]` — [observed behavior]
+- `uv run gz [verb] [target]` — [observed behavior]
 
 **OBPI Status:** Completed
 **Brief Status:** Completed

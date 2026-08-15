@@ -23,16 +23,16 @@ List the specific CLI commands, reporter surfaces, or behaviors that this ADR in
 
 Example (adapt to ADR):
 
-- `uv run -m airlineops reporter <feature> ...`
-- Config sources: `config/settings.json`, `config/calendars.json`
-- Registry/manifest: `data/data_sources.json`
+- `uv run gz <verb> <target> ...`
+- Config sources: `.gzkit/manifest.json`
+- Registry/manifest: `.gzkit/manifest.json`, `.gzkit/ledger.jsonl`
 
 **System health surfaces (use when relevant):**
 
-- `uv run -m airlineops reporter status`
-- `uv run -m airlineops reporter contract horizon`
-- `uv run -m airlineops reporter manifest status`
-- `uv run -m airlineops reporter registrar --format console`
+- `uv run gz status --table`
+- `uv run gz state --json`
+- `uv run gz validate --documents`
+- `uv run gz check`
 
 ## Planned Checks
 

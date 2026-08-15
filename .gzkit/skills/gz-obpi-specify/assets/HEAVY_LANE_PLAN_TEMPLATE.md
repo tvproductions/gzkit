@@ -39,11 +39,11 @@ An agent implementing a Heavy lane OBPI MUST use this structure. Deviation is a 
 **Product surface commands for verification:**
 
 \`\`\`bash
-# [Command 1 - primary product surface]
-uv run -m airlineops [command]
+# [Command 1 - primary product surface this OBPI delivers]
+uv run gz [verb] [target]
 
 # [Command 2 - secondary verification]
-uv run -m airlineops [command]
+uv run gz [verb] [target] --json
 \`\`\`
 
 **Awaiting attestation.** Human must execute above commands and respond with:
