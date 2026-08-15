@@ -289,17 +289,25 @@ class HandoffArchiveBehaviorTests(unittest.TestCase):
             probe.mkdir()
             case_insensitive = (base / "caseprobe").exists()
             probe.rmdir()
-            if not case_insensitive:
-                self.skipTest("case-sensitive filesystem: alias is a distinct file")
-
             target = _write_handoff(base, "target.md", timestamp=_OLD_TS)
             _write_handoff(base, "child.md", timestamp=_RECENT_TS, continues_from="TARGET.md")
 
             plan = plan_archive(base_path=base, older_than_days=30, now=_NOW)
             execute_archive(plan, base_path=base)
 
-            self.assertIn(".gzkit/handoffs/target.md", plan.skipped_chained)
-            self.assertTrue(target.exists(), "case-alias pointer target must not be orphaned")
+            # Both filesystems are asserted, neither is skipped. Case-sensitivity
+            # is a real, irreducible platform difference — but "the platform
+            # differs" is a reason to assert the OTHER behaviour, never a reason
+            # to assert nothing. On a case-sensitive filesystem `TARGET.md` names
+            # no existing file, so the chain does not exist and archiving
+            # `target.md` is correct; on a case-insensitive one it resolves and
+            # the pointer target must be protected.
+            if case_insensitive:
+                self.assertIn(".gzkit/handoffs/target.md", plan.skipped_chained)
+                self.assertTrue(target.exists(), "case-alias pointer target must not be orphaned")
+            else:
+                self.assertNotIn(".gzkit/handoffs/target.md", plan.skipped_chained)
+                self.assertFalse(target.exists(), "no chain exists on a case-sensitive filesystem")
 
     @covers("REQ-0.0.65-05-05")
     def test_dry_run_flags_dangling_symlink_conflict(self) -> None:
@@ -313,10 +321,19 @@ class HandoffArchiveBehaviorTests(unittest.TestCase):
             base = Path(tmp)
             archive = base / ".gzkit" / "handoffs" / "archive"
             archive.mkdir(parents=True)
+            # Asserted, not skipped. gzkit treats Windows/macOS/Linux as co-equal
+            # (`.claude/rules/cross-platform.md`), and a dangling-symlink dest is
+            # a real conflict shape on all three — so an environment that cannot
+            # create one cannot verify this behaviour, and must SAY so rather than
+            # report green. On Windows this needs Developer Mode or an elevated
+            # shell; that is an environment requirement, not an optional extra.
             try:
                 (archive / "dup.md").symlink_to(base / "no-such-target.md")
-            except (OSError, NotImplementedError):
-                self.skipTest("filesystem/OS does not support symlink creation")
+            except (OSError, NotImplementedError) as exc:  # pragma: no cover - env capability
+                self.fail(
+                    f"cannot create a symlink, so the dangling-dest conflict path is "
+                    f"unverifiable here: {exc}. On Windows enable Developer Mode."
+                )
             _write_handoff(base, "dup.md", timestamp=_OLD_TS)
 
             plan = plan_archive(base_path=base, older_than_days=30, now=_NOW)

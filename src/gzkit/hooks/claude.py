@@ -385,7 +385,19 @@ def _merge_hook_phase(
     For each matcher that gzkit defines, the gzkit hooks replace all existing
     hooks for that matcher.  User-added hooks within that same matcher group
     are preserved alongside the fresh gzkit hooks.  Matcher groups that gzkit
-    does not define are kept as-is.
+    does not define keep their USER hooks; any gzkit-owned hook found under
+    such a matcher is dropped, and a group left empty disappears.
+
+    That last clause closes the matcher-RENAME orphan.  "Not a matcher gzkit
+    defines" was read as "a group the user authored", which is false the moment
+    gzkit changes a matcher string: the old group is not user content, it is
+    gzkit's own previous output, and preserving it wholesale pins the retired
+    matcher forever.  Observed 2026-08-15 — `Write|Edit` survived the rename to
+    `Write|Edit|NotebookEdit` carrying four gzkit hooks, so every Write/Edit ran
+    `session-staleness-check`, `pipeline-gate`, `obpi-completion-validator` and
+    `instruction-router` TWICE, paying four extra `uv run python` interpreter
+    starts per edit.  Ownership is decided per HOOK (`_is_gzkit_owned_hook`),
+    which is the question that has an answer; matcher identity is not.
     """
     gzkit_by_matcher = {g["matcher"]: g for g in gzkit_groups}
     seen_matchers: set[str] = set()
@@ -409,8 +421,15 @@ def _merge_hook_phase(
                 seen_matchers.add(matcher)
             # else: duplicate matcher in existing — skip (gzkit version already emitted)
         else:
-            # Matcher not gzkit-owned — preserve entirely
-            merged.append(existing_group)
+            # Matcher not gzkit-owned — keep the USER hooks only. A gzkit hook
+            # sitting here is orphaned output from a matcher gzkit has since
+            # renamed, never user content; carrying it forward duplicates every
+            # hook the current matcher already runs.
+            user_hooks = [
+                h for h in existing_group.get("hooks", []) if not _is_gzkit_owned_hook(h, hooks_dir)
+            ]
+            if user_hooks:
+                merged.append({**existing_group, "hooks": user_hooks})
 
     # Add any gzkit matchers not present in existing
     for matcher, group in gzkit_by_matcher.items():

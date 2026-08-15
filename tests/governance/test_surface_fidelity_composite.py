@@ -67,9 +67,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
         Invariant 4 (scenario reachability) was retired 2026-07-25 —
         ADR-0.0.33 § Amendment (2026-07-25).
         """
-        if validate_surface_fidelity is None:
-            self.skipTest("validate_surface_fidelity not yet implemented (TDD Red)")
-
         with (
             patch("gzkit.governance.trust_audits.validate_bullet_retention") as mock_bullet,
             patch("gzkit.governance.trust_audits.validate_surface_weight") as mock_surface,
@@ -118,9 +115,6 @@ class TestSurfaceFidelityComposite(QuietAdvisoriesMixin):
         validators. If any constituent indicates a policy breach (exit 3),
         the composite must also indicate exit 3.
         """
-        if validate_surface_fidelity is None:
-            self.skipTest("validate_surface_fidelity not yet implemented (TDD Red)")
-
         with (
             patch("gzkit.governance.trust_audits.validate_bullet_retention") as mock_bullet,
             patch("gzkit.governance.trust_audits.validate_surface_weight") as mock_surface,

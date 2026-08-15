@@ -771,6 +771,88 @@ class TestSettingsMergePreservesUserHooks(unittest.TestCase):
             # Verify custom top-level key survived
             self.assertEqual(result.get("myCustomKey"), "preserve-me")
 
+    def test_a_renamed_matcher_does_not_leave_gzkit_hooks_orphaned(self) -> None:
+        """A retired gzkit matcher is dropped, not preserved as if user-authored.
+
+        The 2026-08-15 defect, generalized: gzkit once emitted `Write|Edit` and
+        later renamed it to `Write|Edit|NotebookEdit`. `_merge_hook_phase` read
+        "matcher gzkit does not define" as "group the user authored" and kept it
+        wholesale, so four gzkit hooks ran TWICE on every Write/Edit — four extra
+        `uv run python` interpreter starts per edit, forever, invisible because
+        both groups looked well-formed.
+
+        Ownership is decided per HOOK, so this fixture plants BOTH a gzkit hook
+        (must be dropped) and a user hook (must survive) under the same retired
+        matcher — an always-drop implementation fails the second assertion and an
+        always-keep implementation fails the first.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            setup_claude_hooks(project_root, config)
+
+            settings_path = project_root / ".claude" / "settings.json"
+            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            live = next(
+                g
+                for g in settings["hooks"]["PreToolUse"]
+                if g["matcher"] == "Write|Edit|NotebookEdit"
+            )
+            settings["hooks"]["PreToolUse"].append(
+                {
+                    "matcher": "Write|Edit",  # the retired spelling
+                    "hooks": [
+                        dict(live["hooks"][0]),  # gzkit-owned -> must be dropped
+                        {"type": "command", "command": "python my-own-audit.py"},
+                    ],
+                }
+            )
+            settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
+            setup_claude_hooks(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            groups = {g["matcher"]: g for g in result["hooks"]["PreToolUse"]}
+            self.assertIn("Write|Edit", groups, "the user's own hook was destroyed with the orphan")
+            surviving = [h["command"] for h in groups["Write|Edit"]["hooks"]]
+            self.assertEqual(surviving, ["python my-own-audit.py"])
+
+            # No command may appear in both groups — that duplication IS the defect.
+            live_cmds = {h["command"] for h in groups["Write|Edit|NotebookEdit"]["hooks"]}
+            self.assertEqual(live_cmds & set(surviving), set())
+
+    def test_an_orphan_group_with_no_user_hooks_disappears(self) -> None:
+        """Nothing worth keeping means the group goes, not an empty shell.
+
+        The exact shape found in this repo's own `.claude/settings.json`: a
+        retired matcher carrying gzkit hooks and nothing else. Leaving `{"matcher":
+        "Write|Edit", "hooks": []}` behind would keep the round-trip unstable and
+        re-raise the same question every sync.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            setup_claude_hooks(project_root, config)
+
+            settings_path = project_root / ".claude" / "settings.json"
+            settings = json.loads(settings_path.read_text(encoding="utf-8"))
+            live = next(
+                g
+                for g in settings["hooks"]["PreToolUse"]
+                if g["matcher"] == "Write|Edit|NotebookEdit"
+            )
+            settings["hooks"]["PreToolUse"].append(
+                {"matcher": "Write|Edit", "hooks": [dict(h) for h in live["hooks"]]}
+            )
+            settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
+            setup_claude_hooks(project_root, config)
+
+            result = json.loads(settings_path.read_text(encoding="utf-8"))
+            matchers = [g["matcher"] for g in result["hooks"]["PreToolUse"]]
+            self.assertNotIn("Write|Edit", matchers)
+            self.assertEqual(len(matchers), len(set(matchers)), f"duplicate groups: {matchers}")
+
     def test_gzkit_hooks_are_updated(self) -> None:
         """gzkit-owned hooks are replaced with fresh versions on re-setup."""
         with tempfile.TemporaryDirectory() as tmpdir:

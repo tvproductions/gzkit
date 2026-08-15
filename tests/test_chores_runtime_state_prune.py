@@ -246,8 +246,7 @@ class TestCommittedTreeIsClean(unittest.TestCase):
 
         root = Path.cwd()
         pkg_chores = root / "src" / "gzkit" / "chores"
-        if not pkg_chores.is_dir():  # pragma: no cover - source checkout only
-            self.skipTest("package chores tree absent")
+        self.assertTrue(pkg_chores.is_dir(), "package chores tree absent")
         offenders = [
             f.relative_to(root).as_posix()
             for f in sorted(pkg_chores.rglob("*"))

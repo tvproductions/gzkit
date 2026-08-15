@@ -225,8 +225,7 @@ class TestExemplarValidation(unittest.TestCase):
     @covers("REQ-0.0.11-06-01")
     def test_exemplar_implementer_validates(self) -> None:
         exemplar = Path(".gzkit/personas/implementer.md")
-        if not exemplar.is_file():
-            self.skipTest("exemplar not yet created")
+        self.assertTrue(exemplar.is_file(), "exemplar not yet created")
         errors = validate_persona_structure(exemplar)
         self.assertEqual(errors, [], f"Exemplar failed validation: {errors}")
 
@@ -240,16 +239,14 @@ class TestMainSessionValidation(unittest.TestCase):
     @covers("REQ-0.0.12-01-01")
     def test_main_session_validates(self) -> None:
         path = Path(".gzkit/personas/main-session.md")
-        if not path.is_file():
-            self.skipTest("main-session persona not yet created")
+        self.assertTrue(path.is_file(), "main-session persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"main-session failed: {errors}")
 
     @covers("REQ-0.0.12-01-02")
     def test_main_session_no_expertise_claims(self) -> None:
         path = Path(".gzkit/personas/main-session.md")
-        if not path.is_file():
-            self.skipTest("main-session persona not yet created")
+        self.assertTrue(path.is_file(), "main-session persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -271,8 +268,7 @@ class TestMainSessionValidation(unittest.TestCase):
         from gzkit.personas import compose_persona_frame
 
         path = Path(".gzkit/personas/main-session.md")
-        if not path.is_file():
-            self.skipTest("main-session persona not yet created")
+        self.assertTrue(path.is_file(), "main-session persona not yet created")
         fm, body = parse_persona_file(path)
         frame = compose_persona_frame(fm, body)
         self.assertIn("craftsperson", frame.lower())
@@ -289,8 +285,7 @@ class TestImplementerEnrichment(unittest.TestCase):
     def test_implementer_schema_and_grounding(self) -> None:
         """Enriched implementer validates and grounding addresses trait cluster."""
         path = Path(".gzkit/personas/implementer.md")
-        if not path.is_file():
-            self.skipTest("implementer persona not yet created")
+        self.assertTrue(path.is_file(), "implementer persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"Schema validation failed: {errors}")
 
@@ -304,8 +299,7 @@ class TestImplementerEnrichment(unittest.TestCase):
         """PRISM: no expertise claims in grounding or body."""
 
         path = Path(".gzkit/personas/implementer.md")
-        if not path.is_file():
-            self.skipTest("implementer persona not yet created")
+        self.assertTrue(path.is_file(), "implementer persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -327,8 +321,7 @@ class TestImplementerEnrichment(unittest.TestCase):
         """Enriched traits include plan-then-write and whole-file-thinking."""
 
         path = Path(".gzkit/personas/implementer.md")
-        if not path.is_file():
-            self.skipTest("implementer persona not yet created")
+        self.assertTrue(path.is_file(), "implementer persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("plan-then-write", fm.traits)
         self.assertIn("whole-file-thinking", fm.traits)
@@ -349,16 +342,14 @@ class TestSpecReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-01")
     def test_spec_reviewer_validates(self) -> None:
         path = Path(".gzkit/personas/spec-reviewer.md")
-        if not path.is_file():
-            self.skipTest("spec-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "spec-reviewer persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"spec-reviewer failed: {errors}")
 
     @covers("REQ-0.0.12-03-02")
     def test_spec_reviewer_no_expertise_claims(self) -> None:
         path = Path(".gzkit/personas/spec-reviewer.md")
-        if not path.is_file():
-            self.skipTest("spec-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "spec-reviewer persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -378,8 +369,7 @@ class TestSpecReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-02")
     def test_spec_reviewer_traits(self) -> None:
         path = Path(".gzkit/personas/spec-reviewer.md")
-        if not path.is_file():
-            self.skipTest("spec-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "spec-reviewer persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("independent-judgment", fm.traits)
         self.assertIn("skepticism", fm.traits)
@@ -389,8 +379,7 @@ class TestSpecReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-02")
     def test_spec_reviewer_anti_traits(self) -> None:
         path = Path(".gzkit/personas/spec-reviewer.md")
-        if not path.is_file():
-            self.skipTest("spec-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "spec-reviewer persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("rubber-stamping", fm.anti_traits)
         self.assertIn("optimistic-bias", fm.anti_traits)
@@ -405,16 +394,14 @@ class TestQualityReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-01")
     def test_quality_reviewer_validates(self) -> None:
         path = Path(".gzkit/personas/quality-reviewer.md")
-        if not path.is_file():
-            self.skipTest("quality-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "quality-reviewer persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"quality-reviewer failed: {errors}")
 
     @covers("REQ-0.0.12-03-03")
     def test_quality_reviewer_no_expertise_claims(self) -> None:
         path = Path(".gzkit/personas/quality-reviewer.md")
-        if not path.is_file():
-            self.skipTest("quality-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "quality-reviewer persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -434,8 +421,7 @@ class TestQualityReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-03")
     def test_quality_reviewer_traits(self) -> None:
         path = Path(".gzkit/personas/quality-reviewer.md")
-        if not path.is_file():
-            self.skipTest("quality-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "quality-reviewer persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("architectural-rigor", fm.traits)
         self.assertIn("solid-principles", fm.traits)
@@ -445,8 +431,7 @@ class TestQualityReviewerValidation(unittest.TestCase):
     @covers("REQ-0.0.12-03-03")
     def test_quality_reviewer_anti_traits(self) -> None:
         path = Path(".gzkit/personas/quality-reviewer.md")
-        if not path.is_file():
-            self.skipTest("quality-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "quality-reviewer persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("rubber-stamping", fm.anti_traits)
         self.assertIn("surface-level-review", fm.anti_traits)
@@ -461,16 +446,14 @@ class TestNarratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-04-01")
     def test_narrator_validates(self) -> None:
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"narrator failed: {errors}")
 
     @covers("REQ-0.0.12-04-02")
     def test_narrator_no_expertise_claims(self) -> None:
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -490,8 +473,7 @@ class TestNarratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-04-02")
     def test_narrator_traits(self) -> None:
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("clarity", fm.traits)
         self.assertIn("precision", fm.traits)
@@ -500,8 +482,7 @@ class TestNarratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-04-02")
     def test_narrator_anti_traits(self) -> None:
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("verbosity", fm.anti_traits)
         self.assertIn("jargon-accumulation", fm.anti_traits)
@@ -511,8 +492,7 @@ class TestNarratorValidation(unittest.TestCase):
         from gzkit.personas import compose_persona_frame
 
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         fm, body = parse_persona_file(path)
         frame = compose_persona_frame(fm, body)
         self.assertIn("evidence", frame.lower())
@@ -528,16 +508,14 @@ class TestPipelineOrchestratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-05-01")
     def test_pipeline_orchestrator_validates(self) -> None:
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         errors = validate_persona_structure(path)
         self.assertEqual(errors, [], f"pipeline-orchestrator failed: {errors}")
 
     @covers("REQ-0.0.12-05-02")
     def test_pipeline_orchestrator_no_expertise_claims(self) -> None:
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         fm, body = parse_persona_file(path)
         full_text = (fm.grounding + " " + body).lower()
         expertise_phrases = [
@@ -557,8 +535,7 @@ class TestPipelineOrchestratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-05-02")
     def test_pipeline_orchestrator_traits(self) -> None:
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("ceremony-completion", fm.traits)
         self.assertIn("stage-discipline", fm.traits)
@@ -569,8 +546,7 @@ class TestPipelineOrchestratorValidation(unittest.TestCase):
     @covers("REQ-0.0.12-05-02")
     def test_pipeline_orchestrator_anti_traits(self) -> None:
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         fm, _body = parse_persona_file(path)
         self.assertIn("premature-summarization", fm.anti_traits)
         self.assertIn("stage-skipping", fm.anti_traits)
@@ -581,8 +557,7 @@ class TestPipelineOrchestratorValidation(unittest.TestCase):
         from gzkit.personas import compose_persona_frame
 
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         fm, body = parse_persona_file(path)
         frame = compose_persona_frame(fm, body)
         self.assertIn("ceremony", frame.lower())
@@ -599,8 +574,10 @@ class TestReviewerOrthogonality(unittest.TestCase):
     def test_trait_clusters_are_orthogonal(self) -> None:
         spec_path = Path(".gzkit/personas/spec-reviewer.md")
         quality_path = Path(".gzkit/personas/quality-reviewer.md")
-        if not spec_path.is_file() or not quality_path.is_file():
-            self.skipTest("reviewer personas not yet created")
+        self.assertTrue(
+            spec_path.is_file() and quality_path.is_file(),
+            "both reviewer personas must ship",
+        )
         spec_fm, _ = parse_persona_file(spec_path)
         quality_fm, _ = parse_persona_file(quality_path)
         shared = set(spec_fm.traits) & set(quality_fm.traits)

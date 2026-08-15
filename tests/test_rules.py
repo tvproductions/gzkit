@@ -626,8 +626,7 @@ class TestLoadRules(unittest.TestCase):
         from gzkit.rules import load_rules
 
         rules_dir = Path(".gzkit/rules")
-        if not rules_dir.is_dir():
-            self.skipTest(".gzkit/rules/ not found")
+        self.assertTrue(rules_dir.is_dir(), ".gzkit/rules/ not found")
 
         rules = load_rules(rules_dir)
 

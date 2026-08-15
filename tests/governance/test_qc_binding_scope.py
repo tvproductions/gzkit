@@ -80,8 +80,11 @@ class TestNegativeControlDetection(unittest.TestCase):
         # whose claim WOULD be a FACADE is not run, so it produces no finding.
         registry = build_qc_registry()
         advisory = [s for s in registry if s.binding != "bound"]
-        if not advisory:
-            self.skipTest("No advisory steps in registry")
+        self.assertTrue(
+            advisory,
+            "registry carries no advisory step, so this test would prove nothing about the "
+            "binding gate — an empty category is a registry defect, not a reason to skip",
+        )
         # Provide hollow records for advisory ids; audit must not run them.
         reg = {s.id: _record(s.id, caught=False) for s in advisory}
         # Also wire every bound step genuinely so the only candidates are advisory.
@@ -206,8 +209,12 @@ class TestExitCodeBehavior(unittest.TestCase):
         bound_step = next(
             (s for s in registry if s.binding == "bound" and s.id != "qc-binding"), None
         )
-        if bound_step is None:
-            self.skipTest("No non-owned bound steps in registry")
+        self.assertIsNotNone(
+            bound_step,
+            "registry carries no non-owned bound step, so the theater path is unexercised — "
+            "green-by-emptiness is exactly what OBPI-06 strengthened this test against",
+        )
+        assert bound_step is not None  # narrows for the type checker
         reg = {s.id: _record(s.id, caught=True) for s in registry if s.binding == "bound"}
         reg[bound_step.id] = _record(bound_step.id, caught=False)  # hollow
         errors = audit_qc_binding(Path("."), nc_registry=reg)

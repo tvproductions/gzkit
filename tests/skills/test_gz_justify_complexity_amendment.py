@@ -121,8 +121,9 @@ class TestGzJustifyComplexityAmendment(unittest.TestCase):
         """
         canonical = SKILL_PATH.read_text(encoding="utf-8")
         for mirror_path in (CLAUDE_MIRROR, AGENTS_MIRROR, GITHUB_MIRROR):
-            if not mirror_path.exists():
-                self.skipTest(f"vendor mirror not present: {mirror_path}")
+            # No existence assertion: `read_text` raises FileNotFoundError, which
+            # names the missing mirror just as clearly without asserting on the
+            # filesystem (`.claude/rules/tests.md` § The discriminator).
             mirror = mirror_path.read_text(encoding="utf-8")
             self.assertEqual(
                 canonical,

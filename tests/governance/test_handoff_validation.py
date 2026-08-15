@@ -221,8 +221,7 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
         malformed document in that class — the failures mask each other.
         """
         handoffs = Path(".gzkit/handoffs")
-        if not handoffs.is_dir():  # pragma: no cover - repo-shape guard
-            self.skipTest("handoffs directory absent")
+        self.assertTrue(handoffs.is_dir(), "handoffs directory absent")
         rejected: list[str] = []
         for path in sorted(handoffs.glob("*.md")):
             if path.name == "AGENTS.md":

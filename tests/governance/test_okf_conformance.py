@@ -49,8 +49,10 @@ class TestCleanBundle(unittest.TestCase):
     def test_real_repo_bundle_is_clean(self) -> None:
         """The real `.gzkit/governance/knowledge/` bundle conforms."""
         repo_root = Path(__file__).resolve().parents[2]
-        if not (repo_root / ".gzkit/governance/knowledge/index.md").exists():
-            self.skipTest("real bundle not present")
+        self.assertTrue(
+            (repo_root / ".gzkit/governance/knowledge/index.md").exists(),
+            "the shipped OKF bundle is a repo artifact, not an optional fixture",
+        )
         self.assertEqual(audit_okf_conformance(repo_root), [])
 
 

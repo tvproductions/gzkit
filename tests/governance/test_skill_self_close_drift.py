@@ -116,8 +116,12 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         ]
         offenders: list[str] = []
         canon_skills = REPO_ROOT / ".gzkit" / "skills"
-        if not canon_skills.exists():
-            self.skipTest(".gzkit/skills not found")
+        # The scan must cover a non-empty corpus. An existence assertion here
+        # would be a filesystem check (§ The discriminator); the real hazard is
+        # green-by-emptiness — `rglob` over a missing or empty directory yields
+        # nothing, the loop body never runs, and the test passes having examined
+        # zero files. `scanned` is asserted below for exactly that.
+        scanned = 0
         for path in canon_skills.rglob("SKILL.md"):
             if ".git" in path.parts:
                 continue
@@ -125,6 +129,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
+            scanned += 1
             for pat in patterns:
                 if re.search(pat, text, re.IGNORECASE | re.DOTALL):
                     rel = path.relative_to(REPO_ROOT).as_posix()
@@ -137,6 +142,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
             "Canon skill files still contain deleted self-close references:\n"
             + "\n".join(f"  - {o}" for o in offenders),
         )
+        self.assertGreater(scanned, 0, "scanned zero canon skill files — corpus missing")
 
     @covers("REQ-0.0.36-05-02")
     def test_canon_rule_files_have_no_self_close(self) -> None:
@@ -148,8 +154,12 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         patterns = ["self-close-exception", "Self-closeable", "self-closeable"]
         offenders: list[str] = []
         canon_rules = REPO_ROOT / ".gzkit" / "rules"
-        if not canon_rules.exists():
-            self.skipTest(".gzkit/rules not found")
+        # The scan must cover a non-empty corpus. An existence assertion here
+        # would be a filesystem check (§ The discriminator); the real hazard is
+        # green-by-emptiness — `rglob` over a missing or empty directory yields
+        # nothing, the loop body never runs, and the test passes having examined
+        # zero files. `scanned` is asserted below for exactly that.
+        scanned = 0
         for path in canon_rules.rglob("*.md"):
             if ".git" in path.parts:
                 continue
@@ -157,6 +167,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
                 text = path.read_text(encoding="utf-8")
             except (OSError, UnicodeDecodeError):
                 continue
+            scanned += 1
             for pat in patterns:
                 if re.search(pat, text, re.IGNORECASE):
                     rel = path.relative_to(REPO_ROOT).as_posix()
@@ -169,6 +180,7 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
             "Canon rule files still contain deleted self-close references:\n"
             + "\n".join(f"  - {o}" for o in offenders),
         )
+        self.assertGreater(scanned, 0, "scanned zero canon rule files — corpus missing")
 
     @covers("REQ-0.0.36-05-03")
     def test_edited_skills_have_bumped_version(self) -> None:

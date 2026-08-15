@@ -188,8 +188,7 @@ class TestRealRegistry(unittest.TestCase):
         """The shipped data/flags.json parses without error."""
         real_path = Path("data") / "flags.json"
         schema_path = Path("data") / "schemas" / "flags.schema.json"
-        if not real_path.is_file():
-            self.skipTest("data/flags.json not present (CI artifact)")
+        self.assertTrue(real_path.is_file(), "data/flags.json not present (CI artifact)")
 
         result = load_registry(real_path, schema_path=schema_path)
         self.assertGreater(len(result), 0)

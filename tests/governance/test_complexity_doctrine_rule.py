@@ -212,19 +212,20 @@ class ComplexityDoctrineCrossSurfaceBindings(unittest.TestCase):
 
     @covers("REQ-0.0.27-01-08")
     def test_vendor_mirror_body_contains_key_canonical_content(self) -> None:
-        if not _RULE_PATH.is_file():
-            self.skipTest("canonical rule file not yet authored")
+        # No existence guard and no `if ...is_file():` wrapper. The former was a
+        # skipTest, the latter silently passed the whole body when the mirror was
+        # absent — both green-by-emptiness. `read_text` raises FileNotFoundError,
+        # which is the loud failure a missing generated mirror deserves.
         claude_mirror = _PROJECT_ROOT / ".claude" / "rules" / "complexity-doctrine.md"
-        if claude_mirror.is_file():
-            mirror_text = claude_mirror.read_text(encoding="utf-8")
-            key_phrases = ("doctrine fitness", "distilled-characteristics", "6-month", "commit SHA")
-            for key_phrase in key_phrases:
-                with self.subTest(key_phrase=key_phrase):
-                    self.assertIn(
-                        key_phrase,
-                        mirror_text,
-                        f"mirror must contain canonical content phrase: {key_phrase!r}",
-                    )
+        mirror_text = claude_mirror.read_text(encoding="utf-8")
+        key_phrases = ("doctrine fitness", "distilled-characteristics", "6-month", "commit SHA")
+        for key_phrase in key_phrases:
+            with self.subTest(key_phrase=key_phrase):
+                self.assertIn(
+                    key_phrase,
+                    mirror_text,
+                    f"mirror must contain canonical content phrase: {key_phrase!r}",
+                )
 
 
 if __name__ == "__main__":

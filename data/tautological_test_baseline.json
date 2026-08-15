@@ -752,7 +752,7 @@
     {
       "file_path": "tests/governance/test_complexity_doctrine_rule.py",
       "line_number": 218,
-      "operation_kind": "is_file",
+      "operation_kind": "read_text",
       "function_name": "test_vendor_mirror_body_contains_key_canonical_content",
       "assertion_kind": "assertIn"
     },
@@ -1123,14 +1123,14 @@
     {
       "file_path": "tests/governance/test_skill_self_close_drift.py",
       "line_number": 119,
-      "operation_kind": "exists",
+      "operation_kind": "read_text",
       "function_name": "test_canon_skill_files_have_no_self_close",
       "assertion_kind": "assertFalse"
     },
     {
       "file_path": "tests/governance/test_skill_self_close_drift.py",
       "line_number": 151,
-      "operation_kind": "exists",
+      "operation_kind": "read_text",
       "function_name": "test_canon_rule_files_have_no_self_close",
       "assertion_kind": "assertFalse"
     },

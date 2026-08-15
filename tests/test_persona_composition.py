@@ -119,8 +119,7 @@ class TestExemplarComposition(unittest.TestCase):
     def test_implementer_exemplar_composes_deterministically(self) -> None:
         """The shipped implementer.md produces a deterministic frame."""
         exemplar = Path(".gzkit/personas/implementer.md")
-        if not exemplar.is_file():
-            self.skipTest("exemplar not present")
+        self.assertTrue(exemplar.is_file(), "exemplar not present")
         fm, body = parse_persona_file(exemplar)
         frame1 = compose_persona_frame(fm, body)
         frame2 = compose_persona_frame(fm, body)
@@ -137,8 +136,7 @@ class TestExemplarComposition(unittest.TestCase):
     def test_implementer_traits_enriched_from_body(self) -> None:
         """Implementer body enriches trait lines with descriptions."""
         exemplar = Path(".gzkit/personas/implementer.md")
-        if not exemplar.is_file():
-            self.skipTest("exemplar not present")
+        self.assertTrue(exemplar.is_file(), "exemplar not present")
         fm, body = parse_persona_file(exemplar)
         frame = compose_persona_frame(fm, body)
         # Implementer body has behavioral anchors with descriptions

@@ -169,8 +169,7 @@ class TestExemplarFile(unittest.TestCase):
     @covers("REQ-0.0.11-02-04")
     def test_exemplar_implementer_parses(self) -> None:
         exemplar = Path(".gzkit/personas/implementer.md")
-        if not exemplar.is_file():
-            self.skipTest("exemplar not yet created")
+        self.assertTrue(exemplar.is_file(), "exemplar not yet created")
         fm, body = parse_persona_file(exemplar)
         self.assertEqual(fm.name, "implementer")
         self.assertGreater(len(fm.traits), 0)
@@ -181,8 +180,7 @@ class TestExemplarFile(unittest.TestCase):
     def test_main_session_parses(self) -> None:
         """OBPI-0.0.12-01: main-session persona parses correctly."""
         path = Path(".gzkit/personas/main-session.md")
-        if not path.is_file():
-            self.skipTest("main-session persona not yet created")
+        self.assertTrue(path.is_file(), "main-session persona not yet created")
         fm, body = parse_persona_file(path)
         self.assertEqual(fm.name, "main-session")
         self.assertGreater(len(fm.traits), 0)
@@ -193,8 +191,7 @@ class TestExemplarFile(unittest.TestCase):
     def test_spec_reviewer_parses(self) -> None:
         """OBPI-0.0.12-03: spec-reviewer persona parses correctly."""
         path = Path(".gzkit/personas/spec-reviewer.md")
-        if not path.is_file():
-            self.skipTest("spec-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "spec-reviewer persona not yet created")
         fm, body = parse_persona_file(path)
         self.assertEqual(fm.name, "spec-reviewer")
         self.assertGreater(len(fm.traits), 0)
@@ -205,8 +202,7 @@ class TestExemplarFile(unittest.TestCase):
     def test_quality_reviewer_parses(self) -> None:
         """OBPI-0.0.12-03: quality-reviewer persona parses correctly."""
         path = Path(".gzkit/personas/quality-reviewer.md")
-        if not path.is_file():
-            self.skipTest("quality-reviewer persona not yet created")
+        self.assertTrue(path.is_file(), "quality-reviewer persona not yet created")
         fm, body = parse_persona_file(path)
         self.assertEqual(fm.name, "quality-reviewer")
         self.assertGreater(len(fm.traits), 0)
@@ -217,8 +213,7 @@ class TestExemplarFile(unittest.TestCase):
     def test_narrator_parses(self) -> None:
         """OBPI-0.0.12-04: narrator persona parses correctly."""
         path = Path(".gzkit/personas/narrator.md")
-        if not path.is_file():
-            self.skipTest("narrator persona not yet created")
+        self.assertTrue(path.is_file(), "narrator persona not yet created")
         fm, body = parse_persona_file(path)
         self.assertEqual(fm.name, "narrator")
         self.assertGreater(len(fm.traits), 0)
@@ -229,8 +224,7 @@ class TestExemplarFile(unittest.TestCase):
     def test_pipeline_orchestrator_parses(self) -> None:
         """OBPI-0.0.12-05: pipeline-orchestrator persona parses correctly."""
         path = Path(".gzkit/personas/pipeline-orchestrator.md")
-        if not path.is_file():
-            self.skipTest("pipeline-orchestrator persona not yet created")
+        self.assertTrue(path.is_file(), "pipeline-orchestrator persona not yet created")
         fm, body = parse_persona_file(path)
         self.assertEqual(fm.name, "pipeline-orchestrator")
         self.assertGreater(len(fm.traits), 0)

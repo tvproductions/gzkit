@@ -268,8 +268,10 @@ class TestFrontmatterGuard(unittest.TestCase):
         )
 
         project_root = get_project_root()
-        if not (project_root / ".gzkit" / "ledger.jsonl").is_file():
-            self.skipTest("No gzkit ledger present — not inside the gzkit repo")
+        self.assertTrue(
+            (project_root / ".gzkit" / "ledger.jsonl").is_file(),
+            "the suite runs inside the gzkit repo; a missing ledger is a defect, not a skip",
+        )
 
         errors = validate_frontmatter_coherence(project_root)
         self.assertIsInstance(errors, list)
