@@ -4,6 +4,7 @@ import json
 import os
 import shlex
 import shutil
+import stat
 import sys
 import tempfile
 import textwrap
@@ -190,22 +191,49 @@ class TestWriteHookScript(unittest.TestCase):
             self.assertEqual(script_path.name, "ledger-writer.py")
 
     @covers("REQ-0.12.0-01-02")
-    def test_makes_executable(self) -> None:
-        """Hook script is executable."""
+    def test_written_hook_stays_rewritable(self) -> None:
+        """The chmod must not leave the hook read-only, on ANY platform.
+
+        Runs everywhere — no skip, no early return. This is the half of the old
+        `test_makes_executable` that is genuinely cross-platform, and it is the
+        half that had no coverage at all: Python's `Path.chmod` on Windows
+        toggles the READ-ONLY attribute rather than any execute bit, so a wrong
+        mode there breaks the next `gz init --force` while every
+        exists-and-ends-in-`.py` assertion stays green.
+        """
         with tempfile.TemporaryDirectory() as tmpdir:
-            project_root = Path(tmpdir)
-            script_path = write_hook_script(project_root, "claude", ".claude/hooks")
+            script_path = write_hook_script(Path(tmpdir), "claude", ".claude/hooks")
+            self.assertTrue(script_path.read_text(encoding="utf-8").strip())
+            self.assertTrue(os.access(script_path, os.W_OK), "chmod left the hook read-only")
+            script_path.write_text("# rewritten\n", encoding="utf-8")
 
-            if os.name == "nt":
-                self.assertTrue(script_path.exists())
-                self.assertEqual(script_path.suffix, ".py")
-                return
+    @covers("REQ-0.12.0-01-02")
+    def test_execute_bit_is_set_wherever_the_platform_has_one(self) -> None:
+        """`chmod(0o755)` grants owner-execute on POSIX; NTFS has no such bit.
 
-            # Check executable bit on Unix-like systems.
-            import stat
+        Also runs everywhere. The branch asserts the REAL contract on each side
+        rather than returning early: POSIX gets `S_IXUSR`, Windows gets the
+        documented no-op — `stat()` must still answer and the file must still be
+        a regular file, so a chmod that corrupted the entry is caught.
 
+        Renamed from `test_makes_executable`, whose Windows leg asserted only
+        that the file existed and ended in `.py` — both already covered by
+        `test_writes_script` above. A test named for executability that checks
+        no executability is green while blind: the same false-green shape
+        `.gzkit/rules/tests.md` § Verification exit-code integrity names for
+        piped verifiers. The platform difference is real; the name was not.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            script_path = write_hook_script(Path(tmpdir), "claude", ".claude/hooks")
             mode = script_path.stat().st_mode
-            self.assertTrue(mode & stat.S_IXUSR)
+            self.assertTrue(stat.S_ISREG(mode), f"not a regular file: {oct(mode)}")
+            if os.name == "nt":
+                # Asserted, not assumed: if a future Python DOES carry the bit
+                # through on Windows this fails and the branch gets revisited,
+                # rather than silently drifting into an untrue comment.
+                self.assertFalse(mode & stat.S_IXUSR, "NTFS is not expected to carry S_IXUSR")
+            else:
+                self.assertTrue(mode & stat.S_IXUSR, f"owner-execute bit unset: {oct(mode)}")
 
 
 class TestGenerateClaudeSettings(unittest.TestCase):

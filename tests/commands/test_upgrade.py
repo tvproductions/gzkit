@@ -3,10 +3,15 @@
 These tests derive from OBPI brief REQ-0.0.32-14-* acceptance criteria.
 They are written BEFORE the implementation so they fail initially (red phase).
 
-The upgrade module does not exist yet; tests that require it are guarded by
-``@unittest.skipUnless(_UPGRADE_AVAILABLE, ...)``.  The parser-registration
-test (REQ-01) is NOT skipped -- it fails with ``invalid choice: 'upgrade'``
-at red phase, which is the correct red.
+The red phase is long over: ``gzkit.commands.upgrade`` ships, and the
+``@unittest.skipUnless(_UPGRADE_AVAILABLE, ...)`` guards that carried these
+tests through it are REMOVED (2026-08-15). They were keyed on whether the
+production module IMPORTS, so a syntax error or a broken dependency in
+``upgrade.py`` would have silently skipped ten test classes instead of failing
+them -- a green suite over a broken module, armed and invisible because nothing
+skips while the import works. A red-phase guard must be deleted when the phase
+ends; carried past it, it converts the regression it was meant to tolerate into
+one nobody sees.
 """
 
 import json
@@ -17,19 +22,6 @@ from unittest.mock import MagicMock, patch
 from gzkit.cli import main
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
-
-# ---------------------------------------------------------------------------
-# Module-level guard: upgrade_cmd may not exist yet (red phase)
-# ---------------------------------------------------------------------------
-try:
-    from gzkit.commands import upgrade as upgrade_mod  # noqa: F401
-
-    _UPGRADE_AVAILABLE = True
-except ImportError:
-    _UPGRADE_AVAILABLE = False
-
-_SKIP_REASON = "gzkit.commands.upgrade not yet implemented"
-
 
 # ---------------------------------------------------------------------------
 # REQ-0.0.32-14-01: Parser registration
@@ -75,7 +67,6 @@ class TestUpgradeRegistration(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeSurfaceFilter(unittest.TestCase):
     """--surface filter: unknown name exits 1 naming the token; default processes all."""
 
@@ -151,7 +142,6 @@ class TestUpgradeSurfaceFilter(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeEditedConflicts(unittest.TestCase):
     """EDITED artifacts reported, left unchanged, exit non-zero when conflicts remain."""
 
@@ -259,7 +249,6 @@ class TestUpgradeEditedConflicts(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeForce(unittest.TestCase):
     """--force overwrites EDITED; prints per-file overwrite line; exit 0."""
 
@@ -332,7 +321,6 @@ class TestUpgradeForce(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeDryRun(unittest.TestCase):
     """--dry-run reports same classification, writes nothing, exits like non-dry-run."""
 
@@ -425,7 +413,6 @@ class TestUpgradeDryRun(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeBootstrapRetrofit(unittest.TestCase):
     """Bootstrap-retrofit: works without prior gz init; scaffolds from package data."""
 
@@ -487,7 +474,6 @@ class TestUpgradeBootstrapRetrofit(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeIdempotent(unittest.TestCase):
     """Second run exits 0 with zero STALE/EDITED."""
 
@@ -578,7 +564,6 @@ class TestUpgradeIdempotent(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeNoSideEffects(unittest.TestCase):
     """upgrade must NOT mutate manifest.json or invoke scaffolder hooks/agent sync."""
 
@@ -682,7 +667,6 @@ class TestUpgradeNoSideEffects(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeHonorsNamedExceptions(unittest.TestCase):
     """ADR-0.0.32 § Named exception 1: hooks is not a valid upgrade surface."""
 
@@ -724,7 +708,6 @@ class TestUpgradeHonorsNamedExceptions(unittest.TestCase):
                 )
 
 
-@unittest.skipUnless(_UPGRADE_AVAILABLE, _SKIP_REASON)
 class TestUpgradeHonorsPackageOnlyCarveout(unittest.TestCase):
     """Package-only files must not be propagated to .gzkit/ during upgrade."""
 
