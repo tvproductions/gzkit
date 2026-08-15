@@ -77,6 +77,13 @@ repos:
         pass_filenames: false
         stages: [pre-commit]
 
+      - id: ledger-vocabulary-inertness
+        name: ledger vocabulary (never-fired types must stay disclosed)
+        entry: uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+
       - id: check-todos-fixmes
         name: check TODO/FIXME (flagged, informational)
         entry: bash -c 'grep -r "TODO\|FIXME" src/ tests/ --include="*.py" 2>/dev/null || true'

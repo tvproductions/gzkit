@@ -1,0 +1,22 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python scripts/check_proof_freshness.py ledger-vocabulary-inertness",
+      "expected": 0,
+      "description": "proof artifacts postdate the surfaces they audit"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --self-test",
+      "expected": 0,
+      "description": "Helper assertions (deterministic, no repo state, no network) — malformed baseline reads as empty; no pair names itself"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
+      "expected": 0,
+      "description": "No undisclosed never-fired event type — every declared type either fires or is disclosed"
+    }
+  ]
+}

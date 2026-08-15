@@ -135,6 +135,8 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/ghi-close`](ghi-close.md) | Do the work described in a GHI, verify artifacts, and close with evidence |
 | [`/ghi-triage`](ghi-triage.md) | Evaluate and triage all open GitHub Issues with routing + urgency scoring |
 | [`/gz-foundation-triage`](gz-foundation-triage.md) | Rank the in-flight foundation backlog by priority — diagnosis only, ephemeral ranked report |
+| [`/gz-health-audit`](gz-health-audit.md) | Namespace router → the four-axis health and integrity audit; owns the ordering and the net-surface-reduction budget rule |
+| [`/gz-intent-trace`](gz-intent-trace.md) | Trace sampled ADRs from declared intent to shipped surface; routes every gap as a correction under its owning ADR |
 | [`/git-sync`](git-sync.md) | Run the guarded repository sync ritual with lint/test gates |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Synchronize generated control surfaces and skill mirrors |
 | [`/gz-check-config-paths`](gz-check-config-paths.md) | Validate configured and manifest path coherence |

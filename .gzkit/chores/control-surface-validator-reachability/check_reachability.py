@@ -384,13 +384,13 @@ def main(argv: list[str] | None = None) -> int:
     )
     args = parser.parse_args(argv)
 
-    root = Path(__file__).resolve()
-    for parent in root.parents:
-        if (parent / "pyproject.toml").is_file():
-            root = parent
-            break
-    else:  # pragma: no cover - defensive
-        print("project root not found", file=sys.stderr)
+    # `Path.cwd()` rather than a positional walk from `__file__` — see the
+    # sibling ledger chore for why. Assigning `Path(__file__).resolve()` to a
+    # variable first evaded `gz check`'s parents-lint AST match; that was the
+    # checker missing it, never this script complying.
+    root = Path.cwd()
+    if not (root / "pyproject.toml").is_file():
+        print("not at a project root (run from the repository root)", file=sys.stderr)
         return 2
 
     if args.self_test:

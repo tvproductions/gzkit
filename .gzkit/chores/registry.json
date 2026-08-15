@@ -204,6 +204,14 @@
       "timeoutSeconds": 120
     },
     {
+      "slug": "ledger-vocabulary-inertness",
+      "title": "Ledger Vocabulary Inertness \u2014 never-fired types and paired-event ratios",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/ledger-vocabulary-inertness",
+      "lane": "lite",
+      "timeoutSeconds": 120
+    },
+    {
       "slug": "memory-hygiene",
       "title": "Audit auto-memory for process drift into governed artifacts",
       "version": "1.0.0",

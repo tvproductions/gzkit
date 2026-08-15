@@ -148,6 +148,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "ungated_scopes",
       "baseline_count": 52
+    },
+    {
+      "data_file": "data/ledger_vocabulary_grandfather.json",
+      "gates_step": "ledger vocabulary inertness (chore: ledger-vocabulary-inertness)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "never_fired",
+      "baseline_count": 10
     }
   ],
   "excluded": [

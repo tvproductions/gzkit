@@ -44,6 +44,13 @@ _AUDITED_SURFACES: dict[str, tuple[str, ...]] = {
         "src/gzkit/governance/trust_audits",
     ),
     "control-surface-permission-consent-drift": (".gzkit/rules", ".claude/settings.json"),
+    # Vocabulary evidence goes stale when the schema that declares types moves,
+    # or when a producer lands that could drain a never-fired entry.
+    "ledger-vocabulary-inertness": (
+        "src/gzkit/schemas/ledger.json",
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+    ),
     # Pass D audits what *invokes* a validator, so its evidence goes stale when a
     # caller surface moves — the CLI parser (which scopes exist), the `gz check`
     # step registry, or any of the three gating surfaces.

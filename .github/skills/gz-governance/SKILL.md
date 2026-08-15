@@ -29,5 +29,7 @@ model: haiku
 | ledger receipt | `gz-adr-emit-receipt` |
 | validate | `gz-validate` |
 | ontology | `gz-ontology` |
+| health audit | `gz-health-audit` |
+| intent trace | `gz-intent-trace` |
 
 Invoke the matched skill directly. See `gz-skill-router` for the full catalog.

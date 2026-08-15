@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "rationale": "Shrink-only disclosure of ledger event types declared in src/gzkit/schemas/ledger.json that have never appeared in .gzkit/ledger.jsonl. An entry records a DISCLOSED absence, never a justified one: the type still owes either a producer or a retirement. Drain by wiring the producer or removing the declaration; this list may only decrease.",
+  "never_fired": [
+    "blocked_by",
+    "blocks",
+    "constitution_created",
+    "discovered_from",
+    "intrinsic-complexity-attestation",
+    "mx_session_closed",
+    "mx_session_opened",
+    "obpi_superseded",
+    "task_escalated",
+    "validates"
+  ]
+}
