@@ -236,15 +236,13 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     ],
                 },
                 {
-                    # NotebookEdit joined the mutating matcher with the resume
-                    # gate: it writes files, so § RESUME's "no file mutation"
-                    # covers it (GHI #574).
+                    # NotebookEdit joined this matcher for the resume gate, which
+                    # is RETIRED (2026-08-15). The matcher string is kept: the
+                    # remaining hooks are path-scoped to src/tests and no-op on a
+                    # notebook edit, so narrowing it would be behaviour-neutral
+                    # churn against every pinned settings assertion.
                     "matcher": "Write|Edit|NotebookEdit",
                     "hooks": [
-                        {
-                            "type": "command",
-                            "command": _expected_hook_command("handoff-resume-gate.py"),
-                        },
                         {
                             "type": "command",
                             "command": _expected_hook_command("session-staleness-check.py"),
@@ -268,10 +266,9 @@ class TestGenerateClaudeSettings(unittest.TestCase):
                     "hooks": [
                         {
                             # `handoff-resume-gate.py` was FIRST here and is gone
-                            # (operator ruling 2026-08-14): it is registered on
-                            # Write|Edit|NotebookEdit only, so leaving it would pay
-                            # an interpreter start per shell command for a verdict
-                            # that is always "allow".
+                            # from the whole surface: off Bash 2026-08-14, off
+                            # Write|Edit|NotebookEdit 2026-08-15 when the hook was
+                            # retired outright. Nothing registers it anywhere.
                             "type": "command",
                             "command": _expected_hook_command("verifier-pipe-gate.py"),
                         },
@@ -335,11 +332,13 @@ class TestGenerateClaudeSettings(unittest.TestCase):
             for group in settings["hooks"][phase]
             for hook in group["hooks"]
         ]
-        # 13 = 12 + the resume gate, registered on `Write|Edit|NotebookEdit`
-        # ONLY. It was 14 while the gate was also on `Bash`; that arm was removed
-        # 2026-08-14 by operator ruling — the § RESUME contract's "gz ceremony"
-        # clause is no longer enforced here (see `MUTATING_TOOLS`).
-        self.assertEqual(len(commands), 13, commands)
+        # 12, after the resume gate's full retirement. The count walked down as
+        # its arms went: 14 with the gate on both `Bash` and
+        # `Write|Edit|NotebookEdit`, 13 when the Bash arm was removed
+        # (2026-08-14), 12 when the hook itself was retired (2026-08-15, operator
+        # ruling: a handoff is an advisor, not a gate-keeping nanny). Nothing
+        # registers it on any matcher now.
+        self.assertEqual(len(commands), 12, commands)
         for command in commands:
             self.assertIn('"$CLAUDE_PROJECT_DIR/', command, command)
             self.assertNotIn("python .claude/hooks/", command, command)
@@ -552,7 +551,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
             obpi_completion_validator = hooks_dir / "obpi-completion-validator.py"
             ledger_writer = hooks_dir / "ledger-writer.py"
             control_surface_sync = hooks_dir / "control-surface-sync.py"
-            handoff_resume_gate = hooks_dir / "handoff-resume-gate.py"
             verifier_pipe_gate = hooks_dir / "verifier-pipe-gate.py"
             readme = hooks_dir / "README.md"
             settings_path = project_root / ".claude" / "settings.json"
@@ -568,7 +566,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
                 obpi_completion_validator,
                 ledger_writer,
                 control_surface_sync,
-                handoff_resume_gate,
                 verifier_pipe_gate,
                 readme,
                 settings_path,
@@ -586,7 +583,12 @@ class TestSetupClaudeHooks(unittest.TestCase):
             self.assertIn(".claude/hooks/ledger-writer.py", created)
             self.assertIn(".claude/hooks/control-surface-sync.py", created)
             self.assertIn(".claude/hooks/verifier-pipe-gate.py", created)
-            self.assertIn(".claude/hooks/handoff-resume-gate.py", created)
+            # `handoff-resume-gate.py` is NOT written: the hook was retired
+            # 2026-08-15 (operator ruling: a handoff is an advisor, not a
+            # gate-keeping nanny) and its generator template deleted. Asserting
+            # the absence keeps a re-added writer from shipping unnoticed.
+            self.assertNotIn(".claude/hooks/handoff-resume-gate.py", created)
+            self.assertFalse((hooks_dir / "handoff-resume-gate.py").exists())
             self.assertIn(".claude/hooks/README.md", created)
             self.assertIn(".claude/settings.json", created)
 
@@ -607,10 +609,6 @@ class TestSetupClaudeHooks(unittest.TestCase):
                     {
                         "matcher": "Write|Edit|NotebookEdit",
                         "hooks": [
-                            {
-                                "type": "command",
-                                "command": _expected_hook_command("handoff-resume-gate.py"),
-                            },
                             {
                                 "type": "command",
                                 "command": _expected_hook_command("session-staleness-check.py"),

@@ -18,7 +18,6 @@ from __future__ import annotations
 import json
 import os
 import subprocess
-import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -194,7 +193,6 @@ class AuditAttestationReceiptsWrapperTest(unittest.TestCase):
         self.assertEqual(errors, [])
 
 
-@unittest.skipIf(sys.platform == "win32", "shell quoting cost is high on Windows")
 class AttestationReceiptCliSmokeTest(unittest.TestCase):
     """Smoke test the ``gz validate --attestation-receipts`` CLI surface."""
 

@@ -333,13 +333,24 @@ alternatives were considered and rejected: the new NC cannot be written until
 "should have entered" is defined per door, and it would fail on 524 commits/quarter
 before any door exists to close.
 
-**Collateral now correctly homed.** The `handoff-resume-gate` hook's `Bash` arm was
-removed earlier the same day (`bc9b72f67`) as a forked fourth door — an
-un-extracted variant with its own copy of the airlock's `proceed|pause|hold|revert`
-grammar, triggering on artifact-presence rather than on entry. Its surviving
-`Write|Edit|NotebookEdit` arm is an improvisation of **Movement B item 3**
-(*"Session entry triggers the airlock"*) and retires **into** that item rather than
-as a loose direct fix, so no gap opens in front of the governed door.
+**Collateral — retired ahead of the door by operator ruling (AMENDED 2026-08-15).**
+The `handoff-resume-gate` hook's `Bash` arm was removed on 2026-08-14
+(`bc9b72f67`) as a forked fourth door — an un-extracted variant with its own copy
+of the airlock's `proceed|pause|hold|revert` grammar, triggering on
+artifact-presence rather than on entry. This paragraph then said its surviving
+`Write|Edit|NotebookEdit` arm *"retires **into**"* Movement B item 3 *"rather than
+as a loose direct fix, so no gap opens in front of the governed door."*
+
+**That is not what happened, and the plan is corrected rather than left standing.**
+The operator retired the whole hook on 2026-08-15 — verbatim: *"the handoff should
+be an advisor, not a gate-keeping nanny"* — with ADR-0.37.0 at `Pending` 0/6 and
+no implementation, so item 3's door did not exist to retire into. A gap IS open in
+front of it, deliberately and on the record: the arm's entire measured lifetime was
+**9 lifts to 1 block** across the single day refusal-recording existed, against 13
+admission-breadth corrections in 29 days. `REQ-0.37.0-05-02` is amended in the same
+commit. Movement B item 3 is unchanged in substance — the door is still owed — but
+it no longer inherits a retirement, and it must not re-create the forked entry gate
+the arm was.
 
 ### 2026-08-11 — the pull-ahead is WITHDRAWN; `ADR-0.35.0` returns to the in-flight position (operator-ratified)
 

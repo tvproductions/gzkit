@@ -737,9 +737,10 @@ uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
 ```
 
-Resuming a handoff does **not** authorize acting on it. The resume gate refuses
-every mutating tool call until you rule and the agent books your verbatim words
-(GHI #574); the block message carries the exact command, session id filled in:
+Resuming a handoff does **not** authorize acting on it. That contract binds the
+agent; since 2026-08-15 no hook enforces it (the resume gate is retired —
+a handoff advises, it does not gate). Rule, and have the agent book your verbatim
+words:
 
 ```bash
 uv run gz handoff decide --handoff .gzkit/handoffs/<file>.md \

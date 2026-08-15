@@ -40,30 +40,22 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "property, not a lineage one."
     ),
     "handoff_resume_authorized": (
-        "Operator ruling on a resumed handoff (GHI #574), read by "
-        "`gzkit.handoff_resume_gate` to lift the Operator Authorization Gate for one "
-        "harness session. Session-scoped consent, not artifact lineage: it attaches to "
-        "a session id, and the handoff it names is already a graph node via its own "
-        "frontmatter. Adding an edge would model a transient permission as a durable "
-        "relationship."
+        "Operator ruling on a resumed handoff (GHI #574). It once lifted the Operator "
+        "Authorization Gate for one harness session; that gate was retired 2026-08-15 "
+        "and nothing reads this to permit anything now — it is the Layer-2 record of "
+        "what the operator said. Waived unchanged: session-scoped, not artifact "
+        "lineage. It attaches to a session id, and the handoff it names is already a "
+        "graph node via its own frontmatter."
     ),
     "handoff_resume_decided": (
         "Operator transit decision on a resumed handoff (GHI #757), the successor to "
-        "`handoff_resume_authorized` and read by the same gate. Waived for the same "
-        "reason: session-scoped consent, not artifact lineage. It attaches to a "
-        "session id, and the handoff it names is already a graph node via its own "
-        "frontmatter. The added `decision` and `set_aside` fields sharpen WHAT was "
-        "ruled and which counsel was declined — they do not make the ruling a durable "
-        "relationship between artifacts."
-    ),
-    "handoff_resume_blocked": (
-        "Refusal telemetry for the same gate (operator report 2026-08-14), the missing "
-        "half of the two events above: they record every LIFT and nothing recorded a "
-        "BLOCK, so the gate's false-refusal rate was unmeasurable and each instance was "
-        "rediscovered by an operator hitting it. Waived for the same reason as its "
-        "siblings and one more of its own: it is session-scoped, the handoff it names is "
-        "already a graph node via its own frontmatter, and it carries command SHAPE "
-        "rather than any artifact — there is no second node for an edge to reach."
+        "`handoff_resume_authorized` and still written by `gz handoff decide`. Waived "
+        "for the same reason: session-scoped provenance, not artifact lineage. It "
+        "attaches to a session id, and the handoff it names is already a graph node "
+        "via its own frontmatter. The `decision` and `set_aside` fields sharpen WHAT "
+        "was ruled and which counsel was declined — they do not make the ruling a "
+        "durable relationship between artifacts, and since the gate's retirement they "
+        "gate nothing at all."
     ),
     "red_receipt_emitted": (
         "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "

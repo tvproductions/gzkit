@@ -973,33 +973,28 @@ class HandoffResumeDecidedEvent(_EventBase):
 
 
 class HandoffResumeBlockedEvent(_EventBase):
-    """handoff_resume_blocked event — the gate refused a tool call.
+    """handoff_resume_blocked event — the retired gate refused a tool call.
 
-    The missing half of a binary decision. Before this event the ledger held 160
-    records of the gate being LIFTED (`handoff_resume_authorized` +
-    `handoff_resume_decided`) and none of it blocking, so any Layer-2 question
-    about refusals was structurally guaranteed to answer "never" — while
-    `docs/governance/state-doctrine.md` makes Layer-2 the system of record. The
-    false-refusal rate was therefore unmeasurable, and the gate accumulated
-    thirteen admission-breadth corrections in twenty-nine days, each discovered
-    by an operator hitting it rather than by anyone counting.
+    **HISTORICAL. Nothing emits this event any more** — the resume gate's last
+    enforcement arm was retired 2026-08-15 (operator ruling: a handoff is an
+    advisor, not a gate-keeping nanny) and its writer went with it. The model is
+    RETAINED because the ledger is append-only and carries one such record
+    (2026-08-15T00:08, a `Write`); a reader that could not parse it would fail
+    validation on committed history.
 
-    Same class as GHI #766's session-exit inversion, in a second module: an
-    event authored for one branch of a two-branch decision. The argument for
-    recording is already in this codebase, applied to the sibling half —
-    `session_exit_bookmark_skipped_event` records a deliberate no-op because
-    *"a silent skip is indistinguishable from a crashed hook"*.
+    That single record is the whole measured lifetime of the arm. Refusal
+    recording landed 2026-08-14 to make the false-refusal rate measurable, after
+    the gate had accumulated thirteen admission-breadth corrections in
+    twenty-nine days — each discovered by an operator hitting it rather than by
+    anyone counting. The measurement it enabled ran for one day and read
+    9 lifts to 1 block, which is the evidence the retirement rests on. The event
+    outlived the mechanism it was built to measure, and answered the question it
+    was built to answer.
 
-    ``tool_name`` is the whole payload beyond identity, and deliberately so. The
-    event briefly carried command-shape fields for the Bash arm; that arm was
-    removed on 2026-08-14 (see :data:`gzkit.handoff_resume_gate.MUTATING_TOOLS`)
-    and the fields went with it rather than remaining as columns that could only
-    ever be empty. No on-disk event ever carried them.
-
-    Advisory telemetry, never a gate. Writing it is fail-open by contract
-    (:func:`gzkit.handoff_resume_gate.record_refusal`): a ledger that cannot be
-    written must never convert a refusal into a hook crash, which would turn a
-    measurement improvement into a way to defeat the gate.
+    ``tool_name`` is the whole payload beyond identity. The event briefly carried
+    command-shape fields for the Bash arm; that arm was removed 2026-08-14 and the
+    fields went with it rather than remaining as columns that could only ever be
+    empty. No on-disk event ever carried them.
     """
 
     event: Literal["handoff_resume_blocked"]

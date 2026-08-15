@@ -2,14 +2,6 @@
 
 Current hook surface in gzkit:
 
-- `handoff-resume-gate.py`
-  PreToolUse (`Write|Edit|NotebookEdit`) hook that refuses FILE
-  MUTATION while this session has resumed a handoff the operator
-  has not ruled on. Mechanizes the Operator Authorization Gate
-  (`gz-session-handoff` SKILL.md § RESUME); lifted by
-  `gz handoff decide` (GHI #574). Bash is NOT gated — that arm was
-  removed 2026-08-14; shell commands run freely on an unruled
-  handoff so a resume can verify its claims.
 - `verifier-pipe-gate.py`
   PreToolUse (`Bash`) hook that refuses a command piping a verifier
   (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any
@@ -52,8 +44,12 @@ Current hook surface in gzkit:
   SessionStart (`*`) hook that surfaces the newest handoff and its
   advised steps via `additionalContext` (universal) and
   `initialUserMessage` (Claude-side upgrade seeding a real first
-  turn). Binds by seeding, never by refusing; it ADVISES — only
-  `gz handoff decide` lifts the resume gate (GHI #757).
+  turn). Binds by seeding, never by refusing; it ADVISES, and
+  since 2026-08-15 that is the WHOLE mechanism — the PreToolUse
+  resume gate is retired (operator ruling: a handoff is an advisor,
+  not a gate-keeping nanny). `gz handoff decide` still books the
+  operator's verbatim ruling to Layer 2 (GHI #757); nothing gates
+  on the absence of one.
 - `session-exit-bookmark.py`
   SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording
   where the session stopped — the trigger ADR-0.0.65 never
@@ -74,9 +70,9 @@ Current hook surface in gzkit:
 
 - `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`
 - `PostToolUse` `ExitPlanMode`: `pipeline-router.py`
-- `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,
-  then `session-staleness-check.py`, then `pipeline-gate.py`,
-  then `obpi-completion-validator.py`, then `instruction-router.py`
+- `PreToolUse` `Write|Edit|NotebookEdit`: `session-staleness-check.py`,
+  then `pipeline-gate.py`, then `obpi-completion-validator.py`,
+  then `instruction-router.py`
 - `PreToolUse` `Bash`: `verifier-pipe-gate.py`,
   then `pipeline-completion-reminder.py`,
   then `ghi-triage-chat-silence.py`

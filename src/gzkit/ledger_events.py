@@ -1169,34 +1169,3 @@ def handoff_resume_decided_event(
             "set_aside": list(set_aside or []),
         },
     )
-
-
-def handoff_resume_blocked_event(
-    *,
-    session_id: str,
-    handoff_path: str,
-    tool_name: str,
-) -> LedgerEvent:
-    """Record that the resume gate REFUSED a tool call.
-
-    The counterpart to :func:`handoff_resume_decided_event`, which records the
-    gate being lifted. Until this existed the ledger carried 160 lift records
-    and zero refusal records, so the gate's false-refusal rate — its dominant
-    real-world failure mode, thirteen corrections in twenty-nine days — could
-    not be queried at all, and each instance was rediscovered by an operator.
-
-    ``id`` is the handoff path, matching its sibling events, so a refusal joins
-    to the ruling that eventually lifted it. Since the Bash arm's removal
-    (2026-08-14) ``tool_name`` is always a file-mutation tool, which makes a
-    rising count a straightforward question: is the gate stopping edits the
-    operator would have wanted to make anyway?
-    """
-    return LedgerEvent(
-        event="handoff_resume_blocked",
-        id=handoff_path,
-        extra={
-            "session_id": session_id,
-            "handoff_path": handoff_path,
-            "tool_name": tool_name,
-        },
-    )

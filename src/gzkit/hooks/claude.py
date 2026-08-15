@@ -9,7 +9,6 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
-from gzkit.hooks.scripts.handoff import _handoff_resume_gate_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
     _pipeline_completion_reminder_script,
@@ -45,14 +44,6 @@ def _claude_hooks_readme() -> str:
             "",
             "Current hook surface in gzkit:",
             "",
-            "- `handoff-resume-gate.py`",
-            "  PreToolUse (`Write|Edit|NotebookEdit`) hook that refuses FILE",
-            "  MUTATION while this session has resumed a handoff the operator",
-            "  has not ruled on. Mechanizes the Operator Authorization Gate",
-            "  (`gz-session-handoff` SKILL.md § RESUME); lifted by",
-            "  `gz handoff decide` (GHI #574). Bash is NOT gated — that arm was",
-            "  removed 2026-08-14; shell commands run freely on an unruled",
-            "  handoff so a resume can verify its claims.",
             "- `verifier-pipe-gate.py`",
             "  PreToolUse (`Bash`) hook that refuses a command piping a verifier",
             "  (`unittest`, `behave`, `mkdocs --strict`, `gz check`, any",
@@ -95,8 +86,12 @@ def _claude_hooks_readme() -> str:
             "  SessionStart (`*`) hook that surfaces the newest handoff and its",
             "  advised steps via `additionalContext` (universal) and",
             "  `initialUserMessage` (Claude-side upgrade seeding a real first",
-            "  turn). Binds by seeding, never by refusing; it ADVISES — only",
-            "  `gz handoff decide` lifts the resume gate (GHI #757).",
+            "  turn). Binds by seeding, never by refusing; it ADVISES, and",
+            "  since 2026-08-15 that is the WHOLE mechanism — the PreToolUse",
+            "  resume gate is retired (operator ruling: a handoff is an advisor,",
+            "  not a gate-keeping nanny). `gz handoff decide` still books the",
+            "  operator's verbatim ruling to Layer 2 (GHI #757); nothing gates",
+            "  on the absence of one.",
             "- `session-exit-bookmark.py`",
             "  SessionEnd (`*`) hook that writes a CHECKPOINT handoff recording",
             "  where the session stopped — the trigger ADR-0.0.65 never",
@@ -117,9 +112,9 @@ def _claude_hooks_readme() -> str:
             "",
             "- `PreToolUse` `ExitPlanMode`: `plan-audit-gate.py`",
             "- `PostToolUse` `ExitPlanMode`: `pipeline-router.py`",
-            "- `PreToolUse` `Write|Edit|NotebookEdit`: `handoff-resume-gate.py`,",
-            "  then `session-staleness-check.py`, then `pipeline-gate.py`,",
-            "  then `obpi-completion-validator.py`, then `instruction-router.py`",
+            "- `PreToolUse` `Write|Edit|NotebookEdit`: `session-staleness-check.py`,",
+            "  then `pipeline-gate.py`, then `obpi-completion-validator.py`,",
+            "  then `instruction-router.py`",
             "- `PreToolUse` `Bash`: `verifier-pipe-gate.py`,",
             "  then `pipeline-completion-reminder.py`,",
             "  then `ghi-triage-chat-silence.py`",
@@ -235,16 +230,14 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     ],
                 },
                 {
-                    # NotebookEdit is included for the resume gate: it mutates
-                    # files, so the § RESUME "no file mutation" clause covers it
-                    # (GHI #574). The other hooks in this chain are path-scoped to
-                    # src/tests and no-op on a notebook edit.
+                    # NotebookEdit entered this matcher for the resume gate, which
+                    # is RETIRED (operator ruling 2026-08-15). The matcher string is
+                    # kept verbatim: the remaining hooks are path-scoped to
+                    # src/tests and no-op on a notebook edit, so narrowing it would
+                    # be a behaviour-neutral churn that invalidates every pinned
+                    # settings assertion for no gain.
                     "matcher": "Write|Edit|NotebookEdit",
                     "hooks": [
-                        {
-                            "type": "command",
-                            "command": _hook_command(hooks_dir, "handoff-resume-gate.py"),
-                        },
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "session-staleness-check.py"),
@@ -267,10 +260,10 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     "matcher": "Bash",
                     "hooks": [
                         # `handoff-resume-gate.py` was FIRST in this chain and is
-                        # removed (operator ruling 2026-08-14). It is registered on
-                        # Write|Edit|NotebookEdit only now, so leaving it here would
-                        # pay a ~300ms interpreter start on every shell command to
-                        # compute a verdict that is always "allow".
+                        # gone from the whole surface: off Bash 2026-08-14, off
+                        # Write|Edit|NotebookEdit 2026-08-15, when the hook itself
+                        # was retired (operator ruling: a handoff is an advisor, not
+                        # a gate-keeping nanny). Nothing registers it anywhere now.
                         {
                             "type": "command",
                             "command": _hook_command(hooks_dir, "verifier-pipe-gate.py"),
@@ -337,8 +330,10 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
                     # The entry beat (GHI #757). Surfaces the newest handoff and
                     # its advised steps through additionalContext (universal) and
                     # initialUserMessage (Claude-side upgrade that seeds a real
-                    # first turn). Binds by seeding, never by refusing — and it
-                    # ADVISES: only `gz handoff decide` lifts the resume gate.
+                    # first turn). Binds by seeding, never by refusing — and since
+                    # the PreToolUse resume gate was retired (2026-08-15) that is
+                    # the whole mechanism. `gz handoff decide` still books the
+                    # operator's ruling; no hook gates on the absence of one.
                     "matcher": "*",
                     "hooks": [
                         {
@@ -530,10 +525,6 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
         executable=True,
     )
     created.append(ghi_triage_chat_silence_path.relative_to(project_root).as_posix())
-
-    handoff_resume_gate_path = hooks_path / "handoff-resume-gate.py"
-    _write_hook_file(handoff_resume_gate_path, _handoff_resume_gate_script(), executable=True)
-    created.append(handoff_resume_gate_path.relative_to(project_root).as_posix())
 
     session_start_advisement_path = hooks_path / "session-start-advisement.py"
     _write_hook_file(

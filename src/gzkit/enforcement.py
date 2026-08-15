@@ -460,12 +460,14 @@ def _ensure_production_claims_registered() -> None:
         honest-negative named-not-enforced members and are deliberately NOT registered.
       * ``mx.proxy_reality`` — ``grader-gaming``, the floor member's live proxy-reality NC
         (OBPI-0.0.74-13).
-      * ``handoff_resume_gate`` — ``handoff-resume-unauthorized-write`` and
-        ``-bash``, one per clause of the § RESUME Operator Authorization Gate
-        ("no file mutation / gz ceremony / migration"). Split deliberately: a gate
-        hooking only Write|Edit leaves the bash claim undischargeable, so a
-        partial mechanism fails ``gz check`` instead of shipping with a caveat
-        (GHI #574).
+      * ``handoff_resume_gate`` — ``handoff-resume-booking-coupling`` ONLY. The two
+        enforcement claims that lived here (``-bash``, retired 2026-08-14;
+        ``-write``, retired 2026-08-15) went with the PreToolUse arms they
+        witnessed, when the resume gate was retired entirely (operator ruling: a
+        handoff is an advisor, not a gate-keeping nanny). What remains witnesses
+        ``gz handoff decide`` — that a ruling is booked against the document the
+        operator actually read (GHI #795/#797) — a property of the ADVISORY half
+        that never depended on the gate.
       * ``verifier_pipe_gate`` — ``verifier-exit-status-masked``, the mechanical
         form of `.gzkit/rules/tests.md` § Verification exit-code integrity. ONE
         claim because the clause declares one rule; its NC asserts the

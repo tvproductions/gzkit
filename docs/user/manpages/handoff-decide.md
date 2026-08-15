@@ -17,15 +17,18 @@ Authorization Gate:
 > every freshness level — Fresh included. ... no file mutation / `gz` ceremony /
 > migration until the operator rules."
 
-That was prose plus a template banner until 2026-07-16 — an agent could read the
-banner and proceed anyway, and nothing stopped it. It now binds:
-`.claude/hooks/handoff-resume-gate.py` (PreToolUse on `Write|Edit|NotebookEdit`
-**and** `Bash`) refuses every mutating tool call while this session has resumed a
-handoff with no operator ruling on the ledger.
+It bound mechanically from 2026-07-16 to 2026-08-15 as
+`.claude/hooks/handoff-resume-gate.py`, a PreToolUse refusal of mutating tool
+calls on an unruled handoff. **That gate is retired** (operator ruling, verbatim:
+*"the handoff should be an advisor, not a gate-keeping nanny"*) — the `Bash` arm
+went 2026-08-14, the `Write|Edit|NotebookEdit` arm 2026-08-15, and the hook and
+its generator template are deleted. The clause above still binds the AGENT; no
+hook enforces it.
 
-`gz handoff decide` is how the ruling is booked. The gate reads Layer-2, so a
-ruling given in conversation and never booked leaves the gate armed — **by
-design**. Memory is not evidence.
+`gz handoff decide` is how the ruling is booked, and booking it remains the
+point: a ruling given in conversation and never booked leaves no Layer-2 record
+of what the operator decided. Memory is not evidence. Nothing is refused for the
+absence of a record — the loss is the record itself.
 
 Authorization is **session-scoped**: it cites the harness `session_id`, so a
 prior session's ruling can never license this one, and a mechanically written

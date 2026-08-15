@@ -782,12 +782,14 @@ uv run gz arb archive --older-than 30d            # move eligible receipts into 
 ```
 
 **Resuming requires an operator ruling, at every freshness level (GHI #574).**
-The resume gate (`.claude/hooks/handoff-resume-gate.py`) refuses every mutating
-tool call until a `proceed` ruling is booked with `gz handoff decide`. The
-ruling is an **acknowledge-and-decide transit**, never a completion attestation
+This is an agent obligation, not a mechanism: the resume gate that refused
+mutating tool calls was retired 2026-08-15 (operator ruling — a handoff is an
+advisor, not a gate-keeping nanny), and `.claude/hooks/handoff-resume-gate.py`
+no longer exists. Book the ruling with `gz handoff decide`. It is an
+**acknowledge-and-decide transit**, never a completion attestation
 (ADR-0.0.33 § Alternatives; GHI #757) — `pause`, `hold`, and `revert` are
-equally bookable and leave the gate armed, and `--set-aside` records any advised
-step the ruling declines. Staleness escalates *re-verification depth*, never the
+equally bookable, and `--set-aside` records any advised step the ruling
+declines. Staleness escalates *re-verification depth*, never the
 authorization requirement:
 
 - `Fresh` (<24h) — present the advised steps, obtain the ruling, book it. Fresh

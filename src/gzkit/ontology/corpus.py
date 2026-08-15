@@ -112,11 +112,17 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # was ruled and which counsel was declined; neither is an edge between
         # artifacts.
         "handoff_resume_decided",
-        # The refusal half of the same gate (operator report 2026-08-14), added
-        # because the two above recorded every lift and nothing recorded a block.
-        # Dispositioned identically and then some: session-scoped, the handoff is
-        # already a node via its frontmatter, and the payload is command SHAPE
-        # rather than an artifact — there is no second node to draw an edge to.
+        # The refusal half of the same gate. RETIRED as an emitter 2026-08-15 with
+        # the gate itself, but it MUST stay dispositioned here: this set is keyed
+        # on the live `TypedLedgerEvent` discriminator union, and
+        # `HandoffResumeBlockedEvent` is deliberately retained so the one on-disk
+        # record (2026-08-15T00:08) stays parseable on an append-only ledger.
+        # Do NOT confuse this with `trust_audits.events._NO_GRAPH_IMPACT`, which
+        # keys on what `ledger_events.py` EMITS — the factory is gone, so the
+        # waiver there is correctly stale and was removed. Two registries, two
+        # questions: "can this be parsed?" versus "can this be written?"
+        # Dispositioned as it always was: session-scoped, the handoff is already a
+        # node via its frontmatter, and there is no second node for an edge.
         "handoff_resume_blocked",
         "intrinsic-complexity-attestation",
         "lifecycle_transition",
