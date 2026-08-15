@@ -51,6 +51,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
+| `chores.md` | `0.3.2` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `governance-core.md` | `0.9.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
@@ -167,9 +168,9 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 54 | Plan-first chore discipline | **Judgment** | Procedural; enforced by `gz chores plan/advise` ordering in the skill |
-| 55 | **Lite by default** | **Mechanical** | Lane config enforced by `gz chores plan` |
-| 56 | CLI-only evidence (no raw SQL attestation) | **Judgment** | Anti-pattern prevention; cultural |
+| 54 | Plan-first chore discipline | **Judgment** | Procedural; enforced by `gz chores plan/advise` ordering in the skill. No artifact records whether a plan preceded a run — `gz chores run` writes to `proofs/` either way — so "plan-first" has no queryable witness. |
+| 55 | **Lite by default** | **Judgment** | **Re-scored 2026-08-15 (rule `0.3.2`); was Mechanical, and the claim was false.** The row read *"Lane config enforced by `gz chores plan`"*. What is actually mechanical is narrower and different: `_parse_chore` validates `lane` against `ALLOWED_LANES = {"lite", "heavy"}` (`src/gzkit/commands/chores.py:25`, `chores_exec.py:197-203`) — an enum check on a string. The clause's real content is *"`uv run -m unittest -q` (unit tier only); no `behave`, no network, no external services"*, and nothing enforces any of those three. `src/gzkit/commands/chores.py:244` says so in its own words: *"The lanes block carries gate-rigor metadata only (lite=Gates 1,2; heavy=all)."* A validated enum was being reported as an enforced discipline. Reclassify on a check that actually inspects a chore's executed commands for the forbidden tiers. |
+| 56 | CLI-only evidence (no raw SQL attestation) | **Judgment** | Anti-pattern prevention; cultural. A regex for SQL keywords in attestation text would grade shape, not substance (the `shape-graded-not-substance` signature ADR-0.0.73 refuses). |
 
 ### ADR Audit (`.gzkit/rules/adr-audit.md`)
 
@@ -379,9 +380,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 67 | 61% |
+| **Mechanical** | 66 | 61% |
 | **Promotable** | 0 | 0% |
-| **Judgment** | 42 | 39% |
+| **Judgment** | 43 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
