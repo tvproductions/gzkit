@@ -172,6 +172,29 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
   2. **Skill arm** — the scorecard covers **no** `.gzkit/skills/**/SKILL.md` mandate, which is where all three agent-side exemplars lived (`#459`, `#574`, `#620` were each a skill mandate with no receipt). Extend coverage to skill mandates, or record in the audit why skills are structurally out of scope. Today the arm is not failing — it is unmeasured, which is the same blindness one surface over.
   3. **Debt arm** — already mechanized and needs no new work: the 23 pre-ledger rules are pinned in `data/advisory_scorecard_grandfather.json` and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 BI #8), so debt cannot grow or follow a rule forward silently.
 
+  > **Status change 2026-08-16 — the rules arm REGRESSED from 0 to 8, and that is
+  > this box working (GHI #810).** `.gzkit/rules/cli.md` was scored for real, which
+  > required dropping its `0.3.1` grandfather pin. Scoring it honestly produced
+  > **8 Promotable rows (scorecard rows 76-82, 85)** — the third state this box
+  > forbids, returning. **Do not read this as new drift.** The CLI layer had been
+  > invisible to the instrument on *both* arms: `cli.md` sat in the grandfather
+  > registry unscored, and the 1,037-line specification elaborating it
+  > (`docs/design/cli-standards-v3.md`, canonical per ADR-0.0.4) was reachable from
+  > that ADR and from **no rule or governance surface**, so nothing carried it into
+  > the per-turn contract. Decay under those conditions produces no signal; the 8
+  > rows are that decay becoming measurable for the first time. Re-scoring them to
+  > **Judgment** without amending the rule text is the laundering arm 1 already
+  > forbids, so the arm is genuinely open. Measured alongside: every CLI rule with
+  > a mechanical arm holds at or near 100%, every prose-only rule at or near 0%.
+  > **The debt arm moved the right way in the same pass** — the grandfather registry
+  > shrank 15 → 14 against `baseline_count` 23, which is the shrink-ratchet
+  > behaving as designed. Restoring arm 1 means building the arms (rows 76-82 and
+  > 85 consolidate to **one** validator, `gz validate --cli-shape`, plus an
+  > output-chokepoint ratchet — see the scorecard's § CLI Contract Doctrine), not
+  > re-scoring. Tracked at GHI #810.
+
+- [ ] **Name the adoptable mechanisms — the positive half of The Firewall** *(added 2026-08-16, operator-directed)*. Item 160 defines what does **not** ship. Nothing defines what an adopter **gets**, and four mechanisms that already work have no home describing them as a deliverable surface rather than gzkit's private tooling. Two ship today with no adoption story: the **shrink-only waiver ratchet** (`data/waiver_ratchet_registry.json`, ADR-0.0.73 BI #8 — debt may only decrease; it gated the grandfather removal on 2026-08-16, 15 → 14 against baseline 23) and the **verifier-pipe-gate hook** (`.claude/hooks/verifier-pipe-gate.py`, GHI #589 — refuses a verifier in any non-final pipeline stage; it fired against an agent's own `gz validate | grep` on 2026-08-16, which is the class of false green that then gets relayed as attestation evidence). Two are already homed and named here only so the set is legible: the **Mechanical validators** are delivered by `ADR-0.0.31-distribution-invariants` (`Validated`; run `uv run gz adr status ADR-0.0.31-distribution-invariants` for its landed count rather than trusting a figure transcribed here — `pip install py-gzkit && gz init`, byte-equivalent, fail-closed via `gz validate --distribution`), and the **scorecard method** is item 162 above, whose live counts are fenced at the scorecard's own Summary table. **Done means:** each of the four is classified under item 160's destiny taxonomy (wheel-borne / authored-into-battlefield / lab-only-jig) and, for anything wheel-borne, the adopter-facing contract is stated — what it checks, what it costs per turn, and what a project must do to satisfy it. **Explicitly NOT a new pool ADR** (Architectural Boundary 2 — *do not add more pool ADRs to the runtime track*); the pool already holds 190 unscoped items and four hooks-related entries (`claude-hooks-absorption`, `pre-commit-hook-absorption`, `hooks-meta-layer-contract`, `prime-context-hooks`) that this box does **not** unfreeze. **Sequenced with item 160, not ahead of it** — the negative half is the load-bearing one, because until it lands an adopter inherits the lab jigs regardless of how well the positive half is described. Origin: the 2026-08-16 competitive review, which measured the flourishing tools in this category as authoring-side (Spec Kit 93k stars, BMAD 46.7k) with the enforcement side unoccupied as OSS — gzkit's differentiator is real and undescribed.
+
 **Movement D — Stop the re-adjudication** *(ruling lifecycle)*
 - [x] **Handoff-local repair** — every authored next step now survives the resume (`ResumeResult.next_steps`); the `continues_from` chain link is correct-by-construction. GHI #696, commit `5ec44ad1`, receipt `arb-step-unittest-430503d2`.
 - [x] **Recover the orphaned 06-10 rulings.** Done 2026-07-18, in-session. Counted **17** amendments + 4 scope decisions + a goal-state — not the "77" the 06-30 edition asserted. All dispositioned in § 9a. Highest-value catch: **Scope decision #1 ("Full pool build-out … no item left undecided at 1.0") was live and unwithdrawn**, in direct contradiction to today's post-1.0 pool ruling — the precise orphan that resurfaces months later as *"but we booked that for 1.0."*
@@ -289,6 +312,48 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-16 — Movement C: rules arm regresses 0 → 8; adoptable-mechanisms box added (operator-directed)
+
+Operator instruction, verbatim: **"ensure that any deficiencies from your four
+proposals have a home in the campaign work, remedy that now."**
+
+**No box removed, nothing resequenced.** Movement B remains TOPMOST; Movement A
+remains HELD; the post-1.0 pool ruling is unchanged and the 190 pool items stay
+frozen. Two changes, both inside Movement C.
+
+**1. Item 162's rules arm regressed from 0 to 8, recorded rather than absorbed.**
+`.gzkit/rules/cli.md` was scored for real under GHI #810, which dropped its
+`0.3.1` grandfather pin by construction. The honest score produced **8 Promotable
+rows** — the third state the box forbids. The box's own criterion is what makes
+this reportable rather than hideable: re-scoring to `Judgment` without amending
+the rule text is laundering, so the arm is genuinely open until the arms are
+built. Recorded at the box; tracked at GHI #810. The **debt arm moved the right
+way in the same pass** (grandfather registry 15 → 14 against `baseline_count` 23).
+
+This is the second time in nine days the family-closure box has been reopened by
+measuring a surface nobody had measured. That is the box working — but it also
+means **its completion criterion cannot be treated as converging while unscored
+surfaces remain.** The scorecard covers `CLAUDE.md` + `.gzkit/rules/**`; arm 2
+already records that `.gzkit/skills/**` is unmeasured. `docs/design/**` standards
+cited as canonical by a `Validated` ADR were likewise unmeasured until this week.
+
+**2. New box — name the adoptable mechanisms.** Item 160 (The Firewall) defines
+what does not ship; nothing defined what an adopter gets. Two working mechanisms
+— the shrink-only waiver ratchet and the verifier-pipe-gate hook — had no home
+describing them as a deliverable surface. Both fired against this session's own
+agent work, which is the evidence they are worth naming. Sequenced **with** item
+160, not ahead of it, and explicitly **not** a new pool ADR (Architectural
+Boundary 2).
+
+**Origin, stated plainly so it is not mistaken for an independent finding.** Both
+changes come from an agent-proposed framing during a 2026-08-16 competitive
+review, which the operator directed be homed. The review measured the category as
+flourishing on the **authoring** side (GitHub Spec Kit 93k stars; BMAD-METHOD
+46.7k; OpenCode 160k) with the **enforcement** side unoccupied in OSS — present
+only as academic work and enterprise compliance platforms. The proposal was
+positioning, not wind-down: gzkit's differentiator is the enforcement layer, and
+it is currently undescribed to anyone outside this repository.
 
 ### 2026-08-14 — Movement B is TOPMOST; Movement A is HELD; calibration precedes widening (operator-ratified)
 
