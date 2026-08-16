@@ -54,7 +54,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `chores.md` | `0.3.2` |
 | `cli.md` | `0.4.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
-| `governance-core.md` | `0.9.0` |
+| `governance-core.md` | `0.10.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.1.0` |
 | `pythonic.md` | `0.5.0` |
@@ -108,6 +108,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 17e | Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb | **Mechanical** | **Scored 2026-08-09 (rule `0.9.0`); previously unrowed.** Enforced by `gz validate --cli-alignment` (registered; verified present in `gz validate --help` this run), **fail-closed at exit 1, not exit 3**. Scope is `docs/**/*.md`, `docs/**/*.feature`, `features/**/*.feature`, `.gzkit/skills/**/SKILL.md`. Covers multi-word subcommands, and the manpage-filename half (`<verb>.md`, never `gz-` prefixed) via `audit_manpage_alignment` (GHI #532). **Known scope gap, not a scoring caveat:** `.gzkit/rules/**` is *not* among `_manpage_alignment_sources` (`src/gzkit/governance/trust_audits/cli.py:237`), so the rule surface sits outside its own binding — carried as row R03 of the `control-surface-rule-conflicts` matrix. **Exit-code correction, same day this row landed:** this row was first written *"exit 3 on any unresolvable reference"*, copied from the rule's own claim at `.gzkit/rules/governance-core.md:53` rather than read from the code. `audit_cli_alignment` emits `type="cli_alignment"` (`cli.py:224`) and `audit_manpage_alignment` emits `type="manpage_alignment"` (`cli.py:298`); neither is in `_POLICY_BREACH_ERROR_TYPES` (`validate_cmd.py:1130-1165`), so the run routes to `SystemExit(1)`. The enforcement is real and the Mechanical score stands — only the exit code was wrong. Caught by the `control-surface-rule-vs-check-drift` Pass C walk hours after landing, which is the exact prose-vs-check gap that chore exists to find; the rule's claim is carried as a Pass C row. |
 | 17f | `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per | **Mechanical** | **Scored 2026-08-09 (rule `0.9.0`); previously unrowed.** Enforced by `gz validate --adr-status-fresh`, wired into the default `gz check` pipeline at `src/gzkit/commands/quality.py:459` (`("ADR status freshness", run_adr_status_fresh_audit)`) and registered at ERROR level at `:58`. Drift between the committed index and on-disk canon fails closed; recovery is a single command (`uv run gz register-adrs`). Both the flag and the `gz check` wiring were verified this run — the pairing is what rows 19/20 lacked when they claimed enforcement that ran nowhere. |
 | 17g | Only a human may repudiate a Gate-5 | **Mechanical** | **Scored 2026-08-09 (rule `0.9.0`); previously unrowed.** Enforced at `src/gzkit/commands/obpi_cmd.py:254-259` — `--attestor` and `--reason` are each checked with `.strip()` and exit 1 **before** `ensure_initialized()` and any `Ledger` construction, so a refusal writes nothing. `--cause` is a closed enum (`model-induced-fabrication \| operator-error \| verification-invalid`). ADR-0.0.71. |
+| 17h | A value written in a Markdown doc is ILLUSTRATIVE, never authoritative | **Promotable** | **Scored 2026-08-16 (rule `0.10.0`) at landing** — the clause and its score arrive together, so the third state is disclosed rather than accrued. Operator ruling: *"we should never allow a hard-coded value in an md doc to be anything other than illustrated lest some rg/grep finds it and gets confused."* **A partial arm already exists and is the promotion precedent:** `gz validate --transcribed-adr-counts` refuses a transcribed Layer-2 OBPI count in live prose, with `data/transcribed_count_surfaces.json` declaring dated-record sections and a `<!-- historical-count -->` escape. It fired twice on 2026-08-16 against an agent's own campaign edits. Promotion is extending that shape from ADR counts to declared threshold authorities. **Named, observed drift — the freeze's admission bar:** `pythonic.md` carries `Modules <=600` while `.gzkit/rules/complexity-thresholds.json` is what `chores/module-sloc-cap-radon/check_module_size.py:56` actually reads, and that module's docstring calls the 600 *"the drift"*; a census against the prose figure counted **51** modules no gate rejects and nearly seated a campaign box against an unenforced authority. **Not Mechanical:** distinguishing an illustrative number from an authoritative one is a reading, and the general form would grade by shape. The tractable arm is narrower — an allowlist of declared authorities plus a scan for their values restated elsewhere. |
 
 ### Pythonic Standards (`.gzkit/rules/pythonic.md`)
 
@@ -419,7 +420,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 66 | 55% |
-| **Promotable** | 8 | 7% |
+| **Promotable** | 9 | 7% |
 | **Judgment** | 45 | 38% |
 | **Ambiguous** | 0 | 0% |
 
