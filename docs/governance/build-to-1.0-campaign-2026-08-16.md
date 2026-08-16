@@ -46,7 +46,7 @@ identical two days into Movement B holding TOPMOST — zero transits — while `
 commits rose by four. The ungoverned door widened while the governed one stayed
 shut, inside the window where that Movement was supposedly being worked.
 
-> **Topmost (sequenced):** **AMENDED 2026-08-14 — Movement B is TOPMOST; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). **The feature ADR that carries this Movement is AUTHORED — `ADR-0.37.0-airlock-calibration-and-compulsion` (2026-08-14), which re-homes `ADR-0.33.0`'s disclosed residuals rather than reopening it; run `uv run gz adr status ADR-0.37.0-airlock-calibration-and-compulsion` for its lifecycle and landed count.** (This sentence read *"none is authored yet"* until 2026-08-16 — see the § Amendments record of that date.) See § Amendments 2026-08-14 and § Movement B.
+> **Topmost (sequenced):** **AMENDED 2026-08-14 — Movement B is TOPMOST; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). **The feature ADR that carries this Movement is AUTHORED — `ADR-0.37.0-airlock-calibration-and-compulsion` (2026-08-14), which re-homes `ADR-0.33.0`'s disclosed residuals rather than reopening it; run `uv run gz adr status ADR-0.37.0-airlock-calibration-and-compulsion` for its lifecycle and landed count.** (This sentence read *"none is authored yet"* until 2026-08-16 — see the § Amendments record of that date.) **GATED BY ADR ORDER, which is absolute (operator ruling 2026-08-16, verbatim: *"i will NOT go out of adr order, whatsoever."*): `ADR-0.37.0` is the THIRD of three open feature ADRs, so Movement B is TOPMOST in priority and NOT pullable until `ADR-0.35.0` and `ADR-0.36.0` land. `ADR-0.35.0-canon-entry-corpus-landing` is the next work. TOPMOST is not a licence to jump the ADR queue.** See § Amendments 2026-08-14, § Amendments 2026-08-16 (latest), and § Movement B.
 >
 > **HELD — Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
 >
@@ -352,6 +352,43 @@ had been repeating. All are dispositioned below — none left undefined.
 > was an unverified number. **No ruling from any edition is now undefined.**
 
 ## Amendments
+
+### 2026-08-16 (latest) — ADR ORDER IS ABSOLUTE, and this plan now says so
+
+Operator ruling, verbatim: **"i will NOT go out of adr order, whatsoever."** (spelling
+preserved). Reaffirms the standing ruling *"we will NOT go out of adr order"*, which had
+refused `ADR-0.37.0` implementation as third of three open ADRs.
+
+**Recording under § 8 — an operator-ratified amendment, recorded with the operator's
+verbatim words. No Movement is resequenced and no box is touched.**
+
+**The gap this closes.** Grep this plan before this entry and it contains **no ADR-order
+language at all** — not in § Topmost, not in any Movement header, nowhere. The constraint
+that decides *which ADR may be worked* lived only in handoff Settled Rulings, while this
+plan declared TOPMOST a Movement carried by the **last** of three open ADRs. Nothing
+contradicted anything: ADR order was ratified canon and Magna Carta was simply silent on
+it. Silence is the defect — every session re-derives the constraint or trips over it, and
+this session did trip, presenting the two as a conflict needing an operator ruling when
+one of them was merely unrecorded.
+
+**Movement priority and ADR order are different axes, and both bind.** Movement B remains
+TOPMOST: it is the highest-value work and the airlock's inertness is still the priority
+problem. ADR order governs *what may be pulled next*, and it is not a preference to be
+traded against priority. The consequence is arithmetic rather than judgment:
+
+| Open feature ADR | Position | May be worked? |
+|---|---|---|
+| `ADR-0.35.0-canon-entry-corpus-landing` | first | **yes — this is the next work** |
+| `ADR-0.36.0-convergence-moment-cross-family-critic` | second | not until 0.35.0 lands |
+| `ADR-0.37.0-airlock-calibration-and-compulsion` | third (carries Movement B) | not until 0.35.0 and 0.36.0 land |
+
+Read each ADR's lifecycle and landed count from
+`uv run gz adr status <ADR-ID>`; no count is transcribed here.
+
+**So Movement B is TOPMOST *and* gated.** A Movement can be the highest priority and still
+be blocked — those are not in tension, and reading "TOPMOST" as a licence to pull
+`ADR-0.37.0` ahead of its position is the misreading this entry exists to prevent. The
+practical effect: **`ADR-0.35.0` is the work**, and Movement B's item 0 waits behind it.
 
 ### 2026-08-16 (later) — the Topmost line claimed Movement B's feature ADR was unauthored; corrected at three sites
 
