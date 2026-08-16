@@ -27,8 +27,8 @@ closeout surface.
 from __future__ import annotations
 
 import contextlib
+import json
 import os
-import re
 from pathlib import Path
 
 import yaml
@@ -128,46 +128,43 @@ def generate_bundle(sources: list[SourceEntry], output_dir: Path | str) -> None:
 
 _GOVERNANCE_DIR = Path("docs/governance")
 _CAMPAIGN_GLOB = "*-campaign-*.md"
-#: Which plan governs. Supersession flips this line, and Operating Rule 1 (one
-#: active plan) is what makes a single match sufficient.
-#:
-#: ``scripts/session_orientation.py._ACTIVE_STATUS_RE`` is the same pattern, and
-#: the two CANNOT be collapsed into one import: that script is contracted to run
-#: on stdlib alone so the campaign still resolves when this package is broken,
-#: and the wheel ships ``src/gzkit/**`` and never that file. The readers sit on
-#: opposite sides of the distribution boundary. Held in agreement by
-#: ``tests/scripts/test_active_status_pattern_single_sourced.py``.
-_ACTIVE_STATUS_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
+#: The registry declaring which plan governs. See its ``_doc`` for why the
+#: `Status:` prose it replaced could not hold the authority.
+ACTIVE_CAMPAIGN_REGISTRY = Path("data/active_campaign.json")
 
 
-def resolve_active_campaign(governance_dir: Path | None = None) -> Path:
-    """Return the campaign plan whose ``Status:`` line declares it ACTIVE.
+def resolve_active_campaign(registry_path: Path | None = None) -> Path:
+    """Return the campaign plan the registry declares ACTIVE.
 
-    *governance_dir* defaults to ``docs/governance``; it is a parameter so the
-    selection logic can be exercised without the repository's own campaign set
-    standing in as an implicit fixture (`.claude/rules/hexagonal-architecture.md`
-    rule 4 — take the external surface as a parameter, never name it inside).
+    *registry_path* defaults to :data:`ACTIVE_CAMPAIGN_REGISTRY`; it is a
+    parameter so the resolution can be exercised without the repository's own
+    registry standing in as an implicit fixture
+    (`.claude/rules/hexagonal-architecture.md` rule 4 — take the external
+    surface as a parameter, never name it inside).
 
-    Supersession flips that line, and Operating Rule 1 guarantees at most one
-    match, so the discriminator is the status — never the filename or its date.
-    This was hardcoded to a specific edition and stayed there through two
-    supersessions (06-30 -> 07-18 -> 08-16), shipping a plan that had not steered
-    for weeks as the bundle's "Active Campaign" concept. A hardcoded path cannot
-    report that it is wrong; resolving from the same signal the orientation hook
-    reads (``scripts/session_orientation.py``) means the bundle follows the
-    ruling that moved the plan.
+    **The declaration is data, not prose (operator ruling 2026-08-16).** This
+    read was twice wrong in ways the shape made possible: first hardcoded to one
+    edition, which stayed put through two supersessions and shipped a plan that
+    had not steered for weeks; then a regex over each plan's ``Status:`` line,
+    maintained in two separate copies on opposite sides of the wheel boundary
+    and one character from ambiguity — every superseded edition says
+    ``**SUPERSEDED -- was ACTIVE**`` and misses only because ACTIVE is not
+    adjacent to the asterisks. Neither shape could report that it was wrong.
+    A registry can: an undeclared edition fails the coherence test closed.
 
-    Falls back to the newest edition by name when nothing declares ACTIVE — bundle
-    generation must not fail closed on a governance-state anomaly, and the
-    newest-by-name file is the least-wrong source while the anomaly is repaired.
+    Falls back to the newest edition by name when the registry is missing,
+    unreadable, or names a file that is gone — bundle generation must not fail
+    closed on a governance-state anomaly, and newest-by-name is the least-wrong
+    source while the anomaly is repaired. The anomaly itself is reported by
+    ``tests/governance/test_active_campaign_registry.py``, not swallowed here.
     """
-    root = _GOVERNANCE_DIR if governance_dir is None else governance_dir
-    editions = sorted(root.glob(_CAMPAIGN_GLOB))
-    for path in editions:
-        with contextlib.suppress(OSError):
-            if _ACTIVE_STATUS_RE.search(path.read_text(encoding="utf-8", errors="replace")):
-                return path
-    return editions[-1] if editions else root / "build-to-1.0-campaign.md"
+    registry = ACTIVE_CAMPAIGN_REGISTRY if registry_path is None else registry_path
+    with contextlib.suppress(OSError, ValueError, KeyError, TypeError):
+        declared = Path(json.loads(registry.read_text(encoding="utf-8"))["active"])
+        if declared.is_file():
+            return declared
+    editions = sorted(_GOVERNANCE_DIR.glob(_CAMPAIGN_GLOB))
+    return editions[-1] if editions else _GOVERNANCE_DIR / "build-to-1.0-campaign.md"
 
 
 TRACER_SLICE: list[SourceEntry] = [

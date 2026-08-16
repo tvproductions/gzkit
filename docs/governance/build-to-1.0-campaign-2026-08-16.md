@@ -6,6 +6,15 @@ Status: **ACTIVE — the one canonical plan** (operator-directed 2026-08-16).
 Supersedes [`build-to-1.0-campaign-2026-07-18.md`](build-to-1.0-campaign-2026-07-18.md);
 priors are retained for audit and no longer steer.
 
+> **This line is a restatement, not the authority.** Which plan governs is declared in
+> [`data/active_campaign.json`](../../data/active_campaign.json) and read from there by
+> `scripts/session_orientation.py` and `gzkit.knowledge.generate` — execution reads state
+> from JSON, never from prose (`.gzkit/rules/governance-core.md` 0.10.0, operator ruling
+> 2026-08-16). Supersession is performed by moving this file between that registry's
+> `active` and `superseded` lists; editing the banner alone changes nothing, and the two
+> are held in agreement by `tests/governance/test_active_campaign_registry.py`, which also
+> fails closed on a campaign edition the registry does not declare.
+
 **This edition is a FULL carry-forward, not a rewrite.** Every box, movement,
 amendment, and register entry from the 2026-07-18 edition is retained inline and
 in place — no box removed, nothing resequenced, no ruling dropped. Movement B

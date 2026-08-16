@@ -1,0 +1,10 @@
+{
+  "_doc": "Which campaign plan governs (Magna Carta, operator ruling 2026-06-10). THIS FILE IS THE AUTHORITY; the `Status:` line in each plan is a human-facing restatement of it, not the source. Execution reads state from JSON, never from prose (.gzkit/rules/governance-core.md 0.10.0, operator ruling 2026-08-16). Before this file existed, both readers -- scripts/session_orientation.py and gzkit.knowledge.generate -- recovered the governing plan by regex over `^Status:\\s*\\*\\*ACTIVE`, in two separately-maintained copies. The prose that pattern read is one character from ambiguity: every superseded edition's line says `**SUPERSEDED -- was ACTIVE**` and misses only because ACTIVE is not adjacent to the asterisks, so `**ACTIVE (superseded)**` would have flipped the governing plan of the entire repository with no gate objecting. Editing this file is a decision, not bookkeeping: `active` is the plan that rules every session, and moving an edition between the two lists IS the supersession. Enforced by tests/governance/test_active_campaign_registry.py -- a campaign file in neither list fails closed, so a new edition cannot arrive undeclared, and each plan's prose `Status:` line must agree with its placement here.",
+  "active": "docs/governance/build-to-1.0-campaign-2026-08-16.md",
+  "superseded": [
+    "docs/governance/build-to-1.0-campaign-2026-06-10.md",
+    "docs/governance/build-to-1.0-campaign-2026-06-20.md",
+    "docs/governance/build-to-1.0-campaign-2026-06-30.md",
+    "docs/governance/build-to-1.0-campaign-2026-07-18.md"
+  ]
+}

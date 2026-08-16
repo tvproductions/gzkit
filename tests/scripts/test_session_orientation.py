@@ -530,12 +530,24 @@ class TestCollectCampaign(unittest.TestCase):
     def setUp(self):
         self.mod = _load_orientation_module()
 
-    def _repo_with_campaign(self, tmp: str, text: str | None) -> Path:
+    _PLAN = "docs/governance/build-to-1.0-campaign-2026-06-10.md"
+
+    def _repo_with_campaign(self, tmp: str, text: str | None, *, declare: bool = True) -> Path:
+        """Build a repo whose registry declares the written plan ACTIVE.
+
+        The registry, not the plan's prose, is what `collect_campaign` reads
+        (operator ruling 2026-08-16), so a fixture that writes only the markdown
+        is describing the superseded contract.
+        """
         root = Path(tmp)
-        gov = root / "docs" / "governance"
-        gov.mkdir(parents=True)
+        (root / "docs" / "governance").mkdir(parents=True)
         if text is not None:
-            (gov / "build-to-1.0-campaign-2026-06-10.md").write_text(text, encoding="utf-8")
+            (root / self._PLAN).write_text(text, encoding="utf-8")
+        if declare:
+            (root / "data").mkdir(parents=True, exist_ok=True)
+            (root / "data" / "active_campaign.json").write_text(
+                json.dumps({"active": self._PLAN}), encoding="utf-8"
+            )
         return root
 
     def test_returns_none_when_no_campaign_file(self):
@@ -543,25 +555,50 @@ class TestCollectCampaign(unittest.TestCase):
             root = self._repo_with_campaign(tmp, None)
             self.assertIsNone(self.mod.collect_campaign(root))
 
-    def test_returns_none_when_campaign_not_active(self):
-        superseded = CAMPAIGN_FIXTURE.replace(
-            "Status: **ACTIVE — the one canonical plan**", "Status: **SUPERSEDED 2027-01-01**"
-        )
+    def test_returns_none_when_no_registry_declares_a_plan(self):
+        """Undeclared is not surfaced, however current the plan looks.
+
+        The boot hook degrades rather than guessing: picking a plan nobody
+        declared is how the previous two shapes went wrong.
+        """
         with tempfile.TemporaryDirectory() as tmp:
-            root = self._repo_with_campaign(tmp, superseded)
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE, declare=False)
             self.assertIsNone(self.mod.collect_campaign(root))
 
-    def test_non_utf8_sibling_does_not_abort_campaign_scan(self):
-        """A non-UTF-8 `*-campaign-*.md` sibling cannot abort the scan.
+    def test_prose_saying_active_does_not_make_a_plan_active(self):
+        """The core of the 2026-08-16 ruling, pinned.
 
-        The site guards with `except OSError`, which does not catch
-        `UnicodeDecodeError` (a `ValueError`) — so a single undecodable
-        campaign file crashes the boot hook the docstring promises never to
-        crash (GHI #688). The ACTIVE campaign must still resolve.
+        A plan whose banner reads ACTIVE while the registry names a different
+        file must NOT be surfaced. Under the prior regex contract this exact
+        corpus resolved to the wrong plan, and nothing could report it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE, declare=False)
+            impostor = root / "docs" / "governance" / "build-to-1.0-campaign-2027-01-01.md"
+            impostor.write_text(CAMPAIGN_FIXTURE, encoding="utf-8")
+            (root / "data").mkdir(parents=True, exist_ok=True)
+            (root / "data" / "active_campaign.json").write_text(
+                json.dumps({"active": self._PLAN}), encoding="utf-8"
+            )
+            campaign = self.mod.collect_campaign(root)
+        assert campaign is not None
+        self.assertIn("build-to-1.0-campaign-2026-06-10.md", campaign["path"])
+
+    def test_non_utf8_sibling_does_not_abort_campaign_resolution(self):
+        """A non-UTF-8 `*-campaign-*.md` sibling cannot break the boot hook.
+
+        Originally (GHI #688) this guarded a *scan*: the site caught `OSError`,
+        which does not catch `UnicodeDecodeError` (a `ValueError`), so one
+        undecodable campaign file crashed the hook its docstring promises never
+        to crash. The scan is gone — resolution is now a direct registry lookup
+        — so the sibling is structurally unreachable rather than merely
+        tolerated. Kept because that is a property worth holding, not an
+        accident to rediscover: the fixture still plants the file that used to
+        break it.
         """
         with tempfile.TemporaryDirectory() as tmp:
             root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE)
-            # Sorts before "build-to-1.0-..." so it is read first.
+            # Sorts before "build-to-1.0-..." so the old scan read it first.
             (root / "docs" / "governance" / "archived-campaign-2020-01-01.md").write_bytes(
                 b"Status: **SUPERSEDED 2020-06-01**\n# Caf\xe9 retrospective\n"
             )
@@ -959,8 +996,11 @@ class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
             root = Path(tmp)
             gov = root / "docs" / "governance"
             gov.mkdir(parents=True)
-            (gov / "build-to-1.0-campaign-2026-07-18.md").write_text(
-                CAMPAIGN_FIXTURE_WITH_TOPMOST, encoding="utf-8"
+            plan = "docs/governance/build-to-1.0-campaign-2026-07-18.md"
+            (root / plan).write_text(CAMPAIGN_FIXTURE_WITH_TOPMOST, encoding="utf-8")
+            (root / "data").mkdir(parents=True)
+            (root / "data" / "active_campaign.json").write_text(
+                json.dumps({"active": plan}), encoding="utf-8"
             )
             with mock.patch.object(self.mod.subprocess, "run") as run:
                 campaign = self.mod.collect_campaign(root)

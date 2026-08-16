@@ -33,20 +33,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Bare ADR ids only — the slug-bearing form is matched by prefix on the CLI side.
 _ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
-# Which plan governs. Supersession flips this line, and Operating Rule 1 (one
-# active plan) is what makes a single match sufficient.
-#
-# `gzkit.knowledge.generate._ACTIVE_STATUS_RE` is the same pattern, and the two
-# CANNOT be collapsed into one import: this script is contracted to run on
-# stdlib alone (see the module docstring) so the campaign still resolves when
-# the package is broken, while the wheel ships `src/gzkit/**` and never this
-# file. The readers sit on opposite sides of the distribution boundary. The
-# copies are held in agreement by
-# `tests/scripts/test_active_status_pattern_single_sourced.py` instead — the
-# same coupling-witness shape `TestTaskGrammarSingleSourced` uses for the TASK
-# grammar. Edit one, the witness fails; it is not a substitute for one
-# implementation, only the closest thing the boundary permits.
-_ACTIVE_STATUS_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
+# Which plan governs is read from `data/active_campaign.json`, never parsed out
+# of a plan's `Status:` prose — see `collect_campaign`.
 # One `gz adr status` per ADR named in the sequencing line. Three keeps the added
 # boot cost near 2.4s at ~0.8s each; raising it raises session-start latency
 # linearly, so it is a budget, not a formality.
@@ -98,29 +86,35 @@ POST_COMPACTION_NOTE = (
 
 
 def collect_campaign(repo_root: Path) -> dict | None:
-    """Locate the ACTIVE campaign plan and extract its burn-down state.
+    """Read the ACTIVE campaign plan named by the registry and extract its state.
 
-    Scans ``docs/governance/*-campaign-*.md`` for the file whose ``Status:``
-    line declares ACTIVE (supersession flips it, so at most one matches —
-    Operating Rule 1: one active plan). Returns ``None`` when no active
-    campaign resolves; orientation must never crash the boot hook.
+    ``data/active_campaign.json`` is the authority (operator ruling 2026-08-16 —
+    execution reads state from JSON, never from prose). This function previously
+    recovered the governing plan by regex over each plan's ``Status:`` line,
+    which put a second copy of that pattern in a boot hook: the drift class the
+    module docstring says this script exists to surface, reproduced by the
+    script itself.
+
+    Reading it costs no gzkit import — ``json`` is stdlib — so the campaign
+    still resolves when the package is broken, which is the property that made
+    the shared-implementation fix unavailable while the discriminator was a
+    regex. Returns ``None`` when the registry is missing, unreadable, or names a
+    file that is gone; orientation must never crash the boot hook.
     """
-    gov_dir = repo_root / "docs" / "governance"
-    if not gov_dir.is_dir():
+    registry = repo_root / "data" / "active_campaign.json"
+    try:
+        # errors="replace" for the same reason the plan itself is read that way:
+        # a bare encoding="utf-8" raises UnicodeDecodeError -- a ValueError, so
+        # `except OSError` misses it and the boot hook dies (GHI #688).
+        declared = json.loads(registry.read_text(encoding="utf-8", errors="replace"))["active"]
+    except (OSError, ValueError, KeyError, TypeError):
         return None
-    for path in sorted(gov_dir.glob("*-campaign-*.md")):
+    path = repo_root / declared
+    if path.is_file():
         try:
-            # errors="replace" rather than widening the guard: a mojibake
-            # campaign line still parses for Status:/checkboxes, whereas
-            # skipping the file loses the ACTIVE campaign entirely. Bare
-            # encoding="utf-8" raises UnicodeDecodeError -- a ValueError, so
-            # `except OSError` misses it and the boot hook dies (GHI #688,
-            # file-read side of the GHI #582 class).
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
-            continue
-        if _ACTIVE_STATUS_RE.search(text) is None:
-            continue
+            return None
         unchecked = re.findall(r"^- \[ \] (.+?)$", text, re.MULTILINE)
         done = len(re.findall(r"^- \[[xX~]\] ", text, re.MULTILINE))
         # The ratified pull-order lives in a machine-readable marker, not in
