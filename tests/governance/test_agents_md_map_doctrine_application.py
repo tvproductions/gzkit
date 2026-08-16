@@ -164,69 +164,20 @@ class BudgetJsonFinalized(unittest.TestCase):
         )
 
 
-class RunbooksUpdated(unittest.TestCase):
-    """REQ-0.0.54-04-04: runbooks updated with recovery path and Instruction Files section."""
-
-    @covers("REQ-0.0.54-04-04")
-    def test_user_runbook_has_gz_context_diet_recovery_path(self) -> None:
-        text = _USER_RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            "gz-context-diet",
-            text,
-            "docs/user/runbook.md must document the gz-context-diet recovery path "
-            "(AGENTS.md shape drift)",
-        )
-
-    @covers("REQ-0.0.54-04-04")
-    def test_user_runbook_references_agents_md_map_conformance_validator(self) -> None:
-        text = _USER_RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            "agents-md-map-conformance",
-            text,
-            "docs/user/runbook.md must name the gz validate --agents-md-map-conformance validator",
-        )
-
-    @covers("REQ-0.0.54-04-04")
-    def test_governance_runbook_has_instruction_files_section(self) -> None:
-        text = _GOV_RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            "## Instruction Files",
-            text,
-            "governance_runbook.md must have an Instruction Files section "
-            "naming map-not-encyclopedia resting state",
-        )
-
-    @covers("REQ-0.0.54-04-04")
-    def test_governance_runbook_names_map_not_encyclopedia_doctrine(self) -> None:
-        text = _GOV_RUNBOOK.read_text(encoding="utf-8")
-        self.assertIn(
-            "map-not-encyclopedia",
-            text,
-            "governance_runbook.md must name the map-not-encyclopedia shape contract",
-        )
-
-
-class TrustDoctrineCrossLink(unittest.TestCase):
-    """REQ-0.0.54-04-05: trust-doctrine promoted-scope catalogue includes the validator."""
-
-    @covers("REQ-0.0.54-04-05")
-    def test_trust_doctrine_cross_links_conformance_scope(self) -> None:
-        text = _TRUST_DOCTRINE.read_text(encoding="utf-8")
-        self.assertIn(
-            "agents-md-map-conformance",
-            text,
-            "docs/governance/trust-doctrine.md must cross-link "
-            "gz validate --agents-md-map-conformance scope",
-        )
-
-    @covers("REQ-0.0.54-04-05")
-    def test_trust_doctrine_references_adr_0054(self) -> None:
-        text = _TRUST_DOCTRINE.read_text(encoding="utf-8")
-        self.assertIn(
-            "ADR-0.0.54",
-            text,
-            "trust-doctrine.md conformance entry must cite ADR-0.0.54",
-        )
+# REQ-0.0.54-04-04 and -04-05 were re-kinded BEHAVIOR -> SUPPORT (operator ruling
+# 2026-08-15) and the six doc-grep tests that stood here are DELETED. They read
+# `docs/user/runbook.md`, `docs/governance/governance_runbook.md` and
+# `docs/governance/trust-doctrine.md` and asserted substrings were present —
+# `grep` wearing a `unittest` costume, which cannot fail when behaviour breaks,
+# only when someone rewords a sentence (`.gzkit/rules/tests.md` § The
+# discriminator). Both REQs claim an ARTIFACT property, so their proof channel is
+# SUPPORT: the cited artifact present on disk plus a structural validator
+# admitting its shape — no `@covers` test is required or appropriate.
+#
+# They were not deletable before the ruling: the brief is Completed, so its REQ
+# kinds were sealed, and a BEHAVIOR REQ with no covering test fails the
+# REQ-coverage gate. The tests were forbidden by the rule and mandated by the
+# kind at the same time.
 
 
 class ConformanceValidatorGreen(unittest.TestCase):

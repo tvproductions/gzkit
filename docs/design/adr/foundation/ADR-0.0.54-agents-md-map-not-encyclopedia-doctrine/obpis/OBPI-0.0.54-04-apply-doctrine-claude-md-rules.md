@@ -32,6 +32,7 @@ Apply the map-not-encyclopedia doctrine to CLAUDE.md and every `.claude/rules/*.
 - `docs/user/runbook.md` — § Recovery flows gains the "AGENTS.md drift → /gz-context-diet" path
 - `docs/governance/governance_runbook.md` — § Instruction files names the map-not-encyclopedia doctrine as the resting state
 - `docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/**` — parent ADR package scope
+- `tests/**` — the covering tests for this brief's BEHAVIOR REQs. **Added 2026-08-15**: the brief always produced `tests/governance/test_agents_md_map_doctrine_application.py`, but never listed the path it wrote to. `gz validate --req-kind-discipline` only surfaces this once REQ kinds are explicit, so the incoherence sat latent for as long as the kinds were implicit — an untagged REQ defaults to BEHAVIOR and BEHAVIOR requires `tests/**`, so the brief was self-contradictory from the day it was written.
 
 **Implementation note (canonical-vs-mirror):** ADR § Decision item 4 names `.claude/rules/*.md` as the audit target. Those files are generated vendor mirrors — the `gz obpi validate` engine and `src/gzkit/hooks/obpi.py` reject `.claude/rules/` as an edit surface and route to the canonical `.gzkit/rules/*.md`. This OBPI audits and lifts on the canonical `.gzkit/rules/*.md` files; the `.claude/rules/*.md` mirrors are re-propagated by `uv run gz agent sync control-surfaces` and are NEVER hand-edited. The ADR's `.claude/rules/*.md` phrasing is read as "the project rule files" — the doctrine binds them through their canonical home.
 
@@ -146,12 +147,12 @@ grep -A2 "gz-context-diet" docs/user/runbook.md
 
 ## Acceptance Criteria
 
-- [ ] REQ-0.0.54-04-01: Given parent ADR § Decision item 4, when CLAUDE.md is audited against the five prohibited shapes, then any prohibited shape is lifted to a `docs/governance/` expansion doc, or — if the audit is clean — the audit receipt is recorded in the Implementation Summary.
-- [ ] REQ-0.0.54-04-02: Given each canonical `.gzkit/rules/*.md` file, when audited, then prohibited shapes are lifted to per-rule expansion docs, the canonical rule file retains binding bullets plus a `See [...]` link, and `.claude/rules/*.md` mirrors are re-propagated by `gz agent sync control-surfaces` (never hand-edited).
-- [ ] REQ-0.0.54-04-03: Given `data/instructions_files_budget.json`, when this OBPI completes, then it holds its final values, with any AGENTS.md budget amendment carrying a recorded rationale tied to an OBPI-02 overrun.
-- [ ] REQ-0.0.54-04-04: Given `.claude/rules/gate5-runbook-code-covenant.md`, when the patch set is reviewed, then `docs/user/runbook.md` § Recovery flows and `docs/governance/governance_runbook.md` § Instruction files are updated in the same commit window.
-- [ ] REQ-0.0.54-04-05: Given `docs/governance/trust-doctrine.md`, when it is read, then it cross-links the `gz validate --agents-md-map-conformance` scope in the promoted-scope catalogue.
-- [ ] REQ-0.0.54-04-06: Given the doctrine application, when `gz validate --agents-md-map-conformance` runs across the full named scope, then CLAUDE.md and every `.claude/rules/*.md` file conform.
+- [ ] REQ-0.0.54-04-01 [BEHAVIOR]: Given parent ADR § Decision item 4, when CLAUDE.md is audited against the five prohibited shapes, then any prohibited shape is lifted to a `docs/governance/` expansion doc, or — if the audit is clean — the audit receipt is recorded in the Implementation Summary.
+- [ ] REQ-0.0.54-04-02 [BEHAVIOR]: Given each canonical `.gzkit/rules/*.md` file, when audited, then prohibited shapes are lifted to per-rule expansion docs, the canonical rule file retains binding bullets plus a `See [...]` link, and `.claude/rules/*.md` mirrors are re-propagated by `gz agent sync control-surfaces` (never hand-edited).
+- [ ] REQ-0.0.54-04-03 [BEHAVIOR]: Given `data/instructions_files_budget.json`, when this OBPI completes, then it holds its final values, with any AGENTS.md budget amendment carrying a recorded rationale tied to an OBPI-02 overrun.
+- [ ] REQ-0.0.54-04-04 [SUPPORT]: Given `.claude/rules/gate5-runbook-code-covenant.md`, when the patch set is reviewed, then `docs/user/runbook.md` § Recovery flows and `docs/governance/governance_runbook.md` § Instruction files are updated in the same commit window. Proof: `artifact_edited` citing each path, admitted by `gz validate --documents`. Re-kinded from BEHAVIOR 2026-08-15 (operator ruling) — the claim is that two ARTIFACTS carry sections, which a `@covers` test could only prove by grepping their prose.
+- [ ] REQ-0.0.54-04-05 [SUPPORT]: Given `docs/governance/trust-doctrine.md`, when it is read, then it cross-links the `gz validate --agents-md-map-conformance` scope in the promoted-scope catalogue. Proof: `artifact_edited` citing `docs/governance/trust-doctrine.md`, admitted by `gz validate --documents`. Re-kinded from BEHAVIOR 2026-08-15 (operator ruling) — same shape: an artifact-content claim, not a behaviour.
+- [ ] REQ-0.0.54-04-06 [BEHAVIOR]: Given the doctrine application, when `gz validate --agents-md-map-conformance` runs across the full named scope, then CLAUDE.md and every `.claude/rules/*.md` file conform.
 
 ## Completion Checklist
 
