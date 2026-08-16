@@ -1,0 +1,160 @@
+**FRAME CHALLENGE**
+
+The question should have been:
+
+“Where does the trust failure first enter the decision—objective retention, scope selection, evidence collection, inference, or presentation—and what is the smallest mechanism that detects it before the operator pays to review a conclusion?”
+
+The proposal assumes the important failure happens at the conclusion. The stronger diagnosis is that it often happens earlier, when the primary agent decides what to inspect, what not to inspect, and which prior framing to preserve. A critic receiving “raw surfaces” selected by the primary is independent in inference but not in scope. It can rigorously validate the wrong slice of reality.
+
+Against the Memento framing:
+
+- Stateless inference requires a persistent decision envelope: objective, constraints, open questions, scope, exclusions, evidence plan, and state transitions. An end-of-turn critic does not consolidate any of these.
+- Attention dilution is partially helped by a fresh context, but only if the critic independently retrieves evidence. A fresh model reading a primary-curated bundle inherits the primary’s omissions.
+- Goal drift is best checked at investigation transitions: before tool selection, after evidence collection, and before conclusion. A critic invoked only after the conclusion is another retrospective audit.
+
+The operator needs both scope challenge and conclusion challenge, but scope challenge comes first. The proposed system reverses that order.
+
+gzkit’s problem is not simply “too few gates” or “too many gates.” It has too many gates whose witnesses do not reliably discriminate the governed subject. Adding another receipt-presence gate without strengthening subject binding is precisely the epicycle the operator is describing.
+
+**PREMISE AUDIT**
+
+- TRUE — There is a PreToolUse precedent for blocking a lifecycle transition pending an audit. `.claude/settings.json:39-47` wires `ExitPlanMode` to `.claude/hooks/plan-audit-gate.py`.
+
+- FALSE — That precedent demonstrates gating on a strong conclusion. It gates on the existence of a fresh audit receipt, not a passing verdict. `.claude/hooks/plan-audit-gate.py:173-176` accepts both `PASS` and `FAIL`; `:284-304` explicitly says a `FAIL` verdict is valid and permits `ExitPlanMode`. It proves “an audit occurred,” not “the plan survived criticism.”
+
+- TRUE — The existing plan gate has already encountered an un-compliable design. `.claude/hooks/plan-audit-gate.py:25-30` records that an earlier version required a receipt while plan mode prohibited creating one. The hook was changed to run the audit itself.
+
+- TRUE — AskUserQuestion is broader than recommendation delivery. `docs/drafts/claude-code-inventory.md:53` describes it as supporting plan-mode requirements and interviews. Repository history also contains its use for attestation and brief-amendment decisions. Trigger A would therefore interpose the critic before required clarification, not merely before recommendations.
+
+- TRUE — This conflicts with existing operator-facing rules. `AGENTS.md:121-124` requires asking the human below 90% confidence, surfacing assumptions, and stopping on inconsistencies. A fail-closed critic dependency can prevent the very question those rules require. A plain-text question would also bypass an AskUserQuestion-only gate.
+
+- FALSE — The existing Stop hook is a usable fail-closed foundation for mandatory criticism. `.claude/hooks/stop-turn-feedback.py:23-27` declares a fail-open contract, while `:265-266` allows the turn immediately when `stop_hook_active` is set. Its test at `tests/hooks/test_stop_turn_feedback.py:97-109` pins the one-block-per-turn behavior. It can request one correction; it cannot guarantee that a critic ran before the turn ends.
+
+- TRUE — The Stop hook intentionally checks form rather than truth. `.claude/hooks/stop-turn-feedback.py:11-14` says exactly that. Its current grounding detector consists of five claim regexes at `:57-67`, with nearby code, SHA, or ledger-shaped tokens accepted as evidence at `:68-73`. “Recommendation-shaped output” would require a new semantic classifier with an unmeasured false-positive and false-negative rate.
+
+- UNVERIFIED — Whether Claude hooks execute identically in critic subagents. If they do, recommendation-shaped critic output risks recursively triggering the critic gate; if critics are exempted, that exemption becomes a bypass surface. No end-to-end subagent hook run was performed.
+
+- TRUE — gzkit already has overlapping adversarial-review machinery. `.gzkit/skills/gz-obpi-pipeline/SKILL.md:651-695` makes Step 4b mandatory, prefers Codex over Claude, requires a structured adversarial verdict, and asks the reviewer to refute the implementation claim. `src/gzkit/governance/trust_audits/adversarial_validation.py:167-216` checks post-cutover ledger verdicts and unresolved refutations.
+
+- TRUE — Existing Step 4b has a real fail-closed completion gate. `.gzkit/skills/gz-obpi-pipeline/SKILL.md:793-800` prohibits completion without the verdict and event; `src/gzkit/commands/obpi_complete.py:2025-2101` implements the completion checks. `.venv/bin/gz validate --adversarial-validation --json` returned `{"valid":true,"errors":[]}`.
+
+- FALSE — A green Step 4b audit proves that an independently executed cross-family critic supplied the verdict. `src/gzkit/commands/obpi_complete.py:1976-1985` decides “cross-vendor” through a caller-supplied adversary-name prefix. `tests/test_adversarial_validation_gate.py:107-130` tests strings such as Claude plus fallback prose; it does not prove an invocation. The ledger event model at `src/gzkit/events.py:761-798` has no prompt hash, scope manifest, primary-output hash, provider receipt, or fallback reason.
+
+- FALSE — The documented Step 4b dispatch contract is currently mechanically satisfiable as written. `.gzkit/skills/gz-obpi-pipeline/SKILL.md:689-693` requires `SubagentDispatchRecord` fields `adversary_tier`, `codex_availability_checked`, and `fallback_reason`. The actual `SubagentDispatchRecord` at `src/gzkit/pipeline_runtime.py:157-173` has none of those fields and forbids extras. This is a concrete documentation/runtime contradiction.
+
+- TRUE — Current durable adversarial records are incomplete as invocation evidence. A ledger query found 17 `adversarial_validation` events, 11 without `job_id`. The current audit nevertheless passes because `job_id` is optional in `src/gzkit/schemas/ledger.json:1597-1625`.
+
+- FALSE — “Different vendor shares none of the blind spots” is defensible. That language appears in `.gzkit/skills/gz-obpi-pipeline/SKILL.md:681-687` and `src/gzkit/commands/obpi_complete.py:2078-2094`. Different families reduce some error correlation; they still share the supplied frame, omitted evidence, repository doctrine, flawed tests, common training priors, and tool-output errors.
+
+- TRUE — The repository itself documents repeated failure while constructing a fail-closed allowlist. `src/gzkit/handoff_resume_gate.py:109-162` lists four successive undercoverage/overcoverage failures and concludes: “A gate that forbids verification … cannot be complied with, and an un-compliable gate gets worked around.” `:479-505` says three of four initial verification commands were rejected by the first compound-command detector. This is directly relevant precedent against an underspecified universal semantic gate.
+
+- TRUE — The governing campaign contains an explicit reduction movement. `docs/governance/build-to-1.0-campaign-2026-07-18.md:37-46` diagnoses unbounded self-inspection; `:98-115` requires accretion reduction; `:150-155` names Movement C — Reduce, including collapsing validation flags and reducing mirrors and oversized surfaces.
+
+- TRUE — The existing control surface is already large. Current inventory produced 18 Python hook files, 68 skill directories, and 99 unique long options in `gz validate --help`; 88 were audit/scope flags after excluding generic help/output selectors. The campaign’s `:56` figure of 92 validation flags was a historical measurement dated 2026-07-18.
+
+- TRUE — Receipt existence has already diverged from subject validity. `.gzkit/chores/memory-hygiene/CHORE.md:8-49` says the chore concerns Claude’s auto-memory shadow layer and scanning `MEMORY.md`. Its current `.gzkit/chores/memory-hygiene/acceptance.json:1-13` instead accepts the generic instructions-files-budget validator plus unit tests. That witness can pass without checking the named memory surface. Local commits for GHI #743 describe analogous stale and green-by-construction audit failures.
+
+- TRUE — New ledger event types have coupled maintenance obligations. `src/gzkit/governance/trust_audits/ledger_event_check.py:287-320` checks that emitted events have schema and graph disposition. `.venv/bin/gz validate --event-handlers --event-schemas --json` currently passed. Adding `second_opinion_requested` and `second_opinion_returned` is therefore not merely two declarations; it expands schemas, models, handlers, ontology disposition, tests, and validation surface.
+
+- TRUE — gzkit already prescribes a vendor-neutral port and vendor-specific adapter architecture. `.claude/rules/hexagonal-architecture.md:9-16` places external dependencies behind ports; `:25-35` says the core must not name external technology; `:39-60` prescribes protocols and injected adapters. `src/gzkit/handoff_resume_gate.py:18-22` and `.claude/hooks/handoff-resume-gate.py:10-14` already implement this shared-decision/thin-adapter shape.
+
+- TRUE — Vendor parity is incomplete today. ADR-0.44.0 says the Codex surface is minimal and hook parity incomplete at `docs/design/adr/pre-release/ADR-0.44.0-vendor-alignment-codex/ADR-0.44.0-vendor-alignment-codex.md:20-32` and `:47-64`. `.codex/hooks.json:1-16` contains only SessionStart and UserPromptSubmit hooks, not PreToolUse or Stop equivalents. `data/vendor-manifest.json:2-23` routes most governed artifact kinds only to Claude.
+
+- TRUE — ADR-0.44.0 already forbids placing a fail-closed invariant solely in a vendor hook. Its boundary invariants at `:66-79` require shared gz runtime or validator authority, allow vendor-specific adapter semantics, and reject blind textual parity.
+
+- UNVERIFIED — The live contents, current state, author, and comments of GitHub issues #670 and #743. Both `gh issue view` commands failed while connecting to `api.github.com`. Only local triage documents, commits, and current repository artifacts were available.
+
+- UNVERIFIED — The exact latency, token cost, and operator burden of the proposed general critic. The existing Step 4b skill says Codex reviews take roughly seven to eight minutes at `.gzkit/skills/gz-obpi-pipeline/SKILL.md:681-689`, but that does not establish the cost of the proposed critic.
+
+**VERDICT**
+
+PERFORATED.
+
+The need for fresh, cross-family criticism is real. The proposed always-on implementation is not strong.
+
+It places the control after scope selection, relies on vendor lifecycle hooks that cannot uniformly enforce it, duplicates existing adversarial machinery, and risks producing another presence-based receipt. The repository already has a green adversarial validator that cannot prove a critic invocation and a Step 4b contract demanding fields its runtime model rejects. Adding two more events does not correct that class of failure.
+
+The proposal also omits the policy that matters after the verdict. If the critic returns PERFORATED, must the primary produce a new scope map, collect new evidence, or merely show the operator the criticism? Without a mandatory state transition, verbatim presentation transfers adjudication back to an already exhausted operator.
+
+Critic and primary can agree for the wrong reason whenever they share:
+
+- The primary-selected evidence boundary.
+- An omitted file or alternative.
+- The same repository doctrine and terminology.
+- A test or validator that observes the wrong subject.
+- The premise that another gate is the appropriate solution.
+
+Always-on review imposes at least one additional model execution and one additional document for the operator to read on every detected recommendation. That reduces operator typing but increases attention and adjudication load. Without measured precision, suppression, risk tiering, and a concise escalation protocol, it is more likely to worsen exhaustion and alert fatigue.
+
+The appropriate conclusion is narrower: retain cross-family review for consequential decisions, move the first independent challenge to scope-setting, and fix evidence provenance in the existing adversary mechanism before creating another universal gate.
+
+**VENDOR LOCK ASSESSMENT**
+
+A cross-family critic requirement creates supplier dependence. It does not inherently require vendor lock-in.
+
+If the requirement is implemented as “Claude AskUserQuestion/Stop hooks must call Codex,” then it is de facto Claude–Codex lock-in. It would also violate gzkit’s existing hexagonal rule and ADR-0.44.0’s prohibition on vendor-hook-only invariants.
+
+The vendor-neutral contract can instead be:
+
+- A decision-review request containing the operator’s exact question, objective, scope manifest, evidence references, primary draft hash, and risk classification.
+- A critic-provider port accepting that request and returning a typed verdict, premise findings, scope omissions, alternatives, provider identity, model family, and invocation receipt.
+- Claude, Codex, Gemini, Copilot, or local-model adapters implementing whatever lifecycle interception their harness supports.
+- A capability matrix distinguishing automatic interception, explicit invocation, asynchronous review, and unavailable/degraded operation.
+
+The core must not equate “cross-family” with the literal string `codex`. It should require demonstrably distinct model-family provenance when that tier is mandated.
+
+“Decoupling versus determinism” is mostly a false dilemma. Determinism comes from a stable contract, explicit state transitions, hashes, provenance, replayable evidence, and deterministic validation. The critic’s judgment remains probabilistic regardless of vendor. Ports and adapters increase determinism by preventing vendor transport details from becoming the invariant.
+
+The founding multi-agent premise is not existentially disproven. It is, however, aspirational and incomplete today. The repository currently has substantial Claude-specific enforcement, explicitly incomplete Codex alignment, and still thinner Copilot/Gemini surfaces. A Claude–Codex-specific implementation would cement that contradiction. A shared review contract with capability-graded adapters would expose and improve it.
+
+The premise becomes genuinely untenable only if gzkit continues claiming identical fail-closed semantics on harnesses that lack the necessary interception capabilities. Honest semantic capability levels are viable; fictional parity is not.
+
+**CROSS-FAMILY DELTA**
+
+The correlated-draw concern is real, but “same family” and “independent” are not binary states. A Claude critic has elevated correlation with a Claude primary; a non-Claude critic can still inherit the same framing and evidence omissions.
+
+I cannot honestly claim that any finding here is structurally unavailable to Claude. A sufficiently skeptical Claude critic with repository access could have found every item above. If the prior Claude review missed them, that is an empirical miss, not proof of a family-level incapacity.
+
+The material delta in this pass is:
+
+- The supposed plan-gate precedent accepts a FAIL verdict and therefore proves receipt gating, not conclusion gating.
+- The Stop hook’s binding fail-open behavior prevents the proposed universal enforcement.
+- The Step 4b skill requires dispatch fields that the runtime model rejects.
+- Current cross-vendor enforcement accepts asserted vendor-name strings rather than execution provenance.
+- GHI #743’s memory-hygiene witness still does not observe its named memory surface.
+- The active campaign explicitly demands reduction while this proposal adds another hook/event/validator family.
+- gzkit’s own architecture already supplies the answer to the vendor-lock dilemma.
+
+The cross-family benefit here is not magical independence. It is a lower probability of sharing the primary agent’s gate-shaped solution prior. The proposal appears anchored in a Claude/gzkit habit: when trust is weak, add a hook, event, and validator. The repository evidence says that habit itself now requires criticism.
+
+**ALTERNATIVES NOT OFFERED**
+
+- Scope-first review: before investigation, give the critic the operator’s exact question and repository access. Require it to return an independent scope map, likely omitted surfaces, and the question that should be answered. Do not give it the primary synthesis.
+
+- Persistent decision envelope: carry the target, constraints, assumptions, investigated surfaces, exclusions, unresolved questions, and evidence plan across tool transitions. This directly addresses the Memento mechanisms.
+
+- Risk-tiered criticism: require cross-family review for architecture, external contracts, irreversible operations, high-cost recommendations, explicit operator requests, and contradictions. Sample routine decisions instead of intercepting every question.
+
+- Generalize Step 4b: extract its adversary contract into a reusable vendor-neutral decision-review port. Do not create a parallel requested/returned event family until the existing provenance defects are corrected.
+
+- Strong subject binding: bind every verdict to a decision ID, exact operator-question hash, objective/scope-manifest hash, primary-output hash, critic prompt version, provider/model family, invocation receipt, and timestamps. Reject stale or replayed verdicts.
+
+- Deterministic checks first: campaign alignment, prior-decision lookup, contradiction detection, scope-to-evidence coverage, and validator-subject correspondence should run before spending a probabilistic critic call.
+
+- Explicit verdict transitions: CONFIRMED may proceed; PERFORATED must produce a revised scope or conclusion; INSUFFICIENT must identify missing evidence and cannot be represented as approval. Operator override should be explicit and durable.
+
+- Airlock integration: use DECLARE/PING/RECONCILE as the global coordinate system for decision scope and evidence reach, with critic review attached at selected transitions rather than as a second independent membrane.
+
+- Calibrated pilot: review a bounded sample and measure unique actionable findings, wrong agreements, false blocks, latency, operator reading time, and decisions changed. A universal fail-closed gate should follow evidence that the mechanism earns its surface area.
+
+**WHAT I COULD NOT CHECK**
+
+- GitHub issues #670 and #743 could not be fetched because `api.github.com` was unreachable. Their live issue metadata and discussion remain unverified.
+- I did not execute an actual Claude/Codex critic or broker job, so runtime hook inheritance, recursion behavior, availability, and end-to-end latency remain unverified.
+- I did not measure the proposed recommendation classifier’s precision or the operator’s actual reading burden.
+- I did not independently review external transformer research supporting the Memento analogy; I evaluated whether the proposed mechanism follows from the supplied architectural framing.
+- I did not run `gz permitted-entry` or hook executions because they can write telemetry or Layer-2 events, contrary to the read-only instruction.
+- The working tree already contained tracked modifications to `.gzkit/insights/agent-insights.jsonl` and `.gzkit/ledger.jsonl`. I made no repository changes.
+
+Codex session ID: 019fd994-df2e-76e0-8da4-8d5072057e81
+Resume in Codex: codex resume 019fd994-df2e-76e0-8da4-8d5072057e81

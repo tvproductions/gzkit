@@ -5,14 +5,19 @@ item: 4
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md
+  - .gzkit/skills/second-opinion/
+  - src/gzkit/second_opinion_door.py
+  - tests/governance/test_second_opinion_agent_door.py
   - docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/**
 reqs:
   - REQ-0.36.0-04-01
   - REQ-0.36.0-04-02
   - REQ-0.36.0-04-03
+  - REQ-0.36.0-04-04
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md
+  - uv run gz validate --documents
+  - uv run -m unittest tests.governance.test_second_opinion_agent_door -v
+  - uv run gz validate --req-kind-discipline
 ---
 
 # OBPI-0.36.0-04-agent-door: Agent Door
@@ -26,9 +31,23 @@ verification:
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
+Make the `second-opinion` skill **agent-invocable**, with the decision to invoke
+taken by OBPI-06's tier rules and **never** by the agent's own assessment of how
+confident it feels.
 
-**agent-door** — The agent-invoked door, fired on the A4 tier rules and never on the agent's own unvalidated confidence.
+That negative clause is the whole substance. The agent asking for review is the
+same agent that produced the conclusion under review, so its confidence is the
+one input structurally disqualified from setting the threshold — a critic fired
+only when the primary already doubts itself never fires on the confident-wrong
+case, which is the case the ADR exists for. § Target Scope states it as the unit
+definition: fired *"on the A4 tier rules rather than on the agent's own
+unvalidated confidence."* A4 is recorded at § Promotion plan item 3 as *"the one
+thing both passes independently reached"* — the sole point of agreement between
+two critics that otherwise both returned PERFORATED.
+
+This door is an entry point only. The skill and verdict schema are OBPI-01's, the
+transport is OBPI-02's, and `second_opinion_door.py` is shared with OBPI-03 — this
+brief adds the agent-side entry to that module and does not re-implement any of it.
 
 ## Lane
 
@@ -40,29 +59,31 @@ verification:
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
-
-- `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md` — parent ADR for intent and scope
-- `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/**` — parent ADR package scope
+- `.gzkit/skills/second-opinion/` — the canonical skill gains its agent-invocation contract. Verified convention: canonical skills live at `.gzkit/skills/<slug>/SKILL.md` and are mirrored by `gz agent sync control-surfaces`.
+- `src/gzkit/second_opinion_door.py` — the shared door module introduced by OBPI-03; this brief adds the agent-side entry. Verified convention: flat modules under `src/gzkit/` (siblings `second_opinion.py` OBPI-01, `second_opinion_transport.py` OBPI-02).
+- `tests/governance/test_second_opinion_agent_door.py` — covering tests. Verified convention: `tests/governance/test_*.py`.
+- `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/**` — this brief and its parent ADR.
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
+- `src/gzkit/second_opinion_tiering.py` — OBPI-06 owns the tier rules. This door **calls** the tier decision; authoring it here would let the door set its own firing threshold, which is the exact inversion this OBPI exists to prevent.
+- `.claude/skills/**`, `.agents/skills/**`, `.github/skills/**`, `src/gzkit/skills/**` — generated mirrors (`.gzkit/rules/skill-surface-sync.md` #4/#5). Edit canonical, then sync.
+- `.claude/hooks/**`, `.claude/settings.json` — OBPI-09's dark `PreToolUse` adapter. A hook wired here would light the dark door outside its own brief (Boundary Invariant #3).
+- `src/gzkit/cli/**` — Boundary Invariant #2, no new `gz` verb.
+- `src/gzkit/commands/obpi_complete_adversarial.py`, the `gz obpi` parser surface, any Step-4b gate — Boundary Invariant #1, verbatim operator canon: *"we will NOT alter the OBPI process, at all!"*
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
-
-1. REQUIREMENT: This OBPI MUST deliver: **agent-door** — The agent-invoked door, fired on the A4 tier rules and never on the agent's own unvalidated confidence.
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
+1. ALWAYS: The firing decision MUST come from OBPI-06's tier resolution. The agent supplies the decision under review and its category; it never supplies the verdict on whether review is warranted.
+2. NEVER: Read, accept, or infer the primary agent's self-reported confidence as an input to whether the door fires. A confidence field arriving from the caller is dropped, not weighted. This is the requirement the whole OBPI turns on.
+3. ALWAYS: Render the critic's verdict **unedited**, including the UNASKED (scope-challenge) line — identical to OBPI-03's rendering contract, because a verdict softened on the agent path is softened in exactly the moments the operator is not watching.
+4. NEVER: Let the primary agent's summary of the verdict substitute for the verdict. The ADR's persona names this as the failure *"an agent building it is most likely to commit."*
+5. ALWAYS: Reuse OBPI-02's transport and OBPI-01's schema, and extend OBPI-03's `second_opinion_door.py` rather than forking a parallel module.
+6. NEVER: Set `disable-model-invocation: true` on the skill. That key is how a skill is made operator-only (verified live in `.gzkit/skills/git-sync/SKILL.md`); setting it would make this door structurally unreachable.
+7. NEVER: Add a `gz` verb, edit a generated mirror, or wire a hook.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -76,29 +97,40 @@ verification:
 
 - [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
 - [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md`
+- [ ] Parent ADR § Target Scope — R2's ruling that the unit is one skill with three doors, and this door's one-line definition.
+- [ ] Parent ADR § Boundary Invariants #2 — no new `gz` verb; this brief is one of the three units it fences.
+- [ ] Parent ADR § Promotion plan item 3 — A4 is *"the one thing both passes independently reached"*; that agreement is the warrant for tier-driven firing.
+- [ ] Parent ADR § Appendices `A2` / `A3` — the two PERFORATED verdicts verbatim. These are primary sources and, per that section, **govern where the ADR's prose disagrees with them**; read them before treating any prose summary of the critique as settled.
 
 > **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
 
 **Governance (read once, cache):**
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+- [ ] `AGENTS.md` § Behavior Rules — Always #7 — *"<90% sure of direction? Ask the human"*; this door is the mechanical counterpart, and #7's threshold is agent-self-assessed where this door's must not be.
+- [ ] `.gzkit/rules/agent-failure-modes.md` — pattern **Metagaming / gaming the gate** and pattern **Fabrication**; a door fired by the primary's own confidence is the shape both name.
+- [ ] `.gzkit/rules/skill-surface-sync.md` — canonical-first editing, the `metadata.skill-version` bump, and the mandatory sync step.
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] OBPI-0.36.0-01 — the skill and the JSON-Schema-pinned verdict this door dispatches and renders.
+- [ ] OBPI-0.36.0-02 — the composed transport this door calls; do not re-implement it.
+- [ ] OBPI-0.36.0-03 — the operator door, which owns `second_opinion_door.py`; this brief extends that module.
+- [ ] OBPI-0.36.0-06 — the tier rules that decide whether this door fires. This brief consumes that decision and must not author it.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/**`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
+- [ ] `.gzkit/skills/` exists with at least one `<slug>/SKILL.md` — verified: `.gzkit/skills/gz-arb/SKILL.md`.
+- [ ] `uv run gz skill list` prints the active catalog.
+- [ ] Required path exists or is intentionally created in this OBPI: `.gzkit/skills/second-opinion/` (created by OBPI-01)
+- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/second_opinion_door.py` (created by OBPI-03)
+- [ ] Required path exists or is intentionally created in this OBPI: `tests/governance/test_second_opinion_agent_door.py`
+- [ ] STOP if OBPI-06 has not landed: this door has no tier source to call, and wiring a placeholder threshold would ship the defect requirement #2 forbids.
 
 **Existing Code (understand current state):**
 
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] `.gzkit/skills/git-sync/SKILL.md:7` — read the `disable-model-invocation: true` frontmatter key. Verified present on exactly one skill; this door must NOT set it.
+- [ ] `.gzkit/skills/gz-arb/SKILL.md` — read for the standard frontmatter block and Output Contract shape.
+- [ ] `src/gzkit/second_opinion_door.py` — read OBPI-03's operator entry before adding the agent entry; the two share verdict rendering and must not diverge.
 
 ## Quality Gates
 
@@ -156,7 +188,10 @@ uv run gz typecheck
 uv run gz test
 
 # Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md
+uv run -m unittest tests.governance.test_second_opinion_agent_door -v
+uv run gz validate --req-kind-discipline
+uv run gz skill list
+uv run gz agent sync control-surfaces
 ```
 
 ## Demo
@@ -169,20 +204,21 @@ test -f docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-c
      and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+# The skill is agent-invocable — it appears in the catalog without the
+# operator-only key that git-sync carries.
+uv run gz skill list
+
+# A consequential-category decision routed through the agent door: the tier
+# decides, and the critic reaches the raw surface itself.
+uv run gz arb step --name adversary -- codex exec --sandbox read-only "Refute: the agent door may fire on the primary agent's self-reported confidence."
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.36.0-04-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.36.0-04-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.36.0-04-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
+- [ ] REQ-0.36.0-04-01 [BEHAVIOR]: Given a decision whose category OBPI-06 tiers as mandatory, when the agent door is invoked, then the critic is dispatched — and given a decision the tier resolves as not-selected, then it is not, regardless of any confidence value supplied by the caller.
+- [ ] REQ-0.36.0-04-02 [BEHAVIOR]: Given a caller-supplied confidence field on the door's input, when the firing decision is computed, then that field is dropped and never reaches the tier resolution — a door that weights it fails.
+- [ ] REQ-0.36.0-04-03 [BEHAVIOR]: Given a verdict carrying PREMISE-ATTACK, VERDICT and UNASKED, when the agent door renders it, then all three fields appear verbatim — identical to OBPI-03's contract, so the agent path cannot soften what the operator path preserves.
+- [ ] REQ-0.36.0-04-04 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` declares the agent-invocation contract and does NOT carry `disable-model-invocation`, keeping the same skill reachable from both doors — `gz validate --documents` + `artifact_edited` event citing that path.
 
 ## Completion Checklist
 

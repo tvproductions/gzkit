@@ -199,7 +199,9 @@ Fire a cross-family critic at the convergence moment via a `PreToolUse` hook on
 > **Status of this decision.** Every row below is an operator ruling or a
 > measurement and stands as recorded. But the *mechanism* they compose was
 > submitted to two independent cross-family critics and **both returned
-> PERFORATED** — see § Adversarial review. The rulings were made before those
+> PERFORATED** — the verdicts themselves are carried verbatim at § Appendices
+> (`A2`, `A3`), and § Promotion plan item 3 names what they left unruled. The
+> rulings were made before those
 > verdicts were fully absorbed, and the handoff chain then lost most of the
 > critique. Treat this section as **the design as ruled**, not as the design as
 > validated. The promoting session must reconcile the two.
