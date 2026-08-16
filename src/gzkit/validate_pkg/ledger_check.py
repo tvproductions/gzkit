@@ -1,7 +1,7 @@
 """Ledger validation for append-only JSONL governance ledger."""
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -10,6 +10,26 @@ from pydantic import ValidationError as PydanticValidationError
 from gzkit.core.validation_rules import ValidationError
 from gzkit.event_evidence import ObpiReceiptEvidence, pydantic_loc_to_field_path
 from gzkit.schemas import load_schema
+
+
+def _parse_ledger_ts(ts_value: Any) -> datetime | None:
+    """Parse a ledger `ts` into an aware datetime, or None when unusable.
+
+    Returns None rather than raising for malformed input: shape errors are
+    already reported per-row by `_validate_ledger_metadata`, and the ordering
+    check has nothing to say about a timestamp that does not parse.
+
+    A naive timestamp is read as UTC. Every live row is tz-aware, but comparing
+    a naive datetime against an aware one raises TypeError, which would turn a
+    malformed row into a crash instead of a finding.
+    """
+    if not isinstance(ts_value, str) or not ts_value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(ts_value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed
 
 
 def _append_ledger_error(
@@ -348,6 +368,13 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
     expected_schema = schema.get("ledger_schema", "gzkit.ledger.v1")
     event_rules = schema.get("events", {})
 
+    # Cross-row state. Every check above this point reads one row in isolation,
+    # so an ordering defect was structurally invisible to the validator: the
+    # rows either side of an inversion are each individually well-formed
+    # (GHI #812).
+    previous_ts: datetime | None = None
+    previous_line = 0
+
     with ledger_path.open(encoding="utf-8") as f:
         for line_no, raw in enumerate(f, start=1):
             line = raw.strip()
@@ -383,5 +410,25 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
                 ledger_path=ledger_path,
                 line_no=line_no,
             )
+
+            current_ts = _parse_ledger_ts(entry.get("ts"))
+            if current_ts is None:
+                continue
+            if previous_ts is not None and current_ts < previous_ts:
+                _append_ledger_error(
+                    errors,
+                    ledger_path,
+                    line_no,
+                    f"Field 'ts' runs backwards: {current_ts.isoformat()} precedes "
+                    f"line {previous_line}'s {previous_ts.isoformat()}. The ledger is "
+                    "append-only, so rows must be ordered by ts. A conflicted "
+                    "concurrent-session merge is the usual cause; resolve it as a "
+                    "ts-ordered union rather than appending one side to the other.",
+                    field="ts",
+                )
+            # Advance even across an inversion, so each boundary is reported once
+            # rather than every subsequent row failing against a high-water mark.
+            previous_ts = current_ts
+            previous_line = line_no
 
     return errors

@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.core.validation_rules import ValidationError
 from gzkit.validate import (
     extract_headers,
     parse_frontmatter,
@@ -668,6 +669,94 @@ class TestValidateLedger(unittest.TestCase):
             f.flush()
             errors = validate_ledger(Path(f.name))
             self.assertEqual(errors, [])
+
+    def test_descending_timestamps_rejected(self) -> None:
+        """A row whose ts precedes its predecessor's is rejected (GHI #812).
+
+        The ledger is an append-only log: rows are written in the order events
+        occur, so time never runs backwards across adjacent rows. Every row
+        validated in isolation here is individually well-formed — the defect is
+        only visible between rows, which is the phase the validator lacked.
+        """
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            for ts in ("2026-02-14T00:00:02+00:00", "2026-02-14T00:00:01+00:00"):
+                f.write(
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "project_init",
+                            "id": "gzkit",
+                            "ts": ts,
+                            "mode": "lite",
+                        }
+                    )
+                    + "\n"
+                )
+            f.flush()
+            errors = validate_ledger(Path(f.name))
+
+        self.assertTrue(
+            any(error.field == "ts" for error in errors),
+            f"descending ts must be rejected, got: {errors}",
+        )
+
+    def _ledger_with_timestamps(self, timestamps: tuple[str, ...]) -> list[ValidationError]:
+        """Validate a ledger whose rows differ only in `ts`."""
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            for ts in timestamps:
+                f.write(
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "project_init",
+                            "id": "gzkit",
+                            "ts": ts,
+                            "mode": "lite",
+                        }
+                    )
+                    + "\n"
+                )
+            f.flush()
+            return validate_ledger(Path(f.name))
+
+    def test_equal_timestamps_accepted(self) -> None:
+        """Two events at the same instant are ordered, not inverted (GHI #812).
+
+        The invariant is non-decreasing, not strictly increasing: nothing stops
+        two events sharing a timestamp, and rejecting them would fail closed on
+        a correct ledger.
+        """
+        errors = self._ledger_with_timestamps(
+            ("2026-02-14T00:00:01+00:00", "2026-02-14T00:00:01+00:00")
+        )
+        self.assertEqual(errors, [], f"equal timestamps must be accepted, got: {errors}")
+
+    def test_ordering_compares_instants_not_strings(self) -> None:
+        """Ordering is by real instant, so UTC offsets are honoured (GHI #812).
+
+        These two rows ascend in real time (09:00Z then 10:00Z) but *descend*
+        lexically, because '2026-02-14T10:00:00+01:00' sorts before
+        '2026-02-14T09:30:00+00:00'. A string comparison — the obvious
+        implementation, and the one the reporting probe used — calls this an
+        inversion and fails a correct ledger.
+        """
+        errors = self._ledger_with_timestamps(
+            ("2026-02-14T10:00:00+01:00", "2026-02-14T09:30:00+00:00")
+        )
+        self.assertEqual(errors, [], f"offsets must be normalized before comparison, got: {errors}")
+
+    def test_naive_timestamp_does_not_crash_ordering(self) -> None:
+        """A naive timestamp is read as UTC rather than raising (GHI #812).
+
+        Comparing a naive datetime against an aware one raises TypeError. A
+        malformed row must surface as a finding, never as a crash that takes
+        the whole validation run down with it.
+        """
+        errors = self._ledger_with_timestamps(("2026-02-14T00:00:01+00:00", "2026-02-14T00:00:00"))
+        self.assertTrue(
+            any(error.field == "ts" for error in errors),
+            f"naive descending ts must be reported, not raised, got: {errors}",
+        )
 
     def test_chore_decommission_compound_dispositions_accepted(self) -> None:
         """Compound/extended dispositions recorded by the OBPI-0.0.59-05 sweep validate clean.
