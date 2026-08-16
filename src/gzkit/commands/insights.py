@@ -14,11 +14,15 @@ import argparse
 import sys
 from typing import get_args
 
-from pydantic import ValidationError
-
-from gzkit.commands.common import get_project_root
-from gzkit.insights.append import DEFAULT_INSIGHTS_PATH, append_insight_record
 from gzkit.insights.model import InsightType
+
+# ``get_project_root``, the append writer, and pydantic's ``ValidationError`` are
+# needed only by ``remember`` and are imported there instead. ``main.py`` imports
+# this module eagerly to build the parser tree, so a module-scope
+# ``gzkit.commands.common`` import puts it — and transitively ``gzkit.sync`` and
+# ``yaml`` — on the ``gz --help`` path, which is the cost GHI #180 exists to keep
+# off it. ``InsightType`` stays at module scope: ``_register_remember`` needs it
+# at registration time for ``choices``. Guard: tests/cli/test_help_path_imports.py.
 
 
 def _build_epilog(examples: list[str]) -> str:
@@ -121,6 +125,14 @@ def remember(
     construction — caught here and turned into exit 1 with no line written
     (out-of-enum ``--type`` is already rejected by argparse ``choices``).
     """
+    from pydantic import ValidationError  # noqa: PLC0415
+
+    from gzkit.commands.common import get_project_root  # noqa: PLC0415
+    from gzkit.insights.append import (  # noqa: PLC0415
+        DEFAULT_INSIGHTS_PATH,
+        append_insight_record,
+    )
+
     path = get_project_root() / DEFAULT_INSIGHTS_PATH
     try:
         line = append_insight_record(

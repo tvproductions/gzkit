@@ -11,8 +11,6 @@ regexes). A third retention verb derives from here rather than re-spelling it.
 
 from __future__ import annotations
 
-from gzkit.commands.common import console
-
 
 def parse_older_than_days(raw: str) -> int:
     """Parse an ``--older-than`` duration like ``30d`` or ``30`` into a day count.
@@ -21,6 +19,12 @@ def parse_older_than_days(raw: str) -> int:
     be read must never fall through to a default, because the default would silently
     age a store the operator did not intend to age.
     """
+    # Deferred: this helper is reached from ``gzkit.cli.helpers`` while the parser
+    # tree is being built, so a module-scope ``gzkit.commands.common`` import puts
+    # ``gzkit.sync`` and ``yaml`` on the ``gz --help`` path — the cost GHI #180
+    # exists to keep off it. ``console`` is only needed on the error branches.
+    from gzkit.commands.common import console  # noqa: PLC0415
+
     token = raw.strip().lower().removesuffix("d")
     try:
         days = int(token)
