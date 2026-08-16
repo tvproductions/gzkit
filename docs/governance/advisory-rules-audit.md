@@ -52,6 +52,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | Rule file | Scored at rule-version |
 |---|---|
 | `chores.md` | `0.3.2` |
+| `cli.md` | `0.4.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `governance-core.md` | `0.9.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
@@ -366,6 +367,43 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 |---|------|-------|-------|
 | 65 | `CHANGELOG.md` and `RELEASE_NOTES.md` follow the Good Docs Project templates adapted to gzkit — changelog is the exhaustive developer-facing projection of closed GHIs (SemVer/ISO version headers, closed category set, one `GHI #N` citation per entry); release notes are the curated reader-facing narrative retaining the `### Gate Evidence` provenance section | **Mechanical** (changelog structure) / **Judgment** (release-notes curation) | Changelog structure enforced by `gz validate --changelog` (GHI #685, `src/gzkit/validate_pkg/changelog.py`) — hermetic, fail-closed on a non-SemVer/non-ISO version header, a disallowed category, or an entry missing its `GHI #N` citation; validated by `tests/test_validate_changelog.py`. The closed-GHI *coverage* half (every closed-since-tag GHI appears) is networked and runs release-time in `gz-patch-release`, not in `gz check` (hermeticity split). Release-notes tone and curation stay Judgment — attested at Gate 5; no mechanical release-notes validator exists (the curated narrative is not machine-checkable). Rule at `.gzkit/rules/changelog-release-notes.md`; canonical shapes at `.gzkit/templates/{changelog,release_notes}.md`. |
 
+### CLI Contract Doctrine (`.gzkit/rules/cli.md`)
+
+Scored for real 2026-08-16 (GHI #810), which retired this rule's
+`data/advisory_scorecard_grandfather.json` pin at `0.3.1`. The rule declared
+clig.dev as its baseline while the specification elaborating it
+(`docs/design/cli-standards-v3.md`, canonical per ADR-0.0.4 — Validated,
+foundation, heavy) was reachable from that ADR and from no rule or governance
+surface, so the per-turn contract never carried it and nothing scored the layer.
+Counts below come from walking the live `argparse` tree — 136 leaf commands, 28
+group nodes, max depth 3 — not from grep over docs. Per-rule measurement and the
+`--cli-shape` consolidation argument: `docs/design/cli-architecture-analysis.md`.
+
+**Zero Mechanical is the finding, not a drafting artifact.** Every CLI rule that
+*does* have an arm (exit codes, epilog coverage, manpage coverage, skill
+alignment) is scored under its own owning surface; what remains here is the set
+that was declared and never witnessed.
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| 76 | The count of depth-1 leaf commands may not increase | **Promotable** | Ratchet form only. "This bare verb belongs under noun X" is a domain reading and not decidable; the *count* is exactly computable from the parser tree (measured **35** of 136 leaves). Seed shrink-only in `data/waiver_ratchet_registry.json`, precedent ADR-0.0.73 Boundary Invariant #8. Justification under the § Recommended promotion order freeze: 35 live instances against a specification ADR-0.0.4 makes canonical, and the count grows silently with every new root verb. |
+| 77 | No subcommand may share its verb with a bare root command | **Promotable** | Strongest candidate in this set. Computable: a depth-2 leaf whose final token equals a registered depth-1 leaf name. Measured **13** (`gz adr status`/`gz status`, `gz cli audit`/`gz audit`, `gz obpi validate`/`gz validate`, …). The predicate separates the defect from the correct case without judgment — `list` recurs 7× under different nouns and collides with nothing, because no bare `list` verb is registered. Seed the 13 as waivers with rationale, shrink-only. |
+| 78 | A noun may not be registered in both singular and plural form | **Promotable** | Narrow by construction: both `x` and `x + "s"` registered at the same level. Measured exactly **1** (`gz flag` group vs `gz flags` leaf). The broader question — whether `chores`/`personas`/`insights` or `skill`/`task`/`adr` is the correct convention — is **Judgment** and deliberately out of scope: no surface declares which number governs, and picking by majority vote is grading by shape. |
+| 79 | New root commands may not hyphenate a noun-verb pair | **Promotable** | Ratchet form, depth-1 only. `"-" in name` is computable (measured **6**), but whether a hyphen encodes a noun-verb pair is a reading — `git-sync` and `test-shape` are arguable single concepts. A blanket rule is wrong at depth 2, where `gz adr audit-begin` is defensible. Note the tree already contains both solutions to this shape: `gz obpi lock` is a real depth-3 group with four verbs, while `gz adr audit-begin` / `gz adr audit-check` / `gz adr audit-end` is the same structure kebab-flattened one level up. |
+| 80 | Every leaf command declares --json or carries a waiver with rationale | **Promotable** | Highest-value arm here, and the closest precedent is exact: `gz validate --skill-alignment` (GHI #202) landed first specifically to establish the declare-or-waive shape with `_NO_SKILL_VERBS`. Measured **63 of 136** leaves lack it, and nine groups disagree with themselves — `gz adr emit-receipt` has no `--json` while `gz obpi audit` does, though both emit structured governance evidence. **Must ship paired with row 85**: the flag is not the behavior. |
+| 81 | A parser node is a leaf or a group, never both | **Promotable** | Cleanest predicate in the set — one line against the tree, a node carrying a `func` default *and* subparsers. Exactly **1** instance (`gz mx`), so the check lands fail-closed with zero seeded waivers if `mx` is corrected, or one explicit waiver naming it a deliberate default-subcommand. Either outcome records a decision that is unrecorded today. |
+| 82 | Building the gz parser tree may not import handler-only dependencies | **Promotable** | Partially built: `tests/cli/test_help_path_imports.py` (landed 2026-08-16 with the `fix(cli)` repair) asserts reachability by static AST over the module-level import graph, currently scoped to `gzkit.commands.common`. Promotion is widening that tuple to `yaml`/`pydantic`, which is blocked on relocating `DEFAULT_LOCK_TTL_MINUTES` out of `gzkit.lock_manager` — it is consumed as an argparse `default=` at registration time, so deferring the import cannot help. |
+| 83 | Mandatory targets are positional; flags are optional modifiers | **Judgment** | **No repository surface models "target."** Deciding that `--manifest` names a thing acted upon while `--json` names a modifier is a reading of each flag's meaning. The proxy — "leaf with > N boolean flags and zero positionals" — grades by shape (the `shape-graded-not-substance` signature ADR-0.0.73 refuses) and would flag `gz git-sync`'s 11 genuine mode selectors identically to `gz validate`'s 93 genuine targets. Also **not clig.dev's position**: its stated default is *"Prefer flags to args"*, with a narrow multiple-targets exception. This is a house rule gzkit has not written down. Reclassify on a named instance of a flag-shaped target causing an operator defect. |
+| 84 | A noun group wraps more than one verb | **Judgment** | Detection is trivial (**11** groups of one: `gz cli audit`, `gz flag explain`, `gz issue file`, `gz patch release`, …). The verdict is not: a group of one may be a deliberate namespace reservation for verbs not yet written, and **no surface models intent-to-extend**. A gate forces either premature flattening or a waiver per group — bookkeeping without signal. Honest form is an advisory line in an existing report, never a fail-close. |
+| 85 | User-facing output passes through the formatter, never console.print directly | **Promotable** | Ratchet form; it cannot land as a gate. The scan is mechanical (`console.print(` outside the formatter module, the shape `audit_utf8_prefix` and `audit_subprocess_errors` already use) but measures **1,230** live sites against **1** `OutputFormatter`, so a fail-close would block every commit. Seed at 1,230, shrink-only. Severity is understated by calling this a doc rule: ADR-0.0.4 declares the presentation surface "a port … that every command handler must honor", so these are bypasses of a Validated heavy-lane foundation ADR's port contract. **Precondition for row 80.** |
+
+**Consolidation (binding on whoever builds these).** Rows 76, 77, 78, 79, 80 and
+81 are six predicates over one walk of the parser tree. They land as **one**
+validator with one waiver registry — `gz validate --cli-shape` — not six flags.
+Precedent: `--cli-alignment` already bundles `audit_cli_alignment` +
+`audit_manpage_alignment` behind a single flag. Shipping six flags for one tree
+walk is the accretion this scorecard exists to catch.
+
 ---
 
 ## Summary
@@ -380,19 +418,44 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 66 | 61% |
-| **Promotable** | 0 | 0% |
-| **Judgment** | 43 | 39% |
+| **Mechanical** | 66 | 55% |
+| **Promotable** | 8 | 7% |
+| **Judgment** | 45 | 38% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
      the percentage column is not. The header read "% of 100" while the rows
      summed to 102, so the denominator was a rounder number than the data —
-     corrected to the actual scored-row total (103) when row 75 landed. -->
+     corrected to the actual scored-row total (103) when row 75 landed, and to
+     119 when rows 76-85 landed with the CLI doctrine scoring (GHI #810). -->
 
 
-**The third state is empty (2026-08-08).** Every scored clause now either carries
-a mechanical witness or says in its own rule text that it is advisory and names
+**The third state is NO LONGER empty (2026-08-16) — and that is this table
+working, not failing.** It stood empty from 2026-08-08 until the CLI Contract
+Doctrine was scored for real under GHI #810, which added **8 Promotable rows**
+(76-82, 85). The paragraph below states the meaning of exactly this event, and it
+holds: a clause scoring **Promotable** means a discipline was found declared with
+neither a witness nor an admission.
+
+What that measured, precisely: `.gzkit/rules/cli.md` sat in
+`data/advisory_scorecard_grandfather.json` pinned at `0.3.1` — pre-ledger debt,
+never scored — while the specification it summarizes
+(`docs/design/cli-standards-v3.md`, canonical per ADR-0.0.4) was reachable from
+that ADR and from no rule or governance surface. Neither arm observed the layer,
+so its decay produced no signal for as long as both conditions held. The eight
+rows are that decay becoming visible for the first time, not new drift.
+
+**The Movement C family-closure criterion is therefore not met on the rules arm,
+and should not be reported as met.** Restoring it means building the arms (rows
+76-82 and 85 consolidate to `gz validate --cli-shape` plus an output-chokepoint
+ratchet — see § CLI Contract Doctrine) or re-scoring individual rows to
+**Judgment** with the unmodelled term named in the rule's own text. Re-scoring
+without a text edit is laundering (operator ruling 2026-08-08) and is not
+available here.
+
+**Original statement of the criterion (2026-08-08), retained because it is the
+rule this event was measured against.** Every scored clause either carries a
+mechanical witness or says in its own rule text that it is advisory and names
 what would reclassify it — the Movement C family-closure criterion, on the rules
 arm. Re-scoring alone was not permitted: each row below that moved cites the rule
 version whose text changed with it. A row returning to **Promotable** means a
