@@ -26,14 +26,16 @@ closeout surface.
 
 from __future__ import annotations
 
+import contextlib
 import os
+import re
 from pathlib import Path
 
 import yaml
 
 from gzkit.knowledge.concept_frontmatter import ConceptFrontmatter
 
-__all__ = ["BUNDLE_OUTPUT", "TRACER_SLICE", "generate_bundle"]
+__all__ = ["BUNDLE_OUTPUT", "TRACER_SLICE", "generate_bundle", "resolve_active_campaign"]
 
 SourceEntry = tuple[str, Path]  # (slug, source_path)
 
@@ -124,6 +126,41 @@ def generate_bundle(sources: list[SourceEntry], output_dir: Path | str) -> None:
     (out / "index.md").write_text(_render_frontmatter(index) + index_body, encoding="utf-8")
 
 
+_GOVERNANCE_DIR = Path("docs/governance")
+_CAMPAIGN_GLOB = "*-campaign-*.md"
+_ACTIVE_STATUS_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
+
+
+def resolve_active_campaign(governance_dir: Path | None = None) -> Path:
+    """Return the campaign plan whose ``Status:`` line declares it ACTIVE.
+
+    *governance_dir* defaults to ``docs/governance``; it is a parameter so the
+    selection logic can be exercised without the repository's own campaign set
+    standing in as an implicit fixture (`.claude/rules/hexagonal-architecture.md`
+    rule 4 — take the external surface as a parameter, never name it inside).
+
+    Supersession flips that line, and Operating Rule 1 guarantees at most one
+    match, so the discriminator is the status — never the filename or its date.
+    This was hardcoded to a specific edition and stayed there through two
+    supersessions (06-30 -> 07-18 -> 08-16), shipping a plan that had not steered
+    for weeks as the bundle's "Active Campaign" concept. A hardcoded path cannot
+    report that it is wrong; resolving from the same signal the orientation hook
+    reads (``scripts/session_orientation.py``) means the bundle follows the
+    ruling that moved the plan.
+
+    Falls back to the newest edition by name when nothing declares ACTIVE — bundle
+    generation must not fail closed on a governance-state anomaly, and the
+    newest-by-name file is the least-wrong source while the anomaly is repaired.
+    """
+    root = _GOVERNANCE_DIR if governance_dir is None else governance_dir
+    editions = sorted(root.glob(_CAMPAIGN_GLOB))
+    for path in editions:
+        with contextlib.suppress(OSError):
+            if _ACTIVE_STATUS_RE.search(path.read_text(encoding="utf-8", errors="replace")):
+                return path
+    return editions[-1] if editions else root / "build-to-1.0-campaign.md"
+
+
 TRACER_SLICE: list[SourceEntry] = [
     ("state-doctrine", Path("docs/governance/state-doctrine.md")),
     ("trust-doctrine", Path("docs/governance/trust-doctrine.md")),
@@ -131,7 +168,7 @@ TRACER_SLICE: list[SourceEntry] = [
         "agent-contract-rationale",
         Path("docs/governance/agent-contract-rationale.md"),
     ),
-    ("active-campaign", Path("docs/governance/build-to-1.0-campaign-2026-06-30.md")),
+    ("active-campaign", resolve_active_campaign()),
 ]
 BUNDLE_OUTPUT = Path(".gzkit/governance/knowledge")
 # Module-execution entry point lives in ``__main__.py`` (run as

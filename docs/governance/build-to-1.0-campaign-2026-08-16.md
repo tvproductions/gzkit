@@ -1,23 +1,41 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# Build-to-1.0 Campaign — 2026-07-18 (Magna Carta)
+# Build-to-1.0 Campaign — 2026-08-16 (Magna Carta)
 
-> **SUPERSEDED 2026-08-16.** This file **no longer steers**. The active plan is
-> [`build-to-1.0-campaign-2026-08-16.md`](build-to-1.0-campaign-2026-08-16.md),
-> which is a **full carry-forward** of this edition — every box, movement,
-> amendment, and register entry is retained there inline and in place, so no
-> § Rulings Register disposition pass was owed and no ruling from this edition is
-> undefined. Read the successor; this file is retained for audit only.
->
-> The successor exists because this plan was re-evaluated against the live tree on
-> 2026-08-16 rather than re-read, and that pass found real drift — oversized
-> modules 33 → 51, the airlock's transit counters frozen at 23 in / 5 out through
-> two days of Movement B holding TOPMOST, and the scorecard's Promotable rows
-> returning 0 → 8 under GHI #810.
+Status: **ACTIVE — the one canonical plan** (operator-directed 2026-08-16).
+Supersedes [`build-to-1.0-campaign-2026-07-18.md`](build-to-1.0-campaign-2026-07-18.md);
+priors are retained for audit and no longer steer.
 
-Status: **SUPERSEDED** (was: ACTIVE — the one canonical plan, operator-ratified 2026-07-18).
-Superseded [`build-to-1.0-campaign-2026-08-16.md`](build-to-1.0-campaign-2026-08-16.md);
-this edition superseded [`build-to-1.0-campaign-2026-06-30.md`](build-to-1.0-campaign-2026-06-30.md).
+**This edition is a FULL carry-forward, not a rewrite.** Every box, movement,
+amendment, and register entry from the 2026-07-18 edition is retained inline and
+in place — no box removed, nothing resequenced, no ruling dropped. Movement B
+remains TOPMOST, Movement A remains HELD, the post-1.0 pool ruling stands. The
+edition exists because the plan was re-evaluated against the live tree on
+2026-08-16 rather than re-read, and a re-evaluation of that scope earns its own
+dated identity (operator-directed: *"update that campaign document with today's
+date - re-evaluate it thoroughly"* / *"did you update a fresh document with today's
+date and sunset the prior?"*). Because the carry-forward is total, no § Rulings
+Register disposition pass was owed — the 07-18 amendments travel with the text.
+
+**What the 2026-08-16 re-evaluation measured** (each finding recorded at its own
+box; § Amendments 2026-08-16 carries the full table and method notes):
+
+| Claim | 07-18 edition | Re-measured 2026-08-16 |
+|---|---|---|
+| Oversized modules (>600 lines) | 33 | **51** — largest regression on the board |
+| `fix` commits, 90 days | 524 | 528 |
+| `airlock_in` / `airlock_out` | 23 / 5 | **23 / 5 — unchanged; zero transits** |
+| Scorecard Promotable rows | 0 | **8** (GHI #810) |
+| Pool ADRs | — | ~199 `.md` under `docs/design/adr/pool/` |
+
+**Held on re-measurement:** `ADR-0.35.0` `Draft`, `ADR-0.36.0` `Proposed`,
+`ADR-0.33.0` `Validated`, GHI #766 and #611 open, surface-mirroring ratio ~49%
+over a stated 90-day window.
+
+**The sharpest finding is the number that did not move.** The airlock counters are
+identical two days into Movement B holding TOPMOST — zero transits — while `fix`
+commits rose by four. The ungoverned door widened while the governed one stayed
+shut, inside the window where that Movement was supposedly being worked.
 
 > **Topmost (sequenced):** **AMENDED 2026-08-14 — Movement B is TOPMOST; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). Movement B needs a feature ADR extending `ADR-0.33.0`; none is authored yet. See § Amendments 2026-08-14 and § Movement B.
 >
@@ -361,9 +379,13 @@ Boundary 2).
 
 **3. Full re-evaluation pass (operator: *"update that campaign document with today's
 date - re-evaluate it thoroughly"*).** Every live claim in the document was
-re-measured rather than re-read. **The edition is NOT re-dated** — re-evaluation is
-stamped inline, as 2026-08-14 was, preserving ~60 inbound references and the
-supersession chain; a new dated edition awaits an operator supersession ruling.
+re-measured rather than re-read. **This edition carries the result.** The first pass
+stamped the findings inline in the 2026-07-18 edition on the reasoning that
+re-evaluation is an amendment (as 2026-08-14 was) and that a new edition is a
+supersession act needing an explicit ruling. The operator's follow-up — *"did you
+update a fresh document with today's date and sunset the prior?"* — settled it the
+other way: a full re-evaluation earns a dated edition. The 07-18 edition is
+sunset, this one is `ACTIVE`, and the carry-forward is total.
 
 *What changed:*
 
