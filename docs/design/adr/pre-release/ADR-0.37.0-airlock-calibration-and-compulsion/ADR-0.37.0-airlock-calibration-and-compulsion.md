@@ -302,7 +302,7 @@ Scoring notes (why these numbers, not the template defaults):
 > item** — a rename is tracked debt, not an open question, and must go through
 > `gz migrate-semver` because `obpi_created` for the current id is already in L2.
 
-- [ ] OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose
+- [ ] OBPI-0.37.0-01 parent-invariant-threading -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose
 - [ ] OBPI-0.37.0-02 airlock-seam-calibration -- replace `accounted = inv in brief_text` with the two-arm predicate (parent binds the invariant to this OBPI via `_fence_obpi_anchored`, OR the brief carries a STRUCTURAL-FENCE REQ citing it); live NC asserts the DIFFERENTIAL pair -- accounted entry PROCEEDs, one unaccounted invariant makes GO unreachable -- and that per-entry pull edges never exceed the parent's declared invariant count
 - [ ] OBPI-0.37.0-03 seam-accounting-predicate -- the graduated severity ladder: unaccounted law WARNs (pending the § Flip Criteria threshold), a parent declaring NO `## Boundary Invariants` section PROCEEDs and emits a counted L2 warning naming the gap; plus override-frequency tracking, so Negative #1's mitigation has an owner
 - [ ] OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz validate warns on src/** and tests/** commits lacking it; carries the stamp-failure recovery path (the producer's failure paths are silent no-ops today)
@@ -590,6 +590,35 @@ WITH HALF THE TIME: cut OBPI-03 (accounting predicate) and file it as a GHI with
 2. A SINGLE HOME FOR THE PAIRED-EVENT FAMILY. Three instances found on one day: the resume gate (160 lifts / 0 blocks, fixed), session_exit (38 skips / 0 writes, GHI #766 open), and the airlock (23 in / 5 out). No owner currently asks 'does this event's decision have a counterpart for its other branch?'. This ADR deliberately does not absorb it.
 3. WIDENING TO MOVEMENT B'S REMAINING DOORS -- the GHI/MX door and the ad-hoc/permitted door -- which becomes safe only once this ADR's calibration has a measured track record.
 4. Possibly a brief-authoring-quality check, since D2 raises the stakes on declarative sections without adding any check on them (surfaced in assumption_surfacing).
+
+## Amendment 2026-08-16 — OBPI-01's slug corrected to match its repurposed content
+
+**Rename debt from the 2026-08-15 amendment, discharged.** That amendment repurposed
+OBPI-01 rather than withdrawing it (operator ruling: *"Book it, but repurpose OBPI-01"*),
+keeping six OBPIs and the Feature Checklist 1:1 with the briefs on disk — and accepted the
+resulting slug/content mismatch as tracked debt. The brief threads `parent_invariants`,
+which is the PULL arm; `ontology-inverse-reach` named the PUSH-arm design that amendment
+**withdrew on measurement**. The id therefore advertised the one thing the brief had stopped
+doing, and a slug is what `rg` finds.
+
+`OBPI-0.37.0-01-ontology-inverse-reach` → **`OBPI-0.37.0-01-parent-invariant-threading`**,
+recorded as a forward `artifact_renamed` event (the ledger is append-only; nothing was
+rewritten). Renamed on the **live decision surfaces only** — the brief and the Feature
+Checklist. The `## Q&A Transcript` above still says `ontology-inverse-reach` and **is
+correct as it stands**: that section is declared preserved UNEDITED, it records the
+2026-08-14 interview in which OBPI-01 genuinely *was* the inverse-`reach` work, and
+rewriting a primary source to match a later decision is exactly what the preservation rule
+forbids. `EVALUATION_SCORECARD.md` and `EVALUATION_SUBSTANCE.md` likewise keep the old slug
+because they are dated measurements of the brief set as it stood.
+
+**A latent defect surfaced doing this and was fixed in the same change.**
+`orphaned_obpi_ids` resolved `artifact_renamed` chains for an OBPI's *parent* but not for
+the OBPI *itself*, so a renamed brief read as a deleted one and `gz check` fail-closed on an
+honest rename. It had never fired because the census short-circuits on disposition and every
+previously renamed OBPI was already terminal or completed; an undisposed `Draft` brief is
+the first shape that can reach the arm. Fixed at `src/gzkit/obpi_lifecycle.py` with a
+covering test family, per AGENTS.md DO IT RIGHT 1a — the consumer's check verified in the
+same commit as the change that made it reachable.
 
 ## Amendment 2026-08-15 — D1 withdrawn on measurement; the seam is declared law
 

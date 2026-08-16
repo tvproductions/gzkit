@@ -1,11 +1,11 @@
 ---
-id: OBPI-0.37.0-01-ontology-inverse-reach
+id: OBPI-0.37.0-01-parent-invariant-threading
 parent: ADR-0.37.0-airlock-calibration-and-compulsion
 item: 1
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-ontology-inverse-reach.md
+  - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-parent-invariant-threading.md
   - src/gzkit/airlock/enter.py
   - src/gzkit/pipeline_runtime.py
   - src/gzkit/commands/airlock.py
@@ -21,18 +21,18 @@ verification:
   - uv run -m unittest tests.test_airlock_parent_invariants -q
 ---
 
-# OBPI-0.37.0-01-ontology-inverse-reach: Ontology Inverse Reach
+# OBPI-0.37.0-01-parent-invariant-threading: Parent-Invariant Threading
 
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md`
-- **Checklist Item:** #1 - "OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose"
+- **Checklist Item:** #1 - "OBPI-0.37.0-01 parent-invariant-threading -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose"
 
 **Status:** Draft
 
 ## Objective
 
-OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
+OBPI-0.37.0-01 parent-invariant-threading -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
 
 ## Lane
 
@@ -46,7 +46,7 @@ OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the paren
 
 <!-- What files/directories are IN SCOPE? Be explicit with paths. -->
 
-- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-ontology-inverse-reach.md` — this brief
+- `docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-01-parent-invariant-threading.md` — this brief
 - `src/gzkit/airlock/enter.py` — `airlock_enter` signature and `_reconcile`'s pull-edge construction
 - `src/gzkit/pipeline_runtime.py` — call sites at `:590` and `:592`
 - `src/gzkit/commands/airlock.py` — call site at `:95`, the door `gz airlock in` uses (the omitted fifth)
@@ -71,7 +71,7 @@ OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the paren
 <!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
      These are the rules agents ground against. If not met, OBPI fails. -->
 
-1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-01 ontology-inverse-reach -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
+1. REQUIREMENT: This OBPI MUST deliver: OBPI-0.37.0-01 parent-invariant-threading -- thread parent_invariants from the parent ADR's `## Boundary Invariants` through all FIVE airlock_enter call sites, including commands/airlock.py:95 (the door `gz airlock in` uses, omitted from the original "all four"); the element is one numbered invariant, identified by its (OBPI-NN) binding token, never its prose.
 1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
 1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
 1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief

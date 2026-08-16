@@ -251,8 +251,17 @@ def orphaned_obpi_ids(
     artifact Layer-1 cannot show, which is the incoherence the GHI's title
     names. Passing ``brief_ids=None`` checks the parent arm only.
 
-    A parent is resolved through its ``artifact_renamed`` chain first — an ADR
-    that was renamed is not an ADR that vanished.
+    **Both ids resolve through their ``artifact_renamed`` chain** — an artifact
+    that was renamed is not an artifact that vanished. The parent arm has always
+    done this; the subject arm was a raw stem-membership test until 2026-08-16,
+    so the sentence was true of the OBPI's parent and false of the OBPI itself.
+    It stayed latent because the disposition short-circuit above catches every
+    renamed OBPI in this repository's history — all of them terminal or
+    completed by the time they were renamed — leaving the arm reachable only by
+    an undisposed brief, which is exactly the case a live slug correction makes.
+    Each arm tests the id *and* its chain terminal rather than the terminal
+    alone, because :func:`rename_chain_target` halts on a cycle: an ``A -> B ->
+    A`` round trip resolves to ``B`` while the artifact sits on disk as ``A``.
     """
     materialized = list(events)
     terminal = terminal_obpi_ids(materialized)
@@ -275,7 +284,11 @@ def orphaned_obpi_ids(
         parent_resolves = parent in live_parent_ids or (
             rename_chain_target(materialized, parent) in live_parent_ids
         )
-        brief_exists = brief_ids is None or obpi_id in brief_ids
+        brief_exists = (
+            brief_ids is None
+            or obpi_id in brief_ids
+            or rename_chain_target(materialized, obpi_id) in brief_ids
+        )
         if parent_resolves and brief_exists:
             continue
         orphans.setdefault(obpi_id, None)

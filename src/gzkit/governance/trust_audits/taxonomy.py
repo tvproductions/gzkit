@@ -697,11 +697,17 @@ def audit_obpi_lifecycle_coherence(project_root: Path) -> list[ValidationError]:
             type="obpi_lifecycle_coherence",
             artifact=f".gzkit/ledger.jsonl::{obpi_id}",
             message=(
-                "obpi_created asserts a brief that has no disposition and whose parent "
-                "ADR no longer resolves. Forbidden by docs/governance/state-doctrine.md "
-                "(Layer-2 facts must trace to Layer-1) and Architectural Boundary 6. "
-                "Recovery: `uv run python -m gzkit.governance.obpi_park_backfill "
-                "--dry-run` to review, then `--apply --attestor <name>` to park it."
+                "obpi_created asserts a brief that has no disposition, and either its "
+                "parent ADR no longer resolves or no brief exists on disk under this id. "
+                "Forbidden by docs/governance/state-doctrine.md (Layer-2 facts must trace "
+                "to Layer-1) and Architectural Boundary 6. Recovery depends on WHICH is "
+                "true, and the two are not interchangeable. If the parent went back to "
+                "pool: `uv run python -m gzkit.governance.obpi_park_backfill --dry-run` "
+                "to review, then `--apply --attestor <name>` to park it. If the brief was "
+                "RENAMED and the parent is still live, parking it would assert a pool "
+                "demotion that never happened — record the rename instead: `uv run python "
+                "-m gzkit.governance.obpi_slug_rename --old <id> --new <id> --reason "
+                "<text> --attestor <name>` (dry run), then `--apply`."
             ),
         )
         for obpi_id in orphans
