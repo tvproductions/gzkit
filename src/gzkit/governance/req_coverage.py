@@ -38,8 +38,13 @@ from gzkit.triangle import extract_reqs_from_brief
 
 # ADR-0.0.59 inline kind tag: ``REQ-X.Y.Z-NN-MM [BEHAVIOR|SUPPORT|STRUCTURAL-FENCE]:``.
 # The trailing colon scopes the match to the declaration line, not prose references.
+# Emphasis is tolerated around the tag for the reason ``gzkit.triangle`` states —
+# ADR-0.0.59 mandates the tag, not its typographic weight. This reader was the
+# third of three and had the tolerance in neither position; an emphasised brief
+# resolved to an empty kind map, so its REQs lost their declared kind and fell
+# back to the BEHAVIOR default (GHI #809, sibling of GHI #700).
 _REQ_KIND_TAG_RE = re.compile(
-    r"(REQ-[\d.]+(?:-\d+)+)\s+\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]:",
+    r"(REQ-[\d.]+(?:-\d+)+)\s+\*{0,2}\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]\*{0,2}:",
     re.IGNORECASE,
 )
 

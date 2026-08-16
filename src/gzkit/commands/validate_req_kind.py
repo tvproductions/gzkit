@@ -18,8 +18,16 @@ from gzkit.req_kind_fence import (
 from gzkit.req_kind_support import parse_support_citation
 from gzkit.validate import ValidationError
 
+# Emphasis is tolerated around the kind tag as it already is around the REQ id:
+# ADR-0.0.59 mandates the tag, not its typographic weight (the reason
+# ``gzkit.triangle`` states for the same tolerance, landed under GHI #700). The
+# asymmetry mattered here more than there: an unmatched tag makes ``tagged``
+# empty, which takes the ``if not tagged: return []`` all-untagged grandfather
+# path below — so a ``**[BEHAVIOR]**`` brief did not fail, it passed WITHOUT
+# being checked (GHI #809).
 _REQ_KIND_TAG_RE = re.compile(
-    r"-\s+\[[ xX]\]\s+\*{0,2}(REQ-[\d.]+[-\d]+)\s+\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]:",
+    r"-\s+\[[ xX]\]\s+\*{0,2}(REQ-[\d.]+[-\d]+)\s+"
+    r"\*{0,2}\[(BEHAVIOR|SUPPORT|STRUCTURAL-FENCE)\]\*{0,2}:",
     re.IGNORECASE,
 )
 _REQ_ANY_ID_RE = re.compile(r"(REQ-[\d.]+[-\d]+)")
