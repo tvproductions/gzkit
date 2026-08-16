@@ -6,7 +6,19 @@ Status: **ACTIVE — the one canonical plan** (operator-ratified 2026-07-18).
 Supersedes [`build-to-1.0-campaign-2026-06-30.md`](build-to-1.0-campaign-2026-06-30.md);
 priors are retained for audit and no longer steer.
 
-> **Topmost (sequenced):** **AMENDED 2026-08-14 — Movement B is TOPMOST; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). Movement B needs a feature ADR extending `ADR-0.33.0`; none is authored yet. See § Amendments 2026-08-14 and § Movement B.
+**Last re-evaluated: 2026-08-16** (operator-directed, *"update that campaign document
+with today's date - re-evaluate it thoroughly"*). The edition keeps its 2026-07-18
+identity — re-evaluation is stamped inline as an amendment, the same way 2026-08-14
+was, so the ~60 inbound references and the supersession chain stay intact. Issue a
+new dated edition only on an operator supersession ruling. **Three findings from
+that pass, each recorded at its box:** oversized modules **33 → 51** (§ Movement C,
+the largest regression on the board); the airlock's transit counters **unchanged at
+23 in / 5 out**, meaning **zero transits in the two days Movement B has been
+TOPMOST**; and Movement C's rules arm **0 → 8 Promotable** (§ Amendments 2026-08-16).
+Everything else the document asserts still holds — `ADR-0.35.0` `Draft`,
+`ADR-0.36.0` `Proposed`, `ADR-0.33.0` `Validated`, GHI #766 and #611 open.
+
+> **Topmost (sequenced):** **AMENDED 2026-08-14 — Movement B is TOPMOST; Movement A is HELD.** **Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). Movement B needs a feature ADR extending `ADR-0.33.0`; none is authored yet. See § Amendments 2026-08-14 and § Movement B.
 >
 > **HELD — Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
 >
@@ -154,9 +166,9 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [ ] Bind with a §4 live NC on each widened door: **un-triggered entry → the claim fails**. Not "un-accounted seam → GO unreachable" (that is `ADR-0.33.0`'s existing NC, and it only fires once you are already inside the airlock). The new NC must catch *never entering at all* — the failure mode that let ~97% of commits through.
 
 **Movement C — Reduce the accretion** *(deferral LIFTED 2026-07-18 — this is pre-1.0)*
-- [ ] **Surface mirroring** — 703 of 810 chore commits (47% of all commits) are `gz git-sync` regenerating five copies of every skill/rule across `.gzkit/`, `src/gzkit/`, `.claude/`, `.agents/`, `.github/`. One canonical location; generate at install, not at commit. Largest single line item on the board.
+- [ ] **Surface mirroring** — 703 of 810 chore commits (47% of all commits) are `gz git-sync` regenerating five copies of every skill/rule across `.gzkit/`, `src/gzkit/`, `.claude/`, `.agents/`, `.github/`. One canonical location; generate at install, not at commit. Largest single line item on the board. **RE-MEASURED 2026-08-16 — the ratio holds, and this box's window is unrecorded so the original figures are NOT overwritten.** Over a stated 90-day window: **1561 commits, 761 `chore` subjects, 633 mentioning `gz git-sync`** (`git log --since='90 days ago' --format='%s'`). The proportion is materially unchanged (~49% vs the 47% recorded), so the box's claim stands on fresh evidence rather than on a transcribed number. The original 703/810 is left in place because the window it was taken over is not stated anywhere — replacing figures whose method is unknown with figures from a different method would manufacture a false comparison, which is the transcription failure `gz validate --transcribed-adr-counts` exists to refuse. **Whoever works this box states the window first.**
 - [x] Collapse the `validate()` surface to the registry — **DONE 2026-08-08** against the amended criterion. **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live. **All three sub-claims now hold, each fenced:** *(a)* enrollment landed 2026-08-02 (`0f671b31c`, GHI #744) — `data/check_scope_membership.json` declares membership and `tests/governance/test_check_scope_parity.py` recomputes it from source via AST, so drift in either direction fails and a default-tier scope outside the gate fails closed; *(b)* the registry is **now** genuinely the single source — `--qc-binding`, `--fidelity-presence` and `--waiver-ratchet` had dispatched through the early-return chain alone since the #618 collapse, contradicting the `VALIDATOR_REGISTRY` header's own "Single source of validate dispatch" claim, and that gap had already cost GHI #630 (every SUPPORT REQ citing one read `unproven-support` regardless of truth) which was patched with a *third* hand-maintained map rather than closed; registering the three retired that map (**net −18 source lines**) and the fence now asserts `reached − registry == ∅` instead of accommodating the exception; *(c)* #704, #745 and #748 all closed 2026-08-02 with standing fences, #704 with a genuine class-level fix replacing the per-scope guards that had been copied forward onto every new scope. **Count correction:** the "94 scopes" this box carried matched no enforced surface — `VALIDATOR_REGISTRY` holds **85**, the roster classifies 85 (44 `in_check` / 41 `out_of_check`), and `gz validate --help` prints 99 *flag* lines including non-scope flags. The retargeting off counting is exactly why that stale figure changed nothing about completion.
-- [ ] Oversized modules (33 > 600 lines) — census-driven, with working proof.
+- [ ] Oversized modules — census-driven, with working proof. **RE-MEASURED 2026-08-16: 51 modules over 600 lines, up from the 33 this box carried — a 55% increase, and the largest measured regression on the board.** Method, so the next reader re-runs rather than transcribes: `find src/gzkit -name '*.py' -exec wc -l {} + | awk '$1>600 && $2!="total"'`. The box is not merely unstarted; its subject grew faster than anything shrank it. Note the threshold itself is contested — `.gzkit/rules/pythonic.md` § Size Limits records that 600 is authoring-time guidance with **no enforcing gate**, and that it disagrees with the canonical `complexity-thresholds.md` table (which warns at 733.2 and blocks at 1031.9), so a census against 600 counts modules that no gate rejects. Settle which number governs as part of the census, or the proof will be measured against an authority the codebase does not enforce.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
 - [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.**
@@ -345,6 +357,41 @@ describing them as a deliverable surface. Both fired against this session's own
 agent work, which is the evidence they are worth naming. Sequenced **with** item
 160, not ahead of it, and explicitly **not** a new pool ADR (Architectural
 Boundary 2).
+
+**3. Full re-evaluation pass (operator: *"update that campaign document with today's
+date - re-evaluate it thoroughly"*).** Every live claim in the document was
+re-measured rather than re-read. **The edition is NOT re-dated** — re-evaluation is
+stamped inline, as 2026-08-14 was, preserving ~60 inbound references and the
+supersession chain; a new dated edition awaits an operator supersession ruling.
+
+*What changed:*
+
+| Claim | Was | Now | Where |
+|---|---|---|---|
+| Oversized modules (>600 lines) | 33 | **51** | § Movement C item |
+| `fix` commits, 90d | 524 | 528 | § Topmost |
+| `airlock_in` / `airlock_out` | 23 / 5 | **23 / 5 — unchanged** | § Topmost |
+| Scorecard Promotable rows | 0 | **8** | item 162, above |
+| Pool ADRs | — | ~199 `.md` under `docs/design/adr/pool/` | § 7 |
+
+*What held:* `ADR-0.35.0` `Draft`, `ADR-0.36.0` `Proposed`, `ADR-0.33.0`
+`Validated`, GHI #766 and #611 open, and the surface-mirroring ratio (~49% over a
+stated 90-day window vs the 47% recorded).
+
+**The sharpest finding is the one that did not move.** The airlock counters are
+identical two days into Movement B holding TOPMOST — zero transits — while `fix`
+commits rose by four. The ungoverned door widened while the governed one stayed
+shut, which is item 150's gap (`GHI : MX :: OBPI : Build`) reproducing in the
+window where the Movement was supposedly being worked. It is also evidence for
+item 0's sequencing: calibrating a gate nobody passes through is cheaper than
+widening it to three more doors.
+
+**Method note.** The surface-mirroring figures were NOT overwritten, because the
+window they were taken over is unrecorded; substituting a differently-scoped
+measurement would manufacture a false comparison. Today's numbers are recorded
+alongside with the window stated. This is the same discipline
+`gz validate --transcribed-adr-counts` enforces mechanically — it refused a draft
+of this very amendment for transcribing a Layer-2 OBPI count into live prose.
 
 **Origin, stated plainly so it is not mistaken for an independent finding.** Both
 changes come from an agent-proposed framing during a 2026-08-16 competitive
