@@ -245,6 +245,57 @@ def _summary_drift_errors(scorecard_text: str) -> list[ValidationError]:
     ]
 
 
+def _silent_dropout_errors(scorecard_text: str) -> list[ValidationError]:
+    r"""Fail when a row that looks scored yields no score.
+
+    :func:`_scorecard_row_scores` counts a row by finding ``**Mechanical**`` (or
+    a sibling) in its Score cell. A row whose Score cell is malformed — a typo,
+    a missing pair of asterisks, an unescaped ``|`` shifting the columns — simply
+    is not counted, and the row stays on the page looking scored. The scorecard's
+    own history is the argument: rows 22, 27 and 52 carry ``\\|`` inside code
+    spans, and before :data:`_CELL_SPLIT_RE` existed a naive split dropped all
+    three, which :data:`_CELL_SPLIT_RE` describes as *"a three-row undercount
+    that looks exactly like a correct answer"*.
+
+    :func:`_summary_drift_errors` is not that witness. It compares the roll-up
+    against the parsed rows, so a dropout moves BOTH numbers the moment someone
+    corrects the Summary to match the new count — the fence and the defect agree,
+    and the row is gone. This asserts the prior property instead: every row the
+    Scorecard section presents as scored must actually carry a score.
+
+    Measured at landing (2026-08-16): 118 rows presented as scored, 0 dropouts.
+    This closes the hole rather than repairs a live break, which is why it is a
+    witness and not a migration — the classification cells stay welded to the
+    rationale that justifies them.
+    """
+    dropouts: list[str] = []
+    for line in _scorecard_section(scorecard_text).splitlines():
+        if not _SCORED_ROW_RE.match(line):
+            continue
+        cells = _CELL_SPLIT_RE.split(line)
+        row_id = cells[1].strip() if len(cells) > 1 else "?"
+        if len(cells) < 4 or not any(f"**{score}**" in cells[3] for score in _SCORE_NAMES):
+            dropouts.append(row_id)
+    if not dropouts:
+        return []
+    return [
+        ValidationError(
+            type="advisory_scorecard",
+            artifact=_SCORECARD_REL,
+            message=(
+                f"Row(s) {', '.join(dropouts)} of `{_SCORECARD_REL}` § Scorecard are "
+                f"presented as scored but carry no recognised score ({_SCORES}) in the "
+                "Score column, so they are invisible to every count and to every "
+                "per-score check. This is the failure that looks like a correct answer: "
+                "the row is on the page, the totals are self-consistent, and the rule is "
+                "unscored. Give each row a bolded score, and if its Score cell contains a "
+                "literal `|` inside a code span, escape it as `\\|` — an unescaped pipe "
+                "shifts the columns and drops the row."
+            ),
+        )
+    ]
+
+
 #: A ruff diagnostic code as it appears in prose: ``BLE001``, ``PLC0415``, ``F401``.
 #: The shape is shared with markdownlint (``MD013``) and others, which is why
 #: extraction is anchored on the row naming ruff — see
@@ -791,6 +842,7 @@ def audit_advisory_scorecard(project_root: Path) -> list[ValidationError]:
     grandfathered = _grandfathered_rules(project_root)
     errors: list[ValidationError] = []
     errors.extend(_summary_drift_errors(text))
+    errors.extend(_silent_dropout_errors(text))
     errors.extend(_unreachable_ruff_claim_errors(text, project_root))
     errors.extend(_missing_witness_path_errors(text, project_root))
     errors.extend(_unwitnessed_mechanical_row_errors(text, project_root))
