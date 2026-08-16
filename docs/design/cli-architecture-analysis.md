@@ -453,6 +453,112 @@ sweep.
 
 ---
 
+## 3.6 Root cause — the CLI doctrine has no governance linkage
+
+§ 3.5 shows *that* prose CLI rules decay. This is *why*, and it resolves in three
+measurements:
+
+**1. The 1,037-line standard is an orphan.** `cli-standards-v3.md` and its
+byte-identical twin `CLI_PRINCIPLES.md` are referenced **zero times** across
+`docs/governance/**`, `.claude/rules/**`, and `.gzkit/rules/**`. No rule cites it,
+no validator reads it, no scorecard scores it. It is the most detailed CLI doctrine
+in the repository and nothing points at it.
+
+**2. The binding surface is frozen debt.** `.claude/rules/cli.md` — the file
+actually loaded per-turn — is **not** in the advisory scorecard's
+scored-at-version registry. It sits in
+[`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json)
+pinned at `0.3.1`, inside what that registry calls *"rows written before this
+ledger existed, against versions nobody recorded."*
+
+**3. So the CLI layer has neither arm.** Not scored, and not pointed to. The one
+layer of gzkit whose contract is consumed by every operator and every agent is the
+layer with no verdict recorded against it.
+
+That is a sufficient explanation for § 3.5's table without needing to posit
+neglect: rules decay where nothing observes them, and nothing observes these.
+
+### The forcing function already exists — it just has not fired
+
+`advisory-rules-audit.md` states the grandfather mechanism in its own words:
+
+> "The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves
+> its pinned version behind and must be scored for real before `gz check` goes
+> green. Debt can only shrink, and it cannot follow a rule forward in silence."
+
+**Any workstream that edits `.claude/rules/cli.md` automatically drops the `0.3.1`
+pin and compels a real scoring pass.** W5 and W6 cannot be done without touching
+that file — a grammar correction that did not update the CLI rule would be the
+coupled-surface defect AGENTS.md § DO IT RIGHT 1a names.
+
+**So the ordering the repo's own machinery wants is already determined, and it is
+not the ordering § 6 originally proposed:**
+
+1. Resolve the duplicate standards doc and link it from `cli.md` (W0)
+2. Editing `cli.md` drops the pin → score the CLI doctrine for real
+3. The scorecard's Mechanical/Promotable/Judgment verdicts then say which of
+   G1–G10 get an arm built and which are accepted as advisory with reasons recorded
+4. Sweep the instances under whatever arms result
+
+This is strictly better than picking workstreams by taste: the verdicts are
+produced by a method already ratified in this repo, and the freeze in
+§ Recommended promotion order (2026-06-08, opt-in-with-justification) governs
+which arms are worth building at all.
+
+---
+
+## 3.7 Candidate scorecard rows — DRAFT, operator ratification required
+
+Drafted in `advisory-rules-audit.md`'s own format and method: **Mechanical** names
+the witness that exists today; **Promotable** names the check that could be built
+and why it is worth building under the § Recommended promotion order freeze
+(2026-06-08, opt-in-with-justification); **Judgment** names the term no repository
+surface models.
+
+Row numbers are placeholders — real numbers are assigned on merge into the audit.
+Section heading would be `### CLI Contract Doctrine (.claude/rules/cli.md)`.
+
+| # | Rule | Score | Notes |
+|---|------|-------|-------|
+| G1 | Commands use grouped subcommands: `<group> <command>` (`cli-standards-v3.md` § Command Structure) | **Promotable** | *Ratchet form only.* "This bare verb should be grouped under noun X" is not decidable — the noun is a domain reading. But "the count of depth-1 leaf commands may not increase" is exactly computable from the parser tree (measured: **35**). Seed shrink-only in `data/waiver_ratchet_registry.json`, precedent ADR-0.0.73 Boundary Invariant #8. Justification for building: 35 live instances against a declared standard, and the count grows silently with every new root verb. |
+| G2 | No subcommand may shadow a bare root verb of the same name | **Promotable** | *Strongest candidate in this set.* Fully computable: a depth-2 leaf whose final token equals a registered depth-1 leaf name. Measured: **13** (`adr status`/`status`, `cli audit`/`audit`, …). The predicate cleanly separates the defect from the correct case — `list` recurs 7× and never collides, because no bare `list` verb is registered at root. Seed the 13 as waivers with rationale, shrink-only. **Drafting note:** this row's first version tripped `--cli-alignment` by writing that absent verb as a command reference — the checker correctly flagged a pointer to a verb that does not resolve, inside a sentence whose point was that it does not resolve. Recorded because it is a live demonstration that the mechanical arm works on exactly the class G2 describes. |
+| G3 | Command nouns use consistent grammatical number | **Promotable** *(narrowed)* | Mechanical **only** for the singular/plural pair predicate: both `x` and `x + "s"` registered at the same level. Measured: exactly **1** (`flag`/`flags`). The broader half — whether `chores`/`personas`/`insights` or `skill`/`task`/`adr` is the correct convention — is **Judgment**: no surface declares which number governs, and choosing one by majority vote would be grading by shape. Build the pair check; record the number-agreement residue as advisory. |
+| G4 | Root verbs do not hyphenate a noun-verb pair | **Promotable** | *Ratchet form, depth-1 only.* `"-" in name` at depth 1 is computable (measured: **6**), but whether a hyphen encodes a noun-verb pair is a reading — `git-sync` and `test-shape` are arguable single concepts. A blanket rule is also wrong at depth 2, where `adr audit-begin` is defensible. So: no new hyphenated root verbs; existing 6 waived shrink-only. |
+| G5 | Mandatory targets are positional; flags are optional modifiers | **Judgment** | **No repository surface models "target."** Deciding that `--manifest` names a thing acted upon while `--json` names a modifier requires reading each flag's meaning. The available proxy — "leaf with > N boolean flags and zero positionals" — grades by shape, the `shape-graded-not-substance` signature ADR-0.0.73 refuses; it would flag `git-sync` (11 genuine mode selectors) identically to `validate` (93 genuine targets). Note this rule is also **not** clig.dev's position (§ 3 G5) — it is a house rule gzkit has not written down. Reclassify on a named instance of a flag-shaped target causing an operator defect. |
+| G6 | `--json` is a standing output mode | **Promotable** | *Strong, and the highest-value arm in the set.* Every leaf either declares `--json` or carries a waiver with rationale — exactly the `_NO_SKILL_VERBS` precedent already used by `gz validate --skill-alignment` (GHI #202), which landed first specifically to establish the waiver shape. Measured: **63 of 136** leaves lack it. **Caveat that must ship with it:** the flag is not the behavior — see G10. A `--json` check that passes while the body calls `console.print` is green-while-blind, so this arm is only honest paired with G10's. |
+| G7 | A noun group wraps more than one verb | **Judgment** | Detection is trivial (**11** groups of one). The verdict is not: `gz issue file` may be a deliberate namespace reservation for verbs not yet written, and **no surface models intent-to-extend**. A gate here would force either premature flattening or a waiver per group, which is bookkeeping without signal. Honest form is an advisory line in an existing report, never a fail-close. |
+| G8 | A parser node is a leaf or a group, never both | **Promotable** | *Cleanest predicate in the set.* One line against the tree — a node with a `func` default **and** subparsers. Exactly **1** instance (`gz mx`), so the check lands fail-closed with zero seeded waivers if `mx` is corrected, or one explicit waiver naming it a deliberate default-subcommand. Either outcome records a decision that is currently unrecorded. |
+| G9 | `gz --help` does not import heavy handler dependencies (GHI #180) | **Promotable** | Directly assertable: build the parser, then assert `gzkit.commands.*` / `yaml` / `pydantic` absent from `sys.modules`. Precedent for import-shape tests is `tests/policy/`-style AST/state scans already used by `audit_utf8_prefix` and `audit_subprocess_errors`. Cheap enough that it should land **with** the W1 fix rather than as separate work — a repair whose regression guard is written in the same patch, per AGENTS.md § DO IT RIGHT 1. |
+| G10 | User-facing output passes through the formatter, never `console.print` directly | **Promotable** | *Ratchet form — it cannot land as a gate.* Regex/AST scan for `console.print(` outside the formatter module is mechanical, but measures **1,230** live sites against **1** `OutputFormatter`, so a fail-close would block every commit. Seed at 1,230, shrink-only via `waiver_ratchet_registry.json`. This is the **precondition for G6**, not a sibling of it: `--json` cannot be trusted while 1,230 sites emit human text directly. |
+
+### Distribution and what it implies
+
+**0 Mechanical / 8 Promotable / 2 Judgment.** Zero Mechanical is the finding, not an
+artifact of drafting — it restates § 3.6 in the scorecard's own vocabulary: nothing
+observes this layer today.
+
+**Eight proposed validators would itself be a defect.** Five of the eight are
+predicates over one walk of the parser tree (G1, G2, G4, G6, G8), and G3's narrow
+half is a sixth. They should land as **one** validator with one waiver registry —
+`gz validate --cli-shape` — not six flags. Precedent: `--cli-alignment` already
+bundles `audit_cli_alignment` + `audit_manpage_alignment` behind a single flag.
+That leaves three arms total:
+
+1. **`gz validate --cli-shape`** — tree-shape predicates (G1, G2, G3-narrow, G4, G6, G8)
+2. **`gz validate --output-chokepoint`** — G10 ratchet, seeded 1,230, shrink-only
+3. **a help-path import assertion** — G9, landing with the W1 repair
+
+### Bookkeeping this scoring triggers
+
+Scoring `cli.md` for real drops its `0.3.1` grandfather pin, which per
+`.gzkit/rules/skill-surface-sync.md` rule-version discipline requires a version
+bump and a version-history note on the rule file itself. The rows above are drafted
+against `cli.md` `0.3.1` **plus** `cli-standards-v3.md`, which carries no rule
+version at all — a second reason § 0.2's duplication must resolve first: a scorecard
+row cannot cite a version that does not exist on a file that exists twice.
+
+---
+
 ## 4. What is consistent — protect this
 
 1. **Dispatch is uniform and total.** Every leaf routes via `set_defaults(func=…)`;
@@ -528,6 +634,14 @@ Ordered by value ÷ risk, not by conceptual appeal.
 | **W5** | Kebab-compound → noun-verb (6 root + 4 `adr audit-*`) | G4 | No (aliased) | M | Grammar coherence |
 | **W6** | Root-verb nouning + shadow resolution (`audit` → `adr audit`, `flag`/`flags` collapse) | G1,G2,G3,G7 | No (aliased) | **L** | Largest coherence win, largest corpus cost |
 | **W7** | Rule the `gz mx` leaf+group anomaly | G8 | Maybe | XS | Removes a one-off |
+
+> **Superseded ordering — read § 3.6 first.** The table above ranks workstreams by
+> value ÷ risk, which was the right method before § 3.6 established that the CLI
+> doctrine is unscored and unlinked. The repo's own grandfather mechanism
+> determines the real order: W0 → score `cli.md` for real → let the
+> Mechanical/Promotable/Judgment verdicts decide which of G1–G10 get an arm → sweep.
+> The rows below remain accurate as *descriptions* of each workstream; their
+> sequencing does not.
 
 **W1 and W2 are worth doing on their own merits regardless of whether any grammar
 work ever happens.** W4 gates W5/W6 — without a hidden-alias mechanism, renames
