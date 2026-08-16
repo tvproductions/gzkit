@@ -43,17 +43,36 @@ This removes the ambiguity flagged in earlier drafts about whether grammar work 
 correction or enhancement. **The intent was declared, in-repo, and is unmet.** It is
 correction work under the owning design doc, independently of clig.dev.
 
-### 0.2 The standards doc is itself duplicated
+### 0.2 The standards doc was duplicated — RESOLVED 2026-08-16
 
-`docs/design/CLI_PRINCIPLES.md` and `docs/design/cli-standards-v3.md` are
-**byte-identical** (md5 `93e5751eeeee7fa97605f3396e4693b3`, 1037 lines each). Two
-filenames, one content, no pointer between them and no statement of which is
-source-of-truth. A reader citing "the CLI principles doc" cannot know which they
-mean, and an edit to one silently diverges from the other.
+**Correction (2026-08-16).** An earlier draft of this section called
+`cli-standards-v3.md` an **orphan**, on a grep scoped to `docs/governance/**`,
+`.claude/rules/**`, and `.gzkit/rules/**`. True in those three scopes, but
+generalized wrongly: repo-wide there is one inbound reference, and it is
+load-bearing.
+[`ADR-0.0.4-cli-standards-presentation-foundation`](adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md)
+— `status: Validated`, `kind: foundation`, `lane: heavy` — states:
 
-This is the same defect class the repo's own § Architectural Boundaries names —
-derived/duplicate surfaces becoming ambiguous authorities. **Resolve before citing
-either as the standard.**
+> "The canonical specification is `docs/design/cli-standards-v3.md`."
+
+**This raises the severity rather than lowering it.** The same ADR declares the
+presentation surface "a port: the CLI presentation contract (OutputFormatter,
+StableArgumentParser, exit-code epilogs, common flags) that **every command
+handler must honor**." So the 1,230 `console.print` bypasses in § 3 G10 are not a
+design doc's preference being ignored — they are a **Validated, heavy-lane
+foundation ADR's declared port contract**, bypassed at scale. The accurate claim
+is narrower and worse: the document is cited by an ADR and by **no rule or
+governance surface**, so the per-turn contract never points at it and no
+instrument scores it. That makes this an instance of GHI #799's class
+(ADR-declared doctrine with no surface mirror), not a separate phenomenon.
+
+**Duplication — resolved.** `docs/design/CLI_PRINCIPLES.md` was byte-identical
+(md5 `93e5751eeeee7fa97605f3396e4693b3`, 1037 lines each) and is now **deleted**
+(operator ruling 2026-08-16). Git history shows the two never held distinct
+content: `cli-standards-v3.md` was created as an **empty** file at `db3851814`
+(`d41d8cd9…` is the MD5 of empty input), filled by copy at `3d0c4ce14`, and
+thereafter edited in lockstep at `ba01f1e96`. Nothing was merged because nothing
+diverged.
 
 ### 0.3 Known-stale content in the standards doc
 
@@ -458,11 +477,13 @@ sweep.
 § 3.5 shows *that* prose CLI rules decay. This is *why*, and it resolves in three
 measurements:
 
-**1. The 1,037-line standard is an orphan.** `cli-standards-v3.md` and its
-byte-identical twin `CLI_PRINCIPLES.md` are referenced **zero times** across
+**1. The 1,037-line standard is cited by an ADR and by no rule.**
+`cli-standards-v3.md` is named canonical by `ADR-0.0.4` (Validated, foundation,
+heavy) — see § 0.2 — but is referenced **zero times** across
 `docs/governance/**`, `.claude/rules/**`, and `.gzkit/rules/**`. No rule cites it,
-no validator reads it, no scorecard scores it. It is the most detailed CLI doctrine
-in the repository and nothing points at it.
+no validator reads it, no scorecard scores it. The most detailed CLI doctrine in
+the repository reaches the per-turn agent contract through nothing at all, which
+is the precise condition GHI #799 names from the ADR side.
 
 **2. The binding surface is frozen debt.** `.claude/rules/cli.md` — the file
 actually loaded per-turn — is **not** in the advisory scorecard's

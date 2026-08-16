@@ -1,5 +1,54 @@
 # Python CLI Tool: Principles, Practices, and Guidelines (v3)
 
+<!-- doc-version: 0.2.0 -->
+
+> **Document version:** `0.2.0` — de-duplication and freshness pass (2026-08-16,
+> operator ruling; GHI #810). `docs/design/CLI_PRINCIPLES.md` was a byte-identical
+> twin of this file and is **deleted**: it was created empty at `db3851814`,
+> filled by copy at `3d0c4ce14`, and thereafter edited in lockstep, so the two
+> never held distinct content and nothing was merged or lost. Adds § Document
+> status below, because this file had no version marker of any kind while being
+> cited as canonical by a Validated foundation ADR. Prior `0.1.0` — implicit;
+> the facade-retirement banner below was the only status this document carried.
+
+## Document status (read before citing any section)
+
+**This is the canonical CLI specification**, named as such by
+[`ADR-0.0.4-cli-standards-presentation-foundation`](adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md)
+(`status: Validated`, `kind: foundation`, `lane: heavy`):
+
+> "The canonical specification is `docs/design/cli-standards-v3.md`."
+
+That ADR also declares what this document's presentation sections *are*: "a port:
+the CLI presentation contract (OutputFormatter, StableArgumentParser, exit-code
+epilogs, common flags) that **every command handler must honor**."
+
+**Being canonical is not the same as being met.** Sections below fall into three
+states, measured 2026-08-16 against `main`. Cite the state, not just the section.
+
+| Section | State | Evidence |
+|---|---|---|
+| § Command Structure — Explicit Registration | **Live, met** | 150 `set_defaults(func=…)`, zero conditional dispatch chains, one dispatch site |
+| § Command Structure — Custom ArgumentParser | **Live, met** | `StableArgumentParser` ships in `src/gzkit/cli/parser.py` |
+| § Error Handling — Exit Codes | **Live, met** | `src/gzkit/cli/helpers/exit_codes.py`; 4-code map + shared epilog |
+| § Type Annotations, § Linting, § Build | **Live, met** | ruff / ty / uv / unittest all in force |
+| § Domain Models | **Live, met** | Pydantic `BaseModel` per `.gzkit/rules/models.md` |
+| § Output Modes — `--json` | **Live, UNMET** | 73 of 136 leaf commands declare it |
+| § Output Modes — `--plain`, `--log-file` | **Live, UNMET** | 13 call sites; `--log-file` does not exist (0 occurrences) |
+| § Output Rules — formatter is sole chokepoint | **Live, UNMET** | **1,230 `console.print(` sites** vs 1 `OutputFormatter` |
+| § Logging — structlog, correlation IDs | **Live, UNMET** | 2 imports, 1 `get_logger`; `configure_logging` is never called — `cli/main.py` uses `logging.basicConfig` |
+| § Architecture — Port Interfaces, DI, Layer Dependencies | **RETIRED** | facade retired 2026-07-06 (banner below) |
+| § Project Structure — `ports/`, `adapters/`, `tests/fakes/` tree | **RETIRED** | layout does not exist; **adding it is now forbidden** by `.claude/rules/hexagonal-architecture.md` rule 7 |
+| § Testing — Test Fakes (`tests/fakes/`) | **RETIRED** | same ruling |
+| § Policy Tests — `tests/policy/` location | **Superseded** | the practice is live; it lives in `tests/governance/` + `src/gzkit/governance/trust_audits/` |
+| § Configuration — TOML-vs-JSON selection | **Superseded** | gzkit is JSON-everywhere (`.gzkit/manifest.json`, schemas, ledger) |
+| § Spectrum Summary | **Read the platform column** | gzkit is 136 leaf commands / 28 groups — the "Platform CLI" column, not the utility default this document leads with |
+
+**UNMET rows are corrections, not enhancements** (AGENTS.md § Operator Doctrine):
+the intent is declared here and in ADR-0.0.4, and the shipped surface does not
+fulfil it. Measurements and the ten candidate advisory-scorecard rows are in
+[`cli-architecture-analysis.md`](cli-architecture-analysis.md).
+
 > **⚠ Facade retired — 2026-07-06 injection-seam ruling.** This document describes
 > a `cli → core → ports → adapters` layering with `tests/fakes/` port doubles.
 > That `src/gzkit/ports/` + `src/gzkit/adapters/` + `tests/fakes/` facade was
@@ -174,6 +223,14 @@ design is wrong. Restructure, don't bypass.
 
 
 ## Project Structure
+
+> **State: RETIRED — do not implement this tree** (see § Document status). The
+> `ports/` + `adapters/` + `tests/fakes/` layout was retired by the 2026-07-06
+> injection-seam ruling, and adding folder partitions of this kind is now
+> **forbidden**: `.claude/rules/hexagonal-architecture.md` rule 7 states that
+> `core/` stays and `domain/`/`application/`/`adapters/`/`contexts/` partitions
+> must not be added "to do DDD", citing Cockburn §2.4 — hexagonal governs the
+> boundary, not internal layout. Kept below as original design intent.
 
 ```
 project-root/
@@ -474,6 +531,13 @@ config = AppConfig.model_validate_json(config_path.read_text())
 
 ## Output Modes
 
+> **State: LIVE but UNMET** (see § Document status). Measured 2026-08-16: `--json`
+> on 73 of 136 leaf commands, `--plain` at 13 call sites, `--log-file` absent
+> entirely. Nine command groups have *mixed* sibling coverage — `gz adr
+> emit-receipt` has no `--json` while `gz obpi audit` does, though both emit
+> structured governance evidence. Treat the table below as the contract to reach,
+> not a description of today.
+
 The tool supports five output modes, selectable via global flags:
 
 | Flag | Mode | Behavior |
@@ -534,6 +598,16 @@ human-readable mode. Use `rich.progress` for this. Progress indicators must:
 
 
 ## Logging
+
+> **State: LIVE but UNMET — built and unwired** (see § Document status).
+> `src/gzkit/cli/logging.py` implements this section in 156 lines. Measured
+> 2026-08-16: `configure_logging` appears in exactly one place outside its own
+> module — the lazy-export map in `src/gzkit/cli/__init__.py` — and **`cli/main.py`
+> never calls it**; `_apply_debug_mode` uses stdlib `logging.basicConfig` instead.
+> `structlog` is a declared runtime dependency serving one real consumer
+> (`src/gzkit/commands/chores.py`). This is the same "wired into zero production
+> code" shape the facade banner above records for ports/adapters — it recurred in
+> this document's other half and nothing caught it.
 
 Logging and user-facing output are **two separate systems** and must never be conflated.
 User output flows through the `OutputFormatter` to stdout. Logging flows through
@@ -779,6 +853,13 @@ class ProcessingResult(BaseModel):
 
 
 ## Policy Tests
+
+> **State: practice LIVE, location SUPERSEDED** (see § Document status). The
+> discipline below is in force and is the shape gzkit's audits actually take, but
+> they live in `tests/governance/` and `src/gzkit/governance/trust_audits/`, not
+> the `tests/policy/` path prescribed here. `gz validate --unscoped-rules`,
+> `--utf8-prefix`, and `--line-endings` are working examples (each verified
+> present in the parser). Read the section for its method; ignore its directory.
 
 Architectural rules written in prose documents drift. Rules written as tests are
 enforced on every CI run. Policy tests are cheap to write (most are AST scans or regex
