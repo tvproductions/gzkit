@@ -32,6 +32,8 @@ from pathlib import Path
 
 from gzkit.commands.validate_req_kind import _REQ_KIND_TAG_RE
 from gzkit.governance.req_coverage import parse_brief_req_kinds
+from gzkit.governance.trust_audits.briefs import _REQ_KIND_TAG as _BRIEFS_KIND_TAG_RE
+from gzkit.governance.trust_audits.closeout_proof import _KIND_TAG_RE as _CLOSEOUT_KIND_TAG_RE
 from gzkit.triangle import extract_reqs_from_brief
 
 # Emphasis on the kind tag, which ADR-0.0.59 does not constrain. The REQ ids are
@@ -78,6 +80,27 @@ class TestKindTagEmphasisAcrossReaders(unittest.TestCase):
             brief = Path(tmp) / "OBPI-0.34.0-04-demote.md"
             brief.write_text(EMPHASISED_BRIEF, encoding="utf-8")
             self.assertEqual(parse_brief_req_kinds(brief), EXPECTED_KINDS)
+
+    def test_trust_audit_readers_tolerate_emphasis(self) -> None:
+        """The two remaining readers are immune by construction — pin that.
+
+        ``trust_audits/briefs`` and ``trust_audits/closeout_proof`` match the
+        bracketed tag ALONE, unanchored and with no trailing ``:``, so emphasis
+        outside the brackets never mattered to them. Neither needed the GHI #809
+        fix. They are pinned here anyway because their immunity is incidental
+        rather than intended: tightening either one for precision — adding the
+        trailing colon that ``req_coverage`` carries, say — would reintroduce the
+        defect in a reader nobody was watching. Enumerating the family without
+        binding its immune members leaves exactly the gap that let the sibling
+        readers of GHI #700 go unfixed for as long as they did.
+        """
+        line = "- [ ] REQ-0.34.0-04-01 **[BEHAVIOR]**: does the thing.\n"
+        for name, pattern in (
+            ("trust_audits.briefs", _BRIEFS_KIND_TAG_RE),
+            ("trust_audits.closeout_proof", _CLOSEOUT_KIND_TAG_RE),
+        ):
+            with self.subTest(reader=name):
+                self.assertIsNotNone(pattern.search(line))
 
     def test_plain_tags_still_read(self) -> None:
         """The tolerance is additive — unemphasised tags keep working."""
