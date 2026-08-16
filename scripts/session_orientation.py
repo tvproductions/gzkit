@@ -33,6 +33,20 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Bare ADR ids only — the slug-bearing form is matched by prefix on the CLI side.
 _ADR_REF_RE = re.compile(r"\bADR-\d+\.\d+\.\d+\b")
+# Which plan governs. Supersession flips this line, and Operating Rule 1 (one
+# active plan) is what makes a single match sufficient.
+#
+# `gzkit.knowledge.generate._ACTIVE_STATUS_RE` is the same pattern, and the two
+# CANNOT be collapsed into one import: this script is contracted to run on
+# stdlib alone (see the module docstring) so the campaign still resolves when
+# the package is broken, while the wheel ships `src/gzkit/**` and never this
+# file. The readers sit on opposite sides of the distribution boundary. The
+# copies are held in agreement by
+# `tests/scripts/test_active_status_pattern_single_sourced.py` instead — the
+# same coupling-witness shape `TestTaskGrammarSingleSourced` uses for the TASK
+# grammar. Edit one, the witness fails; it is not a substitute for one
+# implementation, only the closest thing the boundary permits.
+_ACTIVE_STATUS_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
 # One `gz adr status` per ADR named in the sequencing line. Three keeps the added
 # boot cost near 2.4s at ~0.8s each; raising it raises session-start latency
 # linearly, so it is a budget, not a formality.
@@ -105,7 +119,7 @@ def collect_campaign(repo_root: Path) -> dict | None:
             text = path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
-        if re.search(r"^Status:\s*\*\*ACTIVE", text, re.MULTILINE) is None:
+        if _ACTIVE_STATUS_RE.search(text) is None:
             continue
         unchecked = re.findall(r"^- \[ \] (.+?)$", text, re.MULTILINE)
         done = len(re.findall(r"^- \[[xX~]\] ", text, re.MULTILINE))

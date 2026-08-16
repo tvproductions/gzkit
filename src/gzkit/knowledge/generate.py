@@ -128,6 +128,15 @@ def generate_bundle(sources: list[SourceEntry], output_dir: Path | str) -> None:
 
 _GOVERNANCE_DIR = Path("docs/governance")
 _CAMPAIGN_GLOB = "*-campaign-*.md"
+#: Which plan governs. Supersession flips this line, and Operating Rule 1 (one
+#: active plan) is what makes a single match sufficient.
+#:
+#: ``scripts/session_orientation.py._ACTIVE_STATUS_RE`` is the same pattern, and
+#: the two CANNOT be collapsed into one import: that script is contracted to run
+#: on stdlib alone so the campaign still resolves when this package is broken,
+#: and the wheel ships ``src/gzkit/**`` and never that file. The readers sit on
+#: opposite sides of the distribution boundary. Held in agreement by
+#: ``tests/scripts/test_active_status_pattern_single_sourced.py``.
 _ACTIVE_STATUS_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
 
 

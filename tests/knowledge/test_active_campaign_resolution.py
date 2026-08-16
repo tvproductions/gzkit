@@ -20,14 +20,23 @@ decaying silently because a hardcoded path cannot report that it is wrong.
 
 from __future__ import annotations
 
-import re
 import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.knowledge.generate import TRACER_SLICE, resolve_active_campaign
+from gzkit.knowledge.generate import (
+    _ACTIVE_STATUS_RE,
+    TRACER_SLICE,
+    resolve_active_campaign,
+)
 
-_ACTIVE_RE = re.compile(r"^Status:\s*\*\*ACTIVE", re.MULTILINE)
+# Imported rather than redeclared. A third copy of the discriminator would put
+# this test in the position of agreeing with a production reader by coincidence,
+# and it has nothing to add: pattern agreement between the two production copies
+# is witnessed by
+# `tests/scripts/test_active_status_pattern_single_sourced.py`, which also pins
+# what the pattern must decide. What this file uniquely asserts is the SELECTION
+# rule built on top of it.
 _CAMPAIGN_GLOB = "*-campaign-*.md"
 
 
@@ -36,7 +45,7 @@ def _active_campaign_on_disk() -> Path:
     matches = [
         path
         for path in sorted(Path("docs/governance").glob(_CAMPAIGN_GLOB))
-        if _ACTIVE_RE.search(path.read_text(encoding="utf-8", errors="replace"))
+        if _ACTIVE_STATUS_RE.search(path.read_text(encoding="utf-8", errors="replace"))
     ]
     if len(matches) != 1:  # pragma: no cover - Operating Rule 1 violation
         raise AssertionError(f"expected exactly one ACTIVE campaign, found {len(matches)}")
