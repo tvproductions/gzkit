@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "b5aad5b8a75c16ec2c120c4c746199c87561c5b894d1701caf09f9d380da2096",
-  "corpus_entry_count": 53,
-  "rendition_fingerprint": "a3832c06f6e509597bb30b43d41b1b3fba847e4207083bd4f8b800c60d86ca73",
-  "committed_ts": "2026-08-06T12:34:42.333871+00:00",
+  "corpus_fingerprint": "b388afd9f5e3f562ecb34ce8aaa7df606b7f638b05f4a4749257788eaf05a1c1",
+  "corpus_entry_count": 59,
+  "rendition_fingerprint": "4b0141bf76eedbf26ce1080867eb599abceb0e6dd24d518685e5dddbcdf74255",
+  "committed_ts": "2026-08-17T12:54:52.728605+00:00",
   "attestor": "g0",
-  "attestation_text": "land the canon, raise the ceiling; i won't worry about adjusting those until we hit a stable 1.0 — the three-term canon (transit/exchange/handoff) is seated verbatim as invariant-tier entry corpus-operator-doctrine-verbatim-canon-2026-08-06T12:07:45.501673+00:00 (954 B) in section operator-doctrine-verbatim-canon, which the survival declaration ranks 1 of 20 (must-survive). No ceiling was raised because none needed it: the gzkit AGENTS.md budget is already 50000 chars, and _PROJECT_DOC_BUDGET_CEILING_BYTES was decoupled from the vendor cap to 65536 by the 2026-07-06 ruling. This codex rendition totals 14563 B, roughly 18 KB under Codex's 32768 B project_doc_max_bytes, so no delivery-cap exposure exists on this consumer at all. Byte evidence invariant=9993B compressible=835B->4570B total=14563B setpoint=lite; no compressible entry was dropped or rewritten."
+  "attestation_text": "yes, push the rendition candidates — recompose of AGENTS.md renditions for both consumers under the operator's Gate 5. Adds three invariant-tier corpus entries captured 2026-08-17 (the corrected three-system canon bullet with 'sythetic'->'synthetic' and 'ecosysten'->'ecosystem'; the airlock's four operator-stated purposes; the airlock/handoff cooperation clause) and REMOVES the 'Correction vs enhancement' double-quote bullet whose corpus entry was retired under GHI #635 on 2026-07-22 but which had continued to render for 26 days. Invariant floor validated mechanically by gz content compose (exit 0, both consumers); byte evidence claude invariant=11764B compressible=1890B->22590B total=34354B setpoint=heavy, codex invariant=11764B compressible=1890B->4000B total=15764B setpoint=lite; content change byte-identical across both consumers (1 removal, 1 replacement, 2 additions). Verified this session: uv run -m unittest discover -s tests -t . 8436 tests exit 0; arb-ruff-a6fad85f40b24556b6c00729dc44d9e2 exit 0; arb-step-typecheck-e9c35801b832460eaff9809648634b6b exit 0; arb-step-mkdocs-1b74708897ab422284ee39c3a944a93b exit 0; gz validate 13 scopes exit 0. Disclosed and knowingly accepted: this grows AGENTS.md 33153B->34354B, widening the Codex delivery-cap breach from 385B to 1586B, tracked at GHI #815 with remedies owned by ADR-pool.render-order-truncation-survival and GHI #533."
 }
