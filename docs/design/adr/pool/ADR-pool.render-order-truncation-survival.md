@@ -68,11 +68,28 @@ Must-survive grew 21,582 B → 23,678 B, yet still clears the cap with **9,090 B
 to spare**, and exactly **one** must-survive section — `architectural-boundaries`,
 595 B, ranked *last* in document order — falls outside. The surface is not too
 big to deliver its binding content. It is rendered in the wrong order, and that
-is the whole defect. Shrinking the surface (GHI #533) buys headroom; it does not
+is the whole defect.
+
+**The reorder half is ranked first as the delivery remedy** (operator ruling
+2026-08-17, on GHI #815 step 2 of the 2026-08-17T13:01:47Z handoff) — but on
+**durability**, not on capability, and an earlier draft of this paragraph got
+that wrong. It read *"Shrinking the surface (GHI #533) buys headroom; it does not
 buy delivery, because a smaller surface rendered in the same order still puts
-rank 11 last. **This is why the reorder half outranks the shrink half as the
-delivery remedy** (operator ruling 2026-08-17, on GHI #815 step 2 of the
-2026-08-17T13:01:47Z handoff).
+rank 11 last."* That holds only while the surface remains OVER the cap.
+Compress `AGENTS.md` below the cap and every section renders inside it,
+`architectural-boundaries` included — so shrink **is** a delivery fix. The
+correction is recorded rather than silently patched because it was the argument
+the ranking rested on:
+
+| Remedy | Delivers must-survive? | Durability |
+|---|---|---|
+| Reorder (this ADR) | yes | **growth-invariant** — must-survive renders first whatever the total |
+| Shrink (GHI #533; `instructions-files-diet` chore v2.0.0) | **yes, once total < cap** | decays — re-breaches on the next corpus growth |
+
+They are complementary. This ADR is ranked first because its fix does not decay;
+the shrink half is the one that can restore delivery *today*, and after GHI #817
+the chore that performs it routes through the corpus and stops at the Gate-5
+attestation boundary.
 
 Ratified survival declaration (operator, 2026-07-25): must-survive =
 **ranks 1–11**, `operator-doctrine-verbatim-canon` first and

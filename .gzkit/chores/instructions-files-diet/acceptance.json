@@ -2,6 +2,12 @@
   "criteria": [
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz validate --invariant-coherence",
+      "expected": 0,
+      "description": "No rendered surface drifted from the rendition it is played back from. AGENTS.md is composed from .gzkit/corpus/AGENTS.md.jsonl, so a hand-edit is drift; this is the only criterion here that can observe it (GHI #817)."
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run gz validate --advisory-scorecard",
       "expected": 0,
       "description": "Advisory scorecard audit passes; every binding bullet retained per scorecard"
