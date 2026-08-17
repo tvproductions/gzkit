@@ -268,7 +268,15 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > handoffs — today unmeasurable); the **`finding` entity** as a kind distinct from facts,
 > judgments and decisions; a per-project schema-validated **Position Relief Checklist**; and
 > the **preview → readiness → briefing** ordering at SessionStart, which today fires
-> simultaneously so the briefing has nothing to be checked against. **Two binding constraints:
+> simultaneously so the briefing has nothing to be checked against; and a
+> **campaign-narrative coherence guard** — a test that fails when this plan's prose contradicts
+> its own checkbox state. Operator ruling 2026-08-17, verbatim: *"it was never written - add the
+> guard to Movement D scope."* Origin: the `adversarial_validation` record for `OBPI-0.33.0-06`
+> claims the fix is *"now guarded by `test_campaign_has_no_stale_unchecked_narrative`"* and **no
+> such test exists** — §4's enforcement-claim rule violated inside the output of the mechanism
+> built to catch it (§ Amendments 2026-08-17 E). Rendering the campaign from ADR canon removes
+> the class; the guard fails closed until then, and afterwards proves the rendering has not
+> regressed. **Two binding constraints:
 > every beat is advisory and gates nothing — authorization migrates to the airlock per
 > `OBPI-0.37.0-05`, the handoff keeps only briefing — and `gz git-sync` is never gated and is
 > always a permitted first operation after a handoff is created (standing canon, `ADR-0.37.0`
@@ -554,6 +562,47 @@ stands.
    airlock-IN; the handoff-resume-gate `Write|Edit|NotebookEdit` arm retires into it."*
    `AGENTS.md` § Operator Doctrine needs a cooperation clause so a reader meets the join and
    not only the fence.
+
+#### E. The campaign-narrative guard is owed — added to Movement D scope after ratification
+
+*(Added to this amendment after the body edits were ratified and pushed at `b342f0f28`, on a
+ruling taken minutes later in the same session. Appended rather than folded into A–D so the
+ratified text is not rewritten.)*
+
+10. **A fabricated enforcement claim sits in Layer 2.** The `adversarial_validation` record for
+    `OBPI-0.33.0-06` states its fix is *"now guarded by
+    `test_campaign_has_no_stale_unchecked_narrative`."* Measured 2026-08-17:
+    `grep -rn 'stale_unchecked|no_stale|unchecked_narrative' tests/ src/` returns **no match**,
+    and `tests/governance/test_active_campaign_registry.py` carries 7 tests, all of which assert
+    *declaration* coherence (which plan is active, does each path resolve, does prose agree with
+    the registry) and **none** of which assert *narrative* coherence. Operator ruling, verbatim:
+    **"it was never written - add the guard to Movement D scope."**
+
+**Why this belongs in Movement D and not in a GHI alone.** The claim is not a missing test in
+isolation — it is §4's enforcement-claim rule violated **inside the output of the mechanism built
+to catch violations of it**. `.claude/rules/agent-failure-modes.md` names the pattern twice:
+**Fabrication** (*"synthesized claim/receipt/attestation not observed from primary source"*) and
+**Metagaming** (*"shapes output to satisfy the check rather than the intent it proxies"*) — naming
+a guard reads as mechanization to any later reader without anything being built. And the subject
+it claimed to guard is **campaign narrative coherence**, which is precisely the surface this
+Movement is absorbing: a stale campaign claim is what a fresh session reads first.
+
+**The false record stands; it is not retracted.** `AGENTS.md` § Never #2 forbids editing the
+ledger, and an append-only Layer 2 that could be corrected in place would not be evidence. The
+correction lives here, in `.gzkit/insights/agent-insights.jsonl` (`defect`, 2026-08-17), and in
+the guard once built.
+
+**Added to Movement D scope:** a **campaign-narrative coherence guard** — a test that fails when
+the plan's prose contradicts its own checkbox state (the original instance: a `4/6` narrative
+line surviving beside a `6/6` reality). It composes with the Movement's rendered-projection work
+rather than duplicating it: **rendering the campaign from ADR canon removes the class; the guard
+is what fails closed until it is rendered, and afterwards is what proves the rendering did not
+regress.** Nothing is checked off by this ruling.
+
+**Observation, deliberately not acted on:** `OBPI-0.33.0-06` reached `attested_completed` with
+this citation in its resolution text. Whether an attestation citing a guard that never existed is
+a defective attestation, or an honest attestation with a false supporting sentence, is a question
+this amendment does **not** decide — no scope was ruled for it and `ADR-0.33.0` stays `Validated`.
 
 #### Corrections — the review's own errors, recorded so they are not inherited
 
