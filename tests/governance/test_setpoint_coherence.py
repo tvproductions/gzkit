@@ -38,14 +38,14 @@ class TestSetpointCoherence(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
+                    "content_type_routes": {"AgentContract": ["root"]},
                     "content_type_temperatures": {"AgentContract": {"claude": "heavy"}},
                 },
             )
             errors = validate_setpoint_coherence(root)
             self.assertTrue(errors, "expected a coherence error for the uncovered pair")
             blob = " ".join(e.message for e in errors)
-            self.assertIn("codex", blob)
+            self.assertIn("root", blob)
             self.assertIn("AgentContract", blob)
 
     @covers("REQ-0.0.37-20-02")
@@ -82,11 +82,11 @@ class TestSetpointCoherence(unittest.TestCase):
                 root,
                 {
                     "content_type_routes": {
-                        "AgentContract": ["claude", "codex"],
+                        "AgentContract": ["root"],
                         "Rule": ["claude"],
                     },
                     "content_type_temperatures": {
-                        "AgentContract": {"claude": "heavy", "codex": "lite"},
+                        "AgentContract": {"root": "lite"},
                         "Rule": {"claude": "heavy"},
                     },
                 },

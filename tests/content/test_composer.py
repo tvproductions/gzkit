@@ -18,8 +18,8 @@ from gzkit.content.models import CorpusEntry
 from gzkit.traceability import covers
 
 _VENDOR_MANIFEST = {
-    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-    "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    "content_type_routes": {"AgentContract": ["root"]},
+    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
 }
 
 _INVARIANT_TEXT = "YOU OWN THE WORK COMPLETELY."
@@ -78,8 +78,8 @@ class TestComposerEngine(unittest.TestCase):
         candidate_text = f"{_INVARIANT_TEXT}\ncompressed content"
 
         with patch("socket.socket") as mock_sock:
-            result1 = compose(self._root, "AGENTS.md", "codex", candidate_text)
-            result2 = compose(self._root, "AGENTS.md", "codex", candidate_text)
+            result1 = compose(self._root, "AGENTS.md", "root", candidate_text)
+            result2 = compose(self._root, "AGENTS.md", "root", candidate_text)
 
         mock_sock.assert_not_called()
         self.assertEqual(result1.byte_evidence, result2.byte_evidence)
@@ -90,7 +90,7 @@ class TestComposerEngine(unittest.TestCase):
     def test_invariant_tier_verbatim_presence(self) -> None:
         """Invariant-tier entry text appears verbatim in a valid candidate."""
         candidate_text = f"{_INVARIANT_TEXT}\nsome compressed content"
-        result = compose(self._root, "AGENTS.md", "codex", candidate_text)
+        result = compose(self._root, "AGENTS.md", "root", candidate_text)
 
         self.assertIn(_INVARIANT_TEXT, result.candidate_text)
         self.assertGreater(result.byte_evidence.invariant_bytes, 0)
@@ -101,7 +101,7 @@ class TestComposerEngine(unittest.TestCase):
         candidate_text = "only compressible content, no invariant"
 
         with self.assertRaises(ValueError) as ctx:
-            compose(self._root, "AGENTS.md", "codex", candidate_text)
+            compose(self._root, "AGENTS.md", "root", candidate_text)
 
         self.assertIn("Invariant-floor violation", str(ctx.exception))
 
@@ -109,7 +109,7 @@ class TestComposerEngine(unittest.TestCase):
     def test_absent_corpus_raises_file_not_found(self) -> None:
         """An absent corpus store raises FileNotFoundError (caller maps to exit 1)."""
         with self.assertRaises(FileNotFoundError):
-            compose(self._root, "NONEXISTENT.md", "codex", "some text")
+            compose(self._root, "NONEXISTENT.md", "root", "some text")
 
     @covers("REQ-0.0.37-21-04")
     def test_undeclared_setpoint_raises_value_error(self) -> None:

@@ -32,8 +32,8 @@ def step_manifest_coherent(context) -> None:
     _write_manifest(
         context._tmpdir,
         {
-            "content_type_routes": {"AgentContract": ["claude", "codex"]},
-            "content_type_temperatures": {"AgentContract": {"claude": "heavy", "codex": "lite"}},
+            "content_type_routes": {"AgentContract": ["root"]},
+            "content_type_temperatures": {"AgentContract": {"root": "lite"}},
         },
     )
 
@@ -44,7 +44,7 @@ def step_manifest_missing_setpoint(context) -> None:
     _write_manifest(
         context._tmpdir,
         {
-            "content_type_routes": {"AgentContract": ["claude", "codex"]},
+            "content_type_routes": {"AgentContract": ["root"]},
             "content_type_temperatures": {"AgentContract": {"claude": "heavy"}},
         },
     )

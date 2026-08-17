@@ -38,7 +38,7 @@ from pathlib import Path
 
 from gzkit.advisory import emit_advisory
 from gzkit.content.parse import section_id
-from gzkit.content.vendors import delivery_cap_for, routes_for
+from gzkit.content.vendors import binding_delivery_cap
 from gzkit.validate import ValidationError
 
 _DECLARATION_REL = Path("data") / "agents_md_survival_declaration.json"
@@ -137,10 +137,12 @@ def _observe_delivery(
 ) -> None:
     """Emit the byte-distance observation. Never fail-closed (2026-07-06 ruling)."""
     surface_bytes = len((project_root / relpath).read_bytes())
-    for vendor in routes_for(content_type, project_root=project_root):
-        cap = delivery_cap_for(content_type, vendor, project_root=project_root)
-        if cap is None:
-            continue
+    # The surface is delivered ONCE and read by every harness, so the binding cap is
+    # the smallest any harness declares — not one observation per route. Iterating
+    # routes was only coherent while each route had its own rendition; after the
+    # root-contract collapse no route carries a cap and this loop fell silent.
+    binding = binding_delivery_cap(content_type, project_root=project_root)
+    for cap, vendor in [binding] if binding else []:
         if surface_bytes <= cap:
             emit_advisory(
                 f"NOTE {_PREFIX} {relpath}: {surface_bytes} B rendered against the "

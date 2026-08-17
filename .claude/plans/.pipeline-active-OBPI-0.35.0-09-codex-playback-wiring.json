@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.35.0-09-codex-playback-wiring",
+  "parent_adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-08-17T21:54:07Z",
+  "updated_at": "2026-08-17T21:54:07Z",
+  "receipt_state": "other_obpi",
+  "nonce": "251f339e0fd66485edcb9c5eb13e7392",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-09-codex-playback-wiring --from=verify",
+  "resume_point": "verify"
+}

@@ -17,7 +17,7 @@ from pathlib import Path
 # Mirrors data/vendor-manifest.json at initial release. Update both surfaces
 # together when extending vendor coverage.
 _FALLBACK_ROUTES: dict[str, list[str]] = {
-    "AgentContract": ["claude", "codex"],
+    "AgentContract": ["root"],
     "Bullet": ["claude"],
     "Chore": ["claude"],
     "Handoff": ["claude"],
@@ -157,3 +157,37 @@ def delivery_cap_for(
         return None
     cap = vendor_map.get(vendor)
     return cap if isinstance(cap, int) and not isinstance(cap, bool) else None
+
+
+def binding_delivery_cap(
+    content_type: str, *, project_root: Path | None = None
+) -> tuple[int, str] | None:
+    """Return the ``(cap, vendor)`` a single delivered surface must satisfy.
+
+    A content type routed to ONE surface serving every harness must fit the
+    **smallest** cap any harness declares — the strictest constraint binds,
+    because one file cannot be short for Codex and long for everyone else.
+
+    This exists because per-route lookup stops working the moment routing
+    collapses: ``AgentContract`` routes to ``root``, no vendor named ``root``
+    publishes a ``project_doc_max_bytes``, and a per-route resolver therefore
+    finds no cap and falls silent — losing the truncation witness precisely when
+    a single shared surface makes it matter most.
+
+    Returns ``None`` when no cap is declared. Fails **open** for the reason
+    :func:`delivery_cap_for` does: an undeclared cap means gzkit knows of no
+    limit, and fail-closing would force an agent to invent byte caps.
+    """
+    caps = _read_manifest_key(project_root, "content_type_delivery_caps") if project_root else {}
+    vendor_map = caps.get(content_type)
+    if not isinstance(vendor_map, dict):
+        return None
+    declared = [
+        (value, vendor)
+        for vendor, value in vendor_map.items()
+        if isinstance(vendor, str) and isinstance(value, int) and not isinstance(value, bool)
+    ]
+    if not declared:
+        return None
+    cap, vendor = min(declared)
+    return cap, vendor

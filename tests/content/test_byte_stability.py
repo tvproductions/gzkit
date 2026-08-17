@@ -81,8 +81,12 @@ class TestByteStability(unittest.TestCase):
                 from gzkit.content.models.base import BaseContentModel
 
                 assert isinstance(stub, BaseContentModel)
-                first = render(stub, "claude")
-                second = render(stub, "claude")
+                # Vendor is ROUTED, never assumed: AgentContract routes to the
+                # single root consumer and has no per-vendor template.
+                routed = vendors.routes_for(content_type_name)
+                vendor = routed[0] if routed else "claude"
+                first = render(stub, vendor)
+                second = render(stub, vendor)
                 self.assertEqual(
                     first,
                     second,
@@ -191,8 +195,8 @@ class TestByteStability(unittest.TestCase):
         )
         for temp in ("lite", "medium", "heavy"):
             with self.subTest(temperature=temp):
-                first = render(contract, "claude", temperature=temp)
-                second = render(contract, "claude", temperature=temp)
+                first = render(contract, "root", temperature=temp)
+                second = render(contract, "root", temperature=temp)
                 self.assertIsInstance(first, bytes)
                 self.assertEqual(
                     first,

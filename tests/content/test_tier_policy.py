@@ -19,8 +19,8 @@ _NEVER_PYTEST_TEXT = "Testing: unittest over pytest. Enforced by forbid-pytest p
 
 _COMPOSER_INVARIANT_TEXT = "YOU OWN THE WORK COMPLETELY."
 _COMPOSER_VENDOR_MANIFEST = {
-    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-    "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    "content_type_routes": {"AgentContract": ["root"]},
+    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
 }
 
 
@@ -319,7 +319,7 @@ class TestComposerRoutesThroughPolicy(unittest.TestCase):
         """compose() routes its invariant-floor check through the shared tier_policy."""
         candidate = f"{_COMPOSER_INVARIANT_TEXT}\ncompressed body"
         with patch("gzkit.content.composer.assert_invariant_verbatim") as mock_assert:
-            compose(self._root, "AGENTS.md", "codex", candidate)
+            compose(self._root, "AGENTS.md", "root", candidate)
         mock_assert.assert_called_once()
 
     @covers("REQ-0.0.37-23-03")
@@ -327,7 +327,7 @@ class TestComposerRoutesThroughPolicy(unittest.TestCase):
         """A dropped invariant is rejected by the shared policy through compose()."""
         candidate = "only compressible content, the invariant was dropped"
         with self.assertRaises(ValueError) as ctx:
-            compose(self._root, "AGENTS.md", "codex", candidate)
+            compose(self._root, "AGENTS.md", "root", candidate)
         self.assertIn("Invariant-floor violation", str(ctx.exception))
 
 

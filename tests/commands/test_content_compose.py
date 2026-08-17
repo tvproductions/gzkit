@@ -19,8 +19,8 @@ from gzkit.traceability import covers
 from tests.commands.common import CliRunner
 
 _VENDOR_MANIFEST = {
-    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-    "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    "content_type_routes": {"AgentContract": ["root"]},
+    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
 }
 
 _INVARIANT_TEXT = "YOU OWN THE WORK COMPLETELY."
@@ -72,14 +72,14 @@ class TestContentComposeCmd(unittest.TestCase):
                 "compose",
                 "AGENTS.md",
                 "--consumer",
-                "codex",
+                "root",
                 "--candidate",
                 "candidate.md",
             ]
             result = self._runner.invoke(main, args)
 
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "codex.candidate.md"
+            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "root.candidate.md"
             self.assertTrue(candidate_path.exists(), "Candidate file should be written")
             self.assertEqual(candidate_path.read_text(encoding="utf-8"), candidate_text)
             self.assertIn("Byte evidence", result.output)
@@ -101,14 +101,14 @@ class TestContentComposeCmd(unittest.TestCase):
                 "compose",
                 "AGENTS.md",
                 "--consumer",
-                "codex",
+                "root",
                 "--candidate",
                 "candidate.md",
             ]
             result = self._runner.invoke(main, args)
 
             self.assertNotEqual(result.exit_code, 0)
-            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "codex.candidate.md"
+            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "root.candidate.md"
             self.assertFalse(candidate_path.exists(), "No candidate should be written on error")
 
     @covers("REQ-0.0.37-21-04")
@@ -151,14 +151,14 @@ class TestContentComposeCmd(unittest.TestCase):
                 "compose",
                 "AGENTS.md",
                 "--consumer",
-                "codex",
+                "root",
                 "--candidate",
                 "candidate.md",
             ]
             result = self._runner.invoke(main, args)
 
             self.assertNotEqual(result.exit_code, 0)
-            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "codex.candidate.md"
+            candidate_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "root.candidate.md"
             self.assertFalse(candidate_path.exists(), "No candidate on invariant violation")
 
     @covers("REQ-0.0.37-21-05")
@@ -179,7 +179,7 @@ class TestContentComposeCmd(unittest.TestCase):
                 "compose",
                 "AGENTS.md",
                 "--consumer",
-                "codex",
+                "root",
                 "--candidate",
                 "candidate.md",
             ]

@@ -358,9 +358,13 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
 def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     """Generate AGENTS.md by deterministic playback of the committed rendition (OBPI-0.0.37-22).
 
-    Playback path (primary): load ``.gzkit/renditions/AGENTS.md/claude.md`` and write
-    its bytes verbatim to AGENTS.md — no LLM, no template substitution, no network.
-    Identical committed rendition → byte-identical surface on every call.
+    Playback path (primary): load the committed rendition for the manifest-declared
+    ``AgentContract`` consumer and write its bytes verbatim to AGENTS.md — no LLM, no
+    template substitution, no network. Identical committed rendition → byte-identical
+    surface on every call. The consumer is RESOLVED, never named here: AGENTS.md is
+    the root contract serving every harness, and the literal ``"claude"`` that stood
+    in this branch until 2026-08-17 elected one vendor's rendition as the whole
+    contract.
 
     Bootstrap fallback (no committed rendition yet): render from the AgentContract
     template via the model pipeline (OBPI-0.0.37-14 plumbing). The monolith
@@ -371,8 +375,11 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
 
     agents_path = project_root / config.paths.agents_md
 
-    if rendition_exists(project_root, "AGENTS.md", "claude"):
-        agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", "claude"))
+    from gzkit.governance.compose import agent_contract_consumer
+
+    consumer = agent_contract_consumer(project_root)
+    if rendition_exists(project_root, "AGENTS.md", consumer):
+        agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", consumer))
         return
 
     # Bootstrap: no committed rendition yet — render from template via the model
@@ -398,13 +405,13 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     from gzkit.content.vendors import temperature_for as _temperature_for  # lazy
 
     try:
-        claude_temp = _temperature_for("AgentContract", "claude", project_root=project_root)
+        temperature = _temperature_for("AgentContract", consumer, project_root=project_root)
     except ValueError:
         # Fresh/consuming projects ship no data/vendor-manifest.json, so the
         # general-control resolver fails closed. Default to full density — render MORE,
         # never silently thin the primary contract (operator directive 2026-06-03).
-        claude_temp = "heavy"
-    content_bytes = render_content_model(model, "claude", temperature=claude_temp)
+        temperature = "heavy"
+    content_bytes = render_content_model(model, consumer, temperature=temperature)
 
     agents_path.write_bytes(content_bytes)
 

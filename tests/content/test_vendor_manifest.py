@@ -26,7 +26,7 @@ from gzkit.schemas import load_schema
 from gzkit.traceability import covers
 
 _DEFAULT_ROUTES: dict[str, list[str]] = {
-    "AgentContract": ["claude", "codex"],
+    "AgentContract": ["root"],
     "Bullet": ["claude"],
     "Chore": ["claude"],
     "Handoff": ["claude"],
@@ -180,10 +180,8 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-                    "content_type_temperatures": {
-                        "AgentContract": {"claude": "heavy", "codex": "lite"}
-                    },
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
             result = vendors.temperature_for("AgentContract", "claude", project_root=root)
@@ -197,10 +195,8 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-                    "content_type_temperatures": {
-                        "AgentContract": {"claude": "heavy", "codex": "lite"}
-                    },
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
             result = vendors.temperature_for("AgentContract", "codex", project_root=root)
@@ -256,10 +252,8 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-                    "content_type_temperatures": {
-                        "AgentContract": {"codex": "lite", "claude": "heavy"}
-                    },
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
             result = render(model, "codex", temperature="lite", project_root=root)
@@ -293,10 +287,8 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-                    "content_type_temperatures": {
-                        "AgentContract": {"codex": "lite", "claude": "heavy"}
-                    },
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
             codex_lite = render(model, "codex", temperature="lite", project_root=root)
@@ -341,10 +333,8 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-                    "content_type_temperatures": {
-                        "AgentContract": {"codex": "lite", "claude": "heavy"}
-                    },
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
             errors = validate_vendor_manifest(root)
@@ -361,7 +351,7 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["claude", "codex"]},
+                    "content_type_routes": {"AgentContract": ["root"]},
                     "content_type_temperatures": {"AgentContract": {"codex": "extra-hot"}},
                 },
             )
@@ -370,6 +360,120 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                 errors,
                 "Schema must reject an out-of-enum temperature value (REQ-0.0.37-15-06).",
             )
+
+
+class TestAgentContractRootFence(unittest.TestCase):
+    """REQ-0.35.0-09-08 / -09: AgentContract is the ROOT contract, singly routed.
+
+    ``AGENTS.md`` is the agent-harness default and the one root contract; the single
+    rendition serves every harness. The doctrine is stated at
+    ``docs/governance/agent-control-surface-rendering-substrate.md:211`` as
+    ``gz content render agent_contract --vendor=root`` and carried an
+    ``invariant``-tier corpus entry from 2026-08-17. It had no mechanical witness,
+    which is how a per-consumer shape reached three surfaces and then a Heavy-lane
+    brief. This class is that witness.
+    """
+
+    @covers("REQ-0.35.0-09-08")
+    def test_multi_vendor_agent_contract_route_fails_closed(self) -> None:
+        """More than one route for AgentContract must fail closed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root", "codex"], "Rule": ["claude"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "heavy"}},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("root contract" in e.message for e in errors),
+                f"A second AgentContract route must fail closed naming the doctrine: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-08")
+    def test_multi_vendor_agent_contract_temperature_fails_closed(self) -> None:
+        """More than one temperature for AgentContract must fail closed."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {
+                        "AgentContract": {"root": "heavy", "codex": "lite"}
+                    },
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("root contract" in e.message for e in errors),
+                f"A second AgentContract temperature must fail closed: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-08")
+    def test_per_vendor_delivery_caps_remain_legal(self) -> None:
+        """Caps stay per-vendor — a cap is an observed fact about someone else's product.
+
+        The asymmetry is the point: a route and a temperature are controls gzkit
+        chooses, so a second one is a doctrine breach. A cap is Codex's
+        ``project_doc_max_bytes``, which gzkit observes and cannot choose.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"root": "heavy"}},
+                    "content_type_delivery_caps": {
+                        "AgentContract": {"codex": 32768, "claude": 200000}
+                    },
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertEqual(errors, [], f"Multiple delivery caps must stay legal, got: {errors}")
+
+    @covers("REQ-0.35.0-09-09")
+    def test_fallback_table_must_agree_with_manifest(self) -> None:
+        """The in-code fallback table is a second copy; divergence must fail closed.
+
+        ``_FALLBACK_ROUTES`` is maintained by a comment ("Update both surfaces
+        together"). That is the same two-copies-one-binds shape that let the root
+        doctrine drift, one layer down — so it is witnessed rather than trusted.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            # The check only binds a root that SHIPS the second copy. Materialize the
+            # marker so this fixture is a source tree rather than a bare data dir.
+            vendors_py = root / "src" / "gzkit" / "content" / "vendors.py"
+            vendors_py.parent.mkdir(parents=True, exist_ok=True)
+            vendors_py.write_text("# fixture marker\n", encoding="utf-8")
+            diverged = {ct: list(vs) for ct, vs in vendors._FALLBACK_ROUTES.items()}
+            diverged["Rule"] = ["copilot"]
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": diverged,
+                    "content_type_temperatures": {"AgentContract": {"root": "heavy"}},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("_FALLBACK_ROUTES" in e.message for e in errors),
+                f"Fallback/manifest divergence must fail closed: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-09")
+    def test_shipped_manifest_and_fallback_agree(self) -> None:
+        """The real repo's two copies must agree — the regression this fence exists for."""
+        project_root = Path(__file__).resolve().parents[2]
+        self.assertEqual(
+            vendors.all_routes(project_root=project_root),
+            dict(vendors._FALLBACK_ROUTES),
+            "data/vendor-manifest.json and _FALLBACK_ROUTES have diverged.",
+        )
 
 
 if __name__ == "__main__":

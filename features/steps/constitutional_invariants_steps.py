@@ -588,8 +588,8 @@ def step_manifest_with_temperatures(context) -> None:
     root = Path(tmp)
     (root / "data").mkdir()
     manifest = {
-        "content_type_routes": {"AgentContract": ["claude", "codex"]},
-        "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+        "content_type_routes": {"AgentContract": ["root"]},
+        "content_type_temperatures": {"AgentContract": {"root": "lite"}},
     }
     (root / "data" / "vendor-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     context.temp_project_root = root
@@ -652,8 +652,8 @@ def step_agent_contract_with_mixed_bullets(context) -> None:
     root = Path(tmp)
     (root / "data").mkdir()
     manifest = {
-        "content_type_routes": {"AgentContract": ["claude", "codex"]},
-        "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+        "content_type_routes": {"AgentContract": ["root"]},
+        "content_type_temperatures": {"AgentContract": {"root": "lite"}},
     }
     (root / "data" / "vendor-manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     context.temp_project_root = root

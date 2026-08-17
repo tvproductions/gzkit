@@ -21,8 +21,8 @@ from gzkit.content.corpus_store import append_entry
 from gzkit.content.models import CorpusEntry
 
 _VENDOR_MANIFEST = {
-    "content_type_routes": {"AgentContract": ["claude", "codex"]},
-    "content_type_temperatures": {"AgentContract": {"codex": "lite", "claude": "heavy"}},
+    "content_type_routes": {"AgentContract": ["root"]},
+    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
 }
 
 

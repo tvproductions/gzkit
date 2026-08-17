@@ -1,7 +1,7 @@
 """Tests for compose.py: deterministic rendition playback (ADR-0.0.37, OBPI-0.0.37-22).
 
 ``render_agents_md`` is a playback function:
-- Returns committed rendition bytes when .gzkit/renditions/AGENTS.md/claude.md exists
+- Returns committed rendition bytes when .gzkit/renditions/AGENTS.md/root.md exists
 - Returns b"" when no rendition exists (bootstrap-safe)
 
 REQ-derived assertions for:
@@ -38,7 +38,7 @@ class TestRenderAgentsMdDeterminism(unittest.TestCase):
         self._root = Path(self._tmp.name)
         (self._root / ".gzkit").mkdir()
         self._rendition = b"# AGENTS.md\n\nDeterministic rendition content.\n"
-        save_rendition(self._root, "AGENTS.md", "claude", self._rendition)
+        save_rendition(self._root, "AGENTS.md", "root", self._rendition)
 
     def tearDown(self) -> None:
         self._tmp.cleanup()
@@ -68,7 +68,7 @@ class TestRenderAgentsMdDeterminism(unittest.TestCase):
         """
         first = render_agents_md(self._root)
         replacement = b"# AGENTS.md\n\nRecommitted rendition content.\n"
-        save_rendition(self._root, "AGENTS.md", "claude", replacement)
+        save_rendition(self._root, "AGENTS.md", "root", replacement)
         self.assertEqual(render_agents_md(self._root), replacement)
         self.assertNotEqual(first, replacement, "fixture must actually differ")
 
@@ -87,7 +87,7 @@ class TestRenderAgentsMdPlaybackSource(unittest.TestCase):
     @covers("REQ-0.0.37-02-03")
     def test_rendered_bytes_are_the_committed_rendition_verbatim(self) -> None:
         content = b"# Test\n\nminimal test agent contract\n"
-        save_rendition(self._root, "AGENTS.md", "claude", content)
+        save_rendition(self._root, "AGENTS.md", "root", content)
         self.assertEqual(render_agents_md(self._root), content)
 
     @covers("REQ-0.0.37-02-03")

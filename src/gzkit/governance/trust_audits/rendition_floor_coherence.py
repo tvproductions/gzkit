@@ -27,6 +27,16 @@ rendition.st_mtime``. That mtime tautology was repudiated 2026-06-16 and
 replaced by the content-fingerprint comparison above; the description outlived
 the behavior it described and read as "the sibling is inert.")
 
+WHAT THIS GATE GRADES (REQ-0.35.0-09-11). Committed, still-routed renditions —
+never every ``*.md`` in the directory. Two exclusions, both measured 2026-08-17:
+``*.candidate.md`` staging artifacts were being graded as committed renditions
+(``AGENTS.md/codex.candidate`` appeared in this gate's own error output), and a
+superseded rendition retained as an attested record — which
+``OBPI-0.35.0-09`` REQ-04a requires be kept, never deleted — would otherwise be
+graded against a corpus it was never committed against, forever. Enumerating by
+directory glob is what made "keep the record" and "stay green" mutually
+exclusive.
+
 Severity resolved through the shared MX checkpoint (OBPI-0.0.74-09): advisory
 inside the hangar (marker present), fail-closed at full strength outside.
 
@@ -46,6 +56,34 @@ from gzkit.governance.events import emit_composition_drift_detected
 from gzkit.mx import checkpoint as _checkpoint
 from gzkit.mx import disposition as _disposition
 from gzkit.mx import levels as _levels
+
+
+def _skip_ungraded(rendition_file: Path, root: Path) -> bool:
+    """Return ``True`` when *rendition_file* is not a committed, routed rendition.
+
+    Two exclusions (REQ-0.35.0-09-11):
+
+    * **Candidates.** ``<consumer>.candidate.md`` is `gz content compose` staging
+      output. A candidate is by definition not committed, so grading it reports
+      drift about a file no playback path will ever read.
+    * **Unrouted consumers.** A consumer named by no route in
+      ``data/vendor-manifest.json`` is a superseded record, retained deliberately
+      (an attested rendition is never deleted). Nothing plays it back, and the
+      corpus has moved on since it was attested.
+
+    The route test is deliberately the union across ALL content types rather than
+    the one type owning this surface: no surface -> content-type map exists in the
+    codebase, and inventing a second routing authority here to avoid a slightly
+    loose predicate would be the very drift this OBPI is repairing. The looseness
+    is bounded and stated: a consumer still routed for some *other* content type
+    stays graded.
+    """
+    from gzkit.content.vendors import all_routes
+
+    if rendition_file.name.endswith(".candidate.md"):
+        return True
+    routed = {vendor for vendors in all_routes(project_root=root).values() for vendor in vendors}
+    return bool(routed) and rendition_file.stem not in routed
 
 
 def validate_rendition_floor_coherence(
@@ -87,6 +125,8 @@ def validate_rendition_floor_coherence(
             continue
 
         for rendition_file in sorted(surface_dir.glob("*.md")):
+            if _skip_ungraded(rendition_file, root):
+                continue
             rendered_text = rendition_file.read_text(encoding="utf-8")
             missing = [entry for entry in invariants if entry.text not in rendered_text]
             if not missing:

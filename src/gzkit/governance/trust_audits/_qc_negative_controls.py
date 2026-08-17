@@ -781,7 +781,7 @@ def _build_rendition_freshness() -> Path:
     )
     # A committed rendition with NO provenance sidecar over a real corpus: the
     # rendition's derivation from the corpus is unproven, so the gate MUST flag it.
-    _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "codex.md", "old\n")
+    _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "root.md", "old\n")
     return root
 
 
@@ -804,7 +804,7 @@ def _build_rendition_floor_coherence() -> Path:
         + "\n",
     )
     # A committed rendition that drops an invariant-tier entry MUST be flagged.
-    _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "codex.md", "missing\n")
+    _write(root / ".gzkit" / "renditions" / "AGENTS.md" / "root.md", "missing\n")
     return root
 
 
@@ -838,7 +838,7 @@ def _build_invariant_coherence() -> Path:
     # A committed rendition that plays back to a non-empty AGENTS.md, with NO
     # committed AGENTS.md on disk: playback != committed (b"") is genuine drift.
     _write(
-        root / ".gzkit" / "renditions" / "AGENTS.md" / "claude.md",
+        root / ".gzkit" / "renditions" / "AGENTS.md" / "root.md",
         "# Rendered AGENTS.md\n\nPlayback body the committed surface does not carry.\n",
     )
     return root
