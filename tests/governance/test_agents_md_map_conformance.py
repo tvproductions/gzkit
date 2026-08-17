@@ -15,6 +15,8 @@ never source-of-truth. Fixes must flow through the template.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -333,14 +335,28 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             )
 
     @covers("REQ-0.0.54-03-01")  # audit-exempt: regression-invariant-overlay body predates tag
-    def test_file_size_over_budget_rejects(self) -> None:
-        """REQ-0.0.54-03-01d fail: an AGENTS.md exceeding the declared budget must be rejected.
+    def test_file_size_over_budget_is_reported_but_not_rejected(self) -> None:
+        """Criterion (d) measures and reports an over-budget AGENTS.md, and does not reject it.
 
-        Padding AGENTS.md with 20000 chars of binding bullets (so criterion (a)
-        is satisfied) against a 15000-char budget must surface exactly one
-        hard-rejection error of type `agents_md_map_conformance`.
+        SUPERSEDES the original assertion of REQ-0.0.54-03-01d ("must be
+        rejected") by operator ruling 2026-08-17, verbatim: *"temporary stay of
+        all control surface budget limits until version 1.0. I want to be
+        warned, and we may lift the limits as needed, but no blockers."*
+        ADR-0.0.54 is Validated and stays sealed — its text records what was
+        decided on its own date, which is the reading convention
+        `data/instructions_files_budget.json` states for itself. The live
+        posture is that data file's LAST entry, and the exit condition is 1.0.
 
-        Criterion (d) is checked against the rendered file (Layer-3 projected property).
+        The REQ's proof channel is intact: this test still covers it, and it
+        still exercises criterion (d) end-to-end. What changed is the asserted
+        consequence, not the checked property — so both halves are asserted
+        here. An audit that had merely stopped LOOKING would satisfy the
+        no-rejection half while failing the reported half, which is the
+        degeneration the stay must not become.
+
+        Padding AGENTS.md with 20000 chars of binding bullets keeps criterion
+        (a) satisfied, isolating (d). Criterion (d) is checked against the
+        rendered file (Layer-3 projected property).
         """
         # Build content that exceeds the 15000-char budget.
         header = "# AGENTS.md\n\n"
@@ -352,15 +368,20 @@ class AgentsMdMapConformanceAuditTests(unittest.TestCase):
             root = Path(tmp)
             _write_rendered(root, content)
             _write_budget(root, {"AGENTS.md": 15000})
-            errors = audit_agents_md_map_conformance(root)
+            buffer = io.StringIO()
+            with contextlib.redirect_stderr(buffer):
+                errors = audit_agents_md_map_conformance(root)
+            advisories = buffer.getvalue()
             hard_errors = [e for e in errors if e.type == "agents_md_map_conformance"]
             self.assertEqual(
                 len(hard_errors),
-                1,
-                f"Expected exactly one error for file over budget; "
+                0,
+                f"Budget overrun must not block under the 2026-08-17 stay; "
                 f"got {len(hard_errors)}: {hard_errors}",
             )
-            self.assertEqual(hard_errors[0].artifact, "AGENTS.md")
+            self.assertIn("AGENTS.md", advisories, "the overrun must still be reported")
+            self.assertIn("15000", advisories, "the advisory must name the budget")
+            self.assertIn(str(len(content)), advisories, "the advisory must name the measured size")
 
     @covers("REQ-0.0.54-03-02")
     def test_happy_path_against_lifted_agents_md(self) -> None:

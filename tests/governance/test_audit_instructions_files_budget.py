@@ -1,19 +1,35 @@
 """Fixture-level tests for ``audit_instructions_files_budget`` (GHI #373).
 
-These tests pin the boundary semantics — at-budget passes, +1 char fails —
+These tests pin the scan semantics — at-budget passes, +1 char is reported —
 and isolate the audit from the live AGENTS.md / CLAUDE.md / .claude/rules/.
-The repo-lock check is `gz check`'s responsibility; this module gates the
-scan semantics.
+
+**Posture: advisory until 1.0** (operator ruling 2026-08-17, verbatim: *"temporary
+stay of all control surface budget limits until version 1.0. I want to be warned,
+and we may lift the limits as needed, but no blockers."*). The two properties that
+must hold together are therefore in tension by design, and each is asserted
+separately: an overrun is still MEASURED and REPORTED, and it contributes NO
+finding. A test that only checked the empty return would pass against an audit
+that had stopped looking, which is the failure mode the stay must not become.
 """
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import tempfile
 import unittest
 from pathlib import Path
 
 from gzkit.governance.trust_audits import audit_instructions_files_budget
+
+
+def _run(root: Path) -> tuple[list[object], str]:
+    """Run the audit, returning (findings, captured advisory stream)."""
+    buffer = io.StringIO()
+    with contextlib.redirect_stderr(buffer):
+        findings = audit_instructions_files_budget(root)
+    return list(findings), buffer.getvalue()
 
 
 class InstructionsFilesBudgetAuditTests(unittest.TestCase):
@@ -29,40 +45,62 @@ class InstructionsFilesBudgetAuditTests(unittest.TestCase):
             payload["globs"] = globs
         target.write_text(json.dumps(payload), encoding="utf-8")
 
-    def test_at_budget_boundary_passes(self) -> None:
+    def test_at_budget_boundary_is_silent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_budget(root, {"AGENTS.md": 100})
             (root / "AGENTS.md").write_text("x" * 100, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(errors, [])
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertNotIn("AGENTS.md", advisories)
 
-    def test_overrun_by_one_char_flagged(self) -> None:
+    def test_overrun_contributes_no_finding(self) -> None:
+        """The stay: an overrun must not change the exit code."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_budget(root, {"AGENTS.md": 100})
             (root / "AGENTS.md").write_text("x" * 101, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(len(errors), 1)
-            self.assertEqual(errors[0].type, "instructions_files_budget")
-            self.assertIn("AGENTS.md", errors[0].artifact)
+            findings, _ = _run(root)
+            self.assertEqual(findings, [])
 
-    def test_under_budget_passes(self) -> None:
+    def test_overrun_is_still_measured_and_reported(self) -> None:
+        """The stay suspends the consequence, never the observation."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_budget(root, {"AGENTS.md": 100})
+            (root / "AGENTS.md").write_text("x" * 175, encoding="utf-8")
+            _, advisories = _run(root)
+            self.assertIn("AGENTS.md", advisories)
+            self.assertIn("175", advisories)
+            self.assertIn("100", advisories)
+            self.assertIn("75", advisories)
+
+    def test_overrun_advisory_names_the_recovery(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_budget(root, {"AGENTS.md": 10})
+            (root / "AGENTS.md").write_text("x" * 11, encoding="utf-8")
+            _, advisories = _run(root)
+            self.assertIn("gz-context-diet", advisories)
+
+    def test_under_budget_is_silent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_budget(root, {"CLAUDE.md": 100})
             (root / "CLAUDE.md").write_text("x" * 50, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(errors, [])
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertNotIn("CLAUDE.md", advisories)
 
     def test_missing_file_skipped(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_budget(root, {"AGENTS.md": 100, "CLAUDE.md": 100})
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(errors, [])
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertEqual(advisories, "")
 
-    def test_glob_per_file_budget_flags_overrun(self) -> None:
+    def test_glob_arm_reports_only_the_overrunning_file(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             rules = root / ".claude" / "rules"
@@ -70,58 +108,41 @@ class InstructionsFilesBudgetAuditTests(unittest.TestCase):
             (rules / "ok.md").write_text("x" * 100, encoding="utf-8")
             (rules / "fat.md").write_text("x" * 200, encoding="utf-8")
             self._write_budget(
-                root,
-                {},
-                [{"pattern": ".claude/rules/*.md", "max_chars_per_file": 100}],
+                root, {}, [{"pattern": ".claude/rules/*.md", "max_chars_per_file": 100}]
             )
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(len(errors), 1)
-            self.assertIn("fat.md", errors[0].artifact)
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertIn("fat.md", advisories)
+            self.assertNotIn("ok.md", advisories)
 
-    def test_glob_no_matches_passes(self) -> None:
+    def test_glob_no_matches_is_silent(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self._write_budget(
-                root,
-                {},
-                [{"pattern": ".claude/rules/*.md", "max_chars_per_file": 100}],
+                root, {}, [{"pattern": ".claude/rules/*.md", "max_chars_per_file": 100}]
             )
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(errors, [])
-
-    def test_remediation_pointer_in_message(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            self._write_budget(root, {"AGENTS.md": 10})
-            (root / "AGENTS.md").write_text("x" * 11, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(len(errors), 1)
-            self.assertIn("gz-context-diet", errors[0].message)
-
-    def test_message_names_chars_and_budget(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            self._write_budget(root, {"AGENTS.md": 50})
-            (root / "AGENTS.md").write_text("x" * 75, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(len(errors), 1)
-            self.assertIn("75", errors[0].message)
-            self.assertIn("50", errors[0].message)
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertEqual(advisories, "")
 
     def test_missing_budget_data_uses_packaged_defaults(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "AGENTS.md").write_text("x" * 100, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertEqual(errors, [])
+            findings, advisories = _run(root)
+            self.assertEqual(findings, [])
+            self.assertEqual(advisories, "")
 
-    def test_error_type_is_instructions_files_budget(self) -> None:
+    def test_budgets_stay_per_file_so_they_can_be_lifted_individually(self) -> None:
+        """ "we may lift the limits as needed" — the data file stays the dial."""
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            self._write_budget(root, {"AGENTS.md": 10})
+            self._write_budget(root, {"AGENTS.md": 10, "CLAUDE.md": 10_000})
             (root / "AGENTS.md").write_text("x" * 50, encoding="utf-8")
-            errors = audit_instructions_files_budget(root)
-            self.assertTrue(all(e.type == "instructions_files_budget" for e in errors))
+            (root / "CLAUDE.md").write_text("x" * 50, encoding="utf-8")
+            _, advisories = _run(root)
+            self.assertIn("AGENTS.md", advisories)
+            self.assertNotIn("CLAUDE.md", advisories)
 
 
 if __name__ == "__main__":

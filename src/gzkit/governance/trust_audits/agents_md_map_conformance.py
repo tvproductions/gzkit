@@ -10,7 +10,14 @@ Asserts four shape criteria from ADR-0.0.54 § Decision item 3:
     project_root; when '#anchor' is present, the anchor must match a
     slugified heading in the target file
 (d) the file size is within the budget declared in
-    data/instructions_files_budget.json
+    data/instructions_files_budget.json — **ADVISORY until 1.0** (operator
+    ruling 2026-08-17: *"temporary stay of all control surface budget limits
+    until version 1.0 … no blockers"*). Criterion (d) is still measured and
+    reported to stderr; it no longer contributes a finding. Criteria (a), (b)
+    and (c) are unaffected and remain fail-closed — the stay is scoped to
+    budget limits, never to shape conformance. The sibling arm in
+    ``instructions_files_budget`` carries the same posture and the same exit
+    condition; see that module's docstring for the rationale.
 
 Two-layer audit (state-doctrine Layer-1 + Layer-3):
 - Template (src/gzkit/templates/agents.md): shape criteria (a)/(b)/(c) — the
@@ -49,6 +56,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from gzkit.advisory import emit_advisory
 from gzkit.validate import ValidationError
 
 _BUDGET_DATA_PATH = Path("data") / "instructions_files_budget.json"
@@ -150,20 +158,20 @@ def _load_budget_config(project_root: Path) -> dict[str, Any]:
 
 
 def _check_budget(text: str, relpath: str, budget: int) -> list[ValidationError]:
-    """Criterion (d): file size within budget."""
+    """Criterion (d): file size within budget — measured, reported, never blocking.
+
+    Advisory until 1.0 (operator ruling 2026-08-17). Returns no findings; the
+    overrun and its distance go to stderr so the operator is warned. Criteria
+    (a)/(b)/(c) in this module are unaffected.
+    """
     actual = len(text)
     if actual <= budget:
         return []
-    return [
-        ValidationError(
-            type="agents_md_map_conformance",
-            artifact=relpath,
-            message=(
-                f"file is {actual} chars, exceeds {budget}-char budget by "
-                f"{actual - budget}. {_REMEDIATION}"
-            ),
-        )
-    ]
+    emit_advisory(
+        f"WARNING agents-md-map-conformance: {relpath} is {actual} chars, exceeds "
+        f"{budget}-char budget by {actual - budget}. {_REMEDIATION}"
+    )
+    return []
 
 
 def _check_prohibited_titles(text: str, relpath: str) -> list[ValidationError]:

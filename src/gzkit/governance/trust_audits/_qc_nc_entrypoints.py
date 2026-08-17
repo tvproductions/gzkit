@@ -462,11 +462,21 @@ def _ep_insights_shape(root: Path) -> list[ValidationError]:
 
 
 def _ep_instructions_files_budget(root: Path) -> list[ValidationError]:
+    """Run the scope exactly as `gz validate --instructions-files-budget` composes it.
+
+    Both arms, summed, mirroring ``validate_cmd``. The char-budget arm is
+    advisory until 1.0 (operator ruling 2026-08-17) and contributes no findings;
+    the delivery witness still fail-closes on survival-declaration drift. Calling
+    only the budget arm would have made this control structurally unable to fail.
+    """
     from gzkit.governance.trust_audits.instructions_files_budget import (  # noqa: PLC0415
         audit_instructions_files_budget,
     )
+    from gzkit.governance.trust_audits.surface_delivery_witness import (  # noqa: PLC0415
+        audit_surface_delivery_witness,
+    )
 
-    return audit_instructions_files_budget(root)
+    return audit_instructions_files_budget(root) + audit_surface_delivery_witness(root)
 
 
 def _ep_agents_md_map_conformance(root: Path) -> list[ValidationError]:

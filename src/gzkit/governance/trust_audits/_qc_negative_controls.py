@@ -989,9 +989,17 @@ def _build_insights_shape() -> Path:
 
 
 def _build_instructions_files_budget() -> Path:
+    """Trip the scope's surviving fail-closed arm: survival-declaration drift.
+
+    Repointed 2026-08-17. The char-budget arm is advisory under the operator's
+    stay-until-1.0 ruling and returns no findings, so the previous fixture (a
+    3-char AGENTS.md budget) asserted enforcement that no longer happens — worse
+    than no control, because it reports a scope as witnessed while it is blind.
+    The scope still fail-closes through ``audit_surface_delivery_witness`` on a
+    malformed survival declaration, and that is what this control now mutates.
+    """
     root = _mkroot("instr-budget")
-    _write(root / "data" / "instructions_files_budget.json", '{"files": {"AGENTS.md": 3}}\n')
-    _write(root / "AGENTS.md", "too long\n")
+    _write(root / "data" / "agents_md_survival_declaration.json", '{"surfaces": "not-a-mapping"}\n')
     return root
 
 
