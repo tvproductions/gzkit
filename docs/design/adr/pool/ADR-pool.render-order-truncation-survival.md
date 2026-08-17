@@ -26,7 +26,15 @@ pipeline (`src/gzkit/commands/quality.py:451`). The condition is therefore
 already **observable and fail-closed**; what remains unbuilt is the act of
 **permuting the surface**.
 
-Measured warrant (do not re-derive):
+Measured warrant. **Both blocks below are dated records of a measurement, not
+authoritative values** (`.gzkit/rules/governance-core.md` § Non-negotiable
+rules) — the live figures come from `uv run gz validate
+--instructions-files-budget`, and the declaration itself is
+`data/agents_md_survival_declaration.json`. Re-derive before acting; the two
+records differ, and the difference is the point.
+
+Record of 2026-07-24, when this ADR was authored — the cap was **not yet
+breached**:
 
 ```
 AGENTS.md = 32,208 bytes; Codex project_doc_max_bytes default 32,768; headroom 560 bytes
@@ -38,16 +46,37 @@ AGENTS.md = 32,208 bytes; Codex project_doc_max_bytes default 32,768; headroom 5
    31613  Architectural Boundaries      <- last 595 bytes
 ```
 
+Record of 2026-08-17, re-measured under GHI #815 after two rendition
+recomposes — **the cap now binds**:
+
+```
+AGENTS.md total = 34,354 B;  Codex cap = 32,768 B;  OVER by 1,586 B
+must-survive (ranks 1-11) = 23,678 B;  headroom under cap = 9,090 B
+
+past the cap in current render order:
+   33759  architectural-boundaries   rank 11   595 B      <- the entire breach
+```
+
 Past 32,768 bytes the tail is **not delivered at all** under Codex
 (openai/codex#7138) — silently. `Operator Doctrine (verbatim canon)` holds
 10 of the corpus's 50 `tier: invariant` entries, including *"MY WORD IS
 AUTHORITY IN ALL CASES"*. An invariant-tier entry that is not delivered is
 not an invariant.
 
+**The 2026-08-17 record sharpens the warrant rather than merely updating it.**
+Must-survive grew 21,582 B → 23,678 B, yet still clears the cap with **9,090 B
+to spare**, and exactly **one** must-survive section — `architectural-boundaries`,
+595 B, ranked *last* in document order — falls outside. The surface is not too
+big to deliver its binding content. It is rendered in the wrong order, and that
+is the whole defect. Shrinking the surface (GHI #533) buys headroom; it does not
+buy delivery, because a smaller surface rendered in the same order still puts
+rank 11 last. **This is why the reorder half outranks the shrink half as the
+delivery remedy** (operator ruling 2026-08-17, on GHI #815 step 2 of the
+2026-08-17T13:01:47Z handoff).
+
 Ratified survival declaration (operator, 2026-07-25): must-survive =
 **ranks 1–11**, `operator-doctrine-verbatim-canon` first and
-`architectural-boundaries` last, cumulative **21,582 B**, leaving
-**11,186 B** of growth headroom. Ranks 12–20 are declared
+`architectural-boundaries` last. Ranks 12–20 are declared
 **expendable-under-pressure because they are recoverable, not because they
 are unimportant.** Ratified **as data only** — applying the order to
 committed `AGENTS.md` remains a Layer-1 canon change requiring Gate-5
@@ -59,6 +88,20 @@ Deferred to post-1.0. Parked here rather than folded into an active ADR
 because only this half is expensive, and it pays off **only once the cap
 binds** — the GHI #712 witness makes the binding condition observable in
 the meantime, so the permutation can wait without the risk going unwatched.
+
+**The deferral's stated trigger has since fired, and the parking still
+stands** (operator ruling 2026-08-17). The witness did exactly what it was
+built to do: `AGENTS.md` crossed the cap on 2026-08-17 and
+`architectural-boundaries` is now undelivered under Codex, tracked as
+GHI #815. So *"it pays off only once the cap binds"* is no longer a reason to
+wait — it is now a reason this ADR is the **ranked-first** delivery remedy.
+What still holds the parking is a different constraint entirely: promoting it
+would put a second feature ADR on the pre-1.0 board while `ADR-0.35.0` is the
+in-flight feature, against *"only one feature at a time, feature, finish, draw
+from pool"* and against Movement C's board reduction (the same ground as
+§ Alternatives 2). Promotion therefore needs its own operator ruling and did
+not happen here; only the ranking was recorded. **Do not read the expired
+trigger as an implicit promotion.**
 
 Three constraints are already measured and bind any future implementation.
 They are recorded here so promotion does not re-litigate them:
