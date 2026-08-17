@@ -52,7 +52,7 @@ No ADR or OBPI advanced. Advised steps 1 and 2 of the predecessor stay set aside
 
 ## Immediate Next Steps
 
-1. **Resume the campaign spine.** `ADR-0.35.0-canon-entry-corpus-landing` is the next work in ADR order at 0/10, all briefs `draft`. Verify with `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` rather than trusting this line. Its § Decision 3 is also the destination GHI #814 [settled] closed against and the exit condition for the budget stay.
+1. **Resume the campaign spine.** `ADR-0.35.0-canon-entry-corpus-landing` is the next work in ADR order, with no OBPI landed and its briefs still in draft. Read the live figures from `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` — this line deliberately transcribes no count. Its § Decision 3 is also the destination GHI #814 [settled] closed against and the exit condition for the budget stay.
 2. **Consider re-prioritising GHI #815 against `ADR-pool.render-order-truncation-survival`.** GHI #580 [settled] measured must-survive at 21582 B against the 32768 B Codex cap, so the declaration is satisfiable with NO shrink at all — the render ORDER is what fails. That argues the reorder half outranks GHI #533's shrink half, inverting how the two are currently parked.
 3. **Do not re-raise the `ADR-0.35.0` lifecycle question.** Ruled 2026-08-12 and re-ruled since: `Draft` HOLDS through implementation. Carried unworked across seven handoffs before being written down.
 4. **Do not re-raise the prosthetic/synthetic naming question.** Ruled 2026-08-17: both terms are apt, both stay, the PRD glossary entry is the settlement.
@@ -62,7 +62,7 @@ No ADR or OBPI advanced. Advised steps 1 and 2 of the predecessor stay set aside
 
 - **GHI #815 is open and widening.** `AGENTS.md` now renders 34354 B against the 32768 B Codex cap — 1586 B over, up from 385 B before this session's recompose. The must-survive section `architectural-boundaries` renders past the cap and is therefore not delivered under Codex, so a rule declared binding does not reach the agent. Remedies are owned by `ADR-pool.render-order-truncation-survival` and GHI #533; neither lands in-session.
 - **The advisory scorecard now carries one fewer Mechanical row.** Row 17b moved Mechanical to Judgment (65/9/46 from 66/9/45). It reclassifies back only when the stay lifts.
-- **`ADR-0.36.0` and `ADR-0.37.0` remain Pending** at 0/9 and 0/6 behind `ADR-0.35.0` in absolute ADR order. Movement B stays TOPMOST in the campaign while its carrier `ADR-0.37.0` is third of three, so the campaign's topmost item is structurally unreachable for two full ADRs. That is intended, not a defect, but it means "work the topmost item" resolves to `ADR-0.35.0`.
+- **`ADR-0.36.0` and `ADR-0.37.0` remain Pending** behind `ADR-0.35.0` in absolute ADR order; read their OBPI counts from `uv run gz adr status <ADR-ID>` rather than from this line. Movement B stays TOPMOST in the campaign while its carrier `ADR-0.37.0` is third of three, so the campaign's topmost item is structurally unreachable for two full ADRs. That is intended, not a defect, but it means "work the topmost item" resolves to `ADR-0.35.0`.
 - **`OBPI-0.33.0-06` attestation question stays deliberately undecided**, carried from the predecessor: it reached `attested_completed` citing a test that does not exist, and whether that is a defective attestation or an honest one with a false supporting sentence has no ruled scope.
 - **Carried untouched from prior sessions:** the PRD rewrite (`PRD-GZKIT-1.0.0` is dated 2026-01-22, status `Draft`, and its Non-Goals forbid multi-agent orchestration that `ADR-0.18.0` ships); radar registry widening; the W1 re-baseline and third cost axis for SUPPORT re-kinds.
 
@@ -77,7 +77,7 @@ uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing
 git rev-list --left-right --count origin/main...HEAD
 ```
 
-Expected, each observed at authoring rather than assumed: bare `validate` reports 13 scopes passed; the scorecard self-test passes; `--instructions-files-budget` exits 0 while printing two `[advisory] WARNING` lines about the Codex cap (exit 0 WITH warnings is the ruled posture — a non-zero exit there is a regression of the stay); the unit suite ran 8436 tests at exit 0; `ADR-0.35.0` reads `Pending` 0/10; the branch count is `0 0`.
+Expected, each observed at authoring rather than assumed: bare `validate` reports 13 scopes passed; the scorecard self-test passes; `--instructions-files-budget` exits 0 while printing two `[advisory] WARNING` lines about the Codex cap (exit 0 WITH warnings is the ruled posture — a non-zero exit there is a regression of the stay); the unit suite exits 0; `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` reports its own lifecycle and OBPI count, which this checklist deliberately does not transcribe; the branch count is `0 0`.
 
 To confirm the stay did not silently become blindness, force an overrun in a throwaway root and check that the advisory still fires while the finding count stays zero — `tests/governance/test_audit_instructions_files_budget.py::test_overrun_is_still_measured_and_reported` is the standing witness.
 
