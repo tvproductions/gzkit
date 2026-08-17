@@ -51,10 +51,15 @@ _DECLARATION_REMEDIATION = (
     "with the rendered headings in the same patch (GHI #712 / GHI #580)."
 )
 _DELIVERY_REMEDIATION = (
-    "Recover by shrinking the surface (`uv run gz chores show "
-    "instructions-files-diet`, GHI #533) or by re-ranking so must-survive "
-    "sections render first (GHI #580 reorder half). Raising the configured "
-    "budget does NOT help — the cap belongs to the vendor, not to gzkit."
+    "A vendor-limit exceedance is TRACKED, never blocking (operator ruling "
+    "2026-08-17: 'when we exceed vendor limits, ghi it so it doesn't block'). "
+    "If no GHI covers this surface's exceedance, file one via `/ghi-author`; "
+    "the live record is GHI #815. The two remedies both have registered homes "
+    "and neither lands in-session: shrink the surface (`uv run gz chores show "
+    "instructions-files-diet`, GHI #533) or re-rank so must-survive sections "
+    "render first (`ADR-pool.render-order-truncation-survival`, the GHI #580 "
+    "reorder half). Raising the configured budget does NOT help — the cap "
+    "belongs to the vendor, not to gzkit, and no gzkit ruling can stay it."
 )
 
 
