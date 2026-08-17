@@ -926,12 +926,38 @@ Every decision has been wired into a governance artifact.
 | Status table updated | Both ADRs registered | `docs/governance/GovZero/adr-status.md` |
 | Pool README restructured | Six groups (A-F) with sequencing | `docs/design/adr/pool/README.md` |
 | Pool ADR archived | `storage-simplicity-profile` forwarding note | `docs/design/adr/pool/ADR-pool.storage-simplicity-profile.md` |
-| AGENTS.md boundaries | Chore registered, ready to execute | `ops/chores/agents-md-architectural-boundaries/` |
+| AGENTS.md boundaries | Chore registered, ready to execute (see § Retirement note 2026-08-17) | `ops/chores/agents-md-architectural-boundaries/` |
 | Phase N+1-N+3 tracking | Pool README groups B/D/F | `docs/design/adr/pool/README.md` |
 
 ### What Remains
 
 Nothing from this memo is untracked. Future phases are sequenced in the pool
 README. The AGENTS.md boundaries chore is registered and ready to execute.
+
+### Retirement note (2026-08-17)
+
+The two claims above about the AGENTS.md boundaries chore were true on their
+date and are left unmodified as the record of it. Current state, for a reader
+who follows the pointer:
+
+- **The boundaries landed** in `.gzkit/agents.local.md` on 2026-04-02
+  (`a42d7de01`), which is spliced into rendered `AGENTS.md`, `CLAUDE.md` and
+  `.github/copilot-instructions.md` by `gz agent sync control-surfaces`.
+  `AGENTS.md § Architectural Boundaries` carries all six.
+- **The chore never performed that work.** Its first recorded run is
+  2026-05-10, five weeks after the section landed; all six of its runs passed
+  by `grep`-ing text that already existed. It was retired 2026-08-17 — a
+  discharged one-shot whose procedure named the rendered `AGENTS.md` as its
+  edit target (the GHI #817 derived-surface defect) and whose only live
+  function, a presence check, is subsumed by `surface_delivery_witness`
+  (GHI #712), which measures *delivery* rather than presence on disk.
+- **The `ops/chores/` path in the table no longer exists** — chores migrated to
+  the two-root layout of ADR-0.0.21 (`src/gzkit/chores/` canonical,
+  `.gzkit/chores/` project-local).
+- **The companion Negative Architecture ADR was never authored.** The memo
+  framed the chore as the operational mirror and that ADR as "the formal
+  governance authority"; only the mirror was built, so the six boundaries are
+  cited across the repo as binding on this memo's authority alone. Tracked as
+  a GHI.
 The two foundation ADRs (0.0.9 and 0.0.10) are Proposed and awaiting
 implementation of their OBPIs.

@@ -19,14 +19,6 @@
   },
   "chores": [
     {
-      "slug": "agents-md-architectural-boundaries",
-      "title": "Add Architectural Boundaries to AGENTS.md",
-      "version": "1.0.0",
-      "path": ".gzkit/chores/agents-md-architectural-boundaries",
-      "lane": "lite",
-      "timeoutSeconds": 120
-    },
-    {
       "slug": "arb-pattern-extraction",
       "title": "ARB Pattern Extraction (Code Style Feedback Loop)",
       "version": "1.0.0",
