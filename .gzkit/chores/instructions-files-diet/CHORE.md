@@ -1,9 +1,29 @@
 # CHORE: Instructions & Memory Files Diet (Progressive Disclosure)
 
-**Version:** 3.0.0
+**Version:** 3.1.0
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
+> **3.1.0 (operator ruling 2026-08-17) — § 5a cited the wrong authority and named
+> retired consumers.** It read *"landing a recomposed `AGENTS.md` is a Layer-1 canon
+> change and Gate 5 is universal (ADR-0.0.36) … It never lands canon itself"* — a
+> single blanket stop for every rendition change. ADR-0.0.36 governs OBPI/ADR
+> **completion** attestation and does not govern a rendition promotion at all, so
+> the citation was a name collision, and the blanket scope made this chore
+> structurally unable to finish the job `agents-md-map-doctrine.md` v0.5.0 had just
+> assigned it. Operator ruling, verbatim: *"a rerender of unhanged canon doesn't
+> require my attestation. adding to cms entries would. removing items would. trims
+> and compressions to render within budget might invite a review"* (spelling
+> preserved). § 5a now carries the three-case table; the discriminator is whether
+> CANON changed, never whether a file was written. **This chore's own output still
+> stops for review** — compression is the third row — so the boundary is unchanged;
+> what changed is the reason, the scope, and the removal of a false blocker (an
+> operator ruling relayed via `--attestation-text` IS the authorization; the chore
+> never waits on a terminal). Also repoints every `--consumer claude` /
+> `--consumer codex` invocation to the single `root` consumer: `OBPI-0.35.0-09`
+> collapsed `AgentContract` to one route and `gz validate --vendor-manifest` now
+> refuses a second, so those three commands would have failed on invocation.
+>
 > **3.0.0 (operator directives 2026-08-17, verbatim: *"the chore should render,
 > check, trim, compress. and ask questions if needed."* and *"it should recommend
 > compression and trimming and consult the operator before acting."*) — the
@@ -129,8 +149,7 @@ no edits. This is the artifact the rest of the chore reasons about; every figure
 below is measured from it rather than from the file on disk.
 
 ```bash
-uv run gz content compose AGENTS.md --consumer claude --candidate .gzkit/renditions/AGENTS.md/claude.candidate.md
-uv run gz content compose AGENTS.md --consumer codex  --candidate .gzkit/renditions/AGENTS.md/codex.candidate.md
+uv run gz content compose AGENTS.md --consumer root --candidate .gzkit/renditions/AGENTS.md/root.candidate.md
 ```
 
 Always pass `--candidate` explicitly: omitted, it reads STDIN and silently
@@ -281,18 +300,31 @@ uv run gz content retire AGENTS.md --entry <entry-id> --reason "<why>"
 # 2. Capture a replacement when combining or rewriting
 uv run gz content remember AGENTS.md --address <section> --text "<compressed text>"
 
-# 3. Compose a candidate per consumer. ALWAYS pass --candidate explicitly:
-#    omitted, it reads from STDIN and silently validates empty input.
-uv run gz content compose AGENTS.md --consumer claude --candidate /tmp/claude.md
-uv run gz content compose AGENTS.md --consumer codex  --candidate /tmp/codex.md
+# 3. Compose a candidate. ALWAYS pass --candidate explicitly: omitted, it reads
+#    from STDIN and silently validates empty input. Resolve the consumer from
+#    the manifest -- NEVER name a vendor here. AgentContract routes to exactly
+#    one consumer (`root`); a second one is refused by --vendor-manifest.
+uv run gz content compose AGENTS.md --consumer root --candidate /tmp/root.md
 ```
 
-**STOP THERE.** `gz content compose` writes a *candidate* and emits byte
-evidence; it never writes a rendered surface. Promotion is
-`uv run gz content commit`, which requires human attestation — landing a
-recomposed `AGENTS.md` is a Layer-1 canon change and Gate 5 is universal
-(ADR-0.0.36). **This chore does the compression labor and hands the operator a
-candidate to attest. It never lands canon itself.**
+**STOP THERE — and know which of three cases you are in** (operator ruling
+2026-08-17; `.gzkit/rules/agents-md-map-doctrine.md` § Attestation granularity).
+The discriminator is whether CANON changed, never whether a file was written:
+
+| What you did | Disposition |
+|---|---|
+| Re-rendered **unchanged** canon (corpus fingerprint unmoved) | No attestation. The chore lands it. |
+| Retired or added corpus entries in steps 1-2 above | Attested — that is a canon change |
+| **Trimmed or compressed to fit a delivery cap** | **Invites operator review** — this is the chore's normal output |
+
+**This chore's own work lands in the third row.** Compression changes what canon
+*looks like* without changing what canon *is*, so it hands the operator a
+candidate and a byte-evidence delta to review. That much of the prior text was
+right; what was wrong was its reason — it cited universal Gate 5 (ADR-0.0.36),
+which governs OBPI/ADR **completion** and does not govern a rendition promotion
+at all. Do not repeat that citation, and do not read the third row as a blocker:
+the operator's ruling relayed verbatim via `--attestation-text` IS the
+authorization, so the chore never waits on a terminal.
 
 `tier: invariant` corpus entries are verbatim-preserved by the composer and are
 not compressible by any amount of editorial judgment. The compressible budget is
@@ -465,7 +497,7 @@ Two consequences bind this chore:
 ## Evidence Commands
 
 ```bash
-uv run gz content compose AGENTS.md --consumer codex --candidate .gzkit/renditions/AGENTS.md/codex.candidate.md
+uv run gz content compose AGENTS.md --consumer root --candidate .gzkit/renditions/AGENTS.md/root.candidate.md
 uv run gz validate --invariant-coherence
 uv run gz validate --instructions-files-budget
 uv run gz validate --advisory-scorecard

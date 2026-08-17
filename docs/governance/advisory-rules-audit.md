@@ -51,7 +51,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
-| `agents-md-map-doctrine.md` | `0.5.0` |
+| `agents-md-map-doctrine.md` | `0.6.0` |
 | `chores.md` | `0.3.2` |
 | `cli.md` | `0.4.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
@@ -324,6 +324,8 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 |---|------|-------|-------|
 | 58 | AGENTS.md MUST contain only binding bullets, structured tables, and canonical-link references; MUST NOT contain multi-paragraph rationale prose, worked examples, anti-pattern catalogs, "Why this is canon" blockquotes, narrative pedagogical sections, or operative-claims expansions already stated in binding-bullet form | **Mechanical** (shape invariant); per-section size targets remain **Judgment** | **Re-scored 2026-08-17 at rule `0.5.0`; two claims in the prior note had gone stale in opposite directions.** The shape check is no longer "forthcoming" — `gz validate --agents-md-map-conformance` ships, and criteria (a) paragraph shape, (b) prohibited titles, (c) link resolution remain **fail-closed**, which is what keeps this row Mechanical. The budget half is no longer "enforced": criterion (d) and `audit_instructions_files_budget` are both deliberately disarmed and, as of the 2026-08-17 cadence ruling, permanently so — see row 17b. Do not read this row's Mechanical score as covering size; it covers **shape only**. Size targets live in ADR-0.0.54 § Intent TOC table and are Judgment by construction. Bringing an over-budget surface back into trim belongs to the `instructions-files-diet` chore on a cadence, not to a gate; the mechanical successor at this subject is drift-from-approved-build (`gz validate --rendition-lineage`, `OBPI-0.35.0-06`, Draft), scored as its own row when it lands. Canonical expansion: `docs/governance/agents-md-doctrine.md`. |
 
+| 58a | Attestation attaches to the CANON change and to completed OBPI/ADR work, never to a Layer-3 derived view: a re-render of unchanged canon needs no attestation; adding and removing corpus entries are attested; trim/compression to fit a delivery cap invites operator review; a GHI needs none; and "Gate 5" names OBPI/ADR completion only | **Judgment** | **Added 2026-08-17 (rule `0.6.0`), operator ruling — verbatim:** *"a rerender of unhanged canon doesn't require my attestation. adding to cms entries would. removing items would. trims and compressions to render within budget might invite a review"* (spelling preserved), preceded by *"I only attest to completed obpi/adr work."* Judgment rather than Promotable, and the reason is that **the implementation is currently inverted**, so there is no check to build until the verbs move: measured 2026-08-17, `gz content remember` and `gz content retire` accept no `--attestor` at all, while `gz content commit` requires one and fail-closes on empty — the two acts this rule makes attested are ungated and the one it exempts is gated. A witness written against today's verbs would assert the opposite of the rule. The `retire` half is not merely unbuilt but *contradicted by its own design*: `ADR-0.35.0` § Decision item 2 already specifies `--attestor` + `--reason` fail-closed on empty for an invariant-tier retirement (`OBPI-0.35.0-02`, Draft), and in its absence an `invariant`-tier operator-canon entry was retired this session on a `--reason` string alone. The trim/compression row is Judgment by construction — *"might invite a review"* is a posture, not a predicate, and mechanizing "invites" would be shape-grading. **Reclassify when the verbs carry the granularity**, at which point the add/remove arms become Mechanical and the re-render exemption becomes a fingerprint comparison already available as `corpus_fingerprint()`. Do NOT promote by adding a gate to `commit` — that is the inversion, not the fix. Coupled surfaces: `.gzkit/chores/instructions-files-diet/CHORE.md` § 5a (encodes the superseded undifferentiated reading, *"It never lands canon itself"*), `gz content commit --help` (claims the name "Gate 5" for a build step), `ADR-0.35.0` § Decision 7 (capture must never be blocked — preserved by reading add/remove attestation as recorded provenance rather than a blocking gate). |
+
 ### REQ Scope Discipline (`.gzkit/rules/tests.md` § REQ Scope Discipline)
 
 | # | Rule | Score | Notes |
@@ -422,7 +424,7 @@ decays in whichever direction the next reader's grep happens to point.
 |-------|-------|---|
 | **Mechanical** | 65 | 54% |
 | **Promotable** | 9 | 7% |
-| **Judgment** | 46 | 38% |
+| **Judgment** | 47 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
