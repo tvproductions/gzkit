@@ -373,6 +373,22 @@ def _detect_stranded_commit_message(project_root: Path) -> str | None:
     return subject
 
 
+def _hook_failure_detail(stdout: str, stderr: str, fallback: str) -> str:
+    """Combine a refusing hook's report with git's summary (GHI #816).
+
+    Hook frameworks write their check report -- the failing check, its location,
+    and its recovery prose -- to **stdout**, while git writes only a terminal
+    one-liner to **stderr**. Reporting stderr alone reduced a fully-diagnosed
+    refusal to `error: failed to push some refs`, which names no gate and, being
+    git's non-fast-forward phrasing, points the reader at the wrong remedy.
+
+    stdout leads because it carries the diagnosis; stderr follows as the summary,
+    matching the order a direct `git commit`/`git push` prints them.
+    """
+    parts = [part.strip() for part in (stdout, stderr) if part.strip()]
+    return "\n".join(parts) or fallback
+
+
 def _commit_staged_changes(project_root: Path, blockers: list[str], executed: list[str]) -> None:
     """Create sync auto-commit when staged changes are present."""
     if blockers:
@@ -407,7 +423,7 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
 
     message = _build_sync_commit_message(staged_files, anchors=anchors, ledger_events=ledger_events)
 
-    rc_commit, _out_commit, err_commit = git_cmd(
+    rc_commit, out_commit, err_commit = git_cmd(
         project_root,
         "commit",
         "-m",
@@ -416,7 +432,7 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
     if rc_commit == 0:
         executed.append("git commit")
     else:
-        blockers.append(err_commit or "Auto-commit failed.")
+        blockers.append(_hook_failure_detail(out_commit, err_commit, "Auto-commit failed."))
 
 
 def _pull_if_needed(
@@ -481,11 +497,11 @@ def _push_if_ahead(
     if post_state["ahead"] <= 0:
         return
 
-    rc_push, _out_push, err_push = git_cmd(project_root, "push", remote, target_branch)
+    rc_push, out_push, err_push = git_cmd(project_root, "push", remote, target_branch)
     if rc_push == 0:
         executed.append(f"git push {remote} {target_branch}")
     else:
-        blockers.append(err_push or "Push failed.")
+        blockers.append(_hook_failure_detail(out_push, err_push, "Push failed."))
 
 
 def _run_post_sync_lint(
