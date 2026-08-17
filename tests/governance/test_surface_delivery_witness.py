@@ -277,5 +277,33 @@ class CommittedTreeIsCoherent(unittest.TestCase):
         self.assertIn("codex", output)
 
 
+class DeliveryRemediationOutputContract(unittest.TestCase):
+    """The delivery advisory transcribes no issue state (GHI #815).
+
+    Output-form carve-out declared: for a guardrail surface the recovery prose
+    *is* the contract (``.gzkit/rules/guardrail-feedback-prose.md`` § Invariant),
+    and this asserts what the prose may not contain rather than its wording.
+    """
+
+    def test_delivery_advisory_transcribes_no_issue_number(self) -> None:
+        # output-contract: the advisory instructs the reader to resolve the
+        # current tracker; an issue number written into it is a state claim that
+        # goes stale silently.  Observed twice on this one string: it named a
+        # GHI as the live record (fixed 01daaf8ae), then named one as closed --
+        # false 88 minutes later when GHI #815 was reopened, and printed on
+        # every `gz check` until this test.  Cite the resolver, not the record.
+        _, output = _run(_PROJECT_ROOT)
+        delivery = [
+            line for line in output.splitlines() if "delivery cap" in line or "must-survive" in line
+        ]
+        self.assertTrue(delivery, "the committed surface must still emit a delivery advisory")
+        self.assertNotRegex(
+            "\n".join(delivery),
+            r"GHI #\d+",
+            "the delivery advisory must name no issue number -- a transcribed "
+            "record decays when its state changes under the string",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
