@@ -7,10 +7,19 @@ status: Draft
 allowlist:
 - src/gzkit/sync_surfaces.py
 - src/gzkit/governance/compose.py
+- src/gzkit/content/vendors.py
+- src/gzkit/schemas/vendor_manifest.json
+- src/gzkit/governance/trust_audits/vendor_manifest.py
+- src/gzkit/governance/trust_audits/surface_delivery_witness.py
+- data/vendor-manifest.json
 - tests/test_sync_surfaces.py
 - tests/governance/test_compose.py
+- tests/content/test_vendors.py
+- tests/governance/test_vendor_manifest.py
+- tests/governance/test_surface_delivery_witness.py
 - features/**
 - docs/user/runbook.md
+- docs/governance/agent-control-surface-rendering-substrate.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-09-codex-playback-wiring.md
 reqs:
 - REQ-0.35.0-09-01
@@ -20,6 +29,9 @@ reqs:
 - REQ-0.35.0-09-05
 - REQ-0.35.0-09-06
 - REQ-0.35.0-09-07
+- REQ-0.35.0-09-08
+- REQ-0.35.0-09-09
+- REQ-0.35.0-09-10
 verification:
 - uv run gz lint
 - uv run gz typecheck
@@ -42,7 +54,23 @@ verification:
 
 ## Objective
 
-Play the committed `codex.md` rendition back to a real Codex-consumed contract surface, so the `lite` setpoint is falsifiable for the first time — `codex.md` (13,606 B) is composed, committed, attested and floor-gated today, and NOTHING consumes it because `sync_surfaces.py:374-376` and `governance/compose.py:28-29` both hardcode `("AGENTS.md", "claude")`.
+**RE-SCOPED 2026-08-17 (operator-ruled).** This OBPI was authored to play `codex.md` back to a *second*, Codex-specific contract surface. That premise was wrong, and the correction is doctrine recovery rather than new design.
+
+**AGENTS.md is the root contract and the agent-harness default; the single rendition serves EVERY harness.** Operator verbatim 2026-08-17: *"claude reads AGENTS.md too — the lite rendition serves both"*; *"agents.md is more universal than stubborn anthropic. So, agents.md is the agent harness default."* This is **OLD GROUND**: `docs/governance/agent-control-surface-rendering-substrate.md:211` has named the root vendor since authoring — `gz content render agent_contract --vendor=root`.
+
+The doctrine drifted to a per-consumer shape in **three** places, none of which was ever ruled:
+
+| Surface | Carries |
+|---|---|
+| `docs/governance/agent-control-surface-rendering-substrate.md:276` (§ Agent Orientation Index) | `.gzkit/renditions/AGENTS.md/<consumer>.md` — a Layer-3 row describing the implementation, 65 lines below the Layer-1 worked example it contradicts |
+| `data/vendor-manifest.json` | `"AgentContract": ["claude", "codex"]` + two temperatures |
+| `src/gzkit/content/vendors.py:21` `_FALLBACK_ROUTES` | the same pair, hardcoded in Python |
+
+The same module already knows the truth: `delivery_cap_for`'s docstring states *"Codex silently truncates root `AGENTS.md` past `project_doc_max_bytes`."* The correct fact and the drift sit ~100 lines apart in one file, because the doctrine carried **no mechanical witness** — the third arm of the doctrine-declared-without-mechanism family (campaign Movement C).
+
+Objective, restated: **collapse `AgentContract` to one rendition played back to root `AGENTS.md`, and fence the manifest so a per-vendor AgentContract can never be declared again.** The `lite` setpoint becomes falsifiable not because a second file is consumed, but because the *one* consumed file is measured against the smallest declared vendor cap.
+
+**Scope boundary (binding).** This OBPI wires the pipe and installs the fence. It does **not** decide what flows through it: which prose survives into a single ≤32,768 B rendition is a `gz content compose` + Gate-5 `commit`, driven by the `instructions-files-diet` chore under the 2026-08-17 cadence ruling. GHI #815 therefore stays OPEN after this OBPI and is correctly re-diagnosed as a **size** problem again, not a routing one.
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 09 is independent of the 01 -> 02 -> 03 chain and may land at any point. Per § Scope Minimization it is NOT cuttable: codex playback is the only thing that makes the `lite` setpoint falsifiable, and its cross-ADR coordination with `ADR-pool.vendor-alignment-codex` gets HARDER, not easier, if deferred into a window where that ADR has moved.
 
@@ -83,8 +111,9 @@ and this OBPI must not touch them.
 
 1. READ ADR-pool.vendor-alignment-codex BEFORE SCOPING ANY EDIT. It owns the Codex surface. This OBPI coordinates; it does not collide. Its six checklist items — config generation, hooks policy, skills/personas/subagents, harness-aware pipeline runtime, surface validation, instruction budget and docs — are ALL out of scope here.
 2. ALWAYS resolve the playback consumer rather than hardcoding it. `sync_surfaces.py:374-376` and `governance/compose.py:28-29` both load `("AGENTS.md", "claude")` as a literal; the playback path must take the consumer as a parameter (Cockburn's rule, `.claude/rules/hexagonal-architecture.md` operative rule 4).
-3. ALWAYS resolve the Codex destination path from EXISTING configuration — `config.vendors.codex.surface_root` — never from a newly invented constant. Inventing a path here is the collision with `ADR-pool.vendor-alignment-codex`; if no suitable configured path exists, STOP and emit BLOCKERS naming the coordination point rather than choosing one.
-4. NEVER regress the `claude` surface. AGENTS.md after this OBPI MUST be byte-identical to AGENTS.md before it. `gz validate --invariant-coherence` byte-compares a re-render against committed AGENTS.md and is in the default `gz check` scope.
+3. **NEVER introduce a second `AgentContract` destination.** The only destination is root `AGENTS.md` (`config.paths.agents_md`). The authored form of this requirement resolved the destination from `config.vendors.codex.surface_root` (`.agents`, `enabled=False`) — **withdrawn 2026-08-17 on the operator's ruling that Codex reads root `AGENTS.md`.** Playing a contract back to a path no harness loads would have satisfied every gate in this brief while delivering nothing, and would have manufactured the second AGENTS.md the root doctrine forbids. `ADR-pool.vendor-alignment-codex` is unaffected: it owns `.codex/config.toml`, hooks, personas and skills — never the root contract.
+4. NEVER regress the delivered contract. AGENTS.md after this OBPI MUST be byte-identical to AGENTS.md before it — the collapse is a **routing** change, not a content change. `gz validate --invariant-coherence` byte-compares a re-render against committed AGENTS.md and is in the default `gz check` scope. Which prose survives into a single ≤32,768 B rendition is a separate Gate-5 `compose`/`commit`; doing it here would bundle a human judgment into a mechanical change.
+4a. **NEVER delete a Gate-5-attested rendition.** Collapsing the route set retires `codex.md` as a *consumer*, not as a *record*: superseded rendition files and their `.corpus.json` provenance sidecars stay on disk. Deleting an attested artifact to tidy a route table destroys the attestation trail (`ADR-0.0.71` semantics — supersede, never erase).
 5. ALWAYS keep playback verbatim and deterministic — load the committed rendition bytes and write them; no LLM, no template substitution, no network (ADR § Alternatives L; the existing `render_agents_md` docstring contract).
 6. ALWAYS stay bootstrap-safe. An absent `codex.md` rendition MUST produce no write and no error, exactly as `rendition_exists` already guards the claude path.
 7. ALWAYS make the setpoint falsifiable — the point of this OBPI. Once `codex.md` is played back to a consumed surface, a `lite` rendition that drops an invariant-tier entry becomes a real failure rather than an unfalsifiable claim. The existing `--rendition-floor-coherence` scope already iterates every consumer under `.gzkit/renditions/<surface>/`; verify it now binds over a surface that is actually read.
@@ -117,11 +146,12 @@ and this OBPI must not touch them.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `.gzkit/renditions/AGENTS.md/codex.md` exists (13,606 B) with its `codex.corpus.json` provenance sidecar
+- [ ] **Re-measure every rendition byte figure before quoting it.** The authored form of this checklist pinned `codex.md` at 13,606 B; it measured **15,764 B** on 2026-08-17, and `claude.md` / root `AGENTS.md` measured **34,354 B**. Run `wc -c` — never transcribe a figure from this brief.
+- [ ] `.gzkit/renditions/AGENTS.md/*.md` and their `*.corpus.json` provenance sidecars exist and are readable
 - [ ] `src/gzkit/sync_surfaces.py::sync_agents_md` exists and currently hardcodes the `claude` consumer
 - [ ] `src/gzkit/governance/compose.py::render_agents_md` exists and currently hardcodes the `claude` consumer
-- [ ] `config.vendors.codex.surface_root` resolves to an existing directory — the coordination point with `ADR-pool.vendor-alignment-codex`; if it does not, STOP and emit BLOCKERS
-- [ ] `docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md` present and read
+- [ ] `docs/governance/agent-control-surface-rendering-substrate.md` § Worked example line 211 still reads `--vendor=root`; § Agent Orientation Index still reads `<consumer>.md`. **If they now agree, the fence in REQ-09-09 already landed — STOP and re-read the ledger before re-doing it.**
+- [ ] `docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md` present and read — it owns `.codex/**`, never the root contract
 
 **Existing Code (understand current state):**
 
@@ -203,10 +233,13 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 -->
 
 - [ ] REQ-0.35.0-09-01 [behavior]: Given the playback path, when it is invoked for a named consumer, then it loads that consumer's committed rendition — the consumer is a parameter in both `sync_surfaces.sync_agents_md` and `governance.compose.render_agents_md`, and the literal `"claude"` appears in neither as a hardcoded load target.
-- [ ] REQ-0.35.0-09-02 [behavior]: Given a committed `.gzkit/renditions/AGENTS.md/codex.md`, when the surface sync runs, then its 13,606 bytes are written VERBATIM to the Codex-consumed contract path resolved from `config.vendors.codex.surface_root` — byte-for-byte, no reflow, no template substitution.
+- [ ] REQ-0.35.0-09-02 [behavior]: Given the committed `AgentContract` rendition, when the surface sync runs, then its bytes are written VERBATIM to root `AGENTS.md` (`config.paths.agents_md`) and to no other contract path — byte-for-byte, no reflow, no template substitution. There is exactly one `AgentContract` destination because there is exactly one root contract.
 - [ ] REQ-0.35.0-09-03 [behavior]: Given NO committed `codex.md` rendition, when the surface sync runs, then no Codex contract file is written and no error is raised — playback is bootstrap-safe for the new consumer exactly as it already is for `claude`.
 - [ ] REQ-0.35.0-09-04 [behavior]: Given the surface sync before and after this OBPI, when AGENTS.md is compared, then it is BYTE-IDENTICAL — the `claude` playback path is unchanged in behavior by the consumer parameterization.
-- [ ] REQ-0.35.0-09-05 [behavior]: Given a `codex.md` rendition from which an invariant-tier corpus entry has been removed, when `gz validate --rendition-floor-coherence` runs fail-closed, then it exits 3 naming the codex consumer — the `lite` setpoint is now falsifiable because the rendition it grades is actually consumed.
+- [ ] REQ-0.35.0-09-05 [behavior]: Given the single `AgentContract` rendition with an invariant-tier corpus entry removed, when `gz validate --rendition-floor-coherence` runs fail-closed, then it exits 3 naming that consumer — the setpoint is falsifiable because the rendition it grades is the one actually delivered.
+- [ ] REQ-0.35.0-09-08 [behavior]: Given a `data/vendor-manifest.json` declaring more than one route OR more than one temperature for `AgentContract`, when the manifest is validated, then it fails closed naming the root-contract doctrine — a second per-vendor `AgentContract` rendition cannot be declared, in JSON or in code. Delivery **caps** are explicitly exempt and stay per-vendor: a cap is an observed fact about someone else's product (`delivery_cap_for` docstring), whereas a route and a temperature are controls gzkit chooses.
+- [ ] REQ-0.35.0-09-09 [behavior]: Given `src/gzkit/content/vendors.py::_FALLBACK_ROUTES` and `data/vendor-manifest.json`, when they disagree on any content type, then the disagreement fails closed. The fallback table is a second copy of the routing authority maintained by a comment (*"Update both surfaces together"*) — the same two-copies-one-binds shape that let this drift ship, one layer down.
+- [ ] REQ-0.35.0-09-10 [behavior]: Given root `AGENTS.md` and the per-vendor delivery caps declared for `AgentContract`, when the surface-delivery witness runs, then it measures the single delivered surface against the **minimum** declared cap and names the vendor that sets it. One file serving every harness must satisfy the smallest cap; measuring it per-route was only coherent while each route had its own file.
 - [ ] REQ-0.35.0-09-06 [behavior]: Given identical committed renditions, when the surface sync is run twice, then both the claude and codex destination files are byte-identical across runs — playback stays deterministic.
 - [ ] REQ-0.35.0-09-07 [structural-fence]: ADR-0.35.0 makes NO change to the surfaces ADR-pool.vendor-alignment-codex owns — `.codex/config.toml` generation, Codex hook registration and adapters, Codex subagent role definitions, the `gz validate --surfaces` Codex drift scope, and the Codex instruction-budget artifacts. This ADR wires playback of an existing committed rendition and nothing else. The boundary is cross-ADR and can only be audited once the whole ADR-0.35.0 diff is in hand, so it is a closeout-layer fence rather than a per-OBPI check.
 
