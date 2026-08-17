@@ -13,6 +13,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.commands.ledger import MERGE_DRIVER_NAME, ensure_jsonl_merge_driver
 from gzkit.git_sync import (
     _compute_git_sync_state,
     _git_status_lines,
@@ -626,6 +627,18 @@ def _execute_git_sync(
     return executed
 
 
+def _register_jsonl_merge_driver(project_root: Path, warnings: list[str]) -> None:
+    """Seed the append-only JSONL merge driver before any rebase runs.
+
+    Called before the rebase, not after: this ceremony is what trips the ledger
+    conflict, so it is also the one place guaranteed to run in every clone that
+    can hit it — including clones that predate the driver, which `gz init` can
+    no longer reach (GHI #811).
+    """
+    if ensure_jsonl_merge_driver(project_root):
+        warnings.append(f"Registered git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL.")
+
+
 def git_sync(
     branch: str | None,
     remote: str,
@@ -676,6 +689,7 @@ def git_sync(
 
     executed: list[str] = []
     if apply:
+        _register_jsonl_merge_driver(project_root, warnings)
         executed = _execute_git_sync(
             project_root=project_root,
             dirty=dirty,

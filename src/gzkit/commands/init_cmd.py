@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     ensure_initialized,
     get_project_root,
 )
+from gzkit.commands.ledger import MERGE_DRIVER_NAME, ensure_jsonl_merge_driver
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
     is_ungrandfathered_foundation,
@@ -970,6 +971,7 @@ def init(
             console.print("  Would run uv sync")
         console.print("  Would create .gitignore")
         _setup_session_green_gate(project_root, dry_run=True)
+        console.print(f"  Would register git merge driver '{MERGE_DRIVER_NAME}'")
         console.print("  Would generate control surfaces (AGENTS.md, CLAUDE.md, etc.)")
         console.print("  Would set up hooks and scaffold core skills")
         console.print("  Would scaffold canonical chores into .gzkit/chores/")
@@ -1028,6 +1030,13 @@ def init(
     # Session-green gate: declare it, then deliver it. `gz check` verifies the
     # delivery, so a failure to install here surfaces rather than going silent.
     _setup_session_green_gate(project_root)
+
+    # Append-only JSONL merge driver. The `.gitattributes` rule ships with the
+    # repo, but git reads the driver *command* from local config, which cannot
+    # be committed — so a fresh clone has the attribute and no driver behind it
+    # until something seeds it here (GHI #811).
+    if ensure_jsonl_merge_driver(project_root):
+        console.print(f"  Registered git merge driver '{MERGE_DRIVER_NAME}' for append-only JSONL")
 
     # Scaffold core skills
     skills = scaffold_core_skills(project_root, config)

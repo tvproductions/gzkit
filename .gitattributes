@@ -7,6 +7,21 @@
 # any committed text surface that still carries CRLF.
 * text=auto eol=lf
 
+# Append-only JSONL the runtime appends to during a session (GHI #811).
+#
+# Two clones in flight both append to the tail, so git conflicts over disjoint
+# additions and a human is forced to hand-edit the ledger — the action
+# AGENTS.md § Never #2 prohibits. `merge=gzkit-jsonl` reconciles them as a
+# timestamp-ordered union via `gz ledger merge-driver`.
+#
+# NOT `merge=union`: git's built-in concatenates without ordering, and these
+# rows are strictly ts-ordered (`gz validate --ledger`, GHI #812). The driver
+# needs `merge.gzkit-jsonl.driver` in local git config, which git cannot commit;
+# `gz git-sync` registers it, and `gz init` seeds it for new clones.
+.gzkit/ledger.jsonl merge=gzkit-jsonl
+.gzkit/insights/agent-insights.jsonl merge=gzkit-jsonl
+.gzkit/corpus/*.jsonl merge=gzkit-jsonl
+
 # Binary files git must never line-ending-normalize.
 *.png binary
 *.jpg binary

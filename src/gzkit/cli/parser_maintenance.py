@@ -1107,6 +1107,37 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_parity_check)
     p_parity_check.set_defaults(func=lambda a: _lazy("parity_check_cmd")(as_json=a.as_json))
 
+    p_ledger = commands.add_parser(
+        "ledger",
+        help="Append-only ledger plumbing",
+        description="Commands operating directly on the append-only ledger file.",
+        epilog=build_epilog(["gz ledger merge-driver ANCESTOR OURS THEIRS"]),
+    )
+    ledger_commands = p_ledger.add_subparsers(dest="ledger_command")
+    ledger_commands.required = True
+    p_ledger_merge = ledger_commands.add_parser(
+        "merge-driver",
+        help="Reconcile a conflicted append-only JSONL file (invoked by git)",
+        description=(
+            "Git merge driver for append-only JSONL. Merges disjoint appends as a "
+            "timestamp-ordered union and exits 1 when the sides are not "
+            "append-only, leaving the conflict for a human. Registered via "
+            "`.gitattributes` plus local git config — you do not normally run "
+            "this by hand."
+        ),
+        epilog=build_epilog(["gz ledger merge-driver ANCESTOR OURS THEIRS"]),
+    )
+    p_ledger_merge.add_argument("ancestor", help="Common-ancestor version (git %%O)")
+    p_ledger_merge.add_argument("ours", help="Our version; the merged result is written here (%%A)")
+    p_ledger_merge.add_argument("theirs", help="Their version (git %%B)")
+    p_ledger_merge.set_defaults(
+        func=lambda a: _lazy("ledger_merge_driver_cmd")(
+            ancestor=a.ancestor,
+            ours=a.ours,
+            theirs=a.theirs,
+        )
+    )
+
     p_readiness = commands.add_parser(
         "readiness",
         help="Agent readiness governance commands",

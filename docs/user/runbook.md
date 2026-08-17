@@ -277,6 +277,14 @@ uv run gz adr status ADR-<X.Y.Z> --json
 uv run gz git-sync --apply --lint --test
 ```
 
+> **Ledger conflicts during sync.** The runtime appends to
+> `.gzkit/ledger.jsonl` every session, so two clones in flight conflict over
+> disjoint tail additions. `gz git-sync --apply` registers
+> [`gz ledger merge-driver`](manpages/ledger-merge-driver.md), which reconciles
+> them as a timestamp-ordered union — you should not be hand-editing the
+> ledger. If the driver exits 1, the sides were not plain appends; resolve as a
+> timestamp-ordered union, never by appending one side to the other.
+
 ---
 
 ## Cross-Repo Defect Filing (gzkit-Owned Surfaces)

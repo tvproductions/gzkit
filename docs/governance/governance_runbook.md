@@ -915,6 +915,22 @@ uv run gz git-sync
 uv run gz git-sync --apply --lint --test
 ```
 
+### Append-only JSONL conflicts
+
+`.gzkit/ledger.jsonl` and its sibling JSONL surfaces are appended to by the
+runtime every session, so two clones in flight conflict over disjoint tail
+additions. `gz git-sync --apply` registers a merge driver
+([`gz ledger merge-driver`](../user/manpages/ledger-merge-driver.md)) that
+reconciles them as a timestamp-ordered union, so the ritual no longer forces a
+hand-edit of the ledger — the action `AGENTS.md` § Never #2 prohibits.
+
+Registration is per-clone (git reads a driver command from local config, which
+cannot be committed) and idempotent, so it self-heals on any clone that
+predates it. When the driver exits 1 the sides were not plain appends — a row
+was edited, removed, or carries no sortable `ts` — and the conflict is left for
+you deliberately. Resolve it as a timestamp-ordered union; never append one
+side to the other.
+
 Rules:
 
 - No `--no-verify`.

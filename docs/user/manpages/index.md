@@ -57,6 +57,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz obpi audit`](obpi-audit.md) | Gather evidence for OBPI brief and record in audit ledger |
 | [`gz obpi complete`](obpi-complete.md) | Atomically complete an OBPI (validate, write evidence, emit receipt) |
 | [`gz git-sync`](git-sync.md) | Run guarded sync ritual |
+| [`gz ledger merge-driver`](ledger-merge-driver.md) | Reconcile a conflicted append-only JSONL file (invoked by git) |
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
 | [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |
 | [`gz chores run`](chores-run.md) | Execute one chore and append a dated log |

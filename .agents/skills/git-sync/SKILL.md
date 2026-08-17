@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-16
 metadata:
-  skill-version: "1.2.4"
+  skill-version: "1.3.0"
 model: haiku
 ---
 
@@ -62,6 +62,23 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
 **Input**: "git sync"
 
 **Output**: Runs `uv run gz git-sync --apply` (or dry-run first if safety confirmation is needed). Pre-commit hook handles lint/test automatically.
+
+## Append-only JSONL conflicts
+
+The runtime appends to `.gzkit/ledger.jsonl` (and `agent-insights.jsonl`,
+`corpus/*.jsonl`) during every session, so two clones in flight conflict over
+disjoint tail additions. `uv run gz git-sync --apply` registers a git merge
+driver — `uv run gz ledger merge-driver` — that reconciles them as a
+**timestamp-ordered union**. Registration is idempotent and per-clone, because
+git reads a driver command from local config, which cannot be committed.
+
+**Never hand-edit `.gzkit/ledger.jsonl` to clear a conflict.** That is the
+action `AGENTS.md` § Never #2 prohibits, and the driver exists so you do not
+have to. If the driver exits 1, the sides were not plain appends — a row was
+edited, removed, or carries no sortable `ts` — and it left the conflict for you
+deliberately. Resolve as a timestamp-ordered union; never append one side to
+the other, which is what git's built-in `merge=union` would do and why it is
+not used here (the ledger is strictly ts-ordered — `gz validate --ledger`).
 
 ## Constraints
 

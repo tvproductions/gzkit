@@ -12,7 +12,7 @@ from gzkit.event_evidence import ObpiReceiptEvidence, pydantic_loc_to_field_path
 from gzkit.schemas import load_schema
 
 
-def _parse_ledger_ts(ts_value: Any) -> datetime | None:
+def parse_ledger_ts(ts_value: Any) -> datetime | None:
     """Parse a ledger `ts` into an aware datetime, or None when unusable.
 
     Returns None rather than raising for malformed input: shape errors are
@@ -411,7 +411,7 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
                 line_no=line_no,
             )
 
-            current_ts = _parse_ledger_ts(entry.get("ts"))
+            current_ts = parse_ledger_ts(entry.get("ts"))
             if current_ts is None:
                 continue
             if previous_ts is not None and current_ts < previous_ts:
