@@ -166,8 +166,9 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
   a non-gzkit substrate, black-box evidence collected (`gz-flighttest`). **Carried by
   `ADR-0.38.0` (portability + the `flighttest` verb), authored in strict ADR order after
   `0.35.0`/`0.36.0`/`0.37.0` land** — operator verbatim 2026-08-17: *"Wait for ADR-0.38.0 in
-  strict order."* **This gate is owed an owning §6 checkbox** and has never had one; until it
-  gets one it is the only §5 gate no Movement tracks (§ Amendments 2026-08-17 B.4).
+  strict order."* **Tracked by Movement E, created 2026-08-17** (operator: *"add the flight-test
+  checkbox to §6"*) — closing two months in which this was the only §5 gate no Movement tracked,
+  though §1 declared it a Movement on 2026-07-18 (§ Amendments 2026-08-17 B.4 and F).
 - **The five contemporary-stack layers are built** *(added 2026-08-17)* — harness portability ·
   foreign skills · MCP/tools · agent-and-session identity · eval. Operator verbatim: *"All five,
   properly built"* — capability-modelled adapters, skill trust/provenance policy, real MCP
@@ -286,6 +287,25 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] **Recover the orphaned 06-10 rulings.** Done 2026-07-18, in-session. Counted **17** amendments + 4 scope decisions + a goal-state — not the "77" the 06-30 edition asserted. All dispositioned in § 9a. Highest-value catch: **Scope decision #1 ("Full pool build-out … no item left undecided at 1.0") was live and unwithdrawn**, in direct contradiction to today's post-1.0 pool ruling — the precise orphan that resurfaces months later as *"but we booked that for 1.0."*
 <!-- gz-validate-skip: command-shape -->
 - [ ] **Rulings become first-class** — `ruling_issued` / `ruling_superseded` typed ledger events; a `ruling` verb; the handoff *Settled* section and per-decision operator-ruled/agent-chose attribution as **rendered projections**; the campaign body as a rendered Layer-3 view; supersession **fail-closed on orphaned rulings**. Sibling: GHI #611. Diagnosis: **nothing in gzkit represents the state "settled"** — 60+ typed ledger event kinds, no ruling event — so settled decisions are re-derived, and re-deriving is re-adjudicating. § Rulings Register is the manual stand-in until this lands.
+
+**Movement E — The external forcing function** *(carried by `ADR-0.38.0`; created 2026-08-17)*
+
+> **§1 declared this a Movement on 2026-07-18 — *"One external forcing function is a Movement,
+> not a nicety"* — and §6 never created one.** For two months the §5 gate *"one external forcing
+> function exists"* was the only 1.0 gate no Movement tracked, which is Movement C item 162's own
+> family (*"Layer X declares a discipline that Layer X does not mechanically enforce"*) reproduced
+> in the plan that names it. Closed by operator ruling 2026-08-17: *"add the flight-test checkbox
+> to §6."*
+>
+> **Sequenced LAST as a consequence, not a preference.** `ADR-0.38.0` follows `0.35.0` /
+> `0.36.0` / `0.37.0` under ADR-order-is-absolute — operator verbatim 2026-08-17: *"Wait for
+> ADR-0.38.0 in strict order."* **Accepted cost, on the record:** the forcing function
+> **certifies rather than informs** — the ~25 OBPIs queued ahead of it are built on internal
+> judgment, and external signal arrives ≈95 days out at the observed OBPI rate.
+
+- [ ] **`ADR-0.38.0` authored** — portability plus the `flighttest` verb. Not authorable until `ADR-0.37.0` lands; do not pull ahead.
+- [ ] **The verification vocabulary is the project's, not gzkit's.** `CANONICAL_STEP_COMMANDS` (`src/gzkit/arb/validator.py`) is `uv`/`ty`/`unittest`/`mkdocs`, so **a non-Python project cannot produce a canonical receipt** — this Movement's own gate is unsatisfiable against most substrates until it moves. Done means: declared in project config, locked at first use, drift-detected exactly as now, `RETIRED_STEP_COMMANDS` history preserved.
+- [ ] **Fly S1 against a non-gzkit substrate** — the §5 gate. `docs/flighttest/manifest.md` S1 ("Cold Start & Spine", 17 ordered test points with expected black-box observables) is authored and **0 of 6 sorties have ever flown**; `gz-flighttest` ships as a skill with templates and no code. Done means: sortie flown, black-box evidence collected, squawks filed, the sortie recorded to L2. **The debrief is an input to the remaining Movements, not a closing formality.**
 
 **Housekeeping (not a Movement, but tracked so it stops being invisible)**
 - [x] `ADR-0.44.0-vendor-alignment-codex` was `Pending`, partly landed, and tracked by no campaign edition. **RETURNED TO POOL 2026-08-08** as `ADR-pool.vendor-alignment-codex` (GHI #773). Operator ruling, verbatim: *"this was originally an agent overeach. this either becomes 0.36.0, revert to pool, or we just ignore/deleted the implemented code - I won't be paralyzed in purgatory."* (spelling preserved).
@@ -603,6 +623,33 @@ regress.** Nothing is checked off by this ruling.
 this citation in its resolution text. Whether an attestation citing a guard that never existed is
 a defective attestation, or an honest attestation with a false supporting sentence, is a question
 this amendment does **not** decide — no scope was ruled for it and `ADR-0.33.0` stays `Validated`.
+
+#### F. Movement E is created — the forcing-function gate finally has an owner
+
+*(Appended after E, same session, on the ruling that followed it. A–D stay as ratified.)*
+
+11. Operator ruling, verbatim: **"add the flight-test checkbox to §6."**
+
+**Placement was an agent judgment and is disclosed as one.** The ruling authorized a checkbox; a
+checkbox needs a home, and none of A–D fits — the forcing function is not the Foundation Sunset,
+not the membrane, not reductive, and not ruling-lifecycle. **§1 had already decided it**: amended
+2026-07-18, *"One external forcing function is a Movement, not a nicety."* §6 never created one,
+so **Movement E discharges the plan's own two-month-old declaration rather than inventing
+structure.** That gap was itself an instance of Movement C item 162's family — *"Layer X declares
+a discipline that Layer X does not mechanically enforce"* — occurring in the plan that names the
+family. Move it if the placement is wrong; the boxes travel intact.
+
+**Movement E carries three boxes, none checked:** `ADR-0.38.0` authored; the verification
+vocabulary moved from gzkit to the project (`CANONICAL_STEP_COMMANDS` is `uv`/`ty`/`unittest`/
+`mkdocs`, so **a non-Python project cannot produce a canonical receipt** and this Movement's own
+gate is unsatisfiable against most substrates until it moves); and S1 flown against a non-gzkit
+substrate. **Sequenced last as a consequence of ADR order, not as a preference** — and the
+certifies-rather-than-informs cost from B.4 is restated at the Movement so a reader meets it
+where the work is.
+
+**§5's forcing-function gate line was updated in the same edit** — it had read *"owed an owning §6
+checkbox,"* which this ruling makes false. Coupled-surface coherence under `AGENTS.md` DO IT
+RIGHT 1a: the consumer's claim is corrected in the same change that invalidates it.
 
 #### Corrections — the review's own errors, recorded so they are not inherited
 
