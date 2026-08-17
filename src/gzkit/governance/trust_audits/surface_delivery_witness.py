@@ -53,8 +53,10 @@ _DECLARATION_REMEDIATION = (
 _DELIVERY_REMEDIATION = (
     "A vendor-limit exceedance is TRACKED, never blocking (operator ruling "
     "2026-08-17: 'when we exceed vendor limits, ghi it so it doesn't block'). "
-    "If no GHI covers this surface's exceedance, file one via `/ghi-author`; "
-    "the live record is GHI #815. The two remedies both have registered homes "
+    "If no OPEN GHI covers this surface's exceedance, file one via "
+    "`/ghi-author` — resolve before citing, never assume: the prior record "
+    "GHI #815 closed superseded 2026-08-17 into the reorder ADR below, which "
+    "now carries the measurement. The two remedies both have registered homes "
     "and neither lands in-session: shrink the surface (`uv run gz chores show "
     "instructions-files-diet`, GHI #533) or re-rank so must-survive sections "
     "render first (`ADR-pool.render-order-truncation-survival`, the GHI #580 "
