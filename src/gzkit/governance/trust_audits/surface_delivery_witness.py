@@ -50,21 +50,20 @@ _DECLARATION_REMEDIATION = (
     f"nothing or a section with no rank. Reconcile {_DECLARATION_REL.as_posix()} "
     "with the rendered headings in the same patch (GHI #712 / GHI #580)."
 )
+# Deliberately one line (operator ruling 2026-08-17: "let the chore manage the
+# limits … I can't be stopping to trim them at every turn"). This scope is a
+# `gz check` step, so every extra sentence is paid on every run by every session
+# — and trimming is not the running session's job. Three clauses earn their
+# place: the posture, the runnable remedy, and the one wrong fix an agent
+# reaches for. The remedy catalogue lives in the chore; `_MAX_ADVISORY_CHARS`
+# holds this to a reminder rather than an essay.
 _DELIVERY_REMEDIATION = (
-    "A vendor-limit exceedance is TRACKED, never blocking (operator ruling "
-    "2026-08-17: 'when we exceed vendor limits, ghi it so it doesn't block'). "
-    "If no OPEN GHI covers this surface's exceedance, file one via "
-    "`/ghi-author`, whose Step 0 prior-art sweep resolves the current record "
-    "and reopens a recent same-cause close rather than duplicating it. This "
-    "prose names no issue number on purpose: a transcribed record is a state "
-    "claim that goes stale under the string, so resolve before citing, never "
-    "assume. The two remedies both have registered homes and neither lands "
-    "in-session: shrink the surface (`uv run gz chores show "
-    "instructions-files-diet`) or re-rank so must-survive sections render "
-    "first (`ADR-pool.render-order-truncation-survival`, the reorder half). "
-    "Raising the configured budget does NOT help — the cap "
-    "belongs to the vendor, not to gzkit, and no gzkit ruling can stay it."
+    "Advisory, never blocking. Trim via the chore: `uv run gz chores run "
+    "instructions-files-diet`. Track via `/ghi-author`; raising the budget "
+    "cannot relieve a vendor cap."
 )
+# The witness reminds; it does not lecture. Asserted by the covering test.
+_MAX_ADVISORY_CHARS = 400
 
 
 def _rendered_sections(surface: Path) -> list[tuple[str, int]]:
@@ -150,9 +149,8 @@ def _observe_delivery(
         else:
             _warn(
                 f"{relpath}: {surface_bytes} B rendered against the {vendor} delivery "
-                f"cap {cap} B — {surface_bytes - cap} B OVER. Bytes past the cap are "
-                f"not delivered to the agent at all under {vendor}, so content there "
-                f"is silently absent rather than merely late. {_DELIVERY_REMEDIATION}"
+                f"cap {cap} B — {surface_bytes - cap} B OVER, so bytes past the cap "
+                f"are not delivered under {vendor} at all. {_DELIVERY_REMEDIATION}"
             )
         # Survival is about the whole section, not its heading. A section whose
         # heading sits under the cap while its body runs past it is truncated
@@ -171,11 +169,10 @@ def _observe_delivery(
                 else f"begins at byte {offset} but runs to {end}, straddling"
             )
             _warn(
-                f"{relpath}: section {name!r} is declared must-survive but "
-                f"{placement} the {vendor} delivery cap {cap} B — at "
-                f"risk of silent loss. A declared-unrecoverable section that is "
-                f"not delivered is not in force (AGENTS.md § Behavior Rules — "
-                f"Always #4). {_DELIVERY_REMEDIATION}"
+                f"{relpath}: must-survive section {name!r} {placement} the "
+                f"{vendor} delivery cap {cap} B, so it is at risk of silent "
+                f"loss — undelivered canon is not in force. "
+                f"{_DELIVERY_REMEDIATION}"
             )
 
 

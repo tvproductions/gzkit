@@ -30,6 +30,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.governance.trust_audits.surface_delivery_witness import (
+    _MAX_ADVISORY_CHARS,
+    _PREFIX,
     audit_surface_delivery_witness,
 )
 
@@ -303,6 +305,26 @@ class DeliveryRemediationOutputContract(unittest.TestCase):
             "the delivery advisory must name no issue number -- a transcribed "
             "record decays when its state changes under the string",
         )
+
+    def test_delivery_advisory_reminds_rather_than_lectures(self) -> None:
+        # output-contract: this scope is a `gz check` step, so every sentence is
+        # paid on every run by every session -- and trimming is not the running
+        # session's job (operator ruling 2026-08-17: "let the chore manage the
+        # limits ... I can't be stopping to trim them at every turn").  The
+        # remedy catalogue moved to the chore; without a bound it grows back one
+        # justified sentence at a time, which is how it reached ~900 chars twice
+        # per run.  The number is the contract, not the wording.
+        _, output = _run(_PROJECT_ROOT)
+        for line in output.splitlines():
+            if _PREFIX not in line:
+                continue
+            self.assertLessEqual(
+                len(line),
+                _MAX_ADVISORY_CHARS,
+                f"advisory line is {len(line)} chars, over the "
+                f"{_MAX_ADVISORY_CHARS}-char reminder budget -- route detail to "
+                f"the chore rather than the per-turn surface: {line[:120]}...",
+            )
 
 
 if __name__ == "__main__":
