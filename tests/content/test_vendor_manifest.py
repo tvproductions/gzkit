@@ -180,12 +180,21 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
             _write_manifest(
                 root,
                 {
-                    "content_type_routes": {"AgentContract": ["root"]},
-                    "content_type_temperatures": {"AgentContract": {"root": "lite"}},
+                    "content_type_routes": {"AgentContract": ["root"], "Rule": ["claude"]},
+                    "content_type_temperatures": {
+                        "AgentContract": {"root": "lite"},
+                        "Rule": {"claude": "heavy"},
+                    },
                 },
             )
-            result = vendors.temperature_for("AgentContract", "claude", project_root=root)
-            self.assertEqual(result, "heavy")
+            # The resolver is generic. Exercised across TWO content types so the
+            # mechanism is proven without asserting AgentContract is per-vendor --
+            # the root-contract ruling (2026-08-17) forbids a second AgentContract
+            # route, and gz validate --vendor-manifest fail-closes on one.
+            self.assertEqual(vendors.temperature_for("Rule", "claude", project_root=root), "heavy")
+            self.assertEqual(
+                vendors.temperature_for("AgentContract", "root", project_root=root), "lite"
+            )
 
     @covers("REQ-0.0.37-15-02")
     def test_codex_resolves_to_lite(self) -> None:
@@ -199,7 +208,7 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                     "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
-            result = vendors.temperature_for("AgentContract", "codex", project_root=root)
+            result = vendors.temperature_for("AgentContract", "root", project_root=root)
             self.assertEqual(result, "lite")
 
     @covers("REQ-0.0.37-15-02")
@@ -256,7 +265,7 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                     "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
-            result = render(model, "codex", temperature="lite", project_root=root)
+            result = render(model, "root", temperature="lite", project_root=root)
             self.assertIn(b"judgment-bullet", result)
             self.assertIn(b"plain-bullet", result)
 
@@ -267,13 +276,16 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
         ruled out by the Codex-loader finding"). The differentiation was delivered solely by
         the temperature-projection filter; OBPI-0.0.37-27 proved it inert and removed it.
 
-        This test pins ONLY what the retirement changed: for a SINGLE vendor, the routed
-        temperature no longer alters the bytes (lite render == heavy render). It deliberately
-        does NOT assert codex == claude — per-harness behavioral tuning is undesigned space
-        that the committed-rendition store (`.gzkit/renditions/<surface>/<consumer>.md`, keyed
-        per consumer) and per-vendor `.j2` template routing both leave open. Asserting
-        cross-harness byte-identity would ossify a not-yet-designed surface and fail the
-        intended future where codex and claude are tuned to diverge."""
+        This test pins ONLY what the retirement changed: for the routed consumer, the routed
+        temperature no longer alters the bytes (lite render == heavy render).
+
+        AMENDED 2026-08-17 (OBPI-0.35.0-09). This docstring previously reserved space for
+        "the intended future where codex and claude are tuned to diverge." That future is
+        FORECLOSED: `AgentContract` is the root contract, routed to exactly one consumer, and
+        `gz validate --vendor-manifest` fail-closes on a second. The per-vendor `.j2` routing
+        this note cited as leaving the door open turned out to be two BYTE-IDENTICAL 530 B
+        templates, collapsed to `root.md.j2`. The assertion is unchanged and still correct;
+        only the reason for its scope moved."""
         model = AgentContract(
             name="Test",
             purpose="Test contract",
@@ -291,11 +303,11 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
                     "content_type_temperatures": {"AgentContract": {"root": "lite"}},
                 },
             )
-            codex_lite = render(model, "codex", temperature="lite", project_root=root)
-            codex_heavy = render(model, "codex", temperature="heavy", project_root=root)
+            root_lite = render(model, "root", temperature="lite", project_root=root)
+            root_heavy = render(model, "root", temperature="heavy", project_root=root)
             self.assertEqual(
-                codex_lite,
-                codex_heavy,
+                root_lite,
+                root_heavy,
                 "Temperature-projection retired (OBPI-0.0.37-27): for a single vendor, the "
                 "routed temperature must no longer alter the rendered bytes",
             )
