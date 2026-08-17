@@ -297,15 +297,22 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > in the plan that names it. Closed by operator ruling 2026-08-17: *"add the flight-test checkbox
 > to §6."*
 >
+> **Internal sequence: vocabulary before sortie** (operator ruling 2026-08-17, verbatim:
+> *"sequence the vocabulary box before the sortie box"*). Item 3 is **blocked on item 2**, on the
+> same reasoning as Movement B's calibrate-before-widening: §5 requires a *non-gzkit* substrate,
+> not a *non-Python* one, so a sortie flown while `CANONICAL_STEP_COMMANDS` is still
+> `uv`/`ty`/`unittest`/`mkdocs` would pass the gate's letter and prove almost nothing —
+> **a vacuous pass, the empty-seam-map failure one Movement over.**
+>
 > **Sequenced LAST as a consequence, not a preference.** `ADR-0.38.0` follows `0.35.0` /
 > `0.36.0` / `0.37.0` under ADR-order-is-absolute — operator verbatim 2026-08-17: *"Wait for
 > ADR-0.38.0 in strict order."* **Accepted cost, on the record:** the forcing function
 > **certifies rather than informs** — the ~25 OBPIs queued ahead of it are built on internal
 > judgment, and external signal arrives ≈95 days out at the observed OBPI rate.
 
-- [ ] **`ADR-0.38.0` authored** — portability plus the `flighttest` verb. Not authorable until `ADR-0.37.0` lands; do not pull ahead.
-- [ ] **The verification vocabulary is the project's, not gzkit's.** `CANONICAL_STEP_COMMANDS` (`src/gzkit/arb/validator.py`) is `uv`/`ty`/`unittest`/`mkdocs`, so **a non-Python project cannot produce a canonical receipt** — this Movement's own gate is unsatisfiable against most substrates until it moves. Done means: declared in project config, locked at first use, drift-detected exactly as now, `RETIRED_STEP_COMMANDS` history preserved.
-- [ ] **Fly S1 against a non-gzkit substrate** — the §5 gate. `docs/flighttest/manifest.md` S1 ("Cold Start & Spine", 17 ordered test points with expected black-box observables) is authored and **0 of 6 sorties have ever flown**; `gz-flighttest` ships as a skill with templates and no code. Done means: sortie flown, black-box evidence collected, squawks filed, the sortie recorded to L2. **The debrief is an input to the remaining Movements, not a closing formality.**
+- [ ] **1. `ADR-0.38.0` authored** — portability plus the `flighttest` verb. Not authorable until `ADR-0.37.0` lands; do not pull ahead.
+- [ ] **2. THE VERIFICATION VOCABULARY MOVES TO THE PROJECT BEFORE ANY SORTIE FLIES.** *(Sequenced ahead of item 3 — operator ruling 2026-08-17: "sequence the vocabulary box before the sortie box." Same convention as Movement B item 0.)* `CANONICAL_STEP_COMMANDS` (`src/gzkit/arb/validator.py`) is `uv`/`ty`/`unittest`/`mkdocs`, so **a non-Python project cannot produce a canonical receipt.** Done means: declared in project config, locked at first use, drift-detected exactly as now, `RETIRED_STEP_COMMANDS` history preserved.
+- [ ] **3. Fly S1 against a non-gzkit substrate** — the §5 gate. **BLOCKED ON ITEM 2, and the block is the point:** §5 says *non-gzkit*, not *non-Python*, so a sortie flown before item 2 lands would satisfy the gate's letter against a Python substrate while proving almost nothing about portability — **a vacuous pass in the exact shape of the empty seam-map**, where a fail-closed decision over an empty input set returned PROCEED (`ADR-0.37.0` § Intent). `docs/flighttest/manifest.md` S1 ("Cold Start & Spine", 17 ordered test points with expected black-box observables) is authored and **0 of 6 sorties have ever flown**; `gz-flighttest` ships as a skill with templates and no code. Done means: sortie flown **on a substrate whose verification vocabulary is not gzkit's**, black-box evidence collected, squawks filed, the sortie recorded to L2. **The debrief is an input to the remaining Movements, not a closing formality.**
 
 **Housekeeping (not a Movement, but tracked so it stops being invisible)**
 - [x] `ADR-0.44.0-vendor-alignment-codex` was `Pending`, partly landed, and tracked by no campaign edition. **RETURNED TO POOL 2026-08-08** as `ADR-pool.vendor-alignment-codex` (GHI #773). Operator ruling, verbatim: *"this was originally an agent overeach. this either becomes 0.36.0, revert to pool, or we just ignore/deleted the implemented code - I won't be paralyzed in purgatory."* (spelling preserved).
@@ -650,6 +657,30 @@ where the work is.
 **§5's forcing-function gate line was updated in the same edit** — it had read *"owed an owning §6
 checkbox,"* which this ruling makes false. Coupled-surface coherence under `AGENTS.md` DO IT
 RIGHT 1a: the consumer's claim is corrected in the same change that invalidates it.
+
+#### G. Movement E gains a binding internal sequence — vocabulary before sortie
+
+*(Appended after F, same session. A–D stay as ratified.)*
+
+12. Operator ruling, verbatim: **"sequence the vocabulary box before the sortie box."**
+
+The two boxes were already in that order on the page, but **§6's "work top-down" makes order an
+implication, not a dependency**, and an implication is what a hurried session routes around. The
+ruling makes it binding, using Movement B item 0's established convention (a numbered box with an
+explicit *"sequenced ahead of"* note).
+
+**Why the block is load-bearing rather than tidy.** §5's gate says *non-gzkit* substrate, **not
+non-Python**. A sortie flown while `CANONICAL_STEP_COMMANDS` is still `uv`/`ty`/`unittest`/
+`mkdocs` would therefore have to fly against a Python project — satisfying the gate's letter,
+recording a real sortie to L2, and proving **almost nothing about portability**, which is the
+property the forcing function exists to test. That is a **vacuous pass**, and its shape is already
+documented one Movement over: `ADR-0.37.0` § Intent on the airlock — *"the fail-closed `_decide`
+returns PROCEED vacuously… the logic is sound; the input set is empty."* Twenty of twenty-three
+transits. The same failure was available here, at the gate that certifies 1.0.
+
+Item 3's done-criterion is tightened accordingly: *"sortie flown **on a substrate whose
+verification vocabulary is not gzkit's**."* Without that clause the box could be checked honestly
+and still leave the gate unproven.
 
 #### Corrections — the review's own errors, recorded so they are not inherited
 
