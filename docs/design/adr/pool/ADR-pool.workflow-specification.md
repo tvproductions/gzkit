@@ -221,7 +221,8 @@ Promotion into the active tree (foundation or feature) is performed via
 
 This ADR captures a gzkit intake decision from the Archon comparison: absorb the
 machine-readable workflow-shape lesson, not Archon's YAML format or product
-surface. gzkit remains a governed meta-harness and agent runner.
+surface. gzkit remains a governed meta-harness; it wraps agent harnesses and
+does not run them.
 
 ---
 

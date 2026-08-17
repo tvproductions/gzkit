@@ -52,11 +52,11 @@ All three are necessary. Specification without governance drifts. Governance wit
 
 ## Boundary
 
-gzkit is a governance meta-harness and agent runner for governed human-AI
-work. A vendor harness turns a model into an agent; gzkit operates one tier up,
-wrapping agent harnesses such as Codex, Claude Code, Copilot, and adjacent tools
-with deterministic governance surfaces, evidence capture, gate enforcement, and
-human attestation.
+gzkit is a governance meta-harness for governed human-AI work. It does not run
+agents: a vendor harness turns a model into an agent, and gzkit operates one
+tier up, wrapping agent harnesses such as Codex, Claude Code, Copilot, and
+adjacent tools with deterministic governance surfaces, evidence capture, gate
+enforcement, and human attestation.
 
 gzkit is not a generic framework that asks humans to assemble arbitrary agent
 chains. It ships an opinionated covenant for deciding whether agent work is
