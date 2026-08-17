@@ -383,6 +383,36 @@ today. **WITHDRAWN** = no longer steers, with reason.
 | Human attestation is sacrosanct; no TTY/PTY excuse | operator canon | **CARRIED** — §4, AGENTS.md corpus |
 | Correction vs enhancement — unmet intent is a correction | operator canon | **CARRIED** — AGENTS.md corpus |
 
+**Session 2026-08-17 — the architecture-review disposition** *(**twelve numbered rulings,
+registered as fifteen rows** — one operator turn can carry several separable rulings, and a
+consequence that binds in its own right earns its own row. Full text and reasoning at
+§ Amendments 2026-08-17 A–G, where the numbering 1–12 is authoritative. Registered here in the
+same session they were taken, because a ruling that lives only in an amendment block is exactly
+what §8 says orphaned ~74 of the 06-10 edition's 77.)*
+
+| Ruling | Origin | Disposition |
+|---|---|---|
+| 1.0 is **both** stations of §1 — a complete and contemporary toolkit; public product **and** personal toolkit. Scope negotiable per item; the standard is not | 08-17 interview (A.1) | **CARRIED** → §1, §5 |
+| The five contemporary-stack layers are built **properly**, not thinly: harness portability · foreign skills · MCP/tools · agent+session identity · eval | 08-17 interview (A.2) | **CARRIED** → new §5 gate |
+| **Nothing comes out of 1.0** to fund the above — the standard is not negotiable, the calendar is; target ≈2027-04 **by declaration, never by slippage** | 08-17 interview (A.3) | **CARRIED** → §5 re-cut header |
+| §5's `FINITE` is qualified to *finite against a declared target* — bare `FINITE` would assert a boundedness the enlarged gate set no longer has | 08-17 (A.3 consequence) | **CARRIED** → §5 header + blockquote |
+| The external forcing function is a **gate in strict ADR order**, carried by `ADR-0.38.0`; no exception to ADR-order-is-absolute. Accepted cost: it **certifies rather than informs** | 08-17 interview (B.4) | **CARRIED** → Movement E |
+| Execution layer is **hybrid** — adapter by default, runner only for integrity gates. gzkit invokes the cross-vendor reviewer itself; a self-summoned adversary is not an adversary. Full orchestration declined | 08-17 interview (B.5) | **CARRIED** → §5, README narrowing owed |
+| Step 4b is **mandatory and unconditional** before Gate 5 on OBPI completion — no lane, kind, sensitivity, or sampling exception | 08-17 interview (B.6) | **CARRIED** — restates `ADR-0.36.0` § Intent |
+| Step 4b does **not** extend to GHI direct-fix / MX work — OBPIs are new intended behavior; a GHI is repair, *"akin to an airworthiness directive"*. **4b is QC for new feature work** | 08-17 interview (B.6) | **CARRIED** — was already canon at `ADR-0.36.0` § Intent (*"step 4b is just for obpi feature work"*); re-asked in error, registered so it is not asked a third time |
+| Movement D **absorbs the orientation problem** — a handoff is an *advisory shift-change orientation*; re-adjudication and mis-orientation are one defect with one mechanism | 08-17 interview (C.7) | **CARRIED** → Movement D |
+| Simultaneity substitute is **a + b + c** — operator is the overlap · ledger is the overlap · time-inverted overlap. Position Relief Checklist becomes a per-project schema-validated artifact. **Handoffs are advisory/informative only and gate nothing**; `gz git-sync` is never gated and is always permitted first after a handoff | 08-17 interview (C.7) | **CARRIED** → Movement D; git-sync arm restates `ADR-0.37.0` BI #5 |
+| `prosthetic` ≈ `synthetic` memory — one concept, two names; settle one term (PRD § Ubiquitous Language) | 08-17 interview (D.8) | **CARRIED** — capture owed |
+| The airlock is **not a verification gate** — awareness + synthetic memory, orientation, contamination watch, disturbance monitoring; it and the handoff **cooperate**. Three of four purposes appear nowhere in `ADR-0.33.0`; cooperation is **refinement, not drift**, already designed at `OBPI-0.37.0-05` | 08-17 interview (D.9) | **CARRIED** — supersedes the review's defer-the-airlock recommendation; capture owed to `AGENTS.md` § Operator Doctrine |
+| The campaign-narrative guard **was never written** — the `adversarial_validation` record for `OBPI-0.33.0-06` cites a test that does not exist. Added to Movement D scope; the false L2 record stands unretracted | 08-17 interview (E.10) | **CARRIED** → Movement D |
+| Movement E is **created** — §1 declared the forcing function a Movement on 2026-07-18 and §6 never made one | 08-17 interview (F.11) | **CARRIED** → §6 |
+| Movement E internal sequence is **binding: vocabulary before sortie.** §5 says *non-gzkit*, not *non-Python*, so a sortie flown first is a **vacuous pass** — the empty-seam-map failure one Movement over | 08-17 interview (G.12) | **CARRIED** → Movement E items 2, 3 |
+
+> **Two rulings above overturn recommendations in the review that produced them**, and both are
+> registered as such rather than quietly dropped: the airlock is **not** deferred (D.9), and
+> `ADR-0.36.0` OBPI-09 is **not** dropped (§ Corrections). The review's five layer-parity findings
+> survive unchanged — they rest on measured absence (grep, ledger, registry), not on ADR prose.
+
 ### 9a. Recovered from the 06-10 edition (dispositioned 2026-07-18)
 
 The 06-30 edition claimed 06-10 carried "77 amendment blocks." **Counted: 17** (plus 4
