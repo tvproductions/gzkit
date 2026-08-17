@@ -127,9 +127,6 @@
       "release_notes.md"
     ],
     "chores": [
-      "agents-md-architectural-boundaries/CHORE.md",
-      "agents-md-architectural-boundaries/README.md",
-      "agents-md-architectural-boundaries/acceptance.json",
       "arb-pattern-extraction/CHORE.md",
       "arb-pattern-extraction/README.md",
       "arb-pattern-extraction/acceptance.json",
