@@ -139,9 +139,16 @@ Mechanized by `@enforces(claim=…, neg_control=…)` + the meta-validator.
 > evidence of a missing NC — check `registered_claims()`. A false facade finding was
 > filed and withdrawn on this exact mistake (GHI #697, 2026-07-18).
 
-## 5. The 1.0 definition — **FINITE** (amended 2026-07-18)
+## 5. The 1.0 definition — **FINITE, against a declared target** (amended 2026-07-18; re-cut 2026-08-17)
 
 gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
+
+> **Re-cut 2026-08-17 (operator-ratified; § Amendments 2026-08-17).** The gate set was
+> **enlarged** and **nothing was removed** — operator verbatim: *"Nothing — move the date
+> instead."* `FINITE` alone would now assert a boundedness this plan does not have, so it is
+> qualified: **finite against a declared target of ≈2027-04**, arrived at by this plan's own §7
+> arithmetic (≈60 unlanded OBPIs at the `ADR-0.34.0`-observed rate of ≈3.8 days each).
+> **The date moves by declaration, never by slippage.**
 
 - **The floor holds** — `gate5_invariants` intact **and** the §4 meta-validator is green
   **over the claim set registered as of 2026-07-18**. Claims registered later are
@@ -156,7 +163,16 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - **The membrane is on the real doors** — Movement B complete.
 - **The accretion is reduced** — Movement C complete.
 - **One external forcing function exists** — at least one flight-test sortie flown against
-  a non-gzkit substrate, black-box evidence collected (`gz-flighttest`).
+  a non-gzkit substrate, black-box evidence collected (`gz-flighttest`). **Carried by
+  `ADR-0.38.0` (portability + the `flighttest` verb), authored in strict ADR order after
+  `0.35.0`/`0.36.0`/`0.37.0` land** — operator verbatim 2026-08-17: *"Wait for ADR-0.38.0 in
+  strict order."* **This gate is owed an owning §6 checkbox** and has never had one; until it
+  gets one it is the only §5 gate no Movement tracks (§ Amendments 2026-08-17 B.4).
+- **The five contemporary-stack layers are built** *(added 2026-08-17)* — harness portability ·
+  foreign skills · MCP/tools · agent-and-session identity · eval. Operator verbatim: *"All five,
+  properly built"* — capability-modelled adapters, skill trust/provenance policy, real MCP
+  governance, a full session/agent model, an eval suite with baselines. Not thin instances, not
+  schema-only (§ Amendments 2026-08-17 A.2).
 - **Release line healthy** from 0.34.0; GHI backlog at steady-state triage scale.
 - **v1.0.0 released** through the ceremony.
 
@@ -235,11 +251,33 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 
 - [ ] **Name the adoptable mechanisms — the positive half of The Firewall** *(added 2026-08-16, operator-directed)*. Item 160 defines what does **not** ship. Nothing defines what an adopter **gets**, and four mechanisms that already work have no home describing them as a deliverable surface rather than gzkit's private tooling. Two ship today with no adoption story: the **shrink-only waiver ratchet** (`data/waiver_ratchet_registry.json`, ADR-0.0.73 BI #8 — debt may only decrease; it gated the grandfather removal on 2026-08-16, 15 → 14 against baseline 23) and the **verifier-pipe-gate hook** (`.claude/hooks/verifier-pipe-gate.py`, GHI #589 — refuses a verifier in any non-final pipeline stage; it fired against an agent's own `gz validate | grep` on 2026-08-16, which is the class of false green that then gets relayed as attestation evidence). Two are already homed and named here only so the set is legible: the **Mechanical validators** are delivered by `ADR-0.0.31-distribution-invariants` (`Validated`; run `uv run gz adr status ADR-0.0.31-distribution-invariants` for its landed count rather than trusting a figure transcribed here — `pip install py-gzkit && gz init`, byte-equivalent, fail-closed via `gz validate --distribution`), and the **scorecard method** is item 162 above, whose live counts are fenced at the scorecard's own Summary table. **Done means:** each of the four is classified under item 160's destiny taxonomy (wheel-borne / authored-into-battlefield / lab-only-jig) and, for anything wheel-borne, the adopter-facing contract is stated — what it checks, what it costs per turn, and what a project must do to satisfy it. **Explicitly NOT a new pool ADR** (Architectural Boundary 2 — *do not add more pool ADRs to the runtime track*); the pool already holds 190 unscoped items and four hooks-related entries (`claude-hooks-absorption`, `pre-commit-hook-absorption`, `hooks-meta-layer-contract`, `prime-context-hooks`) that this box does **not** unfreeze. **Sequenced with item 160, not ahead of it** — the negative half is the load-bearing one, because until it lands an adopter inherits the lab jigs regardless of how well the positive half is described. Origin: the 2026-08-16 competitive review, which measured the flourishing tools in this category as authoring-side (Spec Kit 93k stars, BMAD 46.7k) with the enforcement side unoccupied as OSS — gzkit's differentiator is real and undescribed.
 
-**Movement D — Stop the re-adjudication** *(ruling lifecycle)*
+**Movement D — Stop the re-adjudication** *(ruling lifecycle; **orientation + findings absorbed 2026-08-17**)*
+
+> **Scope change 2026-08-17 (operator-ratified) — Movement D absorbs the orientation problem
+> and the `finding` entity.** Operator verbatim: *"Movement D should absorb the orientation
+> problem. a handoff is there to orient a new session from the prior session - it is an
+> advisory shift change orientation"* and *"yes, findings in scope for Movement D."*
+> Re-adjudication and mis-orientation are **one defect with one mechanism**: this plan is what
+> `session_orientation.py` hands every fresh session, and its transcriptions of its own ADRs
+> preserve status, counts and citations while **dropping the reasoning** — demonstrated in
+> session 2026-08-17, where a full architecture review built on them mischaracterized three
+> feature ADRs. The governing model for the handoff half is operator-supplied and external:
+> the **FAA Position Relief Briefing** (JO 7110.65 App A; JO 7210.3), four ordered beats under
+> *"equal responsibility for the completeness and accuracy of the transfer."* Added scope:
+> `handoff_discrepancy` as a typed **finding** event (the first accuracy signal over 373
+> handoffs — today unmeasurable); the **`finding` entity** as a kind distinct from facts,
+> judgments and decisions; a per-project schema-validated **Position Relief Checklist**; and
+> the **preview → readiness → briefing** ordering at SessionStart, which today fires
+> simultaneously so the briefing has nothing to be checked against. **Two binding constraints:
+> every beat is advisory and gates nothing — authorization migrates to the airlock per
+> `OBPI-0.37.0-05`, the handoff keeps only briefing — and `gz git-sync` is never gated and is
+> always a permitted first operation after a handoff is created (standing canon, `ADR-0.37.0`
+> BI #5: *"handoffs should never, never, never, ever, block git-sync. NEVER."*).** Existing
+> scope carried unchanged. See § Amendments 2026-08-17 C.
 - [x] **Handoff-local repair** — every authored next step now survives the resume (`ResumeResult.next_steps`); the `continues_from` chain link is correct-by-construction. GHI #696, commit `5ec44ad1`, receipt `arb-step-unittest-430503d2`.
 - [x] **Recover the orphaned 06-10 rulings.** Done 2026-07-18, in-session. Counted **17** amendments + 4 scope decisions + a goal-state — not the "77" the 06-30 edition asserted. All dispositioned in § 9a. Highest-value catch: **Scope decision #1 ("Full pool build-out … no item left undecided at 1.0") was live and unwithdrawn**, in direct contradiction to today's post-1.0 pool ruling — the precise orphan that resurfaces months later as *"but we booked that for 1.0."*
 <!-- gz-validate-skip: command-shape -->
-- [ ] **Rulings become first-class** — `ruling_issued` / `ruling_superseded` typed ledger events; a `gz ruling` verb; the handoff *Settled* section and per-decision operator-ruled/agent-chose attribution as **rendered projections**; the campaign body as a rendered Layer-3 view; supersession **fail-closed on orphaned rulings**. Sibling: GHI #611. Diagnosis: **nothing in gzkit represents the state "settled"** — 60+ typed ledger event kinds, no ruling event — so settled decisions are re-derived, and re-deriving is re-adjudicating. § Rulings Register is the manual stand-in until this lands.
+- [ ] **Rulings become first-class** — `ruling_issued` / `ruling_superseded` typed ledger events; a `ruling` verb; the handoff *Settled* section and per-decision operator-ruled/agent-chose attribution as **rendered projections**; the campaign body as a rendered Layer-3 view; supersession **fail-closed on orphaned rulings**. Sibling: GHI #611. Diagnosis: **nothing in gzkit represents the state "settled"** — 60+ typed ledger event kinds, no ruling event — so settled decisions are re-derived, and re-deriving is re-adjudicating. § Rulings Register is the manual stand-in until this lands.
 
 **Housekeeping (not a Movement, but tracked so it stops being invisible)**
 - [x] `ADR-0.44.0-vendor-alignment-codex` was `Pending`, partly landed, and tracked by no campaign edition. **RETURNED TO POOL 2026-08-08** as `ADR-pool.vendor-alignment-codex` (GHI #773). Operator ruling, verbatim: *"this was originally an agent overeach. this either becomes 0.36.0, revert to pool, or we just ignore/deleted the implemented code - I won't be paralyzed in purgatory."* (spelling preserved).
@@ -353,7 +391,218 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-08-16 (latest) — ADR ORDER IS ABSOLUTE, and this plan now says so
+### 2026-08-17 (latest) — the architecture review is dispositioned: §5 is re-cut against a declared date, and Movement D absorbs orientation + findings (operator-ratified)
+
+**Provenance.** An architectural and roadmap review of gzkit against the August-2026
+agentic-development stack was run this session and retained at
+[`docs/evals/gzkit-campaign-architecture-review-2026-08-17.md`](../evals/gzkit-campaign-architecture-review-2026-08-17.md),
+against the prompt retained beside it. The review was then dispositioned through a
+one-question-at-a-time operator interview; every ruling below carries the operator's verbatim
+words. **The review is evidence routed at this plan; it is not itself a plan, and it carried
+errors — see § Corrections below, which exist so this amendment does not launder them into
+canon.**
+
+#### A. §5 is re-cut — still bounded, now against a declared date
+
+Three rulings, in order taken.
+
+1. **Which station of §1's trajectory 1.0 marks.** Verbatim: *"I want it to be a complete and
+   contemporary toolkit for agentic work, but I am willing to let scope change on some
+   things. public product and personal toolkit."* → **BOTH stations. 1.0 = a complete and
+   contemporary toolkit. Scope is negotiable per item; the standard is not.**
+2. **Layer scope.** The review measured gzkit absent or single-vendor on five layers of the
+   contemporary stack — **harness portability · foreign skills · MCP/tools · agent-and-session
+   identity · eval**. Verbatim: *"All five, properly built"* → **capability-modelled harness
+   adapters, skill trust/provenance policy, real MCP governance, a full session/agent model,
+   and an eval suite with baselines.** Not thin instances; not schema-only. Selected against a
+   stated cost of *"quarters of work"* and *"highest risk of 1.0 receding."*
+3. **What comes out to fund it.** Verbatim: *"Nothing — move the date instead"* → **every
+   current §5 gate is retained**, including *"the membrane is on the real doors"* and *"the
+   accretion is reduced."*
+
+**Consequence, booked rather than softened.** §5's header still reads **FINITE (amended
+2026-07-18)**, and that word was added precisely because unbounded gates made 1.0
+unreachable. Ruling 3 enlarges the gate set while keeping every prior gate, so **§5 must be
+re-cut to read finite against a declared target of ≈2027-04, not finite simpliciter.** Left as
+the bare word, §5 asserts a boundedness the plan no longer has — the same class as the
+campaign-`Status:` defect `.gzkit/rules/governance-core.md` `0.11.0` just discharged. **The
+date moves by declaration, never by slippage.** Arithmetic on the record, by this plan's own §7
+method: ~25 OBPIs unlanded across `ADR-0.35.0`/`0.36.0`/`0.37.0`, plus ~25 for ruling 2, plus
+~10 for portability/Firewall/mirroring/PRD/radar ≈ **60 OBPIs**; at the observed rate from
+`ADR-0.34.0` (5 OBPIs, 2026-07-12 → 07-31 ≈ 3.8 days each) that is ≈230 days.
+
+#### B. §6 sequencing — held, and one gate is owed a checkbox
+
+4. **The external forcing function.** The review found §5's gate *"one external forcing
+   function exists — at least one flight-test sortie flown against a non-gzkit substrate"*
+   is **carried by no Movement checkbox in §6**, and recommended sequencing it first.
+   Verbatim: *"Wait for ADR-0.38.0 in strict order"* → **ADR-order-is-absolute holds; no
+   exception granted.** Portability (project-declared, gzkit-locked verification vocabulary)
+   and the `flighttest` verb become **`ADR-0.38.0`**, authored after `0.35.0`, `0.36.0` and
+   `0.37.0` land. Both the pull-ahead and the fly-a-Python-substrate-now options were declined.
+   **Accepted consequence:** the forcing function **certifies rather than informs** — the ~25
+   queued OBPIs are built on internal judgment, and external signal arrives ≈95 days out.
+   **OWED:** §6 still needs an owning checkbox for this gate, reading *"flies after
+   `ADR-0.38.0`"*, so it stops being an unowned 1.0 gate. Not discharged by this amendment.
+
+5. **Execution-layer ownership.** The README claims *"governance meta-harness **and agent
+   runner**"*; no code runs a harness. Verbatim: *"Hybrid — runner for integrity gates only"*
+   → **adapter by default; runner only where independence requires vendor control.** gzkit
+   invokes the cross-vendor reviewer itself and records the verdict; the gate reads gzkit's
+   record, never the subject agent's claim. Rationale on the record: **a self-summoned
+   adversary is not an adversary.** Full orchestration declined. `pipeline_dispatch.py` shrinks
+   to a recorder for all non-integrity dispatch; the README's *"agent runner"* language is
+   narrowed to match, not deleted.
+
+6. **Step 4b scope — restated, not newly ruled.** Verbatim: *"yes, absolutely yes"* → **Step 4b
+   is mandatory and unconditional before Gate 5 on OBPI completion** — no lane, kind,
+   sensitivity, or sampling exception. Measured basis: 28 completions/month and falling; of 17
+   `adversarial_validation` events, **6 `not-refuted` / 7 `refuted-with-caveats` / 4
+   `refuted` — 65% found something**, including a negative control Codex refuted as *"a
+   gameable facade"* and two taxonomy scanners that would have shipped a permanent gate inert.
+   And verbatim: *"not presently… obpis are feature implementation - new intended behavior.
+   ghi direct fix is repair and correction. Even if the adr/obpi were defective, and we need to
+   revisit it via a ghi, I'd consider that akin to an 'airworthiness directive' and not a new
+   feature driven by an obpi. So, the 4b gate is QC for new feature work."* → **GHI direct-fix
+   / MX work acquires no Step 4b requirement.** This ruling was **already canon** —
+   `ADR-0.36.0` § Intent records it verbatim as *"step 4b is just for obpi feature work, like
+   handoffs, and the airlock"* — and asking for it again induced re-adjudication of a settled
+   decision, which is the disease this Movement exists to stop. Recorded so it is not asked a
+   third time.
+
+#### C. Movement D is re-scoped — orientation and findings are absorbed
+
+7. Verbatim: *"yes, and Movement D should absorb the orientation problem. a handoff is there to
+   orient a new session from the prior session - it is an advisory shift change orientation."*
+   And: *"yes, findings in scope for Movement D."*
+
+**Why orientation belongs here.** Movement D already names *"the campaign body as a rendered
+Layer-3 view."* The review supplied the reason that box exists: this plan is what
+`scripts/session_orientation.py` hands **every** fresh session, and its transcriptions of its
+own ADRs are lossy in one consistent direction — **they preserve status, counts and citations
+and drop the reasoning.** This session is the worked example: a full architecture review built
+on those transcriptions produced confident, wrong characterizations of three feature ADRs
+(§ Corrections). Re-adjudication and mis-orientation are therefore **one defect with one
+mechanism**, which is why they share a Movement.
+
+**The governing model is operator-supplied and external: the FAA Position Relief Briefing**
+(FAA Order JO 7110.65 App A; JO 7210.3) — four ordered beats, with *"both the specialist being
+relieved and the relieving specialist share equal responsibility for the completeness and
+accuracy of the transfer."* Mapped against the shipped handoff system, beats 1 and 2 are
+substantially present (and in places stronger than the source — `NextStep.references` resolve
+against live state rather than being recited), beat 3 is present but one-sided, and **beat 4 is
+absent.** The load-bearing gap is that **equal responsibility requires simultaneity**, and in
+gzkit the relieved party is gone before the relieving party arrives: 373 handoffs exist and
+**nothing measures whether any briefing was accurate.**
+
+Operator ruling on the substitution for simultaneity, verbatim: *"it really is a + b + c. yes
+to checklist, BUT, handoffs are advisory/informative to operator. also, a git-sync is always a
+permitted first operation after a handoff is created."*
+
+| Beat | FAA | Mechanism added | Substitution |
+|---|---|---|---|
+| Exit verification | 4 — *"confirms SIA data accuracy"* | Outgoing session re-resolves its own authored next steps and cited references against L2, writes each claim carrying its verification state, records the turnover timestamp. **Then `git-sync`, unobstructed.** | **(b)** the ledger is the overlap |
+| Preview | 1 — SIA, environment, monitor jack | Orientation runs **first and alone**; the briefing is not yet delivered. Gains a non-empty seam map once `ADR-0.37.0` D1 lands | existing + `ADR-0.37.0` |
+| **Readiness call** | 1 — *"preview complete, begin briefing"* | **The missing ordered two-beat.** Today SessionStart delivers orientation *and* the resumed handoff simultaneously, so the briefing has nothing to be checked against and becomes the picture instead of being tested by it | **new** |
+| Briefing | 2 — Position Relief Checklist | The handoff rendered against a **per-project, schema-validated Position Relief Checklist** (FAA's checklist is facility-specific; gzkit has one global template), including an explicit **abnormal items** section whose contract is *what the tooling will not tell you* | **new artifact** |
+| Assumption | 3 — *"I assume position responsibility"* | `gz handoff decide --operator-text`. The operator is the **only party continuous across both sessions**, therefore the briefing's second party rather than a supervisor. Formal in booking the turnover; **advisory in never blocking work** | **(a)** the operator is the overlap |
+| Deferred review | 4 — overlap, run backwards in time | After working, the incoming session books a **`handoff_discrepancy` finding** for a wrong next step, a stale reference, or an unbriefed abnormal item — attributable to the handoff that misbriefed | **(c)** time-inverted overlap |
+
+**Two binding constraints on all of the above.**
+
+- **Advisory, never authorizing.** No beat here may gate anything. This confirms the direction
+  of `OBPI-0.37.0-05`: **authorization migrates to the airlock; the handoff keeps only
+  briefing** — the `AGENTS.md` § Operator Doctrine three-system fence (transit authorizes,
+  handoff refreshes memory) realized in mechanism rather than merely asserted. Equal
+  responsibility survives through **(c)** rather than through a gate: responsibility becomes
+  *legible* — a discrepancy names the handoff — which is how the source model works, where the
+  sign-off is administrative and accountability lives in the record.
+- **`gz git-sync` is never gated, and is always a permitted first operation after a handoff is
+  created.** Standing canon, already recorded at three sites in `ADR-0.37.0` (BI #5 and twice
+  in its forcing-function answers), verbatim: *"I EXPLICITLY want this"* and *"handoffs should
+  never, never, never, ever, block git-sync. NEVER."* Verified this session: the shipped
+  `handoff_resume_gate.py` declares `exempts=EXEMPTS_NONE` and that declaration is **accurate**
+  — its arm is `Write|Edit|NotebookEdit` and `git-sync` runs through `Bash`, so it never sees
+  it. **No defect; no repair owed.**
+
+**Movement D's box therefore gains:** `handoff_discrepancy` as a typed **finding** event (the
+first accuracy signal over 373 handoffs, today unmeasurable); the **`finding` entity** as a
+first-class kind distinct from facts, judgments and decisions; the per-project **Position
+Relief Checklist** artifact; and the **preview → readiness → briefing** ordering at
+SessionStart. The existing scope — `ruling_issued`/`ruling_superseded`, a `ruling` verb,
+*Settled* and attribution as rendered projections, the campaign body as a rendered Layer-3
+view, supersession fail-closed on orphaned rulings — is **carried unchanged**. Sibling GHI #611
+stands.
+
+#### D. Two terminology rulings
+
+8. **`prosthetic` ≈ `synthetic` memory.** Verbatim: *"probably the same"* → one concept, two
+   names. `ADR-0.33.0` says *prosthetic* (5 files); the handoff system and `AGENTS.md` canon say
+   *synthetic* (7 files). Measurable cost: `rg synthetic` misses the airlock and `rg prosthetic`
+   misses the handoff system, so the two most memory-relevant subsystems are mutually invisible
+   to search. Settle one term; PRD § Ubiquitous Language is the home.
+9. **The airlock is not a verification gate.** Verbatim: *"The airlock is an awareness and
+   synthetic memory approach to keep an agent oriented about its actions within the system. we
+   call it airlock as we want to control movement within the project when the agent enters that
+   environment. it is to keep the agent focused and oriented, watch for contamination, and
+   monitor results/disturbance. The handoff system and the airlock are meant to cooperate with
+   (and provide) synthetic memory."* Measured against `ADR-0.33.0` (34.5 KB): `synthetic` 0,
+   `orient` 0, `contaminat` 0, `awareness` 0 — **three of the four stated purposes appear
+   nowhere in the governing ADR**, which carries the memory purpose only, as *"Prosthetic
+   memory."* Capture is owed. The airlock↔handoff cooperation is **refinement, not drift**, and
+   its mechanism is already designed: `OBPI-0.37.0-05` item #5 — *"SessionStart fires
+   airlock-IN; the handoff-resume-gate `Write|Edit|NotebookEdit` arm retires into it."*
+   `AGENTS.md` § Operator Doctrine needs a cooperation clause so a reader meets the join and
+   not only the fence.
+
+#### Corrections — the review's own errors, recorded so they are not inherited
+
+The review characterized three feature ADRs from **this plan's transcriptions of them** rather
+than their bodies. Operator correction, verbatim: *"i fear that you riff on things without
+rereading docs."* Logged as an `improvement` insight in
+`.gzkit/insights/agent-insights.jsonl`, 2026-08-17. The corrections that bear on this plan:
+
+- **The airlock is not over-built ceremony.** `ADR-0.33.0` § Persona: it *"earns trust by
+  **biting**, never by ceremony."* It is memory **and** gate by design — the gate is what makes
+  map-maintenance an unavoidable byproduct. The review's recommendation to defer it was wrong,
+  and **ruling 3 (nothing comes out) is better justified than the review's own analysis.**
+- **The 20-of-23 empty seam-maps are a disclosed residual, not an undetected defect** —
+  operator-attested 2026-07-10 as `ADR-0.33.0` § *Calibration frontier*, naming the exact cause,
+  with Stage 1 deliberately held diagnostic-only so a mis-calibrated gate cannot *"2am-wall a
+  real pipeline."*
+- **`ADR-0.37.0` is not tuning.** It repairs a **self-granting accounting predicate**:
+  `accounted = inv in brief_text` is a substring test over a file the entering agent controls —
+  *"the cheapest way to clear six invariants would be to paste six headings."*
+- **`ADR-0.36.0` OBPI-09 must not be dropped.** It is the **always-on** arm, and *"Install an
+  always-on '2nd opinion'"* is that ADR's first sentence; its metaphor is **Crew Resource
+  Management, not adversarial review**. Recommendation withdrawn.
+- **`ADR-0.35.0` was mischaracterized as inward plumbing.** It drains three facades on the
+  surface every agent loads every turn: a witness that cannot fail (`composer.py:63-65` reports
+  `compressible_bytes_after` 22,378 against `before` 354 — a 63× inflation labelled
+  compression), an attested and floor-gated `codex.md` setpoint that **nothing plays back**, and
+  **only 31.2% of `AGENTS.md` witnessed** (9,966 B of 31,990 B; 8 of 22 sections).
+- **`session_exit_bookmark_skipped` is the mechanism working, not a broken pair.**
+  `session_exit.py:62-64`: `skipped=True` means *"nothing needed booking"*; 36 of 44 carry
+  `exit_reason: clear` because a covering handoff already exists. Any future citation of
+  "N skips / 0 writes" as a defect should state which of the two states it means.
+
+**Body edits ratified.** This amendment made three coupled edits to the plan body, disclosed
+to the operator before ratification and approved verbatim: *"ratify the body edits and
+git-sync"* (2026-08-17). They are (i) §5's header qualified from `FINITE` to `FINITE, against a
+declared target` with the re-cut blockquote; (ii) §5's gate list gaining the five-layer gate and
+naming `ADR-0.38.0` on the forcing-function gate; (iii) Movement D's box gaining its
+scope-change blockquote. **Deliberately NOT done:** adding the owed flight-test checkbox to §6
+— placing a box in a Movement is a sequencing act, not bookkeeping, and it remains owed.
+Evidence at ratification: `uv run gz validate` → **13 scopes, all passed**;
+`tests.governance.test_active_campaign_registry` 7/7.
+
+**What this amendment does NOT change.** Movement order (A → B → C → D) is unchanged. Movement
+B remains TOPMOST and gated by ADR order; Movement A remains HELD. `ADR-0.35.0` is still the
+in-flight feature and `Draft` still HOLDS through implementation (ruled 2026-08-12 — do not
+re-raise). The post-1.0 pool ruling (§7) stands. No box is checked by this amendment. Every §5
+gate is retained.
+
+### 2026-08-16 — ADR ORDER IS ABSOLUTE, and this plan now says so
 
 Operator ruling, verbatim: **"i will NOT go out of adr order, whatsoever."** (spelling
 preserved). Reaffirms the standing ruling *"we will NOT go out of adr order"*, which had
@@ -1135,7 +1384,7 @@ no-op'd for adopters by `_pkg_surface_exists` (`:626`).
 Operator, verbatim: *"I swear we've covered this before."* Movement D already diagnoses
 exactly this — *"nothing in gzkit represents the state 'settled'"* — and its fix
 <!-- gz-validate-skip: command-shape -->
-(`ruling_issued` / `ruling_superseded` typed events, a `gz ruling` verb) is unbuilt, with
+(`ruling_issued` / `ruling_superseded` typed events, a `ruling` verb) is unbuilt, with
 this register as the manual stand-in. The pattern across all three of this session's
 findings: **the diagnosis was correct, written down, and terminated in prose instead of a
 mechanism.** Orphaned maps (authored, not retrieved) · orientation index (prescribed as a
