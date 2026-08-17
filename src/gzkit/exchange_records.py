@@ -3,11 +3,13 @@
 An **exchange record** notes one block's vacation: the token holder surrendering
 its claim, plus an observation report of what happened during the traversal. It
 is NOT a session handoff. Operator canon, ruled 2026-08-06 and seated at
-``invariant`` tier in ``.gzkit/corpus/AGENTS.md.jsonl`` (spelling preserved):
+``invariant`` tier in ``.gzkit/corpus/AGENTS.md.jsonl`` (two keystroke slips
+corrected 2026-08-17 by operator ruling — ``sythetic``/``ecosysten``; wording
+otherwise unchanged):
 
-    transit (how we enter and leave the designed ecosysten); exchange (noting
+    transit (how we enter and leave the designed ecosystem); exchange (noting
     block vacation and an observation report of what happened); handoff
-    (sythetic memory refresh, from agent session to agent session, for context
+    (synthetic memory refresh, from agent session to agent session, for context
     management). Three vital features, that, as it turns out, are vital for
     campaign success.
 

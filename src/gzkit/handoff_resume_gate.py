@@ -12,7 +12,7 @@ question. GHI #574, which authorized it, quoted the remedy it was meant to apply
 *"place the human at a mechanical gate, **not at every keystroke**."* It shipped
 as a PreToolUse hook on every mutating call. Operator canon recorded 2026-08-06 at
 `invariant` tier assigns entry/exit authorization to TRANSIT — the airlock's
-subject (ADR-0.33.0) — while a handoff is a *"sythetic memory refresh, from agent
+subject (ADR-0.33.0) — while a handoff is a *"synthetic memory refresh, from agent
 session to agent session, for context management"*. A memory artifact has no
 natural blast radius, so "what should reading a reminder prevent?" had no
 principled answer; the invented answer was maximal, then whittled by 44 read
