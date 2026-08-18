@@ -164,3 +164,97 @@ class TestContentCommitCmd(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestCommitAttestationGranularity(unittest.TestCase):
+    """`commit` gates the CORPUS DELTA, never the re-render (GHI #821).
+
+    Operator ruling 2026-08-17, verbatim: *"a rerender of unhanged canon doesn't
+    require my attestation"* (spelling preserved). The discriminator is
+    ``corpus_fingerprint()`` — already computed at every commit, previously read
+    for freshness but never for this. These tests assert the RULING, not the
+    branch: each one names which of the four dispositions it pins, so a future
+    change to how the exemption is detected cannot quietly change WHAT is exempt.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _commit_unattested(self) -> object:
+        return self._runner.invoke(main, ["content", "commit", "AGENTS.md", "--consumer", "codex"])
+
+    def test_first_commit_still_requires_attestation(self) -> None:
+        """No prior sidecar → canon is unproven, not unchanged → still fail-closed.
+
+        The absence of a sidecar is NOT evidence that canon is unchanged; it is
+        absence of evidence either way. Reading it as an exemption would make the
+        very first commit of every consumer the one unattested one.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            result = self._commit_unattested()
+            self.assertNotEqual(result.exit_code, 0, msg=result.output)
+            self.assertFalse(fingerprint_path(Path("."), "AGENTS.md", "codex").exists())
+
+    def test_recommit_of_unchanged_canon_needs_no_attestation(self) -> None:
+        """Corpus fingerprint unmoved since the committed sidecar → exempt, exit 0."""
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            self.assertEqual(self._runner.invoke(main, _commit_args()).exit_code, 0)
+
+            # Re-render the SAME canon: rewrite the candidate, commit with no attestation.
+            candidate_path(Path("."), "AGENTS.md", "codex").write_text(
+                _CANDIDATE_TEXT + "\ntrimmed tail\n", encoding="utf-8"
+            )
+            result = self._commit_unattested()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    def test_exempt_recommit_carries_the_standing_attestation_forward(self) -> None:
+        """The exempt path inherits the prior attestor rather than blanking it.
+
+        Canon did not move, so the operator's standing attestation still describes
+        this corpus. Writing an empty attestor would record that nobody attested
+        a corpus somebody did attest — losing provenance to express an exemption.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            self._runner.invoke(main, _commit_args(attestor="g0", text="attest completed"))
+            candidate_path(Path("."), "AGENTS.md", "codex").write_text(
+                _CANDIDATE_TEXT + "\ntrimmed tail\n", encoding="utf-8"
+            )
+            self.assertEqual(self._commit_unattested().exit_code, 0)
+
+            prov = load_fingerprint(Path("."), "AGENTS.md", "codex")
+            assert prov is not None
+            self.assertEqual(prov.attestor, "g0")
+            self.assertEqual(prov.attestation_text, "attest completed")
+
+    def test_recommit_after_canon_moved_is_fail_closed_again(self) -> None:
+        """A corpus delta re-arms the gate — this is the arm that must NOT relax.
+
+        Distinguishes the ruling from "commit never needs attestation": appending
+        one entry moves the fingerprint, and the standing attestation no longer
+        describes the corpus being committed.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            self.assertEqual(self._runner.invoke(main, _commit_args()).exit_code, 0)
+
+            append_entry(Path("."), "AGENTS.md", _entry("e3", text="new canon"))
+            result = self._commit_unattested()
+            self.assertNotEqual(result.exit_code, 0, msg=result.output)
+
+    def test_explicit_attestation_still_honored_on_the_exempt_path(self) -> None:
+        """Exempt means "not required", never "not accepted" — a supplied attestor wins."""
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            self._runner.invoke(main, _commit_args(attestor="first", text="first words"))
+            candidate_path(Path("."), "AGENTS.md", "codex").write_text(
+                _CANDIDATE_TEXT + "\nagain\n", encoding="utf-8"
+            )
+            result = self._runner.invoke(main, _commit_args(attestor="second", text="second words"))
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            prov = load_fingerprint(Path("."), "AGENTS.md", "codex")
+            assert prov is not None
+            self.assertEqual(prov.attestor, "second")

@@ -268,3 +268,71 @@ class TestContentRememberDriftWarning(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestRememberWitnessProvenance(unittest.TestCase):
+    """`--witness` records WHO stands behind an entry, distinct from `--origin` (GHI #821).
+
+    Measured 2026-08-18 before this landed: `CorpusEntry.witness` was set on 0 of
+    65 live AGENTS.md entries — a model field no CLI path could reach — while
+    `origin` carried the machine string `cli:content-remember` on 36 of them. The
+    operator's identity, where recorded at all, had been smuggled into `origin` as
+    free prose. The two fields answer different questions and must stay separable:
+    `origin` is HOW the entry arrived, `witness` is WHO vouches for it.
+
+    Capture must never be blocked (ADR-0.35.0 § Decision 7), so `--witness` is
+    optional on every tier and its absence is never an error.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _remember(self, *extra: str) -> object:
+        return self._runner.invoke(
+            main,
+            [
+                "content",
+                "remember",
+                "AGENTS.md",
+                "--section",
+                "Behavior Rules",
+                "--text",
+                "Canon text.",
+                *extra,
+            ],
+        )
+
+    def _only_entry(self) -> object:
+        corpus = Corpus.loads(
+            (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(corpus.entries), 1)
+        return corpus.entries[0]
+
+    def test_witness_is_recorded_on_the_entry(self) -> None:
+        """`--witness g0` reaches `CorpusEntry.witness` — the field stops being dead."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self.assertEqual(self._remember("--witness", "g0").exit_code, 0)
+            self.assertEqual(self._only_entry().witness, "g0")
+
+    def test_witness_is_optional_and_capture_is_never_blocked(self) -> None:
+        """No `--witness` → exit 0, entry written, witness None.
+
+        Pins ADR-0.35.0 § Decision 7 against the obvious future tightening: making
+        an invariant-tier append fail closed on a missing witness would trade the
+        operator's words for a red tree, which the ADR forbids in those terms.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self.assertEqual(self._remember("--tier", "invariant").exit_code, 0)
+            self.assertIsNone(self._only_entry().witness)
+
+    def test_witness_and_origin_are_independent_channels(self) -> None:
+        """Supplying both keeps them distinct — witness never overwrites origin."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self.assertEqual(self._remember("--witness", "g0", "--origin", "GHI #821").exit_code, 0)
+            entry = self._only_entry()
+            self.assertEqual(entry.witness, "g0")
+            self.assertEqual(entry.origin, "GHI #821")

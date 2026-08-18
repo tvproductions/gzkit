@@ -111,6 +111,7 @@ def content_remember_cmd(
     tier: _Tier,
     classification: _Classification,
     origin: str,
+    witness: str = "",
 ) -> None:
     """Handle ``gz content remember <surface> --section <id> --text <text> [...]``.
 
@@ -158,6 +159,11 @@ def content_remember_cmd(
         classification=classification,
         text=text,
         origin=origin,
+        # `origin` is HOW the entry arrived (`cli:content-remember`); `witness` is WHO
+        # vouches for it. Distinct questions, so an unsupplied witness stays None rather
+        # than defaulting to the origin string — a fabricated witness is worse than an
+        # absent one on the artifact the whole system trusts (ADR-0.35.0 § Alternatives B).
+        witness=witness.strip() or None,
         ts=timestamp,
     )
 

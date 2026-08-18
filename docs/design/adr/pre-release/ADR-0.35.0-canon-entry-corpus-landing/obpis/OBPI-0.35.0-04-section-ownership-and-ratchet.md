@@ -142,7 +142,7 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 
 - [ ] `src/gzkit/content/models/corpus.py:43` — `section: str` is flat and `anchor: str | None` is largely unused; ownership is declared at a granularity the model supports only weakly
 - [ ] `src/gzkit/governance/trust_audits/rendition_floor_coherence.py:87-91` — the staged-warn precedent, and `_checkpoint.resolve`'s hangar downgrade; the in-repo evidence for pre-mortem #2
-- [ ] `src/gzkit/commands/content/commit.py:47-54` — the corpus-attestation shape to mirror
+- [ ] `src/gzkit/commands/content/commit.py:88-117` — the corpus-attestation shape to mirror (re-seated by GHI #821; was 47-54). Mirror the FAIL-CLOSED arm: un-owning a section is a canon change, so it never reaches the unchanged-canon exemption
 
 ## Quality Gates
 

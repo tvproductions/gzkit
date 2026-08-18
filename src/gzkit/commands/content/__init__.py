@@ -301,7 +301,12 @@ def _register_remember(content_commands: argparse._SubParsersAction) -> None:
     p.add_argument(
         "--origin",
         default="cli:content-remember",
-        help="Provenance of the capture, e.g. a GHI or session id.",
+        help="HOW the capture arrived, e.g. a GHI or session id.",
+    )
+    p.add_argument(
+        "--witness",
+        default="",
+        help="WHO vouches for this entry; recorded provenance, never a gate.",
     )
     p.set_defaults(
         func=lambda a: _content("remember", "content_remember_cmd")(
@@ -311,6 +316,7 @@ def _register_remember(content_commands: argparse._SubParsersAction) -> None:
             tier=a.tier,
             classification=a.classification,
             origin=a.origin,
+            witness=a.witness,
         )
     )
 
@@ -406,8 +412,10 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
             "rendition (<consumer>.md), freeze the corpus content-fingerprint in a provenance "
             "sidecar (<consumer>.corpus.json), and emit a rendition_committed ledger event. "
             "Operator-attested (corpus attestation, NOT Gate 5): --attestor and "
-            "--attestation-text are required and "
-            "fail closed when empty — promotion is explicit, never automatic. The frozen "
+            "--attestation-text fail closed when empty IF the corpus moved since this "
+            "consumer's last committed rendition; a re-render of UNCHANGED canon needs "
+            "none and carries the standing attestation forward (GHI #821) — attestation "
+            "attaches to the canon change, never to this Layer-3 re-render. The frozen "
             "fingerprint is what `gz validate --rendition-freshness` checks the corpus against."
         ),
         epilog=_build_epilog(
@@ -427,14 +435,14 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
     )
     p.add_argument(
         "--attestor",
-        required=True,
-        help="Operator attesting the corpus delta this commit renders; empty fails closed.",
+        default="",
+        help="Operator attesting the corpus delta; required only if canon moved.",
     )
     p.add_argument(
         "--attestation-text",
         dest="attestation_text",
-        required=True,
-        help="Operator's verbatim corpus-attestation token; empty fails closed.",
+        default="",
+        help="Operator's verbatim corpus-attestation token; same conditional requirement.",
     )
     p.set_defaults(
         func=lambda a: _content("commit", "content_commit_cmd")(

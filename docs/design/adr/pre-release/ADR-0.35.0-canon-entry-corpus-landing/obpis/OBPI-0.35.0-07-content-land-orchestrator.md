@@ -147,7 +147,7 @@ Ship gz content land &lt;surface&gt; — one attested, atomic, resumable landing
 
 - [ ] `src/gzkit/content/rendition_store.py:31-53` — `RenditionProvenance` is frozen with `extra="forbid"`; adding `landing_id` is an additive optional field, exactly as `rendition_fingerprint` was under GHI #694
 - [ ] `src/gzkit/content/rendition_store.py:95-134` — `rendition_exists`, `save_rendition`, `save_fingerprint`: the single-consumer write path being made atomic across a set
-- [ ] `src/gzkit/commands/content/commit.py:39-125` — the existing corpus-attestation fail-closed commit and its sidecar write
+- [ ] `src/gzkit/commands/content/commit.py:44-140` — the existing corpus-attestation commit and its sidecar write. Its gate is CONDITIONAL since GHI #821 (fail-closed only on a corpus delta); Requirements 5 and 9 are unaffected because both already scope the attestation to the DELTA
 - [ ] `src/gzkit/governance/trust_audits/rendition_floor_coherence.py:1-9` — the module docstring naming mtime comparison as the discredited witness `--status` must not reuse
 
 ## Quality Gates

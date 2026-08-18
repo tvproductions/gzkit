@@ -469,7 +469,7 @@ G -- FIX THE SUBSTRING TEST ONLY. Rejected. Making `rendition_floor_coherence.py
 
 H -- SHIP THE GENERATOR FIRST, DEFER RETIREMENT. Rejected. Ships a regression by construction: the byte-identical groups are invisible today ONLY because the floor check is a substring test, and they become literal double-emissions the instant a generator materializes. Supersede is a PREREQUISITE, not a parallel workstream.
 
-I -- AUTO-COMPOSE AND AUTO-COMMIT ON `remember`. Rejected. Auto-commit of a rendition bypasses the corpus attestation. `gz content commit` is fail-closed on empty `--attestor`/`--attestation-text` by explicit design (`commit.py:47-54`); routing around it is the bypass AGENTS.md Never #1 forbids.
+I -- AUTO-COMPOSE AND AUTO-COMMIT ON `remember`. Rejected. Auto-commit of a rendition bypasses the corpus attestation. `gz content commit` is fail-closed on empty `--attestor`/`--attestation-text` whenever the corpus moved (`commit.py:88-117`; conditional since GHI #821). The rejection is UNWEAKENED: an auto-commit triggered BY a `remember` is by construction a commit after a corpus delta, so it always lands in the fail-closed arm. Routing around it is the bypass AGENTS.md Never #1 forbids. (§ Q&A Transcript retains the pre-amendment wording as the authoring-time record.)
 
 J -- MAKE `remember` REFUSE THE APPEND WHEN IT WOULD DRIFT RENDITIONS. Rejected. Capture is the operator's words entering canon; a capture tool that refuses is a tool that loses doctrine.
 

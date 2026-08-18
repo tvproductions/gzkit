@@ -183,7 +183,7 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] OBPI-0.35.0-01 landed: **check `effective_corpus()`, not `CorpusEntry.retires`** — the field has existed since 2026-07-22 (`corpus.py:100`) and proves nothing about this prerequisite. The gate is that `effective_corpus()` exists and folds; today only a flat `Corpus.retired_ids()` does (`corpus.py:129-131`), and REQ-0.35.0-02-04 below asserts against `effective_corpus()` directly
-- [ ] `src/gzkit/commands/content/commit.py` exists (the corpus-attestation fail-closed pattern to mirror, lines 47-54)
+- [ ] `src/gzkit/commands/content/commit.py` exists (the corpus-attestation fail-closed pattern to mirror, lines 88-117; re-seated by GHI #821). Retirement is a canon change, so mirror the fail-closed arm, never the unchanged-canon exemption
 - [ ] `src/gzkit/content/corpus_store.py::append_entry` exists
 - [ ] `src/gzkit/governance/events.py` exists and carries the emit-helper pattern for corpus events
 - [ ] `docs/user/manpages/content.md` exists

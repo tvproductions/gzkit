@@ -185,10 +185,15 @@ writes `<consumer>.md` AND freezes the corpus content-fingerprint in a
 provenance sidecar `<consumer>.corpus.json`, then emits a `rendition_committed`
 ledger event.
 
-**`commit` is operator-attested (corpus attestation, NOT Gate 5)** — `--attestor` and `--attestation-text`
-are required and **fail closed when empty**; promotion is explicit, never
-automatic. The operator's verbatim `--attestation-text` IS the corpus attestation (mirrors
-`gz obpi repudiate`). The frozen fingerprint is exactly what
+**`commit` carries the corpus attestation (NOT Gate 5)** — and the attestation
+attaches to the **canon change**, never to this Layer-3 re-render. `--attestor`
+and `--attestation-text` **fail closed when empty only if the corpus moved**
+since this consumer's last committed rendition; a re-render of **unchanged
+canon** needs no attestation and carries the standing one forward (GHI #821).
+The discriminator is the corpus fingerprint the sidecar already froze. A first
+commit — no sidecar — is always attested: an absent sidecar is not evidence that
+canon is unchanged. The operator's verbatim `--attestation-text` IS the corpus
+attestation (mirrors `gz obpi repudiate`). The frozen fingerprint is exactly what
 `gz validate --rendition-freshness` compares the live corpus against: when the
 corpus drifts from the committed rendition, the freshness gate flags it and the
 recovery is to recompose and re-commit.
@@ -197,10 +202,14 @@ recovery is to recompose and re-commit.
 gz content commit <surface> --consumer <vendor> --attestor "<name>" --attestation-text "<verbatim>"
 gz content commit AGENTS.md --consumer codex \
   --attestor "g0" --attestation-text "attest completed"
+
+# Re-render of unchanged canon (a trim, a recompose): no attestation needed.
+gz content commit AGENTS.md --consumer codex
 ```
 
 The command **fails closed** (non-zero exit, nothing written) when:
-- `--attestor` or `--attestation-text` is empty or whitespace (corpus attestation),
+- `--attestor` or `--attestation-text` is empty or whitespace **and** the corpus
+  fingerprint differs from this consumer's committed sidecar, or no sidecar exists,
 - no staged candidate exists for `(surface, consumer)`, or
 - no corpus store exists for `<surface>` (nothing to fingerprint).
 
@@ -245,11 +254,12 @@ verdict value itself is never the fail-closed trigger.
 | `--text <text>` | remember | The entry prose to remember (required) |
 | `--tier <tier>` | remember | `invariant` (verbatim at every setpoint) or `compressible` (default) |
 | `--classification <c>` | remember | Advisory-scorecard class: `Mechanical`/`Promotable`/`Judgment`/`Ambiguous` (default `Ambiguous`) |
-| `--origin <provenance>` | remember | Provenance of the capture, e.g. a GHI or session id (default `cli:content-remember`) |
+| `--origin <provenance>` | remember | HOW the capture arrived, e.g. a GHI or session id (default `cli:content-remember`) |
+| `--witness <who>` | remember | WHO vouches for the entry. Recorded provenance, never a gate — capture is never blocked for want of one (GHI #821) |
 | `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
-| `--attestor <name>` | commit | Operator attesting the corpus delta this promotion renders; empty fails closed (required) |
-| `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; empty fails closed (required) |
+| `--attestor <name>` | commit | Operator attesting the corpus delta this promotion renders; empty fails closed **only when the corpus moved** since the last commit |
+| `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor` |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |
