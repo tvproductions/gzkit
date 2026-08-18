@@ -59,6 +59,17 @@ verification:
 - uv run mkdocs build --strict
 tasks:
   - TASK-0.35.0-09-11-01
+  - TASK-0.35.0-09-01-01
+  - TASK-0.35.0-09-02-01
+  - TASK-0.35.0-09-03-01
+  - TASK-0.35.0-09-04-01
+  - TASK-0.35.0-09-05-01
+  - TASK-0.35.0-09-06-01
+  - TASK-0.35.0-09-07-01
+  - TASK-0.35.0-09-08-01
+  - TASK-0.35.0-09-09-01
+  - TASK-0.35.0-09-10-01
+  - TASK-0.35.0-09-01-02
 ---
 
 # OBPI-0.35.0-09-codex-playback-wiring: Codex Playback Wiring
