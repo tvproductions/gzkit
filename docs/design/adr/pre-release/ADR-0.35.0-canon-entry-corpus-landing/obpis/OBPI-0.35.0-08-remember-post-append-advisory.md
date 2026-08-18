@@ -138,7 +138,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 - [ ] `src/gzkit/commands/content/remember.py` exists and appends via `corpus_store.append_entry`
 - [ ] `src/gzkit/content/rendition_store.py::corpus_fingerprint` and `load_fingerprint` exist — the drift signal is a fingerprint comparison, never an mtime comparison
-- [ ] `.gzkit/renditions/AGENTS.md/claude.corpus.json` and `codex.corpus.json` exist — the provenance sidecars whose frozen fingerprints the advisory compares against
+- [ ] `.gzkit/renditions/AGENTS.md/root.corpus.json` and `codex.corpus.json` exist — the provenance sidecars whose frozen fingerprints the advisory compares against
 - [ ] OBPI-0.35.0-07's gz content land &lt;surface&gt; shape is settled, so the advisory's next-step string is runnable rather than aspirational
 - [ ] `docs/user/manpages/content.md` exists
 

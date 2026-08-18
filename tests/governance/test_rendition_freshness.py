@@ -104,7 +104,7 @@ class TestRenditionFreshnessAgreement(_TempProjectMixin):
     @covers("REQ-0.0.37-22-03")
     def test_no_errors_when_corpus_absent(self) -> None:
         """No corpus → no drift possible → no errors (even with a rendition present)."""
-        save_rendition(self.root, "AGENTS.md", "claude", b"content")
+        save_rendition(self.root, "AGENTS.md", "root", b"content")
         self.assertEqual(validate_rendition_freshness(self.root, fail_closed=True), [])
 
     @covers("REQ-0.0.37-22-03")
@@ -117,7 +117,7 @@ class TestRenditionFreshnessAgreement(_TempProjectMixin):
     def test_no_errors_when_fingerprint_matches_corpus(self) -> None:
         """Committed fingerprint equals the corpus fingerprint → agreement → no errors."""
         corpus = self._seed_corpus("AGENTS.md", "alpha", "beta")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         self.assertEqual(validate_rendition_freshness(self.root, fail_closed=True), [])
 
     @covers("REQ-0.0.37-22-03")
@@ -133,7 +133,7 @@ class TestRenditionFreshnessRegressionLock(_TempProjectMixin):
     def test_mtime_bump_without_content_change_is_not_drift(self) -> None:
         """A pure mtime bump (identical content) is NOT drift — the old mtime gate flagged it."""
         corpus = self._seed_corpus("AGENTS.md", "stable")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         # Make the corpus far newer than the rendition WITHOUT changing its content.
         corpus_file = self._corpus_file("AGENTS.md")
         future = corpus_file.stat().st_mtime + 10_000
@@ -148,7 +148,7 @@ class TestRenditionFreshnessRegressionLock(_TempProjectMixin):
     def test_staged_candidate_file_is_not_treated_as_a_rendition(self) -> None:
         """A `<consumer>.candidate.md` left by compose must not trigger drift (no sidecar)."""
         corpus = self._seed_corpus("AGENTS.md", "stable")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         # Simulate a staged candidate sitting beside the committed rendition.
         candidate = self.root / ".gzkit" / "renditions" / "AGENTS.md" / "codex.candidate.md"
         candidate.write_text("# staged candidate\n", encoding="utf-8")
@@ -158,7 +158,7 @@ class TestRenditionFreshnessRegressionLock(_TempProjectMixin):
     def test_byte_identical_rewrite_is_not_drift(self) -> None:
         """Rewriting the corpus file with byte-identical content (new mtime) is NOT drift."""
         corpus = self._seed_corpus("AGENTS.md", "stable")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         corpus_file = self._corpus_file("AGENTS.md")
         # rewrite with byte-identical content (new mtime, same fingerprint)
         corpus_file.write_text(corpus.dumps() + "\n", encoding="utf-8")
@@ -172,7 +172,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_corpus_content_edit_is_drift(self) -> None:
         """A genuine corpus content change makes the frozen fingerprint stale → one error."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         self._seed_corpus("AGENTS.md", "original", "appended entry")  # corpus content grows
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1, f"Expected 1 drift error, got: {errors}")
@@ -181,7 +181,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_drift_error_type_is_rendition_freshness(self) -> None:
         """Drift error carries type 'rendition_freshness'."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         self._seed_corpus("AGENTS.md", "mutated")
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(errors[0].type, "rendition_freshness")
@@ -190,7 +190,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_drift_message_is_three_part_recovery(self) -> None:
         """Drift message names the corpus (what/why) and the compose+commit recovery (next step)."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         self._seed_corpus("AGENTS.md", "mutated")
         message = validate_rendition_freshness(self.root, fail_closed=True)[0].message.lower()
         self.assertIn("corpus", message)
@@ -202,7 +202,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_missing_sidecar_is_drift(self) -> None:
         """A rendition with no provenance sidecar cannot prove derivation → drift (closed)."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        save_rendition(self.root, "AGENTS.md", "claude", b"hand-placed rendition\n")  # no sidecar
+        save_rendition(self.root, "AGENTS.md", "root", b"hand-placed rendition\n")  # no sidecar
         del corpus
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1)
@@ -211,7 +211,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_drift_emits_composition_drift_detected_event(self) -> None:
         """Fail-closed drift emits exactly one composition_drift_detected ledger event."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        self._commit("AGENTS.md", "claude", corpus)
+        self._commit("AGENTS.md", "root", corpus)
         self._seed_corpus("AGENTS.md", "mutated")
         validate_rendition_freshness(self.root, fail_closed=True)
         drift = [e for e in self._ledger_events() if e.get("event") == "composition_drift_detected"]
@@ -221,7 +221,7 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_consumers_checked_independently(self) -> None:
         """An agreeing consumer and a stale consumer under one surface are scored independently."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus)  # claude agrees
+        self._commit("AGENTS.md", "root", corpus)  # claude agrees
         save_rendition(self.root, "AGENTS.md", "codex", b"codex no sidecar\n")  # codex drifts
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1, "only codex (missing sidecar) drifts")
@@ -245,23 +245,23 @@ class TestRenditionIntegrity(_TempProjectMixin):
     def test_post_commit_byte_edit_is_drift(self) -> None:
         """A rendition edited after commit no longer matches its frozen digest → drift."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
-        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        self._commit("AGENTS.md", "root", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "root").write_bytes(b"tampered body\n")
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1, f"post-commit byte edit must be drift, got: {errors}")
 
     def test_integrity_drift_error_type_is_distinct(self) -> None:
         """Byte drift is attributed as 'rendition_integrity', not corpus staleness."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
-        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        self._commit("AGENTS.md", "root", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "root").write_bytes(b"tampered body\n")
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(errors[0].type, "rendition_integrity")
 
     def test_untampered_rendition_is_clean(self) -> None:
         """Committed bytes that still match their frozen digest are not drift."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
+        self._commit("AGENTS.md", "root", corpus, content=b"attested body\n")
         self.assertEqual(validate_rendition_freshness(self.root, fail_closed=True), [])
 
     def test_absent_rendition_fingerprint_is_drift(self) -> None:
@@ -271,7 +271,7 @@ class TestRenditionIntegrity(_TempProjectMixin):
         bypassable by deleting one JSON field.
         """
         corpus = self._seed_corpus("AGENTS.md", "x")
-        save_rendition(self.root, "AGENTS.md", "claude", b"body\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"body\n")
         save_fingerprint(
             self.root,
             "AGENTS.md",
@@ -292,8 +292,8 @@ class TestRenditionIntegrity(_TempProjectMixin):
     def test_integrity_message_names_the_attestation_and_recovery(self) -> None:
         """Three-part recovery prose: what drifted, why it is forbidden, the next step."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
-        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        self._commit("AGENTS.md", "root", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "root").write_bytes(b"tampered body\n")
         message = validate_rendition_freshness(self.root, fail_closed=True)[0].message.lower()
         self.assertIn("attest", message)
         self.assertIn("commit", message)
@@ -301,8 +301,8 @@ class TestRenditionIntegrity(_TempProjectMixin):
     def test_integrity_drift_warns_in_warn_mode(self) -> None:
         """Warn mode reports no errors and mutates no ledger (mirrors the corpus arm)."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "claude", corpus, content=b"attested body\n")
-        rendition_path(self.root, "AGENTS.md", "claude").write_bytes(b"tampered body\n")
+        self._commit("AGENTS.md", "root", corpus, content=b"attested body\n")
+        rendition_path(self.root, "AGENTS.md", "root").write_bytes(b"tampered body\n")
         self.assertEqual(validate_rendition_freshness(self.root, fail_closed=False), [])
         self.assertEqual(self._ledger_events(), [])
 
@@ -318,7 +318,7 @@ class TestCheckpointWiringFreshness(_TempProjectMixin):
     def test_without_mx_marker_gate_is_fail_closed(self) -> None:
         """No MX marker → default mode is fail-closed (full strength outside the hangar)."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        save_rendition(self.root, "AGENTS.md", "claude", b"no sidecar\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"no sidecar\n")
         del corpus
         errors = validate_rendition_freshness(self.root)
         self.assertEqual(len(errors), 1, "outside hangar: gate must be fail-closed by default")
@@ -327,7 +327,7 @@ class TestCheckpointWiringFreshness(_TempProjectMixin):
     def test_with_mx_marker_gate_is_advisory(self) -> None:
         """Active MX marker → default mode is advisory (gates demote inside the hangar)."""
         corpus = self._seed_corpus("AGENTS.md", "original")
-        save_rendition(self.root, "AGENTS.md", "claude", b"no sidecar\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"no sidecar\n")
         del corpus
         _marker.write(Marker(session_id="test-session"), self.root)
         errors = validate_rendition_freshness(self.root)

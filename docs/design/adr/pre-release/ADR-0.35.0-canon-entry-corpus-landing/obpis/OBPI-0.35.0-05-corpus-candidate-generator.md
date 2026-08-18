@@ -126,7 +126,7 @@ Make the corpus actually materialize a candidate: owned sections are generated f
 - [ ] OBPI-0.35.0-03 landed: the eight duplicates retired, so materialization does not double-emit
 - [ ] OBPI-0.35.0-04 landed: `.gzkit/ownership/AGENTS.md.json` declares every AGENTS.md section
 - [ ] `src/gzkit/content/composer.py` and `src/gzkit/content/rendition.py` exist
-- [ ] `.gzkit/renditions/AGENTS.md/claude.md` (31,990 B) and `codex.md` (13,606 B) exist as the carry-forward and setpoint-delta reference artifacts
+- [ ] `.gzkit/renditions/AGENTS.md/root.md` (31,990 B) and `codex.md` (13,606 B) exist as the carry-forward and setpoint-delta reference artifacts
 
 **Existing Code (understand current state):**
 
@@ -193,8 +193,8 @@ uv run mkdocs build --strict
 ```bash
 uv run gz content compose AGENTS.md --consumer claude
 uv run gz content compose AGENTS.md --consumer codex
-uv run python -c "import json, pathlib; d = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/claude.lineage.json').read_text(encoding='utf-8')); print('sections', len(d), '| owned', sum(1 for v in d.values() if v['owned']))"
-uv run python -c "import json, pathlib; a = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/claude.lineage.json').read_text(encoding='utf-8')); b = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/codex.lineage.json').read_text(encoding='utf-8')); s = next(k for k, v in a.items() if v['owned']); print(s, 'claude span', a[s]['byte_span'], '| codex span', b[s]['byte_span'])"
+uv run python -c "import json, pathlib; d = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/root.lineage.json').read_text(encoding='utf-8')); print('sections', len(d), '| owned', sum(1 for v in d.values() if v['owned']))"
+uv run python -c "import json, pathlib; a = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/root.lineage.json').read_text(encoding='utf-8')); b = json.loads(pathlib.Path('.gzkit/renditions/AGENTS.md/codex.lineage.json').read_text(encoding='utf-8')); s = next(k for k, v in a.items() if v['owned']); print(s, 'claude span', a[s]['byte_span'], '| codex span', b[s]['byte_span'])"
 ```
 
 ## Acceptance Criteria

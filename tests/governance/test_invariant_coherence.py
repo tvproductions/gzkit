@@ -45,7 +45,7 @@ def _setup_project(root: Path, *, with_rendition: bool = True) -> None:
     gzkit_dir.mkdir(parents=True, exist_ok=True)
 
     if with_rendition:
-        save_rendition(root, "AGENTS.md", "claude", _MINIMAL_RENDITION)
+        save_rendition(root, "AGENTS.md", "root", _MINIMAL_RENDITION)
 
 
 def _write_agents_md(root: Path, content: bytes) -> None:
@@ -57,8 +57,8 @@ def _rendition_bytes(root: Path) -> bytes:
     """Return the committed rendition bytes (what playback produces)."""
     from gzkit.content.rendition_store import load_rendition, rendition_exists
 
-    if rendition_exists(root, "AGENTS.md", "claude"):
-        return load_rendition(root, "AGENTS.md", "claude")
+    if rendition_exists(root, "AGENTS.md", "root"):
+        return load_rendition(root, "AGENTS.md", "root")
     return b""
 
 

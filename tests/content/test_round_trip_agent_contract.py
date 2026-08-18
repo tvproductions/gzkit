@@ -18,7 +18,7 @@ class TestRoundTripAgentContract(unittest.TestCase):
     def test_model_identity_minimal(self) -> None:
         """parse(render(model)) == model for minimal AgentContract."""
         model = AgentContract(name="Test", purpose="A purpose", tech_stack=[], rules=[])
-        rendered = render(model, "claude").decode("utf-8")
+        rendered = render(model, "root").decode("utf-8")
         parsed = parse(rendered, "AgentContract")
         self.assertEqual(parsed, model)
 
@@ -34,7 +34,7 @@ class TestRoundTripAgentContract(unittest.TestCase):
                 Bullet(text="Sub rule", indent=1),
             ],
         )
-        rendered = render(model, "claude").decode("utf-8")
+        rendered = render(model, "root").decode("utf-8")
         parsed = parse(rendered, "AgentContract")
         self.assertEqual(parsed, model)
 
@@ -47,9 +47,9 @@ class TestRoundTripAgentContract(unittest.TestCase):
             tech_stack=["Python 3.13+", "uv"],
             rules=[Bullet(text="Rule one", indent=0)],
         )
-        once = render(model, "claude")
+        once = render(model, "root")
         parsed = parse(once.decode("utf-8"), "AgentContract")
-        twice = render(parsed, "claude")
+        twice = render(parsed, "root")
         self.assertEqual(once, twice)
 
 
@@ -141,7 +141,7 @@ class TestReverseParseRoundTrip(unittest.TestCase):
         explicitly lossy human view, so classification metadata is NOT asserted to survive it,
         and blank-line normalization is permitted."""
         model = self._import_agents_md()
-        reparsed = parse(render(model, "claude").decode("utf-8"), "AgentContract")
+        reparsed = parse(render(model, "root").decode("utf-8"), "AgentContract")
         # Sections and order recovered.
         self.assertEqual([p.title for p in reparsed.pillars], [p.title for p in model.pillars])
         # Bullet text recovered, in order.

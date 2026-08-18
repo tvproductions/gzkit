@@ -57,7 +57,7 @@ class TestFloorViolation(_TempProject):
     def test_missing_invariant_entry_is_fail_closed(self) -> None:
         """A rendition that omits an invariant-tier corpus entry returns one error."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
 
         errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
 
@@ -69,7 +69,7 @@ class TestFloorViolation(_TempProject):
         """Two missing invariants on one rendition → one error naming both ids."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
         append_entry(self.root, "AGENTS.md", _entry(_INV2, entry_id="corpus-headless"))
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nNeither here.\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nNeither here.\n")
 
         errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
 
@@ -83,7 +83,7 @@ class TestFloorSatisfied(_TempProject):
         """A rendition that carries every invariant entry verbatim returns no errors."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
         body = f"# AGENTS.md\n\nPreamble.\n\n{_INV}\n\nMore.\n".encode()
-        save_rendition(self.root, "AGENTS.md", "claude", body)
+        save_rendition(self.root, "AGENTS.md", "root", body)
 
         self.assertEqual(validate_rendition_floor_coherence(self.root), [])
 
@@ -91,7 +91,7 @@ class TestFloorSatisfied(_TempProject):
         """Only invariant-tier entries are floor-enforced; compressible may be absent."""
         note = _entry("a summarizable note", tier="compressible", entry_id="c-1")
         append_entry(self.root, "AGENTS.md", note)
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nNo note here.\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nNo note here.\n")
 
         self.assertEqual(validate_rendition_floor_coherence(self.root), [])
 
@@ -102,7 +102,7 @@ class TestBootstrapSafe(_TempProject):
 
     def test_rendition_without_corpus_returns_empty(self) -> None:
         """A surface with a rendition but no corpus cannot violate a floor."""
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n")
         self.assertEqual(validate_rendition_floor_coherence(self.root), [])
 
 
@@ -117,7 +117,7 @@ class TestCheckpointWiringFloor(_TempProject):
     def test_without_mx_marker_gate_is_fail_closed(self) -> None:
         """No MX marker → default mode is fail-closed (full strength outside the hangar)."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
         errors = validate_rendition_floor_coherence(self.root)
         self.assertEqual(len(errors), 1, "outside hangar: gate must be fail-closed by default")
 
@@ -125,7 +125,7 @@ class TestCheckpointWiringFloor(_TempProject):
     def test_with_mx_marker_gate_is_advisory(self) -> None:
         """Active MX marker → default mode is advisory (gates demote inside the hangar)."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
-        save_rendition(self.root, "AGENTS.md", "claude", b"# AGENTS.md\n\nUnrelated body.\n")
+        save_rendition(self.root, "AGENTS.md", "root", b"# AGENTS.md\n\nUnrelated body.\n")
         _marker.write(Marker(session_id="test-session"), self.root)
         errors = validate_rendition_floor_coherence(self.root)
         self.assertEqual(errors, [], "inside hangar: gate must be advisory by default")

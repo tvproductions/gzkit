@@ -268,7 +268,7 @@ class TestRenderPipelineWired(unittest.TestCase):
             "gzkit.content.validation.hooks.validate_render",
         ) as mock_validate:
             mock_validate.return_value = None
-            render(contract, "claude", project_root=project_root)
+            render(contract, "root", project_root=project_root)
 
         mock_validate.assert_called_once()
         call_kwargs = mock_validate.call_args
@@ -286,7 +286,7 @@ class TestRenderPipelineWired(unittest.TestCase):
             "gzkit.content.validation.hooks.validate_render",
         ) as mock_validate:
             mock_validate.return_value = None
-            render(contract, "claude")
+            render(contract, "root")
 
         mock_validate.assert_not_called()
 
@@ -310,7 +310,7 @@ class TestRenderPipelineWired(unittest.TestCase):
             ),
             self.assertRaises(FidelityHookError),
         ):
-            render(contract, "claude", project_root=project_root)
+            render(contract, "root", project_root=project_root)
 
 
 class TestEditSaveHookWired(unittest.TestCase):
@@ -329,14 +329,14 @@ class TestEditSaveHookWired(unittest.TestCase):
 
         contract = _make_agent_contract()
         p = self._tmp / "agents.md"
-        p.write_bytes(render(contract, "claude"))
+        p.write_bytes(render(contract, "root"))
         return p
 
     def _make_fake_editor(self, file_path: Path) -> object:
         """Return a fake subprocess.run that writes valid AgentContract to the temp file."""
         from gzkit.content.render import render  # noqa: PLC0415
 
-        valid_bytes = render(_make_agent_contract(), "claude")
+        valid_bytes = render(_make_agent_contract(), "root")
 
         def fake_editor(args: list[str], **_kwargs: object) -> subprocess.CompletedProcess:
             temp_path = Path(args[-1])
@@ -380,7 +380,7 @@ class TestEditSaveHookWired(unittest.TestCase):
             content_edit_cmd(
                 file=str(file_path),
                 as_type="AgentContract",
-                vendor="claude",
+                vendor="root",
             )
 
         validate_pos = call_order.index("validate_save") if "validate_save" in call_order else -1
@@ -426,7 +426,7 @@ class TestEditSaveHookWired(unittest.TestCase):
             content_edit_cmd(
                 file=str(file_path),
                 as_type="AgentContract",
-                vendor="claude",
+                vendor="root",
             )
 
         self.assertNotEqual(ctx.exception.code, 0, msg="Expected non-zero exit on fidelity failure")

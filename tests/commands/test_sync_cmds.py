@@ -204,7 +204,7 @@ class TestSyncCommand(unittest.TestCase):
 
             # Commit the synced AGENTS.md as the rendition (bootstrap seeding)
             agents_bytes = (project_root / "AGENTS.md").read_bytes()
-            save_rendition(project_root, "AGENTS.md", "claude", agents_bytes)
+            save_rendition(project_root, "AGENTS.md", "root", agents_bytes)
 
             # Re-sync: now plays back the rendition → AGENTS.md == rendition bytes
             sync_result2 = runner.invoke(main, ["agent", "sync", "control-surfaces"])
@@ -388,7 +388,7 @@ class TestSyncCommand(unittest.TestCase):
             # Seed committed rendition with the current AGENTS.md bytes
             agents_path = project_root / "AGENTS.md"
             canonical_bytes = agents_path.read_bytes()
-            save_rendition(project_root, "AGENTS.md", "claude", canonical_bytes)
+            save_rendition(project_root, "AGENTS.md", "root", canonical_bytes)
 
             # Coherence must pass when rendition matches the committed surface
             errors_before = validate_invariant_coherence(project_root)
@@ -428,7 +428,7 @@ class TestSyncCommand(unittest.TestCase):
             rendition_bytes = (
                 b"# AGENTS.md\n\nDETERMINISTIC RENDITION CONTENT FOR REQ-0.0.37-22-02\n"
             )
-            save_rendition(project_root, "AGENTS.md", "claude", rendition_bytes)
+            save_rendition(project_root, "AGENTS.md", "root", rendition_bytes)
 
             # sync_agents_md must NOT call the model pipeline when a rendition exists
             with patch.object(

@@ -104,9 +104,9 @@ class TestTemperatureProjectionRetired(unittest.TestCase):
                 ),
             ],
         )
-        lite = render(contract, "claude", temperature="lite")
-        medium = render(contract, "claude", temperature="medium")
-        heavy = render(contract, "claude", temperature="heavy")
+        lite = render(contract, "root", temperature="lite")
+        medium = render(contract, "root", temperature="medium")
+        heavy = render(contract, "root", temperature="heavy")
         self.assertEqual(lite, medium, "lite and medium renders must be byte-identical")
         self.assertEqual(medium, heavy, "medium and heavy renders must be byte-identical")
         # The previously-withheld section MUST now appear at every temperature — proof the
