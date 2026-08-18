@@ -522,11 +522,36 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
 
 
 def _find_brief_path(project_root: Path, obpi_id: str) -> Path | None:
-    needle = obpi_id.removeprefix("OBPI-")
-    for candidate in sorted(project_root.rglob("OBPI-*.md")):
-        if needle in candidate.name:
-            return candidate
-    return None
+    """Resolve an OBPI id to its brief under canon, never to a same-named file elsewhere.
+
+    Anchored twice, because the lookup was unanchored twice over (GHI #824).
+
+    The SEARCH ROOT is the ADR tree, via the canonical brief-discovery helper
+    rather than a second copy of the walk. A project-root ``rglob`` treats every
+    ``OBPI-*.md`` in the working tree as a candidate brief, and ``gz obpi
+    pipeline`` names its own plan files ``OBPI-<id>-<slug>.md`` — so the
+    collision fires for every OBPI that ever passed the plan-audit gate, and
+    ``.claude/`` sorts before ``docs/``. Measured at filing: 164 of this repo's
+    542 short ids resolved to a plan file.
+
+    The MATCH is stem-anchored. ``needle in candidate.name`` is a substring test,
+    so a slug that merely MENTIONS another id (``migrate-0.1.0-01-artifacts``)
+    reads as that id.
+
+    Ambiguity returns None rather than taking a lexical tiebreak — the stance
+    ``_canonical_obpi_id`` already takes one function up: guessing between two
+    real briefs writes a confidently wrong answer. Silence is recoverable;
+    a stamp in the wrong artifact is not, because the caller cannot tell the two
+    apart (`_stamp_brief_task_declaration` is best-effort by contract).
+    """
+    from gzkit.commands.validate_briefs import _find_obpi_briefs  # noqa: PLC0415
+
+    briefs = _find_obpi_briefs(project_root)
+    exact = [path for path in briefs if path.stem == obpi_id]
+    if len(exact) == 1:
+        return exact[0]
+    prefixed = [path for path in briefs if path.stem.startswith(f"{obpi_id}-")]
+    return prefixed[0] if len(prefixed) == 1 else None
 
 
 def _stamp_brief_task_declaration(project_root: Path, obpi_id: str, task_id: str) -> Path | None:

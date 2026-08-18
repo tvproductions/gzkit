@@ -31,7 +31,11 @@ from tempfile import TemporaryDirectory
 import yaml
 
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
-from gzkit.commands.task import _stamp_brief_task_declaration, task_start_cmd
+from gzkit.commands.task import (
+    _find_brief_path,
+    _stamp_brief_task_declaration,
+    task_start_cmd,
+)
 from gzkit.commands.validate_task_envelope import _frontmatter_channel_map
 from tests.commands.common import CliRunner, _quick_init
 
@@ -202,3 +206,88 @@ def _collect(root: Path) -> dict[str, dict[str, object]]:
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestBriefResolutionIsAnchored(unittest.TestCase):
+    """`_find_brief_path` resolves a governance id against canon, not the tree (GHI #824).
+
+    The stamp's own contract makes this failure mode invisible at the call site:
+    `_stamp_brief_task_declaration` is best-effort, so writing to the WRONG file is
+    indistinguishable from success. The REQ is therefore about WHICH file the
+    resolver returns, not about whether a write happened.
+
+    Measured on this repo at filing time: 164 of 542 short OBPI ids resolved to a
+    file outside `docs/design/adr/` — one `.claude/plans/OBPI-<id>-<slug>.md` per
+    OBPI that ever passed the plan-audit gate, and `.claude/` sorts before `docs/`.
+    """
+
+    def test_a_plan_file_never_shadows_the_brief(self) -> None:
+        """The observed cause: an `OBPI-*.md` outside the ADR tree sorting first.
+
+        `.claude/plans/` is the canonical plan-file home and `gz obpi pipeline`
+        names its files `OBPI-<id>-<slug>.md` itself, so this collision is
+        structural rather than incidental.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = _brief(root)
+            plan = root / ".claude" / "plans" / f"{_OBPI_ID}.md"
+            plan.parent.mkdir(parents=True, exist_ok=True)
+            plan.write_text("# Plan\n", encoding="utf-8")
+
+            self.assertEqual(_find_brief_path(root, _OBPI_ID), brief)
+
+            _stamp_brief_task_declaration(root, _OBPI_ID, "TASK-0.0.64-02-01-01")
+
+            # The consumer-level assertion: the governance channel is fed and the
+            # plan file is left exactly as authored, with no frontmatter grafted on.
+            self.assertEqual(
+                _frontmatter_channel_map(_collect(root)),
+                {_OBPI_ID: {"TASK-0.0.64-02-01-01"}},
+            )
+            self.assertEqual(plan.read_text(encoding="utf-8"), "# Plan\n")
+
+    def test_an_id_mentioned_inside_another_briefs_slug_is_not_a_match(self) -> None:
+        """Latent cause: `needle in candidate.name` is a substring test, not an id test.
+
+        A slug that references another OBPI's id (`migrate-0.1.0-01-artifacts`) is
+        ordinary kebab-case authoring. Anchoring the match to the stem's own id
+        segment is what makes a mention stop reading as an identity.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            obpis = root / "docs" / "design" / "adr" / "foundation" / "ADR-0.0.1" / "obpis"
+            obpis.mkdir(parents=True, exist_ok=True)
+            # Sorts BEFORE the real brief, and its slug contains the needle.
+            decoy = obpis / "OBPI-0.0.1-01-migrate-0.1.0-01-artifacts.md"
+            decoy.write_text("---\nid: OBPI-0.0.1-01\n---\n", encoding="utf-8")
+            real = _brief(root, "OBPI-0.1.0-01-real-target")
+
+            self.assertEqual(_find_brief_path(root, "OBPI-0.1.0-01"), real)
+
+    def test_two_real_briefs_sharing_a_short_id_stay_ambiguous(self) -> None:
+        """Ambiguity resolves to None, never to whichever name sorts first.
+
+        Same stance `_canonical_obpi_id` already takes one function up — *"Two REAL
+        briefs stay ambiguous — guessing would write a confidently wrong obpi_id."*
+        A silent lexical tiebreak is the identical failure wearing a different hat.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _brief(root, "OBPI-0.1.0-01-alpha-slug")
+            _brief(root, "OBPI-0.1.0-01-beta-slug")
+
+            self.assertIsNone(_find_brief_path(root, "OBPI-0.1.0-01"))
+
+    def test_an_exact_full_slug_id_still_resolves(self) -> None:
+        """Regression guard for `_canonical_obpi_id`'s on-disk existence probe.
+
+        That caller passes full artifact-graph keys and reads only `is not None`,
+        so an over-tight matcher would silently re-break GHI #653's disambiguation
+        rather than fail loudly here.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            brief = _brief(root)
+
+            self.assertEqual(_find_brief_path(root, _OBPI_ID), brief)

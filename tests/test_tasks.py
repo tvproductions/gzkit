@@ -1534,7 +1534,13 @@ status: Draft
 
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
-            brief = root / "OBPI-0.1.0-01-sample.md"
+            # Under the ADR tree, where briefs actually live. Writing it at the
+            # project root passed only because the resolver accepted any
+            # `OBPI-*.md` anywhere in the tree — the defect GHI #824 fixed — so
+            # this fixture could not have caught a stamp landing in a plan file.
+            briefs = root / "docs" / "design" / "adr" / "pre-release" / "ADR-0.1.0-f" / "obpis"
+            briefs.mkdir(parents=True, exist_ok=True)
+            brief = briefs / "OBPI-0.1.0-01-sample.md"
             brief.write_text(self._BRIEF_WITH_REQS, encoding="utf-8")
 
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
