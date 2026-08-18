@@ -43,6 +43,17 @@ verification:
 
 Add two optional tombstone fields to `CorpusEntry` and ship `effective_corpus()` — a fold whose algebra is pinned in this brief, including retire-the-tombstone (un-retirement) — so retirement becomes an appended row rather than a deletion, and route `tier_policy.invariant_entries()` through the effective view so the invariant floor stops counting retired canon.
 
+> **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
+> attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
+> OBPI/ADR completion attestation (`ADR-0.0.36`) and nothing else; a build step
+> wearing that name is the collision the transit/exchange/handoff fence forbids
+> (operator ruling 2026-08-17, `AGENTS.md` § Operator Doctrine). The noun is
+> `corpus`, not `rendition`, because the same ruling puts the attestable subject on
+> the corpus and holds a rendition to be a Layer-3 derived view, "never the thing
+> attested." Parent ADR § Decision carries the governing amendment. This brief's own
+> `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
+> Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
+
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 01 is the head of the 01 -> 02 -> 03 prerequisite chain and the minimum shippable slice. Nothing else in ADR-0.35.0 may land first: alternative H is rejected precisely because shipping the OBPI-05 generator before retirement ships a regression by construction.
 
 > **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-08-07).**
@@ -99,7 +110,7 @@ Add two optional tombstone fields to `CorpusEntry` and ship `effective_corpus()`
 
 ## Denied Paths
 
-- `src/gzkit/commands/content/**` — the `retire` CLI surface (its Gate-5 extension) is OBPI-0.35.0-02
+- `src/gzkit/commands/content/**` — the `retire` CLI surface (its corpus-attestation extension) is OBPI-0.35.0-02
 - `.gzkit/corpus/AGENTS.md.jsonl` — appending the eight tombstones is OBPI-0.35.0-03
 - `src/gzkit/content/composer.py` — generator and `ByteEvidence` work is OBPI-0.35.0-05
 - `src/gzkit/governance/trust_audits/**` — validator scopes are OBPI-0.35.0-06

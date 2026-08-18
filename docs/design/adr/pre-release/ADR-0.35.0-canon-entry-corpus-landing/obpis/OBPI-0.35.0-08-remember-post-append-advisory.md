@@ -41,6 +41,17 @@ verification:
 
 Give `gz content remember` a POST-APPEND advisory that names the renditions its append just drifted, cites the ADR-0.0.37 corpus->rendition seam, and points at the governed next step — while the append always succeeds and the exit code stays 0. GHI #654's defect is the SILENCE, not the redness.
 
+> **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
+> attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
+> OBPI/ADR completion attestation (`ADR-0.0.36`) and nothing else; a build step
+> wearing that name is the collision the transit/exchange/handoff fence forbids
+> (operator ruling 2026-08-17, `AGENTS.md` § Operator Doctrine). The noun is
+> `corpus`, not `rendition`, because the same ruling puts the attestable subject on
+> the corpus and holds a rendition to be a Layer-3 derived view, "never the thing
+> attested." Parent ADR § Decision carries the governing amendment. This brief's own
+> `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
+> Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
+
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 08 is independent of the 01 -> 02 -> 03 chain and of 04 -> 05 -> 06 -> 07; it may land at any point. Its advisory text names the OBPI-0.35.0-07 verb as the governed next step, so the prose is authored against that verb's final shape.
 
 <!-- gz-validate-skip: command-shape -->
@@ -102,7 +113,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 1. NEVER refuse the append. On EVERY path — drift detected, drift-detection itself failing, corpus unreadable, renditions absent — the entry is appended and the exit code stays 0. Capture is the operator's words entering canon; a capture tool that refuses is a tool that loses doctrine (ADR § Alternatives J).
 2. ALWAYS append FIRST, advise SECOND. The advisory is computed after the corpus row is durably written, so a fault in drift detection can never cost the operator their words.
-3. NEVER auto-compose or auto-commit. Auto-commit of a rendition bypasses Gate 5, and `gz content commit` is fail-closed on empty attestation by explicit design (`commit.py:47-54`); routing around it is the bypass AGENTS.md § Never #1 forbids (ADR § Alternatives I).
+3. NEVER auto-compose or auto-commit. Auto-commit of a rendition bypasses the corpus attestation, and `gz content commit` is fail-closed on empty attestation by explicit design (`commit.py:47-54`); routing around it is the bypass AGENTS.md § Never #1 forbids (ADR § Alternatives I).
 4. ALWAYS emit three parts per `.claude/rules/guardrail-feedback-prose.md`: (1) WHAT DRIFTED — the count of now-stale renditions and each one NAMED by consumer; (2) WHY — the ADR-0.0.37 corpus->rendition seam, cited, not paraphrased; (3) GOVERNED NEXT STEP — the runnable gz content land invocation for the surface.
 5. NEVER emit the advisory when nothing drifted. A surface with no committed renditions, or renditions already on the current corpus fingerprint, produces a silent success — an advisory that always fires is noise, and noise is how the real signal gets ignored.
 6. ALWAYS write the advisory to stderr, leaving stdout's existing success output unchanged, so machine consumers of `remember` are unaffected.
@@ -146,7 +157,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 - [ ] `src/gzkit/commands/content/remember.py` — the current append path and its stdout success output, which stays unchanged
 - [ ] `src/gzkit/content/rendition_store.py:56-64` and `:135-144` — `corpus_fingerprint` and `load_fingerprint`; `load_fingerprint` returns `None` for an absent sidecar, which the freshness gate reads as drift
-- [ ] `src/gzkit/commands/content/commit.py:47-54` — the Gate-5 fail-close this OBPI must not route around
+- [ ] `src/gzkit/commands/content/commit.py:47-54` — the corpus-attestation fail-close this OBPI must not route around
 
 ## Quality Gates
 

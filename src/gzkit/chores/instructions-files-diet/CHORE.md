@@ -1,9 +1,23 @@
 # CHORE: Instructions & Memory Files Diet (Progressive Disclosure)
 
-**Version:** 3.1.0
+**Version:** 3.2.0
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
+> **3.2.0 (operator ruling 2026-08-18, GHI #822) — the content-surface attestation
+> is named CORPUS ATTESTATION, never "Gate 5."** `3.1.0` established that citing
+> ADR-0.0.36 for a rendition promotion was the wrong authority, but it corrected only
+> § 5a's prose and left the colliding NAME standing in four other places — including
+> § Anti-patterns, which still read *"(Gate 5 is universal, ADR-0.0.36)"* and so
+> asserted, six sections later, the exact citation § 5a had just retired. A file that
+> contradicts itself teaches whichever half the reader reaches first. Renamed here:
+> the § 5a heading, the `3.0.0`/`3.1.0` history prose, Exit-criteria row 11, and the
+> § Anti-patterns entry. LEFT ALONE deliberately: the verbatim quote of the
+> superseded text in this history block (editing a quotation falsifies the record)
+> and § 5a's own correct use of the real Gate 5. Still open and NOT settled here:
+> whether a rendition promotion is a Layer-1 canon change at all — that is GHI #821's
+> subject (whether the gate should fire), not this one's (what it is called).
+>
 > **3.1.0 (operator ruling 2026-08-17) — § 5a cited the wrong authority and named
 > retired consumers.** It read *"landing a recomposed `AGENTS.md` is a Layer-1 canon
 > change and Gate 5 is universal (ADR-0.0.36) … It never lands canon itself"* — a
@@ -28,7 +42,8 @@
 > check, trim, compress. and ask questions if needed."* and *"it should recommend
 > compression and trimming and consult the operator before acting."*) — the
 > procedure now MEASURES BEFORE IT CUTS, RECOMMENDS RATHER THAN DECIDES, and
-> consults the operator BEFORE the first edit rather than only at Gate 5.**
+> consults the operator BEFORE the first edit rather than only at the corpus
+> attestation.**
 > The consult gate moved upstream for a measured reason: of 59 corpus entries
 > only 4 are `tier: compressible`, and three of those four are
 > `prime-directive-ownership` and `operator-doctrine-verbatim-canon`. There is no
@@ -70,7 +85,7 @@
 > `gz check`. It also contradicted itself on mirrors: § 3 named
 > `.claude/rules/<rule>.md` as an origin while § 5 and § Anti-patterns both said
 > never to edit mirrors. Both arms are now routed to their canonical source, and
-> the corpus arm stops at the Gate 5 boundary rather than landing canon
+> the corpus arm stops at the corpus-attestation boundary rather than landing canon
 > unattested. `1.0.0` predated the composition architecture (baseline 2026-04-26)
 > and aged into incorrectness silently — nothing couples a chore's procedure to a
 > change in the layer model of the surfaces it names.
@@ -282,7 +297,7 @@ The rules row restates `.gzkit/rules/skill-surface-sync.md` § Non-negotiable ru
 have always said. Through `1.0.0` this table contradicted both by naming the
 mirror as the origin to edit.
 
-### 5a. The `AGENTS.md` arm goes through the corpus, and stops at Gate 5
+### 5a. The `AGENTS.md` arm goes through the corpus, and stops at the corpus attestation
 
 `AGENTS.md` is **not** a hand-authored file. It is played back from a committed
 rendition under `.gzkit/renditions/AGENTS.md/<consumer>.md`, composed from the
@@ -487,7 +502,7 @@ Two consequences bind this chore:
 | 8 | Every binding bullet retained | Each Mechanical / Promotable scorecard entry resolves to a bullet still present in the per-turn contract (manual cross-check recorded in `proofs/bullet-retention-audit.md`) |
 | 9 | Pedagogy reachable via in-line link | Every pillar that lifted narrative carries a one-line pointer to its destination page |
 | 10 | `AGENTS.md` compression authored in the corpus, not the rendered file | `git diff` shows changes under `.gzkit/corpus/` and `.gzkit/renditions/`; a diff touching `AGENTS.md` with no corresponding corpus change is drift, not a trim |
-| 11 | Canon left at the attestation boundary | A composed candidate exists at `.gzkit/renditions/AGENTS.md/<consumer>.candidate.md` and `gz content commit` has NOT been run by the chore — promotion is the operator's Gate 5 act |
+| 11 | Canon left at the attestation boundary | A composed candidate exists at `.gzkit/renditions/AGENTS.md/<consumer>.candidate.md` and `gz content commit` has NOT been run by the chore — promotion is the operator's corpus-attestation act |
 | 12 | Measured before it cut | `proofs/baseline-*.txt` records **bytes per consumer** measured from a § 1 composed candidate, and predates every corpus/rule/doc edit in the run |
 | 13 | Delivery measured, not just weight | `uv run gz validate --instructions-files-budget` output is recorded for the baseline AND the post-trim state, including each must-survive section's byte offset against the cap |
 | 14 | Recommended, did not decide | `proofs/recommendation-*.md` exists, carries per-item bytes + scorecard class + cost, and lists no `tier: invariant` entry and no Mechanical/Promotable bullet |
@@ -541,8 +556,10 @@ exists to move.
   drift that `gz validate --invariant-coherence` fails closed and that
   `gz agent sync control-surfaces` overwrites. Author against the corpus (§ 5a)
 - **Running `gz content commit` from this chore** — promotion of a candidate to
-  the committed rendition is a Layer-1 canon change requiring human attestation
-  (Gate 5 is universal, ADR-0.0.36). The chore composes and stops
+  the committed rendition requires the operator's corpus attestation. **NOT Gate 5,
+  and NOT ADR-0.0.36** — § 5a above records that this exact citation was the wrong
+  authority; ADR-0.0.36 governs OBPI/ADR completion and does not govern a rendition
+  promotion at all (operator ruling 2026-08-17, GHI #822). The chore composes and stops
 - **Compressing a `tier: invariant` corpus entry** — the composer preserves them
   verbatim and the invariant floor is not an editorial judgment. Compress the
   non-invariant remainder, and measure it rather than assuming it

@@ -185,9 +185,9 @@ writes `<consumer>.md` AND freezes the corpus content-fingerprint in a
 provenance sidecar `<consumer>.corpus.json`, then emits a `rendition_committed`
 ledger event.
 
-**`commit` is operator-attested (Gate 5)** — `--attestor` and `--attestation-text`
+**`commit` is operator-attested (corpus attestation, NOT Gate 5)** — `--attestor` and `--attestation-text`
 are required and **fail closed when empty**; promotion is explicit, never
-automatic. The operator's verbatim `--attestation-text` IS Gate 5 (mirrors
+automatic. The operator's verbatim `--attestation-text` IS the corpus attestation (mirrors
 `gz obpi repudiate`). The frozen fingerprint is exactly what
 `gz validate --rendition-freshness` compares the live corpus against: when the
 corpus drifts from the committed rendition, the freshness gate flags it and the
@@ -200,7 +200,7 @@ gz content commit AGENTS.md --consumer codex \
 ```
 
 The command **fails closed** (non-zero exit, nothing written) when:
-- `--attestor` or `--attestation-text` is empty or whitespace (Gate 5),
+- `--attestor` or `--attestation-text` is empty or whitespace (corpus attestation),
 - no staged candidate exists for `(surface, consumer)`, or
 - no corpus store exists for `<surface>` (nothing to fingerprint).
 
@@ -248,8 +248,8 @@ verdict value itself is never the fail-closed trigger.
 | `--origin <provenance>` | remember | Provenance of the capture, e.g. a GHI or session id (default `cli:content-remember`) |
 | `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
-| `--attestor <name>` | commit | Operator attesting the candidate→committed promotion (Gate 5); empty fails closed (required) |
-| `--attestation-text <text>` | commit | Operator's verbatim attestation token (Gate 5); empty fails closed (required) |
+| `--attestor <name>` | commit | Operator attesting the corpus delta this promotion renders; empty fails closed (required) |
+| `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; empty fails closed (required) |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |

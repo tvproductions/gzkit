@@ -47,7 +47,18 @@ verification:
 
 ## Objective
 
-Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record the unowned byte total in a decrease-only ratchet, and gate the only move that raises it — un-owning a section — behind an attested raise-path with the same Gate 5 shape as gz content withdraw.
+Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record the unowned byte total in a decrease-only ratchet, and gate the only move that raises it — un-owning a section — behind an attested raise-path with the same corpus-attestation shape as gz content withdraw.
+
+> **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
+> attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
+> OBPI/ADR completion attestation (`ADR-0.0.36`) and nothing else; a build step
+> wearing that name is the collision the transit/exchange/handoff fence forbids
+> (operator ruling 2026-08-17, `AGENTS.md` § Operator Doctrine). The noun is
+> `corpus`, not `rendition`, because the same ruling puts the attestable subject on
+> the corpus and holds a rendition to be a Layer-3 derived view, "never the thing
+> attested." Parent ADR § Decision carries the governing amendment. This brief's own
+> `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
+> Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 04 has no prerequisite inside ADR-0.35.0 and may land in parallel with 01-03. 05 depends on 01 + 04; 06 depends on 04 + 05. Per § Scope Minimization, 04 and 06 are cut together or not at all — cutting 06 alone leaves ownership as a claim with no enforcement, which IS pre-mortem #2.
 
@@ -86,7 +97,7 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 1. ALWAYS declare a closed enum. A section's ownership is exactly one of `corpus-owned` or `unowned`. Any third value, or a section present in AGENTS.md with no declaration, is fail-closed — an undeclared section is the silent third state this OBPI exists to remove.
 2. DAY-ONE BASELINE (re-measured before this brief was written, and to be re-measured at implementation time): AGENTS.md is 31,990 B across 22 H1/H2 sections. Eight sections are corpus-addressed — `attestation`, `behavior-rules`, `defect-fix-routing`, `do-it-right-craftsmanship-maxim`, `governance-doctrine-surfaces`, `obpi-acceptance-protocol`, `operator-doctrine-verbatim-canon`, `prime-directive-ownership` — carrying 9,612 B invariant + 354 B compressible = 9,966 B. The remaining 22,378 B across 14 sections is the day-one unowned ratchet floor.
 3. NEVER let the ratchet increase without attestation. Recording an unowned-byte total GREATER than the stored floor MUST be refused. Decrease or equality updates the floor; an increase is only reachable through the attested raise-path.
-4. ALWAYS gate the raise-path at Gate 5, fail-closed, with the SAME shape as gz content withdraw: empty or whitespace-only `--attestor` or `--reason` exits non-zero and writes nothing. Un-owning a section is the same act on the same kind of canon, so it takes the same ceremony (ADR § Reversibility).
+4. ALWAYS gate the raise-path at the corpus attestation, fail-closed, with the SAME shape as gz content withdraw: empty or whitespace-only `--attestor` or `--reason` exits non-zero and writes nothing. Un-owning a section is the same act on the same kind of canon, so it takes the same ceremony (ADR § Reversibility).
 5. ALWAYS emit a ledger event on both moves — an ownership transition and a ratchet-floor change — carrying the section id, the prior and new byte totals, and, on a raise, the attestor and reason.
 6. NEVER couple ownership to a section TITLE. Declarations key on the stable kebab-case section id used by the corpus `section` field, so renaming an H2 heading does not silently orphan a declaration (`DESIGN_FORCING_FUNCTIONS.md` § 2 assumption a1).
 7. ALWAYS record the coverage figure alongside the ratchet so it can be read without recomputation: 9,966 of 31,990 B = 31.2%, 8 of 22 sections.
@@ -124,14 +135,14 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 - [ ] `AGENTS.md` present; 22 H1/H2 headings and 31,990 B re-measured at implementation time
 - [ ] `.gzkit/corpus/AGENTS.md.jsonl` present; the eight corpus-addressed section ids re-derived at implementation time
 - [ ] `src/gzkit/governance/events.py` exists and carries the emit-helper pattern
-- [ ] `src/gzkit/commands/content/commit.py` exists (the Gate-5 fail-closed pattern the raise-path mirrors)
+- [ ] `src/gzkit/commands/content/commit.py` exists (the corpus-attestation fail-closed pattern the raise-path mirrors)
 - [ ] `docs/user/manpages/content.md` exists
 
 **Existing Code (understand current state):**
 
 - [ ] `src/gzkit/content/models/corpus.py:43` — `section: str` is flat and `anchor: str | None` is largely unused; ownership is declared at a granularity the model supports only weakly
 - [ ] `src/gzkit/governance/trust_audits/rendition_floor_coherence.py:87-91` — the staged-warn precedent, and `_checkpoint.resolve`'s hangar downgrade; the in-repo evidence for pre-mortem #2
-- [ ] `src/gzkit/commands/content/commit.py:47-54` — the Gate-5 shape to mirror
+- [ ] `src/gzkit/commands/content/commit.py:47-54` — the corpus-attestation shape to mirror
 
 ## Quality Gates
 

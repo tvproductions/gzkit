@@ -3,7 +3,8 @@
 REQ-derived: the governed candidate→committed promotion seam. ``gz content commit``
 promotes the staged candidate to the durable committed rendition AND freezes the
 corpus content-fingerprint in a provenance sidecar, under operator attestation
-(Gate 5: ``--attestor`` / ``--attestation-text`` fail-closed on empty). It is the
+(corpus attestation: ``--attestor`` / ``--attestation-text`` fail-closed on empty --
+ NOT Gate 5, which names OBPI/ADR completion only; GHI #822). It is the
 missing REQ-22-01 substance — ``save_rendition`` previously had no governed caller.
 """
 
@@ -132,7 +133,7 @@ class TestContentCommitCmd(unittest.TestCase):
 
     @covers("REQ-0.0.37-22-07")
     def test_commit_fails_closed_on_empty_attestor(self) -> None:
-        """Empty --attestor → exit 1, no rendition and no sidecar written (Gate 5 fail-closed)."""
+        """Empty --attestor → exit 1; no rendition, no sidecar (corpus attestation fail-closed)."""
         with self._runner.isolated_filesystem():
             _seed_corpus_and_candidate()
             result = self._runner.invoke(main, _commit_args(attestor=""))

@@ -39,13 +39,24 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-- **Checklist Item:** #2 - "`gz content retire` — Gate-5 extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2."
+- **Checklist Item:** #2 - "`gz content retire` — corpus-attestation extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2."
 
 **Status:** Draft
 
 ## Objective
 
-Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --attestor <name> --reason <text>` — the operator surface that appends an OBPI-0.35.0-01 tombstone. Retirement is already keyed to the entry id and never to the entry text; what this OBPI adds is the Gate-5 half: retiring an `invariant`-tier entry becomes fail-closed on empty `--attestor` or `--reason`, mirroring `gz obpi repudiate` (ADR-0.0.71).
+Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --attestor <name> --reason <text>` — the operator surface that appends an OBPI-0.35.0-01 tombstone. Retirement is already keyed to the entry id and never to the entry text; what this OBPI adds is the corpus-attestation half: retiring an `invariant`-tier entry becomes fail-closed on empty `--attestor` or `--reason`, mirroring `gz obpi repudiate` (ADR-0.0.71).
+
+> **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
+> attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
+> OBPI/ADR completion attestation (`ADR-0.0.36`) and nothing else; a build step
+> wearing that name is the collision the transit/exchange/handoff fence forbids
+> (operator ruling 2026-08-17, `AGENTS.md` § Operator Doctrine). The noun is
+> `corpus`, not `rendition`, because the same ruling puts the attestable subject on
+> the corpus and holds a rendition to be a Layer-3 derived view, "never the thing
+> attested." Parent ADR § Decision carries the governing amendment. This brief's own
+> `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
+> Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
 > **This objective was AMENDED 2026-08-07 (operator-ruled) from "ship the new verb
 > `content withdraw`."** The verb already shipped under GHI #635; extending it in
@@ -70,8 +81,8 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 > | Requirement | Target | Observed in `retire.py` | State |
 > |-------------|--------|--------------------------|-------|
 > | 1 — never accept a `--text` selector | id-keyed only | `--entry <id>` keyed; no text selector | **landed** |
-> | 2 — Gate 5 fail-closed on `invariant` tier | empty `--attestor`/`--reason` exits non-zero, writes nothing | **no `--attestor` parameter at all**; `reason` is not empty-checked (`retire.py:31`) | **open** |
-> | 3 — never require Gate 5 for `compressible` | tier discrimination | **no tier discrimination anywhere** | **open** |
+> | 2 — corpus attestation fail-closed on `invariant` tier | empty `--attestor`/`--reason` exits non-zero, writes nothing | **no `--attestor` parameter at all**; `reason` is not empty-checked (`retire.py:31`) | **open** |
+> | 3 — never require corpus attestation for `compressible` | tier discrimination | **no tier discrimination anywhere** | **open** |
 > | 4 — always append, never shrink | append-only | appends a retraction row via `corpus_store.append_entry` (`retire.py:74`) | **landed** |
 > | 5 — fail closed on unknown / already-retired / absent store | exit non-zero, write nothing | exit 1 on both unknown (`:47`) and already-retired (`:55`) | **landed** |
 > | 6 — emit BOTH `corpus_entry_appended` and `corpus_entry_retired` | two events | only `corpus_entry_retired_event` (`:80`); `append_entry` emits none | **half open** |
@@ -136,8 +147,8 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 ## Requirements (FAIL-CLOSED)
 
 1. NEVER accept a `--text` selector. Retirement is per-entry-id, full stop. Six of the seven byte-identical duplicate groups address the same text to TWO DIFFERENT sections, so a text key silently elects a section winner — a question text identity cannot see (ADR § Alternatives D).
-2. ALWAYS fail closed on Gate 5 for `invariant`-tier targets: an empty or whitespace-only `--attestor` or `--reason` MUST exit non-zero and write NOTHING — no corpus append, no ledger event, no partial file. Mirror `commit.py:47-54` and `gz obpi repudiate`.
-3. NEVER require Gate 5 for a `compressible`-tier target. The 0-Kelvin floor is what human attestation protects; compressible retirement is routine.
+2. ALWAYS fail closed on the corpus attestation for `invariant`-tier targets: an empty or whitespace-only `--attestor` or `--reason` MUST exit non-zero and write NOTHING — no corpus append, no ledger event, no partial file. Mirror `commit.py:47-54` and `gz obpi repudiate`.
+3. NEVER require corpus attestation for a `compressible`-tier target. The 0-Kelvin floor is what human attestation protects; compressible retirement is routine.
 4. ALWAYS append. The verb appends a tombstone row through `corpus_store.append_entry`; the raw log's row count MUST grow and MUST NEVER shrink (alternatives E and F).
 5. ALWAYS fail closed on an unknown `--entry` id, an already-retired target, or an absent corpus store — exit non-zero, write nothing.
 6. ALWAYS emit BOTH ledger events on a successful retirement: `corpus_entry_appended` for the tombstone row (a tombstone IS an appended corpus row and goes through `corpus_store.append_entry` like any other), and a new `corpus_entry_retired` carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason. The pair is the SUPPORT proof channel for OBPI-0.35.0-03's batch.
@@ -172,7 +183,7 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] OBPI-0.35.0-01 landed: **check `effective_corpus()`, not `CorpusEntry.retires`** — the field has existed since 2026-07-22 (`corpus.py:100`) and proves nothing about this prerequisite. The gate is that `effective_corpus()` exists and folds; today only a flat `Corpus.retired_ids()` does (`corpus.py:129-131`), and REQ-0.35.0-02-04 below asserts against `effective_corpus()` directly
-- [ ] `src/gzkit/commands/content/commit.py` exists (the Gate-5 fail-closed pattern to mirror, lines 47-54)
+- [ ] `src/gzkit/commands/content/commit.py` exists (the corpus-attestation fail-closed pattern to mirror, lines 47-54)
 - [ ] `src/gzkit/content/corpus_store.py::append_entry` exists
 - [ ] `src/gzkit/governance/events.py` exists and carries the emit-helper pattern for corpus events
 - [ ] `docs/user/manpages/content.md` exists
@@ -254,14 +265,14 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
   [structural-fence] -> proven ONLY by a parent-ADR ## Boundary Invariants entry
 -->
 
-- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — Gate 5 is fail-closed on the invariant tier.
+- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — The corpus attestation is fail-closed on the invariant tier.
 - [ ] REQ-0.35.0-02-02 [behavior]: Given the same invocation with a non-empty `--reason` but a whitespace-only `--attestor` (and the symmetric case), when the command runs, then it exits non-zero and writes nothing — whitespace is not attestation.
-- [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming a `compressible`-tier entry and NO `--attestor`/`--reason`, when the command runs, then it exits 0 and appends the tombstone — Gate 5 guards the 0-Kelvin floor, not routine retirement.
+- [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming a `compressible`-tier entry and NO `--attestor`/`--reason`, when the command runs, then it exits 0 and appends the tombstone — The corpus attestation guards the 0-Kelvin floor, not routine retirement.
 - [ ] REQ-0.35.0-02-04 [behavior]: Given a valid invariant-tier retirement with a non-empty attestor and reason, when the command runs, then the raw corpus GROWS by exactly one row, the target entry is absent from `effective_corpus()`, and the target row itself is still present verbatim in the raw log.
 - [ ] REQ-0.35.0-02-05 [behavior]: Given `--entry` naming an unknown id, an already-retired id, or a surface with no corpus store, when the command runs, then it exits non-zero, writes nothing, and its stderr carries all three recovery parts (what failed, the cited rule, a runnable next step).
 - [ ] REQ-0.35.0-02-06 [behavior]: Given the registered parser, when gz content retire --help is invoked, then the option set contains `--entry` and contains NO text-valued selector — text-keyed retirement is unreachable from the CLI, not merely discouraged.
 - [ ] REQ-0.35.0-02-07 [behavior]: Given a successful retirement, when the ledger is read, then a `corpus_entry_appended` event exists for the tombstone row AND a `corpus_entry_retired` event exists carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason.
-- [ ] REQ-0.35.0-02-08 [support]: `docs/user/manpages/content.md` carries a `retire` section (already present at line 127, EXTENDED here) documenting the per-entry-id contract and the invariant-tier Gate-5 fail-close, — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md` — and `gz validate --cli-alignment` resolves every gz content retire reference it prescribes.
+- [ ] REQ-0.35.0-02-08 [support]: `docs/user/manpages/content.md` carries a `retire` section (already present at line 127, EXTENDED here) documenting the per-entry-id contract and the invariant-tier corpus-attestation fail-close, — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md` — and `gz validate --cli-alignment` resolves every gz content retire reference it prescribes.
 
 ## Completion Checklist
 

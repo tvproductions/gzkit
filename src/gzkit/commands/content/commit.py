@@ -3,12 +3,17 @@
 The governed candidate→committed promotion seam. ``gz content compose`` stages a
 candidate; this command promotes it to the durable committed rendition AND freezes
 the corpus content-fingerprint in a provenance sidecar, under operator attestation
-(Gate 5). It is the missing REQ-22-01 substance — before this, ``save_rendition``
+(the corpus attestation). It is the missing REQ-22-01 substance — before this, ``save_rendition``
 had no governed caller and renditions were hand-placed.
 
-Gate 5 is fail-closed: empty ``--attestor`` or ``--attestation-text`` writes nothing.
+The corpus attestation is fail-closed: empty ``--attestor`` or ``--attestation-text``
+writes nothing.
 Promotion is explicit and operator-attested, never automatic — the operator's
-verbatim ``--attestation-text`` IS Gate 5 (mirrors ``gz obpi repudiate``).
+verbatim ``--attestation-text`` IS the corpus attestation (mirrors ``gz obpi repudiate``).
+
+This attestation is NOT Gate 5. Gate 5 names OBPI/ADR completion attestation
+(``ADR-0.0.36``) and nothing else; a build step wearing that name is the collision
+the transit/exchange/handoff fence forbids (operator ruling 2026-08-17, GHI #822).
 
 Exit 0: rendition + sidecar committed + ledger event emitted.
 Exit 1: user/config error (empty attestation, absent candidate, absent corpus).
@@ -44,11 +49,11 @@ def content_commit_cmd(
     """
     root = get_project_root()
 
-    # Gate 5 fail-closed: attestation is required and may not be empty.
+    # Corpus attestation fail-closed: attestation is required and may not be empty.
     if not attestor.strip() or not attestation_text.strip():
         print(
             "Error: --attestor and --attestation-text are required and may not be empty "
-            "(Gate 5 fail-closed). Nothing committed.",
+            "(corpus attestation fail-closed). Nothing committed.",
             file=sys.stderr,
         )
         sys.exit(1)

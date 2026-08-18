@@ -30,7 +30,18 @@ verification:
 
 ## Objective
 
-Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpus under one Gate 5 batch — one redundant copy from each of the seven byte-identical groups, plus the operator-ruled loser of the divergent quote-style pair — taking the live invariant count from 50 to 42 and discharging GHI #635.
+Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpus under one corpus-attestation batch — one redundant copy from each of the seven byte-identical groups, plus the operator-ruled loser of the divergent quote-style pair — taking the live invariant count from 50 to 42 and discharging GHI #635.
+
+> **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
+> attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
+> OBPI/ADR completion attestation (`ADR-0.0.36`) and nothing else; a build step
+> wearing that name is the collision the transit/exchange/handoff fence forbids
+> (operator ruling 2026-08-17, `AGENTS.md` § Operator Doctrine). The noun is
+> `corpus`, not `rendition`, because the same ruling puts the attestable subject on
+> the corpus and holds a rendition to be a Layer-3 derived view, "never the thing
+> attested." Parent ADR § Decision carries the governing amendment. This brief's own
+> `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
+> Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the withdraw verb). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
 
@@ -87,7 +98,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 >
 > **Requirement 1 says EXACTLY EIGHT; the remaining work is SEVEN.** Requirement 1
 > is written against the authoring-time corpus and is not silently rewritten here —
-> an off-by-one inside a Gate 5 batch is a fabricated receipt, so the count must be
+> an off-by-one inside a corpus-attestation batch is a fabricated receipt, so the count must be
 > re-derived at implementation time and reconciled deliberately, which is
 > Requirement 2's job.
 >
@@ -95,7 +106,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > Prerequisites are not met. **Verb-name collision RULED 2026-08-07 (operator):
 > OBPI-0.35.0-02 extends the shipped `gz content retire` in place rather than
 > shipping a new `withdraw`,** and the parent ADR is amended to match. The verb
-> therefore exists — but its **Gate-5 half does not**: `content_retire_cmd` takes no
+> therefore exists — but its **corpus-attestation half does not**: `content_retire_cmd` takes no
 > `--attestor`, does not empty-check `--reason`, and does not discriminate tier
 > (`retire.py:31`). Requirement 13 below demands a non-empty `--attestor` on all
 > eight invocations, so this brief cannot run until OBPI-0.35.0-02 lands that half.
@@ -128,7 +139,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: EXACTLY EIGHT entries are retired. Not seven, not nine. The count was re-measured against `.gzkit/corpus/AGENTS.md.jsonl` before this brief was written: 51 rows total, 50 `invariant` + 1 `compressible`; seven byte-identical `invariant` groups of size two each (seven redundant copies) plus the operator-ruled divergent pair (one more). An off-by-one inside a Gate 5 batch is a fabricated receipt.
+1. REQUIREMENT: EXACTLY EIGHT entries are retired. Not seven, not nine. The count was re-measured against `.gzkit/corpus/AGENTS.md.jsonl` before this brief was written: 51 rows total, 50 `invariant` + 1 `compressible`; seven byte-identical `invariant` groups of size two each (seven redundant copies) plus the operator-ruled divergent pair (one more). An off-by-one inside a corpus-attestation batch is a fabricated receipt.
 2. REQUIREMENT: ALWAYS re-measure before appending. Re-derive the group membership from the corpus on disk at implementation time and compare it to the ids enumerated in this brief. If the sets differ, STOP and emit BLOCKERS — do not reconcile silently.
 3. REQUIREMENT: GROUP 1 (cross-section, `attestation` / `operator-doctrine-verbatim-canon`) — retire `corpus-attestation-2026-06-06T06:20:27.327411+00:00`; RETAIN `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:19.779516+00:00`. ("Never, ever again give me that TTY or PTY bullshit …")
 4. REQUIREMENT: GROUP 2 (cross-section, `behavior-rules` / `operator-doctrine-verbatim-canon`) — retire `corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00`; RETAIN `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:28.077865+00:00`. ("The ACTIVE campaign plan …")
@@ -140,7 +151,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 10. REQUIREMENT: DIVERGENT PAIR (operator-ruled) — the two rows are 571 characters each and differ ONLY in quote style at four sites (`'discovering'`/`"discovering"`, `correction.'`/`correction."`, `'enhancement'`/`"enhancement"`, `'capability not yet built'`/`"capability not yet built"`). The SINGLE-QUOTE row `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00` IS CANON; retire `corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00`. This is the pair that already double-renders in AGENTS.md today.
 11. REQUIREMENT: NEVER let the tool elect the winner. The divergent pair is settled by the recorded operator ruling above, never by a dedup heuristic — a silently-picked quote style is doctrine drift with no attestation (ADR § Alternatives D; AGENTS.md § MAKE LLM STOCHASTIC VIBES INERT operative claim 3).
 12. REQUIREMENT: ALWAYS retire the cross-section duplicate and RETAIN the `operator-doctrine-verbatim-canon` row in groups 1-6. The verbatim-canon section is the operator's own home for these utterances; retaining the sibling and retiring the canon row would invert the ruling.
-13. REQUIREMENT: ALWAYS supply a non-empty `--attestor` and `--reason` on every one of the eight invocations. All eight targets are `invariant` tier, so all eight are Gate 5 fail-closed (OBPI-0.35.0-02).
+13. REQUIREMENT: ALWAYS supply a non-empty `--attestor` and `--reason` on every one of the eight invocations. All eight targets are `invariant` tier, so all eight are corpus-attestation fail-closed (OBPI-0.35.0-02).
 14. REQUIREMENT: AFTER the batch: the raw log holds 59 rows (51 + 8 tombstones) and `effective_corpus()` yields 42 live `invariant` entries and 1 `compressible`. No two live invariant entries share byte-identical text.
 15. REQUIREMENT: NEVER delete, edit, or re-tier a row. All eight originals stay in the raw log verbatim; provenance survives (alternatives E and F).
 
@@ -172,10 +183,10 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] OBPI-0.35.0-01 landed: `effective_corpus()` folds tombstones under the pinned algebra
-- [ ] OBPI-0.35.0-02 landed: `gz content retire` accepts `--attestor` and is Gate-5 fail-closed on invariant tier. **Check the flag, not the verb** — the verb has shipped since 2026-07-22 and its mere existence proves nothing about this prerequisite (`uv run gz content retire --help` must list `--attestor`)
+- [ ] OBPI-0.35.0-02 landed: `gz content retire` accepts `--attestor` and is corpus-attestation fail-closed on invariant tier. **Check the flag, not the verb** — the verb has shipped since 2026-07-22 and its mere existence proves nothing about this prerequisite (`uv run gz content retire --help` must list `--attestor`)
 - [ ] `.gzkit/corpus/AGENTS.md.jsonl` present and loading; 51 rows, 50 invariant + 1 compressible, re-measured at implementation time
 - [ ] All sixteen entry ids enumerated in Requirements resolve against the corpus on disk
-- [ ] A human attestor is available — all eight retirements are Gate 5 and there is no self-close path
+- [ ] A human attestor is available — all eight retirements are corpus-attested and there is no self-close path
 
 **Existing Code (understand current state):**
 
