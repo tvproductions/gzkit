@@ -18,7 +18,6 @@ The ``gz-obpi-pipeline`` skill wires this in as Stage 5 Step 0.
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -35,9 +34,6 @@ from gzkit.governance.req_coverage import discover_covers, parse_brief_req_kinds
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
-
-
-_OBPI_SHORT_PATTERN = re.compile(r"OBPI-[\d.]+-\d+")
 
 
 class CheckResult(BaseModel):
@@ -94,14 +90,20 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
 def _resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     """Find the OBPI brief by id under either obpis/ or briefs/ layout.
 
+    Matches on the id the caller SUPPLIED, never on a prefix derived from it. A
+    bare ``OBPI-<semver>-<index>`` still resolves — it globs as its own prefix —
+    but a fully-qualified id matching no brief is NOT FOUND rather than the
+    nearest sibling. Deriving the bare form and searching it first meant a full
+    id resolved to a different OBPI: demoting a feature ADR to pool releases its
+    semver for reuse while the parked OBPI ids keep it, so one prefix can name
+    two OBPIs under two different parent ADRs (GHI #826).
+
     Honors ``config.paths.design_root`` so the lookup works regardless of
     project layout (``docs/design`` in production, ``design`` in test
     fixtures from ``_quick_init``).
     """
     from gzkit.config import GzkitConfig
 
-    short_match = _OBPI_SHORT_PATTERN.match(obpi_id)
-    short = short_match.group(0) if short_match else obpi_id
     try:
         config = GzkitConfig.load(project_root / ".gzkit.json")
         design_root = config.paths.design_root
@@ -109,10 +111,10 @@ def _resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
         design_root = "docs/design"
     candidates: list[Path] = []
     for layout in ("obpis", "briefs"):
-        candidates.extend(project_root.glob(f"{design_root}/adr/**/{layout}/{short}*.md"))
-        if obpi_id != short:
-            candidates.extend(project_root.glob(f"{design_root}/adr/**/{layout}/{obpi_id}*.md"))
-    return candidates[0] if candidates else None
+        candidates.extend(project_root.glob(f"{design_root}/adr/**/{layout}/{obpi_id}*.md"))
+    # Sorted, not glob order: `Path.glob` is filesystem-ordered, so an unsorted
+    # pick makes the answer vary by machine (the GHI #721 family).
+    return sorted(candidates)[0] if candidates else None
 
 
 def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Iterable[CheckResult]:
@@ -194,8 +196,6 @@ def _check_reconcile_idempotent(project_root: Path) -> CheckResult:
 
 def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
     """OBPI lock MUST exist before `gz obpi complete` runs."""
-    short_match = _OBPI_SHORT_PATTERN.match(obpi_id)
-    short = short_match.group(0) if short_match else obpi_id
     locks_dir = project_root / ".gzkit" / "locks" / "obpi"
     if not locks_dir.is_dir():
         return CheckResult(
@@ -204,14 +204,14 @@ def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
             message="No .gzkit/locks/obpi/ directory",
             remediation=f"Run `uv run gz obpi lock claim {obpi_id}`.",
         )
-    candidates = sorted(locks_dir.glob(f"{short}*.json")) + sorted(
-        locks_dir.glob(f"{obpi_id}*.json") if obpi_id != short else []
-    )
+    # The supplied id only: a lock claimed for a prefix sibling is a different
+    # OBPI's claim, and honoring it hands two agents the same green light (#826).
+    candidates = sorted(locks_dir.glob(f"{obpi_id}*.json"))
     if not candidates:
         return CheckResult(
             name="lock_held",
             ok=False,
-            message=f"No lock file matches {short}",
+            message=f"No lock file matches {obpi_id}",
             remediation=f"Run `uv run gz obpi lock claim {obpi_id}`.",
         )
     return CheckResult(
@@ -261,8 +261,6 @@ def _check_arb_receipts_present(project_root: Path) -> CheckResult:
 
 def _check_plan_audit_receipt(project_root: Path, obpi_id: str) -> CheckResult:
     """Plan-audit receipt MUST exist with verdict PASS for the target OBPI."""
-    short_match = _OBPI_SHORT_PATTERN.match(obpi_id)
-    short = short_match.group(0) if short_match else obpi_id
     plans_dir = project_root / ".claude" / "plans"
     if not plans_dir.is_dir():
         return CheckResult(
@@ -271,12 +269,12 @@ def _check_plan_audit_receipt(project_root: Path, obpi_id: str) -> CheckResult:
             message="No .claude/plans/ directory",
             remediation=f"Run `uv run gz plan audit {obpi_id}`.",
         )
-    candidates = sorted(plans_dir.glob(f".plan-audit-receipt-{short}*.json"))
+    candidates = sorted(plans_dir.glob(f".plan-audit-receipt-{obpi_id}*.json"))
     if not candidates:
         return CheckResult(
             name="plan_audit_receipt",
             ok=False,
-            message=f"No plan-audit receipt for {short}",
+            message=f"No plan-audit receipt for {obpi_id}",
             remediation=f"Run `uv run gz plan audit {obpi_id}`.",
         )
     receipt_path = candidates[-1]

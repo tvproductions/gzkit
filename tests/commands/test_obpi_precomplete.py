@@ -79,6 +79,83 @@ class TestPrecompleteResolveBriefPath(unittest.TestCase):
             self.assertIsNone(_resolve_brief_path(root, "OBPI-9.9.9-99"))
 
 
+class TestPrecompleteIdPrefixIsNotIdentity(unittest.TestCase):
+    """`OBPI-<semver>-<index>` is not an identity (GHI #826).
+
+    Demoting a feature ADR to pool releases its semver for reuse, and the parked
+    OBPI ids keep it. So one prefix can name two different OBPIs under two
+    different parent ADRs, and prefix-matching a fully-qualified id hands back
+    the wrong artifact. Measured live: `ADR-0.35.0-pre-commit-hook-absorption`
+    was parked 2026-07-22 and `ADR-0.35.0-canon-entry-corpus-landing` reused
+    `0.35.0`, so `OBPI-0.35.0-01` names both `-arb-ruff` and
+    `-corpus-tombstone-schema-and-fold`.
+    """
+
+    def test_fully_qualified_id_never_resolves_to_a_prefix_sibling(self) -> None:
+        """A full id matching no brief is NOT FOUND, never a sibling's brief.
+
+        Resolving `-other-slug` to `-01`'s brief is not a near-miss: the two ids
+        can belong to different parent ADRs, so the caller silently operates on
+        an OBPI it did not name.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            sibling = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            self.assertTrue(sibling.is_file())
+            resolved = _resolve_brief_path(root, "OBPI-0.1.0-01-a-different-obpi")
+            self.assertIsNone(
+                resolved,
+                f"fully-qualified id resolved to a prefix sibling: {resolved}",
+            )
+
+    def test_short_form_still_resolves(self) -> None:
+        """The short form remains a supported lookup — this fix narrows only full ids."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            self.assertEqual(_resolve_brief_path(root, "OBPI-0.1.0-01"), path)
+
+    def test_lock_check_is_not_satisfied_by_a_prefix_siblings_lock(self) -> None:
+        """A lock claimed for one OBPI must not clear the gate for another.
+
+        The lock is the multi-agent coordination primitive; honoring a sibling's
+        lock hands two agents the same green light.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            locks = root / ".gzkit" / "locks" / "obpi"
+            locks.mkdir(parents=True, exist_ok=True)
+            (locks / "OBPI-0.1.0-01-the-held-one.json").write_text("{}", encoding="utf-8")
+            result = _check_lock_held(root, "OBPI-0.1.0-01-a-different-obpi")
+            self.assertFalse(
+                result.ok,
+                "a prefix sibling's lock satisfied the gate for an unlocked OBPI",
+            )
+
+    def test_plan_audit_receipt_is_not_satisfied_by_a_prefix_siblings_receipt(self) -> None:
+        """A plan-audit receipt for one OBPI must not clear the gate for another."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            plans = root / ".claude" / "plans"
+            plans.mkdir(parents=True, exist_ok=True)
+            (plans / ".plan-audit-receipt-OBPI-0.1.0-01-the-audited-one.json").write_text(
+                json.dumps({"verdict": "PASS"}), encoding="utf-8"
+            )
+            result = _check_plan_audit_receipt(root, "OBPI-0.1.0-01-a-different-obpi")
+            self.assertFalse(
+                result.ok,
+                "a prefix sibling's plan-audit receipt satisfied the gate",
+            )
+
+
 class TestPrecompleteBriefReadinessCheck(unittest.TestCase):
     """Brief MUST pass `gz obpi validate --authored` for completion."""
 
