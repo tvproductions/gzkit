@@ -1062,5 +1062,117 @@ class VersionReleaseAuditChickenAndEgg(unittest.TestCase):
             self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
 
 
+class VersionReleaseAuditTagReachability(unittest.TestCase):
+    """GHI #828 — a tag only the author can see must not read as a release.
+
+    `audit_version_release` compared the declared version against the LOCAL
+    tag set and stopped there, so a tag created out-of-band and never pushed
+    satisfied it. GHI #217 documents the workaround that manufactures exactly
+    that artifact: *"creating a local `vX.Y.Z` tag on the PRIOR commit (so the
+    audit sees some tag)"*. Observed at `v0.7.0`, a release documented in
+    `RELEASE_NOTES.md` whose tag pointed at an orphaned pre-rebase commit on
+    no remote branch, with no GitHub release.
+
+    The arm is deliberately network-free: reachability from the
+    `refs/remotes/origin/main` tracking ref, never `git ls-remote`. The audit
+    runs at pre-commit time and GHI #205 scoped that cost out explicitly.
+    """
+
+    def _write_pyproject(self, root: Path, version: str) -> None:
+        (root / "pyproject.toml").write_text(
+            f'[project]\nname = "demo"\nversion = "{version}"\n',
+            encoding="utf-8",
+        )
+
+    def _git(self, root: Path, *args: str) -> str:
+        import subprocess  # noqa: PLC0415
+
+        result = subprocess.run(
+            ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            encoding="utf-8",
+        )
+        return result.stdout.strip()
+
+    def _repo_with_commit(self, root: Path, version: str) -> str:
+        self._git(root, "init", "-q", "-b", "main")
+        self._write_pyproject(root, version)
+        self._git(root, "commit", "--allow-empty", "-qm", "landed")
+        return self._git(root, "rev-parse", "HEAD")
+
+    def _write_manifest(self, root: Path, version: str) -> None:
+        manifest_dir = root / "docs" / "releases"
+        manifest_dir.mkdir(parents=True, exist_ok=True)
+        (manifest_dir / f"PATCH-v{version}.md").write_text(
+            f"# Patch Release: v{version}\n", encoding="utf-8"
+        )
+
+    def test_tag_off_origin_main_is_refused(self) -> None:
+        """The v0.7.0 shape: tag points at a commit no remote branch contains."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            landed = self._repo_with_commit(root, "9.9.9")
+            self._git(root, "update-ref", "refs/remotes/origin/main", landed)
+            orphan = self._git(root, "commit-tree", "-m", "orphan", f"{landed}^{{tree}}")
+            self._git(root, "tag", "v9.9.9", orphan)
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+            self.assertIn("9.9.9", errors[0].message)
+
+    def test_tag_reachable_from_origin_main_passes(self) -> None:
+        """A tag on the published line is a real release and must not be flagged."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            landed = self._repo_with_commit(root, "9.9.9")
+            self._git(root, "update-ref", "refs/remotes/origin/main", landed)
+            self._git(root, "tag", "v9.9.9", landed)
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_manifest_does_not_excuse_an_unreachable_tag(self) -> None:
+        """The in-flight escape is for the window BEFORE a tag exists, not after.
+
+        Release manifests are committed and never removed, so accepting one
+        unconditionally made the escape permanent and the tag check dead for
+        every version `gz patch release` ever shipped.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            landed = self._repo_with_commit(root, "9.9.9")
+            self._git(root, "update-ref", "refs/remotes/origin/main", landed)
+            orphan = self._git(root, "commit-tree", "-m", "orphan", f"{landed}^{{tree}}")
+            self._git(root, "tag", "v9.9.9", orphan)
+            self._write_manifest(root, "9.9.9")
+            errors = audit_version_release(root)
+            self.assertEqual(
+                len(errors),
+                1,
+                msg=f"a persistent manifest must not excuse an unreachable tag, got {errors}",
+            )
+
+    def test_missing_origin_main_ref_does_not_flag(self) -> None:
+        """A fresh clone or CI sandbox has no tracking ref; absence is not evidence.
+
+        GHI #205 scoped network out of this audit. Judging reachability with
+        no `origin/main` to judge against would turn every sandbox red.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            landed = self._repo_with_commit(root, "9.9.9")
+            self._git(root, "tag", "v9.9.9", landed)
+            self.assertEqual(audit_version_release(root), [])
+
+
 if __name__ == "__main__":
     unittest.main()

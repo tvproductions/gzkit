@@ -50,6 +50,13 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     is attempted, so it satisfies the audit during the brief window between
     the commit and ``gh release create`` (which creates the tag).
 
+    Per GHI #828 the order is tag-first: a present tag is checked for
+    reachability from ``ORIGIN_MAIN_REF``, and the in-flight manifest is
+    consulted only when no tag exists. The manifest covers the window BEFORE
+    ``gh release create``, but manifests are committed and never removed, so
+    accepting one unconditionally made the escape permanent and the tag check
+    dead for every version ``gz patch release`` ever shipped.
+
     Per GHI #739 the lookup accepts both ``IN_FLIGHT_MANIFEST_PREFIXES``.
     ``PATCH-`` alone was hardcoded here, which had two consequences: minor
     releases from ``gz closeout`` had to file an artifact mislabelled as a
@@ -58,8 +65,6 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     while the ceremony's own Step 10 ran that gate before creating the tag —
     a deadlock on every minor release.
     """
-    import subprocess  # noqa: PLC0415
-
     pyproject = project_root / "pyproject.toml"
     if not pyproject.is_file():
         return []
@@ -67,25 +72,15 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     if version is None:
         return []
     expected = f"v{version}"
+    tags = _local_tags(project_root)
+    if tags is None:
+        return []
+    if expected in tags:
+        return _unreachable_tag_errors(project_root, version, expected)
     if any(
         in_flight_manifest_path(project_root, version, prefix).is_file()
         for prefix in IN_FLIGHT_MANIFEST_PREFIXES
     ):
-        return []
-    try:
-        result = subprocess.run(
-            ["git", "tag", "--list", "v*"],
-            cwd=project_root,
-            check=True,
-            capture_output=True,
-            text=True,
-            errors="replace",
-            encoding="utf-8",
-        )
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return []
-    tags = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    if expected in tags:
         return []
     return [
         ValidationError(
@@ -96,6 +91,83 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
                 "Every version bump is a release (CLAUDE.md local rule 11) — "
                 f"create one via `gh release create {expected} --target main "
                 f'--title "{expected}" --latest --notes "..."`.'
+            ),
+        )
+    ]
+
+
+#: The tracking ref reachability is judged against. A local ref, never
+#: ``git ls-remote`` — GHI #205 scoped network out of this audit because it
+#: runs at pre-commit time and would otherwise be brittle in CI and sandboxes.
+ORIGIN_MAIN_REF = "refs/remotes/origin/main"
+
+
+def _git_stdout(project_root: Path, *args: str) -> str | None:
+    """Return ``git *args`` stdout, or ``None`` if git is absent or the call fails."""
+    import subprocess  # noqa: PLC0415
+
+    try:
+        result = subprocess.run(
+            ["git", *args],
+            cwd=project_root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            encoding="utf-8",
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return None
+    return result.stdout
+
+
+def _local_tags(project_root: Path) -> set[str] | None:
+    """Return the local ``v*`` tag set, or ``None`` when git cannot be consulted."""
+    stdout = _git_stdout(project_root, "tag", "--list", "v*")
+    if stdout is None:
+        return None
+    return {line.strip() for line in stdout.splitlines() if line.strip()}
+
+
+def _unreachable_tag_errors(
+    project_root: Path, version: str, expected: str
+) -> list[ValidationError]:
+    """Fail if *expected* names a commit ``origin/main`` does not contain (GHI #828).
+
+    A tag is evidence of a release only if it points into the published line.
+    A tag created out-of-band and never pushed satisfies a local-only lookup
+    while origin carries neither the tag nor a GitHub release — observed at
+    ``v0.7.0``, whose tag pointed at an orphaned pre-rebase commit on no
+    remote branch while ``RELEASE_NOTES.md`` documented the release.
+
+    Absence of ``ORIGIN_MAIN_REF`` is not evidence of a defect: a fresh clone
+    or a CI sandbox legitimately has no tracking ref, and there is nothing to
+    judge reachability against.
+    """
+    import subprocess  # noqa: PLC0415
+
+    if _git_stdout(project_root, "rev-parse", "--verify", "--quiet", ORIGIN_MAIN_REF) is None:
+        return []
+    try:
+        reachable = subprocess.run(
+            ["git", "merge-base", "--is-ancestor", f"{expected}^{{commit}}", ORIGIN_MAIN_REF],
+            cwd=project_root,
+            check=False,
+            capture_output=True,
+        )
+    except FileNotFoundError:  # pragma: no cover - git vanished mid-audit
+        return []
+    if reachable.returncode == 0:
+        return []
+    return [
+        ValidationError(
+            type="version_release",
+            artifact=f"pyproject.toml::version={version}",
+            message=(
+                f"Tag `{expected}` names a commit `{ORIGIN_MAIN_REF}` does not contain, "
+                "so it is evidence only in this clone. Every version bump is a release "
+                "(CLAUDE.md local rule 11) — retag at the commit that landed and push it, "
+                f"then confirm the release exists via `gh release view {expected}`."
             ),
         )
     ]
