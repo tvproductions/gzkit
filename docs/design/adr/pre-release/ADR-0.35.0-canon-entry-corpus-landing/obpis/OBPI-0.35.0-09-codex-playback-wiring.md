@@ -14,6 +14,7 @@ allowlist:
 - src/gzkit/governance/trust_audits/rendition_floor_coherence.py
 - src/gzkit/governance/trust_audits/rendition_freshness.py
 - src/gzkit/content/rendition_store.py
+- src/gzkit/content/corpus_store.py
 - src/gzkit/governance/trust_audits/_qc_negative_controls.py
 - data/vendor-manifest.json
 - data/distribution_baseline_manifest.json
