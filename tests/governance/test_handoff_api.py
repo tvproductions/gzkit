@@ -18,6 +18,7 @@ from gzkit.exchange_records import (
     write_completion_exchange,
 )
 from gzkit.handoff_api import (
+    SETTLED_MARKER,
     DecisionAttribution,
     ObservedState,
     ReferenceKind,
@@ -32,6 +33,7 @@ from gzkit.handoff_api import (
     scaffold_handoff,
     settled_rulings,
 )
+from gzkit.handoff_api import _mark_settled as mark_settled
 from gzkit.handoff_validation import (
     PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
@@ -1416,6 +1418,80 @@ class TestProspectiveSectionsAreRealSections(unittest.TestCase):
             set(PROSPECTIVE_SECTIONS) <= set(REQUIRED_SECTIONS),
             f"{set(PROSPECTIVE_SECTIONS) - set(REQUIRED_SECTIONS)} is not a required section",
         )
+
+
+class TestSectionNumbersAreNotIssueCitations(unittest.TestCase):
+    """A bare ``#N`` numbering a RULE is not a GitHub issue citation (GHI #827).
+
+    The bare form is deliberately honored — handoff authors write "#696" far more
+    often than "GHI #696", and the bare form is the one that decayed unchecked
+    (GHI #696). But unbounded, it also claims this repo's own contract numbering:
+    `AGENTS.md` § Behavior Rules is numbered and routinely cited as `Always #13`.
+
+    Measured across `.gzkit/handoffs/**` on 2026-08-18 — the exact corpus the
+    annotator scans — the section-numbering forms occur 168 times: Always 73,
+    Never 27, Invariant 20, item 14, rule/Rule 15, Negative 9, Decision 7,
+    Positive 2, Step 1. That makes this the common case, not an edge case.
+
+    Observed instance: `.gzkit/handoffs/20260818T023015Z-...md:50` was written
+    with "AGENTS.md Behavior Rules, Always #13" and the gate stamped it
+    "Always #13 [settled]" — resolving issue 13, which is closed and unrelated.
+    """
+
+    def _steps_with(self, step: str) -> object:
+        def settle_everything(reference: StepReference) -> ReferenceState:
+            return ReferenceState.SETTLED
+
+        with tempfile.TemporaryDirectory() as made:
+            base = Path(made)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True, exist_ok=True)
+            body = (
+                "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+                "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+                f"## Immediate Next Steps\n\n1. {step}\n"
+            )
+            (handoff_dir / "h.md").write_text(body, encoding="utf-8", newline="\n")
+            return resume_handoff(
+                adr_id="ADR-0.0.65",
+                base_path=base,
+                now="2026-07-18T11:00:00Z",
+                reference_checker=settle_everything,
+            )
+
+    def test_rule_number_is_not_read_as_an_issue(self) -> None:
+        """`Always #13` cites a behavior rule; nothing about issue 13 is claimed."""
+        result = self._steps_with("Never call gh issue create directly (AGENTS.md Always #13).")
+        self.assertFalse(
+            result.steps[0].cites_settled,
+            "a behavior-rule number was resolved as a GitHub issue",
+        )
+
+    def test_bare_issue_citation_is_still_read(self) -> None:
+        """The bare form must keep working — it is the decay GHI #696 exists to catch."""
+        result = self._steps_with("Rule on #693 before re-adjudicating it.")
+        self.assertTrue(
+            result.steps[0].cites_settled,
+            "the bare issue form stopped being recognized",
+        )
+
+    def test_prefixed_issue_citation_is_still_read(self) -> None:
+        """The explicit `GHI #N` form must keep working."""
+        result = self._steps_with("Rule on GHI #693 before re-adjudicating it.")
+        self.assertTrue(result.steps[0].cites_settled)
+
+    def test_marking_skips_the_rule_number_but_marks_a_real_citation(self) -> None:
+        """One body, both forms, same number: mark the citation and leave the rule.
+
+        This is the case a purely extraction-side guard cannot reach — the number
+        IS a live issue citation somewhere in the text, so it gets marked, and the
+        marker must still not land on the rule reference.
+        """
+        body = "Cite AGENTS.md Always #13 and also resolve #13 before landing."
+        marked = mark_settled(body, "13")
+        self.assertIn(f"resolve #13 {SETTLED_MARKER}", marked)
+        self.assertIn("Always #13 and", marked)
+        self.assertNotIn(f"Always #13 {SETTLED_MARKER}", marked)
 
 
 if __name__ == "__main__":

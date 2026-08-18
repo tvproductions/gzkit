@@ -562,6 +562,35 @@ def _bullet_items(text: str) -> list[str]:
     return items
 
 
+#: Words that number a RULE or SECTION rather than a GitHub issue. This repo's own
+#: contract surfaces are numbered and cited that way — ``AGENTS.md`` § Behavior
+#: Rules reads ``Always #13`` — so an unbounded bare-``#N`` match claims them too.
+#: Measured across ``.gzkit/handoffs/**`` on 2026-08-18, the corpus this annotator
+#: actually scans: Always 73, Never 27, Invariant 20, item 14, rule/Rule 15,
+#: Negative 9, Decision 7, Positive 2, Step 1 — 168 occurrences, so this is the
+#: common case rather than an edge case (GHI #827).
+_SECTION_LEAD_INS: tuple[str, ...] = (
+    "Always",
+    "Never",
+    "Judgment",
+    "Invariant",
+    "invariant",
+    "Item",
+    "item",
+    "Rule",
+    "rule",
+    "Negative",
+    "Positive",
+    "Decision",
+    "Step",
+    "step",
+    "criterion",
+    "Signature",
+)
+
+_SECTION_NUMBER_LEAD = r"\b(?:" + "|".join(_SECTION_LEAD_INS) + r")\s+"
+_SECTION_NUMBER = _SECTION_NUMBER_LEAD + r"#\d+\b"
+
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR
     # first would strand the OBPI suffix as a second, bogus reference.
@@ -569,7 +598,11 @@ _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     (ReferenceKind.ADR, re.compile(r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)")),
     # Bare ``#123`` counts: handoff authors write "#696" far more often than
     # "GHI #696", and the bare form is the one that decayed unchecked.
-    (ReferenceKind.GHI, re.compile(r"(?:\bGHI\s*)?#(\d+)\b")),
+    #
+    # The section-number branch comes FIRST and captures nothing: it exists to
+    # CONSUME ``Always #13`` so the issue branch cannot re-read the number out of
+    # it. A match with no ``num`` group is discarded by `_extract_references`.
+    (ReferenceKind.GHI, re.compile(_SECTION_NUMBER + r"|(?:\bGHI\s*)?#(?P<num>\d+)\b")),
 )
 
 
@@ -585,7 +618,11 @@ def _extract_references(text: str) -> tuple[StepReference, ...]:
     remaining = text
     for kind, pattern in _REFERENCE_PATTERNS:
         for match in pattern.finditer(remaining):
-            identifier = match.group(1) if kind is ReferenceKind.GHI else match.group(0)
+            identifier = match.group("num") if kind is ReferenceKind.GHI else match.group(0)
+            if identifier is None:
+                # The section-number branch matched: a rule or section number, not
+                # an issue citation. Consumed above so nothing re-reads it (#827).
+                continue
             key = (kind, identifier)
             if key in seen:
                 continue
@@ -611,9 +648,19 @@ def _mark_settled(body: str, identifier: str) -> str:
     ``#57`` cannot claim the ``#573`` it is a prefix of.
     """
     pattern = re.compile(
+        r"(?P<lead>" + _SECTION_NUMBER_LEAD + r")?"
         r"#" + re.escape(identifier) + r"\b(?!\s*" + re.escape(SETTLED_MARKER) + r")"
     )
-    return pattern.sub(f"#{identifier} {SETTLED_MARKER}", body)
+
+    def _mark(match: re.Match[str]) -> str:
+        # A number this same body cites as a live issue ELSEWHERE still arrives
+        # here, so the extraction-side guard cannot cover this: skip the mention
+        # that numbers a rule and mark only the citation (#827).
+        if match.group("lead"):
+            return match.group(0)
+        return f"#{identifier} {SETTLED_MARKER}"
+
+    return pattern.sub(_mark, body)
 
 
 def _annotate_settled_citations(
