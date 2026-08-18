@@ -177,6 +177,7 @@ def auto_start_obpi_tasks(
     parent_adr: str,
     brief_content: str,
     agent: str = "gz-obpi-pipeline",
+    project_root: Path | None = None,
 ) -> list[str]:
     """Auto-start one TASK (seq=01) per REQ declared in an OBPI brief.
 
@@ -186,6 +187,14 @@ def auto_start_obpi_tasks(
 
     Eliminates the manual-coordination friction that drove silent TASK
     abandonment (3 Task: vs. 305+ Ceremony: trailers in 30-day audit).
+
+    ``project_root`` stamps each minted TASK into the brief's ``tasks:``
+    discovery channel, exactly as both manual ``gz task start`` paths do
+    (GHI #752, reopened 2026-08-17). This is the third and highest-traffic
+    producer of ``task_started``; leaving it unstamped kept the frontmatter
+    channel empty precisely where the pipeline does the minting. Optional
+    because the ledger write is the governance record and the declaration is
+    best-effort — attribution must never block the pipeline.
     """
     req_entities = extract_reqs_from_brief(brief_content, parent_obpi=obpi_id)
     existing = _all_started_task_ids(ledger)
@@ -207,6 +216,8 @@ def auto_start_obpi_tasks(
             agent=agent,
         )
         _emit_task_event(ledger, event)
+        if project_root is not None:
+            _stamp_brief_task_declaration(project_root, obpi_id, task_id)
         started.append(task_id)
     return started
 

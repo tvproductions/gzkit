@@ -1515,6 +1515,48 @@ status: Draft
         )
         self.assertEqual(started, [])
 
+    def test_auto_start_declares_every_minted_task_in_the_brief(self) -> None:
+        """The pipeline path stamps `tasks:` exactly as the manual path does (GHI #752).
+
+        `_stamp_brief_task_declaration` was built by GHI #752 to populate the
+        frontmatter discovery channel at mint time, and wired into both manual
+        `gz task start` entry points. `auto_start_obpi_tasks` is the third
+        producer and the one `gz obpi pipeline` actually uses, so leaving it
+        unstamped keeps the channel empty exactly where the volume is — which is
+        the `frontmatter keys=0` measurement #752 was filed on.
+
+        Asserts the governance semantic, not the call: every TASK the pipeline
+        mints is discoverable from the brief afterwards.
+        """
+        import tempfile
+
+        from gzkit.commands.task import auto_start_obpi_tasks
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            brief = root / "OBPI-0.1.0-01-sample.md"
+            brief.write_text(self._BRIEF_WITH_REQS, encoding="utf-8")
+
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            started = auto_start_obpi_tasks(
+                ledger,
+                obpi_id="OBPI-0.1.0-01",
+                parent_adr="ADR-0.1.0-f",
+                brief_content=self._BRIEF_WITH_REQS,
+                agent="gz-obpi-pipeline",
+                project_root=root,
+            )
+
+            declared = brief.read_text(encoding="utf-8")
+            for task_id in started:
+                self.assertIn(
+                    task_id,
+                    declared,
+                    f"{task_id} was minted by the pipeline but never declared in the "
+                    "brief's tasks: channel — the producer half of GHI #752 is "
+                    "unwired on the auto-start path.",
+                )
+
 
 class TestAutoCompleteObpiTasks(_TaskCliBase):
     """auto_complete_obpi_tasks: GHI #552 layer 4 — TASK completion at OBPI receipt."""

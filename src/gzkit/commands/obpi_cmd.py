@@ -557,12 +557,17 @@ def _run_pipeline_full_launch_task_start(
     obpi_id: str,
     parent_adr: str,
     obpi_content: str,
+    project_root: Path,
 ) -> None:
     """Auto-start one TASK per brief REQ at pipeline full-launch entry.
 
     GHI #552 layer 4. Eliminates the manual `gz task start` friction that
     drove silent TASK abandonment. Idempotent — re-launches do not duplicate
     `task_started` events.
+
+    ``project_root`` reaches the brief so each minted TASK is declared in its
+    ``tasks:`` channel (GHI #752) — the pipeline is the producer that volume
+    flows through, so an unstamped auto-start leaves the channel empty.
     """
     from gzkit.commands.task import auto_start_obpi_tasks  # noqa: PLC0415
 
@@ -571,6 +576,7 @@ def _run_pipeline_full_launch_task_start(
         obpi_id=obpi_id,
         parent_adr=parent_adr,
         brief_content=obpi_content,
+        project_root=project_root,
     )
     if not started:
         return
@@ -719,7 +725,11 @@ def obpi_pipeline_cmd(
 
     if start_from is None:
         _run_pipeline_full_launch_task_start(
-            ledger, obpi_id=obpi_id, parent_adr=resolved_parent, obpi_content=obpi_content
+            ledger,
+            obpi_id=obpi_id,
+            parent_adr=resolved_parent,
+            obpi_content=obpi_content,
+            project_root=project_root,
         )
         _print_pipeline_implementation_next_steps(obpi_id)
         return
