@@ -52,6 +52,8 @@ verification:
 - uv run gz validate --surfaces
 - uv run gz validate --req-kind-discipline
 - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-09-11-01
 ---
 
 # OBPI-0.35.0-09-codex-playback-wiring: Codex Playback Wiring

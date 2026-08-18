@@ -859,8 +859,7 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
         all_tasks: set[str] = set()
         for tids in non_empty.values():
             all_tasks |= tids
-        # Drift = at least one non-empty channel disagrees with the union.
-        diverging_channels = sorted(ch for ch, tids in non_empty.items() if tids != all_tasks)
+        diverging_channels = _crossing_channels(non_empty)
         if diverging_channels:
             errors.append(
                 ValidationError(
@@ -877,6 +876,40 @@ def _sig_c_layer_drift(project_root: Path) -> list[ValidationError]:
                 )
             )
     return errors
+
+
+def _crossing_channels(non_empty: dict[str, set[str]]) -> list[str]:
+    """Return the channels that CONTRADICT one another, never those merely behind.
+
+    Two channels cross when each holds a TASK id the other lacks. Channels whose
+    declarations are *nested* — one a subset of the other — do not cross: the
+    smaller is simply further behind, which is the normal state of a discovery
+    channel that accretes.
+
+    This replaced ``tids != all_tasks`` on 2026-08-17 (GHI #820). Set equality
+    against the union reported any channel short of the union as divergent, which
+    made the gate **satisfiable only by falsifying attribution**: ``gz obpi
+    pipeline`` writes every ``task_started`` event AT LAUNCH, while commit
+    trailers accrete one commit at a time, so those two channels could agree only
+    if every commit carried every TASK's trailer.
+    ``.claude/rules/task-discovery.md`` § Layer-drift fail-close forbids precisely
+    that (*"do not silently rewrite TASK IDs across channels to make the validator
+    happy"*) and defines drift as one unit of labor surfacing *"with different
+    TASK IDs"* — a contradiction, not a shortfall. A gate whose only passing move
+    is the act its own rule prohibits is worse than no gate;
+    ``_SIG_C_DRIFT_GRANDFATHER`` is where two prior instances were absorbed
+    instead of diagnosed.
+
+    The real signal is preserved: ``@advances`` naming TASK-A while the trailer
+    names TASK-C still fires, because neither set contains the other.
+    """
+    crossing: set[str] = set()
+    channels = sorted(non_empty.items())
+    for index, (name_a, tasks_a) in enumerate(channels):
+        for name_b, tasks_b in channels[index + 1 :]:
+            if (tasks_a - tasks_b) and (tasks_b - tasks_a):
+                crossing.update((name_a, name_b))
+    return sorted(crossing)
 
 
 def _sig_d_obpi_id_divergence(project_root: Path) -> list[ValidationError]:

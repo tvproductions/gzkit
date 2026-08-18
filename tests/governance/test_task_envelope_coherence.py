@@ -1320,6 +1320,75 @@ class TestSignatureCCommitTrailerChannel(unittest.TestCase):
             self.assertEqual(len(errors), 0)
 
 
+class TestSignatureCSubsetIsNotDrift(unittest.TestCase):
+    """Signature (c) fires on CONTRADICTION, never on incompleteness (GHI #820).
+
+    `.claude/rules/task-discovery.md` § Layer-drift fail-close defines drift as a
+    unit of labor surfacing "with **different TASK IDs**" across channels. A
+    channel naming FEWER TASKs contradicts nothing.
+
+    The distinction is load-bearing rather than pedantic, because the channels
+    populate on incompatible schedules: `gz obpi pipeline` writes every
+    `task_started` event AT LAUNCH, while commit trailers accrete one commit at a
+    time. Under set-equality the two can agree only if every commit carries every
+    TASK's trailer — falsified attribution, which the same rule forbids by name.
+    A gate satisfiable only by the act its rule prohibits is worse than no gate.
+    """
+
+    @covers("REQ-0.0.64-04-03")
+    def test_trailer_subset_of_ledger_is_not_drift(self) -> None:
+        """A commit-trailer channel naming a SUBSET of declared TASKs must not fire."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            fm = {
+                **_BASE_FM,
+                "tasks": ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-01-02"],
+            }
+            _write_brief(root, fm)
+            # One commit landed so far, naming one of the two declared TASKs.
+            git_log = "fix(x): first increment\n\nTask: TASK-0.0.64-04-01-01\n--EOC--\n"
+            fake = mock.Mock(returncode=0, stdout=git_log)
+            with mock.patch.object(validate_task_envelope.subprocess, "run", return_value=fake):
+                errors = [
+                    e
+                    for e in _validate_task_envelope_coherence(root)
+                    if "Signature (c)" in e.message or "layer-drift" in e.message.lower()
+                ]
+            self.assertEqual(
+                errors,
+                [],
+                "A trailer channel naming a subset of the declared TASKs names no TASK "
+                "the other channels lack, so it contradicts nothing and must not "
+                "report layer-drift (GHI #820).",
+            )
+
+    @covers("REQ-0.0.64-04-03")
+    def test_contradiction_still_fires_under_the_narrowed_predicate(self) -> None:
+        """The real signal survives: a channel holding an id no other channel knows fires."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            fm = {
+                **_BASE_FM,
+                "tasks": ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-01-02"],
+            }
+            _write_brief(root, fm)
+            # Trailer names a THIRD TASK that no other channel declares.
+            git_log = "fix(x): change\n\nTask: TASK-0.0.64-04-01-09\n--EOC--\n"
+            fake = mock.Mock(returncode=0, stdout=git_log)
+            with mock.patch.object(validate_task_envelope.subprocess, "run", return_value=fake):
+                errors = [
+                    e
+                    for e in _validate_task_envelope_coherence(root)
+                    if "Signature (c)" in e.message or "layer-drift" in e.message.lower()
+                ]
+            self.assertGreater(
+                len(errors),
+                0,
+                "Narrowing the predicate must not disarm it: a channel naming a TASK "
+                "no other channel knows is the contradiction the rule describes.",
+            )
+
+
 class TestSignatureCPerformance(unittest.TestCase):
     """Signature (c) scans git history once per audit, not once per OBPI."""
 
