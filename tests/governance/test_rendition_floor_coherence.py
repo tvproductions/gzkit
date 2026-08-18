@@ -65,6 +65,85 @@ class TestFloorViolation(_TempProject):
         self.assertEqual(errors[0].type, "rendition_floor_coherence")
         self.assertIn("corpus-tty", errors[0].message)
 
+    @covers("REQ-0.35.0-09-05")
+    def test_the_graded_consumer_is_the_routed_one(self) -> None:
+        """The floor gate grades the rendition the playback path actually delivers.
+
+        REQ-0.35.0-09-05 turns on *which* rendition is graded, not on the gate's
+        pre-existing ability to detect a missing entry: the setpoint is falsifiable
+        "because the rendition it grades is the one actually delivered". Before the
+        collapse the manifest routed `AgentContract` to `["claude", "codex"]` while
+        the delivered file was root `AGENTS.md`, so the gate could fail closed over
+        a rendition no harness ever read — an unfalsifiable setpoint that still
+        looked green.
+
+        The assertion is therefore a COUPLING: the consumer
+        `governance.compose.agent_contract_consumer` resolves for playback must be
+        the same consumer whose rendition the floor gate grades. Asserting only
+        that "root" is named would re-pin the literal this OBPI removed
+        (hexagonal-architecture operative rule 4), and would pass unchanged if the
+        manifest were re-routed away from the delivered surface.
+        """
+        from gzkit.governance.compose import agent_contract_consumer
+
+        routed = agent_contract_consumer(self.root)
+
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", routed, b"# AGENTS.md\n\nUnrelated body.\n")
+
+        errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
+
+        self.assertEqual(
+            len(errors),
+            1,
+            "the rendition under the ROUTED consumer must be graded — if it is not, "
+            "the gate is measuring a surface no harness reads",
+        )
+        self.assertEqual(
+            errors[0].artifact,
+            f"AGENTS.md/{routed}",
+            "the graded artifact must be the routed consumer's rendition, so the "
+            "floor binds over the delivered contract rather than an off-route record",
+        )
+
+    @covers("REQ-0.35.0-09-11")
+    def test_only_the_committed_on_route_rendition_is_graded(self) -> None:
+        """Three artifacts on disk, exactly one graded (REQ-0.35.0-09-11).
+
+        The gate enumerated `.gzkit/renditions/<surface>/*.md` by glob, which made
+        Requirement 4a ("NEVER delete a Gate-5-attested rendition") unlivable: a
+        retained superseded record would be graded against a corpus it was never
+        committed against, forever, and a `*.candidate.md` staging artifact would be
+        graded despite being by definition not committed. Measured 2026-08-17,
+        `AGENTS.md/codex.candidate` appeared in the gate's own error output.
+
+        All three artifacts omit the invariant entry, so under the old glob all
+        three would report. Asserting the COUNT is what makes the exclusion
+        falsifiable — asserting only that the committed one reports would pass
+        just as well while the other two were still being graded.
+        """
+        from gzkit.governance.compose import agent_contract_consumer
+
+        routed = agent_contract_consumer(self.root)
+        body = b"# AGENTS.md\n\nUnrelated body.\n"
+
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", routed, body)
+        # A staging candidate and a superseded off-route record, both omitting it.
+        surface_dir = self.root / ".gzkit" / "renditions" / "AGENTS.md"
+        (surface_dir / f"{routed}.candidate.md").write_bytes(body)
+        (surface_dir / "codex.md").write_bytes(body)
+
+        errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
+
+        self.assertEqual(
+            [e.artifact for e in errors],
+            [f"AGENTS.md/{routed}"],
+            "only the committed, on-route rendition may be graded: a candidate is "
+            "not committed, and a superseded off-route record is retained as an "
+            "attestation trail that nothing plays back",
+        )
+
     def test_one_error_per_rendition_lists_every_missing_entry(self) -> None:
         """Two missing invariants on one rendition → one error naming both ids."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))

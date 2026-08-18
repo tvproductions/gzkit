@@ -355,7 +355,7 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
 # ---------------------------------------------------------------------------
 
 
-def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
+def sync_agents_md(project_root: Path, config: GzkitConfig, consumer: str | None = None) -> None:
     """Generate AGENTS.md by deterministic playback of the committed rendition (OBPI-0.0.37-22).
 
     Playback path (primary): load the committed rendition for the manifest-declared
@@ -365,6 +365,13 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
     the root contract serving every harness, and the literal ``"claude"`` that stood
     in this branch until 2026-08-17 elected one vendor's rendition as the whole
     contract.
+
+    *consumer* is a parameter rather than a value this function reaches for
+    (REQ-0.35.0-09-01). Resolving it internally fixes the hardcoded literal but
+    leaves the caller unable to name a consumer, which is the same port/adapter
+    inversion one layer in — ``.claude/rules/hexagonal-architecture.md`` operative
+    rule 4. Defaults to the manifest-declared route, so every existing caller is
+    unaffected.
 
     Bootstrap fallback (no committed rendition yet): render from the AgentContract
     template via the model pipeline (OBPI-0.0.37-14 plumbing). The monolith
@@ -377,7 +384,8 @@ def sync_agents_md(project_root: Path, config: GzkitConfig) -> None:
 
     from gzkit.governance.compose import agent_contract_consumer
 
-    consumer = agent_contract_consumer(project_root)
+    if consumer is None:
+        consumer = agent_contract_consumer(project_root)
     if rendition_exists(project_root, "AGENTS.md", consumer):
         agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", consumer))
         return

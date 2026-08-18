@@ -488,5 +488,69 @@ class TestAgentContractRootFence(unittest.TestCase):
         )
 
 
+class TestBindingDeliveryCap(unittest.TestCase):
+    """REQ-0.35.0-09-10 — one delivered surface is measured against the SMALLEST cap."""
+
+    @covers("REQ-0.35.0-09-10")
+    def test_the_smallest_declared_cap_binds_and_names_its_vendor(self) -> None:
+        """The strictest declared cap binds, and the witness names who set it.
+
+        `AgentContract` routes to a single `root` consumer, and no vendor named
+        `root` publishes a `project_doc_max_bytes`. A per-route cap lookup
+        therefore finds nothing and falls SILENT — losing the truncation witness
+        at exactly the moment one shared surface makes it matter most. One file
+        cannot be short for Codex and long for everyone else, so the smallest cap
+        any harness declares is the one that binds.
+
+        Naming the vendor is half the REQ and is asserted separately: a bare
+        "over cap" warning does not tell an operator whose limit they crossed,
+        and the caps are per-vendor precisely because they are observed facts
+        about someone else's product rather than a control gzkit chooses.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_delivery_caps": {
+                        "AgentContract": {"codex": 32768, "spacious": 1000000}
+                    },
+                },
+            )
+
+            binding = vendors.binding_delivery_cap("AgentContract", project_root=root)
+
+            self.assertIsNotNone(binding, "a declared cap must be found for the routed surface")
+            assert binding is not None
+            cap, vendor = binding
+            self.assertEqual(
+                cap,
+                32768,
+                "the SMALLEST declared cap binds — a surface fitting the roomiest "
+                "harness still truncates in the strictest one",
+            )
+            self.assertEqual(
+                vendor,
+                "codex",
+                "the witness must name the vendor whose cap bound, so an operator "
+                "knows which harness truncates rather than only that some cap exists",
+            )
+
+    @covers("REQ-0.35.0-09-10")
+    def test_no_declared_cap_fails_open_rather_than_inventing_one(self) -> None:
+        """An undeclared cap yields None — gzkit never invents a byte limit.
+
+        Fail-open is deliberate and stated: an undeclared cap means gzkit knows of
+        no limit, and fail-closing would force an agent to make up a number, which
+        is the fabrication the delivery witness exists to prevent.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(root, {"content_type_routes": {"AgentContract": ["root"]}})
+
+            self.assertIsNone(vendors.binding_delivery_cap("AgentContract", project_root=root))
+
+
 if __name__ == "__main__":
     unittest.main()

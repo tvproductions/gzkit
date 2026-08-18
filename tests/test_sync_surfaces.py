@@ -626,3 +626,189 @@ class TestSyncPkgSurfacesManifestAndDocs(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestAgentContractPlaybackConsumer(unittest.TestCase):
+    """REQ-0.35.0-09-01/02/06 — playback resolves a consumer and writes it verbatim."""
+
+    _BODY = b"# AGENTS.md\n\nCommitted rendition body.\n"
+
+    @covers("REQ-0.35.0-09-01")
+    def test_sync_loads_the_named_consumers_rendition(self) -> None:
+        """`sync_agents_md` takes the consumer as a PARAMETER, not a literal.
+
+        REQ-0.35.0-09-01 names both halves of the playback path — `sync_agents_md`
+        and `render_agents_md`. The literal `"claude"` stood in this branch until
+        2026-08-17 and is what silently elected one vendor's rendition as the whole
+        contract; a resolver reached from inside the function fixes the symptom but
+        leaves the caller unable to name a consumer, which is the port/adapter
+        inversion `.claude/rules/hexagonal-architecture.md` operative rule 4
+        forbids ("never name the technology in the core").
+
+        Driving a NON-default consumer is what makes this falsifiable: a test using
+        the routed consumer would pass identically against an internally-resolved
+        implementation and prove nothing about parameterization.
+        """
+        import tempfile
+
+        from gzkit.config import GzkitConfig
+        from gzkit.content.rendition_store import save_rendition
+        from gzkit.sync_surfaces import sync_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            save_rendition(root, "AGENTS.md", "alt-harness", self._BODY)
+
+            config = GzkitConfig()
+            sync_agents_md(root, config, consumer="alt-harness")
+
+            self.assertEqual(
+                (root / config.paths.agents_md).read_bytes(),
+                self._BODY,
+                "the caller-named consumer's committed rendition must be the one "
+                "played back — the consumer is a parameter of the playback path",
+            )
+
+    @covers("REQ-0.35.0-09-02")
+    def test_playback_writes_only_the_root_contract_path(self) -> None:
+        """The rendition lands at root AGENTS.md and at NO other contract path.
+
+        The second half of REQ-0.35.0-09-02 is the one that would have caught the
+        failure this OBPI exists to undo: playing a contract back to a second
+        per-vendor destination satisfies every byte-verbatim assertion while
+        manufacturing the second AGENTS.md the root doctrine forbids. Asserting
+        the bytes alone cannot distinguish one destination from two.
+        """
+        import tempfile
+
+        from gzkit.config import GzkitConfig
+        from gzkit.content.rendition_store import save_rendition
+        from gzkit.sync_surfaces import sync_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            save_rendition(root, "AGENTS.md", "alt-harness", self._BODY)
+
+            config = GzkitConfig()
+            sync_agents_md(root, config, consumer="alt-harness")
+
+            written = {
+                path.relative_to(root).as_posix()
+                for path in root.rglob("AGENTS.md")
+                if ".gzkit/renditions" not in path.as_posix()
+            }
+            self.assertEqual(
+                written,
+                {config.paths.agents_md},
+                "exactly one AgentContract destination may exist: the root contract. "
+                "A second per-vendor contract file is the drift this OBPI removed.",
+            )
+
+    @covers("REQ-0.35.0-09-06")
+    def test_playback_is_deterministic_across_runs(self) -> None:
+        """Two syncs of one committed rendition produce byte-identical output.
+
+        Playback is verbatim by contract — no LLM, no template substitution, no
+        network — so re-running it cannot perturb the delivered contract. A
+        non-deterministic playback path would make every downstream byte gate
+        (`--invariant-coherence`, `--rendition-freshness`) flap for reasons
+        unrelated to canon.
+        """
+        import tempfile
+
+        from gzkit.config import GzkitConfig
+        from gzkit.content.rendition_store import save_rendition
+        from gzkit.sync_surfaces import sync_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            save_rendition(root, "AGENTS.md", "alt-harness", self._BODY)
+
+            config = GzkitConfig()
+            agents = root / config.paths.agents_md
+
+            sync_agents_md(root, config, consumer="alt-harness")
+            first = agents.read_bytes()
+            sync_agents_md(root, config, consumer="alt-harness")
+            second = agents.read_bytes()
+
+            self.assertEqual(first, second, "playback must be byte-deterministic across runs")
+
+    @covers("REQ-0.35.0-09-03")
+    def test_absent_rendition_playback_is_bootstrap_safe(self) -> None:
+        """Playback of a never-committed consumer returns empty bytes and raises nothing.
+
+        REQ-0.35.0-09-03 asserts bootstrap safety for the new consumer "exactly as
+        it already is for `claude`": an absent committed rendition must produce no
+        write and no error. The property lives on the playback path — `sync_agents_md`
+        deliberately falls through to a template bootstrap when nothing is committed,
+        which is a different branch with a different contract.
+
+        Asserting empty bytes AND the absence of a raise is the whole REQ: a
+        playback path that raised would break a fresh `gz init`, which runs before
+        any rendition has been attested.
+        """
+        import tempfile
+
+        from gzkit.governance.compose import render_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+
+            self.assertEqual(
+                render_agents_md(root, consumer="never-committed"),
+                b"",
+                "an absent committed rendition yields empty bytes rather than an "
+                "error, so nothing is written and bootstrap stays safe",
+            )
+
+    @covers("REQ-0.35.0-09-04")
+    def test_default_playback_equals_explicitly_routing_the_same_consumer(self) -> None:
+        """Parameterizing the consumer did not change what the default call delivers.
+
+        REQ-0.35.0-09-04 is the no-regression half of this OBPI: the collapse is a
+        ROUTING change, not a content change, so AGENTS.md after it must be
+        byte-identical to AGENTS.md before it. Adding a `consumer` parameter is
+        exactly the kind of edit that can silently move the default, because the
+        default path and the explicit path are then two code paths that only
+        agree by construction.
+
+        Asserting the two agree is what makes that falsifiable at the unit layer;
+        `gz validate --invariant-coherence` byte-compares a re-render against the
+        committed surface at the repo layer. Both are needed — the validator would
+        catch a moved default only after it had been rendered and committed.
+        """
+        import tempfile
+
+        from gzkit.config import GzkitConfig
+        from gzkit.content.rendition_store import save_rendition
+        from gzkit.governance.compose import agent_contract_consumer
+        from gzkit.sync_surfaces import sync_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            routed = agent_contract_consumer(root)
+            save_rendition(root, "AGENTS.md", routed, self._BODY)
+
+            config = GzkitConfig()
+            agents = root / config.paths.agents_md
+
+            sync_agents_md(root, config)
+            defaulted = agents.read_bytes()
+            agents.unlink()
+            sync_agents_md(root, config, consumer=routed)
+            explicit = agents.read_bytes()
+
+            self.assertEqual(
+                defaulted,
+                explicit,
+                "the resolved default and an explicitly-named routed consumer must "
+                "deliver identical bytes — the parameterization is a routing seam, "
+                "never a change to what the contract says",
+            )
+            self.assertEqual(defaulted, self._BODY, "and both are the committed rendition verbatim")
