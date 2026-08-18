@@ -242,7 +242,7 @@ class TestDerivationIdentity(unittest.TestCase):
     string IS the identity the committed renditions' provenance is proven
     against. Adding ``retires`` alone re-fingerprinted every surface while the
     .jsonl on disk stayed byte-identical, because every row began emitting
-    ``"retires":null`` — costing a Gate-5 recompose for a semantically empty
+    ``"retires":null`` — costing a corpus-attested recompose for a semantically empty
     change. These tests pin the rule that makes additive evolution possible,
     and the fence that stops the next field from re-opening the trap silently.
     """

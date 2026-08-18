@@ -111,7 +111,7 @@ class TestFloorViolation(_TempProject):
         """Three artifacts on disk, exactly one graded (REQ-0.35.0-09-11).
 
         The gate enumerated `.gzkit/renditions/<surface>/*.md` by glob, which made
-        Requirement 4a ("NEVER delete a Gate-5-attested rendition") unlivable: a
+        Requirement 4a ("NEVER delete a corpus-attested rendition") unlivable: a
         retained superseded record would be graded against a corpus it was never
         committed against, forever, and a `*.candidate.md` staging artifact would be
         graded despite being by definition not committed. Measured 2026-08-17,
