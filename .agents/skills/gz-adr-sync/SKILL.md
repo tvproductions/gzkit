@@ -4,14 +4,14 @@ description: End-to-end ADR governance sync — discover @covers evidence, recon
 category: adr-operations
 compatibility: GovZero v6 framework
 metadata:
-  skill-version: "7.1.0"
+  skill-version: "7.1.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
 gz_command: register-adrs
 invocation: uv run gz register-adrs
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-07
+last_reviewed: 2026-08-18
 model: haiku
 ---
 
@@ -26,8 +26,8 @@ End-to-end ADR governance sync. Absorbs `gz-adr-autolink` (Layer 1), `gz-adr-rec
 Runs all three layers in trust order.
 
 ```bash
-# Layer 1 — discover @covers annotations
-rg -n '@covers\("ADR-' tests
+# Layer 1 — repo-wide @covers coverage (REQ/OBPI/ADR granularity)
+uv run gz covers
 
 # Layer 2 — global ledger reconciliation
 uv run gz status --json

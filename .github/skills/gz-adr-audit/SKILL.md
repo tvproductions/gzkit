@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.13.1"
+  skill-version: "6.13.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-15
+last_reviewed: 2026-08-18
 model: opus
 ---
 
@@ -337,7 +337,7 @@ report success to the operator until the report command confirms the change.
 | Config paths | `uv run gz check-config-paths` | L1 |
 | Heavy gates | `uv run gz closeout <adr-id> --dry-run` | L1 |
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
-| Coverage discovery | `rg -n '@covers("ADR-' tests` | L1 |
+| Coverage discovery | `uv run gz covers <adr-id>` | L1 |
 | **Open audit ceremony** | `uv run gz adr audit-begin <adr-id>` — writes per-ADR co-presence marker. | L1 |
 | **Emit receipt** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --evidence-json '{...,"attestation_text":"<operator verbatim ack>"}'` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
 | **Close audit ceremony** | `uv run gz adr audit-end <adr-id>` — removes marker. | L1 |
