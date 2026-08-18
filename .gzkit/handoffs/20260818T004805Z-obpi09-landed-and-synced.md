@@ -2,28 +2,24 @@
 mode: CREATE
 adr_id: ADR-0.35.0-canon-entry-corpus-landing
 branch: main
-timestamp: '2026-08-18T00:43:12Z'
+timestamp: '2026-08-18T00:48:05Z'
 agent: claude-code
 continues_from: .gzkit/handoffs/20260818T002217Z-obpi09-implemented-sync-blocked-on-recompose.md
 ---
 
 ## Current State Summary
 
-SYNCED. origin/main is level; 11 commits pushed and the tree is clean. The predecessor described a sync blocked on a pending recompose; that blocker is discharged. OBPI-0.35.0-09 is ACTIVE with 11 REQs implemented and its pipeline at Stage 2, NOT complete. Full verification green at the sync: gz lint, gz test (8451 unit tests plus the behave tier), gz validate 13 scopes, task-envelope-coherence, rendition-floor-coherence, rendition-freshness and invariant-coherence all exit 0. Root AGENTS.md is now 37329 B carrying 54 invariant-tier entries, attested by g0 at corpus_fingerprint f4489ed5. GHI #819 repaired, GHI #820 filed and fixed, ADR-pool.skill-efficacy-measurement pooled.
+SYNCED. 11 commits pushed; origin/main level. The predecessor described a sync blocked on a pending recompose; that blocker is discharged. OBPI-0.35.0-09 is ACTIVE with 11 REQs implemented and its pipeline at Stage 2, NOT complete. Verification green at the sync: gz lint, gz test (8451 unit tests plus the behave tier), gz validate 13 scopes, task-envelope-coherence, rendition-floor-coherence, rendition-freshness and invariant-coherence all exit 0. Root AGENTS.md is now 37329 B carrying 54 invariant-tier entries, attested by g0 at corpus_fingerprint f4489ed5. GHI #819 repaired, GHI #820 filed and fixed, ADR-pool.skill-efficacy-measurement pooled.
 
 ## Important Context
 
-THE SESSION'S ROOT FINDING: a foundation doctrine had no mechanical witness and lost to code. agent-control-surface-rendering-substrate.md line 211 specifies 'gz content render agent_contract --vendor=root'; the string 'root' appeared ZERO times in src/gzkit/content/. THE BLAST RADIUS CAME IN THREE LAYERS and the agent measured only the first: the MANIFEST literal (20 sites, censused before implementation), then the CONSUMER literal in unit fixtures (19 tests across six modules, caught by the full tier), then the same literal in BDD feature text AND step bodies (10 scenarios, caught by the pre-push gate). Whoever touches a routing key next should census all three before starting. GATES CAUGHT FIVE THINGS THE AGENT WOULD HAVE SHIPPED: a routed-consumer filter that DISARMED both rendition-floor-coherence and invariant-coherence; two INVENTED allowlist paths; the 19-test layer; a fabricated TASK id; and a witness message that breached its own reminder budget. ATTESTATION IS NOW RULED at four granularities and the implementation is INVERTED - remember and retire take no --attestor while commit fail-closes without one. Gate 5 means OBPI/ADR completion (ADR-0.0.36) and nothing else.
+THE SESSION'S ROOT FINDING: a foundation doctrine had no mechanical witness and lost to code. agent-control-surface-rendering-substrate.md line 211 specifies 'gz content render agent_contract --vendor=root'; the string 'root' appeared ZERO times in src/gzkit/content/. THE BLAST RADIUS CAME IN THREE LAYERS and only the first was censused before implementation: the MANIFEST literal (20 sites), then the CONSUMER literal in unit fixtures (19 tests across six modules, caught by the full tier), then the same literal in BDD feature text AND step bodies (10 scenarios, caught by the pre-push gate). Whoever touches a routing key next should census all three before starting. GATES CAUGHT SIX THINGS THE AGENT WOULD HAVE SHIPPED: a routed-consumer filter that DISARMED both rendition-floor-coherence and invariant-coherence; two INVENTED allowlist paths; the 19-test layer; a fabricated TASK id; a witness message breaching its own reminder budget; and three ABRIDGED twins of already-carried rulings in a handoff. ATTESTATION IS NOW RULED at four granularities and the implementation is INVERTED - remember and retire take no --attestor while commit fail-closes without one. Gate 5 means OBPI/ADR completion (ADR-0.0.36) and nothing else.
 
 ## Decisions Made
 
 - [operator-ruled] Clear the blocker rather than stop at it (verbatim: 'why did you stall?'). Relayed as the attestation text on the rendition commit, per the canon that a transport mechanism never gates an attestation.
 - [operator-ruled] Commit remaining work to a handoff, then git sync (verbatim: 'its time to commit remaining work to a handoff, then git sync').
-- [operator-ruled] File and land the Signature (c) predicate fix (verbatim: 'yes'). Produced GHI #820.
-- [operator-ruled] Pool the skill-efficacy ADR, then return to ADR-0.35.0 (verbatim: 'pool the skill-efficacy ADR, then get back to 0.35.0').
-- [operator-ruled] Attestation granularity, verbatim: 'a rerender of unhanged canon does not require my attestation. adding to cms entries would. removing items would. trims and compressions to render within budget might invite a review.'
-- [operator-ruled] AGENTS.md is the agent harness default and the lite rendition serves both consumers; the single consumer is named root (verbatim: 'ok, go with root').
-- [agent-chose] Built the rendition candidate MECHANICALLY rather than editorially: preserved the committed bytes, appended the three ruled entries verbatim, removed the one superseded bullet. Corrected a prior claim that composing meant hand-authoring 34 KB, which was asserted from a document without running the command.
+- [agent-chose] Built the rendition candidate MECHANICALLY rather than editorially: preserved the committed bytes, appended the three ruled entries verbatim, removed the one superseded bullet. Corrected a prior claim that composing meant hand-authoring 34 KB, which had been asserted from a document without running the command.
 - [agent-chose] Hoisted the graded-rendition predicate into rendition_store as is_graded_rendition, shared by the floor and freshness gates, rather than copying it into the second gate.
 - [agent-chose] Trimmed the delivery witness message when it breached its own 400-char reminder budget, rather than raising the budget.
 - [agent-chose] Repaired the BDD tier with feature text and step bodies in ONE pass, after the same fixture/assertion split had already stranded four tests earlier in the session.
@@ -38,7 +34,7 @@ THE SESSION'S ROOT FINDING: a foundation doctrine had no mechanical witness and 
 
 ## Pending Work / Open Loops
 
-- GHI #815 is OPEN and its measurement MOVED THE WRONG WAY this session. Root AGENTS.md went 34354 B to 37329 B against the 32768 B codex cap, because landing ruled canon is an ADD and adds grow the surface. Two must-survive sections now sit past or across the cap: operator-doctrine-verbatim-canon straddles at 25198-34394, architectural-boundaries starts at 36734. The remedy is the instructions-files-diet chore's trim-and-compress pass, which is the third row of the attestation-granularity table and invites operator review.
+- GHI #815 is OPEN and its measurement MOVED THE WRONG WAY this session. Root AGENTS.md went 34354 B to 37329 B against the 32768 B codex cap, because landing ruled canon is an ADD and adds grow the surface. Two must-survive sections now sit past or across the cap: operator-doctrine-verbatim-canon straddles 25198-34394, architectural-boundaries starts at 36734. The remedy is the instructions-files-diet trim-and-compress pass, which is the third row of the attestation-granularity table and invites operator review.
 - GHI #820 and #819 are FIXED but OPEN pending close.
 - GHI #818 and #799 are OPEN and untouched, both blocked on operator design rulings.
 - ADR-pool.skill-efficacy-measurement is pooled. Its Notes record an UNINVESTIGATED question: 38 of 70 skills cite a parent ADR and the other 32 are unmeasured.
@@ -56,7 +52,7 @@ uv run gz validate --rendition-floor-coherence --rendition-freshness --task-enve
 uv run gz obpi status OBPI-0.35.0-09-codex-playback-wiring
 git status -sb
 
-Expected, each OBSERVED at authoring: bare validate reports 13 scopes passed; the three-scope run exits 0; obpi status reports Runtime State ACTIVE with completion PENDING; git reports main level with origin. Three witnesses worth reading rather than only running: the floor and freshness gates must grade exactly ONE artifact each and must share one predicate (rendition_store.is_graded_rendition) rather than a copy apiece; the negative-control fixtures for rendition-floor-coherence and invariant-coherence must still BITE, since the enforcement floor caught a filter disarming both; and Signature (c) must still fire on a channel holding an id no other channel knows, since narrowing a predicate is the move most likely to disarm it silently.
+Expected, each OBSERVED at authoring: bare validate reports 13 scopes passed; the three-scope run exits 0; obpi status reports Runtime State ACTIVE with completion PENDING; git reports main level with origin. Three witnesses worth reading rather than only running: the floor and freshness gates must grade exactly ONE artifact each and must SHARE one predicate (rendition_store.is_graded_rendition) rather than a copy apiece; the negative-control fixtures for rendition-floor-coherence and invariant-coherence must still BITE, since the enforcement floor caught a filter disarming both; and Signature (c) must still fire on a channel holding an id no other channel knows, since narrowing a predicate is the move most likely to disarm it silently.
 
 ## Evidence / Artifacts
 
@@ -68,7 +64,9 @@ Expected, each OBSERVED at authoring: bare validate reports 13 scopes passed; th
 - src/gzkit/commands/validate_task_envelope.py - _crossing_channels replaces the union comparison (GHI #820)
 - tests/governance/test_task_envelope_coherence.py - TestSignatureCSubsetIsNotDrift, subset passes and contradiction still fires
 - src/gzkit/governance/trust_audits/surface_delivery_witness.py - min-cap measurement; message trimmed back under its 400-char budget
-- features/constitutional_invariants.feature, features/content_compose.feature, features/rendition_playback.feature - BDD tier repointed at the root consumer
+- features/constitutional_invariants.feature - BDD tier repointed at the root consumer
+- features/content_compose.feature - same, including the step bodies
+- features/rendition_playback.feature - same
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-09-codex-playback-wiring.md - Active, 11 REQs, allowlist at the measured radius
 - docs/design/adr/pool/ADR-pool.skill-efficacy-measurement.md - pooled this session
 - .gzkit/rules/agents-md-map-doctrine.md - v0.6.0, section Attestation granularity
@@ -453,7 +451,4 @@ Expected, each OBSERVED at authoring: bare validate reports 13 scopes passed; th
 - The attestation granularity is an AGENTS.md and/or rule-level directive, not only a GHI (verbatim: 'that is an agents.md and/or rule level directive too then').
 - The four stranded per-vendor-temperature tests are GHI territory (verbatim: '1. is ghi territory'). Produced GHI #819.
 - Pool the skill-efficacy ADR, then return to ADR-0.35.0 (verbatim: 'pool the skill-efficacy ADR, then get back to 0.35.0').
-- Work OBPI-0.35.0-09 with root AGENTS.md as the destination (verbatim: 'do 9, root AGENTS.md is what codex reads').
-- Replace the 90-percent-confidence doctrine bullet (verbatim: 'forget 90%, you have zero basis for any certainty'), amended with the agent-offered absence-claim clause.
-- The single consumer is named root (verbatim: 'ok, go with root').
 - File and land the Signature (c) predicate fix on the agent's recommendation (verbatim: 'yes'), choosing the fix-the-check route over accepting the drift or leaving the sync blocked. Produced GHI #820.

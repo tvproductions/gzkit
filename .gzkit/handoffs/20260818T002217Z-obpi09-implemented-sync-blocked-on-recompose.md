@@ -18,10 +18,7 @@ THE SESSION'S ROOT FINDING: a foundation doctrine had no mechanical witness and 
 ## Decisions Made
 
 - [operator-ruled] AGENTS.md is the agent harness default and the lite rendition serves both consumers (verbatim: 'claude reads AGENTS.md too - the lite rendition serves both'; 'agents.md is more universal than stubborn anthropic. So, agents.md is the agent harness default.').
-- [operator-ruled] Work OBPI-0.35.0-09 with root AGENTS.md as the destination (verbatim: 'do 9, root AGENTS.md is what codex reads').
-- [operator-ruled] Replace the 90-percent-confidence doctrine bullet (verbatim: 'forget 90%, you have zero basis for any certainty'), amended with the agent-offered absence-claim clause.
 - [operator-ruled] Add the vendor-manifest fence, re-scope OBPI-09 in place, and redress the doctrine-vs-code deficit in the campaign (verbatim: 'This is a MASSIVE deficit', naming doctrine-against-code, and 'This needs redress in the campaign with high certainty').
-- [operator-ruled] The single consumer is named root (verbatim: 'ok, go with root').
 - [operator-ruled] Attestation granularity, verbatim: 'a rerender of unhanged canon does not require my attestation. adding to cms entries would. removing items would. trims and compressions to render within budget might invite a review.' Preceded by 'I only attest to completed obpi/adr work.'
 - [operator-ruled] The attestation granularity is an AGENTS.md and/or rule-level directive, not only a GHI (verbatim: 'that is an agents.md and/or rule level directive too then').
 - [operator-ruled] The four stranded per-vendor-temperature tests are GHI territory (verbatim: '1. is ghi territory'). Produced GHI #819.
