@@ -166,15 +166,12 @@ def _observe_delivery(
             if end <= cap:
                 continue
             placement = (
-                f"begins at byte {offset}, past"
-                if offset >= cap
-                else f"begins at byte {offset} but runs to {end}, straddling"
+                f"starts {offset}, past" if offset >= cap else f"spans {offset}-{end}, straddles"
             )
             _warn(
                 f"{relpath}: must-survive section {name!r} {placement} the "
-                f"{vendor} delivery cap {cap} B, so it is at risk of silent "
-                f"loss — undelivered canon is not in force. "
-                f"{_DELIVERY_REMEDIATION}"
+                f"{vendor} cap {cap} B — at risk of silent loss; undelivered "
+                f"canon is not in force. {_DELIVERY_REMEDIATION}"
             )
 
 

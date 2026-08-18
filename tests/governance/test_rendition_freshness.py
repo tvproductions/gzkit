@@ -221,10 +221,13 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
     def test_consumers_checked_independently(self) -> None:
         """An agreeing consumer and a stale consumer under one surface are scored independently."""
         corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "root", corpus)  # claude agrees
-        save_rendition(self.root, "AGENTS.md", "codex", b"codex no sidecar\n")  # codex drifts
+        self._commit("AGENTS.md", "root", corpus)  # root agrees
+        # Second consumer must be a ROUTED one: an unrouted consumer is a superseded
+        # record and is not graded (REQ-0.35.0-09-11), which would make this test pass
+        # for the wrong reason. `claude` still routes for Rule/Chore/Persona/etc.
+        save_rendition(self.root, "AGENTS.md", "claude", b"claude no sidecar\n")
         errors = validate_rendition_freshness(self.root, fail_closed=True)
-        self.assertEqual(len(errors), 1, "only codex (missing sidecar) drifts")
+        self.assertEqual(len(errors), 1, "only claude (missing sidecar) drifts")
 
 
 class TestRenditionIntegrity(_TempProjectMixin):

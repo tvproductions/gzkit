@@ -12,6 +12,8 @@ allowlist:
 - src/gzkit/governance/trust_audits/vendor_manifest.py
 - src/gzkit/governance/trust_audits/surface_delivery_witness.py
 - src/gzkit/governance/trust_audits/rendition_floor_coherence.py
+- src/gzkit/governance/trust_audits/rendition_freshness.py
+- src/gzkit/content/rendition_store.py
 - src/gzkit/governance/trust_audits/_qc_negative_controls.py
 - data/vendor-manifest.json
 - data/distribution_baseline_manifest.json
@@ -27,6 +29,8 @@ allowlist:
 - tests/governance/test_setpoint_coherence.py
 - tests/governance/test_surface_delivery_witness.py
 - tests/governance/test_rendition_floor_coherence.py
+- tests/governance/test_rendition_freshness.py
+- tests/content/test_rendition_store.py
 - features/**
 - docs/user/runbook.md
 - docs/governance/agent-control-surface-rendering-substrate.md

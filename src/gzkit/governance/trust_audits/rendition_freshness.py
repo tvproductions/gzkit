@@ -43,6 +43,7 @@ from gzkit.content.rendition_store import (
     RenditionProvenance,
     corpus_fingerprint,
     fingerprint_path,
+    is_graded_rendition,
     load_fingerprint,
     rendition_fingerprint,
 )
@@ -150,9 +151,12 @@ def validate_rendition_freshness(
         current = corpus_fingerprint(load_corpus(root, surface))
 
         for rendition_file in surface_dir.glob("*.md"):
-            # Skip staged candidates (`<consumer>.candidate.md`) — only committed
-            # renditions carry a provenance sidecar and are subject to this gate.
-            if rendition_file.name.endswith(".candidate.md"):
+            # Grade committed, still-routed renditions only. Staged candidates carry
+            # no sidecar, and a superseded record retained per OBPI-0.35.0-09
+            # Requirement 4a would otherwise be measured forever against a corpus it
+            # was never committed against. Shared with the floor gate so the two
+            # cannot disagree about what exists (REQ-0.35.0-09-11).
+            if not is_graded_rendition(rendition_file, root):
                 continue
             consumer = rendition_file.stem
             target = f"{surface}/{consumer}"

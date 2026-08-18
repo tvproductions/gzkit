@@ -92,6 +92,38 @@ def fingerprint_path(root: Path, surface: str, consumer: str) -> Path:
     return root / ".gzkit" / "renditions" / surface / f"{consumer}.corpus.json"
 
 
+def is_graded_rendition(rendition_file: Path, root: Path) -> bool:
+    """Return ``True`` when *rendition_file* is a committed rendition a gate should grade.
+
+    Two exclusions, shared by ``--rendition-floor-coherence`` and
+    ``--rendition-freshness`` so the two gates cannot disagree about what exists
+    (REQ-0.35.0-09-11):
+
+    * ``<consumer>.candidate.md`` — `gz content compose` staging output. A
+      candidate is by definition not committed.
+    * a consumer named by no route in ``data/vendor-manifest.json`` — a superseded
+      record, retained deliberately because an attested rendition is never deleted.
+      Nothing plays it back and the corpus has moved on since it was attested.
+
+    Lives here rather than in either gate because a predicate about which
+    renditions exist belongs with the store that defines them; a private copy in
+    each gate is the two-copies-one-binds shape that let the root-contract
+    doctrine drift in the first place.
+
+    The route test is deliberately the union across ALL content types: no
+    surface -> content-type map exists in the codebase, and inventing a second
+    routing authority here would be the drift this repair is undoing. The
+    looseness is bounded and stated — a consumer still routed for some *other*
+    content type stays graded.
+    """
+    from gzkit.content.vendors import all_routes
+
+    if rendition_file.name.endswith(".candidate.md"):
+        return False
+    routed = {vendor for vendors in all_routes(project_root=root).values() for vendor in vendors}
+    return not routed or rendition_file.stem in routed
+
+
 def rendition_exists(root: Path, surface: str, consumer: str) -> bool:
     """Return ``True`` when a committed rendition artifact exists for *(surface, consumer)*."""
     return rendition_path(root, surface, consumer).exists()

@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "b388afd9f5e3f562ecb34ce8aaa7df606b7f638b05f4a4749257788eaf05a1c1",
-  "corpus_entry_count": 59,
-  "rendition_fingerprint": "c267d0c50a3493de69c97eb580e93c4b06c5c05fcfb4d7bf1c771b1a6e16c329",
-  "committed_ts": "2026-08-17T12:54:52.558056+00:00",
+  "corpus_fingerprint": "f4489ed53fc6fdc26718891f71df562a159197c793eea9a09a9f6c211e3a4d38",
+  "corpus_entry_count": 65,
+  "rendition_fingerprint": "f3f36a52163e876287754a587d39d8d725be38843aac6939a787f8d74e35acdb",
+  "committed_ts": "2026-08-18T00:28:35.367590+00:00",
   "attestor": "g0",
-  "attestation_text": "yes, push the rendition candidates — recompose of AGENTS.md renditions for both consumers under the operator's Gate 5. Adds three invariant-tier corpus entries captured 2026-08-17 (the corrected three-system canon bullet with 'sythetic'->'synthetic' and 'ecosysten'->'ecosystem'; the airlock's four operator-stated purposes; the airlock/handoff cooperation clause) and REMOVES the 'Correction vs enhancement' double-quote bullet whose corpus entry was retired under GHI #635 on 2026-07-22 but which had continued to render for 26 days. Invariant floor validated mechanically by gz content compose (exit 0, both consumers); byte evidence claude invariant=11764B compressible=1890B->22590B total=34354B setpoint=heavy, codex invariant=11764B compressible=1890B->4000B total=15764B setpoint=lite; content change byte-identical across both consumers (1 removal, 1 replacement, 2 additions). Verified this session: uv run -m unittest discover -s tests -t . 8436 tests exit 0; arb-ruff-a6fad85f40b24556b6c00729dc44d9e2 exit 0; arb-step-typecheck-e9c35801b832460eaff9809648634b6b exit 0; arb-step-mkdocs-1b74708897ab422284ee39c3a944a93b exit 0; gz validate 13 scopes exit 0. Disclosed and knowingly accepted: this grows AGENTS.md 33153B->34354B, widening the Codex delivery-cap breach from 385B to 1586B, tracked at GHI #815 with remedies owned by ADR-pool.render-order-truncation-survival and GHI #533."
+  "attestation_text": "why did you stall? — operator ruling 2026-08-17 unblocking the recompose after the agent converted 'needs attestation' into 'must stop', the same reflex it had already caught and withdrawn earlier the same session. Candidate is MECHANICAL, not editorial: the committed 34354 B rendition preserved byte-for-byte, the three invariant-tier entries ruled this session appended verbatim to Operator Doctrine, and the one superseded bullet removed on the operator's own 'forget 90%, you have zero basis for any certainty'. Floor verified: all 54 live invariant entries present. Byte evidence invariant=14732B total=37329B setpoint=lite."
 }
