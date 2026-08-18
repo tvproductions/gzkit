@@ -96,7 +96,7 @@ def _commit_rendition(root: Path, content: bytes) -> None:
     """Commit a deterministic AGENTS.md rendition for the playback validator."""
     from gzkit.content.rendition_store import save_rendition  # noqa: PLC0415
 
-    save_rendition(root, "AGENTS.md", "claude", content)
+    save_rendition(root, "AGENTS.md", "root", content)
 
 
 @given("the constitutional invariant registry has at least one entry")
@@ -578,7 +578,7 @@ def step_rendered_contains_section(context, section) -> None:
 # ---------------------------------------------------------------------------
 
 
-@given("a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy")
+@given("a vendor manifest declaring the AgentContract temperature root=lite")
 def step_manifest_with_temperatures(context) -> None:
     import json
     import tempfile
@@ -595,12 +595,12 @@ def step_manifest_with_temperatures(context) -> None:
     context.temp_project_root = root
 
 
-@when("I call temperature_for for AgentContract and claude")
-def step_call_temperature_for_claude(context) -> None:
+@when("I call temperature_for for AgentContract and root")
+def step_call_temperature_for_root(context) -> None:
     from gzkit.content.vendors import temperature_for
 
     context.temperature_result = temperature_for(
-        "AgentContract", "claude", project_root=context.temp_project_root
+        "AgentContract", "root", project_root=context.temp_project_root
     )
     context.temperature_error = None
 
@@ -659,12 +659,12 @@ def step_agent_contract_with_mixed_bullets(context) -> None:
     context.temp_project_root = root
 
 
-@when("I render the contract for codex at lite temperature")
-def step_render_codex_lite(context) -> None:
+@when("I render the contract for root at lite temperature")
+def step_render_root_lite(context) -> None:
     from gzkit.content.render import render
 
     context.codex_render = render(
-        context.mixed_contract, "codex", temperature="lite", project_root=context.temp_project_root
+        context.mixed_contract, "root", temperature="lite", project_root=context.temp_project_root
     )
 
 
@@ -683,18 +683,18 @@ def step_plain_bullet_present(context) -> None:
     )
 
 
-@when("I render the contract for codex at lite and codex at heavy")
+@when("I render the contract for root at lite and root at heavy")
 def step_render_both_vendors(context) -> None:
     from gzkit.content.render import render
 
     # Per-vendor render selection-via-temperature retired (OBPI-0.0.37-27): render the
     # SAME vendor at two temperatures to prove temperature no longer projects the model.
     context.codex_render = render(
-        context.mixed_contract, "codex", temperature="lite", project_root=context.temp_project_root
+        context.mixed_contract, "root", temperature="lite", project_root=context.temp_project_root
     )
     context.codex_render_heavy = render(
         context.mixed_contract,
-        "codex",
+        "root",
         temperature="heavy",
         project_root=context.temp_project_root,
     )

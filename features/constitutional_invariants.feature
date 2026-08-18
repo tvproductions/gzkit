@@ -171,27 +171,27 @@ Feature: Constitutional invariant composition renderer (ADR-0.0.37, OBPI-0.0.37-
 
   @REQ-0.0.37-15-01
   Scenario: temperature_for resolves per-vendor temperature from manifest
-    Given a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy
-    When I call temperature_for for AgentContract and claude
-    Then the resolved temperature is "heavy"
+    Given a vendor manifest declaring the AgentContract temperature root=lite
+    When I call temperature_for for AgentContract and root
+    Then the resolved temperature is "lite"
 
   @REQ-0.0.37-15-02
   Scenario: temperature_for fails closed for an undeclared vendor
-    Given a vendor manifest declaring AgentContract temperatures codex=lite, claude=heavy
+    Given a vendor manifest declaring the AgentContract temperature root=lite
     When I call temperature_for for AgentContract and an unknown vendor
     Then a temperature ValueError is raised
 
   @REQ-0.0.37-15-03
-  Scenario: Codex lite render includes all bullets (density projection retired)
+  Scenario: The root lite render includes all bullets (density projection retired)
     Given an AgentContract with a Judgment bullet and a plain bullet
-    When I render the contract for codex at lite temperature
+    When I render the contract for root at lite temperature
     Then the Judgment bullet is present in the rendered output
     And the plain bullet is also present in the rendered output
 
   @REQ-0.0.37-15-04
   Scenario: Temperature no longer differentiates a vendor render (selection retired)
     Given an AgentContract with a Judgment bullet and a plain bullet
-    When I render the contract for codex at lite and codex at heavy
+    When I render the contract for root at lite and root at heavy
     Then the two rendered outputs are identical
 
   # OBPI-0.0.37-18 — Append-only corpus model

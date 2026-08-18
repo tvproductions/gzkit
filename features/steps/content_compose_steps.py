@@ -65,7 +65,7 @@ def step_init_project(context) -> None:
     context.candidate_file = root / "candidate.md"
 
 
-@given('the vendor manifest declares setpoint "lite" for (AgentContract, codex)')
+@given('the vendor manifest declares setpoint "lite" for (AgentContract, root)')
 def step_vendor_manifest_lite(_context) -> None:
     """Already set up in step_init_project via _VENDOR_MANIFEST."""
 
@@ -128,7 +128,7 @@ def step_surface_exists(_context, filename: str) -> None:
     Path(filename).write_text(f"# {filename}\nsome content", encoding="utf-8")
 
 
-@when('I run "gz content compose AGENTS.md --consumer codex --candidate <file>"')
+@when('I run "gz content compose AGENTS.md --consumer root --candidate <file>"')
 def step_run_compose(context) -> None:
     code, output = _invoke(
         [
@@ -136,7 +136,7 @@ def step_run_compose(context) -> None:
             "compose",
             "AGENTS.md",
             "--consumer",
-            "codex",
+            "root",
             "--candidate",
             str(context.candidate_file),
         ]
@@ -145,14 +145,14 @@ def step_run_compose(context) -> None:
     context.output = output
 
 
-@when('I run "gz content compose AGENTS.md --consumer codex --candidate <file>" twice')
+@when('I run "gz content compose AGENTS.md --consumer root --candidate <file>" twice')
 def step_run_compose_twice(context) -> None:
     args = [
         "content",
         "compose",
         "AGENTS.md",
         "--consumer",
-        "codex",
+        "root",
         "--candidate",
         str(context.candidate_file),
     ]
@@ -188,7 +188,7 @@ def step_run_compose_missing_surface(context) -> None:
     if not candidate.exists():
         candidate.write_text("some text", encoding="utf-8")
     code, output = _invoke(
-        ["content", "compose", "MISSING.md", "--consumer", "codex", "--candidate", str(candidate)]
+        ["content", "compose", "MISSING.md", "--consumer", "root", "--candidate", str(candidate)]
     )
     context.exit_code = code
     context.output = output
