@@ -1,0 +1,575 @@
+{
+  "obpi_id": "OBPI-0.35.0-09-codex-playback-wiring",
+  "timestamp": "2026-08-18T01:22:18.313402+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.35.0-09-codex-playback-wiring.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-05-progressive-disclosure-path-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-06-content-boundary-doctrine",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-05-parity-scan-path-hardening",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.3.0",
+      "sibling_obpi": "OBPI-0.3.0-02-divergent-skill-reconciliation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.25.0",
+      "sibling_obpi": "OBPI-0.25.0-33-arb-analysis-pattern",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-08-wire-req-verification-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-06-wire-implementer-dispatch",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-05-pipeline-runtime-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.18.0",
+      "sibling_obpi": "OBPI-0.18.0-07-wire-two-stage-review",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.24.0",
+      "sibling_obpi": "OBPI-0.24.0-04-runbook-skill-entries",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.20.0",
+      "sibling_obpi": "OBPI-0.20.0-05-advisory-gate-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-01-runtime-command-contract",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.13.0",
+      "sibling_obpi": "OBPI-0.13.0-05-runtime-engine-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-05-operator-docs-and-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-03-airlock-out-pipeline-tracer",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-02-airlock-in-pipeline-tracer",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-05-airlock-permitted-entry-door",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-03-gz-ontology-interface",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-withdraw-supersede-transitions",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.8",
+      "sibling_obpi": "OBPI-0.0.8-08-operator-docs",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-03-state-repair-command",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-01-stop-hook-turn-end-feedback",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-05-justify-integration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-01-complexity-guide-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.68",
+      "sibling_obpi": "OBPI-0.0.68-01-pre-push-gz-check-hook",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-05-audit-check-covers-backfill-heuristic",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-04-cross-repo-defect-filing",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py",
+        "src/gzkit/governance/compose.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-17-agents-md-density-classification",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py",
+        "src/gzkit/governance/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-02-composition-renderer",
+      "contested_paths": [
+        "src/gzkit/governance/compose.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-15-per-vendor-template-selection",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-14-wire-sync-retire-monolith",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py",
+        "src/gzkit/governance/compose.py",
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-09-agents-md-migration",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-08-obpi-complete-gate",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-07-pipeline-stage1-gate",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-27-migration-disposition-doctrine-refresh-orientation-index",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-04-requires-security-review-attestation",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-03-parity-gate-three-channel-extension",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-03-pipeline-skill-migration",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-05-init-update-flag",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-10-personas-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-12-templates-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-04-rules-scaffolder-authoring",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-14-gz-upgrade-subcommand",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-02-rendering-pipeline",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-05-handoff-archive-retention",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.65",
+      "sibling_obpi": "OBPI-0.0.65-03-gz-handoff-cli-verb",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-03-complexity-advise-cli",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-05-auto-chain-hook",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-09-advisor-timeout-fallback",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.19",
+      "sibling_obpi": "OBPI-0.0.19-05-docs-bdd-closeout",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-03-doc-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.36",
+      "sibling_obpi": "OBPI-0.0.36-03-validate-receipt-shape-scope",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-05-session-handoff-surface-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.21",
+      "sibling_obpi": "OBPI-0.0.21-06-rule-and-doc-updates",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.12",
+      "sibling_obpi": "OBPI-0.0.12-07-agents-md-persona-reference",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-04-closeout-audit-fidelity-repoint",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-03-bdd-and-doc",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-02-runbook-prd-to-adr",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.18",
+      "sibling_obpi": "OBPI-0.0.18-03-pool-curation-policy",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-04-apply-doctrine-claude-md-rules",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.57",
+      "sibling_obpi": "OBPI-0.0.57-05-docs-runbook-fixtures",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.7",
+      "sibling_obpi": "OBPI-0.0.7-01-manifest-v2-schema",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-03-manifest-schema-persona-sync",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-04-vendor-neutral-persona-loading",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-04-agents-md-persona-section",
+      "contested_paths": [
+        "src/gzkit/sync_surfaces.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-03-why-foundation-tier-convention",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-04-kind-invariance-validator",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.35",
+      "sibling_obpi": "OBPI-0.0.35-01-concept-page",
+      "contested_paths": [
+        "docs/user/runbook.md"
+      ]
+    }
+  ]
+}
