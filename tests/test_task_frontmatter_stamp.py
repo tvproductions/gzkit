@@ -88,6 +88,25 @@ class TestFrontmatterListAppend(unittest.TestCase):
 
         self.assertEqual(_parsed_tasks(out), ["TASK-A"])
 
+    def test_joins_an_existing_block_at_its_own_indentation(self) -> None:
+        """An appended item matches the indentation of the block it joins.
+
+        A YAML block sequence must agree on depth, so emitting a fixed two-space
+        item into a column-zero block both reformats every sibling line and risks
+        a brief that no longer parses. Column-zero is the shape OBPI briefs are
+        authored in -- `allowlist:` on the live briefs sits flush (GHI #825).
+        """
+        content = "---\nid: X\nallowlist:\n- src/a.py\n- src/b.py\nstatus: Active\n---\n\nbody\n"
+        out = _append_frontmatter_list_value(content, "allowlist", "src/c.py")
+
+        end = out.find("\n---\n", 4)
+        fm = yaml.safe_load(out[4:end])
+        self.assertEqual(fm["allowlist"], ["src/a.py", "src/b.py", "src/c.py"])
+        self.assertIn("\n- src/c.py", out)
+        self.assertNotIn("\n  - src/c.py", out)
+        # The siblings are untouched, so the diff is one line rather than three.
+        self.assertIn("\n- src/a.py\n- src/b.py\n", out)
+
     def test_preserves_sibling_frontmatter_keys(self) -> None:
         """Stamping one key must not disturb the rest of the brief's envelope."""
         out = _append_frontmatter_list_value(

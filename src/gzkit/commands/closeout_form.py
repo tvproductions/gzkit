@@ -116,6 +116,9 @@ def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
     An existing inline value (``tasks: [A, B]``) is normalized to block form
     rather than skipped, so a hand-authored brief cannot silently drop the
     declaration this stamps.
+
+    An appended item joins an existing block at that block's own indentation; a
+    newly created block uses two spaces.
     """
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -139,8 +142,17 @@ def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
 
     item_end = key_idx + 1
     items: list[str] = []
+    # Two spaces only as the default for a block being CREATED. An existing block
+    # keeps its own depth: a YAML sequence must agree on indentation, so emitting a
+    # fixed two-space item into a column-zero block reformats every sibling line
+    # and risks a brief that no longer parses. OBPI briefs author `allowlist:`
+    # flush at column zero (GHI #825).
+    indent = "  "
     while item_end < end_idx and lines[item_end].lstrip().startswith("- "):
-        items.append(lines[item_end].lstrip()[2:].strip())
+        line = lines[item_end]
+        if not items:
+            indent = line[: len(line) - len(line.lstrip())]
+        items.append(line.lstrip()[2:].strip())
         item_end += 1
 
     inline = lines[key_idx].partition(":")[2].strip()
@@ -152,7 +164,7 @@ def _append_frontmatter_list_value(content: str, key: str, value: str) -> str:
         return content
 
     items.append(value)
-    lines[key_idx:item_end] = [f"{key}:", *(f"  - {item}" for item in items)]
+    lines[key_idx:item_end] = [f"{key}:", *(f"{indent}- {item}" for item in items)]
     return "\n".join(lines).rstrip() + "\n"
 
 

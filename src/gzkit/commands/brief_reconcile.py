@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 
+from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import (
     GzCliError,
     console,
@@ -63,37 +64,6 @@ def _append_under_heading(text: str, heading: str, bullets: list[str]) -> str:
     return f"{text.rstrip()}\n\n{heading}\n\n{block}\n"
 
 
-def _append_frontmatter_list_items(text: str, key: str, items: list[str]) -> str:
-    """Append ``- item`` lines to the end of the block-style ``key:`` list.
-
-    Textual rather than a YAML round-trip: ``yaml.safe_dump`` would rewrite every
-    other key in the frontmatter — reordering, requoting, and reflowing a
-    governance artifact to add one path. The indentation of the existing first
-    item is reused so the inserted lines match the block they join.
-
-    Block style only. A flow-style ``key: [a, b]`` line does not match and the
-    text is returned unchanged, leaving the drift reported rather than writing a
-    malformed list; no brief in this repo uses that form.
-    """
-    if not text.startswith("---\n"):
-        return text
-    end = text.find("\n---\n", 4)
-    if end == -1:
-        return text
-    lines = text[4:end].split("\n")
-    try:
-        start = next(i for i, line in enumerate(lines) if line.strip() == f"{key}:")
-    except StopIteration:
-        return text
-    insert_at = start + 1
-    while insert_at < len(lines) and lines[insert_at].lstrip().startswith("- "):
-        insert_at += 1
-    first = lines[start + 1] if insert_at > start + 1 else ""
-    indent = first[: len(first) - len(first.lstrip())]
-    lines[insert_at:insert_at] = [f"{indent}- {item}" for item in items]
-    return "---\n" + "\n".join(lines) + text[end:]
-
-
 def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> None:
     """Write operator-attested amendments back into the brief frontmatter/body.
 
@@ -108,7 +78,8 @@ def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> Non
     text = brief_path.read_text(encoding="utf-8")
     if allowlist_adds:
         if isinstance(parse_brief(brief_path), BriefStructure):
-            text = _append_frontmatter_list_items(text, "allowlist", allowlist_adds)
+            for path in allowlist_adds:
+                text = _append_frontmatter_list_value(text, "allowlist", path)
         else:
             text = _append_under_heading(
                 text,

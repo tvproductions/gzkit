@@ -12,7 +12,6 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from gzkit.commands.brief_reconcile import _append_frontmatter_list_items
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
@@ -503,43 +502,6 @@ class TestBriefReconcileCommand(unittest.TestCase):
                 "--apply reported drift it did not clear",
             )
             self.assertEqual(result.exit_code, 0)
-
-
-class TestFrontmatterListAppend(unittest.TestCase):
-    """The allowlist writer joins the block it lands in (GHI #825)."""
-
-    @covers("REQ-0.0.37-06-04")
-    def test_inserted_items_match_the_existing_block_indentation(self) -> None:
-        """An indented YAML list stays indented; a column-0 insert would break it.
-
-        The inserted line must sit at the indentation of the block it joins, not
-        at a fixed column — YAML rejects a list whose items disagree on depth, so
-        a mismatched insert turns a repaired brief into an unparseable one.
-        """
-        text = "---\nallowlist:\n  - src/a.py\n  - src/b.py\nstatus: Draft\n---\n\nbody\n"
-        out = _append_frontmatter_list_items(text, "allowlist", ["src/c.py"])
-        self.assertIn("  - src/c.py", out)
-        self.assertNotIn("\n- src/c.py", out)
-        # Appended at the end of the block, not spliced into the middle of it.
-        self.assertLess(out.index("  - src/b.py"), out.index("  - src/c.py"))
-        self.assertLess(out.index("  - src/c.py"), out.index("status: Draft"))
-
-    @covers("REQ-0.0.37-06-04")
-    def test_flow_style_list_is_left_untouched(self) -> None:
-        """A flow-style list is not rewritten — reporting drift beats writing garbage.
-
-        `key: [a, b]` has no block to append to. Returning the text unchanged
-        leaves the drift reported and fails closed at exit 3; a naive insert
-        would emit a malformed brief that no longer parses at all.
-        """
-        text = "---\nallowlist: [src/a.py]\nstatus: Draft\n---\n\nbody\n"
-        self.assertEqual(_append_frontmatter_list_items(text, "allowlist", ["src/c.py"]), text)
-
-    @covers("REQ-0.0.37-06-04")
-    def test_absent_key_is_left_untouched(self) -> None:
-        """A brief with no `allowlist:` key is returned unchanged, never invented."""
-        text = "---\nstatus: Draft\n---\n\nbody\n"
-        self.assertEqual(_append_frontmatter_list_items(text, "allowlist", ["src/c.py"]), text)
 
 
 if __name__ == "__main__":
