@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.commands.brief_reconcile import _append_frontmatter_list_items
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
@@ -125,6 +126,55 @@ def test_thing() -> None:
 """
 
 
+# The structured twin of `_REPAIRABLE_BRIEF`: identical drift, but frontmatter
+# declares `allowlist`/`reqs`/`verification`, so `parse_brief` returns a
+# `BriefStructure` and the engine reads the allowlist from frontmatter rather
+# than from the `## Allowed Paths` prose (`brief_reconcile.py` line 219). Every
+# other `--apply` fixture here is legacy-shaped, which is why GHI #825 shipped.
+_STRUCTURED_REPAIRABLE_BRIEF = """\
+---
+id: OBPI-0.1.0-04-structured
+parent: ADR-0.1.0-f
+item: 4
+lane: Lite
+status: Draft
+allowlist:
+- src/gzkit/alpha.py
+reqs:
+- REQ-0.1.0-04-01
+verification:
+- uv run gz lint
+---
+
+# OBPI-0.1.0-04-structured: Structured Repairable
+
+## Allowed Paths
+
+- `src/gzkit/alpha.py` (modify)
+
+## Requirements (FAIL-CLOSED)
+
+1. REQUIREMENT: the system does the structured thing
+
+## Acceptance Criteria
+
+- [ ] REQ-0.1.0-04-01: the system does the structured thing
+
+**Brief Status:** Draft
+"""
+
+_STRUCTURED_REPAIRABLE_TEST = """\
+from gzkit.beta import BETA
+from gzkit.traceability import covers
+
+
+@covers("REQ-0.1.0-04-01")
+def test_structured_thing() -> None:
+    \"\"\"Covering test importing a non-allowlisted sibling.\"\"\"
+    assert BETA == 1
+"""
+
+
 def _seed_repairable_project() -> None:
     """Lay down the src/ siblings and covering test the repairable brief needs."""
     src = Path("src") / "gzkit"
@@ -134,6 +184,9 @@ def _seed_repairable_project() -> None:
     tests_dir = Path("tests")
     tests_dir.mkdir(parents=True, exist_ok=True)
     (tests_dir / "test_repairable.py").write_text(_REPAIRABLE_TEST, encoding="utf-8")
+    (tests_dir / "test_structured_repairable.py").write_text(
+        _STRUCTURED_REPAIRABLE_TEST, encoding="utf-8"
+    )
 
 
 class TestBriefReconcileCommand(unittest.TestCase):
@@ -407,6 +460,86 @@ class TestBriefReconcileCommand(unittest.TestCase):
         text = manpage.read_text(encoding="utf-8")
         for section in ("NAME", "SYNOPSIS", "DESCRIPTION", "OPTIONS", "EXAMPLES"):
             self.assertIn(f"## {section}", text, f"manpage missing required section: {section}")
+
+    @covers("REQ-0.0.37-06-04")
+    def test_apply_amends_the_frontmatter_allowlist_for_a_structured_brief(self) -> None:
+        """REQ-04: --apply repairs the surface the engine reads, not a prose twin.
+
+        For a `BriefStructure` brief the engine reads `parsed.allowlist` from
+        frontmatter (`brief_reconcile.py` line 219); the `## Allowed Paths`
+        section is an unread restatement. An amendment written only to the prose
+        leaves the drift exactly as reported, so `--apply` announces success and
+        the re-measurement is byte-identical to the pre-write one (GHI #825).
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _seed_repairable_project()
+            brief_path = self._adrs_dir() / "OBPI-0.1.0-04-structured.md"
+            _write_brief(brief_path, _STRUCTURED_REPAIRABLE_BRIEF)
+            result = runner.invoke(
+                main,
+                [
+                    "obpi",
+                    "brief-drift",
+                    "OBPI-0.1.0-04-structured",
+                    "--apply",
+                    "--attestor",
+                    "g0",
+                ],
+            )
+            written = brief_path.read_text(encoding="utf-8")
+            frontmatter = written.split("\n---\n", 1)[0]
+            self.assertIn(
+                "src/gzkit/beta.py",
+                frontmatter,
+                "amendment did not reach the frontmatter allowlist the engine reads",
+            )
+            # The binding assertion: the drift the verb reported is actually gone.
+            applied = [e for e in self._events("brief_reconciled") if e.extra.get("applied")]
+            self.assertEqual(len(applied), 1)
+            self.assertFalse(
+                applied[0].extra["has_drift"],
+                "--apply reported drift it did not clear",
+            )
+            self.assertEqual(result.exit_code, 0)
+
+
+class TestFrontmatterListAppend(unittest.TestCase):
+    """The allowlist writer joins the block it lands in (GHI #825)."""
+
+    @covers("REQ-0.0.37-06-04")
+    def test_inserted_items_match_the_existing_block_indentation(self) -> None:
+        """An indented YAML list stays indented; a column-0 insert would break it.
+
+        The inserted line must sit at the indentation of the block it joins, not
+        at a fixed column — YAML rejects a list whose items disagree on depth, so
+        a mismatched insert turns a repaired brief into an unparseable one.
+        """
+        text = "---\nallowlist:\n  - src/a.py\n  - src/b.py\nstatus: Draft\n---\n\nbody\n"
+        out = _append_frontmatter_list_items(text, "allowlist", ["src/c.py"])
+        self.assertIn("  - src/c.py", out)
+        self.assertNotIn("\n- src/c.py", out)
+        # Appended at the end of the block, not spliced into the middle of it.
+        self.assertLess(out.index("  - src/b.py"), out.index("  - src/c.py"))
+        self.assertLess(out.index("  - src/c.py"), out.index("status: Draft"))
+
+    @covers("REQ-0.0.37-06-04")
+    def test_flow_style_list_is_left_untouched(self) -> None:
+        """A flow-style list is not rewritten — reporting drift beats writing garbage.
+
+        `key: [a, b]` has no block to append to. Returning the text unchanged
+        leaves the drift reported and fails closed at exit 3; a naive insert
+        would emit a malformed brief that no longer parses at all.
+        """
+        text = "---\nallowlist: [src/a.py]\nstatus: Draft\n---\n\nbody\n"
+        self.assertEqual(_append_frontmatter_list_items(text, "allowlist", ["src/c.py"]), text)
+
+    @covers("REQ-0.0.37-06-04")
+    def test_absent_key_is_left_untouched(self) -> None:
+        """A brief with no `allowlist:` key is returned unchanged, never invented."""
+        text = "---\nstatus: Draft\n---\n\nbody\n"
+        self.assertEqual(_append_frontmatter_list_items(text, "allowlist", ["src/c.py"]), text)
 
 
 if __name__ == "__main__":

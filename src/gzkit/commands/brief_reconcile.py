@@ -20,6 +20,7 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.obpi_precomplete import _resolve_brief_path
 from gzkit.governance.brief_reconcile import ReconcileResult, reconcile_brief
+from gzkit.governance.brief_structure import BriefStructure, parse_brief
 from gzkit.governance.events import (
     emit_brief_reconcile_drift_detected,
     emit_brief_reconciled,
@@ -27,15 +28,17 @@ from gzkit.governance.events import (
 
 
 def _compute_amendments(result: ReconcileResult, attestor: str) -> tuple[list[str], list[str]]:
-    """Return (allowlist additions, tracked-defect notes) implied by the result.
+    """Return (allowlist path additions, tracked-defect notes) implied by the result.
+
+    Allowlist additions are **bare paths**, not rendered bullets: a structured
+    brief carries them as YAML list values where an inline provenance suffix
+    would corrupt the path (GHI #825). The prose writer renders its own bullet;
+    the attestor is recorded on the ``brief_reconciled`` ledger event either way.
 
     The CLI never silently rewrites verb references (operator-judgment call); it
     records them as tracked defects instead.
     """
-    allowlist_adds = [
-        f"`{path}` (added by obpi brief-drift, attestor {attestor})"
-        for path in result.allowlist_delta.missing_in_brief
-    ]
+    allowlist_adds = list(result.allowlist_delta.missing_in_brief)
     defects = [
         f"Unresolved verb `gz {verb}` (obpi brief-drift, attestor {attestor})"
         for verb in result.verification_delta.unresolved_verbs
@@ -60,12 +63,61 @@ def _append_under_heading(text: str, heading: str, bullets: list[str]) -> str:
     return f"{text.rstrip()}\n\n{heading}\n\n{block}\n"
 
 
+def _append_frontmatter_list_items(text: str, key: str, items: list[str]) -> str:
+    """Append ``- item`` lines to the end of the block-style ``key:`` list.
+
+    Textual rather than a YAML round-trip: ``yaml.safe_dump`` would rewrite every
+    other key in the frontmatter — reordering, requoting, and reflowing a
+    governance artifact to add one path. The indentation of the existing first
+    item is reused so the inserted lines match the block they join.
+
+    Block style only. A flow-style ``key: [a, b]`` line does not match and the
+    text is returned unchanged, leaving the drift reported rather than writing a
+    malformed list; no brief in this repo uses that form.
+    """
+    if not text.startswith("---\n"):
+        return text
+    end = text.find("\n---\n", 4)
+    if end == -1:
+        return text
+    lines = text[4:end].split("\n")
+    try:
+        start = next(i for i, line in enumerate(lines) if line.strip() == f"{key}:")
+    except StopIteration:
+        return text
+    insert_at = start + 1
+    while insert_at < len(lines) and lines[insert_at].lstrip().startswith("- "):
+        insert_at += 1
+    first = lines[start + 1] if insert_at > start + 1 else ""
+    indent = first[: len(first) - len(first.lstrip())]
+    lines[insert_at:insert_at] = [f"{indent}- {item}" for item in items]
+    return "---\n" + "\n".join(lines) + text[end:]
+
+
 def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> None:
-    """Write operator-attested amendments back into the brief frontmatter/body."""
+    """Write operator-attested amendments back into the brief frontmatter/body.
+
+    The allowlist amendment must land on the surface the engine READS, which
+    differs by brief shape: ``reconcile_brief`` takes ``parsed.allowlist`` from
+    frontmatter for a ``BriefStructure`` and only falls back to the
+    ``## Allowed Paths`` prose for a ``LegacyBriefShape``. Writing the prose
+    unconditionally left every structured brief reporting drift this verb had
+    just claimed to repair, indefinitely (GHI #825).
+    """
     allowlist_adds, defects = _compute_amendments(result, attestor)
     text = brief_path.read_text(encoding="utf-8")
     if allowlist_adds:
-        text = _append_under_heading(text, "## Allowed Paths", allowlist_adds)
+        if isinstance(parse_brief(brief_path), BriefStructure):
+            text = _append_frontmatter_list_items(text, "allowlist", allowlist_adds)
+        else:
+            text = _append_under_heading(
+                text,
+                "## Allowed Paths",
+                [
+                    f"`{path}` (added by obpi brief-drift, attestor {attestor})"
+                    for path in allowlist_adds
+                ],
+            )
     if defects:
         text = _append_under_heading(text, "## Tracked Defects", defects)
     brief_path.write_text(text, encoding="utf-8")
