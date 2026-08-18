@@ -1,5 +1,119 @@
 # gzkit Release Notes
 
+## v0.34.4 (2026-08-18)
+
+### Highlights
+
+This release is about **enforcement that could not see its own exemptions, and
+an attestation pointed at the wrong thing.** Every gate carrying a waiver makes
+two claims — *this is refused* and *this is admitted* — and across 28 exemption
+surfaces and 55 negative controls, nothing ever tested the second. Separately,
+the content surface gated a re-render of unchanged canon while letting corpus
+additions and removals through ungated, and it called that gate "Gate 5" — the
+name reserved for OBPI/ADR completion attestation. Both are now the right way
+round.
+
+### New features
+
+- **#797** — `gz validate` inventories the exemption half of every enforcement
+  claim, and two gates gain working exemption controls. The undeclared backlog
+  drains from 71 claims to 55.
+- **#798** — The enforcement claim registry records which gate each claim's
+  entrypoint delegates to, so a claim resolves to the gate it enforces without a
+  human reading the delegation chain.
+- **#812** — `gz validate --ledger` rejects a ledger whose timestamps run
+  backwards. The property held across all 15,037 rows; it now has a witness.
+
+### Improvements
+
+- **#821** — Corpus additions and removals record operator attestation, and a
+  re-render of unchanged canon no longer asks for one. The corpus fingerprint is
+  the discriminator, and the witness is exposed rather than assumed.
+- **#822** — The content-surface attestation is named "corpus attestation"
+  throughout, freeing "Gate 5" for the OBPI/ADR completion attestation it names
+  in ADR-0.0.36.
+- **#811** — Concurrent `gz git-sync` runs merge append-only ledger JSONL
+  instead of stopping at a rebase conflict for hand-editing.
+- **#816** — A `gz git-sync` push refused by a pre-push hook reports the hook's
+  diagnosis, not just the push failure.
+- **#794** — Patch-release discovery discloses a GHI cited only by a
+  non-closure-typed commit, instead of omitting it from every bucket.
+- **#800** — The handoff resume gate admits a compound Bash command whose every
+  segment is individually admitted, and the ruling that compound breadth is
+  correct is recorded rather than re-litigated each session.
+- **#817** — The `instructions-files-diet` chore edits the corpus and the
+  canonical rule sources, rather than the rendered surfaces and vendor mirrors
+  they generate.
+- **#823** — Names a disposition for an attested REQ whose subject a later
+  doctrine ruling retired on a terminal ADR that cannot be amended. The
+  transition had been resolved correctly twice from first principles and
+  recorded nowhere an agent would find it.
+
+### Bug fixes
+
+- **#824** — `gz task start` stamped TASK declarations into a plan file instead
+  of the OBPI brief. Brief resolution is anchored to canon, and the 11 misrouted
+  declarations on OBPI-0.35.0-09 were restored.
+- **#752** — The pipeline auto-start path never stamped the `tasks:` frontmatter
+  channel, leaving two of four declared TASK discovery channels empty repo-wide.
+- **#820** — Task-envelope Signature (c) reported a channel naming a strict
+  subset of the union as layer-drift, so the gate was satisfiable only by
+  falsifying attribution.
+- **#825** — `gz obpi brief-drift --apply` wrote allowlist amendments into a
+  prose section the reconciler never reads, reporting success while the drift it
+  had just amended persisted byte-identically.
+- **#826** — Parked OBPI ids kept a semver that a later ADR reused, so an
+  `OBPI-<semver>-<index>` prefix could match two disjoint OBPIs.
+- **#809** — A REQ whose kind tag carried markdown emphasis read as untagged to
+  `--req-kind-discipline`, silently grandfathering the brief.
+- **#796** — The verifier-pipe gate was disarmed by any command that merely
+  mentioned `pipefail` or `PIPESTATUS` — including grepping the docs for the
+  escape's own name.
+- **#795** — A resume ruling booked against one handoff lifted the gate armed on
+  a different one.
+- **#827** — The handoff annotator stamped `[settled]` on any `#N`, rewriting an
+  `AGENTS.md` behavior-rule citation as a closed GitHub issue.
+- **#806** — Gate-5 examples in the `gz-obpi-specify` and `gz-adr-audit` skill
+  templates invoked a module that does not exist.
+
+### Known issues
+
+- **#815** — The `AGENTS.md` must-survive section still renders past the Codex
+  delivery cap. Vendor-limit exceedances now route to a GHI rather than
+  blocking, and the delivery advisory no longer transcribes issue state, but the
+  overflow itself remains open.
+- **#810** — CLI doctrine rows scored Promotable in the advisory audit still
+  lack mechanical arms. This release lands the measured structural analysis and
+  the canonical spec, not the arms.
+
+### Gate Evidence
+
+- **Qualifier:** behavior-level GHIs closed since `v0.34.3` (2026-08-12). 21
+  GHIs are release content; 0 foundation-ADR closeouts in range.
+- **Step 1a (`diff_only`):** #806 confirmed against the `ghi-author` § Step 1
+  runtime predicate — remedy shape `fix(skills):`, diff under
+  `src/gzkit/skills/` (wheel-distributed Gate-5 templates delivered by
+  `gz init`). `runtime` label backfilled with operator confirmation; discovery
+  re-run reports `qualified`.
+- **Step 1b (`open_upstream`):** none.
+- **Step 1c (`unclassified_reference`):** #823 — *the citing commit IS the
+  remedy* (`ca4296f65` authored `docs/governance/attested-req-subject-retirement.md`
+  plus the `governance-core.md` rule bullet); written into the narrative and
+  changelog by hand. #635 — *remedy shipped in a prior tag* (closed 2026-07-22,
+  before the `v0.34.3` tag); context reference only. #810 — *routed, not
+  shipped*; open tracker, only `docs(cli)` measurement and spec work landed.
+- **`label_only`:** #819 correctly excluded — remedy touched `tests/` and
+  `features/` only, no `src/gzkit/` surface.
+- **`diff_only` + OPEN:** #815 left open per SKILL.md § Step 1b Case 2; only the
+  landed work is described, and it is excluded from `Stats`.
+- **Version sync:** `pyproject.toml`, `src/gzkit/__init__.py`, README badge —
+  0.34.3 -> 0.34.4 via `gz patch release`.
+- **Operator approval:** g0, 2026-08-18 — "approve as-is, proceed".
+
+### Stats
+
+- 21 GHIs closed
+
 ## v0.34.3 (2026-08-12)
 
 ### Highlights

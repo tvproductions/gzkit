@@ -17,6 +17,44 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.4 (2026-08-18)
+
+### Release highlights
+
+- Enforcement gains its missing half: negative controls tested whether a gate's rule fires, never whether its exemption admits only what it should — 28 exemption surfaces, 55 negative controls, 0 exercising an exemption. The exemption axis is now declared, inventoried, and controlled on two gates, draining the undeclared backlog 71 -> 55 (GHI #797, GHI #798)
+- The content surface's attestation is inverted and renamed: corpus additions and removals now carry operator attestation while a re-render of unchanged canon does not, and the build step stops claiming the name "Gate 5" that ADR-0.0.36 fixes to OBPI/ADR completion attestation (GHI #821, GHI #822)
+
+### Added
+
+- `gz validate` inventories the exemption half of every registered enforcement claim, and two gates receive working exemption controls; eight exemption-free gates are declared as such (GHI #797)
+- `EnforcementClaimRecord` records the gate its entrypoint delegates to, so a claim resolves to the gate it enforces without reading the delegation chain by hand; `source_file` had pointed only at the negative-control shim in `_qc_nc_entrypoints.py` (GHI #798)
+- `gz validate --ledger` compares each row's `ts` against its predecessor and rejects a ledger whose timestamps run backwards; the property held across all 15,037 live rows with no witness (GHI #812)
+- `gz patch release` discovery reports an `unclassified_reference` bucket for a GHI cited in range only by a commit whose Conventional-Commits type is not a closure type; such a GHI previously appeared in no bucket at all (GHI #794)
+- A merge driver for runtime-appended tracked JSONL, so two concurrent `gz git-sync` runs that both appended to `.gzkit/ledger.jsonl` merge by tail-union instead of halting the rebase for a hand-edit (GHI #811)
+
+### Changed
+
+- `gz content remember` and `gz content retire` accept and record an attestor; `gz content commit` no longer fail-closes on a re-render whose corpus fingerprint is unchanged, and the fingerprint witness is exposed rather than assumed (GHI #821)
+- The content-surface attestation is named "corpus attestation" across help text, source, and docs; twelve naming sites across three sweeps previously called it "Gate 5" (GHI #822)
+- `gz git-sync` retains a refusing hook's stdout in its blocker output, so a pre-push gate refusal reports the failing check, file, and line rather than only `failed to push some refs` (GHI #816)
+- The handoff resume gate declares command separators explicitly instead of deriving compound shape, admits a compound whose every segment is individually admitted, reads `2>&1` as descriptor duplication rather than a file redirect, and admits writes targeting the null device; the ruling that compound breadth is correct is recorded in the gate and in `gz-session-handoff`'s Trust Model (GHI #800)
+- The `instructions-files-diet` chore routes edits through `.gzkit/corpus/` and the canonical `.gzkit/rules/` sources rather than the rendered `AGENTS.md` and the generated vendor mirrors; the sibling memory-hygiene migrations are routed the same way (GHI #817)
+- `docs/governance/attested-req-subject-retirement.md` records the disposition for an attested REQ whose subject a later doctrine ruling retired on a terminal, unamendable ADR, with the binding bullet added to `governance-core.md` in all four surface copies; the transition had been resolved correctly twice from first principles and written down nowhere an agent would find it (GHI #823)
+- `--req-kind-discipline` tolerates markdown emphasis around a REQ kind tag in both readers, matching `triangle.py`'s existing tolerance; the two immune tag readers are pinned into the guard by test (GHI #809)
+- Task-envelope Signature (c) fires on contradiction between discovery channels rather than on incompleteness, so a channel naming a strict subset of the union is no longer reported as layer-drift (GHI #820)
+
+### Fixed
+
+- `gz task start` resolves an OBPI id to its brief by anchoring on canon rather than substring-matching an `rglob` of the working tree, so TASK declarations no longer land in a `.claude/plans/` file; the 11 declarations misrouted on OBPI-0.35.0-09 were restored to the brief (GHI #824)
+- The pipeline auto-start path stamps the `tasks:` frontmatter discovery channel, which had produced zero keys repo-wide and left Signature (c) comparing 7 of 534 OBPIs (GHI #752)
+- `gz obpi brief-drift --apply` amends the frontmatter allowlist for a structured brief, where the reconciler actually reads; it had written into the prose `## Allowed Paths` section and reported success while the drift persisted byte-identically (GHI #825)
+- `gz obpi precomplete` matches the supplied OBPI id instead of a derived prefix, so parked OBPI ids retaining a semver that a later ADR reused no longer collide under one `OBPI-<semver>-<index>` prefix (GHI #826)
+- The verifier-pipe gate honors `pipefail` and `PIPESTATUS` when they are used rather than when they are named; any token mentioning either — including `grep -rn "pipefail" docs/` — previously disarmed the gate (GHI #796)
+- A handoff resume ruling is coupled to the `handoff_path` it was booked against, so a ruling on one document no longer lifts a gate armed on another (GHI #795)
+- The handoff settled-citation annotator matches only genuine GHI references, so an `AGENTS.md` behavior-rule number such as "Always #13" is no longer resolved against live issue state and stamped `[settled]` (GHI #827)
+- Gate-5 template assets in the `gz-obpi-specify` and `gz-adr-audit` skills invoke commands that exist, replacing airlineops-era invocations of a module absent from this package; ADR-sync/audit Layer 1 routes through `gz covers` rather than a raw ADR grep (GHI #806)
+- Four `REQ-0.0.37-15-*` covering tests and the AgentContract BDD scenarios are repointed at the root consumer, unstranding them from the retired per-vendor AgentContract doctrine while preserving their `@covers` bindings and attested REQs (GHI #819)
+
 ## v0.34.3 (2026-08-12)
 
 ### Release highlights

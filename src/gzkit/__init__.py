@@ -6,4 +6,4 @@ constraints to reason against, creates verification loops both parties trust,
 and reserves final judgment for humans.
 """
 
-__version__ = "0.34.3"
+__version__ = "0.34.4"
