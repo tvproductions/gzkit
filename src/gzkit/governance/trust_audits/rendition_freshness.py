@@ -15,7 +15,7 @@ optional field to ``CorpusEntry`` therefore re-fingerprints every surface even
 when the .jsonl is byte-identical on disk. ``BASELINE_IDENTITY_FIELDS`` /
 ``POST_BASELINE_IDENTITY_FIELDS`` in ``gzkit.content.models.corpus`` classify
 each field so additive evolution stays inert here; a field left unclassified
-fails closed in that module's fence rather than silently demanding a Gate-5
+fails closed in that module's fence rather than silently demanding a corpus-attested
 recompose (GHI #635).
 
 SIBLING GATE — read both before changing the corpus or its model.

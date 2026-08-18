@@ -49,7 +49,7 @@ class RenditionProvenance(BaseModel):
         ),
     )
     committed_ts: str = Field(..., description="ISO-8601 commit timestamp.")
-    attestor: str = Field(..., description="Operator who attested the commit (Gate 5).")
+    attestor: str = Field(..., description="Operator whose corpus attestation this commit carries.")
     attestation_text: str = Field(..., description="Operator's verbatim attestation token.")
 
 

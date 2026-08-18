@@ -33,7 +33,7 @@ _Classification = Literal["Mechanical", "Promotable", "Judgment", "Ambiguous"]
 # `rendition_store.corpus_fingerprint` hashes `Corpus.dumps()`, so that string
 # IS the corpus derivation identity: the committed renditions' provenance is
 # proven against it, and any change red-flags every surface and demands a
-# Gate-5 recompose (`gz content compose` + `gz content commit --attestor ...`).
+# corpus-attested recompose (`gz content compose` + `gz content commit --attestor ...`).
 #
 # That makes the *field set* part of the identity, not just the values. Adding
 # `retires` alone changed every surface's fingerprint while the .jsonl on disk
@@ -141,7 +141,7 @@ class Corpus(BaseModel):
         ``BASELINE_IDENTITY_FIELDS`` / ``POST_BASELINE_IDENTITY_FIELDS`` note):
         a post-baseline field holding its default is omitted, so adding a field
         cannot re-fingerprint rows that predate it and cost an operator a
-        Gate-5 recompose for a semantically empty change. A row that actually
+        corpus-attested recompose for a semantically empty change. A row that actually
         uses the field is serialized with it — real canon drift, which the
         freshness gate should catch.
         """

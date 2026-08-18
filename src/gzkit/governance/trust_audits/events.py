@@ -183,7 +183,8 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
     "rendition_committed": (
         "Operator-attested candidate→committed promotion record (ADR-0.0.37, OBPI-0.0.37-22). "
         "Layer-2 witness that `gz content commit` promoted a candidate to the durable committed "
-        "rendition under Gate 5, freezing the corpus content-fingerprint; consumed by the "
+        "rendition under the operator's corpus attestation, freezing the corpus "
+        "content-fingerprint; consumed by the "
         "freshness gate and provenance audit, not the artifact graph."
     ),
     "rendition_advisor_verdict": (
