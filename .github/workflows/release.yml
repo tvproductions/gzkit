@@ -125,3 +125,9 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           verbose: true
+          # PyPI files are immutable, so re-uploading an already-published
+          # version is a no-op rather than an error condition. Without this,
+          # re-pushing an old tag (tag repair, a re-run) fails the job with
+          # "400 File already exists" — observed on v0.18.1 and v0.24.1,
+          # runs 32205324813 and 32205324956.
+          skip-existing: true
