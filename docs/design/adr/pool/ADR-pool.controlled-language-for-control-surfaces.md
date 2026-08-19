@@ -106,7 +106,7 @@ in-flight feature is `ADR-0.35.0-canon-entry-corpus-landing`, and *"only one
 feature at a time, feature, finish, draw from pool"* holds. Promotion needs its
 own operator ruling.
 
-On promotion, build **four arms, in this order** — the ordering is the design,
+On promotion, build **five arms, in this order** — the ordering is the design,
 because the cheapest arm attaches to a distinction gzkit already models and the
 most expensive one is the only one that needs anybody's permission.
 
@@ -133,15 +133,37 @@ most expensive one is the only one that needs anybody's permission.
    over an absolute threshold deliberately: a ratchet needs no ruling on
    whether 20 is the right number, and it cannot be satisfied by argument.
 
-4. **Approved-word dictionary — GATED, not scheduled.** Blocked on the
+4. **Imperative-density measurement (absorbs GHI #579).** Count binding
+   instructions per surface alongside sentence length, and hold the count in
+   the same decrease-only ratchet as arm 3. #579 opened this axis on
+   2026-06-03 against external evidence that instruction-following decays
+   *uniformly by count* — every instruction followed slightly worse as the
+   count rises — and recorded 375 lines / ~105 binding imperatives in
+   `AGENTS.md` on that date (a dated record, not a current value; re-derive
+   before acting). Its § Design questions name the open metric choice —
+   binding-bullet count, imperatives per 1k chars, or classification-weighted
+   count — and that choice is left to promotion rather than pre-empted here.
+
+   **Absorbed rather than merely cited** (operator ruling 2026-08-19). The
+   absorption is load-bearing, not administrative: each of arms 3 and 4 closes
+   a failure mode the other has. A length ratchet alone is satisfiable by
+   splitting one long directive into three short ones — mean sentence length
+   falls while the instruction count the model actually pays for **rises**. A
+   count alone has no definition of what constitutes one instruction, which is
+   what arm 1's modal-keyword set supplies. Promotion inherits both arms or
+   neither is sound. #579's own scope-boundary note stands unchanged:
+   re-anchoring the budget unit cannot fold into `ADR-0.0.54`, and does not
+   fold into it here either.
+
+5. **Approved-word dictionary — GATED, not scheduled.** Blocked on the
    reproduction question in constraint 2. Do not begin this arm without an
-   operator ruling; do not treat arms 1–3 as blocked by it.
+   operator ruling; do not treat arms 1–4 as blocked by it.
 
 **The chore is the wielding mechanism, never a per-turn gate.** The 2026-08-17
 fifth ruling put control-surface size on a chore cadence precisely to stop
 per-turn interruption — *"I can't be stopping to trim them at every turn"* —
 and a language gate that fires on every edit would reintroduce exactly what
-that ruling removed. Arms 1–3 produce **chore-time criteria and observational
+that ruling removed. Arms 1–4 produce **chore-time criteria and observational
 witnesses**; `instructions-files-diet` consumes them. Any future draft that
 routes these into per-turn `gz check` failure is re-litigating a settled
 ruling and should be refused on that ground.
@@ -228,7 +250,7 @@ ruling and should be refused on that ground.
 1. **Adopt ASD-STE100 wholesale, dictionary included.** Rejected on two
    independent grounds, either sufficient: the reproduction question in
    constraint 2 is unanswered, and the invariant tier could not comply
-   without destroying the verbatim floor. Retained as the shape arm 4 takes
+   without destroying the verbatim floor. Retained as the shape arm 5 takes
    *if* permission resolves.
 
 2. **Vendor Vale or redpen and configure a style pack.** Rejected on
@@ -242,7 +264,7 @@ ruling and should be refused on that ground.
    doctrine is advisory-never-gating, so a judge cannot discharge a
    Judgment-class rule into a Mechanical one — that is the whole point of
    the promotion. It can carry the conformance reading no metric captures,
-   alongside arms 1–3, and its existing receipt path already works.
+   alongside arms 1–4, and its existing receipt path already works.
 
 4. **Readability formulas alone as the criterion.** Rejected as primary; see
    constraint 5. A Flesch-Kincaid floor on `.claude/rules/**` would flag
@@ -258,7 +280,7 @@ ruling and should be refused on that ground.
    counter-argument is real and is recorded so promotion does not discover
    it late: the chore already works by operator consultation, and the
    2026-08-17 ruling deliberately chose cadence over gate. The answer is
-   that arms 1–3 **feed** that consultation rather than replacing it — the
+   that arms 1–4 **feed** that consultation rather than replacing it — the
    operator still decides, with a measurement in hand instead of an
    impression. If a promotion draft cannot preserve that, it has drifted.
 
@@ -289,7 +311,7 @@ Sibling destinations, so promotion does not collide:
 | Language of the surface (**this ADR**) | here |
 | Doctrine for borrowing external strengths | `ADR-pool.external-strength-absorption-doctrine` |
 | The source document as a citation | `ADR-pool.design-references-bibliography` |
-| Instruction **count** as the budget unit | GHI #579 (open, unrouted since 2026-06-03) |
+| Instruction **count** as the budget unit | **absorbed as arm 4** — GHI #579, closed `superseded` 2026-08-19 |
 
 **Independent convergence, surveyed 2026-08-19.** At least six public projects
 apply ASD-STE100 to *agent-facing* English rather than to maintenance manuals:
@@ -301,7 +323,7 @@ from R1.5/R1.12, AGPL-3.0), its siblings `…AsdSte100Lookup` and
 
 First, `danyuchn/asd-ste100-skill` deliberately applies the *principle* — the
 plainest available word, used the same way every time — rather than checking
-against a fixed list, which is arms 1-3 of this ADR arrived at independently.
+against a fixed list, which is arms 1-4 of this ADR arrived at independently.
 That is corroboration of the design, not of the standard.
 
 Second, the ecosystem clusters on **skills**, not validators: every one of these
@@ -323,21 +345,23 @@ readable, and shortening its sentences does not by itself bring it under a cap.
 **GHI #579 is the closest open neighbour, and it was not consulted when this ADR
 was first drafted.** It surfaced on a `ghi-author` Step-0 prior-art sweep for an
 unrelated finding — late, and recorded here rather than quietly folded in. Filed
-2026-06-03 and still unrouted, it argues the budget's *unit* is wrong: char count
+2026-06-03 and unrouted until this ADR absorbed it, it argues the budget's
+*unit* is wrong: char count
 is a proxy for instruction-following degradation by **count**, and its § Design
 questions ask *"what metric — count of binding bullets? imperatives per 1k chars?
 classification-weighted count?"* That is the same dissatisfaction this ADR
 records, answered on a different axis — #579 says the real unit is how **many**
 instructions there are; this ADR says the tractable lever is what **language**
-they are written in. Neither answers the other, and #579's own scope-boundary
-note (that re-anchoring the budget unit cannot fold into `ADR-0.0.54`) applies
-here unchanged.
+they are written in. Neither axis answers the other, which is precisely why the
+disposition is absorption rather than substitution.
 
-**Open routing question, deliberately not decided in this draft:** whether #579
-closes `superseded` against this ADR, stays open as a sibling, or is absorbed as
-a fifth arm measuring imperative count alongside sentence length. A pool ADR is a
-valid `superseded` destination under `ghi-close`, so all three are available and
-the choice is the operator's.
+**Routing booked 2026-08-19** (operator ruling, verbatim: *"include 579 as a part
+of it"*). #579 is **absorbed as arm 4** and closed `superseded` against this ADR;
+a pool ADR is a valid `superseded` destination under `ghi-close` once registered,
+and this one is. The three options the earlier draft left open — close, sibling,
+or absorb — are settled, and the reason absorb won is recorded in arm 4 rather
+than here: the two ratchets are individually gameable and jointly sound. Anyone
+reopening this should have to defeat that argument, not merely re-weigh taste.
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
