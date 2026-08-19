@@ -327,7 +327,7 @@ Sibling destinations, so promotion does not collide:
 | Delivery order under a vendor cap | `ADR-pool.render-order-truncation-survival` |
 | Language of the surface (**this ADR**) | here |
 | Doctrine for borrowing external strengths | `ADR-pool.external-strength-absorption-doctrine` |
-| The source document as a citation | `ADR-pool.design-references-bibliography` |
+| The source document as a citation | **`docs/governance/research_sources/asd-ste100-issue-9.md`** — cite-only, landed 2026-08-19 (operator ruling) |
 | Instruction **count** as the budget unit | **absorbed as arm 4** — GHI #579, closed `superseded` 2026-08-19 |
 
 **Independent convergence, surveyed 2026-08-19.** At least six public projects
@@ -379,6 +379,16 @@ and this one is. The three options the earlier draft left open — close, siblin
 or absorb — are settled, and the reason absorb won is recorded in arm 4 rather
 than here: the two ratchets are individually gameable and jointly sound. Anyone
 reopening this should have to defeat that argument, not merely re-weigh taste.
+
+**The source is onboarded as a CITE-ONLY reference** (operator ruling 2026-08-19).
+`docs/governance/research_sources/asd-ste100-issue-9.md` carries publisher, issue,
+date, lineage and URL, and deliberately carries NO extracted text — every other
+file in that directory holds its source's full text, and this one cannot, because
+gzkit ships publicly and extraction would republish the document to every adopter.
+That entry is the durable home for the licence position; this ADR's constraint 2
+remains the place where it binds the dictionary arm. `ADR-pool.design-references-bibliography`
+stays the destination for a real bibliography surface and is unaffected — it is
+still unpromoted, and nothing here pre-empts its design.
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
