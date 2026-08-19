@@ -281,6 +281,15 @@ def _ep_unscoped_rules(root: Path) -> int:
     return 1 if run_unscoped_rules(root).exit_code == 3 else 0
 
 
+def _ep_python_version_pins(root: Path) -> list[ValidationError]:
+    """Run the production interpreter-pin audit against the planted tree."""
+    from gzkit.governance.trust_audits.python_version_pins import (  # noqa: PLC0415
+        audit_python_version_pins,
+    )
+
+    return audit_python_version_pins(root)
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

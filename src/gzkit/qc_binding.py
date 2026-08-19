@@ -85,6 +85,12 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Readiness audit": ("audit", "all", "bound", "python_function"),
     "CLI audit": ("audit", "docs/", "bound", "python_function"),
     "Unscoped rules": ("audit", ".gzkit/rules/", "bound", "python_function"),
+    # Enrolled the same commit it joined `gz check`. Subject is
+    # `.github/workflows/` because that is the POPULATION it audits — the
+    # interpreter declarations. `.python-version` is the authority it reads
+    # them against, not the audited set, the same distinction the Advisory
+    # scorecard entry below draws.
+    "Python version pins": ("audit", ".github/workflows/", "bound", "python_function"),
     "ADR status freshness": ("audit", "docs/", "bound", "python_function"),
     # GHI #754: enrolled here the same commit it joined `gz check`. Its subject is
     # `.gzkit/rules/` because the population it audits is the canonical rule set,

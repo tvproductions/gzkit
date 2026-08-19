@@ -670,6 +670,16 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
 
+def run_python_version_pins_audit(project_root: Path) -> QualityResult:
+    """Run the interpreter-pin coherence audit.
+
+    Fails closed when a CI workflow declares a Python version that disagrees
+    with `.python-version`, which is what uv resolves the project interpreter
+    from. Without it the two drift silently and both sides stay green.
+    """
+    return run_command("uv run gz validate --python-version-pins", cwd=project_root)
+
+
 def run_validate_default_scopes(project_root: Path) -> QualityResult:
     """Run every default-tier `gz validate` scope in one pass (GHI #744).
 

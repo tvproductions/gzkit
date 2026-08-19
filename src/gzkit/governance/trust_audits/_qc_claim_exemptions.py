@@ -84,6 +84,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # Asserts the SessionStart orientation hook stays wired in both harnesses.
     # Every arm yields a finding; a missing script is an error, not a pass.
     "orientation-freshness": EXEMPTS_NONE,
+    # Compares every interpreter declaration under `.github/workflows/**`
+    # against `.python-version`. Read end-to-end: there is no allowlist, no
+    # waiver file, and no per-site suppression. The only empty returns are
+    # "everything agrees" and "nothing is declared anywhere" — neither admits
+    # a mismatch it has found. The `requires-python` floor is read but never
+    # compared for equality, which is a scope decision, not an admit path.
+    "python-version-pins": EXEMPTS_NONE,
     # Per-surface mechanism arms of the ratchet. The umbrella `waiver-ratchet`
     # claim and its silent-bypass arm DO carry an exemption (the registry's
     # `excluded` list), which is why only these two appear here — `excluded` is

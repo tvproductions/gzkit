@@ -2172,6 +2172,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--event-schemas` | opt-in | Every event type emitted by a `ledger_events.py` factory or an `events.py` typed model must have a paired `src/gzkit/schemas/ledger.json` entry, and no schema entry may be stale (GHI #581) |
 | `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
 | `--authorship` | opt-in | Fail closed when the effective `git user.email` violates `authorship.required_email_suffix` in `.gzkit.json`. No-op when no policy is declared, so adopters inherit no identity rule (GHI #725) |
+| `--python-version-pins` | opt-in | Fail closed when a CI interpreter declaration in `.github/workflows/**` disagrees with `.python-version`, which is what uv resolves the project interpreter from. Also rejects a pin below the `requires-python` floor. The floor itself is never compared for equality — it is a floor, not a pin |
 | `--utf8-prefix` | opt-in | Forbid the `PYTHONUTF8=1`-as-`uv-run-gz`-prefix anti-pattern in docs / skills / features (GHI #275) |
 | `--line-endings` | opt-in | Fail closed on CRLF line endings in tracked text surfaces, or a `.gitattributes` missing the `* text=auto eol=lf` LF-normalization rule (GHI #570) |
 | `--test-tiers` | opt-in | Forbid a third test tier under `tests/` (`integration`, `e2e`, `slow`, `bdd`) — runner boundary is the gate |

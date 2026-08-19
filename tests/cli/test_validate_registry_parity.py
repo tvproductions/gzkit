@@ -119,6 +119,12 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "pool_interview",
         "gate_callers",
         "exemption_controls",
+        # Interpreter-pin coherence. Explicit tier because its subject is a
+        # named population (`.github/workflows/**` declarations) rather than a
+        # whole-tree sweep. `in_check` from the outset: the drift it catches is
+        # invisible on a clean tree, so a gate that runs only when an operator
+        # remembers the flag would never fire on the commit that introduced it.
+        "python_version_pins",
     }
 )
 

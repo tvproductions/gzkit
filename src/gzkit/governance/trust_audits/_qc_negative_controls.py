@@ -448,6 +448,27 @@ def _build_unscoped_rules() -> Path:
     return root
 
 
+def _build_python_version_pins() -> Path:
+    """Plant a CI interpreter declaration that contradicts ``.python-version``.
+
+    The drift this audit exists to catch is invisible on a clean tree by
+    construction: both sides stay green while CI tests a different interpreter
+    than ``uv run`` uses. An audit for that class which only ever runs against
+    an agreeing tree would reproduce the defect it was built to close, so it
+    ships with a tree it must go red on.
+    """
+    root = _mkroot("python-version-pins")
+    _write(root / ".python-version", "3.13.15\n")
+    _write(root / "pyproject.toml", 'requires-python = ">=3.13"\n')
+    _write(
+        root / ".github" / "workflows" / "ci.yml",
+        "jobs:\n  build:\n    steps:\n"
+        "      - uses: actions/setup-python@v6\n"
+        '        with:\n          python-version: "3.13.14"\n',
+    )
+    return root
+
+
 def _build_status_writer_coverage() -> Path:
     """Plant a ``status:`` writer that bypasses the single invariant monitor.
 
@@ -1251,6 +1272,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
+    ("python-version-pins", _build_python_version_pins, _ep._ep_python_version_pins),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     (
         "pool-interview-schema",

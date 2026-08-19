@@ -417,6 +417,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Fail closed when git user.email violates the declared authorship policy",
     )
     p_validate.add_argument(
+        "--python-version-pins",
+        dest="check_python_version_pins",
+        action="store_true",
+        help="Fail closed when a CI interpreter declaration disagrees with .python-version",
+    )
+    p_validate.add_argument(
         "--utf8-prefix",
         dest="check_utf8_prefix",
         action="store_true",
@@ -945,6 +951,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_event_schemas=a.check_event_schemas,
             check_validator_fields=a.check_validator_fields,
             check_authorship=a.check_authorship,
+            check_python_version_pins=a.check_python_version_pins,
             check_utf8_prefix=a.check_utf8_prefix,
             check_line_endings=a.check_line_endings,
             check_test_tiers=a.check_test_tiers,

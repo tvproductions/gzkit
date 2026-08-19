@@ -126,6 +126,10 @@ from gzkit.governance.trust_audits.persona_witness import audit_persona_witness
 from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
+from gzkit.governance.trust_audits.python_version_pins import (
+    audit_python_version_pins,
+    evaluate_python_version_pins,
+)
 from gzkit.governance.trust_audits.qc_binding import audit_qc_binding
 from gzkit.governance.trust_audits.receipt_shape import audit_receipt_shape
 from gzkit.governance.trust_audits.reconcile import audit_reconcile_freshness
@@ -198,7 +202,9 @@ __all__ = [
     "audit_brief_command_shape",
     "audit_brief_cross_references",
     "audit_authorship",
+    "audit_python_version_pins",
     "evaluate_authorship",
+    "evaluate_python_version_pins",
     "audit_brief_demo_section",
     "audit_brief_headings",
     "audit_agents_md_map_conformance",
