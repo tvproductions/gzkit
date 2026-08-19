@@ -95,6 +95,39 @@ To reproduce the gate breakdown rather than trusting the numbers in Important Co
 - `.python-version` — 3.13.15
 - `docs/user/manpages/validate.md` — per-flag documentation the CLI audit required
 
+## Correction (2026-08-19, post-authoring)
+
+**Appended, not edited in.** The sections above record what was true when this
+handoff was authored and are left UNMODIFIED — the same reading convention
+`data/instructions_files_budget.json` uses, where each dated entry states the
+values true on its own date and corrections are appended rather than patched
+over. Read this section as superseding the two items it names, and nothing else.
+
+**DISCHARGED: the ASD-STE100 references decision.** § Immediate Next Steps item 1
+and the second bullet of § Pending Work / Open Loops both carry it as the open
+question outstanding across two handoffs. The operator ruled it the same day,
+verbatim: *"onboard ASD-STE100 as a cite-only reference"* — option 1 of the three
+recorded. Landed in `ebaa9f254`:
+
+- `docs/governance/research_sources/asd-ste100-issue-9.md` — cite-only entry
+  carrying publisher, issue, date, lineage and URL, and deliberately carrying NO
+  extracted text. Every other file in that directory holds its source's full
+  text; this one cannot, because gzkit ships publicly and extraction would
+  republish the document to every adopter.
+- The pool ADR's sibling table now names that entry instead of the unpromoted
+  `ADR-pool.design-references-bibliography`, and its § Notes records the ruling.
+
+**Still open, and explicitly NOT discharged by the above:**
+`ADR-pool.design-references-bibliography` remains unpromoted. The cite-only entry
+is a citation home, not a bibliography surface, and nothing here pre-empts that
+ADR's design. A future reader should not read "references onboarded" as "the
+bibliography question is settled" — those are different questions and only the
+first is answered.
+
+Everything else in § Pending Work / Open Loops stands as written: GHIs #813,
+#832, #833, #834 and #835 were all open at this correction, and #834 still blocks
+#832.
+
 ## Settled Rulings
 
 - Work the degrading tier starting with #696 (verbatim authorization booked via gz handoff authorize, session 81765765).
