@@ -19,6 +19,7 @@ from gzkit.ledger import (
     project_init_event,
 )
 from gzkit.traceability import covers  # noqa: F401
+from tests.commands.common import _ignore_transient_git
 
 
 class TestObpiValidator(unittest.TestCase):
@@ -81,7 +82,9 @@ class TestObpiValidator(unittest.TestCase):
         self._tmp_ctx = tempfile.TemporaryDirectory()
         self.test_dir = Path(self._tmp_ctx.name)
         self.project_root = self.test_dir / "repo"
-        self._shutil.copytree(self._template_dir.name, self.project_root)
+        self._shutil.copytree(
+            self._template_dir.name, self.project_root, ignore=_ignore_transient_git
+        )
         self.gzkit_dir = self.project_root / ".gzkit"
 
         self.ledger_path = self.gzkit_dir / "ledger.jsonl"

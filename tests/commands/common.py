@@ -146,6 +146,30 @@ def _git_subprocess_patcher(
             p.stop()
 
 
+def _ignore_transient_git(src: str, names: list[str]) -> set[str]:
+    """``shutil.copytree`` ignore callable dropping transient files under ``.git``.
+
+    Fixture suites cache one repo per module and ``copytree`` it per test.
+    ``copytree`` lists a directory, then copies each name; a file git removed
+    in between makes the copy die with ``shutil.Error: [Errno 2] No such file
+    or directory`` (CI 32230349611). Quiescing auto-maintenance removed the
+    writer of ``objects/maintenance.lock`` only — ``index.lock``, ``HEAD.lock``,
+    ``config.lock`` and ``objects/pack/tmp_pack_*`` are written and removed by
+    the ordinary ``git add``/``git commit`` every fixture builder runs, and
+    each reproduces the same failure under a different name (GHI #833).
+
+    Scoped by *location*, not by name: ``ignore_patterns("*.lock")`` would drop
+    ``uv.lock`` from every copied tree, which ``gzkit.commands.patch_release``
+    reads. Only names inside a ``.git`` directory are considered.
+
+    Dropping them is more correct than copying them, not merely safer — git
+    refuses to operate on a repo carrying a stale ``index.lock``.
+    """
+    if ".git" not in Path(src).parts:
+        return set()
+    return {name for name in names if name.endswith(".lock") or name.startswith("tmp_")}
+
+
 def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     """Initialize a disposable git repo and return the initial short HEAD SHA.
 

@@ -33,6 +33,7 @@ from gzkit.templates import load_template
 from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
+    _ignore_transient_git,
     _init_git_repo,
     _quick_init,
     start_init_subprocess_patches,
@@ -67,7 +68,9 @@ def setUpModule() -> None:
         os.chdir(orig)
 
     # Build attested template on top of bare: copytree + plan create + events.
-    shutil.copytree(_BARE_TEMPLATE, _ATTESTED_TEMPLATE, dirs_exist_ok=True)
+    shutil.copytree(
+        _BARE_TEMPLATE, _ATTESTED_TEMPLATE, dirs_exist_ok=True, ignore=_ignore_transient_git
+    )
     os.chdir(_ATTESTED_TEMPLATE)
     try:
         CliRunner().invoke(main, ["plan", "create", "f", "--kind", "feature"])
@@ -112,7 +115,7 @@ class _CopyTemplate:
     def __enter__(self) -> None:
         self._tmpctx = tempfile.TemporaryDirectory(prefix="gzkit-audit-pl-test-")
         dest = Path(self._tmpctx.name) / "project"
-        shutil.copytree(self._template, dest)
+        shutil.copytree(self._template, dest, ignore=_ignore_transient_git)
         self._orig_cwd = Path.cwd()
         os.chdir(dest)
 
