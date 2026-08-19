@@ -175,6 +175,29 @@ ruling and should be refused on that ground.
    list (Ogden's Basic English, 850 words; the VOA Learning English list,
    ~1,500) and treat the standard as doctrine rather than dictionary.
 
+   **A fourth path, and the cleanest: an operator-installed lookup tool at
+   authoring time.** `dfch/biz.dfch.AsdSte100Mcp` is an MCP server exposing
+   `word_find`, `word_match`, `word_fuzzy`, `rules_find`, `rules_by_section`
+   and similar over Issue 9, backed by `dfch/biz.dfch.AsdSte100Vocab`. gzkit
+   would not redistribute anything: the operator installs the server, the
+   chore consults it during a diet pass, and no dictionary enters `data/` or
+   the wheel. This dissolves the redistribution question rather than answering
+   it, which is why it ranks above the other three.
+
+   **Surveyed 2026-08-19 and recorded as constraints, not as endorsements:**
+   both `dfch` packages are **AGPL-3.0-or-later**, and gzkit is **MIT**
+   (`pyproject.toml:16`, `License :: OSI Approved :: MIT License`). A runtime
+   dependency on either is therefore **foreclosed independently of any
+   copyright question** — AGPL copyleft would reach a distributed MIT package
+   that gzkit cannot relicense. The separate-process MCP path is what survives
+   that, and it survives because gzkit ships neither the code nor the data.
+   Note also that both repos carry ASD's copyright notice verbatim alongside
+   *"not affiliated with ASD; ASD does not endorse"* — they disclaim
+   endorsement, they do not assert permission. **An upstream that ships the
+   data does not transfer the right to ship it.** Depending on one inherits
+   the unresolved question and adds a licence conflict; it does not resolve
+   constraint 2.
+
 3. **Trademark is a separate axis from copyright.** ASD-STE100 Simplified
    Technical English is an EU registered trademark owned by ASD. Describing
    gzkit prose as *written toward* the standard is nominative reference;
@@ -267,6 +290,31 @@ Sibling destinations, so promotion does not collide:
 | Doctrine for borrowing external strengths | `ADR-pool.external-strength-absorption-doctrine` |
 | The source document as a citation | `ADR-pool.design-references-bibliography` |
 | Instruction **count** as the budget unit | GHI #579 (open, unrouted since 2026-06-03) |
+
+**Independent convergence, surveyed 2026-08-19.** At least six public projects
+apply ASD-STE100 to *agent-facing* English rather than to maintenance manuals:
+`dfch/biz.dfch.AsdSte100Vocab` (Issue 9 Technical Nouns and Technical Verbs
+from R1.5/R1.12, AGPL-3.0), its siblings `…AsdSte100Lookup` and
+`…AsdSte100Mcp`, plus the agent-skill cut — `dandye/ste-writing-style`,
+`danyuchn/asd-ste100-skill`, `nuelcyoung/asd-ste100`, `fre-sch/skill-asd-ste100`,
+`AminBlg/SimpleEnglish`. Two observations are worth keeping and one caution.
+
+First, `danyuchn/asd-ste100-skill` deliberately applies the *principle* — the
+plainest available word, used the same way every time — rather than checking
+against a fixed list, which is arms 1-3 of this ADR arrived at independently.
+That is corroboration of the design, not of the standard.
+
+Second, the ecosystem clusters on **skills**, not validators: every one of these
+is an authoring-time prompt surface. None carries a mechanical witness, which is
+exactly the gap this ADR exists to close and the reason none of them substitutes
+for it.
+
+The caution, stated because it would otherwise be the easiest bad argument to
+make from this paragraph: **ecosystem activity is not rationale.** `AGENTS.md`
+§ STDLIB-FIRST DOCTRINE operative claims 3 and 4 name *"most projects use X"*
+and recent prominence as explicit anti-rationales. Six repositories agreeing is
+evidence that the problem is felt, never evidence that the answer is right. The
+warrant for this ADR remains the measurement in § Intent.
 
 The byte axis and the language axis are complementary and neither substitutes
 for the other: shrinking a surface does not make its remaining sentences
