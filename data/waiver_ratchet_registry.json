@@ -155,6 +155,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "never_fired",
       "baseline_count": 10
+    },
+    {
+      "data_file": "data/release_tag_reachability_grandfather.json",
+      "gates_step": "release-tag reachability (gz validate --version-release)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "accepted_unreachable_versions",
+      "baseline_count": 33
     }
   ],
   "excluded": [

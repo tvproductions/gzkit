@@ -1174,5 +1174,136 @@ class VersionReleaseAuditTagReachability(unittest.TestCase):
             self.assertEqual(audit_version_release(root), [])
 
 
+class VersionReleaseAuditDocumentedSweep(unittest.TestCase):
+    """GHI #829 — the audit checked one version and reported as though it swept.
+
+    `audit_version_release` read only ``[project].version`` from
+    ``pyproject.toml``, so a historical release that lost its tag was
+    unreachable by construction. ``v0.7.0`` sat in exactly that state — a
+    release documented in ``RELEASE_NOTES.md`` whose tag was local-only and
+    pointed at an orphaned commit — and nothing ever reported it.
+
+    The reachability arm cannot be applied blindly across history: the
+    2026-04-19 filter-repo rewrite named in ``AGENTS.md`` § Local Agent Rules
+    orphaned every pre-existing tag, so 33 of 68 documented releases are
+    legitimately unprovable. Those are carried as a disclosed, shrink-only
+    grandfather set that exempts REACHABILITY only — the tag must still exist.
+    """
+
+    def _git(self, root: Path, *args: str) -> str:
+        import subprocess  # noqa: PLC0415
+
+        result = subprocess.run(
+            ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            encoding="utf-8",
+        )
+        return result.stdout.strip()
+
+    def _seed(
+        self, root: Path, *, documented: tuple[str, ...], grandfathered: tuple[str, ...] = ()
+    ) -> str:
+        """Build a repo whose current version is tagged and reachable."""
+        import json  # noqa: PLC0415
+
+        self._git(root, "init", "-q", "-b", "main")
+        (root / "pyproject.toml").write_text(
+            '[project]\nname = "demo"\nversion = "9.9.9"\n', encoding="utf-8"
+        )
+        headings = "".join(f"## v{v} (2026-01-01)\n\n" for v in ("9.9.9", *documented))
+        (root / "RELEASE_NOTES.md").write_text(f"# Notes\n\n{headings}", encoding="utf-8")
+        (root / "data").mkdir(exist_ok=True)
+        (root / "data" / "release_tag_reachability_grandfather.json").write_text(
+            json.dumps({"accepted_unreachable_versions": list(grandfathered)}), encoding="utf-8"
+        )
+        self._git(root, "add", "-A")
+        self._git(root, "commit", "-qm", "landed")
+        head = self._git(root, "rev-parse", "HEAD")
+        self._git(root, "update-ref", "refs/remotes/origin/main", head)
+        self._git(root, "tag", "v9.9.9", head)
+        return head
+
+    def _orphan_tag(self, root: Path, version: str, head: str) -> None:
+        orphan = self._git(root, "commit-tree", "-m", "orphan", f"{head}^{{tree}}")
+        self._git(root, "tag", f"v{version}", orphan)
+
+    def test_documented_release_with_no_tag_is_refused(self) -> None:
+        """The v0.7.0 class: RELEASE_NOTES.md declares it shipped; no tag exists."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed(root, documented=("9.9.0",))
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+            self.assertIn("9.9.0", errors[0].message)
+
+    def test_documented_release_with_unreachable_tag_is_refused(self) -> None:
+        """A tag that exists but points off the published line is not evidence."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=("9.9.0",))
+            self._orphan_tag(root, "9.9.0", head)
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+
+    def test_grandfathered_version_is_exempt_from_reachability(self) -> None:
+        """The 33 rewrite-orphaned releases must not be reported as defects."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=("9.9.0",), grandfathered=("9.9.0",))
+            self._orphan_tag(root, "9.9.0", head)
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_grandfathered_version_still_requires_its_tag(self) -> None:
+        """The exemption covers reachability only — a deleted tag is still refused.
+
+        A grandfather entry discloses that the 2026-04-19 rewrite made
+        reachability unprovable. It says nothing about the tag's existence,
+        so widening it to cover a missing tag would launder a real deletion.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed(root, documented=("9.9.0",), grandfathered=("9.9.0",))
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+
+    def test_sweep_is_silent_without_a_tracking_ref(self) -> None:
+        """A fresh clone has no origin/main; absence is not evidence of a defect."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._git(root, "init", "-q", "-b", "main")
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "demo"\nversion = "9.9.9"\n', encoding="utf-8"
+            )
+            (root / "RELEASE_NOTES.md").write_text(
+                "# Notes\n\n## v9.9.9 (2026-01-01)\n\n## v9.9.0 (2026-01-01)\n", encoding="utf-8"
+            )
+            self._git(root, "add", "-A")
+            self._git(root, "commit", "-qm", "landed")
+            self._git(root, "tag", "v9.9.9", self._git(root, "rev-parse", "HEAD"))
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_real_tree_documented_releases_are_clean(self) -> None:
+        """Fail-close guard: every release this repo documents has a live tag."""
+        self.assertEqual(
+            audit_version_release(_PROJECT_ROOT),
+            [],
+            msg="a documented release lost its tag — retag at the commit that landed and push",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

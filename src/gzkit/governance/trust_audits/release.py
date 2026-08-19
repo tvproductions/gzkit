@@ -75,13 +75,14 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     tags = _local_tags(project_root)
     if tags is None:
         return []
+    swept = _documented_release_errors(project_root, version)
     if expected in tags:
-        return _unreachable_tag_errors(project_root, version, expected)
+        return _unreachable_tag_errors(project_root, version, expected) + swept
     if any(
         in_flight_manifest_path(project_root, version, prefix).is_file()
         for prefix in IN_FLIGHT_MANIFEST_PREFIXES
     ):
-        return []
+        return swept
     return [
         ValidationError(
             type="version_release",
@@ -92,7 +93,8 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
                 f"create one via `gh release create {expected} --target main "
                 f'--title "{expected}" --latest --notes "..."`.'
             ),
-        )
+        ),
+        *swept,
     ]
 
 
@@ -171,6 +173,87 @@ def _unreachable_tag_errors(
             ),
         )
     ]
+
+
+#: The operator-facing declaration of what shipped. Its ``## vX.Y.Z`` headings
+#: are the release roster the sweep checks — not ``docs/releases/`` manifests,
+#: which only exist for the 35 versions cut after the ceremony was built, and
+#: not the tag set, which is the thing being checked.
+RELEASE_NOTES_REL = "RELEASE_NOTES.md"
+
+#: Releases whose tag is present but points outside the published history,
+#: because the 2026-04-19 filter-repo rewrite (``AGENTS.md`` § Local Agent
+#: Rules) orphaned every tag that predated it. Shrink-only, and it exempts
+#: REACHABILITY only — the tag must still exist.
+REACHABILITY_GRANDFATHER_REL = Path("data") / "release_tag_reachability_grandfather.json"
+
+_DOCUMENTED_VERSION_RE = re.compile(r"^## v(\d+\.\d+\.\d+)", re.MULTILINE)
+
+
+def _documented_versions(project_root: Path) -> list[str]:
+    """Return every version ``RELEASE_NOTES.md`` declares as shipped."""
+    notes = project_root / RELEASE_NOTES_REL
+    if not notes.is_file():
+        return []
+    return list(dict.fromkeys(_DOCUMENTED_VERSION_RE.findall(notes.read_text(encoding="utf-8"))))
+
+
+def _reachability_grandfather(project_root: Path) -> frozenset[str]:
+    """Return the disclosed set of versions exempt from the reachability arm."""
+    path = project_root / REACHABILITY_GRANDFATHER_REL
+    if not path.is_file():
+        return frozenset()
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return frozenset()
+    accepted = payload.get("accepted_unreachable_versions", [])
+    return frozenset(str(entry) for entry in accepted)
+
+
+def _missing_tag_error(version: str, expected: str) -> ValidationError:
+    """Build the violation for a documented release carrying no tag at all."""
+    return ValidationError(
+        type="version_release",
+        artifact=f"{RELEASE_NOTES_REL}::v{version}",
+        message=(
+            f"`{RELEASE_NOTES_REL}` documents v{version} as shipped, but no tag "
+            f"`{expected}` exists. A release nobody can check out is undelivered — "
+            "retag at the commit that landed and push it, or withdraw the entry."
+        ),
+    )
+
+
+def _documented_release_errors(project_root: Path, current_version: str) -> list[ValidationError]:
+    """Sweep every documented release, not only the one ``pyproject.toml`` declares.
+
+    GHI #829: the audit read a single version and reported ``Validated`` whether
+    it had checked one release or sixty-eight, so a historical release that lost
+    its tag was unreachable by construction. ``v0.7.0`` sat in that state — its
+    tag local-only and pointing at an orphaned commit — until an unrelated
+    ``git fetch --tags`` happened to print a rejection.
+
+    The current version is skipped; the caller's arm already judged it.
+    """
+    versions = _documented_versions(project_root)
+    if not versions:
+        return []
+    tags = _local_tags(project_root)
+    if tags is None:
+        return []
+    if _git_stdout(project_root, "rev-parse", "--verify", "--quiet", ORIGIN_MAIN_REF) is None:
+        return []
+    exempt = _reachability_grandfather(project_root)
+    errors: list[ValidationError] = []
+    for version in versions:
+        if version == current_version:
+            continue
+        expected = f"v{version}"
+        if expected not in tags:
+            errors.append(_missing_tag_error(version, expected))
+        elif version not in exempt:
+            errors.extend(_unreachable_tag_errors(project_root, version, expected))
+    return errors
 
 
 def _read_pyproject_version(path: Path) -> str | None:
