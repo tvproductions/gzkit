@@ -52,7 +52,7 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: "3.13"
+          python-version: "3.13.15"
 
       # Astral's own action rather than the shell installer: the `install.sh`
       # curl form is POSIX-only, and hand-rolling the PowerShell branch plus its
