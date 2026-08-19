@@ -59,7 +59,7 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 - **Reads:** User input, templates, existing ADR registry
 - **Writes:** ADR files, OBPI brief files, registry entries
 - **Does NOT verify:** Evidence, test coverage, or criteria
-- **Books:** an `adr_created` ledger event on authoring (both `gz interview adr` and `gz plan create` append it) — this registers the ADR's existence, not its completion; the ledger IS touched
+- **Books:** an `adr_created` ledger event on authoring — **for non-pool kinds only**. `gz interview adr` and `gz plan create --kind {foundation,feature}` append it through `register_adr_in_ledger` (`src/gzkit/commands/plan.py`), which registers the ADR's existence, not its completion; the ledger IS touched. **`--kind pool` books nothing** — the pool branch returns before the register call, and the dry-run preview suppresses the ledger line to match. Pool entries reach Layer 2 through `uv run gz register-adrs`, which reconciles ADR packages that exist in canon but are missing from ledger state.
 
 ---
 

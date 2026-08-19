@@ -40,7 +40,8 @@ Operate the gz plan command surface as a reusable governance workflow.
     > **Invariance Test (Foundation/Feature Boundary):** *"Foundation = without it, we wouldn't be doing the project."* Use the hexagonal-ports lens to resolve edge cases: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns.
 
 7. Run `uv run gz plan create` with the required options, passing the operator's chosen `--kind` through verbatim. (Bare `uv run gz plan` errors — `plan_command` is required.)
-8. **Registration is automatic; verify rather than re-run.** `gz plan create` appends the `adr_created` event itself (`src/gzkit/commands/plan.py`, idempotent via `ledger.has_adr_created`), so no follow-up registrar call is needed on the success path. Only if that append fails does `plan.py` prescribe `uv run gz register-adrs --all` to recover; `gz register-adrs` is classified a one-shot historical registrar, not a recurring operator action.
+8. **Registration is automatic for non-pool kinds; verify rather than re-run.** `gz plan create --kind {foundation,feature}` appends the `adr_created` event itself (`src/gzkit/commands/plan.py`, idempotent via `ledger.has_adr_created`), so no follow-up registrar call is needed on the success path. Only if that append fails does `plan.py` prescribe `uv run gz register-adrs --all` to recover.
+   **`--kind pool` is the exception and books nothing.** The pool branch returns before the register call, so a pool ADR is unwitnessed at Layer 2 until it is reconciled. `uv run gz register-adrs` (or `--pool-only`) is the designated booking path for pool entries — **not** a failure-recovery step and **not** a one-shot historical registrar in this case. Verify with `uv run gz register-adrs --pool-only --dry-run`, which names every pool ADR still missing its event.
 9. Summarize results, including evidence and any follow-up gates.
 
 ## Validation
