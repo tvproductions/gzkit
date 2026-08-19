@@ -29,7 +29,7 @@ witness, the render-order remedy. None of them can see the difference between
 600 bytes of binding rule and 600 bytes of rationale.
 
 **Prior art: ASD-STE100 Simplified Technical English** (ASD, Issue 9,
-2025-01-15) — a controlled language for aerospace maintenance documentation,
+January 2025) — a controlled language for aerospace maintenance documentation,
 in continuous revision since AECMA's 1986 first issue. Its mechanism is three
 constraints applied to instructional prose: a bounded approved dictionary,
 one-word-one-meaning, and caps on sentence length. gzkit's per-turn contract
@@ -179,13 +179,30 @@ ruling and should be refused on that ground.
    models the distinction.
 
 2. **The dictionary is licence-gated; the rules are not.** ASD-STE100 Issue 9
-   § Copyright notices sets a default deny on reproduction or publication in
-   whole or in part absent written ASD authority, then grants irrevocable
-   free reproduction rights to eight enumerated categories. Category 8 is
-   "Universities and research institutes for educational purposes" — a live
-   question for this operator rather than a settled one, and note the grant
-   is scoped *for educational purposes*, which a package distributed to
-   arbitrary adopters may exceed even where the author is covered. What is
+   § Copyright notices sets a default deny: no reproduction or publication,
+   in whole or in part, without the written authority of an officer of ASD.
+   A separate § Special usage rights then grants irrevocable, free-of-charge
+   permission to use, reproduce or publish to eight enumerated categories of
+   organization. Category 8 is "Universities and research institutes for
+   educational purposes" — a live question for this operator rather than a
+   settled one, and note the grant is scoped *for educational purposes*,
+   which a package distributed to arbitrary adopters may exceed even where
+   the author is covered. The document also carries a § Disclaimer of
+   liability stating it creates no legal obligations and confers no legal
+   rights; that governs the standard's *recommendations*, not ASD's
+   copyright in the text, and does not soften the grant boundary above.
+
+   **Provenance of this paragraph (recorded because it was wrong once).**
+   These terms are now READ from the source — Issue 9 front matter,
+   pp. 1-2, extracted 2026-08-19. The paragraph as first committed
+   (`0fc82fe5f`) was written when the fetch had FAILED, from a search-result
+   summary plus recall, and stated source specifics as though read. Most
+   survived verification; two did not. The issue date carried a fabricated
+   day (`2025-01-15`; the document states only January 2025), and the
+   eight-category grant was attributed to § Copyright notices when it lives
+   under § Special usage rights. Both are corrected above. The lesson is the
+   one this ADR is otherwise about: a claim sourced to a document nobody
+   opened reads exactly like a claim sourced to one that was. What is
    **not** encumbered: applying the standard, and implementing its writing
    rules. A 20-word sentence cap is a fact about a rule, not ASD's expression
    of it, and a validator enforcing one reproduces nothing. Paraphrase in
