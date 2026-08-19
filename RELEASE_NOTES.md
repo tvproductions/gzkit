@@ -2351,6 +2351,46 @@ Python skeleton.
 - 19 tests covering skeleton creation, idempotent repair, partial skeleton
   fill, package name normalization, and `--no-skeleton` opt-out
 
+## v0.25.1 (2026-04-15)
+
+**GHI:** #171 — gz init does not scaffold Python project skeleton
+
+First non-dogfooded use of gzkit (RHEA project) revealed that `gz init`
+scaffolded governance infrastructure but left the project without a runnable
+Python skeleton.
+
+### Fixed
+
+- **`gz init` now creates a Python project skeleton** — `pyproject.toml`
+  (Python >=3.13, hatchling, ruff config), `src/<project>/__init__.py`, and
+  `tests/__init__.py` are created alongside governance scaffolding
+- **Re-running `gz init` enters repair mode** — detects and creates missing
+  artifacts (skeleton files, governance dirs, manifest) without overwriting
+  existing files; no `--force` required
+- **`--no-skeleton` flag** — opt out of project skeleton creation for
+  governance-only init on projects with existing build setups
+
+### Changed
+
+- `gz init` on an already-initialized project no longer errors; it repairs
+- Parser description and epilog updated to reflect new behavior
+- `gz-init` skill updated with repair workflow documentation
+
+### Tests
+
+- 19 tests covering skeleton creation, idempotent repair, partial skeleton
+  fill, package name normalization, and `--no-skeleton` opt-out
+
+
+### Provenance
+
+Backfilled 2026-08-19 under GHI #830. Transcribed verbatim from the `v0.25.1`
+GitHub release body, which carried these authored notes but never reached this
+file — the release was published with `--notes-file` pointed at the whole
+cumulative `RELEASE_NOTES.md` (25 version sections, the defect tracked as
+GHI #710), and its tag sits on a `gz git-sync` sync-artifact commit rather
+than a release commit.
+
 ## v0.25.0 (2026-04-15)
 
 **ADR:** ADR-0.25.0 — Core Infrastructure Pattern Absorption
@@ -2508,6 +2548,37 @@ identity normalization.
 - 69 commits since v0.24.1
 - 2527 tests passing
 
+## v0.24.1 (2026-04-01)
+
+Reconstructed release entry. The bulk of the release is the closeout ceremony
+becoming a CLI-driven state machine, together with the feature-flag subsystem
+and three new audit and lock surfaces.
+
+### Added
+
+- **CLI-driven closeout ceremony** — `closeout_ceremony.py` and `ceremony_steps.py` make the CLI the step driver, returning exactly one step per `--next` call so the agent never sees future steps and cannot batch them (#59)
+- **Feature-flag subsystem** — `gzkit/flags/` (registry, service, models, diagnostics, decisions), resolving a flag through a five-layer precedence chain: registry default, environment variable, project config, test override, runtime override (ADR-0.0.8 § 6.1)
+- **OBPI work locks** — the claim and release surface for multi-agent coordination, today `gz obpi lock`
+- **OBPI audit** — brief-against-evidence auditing, today `gz obpi audit`
+- **Plan alignment audit** — pre-implementation ADR/brief alignment checking, today `gz plan audit`
+
+### Fixed
+
+- Ceremony steps could be batched into a single agent message; sequencing is now deterministic and CLI-owned (#59)
+- Walkthrough sub-stepping collapsed into a single step, and the walkthrough offers a choice rather than auto-running
+- Product-proof regex was case-sensitive and missed `Allowed Paths` sections
+
+### Provenance
+
+Backfilled 2026-08-19 under GHI #830. No authored notes exist for this
+release: its GitHub release body is an 84-byte auto-generated compare link,
+and its tag sits on a `gz git-sync` sync-artifact commit rather than a
+release commit, so no release ceremony ever ran. Reconstructed by reading the
+`v0.24.0..v0.24.1` range — 74 commits, 361 files, +65,054/-3,182. GHI #59 is
+the only issue cited anywhere in that range; the remaining entries are
+derived from module docstrings and diffstat, not from a contemporaneous
+record.
+
 ## v0.24.0 (2026-03-29)
 
 **ADR:** ADR-0.24.0 - Skill Documentation Contract
@@ -2626,6 +2697,28 @@ Consolidated the six-command ADR closeout workflow into a single `gz closeout AD
 ### Gate Evidence
 
 All 5 GovZero gates satisfied.
+
+## v0.18.1 (2026-03-21)
+
+Reconstructed release entry. Adds the deterministic ADR/OBPI quality
+evaluation engine and its red-team companion.
+
+### Added
+
+- **ADR/OBPI quality evaluation** — `adr_eval.py`, a deterministic scoring engine over the 8-dimension ADR rubric and 5-dimension OBPI rubric, emitting `GO` / `CONDITIONAL_GO` / `NO_GO` verdicts and markdown scorecards. Shipped as `gz adr eval`; the verb is `gz adr evaluate` today
+- **Red-team challenge pass** — `adr_eval_redteam.py`, structured challenges run before proposal or defense
+- **Scaffold quality gate** — evaluation refuses briefs containing only template defaults, with an explicit override flag
+- **Version-sync coverage** — tests asserting `pyproject.toml`, `src/gzkit/__init__.py`, and the README badge agree
+
+### Provenance
+
+Backfilled 2026-08-19 under GHI #830. No authored notes exist for this
+release: its GitHub release body is an 84-byte auto-generated compare link,
+and its tag sits on a `gz git-sync` sync-artifact commit rather than a
+release commit, so no release ceremony ever ran. Reconstructed by reading the
+`v0.18.0..v0.18.1` range — 10 commits, 108 files, +5,298/-1,076. No GHI is
+cited anywhere in that range; the entries above are derived from module
+docstrings and diffstat, not from a contemporaneous record.
 
 ## v0.18.0 (2026-03-21)
 

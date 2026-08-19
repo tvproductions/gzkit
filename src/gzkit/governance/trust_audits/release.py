@@ -57,6 +57,11 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     accepting one unconditionally made the escape permanent and the tag check
     dead for every version ``gz patch release`` ever shipped.
 
+    Per GHI #830 the sweep also runs in reverse: every strict ``vX.Y.Z`` tag
+    owes a ``RELEASE_NOTES.md`` entry. The forward sweep reads the notes as its
+    roster and so is blind to a release the roster omits, which is how three
+    published releases went undocumented for months.
+
     Per GHI #739 the lookup accepts both ``IN_FLIGHT_MANIFEST_PREFIXES``.
     ``PATCH-`` alone was hardcoded here, which had two consequences: minor
     releases from ``gz closeout`` had to file an artifact mislabelled as a
@@ -76,6 +81,7 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
     if tags is None:
         return []
     swept = _documented_release_errors(project_root, version)
+    swept += _undocumented_tag_errors(project_root)
     if expected in tags:
         return _unreachable_tag_errors(project_root, version, expected) + swept
     if any(
@@ -99,8 +105,10 @@ def audit_version_release(project_root: Path) -> list[ValidationError]:
 
 
 #: The tracking ref reachability is judged against. A local ref, never
-#: ``git ls-remote`` — GHI #205 scoped network out of this audit because it
-#: runs at pre-commit time and would otherwise be brittle in CI and sandboxes.
+#: ``git ls-remote``. GHI #205 scope-GATED network ("skip under ``--offline``
+#: or ``GZKIT_NO_NETWORK=1``"), it did not forbid it; this audit stays wholly
+#: local on cost, because it runs at pre-commit over the entire tag set and a
+#: per-tag round trip is not affordable there (GHI #830 ruling, 2026-08-19).
 ORIGIN_MAIN_REF = "refs/remotes/origin/main"
 
 
@@ -254,6 +262,59 @@ def _documented_release_errors(project_root: Path, current_version: str) -> list
         elif version not in exempt:
             errors.extend(_unreachable_tag_errors(project_root, version, expected))
     return errors
+
+
+#: Tags the inverse sweep judges. Strict ``vMAJOR.MINOR.PATCH`` — ``_local_tags``
+#: globs ``v*``, so a pre-release or build-metadata tag (``v1.0.0-rc1``) would
+#: otherwise read as a release owing an entry it never owed.
+_RELEASE_TAG_RE = re.compile(r"^v(\d+\.\d+\.\d+)$")
+
+
+def _release_tag_versions(project_root: Path) -> list[str]:
+    """Return every version whose local tag names a release."""
+    tags = _local_tags(project_root)
+    if tags is None:
+        return []
+    return sorted(match.group(1) for match in map(_RELEASE_TAG_RE.match, tags) if match)
+
+
+def _undocumented_tag_errors(project_root: Path) -> list[ValidationError]:
+    """Fail if a release tag carries no ``RELEASE_NOTES.md`` entry (GHI #830).
+
+    The inverse of :func:`_documented_release_errors`, which reads the notes as
+    the roster and so cannot see a release the roster omits — the roster IS its
+    loop. Three releases sat in that blind spot (``v0.18.1``, ``v0.24.1``,
+    ``v0.25.1``), each tagged on a ``gz git-sync`` sync-artifact commit rather
+    than a release commit, so no manifest was written and no narrative step ran.
+
+    The predicate is a strict local proxy rather than a query for "has a
+    published GitHub release". It is exact, not approximate: ``RELEASE_NOTES.md``
+    is written in the release commit and the tag is created after it by
+    ``gh release create``, so — unlike the in-flight manifest arm, which exists
+    precisely to cover a bump that precedes its tag — there is no window in
+    which a tag legitimately precedes its entry.
+
+    An absent ``RELEASE_NOTES.md`` yields nothing. A missing roster is not
+    evidence that every tag is undocumented, and reporting the whole tag set
+    against a file that does not exist would be noise, not a finding.
+    """
+    documented = set(_documented_versions(project_root))
+    if not documented:
+        return []
+    return [
+        ValidationError(
+            type="version_release",
+            artifact=f"refs/tags/v{version}",
+            message=(
+                f"Tag `v{version}` names a release that `{RELEASE_NOTES_REL}` does not "
+                "document. A release nobody can read about is undelivered to every "
+                "reader who did not open the GitHub releases page — add its "
+                f"`## v{version}` entry, or delete the tag if it never shipped."
+            ),
+        )
+        for version in _release_tag_versions(project_root)
+        if version not in documented
+    ]
 
 
 def _read_pyproject_version(path: Path) -> str | None:

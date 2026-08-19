@@ -161,7 +161,7 @@
       "gates_step": "release-tag reachability (gz validate --version-release)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_unreachable_versions",
-      "baseline_count": 33
+      "baseline_count": 34
     }
   ],
   "excluded": [

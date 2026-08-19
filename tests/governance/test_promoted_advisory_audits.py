@@ -1305,5 +1305,133 @@ class VersionReleaseAuditDocumentedSweep(unittest.TestCase):
         )
 
 
+class VersionReleaseAuditUndocumentedTagSweep(unittest.TestCase):
+    """GHI #830 — the sweep ran one way, so a published-but-undocumented release was invisible.
+
+    GHI #829 landed ``_documented_release_errors``, which reads
+    ``RELEASE_NOTES.md`` headings as the roster and checks each against the
+    tag set. That direction cannot see a release absent from the roster: the
+    roster IS the loop. Three versions sat in that state — ``v0.18.1``,
+    ``v0.24.1``, ``v0.25.1`` — each tagged on a ``gz git-sync`` sync-artifact
+    commit rather than a release commit, so no manifest was written and no
+    narrative step ever ran.
+
+    The predicate is a strict local proxy, ruled 2026-08-19: every tag matching
+    ``vMAJOR.MINOR.PATCH`` owes an entry. It is exact rather than approximate
+    because ``RELEASE_NOTES.md`` is written in the release commit and the tag
+    is created after it by ``gh release create`` — so unlike the in-flight
+    manifest arm, there is no window in which a tag legitimately precedes its
+    entry. Network stays out: 71 ``gh`` round trips at pre-commit is the cost
+    GHI #205 warned about.
+    """
+
+    def _git(self, root: Path, *args: str) -> str:
+        import subprocess  # noqa: PLC0415
+
+        result = subprocess.run(
+            ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            text=True,
+            errors="replace",
+            encoding="utf-8",
+        )
+        return result.stdout.strip()
+
+    def _seed(self, root: Path, *, documented: tuple[str, ...]) -> str:
+        """Build a repo at v9.9.9 whose declared version is tagged and documented."""
+        self._git(root, "init", "-q", "-b", "main")
+        (root / "pyproject.toml").write_text(
+            '[project]\nname = "demo"\nversion = "9.9.9"\n', encoding="utf-8"
+        )
+        headings = "".join(f"## v{v} (2026-01-01)\n\n" for v in ("9.9.9", *documented))
+        (root / "RELEASE_NOTES.md").write_text(f"# Notes\n\n{headings}", encoding="utf-8")
+        self._git(root, "add", "-A")
+        self._git(root, "commit", "-qm", "landed")
+        head = self._git(root, "rev-parse", "HEAD")
+        self._git(root, "update-ref", "refs/remotes/origin/main", head)
+        self._git(root, "tag", "v9.9.9", head)
+        return head
+
+    def test_tagged_release_absent_from_notes_is_refused(self) -> None:
+        """The v0.18.1 class: a tag on the published line that no entry declares."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=())
+            self._git(root, "tag", "v9.8.0", head)
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+            self.assertIn("9.8.0", errors[0].message)
+
+    def test_documented_tag_is_not_flagged(self) -> None:
+        """Negative control: the same tag, declared, must produce nothing.
+
+        Without this the sweep could flag every tag and still pass the
+        positive case.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=("9.8.0",))
+            self._git(root, "tag", "v9.8.0", head)
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_prerelease_tag_owes_no_entry(self) -> None:
+        """``v1.0.0-rc1`` names something that never shipped as a release.
+
+        The tag glob is ``v*``; the predicate is strict ``vMAJOR.MINOR.PATCH``.
+        A loose match would make every release candidate a permanent defect.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=())
+            self._git(root, "tag", "v1.0.0-rc1", head)
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_sweep_is_silent_without_release_notes(self) -> None:
+        """No roster is not evidence that every tag is undocumented."""
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._git(root, "init", "-q", "-b", "main")
+            (root / "pyproject.toml").write_text(
+                '[project]\nname = "demo"\nversion = "9.9.9"\n', encoding="utf-8"
+            )
+            self._git(root, "commit", "--allow-empty", "-qm", "landed")
+            head = self._git(root, "rev-parse", "HEAD")
+            self._git(root, "update-ref", "refs/remotes/origin/main", head)
+            self._git(root, "tag", "v9.9.9", head)
+            self._git(root, "tag", "v9.8.0", head)
+            self.assertEqual(audit_version_release(root), [])
+
+    def test_real_tree_has_no_undocumented_release_tag(self) -> None:
+        """Fail-close guard on the live repo, and the non-vacuity witness.
+
+        The count assertion is the half that matters: a sweep exempting every
+        tag would satisfy the emptiness check and report ``Validated`` forever.
+        """
+        from gzkit.governance.trust_audits.release import (  # noqa: PLC0415
+            _release_tag_versions,
+            _undocumented_tag_errors,
+        )
+
+        judged = _release_tag_versions(_PROJECT_ROOT)
+        self.assertGreater(
+            len(judged), 60, msg=f"sweep judged only {len(judged)} tags — population collapsed"
+        )
+        self.assertEqual(
+            _undocumented_tag_errors(_PROJECT_ROOT),
+            [],
+            msg="a published release is documented nowhere — backfill RELEASE_NOTES.md",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
