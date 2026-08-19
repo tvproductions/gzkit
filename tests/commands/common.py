@@ -169,7 +169,11 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     config_path = path / ".git" / "config"
     config_path.write_text(
         config_path.read_text(encoding="utf-8")
-        + "[user]\n\tname = Test User\n\temail = test@example.com\n",
+        + "[user]\n\tname = Test User\n\temail = test@example.com\n"
+        # Background maintenance races the per-test copytree: git creates
+        # .git/objects/maintenance.lock after commit, copytree enumerates it,
+        # and it is gone before the copy reads it (shutil.Error, CI 32230349611).
+        + "[gc]\n\tauto = 0\n[maintenance]\n\tauto = false\n",
         encoding="utf-8",
     )
     (path / seed_file).write_text("seed\n", encoding="utf-8")
