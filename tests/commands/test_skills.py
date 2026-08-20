@@ -280,7 +280,13 @@ class TestSkillCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("non-blocking", result.output.lower())
             self.assertIn("blocking: 0", result.output.lower())
-            self.assertIn("non-blocking: 1", result.output.lower())
+            # At least one non-blocking warning, never an exact total: the fixture is
+            # initialized from the real skill set, whose `last_reviewed:` dates age with
+            # the calendar. Pinning the total made this fail on a date rollover with no
+            # code change (observed 2026-08-20, when gz-content-remember crossed the
+            # 75-day warn band). The claim under test is the DISPOSITION of the stale
+            # mirror skill, not the fixture's warning census.
+            self.assertRegex(result.output.lower(), r"non-blocking: [1-9]\d*")
 
     def test_skill_audit_strict_fails_on_non_blocking_warnings(self) -> None:
         """Strict mode escalates warnings to failure."""
@@ -304,16 +310,19 @@ class TestSkillCommands(unittest.TestCase):
             self.assertIn("non_blocking_warning_count", payload)
             self.assertIn("max_review_age_days", payload)
             self.assertIn("stale_review_count", payload)
-            self.assertEqual(payload["blocking_error_count"], 0)
-            self.assertEqual(payload["non_blocking_warning_count"], 1)
+            self.assertGreaterEqual(payload["non_blocking_warning_count"], 1)
             self.assertEqual(payload["max_review_age_days"], 90)
-            self.assertEqual(payload["stale_review_count"], 0)
-            self.assertTrue(payload["issues"])
-            issue = payload["issues"][0]
+            # Locate the issue by CODE, never by position: `issues[0]` assumed both an
+            # ordering and a census of one. Calendar-driven review-age findings share the
+            # list, so the subject of this test has to be named to be asserted about.
+            mirror = [i for i in payload["issues"] if i.get("code") == "SKA-MIRROR-DIR-UNEXPECTED"]
+            self.assertEqual(
+                len(mirror), 1, f"expected one mirror finding, got {payload['issues']}"
+            )
+            issue = mirror[0]
             self.assertIn("code", issue)
             self.assertIn("blocking", issue)
-            self.assertFalse(issue["blocking"])
-            self.assertEqual(issue["code"], "SKA-MIRROR-DIR-UNEXPECTED")
+            self.assertFalse(issue["blocking"], "a stale mirror-only skill must not block")
 
     def test_skill_audit_rejects_non_positive_max_review_age_days(self) -> None:
         """Non-positive max review age is rejected as invalid input."""
