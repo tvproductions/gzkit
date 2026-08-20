@@ -190,9 +190,9 @@ The skill's Persona Dispatch table requires `spec-reviewer`, `quality-reviewer`,
 
 | Phase | Status | Attested by | Date |
 |---|---|---|---|
-| OBPI completion (Gate 5 × 5) | attested | Jeffry | 2026-05-23 |
-| ADR Closeout (closeout_initiated → attested → lifecycle Completed) | attested | Jeffry | 2026-05-23 |
+| OBPI completion (Gate 5 × 5) | attested | g0 | 2026-05-23 |
+| ADR Closeout (closeout_initiated → attested → lifecycle Completed) | attested | g0 | 2026-05-23 |
 | Audit recommendation | RECOMMEND VALIDATED with non-blocking shortfalls S-01, S-02 routed to GHIs | agent (pipeline-orchestrator persona) | 2026-05-23 |
-| Audit acceptance (Gate 5 — pending operator verbal ack) | awaiting `accept audit` / `verify audit` | Jeffry | (pending) |
+| Audit acceptance (Gate 5 — pending operator verbal ack) | awaiting `accept audit` / `verify audit` | g0 | (pending) |
 
 Per skill Step 8, the operator's verbal `accept audit` / `verify audit` IS the Gate-5 attestation event; this audit document is presented to the operator for that ack before `gz adr emit-receipt --event validated` runs.

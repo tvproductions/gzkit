@@ -200,4 +200,4 @@ This ADR belongs to the **`governance-triage`** bounded context (per ADR-0.0.43 
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.57 | Completed | Jeffry | 2026-05-23 | completed |
+| 0.0.57 | Completed | g0 | 2026-05-23 | completed |

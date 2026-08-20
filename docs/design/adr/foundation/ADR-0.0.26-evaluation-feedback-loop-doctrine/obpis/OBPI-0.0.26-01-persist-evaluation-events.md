@@ -169,7 +169,7 @@ TestAdrEvalCmdEmission.test_successful_eval_emits_exactly_one_adr_evaluation_eve
 - Files modified: src/gzkit/ledger_events.py (adr_evaluation_event factory), src/gzkit/events.py (AdrEvaluationEvent + union), src/gzkit/schemas/ledger.json (adr-evaluation schema), src/gzkit/governance/trust_audits/events.py (_NO_GRAPH_IMPACT waiver), src/gzkit/commands/adr_promote.py (emission wired in adr_eval_cmd), src/gzkit/ledger.py (re-export), tests/test_schemas.py (AdrEvaluationEvent in schema map)
 - Tests added: 17 (lint: arb-ruff-ea2903ed5c9e4d0992253ee7da292560, unittest: arb-step-unittest-bdc9602b3d9e4397960fd9fe23072047)
 - Date completed: 2026-05-03
-- Attestation status: attested by Jeffry ("attest completed")
+- Attestation status: attested by g0 ("attest completed")
 - Defects noted: none
 
 ## Tracked Defects

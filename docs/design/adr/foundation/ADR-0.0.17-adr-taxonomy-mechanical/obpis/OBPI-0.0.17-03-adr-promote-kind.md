@@ -206,6 +206,6 @@ OBPI-0.0.17-03              8        8   100.0%
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed -- Heavy-lane OBPI-0.0.17-03 lands --kind {pool,foundation,feature} on gz adr promote. 20/20 unit + 8/8 BDD + 3218/3218 full suite. Receipts: lint arb-ruff-566f1dd2a7c04ee9b9763217f920261f; types arb-step-typecheck-a9d2ecc0b30c488b99b00293b7e6ede4; OBPI tests arb-step-unittest-228cb6e598da4a0a8994165d82b92f8b; full tests arb-step-unittest-7c058a86710b41cca30840840f39bdcf; BDD arb-step-behave-700b4c0f4d194d389379e07957ad21f2. Tracked: GHI #244.
 - Date: 2026-04-19

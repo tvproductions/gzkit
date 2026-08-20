@@ -64,5 +64,5 @@ Closeout evidence verified:
 
 - `Completed — attest completed — 5/5 OBPIs attested_completed; 27/27 REQs covered by 71 REQ-derived tests (spec-reviewer CLEAN, independent persona dispatch); quality-reviewer verdict COHERENT (composite is thin orchestrator, CLI dispatch uniform, Era-1/Era-2 contract honored); ARB receipts arb-ruff-49f51bb527354bc796e0f4baf769c6fa, arb-step-typecheck-3be8b030fa1c4b4d9029be8ac78c083d, arb-step-unittest-05c79d3dce8942148542f1c7a2da4062 (5087 tests), arb-step-mkdocs-9e42f8eac90c4506b2a0a535e6e48c9d all exit 0; in-flight fixes applied for Blocker A (fold-test BUCKET_3_ROOTS self-perpetuation) and Blocker B / GHI #473 (pointer_anchors + scenario_reachability exit-code drift) with 4 new GREEN tests pinning REQ-vs-runtime contract`
 
-**Attested by**: Jeffry
+**Attested by**: g0
 **Timestamp (UTC)**: 2026-05-16T02:25:48Z

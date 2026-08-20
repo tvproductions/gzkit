@@ -183,7 +183,7 @@ Expected: Line containing `**Decision: Confirm**` with rationale citing type saf
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed.
 - Date: 2026-04-10
 

@@ -200,7 +200,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: agree, not everything from airlineops will transfer
 - Date: 2026-04-09
 

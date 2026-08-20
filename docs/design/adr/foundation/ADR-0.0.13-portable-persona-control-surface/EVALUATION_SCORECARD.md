@@ -683,7 +683,7 @@ Status: Validated, Heavy, 6/6 OBPIs completed.
    which is legitimate).
 
 5. **Attestation Block** (0.0.11 lines 354-358): Completed with attestor
-   (Jeffry), date (2026-04-02), and status. ADR-0.0.13 has a blank sign-off
+   (g0), date (2026-04-02), and status. ADR-0.0.13 has a blank sign-off
    block (lines 291-296) — expected for a Draft ADR.
 
 --- What 0.0.13 improves over 0.0.11 ---

@@ -158,7 +158,7 @@ features/intrinsic_complexity_attestation.feature
 
 ### Gate 5 (Human)
 ```text
-Attestor: Jeffry
+Attestor: g0
 Text: attest completed
 Date: 2026-05-08
 ```
@@ -193,7 +193,7 @@ validate_intrinsic_attestation added under gz validate --intrinsic-attestation.
 - Files modified: complexity_advise.py, ledger_events.py, schemas/ledger.json, events.py, trust_audits/__init__.py, validate_cmd.py, parser_artifacts.py, parser_maintenance.py, 3 doc files
 - Tests added: 8 unit (registry), 7 unit (attest CLI), 8 unit (event shape), 4 BDD
 - Date completed: 2026-05-08
-- Attestation status: Attested by Jeffry
+- Attestation status: Attested by g0
 - Defects noted: None in-scope
 
 ### Closing Argument
@@ -209,7 +209,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — two-path intrinsic-complexity attestation implemented: decorator registry (@intrinsic_complexity) + commit-time --attest-intrinsic CLI path with TTY gate; validate_intrinsic_attestation trust audit wired; arb-ruff-363ee011147c4191a2196e0eb613434b, arb-step-typecheck-093d9f5a6d32460fab47140eb0b1f986, arb-step-unittest-cf68ebf06bb646cbb56d5e0cf81afef5, arb-step-mkdocs-42e979ab5b214bf9bf28beb7e79ccc2e; 4/4 BDD scenarios pass; gz validate --documents clean; REQ-0.0.29-07-01 through -06 covered
 - Date: 2026-05-08
 

@@ -176,7 +176,7 @@ uv run gz patch release -> Version bumped: 0.24.2 -> 0.24.3. Updated: pyproject.
 - Files created/modified: docs/releases/PATCH-v0.24.3.md (new), pyproject.toml, src/gzkit/__init__.py, README.md, RELEASE_NOTES.md, .gzkit/ledger.jsonl
 - Tests added: none (dogfood invocation, not new code)
 - Date completed: 2026-04-08
-- Attestation status: Human attested (Jeffry)
+- Attestation status: Human attested (g0)
 - Defects noted: Brief frontmatter id used short-form OBPI-0.0.15-06 instead of full slug (fixed inline)
 
 ## Tracked Defects
@@ -185,7 +185,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: Completed
 - Date: 2026-04-08
 

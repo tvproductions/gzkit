@@ -270,7 +270,7 @@ $ echo $?
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — Heavy-lane OBPI-0.0.16-02 wires OBPI-01's _validate_frontmatter_coherence into gz gates Gate 1 with policy-breach routing via existing EXIT_POLICY_BREACH constant; gate-local renderer consumes STATUS_VOCAB_MAPPING for canonical-term display and surfaces unmapped status terms on a distinct line rather than silent fallback; _RECOVERY_COMMANDS imported from validate_frontmatter rather than duplicated; closeout-migration breadcrumb in renderer docstring. 8 @covers-decorated unit tests + 2 @REQ-tagged behave scenarios give 6/6 REQ parity via gz covers. Adjacent coherence fixes in test_l3_gate_independence.py and test_gates.py preserve L3-independence assertions under the new Gate 1 contract; pre-existing ty defect in scripts/backfill_req_ids.py:246 closed with a one-line null guard. Receipts: lint arb-ruff-c56787459f044bebaac79fd88df31ff8; types arb-step-ty-e68baed0da5b47a9984f9de5e62b7d74; OBPI-scoped tests arb-step-unittest-obpi-150e16e8b78542e986916623f5e630fc (8/8); full tests arb-step-unittest-full-02bfb1a7c98044d7a8a3f77bf93d92fc (3060/3060); docs arb-step-mkdocs-9cab5f669afb4123a9c220c4c058c9d6; bdd arb-step-behave-obpi-65357b245a6f4945befd1556454e23a4.
 - Date: 2026-04-18
 

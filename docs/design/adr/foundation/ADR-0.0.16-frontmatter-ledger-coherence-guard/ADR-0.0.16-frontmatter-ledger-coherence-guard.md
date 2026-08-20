@@ -292,4 +292,4 @@ Build a frontmatter-ledger coherence guard, not per-consumer rewrites. The umbre
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.16 | Completed | Jeffry | 2026-04-18 | completed |
+| 0.0.16 | Completed | g0 | 2026-04-18 | completed |

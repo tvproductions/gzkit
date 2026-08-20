@@ -282,7 +282,7 @@ Before this OBPI, the comparison between `airlineops/src/opsdev/lib/references.p
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — Exclude decision for airlineops/src/opsdev/lib/references.py (797 L PDF-scan pipeline). Initial framing corrected mid-ceremony after user pushback: gzkit does need a design-references bibliography for SDD/AI-governance literature, but airlineops's specific implementation is PDF-first/pypdf-dependent/APA-journal-article-formatted and mismatches gzkit's URL-first article-centric consumer pattern. Refined 6-point rationale anchored in file:line citations; capability booked as ADR-pool.design-references-bibliography seeded with three Anthropic articles (Project Sustainable Model, Abstractive Red-Teaming, Effective Context Engineering for AI Agents). Zero source/test edits; no pypdf added; gates green.
 - Date: 2026-04-13
 

@@ -191,7 +191,7 @@ Proof logs co-located under `audit/proofs/`:
 - `audit/proofs/agents-md-matrix-grep.txt` — AGENTS.md universal-attestation language grep
 - `audit/proofs/skills-self-clos-grep.txt` — skill prose sweep result (residue surface flagged)
 
-Ledger proof (Layer 2) — 41 events scoped to `ADR-0.0.36-universal-obpi-attestation` in `.gzkit/ledger.jsonl`, including 5 `obpi_completed` (one per OBPI), 5 `attested` events with `by: Jeffry`, gate_checked entries for Gates 1-4, and the final `lifecycle_transition` from `Proposed` to `Completed` (2026-05-18T10:00:58Z).
+Ledger proof (Layer 2) — 41 events scoped to `ADR-0.0.36-universal-obpi-attestation` in `.gzkit/ledger.jsonl`, including 5 `obpi_completed` (one per OBPI), 5 `attested` events with `by: g0`, gate_checked entries for Gates 1-4, and the final `lifecycle_transition` from `Proposed` to `Completed` (2026-05-18T10:00:58Z).
 
 ## Recommendations
 
@@ -203,7 +203,7 @@ Ledger proof (Layer 2) — 41 events scoped to `ADR-0.0.36-universal-obpi-attest
 
 ## Attestation
 
-**Agent attestation (audit-side):** This audit verifies ADR-0.0.36's five claims are delivered with reproducible evidence. The Layer-2 ledger proof is complete (all 5 OBPIs `attested_completed` by Jeffry, 29/29 REQs covered, lifecycle transitioned to `Completed`); the runtime gate's collapse to `return True` is structurally confirmed; the validator's fail-closed scope passes both live ledger validation and 7 semantic test fixtures; the waiver list's closure constraint holds (42 entries, all under OBPI-0.0.36-04); and the AGENTS.md matrix collapse is verbatim binding. One residue surface (`gz-obpi-specify` template) carries deprecated language but is outside OBPI-0.0.36-05's named scope and does not breach runtime enforcement; it is tracked as GHI #487 for separate remediation.
+**Agent attestation (audit-side):** This audit verifies ADR-0.0.36's five claims are delivered with reproducible evidence. The Layer-2 ledger proof is complete (all 5 OBPIs `attested_completed` by g0, 29/29 REQs covered, lifecycle transitioned to `Completed`); the runtime gate's collapse to `return True` is structurally confirmed; the validator's fail-closed scope passes both live ledger validation and 7 semantic test fixtures; the waiver list's closure constraint holds (42 entries, all under OBPI-0.0.36-04); and the AGENTS.md matrix collapse is verbatim binding. One residue surface (`gz-obpi-specify` template) carries deprecated language but is outside OBPI-0.0.36-05's named scope and does not breach runtime enforcement; it is tracked as GHI #487 for separate remediation.
 
 Signed: pipeline-orchestrator persona via Claude agent relay — 2026-05-18
 

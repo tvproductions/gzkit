@@ -221,6 +221,6 @@ rg -n 'Decision: Confirm' docs/design/adr/pre-release/ADR-0.25.0-core-infrastruc
 
 ### Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Date: 2026-04-12
 - Attestation: Accepted. Confirm decision for airlineops opsdev/lib/docs.py — gzkit doc_coverage/ package plus mkdocs strict builds already cover all functional needs; airlineops module is self-declared temporary technical debt.

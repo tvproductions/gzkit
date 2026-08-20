@@ -19,7 +19,7 @@ ADR from `Completed` → `Validated` after producing reproducible proof and
 demonstrating the gate's value on a live runtime surface.
 
 **Audit trigger:** Phase 2 validation — Phase 1 closeout already attested
-(`Jeffry`, 2026-05-03), all three OBPIs `attested_completed`, REQ-coverage
+(`g0`, 2026-05-03), all three OBPIs `attested_completed`, REQ-coverage
 already at 15/15 per `gz adr audit-check`.
 
 ## Claims extracted from ADR § Decision

@@ -729,7 +729,7 @@ surrenders any held lock mechanically and writes its register-entry handoff — 
 #619), then sync and reconcile:
 
 ```bash
-uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "Jeffry" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
+uv run gz obpi complete OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity --attestor "g0" --attestation-text "I attest I understand the completion of OBPI-0.5.0-05."
 uv run gz git-sync --apply --lint --test
 uv run gz obpi sync OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity
 uv run gz git-sync --apply --lint --test
@@ -827,14 +827,14 @@ Then run non-dry commands and record receipts:
 uv run gz closeout ADR-0.6.0-pool-promotion-protocol
 uv run gz attest ADR-0.6.0-pool-promotion-protocol --status completed
 uv run gz audit ADR-0.6.0-pool-promotion-protocol
-uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "Jeffry" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}'
+uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "g0" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}'
 ```
 
 If you want to inspect receipt payloads before writing events:
 
 ```bash
-uv run gz obpi emit-receipt OBPI-0.6.0-03-operator-narratives-and-auditability --event completed --attestor "Jeffry" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-0.6.0-03.","date":"2026-02-22"}' --dry-run
-uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "Jeffry" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}' --dry-run
+uv run gz obpi emit-receipt OBPI-0.6.0-03-operator-narratives-and-auditability --event completed --attestor "g0" --evidence-json '{"attestation":"I attest I understand the completion of OBPI-0.6.0-03.","date":"2026-02-22"}' --dry-run
+uv run gz adr emit-receipt ADR-0.6.0-pool-promotion-protocol --event validated --attestor "g0" --evidence-json '{"scope":"ADR-0.6.0-pool-promotion-protocol","date":"2026-02-22"}' --dry-run
 ```
 
 ---

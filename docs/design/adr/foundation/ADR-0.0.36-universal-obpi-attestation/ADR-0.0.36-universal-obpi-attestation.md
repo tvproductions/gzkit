@@ -178,4 +178,4 @@ The surface-boundary split fires because the work crosses five distinct surfaces
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.36 | Completed | Jeffry | 2026-05-18 | Completed — operator attested verbatim 'attest completed' on 2026-05-18; 5/5 OBPIs completed with brief-level human attestation, validator --receipt-shape scope landed (arb receipts: ruff ff45cc0a, unittest 130a76b7 [5300 tests], typecheck 19a1a3dd, mkdocs d703186e), GHIs #342 and #332 already closed, doctrine boundary holding with zero post-cutoff ledger drift. |
+| 0.0.36 | Completed | g0 | 2026-05-18 | Completed — operator attested verbatim 'attest completed' on 2026-05-18; 5/5 OBPIs completed with brief-level human attestation, validator --receipt-shape scope landed (arb receipts: ruff ff45cc0a, unittest 130a76b7 [5300 tests], typecheck 19a1a3dd, mkdocs d703186e), GHIs #342 and #332 already closed, doctrine boundary holding with zero post-cutoff ledger drift. |

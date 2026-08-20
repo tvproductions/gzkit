@@ -6,7 +6,7 @@
 | ADR Title | GHI-Driven Patch Release Ceremony |
 | ADR Dir | docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony |
 | Audit Date | 2026-04-08 |
-| Auditor(s) | Jeffry (human attestor), claude-haiku-4-5 (agent auditor) |
+| Auditor(s) | g0 (human attestor), claude-haiku-4-5 (agent auditor) |
 
 ## Feature Demonstration (Step 3)
 
@@ -122,5 +122,5 @@ Command has a manpage but no runbook entry.
 
 ADR-0.0.15 is implemented as intended. All quality gates pass. Five non-blocking defects filed for follow-up (#116, #117, #118, #119, #120). The critical @covers scanner inconsistency (#120) affects reporting only — actual test coverage is comprehensive.
 
-Human attestation: Jeffry (2026-04-08, closeout ceremony)
+Human attestation: g0 (2026-04-08, closeout ceremony)
 Agent attestation: claude-haiku-4-5 (2026-04-08, Gate 5 audit)

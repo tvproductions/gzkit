@@ -424,4 +424,4 @@ The two-path intrinsic-complexity attestation (OBPI-07) is the 2am Scenario-3 am
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.29 | Completed | Jeffry | 2026-05-09 | Completed |
+| 0.0.29 | Completed | g0 | 2026-05-09 | Completed |

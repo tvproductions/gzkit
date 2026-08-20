@@ -166,7 +166,7 @@ uv run gz complexity advise tests/fixtures/complexity/warn_band.py — ad-hoc (v
 - Files modified: src/gzkit/commands/complexity_advise.py (presenter dispatch replacing _render_prose(); functions_checked/metrics_checked tracking), docs/user/manpages/gz-complexity-advise.md (ad-hoc/auto-chain examples added; --auto-chain description updated), features/steps/gz_steps.py (output does not contain step added)
 - Tests added: 10 unit tests covering REQ-01 through REQ-06; 3 BDD scenarios
 - Date completed: 2026-05-07
-- Attestation status: attested by Jeffry
+- Attestation status: attested by g0
 - Defects noted: none
 
 ### Closing Argument
@@ -177,7 +177,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — presentation-dispatch layer for OBPI-0.0.29-06 implemented and verified: AdHocPresenter (verbose) and AutoChainPresenter (concise) wired in complexity_advise.py based on --auto-chain flag; 10 unit tests @covers all REQs; 3 BDD scenarios pass; receipts arb-step-unittest-ba929e08ae824fe8b4f141312aa6920d, arb-ruff-5f3f031cfd1047809f4c01cf2aad9953, arb-step-typecheck-f075a8414ac542809441764a0814b650, arb-step-mkdocs-3bae6193fb704844abe73d4ec3f33c2c
 - Date: 2026-05-08
 

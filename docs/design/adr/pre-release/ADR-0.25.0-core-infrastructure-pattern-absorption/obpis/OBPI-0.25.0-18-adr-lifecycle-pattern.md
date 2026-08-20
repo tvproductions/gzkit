@@ -210,7 +210,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed
 - Date: 2026-04-11
 

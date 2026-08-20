@@ -268,7 +268,7 @@ Before this OBPI, the comparison between `airlineops/src/opsdev/lib/validation_r
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed. — Confirm decision: gzkit receipt surface (events.py 470L + ledger_semantics.py 547L + validate_pkg/ledger_check.py 379L + utils.capture_validation_anchor + temporal_drift.py + commands/obpi_complete.py atomic transaction, ~1396L distributed) is architecturally a strict superset of airlineops/opsdev/lib/validation_receipt.py (274L). 12-dimension comparison anchored in file:line citations: 17+ event types vs 3 fixed Literals; ObpiReceiptEvidence with nested ScopeAudit/GitSyncState/ReqProofInput vs dict[str,Any]; central .gzkit/ledger.jsonl vs per-ADR storage; atomic 3-step transaction with OSError rollback (obpi_complete.py:225-237) vs plain JSONL append; first-class CLI integration vs library-only. Single narrow win for airlineops — typed ValidationAnchor on events.py:362,373 — is a refactor of existing gzkit capability not a new feature, tracked as defect via GHI #143 for independent remediation. No source/test edits. Brief-only OBPI; gates green: lint/typecheck/test (17 features, 110 scenarios, 584 steps, 10.907s)/validate-documents/mkdocs-strict/covers (total_reqs=0). Mirrors OBPI-0.25.0-29 and OBPI-0.25.0-30 tooling-vs-consumer-layer precedent.
 - Date: 2026-04-13
 

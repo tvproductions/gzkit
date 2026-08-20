@@ -167,4 +167,4 @@ pre-emission.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.25 | Completed | Jeffry | 2026-05-03 | Completed |
+| 0.0.25 | Completed | g0 | 2026-05-03 | Completed |

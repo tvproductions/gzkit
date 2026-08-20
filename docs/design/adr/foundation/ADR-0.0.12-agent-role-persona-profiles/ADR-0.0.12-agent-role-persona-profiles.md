@@ -315,7 +315,7 @@ cluster: "plan-first, whole-file, deeply-compliant."
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.12 | Completed | Jeffry | 2026-04-04 | completed |
+| 0.0.12 | Completed | g0 | 2026-04-04 | completed |
 
 ### SIGN-OFF — Post-Ship Tidy
 

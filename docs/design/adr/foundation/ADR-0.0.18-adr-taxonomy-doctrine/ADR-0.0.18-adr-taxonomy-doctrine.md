@@ -193,7 +193,7 @@ ADR. This algorithm is documented in
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.18 | Completed | Jeffry | 2026-04-20 | completed |
+| 0.0.18 | Completed | g0 | 2026-04-20 | completed |
 
 - Scope: ADR-0.0.18 operator doctrine
 - Lane: lite

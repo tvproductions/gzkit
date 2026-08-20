@@ -30,7 +30,7 @@ def _well_formed_event(
     file_path: str = "/tmp/foo.py",
     qualname: str = "Foo.bar",
     reason: str = "irreducible state machine",
-    attestor: str = "Jeffry",
+    attestor: str = "g0",
     attestation_date: str = "2026-05-07",
     metric: str = "radon_cc",
     crossing_band: str = "block",

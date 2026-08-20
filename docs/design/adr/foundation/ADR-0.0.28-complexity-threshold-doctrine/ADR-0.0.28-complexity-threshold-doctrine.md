@@ -363,4 +363,4 @@ A metric MUST have a `block` band (a metric that cannot fail the gate is not a r
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.28 | Completed | Jeffry | 2026-05-05 | completed |
+| 0.0.28 | Completed | g0 | 2026-05-05 | completed |

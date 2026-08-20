@@ -167,7 +167,7 @@ Before this OBPI, `gz patch release` could discover GHIs but had no version bump
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: ok
 - Date: 2026-04-08
 

@@ -197,7 +197,7 @@ These tradeoffs are intentional.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.2 | Completed | Jeffry | 2026-05-17 | Completed |
+| 0.0.2 | Completed | g0 | 2026-05-17 | Completed |
 
 | Field | Value |
 |-------|-------|

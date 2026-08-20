@@ -49,7 +49,7 @@ def step_register_intrinsic(context, qualname: str, filename: str) -> None:
     file_path = str((Path.cwd() / filename).absolute())
     _REGISTRY[(file_path, qualname)] = (
         "irreducible branching for all observed states",
-        "Jeffry",
+        "g0",
         date.today().isoformat(),
     )
     context.add_cleanup(_REGISTRY.clear)

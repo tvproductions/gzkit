@@ -58,5 +58,5 @@ Closeout evidence verified:
 
 - `Completed — green-between-sessions gate verified live: pre-push gz-check hook Passed (exit 0), gz validate --session-green-gate exit 0, gz check 27/27 incl ✓ Session green gate; 6 REQs ledger-bound (arb receipts 0202269a/41bf3d47/69a321fc for OBPI-01, b33f1ba8/a0d3ff4e/0faf68d7/a610c061 for OBPI-02); spec-reviewer PASS, quality-reviewer COHERENT`
 
-**Attested by**: Jeffry
+**Attested by**: g0
 **Timestamp (UTC)**: 2026-06-09T13:27:55Z

@@ -228,7 +228,7 @@ uv run -m unittest tests/test_adr_governance_confirm.py -v
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Date: 2026-04-11
 - Attestation: attest completed
 

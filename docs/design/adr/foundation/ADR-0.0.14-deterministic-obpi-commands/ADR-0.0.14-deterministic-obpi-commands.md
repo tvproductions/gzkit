@@ -352,4 +352,4 @@ If "Request Changes," required fixes:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.14 | Completed | Jeffry | 2026-04-06 | completed |
+| 0.0.14 | Completed | g0 | 2026-04-06 | completed |

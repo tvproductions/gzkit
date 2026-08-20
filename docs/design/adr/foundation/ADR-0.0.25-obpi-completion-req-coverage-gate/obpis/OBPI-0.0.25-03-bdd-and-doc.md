@@ -181,7 +181,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — 15 BDD scenarios pass covering all 15 REQs across ADR-0.0.25 (OBPI-01 6/6, OBPI-02 5/5, OBPI-03 4/4); AGENTS.md OBPI Acceptance Protocol updated naming REQ-coverage gate; obpi-complete.md, runbook.md, governance_runbook.md updated with gate semantics and override path; lint/typecheck/unittest/mkdocs all exit 0 (receipts: arb-ruff-cda7089ae57c4ef1aafc4e4ba851bdf4, arb-step-typecheck-b0f339231ba04aa58362acf0ac733c97, arb-step-unittest-e4aa649c9fd94e18bc0515edec48adff, arb-step-mkdocs-2d2c3a321d6144f095d45bf3f68cf014); pre-existing behave failure tracked at GHI #388
 - Date: 2026-05-03
 

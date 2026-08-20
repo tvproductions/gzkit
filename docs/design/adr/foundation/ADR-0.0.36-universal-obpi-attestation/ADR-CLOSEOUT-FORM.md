@@ -64,5 +64,5 @@ Closeout evidence verified:
 
 - `Completed — operator attested verbatim 'attest completed' on 2026-05-18; 5/5 OBPIs completed with brief-level human attestation, validator --receipt-shape scope landed (arb receipts: ruff ff45cc0a, unittest 130a76b7 [5300 tests], typecheck 19a1a3dd, mkdocs d703186e), GHIs #342 and #332 already closed, doctrine boundary holding with zero post-cutoff ledger drift.`
 
-**Attested by**: Jeffry
+**Attested by**: g0
 **Timestamp (UTC)**: 2026-05-18T10:00:58Z

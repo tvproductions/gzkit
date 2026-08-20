@@ -75,7 +75,7 @@ naming operator + REQ-ID + rationale + acceptance type:
 {"event":"obpi_completion_uncovered_accept","id":"OBPI-0.0.25-03-bdd-and-doc",
  "ts":"2026-05-03T07:12:47.301204+00:00",
  "obpi_id":"OBPI-0.0.25-03-bdd-and-doc","req_id":"REQ-0.0.25-03-01",
- "operator":"Jeffry",
+ "operator":"g0",
  "rationale":"Covered by @REQ-0.0.25-03-01 BDD scenario tag …",
  "acceptance_type":"agent-relayed-operator-attestation"}
 ```

@@ -571,5 +571,5 @@ The collision surfaced a defect in the plan-audit surface (tracked as **GHI #152
 
 - `completed`
 
-**Attested by**: Jeffry
+**Attested by**: g0
 **Timestamp (UTC)**: 2026-04-16T02:42:30Z

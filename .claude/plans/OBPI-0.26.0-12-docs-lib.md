@@ -2,7 +2,7 @@
 
 **OBPI:** OBPI-0.26.0-12-docs-lib
 **Parent ADR:** ADR-0.26.0-governance-library-module-absorption (Heavy, feature)
-**Paired (attested):** OBPI-0.25.0-25-docs-validation-pattern — `attested_completed` 2026-04-12 (Jeffry)
+**Paired (attested):** OBPI-0.25.0-25-docs-validation-pattern — `attested_completed` 2026-04-12 (g0)
 **Lane:** Heavy
 **Operator routing:** Path B (re-frame as Confirm, inherit paired decision)
 

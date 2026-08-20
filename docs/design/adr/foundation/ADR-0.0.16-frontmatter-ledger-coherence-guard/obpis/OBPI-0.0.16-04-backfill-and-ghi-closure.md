@@ -346,7 +346,7 @@ Exit code 0 against the live repo is the dogfood proof — the ADR's central cla
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — OBPI-0.0.16-04 dogfood backfill landed: live chore receipt artifacts/receipts/frontmatter-coherence/20260418T100437Z.json reconciled 257 ADR/OBPI files (REQ-08 honored, 0 hand-edits); idempotence verified by second dry-run (20260418T100647Z.json, 0 files rewritten); REQ-04 satisfied — gz validate --frontmatter exits 0 against post-backfill repo after fix(validator) commit 4e914dd0 (GHI #192) closed the pool-skip parity gap surfaced by REQ-04 itself; regression test tests/chores/test_frontmatter_coherence_backfill.py pins both REQ-04 and REQ-05 via @covers decorators (2/2 pass). REQ-06 closed 5 GHIs (#162, #167, #168, #169, #170) with structured comments citing ADR-0.0.16 + receipt path. Session-filed defects also resolved: GHI #191 (plan-audit deadlock, fix 40dc7864) and GHI #192 (validator pool-skip, fix 4e914dd0). Receipts: lint arb-ruff-5e823d9cbd2643d9829a318e8869cbcc (exit 0); tests arb-step-unittest-03e0fa2cab7d4edfb5b870033a84aad4 (exit 0, 3085 pass); typecheck arb-step-typecheck-29bf200f11544d8b992195cdd4af68d7 (exit 1, 12 pre-existing diagnostics unrelated to OBPI-04 scope — none in validate_frontmatter.py or pipeline hook template).
 - Date: 2026-04-18
 

@@ -86,7 +86,7 @@ gz complexity advise tests/ --quiet
 gz complexity advise src/gzkit/commands/engine.py:QueryOptimizer.plan \
     --attest-intrinsic \
     --reason "Irreducibly complex state-machine optimizer; CC=24 is the floor" \
-    --attestor "Jeffry"
+    --attestor "g0"
 ```
 
 ## SEE ALSO

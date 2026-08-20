@@ -372,6 +372,6 @@ rg -n 'Decision: Absorb' \
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Date: 2026-04-13
 - Attestation: attest completed — Absorb decision for airlineops opsdev/lib/guards.py: absorbed _safe_print helper (seven-line UnicodeEncodeError backslashreplace fallback) into gzkit hooks/guards.py to protect the pre-commit hook invocation path (uv run -m gzkit.hooks.guards) that bypasses the CLI UTF-8 guard. Kept gzkit's superior forbid_pytest(root: Path) API from OBPI-0.0.7-04 — airlineops still carries Path(__file__).parents[3] which gzkit already removed. TDD exposed a latent iter_files prune defect shared by both codebases (rglob walks inside EXCLUDE_DIRS); fixed via ancestor-parts check. 26 unittest cases across 7 test classes land the first-ever test coverage for hooks/guards.py (0 → ~92%). Gate 4 BDD: N/A (library-only; header/footer bytes unchanged). All quality gates green: lint, typecheck, gz test (17 features / 110 scenarios / 584 steps), validate --documents, mkdocs --strict.

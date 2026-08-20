@@ -264,4 +264,4 @@ Inbound references across ~40 live files (Bucket 1 from blast-radius analysis) g
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.20 | Completed | Jeffry | 2026-04-23 | completed |
+| 0.0.20 | Completed | g0 | 2026-04-23 | completed |

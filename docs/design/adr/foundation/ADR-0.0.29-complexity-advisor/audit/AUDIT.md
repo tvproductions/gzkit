@@ -137,7 +137,7 @@ layer, applied at the diagnosis layer.
 ---
 
 ## Attestation Record
-- Attestor: Jeffry
+- Attestor: g0
 - Status: completed
 - Timestamp: 2026-05-09T15:31:00.888024+00:00
 

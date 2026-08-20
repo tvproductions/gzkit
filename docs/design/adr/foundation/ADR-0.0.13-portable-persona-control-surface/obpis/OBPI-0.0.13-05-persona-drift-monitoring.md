@@ -195,7 +195,7 @@ INFO - Documentation built in 1.18 seconds
 ### Gate 5 (Human)
 
 ```text
-Attestor: Jeffry
+Attestor: g0
 Attestation: attest completed
 Date: 2026-04-05
 ```
@@ -239,7 +239,7 @@ $ uv run gz personas drift
 
 ## Human Attestation
 
-- Attestor: Jeffry
+- Attestor: g0
 - Attestation: attest completed
 - Date: 2026-04-05
 

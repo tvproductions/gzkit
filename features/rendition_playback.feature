@@ -69,7 +69,7 @@ Feature: Committed-rendition store, deterministic playback, and freshness gate
   Scenario: gz content commit promotes a candidate and freezes the corpus fingerprint
     Given a corpus for "AGENTS.md" with one entry
     And a staged candidate for "AGENTS.md" consumer "root" with content "# Candidate\n"
-    When I run the gz command "content commit AGENTS.md --consumer root --attestor Jeffry --attestation-text done"
+    When I run the gz command "content commit AGENTS.md --consumer root --attestor g0 --attestation-text done"
     Then the command exits with code 0
     And a committed rendition exists for "AGENTS.md" consumer "root"
     And a provenance sidecar exists for "AGENTS.md" consumer "root"

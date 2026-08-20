@@ -70,5 +70,5 @@ Closeout evidence verified:
 
 - `Completed — ADR-0.0.34 agent-control-surface-rendering-substrate: 8/8 OBPIs attested_completed, 39/39 REQs covered 100%; canonical content substrate (Pydantic models + Jinja2 templates + vendor manifest) replaces shutil-copy mirror propagation per ADR Intent; gz content list/show/render/edit/import authoring CLI live (OBPI-04); gz validate --vendor-manifest scope live (OBPI-08); fidelity hooks wired at render and save (OBPI-06); migration registry stamped at schema_version=1 (OBPI-07); ARB receipts arb-ruff-88a38972158342088b2005974ff923b0, arb-step-unittest-a13ce5a677d149c494038df90901f2ca (5198/5198), arb-step-typecheck-2bb2b53f283244f59f5bc7ba558f139d, arb-step-mkdocs-f80e6d03c5644c198a852a2a18cec4a3 all clean; gz adr audit-check PASS; spec-reviewer + quality-reviewer independent passes both clean; no open GHIs reference ADR-0.0.34; operator attestation phrase "Completed" received via AskUserQuestion at Step 6 ATTESTATION 2026-05-17.`
 
-**Attested by**: Jeffry
+**Attested by**: g0
 **Timestamp (UTC)**: 2026-05-17T09:03:48Z

@@ -425,4 +425,4 @@ Decision: Accept | Request Changes
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.25.0 | Completed | Jeffry | 2026-04-15 | completed |
+| 0.25.0 | Completed | g0 | 2026-04-15 | completed |

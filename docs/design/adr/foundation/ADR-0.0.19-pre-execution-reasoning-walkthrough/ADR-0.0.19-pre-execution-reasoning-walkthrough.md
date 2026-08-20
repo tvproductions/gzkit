@@ -192,4 +192,4 @@ Full answer text is available in `adr-interview.json`. Key forcing-function exce
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.19 | Completed | Jeffry | 2026-04-22 | completed |
+| 0.0.19 | Completed | g0 | 2026-04-22 | completed |

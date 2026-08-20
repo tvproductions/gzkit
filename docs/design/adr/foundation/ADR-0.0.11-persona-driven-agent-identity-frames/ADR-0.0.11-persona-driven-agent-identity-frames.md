@@ -381,4 +381,4 @@ Decision: Accept | Request Changes
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.11 | Completed | Jeffry | 2026-04-02 | completed |
+| 0.0.11 | Completed | g0 | 2026-04-02 | completed |

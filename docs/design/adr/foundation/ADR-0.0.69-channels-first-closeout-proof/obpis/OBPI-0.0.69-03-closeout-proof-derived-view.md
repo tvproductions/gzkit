@@ -51,7 +51,7 @@ EXECUTE->ATTESTATION edge.
 
 ## Allowed Paths
 
-- `src/gzkit/traceability.py` (added by brief reconcile, attestor Jeffry)
+- `src/gzkit/traceability.py` (added by brief reconcile, attestor g0)
 
 <!-- What files/directories are IN SCOPE? -->
 

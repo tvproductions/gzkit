@@ -190,7 +190,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: Completed — all 4 REQs verified, 2645 tests pass, BDD green, docs built.
 - Date: 2026-04-08
 

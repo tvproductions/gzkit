@@ -184,7 +184,7 @@ Returns: `**Decision: Exclude** — The manifests module is domain-specific to a
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: Attested as completed. Evaluated airlineops manifests.py against gzkit manifest handling. Exclude decision is correct — module is domain-specific to demand-run artifacts with no governance analog. All quality gates pass.
 - Date: 2026-04-10
 

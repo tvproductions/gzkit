@@ -276,7 +276,7 @@ Pre-existing tooling drift noticed but out of scope: `uv run gz plan audit` (`sr
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: attest completed — Exclude decision recorded with five-point rationale including the tooling-layer vs consumer-layer distinction that decisively disqualifies absorption. See brief Human Attestation section for the full enrichment.
 - Date: 2026-04-13
 

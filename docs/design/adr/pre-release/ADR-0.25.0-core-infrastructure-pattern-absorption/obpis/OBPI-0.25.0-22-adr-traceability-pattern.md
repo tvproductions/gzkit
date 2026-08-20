@@ -204,6 +204,6 @@ rg -n 'Decision: Confirm' docs/design/adr/pre-release/ADR-0.25.0-core-infrastruc
 
 ### Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Date: 2026-04-11
 - Attestation: attest completed

@@ -401,6 +401,6 @@ rg -n 'Decision: Absorb' \
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Date: 2026-04-12
 - Attestation: Accepted. Absorb decision for airlineops opsdev/lib/drift_detection.py — gzkit had been writing anchor commits into receipt events for months without any reader; the absorbed temporal_drift module fills that gap with a pure classify_drift plus thin orchestrators that share git_cmd and read .gzkit/ledger.jsonl. 25 tests pass; library-only; CLI surfacing deferred to a follow-on OBPI.

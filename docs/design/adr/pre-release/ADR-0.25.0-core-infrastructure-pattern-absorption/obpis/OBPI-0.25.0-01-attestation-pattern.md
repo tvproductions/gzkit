@@ -198,7 +198,7 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 - Attestation: Confirmed: gzkit attestation surface is more capable across all dimensions. Comparison is honest and neutral — retains best from both codebases. No absorption warranted.
 - Date: 2026-04-10
 

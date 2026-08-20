@@ -278,7 +278,7 @@ The first attestation evidence in this repository to satisfy `.claude/rules/atte
 
 ## Human Attestation
 
-- Attestor: `Jeffry`
+- Attestor: `g0`
 <!-- gz-validate-skip: brief-cross-references -->
 - Attestation: attest completed — Absorb decision executed: airlineops/opsdev/arb/ ported to gzkit as a 7-module package, 7-verb CLI surface (commands/arb.py + cli/parser_arb.py new dedicated module), 2 Draft 2020-12 JSON schemas with gzkit.arb.*.v1 IDs, ArbConfig added to GzkitConfig, 54 Red-then-Green tests across 11 modules, 6 behave scenarios in features/arb.feature, docs/user/commands/arb.md + manpages/arb.md + runbook Heavy-lane flow update, .gzkit/rules/arb.md bumped 1.0 to 1.1, gz-arb skill revived from retired to active. Forensic root cause confirmed via git log -S: commit 37c891ca copied the airlineops arb rule wholesale, commit 4700b623 mechanical opsdev-to-gzkit find-and-replace without implementation. First attestation in the repository to honestly satisfy the attestation-enrichment rule. ARB receipts dog-fooded from the surface this OBPI just created: lint arb-ruff-96af31501b1e40f09ce8afd77ac93bbe, typecheck arb-step-typecheck-5cd0e1da148b4b82b938e55c9c917879, tests arb-step-unittest-arb-full-865bd7c0ce074b77bf1f92d2bd81df6e, mkdocs arb-step-mkdocs-a3947f56aa1d4887802607414708ea4c. All 4 validated via gz arb validate. Reconciled ADR-0.27.0 sibling collision: 9 of 13 briefs cross-referenced as absorbed under OBPI-0.25.0-33; 06/07/08/09 pending with Logfire telemetry-sync design preserved in 09. GHI #152 filed for plan-audit cross-ADR scope-collision check.
 - Date: 2026-04-15

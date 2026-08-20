@@ -137,7 +137,7 @@ product proof as evidence channels.
 identified and remediated in-session. One non-blocking architectural limitation
 tracked under GHI #165.
 
-**Human attestation:** Recorded at closeout ceremony — "Completed" (by Jeffry,
+**Human attestation:** Recorded at closeout ceremony — "Completed" (by g0,
 2026-04-15).
 
 **Lifecycle:** Validated (confirmed via `uv run gz adr status ADR-0.25.0`).

@@ -3672,7 +3672,7 @@ complexity-thresholds.json" # features/steps/gz_steps.py:209
     And the ledger directory exists at ".gzkit"
 # features/steps/intrinsic_complexity_attestation_steps.py:58
     When I run the gz command "complexity advise subject.py:add
---attest-intrinsic --reason=irreducible --attestor=Jeffry --rule-path
+--attest-intrinsic --reason=irreducible --attestor=g0 --rule-path
 complexity-thresholds.json" # features/steps/gz_steps.py:209
     Then the command exits with code 1
 # features/steps/gz_steps.py:220
@@ -3689,7 +3689,7 @@ source
     And the ledger directory exists at ".gzkit"
 # features/steps/intrinsic_complexity_attestation_steps.py:58
     When I run the gz command "complexity advise subject.py:block_band
---attest-intrinsic --reason=irreducible-state-machine --attestor=Jeffry
+--attest-intrinsic --reason=irreducible-state-machine --attestor=g0
 --rule-path complexity-thresholds.json" with simulated TTY attestation #
 features/steps/intrinsic_complexity_attestation_steps.py:67
     Then the command exits with code 0
@@ -3709,7 +3709,7 @@ source
     And the ledger directory exists at ".gzkit"
 # features/steps/intrinsic_complexity_attestation_steps.py:58
     When I run the gz command "complexity advise subject.py:block_band
---attest-intrinsic --reason=irreducible-state-machine --attestor=Jeffry
+--attest-intrinsic --reason=irreducible-state-machine --attestor=g0
 --rule-path complexity-thresholds.json" # features/steps/gz_steps.py:209
     Then the command exits with code 1
 # features/steps/gz_steps.py:220
@@ -4946,7 +4946,7 @@ features/rendition_playback.feature:69
 Candidate\n"                            #
 features/steps/rendition_playback_steps.py:99
     When I run the gz command "content commit AGENTS.md --consumer codex
---attestor Jeffry --attestation-text done" # features/steps/gz_steps.py:209
+--attestor g0 --attestation-text done" # features/steps/gz_steps.py:209
     Then the command exits with code 0
 # features/steps/gz_steps.py:220
     And a committed rendition exists for "AGENTS.md" consumer "codex"

@@ -324,4 +324,4 @@ If "Request Changes," required fixes:
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.15 | Completed | Jeffry | 2026-04-08 | completed |
+| 0.0.15 | Completed | g0 | 2026-04-08 | completed |

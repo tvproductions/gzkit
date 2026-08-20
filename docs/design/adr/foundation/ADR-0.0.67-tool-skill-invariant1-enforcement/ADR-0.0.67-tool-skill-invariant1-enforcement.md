@@ -204,5 +204,5 @@ floor.
 
 | Term | Status | Attested By | Date | Reason |
 |------|--------|-------------|------|--------|
-| 0.0.67 | Completed | Jeffry | 2026-06-09 | Completed |
+| 0.0.67 | Completed | g0 | 2026-06-09 | Completed |
 | 0.0.67 | Validated | g0 | 2026-06-09 | Gate-5 audit acceptance ("accept audit"); L2 ledger proof PASS, value demonstrated, 8/8 BEHAVIOR REQs covered, 2 non-blocking findings tracked (GHI #543, #591). Re-verify receipts: arb-step-unittest-0530bd37 (5977 pass), arb-ruff-b7640c24, arb-step-typecheck-1f868616, arb-step-mkdocs-0559dd5f. |
