@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "f4489ed53fc6fdc26718891f71df562a159197c793eea9a09a9f6c211e3a4d38",
-  "corpus_entry_count": 65,
-  "rendition_fingerprint": "f3f36a52163e876287754a587d39d8d725be38843aac6939a787f8d74e35acdb",
-  "committed_ts": "2026-08-18T00:28:35.367590+00:00",
+  "corpus_fingerprint": "3e359d7502b0bf58b3465d5d1d72dbf0767fe627d49e813c9d2c9ab907a5d2b6",
+  "corpus_entry_count": 66,
+  "rendition_fingerprint": "ca277d58a7e7719fa5f0681ec3b753b39cfd4019af5d1d232954524801bec59b",
+  "committed_ts": "2026-08-20T00:33:00.162433+00:00",
   "attestor": "g0",
-  "attestation_text": "why did you stall? — operator ruling 2026-08-17 unblocking the recompose after the agent converted 'needs attestation' into 'must stop', the same reflex it had already caught and withdrawn earlier the same session. Candidate is MECHANICAL, not editorial: the committed 34354 B rendition preserved byte-for-byte, the three invariant-tier entries ruled this session appended verbatim to Operator Doctrine, and the one superseded bullet removed on the operator's own 'forget 90%, you have zero basis for any certainty'. Floor verified: all 54 live invariant entries present. Byte evidence invariant=14732B total=37329B setpoint=lite."
+  "attestation_text": "AGENTS.md is wrong, but it is rendered, so fix in source — corpus entry corpus-gate-covenant-2026-08-20T00:31:11 (invariant tier, Mechanical) closes the foundation kind per ADR-0.34.0, discharging the capture OBPI-0.34.0-03 § Denied Paths deferred and never claimed; witnessed by 'gz plan create --kind foundation' and 'gz adr promote --kind foundation' both refusing with three-part guardrail prose, and 'gz validate --taxonomy' green at exit 0"
 }

@@ -201,17 +201,17 @@ Run `uv run gz skill list` for the authoritative active catalog. For details on 
 | Kind | Semver | Content |
 |------|--------|---------|
 | `pool` | none (flat backlog; id prefix `ADR-pool.<slug>`) | Backlog awaiting promotion |
-| `foundation` | `0.0.x` | App/system invariants, identity-shaping facts, conditions, concepts, semantics |
+| `foundation` | `0.0.x` | **CLOSED to new authoring** — grandfathered set only (see below) |
 | `feature` | `0.y.z` and up | Active/committed (or queued) release-carrying capability |
 
-Mechanical enforcement (ADR-0.0.17):
+The `foundation` kind is CLOSED to new authoring in gzkit (ADR-0.34.0 Foundation Sunset). It is SEALED, never deleted: `foundation` stays a valid schema enum value so the grandfathered set keeps validating, and that set's membership is the committed roster in `data/foundation_grandfather.json` — never a count transcribed into prose. New gzkit ADRs are `feature` or `pool` only. Mechanically witnessed: `gz plan create --kind foundation` and `gz adr promote --kind foundation` are rejected at the command layer with three-part guardrail prose, and `gz validate --taxonomy` fail-closes on the closed-kind and terminal-partition assertions. The closure is PROJECT-LOCAL: `gz init` scaffolds adopters OPEN, because early adopter projects are exactly when identity-shaping foundations make sense — never propagate this closure into the wheel-shipped adopter template. ADR-0.0.18's choose-foundation guidance is superseded-in-part and frozen-historic; read it as a record of how the era was decided, never as instruction on which kind to author now.
 
-- `kind:` frontmatter on every non-pool ADR; validated against schema enum `{foundation, feature}` (`src/gzkit/schemas/adr.json`)
-- `gz plan create --kind {pool,foundation,feature}` scaffolds correct shape with kind/semver consistency
-- `gz adr promote --kind {foundation,feature}` writes `kind:` into promoted ADR frontmatter
-- `gz validate --taxonomy` enforces: `foundation` ⇒ `0.0.x`, `feature` ⇒ non-`0.0.x`, `pool` ⇒ no `kind`/`semver` frontmatter
+Mechanical enforcement (ADR-0.0.17, ADR-0.34.0):
 
-Operator guidance on *when* to choose which kind: [ADR-0.0.18](docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md).
+- `kind:` frontmatter on every non-pool ADR; validated against schema enum `{foundation, feature}` (`src/gzkit/schemas/adr.json`) — the enum keeps `foundation` so grandfathered ADRs validate
+- `gz plan create --kind {pool,feature}` scaffolds correct shape with kind/semver consistency; `--kind foundation` is refused at the command layer
+- `gz adr promote --kind feature` writes `kind:` into promoted ADR frontmatter; `--kind foundation` is refused on the same terms
+- `gz validate --taxonomy` enforces: `foundation` ⇒ `0.0.x`, `feature` ⇒ non-`0.0.x`, `pool` ⇒ no `kind`/`semver` frontmatter, plus the closed-kind and terminal-partition assertions
 
 ### OBPI Decomposition Mandate
 
