@@ -2,9 +2,16 @@
 # Builds PyInstaller binaries for Windows/Linux/macOS, creates GitHub Release,
 # and optionally publishes to PyPI.
 #
-# Usage:
-#   git tag vX.Y.Z
-#   git push origin vX.Y.Z
+# Usage (see docs/developer/release_process.md for the full ceremony):
+#   gh release create vX.Y.Z --target main --latest --notes-file <curated notes>
+#
+# The release is created from curated notes BEFORE the tag reaches the remote;
+# this workflow then attaches the built binaries to it. Pushing a bare tag with
+# no release present still works and falls back to generated notes.
+#
+# Re-pushing a tag that is already fully released is a no-op: the release body
+# is never rewritten, binaries already attached are left alone, and PyPI
+# re-uploads are skipped as already-present (GHI #834).
 
 name: Release
 
@@ -78,16 +85,94 @@ jobs:
         with:
           path: artifacts
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
-          files: |
-            artifacts/gz.exe/gz.exe
-            artifacts/gz-linux/gz-linux
-            artifacts/gz-macos/gz-macos
+      # A tag push is not the same event as a first release. Tag repair, a
+      # workflow re-run, a force-pushed tag, or a mis-typed `git push --tags`
+      # all re-enter this job with the release already published, and the
+      # publishing step used to rewrite whatever it was handed while reporting
+      # success -- so the destructive half was the silent half (GHI #834).
+      #
+      # Two facts, both measured 2026-08-19, decide the shape of this guard:
+      #
+      #   1. The release object ALREADY EXISTS on the normal path. The ceremony
+      #      in docs/developer/release_process.md runs `gh release create
+      #      --notes-file RELEASE_NOTES.md` before pushing the tag -- v0.34.4
+      #      was published 12:14:23Z and this workflow started 12:14:25Z. So
+      #      "a release exists" cannot mean "skip", or no release would ever
+      #      receive binaries again.
+      #   2. Assets are ours alone, and re-running replaced them. The 2026-08-19
+      #      re-push of v0.18.1 and v0.24.1 overwrote their March/April binaries
+      #      with fresh builds (asset created_at moved to 2026-08-19T01:34Z).
+      #
+      # So the discriminator is the artifact set: this workflow is the only
+      # producer of these three files, and a release already carrying all of
+      # them has already been served. Body writes are gated on the release
+      # being absent; asset writes on the artifact set being incomplete.
+      - name: Decide what this tag still needs
+        id: existing
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # Must equal the `artifact` values in the build matrix above, sorted.
+          want="gz-linux,gz-macos,gz.exe"
+
+          # First fence: serve only the version `main` currently declares. A
+          # historical tag re-pushed for reachability repair (GHI #832) must be
+          # left exactly as it stands, body AND assets -- and several of those
+          # releases carry no assets at all, so the artifact check below would
+          # otherwise read them as "still owed binaries" and upload today's
+          # build onto a release from March.
+          git fetch --depth=1 origin main
+          main_version="$(git show FETCH_HEAD:pyproject.toml | sed -n 's/^version = "\(.*\)"/\1/p' | head -1)"
+          if [ "${GITHUB_REF_NAME#v}" != "$main_version" ]; then
+            echo "create=false" >> "$GITHUB_OUTPUT"
+            echo "attach=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::$GITHUB_REF_NAME is not the version main declares ($main_version). Leaving its release untouched."
+            exit 0
+          fi
+
+          # Second fence: what does this tag still need?
+          if ! gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "create=true" >> "$GITHUB_OUTPUT"
+            echo "attach=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "create=false" >> "$GITHUB_OUTPUT"
+          have="$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --json assets --jq '[.assets[].name] | sort | join(",")')"
+          if [ "$have" = "$want" ]; then
+            echo "attach=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Release $GITHUB_REF_NAME already carries every built artifact. Leaving its body and assets untouched."
+          else
+            echo "attach=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # `gh` rather than a marketplace action: what an action does to the body
+      # of an ALREADY-EXISTING release is exactly the behaviour this issue is
+      # about, and it is not something a reader of this file can verify. These
+      # verbs are documented and each touches one thing.
+      - name: Create the release when this tag has none
+        if: steps.existing.outputs.create == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
+            --title "gzkit $GITHUB_REF_NAME" --generate-notes
+
+      - name: Attach built binaries
+        if: steps.existing.outputs.attach == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release upload "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --clobber \
+            artifacts/gz.exe/gz.exe \
+            artifacts/gz-linux/gz-linux \
+            artifacts/gz-macos/gz-macos
 
   pypi:
     needs: build

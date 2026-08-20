@@ -66,13 +66,26 @@ If HEAD or the worktree changes after sync, rerun this step.
 
 7. Tag and publish (manual)
 
+Create the release from the curated notes. `--target main` creates and pushes
+the tag, which fires `.github/workflows/release.yml`; that workflow attaches the
+built binaries to the release you just created and never rewrites a body that
+already exists.
+
 ```zsh
-git tag -a vX.Y.Z -m "gzkit vX.Y.Z"
-git push origin vX.Y.Z
-gh release create vX.Y.Z --notes-file RELEASE_NOTES.md --title "gzkit vX.Y.Z"
+BODY="$(mktemp)"
+awk '/^## v/{c++} c==2{exit} c==1' RELEASE_NOTES.md > "$BODY"
+gh release create vX.Y.Z --target main --latest --title "vX.Y.Z" --notes-file "$BODY"
 ```
 
 ## Notes
 
 - Full sync is mandatory immediately before release/tag commands: `uv run gz git-sync --apply --lint --test`.
 - Do not create release tags until all gates and human attestation evidence are complete.
+- Create the release *before* the tag reaches the remote, not after. A bare
+  `git push origin vX.Y.Z` fires the release workflow with no release present,
+  so the workflow creates one from generated notes and the curated body never
+  lands — the generated-stub outcome GHI #830 closed.
+- `RELEASE_NOTES.md` is cumulative, so `--notes-file` against the whole file
+  publishes every historical version as the body (GHI #710). The `awk` slice
+  above takes only the newest `## v…` block; `gz-patch-release` § Publish runs
+  the same slice.
