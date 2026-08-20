@@ -1,8 +1,8 @@
 # Implementation Plan: OBPI-0.0.35-04-kind-invariance-validator
 
-**OBPI:** OBPI-0.0.35-04-kind-invariance-validator  
-**Parent ADR:** ADR-0.0.35-foundation-feature-invariance-test  
-**Lane:** Heavy  
+**OBPI:** OBPI-0.0.35-04-kind-invariance-validator
+**Parent ADR:** ADR-0.0.35-foundation-feature-invariance-test
+**Lane:** Heavy
 **Date:** 2026-05-17
 
 ## Context

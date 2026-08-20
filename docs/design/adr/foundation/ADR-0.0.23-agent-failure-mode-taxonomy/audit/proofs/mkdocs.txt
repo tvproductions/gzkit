@@ -13,4 +13,3 @@
  \u2502  Our full analysis:
  \u2502
  \u2502  https://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/
-

@@ -20,4 +20,3 @@ INFO    -  The following pages exist in the docs directory, but are not included
   - user\commands\adr-report.md
   - user\commands\readiness-eval.md
 INFO    -  Documentation built in 1.51 seconds
-

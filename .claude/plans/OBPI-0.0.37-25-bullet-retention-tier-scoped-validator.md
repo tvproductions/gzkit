@@ -74,7 +74,7 @@ silent validator edit (parent ADR Alternative #18).
 
 ### Step 1 — Tier-aware validator (REQ-01, REQ-02, REQ-03) — RED→GREEN
 Refactor the lines 52–72 loop: for each enforced bullet, resolve its tier via the surface corpus
-(unknown → invariant). 
+(unknown → invariant).
 - **invariant:** keep `normalized_rule not in _normalize(corpus)` → ValidationError (exit 3).
 - **compressible:** look up the surface's latest `rendition_advisor_verdict` event → load + validate
   that receipt (`exit_status == 0`) + confirm operator attestation present. Witnessed → pass; not

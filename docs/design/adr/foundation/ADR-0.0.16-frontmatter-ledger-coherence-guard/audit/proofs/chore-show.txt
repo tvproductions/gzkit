@@ -36,7 +36,7 @@ the existing `status:` term.
 - **Ungoverned keys:** untouched byte-identically (tags, related, etc.)
 - **Pool ADRs:** skipped (no ledger entry by design); listed in receipt.
 - **Unmapped status term:** STOPs with a BLOCKER; zero files mutated.
-- **Receipt location:** 
+- **Receipt location:**
 `artifacts/receipts/frontmatter-coherence/<YYYYMMDDTHHMMSSZ>.json`
 - **Related GHIs:** #167 (umbrella), #168, #169, #170
 
@@ -97,11 +97,10 @@ resolve, then re-run the dry-run to confirm.
 ## Evidence Commands
 
 ```bash
-uv run gz frontmatter reconcile --dry-run --json > 
+uv run gz frontmatter reconcile --dry-run --json >
 ops/chores/frontmatter-ledger-coherence/proofs/dry-run.json
 ```
 
 ---
 
 **End of CHORE: Frontmatter-Ledger Reconciliation**
-

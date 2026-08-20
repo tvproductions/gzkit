@@ -1,8 +1,8 @@
 # Plan: OBPI-0.0.35-03-why-foundation-tier-convention
 
-**OBPI:** OBPI-0.0.35-03-why-foundation-tier-convention  
-**ADR:** ADR-0.0.35-foundation-feature-invariance-test  
-**Lane:** Lite  
+**OBPI:** OBPI-0.0.35-03-why-foundation-tier-convention
+**ADR:** ADR-0.0.35-foundation-feature-invariance-test
+**Lane:** Lite
 
 ## Context
 

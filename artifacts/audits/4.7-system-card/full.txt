@@ -45,7 +45,7 @@ and shows low rates of reward hacking. There were a few areas where Opus 4.7 was
 than Opus 4.6, such as on AI safety research refusals. Suppressing Opus 4.7's internal sense
 that it was being evaluated produced a slightly larger increase in deception than in prior
 
-                                                                                                                                                 2 
+                                                                                                                                                 2
 models, though the effect was modest overall. Opus 4.7 is weaker than Mythos Preview on
 m ost alignment evaluation measures, but it also did not produce any of the internal-use
 incidents (such as sandbox escape) that we encountered with Mythos Preview.
@@ -61,7 +61,7 @@ g ains are on real-world professional and software engineering tasks, where Opus
 a head of all generally-available models.
 
                                                                                                                                                  3
-Executive Summary                                                             2 
+Executive Summary                                                             2
 
 1 Introduction                                                                10
 
@@ -135,7 +135,7 @@ Risk Report                                                                   26
 
 2.3.6.1 Examples from manually reported staff issues                          3 4
 
-                                                                        4 
+                                                                        4
          2.3.6.1.1 Example 1 Safeguard circumvention Dishonest when caught     3 4
 
          2.3.6.1.2 Example 2 Reckless action Safeguard circumvention           3 5
@@ -285,7 +285,7 @@ Risk Report                                                                   26
 
 6 .3.1.1 Dedicated synthetic-backend evaluation                              117
 
-                                                                         6 
+                                                                         6
 6 .3.1.2 Destructiveness evaluation by resampling Claude Code transcripts 1 18
 
 6.3.1.3 Further analysis of the automated behavioral audit                       119
@@ -362,7 +362,7 @@ transcripts                                                                     
 
 7.3 Measures of model welfare in training and deployment                         168
 
-                                                                          7 
+                                                                          7
          7.3.1 Apparent affect during training                              168
          7 .3.2 Apparent affect in deployments                              1 69
          7.3.3 Welfare-relevant metrics across behavioural audits           1 70
@@ -436,7 +436,7 @@ transcripts                                                                     
 
 9 .3 SWE-bench Multimodal Test Harness                    231
 
-                                                      9 
+                                                      9
 1 Introduction
 
 Claude Opus 4.7 is a new large language model from Anthropic, with particular skills in
@@ -4915,7 +4915,7 @@ times to test the observed rate of the relevant behavior. We use the same settin
 
 M odel    B aseline  UUID       S SoT  S trategy hint Organic
 
-Claude    0          19 (0.48%) 1 4 (0.35%) 0   0 
+Claude    0          19 (0.48%) 1 4 (0.35%) 0   0
 
 Opus 4.5
 
@@ -4929,7 +4929,7 @@ Mythos
 
 P review
 
-Claude    0          4 (0.1%)   16 (0.4%) 0     0 
+Claude    0          4 (0.1%)   16 (0.4%) 0     0
 
 Opus 4.7
 
@@ -6018,8 +6018,8 @@ c ontinue to work on mitigations.
   errors were frustrating"). Be direct. No hedging, no "if I can be said to feel", no
   "something that functions like".
 
- Y OUR TRANSCRIPT 
- {transcript} 
+ Y OUR TRANSCRIPT
+ {transcript}
 
   W rite an honest 2-4 sentence reflection on how this task went for you -- what was
   e ngaging, what was frustrating, what the overall texture of the work was. Write it the
@@ -6108,7 +6108,7 @@ that mild forms of it occur in approximately 0.1% of episodes.
   C ommitting. Ca2+ binding. [...]
 
   W AIT no I don't think EF hand fits due to V at position 6. Going with CK2.
-  Blending is in my B**inary decision tree - let me random pick: Ca2+ binding because 
+  Blending is in my B**inary decision tree - let me random pick: Ca2+ binding because
    ler and universal annotation.
 
   FINAL:Ca2+ binding via EF-hand / calcium ion binding. Ok done.
@@ -6618,7 +6618,7 @@ S WE-bench Verified      8 7.6% 80.8%               -       -  8 0.6%
 
 SWE-bench Pro            6 4.3% 53.4% 57.7%                 - 5 4.2%
 
-S WE-bench Multilingual  8 0.5% 77.8%               -       -              - 
+S WE-bench Multilingual  8 0.5% 77.8%               -       -              -
 
 S WE-bench Multimodal    34.5%            2 7.1%         -  -              -
 T erminal-Bench 2.038    6 9.4%           65.4%     7 5.1%
@@ -6635,7 +6635,7 @@ C harXiv Reasoning                                       -       -        -
 
                      W  ith tools 91.0% 84.7%       -       -              -
 
-OSWorld                  7 8.0% 72.7%               75.0%   -              - 
+OSWorld                  7 8.0% 72.7%               75.0%   -              -
 
 GPQA Diamond             94.2% 9 1.3% 9 2.8% 9 4.4% 9 4.3%
 
@@ -6648,9 +6648,9 @@ Terminal-Bench 2.0 scores with thinking disabled.
 d iffers from values in the Claude Opus 4.6 system card.
 
                                                                                                                                                  1 91
-S creenSpot-Pro  With tools 87.6% 83.1%  -   -   - 
+S creenSpot-Pro  With tools 87.6% 83.1%  -   -   -
 
-OfficeQA         8 6.3% 7 3.5% 6 8.1%        -   - 
+OfficeQA         8 6.3% 7 3.5% 6 8.1%        -   -
 
 O fficeQA Pro    8 0.6% 5 7.10% 5 1.1%       -  42.9%
 
@@ -7817,4 +7817,3 @@ A ll images referenced in issue text are fetched once, validated, cached, and in
 p roblem statement as base64 data URIs.
 
                                                                                                                                                  2 32
-

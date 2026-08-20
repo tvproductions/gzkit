@@ -1,8 +1,8 @@
 # Plan: OBPI-0.0.32-15-t0-maintenance-surfaces
 
-**OBPI:** OBPI-0.0.32-15-t0-maintenance-surfaces  
-**Parent ADR:** ADR-0.0.32-canonical-surface-packaging  
-**Lane:** Heavy  
+**OBPI:** OBPI-0.0.32-15-t0-maintenance-surfaces
+**Parent ADR:** ADR-0.0.32-canonical-surface-packaging
+**Lane:** Heavy
 **Date:** 2026-05-14
 
 ## Context

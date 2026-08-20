@@ -2,69 +2,69 @@ gz adr fidelity: ADR-0.0.74-mx-mode-maintenance-hangar
   Assertions: 10
 
   PASS  The MX marker is the single filesystem truth-source: its presence means
-MX==TRUE, its validity binds to a real `mx_session_opened` ledger event (a 
+MX==TRUE, its validity binds to a real `mx_session_opened` ledger event (a
 hand-created marker is void), and it reads without importing any gzkit-internal
 subsystem (it reads when gzkit is the patient).
         command:  uv run -m unittest tests.mx.test_marker
         expected: 0  observed: 0
 
-  PASS  The shared checkpoint is the single leveled-severity authority: it 
-reads the marker and resolves each guard's effective `GZ_<LEVEL>`, demoting 
-non-floor guards to advisory under an active marker while keeping 
-`gate5_invariants` fail-closed, and is a strict no-op when no marker is 
+  PASS  The shared checkpoint is the single leveled-severity authority: it
+reads the marker and resolves each guard's effective `GZ_<LEVEL>`, demoting
+non-floor guards to advisory under an active marker while keeping
+`gate5_invariants` fail-closed, and is a strict no-op when no marker is
 present.
         command:  uv run -m unittest tests.mx.test_checkpoint
         expected: 0  observed: 0
 
-  PASS  The `GZ_<LEVEL>` severity vocabulary is the Python-`logging` ladder 
-(CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10) with 
-NOTICE the agent-fidelity/drift band and the grounding threshold at effective 
+  PASS  The `GZ_<LEVEL>` severity vocabulary is the Python-`logging` ladder
+(CRITICAL 50 / ERROR 40 / WARNING 30 / NOTICE 25 / INFO 20 / DEBUG 10) with
+NOTICE the agent-fidelity/drift band and the grounding threshold at effective
 `>= ERROR`.
         command:  uv run -m unittest tests.mx.test_levels
         expected: 0  observed: 0
 
-  PASS  Gates are T/F sensors feeding one disposition handler that maps the 
-(design × build × vibes) diagnosis to a `GZ_<LEVEL>` and routes it (AOG/MX 
-hangar, GHI-fix, refactor/Chores, drift-drain, track) — guards emit a level 
+  PASS  Gates are T/F sensors feeding one disposition handler that maps the
+(design × build × vibes) diagnosis to a `GZ_<LEVEL>` and routes it (AOG/MX
+hangar, GHI-fix, refactor/Chores, drift-drain, track) — guards emit a level
 instead of self-deciding.
         command:  uv run -m unittest tests.mx.test_disposition
         expected: 0  observed: 0
 
-  PASS  The `@enforces(claim, fixture, entrypoint)` primitive registers claims 
+  PASS  The `@enforces(claim, fixture, entrypoint)` primitive registers claims
 at import time and fail-closes at decoration on a typo / unknown claim (mirrors
 `@covers` / `@advances`).
         command:  uv run -m unittest tests.governance.test_enforces_registry
         expected: 0  observed: 0
 
   PASS  The meta-validator runner invokes `entrypoint(fixture())` in production
-config, asserts failure, fail-closes strict (no debt escape) if any enrolled 
-claim lacks a passing un-forced NC, is READ-ONLY on a clean run, and emits 
+config, asserts failure, fail-closes strict (no debt escape) if any enrolled
+claim lacks a passing un-forced NC, is READ-ONLY on a clean run, and emits
 per-claim FACADE-vs-TEST-BUG guardrail-feedback with a single-NC repro command.
-        command:  uv run -m unittest 
+        command:  uv run -m unittest
 tests.governance.test_enforcement_meta_validator
         expected: 0  observed: 0
 
-  PASS  Each `gate5_invariants` member (secrets, operator-pii, ledger, 
-gate5-attestation-absence) carries a live un-forced NC that runs the real path 
+  PASS  Each `gate5_invariants` member (secrets, operator-pii, ledger,
+gate5-attestation-absence) carries a live un-forced NC that runs the real path
 against a known violation and is caught.
         command:  uv run -m unittest tests.mx.test_gate5_invariants_live_nc
         expected: 0  observed: 0
 
-  PASS  A `` REQ that asserts enforcement resolves at closeout only when 
+  PASS  A `` REQ that asserts enforcement resolves at closeout only when
 `resolve_fence_proof` (in `src/gzkit/req_kind.py`) finds a live `@enforces` NC.
         command:  uv run -m unittest tests.governance.test_fence_proof_live_nc
         expected: 0  observed: 0
 
   PASS  The meta-validator is wired into `gz check` / pre-push and is READ-ONLY
 (no ledger mutation) on a clean run.
-        command:  uv run -m unittest 
+        command:  uv run -m unittest
 tests.governance.test_enforcement_floor_wiring
         expected: 0  observed: 0
 
-  PASS  Each `gz check` audit step and solo `gz validate` governance path 
-resolves disposition through `checkpoint.resolve` (the step-layer seam): 
-non-floor guards demote to advisory under an active marker and exit 3 outside, 
-`gate5_invariants` pin CRITICAL, and `--sensitivity` + attestation lane/kind 
+  PASS  Each `gz check` audit step and solo `gz validate` governance path
+resolves disposition through `checkpoint.resolve` (the step-layer seam):
+non-floor guards demote to advisory under an active marker and exit 3 outside,
+`gate5_invariants` pin CRITICAL, and `--sensitivity` + attestation lane/kind
 stay self-deciding.
         command:  uv run -m unittest tests.mx.test_check_step_checkpoint_seam
         expected: 0  observed: 0

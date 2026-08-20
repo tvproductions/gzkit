@@ -1,4 +1,4 @@
-  ✓ Gate 1 (ADR): PASS 
+  ✓ Gate 1 (ADR): PASS
 Gate 2 (TDD): uv run gz test
   ✓ Gate 2 (TDD): PASS
   → Gate 3 (Docs): uv run mkdocs build --strict
@@ -6,13 +6,13 @@ Gate 2 (TDD): uv run gz test
   → Gate 4 (BDD): uv run -m behave features/
   Heavy-lane Gate 4 proof for ADR-0.0.21 (chores as gzkit surface).
   I want Gate 1 to mechanically block on frontmatter-ledger drift,
-  Scenario: Gate 1 blocks on status frontmatter drift with exit 3        # 
+  Scenario: Gate 1 blocks on status frontmatter drift with exit 3        #
 Feature: Heavy lane Gate 4 governance # features/heavy_lane_gate4.feature:1
   Heavy-lane ADR workflows must enforce Gate 4 BDD checks.
-  Scenario: Attestation is blocked until Gate 4 passes              # 
-    And the output contains "Gate 4 must pass"                      # 
-  Scenario: Closeout guidance includes Gate 4 BDD command              # 
-    And the output contains "Gate 4 (BDD): uv run -m behave features/" # 
-  Scenario: Heavy ADR status reports Gate 4 as pending when not checked  # 
+  Scenario: Attestation is blocked until Gate 4 passes              #
+    And the output contains "Gate 4 must pass"                      #
+  Scenario: Closeout guidance includes Gate 4 BDD command              #
+    And the output contains "Gate 4 (BDD): uv run -m behave features/" #
+  Scenario: Heavy ADR status reports Gate 4 as pending when not checked  #
   ✓ Gate 4 (BDD): PASS
   ⚠ Gate 5 (Human): PENDING (manual)

@@ -16,11 +16,11 @@ distinct artifacts (ADR-0.0.26 Decision §3).
 ## Policy and Guardrails
 
 - **Lane:** Medium — reads ledger and justify artifacts; no network required.
-- **Read-only** at `.gzkit/ledger.jsonl` and `docs/design/adr/**`; only writes 
+- **Read-only** at `.gzkit/ledger.jsonl` and `docs/design/adr/**`; only writes
 to its own proofs directory.
 - No duplicate proposals: idempotent by content hash over `(cluster_key, sorted
 source_artifact_ids)`.
-- Threshold configurable via `data/eval_feedback_thresholds.json` 
+- Threshold configurable via `data/eval_feedback_thresholds.json`
 (`cluster_min_recurrence`, default 3).
 
 ## Workflow
@@ -38,7 +38,7 @@ ls .gzkit/chores/eval-feedback-cluster/proofs/
 ```
 
 Proposals are JSON files: `proposal-<timestamp>.json` with schema:
-`cluster_key`, `recurrence_count`, `source_artifact_ids`, 
+`cluster_key`, `recurrence_count`, `source_artifact_ids`,
 `source_artifact_paths`,
 `summary`, `proposed_rule_target`.
 
@@ -52,9 +52,8 @@ uv run gz validate --chores-layout
 
 | Type | Command | Expected |
 |------|---------|----------|
-| exitCodeEquals | `uv run -m unittest 
+| exitCodeEquals | `uv run -m unittest
 tests/chores/test_eval_feedback_cluster.py -q` | 0 |
 | exitCodeEquals | `uv run gz validate --chores-layout` | 0 |
 
 ## Evidence Commands
-

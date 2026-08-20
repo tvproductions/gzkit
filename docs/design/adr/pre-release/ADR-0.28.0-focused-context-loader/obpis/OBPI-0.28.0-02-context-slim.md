@@ -242,11 +242,11 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 $ diff <(uv run gz context ADR-0.0.3-hexagonal-architecture-tune-up) \
        <(uv run gz context --slim ADR-0.0.3-hexagonal-architecture-tune-up)
 2504,2512d2503
-< 
+<
 < ---
-< 
+<
 < ## Governance rules
-< 
+<
 < - **Lane:** heavy
 < - **Lifecycle:** Validated
 < - **Current gate:** Gate 5

@@ -47,4 +47,3 @@ INFO    -  The following pages exist in the docs directory, but are not included
   - user\manpages\closeout.md
   - user\skills\_TEMPLATE.md
 INFO    -  Documentation built in 1.60 seconds
-

@@ -1,8 +1,8 @@
 # Plan: OBPI-0.0.37-23-invariant-tier — Invariant Tier (Verbatim, Never Condense)
 
-**OBPI:** OBPI-0.0.37-23-invariant-tier  
-**ADR:** ADR-0.0.37-constitutional-invariant-composition (Checklist item #23)  
-**Lane:** Heavy  
+**OBPI:** OBPI-0.0.37-23-invariant-tier
+**ADR:** ADR-0.0.37-constitutional-invariant-composition (Checklist item #23)
+**Lane:** Heavy
 **Status:** Ready for implementation
 
 ## Context

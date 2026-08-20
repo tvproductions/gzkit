@@ -1,11 +1,11 @@
 ⚠ Deprecated: `gz gates` will be removed in a future release. Use `gz closeout` instead.
-  ✓ Gate 1 (ADR): PASS 
+  ✓ Gate 1 (ADR): PASS
 (docs/design/adr/foundation/ADR-0.0.23-agent-failure-mode-taxonomy/ADR-0.0.23-a
 gent-failure-mode-taxonomy.md)
 Gate 2 (TDD): uv run gz test
 Running unit tests...
 Error: Attestation receipt-binding gate failed (heavy/foundation policy).
-  - missing: no receipt file at 
+  - missing: no receipt file at
 arb-step-unittest-dddddddddddddddddddddddddddddddd.json
 Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.
 Chores registry diff:
@@ -169,27 +169,27 @@ r1); see .claude/rules/tests.md § Invariant 6f for remediation
 .............s.................................................................
 .........Exception in thread Thread-493 (_readerthread):
 Traceback (most recent call last):
-  File 
+  File
 "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\t
 hreading.py", line 1044, in _bootstrap_inner
     self.run()
     ~~~~~~~~^^
-  File 
+  File
 "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\t
 hreading.py", line 995, in run
     self._target(*self._args, **self._kwargs)
     ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File 
+  File
 "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\s
 ubprocess.py", line 1615, in _readerthread
     buffer.append(fh.read())
                   ~~~~~~~^^
-  File 
+  File
 "C:\Users\Jeff\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\e
 ncodings\cp1252.py", line 23, in decode
     return codecs.charmap_decode(input,self.errors,decoding_table)[0]
            ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 29: 
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 29:
 character maps to <undefined>
 ...............................................................................
 .............................................................s.................

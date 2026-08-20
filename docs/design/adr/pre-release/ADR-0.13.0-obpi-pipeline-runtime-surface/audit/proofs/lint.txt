@@ -11,4 +11,3 @@ Lint passed.
 
 
 [stderr]
-

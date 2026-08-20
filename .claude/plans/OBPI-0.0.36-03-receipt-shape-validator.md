@@ -1,9 +1,9 @@
 # Implementation Plan: OBPI-0.0.36-03-validate-receipt-shape-scope
 
-**OBPI:** OBPI-0.0.36-03-validate-receipt-shape-scope  
-**Parent ADR:** ADR-0.0.36-universal-obpi-attestation  
-**Lane:** Heavy  
-**ADR cutoff date:** 2026-04-26  
+**OBPI:** OBPI-0.0.36-03-validate-receipt-shape-scope
+**Parent ADR:** ADR-0.0.36-universal-obpi-attestation
+**Lane:** Heavy
+**ADR cutoff date:** 2026-04-26
 
 ## Context
 

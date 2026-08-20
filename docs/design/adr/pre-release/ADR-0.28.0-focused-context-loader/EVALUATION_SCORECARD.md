@@ -35,4 +35,3 @@ OBPI THRESHOLD: Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised
 [x] GO
 [ ] CONDITIONAL GO
 [ ] NO GO
-

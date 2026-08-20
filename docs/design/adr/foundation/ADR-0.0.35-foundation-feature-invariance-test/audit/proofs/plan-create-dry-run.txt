@@ -1,5 +1,5 @@
 Dry run: no files will be written.
-  Would create ADR: 
+  Would create ADR:
 C:\Users\Jeff\source\repos\va\gzkit\docs\design\adr\foundation\ADR-0.0.999-audi
 t-probe-demo-only\ADR-0.0.999-audit-probe-demo-only.md
   Would append ledger event: adr_created (ADR-0.0.999-audit-probe-demo-only)

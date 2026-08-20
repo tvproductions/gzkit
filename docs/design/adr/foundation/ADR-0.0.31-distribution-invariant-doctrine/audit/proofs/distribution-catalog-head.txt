@@ -27,4 +27,3 @@ No `scaffold_core_rules` function existed. No `CORE_RULES` registry symmetric to
 **Closed by:**
 - [OBPI-0.0.32-03](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-03-rules-physical-migration.md) — physical migration (`git mv .gzkit/rules/<slug>.md src/gzkit/rules/<slug>.md` for all 14 canonical rules)
 - [OBPI-0.0.32-04](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-04-rules-scaffolder-authoring.md) — `CORE_RULES` registry + `scaffold_core_rules` + `init_cmd` wiring
-

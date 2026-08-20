@@ -74,7 +74,7 @@ Public API in `src/gzkit/content/parse/__init__.py`:
 ```python
 def parse(text: str, as_type: str) -> BaseContentModel:
     """Parse canonical markdown text into a BaseContentModel instance.
-    
+
     Raises:
         KeyError: if as_type is not in CONTENT_MODELS
         pydantic.ValidationError: if parsed fields fail model validation
@@ -99,7 +99,7 @@ class TestRoundTripX(unittest.TestCase):
         parsed = parse(rendered, "X")
         # Model identity
         self.assertEqual(parsed, model)
-    
+
     @covers("REQ-0.0.34-03-02")
     def test_render_parse_render_idempotency(self):
         # render(parse(render(model))) == render(model)

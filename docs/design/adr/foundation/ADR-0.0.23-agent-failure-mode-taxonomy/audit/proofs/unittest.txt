@@ -1,5 +1,5 @@
 Error: Attestation receipt-binding gate failed (heavy/foundation policy).
-  - missing: no receipt file at 
+  - missing: no receipt file at
 arb-step-unittest-dddddddddddddddddddddddddddddddd.json
 Recovery: re-run the cited ARB commands and re-cite the resolved receipt IDs.
 Chores registry diff:

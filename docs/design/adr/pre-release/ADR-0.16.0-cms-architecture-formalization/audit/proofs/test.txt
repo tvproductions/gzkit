@@ -22,4 +22,3 @@ Tests passed.
 
 
 [stderr]
-

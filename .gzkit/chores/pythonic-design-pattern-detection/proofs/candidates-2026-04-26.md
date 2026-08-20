@@ -397,4 +397,3 @@
   - Absorption ref: https://refactoring.guru/design-patterns/visitor/python/example
   - Disposition: _[applied | deferred | not-pythonic-rewrite]_
   - Notes: _[fill in]_
-
