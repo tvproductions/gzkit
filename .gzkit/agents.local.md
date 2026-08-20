@@ -6,7 +6,7 @@
 - Attestation/commit-message enrichment: pass user words verbatim, append concrete characterization grounded in session evidence (AGENTS.md § Attestation).
 - Every version bump is a release — after bumping `pyproject.toml`, `__init__.py`, and the README badge, `gh release create vX.Y.Z --target main --latest`. Never leave a version bump unreleased.
 - `.gitignore` scaffolding uses the canonical [github/gitignore](https://github.com/github/gitignore) Python template plus gzkit entries (e.g. `.claude/settings.local.json`).
-- **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Use the operator's name only (e.g. `g0`); if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).
+- **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Record operator authorship as `g0` — never the operator's real name — in every attestor/author identity field; if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).
 
 ## Governance doctrine surfaces
 
