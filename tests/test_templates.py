@@ -776,5 +776,70 @@ class TestClassifyTemplateFile(unittest.TestCase):
         self.assertEqual(result, "package_only")
 
 
+class TestAdopterScaffoldKeepsFoundationOpen(unittest.TestCase):
+    """The foundation-kind closure is PROJECT-LOCAL and must never reach the wheel.
+
+    ADR-0.34.0 (Foundation Sunset) sealed `foundation` for gzkit's own authoring
+    and says so in gzkit's rendered AGENTS.md via an invariant-tier corpus entry.
+    Its § Positive #8 keeps the mechanism framework-wide while keeping the
+    DECISION project-local: `gz init` scaffolds adopters OPEN, "because early
+    adopter projects are exactly when identity-shaping foundations make sense".
+
+    `src/gzkit/templates/agents.md` is what `gz init` copies into an adopter, so
+    propagating gzkit's closure into it would cripple every downstream project.
+    Until now nothing checked that: `gz validate --distribution` enforces
+    byte-parity between the two template copies, which an edit to BOTH satisfies,
+    and the only thing standing against the mistake was prose asking an agent not
+    to make it. These assertions bite in both directions — the closure must not
+    leak in, and the kind must not be quietly dropped out.
+    """
+
+    def setUp(self) -> None:
+        self._template = (_PROJECT_ROOT / "src" / "gzkit" / "templates" / "agents.md").read_text(
+            encoding="utf-8"
+        )
+        self._agents_md = (_PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+    def test_adopter_template_does_not_carry_the_gzkit_closure(self) -> None:
+        """gzkit's project-local closure must not be scaffolded into adopters."""
+        # assertFalse on a membership test, not assertNotIn: assertNotIn renders the
+        # whole ~20 KB template into the failure message, burying the finding.
+        for leaked in ("CLOSED to new authoring", "ADR-0.34.0", "Foundation Sunset"):
+            self.assertFalse(
+                leaked in self._template,
+                f"the adopter scaffold carries gzkit's own closure ({leaked!r}); "
+                "ADR-0.34.0 Positive #8 keeps gz init scaffolding adopters OPEN, so "
+                "the closure belongs in gzkit's corpus only, never in the wheel template",
+            )
+
+    def test_adopter_template_still_offers_the_foundation_kind(self) -> None:
+        """An adopter must still be able to author a foundation ADR."""
+        self.assertIn(
+            "`foundation`",
+            self._template,
+            "the adopter scaffold must still present foundation as an authorable kind",
+        )
+        self.assertIn(
+            "identity-shaping",
+            self._template,
+            "the adopter scaffold must keep the guidance describing what a "
+            "foundation ADR is for; dropping it silently removes the kind",
+        )
+
+    def test_gzkit_own_contract_does_carry_the_closure(self) -> None:
+        """The paired direction: gzkit's rendered contract must state the closure.
+
+        Guards the pair rather than one half — a future edit that "harmonized"
+        the two surfaces by relaxing gzkit's own AGENTS.md would leave both
+        teaching a sealed kind as live, which is the defect this pair closes.
+        """
+        self.assertIn(
+            "CLOSED to new authoring",
+            self._agents_md,
+            "gzkit's own rendered contract must state that the foundation kind "
+            "is sealed (ADR-0.34.0); the CLI has refused it since 2026-07-12",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
