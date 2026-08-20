@@ -66,6 +66,7 @@ SEVENTH — THE SCOPE FENCE ON THE SEALED-KIND SWEEP. `src/gzkit/templates/adr_p
 5. GHI #835 remains the live performance thread and its first deliverable is NOT a speedup: establish which `gz check` steps write, or depend on another step's side effect, before any concurrent runner.
 6. GHI #832 may be unblocked by the #834 narrowing the predecessor recorded, but re-measure the ceremony path before running the 22-tag repair.
 7. GHI #813 has now gone untouched across SIX handoffs and is the oldest open thread here.
+8. Decide whether campaign Movement D gets a carrying feature ADR the way Movement E got ADR-0.38.0. This is the blocker on GHI #838 and GHI #611: both name Movement D's unchecked "Rulings become first-class" box as their destination, and a campaign checkbox is not a registered artifact, so neither can close `superseded` against it. Explicitly NOT the action: widening `_ruling_key` in `src/gzkit/handoff_api.py` — that is the locally obvious patch and it makes the silent-loss direction of GHI #717 and GHI #790 more likely, which the docstring at lines 439-456 deliberately chose against. (added by amendment 2026-08-20T12:15Z, after this handoff was authored)
 
 ## Pending Work / Open Loops
 
@@ -76,6 +77,7 @@ SEVENTH — THE SCOPE FENCE ON THE SEALED-KIND SWEEP. `src/gzkit/templates/adr_p
 - No mechanical arm exists for PII discipline. `gitleaks` matches neither a plain address nor a personal name; it passed on both the re-leaking commit last session and every commit this session.
 - `gz ledger redact` does not exist. Until it does, any operator-authorized ledger correction re-enters the same deadlock and needs a `--no-verify` commit the agent cannot make.
 - GHI #837 open — 5 pool ADRs route promotion through the sealed foundation kind.
+- GHI #838 open — the `Settled Rulings` section of THIS document is 91151 of its 106600 bytes (85%), 423 bullets, and one operator ruling appears three times in three phrasings. Filed as a correction, not an enhancement: re-adjudication is happening through the mechanism built to prevent it. Do NOT route it as a dedup patch — see Immediate Next Steps 8. (added by amendment 2026-08-20T12:15Z, after this handoff was authored)
 - GHI #836 open — the same ADR-0.34.0 residue in `AGENTS.md` § Kinds.
 - GHI #835 open — validator steps run serially.
 - GHI #834 open — narrowed by the predecessor to the release-ceremony path.
