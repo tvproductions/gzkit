@@ -162,10 +162,6 @@ class TestContentCommitCmd(unittest.TestCase):
             self.assertFalse(rendition_path(Path("."), "AGENTS.md", "codex").exists())
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestCommitAttestationGranularity(unittest.TestCase):
     """`commit` gates the CORPUS DELTA, never the re-render (GHI #821).
 
@@ -258,3 +254,53 @@ class TestCommitAttestationGranularity(unittest.TestCase):
             prov = load_fingerprint(Path("."), "AGENTS.md", "codex")
             assert prov is not None
             self.assertEqual(prov.attestor, "second")
+
+
+class TestCommitNamesThePlaybackWriter(unittest.TestCase):
+    """`commit` writes the RENDITION only; it must say so and name the next writer.
+
+    The pipeline is corpus -> compose -> commit -> playback, and the stages have
+    different writers: this seam writes `.gzkit/renditions/<surface>/<consumer>.md`
+    and never the played-back surface itself. A session that stops here has a
+    rendered contract still showing the PRIOR canon while the ledger records a
+    committed rendition — the half-applied state `gz validate --invariant-coherence`
+    exists to catch, which only bites if someone runs it.
+
+    Observed 2026-08-20: a canon repair reached this seam and reported three
+    success lines with no next step. Asserting the SEMANTIC (a governed next step
+    naming the playback writer) rather than the sentence, per DO IT RIGHT #6 and
+    the three-part bar in `.claude/rules/guardrail-feedback-prose.md`.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def test_success_output_names_the_playback_writer(self) -> None:
+        """A successful commit names the runnable command that writes the surface."""
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            result = self._runner.invoke(main, _commit_args())
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn(
+                "gz agent sync control-surfaces",
+                result.output,
+                "commit must name the playback writer; without it the rendered "
+                "surface silently keeps the prior canon",
+            )
+
+    def test_success_output_states_the_rendition_only_scope(self) -> None:
+        """The prose says what was written and which gate stays red until playback."""
+        with self._runner.isolated_filesystem():
+            _seed_corpus_and_candidate()
+            output = self._runner.invoke(main, _commit_args()).output
+            self.assertIn("rendition", output, "must state that only the rendition was written")
+            self.assertIn(
+                "--invariant-coherence",
+                output,
+                "must name the gate that stays red until playback runs, so the "
+                "operator can tell a finished change from a half-applied one",
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()

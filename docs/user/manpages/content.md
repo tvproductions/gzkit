@@ -198,6 +198,13 @@ attestation (mirrors `gz obpi repudiate`). The frozen fingerprint is exactly wha
 corpus drifts from the committed rendition, the freshness gate flags it and the
 recovery is to recompose and re-commit.
 
+**`commit` is not the last step.** It writes the *rendition* — playback is the
+sole writer of the rendered surface itself, so a canon change is only applied
+once `gz agent sync control-surfaces` runs. Until it does,
+`gz validate --invariant-coherence` fails closed (exit 3) with the pending diff
+as its message: the committed rendition and the played-back `AGENTS.md` disagree.
+The command's success output names this next step.
+
 ```bash
 gz content commit <surface> --consumer <vendor> --attestor "<name>" --attestation-text "<verbatim>"
 gz content commit AGENTS.md --consumer codex \

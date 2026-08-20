@@ -154,4 +154,11 @@ def content_commit_cmd(
             if standing is not None and not attestor.strip()
             else ""
         )
+        # Three-part next step (`.claude/rules/guardrail-feedback-prose.md`): this seam
+        # writes the RENDITION only, and a session that stops here has a played-back
+        # surface still showing the prior canon. Naming the playback writer here is the
+        # difference between a half-applied canon change and a finished one.
+        + f"\nNext: `uv run gz agent sync control-surfaces` — this wrote the rendition "
+        f"only; playback is the sole writer of {surface} and its mirrors, so "
+        "`uv run gz validate --invariant-coherence` stays red until it runs."
     )
