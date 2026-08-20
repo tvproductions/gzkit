@@ -104,6 +104,41 @@ At authoring time 3094 commits and 71 tags survived the rewrite, the full suite 
 - `docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/obpis/OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement.md` — line 87 the declared deferral no movement claimed, line 105 REQ-6 forbidding the hand-edit
 - `.gzkit/insights/agent-insights.jsonl` — six insights this session: the deferred capture, the handoff-scope reading, the PII example seed, the skill review deadline, the #834 narrowing, and the history-rewrite residuals
 
+## Correction — 2026-08-20, after authoring
+
+Appended rather than edited in place: the bullets above record what was genuinely
+outstanding when this handoff was written, and rewriting them would falsify that.
+Read this section as superseding them where they conflict.
+
+**Immediate Next Step 1 is DISCHARGED — the sweep is COMPLETE in this repository.**
+The operator ran `git push --force origin gh-pages:gh-pages` (`8ed12f26 -> 9fe4d795`).
+Verified across every remote ref afterward: `origin/main`, `origin/gh-pages` and all
+71 tags return ZERO hits for both the operator's name and personal address, commit
+metadata carries none, and the working tree is clean. Identities across all history
+are now only `g0`, `dependabot[bot]` and `Test User`. The Pending bullet reading
+"`gh-pages` force-push outstanding — the only unswept remote surface" is likewise
+discharged. Next Steps 2 and 3 (GitHub unreachable-object GC, five immutable
+`refs/pull/*` refs) are UNCHANGED and remain the only PII residuals.
+
+**A defect this handoff did not record, because it was this handoff.** Its first
+committed draft quoted the operator's personal address VERBATIM — once in the
+Movement 3 prose, once in a Verification Checklist command — putting the value back
+on `main` one commit after 3094 commits were rewritten to remove it. Repaired by
+amend and force-push (`be1eedee -> 438d16c8`) so the offending commit is unreachable
+rather than merely superseded; the prose now describes the address and the
+verification command uses a `<operator personal address>` substitution marker.
+
+Two things make it worth carrying forward. It is the SAME CLASS as the root cause
+this session diagnosed — the operator-PII rule seeded 93 occurrences because its
+worked example exhibited the forbidden value instead of the substitute — which means
+the failure mode survives even in the hands of someone actively hunting it. And NO
+GATE CAUGHT IT: `gitleaks` passed, because it matches secret patterns and a plain
+address is not one. What caught it was running the pickaxe over every remote ref
+AFTER pushing, instead of trusting that the sweep had finished.
+
+**Evidence-section count is off by one.** Seven insights carry a 2026-08-20 stamp,
+not six; the seventh is the re-leak defect recorded above.
+
 ## Settled Rulings
 
 - Work the degrading tier starting with #696 (verbatim authorization booked via gz handoff authorize, session 81765765).
