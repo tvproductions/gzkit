@@ -88,3 +88,10 @@ site/
 # Closeout ceremony turn-lock (transient per-turn step-lock; the sibling
 # .ceremony.json is the tracked ceremony state, the .turn-lock is not)
 .gzkit/ceremonies/*.turn-lock
+
+# Office owner/lock files (`~$name.pptx`, `~$doc.docx`). PowerPoint and Word write
+# these beside an open document and embed the LOCAL USERNAME in the first bytes
+# (a length prefix then the name). One was committed and carried the operator's
+# real name through history until the 2026-08-20 PII sweep, where it survived
+# --replace-text (a 165-byte binary) and had to be purged as a path. Never tracked.
+~$*
