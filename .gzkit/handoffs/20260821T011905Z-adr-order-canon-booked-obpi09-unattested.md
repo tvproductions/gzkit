@@ -84,7 +84,7 @@ uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing
 gh issue view 839 --json state,title
 ```
 
-Expect: a clean tree; `gz check` exit 0; OBPI-09 NOT complete; no active locks; `precomplete` blocking on `adversarial_validation` alone (8 of 9 pass); ADR-0.35.0 at 0/10; GHI #839 OPEN.
+Expect: a clean tree; `gz check` exit 0; OBPI-09 NOT complete; no active locks; `precomplete` blocking on `adversarial_validation` alone; GHI #839 OPEN. Read ADR-0.35.0's landed count from `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing`, never from a figure transcribed here.
 
 To confirm the GHI #839 mechanism rather than trusting the write-up:
 
