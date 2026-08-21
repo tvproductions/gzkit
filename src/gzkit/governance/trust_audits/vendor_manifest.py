@@ -26,28 +26,61 @@ _MANIFEST_REL = Path("data") / "vendor-manifest.json"
 # invariant-tier corpus entry from 2026-08-17.
 _ROOT_CONTRACT_TYPE = "AgentContract"
 
+# ...and `root` is the consumer that serves it. The identity is load-bearing, not
+# the cardinality: `["codex"]` is exactly one route AND a re-vendored root
+# contract, so a count-only fence reads it green. Named at
+# agent-control-surface-rendering-substrate.md:211 since authoring.
+_ROOT_CONSUMER = "root"
+
 _ROOT_CONTRACT_RECOVERY = (
     "AGENTS.md is the root contract and the agent-harness default: ONE rendition "
     "serves every harness, because it must fit the smallest vendor delivery cap. "
-    "Declare exactly one route and one temperature for "
-    f"{_ROOT_CONTRACT_TYPE!r}. Vendor-specific material belongs in that vendor's "
+    f"Declare exactly one route, {_ROOT_CONSUMER!r}, and one temperature keyed to "
+    f"{_ROOT_CONSUMER!r}, for {_ROOT_CONTRACT_TYPE!r}. A single VENDOR-NAMED route "
+    "is the same breach as two: it re-vendors the contract every harness reads. "
+    "Vendor-specific material belongs in that vendor's "
     "own surface (.claude/rules/**), never in a second AGENTS.md. Delivery CAPS "
     "are exempt and stay per-vendor — a cap is an observed fact about someone "
     "else's product, not a control gzkit chooses."
 )
 
 
-def _singleton_error(artifact: str, key: str, declared: list[str]) -> ValidationError:
-    """Return the fail-closed finding for a multi-vendor root-contract declaration."""
+def _root_identity_error(artifact: str, key: str, declared: list[str]) -> ValidationError:
+    """Return the fail-closed finding for a root contract not served by ``root``.
+
+    Reports the declared set rather than only its size: a reader who is told
+    "declares 1 vendor" learns nothing about WHICH one, and which one is the
+    whole invariant.
+    """
     return ValidationError(
         type="vendor_manifest",
         artifact=artifact,
         message=(
-            f"{key}.{_ROOT_CONTRACT_TYPE} declares {len(declared)} vendors "
-            f"({', '.join(sorted(declared))}), but there is exactly one root contract. "
-            + _ROOT_CONTRACT_RECOVERY
+            f"{key}.{_ROOT_CONTRACT_TYPE} declares [{', '.join(sorted(declared))}], "
+            f"but there is exactly one root contract and it is served by the single "
+            f"consumer {_ROOT_CONSUMER!r}. " + _ROOT_CONTRACT_RECOVERY
         ),
         field=f"{key}.{_ROOT_CONTRACT_TYPE}",
+    )
+
+
+def _missing_setpoint_error(artifact: str) -> ValidationError:
+    """Return the fail-closed finding for a routed root contract with no setpoint.
+
+    Coupled to the ROUTE rather than demanded unconditionally: a partial fixture
+    that routes no root contract owes no setpoint, exactly as it owes no
+    ``_FALLBACK_ROUTES`` agreement.
+    """
+    return ValidationError(
+        type="vendor_manifest",
+        artifact=artifact,
+        message=(
+            f"content_type_routes declares the {_ROOT_CONTRACT_TYPE!r} root contract "
+            f"but content_type_temperatures declares no setpoint for it. A rendition "
+            f"graded against no declared setpoint cannot be wrong, which is the "
+            f"unfalsifiable state the root-contract fence exists to end. " + _ROOT_CONTRACT_RECOVERY
+        ),
+        field=f"content_type_temperatures.{_ROOT_CONTRACT_TYPE}",
     )
 
 
@@ -58,37 +91,56 @@ def _root_contract_errors(
 
     Two findings, both fail-closed:
 
-    * ``AgentContract`` declaring more than one route or more than one temperature.
-      Those are controls gzkit chooses, so a second one asserts two root contracts.
+    * ``AgentContract`` routed or temperature-keyed to anything other than exactly
+      ``["root"]``. Routes and temperatures are controls gzkit chooses, so a second
+      one asserts two root contracts and a vendor-named one asserts the wrong single
+      contract. The check is IDENTITY, not cardinality: it read ``len(...) > 1`` until
+      2026-08-21, which passed a coherent re-vendoring to ``["codex"]`` and left the
+      doctrine resting on convention — the exact state this fence exists to end.
     * ``data/vendor-manifest.json`` disagreeing with
       :data:`gzkit.content.vendors._FALLBACK_ROUTES`. The fallback table is a second
       copy of the routing authority kept in agreement by a comment; that is the same
       two-copies-one-binds shape that let the root doctrine drift for three artifacts,
       so it is witnessed rather than trusted.
     """
-    from gzkit.content.vendors import _FALLBACK_ROUTES
+    from gzkit.content.vendors import _FALLBACK_ROUTES, _FALLBACK_SURFACE_CONTENT_TYPES
 
     errors: list[ValidationError] = []
 
     routes = manifest_data.get("content_type_routes")
+    routed = False
     if isinstance(routes, dict):
         declared = routes.get(_ROOT_CONTRACT_TYPE)
-        if isinstance(declared, list) and len(declared) > 1:
-            errors.append(_singleton_error(artifact, "content_type_routes", declared))
+        if isinstance(declared, list):
+            routed = True
+            if list(declared) != [_ROOT_CONSUMER]:
+                errors.append(_root_identity_error(artifact, "content_type_routes", declared))
 
+    # Both identity checks above guard OPTIONAL structures, so deleting a key skips
+    # the guard rather than tripping it. The route arm survives that omission on the
+    # _FALLBACK_ROUTES agreement check below; the temperature arm has no second copy
+    # to notice, so the obligation is stated here explicitly.
     temperatures = manifest_data.get("content_type_temperatures")
-    if isinstance(temperatures, dict):
-        vendor_map = temperatures.get(_ROOT_CONTRACT_TYPE)
-        if isinstance(vendor_map, dict) and len(vendor_map) > 1:
-            errors.append(_singleton_error(artifact, "content_type_temperatures", list(vendor_map)))
+    vendor_map = temperatures.get(_ROOT_CONTRACT_TYPE) if isinstance(temperatures, dict) else None
+    if isinstance(vendor_map, dict):
+        if list(vendor_map) != [_ROOT_CONSUMER]:
+            errors.append(
+                _root_identity_error(artifact, "content_type_temperatures", list(vendor_map))
+            )
+    elif routed:
+        errors.append(_missing_setpoint_error(artifact))
 
     # The agreement check is a property of a gzkit SOURCE TREE, not of any manifest:
     # only a root that ships `vendors.py` owns the second copy this compares against.
     # A fixture root under tempfile has no such obligation, and asserting one there
     # would fail every partial fixture in the suite for a divergence that cannot exist.
     owns_fallback = (project_root / "src" / "gzkit" / "content" / "vendors.py").is_file()
-    diverged = isinstance(routes, dict) and routes and dict(routes) != dict(_FALLBACK_ROUTES)
-    if owns_fallback and diverged:
+    # `routes` is NOT tested for truthiness: `{}` is a divergence, not an absence.
+    # The guard read `routes and dict(routes) != ...` until 2026-08-21, so blanking
+    # every route validated cleanly while _FALLBACK_ROUTES still declared eight. The
+    # fixture exemption is carried by `owns_fallback` alone — a tree that ships the
+    # second copy always has something to disagree with.
+    if owns_fallback and isinstance(routes, dict) and dict(routes) != dict(_FALLBACK_ROUTES):
         errors.append(
             ValidationError(
                 type="vendor_manifest",
@@ -101,6 +153,32 @@ def _root_contract_errors(
                     "get different answers. Update both surfaces together."
                 ),
                 field="content_type_routes",
+            )
+        )
+
+    # `surface_content_types` is a second copy on exactly the same terms, and it
+    # arrived (2026-08-21, GHI #840) in the shape this REQ exists to forbid: a
+    # manifest map plus an in-code mirror held together by a comment. A wrong map is
+    # not cosmetic — it makes the floor gate grade the rendition nothing delivers and
+    # skip the one every harness reads.
+    owners = manifest_data.get("surface_content_types")
+    if (
+        owns_fallback
+        and isinstance(owners, dict)
+        and dict(owners) != dict(_FALLBACK_SURFACE_CONTENT_TYPES)
+    ):
+        errors.append(
+            ValidationError(
+                type="vendor_manifest",
+                artifact=artifact,
+                message=(
+                    "surface_content_types disagrees with _FALLBACK_SURFACE_CONTENT_TYPES "
+                    "in src/gzkit/content/vendors.py. The map decides which consumers are "
+                    "on-route FOR A SURFACE, so two callers disagreeing means the floor "
+                    "gate grades one rendition and the freshness gate another. Update "
+                    "both surfaces together."
+                ),
+                field="surface_content_types",
             )
         )
 

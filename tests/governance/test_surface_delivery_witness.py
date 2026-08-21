@@ -34,6 +34,7 @@ from gzkit.governance.trust_audits.surface_delivery_witness import (
     _PREFIX,
     audit_surface_delivery_witness,
 )
+from gzkit.traceability import covers
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -85,7 +86,12 @@ def _write_declaration(
 
 
 def _write_manifest(root: Path, caps: dict[str, int] | None) -> None:
-    payload: dict[str, object] = {"content_type_routes": {"AgentContract": ["claude", "codex"]}}
+    # One route, because ``AgentContract`` has exactly one destination — root
+    # AGENTS.md (REQ-0.35.0-09-02/-08). The two-route shape stood here until
+    # 2026-08-21 as the last of the 20 sites this OBPI's blast radius named: a
+    # fixture asserting a shape the manifest fence now refuses is a fixture
+    # teaching the next reader the doctrine this OBPI exists to undo.
+    payload: dict[str, object] = {"content_type_routes": {"AgentContract": ["root"]}}
     if caps is not None:
         payload["content_type_delivery_caps"] = {"AgentContract": caps}
     (root / "data").mkdir(exist_ok=True)
@@ -243,6 +249,53 @@ class DeliveryCapIsObservedNeverGated(unittest.TestCase):
             _write_manifest(root, {"codex": 4096})
             _, output = _run(root)
         self.assertNotIn("at risk", output)
+
+    @covers("REQ-0.35.0-09-10")
+    def test_witness_measures_against_the_smallest_cap_and_names_its_vendor(self) -> None:
+        """The WITNESS — not the helper — binds the strictest declared cap.
+
+        REQ-0.35.0-09-10 says "when the surface-delivery witness runs, then it
+        measures the single delivered surface against the minimum declared cap and
+        names the vendor that sets it". Until 2026-08-21 both covering tests lived
+        on `vendors.binding_delivery_cap`, so they proved the helper computes the
+        right answer while proving nothing about whether the witness USES it — the
+        Step 4b adversary (receipt
+        `arb-step-codexadversary-fc821cac161042538c772cb58d0433a6`, 2026-08-18)
+        demonstrated the gap by feeding the resolver a deliberately wrong result
+        and watching both tests stay green.
+
+        Every other cap test in this class declares ONE cap, which cannot separate
+        "smallest" from "only". Two competing caps are what make the REQ
+        falsifiable: the surface sits over the strict cap and far under the roomy
+        one, so a witness taking the max, or naming the wrong vendor, fails here.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            actual = _write_surface(root, [("Alpha", 400), ("Beta", 400)])
+            _write_declaration(root, ["beta", "alpha"], 1)
+            _write_manifest(root, {"codex": 200, "spacious": 1_000_000})
+            errors, output = _run(root)
+
+        self.assertEqual(errors, [], "a delivery cap never changes the exit code")
+        self.assertIn(
+            "codex",
+            output,
+            "the witness must name the vendor whose cap BOUND — an operator who "
+            "is not told which harness truncates cannot act on the warning",
+        )
+        self.assertIn(
+            str(actual - 200),
+            output,
+            "the over-cap distance must be measured against the SMALLEST cap; "
+            "measuring against the roomiest one reports headroom that no harness "
+            "actually has",
+        )
+        self.assertNotIn(
+            "spacious",
+            output,
+            "the roomier cap is not binding and naming it would tell the operator "
+            "to trim for a harness that was never the constraint",
+        )
 
     def test_vendor_without_declared_cap_is_not_measured(self) -> None:
         """An undeclared cap means *no known limit* — never a fabricated one."""

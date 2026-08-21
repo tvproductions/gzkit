@@ -27,6 +27,16 @@ _FALLBACK_ROUTES: dict[str, list[str]] = {
     "Skill": ["claude"],
 }
 
+# Which content type owns each rendered control surface — the INVERSE of
+# _FALLBACK_ROUTES, and the authority that makes "is this consumer on-route for
+# THIS surface" answerable. Without it a route test can only ask whether a
+# consumer is routed for *something*, which grades a retained `claude.md` under
+# `AGENTS.md/` because `claude` routes Rule, Skill, Persona and four others
+# (GHI #840). Update both surfaces together, as with _FALLBACK_ROUTES.
+_FALLBACK_SURFACE_CONTENT_TYPES: dict[str, str] = {
+    "AGENTS.md": "AgentContract",
+}
+
 _MANIFEST_REL = Path("data") / "vendor-manifest.json"
 
 # Legal compression-setpoint tokens. Mirrors the enum in
@@ -114,6 +124,21 @@ def all_routes(*, project_root: Path | None = None) -> dict[str, list[str]]:
         if routes:
             return routes
     return dict(_FALLBACK_ROUTES)
+
+
+def content_type_for_surface(surface: str, *, project_root: Path | None = None) -> str | None:
+    """Return the content type that owns *surface*, or ``None`` when unmapped.
+
+    ``None`` means "this project declares no owner for that surface" and is a
+    real answer, not an error: callers decide what an unmapped surface means for
+    them rather than having a guess imposed here.
+    """
+    if project_root is not None:
+        declared = _read_manifest_key(project_root, "surface_content_types")
+        if declared:
+            owner = declared.get(surface)
+            return owner if isinstance(owner, str) else None
+    return _FALLBACK_SURFACE_CONTENT_TYPES.get(surface)
 
 
 def temperature_for(content_type: str, vendor: str, *, project_root: Path | None = None) -> str:

@@ -375,7 +375,7 @@ class TestPerVendorTemperatureRouting(unittest.TestCase):
 
 
 class TestAgentContractRootFence(unittest.TestCase):
-    """REQ-0.35.0-09-08 / -09: AgentContract is the ROOT contract, singly routed.
+    """REQ-0.35.0-09-08 / -09: AgentContract is the ROOT contract, routed to ``root``.
 
     ``AGENTS.md`` is the agent-harness default and the one root contract; the single
     rendition serves every harness. The doctrine is stated at
@@ -422,6 +422,102 @@ class TestAgentContractRootFence(unittest.TestCase):
             self.assertTrue(
                 any("root contract" in e.message for e in errors),
                 f"A second AgentContract temperature must fail closed: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-08")
+    def test_single_vendor_specific_agent_contract_route_fails_closed(self) -> None:
+        """ONE route is not the invariant — one route NAMED ``root`` is.
+
+        REQ-0.35.0-09-08 ends "a second per-vendor ``AgentContract`` rendition
+        cannot be declared, in JSON or in code". Declaring ``["codex"]`` declares
+        exactly that, and a cardinality check cannot see it: it counts one route
+        and passes. The two sibling tests above both mutate to TWO routes, so
+        neither can separate "exactly one" from "exactly root" — the fence read
+        green against a manifest that had re-vendored the root contract.
+
+        Surfaced 2026-08-21 by the tier-1 Codex adversary (receipt
+        ``arb-step-codexadversary-0bd5c04ee75c45a992052d9bfa9ad9f2``), which
+        changed the manifest and ``_FALLBACK_ROUTES`` together to ``["codex"]``
+        and observed all five fence tests stay green under a mutant that refutes
+        the OBPI's whole objective.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["codex"], "Rule": ["claude"]},
+                    "content_type_temperatures": {"AgentContract": {"codex": "lite"}},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("root contract" in e.message for e in errors),
+                "a single VENDOR-SPECIFIC AgentContract route re-vendors the root "
+                f"contract and must fail closed naming the doctrine: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-08")
+    def test_single_vendor_specific_agent_contract_temperature_fails_closed(self) -> None:
+        """The temperature arm carries the same identity obligation as the route arm.
+
+        A temperature keyed to a vendor names a compression setpoint chosen FOR
+        that vendor, which is the per-vendor AgentContract the doctrine forbids —
+        the count being one changes nothing about that.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root"]},
+                    "content_type_temperatures": {"AgentContract": {"codex": "lite"}},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("root contract" in e.message for e in errors),
+                "a vendor-keyed AgentContract temperature must fail closed even "
+                f"when only one is declared: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-08")
+    def test_routing_the_root_contract_obliges_declaring_its_setpoint(self) -> None:
+        """Routing `AgentContract` without a temperature must fail closed.
+
+        The two identity checks above are guards on OPTIONAL structures: each runs
+        only once its key resolves to the expected type, so DELETING the key skips
+        the guard entirely and the invariant degrades to "exactly root, if
+        declared". Surfaced 2026-08-21 by the tier-1 Codex adversary (receipt
+        ``arb-step-codexadversary-3da844475ab041a69f62249c42eb0113``).
+
+        The route arm survives that omission because `_FALLBACK_ROUTES` is a second
+        copy and the agreement check notices the absence. The temperature arm has no
+        second copy — deliberately, by the operator directive noted in
+        ``vendors.py`` — so omission is invisible there and ONLY there. That
+        asymmetry is why this test binds the temperature to the route rather than
+        demanding both unconditionally: a partial fixture that routes no root
+        contract owes no setpoint, exactly as it owes no fallback agreement.
+
+        An absent setpoint is not a cosmetic gap. This brief's requirement 7 makes
+        the `lite` setpoint FALSIFIABLE; a rendition graded against no declared
+        setpoint cannot be wrong, which is the unfalsifiable state the OBPI exists
+        to end.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": {"AgentContract": ["root"], "Rule": ["claude"]},
+                    "content_type_temperatures": {"Rule": {"claude": "heavy"}},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("root contract" in e.message for e in errors),
+                "routing the root contract with no declared temperature leaves the "
+                f"setpoint unfalsifiable and must fail closed: {errors}",
             )
 
     @covers("REQ-0.35.0-09-08")
@@ -475,6 +571,65 @@ class TestAgentContractRootFence(unittest.TestCase):
             self.assertTrue(
                 any("_FALLBACK_ROUTES" in e.message for e in errors),
                 f"Fallback/manifest divergence must fail closed: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-09")
+    def test_surface_content_types_must_agree_with_its_fallback(self) -> None:
+        """The surface->content-type map is a SECOND COPY and must be witnessed too.
+
+        ``surface_content_types`` was added 2026-08-21 to close GHI #840, and it
+        arrived in exactly the shape REQ-0.35.0-09-09 exists to forbid: a manifest
+        map plus an in-code mirror kept in agreement by a comment. The tier-1 Codex
+        adversary named it the weakest point of the whole repair (receipt
+        ``arb-step-codexadversary-76971da7d2c04b09a65f1b2eaacfc038``) — *"recreates
+        the exact two-copies, comment-says-synchronize, nothing-binds failure class
+        this OBPI is meant to eliminate."*
+
+        The consequence is not cosmetic: a wrong map makes the floor gate grade
+        ``claude`` and EXCLUDE ``root``, i.e. it grades the rendition nothing
+        delivers and skips the one every harness reads.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            vendors_py = root / "src" / "gzkit" / "content" / "vendors.py"
+            vendors_py.parent.mkdir(parents=True, exist_ok=True)
+            vendors_py.write_text("# fixture marker\n", encoding="utf-8")
+            agreeing = {ct: list(v) for ct, v in vendors._FALLBACK_ROUTES.items()}
+            _write_manifest(
+                root,
+                {
+                    "content_type_routes": agreeing,
+                    "content_type_temperatures": {"AgentContract": {"root": "heavy"}},
+                    "surface_content_types": {"AGENTS.md": "Rule"},
+                },
+            )
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("surface_content_types" in e.message for e in errors),
+                f"a divergent surface_content_types map must fail closed: {errors}",
+            )
+
+    @covers("REQ-0.35.0-09-09")
+    def test_blanking_the_route_map_entirely_fails_closed(self) -> None:
+        """An EMPTY ``content_type_routes`` in a source tree is divergence, not absence.
+
+        The agreement guard read ``routes and dict(routes) != ...``, so ``{}`` was
+        falsy and skipped the comparison — blanking every route validated cleanly
+        while ``_FALLBACK_ROUTES`` still declared eight. Found by the same adversary
+        pass. A source tree that ships the second copy always has something to
+        disagree with; only a fixture that ships no ``vendors.py`` is exempt, and
+        that exemption is carried by ``owns_fallback``, not by emptiness.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            vendors_py = root / "src" / "gzkit" / "content" / "vendors.py"
+            vendors_py.parent.mkdir(parents=True, exist_ok=True)
+            vendors_py.write_text("# fixture marker\n", encoding="utf-8")
+            _write_manifest(root, {"content_type_routes": {}})
+            errors = validate_vendor_manifest(root)
+            self.assertTrue(
+                any("_FALLBACK_ROUTES" in e.message for e in errors),
+                f"blanking every route must fail closed in a source tree: {errors}",
             )
 
     @covers("REQ-0.35.0-09-09")

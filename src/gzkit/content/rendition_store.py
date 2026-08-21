@@ -110,17 +110,31 @@ def is_graded_rendition(rendition_file: Path, root: Path) -> bool:
     each gate is the two-copies-one-binds shape that let the root-contract
     doctrine drift in the first place.
 
-    The route test is deliberately the union across ALL content types: no
-    surface -> content-type map exists in the codebase, and inventing a second
-    routing authority here would be the drift this repair is undoing. The
-    looseness is bounded and stated — a consumer still routed for some *other*
-    content type stays graded.
+    The route test is asked OF THIS SURFACE, via the ``surface_content_types``
+    map in ``data/vendor-manifest.json``. It unioned every content type until
+    2026-08-21, which graded a retained ``claude.md`` under ``AGENTS.md/``
+    because ``claude`` routes Rule, Skill, Persona and four others — off-route
+    for this surface, yet indistinguishable from on-route to a union (GHI #840,
+    surfaced by the tier-1 Codex adversary). The union was chosen because no
+    surface -> content-type authority existed; the fix is to declare one in the
+    manifest that already owns routing, not to invent a second one elsewhere.
+
+    An UNMAPPED surface falls back to the union. That is deliberate: the map
+    answers "which content type owns this surface", and for a surface no project
+    has declared, the honest answer is "unknown" — under which "routed for
+    something" is a better approximation than excluding every rendition and
+    silently grading nothing.
     """
-    from gzkit.content.vendors import all_routes
+    from gzkit.content.vendors import all_routes, content_type_for_surface, routes_for
 
     if rendition_file.name.endswith(".candidate.md"):
         return False
-    routed = {vendor for vendors in all_routes(project_root=root).values() for vendor in vendors}
+    surface = rendition_file.parent.name
+    owner = content_type_for_surface(surface, project_root=root)
+    if owner is not None:
+        routed = set(routes_for(owner, project_root=root))
+    else:
+        routed = {v for vendors in all_routes(project_root=root).values() for v in vendors}
     return not routed or rendition_file.stem in routed
 
 

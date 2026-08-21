@@ -390,6 +390,24 @@ def sync_agents_md(project_root: Path, config: GzkitConfig, consumer: str | None
         agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", consumer))
         return
 
+    # Nothing committed for this consumer. Bootstrap belongs to a ROUTED consumer:
+    # it exists so a fresh `gz init` yields a functional AGENTS.md before anything
+    # has been attested. A consumer the manifest routes nowhere has nothing to play
+    # back AND nothing to bootstrap from, so playback is a no-op — no write, no
+    # raise (REQ-0.35.0-09-03). Until 2026-08-21 this branch fell through to the
+    # template render, which raises TemplateNotFound on the routing guard in
+    # `content.render.pipeline` and left the caller holding an exception for a
+    # question that simply has no answer. Found by the Step 4b adversary (receipt
+    # arb-step-codexadversary-fc821cac161042538c772cb58d0433a6, 2026-08-18).
+    #
+    # The predicate is the pipeline's OWN routing authority rather than a second
+    # copy: stopping here reaches the same verdict one frame earlier, so the two
+    # surfaces cannot disagree about which consumers are routed.
+    from gzkit.content.vendors import routes_for as _routes_for  # lazy: import cycle
+
+    if consumer not in _routes_for("AgentContract", project_root=project_root):
+        return
+
     # Bootstrap: no committed rendition yet — render from template via the model
     # pipeline. The monolith render_template agents fallback is retired (OBPI-0.0.37-27):
     # the template-model pipeline is the SOLE bootstrap path. A project-local template

@@ -144,6 +144,46 @@ class TestFloorViolation(_TempProject):
             "attestation trail that nothing plays back",
         )
 
+    @covers("REQ-0.35.0-09-11")
+    def test_a_consumer_routed_for_another_content_type_is_not_graded_here(self) -> None:
+        """`claude.md` under `AGENTS.md/` is OFF-ROUTE and must not be graded.
+
+        REQ-0.35.0-09-11 says the gate grades the committed ON-ROUTE rendition
+        only. `claude` is routed for seven other content types (Bullet, Chore,
+        Handoff, Persona, Rule, Scenario, Skill) and for none of `AgentContract`,
+        so a retained `claude.md` here is a superseded off-route record exactly as
+        `codex.md` is — the difference is invisible to a route test that unions
+        every content type.
+
+        The sibling test above uses `codex.md`, which is routed for NOTHING, so it
+        cannot separate "not routed at all" from "not routed for THIS surface".
+        That gap was found 2026-08-21 by the tier-1 Codex adversary (receipt
+        `arb-step-codexadversary-0bd5c04ee75c45a992052d9bfa9ad9f2`) and tracked as
+        GHI #840; it was latent rather than live only because no `claude.md`
+        happened to exist on disk, which is a fact about today's files and not a
+        property of the gate.
+        """
+        from gzkit.governance.compose import agent_contract_consumer
+
+        routed = agent_contract_consumer(self.root)
+        body = b"# AGENTS.md\n\nUnrelated body.\n"
+
+        append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))
+        save_rendition(self.root, "AGENTS.md", routed, body)
+        surface_dir = self.root / ".gzkit" / "renditions" / "AGENTS.md"
+        # Routed for other content types, never for AgentContract.
+        (surface_dir / "claude.md").write_bytes(body)
+
+        errors = validate_rendition_floor_coherence(self.root, fail_closed=True)
+
+        self.assertEqual(
+            [e.artifact for e in errors],
+            [f"AGENTS.md/{routed}"],
+            "a consumer routed only for OTHER content types is off-route for this "
+            "surface and must be excluded; grading it holds a retained record "
+            "against a corpus it was never committed against",
+        )
+
     def test_one_error_per_rendition_lists_every_missing_entry(self) -> None:
         """Two missing invariants on one rendition → one error naming both ids."""
         append_entry(self.root, "AGENTS.md", _entry(_INV, entry_id="corpus-tty"))

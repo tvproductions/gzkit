@@ -5,6 +5,7 @@
 @covers ADR-0.0.13  OBPI-0.0.13-03 manifest-schema-persona-sync
 """
 
+import json
 import re
 import tempfile
 import unittest
@@ -705,6 +706,20 @@ class TestAgentContractPlaybackConsumer(unittest.TestCase):
                 "exactly one AgentContract destination may exist: the root contract. "
                 "A second per-vendor contract file is the drift this OBPI removed.",
             )
+            # REQ-0.35.0-09-02 has TWO clauses and the destination set proves only
+            # one. Until 2026-08-21 the byte clause — "its bytes are written
+            # VERBATIM ... byte-for-byte, no reflow, no template substitution" —
+            # was unasserted here, and the Step 4b adversary (receipt
+            # arb-step-codexadversary-9e6c404234254b709fe3064e10da59e8) showed the
+            # gap by corrupting the playback bytes and watching this test stay
+            # green. A destination assertion cannot see WHAT landed there.
+            self.assertEqual(
+                (root / config.paths.agents_md).read_bytes(),
+                self._BODY,
+                "the delivered contract must be the committed rendition BYTE-FOR-BYTE; "
+                "any reflow or substitution en route makes playback a renderer, which "
+                "is precisely what REQ-0.35.0-09-05's byte gates then cannot trust",
+            )
 
     @covers("REQ-0.35.0-09-06")
     def test_playback_is_deterministic_across_runs(self) -> None:
@@ -737,33 +752,88 @@ class TestAgentContractPlaybackConsumer(unittest.TestCase):
 
             self.assertEqual(first, second, "playback must be byte-deterministic across runs")
 
-    @covers("REQ-0.35.0-09-03")
-    def test_absent_rendition_playback_is_bootstrap_safe(self) -> None:
-        """Playback of a never-committed consumer returns empty bytes and raises nothing.
+    @covers("REQ-0.35.0-09-01")
+    def test_render_loads_the_named_consumers_rendition(self) -> None:
+        """`render_agents_md` takes the consumer as a PARAMETER too.
 
-        REQ-0.35.0-09-03 asserts bootstrap safety for the new consumer "exactly as
-        it already is for `claude`": an absent committed rendition must produce no
-        write and no error. The property lives on the playback path — `sync_agents_md`
-        deliberately falls through to a template bootstrap when nothing is committed,
-        which is a different branch with a different contract.
+        REQ-0.35.0-09-01 names BOTH halves of the playback path — "the consumer is
+        a parameter in both `sync_surfaces.sync_agents_md` and
+        `governance.compose.render_agents_md`". Until 2026-08-21 only the first
+        half was covered, so a regression that re-hardcoded the loader half would
+        have passed the REQ's own gate. The Step 4b adversary (receipt
+        `arb-step-codexadversary-fc821cac161042538c772cb58d0433a6`, 2026-08-18)
+        named the half-coverage and this test closes it.
 
-        Asserting empty bytes AND the absence of a raise is the whole REQ: a
-        playback path that raised would break a fresh `gz init`, which runs before
-        any rendition has been attested.
+        Two consumers are committed with DIFFERENT bodies and the non-default one
+        is requested. That is what makes the assertion bite: a single-rendition
+        fixture passes identically against an implementation that ignores the
+        parameter and resolves internally, proving nothing about parameterization.
         """
         import tempfile
 
-        from gzkit.governance.compose import render_agents_md
+        from gzkit.content.rendition_store import save_rendition
+        from gzkit.governance.compose import agent_contract_consumer, render_agents_md
 
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
 
+            default_consumer = agent_contract_consumer(root)
+            other_body = b"# AGENTS.md\n\nAlternate harness rendition.\n"
+            save_rendition(root, "AGENTS.md", default_consumer, self._BODY)
+            save_rendition(root, "AGENTS.md", "alt-harness", other_body)
+
             self.assertEqual(
-                render_agents_md(root, consumer="never-committed"),
-                b"",
-                "an absent committed rendition yields empty bytes rather than an "
-                "error, so nothing is written and bootstrap stays safe",
+                render_agents_md(root, consumer="alt-harness"),
+                other_body,
+                "the loader must return the NAMED consumer's rendition; returning "
+                f"the default ({default_consumer!r}) means the parameter is ignored "
+                "and the consumer is resolved internally after all",
+            )
+
+    @covers("REQ-0.35.0-09-03")
+    def test_absent_rendition_surface_sync_writes_nothing_and_raises_nothing(self) -> None:
+        """The SURFACE SYNC is bootstrap-safe for a consumer with nothing committed.
+
+        REQ-0.35.0-09-03 says "when the surface sync runs" — `sync_agents_md`, not
+        `render_agents_md`. Until 2026-08-21 this test asserted the loader half
+        instead, which returns `b""` cleanly and therefore could never observe the
+        REQ's actual subject; the Step 4b adversary (receipt
+        `arb-step-codexadversary-fc821cac161042538c772cb58d0433a6`, 2026-08-18)
+        named the substitution and it is the finding this test now closes.
+
+        Both halves of the REQ are asserted because each fails differently: a raise
+        breaks the caller, and a write under an unrouted consumer name would
+        manufacture a second contract destination REQ-0.35.0-09-02 forbids. The
+        bootstrap branch belongs to a ROUTED consumer — it renders the packaged
+        template so a fresh `gz init` produces a functional AGENTS.md — and a
+        consumer the manifest routes nowhere has nothing to play back and nothing
+        to bootstrap from.
+        """
+        import tempfile
+
+        from gzkit.config import GzkitConfig
+        from gzkit.sync_surfaces import sync_agents_md
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / ".gzkit").mkdir()
+            config = GzkitConfig()
+            agents_path = root / config.paths.agents_md
+
+            try:
+                sync_agents_md(root, config, consumer="never-committed")
+            except Exception as exc:  # noqa: BLE001 — the REQ forbids ANY raise
+                self.fail(
+                    "the surface sync must not raise for a consumer with no "
+                    f"committed rendition; got {type(exc).__name__}: {exc}"
+                )
+
+            self.assertFalse(
+                agents_path.exists(),
+                "an unrouted consumer must leave the root contract untouched — "
+                "writing one would manufacture the second AgentContract "
+                "destination REQ-0.35.0-09-02 forbids",
             )
 
     @covers("REQ-0.35.0-09-04")
@@ -792,18 +862,50 @@ class TestAgentContractPlaybackConsumer(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             (root / ".gzkit").mkdir()
-            routed = agent_contract_consumer(root)
-            save_rendition(root, "AGENTS.md", routed, self._BODY)
+
+            # The expectation is derived from the MANIFEST, never from the resolver
+            # under test. Until 2026-08-21 this fixture read
+            # `routed = agent_contract_consumer(root)` and then saved its rendition
+            # under whatever came back — so a resolver hardcoded to the wrong vendor
+            # saved the fixture under that same wrong vendor and the test stayed
+            # green. The Step 4b adversary (receipt
+            # arb-step-codexadversary-9e6c404234254b709fe3064e10da59e8) proved it by
+            # pinning the resolver to `codex`. An oracle that asks the subject what
+            # the answer is cannot fail.
+            (root / "data").mkdir()
+            (root / "data" / "vendor-manifest.json").write_text(
+                json.dumps({"content_type_routes": {"AgentContract": ["declared-harness"]}}),
+                encoding="utf-8",
+            )
+            decoy = b"# AGENTS.md\n\nDECOY - the fallback consumer rendition.\n"
+            save_rendition(root, "AGENTS.md", "declared-harness", self._BODY)
+            # Committed under the "root" FALLBACK too, so a resolver that ignores the
+            # manifest and falls back delivers the decoy rather than silently finding
+            # nothing — the failure is visible as wrong bytes, not as an empty tree.
+            save_rendition(root, "AGENTS.md", "root", decoy)
 
             config = GzkitConfig()
             agents = root / config.paths.agents_md
 
             sync_agents_md(root, config)
+            self.assertTrue(
+                agents.exists(),
+                "the default sync must DELIVER something: an absent contract means "
+                "the resolver named a consumer the manifest routes nowhere, so "
+                "playback found nothing to play and bootstrap correctly declined",
+            )
             defaulted = agents.read_bytes()
             agents.unlink()
-            sync_agents_md(root, config, consumer=routed)
+            sync_agents_md(root, config, consumer="declared-harness")
             explicit = agents.read_bytes()
 
+            self.assertEqual(
+                defaulted,
+                self._BODY,
+                "the DEFAULT call must deliver the rendition committed under the "
+                "manifest-DECLARED route; delivering the fallback's decoy means the "
+                "resolver is not reading the routing authority at all",
+            )
             self.assertEqual(
                 defaulted,
                 explicit,
@@ -811,4 +913,10 @@ class TestAgentContractPlaybackConsumer(unittest.TestCase):
                 "deliver identical bytes — the parameterization is a routing seam, "
                 "never a change to what the contract says",
             )
-            self.assertEqual(defaulted, self._BODY, "and both are the committed rendition verbatim")
+            self.assertEqual(
+                agent_contract_consumer(root),
+                "declared-harness",
+                "and the resolver itself must name the declared route, so the "
+                "equivalence above is anchored to the manifest rather than to "
+                "whatever the resolver happened to return",
+            )

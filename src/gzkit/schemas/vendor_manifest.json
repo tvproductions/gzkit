@@ -35,6 +35,14 @@
           "enum": ["lite", "medium", "heavy"]
         }
       }
+    },
+    "surface_content_types": {
+      "type": "object",
+      "description": "Maps each rendered control surface to the content type that owns it \u2014 the inverse direction of content_type_routes, and the authority that makes \"is this consumer on-route FOR THIS SURFACE\" answerable. Without it a route test can only ask whether a consumer is routed for SOMETHING, which grades an off-content-type rendition (GHI #840).",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
     }
   }
 }

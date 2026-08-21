@@ -219,13 +219,29 @@ class TestRenditionFreshnessDriftClosed(_TempProjectMixin):
 
     @covers("REQ-0.0.37-22-03")
     def test_consumers_checked_independently(self) -> None:
-        """An agreeing consumer and a stale consumer under one surface are scored independently."""
-        corpus = self._seed_corpus("AGENTS.md", "x")
-        self._commit("AGENTS.md", "root", corpus)  # root agrees
-        # Second consumer must be a ROUTED one: an unrouted consumer is a superseded
-        # record and is not graded (REQ-0.35.0-09-11), which would make this test pass
-        # for the wrong reason. `claude` still routes for Rule/Chore/Persona/etc.
-        save_rendition(self.root, "AGENTS.md", "claude", b"claude no sidecar\n")
+        """An agreeing consumer and a stale consumer under one surface are scored independently.
+
+        Amended 2026-08-21. This ran on ``AGENTS.md`` with ``claude`` as the second
+        consumer, chosen — per its own prior comment — because ``claude`` "still
+        routes for Rule/Chore/Persona/etc." That is precisely the cross-content-type
+        union GHI #840 named, so the test was resting on the defect
+        ``REQ-0.35.0-09-11`` exists to remove, and it went red the moment the route
+        test became surface-scoped.
+
+        ``REQ-0.0.37-22-03``'s subject — consumers under one surface are scored
+        INDEPENDENTLY — is untouched by that ruling, so the repair is to keep the
+        assertion true rather than delete it (`.claude/rules/governance-core.md`
+        § attested-REQ-subject-retirement; ``ADR-0.0.37`` is terminal and cannot be
+        amended). Only the venue moves: ``AgentContract`` now has exactly ONE route
+        by doctrine, so two GRADED consumers under ``AGENTS.md`` is not a state the
+        system can reach. An unmapped surface is where multiple graded consumers
+        remain reachable, and hosting the property there also covers the
+        unmapped-surface fallback branch that ``is_graded_rendition`` gained.
+        """
+        surface = "UNMAPPED-SURFACE.md"
+        corpus = self._seed_corpus(surface, "x")
+        self._commit(surface, "root", corpus)  # root agrees
+        save_rendition(self.root, surface, "claude", b"claude no sidecar\n")
         errors = validate_rendition_freshness(self.root, fail_closed=True)
         self.assertEqual(len(errors), 1, "only claude (missing sidecar) drifts")
 
