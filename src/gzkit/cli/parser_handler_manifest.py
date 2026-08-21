@@ -115,6 +115,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "obpi_emit_receipt_cmd": "gzkit.commands.obpi_cmd",
     "obpi_pipeline_cmd": "gzkit.commands.obpi_cmd",
     "obpi_precomplete_cmd": "gzkit.commands.obpi_precomplete",
+    "obpi_dispatch_cmd": "gzkit.commands.obpi_dispatch",
     "obpi_present_evidence_cmd": "gzkit.commands.obpi_present_evidence",
     "obpi_validate_cmd": "gzkit.commands.obpi_cmd",
     "obpi_repudiate_cmd": "gzkit.commands.obpi_cmd",

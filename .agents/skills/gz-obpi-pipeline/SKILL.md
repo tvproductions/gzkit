@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-09
+last_reviewed: 2026-08-21
 metadata:
-  skill-version: "6.35.0"
+  skill-version: "6.36.0"
 model: sonnet
 ---
 
@@ -298,7 +298,7 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
 
    e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.
 
-   f. **Record dispatch** — create a `SubagentDispatchRecord` with task_id, role="Implementer", model, timestamps, and result. Persist to the pipeline active marker.
+   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This persists a `SubagentDispatchRecord` to the active marker so Stage 5 can attest it. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. Declared single-driver passes Stage 5; silent single-driver does not.
 
    g. **Handle result status:**
       - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)
@@ -338,7 +338,7 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          ```
          Wait for both to complete. Parse `ReviewResult` from each using `parse_review_result()`.
 
-      v. **Record review dispatches** — create `SubagentDispatchRecord` entries for each
+      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This creates `SubagentDispatchRecord` entries for each
          reviewer (role="Spec Reviewer" / role="Quality Reviewer") with model, timestamps, and result.
 
       vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result)`:

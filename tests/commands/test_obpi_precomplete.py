@@ -435,7 +435,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi_id"], "OBPI-0.1.0-01")
             self.assertIn("ready", payload)
-            self.assertEqual(len(payload["checks"]), 9)
+            self.assertEqual(len(payload["checks"]), 10)
             self.assertEqual(
                 {c["name"] for c in payload["checks"]},
                 {
@@ -448,6 +448,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
                     "behave_req_coverage",
                     "task_envelope_coherence",
                     "adversarial_validation",  # GHI #676
+                    "stage2_dispatch",  # GHI #845
                 },
             )
 

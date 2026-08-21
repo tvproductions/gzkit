@@ -147,6 +147,23 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
 ```
 
+Stage 2 dispatches an implementer and then a two-stage spec-reviewer +
+quality-reviewer review. Record each dispatch so `gz obpi precomplete` can
+attest it at Stage 5 — credit is never inferred from the presence of code:
+
+```bash
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role Implementer --model <tier> --task 1
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role SpecReviewer --model <tier> --task 2
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role QualityReviewer --model <tier> --task 3
+```
+
+If the session genuinely cannot dispatch, declare it rather than running
+silently — declared single-driver passes Stage 5, silent single-driver does not:
+
+```bash
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
+```
+
 > The CLI and generated Claude hooks share the same runtime engine in
 > `src/gzkit/pipeline_runtime.py`. Treat active pipeline markers as
 > runtime-managed state; do not clear them by hand.

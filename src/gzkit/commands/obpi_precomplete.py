@@ -128,6 +128,62 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
     yield _check_task_envelope_coherence(project_root, brief_path)
     yield _check_adversarial_validation(brief_path)
+    yield _check_stage2_dispatch(project_root, obpi_id)
+
+
+def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
+    """Stage 2's mandated dispatch must be recorded, or knowingly declared (GHI #845).
+
+    The operator ruling of 2026-08-21 is that the implementer dispatch and the
+    two-stage spec-reviewer + quality-reviewer review ARE the work. Before this
+    check, an OBPI whose Stage 2 ran inline produced a completion receipt
+    byte-identical to one that dispatched properly.
+
+    Declared single-driver PASSES. Silent single-driver does not. That asymmetry
+    is the whole point: a gate with no compliant path for a session that cannot
+    dispatch is un-compliable, and an un-compliable gate gets worked around.
+    """
+    from gzkit.obpi_dispatch_channel import (
+        dispatch_channel,
+        is_single_driver,
+        render_dispatch_channel,
+        single_driver_declaration,
+    )
+    from gzkit.pipeline_runtime import pipeline_plans_dir
+
+    plans_dir = pipeline_plans_dir(project_root)
+    if not (plans_dir / f".pipeline-active-{obpi_id}.json").is_file():
+        # Say it rather than pass silently: "no pipeline ran" and "the pipeline
+        # dispatched correctly" must never render identically.
+        return CheckResult(
+            name="stage2_dispatch",
+            ok=True,
+            message=(
+                "no active pipeline marker - dispatch not assessable here "
+                "(whether this OBPI should have run through the pipeline is a "
+                "separate question this check does not answer)"
+            ),
+        )
+
+    channel = dispatch_channel(plans_dir, obpi_id)
+    declaration = single_driver_declaration(plans_dir, obpi_id)
+    rendered = render_dispatch_channel(channel, declaration=declaration)
+
+    if not is_single_driver(channel) or declaration:
+        return CheckResult(name="stage2_dispatch", ok=True, message=rendered)
+    return CheckResult(
+        name="stage2_dispatch",
+        ok=False,
+        message=rendered,
+        remediation=(
+            "Stage 2's mandated dispatch is unrecorded. Either dispatch the roster "
+            "and record each one - `uv run gz obpi dispatch "
+            f"{obpi_id} --role Implementer --model <tier> --task 1` - or, if this "
+            "session genuinely cannot dispatch, declare it: `uv run gz obpi dispatch "
+            f'{obpi_id} --single-driver --reason "<why>"`. Declared single-driver '
+            "is permitted; silent single-driver is what this gate refuses."
+        ),
+    )
 
 
 def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:

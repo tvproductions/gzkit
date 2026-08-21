@@ -43,6 +43,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
 | [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
 | [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
+| [`gz obpi dispatch`](obpi-dispatch.md) | Record a Stage-2 subagent dispatch, or declare a single-driver run |
 | [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for authored, scaffold, and completion readiness |
 | [`gz obpi sync`](obpi-sync.md) | Fail-closed reconciliation for one OBPI (receipt + ADR table) |
 | [`gz obpi brief-drift`](obpi-brief-drift.md) | Check an OBPI brief against project state across five drift dimensions |

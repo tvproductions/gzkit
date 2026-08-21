@@ -295,6 +295,46 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("obpi_precomplete_cmd")(obpi_id=a.obpi, as_json=a.as_json)
     )
 
+    p_obpi_dispatch = obpi_commands.add_parser(
+        "dispatch",
+        help="Record a Stage-2 subagent dispatch, or declare a single-driver run",
+        description=(
+            "Record that Stage 2 dispatched a mandated persona, so "
+            "'gz obpi precomplete' can attest it. Credit is never inferred - "
+            "this verb is the only way the dispatch channel reports DISPATCHED. "
+            "Use --single-driver --reason when the session genuinely cannot "
+            "dispatch: declared single-driver is permitted, silent is refused "
+            "(GHI #845)."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi dispatch OBPI-0.1.0-01 --role Implementer --model sonnet --task 1",
+                "gz obpi dispatch OBPI-0.1.0-01 --role SpecReviewer --model opus --task 2",
+                'gz obpi dispatch OBPI-0.1.0-01 --single-driver --reason "cron run, no Agent tool"',
+            ]
+        ),
+    )
+    p_obpi_dispatch.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.16-04)")
+    p_obpi_dispatch.add_argument("--role", help="Mandated Stage-2 role that was dispatched")
+    p_obpi_dispatch.add_argument("--model", help="Model tier used for the dispatch")
+    p_obpi_dispatch.add_argument("--task", type=int, default=1, help="1-based task index")
+    p_obpi_dispatch.add_argument(
+        "--single-driver",
+        action="store_true",
+        help="Declare this run knowingly single-driver (requires --reason)",
+    )
+    p_obpi_dispatch.add_argument("--reason", help="Why the mandated dispatch could not run")
+    p_obpi_dispatch.set_defaults(
+        func=lambda a: _lazy("obpi_dispatch_cmd")(
+            obpi_id=a.obpi,
+            role=a.role,
+            model=a.model,
+            task_id=a.task,
+            single_driver=a.single_driver,
+            reason=a.reason,
+        )
+    )
+
     p_obpi_present_evidence = obpi_commands.add_parser(
         "present-evidence",
         help="Generate tool-derived Stage-4 acceptance evidence (GHI #643)",

@@ -42,6 +42,7 @@ uv run gz plan create <name> --kind feature --semver X.Y.Z  # Create an ADR
 uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignment
 uv run gz specify                     # Create implementation brief (OBPI)
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN>  # Execute OBPI pipeline
+uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role <Role> --model <tier>  # Record a Stage-2 dispatch (credit is never inferred)
 uv run gz obpi audit OBPI-<X.Y.Z-NN> # Gather evidence and record in audit ledger
 uv run gz obpi sync OBPI-<X.Y.Z-NN> # Fail-closed reconciliation
 uv run gz obpi brief-drift OBPI-<X.Y.Z-NN> # Reconcile brief content vs project (5 drift dimensions)
