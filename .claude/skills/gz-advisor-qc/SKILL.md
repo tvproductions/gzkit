@@ -4,9 +4,9 @@ description: Judge the information-retained-per-byte of a candidate rendition an
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-15
+last_reviewed: 2026-08-21
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.2.0"
 model: sonnet
 gz_command: gz content advise-rendition
 ---
@@ -36,7 +36,7 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
 
 ## Workflow
 
-1. Identify the **surface** (e.g. `AGENTS.md`) and the **consumer** (e.g. `codex`) whose
+1. Identify the **surface** (e.g. `AGENTS.md`) and the **consumer** (e.g. `root`) whose
    candidate rendition you are judging. The candidate is staged at
    `.gzkit/renditions/<surface>/<consumer>.candidate.md`; the source corpus is at
    `.gzkit/corpus/<surface>.jsonl`.
@@ -71,8 +71,8 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
 ## Example
 
 ```bash
-# After composing a candidate for AGENTS.md → codex, judge and record the verdict.
-gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+# After composing a candidate for AGENTS.md → root, judge and record the verdict.
+gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained verbatim; two Promotable bullets combined without information loss; no Judgment content dropped."
 
 # A low score is still recorded (advisory) — it is evidence for the operator, not a block.

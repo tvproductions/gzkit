@@ -47,7 +47,7 @@ gz content advise-rendition <surface> [--consumer <vendor>] \
 ## Example
 
 ```bash
-gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
 ```
 

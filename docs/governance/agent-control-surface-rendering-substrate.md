@@ -273,7 +273,7 @@ In every era, the agent reads a static document. What changes is *how the docume
 
 | Control surface | Canonical model | Governing doctrine | Load / regenerate command |
 |---|---|---|---|
-| `AGENTS.md`, `CLAUDE.md` | `AgentContract` (`src/gzkit/content/models/agent_contract.py`) | this doctrine; ADR-0.0.37 | `gz agent sync control-surfaces` (playback of `.gzkit/renditions/AGENTS.md/<consumer>.md`) |
+| `AGENTS.md`, `CLAUDE.md` | `AgentContract` (`src/gzkit/content/models/agent_contract.py`) | this doctrine; ADR-0.0.37 | `gz agent sync control-surfaces` (playback of `.gzkit/renditions/AGENTS.md/root.md`) |
 | `.claude/rules/**`, `.github/instructions/**` | `Rule` | `.gzkit/rules/skill-surface-sync.md` | `gz agent sync control-surfaces` |
 | `.claude/skills/**/SKILL.md` | `Skill` | `.gzkit/rules/skill-surface-sync.md` | `gz skill list`; `gz agent sync control-surfaces` |
 | persona files | `Persona` | ADR-0.0.11, ADR-0.0.12 | `gz personas list` |

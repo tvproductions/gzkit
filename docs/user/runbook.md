@@ -1172,17 +1172,21 @@ After the corpus is seeded, the agent wielding the `gz-content-compose` skill re
 corpus, decides which compressible entries to drop/combine/rewrite toward the declared
 setpoint, then provides the candidate text to the tool for validation:
 
+`AGENTS.md` has exactly one consumer, `root` — it is the root contract and the
+agent-harness default, so the single rendition serves every harness. A vendor-named
+`--consumer` for this surface is refused by `gz validate --vendor-manifest`.
+
 ```bash
 # Write candidate text to a temp file, then compose (AGENTS.md stays byte-unchanged)
-cat /tmp/candidate.md | uv run gz content compose AGENTS.md --consumer codex
+cat /tmp/candidate.md | uv run gz content compose AGENTS.md --consumer root
 
 # Or pass candidate via --candidate flag
-uv run gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
+uv run gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md
 ```
 
 The compose tool validates invariant-tier verbatim presence (0-Kelvin floor), computes
 per-tier byte evidence, writes the candidate to
-`.gzkit/renditions/AGENTS.md/codex.candidate.md`, and emits a
+`.gzkit/renditions/AGENTS.md/root.candidate.md`, and emits a
 `composition_candidate_emitted` ledger event. The tool fails closed if the corpus is
 absent, the `(surface, consumer)` setpoint is undeclared, or the candidate drops an
 invariant-tier entry. The candidate then flows to the advisor-QC loop (OBPI-24) and
@@ -1197,7 +1201,7 @@ records the verdict — **advisory, never gating** (ADR-0.0.39):
 
 ```bash
 # Record the advisor verdict (any score is recorded; the tool exits 0 regardless)
-uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+uv run gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without loss."
 
 # The verdict is witnessed in the ledger; inspect it before attesting
@@ -1221,7 +1225,7 @@ in a provenance sidecar (`<consumer>.corpus.json`), under operator attestation (
 
 ```bash
 # Promote the attested candidate to the committed rendition (Gate 5: fail-closed on empty)
-uv run gz content commit AGENTS.md --consumer codex \
+uv run gz content commit AGENTS.md --consumer root \
   --attestor "g0" --attestation-text "attest completed"
 
 # Play the committed rendition back to the rendered surface (deterministic — no LLM/network)
@@ -1241,8 +1245,8 @@ an absent candidate, or an absent corpus. It emits a `rendition_committed` ledge
 uv run gz validate --rendition-freshness
 
 # Recompose, attest, and re-commit so the committed rendition + fingerprint reflect the corpus
-cat /tmp/new-candidate.md | uv run gz content compose AGENTS.md --consumer codex
-uv run gz content commit AGENTS.md --consumer codex \
+cat /tmp/new-candidate.md | uv run gz content compose AGENTS.md --consumer root
+uv run gz content commit AGENTS.md --consumer root \
   --attestor "g0" --attestation-text "recompose attested"
 
 # Confirm drift cleared, then play back

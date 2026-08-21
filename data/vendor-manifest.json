@@ -21,5 +21,8 @@
     "Rule": {"claude": "heavy"},
     "Scenario": {"claude": "heavy"},
     "Skill": {"claude": "heavy"}
+  },
+  "surface_content_types": {
+    "AGENTS.md": "AgentContract"
   }
 }

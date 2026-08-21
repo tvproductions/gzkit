@@ -23,8 +23,8 @@ judgment is the agent's. The tool **never writes a rendered surface** —
 
 ```bash
 gz content compose <surface> --consumer <vendor> --candidate <file>
-gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
-cat /tmp/candidate.md | gz content compose AGENTS.md --consumer codex
+gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md
+cat /tmp/candidate.md | gz content compose AGENTS.md --consumer root
 ```
 
 - `--consumer` is required; must match a vendor declared in `data/vendor-manifest.json`.
@@ -45,10 +45,10 @@ cat /tmp/candidate.md | gz content compose AGENTS.md --consumer codex
 
 ```bash
 # Compose a candidate for the AGENTS.md corpus toward the Codex (lite) setpoint
-gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
+gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md
 
 # Confirm candidate landed; AGENTS.md is byte-unchanged
-test -s .gzkit/renditions/AGENTS.md/codex.candidate.md
+test -s .gzkit/renditions/AGENTS.md/root.candidate.md
 git diff --exit-code AGENTS.md
 
 # Confirm the ledger records the compose event

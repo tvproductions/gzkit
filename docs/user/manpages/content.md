@@ -167,8 +167,8 @@ or any mirror) — only the candidate artifact and ledger change.
 
 ```bash
 gz content compose <surface> --consumer <vendor> --candidate <file>
-gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md
-cat /tmp/candidate.md | gz content compose AGENTS.md --consumer codex
+gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md
+cat /tmp/candidate.md | gz content compose AGENTS.md --consumer root
 ```
 
 The command **fails closed** (non-zero exit, no candidate written) when:
@@ -207,11 +207,11 @@ The command's success output names this next step.
 
 ```bash
 gz content commit <surface> --consumer <vendor> --attestor "<name>" --attestation-text "<verbatim>"
-gz content commit AGENTS.md --consumer codex \
+gz content commit AGENTS.md --consumer root \
   --attestor "g0" --attestation-text "attest completed"
 
 # Re-render of unchanged canon (a trim, a recompose): no attestation needed.
-gz content commit AGENTS.md --consumer codex
+gz content commit AGENTS.md --consumer root
 ```
 
 The command **fails closed** (non-zero exit, nothing written) when:
@@ -240,7 +240,7 @@ score is evidence for the operator, never a fail-closed gate.
 
 ```bash
 gz content advise-rendition <surface> [--consumer <vendor>] --score <0.0-1.0> --explanation "<reasoning>"
-gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
 ```
 
@@ -322,7 +322,7 @@ uv run gz content remember AGENTS.md --section "Behavior Rules" \
 #   AGENTS.md                       ← byte-unchanged
 
 # Record an advisory info-retained-per-byte verdict for a candidate rendition (advisory, never gating)
-uv run gz content advise-rendition AGENTS.md --consumer codex --score 0.94 \
+uv run gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
   --explanation "All Mechanical bullets retained; two Promotable bullets combined without information loss."
 
 # The verdict is witnessed in the ledger and written as an ARB receipt cited at Gate 5:
