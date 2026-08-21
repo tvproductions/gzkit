@@ -385,6 +385,9 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "doc_surface_parity", "explicit", True, lambda r, _f: _ta().audit_doc_surface_parity(r)
     ),
     _ScopeEntry(
+        "lifecycle_pointers", "explicit", True, lambda r, _f: _ta().audit_lifecycle_pointers(r)
+    ),
+    _ScopeEntry(
         "absorption_duplicates",
         "explicit",
         True,
@@ -1368,6 +1371,7 @@ def validate(
     check_brief_cross_references: bool = False,
     check_brief_demo_section: bool = False,
     check_chores_layout: bool = False,
+    check_lifecycle_pointers: bool = False,
     check_unscoped_rules: bool = False,
     check_rule_version_markers: bool = False,
     unscoped_rules_allowlist_only: bool = False,
@@ -1503,6 +1507,7 @@ def validate(
         "brief_cross_references": check_brief_cross_references,
         "brief_demo_section": check_brief_demo_section,
         "chores_layout": check_chores_layout,
+        "lifecycle_pointers": check_lifecycle_pointers,
         "unscoped_rules": check_unscoped_rules,
         "sensitivity": check_sensitivity,
         "doc_surface_parity": check_doc_surface_parity,

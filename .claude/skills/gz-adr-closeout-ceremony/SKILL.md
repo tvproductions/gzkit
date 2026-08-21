@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.17.0"
+  skill-version: "7.18.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-02
+last_reviewed: 2026-08-21
 model: opus
 ---
 
@@ -67,7 +67,7 @@ Closeout is read-only ceremony work — the driver synthesizes attestation evide
 
 Personas not dispatched: `implementer` (no code written — closeout reads completed work; if it surfaces a defect, file a GHI via `/ghi-author`).
 
-The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts.
+The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This skill body declares the T1 contract and **this ceremony has no artifact channel** — its dispatches remain unattested and undisclosed (GHI #770's named residual). Treat the mandate as binding on you, not as something a gate will catch.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 

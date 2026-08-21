@@ -926,6 +926,41 @@ uv run gz validate --distribution --regenerate
 uv run gz validate --distribution
 ```
 
+### `--lifecycle-pointers`
+
+Fails closed when a canonical skill or rule asserts a **pending lifecycle step**
+for an ADR whose status is terminal (GHI #846).
+
+A cross-artifact reference can name its target's *identity* or its target's
+*status*. Identity references survive the target's lifecycle; status references
+silently invert when it moves, and nothing re-reads them. Measured 2026-08-21:
+four skills told every agent that read them that a pool ADR was "awaiting
+promotion" and that "the pool ADR's promotion will bind T2 receipts". That ADR
+had been `status: Superseded` since 2026-05 — there was no promotion pending and
+none could ever occur.
+
+This is the ADR/OBPI-status member of the family `--cli-alignment` already
+covers for CLI verbs: a reference pointing at something that cannot resolve is
+the same class of defect as an unresolvable import.
+
+- Scans `.gzkit/skills/*/SKILL.md` and `.gzkit/rules/*.md` (canonical only —
+  generated mirrors carry the same text and are repaired by sync, so flagging
+  them would report one defect five times).
+- Judges line by line: a claim and a reference three paragraphs apart are not
+  the same assertion.
+- Terminal statuses: `Superseded`, `Withdrawn`, `Validated`, `Completed`,
+  `Retired`. A `Pool` or `Draft` ADR genuinely awaiting promotion is exactly
+  what the phrasing is for and passes.
+- **Citing a terminal ADR stays legal.** Only claiming something is *pending*
+  from it is refused — history references must remain writable.
+
+```bash
+gz validate --lifecycle-pointers
+```
+
+Recovery: state what the artifact **is** and where its scope actually lives,
+rather than what it is waiting to do.
+
 ### `--unscoped-rules`
 
 Enforces the agent-rule placement invariant ([ADR-0.0.20](../../design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/ADR-0.0.20-agent-rule-placement-invariant.md)). Non-path-scoped agent rules (`paths: "**"` or missing `paths:`) may not live under any vendor-surface rules directory — they belong in `AGENTS.md` (root or hierarchical per-directory) at the narrowest appropriate scope.

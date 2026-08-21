@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.6.0"
+  skill-version: "6.7.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-08
+last_reviewed: 2026-08-21
 model: sonnet
 ---
 
@@ -66,7 +66,7 @@ Evaluation is the highest-risk read-only judgment ceremony — the rubric's 8 di
 
 Personas not dispatched: `implementer` (evaluation is pre-implementation review — no code exists to write or evaluate).
 
-The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts.
+The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This ceremony **does** have a dispatch channel: `gzkit.adr_eval_dispatch` reports `NOT DISPATCHED` absent a receipt and never infers dispatch from the presence of scores (GHI #770). See § Degraded mode.
 
 ### Degraded mode — when dispatch cannot run (binding, GHI #770)
 

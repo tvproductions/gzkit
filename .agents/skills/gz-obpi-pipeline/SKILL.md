@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-21
 metadata:
-  skill-version: "6.36.0"
+  skill-version: "6.37.0"
 model: sonnet
 ---
 
@@ -37,7 +37,7 @@ The pipeline dispatches four subagent personas across its stages. Stage-2 implem
 | `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff | Stage 2 step h.i–vii (two-stage review) |
 | `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |
 
-The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). The pipeline marker schema records dispatches via `SubagentDispatchRecord`; the pool ADR's promotion will add `gz validate --pipeline-review-receipts` and `persona_adopted` ledger events as T2 fail-close.
+The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). **Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred. The Stage-4 narrator dispatch has no channel yet.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated). Runtime mapping: `src/gzkit/pipeline_runtime.py:129` (`ROLE_PERSONA_MAP`).
 

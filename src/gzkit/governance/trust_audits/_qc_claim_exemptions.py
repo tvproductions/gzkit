@@ -80,6 +80,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "kind-invariance": EXEMPTS_NONE,
     # Two arms, both fail-closed: `.gitattributes` must carry the LF directive,
     # and no tracked text surface may be committed CRLF. No per-file waiver.
+    # Read end-to-end 2026-08-21: no allowlist, no waiver file, no skip marker.
+    # The terminal-status set and the two scanned globs are SCOPE predicates
+    # (which artifacts the gate examines), which this module's bar excludes
+    # from being exemptions. Nothing makes it ADMIT a line it has judged in
+    # violation.
+    "lifecycle-pointers": EXEMPTS_NONE,
     "line-endings": EXEMPTS_NONE,
     # Asserts the SessionStart orientation hook stays wired in both harnesses.
     # Every arm yields a finding; a missing script is an error, not a pass.

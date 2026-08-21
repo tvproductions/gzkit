@@ -113,6 +113,9 @@ from gzkit.governance.trust_audits.invariant_coherence import (
     validate_invariant_coherence,
 )
 from gzkit.governance.trust_audits.kind_invariance import audit_kind_invariance
+from gzkit.governance.trust_audits.lifecycle_pointers import (
+    audit_lifecycle_pointers,
+)
 from gzkit.governance.trust_audits.lock_exchange_coupling import (
     validate_lock_exchange_coupling,
 )
@@ -214,6 +217,7 @@ __all__ = [
     "audit_cli_alignment",
     "audit_manpage_alignment",
     "audit_doc_surface_parity",
+    "audit_lifecycle_pointers",
     "audit_event_handlers",
     "audit_event_schemas",
     "audit_insights_shape",

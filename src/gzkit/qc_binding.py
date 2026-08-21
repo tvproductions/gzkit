@@ -85,6 +85,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Readiness audit": ("audit", "all", "bound", "python_function"),
     "CLI audit": ("audit", "docs/", "bound", "python_function"),
     "Unscoped rules": ("audit", ".gzkit/rules/", "bound", "python_function"),
+    "Lifecycle pointers": ("audit", ".gzkit/skills/", "bound", "python_function"),
     # Enrolled the same commit it joined `gz check`. Subject is
     # `.github/workflows/` because that is the POPULATION it audits — the
     # interpreter declarations. `.python-version` is the authority it reads

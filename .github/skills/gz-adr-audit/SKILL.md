@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.13.2"
+  skill-version: "6.14.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-18
+last_reviewed: 2026-08-21
 model: opus
 ---
 
@@ -40,7 +40,7 @@ The audit is read-only judgment work — a single driver scoring its own finding
 
 Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
 
-The mechanical attestation that these dispatches occurred is governed by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6 (Pool / HEAVY — awaiting promotion). This skill body declares the T1 contract; the pool ADR's promotion will bind T2 receipts (`gz validate --pipeline-review-receipts`, `persona_adopted` ledger events).
+The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This skill body declares the T1 contract and **this ceremony has no artifact channel** — its dispatches remain unattested and undisclosed (GHI #770's named residual). Treat the mandate as binding on you, not as something a gate will catch.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
