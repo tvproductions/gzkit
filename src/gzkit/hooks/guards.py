@@ -273,6 +273,69 @@ def forbid_skill_sync_drift(root: Path) -> int:
     return 0
 
 
+def forbid_post_authoring_src_commits(root: Path) -> int:
+    """Refuse a commit carrying production code past Stage 2 (GHI #844).
+
+    This is the arm of the post-Stage-2 fence that no tool choice evades. Its
+    sibling — the generated ``.claude/hooks/pipeline-gate.py`` PreToolUse hook —
+    binds the ``Write|Edit|NotebookEdit`` matcher and keys on
+    ``tool_input.file_path``, a field a Bash payload does not carry. Measured
+    2026-08-21 across the three sessions that implemented OBPI-0.35.0-09: 348
+    Bash calls, zero Write/Edit calls, ~350 lines of production code authored at
+    ``current_stage: verify``, and the hook never executed once.
+
+    Reading the staged diff answers the question the hook was asked but could
+    not hear: did production code change while the pipeline was past its
+    authoring stage? ``sed``, a heredoc, inline ``python``, and an editor
+    outside the session all land in ``git diff --cached`` identically.
+
+    The decision itself lives in :mod:`gzkit.pipeline_stage_fence` so this guard
+    and the hook cannot drift apart.
+    """
+    from gzkit.pipeline_stage_fence import (  # noqa: PLC0415
+        marker_stage,
+        post_authoring_commit_message,
+        refuses_production_commit,
+    )
+
+    plans_dir = root / ".claude" / "plans"
+    if not plans_dir.is_dir():
+        return 0
+    staged = _run_git(["diff", "--cached", "--name-status"], root)
+    if not staged:
+        return 0
+    changed = [path for path, code in _parse_staged_name_status(staged).items() if code != "D"]
+    if not changed:
+        return 0
+
+    for marker_path in sorted(plans_dir.glob(".pipeline-active*.json")):
+        stage = marker_stage(marker_path)
+        if stage is None:
+            continue
+        offending = [p for p in changed if refuses_production_commit(stage, p)]
+        if not offending:
+            continue
+        obpi_id = _marker_obpi_id(marker_path)
+        _safe_print(post_authoring_commit_message(obpi_id, stage, offending))
+        return 1
+    return 0
+
+
+def _marker_obpi_id(marker_path: Path) -> str:
+    """Return a marker's ``obpi_id``, falling back to its filename stem."""
+    import json  # noqa: PLC0415
+
+    try:
+        payload = json.loads(marker_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return marker_path.stem
+    if isinstance(payload, dict):
+        obpi_id = str(payload.get("obpi_id") or "").strip()
+        if obpi_id:
+            return obpi_id
+    return marker_path.stem
+
+
 def _run_enforcement_floor(root: Path) -> int:
     """Run the enforcement-claim meta-validator as a pre-push guard. READ-ONLY on clean."""
     from gzkit.quality import run_enforcement_floor_audit  # noqa: PLC0415
@@ -294,6 +357,9 @@ def main() -> int:
     if rc:
         return rc
     rc = forbid_skill_sync_drift(root)
+    if rc:
+        return rc
+    rc = forbid_post_authoring_src_commits(root)
     if rc:
         return rc
     rc = _run_enforcement_floor(root)
