@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "3e359d7502b0bf58b3465d5d1d72dbf0767fe627d49e813c9d2c9ab907a5d2b6",
-  "corpus_entry_count": 66,
-  "rendition_fingerprint": "4dcd67587e3ea743d2c813a793653b7f87b1f22f21ef538b961fc3bfa96d59df",
-  "committed_ts": "2026-08-20T06:44:14.897357+00:00",
+  "corpus_fingerprint": "d536666d56eefb6b3e784f0f588b72a689ffaf2be74c6456bb9c400747a111f8",
+  "corpus_entry_count": 67,
+  "rendition_fingerprint": "5608e95eef699cc653fe0136a252536540e03c9c8c2d8c6548fb6b165f138ec3",
+  "committed_ts": "2026-08-21T00:42:41.671647+00:00",
   "attestor": "g0",
-  "attestation_text": "AGENTS.md is wrong, but it is rendered, so fix in source — corpus entry corpus-gate-covenant-2026-08-20T00:31:11 (invariant tier, Mechanical) closes the foundation kind per ADR-0.34.0, discharging the capture OBPI-0.34.0-03 § Denied Paths deferred and never claimed; witnessed by 'gz plan create --kind foundation' and 'gz adr promote --kind foundation' both refusing with three-part guardrail prose, and 'gz validate --taxonomy' green at exit 0"
+  "attestation_text": "we need to place this into the agents.md canon: never, ever recommend/allow an out-of-sequence work order for adrs. we booked 0.37.0 ahead of 0.35.0, we don't do that — do this. Corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-21T00:12:37 added at invariant tier, section operator-doctrine-verbatim-canon; candidate 39996B (invariant=17294B, setpoint lite), byte delta +1516 as a single 349a350 insertion with no entry dropped, combined, or rewritten; advisor-QC receipt arb-step-judge-6e9cd6ec98b3 score 1.0. Grounded on ADR-0.35.0 0/10, ADR-0.36.0 0/9, ADR-0.37.0 0/6 measured this session."
 }
