@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "d536666d56eefb6b3e784f0f588b72a689ffaf2be74c6456bb9c400747a111f8",
-  "corpus_entry_count": 67,
-  "rendition_fingerprint": "5608e95eef699cc653fe0136a252536540e03c9c8c2d8c6548fb6b165f138ec3",
-  "committed_ts": "2026-08-21T00:42:41.671647+00:00",
+  "corpus_fingerprint": "31e903e9a3e1c5195fe7f3661f4ebe68627ea6546a0e42b4977587f2b1a248b0",
+  "corpus_entry_count": 69,
+  "rendition_fingerprint": "cd1983b4f2ada0617194c46c4d8bf37cb88f6a9222179da2a4bec8ff5c507a0d",
+  "committed_ts": "2026-08-21T09:40:18.355687+00:00",
   "attestor": "g0",
-  "attestation_text": "we need to place this into the agents.md canon: never, ever recommend/allow an out-of-sequence work order for adrs. we booked 0.37.0 ahead of 0.35.0, we don't do that — do this. Corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-21T00:12:37 added at invariant tier, section operator-doctrine-verbatim-canon; candidate 39996B (invariant=17294B, setpoint lite), byte delta +1516 as a single 349a350 insertion with no entry dropped, combined, or rewritten; advisor-QC receipt arb-step-judge-6e9cd6ec98b3 score 1.0. Grounded on ADR-0.35.0 0/10, ADR-0.36.0 0/9, ADR-0.37.0 0/6 measured this session."
+  "attestation_text": "render the control surfaces — operator directive 2026-08-21. Promotes the candidate carrying two invariant-tier corpus entries added this session: the never-work-an-OBPI-without-the-skill mandate (operator verbatim) and the presence-check-is-not-evidence maxim. Corpus fingerprint d536666d56ee -> 31e903e9a3e1. Zero information loss: the candidate is the prior committed rendition with both entries appended verbatim, nothing dropped, combined, or rewritten (advisor-QC receipt arb-step-judge-ecf5197875474470b45b48362831b3f4, score 1.00). Result is 42235B against the 32768B Codex cap, which is advisory until 1.0 per the operator stay of 2026-08-17; the overage is corpus-unowned template scaffolding and its remedy is the unlanded OBPI-0.35.0-04-section-ownership-and-ratchet, not a trim that would delete doctrine the corpus cannot return."
 }

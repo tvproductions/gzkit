@@ -83,23 +83,18 @@ def _extract_allowed_paths_from_brief(brief_path: Path) -> list[str]:
     return paths
 
 
-# Stages in which AUTHORING production code is the declared work. Every other
-# canonical stage is post-authoring: the pipeline has already left Stage 2, so a
-# fresh `src/**` write there is freeform implementation wearing an active
-# marker. `.claude/hooks/pipeline-gate.py` witnessed marker PRESENCE only until
-# 2026-08-21, which is how OBPI-0.35.0-09 took ~350 lines of production edits at
-# `current_stage: verify` with no implementer dispatch and no two-stage review —
-# the Stage-2 gate that exists to catch hollow tests and subject-substituted REQ
-# coverage never ran, and three tier-1 adversary rounds found it instead.
+# Stages in which AUTHORING production code is the declared work.
+# Every other canonical stage is post-authoring: the pipeline has left
+# Stage 2, so a fresh src/** write there is freeform implementation
+# wearing an active marker. This gate witnessed marker PRESENCE only
+# until 2026-08-21, which is how OBPI-0.35.0-09 took ~350 lines of
+# production edits at current_stage: verify with no implementer
+# dispatch and no two-stage review.
 _AUTHORING_STAGES = frozenset({"implement"})
 
 
 def _marker_stage(marker_path: Path) -> str | None:
-    """Return the marker's ``current_stage``, or ``None`` when unreadable/absent.
-
-    ``None`` permits the write: a marker with no stage predates this check, and
-    refusing on a parse error would block repair of the very marker at fault.
-    """
+    # Marker current_stage, or None when unreadable/absent.
     try:
         payload = json.loads(marker_path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -108,24 +103,26 @@ def _marker_stage(marker_path: Path) -> str | None:
     return str(stage) if isinstance(stage, str) and stage else None
 
 
-def _post_authoring_message(obpi_id: str, stage: str, rel_path: str) -> str:
-    """Explain why a production write is refused after Stage 2, and how to proceed."""
+def _post_authoring_message(obpi_id, stage, rel_path):
+    # Why a production write is refused after Stage 2, and how to proceed.
     return (
-        f"BLOCKED: `{rel_path}` is a production write, but the pipeline marker for "
-        f"{obpi_id} is at `current_stage: {stage}` — past Stage 2.\n\n"
-        "WHY: an active marker is not evidence that the skill's Stage 2 ran. Stage 2 "
-        "dispatches an implementer and then a two-stage spec-reviewer + quality-reviewer "
-        "pass; that review is what catches hollow tests and REQ coverage bound to the "
-        "wrong subject. Authoring production code at a post-authoring stage skips it "
-        "while every marker-presence check still reads green.\n\n"
-        "NEXT STEP: if this is genuine implementation work, re-enter Stage 2 so the "
-        "review fires -- `uv run gz obpi pipeline "
-        f"{obpi_id}` -- and let the skill dispatch it. If it is the bounded in-flight "
-        "repair Stage 3 allows after a failed check, move the marker back to "
-        "`implement` through the runtime so the re-entry is recorded, then repair. "
-        "Do NOT hand-edit the marker to satisfy this gate (AGENTS.md Never #6).\n\n"
-        "`tests/**` writes stay permitted at every stage: Phase 1b @covers parity and "
-        "the Phase 1c RED witness are verify-stage work by design."
+        f"BLOCKED: `{rel_path}` is a production write, but the pipeline "
+        f"marker for {obpi_id} is at `current_stage: {stage}` - past "
+        "Stage 2.\n\nWHY: an active marker is not evidence that the "
+        "skill's Stage 2 ran. Stage 2 dispatches an implementer and then "
+        "a two-stage spec-reviewer + quality-reviewer pass; that review "
+        "is what catches hollow tests and REQ coverage bound to the wrong "
+        "subject. Authoring production code at a post-authoring stage "
+        "skips it while every marker-presence check still reads green."
+        "\n\nNEXT STEP: if this is genuine implementation work, "
+        f"re-enter Stage 2 so the review fires - `uv run gz obpi pipeline "
+        f"{obpi_id}` - and let the skill dispatch it. If it is the bounded "
+        "in-flight repair Stage 3 allows after a failed check, move the "
+        "marker back to `implement` through the runtime so the re-entry is "
+        "recorded, then repair. Do NOT hand-edit the marker to satisfy this "
+        "gate (AGENTS.md Never #6).\n\n`tests/**` writes stay permitted "
+        "at every stage: Phase 1b @covers parity and the Phase 1c RED "
+        "witness are verify-stage work by design."
     )
 
 
@@ -195,19 +192,22 @@ def main() -> None:
                 continue
 
         obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
-        active_marker: Path | None = None
+        active_marker = None
         if marker_matches(obpi_marker, obpi_id):
             active_marker = obpi_marker
         elif marker_matches(legacy_marker, obpi_id):
             active_marker = legacy_marker
 
         if active_marker is not None:
-            # An active marker arms the pipeline; it does NOT attest that Stage 2
-            # ran. Production authoring is refused once the marker has moved past
-            # the authoring stage. Tests stay open — verify-stage work needs them.
+            # An active marker arms the pipeline; it does NOT attest that
+            # Stage 2 ran. Production authoring is refused once the marker
+            # moves past the authoring stage. Tests stay open.
             stage = _marker_stage(active_marker)
             if rel_path.startswith("src/") and stage is not None and stage not in _AUTHORING_STAGES:
-                print(_post_authoring_message(obpi_id, stage, rel_path), file=sys.stderr)
+                print(
+                    _post_authoring_message(obpi_id, stage, rel_path),
+                    file=sys.stderr,
+                )
                 sys.exit(2)
             continue
 
