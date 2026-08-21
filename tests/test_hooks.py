@@ -1587,14 +1587,20 @@ class TestPipelineGateHook(unittest.TestCase):
                         "lane": "heavy",
                         "entry": "verify",
                         "execution_mode": "normal",
-                        "current_stage": "verify",
+                        # Amended 2026-08-21 for the post-Stage-2 refusal in
+                        # `.claude/hooks/pipeline-gate.py`: this test's subject
+                        # is the RICHER MARKER SHAPE matching on obpi_id, so it
+                        # asserts at the authoring stage, where a src/** write
+                        # is the declared work. The stage refusal itself is
+                        # asserted by the two tests below.
+                        "current_stage": "implement",
                         "started_at": "2026-03-13T12:00:00Z",
                         "updated_at": "2026-03-13T12:05:00Z",
                         "receipt_state": "pass",
                         "blockers": [],
                         "required_human_action": None,
-                        "next_command": "uv run gz obpi pipeline OBPI-0.12.0-04 --from=ceremony",
-                        "resume_point": "ceremony",
+                        "next_command": "uv run gz obpi pipeline OBPI-0.12.0-04 --from=implement",
+                        "resume_point": "implement",
                     }
                 )
                 + "\n",
@@ -1602,6 +1608,77 @@ class TestPipelineGateHook(unittest.TestCase):
             )
 
             result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+            self.assertEqual(result.returncode, 0)
+            self.assertEqual(result.stderr, "")
+
+    def test_blocks_src_write_when_marker_is_past_authoring_stage(self) -> None:
+        # An active marker arms the pipeline; it is NOT evidence that Stage 2
+        # ran. Past the authoring stage the implementer dispatch and the
+        # two-stage spec-reviewer + quality-reviewer review are already behind
+        # us, so a fresh production write is freeform implementation wearing a
+        # marker an earlier session left. Refusing it is the whole point of the
+        # gate: a presence check answers "is something armed", never "did the
+        # governed procedure run" (AGENTS.md, OBPI-0.35.0-09, 2026-08-21).
+        for stage in ("verify", "ceremony", "sync", "complete"):
+            with self.subTest(stage=stage), tempfile.TemporaryDirectory() as tmpdir:
+                project_root = Path(tmpdir)
+                plans_dir = project_root / ".claude" / "plans"
+                script_path = self._create_hook(project_root)
+                self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+                self._write_marker(
+                    plans_dir,
+                    ".pipeline-active-OBPI-0.12.0-04.json",
+                    obpi_id="OBPI-0.12.0-04",
+                )
+                (plans_dir / ".pipeline-active-OBPI-0.12.0-04.json").write_text(
+                    json.dumps(
+                        {
+                            "obpi_id": "OBPI-0.12.0-04",
+                            "current_stage": stage,
+                            "started_at": "2026-03-13T12:00:00Z",
+                        }
+                    )
+                    + "\n",
+                    encoding="utf-8",
+                )
+
+                result = self._run_hook(script_path, project_root, file_path="src/demo.py")
+
+                self.assertEqual(result.returncode, 2)
+                self.assertIn(f"`current_stage: {stage}` - past Stage 2", result.stderr)
+                # Recovery names the runtime re-entry, never a marker edit.
+                self.assertIn("uv run gz obpi pipeline OBPI-0.12.0-04", result.stderr)
+                self.assertIn("Do NOT hand-edit the marker", result.stderr)
+
+    def test_allows_tests_write_when_marker_is_past_authoring_stage(self) -> None:
+        # The carve-out is declared, so it is asserted rather than assumed:
+        # Phase 1b @covers parity and the Phase 1c RED witness are verify-stage
+        # work by design, so `tests/**` stays open at every stage. Without this
+        # the refusal above would strand the pipeline's own verify phase.
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            plans_dir = project_root / ".claude" / "plans"
+            script_path = self._create_hook(project_root)
+            self._write_receipt(plans_dir, obpi_id="OBPI-0.12.0-04", verdict="PASS")
+            self._write_marker(
+                plans_dir,
+                ".pipeline-active-OBPI-0.12.0-04.json",
+                obpi_id="OBPI-0.12.0-04",
+            )
+            (plans_dir / ".pipeline-active-OBPI-0.12.0-04.json").write_text(
+                json.dumps(
+                    {
+                        "obpi_id": "OBPI-0.12.0-04",
+                        "current_stage": "verify",
+                        "started_at": "2026-03-13T12:00:00Z",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = self._run_hook(script_path, project_root, file_path="tests/test_demo.py")
 
             self.assertEqual(result.returncode, 0)
             self.assertEqual(result.stderr, "")
