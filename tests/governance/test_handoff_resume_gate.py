@@ -400,3 +400,65 @@ class ResumeGateNewestHandoffSelectionTests(unittest.TestCase):
                 abandoned=True,
             )
             self.assertEqual(newest_handoff(base), resumable)
+
+
+class RetiredGateProseTests(unittest.TestCase):
+    """No production prose may assert the refusal the retired gate no longer performs.
+
+    WHY this exists as a separate pin (GHI #805, reopened 2026-08-21). The two
+    controls in `ResumeGateExemptionControlTests` read the enforcement REGISTRY
+    and the module API — machine surfaces. Neither reads a string shown to a
+    human. #805's own class section named that asymmetry as the general shape
+    that survived its closure: *"a string template that documents its own
+    enforcement scope has two consumers (the reader and the matcher) and only
+    one of them is tested."*
+
+    It reproduced six days after #805 closed. The retirement commit rewrote the
+    module that IMPLEMENTED the gate and left five modules that only DESCRIBED
+    it, so `gz handoff decide --help` and the SessionStart advisement both told
+    a resuming agent the gate was armed while the registry pin above stayed
+    green. The advisement was self-contradictory in one block — "A handoff
+    advises; it does not authorize" three lines above "leave the gate armed" —
+    and the agent believed the second half.
+
+    Scope is bounded and stated: the pin covers present-tense assertion phrases,
+    which is what makes a false claim false. Past-tense narrative about the
+    gate's own history is deliberately NOT matched — `handoff_api.py` explains a
+    GHI #758 defect in terms of what the gate did at the time, and
+    `handoff_resume_gate.py` is the retirement record itself. A dated account of
+    what was true on its date is not drift.
+    """
+
+    #: Phrases that only parse as a live claim of enforcement.
+    RETIRED_CLAIMS = (
+        "lifts the resume gate",
+        "resume gate refuses",
+        "leave the gate armed",
+        "refuses every mutating tool call",
+    )
+
+    #: The module whose documented SUBJECT is the retirement.
+    NARRATES_THE_RETIREMENT = "handoff_resume_gate.py"
+
+    def test_no_production_module_asserts_the_retired_gate(self) -> None:
+        src = Path(__file__).resolve().parents[2] / "src" / "gzkit"
+        self.assertTrue(src.is_dir(), f"source tree not found at {src}")
+
+        offenders: list[str] = []
+        for path in sorted(src.rglob("*.py")):
+            if path.name == self.NARRATES_THE_RETIREMENT:
+                continue
+            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+                for claim in self.RETIRED_CLAIMS:
+                    if claim in line:
+                        rel = path.relative_to(src.parents[1])
+                        offenders.append(f"{rel}:{lineno}: {claim!r} in {line.strip()!r}")
+
+        self.assertEqual(
+            offenders,
+            [],
+            "Production prose asserts a resume gate retired 2026-08-15 "
+            "(operator: 'the handoff should be an advisor, not a gate-keeping "
+            "nanny'). Reword to describe the advisory record, never a refusal:\n"
+            + "\n".join(offenders),
+        )

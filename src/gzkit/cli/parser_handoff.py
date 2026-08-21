@@ -31,10 +31,11 @@ from gzkit.cli.parser_handler_manifest import _lazy
 def _handoff_decide_description(verb: str) -> str:
     """Return the shared description for `decide` and its `authorize` alias."""
     return (
-        "Record the operator's decision on a resumed handoff. Until a "
-        "PROCEED decision is booked, the resume gate refuses every mutating "
-        "tool call for this session (gz-session-handoff SKILL.md § RESUME). "
-        "This is an acknowledge-and-decide transit gate, NOT a completion "
+        "Record the operator's decision on a resumed handoff. A handoff "
+        "ADVISES and gates nothing — the resume gate was retired 2026-08-15 "
+        "(gz-session-handoff SKILL.md § RESUME); booking puts the ruling on "
+        "Layer-2 so the decision has a record. This is an "
+        "acknowledge-and-decide transit decision, NOT a completion "
         "attestation — ADR-0.0.33 reserves that register for completed "
         "planned work. --operator-text still carries the operator's VERBATIM "
         "words: never a paraphrase, and never words they did not say."

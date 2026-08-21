@@ -400,12 +400,13 @@ def handoff_authorize_cmd(
 ) -> None:
     """Book the operator's transit decision on a resumed handoff (GHI #574, #757).
 
-    Discharges the Operator Authorization Gate (`gz-session-handoff` SKILL.md
-    § RESUME) for this session: until a PROCEED decision is on the ledger, the
-    resume gate refuses every mutating tool call. The gate reads Layer-2, so the
-    ruling must be BOOKED — presenting the steps and being told "go" in
-    conversation leaves no record, which is the state that let the gate hold by
-    goodwill alone.
+    Records the operator's ruling on this session's resumed handoff
+    (`gz-session-handoff` SKILL.md § RESUME). It authorizes nothing: the
+    Operator Authorization Gate was retired 2026-08-15 (operator ruling: a
+    handoff is an advisor, not a gate-keeping nanny), and advising is now the
+    whole mechanism. The ruling must still be BOOKED — presenting the steps and
+    being told "go" in conversation leaves no Layer-2 record of what the
+    operator actually decided.
 
     **This is a transit decision, not an attestation.** ADR-0.0.33 § Alternatives
     rejects the conflation by name — completion-attestation is reserved for
@@ -499,10 +500,10 @@ def handoff_authorize_cmd(
         )
         console.print(
             f"[red]Refusing to book:[/red] {rel} is not the handoff this session resumed.\n"
-            f"WHY: the gate armed on {armed_rel}, and a ruling names the advised steps "
-            f"the operator actually read. Booking against a different document would "
-            f"record consent for steps nobody was shown, and would lift the gate anyway "
-            f"— the gate matches on session id, not on path (GHI #795).\n"
+            f"WHY: this session resumed {armed_rel}, and a ruling names the advised "
+            f"steps the operator actually read. Booking against a different document "
+            f"would record consent for steps nobody was shown — the coupling predicate "
+            f"matches on session id, not on path (GHI #795).\n"
             f"NEXT STEP: re-run against the armed handoff, or rule on it explicitly:\n"
             f"  uv run gz handoff decide --handoff {armed_rel} \\\n"
             f"    --session-id {resolved_session} --decision {resolved_decision} "

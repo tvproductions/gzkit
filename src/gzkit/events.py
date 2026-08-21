@@ -965,7 +965,7 @@ class HandoffResumeDecidedEvent(_EventBase):
     handoff_path: str = Field(..., min_length=1, description="Resumed handoff the ruling covers")
     operator_text: str = Field(..., min_length=1, description="Operator's verbatim ruling words")
     decision: Literal["proceed", "pause", "hold", "revert"] = Field(
-        ..., description="Transit decision; only 'proceed' lifts the resume gate"
+        ..., description="Transit decision recorded for the resumed handoff"
     )
     set_aside: list[str] = Field(
         default_factory=list, description="Advised steps this ruling declines"

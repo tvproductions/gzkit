@@ -1146,7 +1146,8 @@ def handoff_resume_decided_event(
 
     ``decision`` borrows the airlock's ``Decision`` grammar (PROCEED / PAUSE /
     HOLD / REVERT) while keeping the handoff layer's own records — the two
-    systems sit on different axes. Only PROCEED lifts the resume gate.
+    systems sit on different axes. No value gates anything — the resume gate was
+    retired 2026-08-15, so every decision is an advisory record.
 
     ``operator_text`` remains VERBATIM by operator ruling (2026-08-05): the word
     is still recorded, what changes is that it is filed as a transit decision

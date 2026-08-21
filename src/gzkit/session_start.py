@@ -109,9 +109,10 @@ def _render(result: object) -> str:
         '  --decision proceed --operator-text "<their exact words>"',
         "```",
         "",
-        "Only a `proceed` decision lifts the resume gate. `pause`, `hold`, and "
-        "`revert` are equally bookable rulings and leave the gate armed. Use "
-        "`--set-aside` to record any advised step the operator declines.",
+        "`proceed`, `pause`, `hold`, and `revert` are equally bookable rulings; "
+        "none gates anything — the record is Layer-2 provenance of what was "
+        "decided, not an authorization. Use `--set-aside` to record any advised "
+        "step the operator declines.",
     ]
     if steps:
         lines += ["", "### Advised steps", ""]

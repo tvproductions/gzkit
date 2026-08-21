@@ -89,7 +89,7 @@ own; the two systems sit on different axes.
 The predecessor shape was a **consent boolean**: booking it *was* authorization,
 so an operator who reviewed the handoff and said *not yet* left no record at all.
 The register could only ever say yes. `pause` / `hold` / `revert` are equally
-bookable rulings that leave the gate armed.
+bookable rulings, and none of them authorizes anything.
 
 ### Recording amendments
 
@@ -213,10 +213,10 @@ Everything else fails **closed**:
 
 ---
 
-## The ruling must name the handoff the gate armed on
+## The ruling must name the handoff this session resumed
 
-`--handoff` is compared against the document the resume gate is currently
-armed on, and a mismatch is refused before anything is written.
+`--handoff` is compared against the document this session actually resumed,
+and a mismatch is refused before anything is written.
 
 A ruling is consent to *a specific document's advised steps*. Until GHI #795
 the `handoff_path` on the decision event was written and never read back, so a
@@ -233,23 +233,25 @@ $ uv run gz handoff decide --handoff .gzkit/handoffs/20260716T000000Z-older.md \
     --session-id session-xyz --decision proceed --operator-text "go ahead"
 Refusing to book: .gzkit/handoffs/20260716T000000Z-older.md is not the handoff
 this session resumed.
-WHY: the gate armed on .gzkit/handoffs/20260812T000000Z-armed.md, and a ruling
-names the advised steps the operator actually read. ...
+WHY: this session resumed .gzkit/handoffs/20260812T000000Z-armed.md, and a
+ruling names the advised steps the operator actually read. ...
 NEXT STEP: re-run against the armed handoff, or rule on it explicitly:
   uv run gz handoff decide --handoff .gzkit/handoffs/20260812T000000Z-armed.md \
     --session-id session-xyz --decision proceed --operator-text "<their exact words>"
 ```
 
-**The check is at booking time, not lift time, and that is deliberate.** The
-gate still lifts on `session_id` alone. Comparing paths when the gate is *read*
-would re-arm it against an already-cleared session the moment any new handoff
-lands mid-flight — a completion record, an exit bookmark, a checkpoint — which
-is the regression GHI #619 and GHI #755 closed. A clearance is amended
-mid-flight, never revoked.
+**The check is at booking time, and that is deliberate.** It was written while
+the resume gate still existed, when the alternative was comparing paths at
+*lift* time — which would have re-armed the gate against an already-cleared
+session the moment any new handoff landed mid-flight (a completion record, an
+exit bookmark, a checkpoint), the regression GHI #619 and GHI #755 closed. The
+gate was retired 2026-08-15 and the placement outlived it: booking time is
+still where the operator's reading is verifiable, because that is when they
+read it.
 
 ## Exit codes
 
 | Code | Meaning |
 |------|---------|
-| 0 | Ruling booked; the gate is lifted for this session. |
-| 1 | No session id; the named handoff does not exist; or it is not the handoff the gate armed on. Nothing written in every case. |
+| 0 | Ruling booked to Layer-2 for this session. |
+| 1 | No session id; the named handoff does not exist; or it is not the handoff this session resumed. Nothing written in every case. |
