@@ -13,6 +13,41 @@ gz check [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results as JSON to stdout |
+| `--fast` | Inner-loop scope: run every lint/type/governance step, plus only the tests the working tree touches. Skips `Test`, `Behave`, and `Docs build`. Never satisfies the pre-push gate |
+| `--reuse-verified` | Skip the run when this exact working-tree content already passed a full check. Used by the pre-push gate |
+
+### `--fast`
+
+Runs the full step list minus the three expensive steps, and substitutes a
+`Test (changed)` step that runs only the test modules the working tree touches.
+
+Measured 2026-08-22 on a 10-core host, against a 148 s full run: `Test` 44 s,
+`Behave` 33 s, `Docs build` 4 s. Every other step stays, because the whole
+remainder is cheaper than any one of the three and it is where the governance
+value lives.
+
+**A `--fast` pass never records a verified fingerprint**, so `--reuse-verified`
+cannot be satisfied by one and the pre-push gate still runs in full. The test
+selection is a name-match heuristic, not a dependency graph — it will miss a test
+that exercises a module it is not named after. That is a convenience for the
+inner loop, never a claim of coverage, and the output says so.
+
+### `--reuse-verified`
+
+Skips the run when this exact working-tree **content** already passed a full
+check (GHI #835). Without it a fix pays the full run twice: once when it is
+verified, then again when `git push` fires the pre-push gate over a tree that has
+not changed. The second run cannot reach a different verdict.
+
+The fingerprint is content-addressed, deliberately not `HEAD`: a commit is
+created between the two runs, so keying on the commit would mean the skip never
+fires. It is taken by staging the worktree into a throwaway index and reading
+that index's tree hash, so `.gitignore` is honoured, staged/unstaged/untracked
+content all count, and the real index is never touched.
+
+Fail-open by construction: any git failure yields no fingerprint, no fingerprint
+ever matches, and the gate runs. A fingerprint mechanism that failed closed would
+refuse pushes on a repository it merely could not read.
 
 ## Description
 

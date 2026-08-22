@@ -133,7 +133,13 @@ repos:
 
       - id: gz-check-pre-push
         name: gz check (pre-push gate)
-        entry: uv run gz check
+        # --reuse-verified skips the run when this exact tree CONTENT already
+        # passed a full check (GHI #835). A fix used to pay ~148s twice: once
+        # when it was verified, then again here over an unchanged tree, where
+        # the second run cannot reach a different verdict. Content-addressed,
+        # so the intervening commit does not defeat it and any edit does; and
+        # fail-open, so an unreadable repo runs the gate rather than skipping.
+        entry: uv run gz check --reuse-verified
         language: system
         pass_filenames: false
         stages: [pre-push]

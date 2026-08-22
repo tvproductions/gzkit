@@ -143,10 +143,26 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "check",
         help="Run all quality checks",
         description="Run lint, format, typecheck, test, and advisory drift in sequence.",
-        epilog=build_epilog(["gz check", "gz check --json"]),
+        epilog=build_epilog(
+            ["gz check", "gz check --fast", "gz check --reuse-verified", "gz check --json"]
+        ),
     )
     add_json_flag(p_check)
-    p_check.set_defaults(func=lambda a: _lazy("check")(as_json=a.as_json))
+    p_check.add_argument(
+        "--fast",
+        action="store_true",
+        help="Inner-loop scope; skips suite/behave/docs. Never satisfies the gate",
+    )
+    p_check.add_argument(
+        "--reuse-verified",
+        action="store_true",
+        help="Skip when this exact tree content already passed a full check",
+    )
+    p_check.set_defaults(
+        func=lambda a: _lazy("check")(
+            as_json=a.as_json, fast=a.fast, reuse_verified=a.reuse_verified
+        )
+    )
 
     p_drift = commands.add_parser(
         "drift",

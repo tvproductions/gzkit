@@ -574,8 +574,175 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     ]
 
 
-def check(as_json: bool = False) -> None:
-    """Run all quality checks (lint + format + typecheck + test + governance audits)."""
+def _select_check_steps(*, fast: bool) -> list[tuple[str, CheckStepRunner]]:
+    """Return the step list for this scope, substituting scoped tests when fast."""
+    steps = _build_check_steps()
+    if not fast:
+        return steps
+    kept = [(name, runner) for name, runner in steps if name not in _FAST_SKIPPED_STEPS]
+    kept.append(("Test (changed)", _run_changed_tests))
+    return kept
+
+
+def _render_step_failures(results: list[tuple[str, QualityResult]]) -> None:
+    """Print each failing step's captured output.
+
+    Without this the aggregator swallows *why* a step failed — a gate that hides
+    its own failure reason is undiagnosable from a CI log (the cause of 28
+    consecutive unreadable red CI runs).
+    """
+    for name, result in results:
+        if result.success:
+            continue
+        console.print(f"\n[red]─── {name} output ───[/red]")
+        if result.stdout:
+            console.print(result.stdout.rstrip("\n"))
+        if result.stderr:
+            console.print(result.stderr.rstrip("\n"))
+
+
+def _record_full_pass(project_root: pathlib.Path) -> None:
+    """Record that the FULL gate passed over this tree's content (GHI #835)."""
+    from gzkit.check_fingerprint import record_verified, worktree_fingerprint  # noqa: PLC0415
+
+    record_verified(project_root, worktree_fingerprint(project_root), scope="full")
+
+
+def _report_reuse_skip(project_root: pathlib.Path, *, as_json: bool) -> bool:
+    """Announce and return True when this exact tree already passed a full check."""
+    import json  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+
+    from gzkit.check_fingerprint import already_verified  # noqa: PLC0415
+
+    verified = already_verified(project_root)
+    if verified is None:
+        return False
+    if as_json:
+        sys.stdout.write(
+            json.dumps({"success": True, "skipped": "already-verified"}, indent=2) + "\n"
+        )
+    else:
+        console.print(
+            f"[green]✓[/green] gz check: skipped — this exact tree ({verified[:12]}) "
+            "already passed a full check. Content-addressed: any edit re-runs it."
+        )
+    return True
+
+
+def _record_and_announce_pass(project_root: pathlib.Path, *, fast: bool) -> None:
+    """Announce a passing run, recording the fingerprint only for a FULL one.
+
+    A ``--fast`` pass is deliberately never recorded: it skipped the expensive
+    steps by design, and letting a partial verification satisfy the gate is the
+    presence-check failure ``AGENTS.md`` names.
+    """
+    if fast:
+        console.print(
+            "\n[green]✓ Fast checks passed.[/green] "
+            f"[yellow](scoped — {', '.join(sorted(_FAST_SKIPPED_STEPS))} not run; "
+            "this does NOT satisfy the pre-push gate)[/yellow]"
+        )
+        return
+    _record_full_pass(project_root)
+    console.print("\n[green]✓ All checks passed.[/green]")
+
+
+def _changed_paths(project_root: pathlib.Path) -> list[str]:
+    """Return repo-relative paths differing from HEAD, plus untracked files."""
+    paths: set[str] = set()
+    for args in (
+        ["diff", "--name-only", "HEAD"],
+        ["ls-files", "--others", "--exclude-standard"],
+    ):
+        try:
+            out = subprocess.run(
+                ["git", *args],
+                cwd=project_root,
+                capture_output=True,
+                text=True,
+                check=False,
+                encoding="utf-8",
+                errors="replace",
+                timeout=60,
+            )
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if out.returncode == 0:
+            paths.update(line.strip() for line in out.stdout.splitlines() if line.strip())
+    return sorted(paths)
+
+
+def _select_changed_tests(project_root: pathlib.Path, changed: list[str]) -> list[str]:
+    """Return unittest-addressable module names for the tests a change touches.
+
+    Two arms, and the second is a HEURISTIC stated as one: a changed test module
+    is selected exactly, and a changed production module selects test modules whose
+    filename contains its stem. Name matching is not a dependency graph — it will
+    miss a test that exercises a module it is not named after. That is why a
+    ``--fast`` pass is never recorded as verified: the selection is a convenience
+    for the inner loop, never a claim of coverage.
+    """
+    selected: set[str] = set()
+    stems: set[str] = set()
+    for rel in changed:
+        posix = rel.replace("\\", "/")
+        if not posix.endswith(".py"):
+            continue
+        if posix.startswith("tests/"):
+            selected.add(posix[: -len(".py")].replace("/", "."))
+        elif posix.startswith("src/"):
+            stem = pathlib.Path(posix).stem
+            if stem not in ("__init__", "__main__"):
+                stems.add(stem)
+    if stems:
+        for test_file in (project_root / "tests").rglob("test_*.py"):
+            if any(stem in test_file.stem for stem in stems):
+                rel_test = test_file.relative_to(project_root).as_posix()
+                selected.add(rel_test[: -len(".py")].replace("/", "."))
+    return sorted(selected)
+
+
+def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
+    """Run only the test modules the working tree touches (``gz check --fast``)."""
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    modules = _select_changed_tests(project_root, _changed_paths(project_root))
+    if not modules:
+        return QualityResult(
+            success=True,
+            command="(no changed tests selected)",
+            stdout=(
+                "No test module matched the working tree's changes. This is a SELECTION "
+                "result, never a pass: run `uv run gz check` for the full suite."
+            ),
+            stderr="",
+            returncode=0,
+        )
+    return run_command(["uv", "run", "-m", "unittest", "-q", *modules], cwd=project_root)
+
+
+#: Steps a ``--fast`` run drops. Measured 2026-08-22 on a 10-core host against a
+#: 148s full run: Test 44s, Behave 33s, Docs build 4s. Everything else — lint,
+#: format, typecheck, and every governance validator — stays, because the whole
+#: remainder is cheaper than any one of these three and it is where the
+#: governance value lives.
+_FAST_SKIPPED_STEPS: frozenset[str] = frozenset({"Test", "Behave", "Docs build"})
+
+
+def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = False) -> None:
+    """Run all quality checks (lint + format + typecheck + test + governance audits).
+
+    ``fast`` drops the three expensive steps and runs only the tests the working
+    tree touches. It is an INNER-LOOP scope and never records a verified
+    fingerprint, so it cannot stand in for the gate — a partial verification that
+    could satisfy a gate is the presence-check failure ``AGENTS.md`` names.
+
+    ``reuse_verified`` skips the run when this exact tree CONTENT already passed a
+    full check (GHI #835). A fix used to pay the full ~148s twice: once when the
+    agent verified, then again at ``git push`` over a tree that had not changed.
+    The second run cannot reach a different verdict.
+    """
     import json
     import sys
 
@@ -585,7 +752,10 @@ def check(as_json: bool = False) -> None:
     project_root = get_project_root()
     fmt = OutputFormatter()
 
-    steps = _build_check_steps()
+    if reuse_verified and not fast and _report_reuse_skip(project_root, as_json=as_json):
+        return
+
+    steps = _select_check_steps(fast=fast)
 
     results: list[tuple[str, QualityResult]] = []
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
@@ -614,9 +784,12 @@ def check(as_json: bool = False) -> None:
     if as_json:
         payload: dict[str, object] = {
             "success": all(r.success for _, r in results),
+            "scope": "fast" if fast else "full",
             "checks": {name: r.success for name, r in results},
             "drift": drift.to_dict(),
         }
+        if all(r.success for _, r in results) and not fast:
+            _record_full_pass(project_root)
         if flag_health is not None:
             payload["flag_health"] = flag_health.model_dump()
         sys.stdout.write(json.dumps(payload, indent=2) + "\n")
@@ -634,21 +807,10 @@ def check(as_json: bool = False) -> None:
 
     all_passed = all(r.success for _, r in results)
     if all_passed:
-        console.print("\n[green]✓ All checks passed.[/green]")
+        _record_and_announce_pass(project_root, fast=fast)
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")
-        # Surface each failing step's captured output. Without this the
-        # aggregator swallows *why* a step failed — a gate that hides its own
-        # failure reason is undiagnosable from a CI log (the cause of 28
-        # consecutive unreadable red CI runs).
-        for name, result in results:
-            if result.success:
-                continue
-            console.print(f"\n[red]─── {name} output ───[/red]")
-            if result.stdout:
-                console.print(result.stdout.rstrip("\n"))
-            if result.stderr:
-                console.print(result.stderr.rstrip("\n"))
+        _render_step_failures(results)
 
     _render_drift_advisory(drift)
     _render_flag_health(flag_health)
