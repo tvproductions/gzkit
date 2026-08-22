@@ -514,7 +514,14 @@ def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> li
     entries: list[str] = []
     for ref in refs:
         try:
-            previous = resolve_continues_from(ref, referrer, base_path).read_text(encoding="utf-8")
+            resolved = resolve_continues_from(ref, referrer, base_path)
+        except (OSError, UnicodeDecodeError, ValueError):
+            continue
+        source = _ruling_source(resolved, base_path)
+        if source is None:
+            continue
+        try:
+            previous = source.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
         entries.extend(settled_rulings(previous))
@@ -522,6 +529,74 @@ def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> li
             decision.text for decision in parse_decisions(previous) if decision.is_settled
         )
     return _dedup_rulings(entries)
+
+
+def _ruling_source(previous: Path, base_path: Path) -> Path | None:
+    """Return the document whose rulings *previous* contributes to the chain.
+
+    Normally ``previous`` itself. The exception is the machine-written floor
+    bookmark the exit beat writes at every session end: it carries no
+    ``Settled Rulings`` and books no operator ruling BY CONSTRUCTION -- its own
+    body says it "records where the session stopped, not what the work meant" --
+    yet it is a valid ``continues_from`` target. Read as an ordinary ancestor it
+    is a SINK: the successor inherits an empty corpus and every ruling booked
+    upstream stops arriving. Measured on the 2026-08-22 chain, the authored
+    ancestor carried 453 settled rulings and the successor carried 0 (GHI #855).
+
+    So a floor bookmark is looked THROUGH, never at. Its declared lineage wins
+    when it has one; otherwise the nearest AUTHORED handoff older than it stands
+    in its place, which is the same document the session that wrote the bookmark
+    would itself have been resuming from.
+
+    The predicate is AUTHORSHIP (:func:`is_floor_bookmark`), never ``mode`` -- an
+    operator-authored ``CHECKPOINT`` is a real document whose rulings must still
+    be inherited, and filtering on mode would look through it too. That is the
+    mistake ``handoff_resume_gate.newest_handoff`` records having already avoided
+    on the selection arm; this arm had not been taught it.
+
+    Transparency, never substitution: the bookmark stays in ``continues_from``
+    and stays selectable. Only its contribution to the RULING chain is skipped.
+    ``None`` when a bookmark has no authored ancestor at all -- a genuine chain
+    root, which must inherit nothing rather than invent lineage.
+    """
+    from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415 — import cycle
+
+    try:
+        frontmatter = parse_frontmatter(previous.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, HandoffValidationError):
+        return previous
+    if not isinstance(frontmatter, dict) or not is_floor_bookmark(frontmatter.get("agent")):
+        return previous
+
+    refs = continues_from_refs(frontmatter.get("continues_from"))
+    for ref in refs:
+        try:
+            return resolve_continues_from(ref, previous, base_path)
+        except (OSError, UnicodeDecodeError, ValueError):
+            continue
+    return _newest_authored_before(str(frontmatter.get("timestamp", "")), base_path)
+
+
+def _newest_authored_before(timestamp: str, base_path: Path) -> Path | None:
+    """Return the newest authored handoff strictly older than *timestamp*.
+
+    Reuses ``list_handoffs`` (already newest-first, already offset-aware via
+    ``_timestamp_sort_key``) rather than re-deriving recency, so this cannot
+    disagree with the selection arm about which document is newer.
+    """
+    from gzkit.handoff_selection import is_floor_bookmark  # noqa: PLC0415 — import cycle
+
+    if not timestamp:
+        return None
+    cutoff = _timestamp_sort_key(timestamp)
+    for info in list_handoffs(base_path=base_path):
+        if is_floor_bookmark(info.agent):
+            continue
+        if _timestamp_sort_key(info.timestamp) >= cutoff:
+            continue
+        candidate = Path(info.path)
+        return candidate if candidate.is_absolute() else base_path / candidate
+    return None
 
 
 def _compose_settled(
