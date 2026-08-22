@@ -34,6 +34,7 @@ from gzkit.handoff_api import (
     list_handoffs,
     resume_handoff,
 )
+from gzkit.handoff_rulings import read_rulings
 from gzkit.handoff_validation import (
     SETTLED_SECTION,
     HandoffValidationError,
@@ -215,13 +216,66 @@ def _render_decisions(result: ResumeResult) -> None:
             console.print(f"      - {decision.text}")
 
 
+#: How many settled rulings a resume renders inline before pointing at the store.
+#: Resume is read at session start, where the corpus is the single largest thing
+#: an agent reads and the least likely to be acted on — 457 entries rendered in
+#: full is the same crowding-out inside the terminal that GHI #838 measured
+#: inside the document. The tail is shown rather than the head: the newest
+#: rulings are the ones a resuming session has not already met.
+_SETTLED_PREVIEW = 10
+
+
 def _render_settled(result: ResumeResult) -> None:
-    """Render rulings carried forward as settled (GHI #696 defect 3)."""
+    """Render rulings carried forward as settled (GHI #696 defect 3).
+
+    Previews the newest few and names the rest rather than eliding them silently
+    — a count the reader can see is what separates a preview from a cap that
+    quietly hides booked rulings.
+    """
     if not result.settled:
         return
-    console.print(f"  settled — do NOT re-open ({len(result.settled)}):")
-    for entry in result.settled:
+    total = len(result.settled)
+    console.print(f"  settled — do NOT re-open ({total}):")
+    for entry in result.settled[-_SETTLED_PREVIEW:]:
         console.print(f"    - {entry}")
+    if total > _SETTLED_PREVIEW:
+        console.print(
+            f"    ({total - _SETTLED_PREVIEW} older rulings not shown — "
+            f"read them all with `gz handoff rulings`)"
+        )
+
+
+def handoff_rulings_cmd(
+    *,
+    limit: int | None = None,
+    search: str | None = None,
+    as_json: bool = False,
+    base_path: Path | None = None,
+) -> int:
+    """Read the settled-ruling corpus (GHI #838).
+
+    The corpus left the handoff documents when it reached 91.4% of them; this is
+    the verb that replaced opening one and scrolling. Read-only: rulings are
+    booked by ``gz handoff create`` composing them from the predecessor, never
+    by a hand edit here.
+    """
+    root = base_path if base_path is not None else get_project_root()
+    entries = read_rulings(root)
+    if search:
+        needle = search.casefold()
+        entries = [entry for entry in entries if needle in entry.casefold()]
+    if limit is not None and limit > 0:
+        entries = entries[-limit:]
+    if as_json:
+        console.print_json(json.dumps(entries))
+        return 0
+    if not entries:
+        console.print("No settled rulings booked.")
+        return 0
+    console.print(f"settled rulings — do NOT re-open ({len(entries)}):")
+    for entry in entries:
+        console.print(f"  - {entry}")
+    return 0
 
 
 def handoff_resume_cmd(

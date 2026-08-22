@@ -33,9 +33,9 @@ from gzkit.commands.handoff import (
 from gzkit.handoff_api import (
     ReferenceState,
     create_handoff,
-    settled_rulings,
     validate_handoff_document,
 )
+from gzkit.handoff_rulings import read_rulings
 from gzkit.handoff_validation import REQUIRED_SECTIONS, parse_frontmatter
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
@@ -442,9 +442,19 @@ class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase
             settled=["Reframe #580 to truncation survival."],
         )
 
-        settled = settled_rulings(second.read_text(encoding="utf-8"))
+        # Asserted against the STORE, not the document body (GHI #838). The
+        # property under test is unchanged — a carried ruling must not be
+        # dropped, and a seated one must land beside it — but the corpus moved
+        # out of the prose it used to be copied into. Reading the body here would
+        # now assert the transport rather than the rulings.
+        settled = read_rulings(self.base)
         self.assertIn("Earlier ruling holds.", settled, "carried rulings must not be dropped")
         self.assertIn("Reframe #580 to truncation survival.", settled)
+        self.assertNotIn(
+            "Earlier ruling holds.",
+            second.read_text(encoding="utf-8"),
+            "the successor must point at the corpus, never re-embed it",
+        )
 
     def test_no_settled_flag_still_self_populates(self) -> None:
         """The flag is an escape hatch, not a requirement — inheritance is default."""
@@ -454,15 +464,13 @@ class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase
             decisions="- [operator-ruled] Earlier ruling holds.",
         )
 
-        second = self._create(
+        self._create(
             slug="second",
             timestamp="2026-07-14T10:00:00Z",
             decisions="- [agent-chose] Nothing new.",
         )
 
-        self.assertEqual(
-            settled_rulings(second.read_text(encoding="utf-8")), ["Earlier ruling holds."]
-        )
+        self.assertEqual(read_rulings(self.base), ["Earlier ruling holds."])
 
 
 class TestHandoffCreate(_HandoffCliCase, SilencedConsoleTestCase):

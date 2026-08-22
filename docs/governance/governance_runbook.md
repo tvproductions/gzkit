@@ -766,6 +766,7 @@ the fail-closed validation gate (ADR-0.0.65):
 uv run gz handoff list --adr ADR-<X.Y.Z>       # list handoffs newest-first
 uv run gz handoff resume --adr ADR-<X.Y.Z>     # newest handoff + staleness + next step
 uv run gz handoff create --adr ADR-<X.Y.Z> --slug <slug> --agent <id> --decisions "<text>"
+uv run gz handoff rulings [--limit N] [--search TEXT]  # the append-only settled-ruling corpus (GHI #838)
 uv run gz handoff decide --handoff <path> --session-id <id> --decision proceed --operator-text "<verbatim>"
 uv run gz handoff authorize --handoff <path> --session-id <id> --operator-text "<verbatim>"  # deprecated alias for `decide`
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention

@@ -31,9 +31,9 @@ from gzkit.handoff_api import (
     parse_decisions,
     resume_handoff,
     scaffold_handoff,
-    settled_rulings,
 )
 from gzkit.handoff_api import _mark_settled as mark_settled
+from gzkit.handoff_rulings import read_rulings
 from gzkit.handoff_validation import (
     PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
@@ -726,9 +726,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 hour=10,
             )
 
-            second = self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
+            self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertIn(
                 "Do NOT promote sensitivity into GATE5_INVARIANTS.",
                 " ".join(settled),
@@ -741,9 +741,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             base = Path(tmp)
             self._create(base, "first", "- [agent-chose] Widened the glob.", hour=10)
 
-            second = self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
+            self._create(base, "second", "- [agent-chose] Used a shared helper.", hour=11)
 
-            self.assertEqual(settled_rulings(second.read_text(encoding="utf-8")), [])
+            self.assertEqual(read_rulings(base), [])
 
     def test_settled_rulings_accumulate_down_the_chain(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -751,9 +751,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
             self._create(base, "second", "- [operator-ruled] Ruling two holds.", hour=11)
 
-            third = self._create(base, "third", "- [agent-chose] Nothing settled here.", hour=12)
+            self._create(base, "third", "- [agent-chose] Nothing settled here.", hour=12)
 
-            settled = " ".join(settled_rulings(third.read_text(encoding="utf-8")))
+            settled = " ".join(read_rulings(base))
             self.assertIn("Ruling one holds.", settled)
             self.assertIn("Ruling two holds.", settled)
 
@@ -779,9 +779,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 '  (operator verbatim: "/gz-patch-release").',
                 hour=10,
             )
-            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertEqual(len(settled), 1)
             self.assertIn("unauthorized", settled[0])
             self.assertIn("/gz-patch-release", settled[0])
@@ -799,9 +799,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 "- [operator-ruled] Ruling one holds.\n- [operator-ruled] Ruling two holds.",
                 hour=10,
             )
-            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertEqual(len(settled), 2)
 
     def test_settled_entries_are_not_duplicated_on_re_carry(self) -> None:
@@ -810,9 +810,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             self._create(base, "first", "- [operator-ruled] Ruling one holds.", hour=10)
             self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
 
-            third = self._create(base, "third", "- [agent-chose] Still nothing new.", hour=12)
+            self._create(base, "third", "- [agent-chose] Still nothing new.", hour=12)
 
-            settled = settled_rulings(third.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertEqual(
                 len([entry for entry in settled if "Ruling one holds." in entry]),
                 1,
@@ -849,9 +849,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 timestamp="2026-07-18T10:00:00Z",
             )
 
-            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertEqual(
                 len([entry for entry in settled if "Reframe #580" in entry]),
                 1,
@@ -875,9 +875,9 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 hour=10,
             )
 
-            second = self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
+            self._create(base, "second", "- [agent-chose] Nothing new.", hour=11)
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertEqual(len(settled), 2, "near-identical but distinct rulings both survive")
 
     def test_author_supplied_ruling_does_not_drop_carried_rulings(self) -> None:
@@ -896,7 +896,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             sections = dict(self._SECTIONS)
             sections["Decisions Made"] = "- [agent-chose] Nothing new."
             sections[SETTLED_SECTION] = "- Late ruling arrived after the prior handoff."
-            second = create_handoff(
+            create_handoff(
                 adr_id="ADR-0.0.65",
                 branch="main",
                 agent="test-agent",
@@ -906,7 +906,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 timestamp="2026-07-18T11:00:00Z",
             )
 
-            settled = settled_rulings(second.read_text(encoding="utf-8"))
+            settled = read_rulings(base)
             self.assertIn("Earlier ruling holds.", settled, "carried rulings must survive")
             self.assertIn("Late ruling arrived after the prior handoff.", settled)
 
@@ -919,7 +919,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             sections = dict(self._SECTIONS)
             sections["Decisions Made"] = "- [agent-chose] Nothing new."
             sections[SETTLED_SECTION] = "- Late ruling."
-            second = create_handoff(
+            create_handoff(
                 adr_id="ADR-0.0.65",
                 branch="main",
                 agent="test-agent",
@@ -930,7 +930,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             )
 
             self.assertEqual(
-                settled_rulings(second.read_text(encoding="utf-8")),
+                read_rulings(base),
                 ["Earlier ruling holds.", "Late ruling."],
             )
 
@@ -942,7 +942,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             sections = dict(self._SECTIONS)
             sections["Decisions Made"] = "- [agent-chose] Nothing new."
             sections[SETTLED_SECTION] = "- Ruling one holds."
-            second = create_handoff(
+            create_handoff(
                 adr_id="ADR-0.0.65",
                 branch="main",
                 agent="test-agent",
@@ -952,9 +952,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
                 timestamp="2026-07-18T11:00:00Z",
             )
 
-            self.assertEqual(
-                settled_rulings(second.read_text(encoding="utf-8")), ["Ruling one holds."]
-            )
+            self.assertEqual(read_rulings(base), ["Ruling one holds."])
 
     def test_adr_less_handoff_inherits_no_settled_rulings(self) -> None:
         """Settled lineage and chain lineage must be the SAME authority.
@@ -982,7 +980,7 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             )
 
             content = adr_less.read_text(encoding="utf-8")
-            self.assertEqual(settled_rulings(content), [])
+            self.assertEqual(read_rulings(base), [])
             self.assertNotIn(
                 "continues_from",
                 content,
@@ -1059,7 +1057,7 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
                 "- [operator-ruled] Reframe #580 to truncation survival.",
                 timestamp="2026-07-25T01:00:00Z",
             )
-            second = self._create(
+            self._create(
                 base,
                 "second",
                 "- [agent-chose] Extended the triage script.",
@@ -1068,7 +1066,7 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
             )
             self.assertIn(
                 "Reframe #580 to truncation survival.",
-                " ".join(settled_rulings(second.read_text(encoding="utf-8"))),
+                " ".join(read_rulings(base)),
             )
 
     def test_seating_a_late_ruling_does_not_drop_the_carried_ones(self) -> None:
@@ -1082,7 +1080,7 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
                 "- [operator-ruled] Movement C is Reduce the accretion.",
                 timestamp="2026-07-25T01:00:00Z",
             )
-            second = self._create(
+            self._create(
                 base,
                 "second",
                 "- [agent-chose] Built the witness.",
@@ -1090,7 +1088,7 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
                 continues_from=first.name,
                 settled=["GHI #607 is unparked."],
             )
-            carried = " ".join(settled_rulings(second.read_text(encoding="utf-8")))
+            carried = " ".join(read_rulings(base))
             self.assertIn("Movement C is Reduce the accretion.", carried)
             self.assertIn("GHI #607 is unparked.", carried)
 
@@ -1106,13 +1104,13 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
                 "- [operator-ruled] A ruling from unrelated work.",
                 timestamp="2026-07-25T01:00:00Z",
             )
-            second = self._create(
+            self._create(
                 base,
                 "second",
                 "- [agent-chose] Did something else.",
                 timestamp="2026-07-25T06:00:00Z",
             )
-            self.assertEqual([], settled_rulings(second.read_text(encoding="utf-8")))
+            self.assertEqual([], read_rulings(base))
 
 
 class TestChainLinkIsCorrectByConstruction(unittest.TestCase):

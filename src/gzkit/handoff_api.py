@@ -25,6 +25,13 @@ from typing import Protocol
 import yaml
 from pydantic import BaseModel, ConfigDict, computed_field
 
+from gzkit.handoff_rulings import (
+    RULINGS_FILENAME,
+    dedup_rulings,
+    read_rulings,
+    record_rulings,
+    ruling_key,
+)
 from gzkit.handoff_selection import selection_rank
 from gzkit.handoff_validation import (
     PROSPECTIVE_SECTIONS,
@@ -431,47 +438,13 @@ def settled_rulings(content: str) -> list[str]:
     return _section_items(content, SETTLED_SECTION)
 
 
-# Quote glyphs an author may pick between without changing what a ruling says.
-# Straight and curly, single and double, all fold to one sentinel for comparison.
-_QUOTE_GLYPHS = str.maketrans(dict.fromkeys("'‘’“”", '"'))
-
-
-def _ruling_key(entry: str) -> str:
-    """Return the comparison key for a settled ruling.
-
-    Two entries are the SAME ruling when they differ only in characters that
-    carry no meaning: which quote glyph the author reached for, and how the text
-    happened to wrap. Observed on `20260725T085656Z`, where the #580 reframe
-    ruling landed twice, byte-identical but for ``'...'`` versus ``"..."`` around
-    the operator's verbatim words — its predecessor had hand-written the same
-    ruling into both ``Decisions Made`` and ``Settled Rulings``.
-
-    Normalization stays deliberately narrow because the two failure directions
-    are not symmetric. A duplicate is visible and harmless; collapsing two
-    genuinely distinct rulings DROPS a booked operator ruling silently, which is
-    precisely the decay this channel exists to stop. So this folds quoting,
-    whitespace, and case — and nothing that could distinguish one ruling from
-    another.
-    """
-    return " ".join(entry.translate(_QUOTE_GLYPHS).casefold().split())
-
-
-def _dedup_rulings(entries: list[str]) -> list[str]:
-    """De-duplicate settled rulings on :func:`_ruling_key`, first-seen text kept.
-
-    Shared by both composition steps on purpose: a ruling normalized on one path
-    and compared exactly on the other would still multiply down the chain, which
-    is the defect wearing a different hat.
-    """
-    seen: set[str] = set()
-    composed: list[str] = []
-    for entry in entries:
-        key = _ruling_key(entry)
-        if key in seen:
-            continue
-        seen.add(key)
-        composed.append(entry)
-    return composed
+#: Ruling identity moved to :mod:`gzkit.handoff_rulings` with the corpus itself
+#: (GHI #838): the layer that must not write a ruling twice is the layer that
+#: owns what "twice" means. Re-exported under the private names because both the
+#: composition path here and the settled-ruling integrity suite reason about them
+#: as this module's contract, and the semantics are unchanged.
+_ruling_key = ruling_key
+_dedup_rulings = dedup_rulings
 
 
 def _carried_settled(predecessor: str | list[str] | None, base_path: Path) -> list[str]:
@@ -615,8 +588,52 @@ def _compose_settled(
     newly seated ones, de-duplicated on :func:`_ruling_key` so re-seating an
     already-carried
     ruling is a no-op rather than a double entry.
+
+    THREE sources since GHI #838, in booking order: the append-only store, then
+    the predecessor's prose, then what the author seats. The store leads because
+    it holds the whole history; the prose walk SURVIVES because every handoff
+    authored before the cutover carries its rulings in its body and nowhere else,
+    so dropping it would make the transition itself the largest silent loss in
+    this channel's history. The two overlap heavily and ``_dedup_rulings``
+    collapses the overlap, which is exactly what a union is for.
+
+    **The store is read under the SAME precondition as the ancestor walk it
+    replaces** — an asserted ``continues_from`` link. It would have been easy to
+    read it unconditionally, and that would have silently repealed the GHI #709
+    guarantee this module states in ``_carried_settled``: *"an unlinked handoff is
+    a genuine chain root, and the newest handoff overall is not its lineage."* A
+    project-wide store read by every authoring pass makes every handoff a
+    successor of everything, which is a different rule than the one that was
+    ruled. Changing the transport must not change who inherits.
     """
-    return _dedup_rulings([*_carried_settled(predecessor, base_path), *_bullet_items(authored)])
+    inherited = (
+        [*read_rulings(base_path), *_carried_settled(predecessor, base_path)]
+        if continues_from_refs(predecessor)
+        else []
+    )
+    return _dedup_rulings([*inherited, *_bullet_items(authored)])
+
+
+def _settled_pointer(count: int) -> str:
+    """Render the section that REPLACED the embedded corpus (GHI #838).
+
+    Carries no list marker, deliberately. ``_section_items`` recognises an entry
+    only by its marker, so a successor reading this document parses ZERO rulings
+    out of it and takes the corpus from the store instead — the pointer can never
+    round-trip into the log as a ruling no operator gave.
+
+    It states the count rather than eliding one, because a section that said only
+    "see the store" would be a silent cap: a reader could not tell 457 rulings
+    from 4 without opening another file.
+    """
+    plural = "ruling" if count == 1 else "rulings"
+    return (
+        f"{count} {plural} booked and carried forward. The corpus lives in "
+        f"`.gzkit/handoffs/{RULINGS_FILENAME}` — read it with `gz handoff rulings`.\n\n"
+        "Do NOT re-open these. A ruling booked once keeps arriving; it is carried "
+        "by reference from the append-only store, not by copying the whole corpus "
+        "into every successor document (GHI #838)."
+    )
 
 
 def _bullet_items(text: str) -> list[str]:
@@ -890,13 +907,12 @@ def create_handoff(
     issue as open work. Omitted, nothing is annotated and the write is unchanged.
     """
     ts = timestamp or _now_iso()
+    filename = f"{_filesystem_safe_timestamp(ts)}-{slug}.md"
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
     composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), link, base_path)
     if composed_settled:
-        sections = {
-            **sections,
-            SETTLED_SECTION: "\n".join(f"- {entry}" for entry in composed_settled),
-        }
+        corpus = record_rulings(composed_settled, base_path=base_path, source=filename)
+        sections = {**sections, SETTLED_SECTION: _settled_pointer(len(corpus))}
     sections = _annotate_settled_citations(sections, reference_checker)
     frontmatter: dict = {
         "mode": mode,
@@ -928,7 +944,7 @@ def create_handoff(
 
     handoff_dir = _handoffs_dir(base_path)
     handoff_dir.mkdir(parents=True, exist_ok=True)
-    path = handoff_dir / f"{_filesystem_safe_timestamp(ts)}-{slug}.md"
+    path = handoff_dir / filename
     path.write_text(document, encoding="utf-8", newline="\n")
     return path
 
@@ -1129,5 +1145,10 @@ def resume_handoff(
         steps=_build_steps(content, reference_checker),
         chain=chain,
         decisions=parse_decisions(content),
-        settled=settled_rulings(content),
+        # Store FIRST, then the document's own prose (GHI #838). A post-cutover
+        # handoff carries a pointer and yields nothing here; a legacy one carries
+        # the whole corpus in its body and is the only place those rulings exist
+        # until the next authoring pass folds them in. Unioned so resuming either
+        # shape reports the same settled set.
+        settled=dedup_rulings([*read_rulings(base_path), *settled_rulings(content)]),
     )

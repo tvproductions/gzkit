@@ -148,6 +148,43 @@ def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
     add_json_flag(p_resume)
     p_resume.set_defaults(func=lambda a: _lazy("handoff_resume_cmd")(adr=a.adr, as_json=a.as_json))
 
+    p_rulings = handoff_sub.add_parser(
+        "rulings",
+        help="Read the settled-ruling corpus carried across sessions",
+        description=(
+            "Read `.gzkit/handoffs/rulings.jsonl`, the append-only settled-ruling "
+            "corpus. Rulings moved out of the handoff documents when they reached "
+            "91.4% of them (GHI #838); a handoff now carries a count and a pointer, "
+            "and this is the verb that reads what it points at. Read-only — rulings "
+            "are booked by `gz handoff create` composing them from the predecessor."
+        ),
+        epilog=build_epilog(
+            [
+                "gz handoff rulings",
+                "gz handoff rulings --limit 20",
+                'gz handoff rulings --search "attest"',
+                "gz handoff rulings --json",
+            ]
+        ),
+    )
+    p_rulings.add_argument(
+        "--limit",
+        type=int,
+        default=None,
+        help="Show only the newest N rulings (default: all)",
+    )
+    p_rulings.add_argument(
+        "--search",
+        default=None,
+        help="Show only rulings containing this text (case-insensitive)",
+    )
+    add_json_flag(p_rulings)
+    p_rulings.set_defaults(
+        func=lambda a: _lazy("handoff_rulings_cmd")(
+            limit=a.limit, search=a.search, as_json=a.as_json
+        )
+    )
+
     p_create = handoff_sub.add_parser(
         "create",
         help="Author a handoff, fail-closed through the validation gate",

@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.0.0"
+  skill-version: "7.1.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-15
+last_reviewed: 2026-08-22
 model: sonnet
 ---
 
-# gz-session-handoff (v6.20.0)
+# gz-session-handoff (v6.21.0)
 
 ## Purpose
 
@@ -37,6 +37,7 @@ uv run gz handoff create [--adr ADR-<X.Y.Z>] --slug <slug> --agent <id> \
   --summary "<text>" --context "<text>" --decisions "<text>" --next-steps "<text>" \
   --pending "<text>" --verification "<text>" --evidence "<text>"
 uv run gz handoff decide --handoff <path> --session-id <id> --decision proceed --operator-text "<operator's exact words>"
+uv run gz handoff rulings [--limit N] [--search TEXT]  # the settled-ruling corpus (read-only, GHI #838)
 uv run gz handoff archive --older-than 30d --dry-run  # preview move-not-delete retention (read-only)
 uv run gz handoff archive --older-than 30d            # move handoffs older than the threshold into archive/
 ```
@@ -203,6 +204,23 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    re-adjudicated. It is deliberately NOT a required section — the
    `handoff-documents` gate validates the whole post-cutover corpus, and a
    required section would fail all of it.
+
+   **The corpus lives in a store; the section is a POINTER (GHI #838).** Rulings
+   are recorded in `.gzkit/handoffs/rulings.jsonl` — append-only, keyed on
+   `ruling_key` — and the rendered section carries a count and a pointer rather
+   than the entries. Read them with `uv run gz handoff rulings` (`--search TEXT`
+   to check whether a question is already settled before re-arguing it; `--limit
+   N` for the newest few). Before this cutover the corpus was transported by
+   COPYING PROSE from each predecessor's rendered body, which is why it reached
+   **98,247 of 107,480 bytes — 91.4% of the document** on `20260822T132232Z`.
+   Nothing retires: the retention question is answered NO, and only the transport
+   changed. `ruling_key` is untouched — widening it to shrink the corpus is the
+   fix GHI #838 rejects, because collapsing two genuinely distinct rulings drops a
+   booked operator ruling silently.
+
+   **Never hand-edit `rulings.jsonl`.** It is written by `create_handoff`
+   composing from the predecessor. Editing it directly is the same class of defect
+   as editing `.gzkit/ledger.jsonl` by hand.
 
    **A ruling that arrives AFTER the handoff is committed must be seated in the
    next one.** Composition runs at authoring time, so a late ruling — the operator

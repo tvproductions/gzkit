@@ -63,6 +63,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "handoff_create_cmd": "gzkit.commands.handoff",
     "handoff_list_cmd": "gzkit.commands.handoff",
     "handoff_resume_cmd": "gzkit.commands.handoff",
+    "handoff_rulings_cmd": "gzkit.commands.handoff",
     # --- maintenance group (parser_maintenance) ---
     "chores_advise": "gzkit.commands.chores",
     "chores_audit": "gzkit.commands.chores",

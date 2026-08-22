@@ -759,6 +759,7 @@ the fail-closed validation gate (ADR-0.0.65):
 ```bash
 uv run gz handoff list --adr ADR-0.5.0-skill-lifecycle-governance
 uv run gz handoff resume --adr ADR-0.5.0-skill-lifecycle-governance
+uv run gz handoff rulings --search "attest"   # what has already been ruled on
 uv run gz handoff create --adr ADR-0.5.0-skill-lifecycle-governance --slug session-wrap --agent g0 --decisions "Completed OBPI-0.5.0-05; next is ADR closeout."
 ```
 
