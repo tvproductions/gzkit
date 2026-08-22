@@ -312,5 +312,53 @@ class TestDerivationIdentity(unittest.TestCase):
         self.assertIn('"witness":null', dumped)
 
 
+class TestLiveEntryWithText(unittest.TestCase):
+    """Duplicate-text detection over the live (non-retired) set — GHI #862.
+
+    `retired_ids` already tells the store which rows stopped binding. The
+    duplicate question has to be asked against the same set: a text whose
+    only prior copy is retired is a re-capture, which is exactly the
+    amendment path (retire, then remember the corrected wording).
+    """
+
+    def test_finds_a_live_entry_carrying_the_same_text(self):
+        """Two live rows with one text is the state GHI #862 measured 7 times."""
+        corpus = Corpus(entries=(_entry(id="c1", text="Never create feature branches."),))
+        found = corpus.live_entry_with_text("Never create feature branches.")
+        self.assertIsNotNone(found)
+        assert found is not None
+        self.assertEqual(found.id, "c1")
+
+    def test_ignores_a_retired_entry(self):
+        """A retired copy must not block re-capture.
+
+        This is the load-bearing case: amending canon means retiring the old
+        wording and remembering the new one. If retired rows counted, the
+        second half of that workflow would be refused.
+        """
+        corpus = Corpus(
+            entries=(
+                _entry(id="c1", text="old wording"),
+                _entry(id="r1", text="superseded", retires="c1", tier="compressible"),
+            )
+        )
+        self.assertIsNone(corpus.live_entry_with_text("old wording"))
+
+    def test_returns_none_when_no_entry_carries_the_text(self):
+        corpus = Corpus(entries=(_entry(id="c1", text="something else"),))
+        self.assertIsNone(corpus.live_entry_with_text("not present"))
+
+    def test_matches_on_exact_text_only(self):
+        """Byte-identical is the predicate.
+
+        The 7 pairs GHI #862 found were byte-identical, which is why nothing
+        fired; GHI #635's pair differed by quote style and broke composition
+        loudly. Near-miss detection is a different problem and would refuse
+        legitimate rewordings, so it is deliberately out of scope.
+        """
+        corpus = Corpus(entries=(_entry(id="c1", text="Work directly on main."),))
+        self.assertIsNone(corpus.live_entry_with_text("Work directly on main"))
+
+
 if __name__ == "__main__":
     unittest.main()

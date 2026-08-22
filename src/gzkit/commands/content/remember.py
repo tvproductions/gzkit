@@ -179,6 +179,24 @@ def content_remember_cmd(
         )
         sys.exit(1)
 
+    # Refuse a text already live in the store (GHI #862). `gz content retire`
+    # refuses a second retraction of the same id on the same ground -- idempotent
+    # by refusal, not by silent re-append. Capture had no such guard, so one
+    # 2026-06-19 import doubled seven operator directives and every check stayed
+    # green: byte-identical copies are both satisfied by one rendered occurrence,
+    # so the invariant floor never noticed. Retired rows do not count, which keeps
+    # retire-then-remember -- the amendment path -- open.
+    duplicate = load_corpus(root, surface).live_entry_with_text(text)
+    if duplicate is not None:
+        print(
+            f"Error: corpus entry {duplicate.id!r} (section {duplicate.section!r}) already "
+            f"carries this text verbatim in {surface!r}. Capture is idempotent by refusal, "
+            "not by silent re-append; nothing written. To amend the wording, retire that "
+            "entry first (`gz content retire`) and then remember the new text.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     try:
         append_entry(root, surface, entry)
     except OSError as exc:

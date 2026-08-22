@@ -266,6 +266,94 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             self.assertNotIn("gz content compose", result.output)
 
 
+class TestContentRememberRefusesLiveDuplicates(unittest.TestCase):
+    """Capture refuses a text that is already live in the corpus (GHI #862).
+
+    `gz content retire` already refuses a second retraction of the same id --
+    "idempotent by refusal, not by silent re-append". Capture had no matching
+    guard, so a re-import of already-captured canon doubled it silently: one
+    2026-06-19 pass appended seven duplicates that every check read green,
+    because byte-identical copies are both satisfied by one rendered occurrence.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _remember(self, text: str, section: str = "behavior-rules"):
+        return self._runner.invoke(
+            main,
+            ["content", "remember", "AGENTS.md", "--section", section, "--text", text],
+        )
+
+    def test_refuses_a_second_append_of_live_text(self) -> None:
+        """The second capture aborts and leaves the corpus at one entry."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            first = self._remember("Never create feature branches.")
+            self.assertEqual(first.exit_code, 0)
+
+            second = self._remember("Never create feature branches.")
+            self.assertNotEqual(second.exit_code, 0)
+
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(corpus.entries), 1, "the refused append must not reach the store")
+
+    def test_refusal_names_the_entry_already_holding_the_text(self) -> None:
+        """A bare refusal makes the operator hunt; name the row that blocks it."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self._remember("Work directly on main.")
+            second = self._remember("Work directly on main.")
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertIn(corpus.entries[0].id, second.output)
+
+    def test_refuses_across_sections(self) -> None:
+        """Section is not part of the predicate.
+
+        Six of the seven GHI #862 pairs sat in DIFFERENT sections -- a topical
+        original plus a canon-section copy -- so a section-scoped check would
+        have missed exactly the instances that motivated this guard.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            first = self._remember("Attestation is sacrosanct.", section="behavior-rules")
+            self.assertEqual(first.exit_code, 0)
+            # `prime-directive` must be a section the seeded surface actually
+            # addresses -- an unaddressable one exits 1 on its own and would
+            # make this test pass without the guard under exercise.
+            second = self._remember("Attestation is sacrosanct.", section="prime-directive")
+            self.assertNotEqual(second.exit_code, 0)
+
+    def test_permits_re_capture_once_the_prior_copy_is_retired(self) -> None:
+        """Retire-then-remember is the amendment path and must stay open.
+
+        The operator ruling of 2026-08-22 permits toning down canon captured in
+        frustration. Executing that means retiring the old wording and
+        remembering the corrected one; a guard that counted retired rows would
+        refuse the second half and make canon unamendable.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self._remember("Original wording.")
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            entry_id = corpus.entries[0].id
+
+            retired = self._runner.invoke(
+                main,
+                ["content", "retire", "AGENTS.md", "--entry", entry_id, "--reason", "toned down"],
+            )
+            self.assertEqual(retired.exit_code, 0)
+
+            again = self._remember("Original wording.")
+            self.assertEqual(again.exit_code, 0, "a retired copy must not block re-capture")
+
+
 if __name__ == "__main__":
     unittest.main()
 

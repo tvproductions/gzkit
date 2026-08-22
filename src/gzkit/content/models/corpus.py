@@ -130,6 +130,30 @@ class Corpus(BaseModel):
         """Return the ids retired by a later retraction row (GHI #635)."""
         return frozenset(e.retires for e in self.entries if e.retires is not None)
 
+    def live_entry_with_text(self, text: str) -> CorpusEntry | None:
+        """Return a live entry carrying *text* verbatim, or ``None`` (GHI #862).
+
+        "Live" means not retired by a later retraction row, the same set
+        :meth:`retired_ids` governs. A text whose only prior copy is retired is
+        a re-capture, not a duplicate — that is the amendment path (retire the
+        old wording, remember the corrected one), and it must stay open.
+
+        The predicate is byte-equality. GHI #635's duplicates differed by quote
+        style and broke composition loudly; the seven GHI #862 measured were
+        byte-identical, so one rendered occurrence satisfied both invariant-floor
+        obligations and nothing fired. Near-miss detection would refuse
+        legitimate rewordings and is deliberately not attempted here.
+        """
+        retired = self.retired_ids()
+        return next(
+            (
+                e
+                for e in self.entries
+                if e.text == text and e.retires is None and e.id not in retired
+            ),
+            None,
+        )
+
     def entry(self, entry_id: str) -> CorpusEntry | None:
         """Return the entry with *entry_id*, or ``None`` when no row carries it."""
         return next((e for e in self.entries if e.id == entry_id), None)
