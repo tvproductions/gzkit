@@ -448,34 +448,6 @@ def _build_unscoped_rules() -> Path:
     return root
 
 
-def _build_lifecycle_pointers() -> Path:
-    """Plant a skill asserting a pending step for a Superseded ADR (GHI #846).
-
-    The control asserts the DIFFERENTIAL, not the refusal alone: the same tree
-    also carries a Pool ADR cited with the identical phrase, which must stay
-    legal. An always-flagging audit would forbid citing a genuinely pending
-    promotion; an always-passing one is the defect itself.
-    """
-    root = _mkroot("lifecycle-pointers")
-    _write(
-        root / "docs" / "design" / "adr" / "pool" / "ADR-pool.dead-target.md",
-        "---\nid: ADR-pool.dead-target\nstatus: Superseded\n---\n\n# Dead\n",
-    )
-    _write(
-        root / "docs" / "design" / "adr" / "pool" / "ADR-pool.live-target.md",
-        "---\nid: ADR-pool.live-target\nstatus: Pool\n---\n\n# Live\n",
-    )
-    _write(
-        root / ".gzkit" / "skills" / "bad-skill" / "SKILL.md",
-        "Governed by `ADR-pool.dead-target` (Pool / HEAVY - awaiting promotion).\n",
-    )
-    _write(
-        root / ".gzkit" / "skills" / "good-skill" / "SKILL.md",
-        "Governed by `ADR-pool.live-target` (Pool / HEAVY - awaiting promotion).\n",
-    )
-    return root
-
-
 def _build_python_version_pins() -> Path:
     """Plant a CI interpreter declaration that contradicts ``.python-version``.
 
@@ -1300,7 +1272,6 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),
     ("cli-audit", _build_cli_audit, _ep._ep_cli_audit),
     ("unscoped-rules", _build_unscoped_rules, _ep._ep_unscoped_rules),
-    ("lifecycle-pointers", _build_lifecycle_pointers, _ep._ep_lifecycle_pointers),
     ("python-version-pins", _build_python_version_pins, _ep._ep_python_version_pins),
     ("adr-status-freshness", _build_adr_status_freshness, _ep._ep_adr_status_freshness),
     (

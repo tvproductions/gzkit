@@ -281,24 +281,6 @@ def _ep_unscoped_rules(root: Path) -> int:
     return 1 if run_unscoped_rules(root).exit_code == 3 else 0
 
 
-def _ep_lifecycle_pointers(root: Path) -> int:
-    """Assert the DIFFERENTIAL: flag the terminal target, permit the live one.
-
-    Truthy only when BOTH poles hold. An always-flag mutation fails the permit
-    pole (it would outlaw citing a genuinely pending promotion); an always-pass
-    mutation fails the refuse pole and is the defect this control exists for.
-    """
-    from gzkit.governance.trust_audits.lifecycle_pointers import (  # noqa: PLC0415
-        audit_lifecycle_pointers,
-    )
-
-    errors = audit_lifecycle_pointers(root)
-    flagged = {e.artifact.split(":")[0] for e in errors}
-    refused = any("bad-skill" in a for a in flagged)
-    permitted = not any("good-skill" in a for a in flagged)
-    return 1 if (refused and permitted) else 0
-
-
 def _ep_python_version_pins(root: Path) -> list[ValidationError]:
     """Run the production interpreter-pin audit against the planted tree."""
     from gzkit.governance.trust_audits.python_version_pins import (  # noqa: PLC0415

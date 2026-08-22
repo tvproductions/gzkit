@@ -591,12 +591,6 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Forbid CHORE.md/acceptance.json outside canonical chores roots (ADR-0.0.21)",
     )
     p_validate.add_argument(
-        "--lifecycle-pointers",
-        dest="check_lifecycle_pointers",
-        action="store_true",
-        help="Fail on a pending-lifecycle claim about a terminal ADR (GHI #846)",
-    )
-    p_validate.add_argument(
         "--unscoped-rules",
         dest="check_unscoped_rules",
         action="store_true",
@@ -986,7 +980,6 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_brief_cross_references=a.check_brief_cross_references,
             check_brief_demo_section=a.check_brief_demo_section,
             check_chores_layout=a.check_chores_layout,
-            check_lifecycle_pointers=a.check_lifecycle_pointers,
             check_unscoped_rules=a.check_unscoped_rules,
             check_rule_version_markers=a.check_rule_version_markers,
             unscoped_rules_allowlist_only=a.unscoped_rules_allowlist_only,

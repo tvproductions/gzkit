@@ -926,10 +926,13 @@ uv run gz validate --distribution --regenerate
 uv run gz validate --distribution
 ```
 
-### `--lifecycle-pointers`
+### Stale lifecycle pointers (second arm of `--cli-alignment`)
 
 Fails closed when a canonical skill or rule asserts a **pending lifecycle step**
-for an ADR whose status is terminal (GHI #846).
+for an ADR whose status is terminal (GHI #846). This has no flag of its own — it
+runs as the second arm of `--cli-alignment`, because a doc naming a verb that does
+not resolve and a skill claiming a pending step from a terminal ADR are the same
+class of unresolvable pointer.
 
 A cross-artifact reference can name its target's *identity* or its target's
 *status*. Identity references survive the target's lifecycle; status references
@@ -955,7 +958,7 @@ the same class of defect as an unresolvable import.
   from it is refused — history references must remain writable.
 
 ```bash
-gz validate --lifecycle-pointers
+gz validate --cli-alignment
 ```
 
 Recovery: state what the artifact **is** and where its scope actually lives,

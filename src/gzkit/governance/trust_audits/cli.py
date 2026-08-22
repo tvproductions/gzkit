@@ -210,9 +210,18 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
     token is registered (GHI #588 / #748). Trailing positional arguments after a
     leaf verb resolve; unregistered intermediate verbs fail closed.
     """
+    from gzkit.governance.trust_audits.lifecycle_pointers import (  # noqa: PLC0415
+        audit_lifecycle_pointers,
+    )
+
     sources = _cli_alignment_sources(project_root)
     references = _collect_verb_references(sources, project_root)
-    errors: list[ValidationError] = []
+    # Second arm, same family (GHI #846): a doc naming a verb that does not
+    # resolve and a skill claiming a pending step from a terminal ADR are the
+    # same class of unresolvable pointer. It rides this scope rather than its
+    # own because `validate_cmd.py` is grandfathered at its ceiling and the
+    # grandfather list is shrink-only, so no new scope can be registered there.
+    errors: list[ValidationError] = audit_lifecycle_pointers(project_root)
     for chain, locations in sorted(references.items()):
         if chain[0] in _DOC_PROSE_VERBS:
             continue

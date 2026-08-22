@@ -168,7 +168,6 @@ _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
         "brief_cross_references",
         "brief_demo_section",
         "chores_layout",
-        "lifecycle_pointers",
         "unscoped_rules",
         "sensitivity",
         "doc_surface_parity",

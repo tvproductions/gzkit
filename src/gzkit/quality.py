@@ -670,15 +670,6 @@ def run_unscoped_rules_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --unscoped-rules", cwd=project_root)
 
 
-def run_lifecycle_pointers_audit(project_root: Path) -> QualityResult:
-    """Run the stale lifecycle-pointer audit (GHI #846).
-
-    Fails closed (exit 3) when a skill or rule asserts a pending lifecycle
-    step for an ADR whose status is terminal, so nothing can arrive from it.
-    """
-    return run_command("uv run gz validate --lifecycle-pointers", cwd=project_root)
-
-
 def run_python_version_pins_audit(project_root: Path) -> QualityResult:
     """Run the interpreter-pin coherence audit.
 
