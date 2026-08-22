@@ -1,27 +1,33 @@
 {
-  "_doc": "Shrink-only ratchet for the canonical radon_raw_nloc block band (1031.9, p95, corpus revision 1). Cutover 2026-08-01, seeded at the modules already over the band when module-sloc-cap-radon was repointed off its own invented <=1000 cap onto the one canonical threshold table (.gzkit/rules/complexity-thresholds.md § Invariant). NEVER add an entry to silence a fresh violation — that is the laundering ADR-0.0.73 Boundary Invariant #8 forbids. An entry records the ceiling a module may never exceed again; a module that drops under the band must surrender its entry, which is what makes the list shrink-only. Enforced by .gzkit/chores/module-sloc-cap-radon/check_module_size.py.",
+  "_doc": "Shrink-only ratchet for the canonical radon_raw_nloc block band (1031.9, p95, corpus revision 1). Cutover 2026-08-01, seeded at the modules already over the band when module-sloc-cap-radon was repointed off its own invented <=1000 cap onto the one canonical threshold table (.gzkit/rules/complexity-thresholds.md § Invariant). NEVER add an entry to silence a fresh violation — that is the laundering ADR-0.0.73 Boundary Invariant #8 forbids. `ceiling` is the value the gate enforces: the ceiling a module may never exceed again, driven down to current SLOC so no headroom is silently re-consumable (GHI #853). `sloc_at_cutover` is the dated 2026-08-01 measurement, preserved as a historical record and never read by the gate. A module that drops under the band must surrender its entry entirely, and a module that shrinks while still over the band must surrender the difference — which is what makes the list shrink-only. An operator may raise a ceiling deliberately (see fc3f0956); the raise then surfaces as slack the next time the module shrinks, recorded-and-visible rather than blocked. Enforced by .gzkit/chores/module-sloc-cap-radon/check_module_size.py.",
   "block_band": 1031.9,
   "metric": "radon_raw_nloc",
   "cutover": "2026-08-01",
+  "ceilings_tightened": "2026-08-22 (GHI #853): 928 SLOC of unrecorded slack surrendered across four entries.",
   "grandfathered_modules": [
     {
       "path": "src/gzkit/cli/parser_artifacts.py",
+      "ceiling": 1077,
       "sloc_at_cutover": 1743
     },
     {
       "path": "src/gzkit/cli/parser_maintenance.py",
+      "ceiling": 1514,
       "sloc_at_cutover": 1582
     },
     {
       "path": "src/gzkit/commands/obpi_complete.py",
+      "ceiling": 1302,
       "sloc_at_cutover": 1429
     },
     {
       "path": "src/gzkit/commands/validate_cmd.py",
+      "ceiling": 1242,
       "sloc_at_cutover": 1309
     },
     {
       "path": "src/gzkit/commands/adr_audit.py",
+      "ceiling": 1034,
       "sloc_at_cutover": 1034
     }
   ]

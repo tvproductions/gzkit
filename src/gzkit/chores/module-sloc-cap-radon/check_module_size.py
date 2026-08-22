@@ -24,15 +24,33 @@ the corpus was measured with, or it would be comparing different quantities.
 Shrink-only ratchet
 -------------------
 Modules already over the band at cutover are listed in
-``data/module_size_grandfather.json`` with the SLOC they carried. The list is
-shrink-only, in all three directions:
+``data/module_size_grandfather.json``. Each entry carries a ``ceiling`` (the
+value this gate enforces) alongside ``sloc_at_cutover`` (the dated 2026-08-01
+measurement, preserved as a historical record and never read by the gate). The
+list is shrink-only, in all five directions:
 
 * a module over the band and NOT listed  -> fail (no new over-band modules)
 * a listed module that GREW              -> fail (the ratchet only turns one way)
 * a listed module now UNDER the band     -> fail, asking for the entry's removal
+* a listed module no longer measured     -> fail, asking for the entry's removal
+* an entry LOOSER than its module        -> fail, asking for the entry's tightening
 
-The third is what makes it a ratchet rather than a permanent exemption: a module
-that improves must surrender its grandfather entry, so the list can only shrink.
+The last two are what make it a ratchet rather than a permanent exemption: a
+module that improves must surrender headroom it no longer uses, so the list can
+only shrink. Without the fifth, improvement is silently re-consumable — measured
+2026-08-22, 928 SLOC across four entries with the gate at exit 0 (GHI #853).
+``ADR-0.0.73`` Boundary Invariant #8 requires "a committed baseline the list can
+only decrease against", and a baseline nothing reports as un-advanced decreases
+only when someone remembers.
+
+The resting state is therefore zero headroom: every entry equals its module's
+current SLOC, so a line added to a grandfathered module needs a compensating
+extraction in the same commit. That is the ratchet's intended pressure, ruled
+explicitly by the operator on 2026-08-22 rather than arriving as a side effect.
+An operator may still RAISE an entry (as ``fc3f0956`` did, with the Boundary
+Invariant #8 contradiction surfaced first); the raise then shows up as slack the
+next time this arm runs, which is what keeps it recorded-and-visible rather than
+blocked.
 
 Exit codes: 0 clean, 1 usage/IO error, 3 policy breach.
 """
@@ -93,11 +111,17 @@ def _measure() -> dict[str, int]:
 
 
 def _grandfathered() -> dict[str, int]:
-    """Return {path: sloc_at_cutover} from the shrink-only ratchet file."""
+    """Return {path: ceiling} from the shrink-only ratchet file.
+
+    Reads ``ceiling``, never ``sloc_at_cutover``. The two were one field until
+    GHI #853 and they mean different things: the cutover SLOC is a dated
+    measurement that must stay true, while the ceiling moves down as the ratchet
+    turns. Conflating them made a tightened entry falsify its own field name.
+    """
     if not _GRANDFATHER.is_file():
         return {}
     data = json.loads(_GRANDFATHER.read_text(encoding="utf-8"))
-    return {e["path"]: int(e["sloc_at_cutover"]) for e in data.get("grandfathered_modules", [])}
+    return {e["path"]: int(e["ceiling"]) for e in data.get("grandfathered_modules", [])}
 
 
 def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]) -> list[str]:
@@ -106,6 +130,9 @@ def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]
     Pure over its three inputs — no radon, no filesystem — so ``--self-test`` can
     drive every failure direction with synthetic data. A gate whose teeth are only
     ever verified by hand is the shape this whole chore repair exists to remove.
+
+    ``listed`` maps a path to its enforced ``ceiling``, which the ratchet drives
+    down toward current SLOC; it is not the dated cutover measurement (GHI #853).
     """
     breaches: list[str] = []
     for path, sloc in sorted(sizes.items(), key=lambda kv: -kv[1]):
@@ -139,10 +166,21 @@ def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]
         elif current <= block:
             breaches.append(
                 f"  {path} is now {current} SLOC, under the {block} band "
-                f"(was {recorded} at cutover).\n"
+                f"(entry records {recorded}).\n"
                 f"    Why: a module that improved must surrender its grandfather "
                 f"entry, or the list stops being a ratchet.\n"
                 f"    Fix: drop its entry from data/module_size_grandfather.json."
+            )
+        elif current < recorded:
+            breaches.append(
+                f"  {path} has {recorded - current} SLOC of unrecorded slack: the "
+                f"entry records {recorded}, the module is {current}.\n"
+                f"    Why: an entry records the ceiling a module may never exceed "
+                f"again. One above current SLOC licenses that much silent re-growth, "
+                f"so the baseline is not one the list can only decrease against "
+                f"(ADR-0.0.73 Boundary Invariant #8).\n"
+                f'    Fix: tighten its "ceiling" to {current} in '
+                f"data/module_size_grandfather.json."
             )
 
     return breaches
@@ -154,11 +192,11 @@ def _self_test() -> int:
     cases: list[tuple[str, dict[str, int], dict[str, int], bool]] = [
         ("clean: under the band, nothing listed", {"a.py": 900}, {}, False),
         ("clean: over the band and listed at its ceiling", {"a.py": 1500}, {"a.py": 1500}, False),
-        ("clean: listed module shrank but is still over", {"a.py": 1200}, {"a.py": 1500}, False),
         ("TEETH: over the band, not listed", {"a.py": 1500}, {}, True),
         ("TEETH: listed module grew past its ceiling", {"a.py": 1600}, {"a.py": 1500}, True),
         ("TEETH: listed module dropped under the band", {"a.py": 900}, {"a.py": 1500}, True),
         ("TEETH: listed module no longer measured", {}, {"a.py": 1500}, True),
+        ("TEETH: entry looser than its module", {"a.py": 1200}, {"a.py": 1500}, True),
     ]
     failures = 0
     for label, sizes, listed, expect_breach in cases:
@@ -169,7 +207,7 @@ def _self_test() -> int:
     if failures:
         print(f"\nself-test FAILED: {failures} case(s)", file=sys.stderr)
         return 3
-    print(f"\nself-test PASSED: {len(cases)} cases, all four breach directions fire.")
+    print(f"\nself-test PASSED: {len(cases)} cases, all five breach directions fire.")
     return 0
 
 
@@ -183,17 +221,22 @@ def main(argv: list[str]) -> int:
     breaches = compute_breaches(block, sizes, listed)
 
     over = [p for p, s in sizes.items() if s > block]
+    slack = sum(max(0, recorded - sizes[p]) for p, recorded in listed.items() if p in sizes)
     print(f"module-size gate — {_METRIC} block band {block} (p95, corpus revision 1)")
     print(f"  modules measured:  {len(sizes)}")
     print(f"  over the band:     {len(over)}")
     print(f"  grandfathered:     {len(listed)} (shrink-only)")
+    print(f"  unrecorded slack:  {slack} SLOC")
 
     if breaches:
         print("\nPOLICY BREACH:", file=sys.stderr)
         for line in breaches:
             print(line, file=sys.stderr)
         return 3
-    print("\nPASS: no un-grandfathered module over the band; no grandfathered module grew.")
+    print(
+        "\nPASS: no un-grandfathered module over the band; no grandfathered module "
+        "grew, dropped under the band, went unmeasured, or holds unrecorded slack."
+    )
     return 0
 
 
