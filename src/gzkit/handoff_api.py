@@ -28,6 +28,7 @@ from pydantic import BaseModel, ConfigDict, computed_field
 from gzkit.handoff_rulings import (
     RULINGS_FILENAME,
     dedup_rulings,
+    prospective_corpus,
     read_rulings,
     record_rulings,
     ruling_key,
@@ -911,7 +912,12 @@ def create_handoff(
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
     composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), link, base_path)
     if composed_settled:
-        corpus = record_rulings(composed_settled, base_path=base_path, source=filename)
+        # Count without booking (GHI #859). The document must state the corpus
+        # size, but a create the gate then REFUSES writes no document at all —
+        # booking here left rulings whose `source` names a file that never
+        # existed, permanently, in an append-only store. `prospective_corpus`
+        # answers the count purely; `record_rulings` runs below, after the gate.
+        corpus = prospective_corpus(composed_settled, base_path=base_path)
         sections = {**sections, SETTLED_SECTION: _settled_pointer(len(corpus))}
     sections = _annotate_settled_citations(sections, reference_checker)
     frontmatter: dict = {
@@ -941,6 +947,12 @@ def create_handoff(
         raise HandoffValidationError(
             "Refusing to write invalid handoff; violations: " + "; ".join(violations)
         )
+
+    # Store BEFORE document, unchanged: a document may never promise a corpus the
+    # store did not receive. Only the refusal above — which writes neither — now
+    # books neither.
+    if composed_settled:
+        record_rulings(composed_settled, base_path=base_path, source=filename)
 
     handoff_dir = _handoffs_dir(base_path)
     handoff_dir.mkdir(parents=True, exist_ok=True)

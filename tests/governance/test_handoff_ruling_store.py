@@ -37,6 +37,7 @@ from gzkit.handoff_rulings import (
     ruling_key,
     rulings_store_path,
 )
+from gzkit.handoff_validation import HandoffValidationError
 
 SECTIONS = {
     "Current State Summary": "The work landed and the gate is green.",
@@ -320,6 +321,97 @@ class HandoffCarriesPointerNotCorpusTests(unittest.TestCase):
         """``settled_rulings`` keeps reading prose — 297+ authored documents hold it."""
         legacy = "## Settled Rulings\n\n- One.\n- Two.\n"
         self.assertEqual(settled_rulings(legacy), ["One.", "Two."])
+
+
+class RefusedCreateBooksNothingTests(unittest.TestCase):
+    """A create the gate refuses must leave the store exactly as it found it (GHI #859).
+
+    ``create_handoff`` is fail-closed on the DOCUMENT — a refusal writes no file.
+    The store was ordered ahead of that check so a document could never promise a
+    corpus the store had not received, but the ordering was coarser than the
+    asymmetry it was defending: it also booked on the path where nothing is
+    written at all. Observed 2026-08-22 authoring `20260822T170107Z`, where a
+    refused first attempt left two rulings whose ``source`` names
+    `20260822T170006Z-...md`, a document that does not exist and never did.
+
+    The asymmetry itself is untouched: the store is still written BEFORE the
+    document. Only the refusal path, which writes neither, now books neither.
+
+    @covers GHI #859
+    """
+
+    def _refuse(self, base: Path, predecessor: str) -> None:
+        """Attempt a create the placeholder rule must reject."""
+        with self.assertRaises(HandoffValidationError):
+            create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="refused",
+                sections=_sections(**{"Important Context": "TODO write this up."}),
+                continues_from=predecessor,
+                base_path=base,
+            )
+
+    def test_refused_create_books_no_rulings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = _project(Path(tmp))
+            root = create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="root",
+                sections=_sections(),
+                base_path=base,
+            )
+            self.assertEqual(
+                read_rulings(base),
+                [],
+                "fixture precondition: the chain root inherits nothing, so nothing "
+                "is booked before the refusal",
+            )
+            self._refuse(base, root.name)
+            self.assertEqual(
+                read_rulings(base),
+                [],
+                "a refused create writes no document, so it must book no ruling",
+            )
+
+    def test_every_booked_ruling_names_a_document_that_exists(self) -> None:
+        """The property the orphaned provenance actually broke.
+
+        ``source`` answers *"which handoff booked this"*. A refusal that books
+        anyway makes that answer name a file nobody can open, and the store is
+        append-only — the wrong answer is permanent.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = _project(Path(tmp))
+            root = create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="root",
+                sections=_sections(),
+                base_path=base,
+            )
+            self._refuse(base, root.name)
+            create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="corrected",
+                sections=_sections(),
+                continues_from=root.name,
+                base_path=base,
+            )
+            store = rulings_store_path(base)
+            sources = {
+                json.loads(line)["source"]
+                for line in store.read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            }
+            self.assertTrue(sources, "the corrected create must book the carried ruling")
+            for source in sources:
+                self.assertTrue(
+                    (base / ".gzkit" / "handoffs" / source).exists(),
+                    f"booked ruling cites {source}, which was never written",
+                )
 
 
 if __name__ == "__main__":

@@ -42,6 +42,7 @@ from pathlib import Path
 __all__ = [
     "RULINGS_FILENAME",
     "dedup_rulings",
+    "prospective_corpus",
     "read_rulings",
     "record_rulings",
     "ruling_key",
@@ -137,6 +138,21 @@ def read_rulings(base_path: Path) -> list[str]:
     return dedup_rulings(entries)
 
 
+def prospective_corpus(entries: list[str], *, base_path: Path) -> list[str]:
+    """Return the corpus :func:`record_rulings` WOULD produce, writing nothing.
+
+    Exists so an author can render the corpus COUNT into a document that has not
+    yet passed its gate. Without it the only way to learn the count was to book
+    the entries, which is why a refused create used to leave rulings behind
+    (GHI #859). Pure: no write, no mkdir, no clock read.
+
+    Kept honest by construction rather than by comment — it composes exactly the
+    two operations :func:`record_rulings` composes, in the same order, so the two
+    cannot drift into different answers.
+    """
+    return dedup_rulings([*read_rulings(base_path), *entries])
+
+
 def record_rulings(entries: list[str], *, base_path: Path, source: str) -> list[str]:
     """Append rulings not already booked and return the full corpus.
 
@@ -148,11 +164,17 @@ def record_rulings(entries: list[str], *, base_path: Path, source: str) -> list[
     identity — a ruling re-stated by a later session keeps the source that first
     booked it, which is what makes the log answer "when did this become settled".
 
-    Written before the handoff document, deliberately. If authoring then fails
-    validation the store holds rulings no document yet references, which is
-    recoverable and harmless; the reverse order would let a document promise a
-    corpus the store never received, and that loses a booked ruling. Same
-    asymmetry that keeps :func:`ruling_key` narrow.
+    Written before the handoff document, deliberately: the reverse order would
+    let a document promise a corpus the store never received, and that loses a
+    booked ruling. Same asymmetry that keeps :func:`ruling_key` narrow.
+
+    That ordering used to sit ahead of VALIDATION too, which was coarser than the
+    asymmetry it defends. A refused create writes no document at all, so there is
+    no promise to keep and nothing to book — but it booked anyway, leaving rulings
+    whose ``source`` names a file that never existed (GHI #859, observed live
+    while authoring `20260822T170107Z`). The caller now validates first and calls
+    this only on the path that goes on to write; :func:`prospective_corpus`
+    supplies the count the document needs in the meantime.
     """
     known = {ruling_key(entry) for entry in read_rulings(base_path)}
     fresh = [entry for entry in dedup_rulings(entries) if ruling_key(entry) not in known]
