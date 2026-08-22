@@ -275,7 +275,7 @@ class _ReconcileGateFixture(unittest.TestCase):
                     exc_type = SystemExit
                     code = int(exc.code) if isinstance(exc.code, int) else 1
             finally:
-                for p in patches:
+                for p in reversed(patches):
                     p.stop()
 
         return exc_type, code, recorded, ledger_obj

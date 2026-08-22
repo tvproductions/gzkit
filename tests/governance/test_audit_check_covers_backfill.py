@@ -1706,7 +1706,24 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         return started
 
     def _stop_patches(self, patches: list) -> None:
-        for p in patches:
+        """Stop patchers NEWEST FIRST. The order is load-bearing (GHI #857).
+
+        ``patch.stop()`` restores whatever the attribute held when that patcher
+        STARTED — not the original. So when two patchers target one attribute,
+        stopping the OUTER one first restores the INNER one's mock, and the
+        module is left holding a ``MagicMock`` for the rest of the process.
+
+        Not hypothetical: two tests below layer a second ``resolve_adr_file``
+        patch over the base one, and stopping FIFO left
+        ``gzkit.commands.adr_audit.resolve_adr_file`` mocked for every test that
+        ran afterwards. Four tests in ``tests.commands.test_runtime`` then failed
+        under any ordering that placed them after this module — the whole of
+        GHI #857. ``tearDown``'s ``patch.stopall()`` backstop could not save it:
+        ``stopall`` is itself LIFO and correct, but by the time it ran, the FIFO
+        stop had already restored the wrong value. The backstop was disarmed by
+        the code it was backing up.
+        """
+        for p in reversed(patches):
             p.stop()
 
     @covers("REQ-0.0.23-05-02")
@@ -1748,8 +1765,17 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         patches = self._make_base_patches("ADR-0.0.23")
         self._apply_patches(patches)
         # Override the adr_file return for foundation kind.
-        patch(self._RESOLVE_ADR_FILE_PATCH, return_value=(mock_adr_path, "ADR-0.0.23")).start()
-        patch(self._RESOLVE_LEDGER_ID_PATCH, return_value="ADR-0.0.23").start()
+        # Appended to `patches`, not started loose: `_stop_patches` unwinds
+        # newest-first, so a patch layered over the same attribute must be in
+        # the list to be stopped BEFORE the base one it shadows.
+        patches.extend(
+            [
+                patch(self._RESOLVE_ADR_FILE_PATCH, return_value=(mock_adr_path, "ADR-0.0.23")),
+                patch(self._RESOLVE_LEDGER_ID_PATCH, return_value="ADR-0.0.23"),
+            ]
+        )
+        patches[-2].start()
+        patches[-1].start()
         try:
             with patch(self._HEURISTIC_PATCH, return_value=BackfillResult()) as mock_heuristic:
                 adr_audit_check(adr="ADR-0.0.23", as_json=False, strict=False)
@@ -1773,8 +1799,17 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         mock_adr_path.read_text.return_value = "---\nlane: heavy\nkind: feature\n---\n# ADR\n"
         patches = self._make_base_patches("ADR-0.1.0")
         self._apply_patches(patches)
-        patch(self._RESOLVE_ADR_FILE_PATCH, return_value=(mock_adr_path, "ADR-0.1.0")).start()
-        patch(self._RESOLVE_LEDGER_ID_PATCH, return_value="ADR-0.1.0").start()
+        # Appended to `patches`, not started loose: `_stop_patches` unwinds
+        # newest-first, so a patch layered over the same attribute must be in
+        # the list to be stopped BEFORE the base one it shadows.
+        patches.extend(
+            [
+                patch(self._RESOLVE_ADR_FILE_PATCH, return_value=(mock_adr_path, "ADR-0.1.0")),
+                patch(self._RESOLVE_LEDGER_ID_PATCH, return_value="ADR-0.1.0"),
+            ]
+        )
+        patches[-2].start()
+        patches[-1].start()
         try:
             with patch(self._HEURISTIC_PATCH, return_value=BackfillResult()) as mock_heuristic:
                 adr_audit_check(adr="ADR-0.1.0", as_json=False, strict=False)
@@ -1925,6 +1960,62 @@ class TestAdrAuditCheckIntegration(unittest.TestCase):
         self.assertEqual(output["covers_backfill_findings"][0]["req_id"], "REQ-0.1.0-01-01")
         self.assertIsInstance(output["covers_backfill_unresolvable"], list)
         self.assertEqual(output["covers_backfill_unresolvable"], ["diag1"])
+
+
+class TestPatchLeakageIntoSiblingModules(unittest.TestCase):
+    """This module must leave ``gzkit.commands.adr_audit`` exactly as it found it.
+
+    GHI #857: four tests in ``tests.commands.test_runtime`` passed only in the
+    default alphabetical order and failed under any shuffle that placed them
+    after this module. The cause was a patch that outlived its test —
+    ``resolve_adr_file`` stayed a ``MagicMock`` for the rest of the PROCESS, so
+    ``gz adr audit-check ADR-pool.sample`` resolved to whichever ADR id the last
+    layered patch had been given and the pool-ADR guard never fired. The
+    canonical ``uv run -m unittest -q`` invocation that attests "Tests pass" for
+    Gate 5 was green only in one traversal order.
+
+    The assertion is on the OBSERVABLE property — no mock survives this class —
+    rather than on how ``_stop_patches`` unwinds. A test pinned to the helper's
+    internals would pass a refactor that reintroduced the leak by another route,
+    and the leak, not the unwind order, is what reaches other modules.
+
+    Runs the whole class (64 tests, ~0.1s) so the guarantee covers every test in
+    it, not the two that happened to layer patches.
+
+    @covers GHI #857
+    """
+
+    def test_no_patch_survives_the_integration_class(self) -> None:
+        import io  # noqa: PLC0415
+        from unittest.mock import NonCallableMock  # noqa: PLC0415
+
+        from gzkit.commands import adr_audit  # noqa: PLC0415
+
+        targets = {
+            attr: getattr(TestAdrAuditCheckIntegration, attr).rsplit(".", 1)[1]
+            for attr in vars(TestAdrAuditCheckIntegration)
+            if attr.endswith("_PATCH")
+        }
+        self.assertTrue(targets, "fixture precondition: the class declares patch targets")
+        before = {name: getattr(adr_audit, name) for name in targets.values()}
+
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestAdrAuditCheckIntegration)
+        result = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0).run(suite)
+        self.assertTrue(result.wasSuccessful(), "fixture precondition: the class passes")
+
+        for name, original in before.items():
+            current = getattr(adr_audit, name)
+            self.assertNotIsInstance(
+                current,
+                NonCallableMock,
+                f"adr_audit.{name} is still a mock after the class ran — it will "
+                f"answer for every test that follows, in any order",
+            )
+            self.assertIs(
+                current,
+                original,
+                f"adr_audit.{name} was not restored to the object it held before",
+            )
 
 
 if __name__ == "__main__":

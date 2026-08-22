@@ -317,7 +317,7 @@ class _EmissionFixture(unittest.TestCase):
                 except SystemExit:
                     pass
             finally:
-                for p in patches:
+                for p in reversed(patches):
                     p.stop()
         return emit_mock
 

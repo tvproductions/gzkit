@@ -142,7 +142,7 @@ def _git_subprocess_patcher(
     try:
         yield
     finally:
-        for p in patchers:
+        for p in reversed(patchers):
             p.stop()
 
 
@@ -300,7 +300,7 @@ def start_init_subprocess_patches() -> None:
 
 def stop_init_subprocess_patches() -> None:
     """Stop the init-subprocess patches started by ``start_init_subprocess_patches``."""
-    for patcher in _ruff_format_patchers:
+    for patcher in reversed(_ruff_format_patchers):
         patcher.stop()
     _uv_sync_patcher.stop()
 
