@@ -42,6 +42,7 @@ __all__ = [
     "SETTLED_SECTION",
     "HandoffFrontmatter",
     "HandoffValidationError",
+    "build_tracked_path_index",
     "parse_frontmatter",
     "validate_decision_markers",
     "validate_handoff_document",
@@ -445,17 +446,31 @@ def validate_decision_markers(content: str) -> list[str]:
     ]
 
 
-def validate_referenced_files(content: str, base_path: Path) -> list[str]:
+def validate_referenced_files(
+    content: str,
+    base_path: Path,
+    *,
+    git_index: frozenset[str] | None = None,
+) -> list[str]:
     """Verify that file paths referenced in Evidence section exist on disk.
 
     Args:
         content: Full Markdown document text.
         base_path: Repository root to resolve relative paths against.
+        git_index: Tracked-path index from :func:`build_tracked_path_index`,
+            for a caller validating MANY documents against one repository. Built
+            per call when omitted, which is correct for a single document and
+            what every authoring caller wants. Threaded rather than cached: a
+            cache keyed on a path would have to guess when the repository
+            changed underneath it, and import-time state that outlives a
+            directory change is the exact defect class filed as GHI #857.
 
     Returns:
         List of nonexistent file paths (empty = all exist).
 
     """
+    if git_index is None:
+        git_index = build_tracked_path_index(base_path)
     content = content.replace("\r\n", "\n")
     body = _strip_frontmatter(content)
     # Find the Evidence / Artifacts section
@@ -491,7 +506,7 @@ def validate_referenced_files(content: str, base_path: Path) -> list[str]:
         # clone / CI would not have it (GHI #671). Fall back to on-disk
         # existence only when git cannot answer (non-git base_path — e.g. a
         # unit-test temp dir).
-        tracked = _is_git_tracked(base_path, candidate)
+        tracked = _is_git_tracked(base_path, candidate, git_index)
         present = (base_path / candidate).exists() if tracked is None else tracked
         if not present:
             missing.append(candidate)
@@ -551,6 +566,7 @@ def validate_handoff_document(
     base_path: Path,
     *,
     allow_empty_sections: bool = False,
+    git_index: frozenset[str] | None = None,
 ) -> list[str]:
     """Run all validation checks on a handoff document.
 
@@ -564,6 +580,8 @@ def validate_handoff_document(
             contract — frontmatter, placeholders, secrets, section presence,
             referenced files — still applies, so this can never become a blanket
             pass. Default ``False``: authoring is fail-closed.
+        git_index: Tracked-path index shared across a multi-document pass; see
+            :func:`validate_referenced_files`. Omit for a single document.
 
     Returns:
         List of all violation messages (empty = valid).
@@ -616,7 +634,7 @@ def validate_handoff_document(
     errors.extend(validate_decision_markers(content))
 
     # 5. Referenced files exist (session handoffs only)
-    for path in validate_referenced_files(content, base_path):
+    for path in validate_referenced_files(content, base_path, git_index=git_index):
         errors.append(f"Referenced file not found: {path}")
 
     return errors
@@ -650,7 +668,63 @@ def _is_git_ignored(base_path: Path, rel_path: str) -> bool:
     return result.returncode == 0
 
 
-def _is_git_tracked(base_path: Path, rel_path: str) -> bool | None:
+#: Pathspec metacharacters. A candidate carrying one is a PATTERN, not a path,
+#: so set membership cannot answer it and the per-path git call still runs.
+#: Vanishingly rare in practice — the Evidence convention is one backticked
+#: path per citation — which is why the batched index is the fast path and this
+#: is the exception rather than the reverse.
+_PATHSPEC_GLOB_CHARS = frozenset("*?[]")
+
+
+def build_tracked_path_index(base_path: Path) -> frozenset[str] | None:
+    """Return every git-tracked path under ``base_path``, plus each directory prefix.
+
+    ONE ``git ls-files`` answers what used to take one per citation. Profiled
+    2026-08-22 over this repository's 405 register entries: 2,858
+    ``subprocess.run`` calls and 25.2s of a 29.8s gate step spent in process
+    spawn and ``select.poll``, none of it in validation logic (GHI #858). The
+    cost grew every session, because every session writes another document.
+
+    Directory prefixes are materialised because the predicate this serves is
+    *"tracked file, or a directory containing at least one tracked file"* — the
+    behaviour ``git ls-files -- <dir>`` gave for free and a bare file set would
+    silently lose. For 8,300 tracked paths that is ~4ms and one set.
+
+    ``None`` when committed state cannot be determined (``base_path`` is not a
+    git work tree, or git is unavailable), which callers read as "fall back to
+    the local disk" exactly as before.
+
+    Bytes-mode capture with an explicit decode keeps this off the non-UTF-8
+    subprocess-read class (GHI #582); a path git cannot round-trip is replaced
+    rather than raising, so one odd filename cannot blind the whole index.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z"],
+            cwd=base_path,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if result.returncode != 0:
+        return None
+    entries: set[str] = set()
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        rel = raw.decode("utf-8", errors="replace")
+        entries.add(rel)
+        parts = rel.split("/")
+        entries.update("/".join(parts[:i]) for i in range(1, len(parts)))
+    return frozenset(entries)
+
+
+def _is_git_tracked(
+    base_path: Path,
+    rel_path: str,
+    git_index: frozenset[str] | None,
+) -> bool | None:
     """Return whether ``rel_path`` is tracked in git under ``base_path``.
 
     ``True`` if git tracks the path — a tracked file, or a directory prefix
@@ -663,10 +737,19 @@ def _is_git_tracked(base_path: Path, rel_path: str) -> bool | None:
     state — what any clean clone or CI sees — not the authoring machine's local
     disk, where an untracked leftover (a stale ``__pycache__`` shell, a git-rm'd
     directory with lingering bytecode) would otherwise mask a broken reference
-    (GHI #671, the inverse of the gitignored-exemption sibling #633). Bytes-mode
-    capture (no stdout decode) keeps this off the non-UTF-8 subprocess-read
-    class (GHI #582).
+    (GHI #671, the inverse of the gitignored-exemption sibling #633).
+
+    Answered from ``git_index`` rather than by a per-path ``git ls-files``
+    (GHI #858). A candidate carrying pathspec globs is the one case a set cannot
+    answer, so it still shells out — narrowly, and only after the set has missed.
     """
+    if git_index is None:
+        return None
+    normalized = rel_path.strip().removeprefix("./").rstrip("/")
+    if normalized in git_index:
+        return True
+    if _PATHSPEC_GLOB_CHARS.isdisjoint(normalized):
+        return False
     try:
         result = subprocess.run(
             ["git", "ls-files", "--", rel_path],

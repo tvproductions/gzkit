@@ -623,10 +623,14 @@ class TestValidateReferencedFiles(unittest.TestCase):
             )
             tracked = {"tracked_present.txt", "tracked_absent.txt"}
 
-            def fake_tracked(_base: Path, path: str) -> bool | None:
-                return path in tracked
-
-            with patch("gzkit.handoff_validation._is_git_tracked", side_effect=fake_tracked):
+            # Stub the INDEX, not the predicate: the predicate is what this
+            # check's correctness lives in, so stubbing it would leave the test
+            # asserting the stub. Batched-index lookup (GHI #858) makes the
+            # index the natural seam.
+            with patch(
+                "gzkit.handoff_validation.build_tracked_path_index",
+                return_value=frozenset(tracked),
+            ):
                 missing = validate_referenced_files(doc, tmp_path)
             self.assertEqual(missing, ["untracked_present.txt"])
 
@@ -1219,6 +1223,83 @@ class CheckpointModeTests(unittest.TestCase):
                 after_timestamp="2026-04-14T09:00:00",
             )
         self.assertEqual(found, expected)
+
+
+class TestReferencedFilesGitCostTests(unittest.TestCase):
+    """The tracked-state lookup costs one git call per document, not one per path.
+
+    ``validate_referenced_files`` resolves each cited path against COMMITTED
+    state rather than local disk (GHI #671), and did so by shelling out to
+    ``git ls-files`` once **per citation**. Profiled 2026-08-22 over this repo's
+    405 register entries: 2,858 ``subprocess.run`` calls, 25.2s of a 29.8s step
+    spent in process spawn and ``select.poll`` — not in validation logic. That
+    made the `Handoff documents` gate step 19% of ``gz check``, with the cost
+    growing every session, because every session writes another document
+    (GHI #858).
+
+    The semantics are unchanged and the sibling tests in this module hold them;
+    what this asserts is the shape of the lookup. A count is the right witness
+    here because the spawn count IS the defect — an assertion on elapsed time
+    would measure the machine, and one on "is it fast" could not fail for the
+    stated reason.
+
+    @covers GHI #858
+    """
+
+    @staticmethod
+    def _git(root: Path, *args: str) -> None:
+        subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+
+    def _repo_with_tracked_files(self, root: Path, count: int) -> list[str]:
+        self._git(root, "init", "--quiet")
+        self._git(root, "config", "user.email", "test@example.invalid")
+        self._git(root, "config", "user.name", "test")
+        names = [f"module_{n:02d}.py" for n in range(count)]
+        for name in names:
+            (root / name).write_text("x = 1\n", encoding="utf-8")
+        self._git(root, "add", *names)
+        self._git(root, "commit", "--quiet", "-m", "add")
+        return names
+
+    def _document(self, names: list[str]) -> str:
+        cited = "\n".join(f"- `{name}` — touched" for name in names)
+        return "---\nkey: value\n---\n\n## Evidence / Artifacts\n\n" + cited + "\n"
+
+    def test_tracked_lookup_does_not_spawn_git_per_citation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            names = self._repo_with_tracked_files(root, 20)
+            doc = self._document(names)
+
+            real_run = subprocess.run
+            calls: list[list[str]] = []
+
+            def counting_run(args, **kwargs):  # noqa: ANN001, ANN003 — test spy
+                calls.append(list(args))
+                return real_run(args, **kwargs)
+
+            with patch("gzkit.handoff_validation.subprocess.run", counting_run):
+                missing = validate_referenced_files(doc, root)
+
+            self.assertEqual(missing, [], "fixture precondition: every path is tracked")
+            self.assertLessEqual(
+                len(calls),
+                3,
+                "the tracked-state lookup must cost a bounded number of git calls "
+                f"per document, not one per citation; 20 citations spawned {len(calls)}",
+            )
+
+    def test_the_bounded_lookup_still_reports_an_untracked_path(self) -> None:
+        """Negative control: cheap must not mean blind.
+
+        A batched index answers from a set, and the failure direction that
+        matters is a broken reference silently reading as present.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            names = self._repo_with_tracked_files(root, 5)
+            doc = self._document([*names, "never/existed.py"])
+            self.assertEqual(validate_referenced_files(doc, root), ["never/existed.py"])
 
 
 if __name__ == "__main__":

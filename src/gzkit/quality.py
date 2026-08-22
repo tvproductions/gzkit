@@ -21,6 +21,7 @@ from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (
     HandoffValidationError,
+    build_tracked_path_index,
     parse_frontmatter,
     validate_handoff_document,
 )
@@ -1231,6 +1232,10 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
 
     cutover = datetime.fromisoformat(_HANDOFF_ENFORCEMENT_CUTOVER.replace("Z", "+00:00"))
     section_waived = _handoff_section_grandfather(project_root)
+    # One tracked-path index for the whole corpus (GHI #858). Built here rather
+    # than per document because this is the only caller that validates hundreds
+    # in one pass, and it is the reason the step cost 19% of `gz check`.
+    git_index = build_tracked_path_index(project_root)
     blocking: list[str] = []
     grandfathered = 0
     hollow = 0
@@ -1250,7 +1255,7 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
         rel = path.relative_to(project_root).as_posix()
         allow_empty = rel in section_waived
         violations = validate_handoff_document(
-            content, project_root, allow_empty_sections=allow_empty
+            content, project_root, allow_empty_sections=allow_empty, git_index=git_index
         )
         if allow_empty:
             hollow += 1
