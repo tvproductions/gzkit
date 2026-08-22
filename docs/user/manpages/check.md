@@ -14,7 +14,7 @@ gz check [OPTIONS]
 |------|-------------|
 | `--json` | Output results as JSON to stdout |
 | `--fast` | Inner-loop scope: run every lint/type/governance step, plus only the tests the working tree touches. Skips `Test`, `Behave`, and `Docs build`. Never satisfies the pre-push gate |
-| `--reuse-verified` | Skip the run when this exact working-tree content already passed a full check. Used by the pre-push gate |
+| `--reuse-verified` | Skip the run when this exact staged tree already passed a full check. Used by the pre-push gate |
 
 ### `--fast`
 
@@ -34,16 +34,32 @@ inner loop, never a claim of coverage, and the output says so.
 
 ### `--reuse-verified`
 
-Skips the run when this exact working-tree **content** already passed a full
-check (GHI #835). Without it a fix pays the full run twice: once when it is
-verified, then again when `git push` fires the pre-push gate over a tree that has
-not changed. The second run cannot reach a different verdict.
+Skips the run when this exact **staged tree** already passed a full check
+(GHI #835). Without it a fix pays the full run twice: once when it is verified,
+then again when `git push` fires the pre-push gate over a tree that has not
+changed. The second run cannot reach a different verdict.
 
-The fingerprint is content-addressed, deliberately not `HEAD`: a commit is
-created between the two runs, so keying on the commit would mean the skip never
-fires. It is taken by staging the worktree into a throwaway index and reading
-that index's tree hash, so `.gitignore` is honoured, staged/unstaged/untracked
-content all count, and the real index is never touched.
+**Use it as: `git add -A && uv run gz check && git commit && git push`.** The
+staging step is not incidental — it is what makes the skip possible.
+
+The fingerprint is the **index** tree, and both alternatives were tried and
+rejected against real measurement:
+
+- `HEAD` fails because a commit is created between verify and push, so it always
+  differs while the files do not.
+- The **working tree** fails for the mirror reason: `pre-commit` stashes unstaged
+  changes while hooks run, so a pre-push hook observes HEAD-plus-staged and never
+  the working tree. Measured 2026-08-22 against this repository, where
+  `.gzkit/ledger.jsonl` is dirty on essentially every run because governance
+  commands append to it — the first implementation fingerprinted the working
+  tree, passed all its own tests on clean fixtures, and skipped exactly zero real
+  pushes.
+
+A pass is recorded **only when nothing is unstaged or untracked**. The gate runs
+against the working tree while the fingerprint names the index tree, and those
+are the same object only when the tree is fully staged; recording otherwise would
+attest a tree that was never the one tested. When it declines to record, it says
+so on stdout.
 
 Fail-open by construction: any git failure yields no fingerprint, no fingerprint
 ever matches, and the gate runs. A fingerprint mechanism that failed closed would

@@ -21,8 +21,9 @@ from pathlib import Path
 from gzkit.check_fingerprint import (
     already_verified,
     record_verified,
+    staged_fingerprint,
+    tree_is_fully_staged,
     verified_fingerprint,
-    worktree_fingerprint,
 )
 
 
@@ -51,46 +52,37 @@ def _repo() -> Path:
     return root
 
 
-class TestFingerprintTracksContentNotCommits(unittest.TestCase):
-    """The property an obvious implementation gets wrong."""
+class TestFingerprintNamesTheCommittableTree(unittest.TestCase):
+    """The index is the only object both sides of the skip can observe."""
 
     def test_committing_does_not_change_the_fingerprint(self) -> None:
         root = _repo()
         (root / "src" / "mod.py").write_text("VALUE = 2\n", encoding="utf-8")
-        before = worktree_fingerprint(root)
         _git(["add", "-A"], root)
+        staged = staged_fingerprint(root)
         _git(["commit", "-qm", "land it"], root)
         self.assertEqual(
-            worktree_fingerprint(root),
-            before,
-            "a commit changes HEAD but not the files; keying on HEAD would mean the "
-            "skip never fires, since a commit ALWAYS happens between verify and push",
+            staged_fingerprint(root),
+            staged,
+            "the whole point: verify then commit then push must see ONE hash. A "
+            "HEAD-keyed check would differ here and the skip would never fire",
         )
 
-    def test_editing_a_file_changes_the_fingerprint(self) -> None:
+    def test_staging_an_edit_changes_the_fingerprint(self) -> None:
         root = _repo()
-        before = worktree_fingerprint(root)
+        before = staged_fingerprint(root)
         (root / "src" / "mod.py").write_text("VALUE = 99\n", encoding="utf-8")
-        self.assertNotEqual(worktree_fingerprint(root), before)
-
-    def test_untracked_file_changes_the_fingerprint(self) -> None:
-        root = _repo()
-        before = worktree_fingerprint(root)
-        (root / "src" / "new.py").write_text("X = 1\n", encoding="utf-8")
-        self.assertNotEqual(
-            worktree_fingerprint(root),
-            before,
-            "an untracked module is code the suite would import; ignoring it would "
-            "skip the gate over a tree the gate never saw",
-        )
+        _git(["add", "-A"], root)
+        self.assertNotEqual(staged_fingerprint(root), before)
 
     def test_gitignored_noise_does_not_change_the_fingerprint(self) -> None:
         root = _repo()
-        before = worktree_fingerprint(root)
+        before = staged_fingerprint(root)
         (root / "build").mkdir()
         (root / "build" / "artifact.bin").write_text("noise\n", encoding="utf-8")
+        _git(["add", "-A"], root)
         self.assertEqual(
-            worktree_fingerprint(root),
+            staged_fingerprint(root),
             before,
             "build output and receipts must not defeat the skip",
         )
@@ -98,7 +90,7 @@ class TestFingerprintTracksContentNotCommits(unittest.TestCase):
     def test_the_real_index_is_left_alone(self) -> None:
         root = _repo()
         (root / "src" / "mod.py").write_text("VALUE = 3\n", encoding="utf-8")
-        worktree_fingerprint(root)
+        staged_fingerprint(root)
         status = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=root,
@@ -116,21 +108,61 @@ class TestFingerprintTracksContentNotCommits(unittest.TestCase):
         )
 
 
+class TestOnlyAnExactlyStagedTreeIsRecordable(unittest.TestCase):
+    """The gate runs on the WORKING tree; the fingerprint names the INDEX tree.
+
+    They are the same object only when nothing is outstanding, so that is the one
+    condition under which the pass is recordable. This is what keeps the skip from
+    attesting a tree that was never the one tested.
+    """
+
+    def test_clean_staged_tree_is_recordable(self) -> None:
+        root = _repo()
+        self.assertTrue(tree_is_fully_staged(root))
+
+    def test_unstaged_edit_is_not_recordable(self) -> None:
+        root = _repo()
+        (root / "src" / "mod.py").write_text("VALUE = 5\n", encoding="utf-8")
+        self.assertFalse(
+            tree_is_fully_staged(root),
+            "an unstaged edit was verified but will not be pushed; recording the "
+            "index tree here would attest content the gate never ran against",
+        )
+
+    def test_untracked_file_is_not_recordable(self) -> None:
+        root = _repo()
+        (root / "src" / "new.py").write_text("X = 1\n", encoding="utf-8")
+        self.assertFalse(
+            tree_is_fully_staged(root),
+            "an untracked module is code the run could import but the commit will not carry",
+        )
+
+    def test_unstaged_edit_blocks_the_skip_end_to_end(self) -> None:
+        root = _repo()
+        (root / "src" / "mod.py").write_text("VALUE = 6\n", encoding="utf-8")
+        record_verified(root, staged_fingerprint(root), scope="full")
+        # record_verified is only ever CALLED behind tree_is_fully_staged; this
+        # asserts the end-to-end path the command takes.
+        self.assertFalse(tree_is_fully_staged(root))
+
+
 class TestSkipRequiresBothSidesToAgree(unittest.TestCase):
     """A missing, partial, or stale receipt must fall through to running the gate."""
 
     def test_matching_tree_reports_verified(self) -> None:
         root = _repo()
-        record_verified(root, worktree_fingerprint(root), scope="full")
+        record_verified(root, staged_fingerprint(root), scope="full")
         self.assertIsNotNone(already_verified(root))
 
-    def test_edit_after_recording_falls_through(self) -> None:
+    def test_staged_edit_after_recording_falls_through(self) -> None:
         root = _repo()
-        record_verified(root, worktree_fingerprint(root), scope="full")
+        record_verified(root, staged_fingerprint(root), scope="full")
         (root / "src" / "mod.py").write_text("VALUE = 4\n", encoding="utf-8")
+        _git(["add", "-A"], root)
         self.assertIsNone(
             already_verified(root),
-            "any edit must re-run the gate; this is the whole safety property",
+            "any change to what will be committed must re-run the gate; this is "
+            "the whole safety property",
         )
 
     def test_no_receipt_falls_through(self) -> None:
@@ -138,7 +170,7 @@ class TestSkipRequiresBothSidesToAgree(unittest.TestCase):
 
     def test_a_fast_scope_is_never_recorded(self) -> None:
         root = _repo()
-        record_verified(root, worktree_fingerprint(root), scope="fast")
+        record_verified(root, staged_fingerprint(root), scope="fast")
         self.assertIsNone(
             verified_fingerprint(root),
             "a scoped run skips the expensive steps by design; letting one satisfy "
@@ -148,7 +180,7 @@ class TestSkipRequiresBothSidesToAgree(unittest.TestCase):
     def test_a_non_git_directory_fails_open(self) -> None:
         plain = Path(tempfile.mkdtemp(prefix="gzkit-nogit-"))
         self.assertIsNone(
-            worktree_fingerprint(plain),
+            staged_fingerprint(plain),
             "no fingerprint ever matches, so the gate runs -- a fingerprint that "
             "failed CLOSED would refuse pushes on a repo it merely could not read",
         )

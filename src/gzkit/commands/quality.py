@@ -602,10 +602,28 @@ def _render_step_failures(results: list[tuple[str, QualityResult]]) -> None:
 
 
 def _record_full_pass(project_root: pathlib.Path) -> None:
-    """Record that the FULL gate passed over this tree's content (GHI #835)."""
-    from gzkit.check_fingerprint import record_verified, worktree_fingerprint  # noqa: PLC0415
+    """Record that the FULL gate passed over this tree's content (GHI #835).
 
-    record_verified(project_root, worktree_fingerprint(project_root), scope="full")
+    Recorded only when nothing is unstaged or untracked. The fingerprint names the
+    INDEX tree — the object that survives ``pre-commit``'s stash and that a commit
+    will carry — while the gate ran against the WORKING tree, and those are the
+    same object only when the tree is fully staged. Recording otherwise would
+    attest a tree that was never the one tested.
+    """
+    from gzkit.check_fingerprint import (  # noqa: PLC0415
+        record_verified,
+        staged_fingerprint,
+        tree_is_fully_staged,
+    )
+
+    if not tree_is_fully_staged(project_root):
+        console.print(
+            "[dim]  (not recorded as verified: the tree has unstaged or untracked "
+            "changes, so the gate ran against content no commit will carry. "
+            "`git add -A` before `gz check` to let the pre-push gate reuse it.)[/dim]"
+        )
+        return
+    record_verified(project_root, staged_fingerprint(project_root), scope="full")
 
 
 def _report_reuse_skip(project_root: pathlib.Path, *, as_json: bool) -> bool:

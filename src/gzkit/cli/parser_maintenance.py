@@ -156,7 +156,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     p_check.add_argument(
         "--reuse-verified",
         action="store_true",
-        help="Skip when this exact tree content already passed a full check",
+        help="Skip when this exact STAGED tree already passed a full check",
     )
     p_check.set_defaults(
         func=lambda a: _lazy("check")(
