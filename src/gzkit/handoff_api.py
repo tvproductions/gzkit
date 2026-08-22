@@ -541,7 +541,7 @@ def _ruling_source(previous: Path, base_path: Path) -> Path | None:
     yet it is a valid ``continues_from`` target. Read as an ordinary ancestor it
     is a SINK: the successor inherits an empty corpus and every ruling booked
     upstream stops arriving. Measured on the 2026-08-22 chain, the authored
-    ancestor carried 453 settled rulings and the successor carried 0 (GHI #855).
+    ancestor carried 453 settled rulings and the successor carried 0 (commit `02ca03ee`).
 
     So a floor bookmark is looked THROUGH, never at. Its declared lineage wins
     when it has one; otherwise the nearest AUTHORED handoff older than it stands

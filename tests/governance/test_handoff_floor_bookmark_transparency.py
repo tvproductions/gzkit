@@ -1,4 +1,4 @@
-"""A floor bookmark must not sink the settled-ruling corpus (GHI #855).
+"""A floor bookmark must not sink the settled-ruling corpus (commit 02ca03ee).
 
 The exit beat writes a mechanical floor bookmark at every session end. By
 construction it carries no ``## Settled Rulings`` and books no operator rulings
@@ -110,7 +110,7 @@ class TestFloorBookmarkIsTransparentToTheRulingChain(unittest.TestCase):
                 RULING,
                 carried,
                 "a machine-written bookmark must be transparent to the ruling chain; "
-                "inheriting its empty corpus drops every ruling booked upstream (GHI #855)",
+                "inheriting its empty corpus drops every ruling booked upstream (commit 02ca03ee)",
             )
             self.assertIn(SECOND, carried, "every upstream ruling survives, not merely the first")
 
