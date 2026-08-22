@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "31e903e9a3e1c5195fe7f3661f4ebe68627ea6546a0e42b4977587f2b1a248b0",
-  "corpus_entry_count": 69,
+  "corpus_fingerprint": "74df7e09b501e81c84240ecf533d38bec2152e61751c186896061cad27f564d0",
+  "corpus_entry_count": 76,
   "rendition_fingerprint": "cd1983b4f2ada0617194c46c4d8bf37cb88f6a9222179da2a4bec8ff5c507a0d",
-  "committed_ts": "2026-08-21T09:40:18.355687+00:00",
+  "committed_ts": "2026-08-22T20:43:03.556298+00:00",
   "attestor": "g0",
-  "attestation_text": "render the control surfaces — operator directive 2026-08-21. Promotes the candidate carrying two invariant-tier corpus entries added this session: the never-work-an-OBPI-without-the-skill mandate (operator verbatim) and the presence-check-is-not-evidence maxim. Corpus fingerprint d536666d56ee -> 31e903e9a3e1. Zero information loss: the candidate is the prior committed rendition with both entries appended verbatim, nothing dropped, combined, or rewritten (advisor-QC receipt arb-step-judge-ecf5197875474470b45b48362831b3f4, score 1.00). Result is 42235B against the 32768B Codex cap, which is advisory until 1.0 per the operator stay of 2026-08-17; the overage is corpus-unowned template scaffolding and its remedy is the unlanded OBPI-0.35.0-04-section-ownership-and-ratchet, not a trim that would delete doctrine the corpus cannot return."
+  "attestation_text": "attest completed — seven duplicate invariant-tier corpus entries retired under the operator ruling of 2026-08-22 ('topical section wins, retire the canon-section copies'), all seven being cli:content-remember rows from the 2026-06-19T22:54 bulk import that had also flattened their classifications to Ambiguous; the surviving topical originals carry Judgment, Promotable and Mechanical. Live entries 59 -> 52, live duplicate texts 7 -> 0. Corpus fingerprint 31e903e9a3e1 -> 74df7e09b501. ZERO INFORMATION LOSS: the candidate is the prior committed rendition's own bytes, composed against the shrunken floor and verified byte-identical by cmp, so AGENTS.md does not change by one byte and this promotion is a derivation re-link, not a re-render of changed canon. Invariant floor 17046B, total 42235B, unchanged. Verified by arb-ruff-6dd6384f6d8343659bd90817840938a3, arb-step-typecheck-e06dc11881824ed3b4e020cd086b5817, and arb-step-unittest-6e3dcae7dc9141c0abef214c315804b5 (8718 tests, exit_status=0), with gz validate --rendition-floor-coherence and --invariant-coherence both passing. Mechanical arm landed as 8ed48271 (GHI #862)."
 }
