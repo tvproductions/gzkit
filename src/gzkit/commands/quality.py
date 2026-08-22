@@ -6,9 +6,12 @@
 
 from __future__ import annotations
 
+import json
+import os
 import pathlib
 import subprocess
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
 
 from rich.markup import escape
@@ -589,6 +592,111 @@ def _select_check_steps(*, fast: bool) -> list[tuple[str, CheckStepRunner]]:
     return kept
 
 
+# Concurrency ceiling for the read-only phase.  Deliberately below the core
+# count: the "Test" step internally runs `unittest-parallel` across every core
+# (GHI #512), so an unbounded pool would have one step saturating the machine
+# while fifty others queue behind it for the same cores.
+_MAX_CONCURRENT_STEPS = 8
+
+
+def _step_concurrency_classes() -> dict[str, str]:
+    """Return {step name: "read_only" | "writes"} from the measured declaration.
+
+    Returns ``{}`` when the declaration is absent, which makes every step serial
+    — today's behaviour exactly.  That is the case in ADOPTER projects: the
+    declaration describes gzkit's own step set and is project-local here, on the
+    same footing as ``data/module_size_grandfather.json``, whose reader also
+    returns empty when the file is missing.  So this speedup is gzkit's own and
+    adopters are unaffected rather than broken; shipping it to them would mean
+    inventing a package-data surface, which is scope this fix does not carry.
+
+    Deliberately NOT cached.  Caching this against ``get_project_root()`` is the
+    import-time-capture shape that makes a value outlive the cwd it was resolved
+    under (GHI #857); the file is small and read once per ``check()`` run, so the
+    cache would buy nothing and reintroduce a defect this repo is already
+    tracking.
+    """
+    path = get_project_root() / "data" / "check_step_concurrency.json"
+    if not path.is_file():
+        return {}
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {name: entry["class"] for name, entry in data["steps"].items()}
+
+
+def _partition_steps_by_concurrency(
+    steps: list[tuple[str, CheckStepRunner]],
+) -> tuple[list[tuple[str, CheckStepRunner]], list[tuple[str, CheckStepRunner]]]:
+    """Split steps into (serial writers, concurrent read-only), preserving order.
+
+    Writers keep their relative list order because one measured producer→consumer
+    edge depends on it: ``Behave`` builds ``dist/*.whl`` and
+    ``gz validate --distribution`` — inside ``Validate default scopes`` — reads
+    that wheel (measured 2026-08-22, GHI #835).
+
+    An UNDECLARED step runs SERIALLY.  Serial is the conservative class — always
+    correct, merely slower — so defaulting there can never introduce the race
+    GHI #835 warns about ("A parallel runner over steps with an undeclared
+    dependency is a flaky gate, which is strictly worse than a slow one"), while
+    defaulting to read-only could.  The "no step ships unaccounted" guarantee is
+    not weakened by this, it is relocated to where it can fail closed without
+    making the runtime brittle for callers that compose their own step lists:
+    ``tests/governance/test_check_step_concurrency.py`` fails the commit when a
+    real step is missing from the declaration.
+    """
+    classes = _step_concurrency_classes()
+    serial: list[tuple[str, CheckStepRunner]] = []
+    concurrent: list[tuple[str, CheckStepRunner]] = []
+    for name, runner in steps:
+        target = concurrent if classes.get(name) == "read_only" else serial
+        target.append((name, runner))
+    return serial, concurrent
+
+
+def _seam(name: str, result: QualityResult, project_root: pathlib.Path) -> QualityResult:
+    """Apply the ONE MX checkpoint seam to a step result."""
+    guard_name, emitted_level = _STEP_GUARD_META.get(
+        name, (name.lower().replace(" ", "-"), _mx_levels.ERROR)
+    )
+    return _apply_mx_seam(result, guard_name, emitted_level, project_root)
+
+
+def _run_check_steps(
+    steps: list[tuple[str, CheckStepRunner]],
+    project_root: pathlib.Path,
+    progress: Any,
+) -> list[tuple[str, QualityResult]]:
+    """Run every step and return results in the declared list order.
+
+    Two phases, per the declaration's stated protocol: writers serially first,
+    then every read-only step concurrently.  Ordering the phases this way
+    preserves the measured dependency edge without needing a general dependency
+    graph — three steps write, and the only consumer among them runs after its
+    producer already.
+
+    Threads (not processes) are correct because every runner shells out through
+    ``run_command``: the work happens in subprocesses, so the GIL is not in the
+    path.  The MX seam and the progress tick both stay on this thread, which
+    keeps the single-firing-point requirement (REQ-0.0.74-20-01) intact.
+    """
+    serial, concurrent = _partition_steps_by_concurrency(steps)
+    collected: dict[str, QualityResult] = {}
+
+    for name, runner in serial:
+        progress.advance(name)
+        collected[name] = _seam(name, runner(project_root), project_root)
+
+    if concurrent:
+        workers = min(_MAX_CONCURRENT_STEPS, len(concurrent), (os.cpu_count() or 4))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            pending = {pool.submit(runner, project_root): name for name, runner in concurrent}
+            for future in as_completed(pending):
+                name = pending[future]
+                progress.advance(name)
+                collected[name] = _seam(name, future.result(), project_root)
+
+    return [(name, collected[name]) for name, _ in steps]
+
+
 def _render_step_failures(results: list[tuple[str, QualityResult]]) -> None:
     """Print each failing step's captured output.
 
@@ -780,16 +888,8 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
 
     steps = _select_check_steps(fast=fast)
 
-    results: list[tuple[str, QualityResult]] = []
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
-        for name, runner in steps:
-            progress.advance(name)
-            result = runner(project_root)
-            guard_name, emitted_level = _STEP_GUARD_META.get(
-                name, (name.lower().replace(" ", "-"), _mx_levels.ERROR)
-            )
-            result = _apply_mx_seam(result, guard_name, emitted_level, project_root)
-            results.append((name, result))
+        results = _run_check_steps(steps, project_root, progress)
 
     drift: DriftAdvisoryResult = run_drift_advisory(project_root)
 

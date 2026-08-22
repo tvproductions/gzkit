@@ -57,6 +57,7 @@ Exit codes: 0 clean, 1 usage/IO error, 3 policy breach.
 
 from __future__ import annotations
 
+import contextlib
 import json
 import subprocess
 import sys
@@ -75,7 +76,14 @@ _THRESHOLDS = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-thresholds.json"
 _GRANDFATHER = _PROJECT_ROOT / "data" / "module_size_grandfather.json"
 _MEASURE_ROOT = _PROJECT_ROOT / "src"
 
-sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
+# `.gzkit/rules/cross-platform.md` § Console requires the explicit UTF-8
+# reconfigure in a helper script, but `sys.stdout` is not always a real stream:
+# `unittest-parallel` swaps in a `StringIO`, which has no `reconfigure`, so an
+# unguarded call raises at IMPORT time for anything loading this module under a
+# capturing harness. EAFP rather than `hasattr` — the guard form narrows the
+# attribute to `object` and breaks ty's own suppression code.
+with contextlib.suppress(AttributeError):
+    sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
 def _block_band() -> float:

@@ -1,0 +1,258 @@
+{
+  "_doc": "Concurrency declaration for `gz check` steps (GHI #835). MEASURED, never assumed: each step ran alone against a marker file and anything newer afterwards is something that step wrote, which catches writes outside git as well as tracked ones. The GHI is explicit that this declaration is the deliverable and the speedup only its consequence -- 'A parallel runner over steps with an undeclared dependency is a flaky gate, which is strictly worse than a slow one.' A step absent from `steps` fails the gate closed (tests/governance/test_check_step_concurrency.py); a new step is DECLARED, never defaulted. `measured_seconds` is a dated record for routing attention, never a threshold anything enforces.",
+  "measured": "2026-08-22",
+  "measured_at_commit": "884c4e67",
+  "protocol": "Writers run serially, in list order, before any read-only step starts. Read-only steps then run concurrently. This preserves the one measured producer->consumer edge (Behave builds dist/, Validate default scopes reads it) without needing a general dependency graph.",
+  "steps": {
+    "Lint": {
+      "class": "read_only",
+      "measured_seconds": 0.94
+    },
+    "Format": {
+      "class": "read_only",
+      "measured_seconds": 0.08
+    },
+    "Typecheck": {
+      "class": "read_only",
+      "measured_seconds": 0.79
+    },
+    "Module size": {
+      "class": "read_only",
+      "measured_seconds": 2.22
+    },
+    "Test": {
+      "class": "read_only",
+      "measured_seconds": 44.42
+    },
+    "Behave": {
+      "class": "writes",
+      "paths": [
+        "dist/"
+      ],
+      "why": "Builds the wheel into dist/ as part of the distribution feature. `gz validate --distribution` (inside the Validate default scopes step) READS that wheel, so this is a real producer->consumer edge and the reason a naive parallel runner would be flaky.",
+      "measured_seconds": 34.15
+    },
+    "Docs build": {
+      "class": "writes",
+      "paths": [
+        "site/"
+      ],
+      "why": "mkdocs renders the whole site/ tree. Nothing else in the step set reads site/, so this writer is isolated -- but it is still a writer and is never run concurrently with anything.",
+      "measured_seconds": 4.17
+    },
+    "Validate default scopes": {
+      "class": "writes",
+      "paths": [
+        ".agents/",
+        ".claude/",
+        ".copilotignore/",
+        ".github/",
+        ".gzkit/",
+        "AGENTS.md/",
+        "CLAUDE.md/",
+        "docs/",
+        "src/",
+        "tests/"
+      ],
+      "why": "Rewrites vendor persona mirrors under .agents/personas/. A validator that mutates canonical mirrors is its own smell (recorded, not fixed here); what matters for concurrency is that Skill audit, Parity check, Surface fidelity and Fidelity presence all READ those mirrors.",
+      "measured_seconds": 3.1
+    },
+    "Skill audit": {
+      "class": "read_only",
+      "measured_seconds": 0.3
+    },
+    "Parity check": {
+      "class": "read_only",
+      "measured_seconds": 0.19
+    },
+    "Readiness audit": {
+      "class": "read_only",
+      "measured_seconds": 0.33
+    },
+    "CLI audit": {
+      "class": "read_only",
+      "measured_seconds": 0.63
+    },
+    "Unscoped rules": {
+      "class": "read_only",
+      "measured_seconds": 0.27
+    },
+    "Python version pins": {
+      "class": "read_only",
+      "measured_seconds": 0.25
+    },
+    "ADR status freshness": {
+      "class": "read_only",
+      "measured_seconds": 0.28
+    },
+    "Advisory scorecard coverage": {
+      "class": "read_only",
+      "measured_seconds": 0.5
+    },
+    "OBPI lifecycle coherence": {
+      "class": "read_only",
+      "measured_seconds": 0.66
+    },
+    "Adversarial validation": {
+      "class": "read_only",
+      "measured_seconds": 0.45
+    },
+    "RED parity": {
+      "class": "read_only",
+      "measured_seconds": 0.34
+    },
+    "Rendition freshness": {
+      "class": "read_only",
+      "measured_seconds": 0.27
+    },
+    "Rendition floor coherence": {
+      "class": "read_only",
+      "measured_seconds": 0.27
+    },
+    "Invariant coherence": {
+      "class": "read_only",
+      "measured_seconds": 0.4
+    },
+    "Brief structure": {
+      "class": "read_only",
+      "measured_seconds": 0.43
+    },
+    "Session green gate": {
+      "class": "read_only",
+      "measured_seconds": 0.28
+    },
+    "Closeout proof": {
+      "class": "read_only",
+      "measured_seconds": 0.38
+    },
+    "Kind invariance": {
+      "class": "read_only",
+      "measured_seconds": 0.42
+    },
+    "Persona witness": {
+      "class": "read_only",
+      "measured_seconds": 0.29
+    },
+    "Interview transcripts": {
+      "class": "read_only",
+      "measured_seconds": 0.37
+    },
+    "Pool interview schema": {
+      "class": "read_only",
+      "measured_seconds": 0.39
+    },
+    "Receipt shape": {
+      "class": "read_only",
+      "measured_seconds": 0.34
+    },
+    "Orientation freshness": {
+      "class": "read_only",
+      "measured_seconds": 0.34
+    },
+    "Insights shape": {
+      "class": "read_only",
+      "measured_seconds": 0.4
+    },
+    "Instructions files budget": {
+      "class": "read_only",
+      "measured_seconds": 0.34
+    },
+    "AGENTS.md map conformance": {
+      "class": "read_only",
+      "measured_seconds": 0.33
+    },
+    "Complexity-doctrine links": {
+      "class": "read_only",
+      "measured_seconds": 0.45
+    },
+    "Complexity-thresholds": {
+      "class": "read_only",
+      "measured_seconds": 0.36
+    },
+    "REQ kind discipline": {
+      "class": "read_only",
+      "measured_seconds": 0.65
+    },
+    "Status writer coverage": {
+      "class": "read_only",
+      "measured_seconds": 1.13
+    },
+    "Transcribed ADR counts": {
+      "class": "read_only",
+      "measured_seconds": 0.6
+    },
+    "tautological test audit": {
+      "class": "read_only",
+      "measured_seconds": 2.14
+    },
+    "Task envelope coherence": {
+      "class": "read_only",
+      "measured_seconds": 0.95
+    },
+    "Lock-exchange coupling": {
+      "class": "read_only",
+      "measured_seconds": 0.41
+    },
+    "QC binding": {
+      "class": "read_only",
+      "measured_seconds": 2.1
+    },
+    "Fidelity presence": {
+      "class": "read_only",
+      "measured_seconds": 0.31
+    },
+    "Waiver ratchet": {
+      "class": "read_only",
+      "measured_seconds": 0.29
+    },
+    "Gate callers": {
+      "class": "read_only",
+      "measured_seconds": 0.31
+    },
+    "Exemption controls": {
+      "class": "read_only",
+      "measured_seconds": 0.28
+    },
+    "Handoff documents": {
+      "class": "read_only",
+      "measured_seconds": 28.67
+    },
+    "Preflight": {
+      "class": "read_only",
+      "measured_seconds": 1.23
+    },
+    "Surface fidelity": {
+      "class": "read_only",
+      "measured_seconds": 0.55
+    },
+    "Line endings": {
+      "class": "read_only",
+      "measured_seconds": 4.23
+    },
+    "Authorship policy": {
+      "class": "read_only",
+      "measured_seconds": 0.31
+    },
+    "Smoke tier": {
+      "class": "read_only",
+      "measured_seconds": 1.35
+    },
+    "Dispatch absorption marker": {
+      "class": "read_only",
+      "measured_seconds": 0.0
+    },
+    "Enforcement floor": {
+      "class": "read_only",
+      "measured_seconds": 1.89
+    },
+    "ADR taxonomy": {
+      "class": "read_only",
+      "measured_seconds": 0.53
+    },
+    "Test (changed)": {
+      "class": "read_only",
+      "measured_seconds": null,
+      "why": "Fast-scope substitute for Test; same read-only shape, not measured by the probe."
+    }
+  }
+}

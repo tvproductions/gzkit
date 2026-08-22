@@ -11,13 +11,21 @@ These tests drive the pure `compute_breaches` function with synthetic data.
 The committed data file carrying zero slack is enforced by the gate itself
 inside `gz check`, not re-measured here: a second measurement path would be
 the second threshold authority the chore's own docstring forbids.
+
+There is deliberately NO test asserting the `--self-test` case list mentions
+the slack direction. Such a test reads the gate's own source and asserts on
+its text, which `gz validate --tautological-test-audit` rejects and
+`.claude/rules/guardrail-feedback-prose.md` § Enforcement posture refuses on
+the stated ground that an inferential prose-grader is weaker than a real
+enforcement consumer. The direction's teeth are proven by the four
+`compute_breaches` cases below; the self-test's own coverage is proven by
+`run_module_size_audit`, which runs `--self-test` and short-circuits on it.
 """
 
 from __future__ import annotations
 
 import importlib.util
 import unittest
-from pathlib import Path
 from types import ModuleType
 
 from gzkit.commands.common import get_project_root
@@ -99,27 +107,6 @@ class TestSlackDirection(unittest.TestCase):
             breaches,
             "A module that shrank 1500 -> 1200 must be asked to surrender the 300 "
             "lines, not passed over",
-        )
-
-
-class TestSelfTestEnumeratesEveryDirection(unittest.TestCase):
-    """The gate's own `--self-test` must cover the direction this GHI added.
-
-    `run_module_size_audit` short-circuits on a self-test failure precisely
-    because an unverified `compute_breaches` makes the band run's verdict
-    worthless. A direction the self-test does not drive is therefore a
-    direction the pipeline never proves.
-    """
-
-    def test_self_test_drives_the_slack_direction(self) -> None:
-        gate = _load_gate()
-        source = Path(gate.__file__ or str(_SCRIPT)).read_text(encoding="utf-8")
-
-        self.assertIn(
-            "TEETH: entry looser than its module",
-            source,
-            "The self-test case list must drive the slack direction, or the gate's "
-            "teeth are unverified for the one arm GHI #853 added",
         )
 
 
