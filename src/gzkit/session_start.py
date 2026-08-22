@@ -20,6 +20,16 @@ dependency.
 handoff must never become self-authorizing. Seeding the turn makes the review
 happen; it does not make the work approved. The advisement text says so, and
 points at ``gz handoff decide`` as the only surface that lifts the gate.
+
+**Guards the document it injects (GHI #850).**
+``gz validate --transcribed-adr-counts`` names its subject as "the handoff a
+resuming session reads", but runs only inside ``gz check`` — at commit time.
+The exit beat writes its bookmark *after* the last commit opportunity, so an
+authored-but-uncommitted handoff reaches this module unguarded, which is how a
+stale ``1/10`` was injected on 2026-08-22 and acted on before anything caught
+it. Consumption is the moment the guard's own message describes, so the scan
+runs here too. It WARNS and never refuses: this hook exits 0 always, and
+capture must never be blocked.
 """
 
 from __future__ import annotations
@@ -49,6 +59,9 @@ class Advisement(BaseModel):
     handoff_path: str | None = Field(None, description="Path of the advised handoff")
     staleness: str | None = Field(None, description="Staleness classification")
     truncated: bool = Field(False, description="Whether the body was cut to fit budget")
+    transcribed_count_lines: tuple[int, ...] = Field(
+        (), description="Lines of the advised handoff carrying a live transcribed ADR count"
+    )
 
 
 def build_advisement(project_root: Path, *, now: str) -> Advisement:
@@ -69,7 +82,8 @@ def build_advisement(project_root: Path, *, now: str) -> Advisement:
     if result is None:
         return Advisement(present=False)
 
-    body = _render(result)
+    findings = _transcribed_count_findings(project_root, result.path)
+    body = _render(result, findings)
     truncated = len(body) > ADVISEMENT_CHAR_BUDGET
     if truncated:
         body = body[: ADVISEMENT_CHAR_BUDGET - len(_TRUNCATION_NOTE)] + _TRUNCATION_NOTE
@@ -80,15 +94,52 @@ def build_advisement(project_root: Path, *, now: str) -> Advisement:
         handoff_path=result.path,
         staleness=str(result.staleness),
         truncated=truncated,
+        transcribed_count_lines=tuple(number for number, _ in findings),
     )
 
 
-def _render(result: object) -> str:
+def _transcribed_count_findings(project_root: Path, path: str) -> list[tuple[int, str]]:
+    """Scan the advised handoff for live transcribed ADR counts. Never raises.
+
+    Scans ``path`` — the document this advisement actually resolved — rather
+    than letting the guard re-select, so the warning can never name a different
+    handoff than the one being injected.
+    """
+    try:
+        from gzkit.governance.trust_audits.transcribed_counts import (  # noqa: PLC0415
+            handoff_count_findings,
+        )
+
+        return handoff_count_findings(project_root, Path(path))
+    except Exception:  # noqa: BLE001 — SessionStart has no agent to read a traceback
+        return []
+
+
+def _render_count_warning(findings: list[tuple[int, str]]) -> str:
+    """Render the transcribed-count warning as one blockquote."""
+    numbers = ", ".join(str(number) for number, _ in findings)
+    plural = "s" if len(findings) > 1 else ""
+    return (
+        f"> **Do not act on the ADR count{plural} in this handoff** "
+        f"(line{plural} {numbers}). A transcribed count is a Layer-3 value with no "
+        "reconciliation path and goes stale the next time an OBPI is added, "
+        "withdrawn, parked, or folded. Run `uv run gz adr status <ADR-ID>` for the "
+        "live figure, and repair the line — `gz validate --transcribed-adr-counts` "
+        "will refuse it at commit time."
+    )
+
+
+def _render(result: object, findings: list[tuple[int, str]] | None = None) -> str:
     """Render the advisement body from a ``ResumeResult``.
 
     Ordered so the load-bearing sentence survives truncation: what this is, that
     it only ADVISES, and how to rule on it come first; the enumerated steps come
     last, because a clipped step list still leaves the operator able to act.
+
+    The count warning sits directly under the document's identity, ahead of
+    everything else, for the same reason: truncation clips the tail, and a
+    warning that "this document's figures are not to be trusted" is worthless
+    if it is the part that gets cut.
     """
     path = getattr(result, "path", "")
     staleness = getattr(result, "staleness", "")
@@ -99,6 +150,10 @@ def _render(result: object) -> str:
         "",
         f"- Path: `{path}`",
         f"- Freshness: {staleness}",
+    ]
+    if findings:
+        lines += ["", _render_count_warning(findings)]
+    lines += [
         "",
         "A handoff **advises**; it does not authorize. Present its advised steps "
         "to the operator and obtain an explicit ruling before executing any of "

@@ -173,6 +173,37 @@ def _scan(text: str, historical: set[str]) -> list[tuple[int, str]]:
     return findings
 
 
+def handoff_count_findings(project_root: Path, handoff: Path) -> list[tuple[int, str]]:
+    """Return ``(line_number, line)`` for every live transcribed count in one handoff.
+
+    Takes the handoff PATH rather than re-deriving it, so a caller that has
+    already selected a document scans exactly the one it holds. Two callers now
+    do: this module's validator arm reaches the newest handoff through
+    :func:`gzkit.handoff_resume_gate.newest_handoff`, and
+    :mod:`gzkit.session_start` reaches it through
+    :func:`gzkit.handoff_api.resume_handoff`. Both apply ``selection_rank`` and
+    therefore agree today — but passing the path makes that agreement
+    STRUCTURAL rather than a property two independent selectors must keep, and
+    a warning naming a different document than the one injected would be worse
+    than no warning (GHI #850).
+
+    Registry-driven and fail-open by the same rule as the validator: an absent
+    or malformed ``newest_handoff`` entry means "nothing declared live here",
+    never "scan everything". The opt-in scope is the filed GHI's constraint —
+    a blanket sweep would falsify the archive.
+    """
+    entry = _registry_payload(project_root).get("newest_handoff")
+    if not isinstance(entry, dict):
+        return []
+    raw = entry.get("historical_sections")
+    historical = {str(h).strip().lower() for h in raw} if isinstance(raw, list) else set()
+    try:
+        text = handoff.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    return _scan(text, historical)
+
+
 def _newest_handoff_errors(project_root: Path) -> list[ValidationError]:
     """Scan the one handoff a resuming session actually reads.
 
@@ -190,17 +221,10 @@ def _newest_handoff_errors(project_root: Path) -> list[ValidationError]:
     """
     from gzkit.handoff_resume_gate import newest_handoff  # noqa: PLC0415
 
-    payload = _registry_payload(project_root)
-    entry = payload.get("newest_handoff")
-    if not isinstance(entry, dict):
-        return []
     handoff = newest_handoff(project_root)
     if handoff is None:
         return []
-    raw = entry.get("historical_sections")
-    historical = {str(h).strip().lower() for h in raw} if isinstance(raw, list) else set()
     relative = handoff.relative_to(project_root).as_posix()
-    text = handoff.read_text(encoding="utf-8", errors="replace")
     return [
         ValidationError(
             type="surface",
@@ -211,7 +235,7 @@ def _newest_handoff_errors(project_root: Path) -> list[ValidationError]:
                 f"here is acted on. {_RECOVERY}"
             ),
         )
-        for number, line in _scan(text, historical)
+        for number, line in handoff_count_findings(project_root, handoff)
     ]
 
 

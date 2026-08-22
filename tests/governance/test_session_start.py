@@ -9,6 +9,7 @@ passively so Codex is not left behind, and must fit the harness output budget.
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from pathlib import Path
@@ -106,3 +107,144 @@ class AdvisementTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TranscribedCountAdvisementTests(unittest.TestCase):
+    """The advisement warns when the document it injects carries a live count.
+
+    GHI #850. `gz validate --transcribed-adr-counts` guards "the handoff a
+    resuming session reads" — its own message says so — but runs only inside
+    `gz check`, i.e. at commit time. A handoff authored and left uncommitted
+    reaches SessionStart unguarded, and the exit-beat bookmark path leaves it
+    uncommitted by construction. These assertions derive from that gap: the
+    warning fires at the moment of consumption, never blocks, and survives the
+    truncation that clips the step list.
+    """
+
+    _REGISTRY = {
+        "surfaces": [],
+        "newest_handoff": {
+            "historical_sections": [
+                "current state summary",
+                "important context",
+                "decisions made",
+                "evidence",
+                "settled rulings",
+            ]
+        },
+    }
+
+    def _root(self, *, registry: object = None) -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        payload = self._REGISTRY if registry is None else registry
+        if payload is not False:
+            (root / "data").mkdir()
+            (root / "data" / "transcribed_count_surfaces.json").write_text(
+                json.dumps(payload), encoding="utf-8"
+            )
+        return root
+
+    def _seed(self, root: Path, *, sections: dict[str, str]) -> Path:
+        seeded: dict[str, str] = {s: f"Seeded {s}." for s in REQUIRED_SECTIONS}
+        seeded["Decisions Made"] = "- [operator-ruled] Seeded."
+        seeded.update(sections)
+        return create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug="seeded",
+            sections=seeded,
+            base_path=root,
+            timestamp="2026-08-05T09:00:00Z",
+        )
+
+    def test_a_live_transcribed_count_is_warned_about_at_the_consumption_moment(self) -> None:
+        root = self._root()
+        handoff = self._seed(
+            root,
+            sections={"Immediate Next Steps": "1. Resume `ADR-0.35.0-slug` — 1/10 OBPIs landed."},
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertEqual(len(advisement.transcribed_count_lines), 1)
+        reported = advisement.transcribed_count_lines[0]
+        # Assert what the number MEANS, not what one run produced: it indexes the
+        # offending line of the document. A literal would pass just as well if the
+        # scanner reported a section-relative offset, which points at nothing.
+        lines = handoff.read_text(encoding="utf-8").splitlines()
+        self.assertIn("1/10", lines[reported - 1])
+        self.assertIn("ADR-0.35.0-slug", lines[reported - 1])
+        # The rendered warning must carry the same locator it found.
+        self.assertIn(str(reported), advisement.text)
+        self.assertIn("transcribed", advisement.text.lower())
+        self.assertIn("gz adr status", advisement.text)
+
+    def test_the_warning_never_blocks_the_advisement(self) -> None:
+        root = self._root()
+        self._seed(
+            root,
+            sections={"Immediate Next Steps": "1. Resume `ADR-0.35.0-slug` — 1/10 OBPIs landed."},
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertTrue(advisement.present)
+        self.assertIn("Resume `ADR-0.35.0-slug`", advisement.text)
+
+    def test_a_count_under_a_historical_section_is_not_warned_about(self) -> None:
+        root = self._root()
+        self._seed(
+            root,
+            sections={
+                "Current State Summary": "Measured at 1/10 OBPIs landed for `ADR-0.35.0-slug`.",
+                "Immediate Next Steps": "1. Work the queue.",
+            },
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertEqual(advisement.transcribed_count_lines, ())
+        self.assertNotIn("transcribed", advisement.text.lower())
+
+    def test_the_warning_survives_truncation_that_clips_the_step_list(self) -> None:
+        root = self._root()
+        bulk = "\n".join(f"{i}. Step {i} " + "x" * 200 for i in range(2, 60))
+        self._seed(
+            root,
+            sections={
+                "Immediate Next Steps": (
+                    "1. Resume `ADR-0.35.0-slug` — 1/10 OBPIs landed.\n" + bulk
+                )
+            },
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertTrue(advisement.truncated)
+        self.assertIn("transcribed", advisement.text.lower())
+
+    def test_an_absent_registry_yields_no_warning_and_no_exception(self) -> None:
+        root = self._root(registry=False)
+        self._seed(
+            root,
+            sections={"Immediate Next Steps": "1. Resume `ADR-0.35.0-slug` — 1/10 OBPIs landed."},
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertTrue(advisement.present)
+        self.assertEqual(advisement.transcribed_count_lines, ())
+
+    def test_a_malformed_registry_yields_no_warning_and_no_exception(self) -> None:
+        root = self._root(registry={"newest_handoff": "not-a-mapping"})
+        self._seed(
+            root,
+            sections={"Immediate Next Steps": "1. Resume `ADR-0.35.0-slug` — 1/10 OBPIs landed."},
+        )
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertTrue(advisement.present)
+        self.assertEqual(advisement.transcribed_count_lines, ())
