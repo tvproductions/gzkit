@@ -6,8 +6,11 @@ Unittest-only policy enforcement: scan for pytest usage and reject it.
 from __future__ import annotations
 
 import re
+import sys
 from collections.abc import Iterable
 from pathlib import Path
+
+from gzkit.mx import levels as _mx_levels
 
 EXCLUDE_DIRS = {
     ".git",
@@ -406,28 +409,94 @@ def _run_enforcement_floor(root: Path) -> int:
     return 0
 
 
+# ---------------------------------------------------------------------------
+# MX checkpoint seam for the pre-commit enforcement surface (GHI #843)
+# ---------------------------------------------------------------------------
+#
+# ADR-0.0.74 Boundary Invariant #2: "Every fail-closed funnel/guard resolves its
+# effective GZ_<LEVEL> by passing through the shared checkpoint ... a guard that
+# decides its own severity OR its own disposition without the checkpoint is the
+# named coverage defect."
+#
+# Every guard below did exactly that -- a bare `return 1` -- so an open hangar
+# had no authority over the pre-commit surface at all, one of the two surfaces
+# governance is enforced on. `gz mx --help` advertises the hangar so "the
+# operator can repair governance itself", and its own worked example is
+# `gz mx enter --reason "repair ledger"`.
+#
+# ONE inventory, ONE seam -- the shape OBPI-0.0.74-20 established for the ~30
+# `gz check` steps in src/gzkit/commands/quality.py, not N inline substitutions.
+#
+# Floor membership is expressed two ways, both borrowed rather than invented:
+#
+#   * by NAME -- `ledger` and `gate5-attestation` are literal GATE5_INVARIANTS
+#     members, so checkpoint.resolve pins them CRITICAL in and out of the hangar
+#     (BI#3). A hangar-open ledger hand-repair is therefore STILL refused, by
+#     design: the governed route for that is an append-only corrective-action
+#     primitive (GHI #611), never a demoted integrity guard.
+#   * by LEVEL -- a guard that must never demote but is not a floor member emits
+#     CRITICAL, exactly as quality.py pins "Enforcement floor" after GHI #651.
+#     `post-authoring-src-commits` is pinned here to PRESERVE today's behaviour
+#     rather than to rule on it; whether the hangar should be able to demote the
+#     Stage-2 production-code fence is an operator call, disclosed on GHI #843.
+#
+# Entries are (mx guard name, module attribute, emitted level). The attribute
+# indirection keeps this tuple the single source of truth: `run_guards` never
+# names a guard, so one added without an entry is unreachable rather than
+# silently unchecked -- the inventory gap that produced this defect.
+_GUARD_META: tuple[tuple[str, str, int], ...] = (
+    ("forbid-pytest", "forbid_pytest", _mx_levels.ERROR),
+    ("ledger", "forbid_manual_ledger_edits", _mx_levels.ERROR),
+    ("skill-sync-drift", "forbid_skill_sync_drift", _mx_levels.ERROR),
+    ("post-authoring-src-commits", "forbid_post_authoring_src_commits", _mx_levels.CRITICAL),
+    ("gate5-attestation", "forbid_unattested_obpi_completion_commits", _mx_levels.ERROR),
+    ("enforcement-floor", "_run_enforcement_floor", _mx_levels.CRITICAL),
+)
+
+
+def _guard_grounds(guard_name: str, emitted_level: int, root: Path) -> bool:
+    """Return True when *guard_name*'s finding must block the commit.
+
+    Fails CLOSED. A broken or half-repaired ``gzkit.mx`` is precisely the state
+    MX mode exists to survive, so an unresolvable checkpoint blocks the commit
+    rather than silently demoting the guard that could not be resolved.
+    """
+    try:
+        from gzkit.mx import checkpoint, disposition  # noqa: PLC0415
+
+        return disposition.grounds(checkpoint.resolve(guard_name, emitted_level, root))
+    except Exception:  # noqa: BLE001 - an unreadable checkpoint must never demote a guard
+        return True
+
+
+def run_guards(root: Path) -> int:
+    """Run every registered pre-commit guard through the shared MX checkpoint.
+
+    Returns the first grounding guard's exit code, or 0 when every guard either
+    passed or resolved to advisory under an open hangar marker.
+
+    A demoted finding is ANNOUNCED, never discarded. Collecting findings and
+    dropping them with nothing said is the complaint recorded on GHI #843
+    itself: an operator otherwise cannot tell a clean run from a hangar run.
+    """
+    module = sys.modules[__name__]
+    for guard_name, attr, emitted_level in _GUARD_META:
+        rc = getattr(module, attr)(root)
+        if not rc:
+            continue
+        if _guard_grounds(guard_name, emitted_level, root):
+            return rc
+        _safe_print(
+            f"[MX advisory] guard '{guard_name}' reported a violation and was demoted "
+            "to advisory by the open Maintenance Hangar marker (.gzkit/mx.json). "
+            "It is NOT waived -- `gz mx exit` re-runs every guard at full strength."
+        )
+    return 0
+
+
 def main() -> int:
     """Entry point for command-line usage."""
-    root = Path.cwd()
-    rc = forbid_pytest(root)
-    if rc:
-        return rc
-    rc = forbid_manual_ledger_edits(root)
-    if rc:
-        return rc
-    rc = forbid_skill_sync_drift(root)
-    if rc:
-        return rc
-    rc = forbid_post_authoring_src_commits(root)
-    if rc:
-        return rc
-    rc = forbid_unattested_obpi_completion_commits(root)
-    if rc:
-        return rc
-    rc = _run_enforcement_floor(root)
-    if rc:
-        return rc
-    return 0
+    return run_guards(Path.cwd())
 
 
 if __name__ == "__main__":

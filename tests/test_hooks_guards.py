@@ -308,3 +308,149 @@ class TestMain(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestMxCheckpointSeam(unittest.TestCase):
+    """The pre-commit enforcement surface resolves every guard through the shared checkpoint.
+
+    Backs the GHI #843 direct fix. ADR-0.0.74 Boundary Invariant #2 states that
+    *every* fail-closed funnel resolves its effective level through the shared MX
+    checkpoint, and that "a guard that decides its own severity OR its own
+    disposition without the checkpoint is the named coverage defect". The
+    pre-commit guards did exactly that, so the hangar had no authority over one of
+    the two enforcement surfaces governance uses.
+
+    Semantics asserted (not strings): non-floor guards stop blocking inside the
+    hangar, gate5_invariants members keep blocking there, nothing demotes outside
+    it, an unreadable checkpoint fails closed, and the inventory cannot be
+    forgotten by the next guard author.
+    """
+
+    @staticmethod
+    def _hangar(td: str) -> Path:
+        """Return a project root carrying an active MX marker."""
+        root = Path(td)
+        (root / ".gzkit").mkdir(parents=True, exist_ok=True)
+        (root / ".gzkit" / "mx.json").write_text('{"session_id": "test-session"}', encoding="utf-8")
+        return root
+
+    def _sweep(self, root: Path, failing: str) -> tuple[int, str]:
+        """Run the guard sweep with exactly *failing* returning 1 and the rest 0."""
+        with contextlib.ExitStack() as stack:
+            for _, attr, _ in guards._GUARD_META:
+                stack.enter_context(
+                    mock.patch.object(guards, attr, return_value=1 if attr == failing else 0)
+                )
+            buf = io.StringIO()
+            with contextlib.redirect_stdout(buf):
+                code = guards.run_guards(root)
+        return code, buf.getvalue()
+
+    def test_non_floor_guard_demotes_inside_the_hangar(self) -> None:
+        """A non-floor guard's violation stops blocking once the hangar is open."""
+        with tempfile.TemporaryDirectory() as td:
+            code, _ = self._sweep(self._hangar(td), "forbid_pytest")
+        self.assertEqual(code, 0, "a non-floor pre-commit guard must demote under the marker")
+
+    def test_demotion_is_announced_rather_than_silent(self) -> None:
+        """A demoted guard stays visible — advisory means non-grounding, never discarded.
+
+        The failure this pins is the one recorded on GHI #843 itself: findings
+        collected and then dropped with nothing said, so an operator cannot tell a
+        clean run from a demoted one.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            _, out = self._sweep(self._hangar(td), "forbid_pytest")
+        self.assertIn("forbid-pytest", out)
+        self.assertIn("advisory", out.lower())
+
+    def test_ledger_guard_pins_inside_the_hangar(self) -> None:
+        """`ledger` is a gate5_invariants member — the hangar can never demote it."""
+        with tempfile.TemporaryDirectory() as td:
+            code, _ = self._sweep(self._hangar(td), "forbid_manual_ledger_edits")
+        self.assertEqual(code, 1, "the ledger floor member must keep blocking in the hangar")
+
+    def test_gate5_attestation_guard_pins_inside_the_hangar(self) -> None:
+        """An unattested OBPI completion is faked Gate-5 — never advisory (AGENTS.md Never #1)."""
+        with tempfile.TemporaryDirectory() as td:
+            code, _ = self._sweep(self._hangar(td), "forbid_unattested_obpi_completion_commits")
+        self.assertEqual(code, 1, "the gate5-attestation floor member must keep blocking")
+
+    def test_critical_guards_pin_inside_the_hangar(self) -> None:
+        """Guards emitting CRITICAL pin by level, the `enforcement-floor` precedent (GHI #651)."""
+        from gzkit.mx import levels as mx_levels
+
+        criticals = [attr for _, attr, level in guards._GUARD_META if level == mx_levels.CRITICAL]
+        self.assertTrue(criticals, "at least one guard must pin by emitted CRITICAL level")
+        with tempfile.TemporaryDirectory() as td:
+            root = self._hangar(td)
+            for attr in criticals:
+                with self.subTest(guard=attr):
+                    code, _ = self._sweep(root, attr)
+                    self.assertEqual(code, 1, f"{attr} emits CRITICAL and must never demote")
+
+    def test_nothing_demotes_outside_the_hangar(self) -> None:
+        """Outside the marker every registered guard still blocks — demotion cannot leak."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / ".gzkit").mkdir(parents=True, exist_ok=True)
+            for _, attr, _ in guards._GUARD_META:
+                with self.subTest(guard=attr):
+                    code, _ = self._sweep(root, attr)
+                    self.assertEqual(code, 1, f"{attr} must block with no marker present")
+
+    def test_unreadable_checkpoint_fails_closed(self) -> None:
+        """If the checkpoint cannot be resolved the guard blocks — never silently demotes."""
+        from gzkit.mx import checkpoint
+
+        with tempfile.TemporaryDirectory() as td:
+            root = self._hangar(td)
+            with mock.patch.object(checkpoint, "resolve", side_effect=RuntimeError("boom")):
+                code, _ = self._sweep(root, "forbid_pytest")
+        self.assertEqual(code, 1, "an unresolvable checkpoint must fail closed, not demote")
+
+    def test_every_forbid_guard_is_registered_in_the_inventory(self) -> None:
+        """The funnel inventory cannot be forgotten — this is the fence GHI #843 lacked.
+
+        ADR-0.0.74 Negative #6 named the cost up front: "every fail-closed funnel
+        must consult the checkpoint; a funnel that forgets it silently stays hard".
+        The inventory fence that shipped enumerated `validate_cmd` only, so the
+        pre-commit surface was never in scope of any check.
+        """
+        forbid_fns = {
+            name
+            for name in dir(guards)
+            if name.startswith("forbid_") and callable(getattr(guards, name))
+        }
+        registered = {attr for _, attr, _ in guards._GUARD_META}
+        self.assertEqual(
+            forbid_fns - registered,
+            set(),
+            "every forbid_* guard must be registered in _GUARD_META with an MX guard name",
+        )
+
+    def test_run_guards_holds_exactly_one_seam(self) -> None:
+        """No guard is invoked directly — the loop over the inventory is the only call site.
+
+        REQ-0.0.74-20-01's shape: ONE seam, not N inline substitutions. A direct
+        call inside `run_guards` would bypass the checkpoint the same way the
+        pre-checkpoint `main()` did.
+        """
+        import ast
+
+        source = Path(guards.__file__).read_text(encoding="utf-8")
+        fn = next(
+            node
+            for node in ast.walk(ast.parse(source))
+            if isinstance(node, ast.FunctionDef) and node.name == "run_guards"
+        )
+        direct = [
+            node.func.id
+            for node in ast.walk(fn)
+            if isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id.startswith("forbid_")
+        ]
+        self.assertEqual(
+            direct, [], "guards must be reached through _GUARD_META, not called directly"
+        )
