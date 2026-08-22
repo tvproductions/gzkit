@@ -1514,6 +1514,29 @@ def _print_success(
 # ---------------------------------------------------------------------------
 
 
+def _append_stamped(ledger: Ledger, event: LedgerEvent) -> None:
+    """Append *event* stamped at the moment of the WRITE, not of construction.
+
+    ``LedgerEvent.ts`` defaults at construction, but the append-only ledger
+    orders rows by ``ts`` at write time -- and a completion builds its rows in a
+    different order than it writes them. The receipt is built before the Step-4b
+    gate so ``--dry-run`` can print it; the adversarial verdict is built after
+    that gate and written ABOVE the receipt (GHI #676); the security-floor
+    override is built earliest of the three and written last. Both pairs emitted
+    a ``ts`` that ran backwards against the row above, and the ledger's own
+    ts-order gate then refused the push, leaving a completed and attested OBPI
+    that no governed route could land (GHI #842).
+
+    Re-stamping HERE rather than reordering the build sites is what makes the fix
+    hold: write order is a property of this one function, so a later refactor
+    that moves a build site cannot re-invert it. Deliberately NOT pushed down
+    into ``Ledger.append`` -- callers such as ``adr_evaluation_event(...,
+    timestamp=result.timestamp)`` supply a historical ``ts`` on purpose, and a
+    blanket re-stamp would clobber those legitimate backfills.
+    """
+    ledger.append(event.model_copy(update={"ts": datetime.now(UTC).isoformat()}))
+
+
 def _emit_security_floor_override_best_effort(
     ledger: Ledger,
     event: LedgerEvent | None,
@@ -1531,7 +1554,7 @@ def _emit_security_floor_override_best_effort(
     if event is None:
         return
     try:
-        ledger.append(event)
+        _append_stamped(ledger, event)
     except (OSError, ValueError):
         # The warning path must itself be non-throwing (a console backed by a
         # closed stream raises ValueError) — Step-4b round 4, Codex.
@@ -1574,10 +1597,12 @@ def _execute_transaction(
 
         # Phase 3: Emit receipt to main ledger. The Step-4b verdict lands FIRST
         # (GHI #676) so a completion receipt can never exist in the ledger without
-        # the adversarial finding that gated it.
+        # the adversarial finding that gated it. Both rows are stamped at the
+        # append so ts order follows write order rather than build order — the
+        # verdict is BUILT after the receipt and written above it (GHI #842).
         if adversarial_event is not None:
-            ledger.append(adversarial_event)
-        ledger.append(receipt_event)
+            _append_stamped(ledger, adversarial_event)
+        _append_stamped(ledger, receipt_event)
 
         # Phase 4: Auto-complete in_progress TASKs tied to this OBPI
         # (GHI #552 layer 4 — TASK auto-coordination at completion).
