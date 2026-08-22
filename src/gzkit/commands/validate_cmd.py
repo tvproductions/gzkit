@@ -2,7 +2,6 @@
 
 import json
 import os
-import re
 from collections.abc import Callable
 from functools import partial
 from pathlib import Path
@@ -22,6 +21,7 @@ from gzkit.commands.validate_commit_trailers import (
     _validate_commit_trailers,
     _validate_eval_feedback_trailer,
 )
+from gzkit.commands.validate_decomposition import validate_decomposition
 from gzkit.commands.validate_frontmatter import (
     _render_frontmatter_explain,
     validate_frontmatter_coherence,
@@ -42,13 +42,11 @@ from gzkit.models.exemplar import ExemplarCorpus
 from gzkit.mx import levels as _mx_levels
 from gzkit.validate import (
     ValidationError,
-    parse_frontmatter,
     validate_document,
     validate_ledger,
     validate_manifest,
     validate_surfaces,
 )
-from gzkit.validate_pkg.document import is_adr_shape_grandfathered, is_pool_adr_path
 
 
 class _ScopeEntry(NamedTuple):
@@ -66,19 +64,7 @@ class _ScopeEntry(NamedTuple):
     tier: str  # "default" (no-flag `gz check`) | "explicit" (flag-gated)
     in_other_scopes: bool  # counts toward validate()'s _other_scopes_active predicate
     run: Callable[[Path, str | None], list[ValidationError]]
-    # Severity this scope emits its drift at, resolved through the ONE leveled
-    # severity authority (``gzkit.mx.checkpoint``, ADR-0.0.74 BI#2). ERROR is the
-    # right default — an ordinary scope demotes to advisory inside an open hangar,
-    # which is the repair mode the hangar exists to provide. CRITICAL pins a scope
-    # so it never demotes, the same by-LEVEL lever ``guards.py`` uses for
-    # ``post-authoring-src-commits`` and ``quality.py`` for "Enforcement floor".
-    #
-    # This field exists because it did not, and its absence was GHI #852: every
-    # scope was resolved at a hardcoded ERROR, so a scope enforcing a floor
-    # concern under a non-floor NAME had no way to say "I never demote" short of
-    # renaming itself into ``GATE5_INVARIANTS`` — the narrower-proxy binding
-    # ADR-0.0.74 § Consequences/Negative #7 forbids.
-    level: int = _mx_levels.ERROR
+    level: int = _mx_levels.ERROR  # ERROR demotes in an open hangar; CRITICAL pins (#852)
 
 
 def _delivery_arm_enabled() -> bool:
@@ -120,91 +106,6 @@ def _validate_tautological_test_audit(project_root: Path) -> list[ValidationErro
     from gzkit.tautological_tests import audit_drift  # noqa: PLC0415
 
     return audit_drift(project_root)
-
-
-def _validate_decomposition(project_root: Path) -> list[ValidationError]:
-    """Validate ADR decomposition scorecards and checklist-to-brief alignment."""
-    from gzkit.core.scoring import (  # noqa: PLC0415
-        active_checklist_items,
-        parse_checklist_items,
-        parse_scorecard,
-    )
-
-    adr_root = project_root / "docs" / "design" / "adr"
-    if not adr_root.is_dir():
-        return []
-
-    errors: list[ValidationError] = []
-    for adr_md in sorted(adr_root.rglob("ADR-*.md")):
-        if adr_md.name.startswith("ADR-CLOSEOUT") or is_pool_adr_path(adr_md):
-            continue
-        # Only check ADR intent documents (not briefs/audit files)
-        if "obpis" in adr_md.parts or "briefs" in adr_md.parts or "audit" in adr_md.parts:
-            continue
-
-        content = adr_md.read_text(encoding="utf-8")
-        frontmatter, body = parse_frontmatter(content)
-        if frontmatter and is_adr_shape_grandfathered(frontmatter):
-            continue
-
-        scorecard, scorecard_errors = parse_scorecard(body)
-        checklist_items = parse_checklist_items(body)
-
-        if not checklist_items:
-            continue  # ADR has no checklist — skip
-
-        if scorecard_errors:
-            for err in scorecard_errors:
-                errors.append(
-                    ValidationError(
-                        type="decomposition",
-                        artifact=adr_md.relative_to(project_root).as_posix(),
-                        message=err,
-                    )
-                )
-            continue
-
-        if scorecard is None:
-            continue
-
-        live_items = active_checklist_items(checklist_items)
-        if len(live_items) != scorecard.final_target_obpi_count:
-            errors.append(
-                ValidationError(
-                    type="decomposition",
-                    artifact=adr_md.relative_to(project_root).as_posix(),
-                    message=(
-                        "Checklist count must match scorecard final target "
-                        "(does not match): "
-                        f"active={len(live_items)} "
-                        f"target={scorecard.final_target_obpi_count}; "
-                        f"total checklist rows including withdrawn history: {len(checklist_items)}."
-                    ),
-                )
-            )
-
-        # Check that OBPI brief files exist for each checklist item
-        adr_dir = adr_md.parent
-        obpis_dir = adr_dir / "obpis"
-        briefs_dir = adr_dir / "briefs"
-        # Extract ADR version from filename
-        match = re.match(r"ADR-([\d.]+)", adr_md.stem)
-        if match:
-            version = match.group(1)
-            existing_briefs = list(obpis_dir.glob(f"OBPI-{version}-*.md"))
-            existing_briefs.extend(briefs_dir.glob(f"OBPI-{version}-*.md"))
-            if checklist_items and not existing_briefs:
-                errors.append(
-                    ValidationError(
-                        type="decomposition",
-                        artifact=adr_md.relative_to(project_root).as_posix(),
-                        message=(
-                            f"Checklist has {len(checklist_items)} items but no OBPI briefs found."
-                        ),
-                    )
-                )
-
-    return errors
 
 
 def _collect_errors(
@@ -272,7 +173,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "invariant_coherence", "default", False, lambda r, _f: _invariant_coherence_runner(r)
     ),
     _ScopeEntry("interviews", "explicit", True, lambda r, _f: _validate_interviews(r)),
-    _ScopeEntry("decomposition", "explicit", True, lambda r, _f: _validate_decomposition(r)),
+    _ScopeEntry("decomposition", "explicit", True, lambda r, _f: validate_decomposition(r)),
     _ScopeEntry("requirements", "explicit", True, lambda r, _f: _validate_requirements(r)),
     _ScopeEntry(
         "commit_trailers",
@@ -292,19 +193,8 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)
     ),
-    # CRITICAL, not ERROR: this scope enforces `operator-pii`, a GATE5_INVARIANTS
-    # member, at the moment the address is stamped into a repo-bound artifact.
-    # Pinned by LEVEL rather than registered under the floor NAME because an
-    # email-suffix check is narrower than the operator-PII prohibition it serves
-    # (which also covers trailers, file content, attestation text and the ledger),
-    # and binding a narrower proxy to a floor member is forbidden by ADR-0.0.74
-    # § Consequences/Negative #7. GHI #852.
-    _ScopeEntry(
-        "authorship",
-        "explicit",
-        True,
-        lambda r, _f: _ta().audit_authorship(r),
-        _mx_levels.CRITICAL,
+    _ScopeEntry(  # CRITICAL: `operator-pii` floor, pinned by LEVEL not NAME (GHI #852)
+        "authorship", "explicit", True, lambda r, _f: _ta().audit_authorship(r), _mx_levels.CRITICAL
     ),
     _ScopeEntry(
         "python_version_pins",
@@ -927,22 +817,13 @@ def _run_scope_checks(
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
-    from gzkit.mx import checkpoint, disposition  # noqa: PLC0415
+    from gzkit.mx import checkpoint  # noqa: PLC0415
 
     scope_levels = {e.stem: e.level for e in VALIDATOR_REGISTRY}
 
     def _grounds(scope: str) -> bool:
-        # Each scope emits its drift at the level IT declares — never a hardcoded
-        # one — and routes through the one leveled severity authority (parent
-        # ADR-0.0.74 BI#2); fail-closed iff grounding. Reading the level from the
-        # registry is what lets a scope enforcing a floor concern pin itself
-        # without renaming into GATE5_INVARIANTS (GHI #852). An unregistered scope
-        # falls back to CRITICAL rather than ERROR: a name nothing declares is a
-        # name nothing vouched for, and the safe reading of "I do not know this
-        # guard" is that it must not be quietly demoted.
-        return disposition.grounds(
-            checkpoint.resolve(scope, scope_levels.get(scope, _mx_levels.CRITICAL), project_root)
-        )
+        # Unregistered scope -> CRITICAL: a name nothing declares, nothing vouched for.
+        return checkpoint.blocks(scope, scope_levels.get(scope, _mx_levels.CRITICAL), project_root)
 
     errors: list[ValidationError] = []
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
