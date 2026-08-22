@@ -902,7 +902,13 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
         persona_body = (
             "# Implementer Persona\n\n## Behavioral Anchors\n\n- **Methodical**: Follow the plan."
         )
-        prompt = compose_implementer_prompt(task, brief_requirements=[], extra_context=persona_body)
+        prompt = compose_implementer_prompt(
+            task,
+            brief_requirements=[],
+            extra_context=persona_body,
+            why="Persona threading regression",
+            project_root=Path("/nonexistent-project-root"),
+        )
         self.assertIn("### Additional Context", prompt)
         self.assertIn("Implementer Persona", prompt)
         self.assertIn("Methodical", prompt)
@@ -951,7 +957,12 @@ class TestPersonaPipelineIntegration(unittest.TestCase):
             model="haiku",
         )
         persona_body = "# Implementer Persona\n\nI plan before I write."
-        prompt = compose_implementer_prompt(task, brief_requirements=[])
+        prompt = compose_implementer_prompt(
+            task,
+            brief_requirements=[],
+            why="Persona threading regression",
+            project_root=Path("/nonexistent-project-root"),
+        )
         final = prepend_persona_to_prompt(persona_body, prompt)
 
         self.assertTrue(final.startswith("# Implementer Persona"))

@@ -6,7 +6,11 @@ result parsing, dispatch state management, and edge cases.
 
 from __future__ import annotations
 
+import json
+import shutil
+import tempfile
 import unittest
+from pathlib import Path
 
 from gzkit.pipeline_runtime import (
     DISPATCH_MODEL_MAP,
@@ -20,6 +24,8 @@ from gzkit.pipeline_runtime import (
     advance_dispatch,
     classify_task_complexity,
     compose_implementer_prompt,
+    compose_quality_review_prompt,
+    compose_spec_review_prompt,
     create_dispatch_state,
     extract_plan_tasks,
     handle_task_result,
@@ -35,6 +41,11 @@ from gzkit.traceability import covers
 # ---------------------------------------------------------------------------
 # Task complexity classification
 # ---------------------------------------------------------------------------
+
+
+# A project root with no personas: keeps these structural assertions focused on
+# the task fields rather than on injected persona text (GHI #861).
+_NO_PERSONA_ROOT = Path("/nonexistent-project-root")
 
 
 class TestClassifyTaskComplexity(unittest.TestCase):
@@ -144,39 +155,75 @@ class TestComposeImplementerPrompt(unittest.TestCase):
     @covers("REQ-0.14.0-06-04")
     def test_contains_task_heading(self):
         task = self._make_task()
-        prompt = compose_implementer_prompt(task, [])
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("## Task 1: Add feature X", prompt)
 
     def test_contains_allowed_files(self):
         task = self._make_task(allowed_paths=["src/a.py", "src/b.py"])
-        prompt = compose_implementer_prompt(task, [])
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("`src/a.py`", prompt)
         self.assertIn("`src/b.py`", prompt)
 
     def test_contains_test_expectations(self):
         task = self._make_task(test_expectations=["test_x passes", "test_y passes"])
-        prompt = compose_implementer_prompt(task, [])
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("test_x passes", prompt)
 
     def test_contains_brief_requirements(self):
         task = self._make_task()
-        prompt = compose_implementer_prompt(task, ["REQ-01: Must validate input"])
+        prompt = compose_implementer_prompt(
+            task,
+            ["REQ-01: Must validate input"],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("REQ-01: Must validate input", prompt)
 
     def test_contains_rules_section(self):
         task = self._make_task()
-        prompt = compose_implementer_prompt(task, [])
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("### Rules", prompt)
         self.assertIn("Return a JSON result block", prompt)
 
     def test_extra_context_included(self):
         task = self._make_task()
-        prompt = compose_implementer_prompt(task, [], extra_context="Prior task changed X")
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            extra_context="Prior task changed X",
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("Prior task changed X", prompt)
 
     def test_no_extra_context_section_when_empty(self):
         task = self._make_task()
-        prompt = compose_implementer_prompt(task, [])
+        prompt = compose_implementer_prompt(
+            task,
+            [],
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertNotIn("### Additional Context", prompt)
 
 
@@ -440,7 +487,12 @@ class TestStage2DispatchLoopContract(unittest.TestCase):
 
         # Each task can produce a scoped prompt with brief requirements
         for rec in state.records:
-            prompt = compose_implementer_prompt(rec.task, reqs)
+            prompt = compose_implementer_prompt(
+                rec.task,
+                reqs,
+                why="Structural test of the dispatch prompt shape",
+                project_root=_NO_PERSONA_ROOT,
+            )
             self.assertIn("Allowed Files", prompt)
             self.assertIn("src/config.py", prompt)
             self.assertIn("Brief Requirements", prompt)
@@ -592,7 +644,13 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
         reqs = ["Config MUST parse TOML", "Validation MUST reject nulls"]
         files_changed = ["src/a.py", "tests/test_a.py"]
 
-        prompt = compose_spec_review_prompt(task, reqs, files_changed)
+        prompt = compose_spec_review_prompt(
+            task,
+            reqs,
+            files_changed,
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("Add validation", prompt)
         self.assertIn("src/a.py", prompt)
         self.assertIn("tests/test_a.py", prompt)
@@ -607,11 +665,16 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
         files_changed = ["src/config.py"]
         test_files = ["tests/test_config.py"]
 
-        prompt = compose_quality_review_prompt(files_changed, test_files)
+        prompt = compose_quality_review_prompt(
+            files_changed,
+            test_files,
+            why="Structural test of the dispatch prompt shape",
+            project_root=_NO_PERSONA_ROOT,
+        )
         self.assertIn("src/config.py", prompt)
         self.assertIn("tests/test_config.py", prompt)
         self.assertIn("SOLID principles", prompt)
-        self.assertIn("Size limits", prompt)
+        self.assertIn(".gzkit/rules/complexity-thresholds.json", prompt)
 
     def test_review_model_never_haiku(self):
         """Reviews always use sonnet or opus, never haiku."""
@@ -735,10 +798,17 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
 
             # Compose review prompts
             spec_prompt = compose_spec_review_prompt(
-                state.records[i].task, reqs, impl_result.files_changed
+                state.records[i].task,
+                reqs,
+                impl_result.files_changed,
+                why="Structural test of the dispatch prompt shape",
+                project_root=_NO_PERSONA_ROOT,
             )
             quality_prompt = compose_quality_review_prompt(
-                impl_result.files_changed, impl_result.tests_added
+                impl_result.files_changed,
+                impl_result.tests_added,
+                why="Structural test of the dispatch prompt shape",
+                project_root=_NO_PERSONA_ROOT,
             )
             self.assertIn("Add model" if i == 0 else "Add tests", spec_prompt)
             self.assertIn("src/m.py", quality_prompt)
@@ -1038,6 +1108,189 @@ class TestStage3VerificationDispatchContract(unittest.TestCase):
         plan = prepare_stage3_verification(brief)
         # No test paths → sequential
         self.assertTrue(should_fallback_to_sequential(plan))
+
+
+class TestDispatchPromptsCarryTheContract(unittest.TestCase):
+    """Dispatch prompts must carry what the acting subagent cannot otherwise see.
+
+    A dispatched subagent has none of this session's context: no conversation
+    history, no already-read files, and no reliable inheritance of the agent
+    contract. Whatever the composer omits, the agent never learns. These tests
+    pin the three things AGENTS.md and ADR-0.0.11 require every dispatch frame
+    to carry, and pin the thresholds to their JSON authority rather than to
+    literals restated in the prompt (GHI #861).
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        personas = self.root / ".gzkit" / "personas"
+        personas.mkdir(parents=True)
+        (personas / "implementer.md").write_text(
+            "---\nname: implementer\ntraits:\n  - methodical\n"
+            "anti-traits:\n  - vibe-coding\ngrounding: I write the test first.\n---\n\n"
+            "I work test-first and my edits land as complete units.\n",
+            encoding="utf-8",
+        )
+        (personas / "spec-reviewer.md").write_text(
+            "---\nname: spec-reviewer\ntraits:\n  - skepticism\n"
+            "anti-traits:\n  - optimistic-bias\n"
+            "grounding: I verify against the REQ.\n---\n\n"
+            "I assume nothing the implementer claims until I have read the code.\n",
+            encoding="utf-8",
+        )
+        (personas / "quality-reviewer.md").write_text(
+            "---\nname: quality-reviewer\ntraits:\n  - architectural-rigor\n"
+            "anti-traits:\n  - taste-driven-nitpicking\n"
+            "grounding: I judge against declared bands.\n---\n\n"
+            "I judge structure against the project's declared thresholds.\n",
+            encoding="utf-8",
+        )
+        rules = self.root / ".gzkit" / "rules"
+        rules.mkdir(parents=True)
+        shutil.copy(
+            Path(".gzkit/rules/complexity-thresholds.json"),
+            rules / "complexity-thresholds.json",
+        )
+        self.addCleanup(self._tmp.cleanup)
+
+    def _task(self) -> DispatchTask:
+        return DispatchTask(
+            task_id=1,
+            description="Add feature X",
+            allowed_paths=["src/gzkit/example.py"],
+            test_expectations=["test_feature_x passes"],
+            complexity=TaskComplexity.SIMPLE,
+            model="haiku",
+        )
+
+    # -- persona: ADR-0.0.11, AGENTS.md § Persona -------------------------
+
+    def test_implementer_prompt_carries_its_persona_frame(self):
+        """The dispatched implementer receives its behavioral identity frame.
+
+        AGENTS.md § Persona: "Every agent frame MUST include a Persona."
+        Without this the subagent runs as a generic assistant.
+        """
+        prompt = compose_implementer_prompt(
+            self._task(), [], why="Land REQ-01", project_root=self.root
+        )
+        self.assertIn("I work test-first", prompt)
+
+    def test_review_prompts_carry_their_persona_frames(self):
+        """Both reviewers receive their own frame, not the implementer's.
+
+        The reviewers' value is that they hold a different stance from the
+        agent that wrote the code; a shared or absent frame collapses that.
+        """
+        spec = compose_spec_review_prompt(
+            self._task(), [], ["src/gzkit/example.py"], why="Verify REQ-01", project_root=self.root
+        )
+        quality = compose_quality_review_prompt(
+            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+        )
+        self.assertIn("I assume nothing the implementer claims", spec)
+        self.assertIn("I judge structure against", quality)
+        self.assertNotIn("I work test-first", spec)
+
+    # -- Why: AGENTS.md § Behavior Rules — Always #6 ----------------------
+
+    def test_every_composer_requires_and_emits_a_why(self):
+        """AGENTS.md Always #6 makes Why unconditional, so it is not optional here.
+
+        Omitting it must be a TypeError, not a silently thinner prompt --
+        an optional Why is a rule declared without a mechanism.
+        """
+        why = "Task 3 of 5; the caller needs the parser split before it can land"
+        for prompt in (
+            compose_implementer_prompt(self._task(), [], why=why, project_root=self.root),
+            compose_spec_review_prompt(self._task(), [], ["a.py"], why=why, project_root=self.root),
+            compose_quality_review_prompt(["a.py"], [], why=why, project_root=self.root),
+        ):
+            self.assertIn(why, prompt)
+
+        with self.assertRaises(TypeError):
+            compose_implementer_prompt(self._task(), [], project_root=self.root)  # ty: ignore[missing-argument]
+
+    # -- RGR discipline: .claude/agents/implementer.md § Rules 2 ----------
+
+    def test_implementer_prompt_states_the_red_witness_not_just_tdd(self):
+        """The prompt must reach the agent with the falsifiability channel named.
+
+        `.claude/agents/implementer.md` requires a witnessed RED via
+        `gz arb red`, because a test authored after the code and passing on
+        its first run is byte-indistinguishable from a RED-first test. A
+        prompt saying only "write tests" cannot produce that receipt.
+        """
+        prompt = compose_implementer_prompt(
+            self._task(), [], why="Land REQ-01", project_root=self.root
+        )
+        self.assertIn("gz arb red", prompt)
+
+    def test_implementer_prompt_does_not_license_test_after_code(self):
+        """ "or alongside" permits the shape the red witness exists to catch."""
+        prompt = compose_implementer_prompt(
+            self._task(), [], why="Land REQ-01", project_root=self.root
+        )
+        self.assertNotIn("before or alongside", prompt)
+
+    # -- thresholds: governance-core.md § Non-negotiable rules ------------
+
+    def test_quality_prompt_cites_the_threshold_authority(self):
+        """Prose must point at the JSON that binds, never restate its values.
+
+        governance-core.md: "Execution reads thresholds ... from JSON or code
+        -- never from prose. ... Cite the authority, not the value."
+        """
+        prompt = compose_quality_review_prompt(
+            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+        )
+        self.assertIn(".gzkit/rules/complexity-thresholds.json", prompt)
+
+    def test_quality_prompt_thresholds_track_the_authority(self):
+        """The emitted band values are read from the table, not hardcoded.
+
+        Rewriting the table must move the prompt. This is what makes the
+        citation load-bearing rather than decorative.
+        """
+        table = self.root / ".gzkit" / "rules" / "complexity-thresholds.json"
+        payload = json.loads(table.read_text(encoding="utf-8"))
+        for band in payload["bands"]:
+            if band["metric"] == "lizard_nloc" and band["trigger_semantic"] == "block":
+                band["absolute_number"] = 4242.0
+        table.write_text(json.dumps(payload), encoding="utf-8")
+
+        prompt = compose_quality_review_prompt(
+            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+        )
+        self.assertIn("4242", prompt)
+
+    def test_quality_prompt_carries_no_unsourced_line_limits(self):
+        """The three literals GHI #861 found are not in the authority.
+
+        `functions <=50 / modules <=600 / classes <=300` appear nowhere in
+        complexity-thresholds.json -- it blocks functions at lizard_nloc 37
+        and modules at radon_raw_nloc 1031.9, and has no class metric at all.
+        """
+        prompt = compose_quality_review_prompt(
+            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+        )
+        self.assertNotIn("modules <=600", prompt)
+        self.assertNotIn("classes <=300", prompt)
+
+    # -- adversary scoping ------------------------------------------------
+
+    def test_quality_prompt_scopes_findings_to_correctness(self):
+        """An unbounded find-problems framing manufactures findings.
+
+        The reviewer must be told which findings block and that the rest are
+        observations, or it keeps escalating until it has something to report.
+        """
+        prompt = compose_quality_review_prompt(
+            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+        )
+        self.assertNotIn("Flag any violations", prompt)
+        self.assertIn("non-blocking", prompt)
 
 
 if __name__ == "__main__":

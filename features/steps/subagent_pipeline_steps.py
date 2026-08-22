@@ -178,7 +178,12 @@ def step_create_task(context, desc, paths_csv):
 
 @when("I compose the implementer prompt")
 def step_compose_prompt(context):
-    context.prompt = compose_implementer_prompt(context.dispatch_task, [])
+    context.prompt = compose_implementer_prompt(
+        context.dispatch_task,
+        [],
+        why="BDD scenario exercising the dispatch prompt shape",
+        project_root=Path("/nonexistent-project-root"),
+    )
 
 
 @then('the prompt contains "{text}"')
@@ -345,7 +350,12 @@ def step_dispatch_all_done(context):
     reqs = getattr(context, "brief_requirements", [])
     for i, rec in enumerate(state.records):
         advance_dispatch(state, i)
-        prompt = compose_implementer_prompt(rec.task, reqs)
+        prompt = compose_implementer_prompt(
+            rec.task,
+            reqs,
+            why="BDD scenario exercising the dispatch prompt shape",
+            project_root=Path("/nonexistent-project-root"),
+        )
         context.prompts.append(prompt)
         result = HandoffResult(
             status=HandoffStatus.DONE, files_changed=["a.py"], tests_added=[], concerns=[]

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-22
 metadata:
-  skill-version: "6.38.0"
+  skill-version: "6.39.0"
 model: sonnet
 ---
 
@@ -275,12 +275,18 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
       - `standard` → `sonnet` (balanced)
       - `complex` → `opus` (most capable)
 
-   c. **Compose implementer prompt** with scoped context:
+   c. **Compose implementer prompt** via `compose_implementer_prompt(task, brief_requirements, why=..., project_root=..., extra_context=...)`:
       - Task description from the plan
       - Allowed files from the brief allowlist
       - Test expectations from the brief
       - Brief requirements (the FAIL-CLOSED list)
-      - Implementer rules from `.claude/agents/implementer.md`
+      - `why` and `project_root` are required keyword arguments (GHI #861). The
+        composer emits the `implementer` persona frame from `project_root` and a
+        `### Why` block from `why` — AGENTS.md § Behavior Rules — Always #6 makes
+        the Why unconditional, so omitting it is a `TypeError`, not a thinner prompt.
+      - The Red-Green-Refactor rules, including the `gz arb red` witness, are
+        emitted by the composer and match `.claude/agents/implementer.md` — do not
+        restate them by hand and do not weaken them
       - **The Red-Green-Refactor discipline above** — instruct the implementer to
         work one behavior per cycle and to report the *verified* red it watched
         (the assertion-level failure message), not merely that it wrote tests.
@@ -314,12 +320,15 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)
          - `complex` → `opus`
 
-      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed)`:
+      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=...)`:
          - Includes the task description, brief requirements, and the diff produced
          - Instructs the reviewer: "The implementer may be optimistic. Verify everything independently."
+         - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)
 
-      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files)`:
-         - Includes changed files, test files, and quality criteria (SOLID, size limits, coverage, etc.)
+      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=...)`:
+         - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)
+         - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)
+         - Findings are scoped: only correctness and stated brief requirements block; style is `minor`/`info` and non-blocking
 
       iv. **Dispatch both reviewers concurrently:**
          ```

@@ -9,9 +9,12 @@ from __future__ import annotations
 import json
 import re
 from enum import StrEnum
+from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.complexity.thresholds import load_threshold_table
+from gzkit.models.persona import load_persona
 from gzkit.roles import (
     HandoffResult,
     HandoffStatus,
@@ -19,6 +22,65 @@ from gzkit.roles import (
     ReviewResult,
     ReviewVerdict,
 )
+
+# Dispatch role -> persona file stem. Defined here rather than in
+# pipeline_runtime because the composers below are the only readers and
+# pipeline_runtime imports from this module (GHI #861).
+ROLE_PERSONA_MAP: dict[str, str] = {
+    "Implementer": "implementer",
+    "Reviewer": "spec-reviewer",
+    "QualityReviewer": "quality-reviewer",
+    "Narrator": "narrator",
+}
+
+THRESHOLD_TABLE_PATH = ".gzkit/rules/complexity-thresholds.json"
+
+
+def _persona_frame(project_root: Path, role: str) -> list[str]:
+    """Return the persona identity frame for *role* as prompt lines.
+
+    A dispatched subagent inherits none of this session's context, so the
+    behavioral frame ADR-0.0.11 makes a first-class control surface reaches
+    it only if the prompt carries it. Returns an empty list when the role
+    has no mapping or the persona file is absent.
+    """
+    stem = ROLE_PERSONA_MAP.get(role)
+    if stem is None:
+        return []
+    body = load_persona(project_root, stem)
+    if not body:
+        return []
+    return ["### Persona", "", body.strip(), ""]
+
+
+def _why_frame(why: str) -> list[str]:
+    """Return the Why block required by AGENTS.md Behavior Rules - Always #6.
+
+    The subagent cannot see why this task exists; without it, it cannot tell
+    signal from noise in the surface it is handed.
+    """
+    return ["### Why", "", why.strip(), ""]
+
+
+def _threshold_criterion(project_root: Path) -> str:
+    """Render the size/complexity criterion from the declared authority.
+
+    Per `.gzkit/rules/governance-core.md` Non-negotiable rules, thresholds are
+    read from JSON, never restated in prose. The band values are rendered from
+    the table so that editing the table moves the prompt.
+    """
+    cite = f"the block bands declared in `{THRESHOLD_TABLE_PATH}`"
+    table_path = project_root / THRESHOLD_TABLE_PATH
+    if not table_path.is_file():
+        return (
+            f"2. **Size and complexity** -- judge against {cite} "
+            "(table not readable from this root)"
+        )
+    table = load_threshold_table(table_path)
+    blocks = [b for b in table.bands if b.trigger_semantic == "block"]
+    rendered = ", ".join(f"{b.metric} {b.absolute_number}" for b in blocks)
+    return f"2. **Size and complexity** -- judge against {cite}: {rendered}"
+
 
 # ---------------------------------------------------------------------------
 # Subagent dispatch: data models (OBPI-0.18.0-02)
@@ -172,15 +234,25 @@ def compose_implementer_prompt(
     task: DispatchTask,
     brief_requirements: list[str],
     *,
+    why: str,
+    project_root: Path,
     extra_context: str = "",
 ) -> str:
     """Build the scoped prompt for an implementer subagent dispatch."""
-    lines = [
-        f"## Task {task.task_id}: {task.description}",
-        "",
-        "### Allowed Files",
-        "",
-    ]
+    lines = _persona_frame(project_root, "Implementer")
+    lines.extend(
+        [
+            f"## Task {task.task_id}: {task.description}",
+            "",
+        ]
+    )
+    lines.extend(_why_frame(why))
+    lines.extend(
+        [
+            "### Allowed Files",
+            "",
+        ]
+    )
     for path in task.allowed_paths:
         lines.append(f"- `{path}`")
     lines.append("")
@@ -210,10 +282,19 @@ def compose_implementer_prompt(
             "### Rules",
             "",
             "1. Only modify files listed in Allowed Files.",
-            "2. Write tests before or alongside implementation (TDD).",
-            "3. Run `uv run ruff check . --fix && uv run ruff format .` after code changes.",
-            "4. Run `uv run -m unittest -q` to verify tests pass.",
-            "5. Return a JSON result block with status, files_changed, tests_added, concerns.",
+            "2. Follow Red-Green-Refactor per behavior increment. Red: write a failing",
+            "   test derived from the brief requirement, run it, confirm it fails for the",
+            "   right reason. Green: the simplest code that passes. Refactor: improve",
+            "   structure with tests green. Repeat per behavior -- do not batch all tests",
+            "   first.",
+            "3. Witness the Red: run `uv run gz arb red --req <REQ-ID> --obpi <OBPI-ID>`.",
+            "   A test authored after the code, passing on its first run, is",
+            "   byte-indistinguishable from a Red-first test without this receipt.",
+            "   Report the assertion-level failure message you observed, not merely",
+            "   that you wrote tests.",
+            "4. Run `uv run ruff check . --fix && uv run ruff format .` after code changes.",
+            "5. Run `uv run -m unittest -q` to verify tests pass.",
+            "6. Return a JSON result block with status, files_changed, tests_added, concerns.",
             "",
         ]
     )
@@ -359,22 +440,33 @@ def compose_spec_review_prompt(
     task: DispatchTask,
     brief_requirements: list[str],
     files_changed: list[str],
+    *,
+    why: str,
+    project_root: Path,
 ) -> str:
     """Build the prompt for the spec compliance reviewer subagent.
 
     The reviewer must independently verify all requirements.
     Output must be a JSON code block in ReviewResult format.
     """
-    lines = [
-        "## Spec Compliance Review",
-        "",
-        "The implementer may be optimistic. Verify everything independently.",
-        "",
-        f"### Task {task.task_id}: {task.description}",
-        "",
-        "### Files Changed",
-        "",
-    ]
+    lines = _persona_frame(project_root, "Reviewer")
+    lines.extend(
+        [
+            "## Spec Compliance Review",
+            "",
+            "The implementer may be optimistic. Verify everything independently.",
+            "",
+        ]
+    )
+    lines.extend(_why_frame(why))
+    lines.extend(
+        [
+            f"### Task {task.task_id}: {task.description}",
+            "",
+            "### Files Changed",
+            "",
+        ]
+    )
     for f in files_changed:
         lines.append(f"- `{f}`")
     lines.append("")
@@ -421,6 +513,9 @@ def compose_spec_review_prompt(
 def compose_quality_review_prompt(
     files_changed: list[str],
     test_files: list[str],
+    *,
+    why: str,
+    project_root: Path,
 ) -> str:
     """Build the prompt for the code quality reviewer subagent.
 
@@ -428,12 +523,20 @@ def compose_quality_review_prompt(
     cross-platform compliance, and Pydantic conventions.
     Output must be a JSON code block in ReviewResult format.
     """
-    lines = [
-        "## Code Quality Review",
-        "",
-        "### Files to Review",
-        "",
-    ]
+    lines = _persona_frame(project_root, "QualityReviewer")
+    lines.extend(
+        [
+            "## Code Quality Review",
+            "",
+        ]
+    )
+    lines.extend(_why_frame(why))
+    lines.extend(
+        [
+            "### Files to Review",
+            "",
+        ]
+    )
     for f in files_changed:
         lines.append(f"- `{f}`")
     lines.append("")
@@ -452,7 +555,7 @@ def compose_quality_review_prompt(
             "Evaluate each file against all of the following criteria:",
             "",
             "1. **SOLID principles** -- single responsibility, open/closed, dependency inversion",
-            "2. **Size limits** -- functions <=50 lines, modules <=600 lines, classes <=300 lines",
+            _threshold_criterion(project_root),
             "3. **Test coverage** -- tests exist and cover the implementation surfaces",
             "4. **Error handling** -- no bare `except:` / `except Exception:`, typed errors",
             "5. **Cross-platform compliance** -- pathlib.Path for all paths, UTF-8 encoding,",
@@ -462,7 +565,11 @@ def compose_quality_review_prompt(
             "",
             "### Instructions",
             "",
-            "Read each file listed above. Flag any violations of the quality criteria.",
+            "Read each file listed above. Report only what affects correctness or a",
+            "stated brief requirement as blocking; everything else is an observation.",
+            "Style preferences and taste calls are non-blocking -- record them at",
+            "`minor` or `info` severity and do not escalate. Do not manufacture",
+            "findings: PASS with no findings is a valid and expected verdict.",
             "",
             "Return your verdict as a JSON code block with this exact structure:",
             "",

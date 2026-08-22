@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import unittest
+from pathlib import Path
 
 from gzkit.pipeline_runtime import (
     MAX_REVIEW_FIX_CYCLES,
@@ -93,6 +94,11 @@ def _make_dispatch_state(num_tasks: int = 1) -> DispatchState:
 # ---------------------------------------------------------------------------
 
 
+# A project root with no personas: keeps these structural assertions focused on
+# the task fields rather than on injected persona text (GHI #861).
+_NO_PERSONA_ROOT = Path("/nonexistent-project-root")
+
+
 class TestShouldDispatchReview(unittest.TestCase):
     """Table-driven tests for should_dispatch_review across all HandoffStatus values."""
 
@@ -174,6 +180,8 @@ class TestComposeSpecReviewPrompt(unittest.TestCase):
             t,
             brief_requirements or [],
             files_changed or [],
+            why="Structural test of the spec-review prompt shape",
+            project_root=_NO_PERSONA_ROOT,
         )
 
     def test_contains_task_description(self):
@@ -246,6 +254,8 @@ class TestComposeQualityReviewPrompt(unittest.TestCase):
         return compose_quality_review_prompt(
             files_changed if files_changed is not None else ["src/gzkit/widget.py"],
             test_files if test_files is not None else ["tests/test_widget.py"],
+            why="Structural test of the quality-review prompt shape",
+            project_root=_NO_PERSONA_ROOT,
         )
 
     def test_contains_files_changed(self):
@@ -261,9 +271,14 @@ class TestComposeQualityReviewPrompt(unittest.TestCase):
         prompt = self._prompt()
         self.assertIn("SOLID", prompt)
 
-    def test_contains_size_limits_criterion(self):
+    def test_size_criterion_cites_the_threshold_authority(self):
+        """The criterion points at the JSON that binds, not at restated values.
+
+        governance-core.md forbids a threshold living in prose; the prompt
+        must send the reviewer to the table (GHI #861).
+        """
         prompt = self._prompt()
-        self.assertIn("Size limits", prompt)
+        self.assertIn(".gzkit/rules/complexity-thresholds.json", prompt)
 
     def test_contains_test_coverage_criterion(self):
         prompt = self._prompt()

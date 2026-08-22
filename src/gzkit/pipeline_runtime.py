@@ -27,6 +27,7 @@ from gzkit.pipeline_dispatch import (
     MAX_NEEDS_CONTEXT_RETRIES,
     MAX_REVIEW_FIX_CYCLES,
     REVIEW_MODEL_MAP,
+    ROLE_PERSONA_MAP,
     DispatchRecord,
     DispatchState,
     DispatchTask,
@@ -141,13 +142,6 @@ AGENT_FILE_MAP: dict[str, str] = {
     "QualityReviewer": ".claude/agents/quality-reviewer.md",
     "Narrator": ".claude/agents/narrator.md",
     "Planner": "",
-}
-
-ROLE_PERSONA_MAP: dict[str, str] = {
-    "Implementer": "implementer",
-    "Reviewer": "spec-reviewer",
-    "QualityReviewer": "quality-reviewer",
-    "Narrator": "narrator",
 }
 
 PIPELINE_CONFIG_FILE = ".gzkit/pipeline-config.json"
