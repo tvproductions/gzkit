@@ -18,7 +18,7 @@
     },
     {
       "path": "src/gzkit/commands/validate_cmd.py",
-      "sloc_at_cutover": 1242
+      "sloc_at_cutover": 1309
     },
     {
       "path": "src/gzkit/commands/adr_audit.py",
