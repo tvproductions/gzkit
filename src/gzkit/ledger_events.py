@@ -193,11 +193,21 @@ def adr_created_event(adr_id: str, parent: str, lane: str) -> LedgerEvent:
     )
 
 
-def artifact_edited_event(path: str, session: str | None = None) -> LedgerEvent:
-    """Create an artifact edited event (from hooks)."""
+def artifact_edited_event(
+    path: str, session: str | None = None, commit: str | None = None
+) -> LedgerEvent:
+    """Create an artifact edited event (from hooks).
+
+    ``commit`` is set only by the commit-locus backstop
+    (:mod:`gzkit.hooks.commit_ledger`, GHI #847) and names the SHA whose diff
+    the row was derived from. Its absence marks a tool-locus row, so the two
+    recorders stay distinguishable in the record they share.
+    """
     extra: dict[str, Any] = {"path": path}
     if session:
         extra["session"] = session
+    if commit:
+        extra["commit"] = commit
     return LedgerEvent(
         event="artifact_edited",
         id=path,

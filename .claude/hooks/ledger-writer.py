@@ -2,6 +2,15 @@
 """gzkit ledger writer and validator hook for claude.
 
 This hook records governance artifact edits and enforces completion gates.
+
+COVERAGE LIMIT (GHI #847): this hook binds Edit|Write and keys on
+tool_input.file_path, a field a Bash payload does not carry. A governance
+artifact written by sed, a heredoc, inline python, git apply, or an editor
+outside the session emits nothing here. That channel is recorded instead by
+the commit-locus backstop -- gzkit.hooks.commit_ledger, wired as the
+post-commit hook in .pre-commit-config.yaml -- which fires only for a path
+this hook did not already record. A write that is never committed stays
+invisible to both.
 """
 
 import json

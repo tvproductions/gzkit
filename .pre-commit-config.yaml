@@ -1,7 +1,11 @@
 default_stages: [pre-commit]
 # prepare-commit-msg installs the TASK-trailer stamper (GHI #731). Without it,
 # `pre-commit install` wires only pre-commit/pre-push and the stamper never runs.
-default_install_hook_types: [pre-commit, pre-push, prepare-commit-msg]
+# post-commit installs the commit-locus ledger backstop (GHI #847). Without it,
+# `pre-commit install` wires no post-commit hook and a Bash-authored governance
+# edit reaches Layer-2 having emitted nothing. Changing this list requires a
+# re-run of `pre-commit install` -- an existing clone does not pick it up.
+default_install_hook_types: [pre-commit, pre-push, prepare-commit-msg, post-commit]
 fail_fast: true
 
 repos:
@@ -130,6 +134,19 @@ repos:
         language: system
         pass_filenames: false
         stages: [pre-commit]
+
+      - id: ledger-commit-locus
+        name: "record governance edits the tool locus could not see"
+        # POST-commit, not pre-commit. The event names the commit it observed
+        # (AGENTS.md DO IT RIGHT: name the STATE, never a proxy), and a
+        # pre-commit emitter would claim an edit was committed for a commit the
+        # message editor or a later hook can still abort. Git ignores this
+        # hook's exit status, which is correct -- a recorder gates nothing.
+        entry: uv run -m gzkit.hooks.commit_ledger
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [post-commit]
 
       - id: gz-check-pre-push
         name: gz check (pre-push gate)

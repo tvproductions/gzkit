@@ -118,6 +118,9 @@ class ArtifactEditedEvent(_EventBase):
     event: Literal["artifact_edited"]
     path: str
     session: str | None = None
+    commit: str | None = Field(
+        default=None, description="Commit SHA the backstop recorder observed (GHI #847)"
+    )
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 

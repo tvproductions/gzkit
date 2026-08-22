@@ -73,6 +73,12 @@
             "string",
             "null"
           ]
+        },
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
