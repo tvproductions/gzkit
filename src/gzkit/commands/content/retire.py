@@ -22,6 +22,7 @@ import sys
 from datetime import UTC, datetime
 
 from gzkit.commands.common import get_project_root
+from gzkit.commands.content._drift import warn_on_rendition_drift
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.models import CorpusEntry
 from gzkit.ledger import Ledger
@@ -87,6 +88,10 @@ def content_retire_cmd(*, surface: str, entry_id: str, reason: str, origin: str)
 
     print(
         f"Retired corpus entry {entry_id} in {surface} "
-        f"(retraction {retraction.id}). The invariant floor shrank; "
-        "committed renditions remain valid."
+        f"(retraction {retraction.id}). The invariant floor shrank, so every "
+        "committed rendition still SATISFIES it — but this row moved the corpus "
+        "fingerprint, so their derivation proof no longer holds."
     )
+    # Retirement only ever removes entries from the floor, so floor coherence
+    # cannot break here — unlike an invariant-tier append (GHI #863).
+    warn_on_rendition_drift(root, surface, mutation="retirement", floor_risk=False)

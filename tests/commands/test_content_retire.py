@@ -14,6 +14,11 @@ from pathlib import Path
 
 from gzkit.cli.main import main
 from gzkit.content.models import Corpus
+from gzkit.content.rendition_store import (
+    RenditionProvenance,
+    save_fingerprint,
+    save_rendition,
+)
 from gzkit.content.tier_policy import invariant_entries
 from tests.commands.common import CliRunner
 
@@ -52,6 +57,132 @@ def _ledger_events() -> list[dict]:
         for line in ledger_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
+
+
+def _seed_committed_rendition(consumer: str, *, corpus_fingerprint: str) -> None:
+    """Commit a rendition + provenance sidecar for AGENTS.md/<consumer> in the cwd."""
+    root = Path()
+    save_rendition(root, "AGENTS.md", consumer, _SURFACE.encode("utf-8"))
+    save_fingerprint(
+        root,
+        "AGENTS.md",
+        consumer,
+        RenditionProvenance(
+            corpus_fingerprint=corpus_fingerprint,
+            corpus_entry_count=0,
+            rendition_fingerprint=None,
+            committed_ts="2026-08-22T00:00:00+00:00",
+            attestor="g0",
+            attestation_text="seeded for test",
+        ),
+    )
+
+
+class TestContentRetireDriftWarning(unittest.TestCase):
+    """Retirement must announce the rendition drift it causes (GHI #863).
+
+    GHI #654 established that a corpus mutation has to say so, and gave
+    `remember` a warning. `retire` never got it, and its help asserted the
+    opposite -- "no recomposition is implied". Both verbs append to the corpus
+    and both move its fingerprint, so both break every committed rendition's
+    derivation proof. The measured cost of the gap was a blocked push and an
+    operator told no recompose was due.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _remember(self, text: str, *, tier: str = "invariant") -> str:
+        result = self._runner.invoke(
+            main,
+            [
+                "content",
+                "remember",
+                "AGENTS.md",
+                "--section",
+                "Prime Directive",
+                "--text",
+                text,
+                "--tier",
+                tier,
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        return _load_corpus().entries[-1].id
+
+    def _retire(self, entry_id: str):
+        return self._runner.invoke(
+            main,
+            ["content", "retire", "AGENTS.md", "--entry", entry_id, "--reason", "superseded"],
+        )
+
+    def test_warns_naming_every_drifted_consumer(self) -> None:
+        """The operator learns which renditions this retirement just unprovable-ised."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("Some directive.")
+            _seed_committed_rendition("root", corpus_fingerprint="stale-root")
+            _seed_committed_rendition("codex", corpus_fingerprint="stale-codex")
+
+            result = self._retire(entry_id)
+            self.assertIn("root", result.output)
+            self.assertIn("codex", result.output)
+            self.assertIn("Rendition freshness", result.output)
+
+    def test_warning_never_changes_the_exit_code(self) -> None:
+        """The retirement succeeded and IS the intended effect; the warning is advisory."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("Some directive.")
+            _seed_committed_rendition("root", corpus_fingerprint="stale-root")
+            self.assertEqual(self._retire(entry_id).exit_code, 0)
+
+    def test_does_not_claim_the_floor_gate_is_at_risk(self) -> None:
+        """Retirement only ever SHRINKS the floor, so floor coherence cannot break.
+
+        This is the true half of the help text GHI #863 corrects, and it is what
+        distinguishes a retirement from an invariant-tier append: `remember`
+        must warn about the floor gate, `retire` must not. Naming a gate that
+        cannot fail would send the operator to recompose for the wrong reason.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("Some directive.", tier="invariant")
+            _seed_committed_rendition("root", corpus_fingerprint="stale-root")
+
+            result = self._retire(entry_id)
+            self.assertNotIn("floor coherence", result.output.lower())
+
+    def test_silent_when_no_rendition_is_committed(self) -> None:
+        """Nothing to drift, nothing to say."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("Some directive.")
+            result = self._retire(entry_id)
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("Rendition freshness", result.output)
+
+    def test_help_states_both_halves_of_the_consequence(self) -> None:
+        """The sentence an operator reads BEFORE retiring must be true as workflow.
+
+        "no recomposition is implied" was accurate about the FLOOR and false
+        about the PUSH, which is the whole of GHI #863. Both halves have to be
+        present: state only the floor half and the operator is misled again;
+        state only the freshness half and the floor claim GHI #635 established
+        is lost.
+
+        The single-occurrence assertion is not decoration. The first attempt at
+        this fix replaced only the tail of a multi-line description string and
+        produced "...stay valid and no shrinks the floor, so every...", which an
+        absence-plus-keyword assertion passed happily. Pinning the count is what
+        catches a spliced string.
+        """
+        output = self._runner.invoke(main, ["content", "retire", "--help"]).output
+        self.assertNotIn("no recomposition is implied", output)
+        self.assertNotIn("committed renditions stay valid", output)
+        self.assertEqual(output.count("shrinks the floor"), 1, "spliced description")
+        self.assertIn("rendition-freshness", output)
+        self.assertIn("recompose", output.lower())
 
 
 class TestContentRetire(unittest.TestCase):

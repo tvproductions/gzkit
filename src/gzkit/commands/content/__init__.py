@@ -330,8 +330,11 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
             "corpus_entry_retired ledger event. Nothing is deleted — the retired entry "
             "stays on disk with its provenance — but it stops binding the invariant "
             "floor, so a rendition no longer has to carry its text verbatim. Retirement "
-            "only ever shrinks the floor, so committed renditions stay valid and no "
-            "recomposition is implied. Fails closed on an unknown or already-retired id."
+            "only ever shrinks the floor, so every committed rendition still SATISFIES "
+            "it — but it does NOT leave them PROVABLE: the retraction row moves the "
+            "corpus fingerprint, so `gz validate --rendition-freshness` requires a "
+            "recompose and re-attest before the next push (GHI #863). Fails closed on "
+            "an unknown or already-retired id."
         ),
         epilog=_build_epilog(
             [
