@@ -321,6 +321,65 @@ def forbid_post_authoring_src_commits(root: Path) -> int:
     return 0
 
 
+def forbid_unattested_obpi_completion_commits(root: Path) -> int:
+    """Refuse a commit that FLIPS an OBPI brief to Completed without its evidence (GHI #847).
+
+    Sibling of :func:`forbid_post_authoring_src_commits`, same remedy shape. The
+    PreToolUse hook this backstops — ``.claude/hooks/obpi-completion-validator.py``
+    — binds ``Write|Edit|NotebookEdit`` and keys on ``tool_input.file_path``, a
+    field a Bash payload does not carry, so a ``sed``, heredoc, or inline-``python``
+    edit reaches the commit having passed no gate at all. Reading ``git diff
+    --cached`` answers the question the hook was asked but could not hear: is a
+    brief becoming Completed, and is the evidence there?
+
+    Scoped to the TRANSITION, never to the state. A brief already Completed at
+    ``HEAD`` is skipped, so an unrelated edit to a long-landed brief — a typo, a
+    link repair — does not have to re-satisfy a bar its era never applied. That is
+    the same scoping the hook does with ``old_string``, and without it this guard
+    would refuse ordinary maintenance on historical briefs.
+
+    The rule lives in :mod:`gzkit.obpi_completion_fence` so this guard, the hook,
+    and ``gz obpi complete``'s own pre-flight cannot drift apart.
+    """
+    from gzkit.obpi_completion_fence import (  # noqa: PLC0415
+        completion_blockers,
+        has_audit_evidence,
+        is_obpi_brief_path,
+        marks_completed,
+        obpi_id_from_path,
+        unattested_completion_commit_message,
+    )
+
+    staged = _run_git(["diff", "--cached", "--name-status"], root)
+    if not staged:
+        return 0
+
+    for path, code in sorted(_parse_staged_name_status(staged).items()):
+        if code == "D" or not is_obpi_brief_path(path):
+            continue
+        staged_text = _run_git(["show", f":{path}"], root)
+        if not staged_text or not marks_completed(staged_text):
+            continue
+        # Only the transition is gated: an empty HEAD blob means the brief is new.
+        head_text = _run_git(["show", f"HEAD:{path}"], root)
+        if head_text and marks_completed(head_text):
+            continue
+        obpi_id = obpi_id_from_path(path)
+        if obpi_id is None:
+            continue
+        blockers = completion_blockers(staged_text)
+        adr_dir = (root / path).parent.parent
+        if not has_audit_evidence(adr_dir, obpi_id):
+            blockers.append(
+                "No completion entry in <ADR>/logs/obpi-audit.jsonl "
+                "(the brief says Completed; the audit ledger does not)"
+            )
+        if blockers:
+            _safe_print(unattested_completion_commit_message(obpi_id, path, blockers))
+            return 1
+    return 0
+
+
 def _marker_obpi_id(marker_path: Path) -> str:
     """Return a marker's ``obpi_id``, falling back to its filename stem."""
     import json  # noqa: PLC0415
@@ -360,6 +419,9 @@ def main() -> int:
     if rc:
         return rc
     rc = forbid_post_authoring_src_commits(root)
+    if rc:
+        return rc
+    rc = forbid_unattested_obpi_completion_commits(root)
     if rc:
         return rc
     rc = _run_enforcement_floor(root)

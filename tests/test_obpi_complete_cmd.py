@@ -15,8 +15,6 @@ from gzkit.commands.obpi_complete import (
     _append_audit_ledger,
     _build_attestation_audit_entry,
     _build_completed_brief,
-    _has_substantive_implementation_summary,
-    _has_substantive_key_proof,
     _is_placeholder,
     _read_existing_key_proof,
     _read_existing_summary,
@@ -27,6 +25,12 @@ from gzkit.commands.obpi_complete import (
     obpi_complete_cmd,
 )
 from gzkit.event_evidence import EventAnchor
+from gzkit.obpi_completion_fence import (
+    has_substantive_implementation_summary as _has_substantive_implementation_summary,
+)
+from gzkit.obpi_completion_fence import (
+    has_substantive_key_proof as _has_substantive_key_proof,
+)
 from tests.commands.common import SilencedConsoleTestCase
 
 

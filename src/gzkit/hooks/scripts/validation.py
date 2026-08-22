@@ -146,86 +146,6 @@ def _obpi_completion_validator_script() -> str:
                 return "normal"
 
 
-            STRICT_PLACEHOLDERS = frozenset(
-                {
-                    "-",
-                    "tbd",
-                    "(none)",
-                    "n/a",
-                    "...",
-                    "paste test output here",
-                }
-            )
-
-
-            def has_substantive_implementation_summary(content: str) -> bool:
-                \"\"\"Check for substantive bullet points in Implementation Summary.\"\"\"
-                match = re.search(
-                    r"^### Implementation Summary\\s*$([\\s\\S]*?)(?:^### |\\n---|\\Z)",
-                    content,
-                    flags=re.MULTILINE,
-                )
-                if not match:
-                    return False
-                section = match.group(1)
-                # Primary: "- Key: value" bullets
-                bullets = re.findall(r"^- [^:\\n]+:[ \\t]*(.+)$", section, flags=re.MULTILINE)
-                if not bullets:
-                    # Fallback: plain "- text" bullets
-                    bullets = re.findall(r"^- \\s*(.+)$", section, flags=re.MULTILINE)
-                for bullet in bullets:
-                    normalized = bullet.strip().lower()
-                    if normalized and normalized not in STRICT_PLACEHOLDERS:
-                        return True
-                return False
-
-
-            def has_substantive_key_proof(content: str) -> bool:
-                \"\"\"Check for substantive Key Proof section.\"\"\"
-                for heading in ("Key Proof", "Verification", "Gate Evidence"):
-                    match = re.search(
-                        rf"^### {re.escape(heading)}\\s*$([\\s\\S]*?)(?:^### |\\n---|\\Z)",
-                        content,
-                        flags=re.MULTILINE,
-                    )
-                    if match:
-                        body = match.group(1).strip()
-                        if body and body.lower() not in STRICT_PLACEHOLDERS:
-                            return True
-                return False
-
-
-            def has_valid_human_attestation(content: str) -> bool:
-                \"\"\"Check that Human Attestation section has all three valid fields (#126).\"\"\"
-                match = re.search(
-                    r"^## Human Attestation\\s*$([\\s\\S]*?)(?:^## |\\n---|\\Z)",
-                    content,
-                    flags=re.MULTILINE,
-                )
-                if not match:
-                    return False
-                body = match.group(1)
-                attestor_match = re.search(r"^- Attestor:\\s*(.+)$", body, flags=re.MULTILINE)
-                if not attestor_match:
-                    return False
-                attestor_val = attestor_match.group(1).strip().strip("`").lower()
-                placeholder_set = STRICT_PLACEHOLDERS | {"<name>", "todo", "none"}
-                if not attestor_val or attestor_val in placeholder_set:
-                    return False
-                attestation_match = re.search(
-                    r"^- Attestation:\\s*(.+)$", body, flags=re.MULTILINE
-                )
-                if not attestation_match:
-                    return False
-                attestation_val = attestation_match.group(1).strip().lower()
-                if not attestation_val or attestation_val in STRICT_PLACEHOLDERS:
-                    return False
-                date_match = re.search(
-                    r"^- Date:\\s*`?(\\d{4}-\\d{2}-\\d{2})`?$", body, flags=re.MULTILINE
-                )
-                return bool(date_match)
-
-
             def resolve_would_be_content(abs_path: Path, tool_input: dict) -> str:
                 \"\"\"Resolve the file content that would result from the edit/write.\"\"\"
                 content_field = tool_input.get("content")
@@ -404,22 +324,23 @@ def _obpi_completion_validator_script() -> str:
 
                 # 5. Check brief content quality (hard block)
                 would_be = resolve_would_be_content(abs_path, tool_input)
-                brief_blocks = []
-                if not has_substantive_implementation_summary(would_be):
-                    brief_blocks.append(
-                        "  - Missing or non-substantive 'Implementation Summary' "
-                        "(requires bullet format: '- Key: value')"
+                # The evidence rule is IMPORTED, never redefined here. This hook
+                # is the ADVISORY fast path: it binds Write|Edit|NotebookEdit and
+                # keys on tool_input.file_path, so every sed / heredoc /
+                # inline-python write bypasses it entirely. The arm that BINDS is
+                # gzkit.hooks.guards.forbid_unattested_obpi_completion_commits,
+                # reading git diff --cached. A second copy of the rule here could
+                # disagree with that guard, and the disagreement would be
+                # invisible -- whichever locus the agent reached would rule
+                # (GHI #847).
+                from gzkit.obpi_completion_fence import completion_blockers
+
+                brief_blocks = [
+                    f"  - {blocker}"
+                    for blocker in completion_blockers(
+                        would_be, requires_human=requires_human
                     )
-                if not has_substantive_key_proof(would_be):
-                    brief_blocks.append(
-                        "  - Missing or non-substantive 'Key Proof' "
-                        "(requires test command output or verification evidence)"
-                    )
-                if requires_human and not has_valid_human_attestation(would_be):
-                    brief_blocks.append(
-                        "  - Missing or malformed 'Human Attestation' section "
-                        "(requires Attestor, Attestation text, and ISO date YYYY-MM-DD)"
-                    )
+                ]
                 if brief_blocks:
                     details = "\\n".join(brief_blocks)
                     print(

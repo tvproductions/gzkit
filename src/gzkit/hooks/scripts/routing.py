@@ -17,6 +17,16 @@ def _instruction_router_script() -> str:
             Informational only — never blocks operations. Outputs constraint
             reminders to stderr so they appear in the agent's context.
 
+            COVERAGE LIMIT (GHI #847): bound to the ``Write|Edit|NotebookEdit``
+            matcher and keyed on ``tool_input.file_path``, so every ``sed``,
+            heredoc, and inline-``python`` write goes un-routed. The
+            instructions it surfaces are reminders, so the gap costs context
+            rather than a gate -- but an agent working through Bash sees NONE
+            of them, which is worth knowing before treating a quiet run as a
+            clean one. Not widened: the field the matcher would need is absent
+            from a Bash payload, and a reminder does not justify a commit-locus
+            arm the way a blocking gate does.
+
             Deduplication: tracks surfaced instructions in a state file and
             suppresses repeats within a 2-hour window per instruction file.
 

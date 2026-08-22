@@ -13,7 +13,18 @@ Checks for:
   1. .pipeline-active.json referencing a completed OBPI
   2. .plan-audit-receipt.json referencing a completed OBPI
 
-Non-blocking — emits warnings only (exit 0 always).
+Non-blocking -- emits warnings only (exit 0 always).
+
+COVERAGE LIMIT (GHI #847): this hook is bound to the
+``Write|Edit|NotebookEdit`` matcher, so a ``sed``, heredoc, or
+inline-``python`` edit never triggers it. It is a courtesy that
+fires on SOME writes, not a sweep of all of them -- and because it
+only warns, the gap costs a missed reminder rather than a missed
+gate. Widening it to ``Bash`` would change nothing on its own: it
+reads ``tool_input.file_path``, a field a Bash payload does not
+carry. Stated here rather than closed because a non-blocking
+reminder does not earn a commit-locus arm; the blocking members of
+this family got one (``gzkit.hooks.guards``).
 """
 
 import json

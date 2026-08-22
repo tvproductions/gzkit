@@ -53,7 +53,6 @@ from gzkit.governance.trust_audits.sensitivity import (
     detect_brief_security_floor,
     detect_brief_security_surfaces,
 )
-from gzkit.hooks.obpi import section_body
 from gzkit.ledger import (
     Ledger,
     LedgerEvent,
@@ -69,6 +68,7 @@ from gzkit.ledger_events import (
     obpi_receipt_emitted_event,
     security_floor_overridden_event,
 )
+from gzkit.obpi_completion_fence import completion_blockers
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -1842,80 +1842,14 @@ def _update_human_attestation(content: str, attestor: str, attestation_text: str
 def _validate_would_be_content(content: str, requires_human: bool) -> list[str]:
     """Validate the would-be brief content matches completion requirements.
 
-    Mirrors the checks in obpi-completion-validator.py hook.
+    Delegates to :mod:`gzkit.obpi_completion_fence`, which is now the single
+    authority. This function used to carry its own copy of the three predicates
+    under the docstring "Mirrors the checks in obpi-completion-validator.py hook"
+    — and a mirror is exactly what a completion gate must not be: the writer and
+    the gate could disagree about what counts as evidence, and whichever locus the
+    agent happened to reach would rule (GHI #847).
     """
-    errors: list[str] = []
-
-    if not _has_substantive_implementation_summary(content):
-        errors.append("Missing or non-substantive Implementation Summary")
-
-    if not _has_substantive_key_proof(content):
-        errors.append("Missing or non-substantive Key Proof")
-
-    if requires_human and not _has_human_attestation_content(content):
-        errors.append("Missing human attestation content")
-
-    return errors
-
-
-def _has_substantive_implementation_summary(content: str) -> bool:
-    """Check for substantive Implementation Summary (mirrors hook check)."""
-    match = re.search(
-        r"^### Implementation Summary\s*$([\s\S]*?)(?:^#{2,3} |\n---|\Z)",
-        content,
-        flags=re.MULTILINE,
-    )
-    if not match:
-        return False
-    section = match.group(1)
-    # Primary: "- Key: value" bullets with actual content after the colon
-    bullets = re.findall(r"^- [^:\n]+:[ \t]*(.+)$", section, flags=re.MULTILINE)
-    if not bullets:
-        # Fallback: plain "- text" bullets
-        bullets = re.findall(r"^- \s*(.+)$", section, flags=re.MULTILINE)
-    return any(not _is_placeholder(b) for b in bullets)
-
-
-def _has_substantive_key_proof(content: str) -> bool:
-    """Check for substantive Key Proof (mirrors hook check)."""
-    for heading in ("Key Proof", "Verification", "Gate Evidence"):
-        match = re.search(
-            rf"^### {re.escape(heading)}\s*$([\s\S]*?)(?:^#{{2,3}} |\n---|\Z)",
-            content,
-            flags=re.MULTILINE,
-        )
-        if match:
-            body = match.group(1).strip()
-            if body and not _is_placeholder(body):
-                return True
-    return False
-
-
-def _has_human_attestation_content(content: str) -> bool:
-    """Check for substantive Human Attestation section.
-
-    Validates all three required fields (GHI-126):
-    - Attestor: non-placeholder name
-    - Attestation: substantive text
-    - Date: ISO 8601 date (YYYY-MM-DD)
-    """
-    body = section_body(content, "Human Attestation")
-    if body is None:
-        return False
-    attestor_match = re.search(r"^- Attestor:\s*(.+)$", body, flags=re.MULTILINE)
-    if not attestor_match:
-        return False
-    attestor_val = attestor_match.group(1).strip().strip("`")
-    if not attestor_val or attestor_val.lower() in _PLACEHOLDERS:
-        return False
-    attestation_match = re.search(r"^- Attestation:\s*(.+)$", body, flags=re.MULTILINE)
-    if not attestation_match:
-        return False
-    attestation_val = attestation_match.group(1).strip()
-    if not attestation_val or attestation_val.lower() in _PLACEHOLDERS:
-        return False
-    date_match = re.search(r"^- Date:\s*`?(\d{4}-\d{2}-\d{2})`?$", body, flags=re.MULTILINE)
-    return bool(date_match)
+    return completion_blockers(content, requires_human=requires_human)
 
 
 # ---------------------------------------------------------------------------
