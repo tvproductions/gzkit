@@ -36,6 +36,60 @@ from gzkit.mx.marker import Marker
 # Lock identity on the token rail — singleton key for the MX session.
 _MX_LOCK_KEY = "mx-session"
 
+
+def _release_session_lock(project_root: Path) -> bool:
+    """Delete the MX session lock. Returns True when one was present (GHI #848).
+
+    The marker has a symmetric pair — written on enter, unlinked on exit. The
+    lock had only the acquire half, so a cleanly-closed hangar left a lock that
+    :func:`gzkit.lock_manager.write_lock` (exclusive-creation, TTL-blind)
+    refused forever. Idempotent: exit must not fail because the lock is already
+    gone.
+    """
+    return lock_manager.delete_lock(project_root, _MX_LOCK_KEY)
+
+
+def _clear_expired_session_lock(project_root: Path) -> bool:
+    """Clear an EXPIRED MX session lock before claiming. Returns True if cleared.
+
+    The crash path, which releasing on exit cannot reach: if the process dies
+    between enter and exit, no exit runs and the orphan blocks every future
+    entry regardless of age. A live lock is never cleared — that exclusion is
+    the property the lock exists to provide.
+    """
+    existing = lock_manager.read_lock(project_root, _MX_LOCK_KEY)
+    if existing is None or not existing.is_expired:
+        return False
+    return lock_manager.delete_lock(project_root, _MX_LOCK_KEY)
+
+
+def _entry_refusal_message(existing: LockData | None) -> str:
+    """Render why entry was refused, distinguishing a live claim from an orphan.
+
+    The prior message said "another session is opening" unconditionally, which
+    is false when the previous session closed cleanly and left an orphan — and
+    it sent the reader hunting a concurrency problem that did not exist.
+    """
+    if existing is None:
+        return (
+            "an mx-session lock exists but could not be read. Inspect "
+            "`.gzkit/locks/obpi/mx-session.lock.json`."
+        )
+    if existing.is_expired:
+        return (
+            f"the mx-session lock is EXPIRED (held by {existing.agent}, claimed "
+            f"{existing.claimed_at}). No session is running; this is an orphan. "
+            f"Release it with `uv run gz obpi lock release {_MX_LOCK_KEY} --force "
+            f'--abandon reaping:"<why>"` and retry. Both flags are required: the '
+            "lock is held by a different agent id, and token-block discipline "
+            "fail-closes any release without an exchange record."
+        )
+    return (
+        f"another session holds the mx-session lock (agent {existing.agent}, "
+        f"claimed {existing.claimed_at}). Wait for it to exit."
+    )
+
+
 # Session-lock TTL tracks the canonical OBPI lock TTL via the shared constant (the
 # marker is the real session truth, not the lock; the lock serializes concurrent
 # entry only). Sharing the constant keeps the two from drifting apart (GHI #604).
@@ -207,11 +261,16 @@ def mx_enter_cmd(
         branch=lock_manager.current_branch(),
         ttl_minutes=_DEFAULT_TTL_MINUTES,
     )
+    # An orphan from a crashed session blocks entry forever otherwise: write_lock
+    # is exclusive-creation and never consults TTL (GHI #848).
+    _clear_expired_session_lock(root)
     try:
         lock_manager.write_lock(root, lock)
     except FileExistsError:
         console.print(
-            "[red]ERROR:[/red] Concurrent MX entry detected — another session is opening."
+            f"[red]ERROR:[/red] MX entry refused — {
+                _entry_refusal_message(lock_manager.read_lock(root, _MX_LOCK_KEY))
+            }"
         )
         sys.exit(1)
 
@@ -326,6 +385,11 @@ def mx_exit_cmd(
     # Signature: write mx_session_closed, marker stays removed.
     ledger = Ledger(root.joinpath(*_LEDGER_RELPATH))
     ledger.append(_mx_session_closed_event(m.session_id, attestor.strip()))
+
+    # Release the lock the matching enter claimed. Without this the hangar is
+    # single-use per repository: write_lock refuses on the orphan forever
+    # (GHI #848).
+    _release_session_lock(root)
 
     console.print(
         f"[green]MX session closed.[/green] session_id={m.session_id}, attestor={attestor.strip()}"

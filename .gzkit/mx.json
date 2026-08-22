@@ -1,9 +1,0 @@
-{
-  "session_id": "d3c16ae0-719a-4276-9fca-9c9739ee3be2",
-  "opened_at": "2026-08-21T08:56:53.758462+00:00",
-  "reason": "repair ledger ts-order deadlock on OBPI-0.35.0-09 completion",
-  "attestor": "g0",
-  "inspection_scope": [
-    "ADR-0.35.0"
-  ]
-}

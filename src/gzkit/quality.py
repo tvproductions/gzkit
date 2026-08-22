@@ -1166,6 +1166,16 @@ def _handoff_section_grandfather(project_root: Path) -> frozenset[str]:
     return frozenset(str(entry) for entry in entries)
 
 
+def _is_non_obpi_register_entry(content: str) -> bool:
+    """Return True when a register entry is for a lock key that is not an OBPI token.
+
+    The token-block invariant governs OBPI tokens. The MX hangar's `mx-session`
+    lock rides the same lock rail but is a session mutex, not a token, so its
+    release record has no OBPI id and no parent ADR to carry (GHI #848).
+    """
+    return bool(re.search(r"^obpi_id:\s*(?!OBPI-)\S+", content, re.MULTILINE))
+
+
 def _handoff_predates_cutover(content: str, cutover: datetime) -> bool:
     """Return True when a handoff is grandfathered (pre-cutover or undatable).
 
@@ -1228,6 +1238,14 @@ def run_handoff_document_audit(project_root: Path) -> QualityResult:
         try:
             content = path.read_text(encoding="utf-8")
         except OSError:
+            continue
+        # HandoffFrontmatter is the OBPI token-block contract: it requires a
+        # well-formed OBPI id and parent ADR. A register entry for a NON-OBPI
+        # lock key - the `mx-session` mutex - cannot satisfy it by construction,
+        # so scanning it asserts a contract it can never meet and traps the
+        # tree: the ledger event is append-only and references the record, so
+        # the record cannot be deleted either (GHI #848).
+        if _is_non_obpi_register_entry(content):
             continue
         rel = path.relative_to(project_root).as_posix()
         allow_empty = rel in section_waived
