@@ -6,9 +6,9 @@ paths:
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
-> **Rule version:** `0.4.0` — GHI #810: links the canonical specification, and adds § Command shape so this file can be scored for real. This rule declared clig.dev as its baseline while the 1,037-line specification elaborating it — `docs/design/cli-standards-v3.md`, named canonical by ADR-0.0.4 (Validated, foundation, heavy) — was cited by that ADR and by **no rule or governance surface**, so the per-turn contract never reached it. Meanwhile this file sat in `data/advisory_scorecard_grandfather.json` pinned at `0.3.1` — pre-ledger debt, never scored. The two facts compound: measured 2026-08-16, every CLI rule with a mechanical arm holds at or near 100% (exit codes, epilogs, manpage coverage, skill alignment) and every rule that is prose only sits at or near 0% (`--json` 73/136, formatter chokepoint 1,230 bypasses, structlog 1 `get_logger`, `--log-file` absent). This edit drops the pin by construction, which per `docs/governance/advisory-rules-audit.md` compels the scoring pass. Prior `0.3.1` — reconciled § Core Principles — Consistency to the mechanism it names, so the audit checks usage-line agreement (`0.3.0`, GHI #693); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.5.0` — § Adding CLI Features — New Subcommand now enumerates all seven mechanically-checked obligations, read out of the validators rather than transcribed from memory. The prior list named four surfaces and omitted three that fail closed: the `config/doc-coverage.json` manifest entry, the handler docstring, and the wielding skill. Measured 2026-08-22 on the `gz handoff rulings` registration — the first full suite run returned **21 failures, every one a deterministic consequence of adding ONE verb**, against a 136s unit tier invoked three times. None was a surprise to the gates; all three were a surprise to the checklist. The gap is not enforcement — every obligation here already fails closed — it is that the pre-flight list disagreed with the post-flight check, so the cheapest surfaces in the repo were discovered by its slowest gate. Scoped deliberately to **per-verb** obligations: § New Subcommand's closing paragraph names what a fixed list structurally cannot catch, so this is not read as a completeness claim. Prior `0.4.0` — GHI #810: links the canonical specification, and adds § Command shape so this file can be scored for real. This rule declared clig.dev as its baseline while the 1,037-line specification elaborating it — `docs/design/cli-standards-v3.md`, named canonical by ADR-0.0.4 (Validated, foundation, heavy) — was cited by that ADR and by **no rule or governance surface**, so the per-turn contract never reached it. Meanwhile this file sat in `data/advisory_scorecard_grandfather.json` pinned at `0.3.1` — pre-ledger debt, never scored. The two facts compound: measured 2026-08-16, every CLI rule with a mechanical arm holds at or near 100% (exit codes, epilogs, manpage coverage, skill alignment) and every rule that is prose only sits at or near 0% (`--json` 73/136, formatter chokepoint 1,230 bypasses, structlog 1 `get_logger`, `--log-file` absent). This edit drops the pin by construction, which per `docs/governance/advisory-rules-audit.md` compels the scoring pass. Prior `0.3.1` — reconciled § Core Principles — Consistency to the mechanism it names, so the audit checks usage-line agreement (`0.3.0`, GHI #693); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
@@ -28,6 +28,7 @@ Mirrored from the canonical specification's § Command Structure and § Output R
 - Every leaf command declares --json or carries a waiver with rationale — 63 of 136 lack it, and nine groups disagree with themselves: `gz adr emit-receipt` has none while `gz obpi audit` does, though both emit structured governance evidence.
 - A parser node is a leaf or a group, never both — exactly one node violates this (`gz mx` carries a handler and subcommands), so the state is either a deliberate default-subcommand or an accident, and nothing records which.
 - Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the parser tree imports (GHI #180). Guarded by `tests/cli/test_help_path_imports.py`.
+- A new subcommand satisfies all seven coupled obligations in the authoring patch — the set is enumerated at § Adding CLI Features — New Subcommand, and the validators named there win any disagreement with the list. Measured 2026-08-22: three surfaces described the set as 3, 4 and 1 obligations against 7 that fail closed (GHI #854).
 - User-facing output passes through the formatter, never console.print directly — 1,230 sites bypass it against one `OutputFormatter`. This is the precondition for the `--json` rule above, not a sibling of it: a `--json` flag on a command whose body prints human text is green while blind.
 
 Two further specification rules are scored **Judgment** and are deliberately absent from this list — mandatory-target-as-positional (no surface models "target"; the available proxy grades by shape) and one-verb noun groups (no surface models intent-to-extend). They live in the canonical specification; see the scorecard for why neither is mechanizable.
@@ -39,7 +40,7 @@ Two further specification rules are scored **Judgment** and are deliberately abs
 | Principle | Rule |
 |-----------|------|
 | Human-first | Optimize for humans; add `--json`/`--plain` for machines |
-| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0 with the new verb covered across manpage, command doc, and index, **and the new flag's usage line agreeing with its parser** (required-ness and value-taking; GHI #693). If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
+| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0, **and the new flag's usage line must agree with its parser** (required-ness and value-taking; GHI #693). For a new subcommand the full obligation set is § Adding CLI Features — New Subcommand; this row does not restate it, because a second partial list is how the two fell out of agreement (GHI #787's class). If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
 | Discovery | Comprehensive help with examples; no web docs needed |
 | Robustness | Validate early; fail fast; provide progress indicators |
 
@@ -108,8 +109,20 @@ Every command must:
 
 ### New Subcommand (Heavy Lane)
 
-1. ADR or brief documenting purpose
-2. Help text with examples
-3. Behave smoke test
-4. Manpage in `docs/user/manpages/`
-5. GHI cited in the commit — **do not hand-write release notes.** `RELEASE_NOTES.md` and `CHANGELOG.md` are authored at release time by the `gz-patch-release` ceremony, never by hand (`.gzkit/rules/changelog-release-notes.md` § Release-notes rules).
+**Seven obligations fire for a new verb, and every one is already mechanically checked.** Satisfy them in the authoring patch — they are knowable up front, so discovering them reactively across repeated full-suite runs is a self-inflicted cost, not a property of the gates.
+
+**The authority is the code, never this list.** The enumeration lives in `_SURFACE_NAMES` and `check_surfaces` (`src/gzkit/doc_coverage/scanner.py`), `find_undeclared_commands` (`src/gzkit/doc_coverage/manifest.py`), and `audit_skill_alignment` (`src/gzkit/governance/trust_audits/cli.py`). If this list and those disagree, they are right.
+
+1. **Manifest entry** — `config/doc-coverage.json`. An undeclared command has no declared obligation, so it fails before any surface is examined.
+2. **Manpage** — `docs/user/manpages/<slug>.md`, `<slug>` being the command with spaces hyphenated (`gz adr audit-check` → `adr-audit-check.md`). **Never a `gz-` prefix** (`governance-core.md` § Manpage filename references, GHI #532).
+3. **Index entry** — the `<slug>.md` filename must appear in `docs/user/manpages/index.md`.
+4. **Operator runbook** — a reference in `docs/user/runbook.md`.
+5. **Governance runbook** — a reference in `docs/governance/governance_runbook.md`.
+6. **Handler docstring** — the resolved handler needs a non-empty docstring. Most often missed, because it is the one obligation that is code rather than a doc file.
+7. **Wielding skill** — a `.gzkit/skills/**/SKILL.md` naming the full verb path, or an `_NO_SKILL_VERBS` waiver carrying rationale (tool-skill-runbook Invariant 1).
+
+Alongside these, unchanged: an ADR or brief documenting purpose, help text with examples, a behave smoke test, and the GHI cited in the commit — **do not hand-write release notes.** `RELEASE_NOTES.md` and `CHANGELOG.md` are authored at release time by the `gz-patch-release` ceremony, never by hand (`.gzkit/rules/changelog-release-notes.md` § Release-notes rules).
+
+**A deprecated verb INVERTS obligations 4, 5 and 7:** absence is the passing state, because a runbook that prescribes a retired verb — or a skill that wraps one — routes agents back onto it (GHI #705).
+
+**What this list cannot cover.** These seven are enumerable because they are fixed per verb. They are not the coupled surface of a change that also alters a *format* — a consumer reading a document body, a test asserting against prose, a fixture keyed on a schema shape. `8d9e09a4` is the worked example: relocating the settled-ruling corpus updated every per-verb surface in one commit and still left `test_settled_ruling_integrity` reading a section that had become a pointer, caught by the suite at push time. Front-loading this checklist collapses the reactive loop for **verb registration**; it does not make a **format** change safe, and treating it as though it does would build a false floor.

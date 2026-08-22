@@ -53,13 +53,13 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 |---|---|
 | `agents-md-map-doctrine.md` | `0.7.0` |
 | `chores.md` | `0.3.2` |
-| `cli.md` | `0.4.0` |
+| `cli.md` | `0.5.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `governance-core.md` | `0.13.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.2.0` |
 | `pythonic.md` | `0.5.0` |
-| `tool-skill-runbook-alignment.md` | `0.3.0` |
+| `tool-skill-runbook-alignment.md` | `0.4.0` |
 | `tests.md` | `0.17.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
@@ -138,7 +138,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 28 | Invariant 1 — Every CLI tool has at least one skill that wields it | **Mechanical** | Enforced by `gz validate --skill-alignment` (GHI #202) — scans every top-level CLI verb; requires at least one skill under `.gzkit/skills/**` unless explicitly waived in `_NO_SKILL_VERBS` |
+| 28 | Invariant 1 — Every CLI tool has at least one skill that wields it | **Mechanical** | Enforced by `gz validate --skill-alignment` (GHI #202) — scans every registered CLI verb path including multi-word subcommands (GHI #588); requires at least one skill under `.gzkit/skills/**` unless explicitly waived in `_NO_SKILL_VERBS`. A deprecated verb INVERTS the invariant: presence of a wielding skill is the failure, because wrapping a retired verb routes agents onto it (GHI #705). **Note amended 2026-08-22 (rule `0.4.0`), GHI #854 — no new row.** § When to apply read as though the wielding skill were the whole obligation of authoring a new verb; it is one of seven, and now points at `cli.md` § Adding CLI Features — New Subcommand (row 86) rather than restating a subset. That is a cross-reference repair, not a new binding clause, so it amends this row instead of growing the scorecard. |
 | 29 | Invariant 2 — Every skill's `gz_command` matches a runbook-prescribed tool | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), Movement C rules arm.** The old note said these "remain advisory *until* the skill→runbook cross-reference is mechanized", which reads as a queue. It is not one: the invariant turns on **"the same operator moment"**, and no repository surface represents an operator moment as a comparable object — the runbook prescribes verbs in prose, so a checker would score the agreement of two prose surfaces, which is grading by shape (the `shape-graded-not-substance` signature ADR-0.0.73 refuses). The *renamed-verb* half is already mechanical elsewhere: `gz validate --cli-alignment` fail-closes on any `gz <verb>` reference that does not resolve to a registered parser verb, so what stays advisory is the same-moment judgment alone. |
 | 30 | Invariant 3 — Destination verb's default output form | **Judgment** | **Re-scored 2026-08-08 (rule `0.3.0`), same reasoning as row 29 plus a second unmodelled term.** A verb's "default human-readable output form" is established by running it and reading the result, and the skill Output Contract it must honor is prose. Mechanizing means asserting that observed rendering satisfies a prose promise — two judgments, not one check. Related but distinct enforcement exists: row 69 (`gz test-shape`) governs where output-form *assertions* may live in tests, which is a different subject from whether a verb's rendering matches its skill's contract. |
 
@@ -403,6 +403,7 @@ that was declared and never witnessed.
 | 81 | A parser node is a leaf or a group, never both | **Promotable** | Cleanest predicate in the set — one line against the tree, a node carrying a `func` default *and* subparsers. Exactly **1** instance (`gz mx`), so the check lands fail-closed with zero seeded waivers if `mx` is corrected, or one explicit waiver naming it a deliberate default-subcommand. Either outcome records a decision that is unrecorded today. |
 | 82 | Building the gz parser tree may not import handler-only dependencies | **Promotable** | Partially built: `tests/cli/test_help_path_imports.py` (landed 2026-08-16 with the `fix(cli)` repair) asserts reachability by static AST over the module-level import graph, currently scoped to `gzkit.commands.common`. Promotion is widening that tuple to `yaml`/`pydantic`, which is blocked on relocating `DEFAULT_LOCK_TTL_MINUTES` out of `gzkit.lock_manager` — it is consumed as an argparse `default=` at registration time, so deferring the import cannot help. |
 | 83 | Mandatory targets are positional; flags are optional modifiers | **Judgment** | **No repository surface models "target."** Deciding that `--manifest` names a thing acted upon while `--json` names a modifier is a reading of each flag's meaning. The proxy — "leaf with > N boolean flags and zero positionals" — grades by shape (the `shape-graded-not-substance` signature ADR-0.0.73 refuses) and would flag `gz git-sync`'s 11 genuine mode selectors identically to `gz validate`'s 93 genuine targets. Also **not clig.dev's position**: its stated default is *"Prefer flags to args"*, with a narrow multiple-targets exception. This is a house rule gzkit has not written down. Reclassify on a named instance of a flag-shaped target causing an operator defect. |
+| 86 | A new subcommand satisfies all seven coupled obligations in the authoring patch | **Promotable** | **Added 2026-08-22 (rule `0.5.0`), GHI #854.** Read the claim precisely: each of the seven obligations already has a fail-closed arm — six via the doc-coverage runner reached through `uv run gz cli audit` (the `config/doc-coverage.json` manifest entry plus the five `_SURFACE_NAMES` surfaces: manpage, index entry, operator runbook, governance runbook, handler docstring) and the seventh via `gz validate --skill-alignment` (row 28). **What has no witness is that the rule's prose list matches the enforced set**, and that is the property this row scores. Scoring it Mechanical would cite the neighbours' arms as if they covered it — the scope-level-control-as-property-proof substitution the scorecard's own fence refuses. Measured 2026-08-22: the obligation set was described in three places naming 3, 4 and 1 against 7 enforced, and adding one verb returned **21 failures on the first full unit-tier run** (136s tier, invoked three times) — every failure deterministic, none a surprise to the gates, all a surprise to the lists. **Promotion path, and it is narrow:** parse the numbered list in § New Subcommand and assert set-equality against `_SURFACE_NAMES` + the manifest check + `audit_skill_alignment`, with a property-level negative control that drops one surface from the code constant and expects the rule to be reported stale. Both sides are already machine-readable, so this is not the two-prose-surfaces shape rows 29/30 refuse. **Scope limit, stated in the rule itself:** the seven are enumerable because they are fixed *per verb*; a change that also alters a *format* couples to consumers no fixed list can name (`8d9e09a4`), and that residue is out of this row's claim by construction. |
 | 84 | A noun group wraps more than one verb | **Judgment** | Detection is trivial (**11** groups of one: `gz cli audit`, `gz flag explain`, `gz issue file`, `gz patch release`, …). The verdict is not: a group of one may be a deliberate namespace reservation for verbs not yet written, and **no surface models intent-to-extend**. A gate forces either premature flattening or a waiver per group — bookkeeping without signal. Honest form is an advisory line in an existing report, never a fail-close. |
 | 85 | User-facing output passes through the formatter, never console.print directly | **Promotable** | Ratchet form; it cannot land as a gate. The scan is mechanical (`console.print(` outside the formatter module, the shape `audit_utf8_prefix` and `audit_subprocess_errors` already use) but measures **1,230** live sites against **1** `OutputFormatter`, so a fail-close would block every commit. Seed at 1,230, shrink-only. Severity is understated by calling this a doc rule: ADR-0.0.4 declares the presentation surface "a port … that every command handler must honor", so these are bypasses of a Validated heavy-lane foundation ADR's port contract. **Precondition for row 80.** |
 
@@ -427,9 +428,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 65 | 53% |
-| **Promotable** | 12 | 10% |
-| **Judgment** | 48 | 39% |
+| **Mechanical** | 65 | 52% |
+| **Promotable** | 13 | 10% |
+| **Judgment** | 48 | 38% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -437,7 +438,8 @@ decays in whichever direction the next reader's grep happens to point.
      summed to 102, so the denominator was a rounder number than the data —
      corrected to the actual scored-row total (103) when row 75 landed, and to
      119 when rows 76-85 landed with the CLI doctrine scoring (GHI #810), and to
-     122 when row 17i landed with the attested-REQ-retirement scoring (GHI #823). -->
+     122 when row 17i landed with the attested-REQ-retirement scoring (GHI #823), and to
+     126 when row 86 landed with the new-verb coupled-obligation scoring (GHI #854). -->
 
 
 **The third state is NO LONGER empty (2026-08-16) — and that is this table
