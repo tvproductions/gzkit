@@ -31,8 +31,14 @@ untruncated twin under :func:`_ruling_key`, so both forms propagate side by side
 
 The assertion derives from that declared property — a carried ruling is the
 operator's booked words and must arrive whole — not from a run of the composer.
-It scans the newest RESUMABLE handoff because that is the document a resuming
-session reads and the one a successor most likely chains from.
+It scans the corpus the newest RESUMABLE handoff CARRIES, because that is what a
+resuming session reads and what a successor chains from.
+
+Since GHI #838 that corpus is the append-only store rather than the document's
+own prose: a post-cutover handoff carries a count and a pointer, so reading its
+body would audit nothing while reporting green. The prose arm survives for a
+legacy head, and both remain corpus SOURCES — a clip's fuller form may still sit
+only in a pre-cutover document.
 """
 
 from __future__ import annotations
@@ -42,6 +48,7 @@ from pathlib import Path
 
 from gzkit.handoff_api import parse_decisions, settled_rulings
 from gzkit.handoff_resume_gate import newest_handoff
+from gzkit.handoff_rulings import RULINGS_FILENAME, read_rulings
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HANDOFFS = REPO_ROOT / ".gzkit" / "handoffs"
@@ -70,9 +77,28 @@ def _twin_probe(text: str) -> str:
     return _normalize(text).rstrip(".")
 
 
+def _head_rulings(head: Path) -> list[str]:
+    """Return the settled corpus the chain head carries.
+
+    Store first (GHI #838). A post-cutover handoff's ``Settled Rulings`` section
+    is a pointer, so parsing its body yields nothing — and an audit that finds
+    nothing to check passes vacuously, which is the shape these two arms exist to
+    prevent in the first place. A legacy head still carries its corpus as prose
+    and is read that way.
+    """
+    return read_rulings(REPO_ROOT) or settled_rulings(head.read_text(encoding="utf-8"))
+
+
 def _corpus_bullets() -> list[tuple[str, str]]:
-    """Every ruling-bearing bullet on disk, from both composition channels."""
-    bullets: list[tuple[str, str]] = []
+    """Every ruling-bearing bullet on disk, from every composition channel.
+
+    The store joins the two prose channels rather than replacing them: a clip's
+    recoverable fuller form may sit only in a pre-cutover document, and dropping
+    the prose scan would make those clips unreportable.
+    """
+    bullets: list[tuple[str, str]] = [
+        (entry, f".gzkit/handoffs/{RULINGS_FILENAME}") for entry in read_rulings(REPO_ROOT)
+    ]
     for path in sorted(HANDOFFS.rglob("*.md")):
         try:
             content = path.read_text(encoding="utf-8")
@@ -92,7 +118,7 @@ class TestSettledRulingsReachTheHeadWhole(unittest.TestCase):
         self.assertIsNotNone(head, "no resumable handoff on disk to audit")
         assert head is not None
 
-        rulings = settled_rulings(head.read_text(encoding="utf-8"))
+        rulings = _head_rulings(head)
         self.assertTrue(rulings, f"{head.name} carries no Settled Rulings to audit")
         carried = {_normalize(entry) for entry in rulings}
 
@@ -136,7 +162,7 @@ class TestNoAbridgedTwinRidesAlongsideItsFullerForm(unittest.TestCase):
         self.assertIsNotNone(head, "no resumable handoff on disk to audit")
         assert head is not None
 
-        rulings = settled_rulings(head.read_text(encoding="utf-8"))
+        rulings = _head_rulings(head)
         self.assertTrue(rulings, f"{head.name} carries no Settled Rulings to audit")
         probes = [_twin_probe(entry) for entry in rulings]
 
