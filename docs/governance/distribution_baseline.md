@@ -128,19 +128,41 @@ When a new canonical artifact lands:
 
 The smoke scenario builds the wheel via `uv build`, installs it into a fresh
 temp venv, runs `gz init`, and asserts byte-equivalence against the manifest.
-Wall-clock runtime is approximately 30-90 seconds depending on `uv build`
-cache state, dominated by wheel build and venv creation.
+Wall-clock runtime measured **3.3s on 2026-08-22** with a warm `uv build`
+cache (a dated record, not a budget). For scale, the whole `Behave` step of
+`gz check` is 29.8s across 401 scenarios, so this one is roughly a tenth of it.
+An earlier revision of this page claimed "30-90 seconds ... dominated by wheel
+build and venv creation"; that figure was never re-measured and the cost it
+described drove a recommendation to exclude the scenario (GHI #860). Cold-cache
+runtime is higher and has not been measured.
 
-The scenario is tagged `@slow` and is **excluded from the standard `gz test`
-smoke run** by default. Invoke it explicitly when verifying distribution
-contract changes:
+The scenario runs in the **`Behave` step of the full `gz check`**, which is the
+pre-push gate. It is not excluded by a tag, and CI that runs `gz check` is
+already gating on T0 distribution drift — no extra step is needed.
+
+Two scopes do skip it, both deliberately:
+
+| Scope | Behaviour |
+|---|---|
+| `gz check --fast` | Drops the whole `Behave` step (`_FAST_SKIPPED_STEPS`) — inner-loop scope, and it records no verified fingerprint, so it cannot stand in for the gate |
+| `gz check --reuse-verified` | Skips the run entirely when this exact tree content already passed a full check |
+
+Invoke the scenario alone when iterating on distribution contract changes:
 
 ```bash
 uv run -m behave features/distribution_invariant.feature
 ```
 
-CI configurations that gate on T0 distribution drift should add this command
-as an explicit step rather than relying on the default `gz check` cascade.
+> **Corrected 2026-08-22 (GHI #860).** This section previously said the scenario
+> was "tagged `@slow` and **excluded from the standard `gz test` smoke run** by
+> default", and advised CI to add it as an explicit step "rather than relying on
+> the default `gz check` cascade". Every clause was wrong: nothing filtered on
+> `@slow`, `gz test` runs `unittest-parallel` and never invoked behave at all, and
+> the `gz check` cascade *does* run the scenario — so the advice would have had CI
+> authors add a duplicate 30-90s step to cover something already covered. The tag
+> has been removed and `gz validate --test-tiers` now fails closed on a tier-shaped
+> tag, because giving `@slow` a reader would re-introduce the third test tier
+> GHI #182 removed.
 
 ## Drift detection — both directions
 

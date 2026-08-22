@@ -1433,5 +1433,71 @@ class VersionReleaseAuditUndocumentedTagSweep(unittest.TestCase):
         )
 
 
+class TestTierTagsOnFeatureFiles(unittest.TestCase):
+    """A test tier expressed as a behave TAG is still a tier (GHI #860).
+
+    ``audit_test_tiers`` enforced GHI #182's two-runners contract on two of the
+    three surfaces a tier boundary can be crossed — a ``tests/<tier>/`` directory
+    and a ``--<tier>`` parser flag — and never read the third.
+    ``features/distribution_invariant.feature`` carried ``@slow`` for as long as
+    the audit had existed, and the audit reported green while blind to one of the
+    two runners its own docstring names.
+
+    The tag was inert — nothing filtered on it — which is what made the obvious
+    remedy the wrong one: giving ``@slow`` a reader would have re-introduced
+    exactly the tier GHI #182 removed.
+
+    @covers GHI #860
+    """
+
+    @staticmethod
+    def _feature(root: Path, name: str, tag_line: str) -> None:
+        features = root / "features"
+        features.mkdir(parents=True, exist_ok=True)
+        (features / name).write_text(
+            "Feature: probe\n" + tag_line + "  Scenario: does a thing\n    Given a step\n",
+            encoding="utf-8",
+        )
+
+    def test_tier_tag_on_a_feature_is_a_violation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._feature(root, "probe.feature", "  @slow\n")
+            errors = audit_test_tiers(root)
+            self.assertEqual(len(errors), 1, [e.message for e in errors])
+            self.assertIn("@slow", errors[0].message)
+            self.assertEqual(errors[0].artifact, "features/probe.feature")
+
+    def test_every_removed_tier_name_is_caught(self) -> None:
+        """The forbidden set mirrors the directory arm, never a subset of it."""
+        for tag in ("@integration", "@e2e", "@slow", "@bdd"):
+            with tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                self._feature(root, "probe.feature", "  " + tag + "\n")
+                errors = audit_test_tiers(root)
+                self.assertEqual(
+                    len(errors), 1, f"{tag} must be caught; got {[e.message for e in errors]}"
+                )
+
+    def test_wip_is_not_a_tier(self) -> None:
+        """Negative control, and the reason the forbidden set is not "every tag".
+
+        ``@wip`` has a real reader (``behave.ini``'s ``default_tags = ~@wip``) and
+        marks scenarios whose steps are unauthored. Unfinished work is not a test
+        tier, and 37 live uses would break if this audit could not tell them apart.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._feature(root, "probe.feature", "  @wip\n  @REQ-0.0.1-01-01\n")
+            self.assertEqual(audit_test_tiers(root), [])
+
+    def test_a_tag_that_merely_starts_with_a_tier_name_is_not_caught(self) -> None:
+        """Whole-tag match: ``@slower`` is a different tag, not a tier."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._feature(root, "probe.feature", "  @slower @e2e-ish\n")
+            self.assertEqual(audit_test_tiers(root), [])
+
+
 if __name__ == "__main__":
     unittest.main()

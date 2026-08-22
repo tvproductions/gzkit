@@ -180,12 +180,25 @@ def audit_class_size(project_root: Path) -> list[ValidationError]:
 
 
 def audit_test_tiers(project_root: Path) -> list[ValidationError]:
-    """Fail if a third test tier re-appears under ``tests/`` or CLI flags.
+    """Fail if a third test tier re-appears as a directory, a CLI flag, or a tag.
 
     GHI #182 removed ``tests/integration/`` and the ``--integration`` /
     ``--e2e`` / ``--slow`` flags on ``gz test``. The two runners —
     ``unittest`` over ``tests/`` and ``behave`` over ``features/`` — are the
     only test tiers. Any re-introduction is drift.
+
+    THREE surfaces, because a tier boundary can be crossed in three places and
+    this audit used to reach two of them (GHI #860). A tier expressed as a behave
+    TAG was invisible: ``features/distribution_invariant.feature`` carried
+    ``@slow`` for as long as this audit has existed, and the audit reported green
+    while blind to one of the two runners its own contract names. The tag was
+    inert — nothing filtered on it — so the remedy anyone would reach for was to
+    give it a reader, which is precisely the tier GHI #182 removed.
+
+    ``@wip`` is NOT a tier and is deliberately absent from the forbidden set: it
+    is an implemented mechanism with a real reader (``behave.ini``'s
+    ``default_tags = ~@wip``) marking scenarios whose steps are unauthored. The
+    distinction is what the tag partitions — unfinished work is not a test tier.
     """
     errors: list[ValidationError] = []
     forbidden_dirs = ("integration", "e2e", "slow", "bdd")
@@ -224,4 +237,45 @@ def audit_test_tiers(project_root: Path) -> list[ValidationError]:
                             ),
                         )
                     )
+    errors.extend(_forbidden_feature_tag_errors(project_root))
+    return errors
+
+
+#: Tier names, as behave tags. Mirrors ``forbidden_dirs`` above rather than
+#: widening it: a tier is a tier whichever surface expresses it. ``@wip`` is
+#: absent by design — see :func:`audit_test_tiers`.
+_FORBIDDEN_FEATURE_TAGS = ("@integration", "@e2e", "@slow", "@bdd")
+
+
+def _forbidden_feature_tag_errors(project_root: Path) -> list[ValidationError]:
+    """Return an error per tier-shaped tag found on a ``.feature`` file (GHI #860).
+
+    Matches on whole tags so ``@slower`` or ``@e2e-ish`` do not trip it, and
+    reports the line so the finding points at the declaration rather than the
+    file.
+    """
+    features_root = project_root / "features"
+    if not features_root.is_dir():
+        return []
+    errors: list[ValidationError] = []
+    for feature in sorted(features_root.rglob("*.feature")):
+        try:
+            text = feature.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            tags = {token for token in line.split() if token.startswith("@")}
+            for tag in sorted(tags & set(_FORBIDDEN_FEATURE_TAGS)):
+                errors.append(  # noqa: PERF401 — one error per (line, tag) pair
+                    ValidationError(
+                        type="test_tiers",
+                        artifact=feature.relative_to(project_root).as_posix(),
+                        message=(
+                            f"Forbidden test-tier tag `{tag}` on line {lineno} — "
+                            "third test tier anti-pattern. The two runners are "
+                            "unittest and behave; a tier expressed as a tag is "
+                            "still a tier. See GHI #182, GHI #860."
+                        ),
+                    )
+                )
     return errors
