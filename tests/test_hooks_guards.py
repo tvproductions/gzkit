@@ -376,18 +376,37 @@ class TestMxCheckpointSeam(unittest.TestCase):
             code, _ = self._sweep(self._hangar(td), "forbid_unattested_obpi_completion_commits")
         self.assertEqual(code, 1, "the gate5-attestation floor member must keep blocking")
 
-    def test_critical_guards_pin_inside_the_hangar(self) -> None:
-        """Guards emitting CRITICAL pin by level, the `enforcement-floor` precedent (GHI #651)."""
-        from gzkit.mx import levels as mx_levels
+    def test_guards_that_must_never_demote_still_block(self) -> None:
+        """The four guards doctrine forbids demoting keep blocking inside the hangar.
 
-        criticals = [attr for _, attr, level in guards._GUARD_META if level == mx_levels.CRITICAL]
-        self.assertTrue(criticals, "at least one guard must pin by emitted CRITICAL level")
+        The names are listed HERE, derived from doctrine, and never read back out
+        of `_GUARD_META`. A first draft derived them from the table under test
+        (`[attr for ... if level == CRITICAL]`) and a mutant that downgraded the
+        Stage-2 fence to ERROR SURVIVED — the guard simply left the list the
+        assertion was built from. That is the tautological-test shape
+        `.gzkit/rules/tests.md` forbids: it could not fail when the behaviour
+        changed, because it re-derived its expectation from the change.
+        """
+        must_never_demote = {
+            # gate5_invariants members — pin by NAME (ADR-0.0.74 BI#3)
+            "forbid_manual_ledger_edits": "`ledger` — ledger integrity",
+            "forbid_unattested_obpi_completion_commits": "`gate5-attestation`",
+            # pinned by emitted CRITICAL — the quality.py precedent (GHI #651)
+            "_run_enforcement_floor": "the §5 enforcement-claim meta-validator",
+            "forbid_post_authoring_src_commits": "the Stage-2 fence (GHI #844)",
+        }
+        registered = {attr for _, attr, _ in guards._GUARD_META}
+        self.assertEqual(
+            set(must_never_demote) - registered,
+            set(),
+            "a guard doctrine forbids demoting is no longer registered at all",
+        )
         with tempfile.TemporaryDirectory() as td:
             root = self._hangar(td)
-            for attr in criticals:
+            for attr, why in must_never_demote.items():
                 with self.subTest(guard=attr):
                     code, _ = self._sweep(root, attr)
-                    self.assertEqual(code, 1, f"{attr} emits CRITICAL and must never demote")
+                    self.assertEqual(code, 1, f"{attr} must never demote — {why}")
 
     def test_nothing_demotes_outside_the_hangar(self) -> None:
         """Outside the marker every registered guard still blocks — demotion cannot leak."""

@@ -228,6 +228,41 @@ def _project_root() -> Path | None:
     return root if (root / "pyproject.toml").is_file() else None
 
 
+def _mx_demoted(guard_name: str, root: Path) -> bool:
+    """Return True when an open MX hangar demotes this guard to advisory.
+
+    ADR-0.0.74 Boundary Invariant #2 -- every fail-closed funnel resolves its
+    severity through the shared checkpoint. This chore runs as its own
+    pre-commit entrypoint, so it consults the checkpoint itself rather than
+    inheriting the seam in ``gzkit.hooks.guards`` (GHI #843).
+
+    The guard name is deliberately ``ledger-vocabulary-inertness`` and NOT
+    ``ledger``: ``ledger`` is a ``GATE5_INVARIANTS`` member meaning ledger
+    INTEGRITY, which never demotes. This chore audits schema-vocabulary
+    disclosure, a different subject that shares a word.
+
+    Fails CLOSED: a broken or half-repaired ``gzkit.mx`` is precisely the state
+    MX mode exists to survive, so anything unresolvable blocks rather than
+    demotes.
+    """
+    try:
+        from gzkit.mx import checkpoint, levels
+
+        return not checkpoint.blocks(guard_name, levels.ERROR, root)
+    except Exception:  # noqa: BLE001 - an unreadable checkpoint must never demote a guard
+        return False
+
+
+def _mx_notice(guard_name: str) -> str:
+    """Return the shared operator-facing demotion line, or a local fallback."""
+    try:
+        from gzkit.mx import checkpoint
+
+        return checkpoint.demote_notice(guard_name)
+    except Exception:  # noqa: BLE001 - never crash a hook over its own advisory text
+        return f"[MX advisory] guard '{guard_name}' demoted by the open MX hangar marker."
+
+
 def main(argv: list[str] | None = None) -> int:
     """Entry point."""
     parser = argparse.ArgumentParser(description="Ledger vocabulary inertness audit")
@@ -248,7 +283,11 @@ def main(argv: list[str] | None = None) -> int:
         return self_test()
     if args.report:
         return report(root, write=args.write)
-    return enforce(root)
+    rc = enforce(root)
+    if rc and _mx_demoted("ledger-vocabulary-inertness", root):
+        print(_mx_notice("ledger-vocabulary-inertness"), file=sys.stderr)
+        return 0
+    return rc
 
 
 if __name__ == "__main__":

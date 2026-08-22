@@ -462,9 +462,9 @@ def _guard_grounds(guard_name: str, emitted_level: int, root: Path) -> bool:
     rather than silently demoting the guard that could not be resolved.
     """
     try:
-        from gzkit.mx import checkpoint, disposition  # noqa: PLC0415
+        from gzkit.mx import checkpoint  # noqa: PLC0415
 
-        return disposition.grounds(checkpoint.resolve(guard_name, emitted_level, root))
+        return checkpoint.blocks(guard_name, emitted_level, root)
     except Exception:  # noqa: BLE001 - an unreadable checkpoint must never demote a guard
         return True
 
@@ -486,11 +486,9 @@ def run_guards(root: Path) -> int:
             continue
         if _guard_grounds(guard_name, emitted_level, root):
             return rc
-        _safe_print(
-            f"[MX advisory] guard '{guard_name}' reported a violation and was demoted "
-            "to advisory by the open Maintenance Hangar marker (.gzkit/mx.json). "
-            "It is NOT waived -- `gz mx exit` re-runs every guard at full strength."
-        )
+        from gzkit.mx import checkpoint  # noqa: PLC0415
+
+        _safe_print(checkpoint.demote_notice(guard_name))
     return 0
 
 

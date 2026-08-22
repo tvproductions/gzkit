@@ -43,3 +43,34 @@ def is_advisory(guard_name: str, project_root: Path | None = None) -> bool:
     nothing demotes, inside the hangar non-invariant guards demote to ADVISORY.
     """
     return resolve(guard_name, _levels.ERROR, project_root) == _disposition.Route.ADVISORY
+
+
+def blocks(
+    guard_name: str,
+    emitted_level: int,
+    project_root: Path | None = None,
+) -> bool:
+    """Return True when a finding from *guard_name* must block (ground).
+
+    The consumer-facing composition of :func:`resolve` and
+    :func:`gzkit.mx.disposition.grounds`, so a guard asks one question instead of
+    re-deriving the level->route->grounds chain at its own call site. Added for
+    the pre-commit enforcement surface (GHI #843), which has three separate
+    entrypoints and would otherwise carry three copies of the composition --
+    the N-inline-substitutions shape parent ADR-0.0.74 BI#2 exists to prevent.
+    """
+    return _disposition.grounds(resolve(guard_name, emitted_level, project_root))
+
+
+def demote_notice(guard_name: str) -> str:
+    """Return the operator-facing line a consumer prints when a guard is demoted.
+
+    Demotion is announced, never silent: advisory means non-grounding, not
+    discarded. One authority for the wording so every consuming surface says the
+    same thing about what did and did not just happen (GHI #843).
+    """
+    return (
+        f"[MX advisory] guard '{guard_name}' reported a violation and was demoted "
+        "to advisory by the open Maintenance Hangar marker (.gzkit/mx.json). "
+        "It is NOT waived -- `gz mx exit` re-runs every guard at full strength."
+    )
