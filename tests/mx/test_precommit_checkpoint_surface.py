@@ -44,7 +44,8 @@ _NOT_A_GZKIT_GUARD = {
     "unittest": "test runner, manual stage",
     "surface-fidelity-cheap": "`gz validate` scopes -- already checkpointed at "
     "validate_cmd.py `_run_scope_checks`",
-    "authorship": "`gz validate` scope -- already checkpointed (and demoting: GHI #852)",
+    "authorship": "`gz validate` scope -- checkpointed, and pinned CRITICAL so it "
+    "never demotes (GHI #852)",
     "gz-check-pre-push": "`gz check` -- already checkpointed at quality.py `_apply_mx_seam`",
     "forbid-pytest": "the gzkit.hooks.guards seam itself; fenced by "
     "tests/test_hooks_guards.py::TestMxCheckpointSeam",
@@ -195,7 +196,9 @@ class TestChoreCheckersConsultTheCheckpoint(unittest.TestCase):
 
         Registering it as `ledger` would pin a demotable chore to the floor; the
         inverse error -- a genuine integrity guard registered under a non-floor
-        name -- is GHI #852 on the `authorship` scope.
+        name -- was GHI #852 on the `authorship` scope, fixed by pinning that
+        scope's LEVEL to CRITICAL rather than by moving its NAME into the floor
+        (tests/mx/test_authorship_floor_pin.py).
         """
         from gzkit.mx.invariants import GATE5_INVARIANTS
 

@@ -92,7 +92,12 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Preflight": ("preflight", _mx_levels.ERROR),
     "Surface fidelity": ("surface-fidelity", _mx_levels.ERROR),
     "Line endings": ("line-endings", _mx_levels.ERROR),
-    "Authorship policy": ("authorship", _mx_levels.ERROR),
+    # CRITICAL, not ERROR: enforces `operator-pii` (a GATE5_INVARIANTS member)
+    # under a non-floor name, so the floor's string match never sees it. Pinned
+    # by LEVEL for the same reason as the validate scope — an email-suffix check
+    # is a narrower proxy for the operator-PII prohibition and may not be bound
+    # to the floor member (ADR-0.0.74 § Consequences/Negative #7). GHI #852.
+    "Authorship policy": ("authorship", _mx_levels.CRITICAL),
     "Smoke tier": ("smoke-tier", _mx_levels.ERROR),
     "Dispatch absorption marker": ("dispatch-absorption-marker", _mx_levels.ERROR),
     # §5 enforcement-claim meta-validator — pinned CRITICAL so a FACADE never

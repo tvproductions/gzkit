@@ -39,6 +39,7 @@ from gzkit.governance.trust_audits import (
 )
 from gzkit.instruction_audit import audit_instructions
 from gzkit.models.exemplar import ExemplarCorpus
+from gzkit.mx import levels as _mx_levels
 from gzkit.validate import (
     ValidationError,
     parse_frontmatter,
@@ -65,6 +66,19 @@ class _ScopeEntry(NamedTuple):
     tier: str  # "default" (no-flag `gz check`) | "explicit" (flag-gated)
     in_other_scopes: bool  # counts toward validate()'s _other_scopes_active predicate
     run: Callable[[Path, str | None], list[ValidationError]]
+    # Severity this scope emits its drift at, resolved through the ONE leveled
+    # severity authority (``gzkit.mx.checkpoint``, ADR-0.0.74 BI#2). ERROR is the
+    # right default — an ordinary scope demotes to advisory inside an open hangar,
+    # which is the repair mode the hangar exists to provide. CRITICAL pins a scope
+    # so it never demotes, the same by-LEVEL lever ``guards.py`` uses for
+    # ``post-authoring-src-commits`` and ``quality.py`` for "Enforcement floor".
+    #
+    # This field exists because it did not, and its absence was GHI #852: every
+    # scope was resolved at a hardcoded ERROR, so a scope enforcing a floor
+    # concern under a non-floor NAME had no way to say "I never demote" short of
+    # renaming itself into ``GATE5_INVARIANTS`` — the narrower-proxy binding
+    # ADR-0.0.74 § Consequences/Negative #7 forbids.
+    level: int = _mx_levels.ERROR
 
 
 def _delivery_arm_enabled() -> bool:
@@ -278,7 +292,20 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)
     ),
-    _ScopeEntry("authorship", "explicit", True, lambda r, _f: _ta().audit_authorship(r)),
+    # CRITICAL, not ERROR: this scope enforces `operator-pii`, a GATE5_INVARIANTS
+    # member, at the moment the address is stamped into a repo-bound artifact.
+    # Pinned by LEVEL rather than registered under the floor NAME because an
+    # email-suffix check is narrower than the operator-PII prohibition it serves
+    # (which also covers trailers, file content, attestation text and the ledger),
+    # and binding a narrower proxy to a floor member is forbidden by ADR-0.0.74
+    # § Consequences/Negative #7. GHI #852.
+    _ScopeEntry(
+        "authorship",
+        "explicit",
+        True,
+        lambda r, _f: _ta().audit_authorship(r),
+        _mx_levels.CRITICAL,
+    ),
     _ScopeEntry(
         "python_version_pins",
         "explicit",
@@ -900,12 +927,22 @@ def _run_scope_checks(
     frontmatter_adr: str | None = None,
 ) -> list[ValidationError]:
     """Dispatch validation checks based on active scopes."""
-    from gzkit.mx import checkpoint, disposition, levels  # noqa: PLC0415
+    from gzkit.mx import checkpoint, disposition  # noqa: PLC0415
+
+    scope_levels = {e.stem: e.level for e in VALIDATOR_REGISTRY}
 
     def _grounds(scope: str) -> bool:
-        # Each scope emits its drift at ERROR and routes through the one leveled
-        # severity authority (parent ADR-0.0.74 BI#2); fail-closed iff grounding.
-        return disposition.grounds(checkpoint.resolve(scope, levels.ERROR, project_root))
+        # Each scope emits its drift at the level IT declares — never a hardcoded
+        # one — and routes through the one leveled severity authority (parent
+        # ADR-0.0.74 BI#2); fail-closed iff grounding. Reading the level from the
+        # registry is what lets a scope enforcing a floor concern pin itself
+        # without renaming into GATE5_INVARIANTS (GHI #852). An unregistered scope
+        # falls back to CRITICAL rather than ERROR: a name nothing declares is a
+        # name nothing vouched for, and the safe reading of "I do not know this
+        # guard" is that it must not be quietly demoted.
+        return disposition.grounds(
+            checkpoint.resolve(scope, scope_levels.get(scope, _mx_levels.CRITICAL), project_root)
+        )
 
     errors: list[ValidationError] = []
     default_runners = _default_scope_runners(project_root, frontmatter_adr)
