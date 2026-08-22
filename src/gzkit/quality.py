@@ -16,7 +16,7 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.exchange_records import exchange_dir
 from gzkit.handoff_validation import (

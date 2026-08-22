@@ -63,7 +63,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.shell_reading import (
     PIPE,
     STATEMENT_SEPARATORS,

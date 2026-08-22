@@ -27,7 +27,7 @@ Documentation is a first-class deliverable and must track behavior changes in th
 
 ## Validation bundle
 
-Cite the **ARB-wrapped canonical invocations** — they emit the receipt IDs attestation requires. Bare (non-ARB) commands emit no receipt and **do not satisfy** the Gate-5 evidence requirement; on Heavy lane and `foundation` kind, missing receipt IDs are fail-closed (`gz adr emit-receipt` exits 3 before attestation is recorded). Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`; see `AGENTS.md` § Attestation.
+Cite the **ARB-wrapped canonical invocations** — they emit the receipt IDs attestation requires. Bare (non-ARB) commands emit no receipt and **do not satisfy** the Gate-5 evidence requirement; on Heavy lane and `foundation` kind, missing receipt IDs are fail-closed (`gz adr emit-receipt` exits 3 before attestation is recorded). Locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/canonical_steps.py`; see `AGENTS.md` § Attestation.
 
 ```bash
 uv run gz arb ruff

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any, NoReturn, cast
 
 from gzkit.arb.paths import receipts_root
-from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_HUMAN,
     ATTESTATION_TYPE_OPERATOR_VERBATIM,
