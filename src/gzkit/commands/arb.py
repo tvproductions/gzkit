@@ -109,6 +109,17 @@ def arb_red_cmd(
             f"failure_class={witness.failure_class} receipt={receipt_path}"
         )
 
+    if witness.failure_class == "not-applicable":
+        print(
+            f"RED WITNESS DID NOT RUN: no production hunks were withheld against base "
+            f"{witness.base_commit[:12]}, so the base tree already carries {req}'s "
+            "implementation and its covering test would pass there no matter what it "
+            "asserts. This is NOT a finding about the test — do NOT rewrite it. The "
+            "experiment needs the production change still in the working tree; run the "
+            "witness while the work is in flight, before it lands (GHI #839).",
+            file=sys.stderr,
+        )
+        return 0
     if witness.failure_class == "none":
         print(
             f"RED WITNESS FAILED: {req}'s covering test PASSED against base commit "

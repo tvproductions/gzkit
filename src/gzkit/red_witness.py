@@ -18,6 +18,12 @@ runs the scoped test there. Three outcomes, and they are not equivalent:
   * ``none``      — the test PASSED without the production code. It cannot fail.
     This is exactly the ``AGENTS.md`` § DO IT RIGHT Rule 6 test "that can't fail
     when business logic changes," and it is rejected.
+  * ``not-applicable`` — nothing was withheld, so the experiment never ran. NOT a
+    verdict on the test (GHI #839). The premise of every class above is that the
+    implementation is ABSENT from the base tree, and ``resolve_base_commit``
+    returns HEAD — so once the production code lands, the base tree already
+    carries it, every covering test passes, and a ``none`` would be a confident
+    accusation against a test that was never actually tested.
 
 Why a base-tree run and not superpowers' commit-the-failing-test witness: gzkit's
 trunk is green and pre-commit runs unittest, so a RED can never be committed to
@@ -39,7 +45,7 @@ from pydantic import BaseModel, ConfigDict, Field
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-FailureClass = Literal["assertion", "error", "none"]
+FailureClass = Literal["assertion", "error", "none", "not-applicable"]
 
 # `FAILED (failures=2, errors=1)` — unittest's own summary line.
 _FAILED_SUMMARY_RE = re.compile(r"FAILED\s*\((?P<body>[^)]*)\)")
@@ -67,9 +73,12 @@ class RedWitness(BaseModel):
         """True when the test demonstrably fails without its implementation.
 
         A weak RED (``error``) still witnesses falsifiability — the test cannot pass
-        without the production change. Only ``none`` means the test proves nothing.
+        without the production change. ``none`` means the test proves nothing, and
+        ``not-applicable`` means the RUN proves nothing — different findings, and
+        neither is a RED. Enumerated positively rather than as ``!= "none"`` so a
+        future class cannot default into counting as falsifiability (GHI #839).
         """
-        return self.failure_class != "none"
+        return self.failure_class in {"assertion", "error"}
 
 
 def classify_failure(exit_status: int, output: str) -> FailureClass:
@@ -137,6 +146,43 @@ def changed_test_files(
     return sorted(Path(p) for p in paths if p.endswith(".py"))
 
 
+def withheld_production_files(
+    project_root: Path, base_commit: str, tests_dir: str = "tests"
+) -> list[Path]:
+    """Return the repo-relative Python files the graft deliberately leaves behind.
+
+    This is the exact complement of :func:`changed_test_files`: the graft copies in
+    changed TEST modules, so everything else that differs from the base tree is what
+    the experiment withholds. Defined by exclusion rather than by a source directory
+    because the withheld set is a property of the graft, not of any one repository's
+    layout — a project with production modules outside ``src/`` withholds those too.
+
+    The experiment's premise — the implementation under test is ABSENT from the base
+    tree — is checked here, never assumed. It holds while work is in flight and fails
+    the moment the production code lands, because ``resolve_base_commit`` returns
+    HEAD. An empty result means nothing was withheld, so the run cannot tell a hollow
+    test from a present implementation and must report neither (GHI #839).
+
+    Deliberately keyed on the PRODUCTION side rather than on ``changed_test_files``:
+    with the code committed and the tests still uncommitted, the changed-test list is
+    non-empty while the implementation is present anyway, and a check keyed there
+    would still hand back a false ``none``.
+
+    Scoped to ``.py`` for the same reason the graft is: a dirty ledger, a receipt, or
+    a scratch file is not a withheld production hunk, and counting one would restore
+    the premise on a tree that has none.
+    """
+    prefix = f"{tests_dir.rstrip('/')}/"
+    paths: set[str] = set()
+    diff = _git(["diff", "--name-only", base_commit], project_root)
+    if diff.returncode == 0:
+        paths.update(line for line in diff.stdout.splitlines() if line.strip())
+    untracked = _git(["ls-files", "--others", "--exclude-standard"], project_root)
+    if untracked.returncode == 0:
+        paths.update(line for line in untracked.stdout.splitlines() if line.strip())
+    return sorted(Path(p) for p in paths if p.endswith(".py") and not p.startswith(prefix))
+
+
 @contextmanager
 def base_tree_worktree(project_root: Path, base_commit: str) -> Iterator[Path]:
     """Check out ``base_commit`` into a throwaway detached worktree, then remove it.
@@ -198,6 +244,26 @@ def run_red_witness(
         raise ValueError(f"no covering tests supplied for {req_id}; nothing to witness")
 
     base = base_commit or resolve_base_commit(project_root)
+
+    # Check the premise BEFORE spending a worktree on it. With nothing withheld the
+    # base tree already carries the implementation, so the run would pass and be
+    # classified `none` — an accusation the experiment never earned (GHI #839).
+    withheld = withheld_production_files(project_root, base, tests_dir)
+    if not withheld:
+        return RedWitness(
+            req_id=req_id,
+            base_commit=base,
+            test_names=sorted(test_names),
+            exit_status=0,
+            failure_class="not-applicable",
+            output_tail=(
+                f"RED witness did not run: no production hunks were withheld against "
+                f"base {base[:12]}. The base tree already carries the implementation "
+                f"under test, so the covering test would pass there no matter what it "
+                f"asserts. This is NOT a finding about the test."
+            ),
+        )
+
     test_files = changed_test_files(project_root, base, tests_dir)
     runner = list(test_runner) if test_runner else list(DEFAULT_TEST_RUNNER)
 
@@ -261,4 +327,5 @@ __all__ = [
     "resolve_base_commit",
     "resolve_covering_test_names",
     "run_red_witness",
+    "withheld_production_files",
 ]

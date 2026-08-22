@@ -81,7 +81,12 @@ def _collect(project_root: Path) -> tuple[dict[str, dict], dict[str, dt.datetime
         name = event.get("event")
         if name == "red_receipt_emitted":
             req_id = event.get("req_id")
-            if isinstance(req_id, str):
+            # A `not-applicable` run withheld nothing, so it witnessed nothing and is
+            # not recorded here (GHI #839). Skipping rather than storing also keeps it
+            # from OVERWRITING an earlier genuine witness for the same REQ — this dict
+            # keeps the last event per REQ, so a void re-run after a real one would
+            # otherwise erase the finding it could not reproduce.
+            if isinstance(req_id, str) and event.get("failure_class") != "not-applicable":
                 witnesses[req_id] = event
         elif name == "obpi_receipt_emitted" and event.get("receipt_event") == "completed":
             obpi_id = event.get("obpi_id") or event.get("id")

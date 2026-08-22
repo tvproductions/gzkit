@@ -826,12 +826,15 @@ class RedReceiptEmittedEvent(_EventBase):
       ``assertion``.
     * ``none``      — the test PASSED with the production hunks withheld. It cannot
       fail, which is the ``AGENTS.md`` Rule-6 defect, and the gate rejects it.
+    * ``not-applicable`` — nothing was withheld, so the experiment never ran. Not a
+      verdict on the test; recorded so a void run is distinguishable from a hollow
+      one rather than sharing ``none``'s name (GHI #839).
     """
 
     event: Literal["red_receipt_emitted"]
     req_id: str = Field(..., min_length=1, description="BEHAVIOR REQ under witness")
     receipt_id: str = Field(..., min_length=1, description="ARB red receipt run_id")
-    failure_class: Literal["assertion", "error", "none"] = Field(
+    failure_class: Literal["assertion", "error", "none", "not-applicable"] = Field(
         ..., description="How the test failed against the base tree; a closed vocabulary"
     )
     base_commit: str = Field(..., min_length=7, description="Commit the test ran against")
