@@ -280,6 +280,10 @@ See [`docs/governance/agent-contract-rationale.md` § Attestation — worked exa
 
 Route by thresholds, not judgment. Default failure mode = over-applying ceremony.
 
+### Precondition — does an OBPI brief already own this work?
+
+- Before applying the routing thresholds, ask WHO OWNS THE WORK — the thresholds ask how big the fix is and where it surfaced, never whose work it is. Grep `docs/design/adr/*/*/obpis/*.md` for the surface path, entry id, or symbol first. A hit on a LIVE brief (Draft, pending, in_progress) makes routing operator-level: surface the brief id, its status, its parent ADR, and the matching requirement lines, then wait — never resolve it yourself (Behavior Rules — Always #9). A TERMINAL brief does not block; that work shipped, and a fresh defect against the same surface is an ordinary GHI. Surface the DISPOSITION, never the bare match: a brief enumerating both sides of a pair matches either side, so a presence check can report agreement where the ruling in fact INVERTED it. (Advisory — the search arm is mechanized in `ghi-author` Step 0 and pinned by tests; whether a brief OWNS a finding is a reading gzkit does not model.) See `docs/governance/defect-fix-routing.md` § Precondition (GHI #864).
+
 ### Direct fix is the right route when ALL hold
 
 | Criterion | Threshold |
