@@ -1,5 +1,121 @@
 # gzkit Release Notes
 
+## v0.34.5 (2026-08-23)
+
+### Highlights
+
+This release is about **gates that reported green while enforcing nothing.**
+Governance hooks bound to editor tool names never fired when a file was written
+through Bash, so six of them could be walked straight past. A falsifiability
+witness could not fail on work that had already landed. A shrink-only size
+ratchet had no arm for the one direction that was actually growing. And the
+maintenance hangar's demotion both over-reached — silencing the operator-PII
+guard — and under-reached, never touching pre-commit at all. Each now binds to
+an observed state rather than to a proxy for one.
+
+Two ceremonies also stopped deadlocking: completing an OBPI could stamp its
+receipt out of timestamp order and leave the tree unpushable, and an OBPI that
+launched the pipeline without completing was stuck permanently.
+
+Finally, the repository's own release history is reconciled. Three published
+releases were documented nowhere in the repo, and one documented release had no
+reachable tag.
+
+### Improvements
+
+- **#835** — `gz check` runs its read-only gate steps concurrently behind a
+  measured declaration, and skips a tree it has already verified.
+- **#858** — Handoff-document validation batches its tracked-path lookup,
+  cutting that step from 29.8s to 4.3s.
+- **#838** — Handoff documents carry the settled-ruling corpus by reference
+  rather than copied prose, and the integrity audit reads the store itself.
+- **#861** — Stage-2 implementer prompts carry the persona and the Why, and cite
+  the threshold authority instead of restating its values.
+- **#854** — All seven new-verb obligations are named in one authority,
+  replacing three partial lists that disagreed.
+- **#855** — The MX floor rule names both opt-in mechanisms and when each
+  applies.
+- **#864** — `ghi-author` Step 0 searches the OBPI briefs that own the work, and
+  the brief-ownership precondition is seated in `AGENTS.md` § Defect-fix routing.
+
+### Bug fixes
+
+**Gate integrity**
+
+- **#844**, **#847** — Governance hooks bound to editor tool names were bypassed
+  by any file write made through Bash. Production writes, OBPI completion, and
+  governance edits are now witnessed at the commit locus.
+- **#852** — The MX hangar demoted the authorship guard, so the operator-PII
+  check stopped firing inside a hangar session.
+- **#843** — Hangar demotion never reached pre-commit, so a sanctioned repair
+  was refused at commit time anyway.
+- **#848** — `gz mx exit` left its session lock behind, making the hangar
+  single-use per repository.
+- **#839** — `gz arb red` accused a test of being hollow when the experiment
+  itself was void.
+- **#845** — An undispatched Stage 2 was neither visible nor refused.
+- **#853** — The module-size ratchet had no arm for an entry looser than the
+  module it governs.
+- **#850** — The newest handoff reached a resuming session before its guard had
+  run.
+
+**Ceremony deadlocks**
+
+- **#842** — Completing an OBPI could stamp its receipt ahead of the event
+  written above it, leaving the ledger unpushable.
+- **#867** — An OBPI that launched the pipeline without completing was
+  permanently stuck with an unpushable tree.
+- **#863** — Retiring a corpus entry promised that no recomposition was implied,
+  then blocked the push.
+- **#859** — A refused `gz handoff create` still wrote to the append-only
+  rulings store.
+- **#869** — Commit-locus rows failed an attribution signature they cannot
+  satisfy.
+
+**Record and doctrine drift**
+
+- **#828**, **#829**, **#830** — The release audit judged a tag by local
+  presence, checked only the current version, and was blind to a published
+  release documented nowhere. It now sweeps both directions across every
+  documented release.
+- **#862** — Seven invariant texts were stored twice in the corpus, so an
+  amendment could not be clean.
+- **#840** — Renditions were graded against consumers their content type never
+  routes to.
+- **#805** — The generated resume gate still advertised an arm retired
+  2026-08-15.
+- **#846** — Four skills pointed agents at a promotion that could never occur.
+- **#831** — `gz-adr-create` claimed `gz plan create` books `adr_created` for
+  pool ADRs.
+- **#857** — Four tests passed only in the default discovery order and failed
+  under shuffle.
+- **#860** — The `@slow` tier boundary was not enforced on feature tags.
+
+### Gate Evidence
+
+- Qualifier: behavior-level GHIs closed since `v0.34.4`
+  (2026-08-18T07:11:23-05:00). 34 discovered — 31 qualified, 2 excluded (#833,
+  #834), 1 adjudicated.
+- **#841 — `unclassified_reference`, adjudicated *routed, not shipped***
+  (`gz-patch-release` § Step 1c case 2). Its only citing commit in range is
+  `94d2efa01 docs(adr-pool): author ADR-pool.rulings-as-first-class-events
+  (GHI #841)`, and the GHI closed `superseded` against that pool ADR. Excluded
+  from the narrative and from Stats.
+- **#840 carries no `fix(...)` commit.** Its remedy shipped inside
+  `0f666fa94 feat(content): collapse AgentContract to the root contract and
+  fence it (OBPI-0.35.0-09)`; release content despite the subject shape.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `uv run gz patch release` (0.34.4 → 0.34.5).
+- Manifest: `docs/releases/PATCH-v0.34.5.md`; `patch-release` ledger event
+  appended.
+- Operator approval: verbatim *"that looks good, let's do that as a patch
+  release (it is substantial)"* — g0, 2026-08-23.
+- Git-sync: `uv run gz git-sync --apply` run immediately before publish.
+
+### Stats
+
+- 31 GHIs closed
+
 ## v0.34.4 (2026-08-18)
 
 ### Highlights

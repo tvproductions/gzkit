@@ -17,6 +17,58 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.5 (2026-08-23)
+
+### Release highlights
+
+- Six governance hooks bound to editor tool matchers were bypassed by any file write made through Bash; the write-side fences move to the commit locus, where `git diff --cached` sees the change regardless of which tool made it (GHI #844, GHI #847)
+- The repository's own release history is reconciled in both directions — a tag is judged by reachability rather than local presence, every documented release is swept rather than only the current one, and a published release documented nowhere in the repo is now reachable by the audit (GHI #828, GHI #829, GHI #830)
+- Two ceremony deadlocks that left an unpushable tree are cleared: completion ledger rows stamp at write time rather than ahead of the event written above them, and reconcile asks reachability instead of single-hop membership (GHI #842, GHI #867)
+
+### Added
+
+- `gz validate --module-size` reports a ratchet entry looser than the module it governs; the shrink-only ratchet had no arm for that direction and 861 lines went unrecorded (GHI #853)
+- The OBPI pipeline makes an undispatched Stage 2 visible and refuses it; `record_subagent_dispatch` had a model, a reader, and an aggregator but zero callers, so the dispatch record could never be written (GHI #845)
+- `ghi-author` Step 0 gains a third pre-flight query against `docs/design/adr/**/obpis/`, so an authored OBPI brief owning the same work is no longer invisible to the duplicate check by construction (GHI #864)
+- The release audit sweeps the inverse direction, so a tagged and published release carrying no `RELEASE_NOTES.md`, `CHANGELOG.md`, or manifest entry is detected; three such releases existed (GHI #830)
+
+### Changed
+
+- `gz check` runs its read-only gate steps concurrently behind a measured declaration, fingerprints the staged tree so the pre-push skip actually fires, and skips a tree it has already verified (GHI #835)
+- Handoff-document validation batches its tracked-path lookup; the `Handoff documents` step fell from 29.8s to 4.3s, having been 19% of the whole gate (GHI #858)
+- A handoff carries the settled-ruling corpus by reference to the append-only store instead of copied prose, and the settled-ruling integrity audit reads the store rather than the rendered document (GHI #838)
+- Stage-2 implementer prompts carry the persona and the Why, and cite the threshold authority rather than restating its values (GHI #861)
+- All seven new-verb CLI obligations are named in one authority; they had been described across three surfaces with no two agreeing, and registering one verb produced 21 first-run failures (GHI #854)
+- `.gzkit/rules/mx-mode.md` names both floor opt-in mechanisms — survival by guard name and survival by emitted level — and when each applies (GHI #855)
+- The release audit sweeps every documented release rather than point-checking `[project].version`, so a historical release that loses its tag is reachable (GHI #829)
+- The brief-ownership precondition is seated in `AGENTS.md` § Defect-fix routing: a live OBPI brief owning a finding makes routing operator-level, and a terminal brief does not block (GHI #864)
+
+### Fixed
+
+- Completion ledger rows are stamped at write time, so `gz obpi complete` no longer emits a receipt timestamped ahead of the adversarial-validation event written above it and leaves the ledger failing the append-only ts-order gate at push (GHI #842)
+- `gz obpi reconcile` asks reachability rather than single-hop membership, so an OBPI that launched the pipeline without completing is no longer permanently stuck with an unpushable tree (GHI #867)
+- Commit-locus `artifact_edited` rows are excused from task-envelope signature (a), which they have no attribution channel to satisfy (GHI #869)
+- Governance edits and OBPI completion are gated at the commit locus rather than on tool identity, closing the four sibling hooks still keyed on `file_path` after the first member of the family was repaired (GHI #847)
+- The MX checkpoint seam extends to the whole pre-commit surface, so a repair sanctioned by an open hangar is not refused at commit time by a guard the hangar never reached (GHI #843)
+- `gz mx exit` releases its session lock and `gz mx enter` reaps orphans, so the hangar is no longer single-use per repository (GHI #848)
+- `gz arb red` reports a void RED experiment instead of accusing the covering test, so a run over already-landed work no longer returns `failure_class=none` for every BEHAVIOR REQ and reads as a hollow-test finding (GHI #839)
+- SessionStart scans the advised handoff at the consumption moment, so a handoff authored and left uncommitted no longer reaches the next session unvalidated (GHI #850)
+- `gz handoff create` books rulings after validation rather than before, so a refused create no longer leaves rulings in the append-only store naming a document that was never written (GHI #859)
+- `gz content retire` warns on rendition drift and its help text no longer promises that no recomposition is implied while the pre-push gate blocks on exactly that (GHI #863)
+- `gz content remember` refuses a corpus append whose text is already live, and the root rendition is re-linked to the post-retirement corpus; seven invariant texts had been stored twice, so an amendment could not be clean (GHI #862)
+- Rendition grading routes by the consumer's own content type instead of the union of all routes, so a rendition is no longer graded for a consumer its content type never routes to (GHI #840)
+- The release audit judges a tag by reachability rather than local presence, so an unpushed tag no longer passes every gate; `v0.7.0` had sat local-only against an orphaned commit (GHI #828)
+- Four skills no longer cite a Superseded pool ADR as "awaiting promotion", and the lifecycle-pointer arm is re-homed onto `--cli-alignment` to fence the class (GHI #846)
+- `gz-adr-create`'s Trust Model states the pool carve-out: `gz plan create --kind pool` does not book an `adr_created` event (GHI #831)
+- The generated resume-gate hook and its source docstring no longer document a `Bash` arm removed 2026-08-14 (GHI #805)
+- Layered test patchers unwind LIFO so no mock outlives its test; four tests passed only in the default discovery order and failed under shuffle (GHI #857)
+- The test-tier boundary is enforced on feature tags, so `@slow` is read rather than declared and ignored (GHI #860)
+
+### Security
+
+- Write-side governance hooks fence production writes at the commit locus rather than on the `Write|Edit|NotebookEdit` tool matcher, closing a bypass in which any file write issued through Bash matched none of the six gates (GHI #844)
+- The authorship guard is pinned so an open MX hangar cannot demote it; hangar demotion had silenced the operator-PII check, which exists to prevent a leak whose recovery costs a history rewrite and a force-push (GHI #852)
+
 ## v0.34.4 (2026-08-18)
 
 ### Release highlights
