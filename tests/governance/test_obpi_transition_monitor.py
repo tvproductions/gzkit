@@ -117,3 +117,58 @@ class TestTransitionMonitor(TestCase):
                         f"is_allowed({from_state}, {to_state}) must be {expected} "
                         "per CANONICAL_TRANSITIONS membership",
                     )
+
+
+class TestTransitionReachability(TestCase):
+    """Verify multi-hop reachability, the coarse-projection predicate (GHI #867).
+
+    Frontmatter vocabulary is a COARSE PROJECTION of the fine six-state machine:
+    it can name DRAFTED, IMPLEMENTING, ATTESTED, WITHDRAWN and SUPERSEDED, and
+    has no term at all for PLANNED, VERIFIED or SYNCED. One frontmatter hop
+    therefore spans several canonical transitions, so the reconciler cannot ask
+    ``is_allowed`` -- that tests single-hop membership and refuses every legal
+    coarse move whose fine path crosses an unnameable state. Measured cost: a
+    launched OBPI that does not complete could never be reconciled Draft ->
+    Active, and its tree could not be pushed.
+
+    Reachability is DIRECTIONAL, so every protection ``is_allowed`` gave the
+    write boundary survives: terminal states have no outgoing transitions and
+    reach nothing, and the machine has no backward edges.
+    """
+
+    def setUp(self) -> None:
+        """Initialize the monitor once per test."""
+        self.monitor = TransitionMonitor()
+
+    def test_drafted_reaches_implementing_through_planned(self) -> None:
+        """The frontmatter Draft -> Active move is legal via the PLANNED waypoint.
+
+        DRAFTED -> IMPLEMENTING is not a declared single hop and must stay
+        refused by is_allowed; it IS reachable, and that is the predicate the
+        write boundary needs.
+        """
+        self.assertFalse(self.monitor.is_allowed(OBPIState.DRAFTED, OBPIState.IMPLEMENTING))
+        self.assertTrue(self.monitor.is_reachable(OBPIState.DRAFTED, OBPIState.IMPLEMENTING))
+
+    def test_drafted_reaches_attested_across_the_full_chain(self) -> None:
+        """Draft -> Completed spans four canonical transitions and is legal."""
+        self.assertTrue(self.monitor.is_reachable(OBPIState.DRAFTED, OBPIState.ATTESTED))
+
+    def test_terminal_states_reach_nothing(self) -> None:
+        """The GHI #348 clobber class stays refused: terminals have no outgoing edge."""
+        for terminal in (OBPIState.WITHDRAWN, OBPIState.SUPERSEDED):
+            for target in (OBPIState.DRAFTED, OBPIState.IMPLEMENTING, OBPIState.ATTESTED):
+                self.assertFalse(
+                    self.monitor.is_reachable(terminal, target),
+                    msg=f"{terminal} must reach nothing, but reached {target}",
+                )
+
+    def test_backward_moves_are_unreachable(self) -> None:
+        """Reachability is directional -- a later state never reaches an earlier one."""
+        self.assertFalse(self.monitor.is_reachable(OBPIState.ATTESTED, OBPIState.DRAFTED))
+        self.assertFalse(self.monitor.is_reachable(OBPIState.IMPLEMENTING, OBPIState.DRAFTED))
+
+    def test_a_state_does_not_reach_itself_without_a_cycle(self) -> None:
+        """Self-reachability requires a real cycle; the machine is acyclic here."""
+        for state in (OBPIState.DRAFTED, OBPIState.IMPLEMENTING, OBPIState.ATTESTED):
+            self.assertFalse(self.monitor.is_reachable(state, state), msg=str(state))

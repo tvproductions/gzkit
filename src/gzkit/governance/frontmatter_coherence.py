@@ -270,8 +270,14 @@ def _status_is_valid_obpi_transition(
         if current_obpi_state is None or target_obpi_state is None:
             return False
 
-        # Check the transition against the monitor
-        return monitor.is_allowed(current_obpi_state, target_obpi_state)
+        # Reachability, NOT single-hop membership (GHI #867). Frontmatter
+        # vocabulary is a coarse projection of the fine state machine — it has no
+        # term for PLANNED, VERIFIED or SYNCED — so one frontmatter hop spans
+        # several canonical transitions. Asking `is_allowed` here refused every
+        # legal coarse move whose fine path crossed an unnameable state, which
+        # made Draft -> Active unreachable by construction and left any launched
+        # OBPI that did not complete permanently unreconcilable.
+        return monitor.is_reachable(current_obpi_state, target_obpi_state)
     except (AttributeError, TypeError):
         # A malformed status (None / non-str) fails .lower() during vocab
         # mapping; refuse the transition to be safe. Narrowed from a blanket

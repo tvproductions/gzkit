@@ -3,7 +3,7 @@ id: OBPI-0.35.0-08-remember-post-append-advisory
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 8
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - src/gzkit/commands/content/remember.py
 - src/gzkit/commands/content/_drift.py
