@@ -6,7 +6,9 @@ lane: Heavy
 status: Draft
 allowlist:
 - src/gzkit/commands/content/remember.py
+- src/gzkit/commands/content/_drift.py
 - tests/commands/test_content_remember.py
+- tests/commands/test_content_retire.py
 - features/**
 - docs/user/manpages/content.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md
@@ -18,6 +20,7 @@ reqs:
 - REQ-0.35.0-08-05
 - REQ-0.35.0-08-06
 - REQ-0.35.0-08-07
+- REQ-0.35.0-08-08
 verification:
 - uv run gz lint
 - uv run gz typecheck
@@ -67,11 +70,14 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 > |-----|-------|-------|
 > | REQ-0.35.0-08-01 | **landed** | `test_warns_naming_every_drifted_consumer` asserts exit 0 with the append intact |
 > | REQ-0.35.0-08-02 | **landed** | `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`; RED observed before `dcf29b95` |
-> | REQ-0.35.0-08-03 | **landed** | same test as 08-01 — names the count and both consumers |
+> | REQ-0.35.0-08-03 | **RE-OPENED 2026-08-23** | was landed by the same test as 08-01, which asserts BOTH `claude` and `codex` are named. The operator-ruled amendment above changed the REQ's subject to the ROUTED consumer only, so that test now pins the behaviour the amended REQ forbids. Re-derive its assertions; do not read the old GREEN as coverage. |
+> | REQ-0.35.0-08-08 | **OPEN** | new 2026-08-23; the advisory must enumerate via `rendition_store.is_graded_rendition`, the predicate `--rendition-freshness` and `--rendition-floor-coherence` already share |
 > | REQ-0.35.0-08-04 | **OPEN** | advisory currently cites the failing gates and points at `compose` + `commit`; it does NOT cite the ADR-0.0.37 seam, and its next step is not yet `gz content land` |
 > | REQ-0.35.0-08-05 | **landed** | `test_silent_when_no_rendition_has_been_committed` |
 > | REQ-0.35.0-08-06 | **landed** | advisory writes to stderr; stdout success line unchanged |
 > | REQ-0.35.0-08-07 | **open (structural-fence)** | audited at ADR closeout, not here |
+>
+> **Remaining scope after the 2026-08-23 amendment: REQ-04, REQ-03 (re-opened) and REQ-08.** REQ-04 remains BLOCKED — `gz content land` is not a registered verb (measured 2026-08-23) and OBPI-0.35.0-07 is `Draft`, so this OBPI cannot complete until 07 lands. REQ-03 and REQ-08 are unblocked and land together: they are one change to the enumeration. Original note follows.
 >
 > **Remaining scope is REQ-04 only:** retarget the three-part prose in
 > `_warn_on_rendition_drift()` to cite the ADR-0.0.37 corpus->rendition seam
@@ -94,7 +100,8 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 
 ## Allowed Paths
 
-- `src/gzkit/commands/content/remember.py` — the post-append advisory
+- `src/gzkit/commands/content/remember.py` — the append path that calls the advisory
+- `src/gzkit/commands/content/_drift.py` — where the advisory itself now lives; GHI #863 lifted it out of `remember.py` so `retire` could share it, which is why this brief's original allowlist no longer covers its own subject
 - `tests/commands/test_content_remember.py` — covering tests
 - `features/**` — Gate 4 scenarios
 - `docs/user/manpages/content.md` — the `remember` advisory contract
@@ -231,10 +238,11 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 - [ ] REQ-0.35.0-08-01 [behavior]: Given an append that leaves every committed rendition of the surface stale, when `gz content remember` runs, then the entry IS appended and the exit code is 0 — the advisory never becomes a refusal.
 - [ ] REQ-0.35.0-08-02 [behavior]: Given drift-detection itself raising (unreadable sidecar, absent renditions directory, malformed provenance), when `remember` runs, then the entry is STILL appended and the exit code is STILL 0 — the append is durably written before the advisory is computed.
-- [ ] REQ-0.35.0-08-03 [behavior]: Given two committed renditions (`claude`, `codex`) rendered stale by the append, when `remember` runs, then the advisory names the count and BOTH consumers by name — not a generic "renditions are stale" string.
+- [ ] REQ-0.35.0-08-03 [behavior]: Given two committed renditions rendered stale by the append — one ROUTED for the surface's content type and one a retained off-route record — when `remember` runs, then the advisory names the count and the ROUTED consumer by name, and does NOT name the off-route record. **Amended 2026-08-23 (operator-ruled).** This REQ read *"two committed renditions (`claude`, `codex`) … names the count and BOTH consumers by name"*. Both named vendors were retired as `AgentContract` consumers by OBPI-0.35.0-09: `claude` was renamed `root` (its Requirement 3a) and `codex` was collapsed off-route while deliberately retained as a record (its Requirement 4a — *"NEVER delete a corpus-attested rendition"*). The property being proven is UNCHANGED and is why the REQ exists — the advisory must be SPECIFIC, naming consumers rather than emitting a generic "renditions are stale" string. What changed is which consumers are nameable: naming an off-route record prescribes a recompose that is impossible (the manifest declares no setpoint for it) and forbidden (per-vendor `AgentContract` renditions are prohibited), so the specificity this REQ demands now REQUIRES the route filter rather than a bare directory glob. Brief is `Draft`, so this is ordinary pre-attestation repair, not the attested-REQ-subject-retirement transition (`.claude/rules/governance-core.md`).
 - [ ] REQ-0.35.0-08-04 [behavior]: Given the advisory fires, when stderr is read, then it carries all three parts — the named drifted renditions, the cited ADR-0.0.37 corpus->rendition seam, and a runnable gz content land invocation naming the surface.
 - [ ] REQ-0.35.0-08-05 [behavior]: Given a surface whose renditions are already on the current corpus fingerprint, or a surface with no committed renditions at all, when `remember` runs, then NO advisory is emitted and stderr is empty.
 - [ ] REQ-0.35.0-08-06 [behavior]: Given the same append performed once with drift present and once without, when the corpus rows are compared, then they are BYTE-IDENTICAL and stdout's success output is identical — the advisory is stderr-only and changes nothing it observes.
+- [ ] REQ-0.35.0-08-08 [behavior]: Given a committed on-route rendition, a `*.candidate.md` staging artifact, and a retained off-route rendition all present under `.gzkit/renditions/<surface>/`, when the advisory enumerates drifted consumers, then it names exactly the set `--rendition-freshness` and `--rendition-floor-coherence` grade, via the shared `content.rendition_store.is_graded_rendition` predicate rather than a private copy. The advisory's entire content is a claim about which gates will now fail; enumerating by a rule those gates do not use lets it name a consumer neither gate would ever flag, and send the operator to recompose it. `is_graded_rendition` was authored under OBPI-0.35.0-09's rendition-grading requirement for exactly this reason and its docstring names the failure mode — *"a private copy in each gate is the two-copies-one-binds shape that let the root-contract doctrine drift in the first place"* — while `_drift.drifted_consumers` carries precisely such a copy, reproducing the candidate exclusion and omitting the route test.
 - [ ] REQ-0.35.0-08-07 [structural-fence]: `gz content remember` refuses an append on NO path introduced anywhere in ADR-0.35.0. Capture is unblockable across the whole decomposition — OBPI-0.35.0-06's gate and OBPI-0.35.0-07's orchestrator both make the tree redder, and either could be tempted to add a precondition to `remember` to keep it green. The property is audited at ADR closeout because it is violated by ADDING something elsewhere, not by anything visible in this brief's own diff.
 
 ## Completion Checklist
