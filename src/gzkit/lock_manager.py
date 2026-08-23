@@ -57,20 +57,43 @@ class LockData(BaseModel):
     branch: str = Field(..., description="Git branch active at claim time")
     ttl_minutes: int = Field(..., description="Time-to-live in minutes")
 
+    def elapsed_minutes_at(self, now: datetime) -> float:
+        """Return minutes elapsed since ``claimed_at`` as measured at *now*.
+
+        *now* must be timezone-aware; ``claimed_at`` is an offset-bearing ISO
+        timestamp and subtracting a naive datetime from an aware one raises.
+
+        This is the clock seam (GHI #865). ``gzkit.handoff_api._classify_staleness``
+        already takes its clock as a parameter; these two did not, so a test
+        needing a specific expiry state had to reach for a real timestamp. That
+        produced a time bomb: a fixture pinned an absolute ``claimed_at`` against
+        a finite TTL, passed for a day, then failed forever once the wall clock
+        crossed expiry — in a change that touched no production code.
+        """
+        claimed = datetime.fromisoformat(self.claimed_at)
+        return (now - claimed).total_seconds() / 60
+
+    def is_expired_at(self, now: datetime) -> bool:
+        """Return True if the lock TTL has elapsed as measured at *now*.
+
+        The comparison is ``>=``, so a lock is expired exactly at its TTL. The
+        wall-clock property below delegates here rather than repeating the
+        arithmetic — a seam that is a second implementation proves nothing about
+        the behavior the runtime actually takes.
+        """
+        return self.elapsed_minutes_at(now) >= self.ttl_minutes
+
     @computed_field
     @property
     def is_expired(self) -> bool:
-        """Return True if the lock TTL has elapsed."""
-        claimed = datetime.fromisoformat(self.claimed_at)
-        elapsed = (datetime.now(UTC) - claimed).total_seconds() / 60
-        return elapsed >= self.ttl_minutes
+        """Return True if the lock TTL has elapsed, measured against the wall clock."""
+        return self.is_expired_at(datetime.now(UTC))
 
     @computed_field
     @property
     def elapsed_minutes(self) -> float:
-        """Return minutes elapsed since claimed_at."""
-        claimed = datetime.fromisoformat(self.claimed_at)
-        return (datetime.now(UTC) - claimed).total_seconds() / 60
+        """Return minutes elapsed since claimed_at, measured against the wall clock."""
+        return self.elapsed_minutes_at(datetime.now(UTC))
 
 
 def resolve_agent(agent_override: str | None = None) -> str:

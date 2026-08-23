@@ -569,5 +569,85 @@ class TestReapWritesRegisterEntry(unittest.TestCase):
             self.assertEqual(len(list(exchange_dir(root).glob("*.md"))), 1)
 
 
+class TestInjectableClockSeam(unittest.TestCase):
+    """`is_expired` / `elapsed_minutes` must be answerable against a supplied clock (GHI #865).
+
+    Both properties reach for `datetime.now(UTC)` internally, so a test that
+    needs a specific expiry state has no seam and must reach for a real
+    timestamp instead. That is what produced the time bomb fixed in
+    `ccce5a75`: a fixture pinned `2026-08-22T01:00:00+00:00` against a
+    1440-minute TTL, passed for a day, then failed forever at 01:00Z in a
+    change that touched zero Python.
+
+    `handoff_api._classify_staleness(now, timestamp)` already takes its clock
+    as a parameter. These tests pin the same shape here, so the deterministic
+    test becomes the easy one to write rather than the one requiring
+    `unittest.mock.patch`.
+    """
+
+    CLAIMED = "2026-08-22T01:00:00+00:00"
+
+    def _lock(self, *, ttl: int = 120) -> LockData:
+        return _make_lock(claimed_at=self.CLAIMED, ttl_minutes=ttl)
+
+    def test_not_expired_before_the_ttl_elapses(self):
+        now = datetime.fromisoformat(self.CLAIMED) + timedelta(minutes=119)
+        self.assertFalse(self._lock().is_expired_at(now))
+
+    def test_expired_once_the_ttl_elapses(self):
+        now = datetime.fromisoformat(self.CLAIMED) + timedelta(minutes=121)
+        self.assertTrue(self._lock().is_expired_at(now))
+
+    def test_expiry_boundary_is_inclusive(self):
+        """Exactly at the TTL counts as expired.
+
+        The property compares `elapsed >= ttl_minutes`; the seam must not
+        quietly disagree with the property it backs, or a caller migrating to
+        the explicit clock would change behavior at the boundary.
+        """
+        now = datetime.fromisoformat(self.CLAIMED) + timedelta(minutes=120)
+        self.assertTrue(self._lock().is_expired_at(now))
+
+    def test_elapsed_minutes_measured_against_the_supplied_clock(self):
+        now = datetime.fromisoformat(self.CLAIMED) + timedelta(minutes=45)
+        self.assertAlmostEqual(self._lock().elapsed_minutes_at(now), 45.0, places=6)
+
+    def test_properties_delegate_to_the_seam(self):
+        """The wall-clock properties must BE the seam evaluated at now.
+
+        If they diverge, the seam is a second implementation rather than the
+        one the runtime uses, and a test passing against it proves nothing
+        about production behavior.
+
+        Pinned AT THE BOUNDARY through a controlled clock, deliberately. An
+        earlier version of this test compared the two at an arbitrary `now`
+        with a long-expired fixture, where `>` and `>=` agree — so a mutation
+        that stopped the property delegating AND flipped its comparison passed
+        it unchanged. A delegation test that cannot fail on a broken
+        delegation is decoration.
+        """
+        lock = self._lock(ttl=120)
+        boundary = datetime.fromisoformat(self.CLAIMED) + timedelta(minutes=120)
+        with patch("gzkit.lock_manager.datetime") as clock:
+            clock.now.return_value = boundary
+            clock.fromisoformat = datetime.fromisoformat
+            self.assertEqual(lock.is_expired, lock.is_expired_at(boundary))
+            self.assertAlmostEqual(
+                lock.elapsed_minutes, lock.elapsed_minutes_at(boundary), places=6
+            )
+
+    def test_seam_needs_no_patching_to_pin_either_state(self):
+        """Both verdicts are reachable from one fixture, deterministically.
+
+        This is the property that removes the incentive to hardcode a live
+        date: the same lock answers both questions with no mock and no real
+        clock, so a fixture never has to be "recent" to be live.
+        """
+        lock = self._lock(ttl=120)
+        base = datetime.fromisoformat(self.CLAIMED)
+        self.assertFalse(lock.is_expired_at(base + timedelta(minutes=1)))
+        self.assertTrue(lock.is_expired_at(base + timedelta(days=365)))
+
+
 if __name__ == "__main__":
     unittest.main()
