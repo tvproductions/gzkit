@@ -212,6 +212,32 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             ],
         )
 
+    @covers("REQ-0.35.0-08-01")
+    def test_append_survives_and_exit_stays_0_when_the_advisory_fires(self) -> None:
+        """A drift-triggering append is never turned into a refusal.
+
+        REQ-0.35.0-08-01: on the path where every committed rendition of the
+        surface is left stale, the entry IS appended and the exit code is 0 --
+        the advisory is additive, never a gate on the capture itself. Unlike
+        `test_warns_naming_the_routed_consumer_not_the_retained_record`, which
+        only asserts `exit_code == 0` and never reads the corpus back, this test
+        proves the OTHER half of the REQ: the corpus on disk holds exactly the
+        entry `remember` was asked to append.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+            result = self._remember()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(corpus.entries), 1)
+            entry = corpus.entries[0]
+            self.assertEqual(entry.surface, "AGENTS.md")
+            self.assertEqual(entry.section, "behavior-rules")
+            self.assertEqual(entry.text, "x")
+
     @covers("REQ-0.35.0-08-03")
     def test_warns_naming_the_routed_consumer_not_the_retained_record(self) -> None:
         """A routed consumer is named; a retained off-route rendition is not.
@@ -255,6 +281,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertIn("floor", result.output.lower())
 
+    @covers("REQ-0.35.0-08-02")
     def test_malformed_sidecar_never_costs_the_append_or_the_exit_code(self) -> None:
         """Drift detection is best-effort: a corrupt sidecar must not break capture.
 
@@ -278,6 +305,16 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             )
             self.assertEqual(len(corpus.entries), 1)
 
+    # No @covers here. `vendors.py::_read_manifest_key` (809f1370) added
+    # `if not isinstance(data, dict): return {}`, so a `[]` manifest now
+    # returns `{}` cleanly and `drifted_consumers()` completes without
+    # raising — `_drift.py`'s `except (OSError, ValueError)` handler is
+    # never entered. This test proves that defensive-parsing regression
+    # guard in `vendors.py`, not REQ-0.35.0-08-02's raise-survival claim
+    # (drift detection RAISING must still cost neither the append nor the
+    # exit code). That claim is proven by
+    # `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`,
+    # which genuinely raises via `RenditionProvenance.model_validate_json`.
     def test_malformed_manifest_never_costs_the_exit_code(self) -> None:
         """A top-level non-object manifest must not turn capture into a failure.
 
@@ -303,14 +340,31 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             )
             self.assertEqual(len(corpus.entries), 1)
 
+    @covers("REQ-0.35.0-08-05")
     def test_silent_when_no_rendition_has_been_committed(self) -> None:
-        """No committed rendition means the append drifted nothing — no false alarm."""
+        """No committed rendition means the append drifted nothing — no false alarm.
+
+        Asserts the absence of the advisory's structural markers, not one
+        particular incantation. `warn_on_rendition_drift` (`_drift.py`) emits
+        the "Warning:" banner and the "drifted ... committed rendition(s)"
+        line unconditionally whenever it fires at all — those two are the
+        real claim that "NO advisory is emitted" makes. A prior version of
+        this test asserted only the absence of the literal substring
+        "gz content compose", which a regression emitting any other non-empty
+        advisory (or unrelated stderr noise) would pass silently. Asserting
+        stderr is empty is inexpressible through this harness: `CliRunner`
+        merges stdout/stderr into one buffer (`tests/commands/common.py`), so
+        that clause of the REQ cannot be proven here (residual, tracked in
+        the OBPI brief).
+        """
         with self._runner.isolated_filesystem():
             _seed_surface()
             result = self._remember()
             # output-contract: a warning with no drifted rendition trains operators to
             # ignore the warning, which is the failure this fix exists to prevent.
             self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertNotIn("Warning:", result.output)
+            self.assertNotIn("committed rendition(s)", result.output)
             self.assertNotIn("gz content compose", result.output)
 
 

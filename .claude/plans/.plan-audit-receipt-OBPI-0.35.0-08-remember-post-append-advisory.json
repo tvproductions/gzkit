@@ -1,0 +1,146 @@
+{
+  "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
+  "timestamp": "2026-08-23T13:11:20.678813+00:00",
+  "verdict": "PASS",
+  "plan_file": "OBPI-0.35.0-08-remember-post-append-advisory.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
+      "contested_paths": [
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/content/rendition_store.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-13-reverse-parse-migration",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+      "contested_paths": [
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-15-per-vendor-template-selection",
+      "contested_paths": [
+        "src/gzkit/content/vendors.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "tests/commands/test_content_remember.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+      "contested_paths": [
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-20-setpoint-declaration-coherence-validator",
+      "contested_paths": [
+        "src/gzkit/content/vendors.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-23-invariant-tier",
+      "contested_paths": [
+        "src/gzkit/content/tier_policy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-08-vendor-manifest-expansion",
+      "contested_paths": [
+        "src/gzkit/content/vendors.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py"
+      ]
+    }
+  ]
+}
