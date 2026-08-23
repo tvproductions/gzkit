@@ -51,3 +51,9 @@ Excluded:
 - No ledger or canon mutation.
 - No automatic GHI filing.
 - No whole-repository quality sweep outside the named handoff surfaces.
+
+Re-base (2026-08-23):
+Verified against origin/main @ a50937481.
+The original edition was authored in a clone stranded 7 days behind origin
+(pre-filter-repo history, no merge-base). All 12 findings re-verified; see
+probes/rebase-verification.txt and the original_* fields in findings.json.

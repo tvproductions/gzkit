@@ -1,0 +1,108 @@
+gzkit session-handoff dossier - RE-BASE VERIFICATION
+Verified against: origin/main @ a50937481 (2026-08-23)
+Original edition authored against: stranded pre-rewrite clone @ 122244991 (2026-08-16)
+Gap: 7 days; no merge-base (whole-history filter-repo author rewrite)
+
+=== FRESH MEASUREMENTS ===
+-- focused handoff suite --
+Ran 246 tests in 6.818s
+OK
+-- archive dry run (30d) --
+would move: 11
+SKIPPED (locked): 87
+SKIPPED (chained): 111
+
+=== PER-FINDING RE-VERIFICATION ===
+
+-- F1 retired resume gate: session-entry arm RESOLVED upstream --
+  fix commit: 6a301e03f 2026-08-20 fix(handoff): stop advertising a resume gate retired 2026-08-15 (GHI #805)
+  strings in session_start.py now: 0
+0
+  surviving live sites:
+    src/gzkit/cli/parser_handoff.py:86:        help="Transit decision; only proceed lifts the gate (default: proceed)",
+    src/gzkit/events.py:963:    stay the handoff layer's own; only ``proceed`` lifts the gate. ``set_aside``
+    src/gzkit/handoff_api.py:1134:    one document while the gate armed on another and printed the
+    src/gzkit/handoff_resume_gate.py:145:    A discharged a gate armed on document B — consent recorded for advised steps
+    src/gzkit/session_start.py:22:points at ``gz handoff decide`` as the only surface that lifts the gate.
+    docs/user/manpages/handoff-authorize.md:20:`decide` carries a decision token, and only `proceed` lifts the gate.
+    docs/user/manpages/handoff-decide.md:55:| `--decision {proceed,pause,hold,revert}` | The transit decision (default `proceed`). **Only `proceed` lifts the gate.** See § A transit decision, not an attestation. |
+    docs/user/manpages/handoff-decide.md:223:ruling booked against document A lifted a gate armed on document B — recording
+    docs/user/runbook.md:776:Only `proceed` lifts the gate. `pause`, `hold`, and `revert` are equally
+
+-- F2 RESUME contract: validate_handoff_document call sites --
+    6:through :func:`gzkit.handoff_validation.validate_handoff_document`, so handoff
+    44:    validate_handoff_document,
+    895:    render empty), then runs :func:`validate_handoff_document`. When validation
+    945:    violations = validate_handoff_document(document, base_path)
+  branch reconciliation hits: src/gzkit/handoff_api.py:0,src/gzkit/session_start.py:0
+
+-- F3 CREATE overwrite: write site vs existing exists() guards --
+    864:    if sibling.exists():
+    867:    if rooted.exists():
+    960:    path.write_text(document, encoding="utf-8", newline="\n")
+
+-- F4 staleness: time-only, no UNVERIFIED --
+    def _classify_staleness(now: str, timestamp: str) -> StalenessLevel:
+        age = _parse_iso(now) - _parse_iso(timestamp)
+        if age < timedelta(hours=24):
+            return StalenessLevel.FRESH
+        if age < timedelta(hours=72):
+            return StalenessLevel.SLIGHTLY_STALE
+        if age < timedelta(days=7):
+            return StalenessLevel.STALE
+        return StalenessLevel.VERY_STALE
+
+    80:    FRESH = "Fresh"
+    81:    SLIGHTLY_STALE = "Slightly-Stale"
+    83:    VERY_STALE = "Very-Stale"
+    836:        return StalenessLevel.FRESH
+    838:        return StalenessLevel.SLIGHTLY_STALE
+
+-- F6 lineage: silent continue arms --
+        for ref in refs:
+            try:
+                resolved = resolve_continues_from(ref, referrer, base_path)
+            except (OSError, UnicodeDecodeError, ValueError):
+                continue
+            source = _ruling_source(resolved, base_path)
+            if source is None:
+                continue
+            try:
+                previous = source.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+
+-- F8 identity fields --
+        branch: str,
+        agent: str,
+        slug: str,
+        agent: str | None = None
+
+-- F10 skill identity: three versions --
+      skill-version: "7.1.0"
+      govzero-framework-version: "v6"
+    # gz-session-handoff (v6.21.0)
+
+-- F12 secret regex scope --
+    _SECRET_RE = re.compile(
+        r"password\s*="
+        r"|secret\s*="
+        r"|token\s*="
+        r"|api_key\s*="
+        r"|Bearer\s+\S+"
+        r"|PRIVATE KEY"
+
+-- F5 stale storage doctrine --
+    Handoff documents are stored per-ADR in the ADR package directory:
+  removed-test-module citations (sealed ADR records only):
+    docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/ADR-0.0.65-handoff-system-consolidation.md
+    docs/design/adr/foundation/ADR-0.0.65-handoff-system-consolidation/obpis/OBPI-0.0.65-02-programmatic-api-implementation.md
+    docs/design/adr/pool/ADR-pool.handoff-system-consolidation.md
+    docs/design/adr/pre-release/ADR-0.11.0-airlineops-obpi-completion-pipeline-parity/obpis/OBPI-0.11.0-02-obpi-completion-validator-and-git-sync-gate.md
+
+=== OWNING ADR (routing basis) ===
+    46:   bypasses the validation gate.
+    82:   existing `handoff_validation.py` so CREATE runs the validation gate
+    88:   create/resume/list, so handoff authoring routes through the validation gate
+    142:- [x] OBPI-0.0.65-03: **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create`, `resume`, `list` subcommands routing authoring through the validation gate. Add manpage under `docs/user/manpages/`. Add behave coverage for create/resume/list flows.
+    150:- **gz-handoff-cli-verb** — Add `gz handoff` CLI verb with `create` / `resume` / `list` subcommands routing authoring through the validation gate; add manpage and behave coverage.
