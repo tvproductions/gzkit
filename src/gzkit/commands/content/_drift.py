@@ -18,7 +18,11 @@ import sys
 from pathlib import Path
 
 from gzkit.content.corpus_store import load_corpus
-from gzkit.content.rendition_store import corpus_fingerprint, load_fingerprint
+from gzkit.content.rendition_store import (
+    corpus_fingerprint,
+    is_graded_rendition,
+    load_fingerprint,
+)
 
 
 def drifted_consumers(root: Path, surface: str) -> list[str]:
@@ -32,6 +36,20 @@ def drifted_consumers(root: Path, surface: str) -> list[str]:
 
     A consumer with no sidecar is skipped. Its rendition was already unprovable before
     this mutation, so naming it here would misattribute pre-existing drift.
+
+    Which renditions count is asked of ``is_graded_rendition`` — the SAME predicate
+    ``--rendition-freshness`` and ``--rendition-floor-coherence`` use (REQ-0.35.0-08-08).
+    This warning's whole content is a claim about which of those two gates will now
+    fail, so enumerating by any other rule lets it name a consumer neither gate would
+    ever flag. Until 2026-08-23 it globbed the directory and skipped only candidates,
+    which is a partial private copy of that predicate — precisely the shape the
+    predicate's own docstring names: *"a private copy in each gate is the
+    two-copies-one-binds shape that let the root-contract doctrine drift in the first
+    place."* Measured cost: a `gz content remember` against ``AGENTS.md`` named the
+    retained off-route ``codex`` rendition and told the operator to recompose and
+    re-attest it — an action the manifest makes impossible (no declared setpoint) and
+    doctrine forbids (per-vendor ``AgentContract`` renditions), against a record kept
+    deliberately because an attested rendition is never deleted.
     """
     rendition_dir = root / ".gzkit" / "renditions" / surface
     if not rendition_dir.is_dir():
@@ -39,7 +57,7 @@ def drifted_consumers(root: Path, surface: str) -> list[str]:
     current = corpus_fingerprint(load_corpus(root, surface))
     drifted = []
     for path in sorted(rendition_dir.glob("*.md")):
-        if path.name.endswith(".candidate.md"):
+        if not is_graded_rendition(path, root):
             continue
         provenance = load_fingerprint(root, surface, path.stem)
         if provenance is not None and provenance.corpus_fingerprint != current:

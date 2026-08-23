@@ -69,6 +69,17 @@ def _read_manifest_key(project_root: Path, key: str) -> dict[str, object]:
         data = json.loads(manifest_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return {}
+    # A top-level non-object parses cleanly and then has no `.get` — `[]`, `"x"`,
+    # `null`, `3` all reach here as valid JSON. Without this guard the docstring
+    # above is false for "unparseable", and the AttributeError escapes into every
+    # caller. That matters most at the corpus-mutation seam
+    # (`commands/content/_drift.warn_on_rendition_drift`), whose handler catches
+    # only `(OSError, ValueError)` under a stated contract that "no fault here may
+    # cost the operator their words or their exit code" — an AttributeError there
+    # costs the exit code after the corpus row is already durable, and reports it
+    # as a bare `Unexpected error: 'list' object has no attribute 'get'`.
+    if not isinstance(data, dict):
+        return {}
     section = data.get(key, {})
     return section if isinstance(section, dict) else {}
 

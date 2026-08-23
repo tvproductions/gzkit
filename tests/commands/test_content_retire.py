@@ -9,6 +9,7 @@ an id without removing it, shrinking the floor rather than growing it.
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -16,10 +17,12 @@ from gzkit.cli.main import main
 from gzkit.content.models import Corpus
 from gzkit.content.rendition_store import (
     RenditionProvenance,
+    is_graded_rendition,
     save_fingerprint,
     save_rendition,
 )
 from gzkit.content.tier_policy import invariant_entries
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner
 
 _SURFACE = """# Test Agent Contract
@@ -116,8 +119,14 @@ class TestContentRetireDriftWarning(unittest.TestCase):
             ["content", "retire", "AGENTS.md", "--entry", entry_id, "--reason", "superseded"],
         )
 
-    def test_warns_naming_every_drifted_consumer(self) -> None:
-        """The operator learns which renditions this retirement just unprovable-ised."""
+    @covers("REQ-0.35.0-08-03")
+    def test_warns_naming_the_routed_consumer_not_the_retained_record(self) -> None:
+        """The operator learns which renditions this retirement just unprovable-ised.
+
+        Amended REQ-0.35.0-08-03: only the routed consumer, because only it has
+        recompose work due. Both verbs share one advisory, so the retire side
+        must reach the same verdict as the remember side.
+        """
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("Some directive.")
@@ -126,8 +135,68 @@ class TestContentRetireDriftWarning(unittest.TestCase):
 
             result = self._retire(entry_id)
             self.assertIn("root", result.output)
-            self.assertIn("codex", result.output)
+            self.assertNotIn("codex", result.output)
             self.assertIn("Rendition freshness", result.output)
+
+    @covers("REQ-0.35.0-08-08")
+    def test_advisory_names_exactly_what_the_gates_grade(self) -> None:
+        """REQ-0.35.0-08-08 — the advisory's count AND names equal the graded set.
+
+        The advisory's entire content is a claim about which gates will now fail,
+        so it must enumerate by the predicate those gates share. Both halves are
+        parsed from the SAME rendered line, because the count and the names are
+        built from different expressions in production: an implementation that
+        counted from the raw glob and named from the predicate would emit
+        "drifted 2 committed rendition(s) ... (root)" and satisfy a names-only
+        assertion while reproducing the operator confusion this REQ exists to
+        remove.
+
+        `graded` is derived, never pinned to a literal. A hardcoded expectation
+        would collapse the parity claim to "names == {root}", which a private
+        copy of the predicate — a bare glob plus `stem != "codex"` — satisfies,
+        and that copy is precisely what this REQ forbids. Non-triviality is
+        asserted structurally instead: the directory must hold more renditions
+        than survive grading, so an implementation excluding nothing fails.
+
+        Scope note: the candidate arm of `is_graded_rendition` is subsumed here
+        rather than witnessed. A candidate is `<consumer>.candidate.md`, so its
+        stem is never itself a routed consumer and the route arm rejects it
+        first. The arm is decisive only when the route set is empty. Tracked
+        rather than asserted, because the predicate belongs to a terminal brief.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("Some directive.")
+            _seed_committed_rendition("root", corpus_fingerprint="stale-root")
+            _seed_committed_rendition("codex", corpus_fingerprint="stale-codex")
+            # A sidecar, so the candidate is excluded by the PREDICATE rather than
+            # by the `provenance is not None` skip further down — without it this
+            # arm of the fixture proves nothing about grading.
+            _seed_committed_rendition("root.candidate", corpus_fingerprint="stale-cand")
+
+            result = self._retire(entry_id)
+
+            rendition_dir = Path(".gzkit") / "renditions" / "AGENTS.md"
+            on_disk = {path.stem for path in rendition_dir.glob("*.md")}
+            graded = {
+                path.stem
+                for path in rendition_dir.glob("*.md")
+                if is_graded_rendition(path, Path())
+            }
+            self.assertTrue(graded, msg="fixture must leave something to grade")
+            self.assertLess(len(graded), len(on_disk), msg="fixture must exercise an exclusion")
+
+            # Parse the advisory's own header so count and names come from one
+            # source and cannot be satisfied independently.
+            match = re.search(
+                r"drifted (\d+) committed rendition\(s\) of 'AGENTS\.md'\s*\n\s*\(([^)]*)\)",
+                result.output,
+            )
+            self.assertIsNotNone(match, msg=result.output)
+            assert match is not None
+            named = {name.strip() for name in match.group(2).split(",")}
+            self.assertEqual(named, graded)
+            self.assertEqual(int(match.group(1)), len(graded))
 
     def test_warning_never_changes_the_exit_code(self) -> None:
         """The retirement succeeded and IS the intended effect; the warning is advisory."""

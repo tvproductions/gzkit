@@ -9,6 +9,7 @@ closed on an unknown surface or an unaddressable section.
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -211,25 +212,43 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             ],
         )
 
-    def test_warns_naming_every_drifted_consumer(self) -> None:
-        """Each committed rendition whose provenance no longer matches the corpus is named."""
+    @covers("REQ-0.35.0-08-03")
+    def test_warns_naming_the_routed_consumer_not_the_retained_record(self) -> None:
+        """A routed consumer is named; a retained off-route rendition is not.
+
+        Amended REQ-0.35.0-08-03. The advisory's job is to say what recompose work
+        is now due. An off-route rendition has none: the manifest declares it no
+        setpoint, so `compose` cannot run for it, and doctrine forbids re-creating
+        it as a consumer. Naming it prescribes an impossible and prohibited action.
+        """
         with self._runner.isolated_filesystem():
             _seed_surface()
-            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
             _seed_committed_rendition("codex", corpus_fingerprint="0" * 64)
             result = self._remember()
             # output-contract: the warning IS the deliverable — GHI #654 gap 1 is that
             # remember produced no operator-visible signal at all.
             self.assertEqual(result.exit_code, 0, msg=result.output)
-            self.assertIn("claude", result.output)
-            self.assertIn("codex", result.output)
+            self.assertNotIn("codex", result.output)
             self.assertIn("gz content compose", result.output)
+            # Count and name are built from different expressions in production,
+            # so assert both off the SAME rendered line: an implementation that
+            # counts from the raw glob and names from the predicate would emit
+            # "drifted 2 ... (root)" and pass a names-only check.
+            match = re.search(
+                r"drifted (\d+) committed rendition\(s\) of 'AGENTS\.md'\s*\n\s*\(([^)]*)\)",
+                result.output,
+            )
+            self.assertIsNotNone(match, msg=result.output)
+            assert match is not None
+            self.assertEqual(int(match.group(1)), 1)
+            self.assertEqual({name.strip() for name in match.group(2).split(",")}, {"root"})
 
     def test_invariant_tier_append_also_warns_about_the_floor(self) -> None:
         """An invariant-tier entry additionally breaks floor coherence; the warning says so."""
         with self._runner.isolated_filesystem():
             _seed_surface()
-            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
             result = self._remember("--tier", "invariant")
             # output-contract: floor coherence is a distinct gate from freshness; an
             # operator told only about freshness under-recovers.
@@ -244,12 +263,41 @@ class TestContentRememberDriftWarning(unittest.TestCase):
         """
         with self._runner.isolated_filesystem():
             _seed_surface()
-            _seed_committed_rendition("claude", corpus_fingerprint="0" * 64)
-            (Path(".gzkit") / "renditions" / "AGENTS.md" / "claude.corpus.json").write_text(
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+            # Corrupt the sidecar of the SEEDED, ON-ROUTE rendition. Pointing this at
+            # an off-route or absent consumer would make the test vacuous: the
+            # enumeration would never open the file, and the malformed-sidecar path
+            # this test exists to exercise would not run.
+            (Path(".gzkit") / "renditions" / "AGENTS.md" / "root.corpus.json").write_text(
                 "{ not json at all", encoding="utf-8"
             )
             result = self._remember()
             self.assertEqual(result.exit_code, 0, msg=result.output)
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(corpus.entries), 1)
+
+    def test_malformed_manifest_never_costs_the_exit_code(self) -> None:
+        """A top-level non-object manifest must not turn capture into a failure.
+
+        Enumeration asks the vendor manifest which consumers are routed, so a
+        manifest fault is now reachable from the advisory — a channel that did
+        not exist before the route filter. `[]` parses as valid JSON and then has
+        no `.get`, and the seam's handler catches only `(OSError, ValueError)`,
+        so an unguarded read raised AttributeError AFTER the corpus row was
+        durable: the operator kept their words and lost their exit code, which
+        the handler's own comment forbids in those terms.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+            manifest = Path("data") / "vendor-manifest.json"
+            manifest.parent.mkdir(parents=True, exist_ok=True)
+            manifest.write_text("[]", encoding="utf-8")
+            result = self._remember()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertNotIn("Unexpected error", result.output)
             corpus = Corpus.loads(
                 (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
             )

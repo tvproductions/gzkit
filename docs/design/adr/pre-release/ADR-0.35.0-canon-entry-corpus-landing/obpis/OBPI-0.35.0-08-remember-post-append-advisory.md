@@ -7,6 +7,9 @@ status: Draft
 allowlist:
 - src/gzkit/commands/content/remember.py
 - src/gzkit/commands/content/_drift.py
+- src/gzkit/content/vendors.py
+- src/gzkit/content/rendition_store.py
+- src/gzkit/content/tier_policy.py
 - tests/commands/test_content_remember.py
 - tests/commands/test_content_retire.py
 - features/**
@@ -68,14 +71,16 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 >
 > | REQ | State | Where |
 > |-----|-------|-------|
-> | REQ-0.35.0-08-01 | **landed** | `test_warns_naming_every_drifted_consumer` asserts exit 0 with the append intact |
+> | REQ-0.35.0-08-01 | **landed, citation repaired 2026-08-23** | cited `test_warns_naming_every_drifted_consumer`, which the 2026-08-23 change RENAMED to `test_warns_naming_the_routed_consumer_not_the_retained_record`. That test asserts exit 0 but does not read the corpus, so the append-intact half rests on `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`, which does. |
 > | REQ-0.35.0-08-02 | **landed** | `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`; RED observed before `dcf29b95` |
-> | REQ-0.35.0-08-03 | **RE-OPENED 2026-08-23** | was landed by the same test as 08-01, which asserts BOTH `claude` and `codex` are named. The operator-ruled amendment above changed the REQ's subject to the ROUTED consumer only, so that test now pins the behaviour the amended REQ forbids. Re-derive its assertions; do not read the old GREEN as coverage. |
-> | REQ-0.35.0-08-08 | **OPEN** | new 2026-08-23; the advisory must enumerate via `rendition_store.is_graded_rendition`, the predicate `--rendition-freshness` and `--rendition-floor-coherence` already share |
+> | REQ-0.35.0-08-03 | **RE-OPENED 2026-08-23** | was landed by the same test as 08-01, which asserts BOTH `claude` and `codex` are named. The operator-ruled amendment above changed the REQ's subject to the ROUTED consumer only, so that test now pins the behaviour the amended REQ forbids. Re-derive its assertions; do not read the old GREEN as coverage. **Landed 2026-08-23** — `test_warns_naming_the_routed_consumer_not_the_retained_record` on both the remember and retire halves; RED witness `arb-red-REQ-0.35.0-08-03-a84e371f264d4050bf8be165bed7b55d`. |
+> | REQ-0.35.0-08-08 | **landed 2026-08-23** | `test_advisory_names_exactly_what_the_gates_grade`; count and names parsed from one rendered line, expectation derived from the predicate rather than pinned to a literal. RED witness `arb-red-REQ-0.35.0-08-08-6abd3bcd045b496d9a999cc6d196c718`. |
 > | REQ-0.35.0-08-04 | **OPEN** | advisory currently cites the failing gates and points at `compose` + `commit`; it does NOT cite the ADR-0.0.37 seam, and its next step is not yet `gz content land` |
 > | REQ-0.35.0-08-05 | **landed** | `test_silent_when_no_rendition_has_been_committed` |
-> | REQ-0.35.0-08-06 | **landed** | advisory writes to stderr; stdout success line unchanged |
+> | REQ-0.35.0-08-06 | **UNPROVABLE THROUGH THIS HARNESS — was marked landed on an unobservable claim** | `CliRunner.invoke` merges both streams into one buffer (`tests/commands/common.py`, `redirect_stdout(output)` and `redirect_stderr(output)`), so the stream-separation half of this REQ cannot be expressed as an assertion here at all. The byte-identical-corpus-rows half is also unasserted. Found by the independent spec review, 2026-08-23; pre-existing, not introduced by that change. |
 > | REQ-0.35.0-08-07 | **open (structural-fence)** | audited at ADR closeout, not here |
+>
+> **COVERAGE CHANNEL WARNING (spec review, 2026-08-23).** REQs 01, 02, 05 and 06 carry NO `@covers` decorator anywhere in the repo and no tagged behave scenario. All four are `[behavior]`, whose only proof channel is `@covers`, and the REQ-coverage gate is unwaivable on every lane. The rows above call them landed on prose evidence; `gz obpi complete` reads the decorator channel and will not see them. Bind them before completion — this is not a completion blocker today only because REQ-04 already is one.
 >
 > **Remaining scope after the 2026-08-23 amendment: REQ-04, REQ-03 (re-opened) and REQ-08.** REQ-04 remains BLOCKED — `gz content land` is not a registered verb (measured 2026-08-23) and OBPI-0.35.0-07 is `Draft`, so this OBPI cannot complete until 07 lands. REQ-03 and REQ-08 are unblocked and land together: they are one change to the enumeration. Original note follows.
 >
@@ -101,7 +106,11 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 ## Allowed Paths
 
 - `src/gzkit/commands/content/remember.py` — the append path that calls the advisory
-- `src/gzkit/commands/content/_drift.py` — where the advisory itself now lives; GHI #863 lifted it out of `remember.py` so `retire` could share it, which is why this brief's original allowlist no longer covers its own subject
+- `src/gzkit/commands/content/_drift.py` — the advisory itself, shared with `retire`; GHI #863 lifted it out of `remember.py`, which is why this brief's original allowlist did not cover its own subject
+- `src/gzkit/content/vendors.py` — the manifest reader the enumeration now reaches; added 2026-08-23 under coupled-surface coherence (AGENTS.md DO IT RIGHT 1a) after the independent quality review found the route filter opened an uncaught `AttributeError` channel into the capture-unblockable seam
+- `src/gzkit/content/rendition_store.py` — READ-ONLY here; home of `is_graded_rendition`, the shared predicate REQ-0.35.0-08-08 binds the advisory to. Declared because the covering test imports it to derive its expectation rather than pinning a literal; this brief does not modify it, and its candidate-exclusion arm belongs to the terminal OBPI-0.35.0-09.
+- `src/gzkit/content/tier_policy.py` — READ-ONLY; imported by the retire-side covering tests for `invariant_entries`. Pulled into scope by declaring `test_content_retire.py`, not by any change here.
+- `tests/commands/test_content_retire.py` — the retire half of the shared advisory
 - `tests/commands/test_content_remember.py` — covering tests
 - `features/**` — Gate 4 scenarios
 - `docs/user/manpages/content.md` — the `remember` advisory contract
@@ -242,7 +251,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-08-04 [behavior]: Given the advisory fires, when stderr is read, then it carries all three parts — the named drifted renditions, the cited ADR-0.0.37 corpus->rendition seam, and a runnable gz content land invocation naming the surface.
 - [ ] REQ-0.35.0-08-05 [behavior]: Given a surface whose renditions are already on the current corpus fingerprint, or a surface with no committed renditions at all, when `remember` runs, then NO advisory is emitted and stderr is empty.
 - [ ] REQ-0.35.0-08-06 [behavior]: Given the same append performed once with drift present and once without, when the corpus rows are compared, then they are BYTE-IDENTICAL and stdout's success output is identical — the advisory is stderr-only and changes nothing it observes.
-- [ ] REQ-0.35.0-08-08 [behavior]: Given a committed on-route rendition, a `*.candidate.md` staging artifact, and a retained off-route rendition all present under `.gzkit/renditions/<surface>/`, when the advisory enumerates drifted consumers, then it names exactly the set `--rendition-freshness` and `--rendition-floor-coherence` grade, via the shared `content.rendition_store.is_graded_rendition` predicate rather than a private copy. The advisory's entire content is a claim about which gates will now fail; enumerating by a rule those gates do not use lets it name a consumer neither gate would ever flag, and send the operator to recompose it. `is_graded_rendition` was authored under OBPI-0.35.0-09's rendition-grading requirement for exactly this reason and its docstring names the failure mode — *"a private copy in each gate is the two-copies-one-binds shape that let the root-contract doctrine drift in the first place"* — while `_drift.drifted_consumers` carries precisely such a copy, reproducing the candidate exclusion and omitting the route test.
+- [ ] REQ-0.35.0-08-08 [behavior]: Given a committed on-route rendition, a `*.candidate.md` staging artifact, and a retained off-route rendition all present under `.gzkit/renditions/<surface>/`, when the advisory enumerates drifted consumers, then it names exactly the set the shared `content.rendition_store.is_graded_rendition` predicate grades — the same predicate `--rendition-freshness` and `--rendition-floor-coherence` enumerate by — rather than a private copy. Scoped to the PREDICATE, not to the gates' finding sets: an on-route rendition with no sidecar at all is skipped here (`provenance is not None`) while `--rendition-freshness` reports it, a deliberate difference documented in `_drift.drifted_consumers` so that pre-existing drift is not misattributed to this mutation. An earlier wording of this REQ said "the set the gates grade", which overclaimed that difference away (independent spec review, 2026-08-23). The advisory's entire content is a claim about which gates will now fail; enumerating by a rule those gates do not use lets it name a consumer neither gate would ever flag, and send the operator to recompose it. `is_graded_rendition` was authored under OBPI-0.35.0-09's rendition-grading requirement for exactly this reason and its docstring names the failure mode — *"a private copy in each gate is the two-copies-one-binds shape that let the root-contract doctrine drift in the first place"* — while `_drift.drifted_consumers` carries precisely such a copy, reproducing the candidate exclusion and omitting the route test.
 - [ ] REQ-0.35.0-08-07 [structural-fence]: `gz content remember` refuses an append on NO path introduced anywhere in ADR-0.35.0. Capture is unblockable across the whole decomposition — OBPI-0.35.0-06's gate and OBPI-0.35.0-07's orchestrator both make the tree redder, and either could be tempted to add a precondition to `remember` to keep it green. The property is audited at ADR closeout because it is violated by ADDING something elsewhere, not by anything visible in this brief's own diff.
 
 ## Completion Checklist
