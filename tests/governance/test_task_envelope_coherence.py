@@ -440,6 +440,100 @@ class TestSignatureA(unittest.TestCase):
                 len(errors), 0, "composition_rendered telemetry must not trip signature (a)"
             )
 
+    def test_commit_locus_artifact_edited_excluded_from_signature_a(self) -> None:
+        """A commit-locus backstop row has NO attribution channel, so it cannot fail (GHI #869).
+
+        ``artifact_edited_event`` (``ledger_events.py``) accepts no ``task_id``
+        parameter, so the commit-locus backstop introduced by GHI #847 -- the
+        ``commit`` field is its discriminator -- physically cannot attribute one.
+        Gating it on attribution makes the row fail permanently: the ledger is
+        append-only, so it can never be repaired, and it blocks every subsequent
+        push including commits unrelated to the OBPI whose TASKs were open.
+        Measured instance: ledger ``:15362``, an AGENTS.md canon render committed
+        as ``a80ed283`` while eight auto-started OBPI-0.35.0-08 TASKs were live.
+
+        Same ground as the ``composition_rendered`` carve-out directly above: a
+        row derived from a commit diff after the fact is not an attributable
+        labor unit. Attributing it to an arbitrary live TASK would be FALSE
+        attribution, which is worse than none.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.35.0-08-01-01",
+                            "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T13:12:21Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "id": "AGENTS.md",
+                            "path": "AGENTS.md",
+                            "commit": "a80ed283543e9e29b3f1b8649e47c0ae64b2e3be",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T14:24:09Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors), 0, "commit-locus artifact_edited must not trip signature (a)"
+            )
+
+    def test_tool_locus_artifact_edited_still_trips_signature_a(self) -> None:
+        """The carve-out is keyed to `commit`, so the 5158-row tool-locus arm is untouched.
+
+        Negative control for the test above (GHI #869). The tool locus records an
+        edit AT edit time, when a live TASK is knowable and attributable, so an
+        unattributed tool-locus row is genuine drift and MUST still fail. Without
+        this pin, widening the carve-out to every `artifact_edited` row would look
+        identical to the correct fix.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.35.0-08-01-01",
+                            "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T13:12:21Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "artifact_edited",
+                            "id": "src/foo.py",
+                            "path": "src/foo.py",
+                            "session": "s1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T14:24:09Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors), 1, "an unattributed TOOL-locus row is real drift and must still fail"
+            )
+
     @covers("REQ-0.0.64-04-01")
     def test_obpi_brief_reflection_edit_under_active_task_is_clean(self) -> None:
         """Editing the active OBPI brief itself is closeout reflection, not TASK labor."""

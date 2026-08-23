@@ -314,6 +314,23 @@ def _sig_a_is_not_labor_event(
     if ev_type == "composition_rendered":
         return True
 
+    # A commit-locus backstop row (GHI #847; the ``commit`` field is its
+    # discriminator) is derived from a commit diff AFTER the fact and has no
+    # attribution channel: ``artifact_edited_event`` accepts no ``task_id``
+    # parameter, so its sole caller cannot supply one even in principle. Gating it
+    # on attribution makes the row fail PERMANENTLY — the ledger is append-only,
+    # so it can never be repaired, and it then blocks every subsequent push,
+    # including commits unrelated to the OBPI whose TASKs happened to be open
+    # (measured 2026-08-23 at ledger :15362, an AGENTS.md canon render). Same
+    # ground as ``composition_rendered`` above; attributing it to an arbitrary
+    # live TASK would be FALSE attribution, which is worse than none.
+    #
+    # Keyed to ``commit`` so the arm that matters is untouched: the TOOL locus
+    # records an edit AT edit time, when a live TASK is knowable, and those rows
+    # (5158 of 5164 measured 2026-08-23) still fail unattributed (GHI #869).
+    if ev_type == "artifact_edited" and ev.get("commit"):
+        return True
+
     if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
         return True
     if _is_adr_decision_doc_reflection_event(ev, active_tasks_by_obpi):

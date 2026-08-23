@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "ae2c8cadece5e2c3fbdaf190e93259155212fe3bac015a31f9bb69d7860918fe",
-  "corpus_entry_count": 78,
-  "rendition_fingerprint": "61660e48db21f69788ea32a55227a51041e84b1117d6eb93fca7342cfcb23131",
-  "committed_ts": "2026-08-23T14:22:34.122317+00:00",
+  "corpus_fingerprint": "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de",
+  "corpus_entry_count": 79,
+  "rendition_fingerprint": "d6dc854a90394c6204ef2226222c9de5747cbe97007cbb0a917556696e6534a2",
+  "committed_ts": "2026-08-23T14:34:09.958980+00:00",
   "attestor": "g0",
-  "attestation_text": "attest completed — corpus 77→78 entries; one invariant-tier entry seated as § OPERATOR ECONOMY OF EFFORT operative claim 7, carrying the operator's verbatim 2026-08-23 observation that asking a question canon already answers is a drift vector rather than merely wasted tokens. Nothing was dropped, combined, or rewritten: this is a pure add, so information-retained-per-byte is 1.0 by construction and the invariant floor validated the text byte-exactly against the corpus row (compose exit 0). Byte evidence invariant=19415B compressible=5075B→25261B total=44676B setpoint=lite; the surface remains over the 32768B Codex delivery cap, widened 1366B by this add, disclosed and knowingly accepted — advisory until 1.0 per the operator stay, tracked at GHI #815 [settled]. Session receipts, all exit_status=0: arb-step-unittest-ff70eef52892482da2203739b5d65350 (8757 tests), arb-ruff-cea63b0ab8c141b185f56c80090f6ac8, arb-step-typecheck-40bfff9d177b43b1ae0f514a1979c587. Corpus attestation, NEVER Gate 5."
+  "attestation_text": "THAT IS IRON LAW/CANON — operator ruling 2026-08-23, seated as an invariant-tier entry under § Operator Doctrine directly ABOVE the rule it supersedes. Corpus 78→79. The operator's four verbatim statements are preserved exactly and are uncompressible by tier. Pure add: nothing dropped, combined, or rewritten; the invariant floor validated the text byte-exactly against the corpus row. Corpus attestation, NEVER Gate 5."
 }
