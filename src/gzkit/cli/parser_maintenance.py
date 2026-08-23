@@ -909,7 +909,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         dest="check_tautological_test_audit",
         action="store_true",
         default=False,
-        help="Fail closed (exit 3) when tautological-test count drifts (OBPI-0.0.59-04).",
+        help="Fail closed (exit 3) on tautological or wall-clock-decaying tests (GHI #865).",
     )
     p_validate.add_argument(
         "--task-envelope-coherence",

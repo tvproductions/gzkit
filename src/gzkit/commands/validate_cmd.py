@@ -96,16 +96,16 @@ def _ta() -> ModuleType:
 
 
 def _validate_tautological_test_audit(project_root: Path) -> list[ValidationError]:
-    """Validate tautological-test drift gate (OBPI-0.0.59-04).
+    """Validate the test-quality gate (OBPI-0.0.59-04; wall-clock arm GHI #865).
 
     Rules:
-    - current count > baseline + waivers → fail (exit 3)
-    - current count <= baseline + waivers → pass
+    - a genuinely-new tautological op, uncovered by baseline or waiver → fail (3)
+    - a fixture whose verdict decays with the wall clock → fail (3)
     Waivers file path is self-exempt from the scan (circular-dependency analysis).
     """
-    from gzkit.tautological_tests import audit_drift  # noqa: PLC0415
+    from gzkit.tautological_tests import audit_test_quality  # noqa: PLC0415
 
-    return audit_drift(project_root)
+    return audit_test_quality(project_root)
 
 
 def _collect_errors(

@@ -461,6 +461,33 @@ def _op_identity(op: TautologicalTestOperation) -> tuple[str, str, str, str]:
     return (op.file_path, op.function_name, op.operation_kind, op.assertion_kind)
 
 
+def audit_test_quality(project_root: Path) -> list[ValidationError]:
+    """Run every test-quality audit this scope owns (GHI #865).
+
+    Two checks, one scope, because both ask the same question of ``tests/``:
+    does this test fail when, and only when, the behavior it covers breaks?
+
+    - :func:`audit_drift` — a filesystem op co-occurring with an assertion,
+      which can pass without exercising the behavior.
+    - :func:`gzkit.governance.trust_audits.wall_clock_fixtures.audit_wall_clock_fixtures`
+      — a fixture whose verdict decays with the calendar, which fails without
+      a defect.
+
+    The wall-clock detector is folded in here rather than given its own
+    ``gz validate`` flag deliberately. A new flag requires growing
+    ``cli/parser_maintenance.py`` and ``commands/validate_cmd.py``, and both sit
+    AT their ceilings in ``data/module_size_grandfather.json``, whose ratchet is
+    shrink-only with no re-baseline path. Folding costs nothing there and
+    inherits this scope's existing registration, manpage entry, QC
+    classification and ``gz check`` wiring.
+    """
+    from gzkit.governance.trust_audits.wall_clock_fixtures import (  # noqa: PLC0415
+        audit_wall_clock_fixtures,
+    )
+
+    return audit_drift(project_root) + audit_wall_clock_fixtures(project_root)
+
+
 def audit_drift(project_root: Path) -> list[ValidationError]:
     """Flag tautological-test ops not covered by the baseline or a file waiver.
 
