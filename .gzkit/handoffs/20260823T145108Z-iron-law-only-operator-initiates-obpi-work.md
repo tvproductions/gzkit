@@ -38,7 +38,7 @@ BOTH PUSH BLOCKS WERE REAL DEFECTS, not friction. `--no-verify` would have hidde
 
 - [operator-ruled] IRON LAW, verbatim: "OBPI WORK WILL NOW ONLY BE OPERATOR INITIATED WORK THAT I EXECUTE VIA THE SKILL"; "ONLY THE OPERATOR CAN INITIATE ANY OBPI WORK"; "NEVER START ANY OF IT ON YOUR OWN. NEVER". Attested "THAT IS IRON LAW/CANON" and seated invariant-tier at `AGENTS.md:358`.
 - [operator-ruled] "attest completed" for the operator-economy claim 7 canon add; corpus 77 -> 78, then 78 -> 79 for the iron law.
-- [operator-ruled] "Bind the OBPI-08 @covers first" — chosen over building OBPI-0.35.0-07, starting at OBPI-0.35.0-01, or holding.
+- [operator-ruled] "Bind the OBPI-08 @covers first" — chosen over building OBPI-0.35.0-07, starting at OBPI-0.35.0-01, or holding. Booked via `gz handoff decide` with steps 1 and 3 set aside.
 - [operator-ruled] Commit and git-sync the verified coverage work rather than holding it uncommitted. No Gate 5 claimed.
 - [operator-ruled] Routing correction, verbatim: "I don't need a pool ADR, this is a broken/incomplete implementation, so this is GHI territory... A misconceived design/solution, against a known/base need, is corrective work, not new work." GHI #867 filed as correction/extension to #646 and ADR-0.31.0; NOT a reopen, NOT a pool ADR.
 - [operator-ruled] "if so, that is pool ADR territory" — for a genuinely UNBUILT capability. Measured: the insights consumption tool is unbuilt, so it IS pool territory; the territory was already occupied, so no third ADR was authored.
