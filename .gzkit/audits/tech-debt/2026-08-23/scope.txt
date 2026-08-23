@@ -1,0 +1,53 @@
+Audit: session handoff implementation, contracts, entry paths, and retention
+Date: 2026-08-23
+Mode: focused external design and failure-mode review
+
+Canonical skill and mirrors:
+.gzkit/skills/gz-session-handoff/SKILL.md
+.claude/skills/gz-session-handoff/SKILL.md
+.agents/skills/gz-session-handoff/SKILL.md
+.github/skills/gz-session-handoff/SKILL.md
+
+Runtime:
+src/gzkit/handoff_api.py
+src/gzkit/handoff_validation.py
+src/gzkit/handoff_resume_gate.py
+src/gzkit/session_start.py
+src/gzkit/commands/handoff.py
+src/gzkit/cli/parser_handoff.py
+scripts/session_orientation.py
+
+User and governance contracts:
+docs/user/manpages/handoff-decide.md
+docs/user/skills/gz-session-handoff.md
+docs/governance/GovZero/session-handoff-obligations.md
+docs/governance/GovZero/session-handoff-schema.md
+docs/governance/GovZero/handoff-validation.md
+docs/governance/GovZero/handoff-chaining.md
+docs/governance/GovZero/staleness-classification.md
+.gzkit/skills/gz-session-handoff/assets/staleness-rules.md
+
+Focused tests:
+tests/governance/test_handoff_api.py
+tests/governance/test_handoff_validation.py
+tests/test_handoff_cli.py
+tests/governance/test_session_start.py
+tests/governance/test_handoff_selection.py
+tests/governance/test_handoff_archive.py
+tests/governance/test_session_exit.py
+
+Existing scheduling routes reviewed:
+.gzkit/chores/skill-command-doc-parity/CHORE.md
+.gzkit/chores/skill-authoring-quality/CHORE.md
+.gzkit/chores/pool-triage/CHORE.md
+docs/design/adr/pool/ADR-pool.pause-resume-handoff-runtime.md
+docs/design/adr/pool/ADR-pool.artifact-staleness-propagation.md
+docs/design/adr/pool/ADR-pool.skill-version-review-coupling.md
+docs/design/adr/pool/ADR-pool.cross-session-search.md
+docs/design/adr/pool/ADR-pool.cross-session-history-query.md
+
+Excluded:
+- No implementation changes.
+- No ledger or canon mutation.
+- No automatic GHI filing.
+- No whole-repository quality sweep outside the named handoff surfaces.

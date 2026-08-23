@@ -1,0 +1,36 @@
+Focused handoff suite
+=====================
+
+Command:
+uv run -m unittest tests.governance.test_handoff_api tests.governance.test_handoff_validation tests.test_handoff_cli tests.governance.test_session_start tests.governance.test_handoff_selection tests.governance.test_handoff_archive tests.governance.test_session_exit -q
+
+Observed 2026-08-23:
+Ran 234 tests in 6.314s
+OK
+
+Handoff corpus audit
+====================
+
+Command:
+uv run python -c "from pathlib import Path; from gzkit.quality import run_handoff_document_audit; r=run_handoff_document_audit(Path('.')); print(r); raise SystemExit(0 if r.success else 1)"
+
+Observed 2026-08-23:
+success=True
+command='handoff-document audit'
+stdout='All post-cutover handoff register entries valid. (14 pre-cutover legacy entries grandfathered.) (4 hollow entries tolerated per data/handoff_section_grandfather.json — sections empty, context NOT preserved; shrink-only.)'
+returncode=0
+
+Probe-health note:
+The first audit invocation imported run_handoff_document_audit from
+gzkit.handoff_validation and failed with ImportError. Repository search traced
+the current public entry point to gzkit.quality; the corrected invocation above
+passed. This was a stale external probe, not a product failure.
+
+Archive retention dry run
+=========================
+
+Command:
+uv run gz handoff archive --older-than 30d --dry-run --json
+
+Observed category counts 2026-08-23:
+{"would_move":11,"skipped_locked":87,"skipped_chained":111}

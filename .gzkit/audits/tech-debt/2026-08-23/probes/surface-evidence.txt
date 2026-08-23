@@ -1,0 +1,71 @@
+Gate-retirement drift
+=====================
+
+Canonical retirement commit:
+c772497c fix(resume-gate): retire the last arm — a handoff advises, it does not gate
+
+Current conflicting surfaces:
+src/gzkit/session_start.py:22 points at gz handoff decide as the only surface that lifts the gate.
+src/gzkit/session_start.py:112 says only proceed lifts the resume gate.
+src/gzkit/cli/parser_handoff.py:35 says the gate refuses every mutating tool call.
+src/gzkit/cli/parser_handoff.py:85 says only proceed lifts the gate.
+src/gzkit/commands/handoff.py:405 says the gate refuses every mutating tool call.
+src/gzkit/commands/handoff.py:535 renders "(gate lifted)" or "(gate stays armed)".
+docs/user/manpages/handoff-decide.md:55 says only proceed lifts the gate.
+docs/user/manpages/handoff-decide.md:218 describes comparison against the gate's selected document.
+
+Resume implementation boundary
+==============================
+
+src/gzkit/handoff_api.py:217 defines ResumeResult.
+src/gzkit/handoff_api.py:693 defines time-based _classify_staleness.
+src/gzkit/handoff_api.py:704 resolves continues_from paths.
+src/gzkit/handoff_api.py:919 loads the handoff chain.
+src/gzkit/handoff_api.py:953 defines resume_handoff.
+
+The returned model and resume implementation do not expose full-document
+validation errors, current-vs-recorded branch reconciliation, per-claim
+verdicts, or an overall bearing result.
+
+Create integrity
+================
+
+src/gzkit/handoff_api.py:737 defines create_handoff.
+src/gzkit/handoff_api.py:810 writes the deterministic destination with
+Path.write_text without an existence refusal or exclusive-create primitive.
+
+Doctrine/runtime staleness split
+================================
+
+docs/governance/GovZero/staleness-classification.md:16 declares multi-factor
+time, commit, file, and branch staleness.
+docs/governance/GovZero/staleness-classification.md:20 declares Unknown = Fresh.
+.gzkit/skills/gz-session-handoff/assets/staleness-rules.md:64 repeats Unknown = Fresh.
+src/gzkit/handoff_api.py:693 implements time-only classification.
+docs/governance/GovZero/staleness-classification.md:106 and :166 cite the
+nonexistent tests/governance/test_staleness.py.
+
+Older storage and schema doctrine
+=================================
+
+docs/user/skills/gz-session-handoff.md:37 and :89 prescribe per-ADR handoff storage.
+docs/governance/GovZero/session-handoff-obligations.md:62 prescribes per-ADR storage.
+docs/governance/GovZero/handoff-chaining.md:27-50 prescribes per-ADR canonical paths.
+docs/governance/GovZero/session-handoff-schema.md:36, :192, and :199 prescribe per-ADR storage.
+docs/governance/GovZero/session-handoff-schema.md:210 and :251 cite the nonexistent tests/governance/test_handoff_schema.py.
+docs/governance/GovZero/handoff-validation.md:36 documents CREATE and RESUME but omits CHECKPOINT.
+
+Skill identity drift
+====================
+
+All four active mirrors currently contain:
+skill-version: "7.0.0"
+govzero-framework-version: "v6"
+title: gz-session-handoff (v6.20.0)
+
+Secret-screening boundary
+=========================
+
+src/gzkit/handoff_validation.py:124-131 screens password=, secret=, token=,
+api_key=, Bearer, PRIVATE KEY, sk-, and ghp_. The detector is useful but does
+not constitute comprehensive secret detection.

@@ -1,0 +1,110 @@
+[
+  {
+    "finding_id": "doc-drift-retired-resume-gate",
+    "class": "doc-drift",
+    "severity": "Critical",
+    "location": "src/gzkit/session_start.py:22",
+    "evidence": "Runtime help and session-entry copy still claim a mutating resume gate exists after c772497c retired it.",
+    "recommendation": "Remove gate-armed, gate-lifted, and mutation-refusal claims from every live help, session-entry, command, and manpage surface; add a semantic parity witness for the retired doctrine.",
+    "route": "chore:skill-command-doc-parity"
+  },
+  {
+    "finding_id": "governance-resume-contract-not-mechanized",
+    "class": "governance",
+    "severity": "Critical",
+    "location": "src/gzkit/handoff_api.py:953",
+    "evidence": "resume_handoff parses and selects but does not return full document validation, branch reconciliation, claim verdicts, or bearing despite the canonical RESUME contract promising validation and reconciliation.",
+    "recommendation": "Make one structured session-entry assessment validate the selected document, reconcile current authorities, classify each load-bearing claim, and render an advisory bearing verdict.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "evidence-integrity-create-overwrite",
+    "class": "evidence-integrity",
+    "severity": "Critical",
+    "location": "src/gzkit/handoff_api.py:810",
+    "evidence": "create_handoff writes a deterministic timestamp-plus-slug path with write_text and no destination-exists refusal.",
+    "recommendation": "Refuse an existing destination before writing, constrain the slug to the canonical safe form, and pin overwrite refusal with a behavior test.",
+    "route": "GHI"
+  },
+  {
+    "finding_id": "governance-time-only-staleness",
+    "class": "governance",
+    "severity": "High",
+    "location": "src/gzkit/handoff_api.py:693",
+    "evidence": "Live RESUME classifies by elapsed time while doctrine declares time, commits, files, and branch divergence; Unknown is currently treated as Fresh.",
+    "recommendation": "Unify freshness and orientation around one drift assessment; retain unknown as UNVERIFIED and let the worst verified factor drive the advisory result.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "doc-drift-multiple-handoff-generations",
+    "class": "doc-drift",
+    "severity": "High",
+    "location": "docs/user/skills/gz-session-handoff.md:37",
+    "evidence": "User and GovZero pages still prescribe per-ADR storage, omit CHECKPOINT, and cite nonexistent test modules after the consolidated register shipped.",
+    "recommendation": "Reconcile every handoff user and governance page to the current register, modes, source modules, and tests; remove historical architecture from current-contract pages.",
+    "route": "chore:skill-command-doc-parity"
+  },
+  {
+    "finding_id": "evidence-integrity-chain-validation",
+    "class": "evidence-integrity",
+    "severity": "High",
+    "location": "src/gzkit/handoff_api.py:704",
+    "evidence": "Predecessor resolution can accept paths outside canonical stores; missing predecessors, cycles, and traversal truncation are silently skipped or collapsed rather than returned as lineage warnings.",
+    "recommendation": "Confine predecessors to repository handoff stores and return explicit dangling, cycle, and truncation findings; distinguish traversal depth from node budget.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "governance-dual-session-entry-semantics",
+    "class": "governance",
+    "severity": "High",
+    "location": "src/gzkit/session_start.py:1",
+    "evidence": "Claude receives session-start advisement plus the richer orientation path, while Codex primarily consumes orientation; duplicated rendering and selection produce harness-dependent semantics.",
+    "recommendation": "Make every harness consume one structured session-entry assessment and reduce secondary hooks to thin renderers or pointers.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "frontmatter-drift-empty-identity-fields",
+    "class": "frontmatter-drift",
+    "severity": "High",
+    "location": "src/gzkit/handoff_api.py:740",
+    "evidence": "Branch and agent are string parameters but the handoff frontmatter model does not enforce stripped non-empty identity values.",
+    "recommendation": "Require stripped non-empty branch and agent values, validate session identifiers through the canonical model, and add negative tests at API and CLI seams.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "governance-bearing-not-projected",
+    "class": "governance",
+    "severity": "High",
+    "location": "src/gzkit/handoff_api.py:217",
+    "evidence": "ResumeResult exposes selected content and extracted items but no structured claim-to-evidence assessment or CONTINUE/REVISE/ABANDON/VERIFY bearing.",
+    "recommendation": "Add an advisory bearing projection with per-step preconditions and an exact start-here-because statement; never turn it into a mutation gate.",
+    "route": "chore:pool-triage"
+  },
+  {
+    "finding_id": "skill-version-identity-incoherence",
+    "class": "governance",
+    "severity": "High",
+    "location": ".gzkit/skills/gz-session-handoff/SKILL.md:8",
+    "evidence": "All active mirrors declare skill-version 7.0.0, GovZero framework v6, and title v6.20.0 simultaneously.",
+    "recommendation": "Choose one authoritative skill identity, reconcile title and metadata, apply the declared framework-major policy, and sync all mirrors.",
+    "route": "chore:skill-authoring-quality"
+  },
+  {
+    "finding_id": "governance-archive-protection-neutralizes-retention",
+    "class": "governance",
+    "severity": "Medium",
+    "location": "src/gzkit/handoff_api.py:919",
+    "evidence": "A 30-day archive dry run found 11 movable entries, 87 lock-protected entries, and 111 chain-protected entries.",
+    "recommendation": "Either describe retention as archiving isolated eligible records or design atomic closed-chain moves with stable identifiers and pointer repair.",
+    "route": "discard"
+  },
+  {
+    "finding_id": "governance-secret-screening-promise",
+    "class": "governance",
+    "severity": "Medium",
+    "location": "src/gzkit/handoff_validation.py:124",
+    "evidence": "The detector covers several common assignment and token forms but not many vendor prefixes, colon forms, credential URLs, or entropy-based secrets.",
+    "recommendation": "Describe the current check as common-pattern screening or adopt a governed detector with explicit supported patterns and false-positive policy.",
+    "route": "chore:skill-authoring-quality"
+  }
+]
