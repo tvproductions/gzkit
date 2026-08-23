@@ -185,7 +185,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > Work top-down. Check items off only with **observed command evidence**. No movement
 > opens while `uv run gz check` is red.
 
-**Movement A — Close the Foundation Sunset** *(TOPMOST; forward engine; closes a kind — reductive)*
+**Movement A — Close the Foundation Sunset** *(forward engine; closes a kind — reductive)* — **HELD as of 2026-08-14 (operator-ratified; § Amendments)**; Movement A is HELD *as a Movement*, while its `ADR-0.35.0` box is **the next work** under ADR order (§ Amendments 2026-08-16 — *ADR ORDER IS ABSOLUTE*)
 - [x] `ADR-0.0.37` → `Validated` via `/gz-adr-audit`. Attribution drift found by independent review and remediated pre-receipt. `b40a8026` · receipt `arb-step-unittest-753d3dda` · detail in § Amendments 2026-07-18 (later session).
 - [ ] **Install the cross-family critic at the convergence moment.** **NEXT-DRAWN, after `ADR-0.35.0` lands — the 2026-08-09 pull-ahead was WITHDRAWN by the 2026-08-11 amendment (operator: *"not sure i wan't to author 0.36.0 while we haven't finished 0.35.0"*, spelling preserved).** The withdrawal rests on the staged-delivery ruling, not on a change of mind: because OBPI-09 lands dark, completing all nine still does not deliver the always-on critic the pull-ahead was for. Three briefs (01, 02, 03) were authored 2026-08-11 at `1b808b18d` and remain valid; six are `draft (scaffold)`. The design is complete and unbuilt: **`ADR-0.36.0-convergence-moment-cross-family-critic` (`Proposed`) now holds it** (run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count), promoted 2026-08-09 from `ADR-pool.convergence-moment-cross-family-critic` (now `Superseded`), which had recovered it verbatim from the three 2026-08-06/07 design transcripts after the operator judged the handoff chain had degraded it — *"multiple audio tape recordings of audio tape recordings where the quality is dissipating rapidly."* **Nothing runs today:** `.claude/hooks/` ships no critic script and `.claude/settings.json` `PreToolUse` has matchers for `ExitPlanMode`, `Write|Edit` and `Bash` only — no `AskUserQuestion` matcher (verified 2026-08-09). **Promotion is done; the remaining work is the nine OBPIs.** Work the governed path; **do not hand-wire a hook** — that was the declined option. Carried design rulings that bind the build: the critic performs BOTH scope and conclusion challenge with full context (*"why is this a choice? we want the adversary to get full context. measure twice, cut once"*); it is a **skill** with three invocation doors — operator, agent, or gate (*"this is a skill but can be invoked by me, by agent, or at gate"*); post-verdict resolution is operator + main agent modeled on Step 4b (*"obpi pipeline 4b already handles this well — observe it"*); and it uses the built-in Codex integration rather than a hand-rolled port (*"why not use that and keep it simple?"*). The critique passes through **unedited** — `updatedInput` enforces it, so the critic's verdict reaches the operator before it enters the agent's context. **This does not relax one-feature-at-a-time:** `ADR-0.35.0` is `Draft` and unstarted (run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count), so this exchanges which feature is in flight rather than running two. **THE PROMOTION DEBT IS DISCHARGED — all four owed items, then the promotion itself (2026-08-09, `8763ec633` + `dc5fe4d39`).** Decomposed against the three doors with the `PreToolUse` adapter as OBPI-09 landing dark; Step 4b generalized without editing it (OBPI-07); A3 and A4 carried as OBPI-05 and OBPI-06; the adversary re-run already discharged by the amendment above. **What remains is the build — no OBPI has landed.** **DELIVERY IS STAGED, not big-bang — the adversary re-run was performed 2026-08-09 and returned `PERFORATED-BUT-NARROWABLE`.** R4 dissolved Pass 1 axis 2 (forbidden same-family critic) and R3 dissolved Pass 2's missing-policy attack at the policy level; axes 1, 3 and 4 remain *partially* addressed. What still perforates: the automatic door binds to a UI event that carries **mandatory clarification** as well as recommendations, so it *"can prevent the very question those rules require"*; prose bypasses it entirely; strong subject binding (prompt hash, scope manifest, primary-output hash) is explicitly unbuilt; and the scope-time-vs-conclusion-time timing question the ADR calls *"live"* is unresolved by R1. **Therefore: ship the skill, the three doors, the scope-first challenge, the A3 envelope, the R3 transition and provenance binding FIRST; the automatic `AskUserQuestion` door lands DARK and is lit only after a calibrated pilot measures *"false blocks, latency, operator reading time, and decisions changed."*** This is sequencing, not abandonment — and the cost is stated rather than softened: until that door lights, this does **not** deliver a second opinion at every structured choice. **A3 → ADOPT-NARROWED** (one decision-scoped envelope, not persistent state across every tool transition). **A4 → ADOPT-NARROWED** (mandatory for the enumerated consequential categories and explicit operator requests, sample the routine; the primary agent's own unvalidated confidence must NOT set the tier — the ADR itself asks whether that confidence is *"placebo"*). **R4's transport premise is measurably wrong and is corrected in the ADR (§ R4 transport correction) — see also GHI #786:** the built-in `adversarial-review` reviews *branch diffs*, not decisions, and the `codex:codex-rescue` forwarder is contracted to *"return nothing"* on failure. R4's ruling (use the current Codex, keep it simple) stands; the belief that the shipped plugin already supplies this transport does not.
 <!-- gz-validate-skip: command-shape -->
@@ -458,7 +458,42 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-08-17 (latest) — the doctrine-declared-without-mechanism family gains a THIRD ARM: doctrine-side (operator-ratified)
+### 2026-08-23 (latest) — the § 6 Queue header labelled the HELD Movement TOPMOST; corrected
+
+Operator ruling, verbatim: **"correct stale header, then I'll decide. report back"**
+
+**Recording under § 8 *"living: items check off with command evidence"* — not a
+sequencing amendment.** No box is removed, nothing is resequenced, no ruling is
+carried or withdrawn. Movement B remains TOPMOST and gated, Movement A remains
+HELD, and `ADR-0.35.0` keeps the in-flight feature position as the next work.
+
+**What was false.** The § 6 Queue header for Movement A read *"(TOPMOST; forward
+engine; closes a kind — reductive)"*. Every other site in this plan that names the
+pair says the opposite — the § Topmost line (*"AMENDED 2026-08-14 — Movement B is
+TOPMOST; Movement A is HELD"*), the 2026-08-14 amendment that made the move, and
+each entry after it recording *"Movement B remains TOPMOST, Movement A remains
+HELD."* The 2026-08-14 amendment moved Movement B ahead and never updated the
+header it displaced.
+
+**The stale label survived because it routed correctly by accident.** § 6 instructs
+*"Work top-down"*, and Movement A's first live box **is** `ADR-0.35.0` — the ADR
+that ascending order independently makes the next work. A reader obeying the false
+label reached the right ADR for the wrong reason, so the error produced no visible
+misroute for anyone to trip over. It is the § Amendments 2026-08-16 (later) finding
+recurring on the same axis: a claim contradicted inside the same document, on the
+sequencing question, surviving because nothing consumed it. That entry's own
+conclusion applies unchanged — *"the habit, not the oversight, is the finding."*
+
+**Correction shape.** The header now carries `HELD as of 2026-08-14
+(operator-ratified; § Amendments)` in the same form Movement B's header uses for its
+TOPMOST claim, plus the disambiguation the bare word would otherwise destroy:
+Movement A is HELD *as a Movement* while its `ADR-0.35.0` box is *the next work*
+under ADR order. Correcting to `HELD` alone would have replaced one misreading with
+its inverse — that `ADR-0.35.0` should not be worked — and that is the live question
+at the top of every session. The § Topmost line and Movement B's header are
+unchanged; neither was wrong. Surfaced during handoff-GHI triage, 2026-08-23.
+
+### 2026-08-17 — the doctrine-declared-without-mechanism family gains a THIRD ARM: doctrine-side (operator-ratified)
 
 Operator instruction, verbatim: **"This is a MASSIVE deficit: ' and doctrine against code not at all' ... This needs redress in the campaign with high certainty."**
 
