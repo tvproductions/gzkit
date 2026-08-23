@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) for a defect, enhancement, or investiga
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-08-22
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.4.0"
 model: sonnet
 ---
 
@@ -117,6 +117,10 @@ routing matrix will consume.
 
    # Recent open by date — catches semantic neighbors keyword search misses.
    gh issue list --state open --limit 20 --json number,title,labels,createdAt
+
+   # Does an authored OBPI brief already OWN this work? (GHI #864)
+   # Search on the SURFACE — a path, an id, a symbol — not on narrative words.
+   grep -rln "<surface path / entry id / symbol>" docs/design/adr/*/*/obpis/*.md
    ```
 
    Read every title in both result sets (titles are cheap; read bodies only on candidate hits). Decide which branch you are on:
@@ -126,11 +130,26 @@ routing matrix will consume.
    | An open GHI already covers this exact finding | **Do not file.** Add a comment to the existing GHI with this session's new evidence; record the issue number in session evidence; stop. Duplicate-filing is the failure mode this step closes. |
    | An open GHI covers an adjacent / sibling-cut of the same root cause | Author this GHI but include `Related: #N` in the body's `## Related` section AND post a cross-link comment on the sibling GHI naming the relationship (root vs. symptom, per-skill vs. catalog-wide, etc.) at authoring time, not as a follow-up |
    | A recently-closed GHI (≤30 days) addressed this exact finding | Re-open it (`gh issue reopen <N>`) with a comment citing the regression evidence — never file a fresh GHI for the same root cause |
+   | **An authored OBPI brief owns the work** | **Do not resolve this yourself.** Read the brief's `status:`, its parent ADR, and the requirement lines that match — then surface all three to the operator and wait. See § When a brief owns the work below. |
    | No prior or adjacent GHI exists | Proceed to Step 1 |
 
    **Canonical sibling-cut regression:** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim catches this class even when keywords disagree.
 
-   The pre-flight is **defense, not guarantee** — semantic neighbors may evade both queries. When in doubt, surface the candidate matches to the operator with the routing facts (open GHI numbers + one-line title-summaries + relationship hypothesis) before proceeding to Step 1.
+   The pre-flight is **defense, not guarantee** — semantic neighbors may evade every query. When in doubt, surface the candidate matches to the operator with the routing facts (open GHI numbers + one-line title-summaries + relationship hypothesis) before proceeding to Step 1.
+
+   **This clause disclosed only a SEMANTIC residual until 2026-08-22, and that understated it (GHI #864).** A near-miss the keywords lost is one risk; an entire artifact class outside the search space is a different claim, and a reader trusting the narrower disclosure over-trusts the pre-flight. Until the third query above existed, both queries hit GitHub issues and neither read `docs/design/adr/**/obpis/`, so an authored OBPI brief owning the same work was invisible *at any phrasing*. Keep the residual honest as new work-owning artifact classes appear: pool ADRs and chore definitions can each own a unit of work, and a query that reads one class defends against one class.
+
+### When a brief owns the work
+
+A GHI colliding with a brief is not a duplicate to dedupe — it is a **routing question only the operator can answer**, because two rules in `AGENTS.md` both apply and they select on which description of the work governs:
+
+> NEVER work an OBPI without running it through the gz-obpi-pipeline skill … the implementer dispatch and the two-stage spec-reviewer + quality-reviewer review ARE the work
+
+> GHIs are AUTHORIZED for direct repair, always … those criteria gate planned ADR work, not defect repair.
+
+Surface **the brief id, its `status:`, its parent ADR, and the requirement lines that match** — never a bare "a brief mentions this surface." The distinction is load-bearing and was learned the expensive way: the first report of the GHI #862 collision measured `entry_id in brief`, got 7/7, and concluded only that the work overlapped. Measured properly against the brief's `retire X; RETAIN Y` structure, the operator's ruling had **inverted** the brief on all seven groups — its `REQUIREMENT 12` said the opposite in as many words. A presence check answers *"is something armed"*, never *"what does it say"* (`AGENTS.md` § DO IT RIGHT). The operator then ruled on a disposition question without being shown that a written brief had already answered it the other way.
+
+**A terminal brief does not block** (`Completed`, `attested_completed`, `Validated`, `Superseded`, `Withdrawn`, `Abandoned`) — its work shipped, and a fresh defect against that surface is an ordinary GHI. It is a **live** brief (`Draft`, `pending`, `in_progress`) that makes the routing operator-level.
 
 1. **Classify the GHI** using the table below. Pick exactly one; a single GHI is one class.
 
@@ -277,6 +296,8 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 | "I'll file this and let it track until the work ships" | A GHI is not an implementation tracker. The destination artifact (commit / ADR / OBPI) tracks implementation through its own lifecycle. File the GHI, route it to a destination in the same session, close it. If you cannot route in-session, open with a blocker comment — never open as a long-lived shadow tracker. |
 | "This finding is too big for a fix and there's no ADR yet — I'll just leave it open" | If the right home is a pool ADR, **author the pool ADR in the same session** via `uv run gz plan create <slug> --kind pool --lane <lane> --title "..."` populated with Intent / Decision / rejected alternatives grounded in the GHI's evidence. Then close `superseded` citing the pool ADR. Pool ADRs are valid `superseded` destinations because they are registered in `gz adr report`. |
 | "I already know this finding is novel — I'll skip the prior-art lookup and save the round-trip" | **Step 0 is mandatory, not advisory.** The canonical sibling-cut regression (#459/#460) was filed by an operator who had filed both issues themselves minutes apart — confidence in novelty is precisely the failure-state. The two `gh issue list` queries take seconds; skipping them produces duplicate-scoped GHIs that bypass `ghi-close`'s destination-routing rule and dilute triage. |
+| "A brief mentions this surface, but my finding is clearly a defect — I'll file and note it" | **A live brief owning the work makes routing an operator question, not yours.** Both `AGENTS.md` rules apply and they disagree about which description governs; picking one silently is the judgment-time face of vibe-coding (§ Behavior Rules — Always #9). Surface the brief id, status, parent ADR and matching requirement lines, and wait. |
+| "The brief mentions the same ids, so the work overlaps — that's all I need to report" | **A presence check answers "is something armed", never "what does it say".** GHI #862's collision was first reported as `entry_id in brief` -> 7/7, which proved nothing: the brief enumerated BOTH sides of every pair. Read the disposition. |
 | "I'll call `gh issue create` directly — faster than going through the skill" | **Direct `gh issue create` invocations are a process defect** per `AGENTS.md` § Behavior Rules — Always #13. The skill is not optional ergonomics; it is the mechanical home of Step 0's prior-art lookup. Bypassing the skill bypasses the only defense against sibling-cut duplicates. |
 
 ## Red Flags
