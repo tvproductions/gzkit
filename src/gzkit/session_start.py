@@ -30,6 +30,15 @@ stale ``1/10`` was injected on 2026-08-22 and acted on before anything caught
 it. Consumption is the moment the guard's own message describes, so the scan
 runs here too. It WARNS and never refuses: this hook exits 0 always, and
 capture must never be blocked.
+
+**Qualifies the tree it selected from (GHI #872).** ``Freshness`` measures the
+AGE OF THE SELECTED DOCUMENT and can say nothing about whether the corpus it was
+selected from is current — a fetch updates refs, never the working tree. On a
+clone 8 commits behind ``origin/main`` this module rendered ``Freshness: Fresh``
+beside a handoff three generations stale, while ``scripts/session_orientation``
+rendered the caveat for the same state and had it clipped by output truncation.
+Both renderers now carry the one qualifier from :mod:`gzkit.remote_divergence`,
+fenced by a differential rather than by a convention.
 """
 
 from __future__ import annotations
@@ -37,6 +46,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
+
+from gzkit.remote_divergence import RemoteDivergence, behind_origin_caveat, probe_remote_divergence
 
 __all__ = ["ADVISEMENT_CHAR_BUDGET", "Advisement", "build_advisement"]
 
@@ -64,13 +75,20 @@ class Advisement(BaseModel):
     )
 
 
-def build_advisement(project_root: Path, *, now: str) -> Advisement:
+def build_advisement(
+    project_root: Path, *, now: str, divergence: RemoteDivergence | None = None
+) -> Advisement:
     """Build the session-start advisement for the newest handoff.
 
     Never raises. ``SessionStart`` runs before there is an agent to read a
     traceback, and a hook that dies takes the orientation down with it — so an
     unreadable tree, an absent handoff store, or a malformed document all yield
     ``present=False`` rather than an exception.
+
+    ``divergence`` is probed from the tree when not supplied; pass it to render a
+    known state without a subprocess. ``None`` from the probe and a level clone
+    are deliberately the same rendering — neither warrants a caveat, and a
+    qualifier that fired on "unknown" would fire on every non-repo checkout.
     """
     try:
         from gzkit.handoff_api import resume_handoff  # noqa: PLC0415
@@ -82,8 +100,10 @@ def build_advisement(project_root: Path, *, now: str) -> Advisement:
     if result is None:
         return Advisement(present=False)
 
+    if divergence is None:
+        divergence = _probe_divergence(project_root)
     findings = _transcribed_count_findings(project_root, result.path)
-    body = _render(result, findings)
+    body = _render(result, findings, divergence)
     truncated = len(body) > ADVISEMENT_CHAR_BUDGET
     if truncated:
         body = body[: ADVISEMENT_CHAR_BUDGET - len(_TRUNCATION_NOTE)] + _TRUNCATION_NOTE
@@ -96,6 +116,20 @@ def build_advisement(project_root: Path, *, now: str) -> Advisement:
         truncated=truncated,
         transcribed_count_lines=tuple(number for number, _ in findings),
     )
+
+
+def _probe_divergence(project_root: Path) -> RemoteDivergence | None:
+    """Measure the clone's distance from ``origin/main``. Never raises.
+
+    ``probe_remote_divergence`` already guards every failure shape; the second
+    guard is here because this module's contract is that NOTHING escapes it, and
+    a contract that depends on a callee keeping its own is one refactor from
+    being false.
+    """
+    try:
+        return probe_remote_divergence(project_root)
+    except Exception:  # noqa: BLE001 — SessionStart has no agent to read a traceback
+        return None
 
 
 def _transcribed_count_findings(project_root: Path, path: str) -> list[tuple[int, str]]:
@@ -129,7 +163,11 @@ def _render_count_warning(findings: list[tuple[int, str]]) -> str:
     )
 
 
-def _render(result: object, findings: list[tuple[int, str]] | None = None) -> str:
+def _render(
+    result: object,
+    findings: list[tuple[int, str]] | None = None,
+    divergence: RemoteDivergence | None = None,
+) -> str:
     """Render the advisement body from a ``ResumeResult``.
 
     Ordered so the load-bearing sentence survives truncation: what this is, that
@@ -140,6 +178,10 @@ def _render(result: object, findings: list[tuple[int, str]] | None = None) -> st
     everything else, for the same reason: truncation clips the tail, and a
     warning that "this document's figures are not to be trusted" is worthless
     if it is the part that gets cut.
+
+    The behind-origin caveat sits ahead of even that, because it is the more
+    fundamental doubt: the count warning says this document's figures are
+    stale, while the caveat says this may not be the right document at all.
     """
     path = getattr(result, "path", "")
     staleness = getattr(result, "staleness", "")
@@ -151,6 +193,8 @@ def _render(result: object, findings: list[tuple[int, str]] | None = None) -> st
         f"- Path: `{path}`",
         f"- Freshness: {staleness}",
     ]
+    if divergence is not None and divergence.is_behind:
+        lines.append(f"- {behind_origin_caveat(divergence.behind)}")
     if findings:
         lines += ["", _render_count_warning(findings)]
     lines += [

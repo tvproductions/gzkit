@@ -25,17 +25,21 @@ others fails here rather than in a future session's orientation.
 from __future__ import annotations
 
 import importlib.util
+import io
 import re
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
-from gzkit.handoff_api import resume_handoff
+from gzkit.handoff_api import create_handoff, resume_handoff
 from gzkit.handoff_resume_gate import newest_handoff
 from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT, is_floor_bookmark, selection_rank
-from gzkit.handoff_validation import HandoffValidationError
+from gzkit.handoff_validation import REQUIRED_SECTIONS, HandoffValidationError
+from gzkit.remote_divergence import RemoteDivergence, behind_origin_caveat
+from gzkit.session_start import build_advisement
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ORIENTATION = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -354,6 +358,200 @@ class TestTheAccountAnchorAgreesWithSelection(unittest.TestCase):
             return
         assert account is not None
         self.assertTrue(account["anchor"].endswith(expected.name))
+
+
+class TestBothRenderersCarryTheSameStalenessQualifiers(unittest.TestCase):
+    """The differential extended from SELECTION to QUALIFIERS (GHI #872).
+
+    WHY: the class above fences the two renderers into naming the SAME document.
+    Nothing fenced what they SAY about it. On 2026-08-23 a session booted 8
+    commits behind `origin/main`: orientation rendered the behind-origin caveat
+    and the advisement rendered `Freshness: Fresh` with no qualifier at all. The
+    defended rendering went to stdout (19.3 KB, clipped to a 2 KB preview that
+    cut the caveat); the undefended one was injected whole as
+    `additionalContext`. The surface that reliably reaches the agent carried no
+    defense, and the agent re-derived an OBPI draw order from a stale tree.
+
+    These assertions derive from the declared rule — a renderer that names a
+    handoff selected from the WORKING TREE must say so whenever the tree is
+    known-behind — not from either implementation. A qualifier added to one
+    renderer and not the other fails here rather than in a future session.
+    """
+
+    def setUp(self) -> None:
+        self.orientation = _load_orientation()
+        self.now = datetime(2026, 4, 25, 12, 0, 0, tzinfo=UTC)
+
+    def _seed_valid_handoff(self, root: Path) -> None:
+        """A handoff `resume_handoff` will actually return, not the minimal stub.
+
+        `_write` above omits most REQUIRED_SECTIONS, which the advisement path
+        rejects — the differential must exercise the rendering, not the refusal.
+        """
+        sections = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = "- [operator-ruled] Seeded for the differential."
+        sections["Immediate Next Steps"] = "1. Present the draw order and wait."
+        create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug="qualifier-differential",
+            sections=sections,
+            base_path=root,
+            timestamp="2026-04-25T10:00:00Z",
+        )
+
+    @staticmethod
+    def _flat(text: str) -> str:
+        """Collapse whitespace so line WRAPPING cannot hide the qualifier.
+
+        The three renderers wrap differently — plain joins, a 4000-char budget,
+        and a rich console at terminal width. The claim under test is that they
+        say the same sentence, never that they lay it out the same way.
+        """
+        return " ".join(text.split())
+
+    def _cli_resume(self, root: Path, behind: int) -> str:
+        """What `gz handoff resume` prints — the third renderer of one selection."""
+        from gzkit.commands.handoff import _render_resume
+
+        result = resume_handoff(base_path=root, now=self.now.isoformat().replace("+00:00", "Z"))
+        buffer = io.StringIO()
+        with redirect_stdout(buffer):
+            _render_resume(result, RemoteDivergence(branch="main", ahead=0, behind=behind))
+        return buffer.getvalue()
+
+    def _orientation_banner(self, behind: int) -> str:
+        state = {
+            "remote_state": {
+                "branch": "main",
+                "ahead": 0,
+                "behind": behind,
+                "is_behind": behind > 0,
+            },
+            "handoff": {
+                "path": ".gzkit/handoffs/20260425T100000Z-qualifier-differential.md",
+                "freshness": "Fresh",
+                "first_action": "Present the draw order and wait.",
+            },
+        }
+        return self.orientation.render(state, self.now)
+
+    def _advisement(self, root: Path, behind: int) -> str:
+        return build_advisement(
+            root,
+            now=self.now.isoformat().replace("+00:00", "Z"),
+            divergence=RemoteDivergence(branch="main", ahead=0, behind=behind),
+        ).text
+
+    def test_both_renderers_carry_the_caveat_when_the_clone_is_behind(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_valid_handoff(root)
+            caveat = behind_origin_caveat(8)
+
+            self.assertIn(
+                caveat,
+                self._flat(self._orientation_banner(8)),
+                "session orientation dropped the behind-origin caveat",
+            )
+            self.assertIn(
+                caveat,
+                self._flat(self._advisement(root, 8)),
+                "the SessionStart advisement named a handoff selected from a "
+                "known-behind working tree without saying so — the exact "
+                "asymmetry GHI #872 records",
+            )
+            self.assertIn(
+                caveat,
+                self._flat(self._cli_resume(root, 8)),
+                "`gz handoff resume` named a handoff selected from a known-behind "
+                "working tree without saying so — the same defect in the reader "
+                "the operator invokes DELIBERATELY to decide what to read",
+            )
+
+    def test_neither_renderer_carries_the_caveat_on_a_level_clone(self) -> None:
+        """The negative pole: a current clone must not be nagged about nothing.
+
+        A caveat that fires unconditionally teaches the reader to skip it, which
+        is the same end state as never rendering it.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_valid_handoff(root)
+
+            self.assertNotIn("reads the WORKING TREE", self._flat(self._orientation_banner(0)))
+            self.assertNotIn("reads the WORKING TREE", self._flat(self._advisement(root, 0)))
+            self.assertNotIn("reads the WORKING TREE", self._flat(self._cli_resume(root, 0)))
+
+    def test_the_caveat_names_the_measured_distance_not_a_generic_warning(self) -> None:
+        """An operator cannot decide whether to pull without the magnitude."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._seed_valid_handoff(root)
+            self.assertIn("8 commits behind", self._advisement(root, 8))
+            self.assertIn("23 commits behind", self._advisement(root, 23))
+
+    def test_the_caveat_survives_truncation_of_the_advisement(self) -> None:
+        """Same reasoning the count warning already carries in `_render`.
+
+        Truncation clips the tail, and a qualifier saying "this document may not
+        be the current one" is worthless if it is the part that gets cut.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            sections = dict.fromkeys(REQUIRED_SECTIONS, "Seeded. " * 400)
+            sections["Decisions Made"] = "- [operator-ruled] " + ("Long. " * 400)
+            sections["Immediate Next Steps"] = "1. " + ("Long step. " * 400)
+            create_handoff(
+                adr_id="ADR-0.0.65",
+                branch="main",
+                agent="g0",
+                slug="overlong",
+                sections=sections,
+                base_path=root,
+                timestamp="2026-04-25T10:00:00Z",
+            )
+            advisement = build_advisement(
+                root,
+                now=self.now.isoformat().replace("+00:00", "Z"),
+                divergence=RemoteDivergence(branch="main", ahead=0, behind=8),
+            )
+            self.assertTrue(advisement.truncated)
+            self.assertIn(behind_origin_caveat(8), self._flat(advisement.text))
+
+
+class TestTheCaveatHasExactlyOneDefinition(unittest.TestCase):
+    """A third renderer must not be able to restate the qualifier.
+
+    Same fence as the writer identity and the exclusion pathspec above, for the
+    same reason: two copies is a convention, and a convention is what failed
+    here. The advisement surface has now been missed twice by two fixes taught
+    to its siblings (GHI #758, then GHI #872).
+    """
+
+    def test_the_caveat_literal_appears_only_in_its_defining_module(self) -> None:
+        owner = REPO_ROOT / "src" / "gzkit" / "remote_divergence.py"
+        offenders: list[str] = []
+        for root in (REPO_ROOT / "src" / "gzkit", REPO_ROOT / "scripts"):
+            for path in root.rglob("*.py"):
+                if path == owner:
+                    continue
+                try:
+                    text = path.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    continue
+                for line in text.splitlines():
+                    # The distinctive clause, not the NAME — importers
+                    # legitimately mention `behind_origin_caveat`.
+                    if "reads the WORKING TREE" in line:
+                        offenders.append(f"{path.relative_to(REPO_ROOT)}: {line.strip()}")
+        self.assertEqual(
+            offenders,
+            [],
+            "the behind-origin caveat is re-stated instead of imported from "
+            "gzkit.remote_divergence; a second copy is how the renderers drift",
+        )
 
 
 if __name__ == "__main__":

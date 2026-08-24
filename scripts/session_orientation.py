@@ -877,57 +877,30 @@ def _git_run(args: list[str], timeout: int) -> subprocess.CompletedProcess[str] 
 def collect_remote_state() -> dict | None:
     """Surface git-remote-divergence so SessionStart agents see stale clones.
 
-    Reports `branch`, `ahead`, `behind`, and `is_behind`. Runs `git fetch`
-    against `origin` unless `GZKIT_ORIENTATION_NO_FETCH=1` is set (offline
-    operator escape hatch). Returns None when git is unavailable, the repo
-    has no `origin` remote, or any subprocess fails — orientation must
-    never crash the session-boot hook (GHI #338).
+    Reports `branch`, `ahead`, `behind`, and `is_behind`. The measurement itself
+    belongs to `gzkit.remote_divergence`, shared with the SessionStart
+    advisement: two probes over one question is the drift that let one renderer
+    warn about a stale clone while the other did not (GHI #872). This function
+    is the adapter from that model to the banner's dict shape, and nothing more.
+
+    Returns None when git is unavailable, the repo has no `origin` remote, or
+    any subprocess fails — orientation must never crash the session-boot hook
+    (GHI #338). The `GZKIT_ORIENTATION_NO_FETCH=1` offline escape hatch is
+    honoured by the shared probe.
     """
-    skip_fetch = os.environ.get("GZKIT_ORIENTATION_NO_FETCH") == "1"
-    if not skip_fetch:
-        fetched = _git_run(["git", "fetch", "--quiet", "origin"], timeout=REMOTE_FETCH_TIMEOUT_SEC)
-        if fetched is None:
-            # git missing entirely is a hard "no remote state available" signal.
-            # Fetch failure with git present (no origin, offline) still leaves
-            # the local refs queryable — fall through to the count below.
-            probe = _git_run(["git", "--version"], timeout=REMOTE_QUERY_TIMEOUT_SEC)
-            if probe is None:
-                return None
-
-    branch_proc = _git_run(
-        ["git", "rev-parse", "--abbrev-ref", "HEAD"], timeout=REMOTE_QUERY_TIMEOUT_SEC
-    )
-    if branch_proc is None or branch_proc.returncode != 0:
-        return None
-    branch = branch_proc.stdout.strip() or "?"
-
-    # `origin/main...HEAD` with --left-right --count prints "<behind>\t<ahead>":
-    #   left side = commits in origin/main not in HEAD (behind)
-    #   right side = commits in HEAD not in origin/main (ahead)
-    # We hard-code `origin/main` as the upstream reference because the
-    # "behind origin/main" warning class GHI #338 names is specific to the
-    # canonical branch — agents editing canonical surfaces against a stale
-    # main is the failure mode, not divergence on feature branches.
-    count_proc = _git_run(
-        ["git", "rev-list", "--left-right", "--count", "origin/main...HEAD"],
-        timeout=REMOTE_QUERY_TIMEOUT_SEC,
-    )
-    if count_proc is None or count_proc.returncode != 0:
-        return None
-    parts = count_proc.stdout.strip().split()
-    if len(parts) != 2:
-        return None
     try:
-        behind = int(parts[0])
-        ahead = int(parts[1])
-    except ValueError:
-        return None
+        from gzkit.remote_divergence import probe_remote_divergence
 
+        divergence = probe_remote_divergence(REPO_ROOT)
+    except Exception:
+        return None
+    if divergence is None:
+        return None
     return {
-        "branch": branch,
-        "ahead": ahead,
-        "behind": behind,
-        "is_behind": behind > 0,
+        "branch": divergence.branch,
+        "ahead": divergence.ahead,
+        "behind": divergence.behind,
+        "is_behind": divergence.is_behind,
     }
 
 
@@ -1069,14 +1042,14 @@ def render(state: dict, now: datetime) -> str:
         # Rendering it with the same confidence either way is what pinned a live
         # session to a handoff three generations stale while the section directly
         # above reported behind=20. The gate was right; its input was not.
+        #
+        # The text is IMPORTED, not spelled here: the SessionStart advisement
+        # answers the same question over the same corpus and must carry the same
+        # qualifier, and a second copy is how it came to carry none (GHI #872).
         if isinstance(remote, dict) and remote.get("is_behind"):
-            lines.append(
-                f"- CAVEAT: this clone is {remote.get('behind', '?')} commits behind "
-                "origin, and this selection reads the WORKING TREE — newer handoffs "
-                "may exist in the unmerged commits. Run "
-                "`git pull --ff-only origin main` and re-read before treating this "
-                "as the most-recent handoff."
-            )
+            from gzkit.remote_divergence import behind_origin_caveat
+
+            lines.append(f"- {behind_origin_caveat(int(remote.get('behind') or 0))}")
         lines.append(
             "- A handoff ADVISES; it does not authorize. Present its advised steps and "
             "obtain explicit operator authorization before executing any of them "

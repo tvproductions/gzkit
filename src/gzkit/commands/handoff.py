@@ -40,6 +40,11 @@ from gzkit.handoff_validation import (
     HandoffValidationError,
     continues_from_refs,
 )
+from gzkit.remote_divergence import (
+    RemoteDivergence,
+    behind_origin_caveat,
+    probe_remote_divergence,
+)
 from gzkit.utils import git_cmd, run_exec
 
 # Required section -> the handoff_create_cmd parameter that fills it. Every
@@ -149,12 +154,20 @@ def _render_step_references(step: NextStep) -> None:
     console.print(f"       refs: {rendered}")
 
 
-def _render_resume(result: ResumeResult) -> None:
+def _render_resume(result: ResumeResult, divergence: RemoteDivergence | None = None) -> None:
     """Human-readable resume report — path, staleness, and EVERY next step.
 
     All authored steps are rendered, not just the head: surfacing one is what
     let items 2-N fall out of the advisory channel and be re-adjudicated as
     open loops in the successor session (GHI #696).
+
+    ``divergence`` carries the behind-origin caveat, printed directly under the
+    path because it qualifies the DOCUMENT'S IDENTITY rather than its contents:
+    on a clone behind ``origin/main`` the newest handoff on disk is not the
+    newest handoff that exists, and every step below is then advice from a
+    superseded document. ``staleness`` cannot say this — it measures the age of
+    the document that WAS selected, never whether the tree it was selected from
+    is current (GHI #872).
 
     Each step also carries the live state of what it cites. A step citing a
     settled reference is flagged, because relaying such a step unexamined is how a
@@ -164,6 +177,8 @@ def _render_resume(result: ResumeResult) -> None:
     call, and no available signal decides it.
     """
     console.print(f"resume — {result.path}")
+    if divergence is not None and divergence.is_behind:
+        console.print(f"  {behind_origin_caveat(divergence.behind)}")
     console.print(f"  staleness: {result.staleness.value}")
     console.print(f"  requires human verification: {result.requires_human_verification}")
     # No early return on an empty step list: decisions and settled rulings are
@@ -302,9 +317,13 @@ def handoff_resume_cmd(
         reference_checker=_live_reference_checker(root),
     )
     if as_json:
+        # Deliberately unqualified: `--json` is the ``ResumeResult`` dump, and
+        # divergence is a property of the TREE rather than of the resumed
+        # document. Widening the model to carry it would put a probe result
+        # inside an artifact projection. Machine consumers read the tree.
         print(json.dumps(result.model_dump(), indent=2))  # noqa: T201
         return
-    _render_resume(result)
+    _render_resume(result, probe_remote_divergence(root))
 
 
 def _current_branch(base_path: Path) -> str:
