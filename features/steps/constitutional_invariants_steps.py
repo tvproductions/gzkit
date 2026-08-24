@@ -749,10 +749,16 @@ def step_corpus_entry_full(context) -> None:
 
 @then("the corpus entry model carries exactly its declared fields")
 def step_corpus_entry_declared_fields(context) -> None:
-    """The ten ADR-0.0.37-18 fields plus ``retires`` (GHI #635 retirement pointer).
+    """The ten ADR-0.0.37-18 fields plus the two tombstone pointers.
+
+    ``retires`` is GHI #635's retirement pointer; ``supersedes`` is
+    OBPI-0.35.0-01's replace-and-retire pointer.
 
     Set equality, not a count: the fence is against fields arriving by
     inheritance, so admitting a deliberate addition is the correct update.
+    REQ-0.0.37-18-01 asserts the entry carries exactly its DECLARED fields —
+    that assertion stays true as the declared set grows, so the surface is
+    repaired rather than the scenario retired.
     """
     from gzkit.content.models import CorpusEntry  # noqa: PLC0415
 
@@ -768,6 +774,7 @@ def step_corpus_entry_declared_fields(context) -> None:
         "origin",
         "ts",
         "retires",
+        "supersedes",
     }
 
 
