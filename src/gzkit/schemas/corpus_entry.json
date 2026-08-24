@@ -51,6 +51,10 @@
     "retires": {
       "type": ["string", "null"],
       "description": "Id of an earlier entry this row supersedes (GHI #635). The retired row stays on disk; it simply stops binding the invariant floor, so retirement only ever shrinks the floor and never invalidates a committed rendition."
+    },
+    "supersedes": {
+      "type": ["string", "null"],
+      "description": "Id of an earlier entry this row both retires AND replaces (OBPI-0.35.0-01). Unlike retires, a supersedes row is itself a content row in the effective view."
     }
   }
 }

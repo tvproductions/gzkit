@@ -7,22 +7,27 @@ This is the single enforcement surface the composer consumes; no duplicated inli
 from __future__ import annotations
 
 from gzkit.content.models import Corpus, CorpusEntry
+from gzkit.content.models.corpus import effective_corpus
 
 
 def invariant_entries(corpus: Corpus) -> list[CorpusEntry]:
-    """Return corpus entries whose tier == 'invariant' and which are not retired.
+    """Return corpus entries whose tier == 'invariant' in the effective (folded) view.
 
-    A row named by a later entry's ``retires`` pointer has been superseded and no
-    longer binds the floor (GHI #635). Retirement only ever removes entries from
-    this set, so a rendition that satisfied the floor before a retirement still
-    satisfies it after. Scope that to the FLOOR: retiring an entry still moves the
-    corpus fingerprint, so the freshness gate's derivation proof breaks and a
-    recompose IS required before the next push. This sentence was lifted into the
-    `gz content retire` help, where it read as a claim about the whole operation
-    and told operators no recomposition was due (GHI #863).
+    Routed through :func:`effective_corpus` (OBPI-0.35.0-01 D3), not a flat
+    `retired_ids()` scan: `effective_corpus` already drops every row that is
+    either not live or is a pure `retires` tombstone (Algebra 8), so no
+    additional retirement filter belongs here. Retirement only ever shrinks
+    this set relative to the raw log, so a rendition that satisfied the floor
+    before a retirement still satisfies it after -- but un-retirement
+    (Algebra 6, a later tombstone retiring an earlier one) can GROW it back,
+    which the old flat form could never express. Scope that to the FLOOR:
+    retiring OR un-retiring an entry still moves the corpus fingerprint, so
+    the freshness gate's derivation proof breaks and a recompose IS required
+    before the next push. This sentence was lifted into the `gz content
+    retire` help, where it read as a claim about the whole operation and told
+    operators no recomposition was due (GHI #863).
     """
-    retired = corpus.retired_ids()
-    return [e for e in corpus.entries if e.tier == "invariant" and e.id not in retired]
+    return [e for e in effective_corpus(corpus).entries if e.tier == "invariant"]
 
 
 def assert_invariant_verbatim(corpus: Corpus, rendered_text: str) -> None:
