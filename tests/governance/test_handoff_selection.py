@@ -26,7 +26,9 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import os
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -38,7 +40,12 @@ from gzkit.handoff_api import create_handoff, resume_handoff
 from gzkit.handoff_resume_gate import newest_handoff
 from gzkit.handoff_selection import FLOOR_BOOKMARK_AGENT, is_floor_bookmark, selection_rank
 from gzkit.handoff_validation import REQUIRED_SECTIONS, HandoffValidationError
-from gzkit.remote_divergence import RemoteDivergence, behind_origin_caveat
+from gzkit.remote_divergence import (
+    NO_FETCH_ENV,
+    RemoteDivergence,
+    behind_origin_caveat,
+    probe_remote_divergence,
+)
 from gzkit.session_start import build_advisement
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -552,6 +559,82 @@ class TestTheCaveatHasExactlyOneDefinition(unittest.TestCase):
             "the behind-origin caveat is re-stated instead of imported from "
             "gzkit.remote_divergence; a second copy is how the renderers drift",
         )
+
+
+class TestTheProbeMeasuresTheRealTree(unittest.TestCase):
+    """The probe must FETCH, not read whatever refs happen to be on disk.
+
+    WHY this is a test and not a code comment: reading stale refs reports
+    `behind=0` on precisely the clone the caveat exists to warn about. Every
+    other test in this file would stay green — the renderers would faithfully
+    render a qualifier that never fires. That is the defect wearing a fix's
+    clothes, and it is invisible to a differential over rendering.
+    """
+
+    def setUp(self) -> None:
+        """Clear the offline escape hatch for the duration of these two tests.
+
+        `GZKIT_ORIENTATION_NO_FETCH=1` is a legitimate operator setting, and an
+        inherited one turns the assertion below into a spurious failure on their
+        machine only. Found by running the suite with it set, not by reasoning.
+        """
+        previous = os.environ.pop(NO_FETCH_ENV, None)
+        if previous is not None:
+            self.addCleanup(os.environ.__setitem__, NO_FETCH_ENV, previous)
+
+    @staticmethod
+    def _git(*args: str, cwd: Path) -> None:
+        subprocess.run(
+            ["git", *args],
+            cwd=cwd,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+        )
+
+    def _commit(self, repo: Path, name: str) -> None:
+        (repo / name).write_text(name, encoding="utf-8")
+        self._git("add", name, cwd=repo)
+        self._git("commit", "-m", f"add {name}", cwd=repo)
+
+    def test_a_clone_left_behind_is_measured_without_a_manual_fetch(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            origin, clone = root / "origin", root / "clone"
+
+            origin.mkdir()
+            self._git("init", "--quiet", "--initial-branch=main", cwd=origin)
+            self._git("config", "user.email", "g0@users.noreply.github.com", cwd=origin)
+            self._git("config", "user.name", "g0", cwd=origin)
+            self._commit(origin, "base.txt")
+
+            self._git("clone", "--quiet", str(origin), str(clone), cwd=root)
+            self._git("config", "user.email", "g0@users.noreply.github.com", cwd=clone)
+            self._git("config", "user.name", "g0", cwd=clone)
+
+            # Two commits land upstream AFTER the clone. The clone's `origin/main`
+            # ref still points at `base.txt` until something fetches.
+            self._commit(origin, "one.txt")
+            self._commit(origin, "two.txt")
+
+            divergence = probe_remote_divergence(clone)
+
+            assert divergence is not None, "a healthy clone must yield a measurement"
+            self.assertEqual(
+                divergence.behind,
+                2,
+                "the probe reported the STALE ref count — on a behind clone it "
+                "would render no caveat while every rendering test stayed green",
+            )
+            self.assertEqual(divergence.ahead, 0)
+            self.assertTrue(divergence.is_behind)
+
+    def test_a_directory_that_is_not_a_repository_yields_no_measurement(self) -> None:
+        """Silence, never an exception: both callers are session-boot surfaces."""
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(probe_remote_divergence(Path(tmp)))
 
 
 if __name__ == "__main__":
