@@ -21,8 +21,16 @@ misled.
 Probe and caveat live here, once, for the reason ``FLOOR_BOOKMARK_AGENT`` and
 ``HANDOFF_PATHSPEC_EXCLUDE`` live in one module: a second copy is the drift.
 ``tests/governance/test_handoff_selection.py`` fences both arms — a differential
-asserting every renderer emits this qualifier for the same state, and a literal
-scan failing closed on a restatement anywhere under ``src/`` or ``scripts/``.
+over the three renderers that exist (orientation banner, SessionStart
+advisement, ``gz handoff resume``), and a literal scan failing closed on a
+restatement anywhere under ``src/`` or ``scripts/``.
+
+**Disclosed residual.** The scan catches a fourth renderer that RESTATES the
+caveat; nothing catches one that simply omits it, because the differential names
+its three readers rather than discovering them. That is the same residual
+``handoff_selection`` carries for selection, and the same words apply:
+enumerating readers is not a fence. A renderer added here should be added to the
+differential in the same commit.
 """
 
 from __future__ import annotations
