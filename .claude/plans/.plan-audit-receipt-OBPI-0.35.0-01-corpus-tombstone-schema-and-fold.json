@@ -1,0 +1,46 @@
+{
+  "obpi_id": "OBPI-0.35.0-01-corpus-tombstone-schema-and-fold",
+  "timestamp": "2026-08-24T07:52:32.770690+00:00",
+  "verdict": "PASS",
+  "plan_file": "corpus-tombstone-schema-and-fold-OBPI-0.35.0-01.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/corpus_entry.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-01-okf-concept-frontmatter-model",
+      "contested_paths": [
+        "src/gzkit/schemas/corpus_entry.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-18-append-only-corpus-model",
+      "contested_paths": [
+        "src/gzkit/content/models/corpus.py",
+        "src/gzkit/schemas/corpus_entry.json",
+        "tests/content/test_corpus_model.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-23-invariant-tier",
+      "contested_paths": [
+        "src/gzkit/content/tier_policy.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/corpus_entry.json"
+      ]
+    }
+  ]
+}

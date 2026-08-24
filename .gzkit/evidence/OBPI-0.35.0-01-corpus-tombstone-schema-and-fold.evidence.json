@@ -1,0 +1,48 @@
+{
+  "obpi_id": "OBPI-0.35.0-01-corpus-tombstone-schema-and-fold",
+  "generated_at": "2026-08-24T09:28:30.939878+00:00",
+  "demos": [
+    {
+      "command": "uv run python -c \"from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.models.corpus import effective_corpus; c = load_corpus(Path('.'), 'AGENTS.md'); print('raw', len(c.entries), 'effective', len(effective_corpus(c).entries))\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "raw 79 effective 55"
+    },
+    {
+      "command": "uv run python -c \"from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.models.corpus import effective_corpus; from gzkit.content.tier_policy import invariant_entries; print('invariant on the floor:', len(invariant_entries(load_corpus(Path('.'), 'AGENTS.md'))))\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "invariant on the floor: 54"
+    },
+    {
+      "command": "uv run python -c \"from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.rendition_store import corpus_fingerprint; print(corpus_fingerprint(load_corpus(Path('.'), 'AGENTS.md')))\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-2a3a3ac6999948719a5ae9da75f53c5e.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-171fe83e0aa54fbb831bf308c0f72fca.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-fce01219ac674796b47ac6fb157ec3be.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 9,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
+}
