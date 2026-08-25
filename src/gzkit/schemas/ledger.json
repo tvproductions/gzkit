@@ -1189,6 +1189,13 @@
         "reason": {
           "type": "string",
           "min_length": 1
+        },
+        "tier": {
+          "type": "string",
+          "min_length": 1
+        },
+        "attestor": {
+          "type": "string"
         }
       }
     },

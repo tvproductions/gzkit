@@ -326,20 +326,29 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
         "retire",
         help="Retire a superseded corpus entry via an append-only retraction",
         description=(
-            "Append a retraction row naming a superseded entry id, and emit a "
-            "corpus_entry_retired ledger event. Nothing is deleted — the retired entry "
+            "Append a retraction row naming a superseded entry id, and emit BOTH a "
+            "corpus_entry_appended event for the tombstone row and a corpus_entry_retired "
+            "event carrying the retired entry's tier and attestor. Nothing is deleted — "
+            "the retired entry "
             "stays on disk with its provenance — but it stops binding the invariant "
             "floor, so a rendition no longer has to carry its text verbatim. Retirement "
             "only ever shrinks the floor, so every committed rendition still SATISFIES "
             "it — but it does NOT leave them PROVABLE: the retraction row moves the "
             "corpus fingerprint, so `gz validate --rendition-freshness` requires a "
             "recompose and re-attest before the next push (GHI #863). Fails closed on "
-            "an unknown or already-retired id."
+            "an unknown or already-retired id. Corpus-attested (OBPI-0.35.0-02): a "
+            "retirement that MOVES invariant-tier liveness requires a named --attestor "
+            "-- including a tombstone, whose retirement revives its target and GROWS "
+            "the floor; routine compressible retirement needs none. --reason is "
+            "always required: it becomes the "
+            "retraction row's text and the corpus_entry_retired event's reason, and both "
+            "surfaces reject an empty one."
         ),
         epilog=_build_epilog(
             [
                 "gz content retire AGENTS.md --entry corpus-prime-directive-2026-06-13T12:34:39 "
-                '--reason "superseded by the 2026-06-19 single-quote canon entry"',
+                '--reason "superseded by the 2026-06-19 single-quote canon entry" '
+                '--attestor "g0"',
             ]
         ),
     )
@@ -348,7 +357,14 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
     p.add_argument(
         "--reason",
         required=True,
-        help="Why the entry is superseded; stored as the retraction row's text.",
+        # Per-flag help is capped at 80 chars (tests/test_help_text_completeness.py);
+        # the full rationale for "always required" lives in the subparser description.
+        help="Why the entry is superseded; becomes the retraction text. Always required.",
+    )
+    p.add_argument(
+        "--attestor",
+        default="",
+        help="Operator retiring the entry; required only when the entry is tier=invariant.",
     )
     p.add_argument(
         "--origin",
@@ -361,6 +377,7 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
             entry_id=a.entry,
             reason=a.reason,
             origin=a.origin,
+            attestor=a.attestor,
         )
     )
 

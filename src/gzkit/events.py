@@ -568,6 +568,13 @@ class CorpusEntryRetiredEvent(_EventBase):
     canon *currently* requires — the surface's invariant floor shrinks — which is the
     fact an auditor looks for, not merely that a row was added. Nothing is deleted;
     the retired entry keeps its provenance on disk.
+
+    ``tier`` and ``attestor`` (OBPI-0.35.0-02): an auditor asking "who un-bound a
+    0-Kelvin-floor entry, and was it floor-tier at all?" could not answer from the
+    ledger without them. ``tier`` is the RETIRED entry's own tier and is always
+    known. ``attestor`` is legitimately empty on a routine compressible-tier
+    retirement — the corpus-attestation gate guards only the invariant floor
+    (`retire.py`), so this field is never required non-empty here.
     """
 
     event: Literal["corpus_entry_retired"]
@@ -575,6 +582,15 @@ class CorpusEntryRetiredEvent(_EventBase):
     retired_entry_id: str
     retraction_entry_id: str
     reason: str
+    # Both tombstone fields carry a default because this model must parse HISTORY, not
+    # only rows this release writes. `tier` was added by OBPI-0.35.0-02; five committed
+    # rows predate it (.gzkit/ledger.jsonl:13992,15045,15047,15075,15117) and the ledger
+    # is append-only, so they can never grow the key. `schemas/ledger.json` leaves `tier`
+    # out of `required` for exactly that reason -- a required field here would make the
+    # two readers disagree about the same row: `gz validate --ledger` accepts it while
+    # `parse_typed_event` raises. Held by TestTypedModelParsesEveryCommittedLedgerRow.
+    tier: str = ""
+    attestor: str = ""
 
 
 class CompositionCandidateEmittedEvent(_EventBase):

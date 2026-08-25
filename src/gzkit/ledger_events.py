@@ -862,13 +862,19 @@ def corpus_entry_retired_event(
     retired_entry_id: str,
     retraction_entry_id: str,
     reason: str,
+    tier: str,
+    attestor: str = "",
 ) -> LedgerEvent:
-    """Create a corpus_entry_retired event (GHI #635).
+    """Create a corpus_entry_retired event (GHI #635, OBPI-0.35.0-02).
 
     Layer-2 witness for a ``gz content retire`` append. Distinct from
     ``corpus_entry_appended`` because retirement mutates what canon *currently*
     requires — the invariant floor shrinks — and that is the fact an auditor
     needs to find, not merely that a row was added.
+
+    ``tier`` is the RETIRED entry's own tier, always known. ``attestor`` is
+    legitimately empty on a compressible-tier retirement — only the invariant
+    floor requires a named attestor (`retire.py`'s corpus-attestation gate).
     """
     timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
@@ -880,6 +886,8 @@ def corpus_entry_retired_event(
             "retired_entry_id": retired_entry_id,
             "retraction_entry_id": retraction_entry_id,
             "reason": reason,
+            "tier": tier,
+            "attestor": attestor,
         },
     )
 

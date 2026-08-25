@@ -5,6 +5,7 @@
 """
 
 import unittest
+from pathlib import Path
 from typing import Literal, get_args, get_origin
 
 from pydantic import BaseModel
@@ -658,6 +659,108 @@ class TestInstructionSchemaAlignment(unittest.TestCase):
         self.assertFalse(
             missing,
             f"rule.schema.json properties without model fields: {missing}",
+        )
+
+
+class TestCommittedLedgerValidatesAgainstSchema(unittest.TestCase):
+    """The repo's OWN ledger must satisfy the schema shipped alongside it.
+
+    Tightening a ledger event's schema is not a local edit: the ledger is
+    APPEND-ONLY, so every row already committed must keep validating, and a
+    historical row cannot be repaired to satisfy a new rule.
+
+    Measured 2026-08-25 (OBPI-0.35.0-02): adding `tier` to
+    `corpus_entry_retired`'s `required` list broke FIVE historical rows written
+    before the field existed -- while `uv run -m unittest -q` stayed green at
+    8822 tests, because every other ledger test builds its own fixture ledger in
+    a temp dir and none reads the committed one. The whole suite passing is
+    therefore not evidence that the shipped ledger still validates; this test is.
+
+    The precedent it enforces: an additive field on an existing event type is
+    DECLARED but not REQUIRED (27 of 65 event types already carry
+    declared-but-optional properties), matching how `task_id` was added additively
+    to the worklog event types. Declare the property so a present value is
+    type-checked; leave it out of `required` so history keeps validating.
+    """
+
+    def test_committed_ledger_has_no_schema_violations(self) -> None:
+        from gzkit.validate_pkg.ledger_check import validate_ledger
+
+        ledger = Path(__file__).resolve().parents[1] / ".gzkit" / "ledger.jsonl"
+        if not ledger.exists():  # pragma: no cover - only in a stripped checkout
+            self.skipTest("no committed ledger in this checkout")
+        errors = validate_ledger(ledger)
+        self.assertEqual(
+            [f"{e.artifact}: {e.message}" for e in errors],
+            [],
+            "The committed ledger no longer satisfies src/gzkit/schemas/ledger.json. "
+            "The ledger is append-only -- do NOT edit historical rows. Relax the "
+            "schema instead: declare a new field as a property, not in `required`.",
+        )
+
+
+class TestTypedModelParsesEveryCommittedLedgerRow(unittest.TestCase):
+    """The typed models must parse the ledger the JSON schema accepts.
+
+    A ledger row has TWO readers: `validate_ledger` (JSON-schema, `ledger_check.py`)
+    and `parse_typed_event` (the Pydantic discriminated union). They can disagree
+    about the same row, and the JSON-schema side is the lenient one -- so a suite
+    that only exercises `validate_ledger` proves nothing about the typed path.
+
+    Measured 2026-08-25 (OBPI-0.35.0-02): `tier` was correctly removed from
+    `corpus_entry_retired`'s `required` list so five pre-existing rows kept
+    validating, but the matching default was NOT added to
+    `CorpusEntryRetiredEvent.tier`. `gz validate --ledger` returned 0 while
+    `parse_typed_event` raised `tier: Field required` on
+    `corpus-entry-retired-2026-07-22T10:31:32.832846+00:00` -- the exact rows the
+    schema relaxation existed to rescue. Both independent reviewers flagged it and
+    no test could have.
+
+    The general rule this pins: when an event type gains a field, the schema and the
+    typed model must relax TOGETHER, because the ledger is append-only and history
+    can never grow the key.
+    """
+
+    def test_every_committed_row_parses_through_the_typed_union(self) -> None:
+        import json
+
+        from gzkit.events import parse_typed_event
+
+        ledger = Path(__file__).resolve().parents[1] / ".gzkit" / "ledger.jsonl"
+        if not ledger.exists():  # pragma: no cover - only in a stripped checkout
+            self.skipTest("no committed ledger in this checkout")
+
+        # SCOPED to the corpus events, deliberately. Measured 2026-08-25: ~300
+        # committed rows across 14 other event-type/field combinations already fail
+        # this union (`artifact_renamed`, `obpi_lock_released`, `airlock_in`, ... all
+        # carrying keys their models forbid). That is a real, larger pre-existing gap
+        # -- tracked separately -- and swallowing it here would mean either a
+        # permanently red test or an allowlist that quietly grows until the fence
+        # asserts nothing. Scope names what this OBPI is accountable for.
+        scope = {"corpus_entry_retired", "corpus_entry_appended"}
+
+        failures: list[str] = []
+        for lineno, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), start=1):
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            if row.get("event") not in scope:
+                continue
+            try:
+                parse_typed_event(row)
+            except ValueError as exc:
+                # An event type with no typed model is a different (declared) gap;
+                # this test is about a row the union CLAIMS to model and cannot parse.
+                if "Unknown event" in str(exc) or "no typed model" in str(exc).lower():
+                    continue
+                failures.append(f"{ledger.name}:{lineno} {row.get('event')}: {exc}")
+
+        self.assertEqual(
+            failures[:5],
+            [],
+            "Typed models reject committed ledger rows that the JSON schema accepts. "
+            "The ledger is append-only -- history cannot gain a key. Give the new "
+            "field a default on the model, matching its absence from `required`.",
         )
 
 
