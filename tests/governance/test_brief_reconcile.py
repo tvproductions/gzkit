@@ -44,9 +44,16 @@ def _write_structured_brief(
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     n_acc = len(reqs) if acceptance_count is None else acceptance_count
-    fm_allowlist = "\n".join(f"  - {p}" for p in allowlist)
-    fm_reqs = "\n".join(f"  - {r}" for r in reqs)
-    acceptance = "\n".join(f"- [ ] {reqs[i % len(reqs)]}: criterion" for i in range(n_acc))
+    # textwrap.dedent runs on the RESULT of f-string substitution, so every
+    # continuation line must already carry the template's own indent. Joining with a
+    # bare "\n" leaves entries 2..N at column 2, which then becomes the common prefix
+    # and dedent shears the whole document — yielding invalid YAML, a brief that does
+    # not parse as structured, and empty deltas that read exactly like "no drift".
+    # Single-entry lists never tripped it, which is why it stayed latent (GHI #876).
+    ind = " " * 12
+    fm_allowlist = f"\n{ind}".join(f"  - {p}" for p in allowlist)
+    fm_reqs = f"\n{ind}".join(f"  - {r}" for r in reqs)
+    acceptance = f"\n{ind}".join(f"- [ ] {reqs[i % len(reqs)]}: criterion" for i in range(n_acc))
     path.write_text(
         textwrap.dedent(f"""\
             ---
@@ -1038,6 +1045,104 @@ class TestMissingInBrief(unittest.TestCase):
             # util.py is in src/gzkit/, not a neighborhood of src/gzkit/foo/ —
             # the cross-cutting utility import must not be flagged.
             self.assertNotIn("src/gzkit/util.py", result.allowlist_delta.missing_in_brief)
+
+    def _build_tree_glob_allowlist(self, tmp: Path, pattern: str) -> Path:
+        """A brief declaring its src/ scope with a GLOB, plus a REQ test importing a
+        concrete module that glob covers (GHI #876).
+
+        This is the OBPI-0.35.0-02 shape: the allowlist reads `src/gzkit/cli/**` and a
+        covering test does `from gzkit.cli.main import main` — the standard CLI test
+        entry point. The glob DECLARES main.py, so it is inside the declared scope, not
+        the "work leaked into a sibling module" the dimension exists to report.
+        """
+        for rel in ("src/gzkit/cli/main.py", "src/gzkit/cli/nested/deep.py"):
+            q = tmp / rel
+            q.parent.mkdir(parents=True, exist_ok=True)
+            q.write_text("# stub\n", encoding="utf-8")
+        test_file = tmp / "tests" / "test_glob.py"
+        test_file.parent.mkdir(parents=True, exist_ok=True)
+        test_file.write_text(
+            textwrap.dedent("""\
+                from gzkit.cli.main import main  # covered by the allowlist's glob
+
+                @covers("REQ-9.9.8-01-01")
+                def test_something():
+                    pass
+                """),
+            encoding="utf-8",
+        )
+        brief = tmp / "docs/design/adr/foundation/ADR-9.9.8-x/obpis/OBPI-9.9.8-01-x.md"
+        _write_structured_brief(
+            brief,
+            brief_id="OBPI-9.9.8-01-x",
+            parent="ADR-9.9.8-x",
+            reqs=["REQ-9.9.8-01-01"],
+            allowlist=[pattern],
+        )
+        return brief
+
+    @covers("REQ-0.0.37-05-02")
+    def test_recursive_glob_allowlist_declares_the_module_it_covers(self):
+        """`src/gzkit/cli/**` DECLARES `src/gzkit/cli/main.py` (GHI #876).
+
+        Before the fix the allowlist was searched by literal set membership, so a glob
+        entry matched no concrete path and every file it covered was reported as
+        undeclared. The failure direction is what makes it costly: it accuses DECLARED
+        scope, so the locally obvious remedy is to widen the brief with a concrete path
+        the OBPI never edits — corrupting the brief to satisfy a reader that misread it.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            brief = self._build_tree_glob_allowlist(tmp, "src/gzkit/cli/**")
+            result = reconcile_brief(brief, tmp)
+            self.assertNotIn("src/gzkit/cli/main.py", result.allowlist_delta.missing_in_brief)
+
+    @covers("REQ-0.0.37-05-02")
+    def test_glob_does_not_swallow_a_sibling_outside_its_subtree(self):
+        """`src/gzkit/cli/**` must NOT declare `src/gzkit/foo/b.py` (GHI #876).
+
+        The negative control on the fix, and it has to be built carefully: a file in a
+        DEEPER directory (`cli/nested/deep.py`) proves nothing here, because the
+        neighborhood filter already excludes it on its parent path — such a test passes
+        for a reason unrelated to glob matching and would stay green even if the glob
+        matched everything.
+
+        This shape isolates the variable instead. `foo/b.py` sits in a genuine
+        neighborhood (its sibling `foo/a.py` is allowlisted), so the neighborhood filter
+        admits it and ONLY the pattern test decides. A repair that over-matched — the
+        `fnmatch` shape, whose `*` crosses `/` — would silently turn a false-accusation
+        fix into a blanket amnesty, and this is the assertion that would catch it.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            for rel in ("src/gzkit/cli/main.py", "src/gzkit/foo/a.py", "src/gzkit/foo/b.py"):
+                q = tmp / rel
+                q.parent.mkdir(parents=True, exist_ok=True)
+                q.write_text("# stub\n", encoding="utf-8")
+            test_file = tmp / "tests" / "test_glob2.py"
+            test_file.parent.mkdir(parents=True, exist_ok=True)
+            test_file.write_text(
+                textwrap.dedent("""\
+                    from gzkit.cli.main import main   # inside the glob's subtree
+                    from gzkit.foo.b import thing     # neighborhood sibling, OUTSIDE it
+
+                    @covers("REQ-9.9.7-01-01")
+                    def test_something():
+                        pass
+                    """),
+                encoding="utf-8",
+            )
+            brief = tmp / "docs/design/adr/foundation/ADR-9.9.7-x/obpis/OBPI-9.9.7-01-x.md"
+            _write_structured_brief(
+                brief,
+                brief_id="OBPI-9.9.7-01-x",
+                parent="ADR-9.9.7-x",
+                reqs=["REQ-9.9.7-01-01"],
+                allowlist=["src/gzkit/cli/**", "src/gzkit/foo/a.py"],
+            )
+            missing = reconcile_brief(brief, tmp).allowlist_delta.missing_in_brief
+            self.assertNotIn("src/gzkit/cli/main.py", missing)
+            self.assertIn("src/gzkit/foo/b.py", missing)
 
     def _build_tree_toplevel_allowlist(self, tmp: Path) -> Path:
         """A brief allowlisting a TOP-LEVEL src/gzkit/*.py file, plus a REQ test

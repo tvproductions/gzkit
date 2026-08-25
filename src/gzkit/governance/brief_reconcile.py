@@ -13,7 +13,7 @@ import ast
 import re
 import warnings
 from functools import lru_cache
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from pydantic import BaseModel, ConfigDict, Field
 from pydantic import ValidationError as PydanticValidationError
@@ -533,6 +533,24 @@ def _covers_index(tests_root: Path) -> tuple[tuple[str, str], ...]:
     )
 
 
+def _declared_by_allowlist(src_rel: str, src_allowlist: set[str]) -> bool:
+    """Return True when *src_rel* is declared by some entry in *src_allowlist*.
+
+    An allowlist entry may be a concrete path or a glob (``src/gzkit/cli/**``). A
+    glob DECLARES every path beneath it, so testing literal set membership reports
+    declared scope as undeclared (GHI #876). That failure direction is what made it
+    costly: it accuses a file the brief already covers, so the locally obvious remedy
+    is to widen the brief with a concrete path the OBPI never edits.
+
+    ``PurePosixPath.full_match`` rather than ``fnmatch``: fnmatch's ``*`` crosses
+    ``/``, so ``src/gzkit/cli/*`` would also swallow ``src/gzkit/cli/nested/deep.py``
+    and turn a false-accusation repair into a blanket amnesty. ``full_match`` stops a
+    single ``*`` at the separator and reserves that reach for ``**``.
+    """
+    candidate = PurePosixPath(src_rel)
+    return any(candidate.full_match(entry) for entry in src_allowlist)
+
+
 def _compute_missing_in_brief(
     req_ids: list[str],
     allowlist: list[str],
@@ -567,7 +585,7 @@ def _compute_missing_in_brief(
         text = test_file.read_text(encoding="utf-8")
         for module in _extract_gzkit_imports(text):
             src_rel = _module_to_src_rel(module, project_root)
-            if src_rel is None or src_rel in src_allowlist:
+            if src_rel is None or _declared_by_allowlist(src_rel, src_allowlist):
                 continue
             if src_rel in _TEST_INFRA_SRC_RELS:
                 continue
