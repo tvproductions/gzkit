@@ -83,6 +83,41 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 > `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
 > Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
+> **AMENDED 2026-08-25 (operator-ruled): REQ-0.35.0-02-04's "verbatim" is SCOPED to the
+> entry's fields, not to its bytes.** Operator ruling, verbatim: *"amend REQ-04 under
+> attestation, and file the GHI"*. The unqualified claim was false as written, and the
+> requirement's own two covering tests had split over it —
+> `test_invariant_retirement_grows_raw_log_but_hides_from_effective_corpus` asserts
+> `line_before == line_after`, while
+> `test_a_legacy_format_row_is_normalized_not_preserved_byte_for_byte` asserts
+> `before_line != after_line`. One covering test was asserting the requirement's negation,
+> which the tier-1 adversary named at round 3 (2026-08-25).
+>
+> **Why the encoding moves.** `corpus_store.append_entry`
+> (`src/gzkit/content/corpus_store.py:36-45`) reloads the store and rewrites the ENTIRE file
+> through `Corpus.dumps()`, so a row persisted in an older shape (reordered keys, explicit
+> nulls, spaces after separators) is re-encoded on the next append. Measured 2026-08-25:
+> `RAW_ROW_EQUAL=False` on a legacy-format row. For rows this codebase wrote the round-trip
+> is byte-stable, which is why the byte-identity test is not circular for its own case.
+>
+> **Why the requirement moved rather than the code.** Two repairs were available: amend the
+> requirement, or change persistence to append without reserializing. The second is
+> `corpus_store.py`, a **Denied Path** for this OBPI — and that same function now carries two
+> further open defects (GHI #875 persist-before-validate, GHI #880 concurrent appends silently
+> drop rows), whose repair ordering is an unresolved operator question. Widening scope into it
+> here would land a third uncoordinated pass over six lines.
+>
+> **What the requirement protects is unchanged**, and is what both tests now assert
+> consistently: retirement is append-only (the row count grows, never shrinks), the target
+> leaves the `effective_corpus()` projection an auditor or renderer actually reads, and the
+> target's CONTENT survives whole. Byte-encoding stability is a property of the serializer,
+> not of retirement — naming it in the requirement asserted a guarantee retirement never made.
+>
+> **Scoped to the single-writer path.** The growth claim holds for one writer at a time. Under
+> concurrent writers the raw log can LOSE a row `append_entry` reported as appended
+> (reproduced 20/20, GHI #880) — a store-level defect routed out of this brief, not a property
+> this requirement can promise.
+
 > **This objective was AMENDED 2026-08-07 (operator-ruled) from "ship the new verb
 > `content withdraw`."** The verb already shipped under GHI #635; extending it in
 > place was ruled over renaming it. Parent ADR § Decision item 2 and § Checklist
@@ -372,7 +407,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — The corpus attestation is fail-closed on the invariant tier.
 - [ ] REQ-0.35.0-02-02 [behavior]: Given the same invocation with a non-empty `--reason` but a whitespace-only `--attestor` (and the symmetric case), when the command runs, then it exits non-zero and writes nothing — whitespace is not attestation.
 - [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming a `compressible`-tier entry and NO `--attestor`, when the command runs, then it exits 0 and appends the tombstone — The corpus attestation guards the 0-Kelvin floor, not routine retirement. **AMENDED 2026-08-25 (operator-ruled): the original text read "NO `--attestor`/`--reason`"; the `--reason` half is struck.** `--reason` is load-bearing on two surfaces this REQ never named: it becomes the retraction row's `text`, and the `corpus_entry_retired` event's `reason`, which `src/gzkit/validate_pkg/ledger_check.py:111` guards with `min_length=1` over `value.strip()`. Measured 2026-08-25: an event with `reason: ""` returns *"Field 'reason' must be at least 1 non-whitespace characters"*; the same event with a reason returns nothing. So the literal REQ shipped an event `gz validate --ledger` rejects — invisible to these tests, which run in an isolated filesystem and never invoke the validator. The REQ's own stated rationale names the **corpus attestation**, which is the attestor; the `--reason` half was drafting drift, not intent. `--reason` stays required on every tier. Held by `test_every_retirement_emits_a_ledger_event_the_validator_accepts`, which runs the real validator over the real emitted event so the coupling has a witness rather than a memory of having checked it once.
-- [ ] REQ-0.35.0-02-04 [behavior]: Given a valid invariant-tier retirement with a non-empty attestor and reason, when the command runs, then the raw corpus GROWS by exactly one row, the target entry is absent from `effective_corpus()`, and the target row itself is still present verbatim in the raw log.
+- [ ] REQ-0.35.0-02-04 [behavior]: Given a valid invariant-tier retirement with a non-empty attestor and reason, when the command runs, then the raw corpus GROWS by exactly one row, the target entry is absent from `effective_corpus()`, and the target ENTRY survives in the raw log with every field intact — byte-for-byte for a row written by this codebase's serializer, and with its encoding normalized for a legacy-format row. **AMENDED 2026-08-25 (operator-ruled); the original read "the target row itself is still present verbatim in the raw log", unqualified — see § Objective for why the requirement moved rather than the code.**
 - [ ] REQ-0.35.0-02-05 [behavior]: Given `--entry` naming an unknown id, an already-retired id, or a surface with no corpus store, when the command runs, then it exits non-zero, writes nothing, and its stderr carries all three recovery parts (what failed, the cited rule, a runnable next step).
 - [ ] REQ-0.35.0-02-06 [behavior]: Given the registered parser, when gz content retire --help is invoked, then the option set contains `--entry` and contains NO text-valued selector — text-keyed retirement is unreachable from the CLI, not merely discouraged.
 - [ ] REQ-0.35.0-02-07 [behavior]: Given a successful retirement, when the ledger is read, then a `corpus_entry_appended` event exists for the tombstone row AND a `corpus_entry_retired` event exists carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason.
@@ -482,7 +517,15 @@ records the measured cost (operator directive, 2026-08-25).
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **GHI #877** — ledger: typed union rejects ~300 committed rows the JSON schema accepts.
+  Routed out; repair lies outside this brief's allowlist. Open, blocker-commented.
+- **GHI #878** — ledger: corpus retirement can change canon with zero or one of its two
+  witnesses. Routed out; the partial-write window is reported honestly, not prevented.
+  Open, blocker-commented.
+- **GHI #880** — corpus_store: concurrent appends silently drop rows from canon
+  (reproduced 20/20). Found by the tier-1 adversary at round 3 as a duplicate-tombstone
+  race; measured to be a lost-update in `append_entry`, which is a Denied Path here.
+  Routed out under the operator ruling of 2026-08-25. Open, blocker-commented.
 
 ## Human Attestation
 
