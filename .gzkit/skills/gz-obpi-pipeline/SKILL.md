@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-22
+last_reviewed: 2026-08-25
 metadata:
-  skill-version: "6.39.0"
+  skill-version: "6.40.0"
 model: sonnet
 ---
 
@@ -702,16 +702,44 @@ Step 4a is authored by the same agent that may have fabricated it. Step 4b adds 
 
 **Record the tier and why.** The tier is recorded on the **completion call**, not on a dispatch record: pass `--adversary-tier {1,2,3}` to `gz obpi complete`, plus — for tier 2/3 — `--adversary-fallback-reason` naming the observed unavailability. Both land on the `adversarial_validation` ledger event, which is the verdict's durable home (GHI #676). **The declared tier GOVERNS but does not AUTHORIZE**: `gz obpi complete` fail-closes when tier 1 is declared while the named adversary is not a recognized different-vendor model, when a tier-1 claim cites no `--adversary-receipt` (GHI #780), and when a tier-2/3 verdict carries no fallback reason. "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
 
+> ### 🛑 THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE (operator directive, 2026-08-25)
+>
+> **`codex exec` is FORBIDDEN as a tier-1 invocation.** Dispatch through OpenAI's Codex
+> plugin for Claude Code — `/codex:adversarial-review`, or its runtime
+> `codex-companion.mjs adversarial-review` — and nothing else. Wrapping the raw binary in
+> `gz arb step` is NOT an acceptable substitute, and this section used to show exactly
+> that, which is how the violation happened.
+>
+> **Measured cost of one hand-rolled run (2026-08-25, OBPI-0.35.0-02):** ~15 minutes
+> wedged at 0.07s CPU because `codex exec` blocked on an unredirected stdin — a state
+> `codex:setup` reports as `ready: true`; then a 500KB undifferentiated blob that had to
+> be `sed`-sliced to find the verdict; then a re-run **refused outright** by an upstream
+> cyber filter (*"This content was flagged for possible cybersecurity risk"*) because a
+> hand-written refute prompt named Unicode bypass techniques. The plugin path, launched
+> against the identical work, streamed structured findings with severity and confidence
+> and surfaced a **high**-severity defect the hand-rolled run had missed entirely.
+>
+> The failure was not the agent forgetting the rule — the rule was stated here and then
+> contradicted three paragraphs later by a worked example using the forbidden form. An
+> agent following the example is following this skill. **Never reintroduce a `codex exec`
+> incantation to this file, even as an illustration.**
+
 **Prove the tier; a declaration will not pass (GHI #765, #780).** A declared tier is a
 second assertion from the same caller — as is `--adversary-job-id`, which **nothing
-resolves**. Run the tier-1 adversary under ARB and cite the receipt:
+resolves**. Wrap the PLUGIN invocation in ARB and cite the receipt:
 
 ```bash
-uv run gz arb step --name codexadversary -- codex exec '<refute-framed prompt>'
+uv run gz arb step --name codexadversary -- \
+  node "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs" \
+  adversarial-review --wait --scope working-tree '<focus text>'
 # → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json
 uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
   --adversary-receipt arb-step-codexadversary-<hash>
 ```
+
+If the run cannot be ARB-wrapped, that is a **tier-2 outcome** and must be recorded as one
+(`--adversary-tier 2 --adversary-fallback-reason '<observed>'`). Reaching for `codex exec`
+to make a receipt appear is the substitution this gate exists to catch.
 
 The gate **resolves** the receipt: it must exist, record `exit_status: 0`, and its
 `step.command[0]` must be a recognized different-vendor binary. Precedence is
