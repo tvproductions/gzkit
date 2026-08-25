@@ -1,0 +1,265 @@
+{
+  "obpi_id": "OBPI-0.35.0-02-content-withdraw-verb",
+  "timestamp": "2026-08-25T01:42:41.565152+00:00",
+  "verdict": "PASS",
+  "plan_file": "content-retire-corpus-attestation-OBPI-0.35.0-02.md",
+  "gaps_found": 0,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.36.0",
+      "sibling_obpi": "OBPI-0.36.0-07-verdict-resolution-transition",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
+      "contested_paths": [
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.34.0",
+      "sibling_obpi": "OBPI-0.34.0-04-execute-migration-populate-and-resense",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.31.0",
+      "sibling_obpi": "OBPI-0.31.0-02-withdraw-supersede-transitions",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-13-reverse-parse-migration",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/ledger_events.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/ledger_events.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/ledger_events.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-03-validate-sensitivity-scope",
+      "contested_paths": [
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-01-obpi-lock-command",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.14",
+      "sibling_obpi": "OBPI-0.0.14-02-obpi-complete-command",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-04-authoring-cli",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-03-reverse-parse-migration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.71",
+      "sibling_obpi": "OBPI-0.0.71-01-completion-repudiation-event",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-04-dual-format-manifest",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-03-release-fail-closed-and-reaping",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-02-claim-release-safety-primitives",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-04-security-floor-overridden-event",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-01-writer-model-roundtrip-validator",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+      "contested_paths": [
+        "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.25",
+      "sibling_obpi": "OBPI-0.0.25-02-override-and-mirror",
+      "contested_paths": [
+        "src/gzkit/ledger_events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/content/retire.py",
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/cli/**"
+      ]
+    }
+  ]
+}

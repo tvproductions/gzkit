@@ -127,28 +127,98 @@ verbatim at every compression setpoint; `--tier` defaults to `compressible`.
 ### retire
 
 Retire a superseded corpus entry by appending a **retraction row** whose
-`retires` field names the id it supersedes, and emit a `corpus_entry_retired`
-ledger event. The corpus has exactly one mutation — append — and no delete, so
-before this verb a superseded operator directive bound the invariant floor
-permanently and the only escape was hand-editing the append-only store.
+`retires` field names the id it supersedes, and emit **two** ledger events:
+`corpus_entry_appended` for the tombstone row, and `corpus_entry_retired` for
+the retirement itself. The corpus has exactly one mutation — append — and no
+delete, so before this verb a superseded operator directive bound the invariant
+floor permanently and the only escape was hand-editing the append-only store.
 
 ```bash
-gz content retire <surface> --entry <id> --reason <text> [--origin <provenance>]
+gz content retire <surface> --entry <id> --reason <text> [--attestor <name>] [--origin <provenance>]
 ```
 
 **Nothing is deleted.** The retired row stays on disk with its provenance
 intact; `tier_policy.invariant_entries` simply stops returning it, so a
 rendition no longer has to carry its text verbatim.
 
-**Retirement only ever shrinks the invariant floor.** A rendition that
-satisfied the floor before a retirement still satisfies it after — retirement
-removes requirements, never adds them — so **committed renditions stay valid
-and no recomposition is implied**. `retire` never touches a rendered surface.
+**Retirement usually shrinks the invariant floor — but not always.** Retiring a
+*content* row removes a requirement, so a rendition that satisfied the floor
+before still satisfies it after. Retiring a **tombstone** does the opposite: it
+revives whatever that tombstone retired, so the floor **grows** and a committed
+rendition may now FAIL it (Algebra 6, "un-retirement is retiring the
+tombstone").
+
+The command reports which way the floor actually moved, and raises the
+floor-coherence warning when it grew. Read that line before deciding whether a
+recompose is needed — the older guarantee that retirement "only ever shrinks
+the floor" was false for the tombstone case. `retire` never touches a rendered
+surface either way.
+
+Because retiring a tombstone moves floor-tier liveness, it requires an
+`--attestor` even though the tombstone itself is `compressible`. The gate asks
+what a retirement **does** to the floor, not what tier the row it names carries.
+
+#### Corpus attestation (OBPI-0.35.0-02)
+
+Retiring a **`tier=invariant`** entry — the 0-Kelvin floor every rendition must
+carry verbatim — requires a named `--attestor`. Un-binding floor-tier canon is
+a canon change, and `AGENTS.md` § Operator Doctrine's ATTESTATION GRANULARITY
+FOR THE CONTENT SURFACE ruling makes removing an entry attested. Routine
+**`compressible`**-tier retirement needs no attestor; the attestation guards the
+floor, not bookkeeping.
+
+`--reason` is required on **every** tier. It becomes the retraction row's text
+and the `corpus_entry_retired` event's `reason`, and both surfaces reject an
+empty one — an empty reason fails `gz validate --ledger` and leaves a canon row
+that says nothing. A whitespace-only `--attestor` or `--reason` is refused on
+every tier: whitespace is not attestation.
+
+Retiring an invariant-tier entry without an attestor fails closed, writing
+nothing:
+
+```console
+$ gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "probe"
+Error: corpus entry 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' is tier='invariant' — the 0-Kelvin floor every rendition must carry verbatim. Retiring it un-binds the floor and requires BOTH a named --attestor and a --reason (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling, which makes removing an entry attested); nothing written.
+  Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --attestor "<your name>" --reason "<why>"`.
+$ echo $?
+1
+```
+
+#### Fail-closed paths
 
 The command **fails closed** (exit 1, nothing written) when `--entry` names no
-row in the surface's corpus, or when that row is already retired. Double
-retirement refuses rather than appending a second retraction, so the ledger
-carries exactly one witness per retirement.
+row in the surface's corpus, when that row is already retired, or when an
+invariant-tier target carries no attestor. Double retirement refuses rather than
+appending a second retraction, so the ledger carries exactly one retirement
+witness per retired entry.
+
+Every refusal carries three-part recovery prose — what failed, the cited rule,
+and a runnable next step. Because no `gz` verb lists corpus entries for a
+surface, the command answers that question itself rather than naming one:
+
+```console
+$ gz content retire AGENTS.md --entry does-not-exist --reason "probe"
+Error: no corpus entry 'does-not-exist' in surface 'AGENTS.md'. Retirement targets an existing entry (append-only corpus store, GHI #635); nothing written.
+  Live entry ids include: 'corpus-attestation-2026-06-06T06:20:27.327411+00:00', 'corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00', 'corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00' (+52 more).
+  Retry with `gz content retire AGENTS.md --entry <id> --reason "<why>"`.
+$ echo $?
+1
+```
+
+#### Ledger witnesses
+
+A successful retirement emits both events, appended before retired, so a replay
+never sees a retirement whose row is not yet witnessed:
+
+| Event | Carries |
+|-------|---------|
+| `corpus_entry_appended` | the tombstone row's surface, section, entry id, tier |
+| `corpus_entry_retired` | the retired entry id, the tombstone row id, the surface, the **retired entry's** tier, the attestor, the reason |
+
+`tier` records the tier of the entry that was **retired** — the fact an auditor
+asking *"was a 0-Kelvin-floor entry un-bound, and by whom?"* needs. `attestor`
+is empty on a compressible retirement, which is why the schema declares it
+without a length floor.
 
 ### compose
 
