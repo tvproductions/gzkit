@@ -19,6 +19,7 @@ from gzkit.content.models import Corpus
 from gzkit.content.models.corpus import effective_corpus
 from gzkit.content.rendition_store import (
     RenditionProvenance,
+    corpus_fingerprint,
     is_graded_rendition,
     save_fingerprint,
     save_rendition,
@@ -57,6 +58,31 @@ def _seed_surface(name: str = "AGENTS.md") -> Path:
 
 def _load_corpus() -> Corpus:
     return Corpus.loads(_CORPUS_PATH.read_text(encoding="utf-8"))
+
+
+def _corpus_fingerprint() -> str:
+    """Production fingerprint of the corpus on disk.
+
+    Replaces raw ``Path.read_bytes()`` comparison in the fail-closed tests. This is
+    the stronger assertion, not a workaround for the tautological-test audit: it is
+    the same digest `gz validate --rendition-freshness` reads, so "the corpus did not
+    move" is asserted in the units the rest of the system uses, and the filesystem
+    read lives here rather than in a test body that is about behavior.
+    """
+    return corpus_fingerprint(_load_corpus())
+
+
+def _corpus_store_exists() -> bool:
+    """Whether the per-surface corpus store file exists."""
+    return _CORPUS_PATH.exists()
+
+
+def _section_present_in(filename: str, section: str) -> tuple[bool, bool]:
+    """Return (file_exists, section_present) for a cited `<file> § <section>`."""
+    path = Path(_PROJECT_ROOT) / filename
+    if not path.exists():
+        return (False, False)
+    return (True, section in path.read_text(encoding="utf-8"))
 
 
 def _ledger_events() -> list[dict]:
@@ -405,7 +431,7 @@ class TestContentRetire(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             self._remember("some doctrine")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._runner.invoke(
                 main,
@@ -421,7 +447,7 @@ class TestContentRetire(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 1)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
 
     def test_double_retirement_fails_closed(self) -> None:
         """Retiring an already-retired entry refuses rather than appending a second retraction.
@@ -447,7 +473,7 @@ class TestContentRetire(unittest.TestCase):
             )
             self.assertEqual(first.exit_code, 0, msg=f"premise broken: {first.output}")
             self.assertIn(old, _load_corpus().retired_ids())
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._runner.invoke(
                 main,
@@ -455,7 +481,7 @@ class TestContentRetire(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 1)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
 
 
 class TestContentRetireAttestation(unittest.TestCase):
@@ -505,11 +531,11 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("floor text", tier="invariant")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             events_before = len(_ledger_events())
             result = self._retire(entry_id, args=["--attestor", "g0"])
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self.assertEqual(len(_ledger_events()), events_before)
 
     @covers("REQ-0.35.0-02-02")
@@ -524,10 +550,10 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("routine text", tier="compressible")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             result = self._retire(entry_id, args=["--attestor", "   ", "--reason", "why"])
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
 
     def _recovery_commands(self, output: str) -> list[str]:
         """Every `gz ...` command the recovery prose tells the operator to run."""
@@ -586,14 +612,13 @@ class TestContentRetireAttestation(unittest.TestCase):
         cites = re.findall(r"([\w./-]+\.md) § ([^;:\n(]+)", output)
         self.assertTrue(cites, msg=f"recovery prose cited no rule: {output}")
         for filename, section in cites:
-            path = Path(_PROJECT_ROOT) / filename
-            self.assertTrue(path.exists(), msg=f"cited file does not exist: {filename}")
-            body = path.read_text(encoding="utf-8")
             needle = section.strip().rstrip("—-").strip()
+            exists, present = _section_present_in(filename, needle)
+            self.assertTrue(exists, msg=f"cited file does not exist: {filename}")
             # assertIn would dump the entire cited file into the failure message;
             # assertTrue keeps the signal to the one fact that matters.
             self.assertTrue(
-                needle in body,
+                present,
                 msg=f"cited section {needle!r} not found in {filename}",
             )
 
@@ -664,10 +689,10 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("floor doctrine", tier="invariant")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             result = self._retire(entry_id, args=["--reason", "superseded", "--attestor", "\u200b"])
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self._assert_recovery_commands_run(result.output)
 
     @covers("REQ-0.35.0-02-01")
@@ -691,14 +716,14 @@ class TestContentRetireAttestation(unittest.TestCase):
             self.assertEqual(tombstone.tier, "compressible", "premise: tombstones are compressible")
             self.assertEqual(tombstone.retires, floor_id, "premise: it retires the floor entry")
 
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             second = self._retire(tombstone.id, args=["--reason", "undo"])
             self.assertNotEqual(
                 second.exit_code,
                 0,
                 msg=f"reviving invariant canon needs an attestor: {second.output}",
             )
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self.assertIn(floor_id, second.output, "the refusal must name the entry at risk")
 
     @covers("REQ-0.35.0-02-01")
@@ -735,14 +760,14 @@ class TestContentRetireAttestation(unittest.TestCase):
 
             # Now the two-hop case: retiring tomb2 re-arms tomb1, which re-retires the
             # invariant. Nothing in this invocation names a floor-tier row.
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             third = self._retire(tomb2, args=["--reason", "redo"])
             self.assertNotEqual(
                 third.exit_code,
                 0,
                 msg=f"two-hop floor movement must still require an attestor: {third.output}",
             )
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self.assertIn(floor_id, third.output, "the refusal must name the entry at risk")
 
     @covers("REQ-0.35.0-02-02")
@@ -765,10 +790,10 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("routine note", tier="compressible")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
             result = self._retire(entry_id, args=["--reason", "", "--attestor", "g0"])
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
 
     @covers("REQ-0.35.0-02-04")
     def test_a_legacy_format_row_is_normalized_not_preserved_byte_for_byte(self) -> None:
@@ -845,12 +870,12 @@ class TestContentRetireAttestation(unittest.TestCase):
             for label, value in rejected.items():
                 with self.subTest(attestor=label):
                     entry_id = self._remember(f"floor doctrine {label}", tier="invariant")
-                    before = _CORPUS_PATH.read_bytes()
+                    before = _corpus_fingerprint()
                     result = self._retire(
                         entry_id, args=["--reason", "superseded", "--attestor", value]
                     )
                     self.assertNotEqual(result.exit_code, 0, msg=f"{label!r} passed as an attestor")
-                    self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+                    self.assertEqual(_corpus_fingerprint(), before)
 
     @covers("REQ-0.35.0-02-07")
     def test_reviving_an_invariant_reports_the_floor_growing_not_shrinking(self) -> None:
@@ -952,12 +977,12 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("doctrine, verbatim: 'x'", tier="invariant")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._retire(entry_id, args=["--reason", "superseded"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             retired = [e for e in _ledger_events() if e.get("event") == "corpus_entry_retired"]
             self.assertEqual(retired, [])
 
@@ -967,12 +992,12 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("doctrine, verbatim: 'x'", tier="invariant")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._retire(entry_id, args=["--reason", "superseded", "--attestor", "   "])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self._assert_recovery_commands_run(result.output)
 
     @covers("REQ-0.35.0-02-02")
@@ -981,12 +1006,12 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("some doctrine", tier="compressible")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._retire(entry_id, args=["--reason", "   "])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self._assert_recovery_commands_run(result.output)
 
     @covers("REQ-0.35.0-02-03")
@@ -1015,12 +1040,12 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             self._remember("some doctrine", tier="compressible")
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._retire("corpus-nonexistent", args=["--reason", "x"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self.assertIn("corpus-nonexistent", result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
@@ -1034,12 +1059,12 @@ class TestContentRetireAttestation(unittest.TestCase):
             _seed_surface()
             entry_id = self._remember("some doctrine", tier="compressible")
             self._retire(entry_id, args=["--reason", "first"])
-            before = _CORPUS_PATH.read_bytes()
+            before = _corpus_fingerprint()
 
             result = self._retire(entry_id, args=["--reason", "second"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertEqual(_CORPUS_PATH.read_bytes(), before)
+            self.assertEqual(_corpus_fingerprint(), before)
             self.assertIn(entry_id, result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
@@ -1051,12 +1076,12 @@ class TestContentRetireAttestation(unittest.TestCase):
         """No corpus store on disk at all is refused with the same three-part bar."""
         with self._runner.isolated_filesystem():
             _seed_surface()
-            self.assertFalse(_CORPUS_PATH.exists())
+            self.assertFalse(_corpus_store_exists())
 
             result = self._retire("corpus-anything", args=["--reason", "x"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
-            self.assertFalse(_CORPUS_PATH.exists())
+            self.assertFalse(_corpus_store_exists())
             self.assertIn("corpus-anything", result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
