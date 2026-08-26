@@ -3,7 +3,7 @@ id: OBPI-0.35.0-03-retire-duplicate-invariant-entries
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 3
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - .gzkit/corpus/AGENTS.md.jsonl
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md
