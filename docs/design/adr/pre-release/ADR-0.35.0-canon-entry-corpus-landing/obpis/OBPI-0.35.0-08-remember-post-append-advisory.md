@@ -7,6 +7,7 @@ status: Active
 allowlist:
 - src/gzkit/commands/content/remember.py
 - src/gzkit/commands/content/_drift.py
+- src/gzkit/commands/content/retire.py
 - src/gzkit/content/vendors.py
 - src/gzkit/content/rendition_store.py
 - src/gzkit/content/tier_policy.py
@@ -118,6 +119,7 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 - `src/gzkit/commands/content/_drift.py` — the advisory itself, shared with `retire`; GHI #863 lifted it out of `remember.py`, which is why this brief's original allowlist did not cover its own subject
 - `src/gzkit/content/vendors.py` — the manifest reader the enumeration now reaches; added 2026-08-23 under coupled-surface coherence (AGENTS.md DO IT RIGHT 1a) after the independent quality review found the route filter opened an uncaught `AttributeError` channel into the capture-unblockable seam
 - `src/gzkit/content/rendition_store.py` — READ-ONLY here; home of `is_graded_rendition`, the shared predicate REQ-0.35.0-08-08 binds the advisory to. Declared because the covering test imports it to derive its expectation rather than pinning a literal; this brief does not modify it, and its candidate-exclusion arm belongs to the terminal OBPI-0.35.0-09.
+- `src/gzkit/commands/content/retire.py` — READ-ONLY; imported by the retire-side covering tests for `_is_named`, the name-plausibility floor. Pulled into scope by declaring `test_content_retire.py`, not by any change here — the same transitive route as `tier_policy.py` below. Declared 2026-08-25 (operator-ruled) after OBPI-0.35.0-02's invisible-attestor repair added the module-level import and `gz validate --brief-reconcile` surfaced the drift against THIS brief; that OBPI cannot amend this allowlist from inside its own transaction contract.
 - `src/gzkit/content/tier_policy.py` — READ-ONLY; imported by the retire-side covering tests for `invariant_entries`. Pulled into scope by declaring `test_content_retire.py`, not by any change here.
 - `tests/commands/test_content_retire.py` — the retire half of the shared advisory
 - `tests/commands/test_content_remember.py` — covering tests

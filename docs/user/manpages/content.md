@@ -141,12 +141,20 @@ gz content retire <surface> --entry <id> --reason <text> [--attestor <name>] [--
 intact; `tier_policy.invariant_entries` simply stops returning it, so a
 rendition no longer has to carry its text verbatim.
 
-**Retirement usually shrinks the invariant floor — but not always.** Retiring a
-*content* row removes a requirement, so a rendition that satisfied the floor
-before still satisfies it after. Retiring a **tombstone** does the opposite: it
-revives whatever that tombstone retired, so the floor **grows** and a committed
-rendition may now FAIL it (Algebra 6, "un-retirement is retiring the
-tombstone").
+**Which way the floor moves is a before/after DELTA over invariant-tier
+liveness — never a property of what kind of row was named.** Four outcomes are
+possible, and the command reports which one occurred:
+
+| Outcome | When | Consequence for a committed rendition |
+|---------|------|----------------------------------------|
+| unchanged | no invariant entry's liveness moved — the usual case for a routine `compressible` retirement | still satisfies the floor |
+| shrank | an invariant entry stopped binding | still SATISFIES it |
+| GREW | retiring a tombstone revived the entry that tombstone had retired, **and that revived entry is invariant-tier** (Algebra 6) | may now FAIL it |
+| CHANGED | both at once — some revived while others stopped binding | may now FAIL it |
+
+Reading the outcome off the row's tier is the mistake this table exists to
+prevent: a `compressible` tombstone over an invariant target GROWS the floor,
+and an ordinary `compressible` row moves it not at all.
 
 The command reports which way the floor actually moved, and raises the
 floor-coherence warning when it grew. Read that line before deciding whether a
@@ -154,9 +162,12 @@ recompose is needed — the older guarantee that retirement "only ever shrinks
 the floor" was false for the tombstone case. `retire` never touches a rendered
 surface either way.
 
-Because retiring a tombstone moves floor-tier liveness, it requires an
-`--attestor` even though the tombstone itself is `compressible`. The gate asks
-what a retirement **does** to the floor, not what tier the row it names carries.
+Retiring a tombstone requires an `--attestor` **only when the entry it revives is
+invariant-tier** — then floor-tier liveness moves, even though the tombstone
+itself is `compressible`. A tombstone over `compressible` content revives nothing
+that binds the floor, needs no attestor, and reports the floor unchanged. The gate
+asks what a retirement **does** to the floor, never what tier the row it names
+carries.
 
 #### Corpus attestation (OBPI-0.35.0-02)
 
@@ -182,7 +193,7 @@ closed, writing nothing:
 
 ```console
 $ gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "probe"
-Error: retiring 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' moves the liveness of invariant-tier entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 — the 0-Kelvin floor every rendition must carry verbatim — so it requires a named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling, which makes removing an entry attested; operator ruling 2026-08-25 scopes the blocking arm to floor-tier removal); nothing written.
+Error: retiring 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' moves the liveness of invariant-tier entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 — the 0-Kelvin floor every rendition must carry verbatim — un-binding floor canon is a canon change, so it requires a named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.
   Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "<why>" --attestor "<your name>"`.
 $ echo $?
 1
@@ -191,8 +202,8 @@ $ echo $?
 #### Fail-closed paths
 
 The command **fails closed** (exit 1, nothing written) when `--entry` names no
-row in the surface's corpus, when that row is already retired, or when an
-invariant-tier target carries no attestor. Double retirement refuses rather than
+row in the surface's corpus, when that row is already retired, or when a
+retirement that MOVES invariant-tier liveness carries no named attestor. Double retirement refuses rather than
 appending a second retraction, so the ledger carries exactly one retirement
 witness per retired entry.
 
@@ -217,12 +228,17 @@ never sees a retirement whose row is not yet witnessed:
 | Event | Carries |
 |-------|---------|
 | `corpus_entry_appended` | the tombstone row's surface, section, entry id, tier |
-| `corpus_entry_retired` | the retired entry id, the tombstone row id, the surface, the **retired entry's** tier, the attestor, the reason |
+| `corpus_entry_retired` | the retired entry id, the tombstone row id, the surface, the **retired entry's** tier, the attestor, the reason, and the invariant-liveness delta: `floor_direction` and `floor_moved_ids` |
 
-`tier` records the tier of the entry that was **retired** — the fact an auditor
-asking *"was a 0-Kelvin-floor entry un-bound, and by whom?"* needs. `attestor`
-is empty on a compressible retirement, which is why the schema declares it
-without a length floor.
+**`floor_direction` is the fact an auditor needs**, not `tier`. The attestor gate
+authorizes on whether the retirement MOVED invariant-tier liveness, and `tier` is
+only a proxy for that: a `compressible` tombstone whose target is invariant grows
+the floor, so an auditor reading `tier` alone cannot tell an unattested floor
+revival from a routine retirement. `floor_direction` is one of `unchanged`,
+`shrank`, `grew`, `changed`; `floor_moved_ids` names the exact invariant entries
+whose liveness moved. `tier` remains recorded as the retired row's own tier.
+`attestor` is empty on a retirement that moves nothing, which is why the schema
+declares it without a length floor.
 
 ### compose
 

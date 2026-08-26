@@ -1,10 +1,25 @@
 {
   "obpi_id": "OBPI-0.35.0-02-content-withdraw-verb",
-  "timestamp": "2026-08-25T01:42:41.565152+00:00",
+  "timestamp": "2026-08-26T01:34:27.543509+00:00",
   "verdict": "PASS",
   "plan_file": "content-retire-corpus-attestation-OBPI-0.35.0-02.md",
   "gaps_found": 0,
   "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.5.0",
+      "sibling_obpi": "OBPI-0.5.0-05-obpi-acceptance-protocol-runtime-parity",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.15.0",
+      "sibling_obpi": "OBPI-0.15.0-04-schema-generation-unification",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json",
+        "src/gzkit/schemas/corpus_entry.json"
+      ]
+    },
     {
       "sibling_adr": "ADR-0.30.0",
       "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
@@ -22,6 +37,14 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-01-okf-concept-frontmatter-model",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json",
+        "src/gzkit/schemas/corpus_entry.json"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.22.0",
       "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
       "contested_paths": [
@@ -30,10 +53,27 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-02-task-ledger-events",
+      "contested_paths": [
+        "src/gzkit/events.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.36.0",
       "sibling_obpi": "OBPI-0.36.0-07-verdict-resolution-transition",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.37.0",
+      "sibling_obpi": "OBPI-0.37.0-03-seam-accounting-predicate",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -48,7 +88,16 @@
       "sibling_adr": "ADR-0.33.0",
       "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
       "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json",
         "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-01-obpi-runtime-contract-and-state-model",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -71,14 +120,26 @@
       "sibling_adr": "ADR-0.34.0",
       "sibling_obpi": "OBPI-0.34.0-04-execute-migration-populate-and-resense",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-06-work-domain-l2-schema-and-queue",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
       "sibling_adr": "ADR-0.31.0",
       "sibling_obpi": "OBPI-0.31.0-02-withdraw-supersede-transitions",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -90,10 +151,33 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.0.26",
+      "sibling_obpi": "OBPI-0.0.26-01-persist-evaluation-events",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "src/gzkit/events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.64",
+      "sibling_obpi": "OBPI-0.0.64-01-task-id-worklog-schema-additive",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.0.37",
       "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -110,6 +194,8 @@
       "contested_paths": [
         "src/gzkit/commands/content/__init__.py",
         "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json",
         "docs/user/manpages/content.md"
       ]
     },
@@ -119,6 +205,7 @@
       "contested_paths": [
         "src/gzkit/commands/content/__init__.py",
         "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
         "docs/user/manpages/content.md"
       ]
     },
@@ -128,6 +215,8 @@
       "contested_paths": [
         "src/gzkit/commands/content/__init__.py",
         "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json",
         "docs/user/manpages/content.md"
       ]
     },
@@ -135,14 +224,25 @@
       "sibling_adr": "ADR-0.0.37",
       "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
       "sibling_adr": "ADR-0.0.37",
       "sibling_obpi": "OBPI-0.0.37-06-brief-reconcile-cli",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-18-append-only-corpus-model",
+      "contested_paths": [
+        "src/gzkit/schemas/corpus_entry.json"
       ]
     },
     {
@@ -156,7 +256,31 @@
       "sibling_adr": "ADR-0.0.59",
       "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-18-structural-fence-proof-upgrade",
+      "contested_paths": [
+        "src/gzkit/events.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-16-meta-validator-runner",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-06-mx-log-auto-assembled",
+      "contested_paths": [
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -191,7 +315,16 @@
       "sibling_adr": "ADR-0.0.71",
       "sibling_obpi": "OBPI-0.0.71-01-completion-repudiation-event",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-07-intrinsic-complexity-attestation",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
@@ -228,14 +361,17 @@
       "sibling_adr": "ADR-0.0.72",
       "sibling_obpi": "OBPI-0.0.72-04-security-floor-overridden-event",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py",
+        "src/gzkit/schemas/ledger.json"
       ]
     },
     {
       "sibling_adr": "ADR-0.0.72",
       "sibling_obpi": "OBPI-0.0.72-01-writer-model-roundtrip-validator",
       "contested_paths": [
-        "src/gzkit/ledger_events.py"
+        "src/gzkit/ledger_events.py",
+        "src/gzkit/events.py"
       ]
     },
     {
@@ -259,6 +395,14 @@
         "src/gzkit/commands/content/retire.py",
         "src/gzkit/commands/content/__init__.py",
         "src/gzkit/cli/**"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.11",
+      "sibling_obpi": "OBPI-0.0.11-06-persona-schema-validation",
+      "contested_paths": [
+        "src/gzkit/schemas/ledger.json",
+        "src/gzkit/schemas/corpus_entry.json"
       ]
     }
   ]

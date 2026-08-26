@@ -4,7 +4,7 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 2
 lane: Heavy
 sensitivity: security
-status: Active
+status: Completed
 allowlist:
 - src/gzkit/commands/content/retire.py
 - src/gzkit/commands/content/__init__.py
@@ -12,6 +12,9 @@ allowlist:
 - src/gzkit/ledger_events.py
 - src/gzkit/events.py
 - src/gzkit/schemas/ledger.json
+- src/gzkit/schemas/corpus_entry.json
+- src/gzkit/commands/obpi_complete_adversarial.py
+- tests/test_adversarial_validation_gate.py
 - tests/commands/test_content_retire.py
 - tests/test_schemas.py
 - features/content_retire.feature
@@ -66,7 +69,7 @@ tasks:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #2 - "`gz content retire` — corpus-attestation extension of the shipped verb: fail-closed on invariant tier (`--attestor` / `--reason` refused when empty). Amended 2026-08-07 from the `content withdraw` name; see § Decision item 2."
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -117,6 +120,70 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 > concurrent writers the raw log can LOSE a row `append_entry` reported as appended
 > (reproduced 20/20, GHI #880) — a store-level defect routed out of this brief, not a property
 > this requirement can promise.
+
+> **AMENDED 2026-08-25 (operator-ruled): REQ-0.35.0-02-01's Given clause is WIDENED
+> from the single empty-attestor case to the general name-plausibility floor
+> `_is_named` actually implements.** REQ-01 as originally written named only
+> `--attestor ""`; `_is_named` rejects a broader class — empty, whitespace-only,
+> punctuation/digit-only, and any value that renders at zero advance width (Unicode
+> `Default_Ignorable_Code_Point`, e.g. a Hangul filler). Two independent reviewers
+> found the covering tests asserting a subject neither REQ-01 nor REQ-02 literally
+> named: three new tests, plus two pre-existing ones —
+> `test_an_invisible_attestor_is_not_a_named_human` (U+200B ZERO WIDTH SPACE) and
+> `test_punctuation_and_digits_do_not_answer_who_attested` (`.`, `7`, a lone
+> combining mark, a punctuation run) — all exercise `--attestor` values that are
+> non-empty, General_Category=Lo or punctuation/digit, and `str.isspace()` False,
+> none of which REQ-01's `""` or REQ-02's whitespace-only Given clause names.
+>
+> **Why the requirement moved rather than a new REQ.** A tier-1 cross-vendor
+> adversary surfaced the underlying bypass at round 3 — an invisible or
+> not-a-name `--attestor` retiring invariant-tier canon while REQ-01/02 as written
+> covered only the two narrowest cases the guard was first built to reject.
+> Operator ruled (2026-08-25) the repair is to widen REQ-01's Given clause to the
+> plausibility floor it should always have named, not to mint a ninth REQ for what
+> is one gate with one guarantee — REQ count stays 8. REQ-02 (whitespace-only) is
+> unchanged and untouched.
+
+> **AMENDED 2026-08-25 (operator-ruled): REQ-0.35.0-02-03's Given clause is REKEYED
+> from the target's TIER to the invariant-liveness DELTA.** REQ-03 promised exit 0
+> whenever `--entry` named a `compressible`-tier entry with no `--attestor`. That is
+> false as written, and the tier-1 cross-vendor adversary demonstrated both halves at
+> round 5: a `compressible` TOMBSTONE whose retirement revived invariant canon was
+> observed exiting 1 (`TOMBSTONE_TIER=compressible`, `SECOND_EXIT_NO_ATTESTOR=1`),
+> while retiring a tombstone over `compressible` content exited 0 printing *"The
+> invariant floor is unchanged"*.
+>
+> This is the THIRD REQ on this brief written against a surface property while the
+> code gates on `_floor_liveness_delta` — REQ-01 (empty attestor) and REQ-04 (verbatim
+> bytes) were amended earlier the same day. The brief was authored before the delta
+> fold existed, so each REQ encoded the model of its moment; rekeying the third
+> completes the migration rather than patching an outlier. REQ count stays 8 and no
+> REQ is added, removed, or renumbered.
+>
+> The same round retired the CATEGORICAL claim that retiring a tombstone grows the
+> floor: it grows the floor ONLY when the revived entry is invariant-tier. Every prose
+> home now states that condition.
+>
+
+> **AMENDED 2026-08-25 (operator-ruled): REQ-0.35.0-02-07 now requires the LIVENESS
+> DELTA on the retirement event, not merely the retired row's tier.** The attestor gate
+> authorizes on `floor_added | floor_removed`; the event recorded `target.tier`. The
+> tier-1 cross-vendor adversary measured the consequence at round 6: retiring a
+> compressible tombstone over an invariant entry printed *"The invariant floor GREW"*
+> while the event carried `tier='compressible'`, and that event with `attestor=''`
+> passed `validate_ledger` with zero errors — so Layer 2 could not tell an unaudited
+> floor revival from routine compressible retirement, and a regression in the tombstone
+> gate would have stayed ledger-valid.
+>
+> This is the fourth REQ on this brief rekeyed from a surface property to the delta
+> (REQ-01, REQ-03, REQ-04 preceded it). `floor_direction` and `floor_moved_ids` are
+> derived from the SAME sets the gate reads, so the witness and the gate cannot
+> disagree; both stay OUT of the schema's `required` because the ledger is append-only
+> and the ~300 committed rows of GHI #877 can never grow the keys. Present values are
+> constrained to the four states by schema enum (round 7). ENFORCEMENT — refusing an
+> event whose direction moved the floor with no attestor — needs a conditional rule the
+> validator does not support, and is routed to GHI #882.
+>
 
 > **This objective was AMENDED 2026-08-07 (operator-ruled) from "ship the new verb
 > `content withdraw`."** The verb already shipped under GHI #635; extending it in
@@ -194,6 +261,9 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 - `src/gzkit/events.py` — the event TYPE (`CorpusEntryRetiredEvent`, `extra="forbid"`); declare `tier` and `attestor` as fields
 - `src/gzkit/schemas/ledger.json` — the event SCHEMA (`corpus_entry_retired` `required`/`properties`); declare the two fields so they are validated
 - `tests/test_schemas.py` — pins event-name -> model; round-trips the extended payload
+- `src/gzkit/schemas/corpus_entry.json` — the `retires` field DESCRIPTION, the third home of the shrink-only claim this OBPI corrects in the runtime help; description text only, no shape change
+- `src/gzkit/commands/obpi_complete_adversarial.py` — the Step-4b tier resolver; its cross-vendor proof read `argv[0]` only, which the operator-mandated plugin dispatch can never satisfy
+- `tests/test_adversarial_validation_gate.py` — regression tests for the wrapper hop and the fail-open it must not reopen
 
 > **ALLOWLIST AMENDED 2026-08-25 (operator-ruled) — a ledger event has THREE homes, and this
 > brief named one.** REQ-07 requires the `corpus_entry_retired` payload to carry the tier and
@@ -206,6 +276,41 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 > Riding the fields as UNDECLARED extras was measured and rejected: `validate_ledger` returns
 > 0 errors on a row carrying undeclared `tier`/`attestor`, so they would ship unvalidated —
 > a garbage tier or an empty attestor would pass the gate that exists to witness them.
+>
+
+> **ALLOWLIST AMENDED 2026-08-25 (operator-ruled) — the shrink-only claim has THREE homes, and
+> this brief named two.** The tier-1 cross-vendor adversary's round-3 MEDIUM finding named the
+> runtime `--help` text, which asserts *"Retirement only ever shrinks the floor"* and then, two
+> clauses later, *"whose retirement revives its target and GROWS the floor"*. Measured 2026-08-25,
+> that claim lives in THREE places, not one: `src/gzkit/commands/content/__init__.py:335` (the
+> parser description), `src/gzkit/commands/content/retire.py` (the module docstring), and
+> `src/gzkit/schemas/corpus_entry.json:53` (the `retires` field description — *"retirement only
+> ever shrinks the floor and never invalidates a committed rendition"*). The original allowlist
+> named the first two.
+>
+> The schema's owning briefs were checked before widening: OBPI-0.35.0-01 authored it and is
+> **Completed** (terminal — a fresh defect against a shipped surface does not block), and
+> OBPI-0.35.0-10 is **Draft** but its subject is the `classification` field, so it shares the file
+> without owning this defect. Correcting two of three homes would leave the schema asserting the
+> retired claim in the exact surface this OBPI is repairing elsewhere — coupled-surface
+> coherence (AGENTS.md § DO IT RIGHT 1a). Description text only; no `properties`, `required`, or
+> type change, so no corpus row is revalidated.
+>
+
+> **ALLOWLIST AMENDED 2026-08-26 (operator-ruled) — obeying the tier-1 dispatch directive made a
+> tier-1 claim unclaimable.** `gz obpi complete` proves the Step-4b tier from the ARB receipt's
+> `step.command[0]`, deliberately: *"a name can MENTION a vendor while describing its absence …
+> an argv cannot mention; it ran."* But the operator's 2026-08-25 directive makes the Codex PLUGIN
+> the ONLY permitted tier-1 surface and FORBIDS `codex exec`, and every plugin dispatch is argv
+> `['node', '.../codex-companion.mjs', …]`. The resolver saw `node` and refused. Both rules landed
+> the same day, so any OBPI obeying the directive could not claim the tier its own evidence proved.
+>
+> The resolver now walks past a bounded set of runtime wrappers (`node`, `python`, `uv`, `npx`, …)
+> and STOPS at the first non-wrapper. Stopping is the load-bearing half: the adversary's PROMPT is
+> also in argv and routinely names vendors, so a scan that kept walking would let a MENTIONED vendor
+> satisfy the gate — reopening the exact fail-open the function exists to close. Four regression
+> tests pin both directions, including a same-vendor helper fronted by `node` and a prompt naming
+> Codex. Recorded as a conflict in its own right at GHI #884.
 >
 > This is the same class the § PARTIALLY PRE-LANDED banner already caught once and did not
 > generalise: that banner found the allowlist naming `governance/events.py` for an event that
@@ -229,11 +334,11 @@ Extend the SHIPPED verb `gz content retire` to take `<surface> --entry <id> --at
 ## Requirements (FAIL-CLOSED)
 
 1. NEVER accept a `--text` selector. Retirement is per-entry-id, full stop. Six of the seven byte-identical duplicate groups address the same text to TWO DIFFERENT sections, so a text key silently elects a section winner — a question text identity cannot see (ADR § Alternatives D).
-2. ALWAYS fail closed on the corpus attestation for `invariant`-tier targets: an empty or whitespace-only `--attestor` or `--reason` MUST exit non-zero and write NOTHING — no corpus append, no ledger event, no partial file. Mirror `commit.py:47-54` and `gz obpi repudiate`.
-3. NEVER require corpus attestation for a `compressible`-tier target. The 0-Kelvin floor is what human attestation protects; compressible retirement is routine.
+2. ALWAYS fail closed on the corpus attestation when a retirement MOVES invariant-tier liveness: an `--attestor` that answers no WHO — empty, whitespace-only, punctuation/digit-only, or rendering at zero advance width — MUST exit non-zero and write NOTHING: no corpus append, no ledger event, no partial file. Mirror `commit.py:47-54` and `gz obpi repudiate`. **AMENDED 2026-08-25 (operator-ruled): the original keyed on the TARGET being `invariant`-tier and bundled `--reason` into the attestation gate. The gate reads the before/after liveness DELTA, and `--reason` is validated separately by the ledger's stripped-non-empty rule — a name predicate on a reason blocked legitimate references like `#880`.**
+3. NEVER require corpus attestation for a retirement that leaves invariant-tier liveness UNTOUCHED. The 0-Kelvin floor is what human attestation protects; retirement that does not move it is routine. **AMENDED 2026-08-25 (operator-ruled): the original keyed on the target's TIER and was false as written — a `compressible` TOMBSTONE whose retirement revives invariant canon DOES require an attestor, which a tier-1 adversary observed exiting 1 while this item promised exit 0.**
 4. ALWAYS append. The verb appends a tombstone row through `corpus_store.append_entry`; the raw log's row count MUST grow and MUST NEVER shrink (alternatives E and F).
 5. ALWAYS fail closed on an unknown `--entry` id, an already-retired target, or an absent corpus store — exit non-zero, write nothing.
-6. ALWAYS emit BOTH ledger events on a successful retirement: `corpus_entry_appended` for the tombstone row (a tombstone IS an appended corpus row and goes through `corpus_store.append_entry` like any other), and a new `corpus_entry_retired` carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason. The pair is the SUPPORT proof channel for OBPI-0.35.0-03's batch.
+6. ALWAYS emit BOTH ledger events on a successful retirement: `corpus_entry_appended` for the tombstone row (a tombstone IS an appended corpus row and goes through `corpus_store.append_entry` like any other), and a new `corpus_entry_retired` carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, the reason, AND the invariant-liveness delta the gate read — `floor_direction` and `floor_moved_ids` (**AMENDED 2026-08-25, operator-ruled**: `tier` alone is a PROXY for the gate's condition and cannot witness it). The pair is the SUPPORT proof channel for OBPI-0.35.0-03's batch.
 7. ALWAYS emit three-part recovery prose on every fail-closed exit per `.claude/rules/guardrail-feedback-prose.md`: what failed, the cited rule, the runnable next step.
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
@@ -404,13 +509,13 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
   [structural-fence] -> proven ONLY by a parent-ADR ## Boundary Invariants entry
 -->
 
-- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor "" --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — The corpus attestation is fail-closed on the invariant tier.
+- [ ] REQ-0.35.0-02-01 [behavior]: Given the invocation `AGENTS.md --entry <invariant-tier id> --attestor <value that answers no WHO — empty, whitespace-only, punctuation/digit-only, or rendering at zero advance width> --reason "probe"` passed to gz content retire, when the command runs, then it exits non-zero, the corpus file is byte-unchanged, and NO ledger event is written — The corpus attestation is fail-closed on the invariant tier. **AMENDED 2026-08-25 (operator-ruled); the original Given clause named only `--attestor ""` — see § Objective.**
 - [ ] REQ-0.35.0-02-02 [behavior]: Given the same invocation with a non-empty `--reason` but a whitespace-only `--attestor` (and the symmetric case), when the command runs, then it exits non-zero and writes nothing — whitespace is not attestation.
-- [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming a `compressible`-tier entry and NO `--attestor`, when the command runs, then it exits 0 and appends the tombstone — The corpus attestation guards the 0-Kelvin floor, not routine retirement. **AMENDED 2026-08-25 (operator-ruled): the original text read "NO `--attestor`/`--reason`"; the `--reason` half is struck.** `--reason` is load-bearing on two surfaces this REQ never named: it becomes the retraction row's `text`, and the `corpus_entry_retired` event's `reason`, which `src/gzkit/validate_pkg/ledger_check.py:111` guards with `min_length=1` over `value.strip()`. Measured 2026-08-25: an event with `reason: ""` returns *"Field 'reason' must be at least 1 non-whitespace characters"*; the same event with a reason returns nothing. So the literal REQ shipped an event `gz validate --ledger` rejects — invisible to these tests, which run in an isolated filesystem and never invoke the validator. The REQ's own stated rationale names the **corpus attestation**, which is the attestor; the `--reason` half was drafting drift, not intent. `--reason` stays required on every tier. Held by `test_every_retirement_emits_a_ledger_event_the_validator_accepts`, which runs the real validator over the real emitted event so the coupling has a witness rather than a memory of having checked it once.
+- [ ] REQ-0.35.0-02-03 [behavior]: Given `--entry` naming an entry whose retirement does NOT move invariant-tier liveness, and NO `--attestor`, when the command runs, then it exits 0 and appends the tombstone — The corpus attestation guards the 0-Kelvin floor, not routine retirement. **AMENDED 2026-08-25 (operator-ruled); the original Given clause keyed on the target being `compressible`-tier — see § Objective.** **AMENDED 2026-08-25 (operator-ruled): the original text read "NO `--attestor`/`--reason`"; the `--reason` half is struck.** `--reason` is load-bearing on two surfaces this REQ never named: it becomes the retraction row's `text`, and the `corpus_entry_retired` event's `reason`, which `src/gzkit/validate_pkg/ledger_check.py:111` guards with `min_length=1` over `value.strip()`. Measured 2026-08-25: an event with `reason: ""` returns *"Field 'reason' must be at least 1 non-whitespace characters"*; the same event with a reason returns nothing. So the literal REQ shipped an event `gz validate --ledger` rejects — invisible to these tests, which run in an isolated filesystem and never invoke the validator. The REQ's own stated rationale names the **corpus attestation**, which is the attestor; the `--reason` half was drafting drift, not intent. `--reason` stays required on every tier. Held by `test_every_retirement_emits_a_ledger_event_the_validator_accepts`, which runs the real validator over the real emitted event so the coupling has a witness rather than a memory of having checked it once.
 - [ ] REQ-0.35.0-02-04 [behavior]: Given a valid invariant-tier retirement with a non-empty attestor and reason, when the command runs, then the raw corpus GROWS by exactly one row, the target entry is absent from `effective_corpus()`, and the target ENTRY survives in the raw log with every field intact — byte-for-byte for a row written by this codebase's serializer, and with its encoding normalized for a legacy-format row. **AMENDED 2026-08-25 (operator-ruled); the original read "the target row itself is still present verbatim in the raw log", unqualified — see § Objective for why the requirement moved rather than the code.**
 - [ ] REQ-0.35.0-02-05 [behavior]: Given `--entry` naming an unknown id, an already-retired id, or a surface with no corpus store, when the command runs, then it exits non-zero, writes nothing, and its stderr carries all three recovery parts (what failed, the cited rule, a runnable next step).
 - [ ] REQ-0.35.0-02-06 [behavior]: Given the registered parser, when gz content retire --help is invoked, then the option set contains `--entry` and contains NO text-valued selector — text-keyed retirement is unreachable from the CLI, not merely discouraged.
-- [ ] REQ-0.35.0-02-07 [behavior]: Given a successful retirement, when the ledger is read, then a `corpus_entry_appended` event exists for the tombstone row AND a `corpus_entry_retired` event exists carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, and the reason.
+- [ ] REQ-0.35.0-02-07 [behavior]: Given a successful retirement, when the ledger is read, then a `corpus_entry_appended` event exists for the tombstone row AND a `corpus_entry_retired` event exists carrying the retired entry id, the tombstone row id, the surface, the tier, the attestor, the reason, AND the invariant-liveness delta the attestor gate read — `floor_direction` (one of `unchanged`, `shrank`, `grew`, `changed`) and the exact set of `floor_moved_ids`. **AMENDED 2026-08-25 (operator-ruled); the original listed only the retired row's tier, which is a PROXY for the gate's condition and cannot witness it — see § Objective.**
 - [ ] REQ-0.35.0-02-08 [support]: `docs/user/manpages/content.md` carries a `retire` section (already present at line 127, EXTENDED here) documenting the per-entry-id contract and the invariant-tier corpus-attestation fail-close, — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md` — and `gz validate --cli-alignment` resolves every gz content retire reference it prescribes.
 
 ## Completion Checklist
@@ -502,15 +607,46 @@ records the measured cost (operator directive, 2026-08-25).
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+Mutation probe — neutralise ONLY the guard, leaving every symbol importable:
+
+    _DEFAULT_IGNORABLE_LETTERS := frozenset()
+    -> 5 assertion-level failures, 0 errors
+
+    test_a_hangul_filler_attestor_does_not_retire_invariant_canon FAILS:
+      AssertionError: 0 == 0 : Retired corpus entry corpus-prime-directive-...
+      The invariant floor shrank.
+
+i.e. with the guard removed the CLI ACTUALLY retired invariant-tier canon with an
+invisible attestor, exit 0. The positive control
+(`test_real_names_across_scripts_still_pass_the_plausibility_floor`) correctly
+still passes under the same mutation, proving the failure is coupled to the guard
+rather than to the harness.
+
+Ledger-witness probe — a false delta is now unrepresentable:
+
+    floor_added={'floor-a'}, floor_removed=set()  -> grew,      ['floor-a']
+    floor_added=set(),       floor_removed=set()  -> unchanged, []
+    floor_added={'same-id'}, floor_removed={'same-id'}
+      -> ValueError: floor_added and floor_removed overlap on ['same-id']
+
+Both canonical readers agree on the discriminator: `BOGUS` is rejected by
+`validate_ledger` AND by `parse_typed_event`; absence yields None on both, so the
+~300 committed rows predating the fields still validate.
+
+Gate evidence: `uv run gz check` -> all 56 checks passed, exit 0.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Invisible-attestor bypass: CLOSED as a class. `_is_named` previously accepted Hangul filler code points (General_Category=Lo, zero advance width) as the human authorizing an irreversible, append-only retirement of governance canon. The repair derives the property — Default_Ignorable_Code_Point INTERSECT GC=Lo — and caught a fourth code point (U+FFA0) the adversary never probed.
+- UCD drift witness: WARNS on the retire path, asserts HARD in CI. An earlier revision raised at module import under an unbounded `requires-python >=3.13`, which would have crashed `gz content retire` outright on Python 3.14 (UCD 16.0.0). Operator-ruled warn-not-raise: the hard failure belongs where a maintainer can re-derive the set.
+- Reason validation separated from name validation: `_is_named` is now exclusive to `--attestor`. `--reason` uses the ledger's stripped-non-empty rule, so legitimate references (`#880`, `2026-08-25`) are no longer refused with a false "whitespace-only" diagnostic.
+- Floor-movement prose corrected across FOUR homes: parser description, module docstring, `corpus_entry.json` `retires` description, and the manpage. Retirement is a before/after invariant-liveness DELTA with four outcomes (unchanged / shrank / GREW / CHANGED), never a two-state property of the row's kind, and a tombstone grows the floor ONLY when the entry it revives is invariant-tier.
+- Ledger witness records the gate's own condition: `corpus_entry_retired` now carries `floor_direction` and `floor_moved_ids`, DERIVED inside the factory from the same two sets the attestor gate reads. `tier` alone was a proxy — a compressible tombstone over an invariant target printed "floor GREW" while the event said `tier='compressible'`, and that event with an empty attestor validated clean.
+- Impossible witnesses are unrepresentable, not merely detectable: the factory refuses overlapping added/removed sets, and both canonical readers now enforce the four-state enum while preserving absence for historical rows.
+- Four REQs rekeyed from surface properties to the liveness delta under operator ruling (REQ-01, REQ-03, REQ-04, REQ-07), and the brief's Requirements items 2, 3 and 6 reconciled with them. REQ count unchanged at 8.
+- Test surface grew from 40 to 56 scoped tests, including a manpage-transcript guard that compares the whole observed CLI line rather than a phrase list — the previous guard was itself defective and stayed green through real drift.
 
 ## Tracked Defects
 
@@ -526,15 +662,37 @@ records the measured cost (operator directive, 2026-08-25).
   (reproduced 20/20). Found by the tier-1 adversary at round 3 as a duplicate-tombstone
   race; measured to be a lost-update in `append_entry`, which is a Denied Path here.
   Routed out under the operator ruling of 2026-08-25. Open, blocker-commented.
+- **GHI #863** (REOPENED 2026-08-25) — the shrink-only claim this OBPI repairs has a FOURTH
+  home: `src/gzkit/content/models/corpus.py:84`'s `CorpusEntry.retires` docstring still reads
+  *"Retirement therefore only ever shrinks the invariant floor, so already-committed renditions
+  cannot be invalidated by one"* — false per Algebra 6. Found by the independent spec-reviewer
+  during this OBPI's Stage-2 review while checking whether the three-homes repair was complete.
+  `corpus.py` is a Denied Path here; both briefs owning it (OBPI-0.0.37-18, OBPI-0.35.0-01) are
+  **Completed** and therefore terminal, so nothing blocks an ordinary direct fix once this OBPI
+  lands. Reopened rather than re-filed because the root cause is identical (`ghi-author` Step 0).
+  Open, evidence-commented.
+- **GHI #881** — `corpus_store.append_entry` rewrites the whole corpus with
+  `Path.write_text`, which truncates before writing, so a disk-full or interrupted
+  append can destroy committed canon while this command's `OSError` handler reports
+  *"nothing written"*. Found by the tier-1 adversary at round 6. `corpus_store.py` is a
+  Denied Path here; cross-linked to #875 (persist-before-validate) and #880 (lost
+  update) — three defects in one function, likely cheaper to fix together. Open.
+- **GHI #882** — the ledger validator has no conditional rule form, so it cannot assert
+  the runtime gate's own condition: an event with `floor_direction: "grew"` and
+  `attestor: ""` validates clean. This OBPI landed the RECORDING half (the event now
+  carries `floor_direction` + `floor_moved_ids`, so an auditor can DETECT an unattested
+  floor revival); ENFORCEMENT needs `validate_pkg/ledger_check.py`, which is outside
+  this allowlist and shared by all 54 event types. Operator-ruled 2026-08-25 to route
+  it rather than widen scope a third time. Open.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Gate 5 for OBPI-0.35.0-02-content-withdraw-verb, attested 2026-08-26 on evidence the operator held in full, including a STANDING REFUTED verdict from the tier-1 cross-vendor adversary (round 9, receipt arb-step-codexadversary-33c1b0ee8afa472a88831b255c48e681). Six ARB-receipted Codex rounds (4-9) produced ~25 findings; every one is fixed-and-verified or routed to a tracked GHI. Full `uv run gz check` passes all 56 checks, exit 0. Tests 8850 (receipt arb-step-unittest-48f847fda0d540598339f5ac3b24d118); lint clean (arb-ruff-0757153889ee495e84a1584e32040536); typecheck clean (arb-step-typecheck-5296a1f2f695408bae270c3739127bbe); mkdocs --strict clean (arb-step-mkdocs-12faacb760ac44ba9231702cc0ae546f); behave 7/7 scoped scenarios (arb-step-behave-acd685e6216945b6b100844887ff77a6). `gz validate` green across 6 scopes; `gz covers` behavior_uncovered_reqs 0. Stage-2 dispatch is DECLARED SINGLE-DRIVER with a recorded reason, not inferred. Eight operator rulings were taken and applied during this session.
+- Date: 2026-08-26
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-08-26
 
 **Evidence Hash:** -
