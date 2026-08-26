@@ -91,9 +91,58 @@ itself took ~25 minutes; the registrations took ~35; nine full 8870-test suite
 runs added ~21 minutes of waiting because each missing registration surfaces
 only as a failing test.
 
+### Second instance — the unit suite has seven invocation forms
+
+Folded in on operator ruling 2026-08-26 (*"fold the seven forms into the pool
+ADR"*) because it is the same shape, not the same surface: one fact restated by
+many uncoordinated declarations, with no single definition any of them derive
+from.
+
+Measured 2026-08-26. One test suite, seven forms:
+
+| # | Form | Where |
+|---|---|---|
+| 1 | `uv run --with unittest-parallel unittest-parallel -t . -s tests --buffer` | `quality.run_tests` (the `gz check` Test step) and the pre-commit hook, `stages: [manual]` |
+| 2 | `uv run -m unittest -q` | `CANONICAL_STEP_COMMANDS["unittest"]` — the serial ARB attestation path |
+| 3 | `uv run -m unittest -q <changed modules>` | `_run_changed_tests`, the `gz check --fast` substitution |
+| 4 | `coverage run -m unittest discover -s tests -t .` | `CANONICAL_STEP_COMMANDS["coverage"]` |
+| 5 | `uv run -m unittest` | `red_witness.DEFAULT_TEST_RUNNER` |
+| 6 | `gz test --obpi <id>` | `@covers`-scoped to one OBPI's REQs |
+| 7 | `gz smoke` | `@smoke`-scoped subset against a 60s budget |
+
+**Two more are not code at all.** `pipeline_dispatch.py:296` and
+`pipeline_verification.py:229` are prose strings instructing an agent to *type*
+`uv run -m unittest -q`. A test runner defined as a sentence cannot be
+validated, cannot be measured, and drifts from the other seven silently — the
+same failure mode `.claude/rules/governance-core.md` names for a value written
+in Markdown.
+
+Wall-clock measured the same day on a 10-core host: `gz check` full **100.4s**,
+`gz check --fast` **16.6s**, Behave **34.2s**, serial `uv run -m unittest -q`
+**142.6s** against ~44s for the parallel form inside the gate. The divergence
+between forms 1 and 2 is a ~100s premium on every attestation.
+
+**Not every form is redundant, and the ADR must not flatten them.** Forms 3, 6
+and 7 are deliberate scopes with different subjects (changed files, one OBPI's
+REQs, the smoke tier). Form 4 measures coverage rather than pass/fail. The
+duplication is in how each form is *spelled and located*, never in what they
+select — there is no shared runner definition the seven derive from, so a change
+to one reaches none of the others.
+
+**Scope note for promotion (binding on whoever promotes this).** These are two
+instances of one pattern, not one piece of work: the validator-scope seam lives
+in `validate_cmd.py` and its dependents, the test-invocation seam in
+`canonical_steps.py`, `quality.py`, `red_witness.py` and two pipeline prose
+strings. They may well want to be two ADRs. This ADR records both because the
+pattern is the finding; splitting them is an operator decision at promotion, and
+the shared title should not be read as a claim that one change fixes both.
+
 ## Decision
 
-**Option C — derive the derivable, checklist the rest.**
+**Option C — derive the derivable, checklist the rest.** Stated for the
+validator-scope instance; the test-invocation instance above is recorded as
+evidence of the pattern and carries no decision yet.
+
 
 1. `VALIDATOR_REGISTRY` becomes the single source across the module boundary,
    not just within it. The eleven mechanical sites are generated or read from it.

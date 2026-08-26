@@ -66,6 +66,35 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # catch a gate that is red on a co-equal supported platform
     # (`.gzkit/rules/cross-platform.md`: "Windows, macOS, Linux — co-equal").
     "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features"],
+    # SERIAL ON PURPOSE, and the purpose is recorded here for the first time
+    # (operator ratification 2026-08-26). `quality.run_tests` runs the same suite
+    # through `unittest-parallel` at roughly a third the wall clock -- measured
+    # 2026-08-26 on a 10-core host: 142.6s serial against ~44s parallel inside
+    # `gz check`. An attestation therefore pays a ~100s premium over the gate,
+    # and the reason is a dependency-provenance one, not a performance oversight:
+    #
+    #   `unittest-parallel` is invoked as `uv run --with unittest-parallel ...`
+    #   and is deliberately NOT in `pyproject.toml` (GHI #512, matching how
+    #   ruff/ty/xenon/gitleaks are wielded). It is resolved from the network at
+    #   run time, so its version is whatever `uv` picked that day. An ARB receipt
+    #   is EVIDENCE; evidence must not rest on an unpinned, network-fetched
+    #   accelerator, and stdlib-first doctrine keeps the attestation path on the
+    #   stdlib runner. The gate may use the accelerator because a gate is a
+    #   verdict recomputed on demand; a receipt is a durable claim about a run.
+    #
+    # DISCLOSURE: no prior rationale existed anywhere. Searched 2026-08-26 --
+    # this table's header comment stated the divergence without a reason,
+    # `quality.run_tests` said "intentionally left serial" without one,
+    # `docs/governance/arb-middleware.md` does not mention it, and neither
+    # `git log --grep=serial` nor `git log -S` on this entry finds a deciding
+    # commit. GHI #512 adopted the parallel runner for the PRE-COMMIT HOOK ONLY
+    # and this table was never revisited; the word "intentionally" was added
+    # later, describing the status quo. The argument above is a reconstruction
+    # the operator ratified, not a decision recovered from the record.
+    #
+    # Changing this string is a receipt-shape change: `gz arb validate` compares
+    # emitted receipts against it and `RETIRED_STEP_COMMANDS` carries the
+    # supersession. Do not "optimise" it without re-ruling the argument above.
     "unittest": ["uv", "run", "-m", "unittest", "-q"],
     "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
