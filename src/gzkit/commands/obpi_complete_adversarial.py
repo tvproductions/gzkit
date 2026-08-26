@@ -84,6 +84,17 @@ def _is_cross_vendor_adversary(adversary: str) -> bool:
     return any(name.startswith(prefix) for prefix in _CROSS_VENDOR_ADVERSARY_PREFIXES)
 
 
+# Runtime wrappers a dispatch may legitimately front the real binary with. The
+# operator's 2026-08-25 directive makes the Codex PLUGIN the only permitted tier-1
+# surface and FORBIDS `codex exec`, so every conforming tier-1 run is argv
+# ['node', '.../codex-companion.mjs', ...] — and a scan reading argv[0] alone sees
+# 'node' and refuses the claim. Both rules landed the same day, which made a tier-1
+# claim structurally unclaimable for any OBPI following the directive.
+_RUNTIME_WRAPPERS: frozenset[str] = frozenset(
+    {"node", "nodejs", "npx", "python", "python3", "uv", "uvx", "bunx", "deno"}
+)
+
+
 def _receipt_binary_name(argv_head: str) -> str:
     """Return the bare binary name from a recorded argv head.
 
@@ -113,7 +124,18 @@ def _receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
     command = step.get("command")
     if not isinstance(command, list) or not command:
         return False
-    return _is_cross_vendor_adversary(_receipt_binary_name(str(command[0])))
+    # Walk past a runtime wrapper to the binary it fronts, then STOP at the first
+    # non-wrapper. Stopping is load-bearing: the adversary's PROMPT is also in argv
+    # and routinely names vendors, so a scan that kept walking would let a mentioned
+    # vendor satisfy the gate — reopening the fail-open this function exists to
+    # close. One hop past `node` reaches `codex-companion.mjs`; nothing reaches the
+    # prompt.
+    for arg in command:
+        name = _receipt_binary_name(str(arg))
+        if name.lower() in _RUNTIME_WRAPPERS:
+            continue
+        return _is_cross_vendor_adversary(name)
+    return False
 
 
 def _load_adversary_receipt(run_id: str, *, root: Path) -> dict[str, Any] | None:

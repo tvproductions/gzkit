@@ -331,15 +331,27 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
             "event carrying the retired entry's tier and attestor. Nothing is deleted — "
             "the retired entry "
             "stays on disk with its provenance — but it stops binding the invariant "
-            "floor, so a rendition no longer has to carry its text verbatim. Retirement "
-            "only ever shrinks the floor, so every committed rendition still SATISFIES "
-            "it — but it does NOT leave them PROVABLE: the retraction row moves the "
+            "floor, so a rendition no longer has to carry its text verbatim. Which way "
+            "the floor moves is a before/after DELTA over invariant-tier liveness, "
+            "never a property of what kind of row was named. Four outcomes are "
+            "possible and the command reports which occurred: the floor is "
+            "unchanged (no invariant entry's liveness moved — the usual case for a "
+            "routine compressible retirement), it shrinks the floor (an invariant "
+            "entry stopped binding), it GREW (retiring a tombstone revived the entry "
+            "that tombstone had retired — Algebra 6), or it CHANGED (both at once: "
+            "some revived while others stopped binding). A rendition that satisfied "
+            "the old floor still SATISFIES a shrunk one, but may FAIL a GREW or "
+            "CHANGED one. Either way "
+            "the retraction "
+            "row moves the "
             "corpus fingerprint, so `gz validate --rendition-freshness` requires a "
             "recompose and re-attest before the next push (GHI #863). Fails closed on "
             "an unknown or already-retired id. Corpus-attested (OBPI-0.35.0-02): a "
             "retirement that MOVES invariant-tier liveness requires a named --attestor "
-            "-- including a tombstone, whose retirement revives its target and GROWS "
-            "the floor; routine compressible retirement needs none. --reason is "
+            "-- including a compressible tombstone, when the entry it revives is "
+            "invariant-tier and the floor therefore GROWS; routine retirement that "
+            "leaves invariant-tier liveness "
+            "untouched needs none. --reason is "
             "always required: it becomes the "
             "retraction row's text and the corpus_entry_retired event's reason, and both "
             "surfaces reject an empty one."
@@ -364,7 +376,7 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
     p.add_argument(
         "--attestor",
         default="",
-        help="Operator retiring the entry; required only when the entry is tier=invariant.",
+        help="Operator retiring; required when retirement moves invariant-tier liveness.",
     )
     p.add_argument(
         "--origin",

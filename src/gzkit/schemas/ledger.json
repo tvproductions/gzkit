@@ -1196,6 +1196,21 @@
         },
         "attestor": {
           "type": "string"
+        },
+        "floor_direction": {
+          "type": "string",
+          "enum": [
+            "unchanged",
+            "shrank",
+            "grew",
+            "changed"
+          ]
+        },
+        "floor_moved_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

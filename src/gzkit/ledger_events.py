@@ -857,25 +857,66 @@ def corpus_entry_appended_event(
     )
 
 
+def floor_direction_for(added: set[str], removed: set[str]) -> str:
+    """Return the ledger discriminator for an invariant-liveness delta.
+
+    Lives HERE, beside the factory, so the witness is DERIVED from the gate's own
+    two sets rather than asserted by the caller. A round-8 adversary probe showed
+    the caller-supplied form was constructible into a lie: `floor_direction='grew'`
+    with `floor_moved_ids=[]` validated clean under both readers, so a producer
+    could claim the floor grew while naming nothing that moved. Deriving both
+    fields from one input makes that state unrepresentable.
+    """
+    if added and removed:
+        return "changed"
+    if added:
+        return "grew"
+    if removed:
+        return "shrank"
+    return "unchanged"
+
+
 def corpus_entry_retired_event(
     surface: str,
     retired_entry_id: str,
     retraction_entry_id: str,
     reason: str,
     tier: str,
+    floor_added: set[str],
+    floor_removed: set[str],
     attestor: str = "",
 ) -> LedgerEvent:
     """Create a corpus_entry_retired event (GHI #635, OBPI-0.35.0-02).
 
     Layer-2 witness for a ``gz content retire`` append. Distinct from
     ``corpus_entry_appended`` because retirement mutates what canon *currently*
-    requires — the invariant floor shrinks — and that is the fact an auditor
-    needs to find, not merely that a row was added.
+    requires — the invariant floor moves — and that is the fact an auditor needs to
+    find, not merely that a row was added. Which WAY it moved is ``floor_direction``;
+    retirement is not shrink-only.
 
     ``tier`` is the RETIRED entry's own tier, always known. ``attestor`` is
     legitimately empty on a compressible-tier retirement — only the invariant
     floor requires a named attestor (`retire.py`'s corpus-attestation gate).
+
+    ``floor_direction`` and ``floor_moved_ids`` record the invariant-liveness DELTA
+    the attestor gate actually reads, so Layer 2 can witness the condition that
+    required attestation rather than the retired row's tier, which is only a proxy
+    for it (round-6 adversary, 2026-08-25). Both default empty because the ledger is
+    append-only and committed rows predating them can never grow the keys.
     """
+    overlap = floor_added & floor_removed
+    if overlap:
+        # A real before/after delta over one fold is DISJOINT by construction: an
+        # invariant id cannot be both revived and un-bound by a single retirement.
+        # A round-9 adversary probe passed the same id in both sets and got a
+        # ledger-valid `changed` witness naming one id -- an impossible state that
+        # both readers accepted. Refuse it at the boundary rather than emit it.
+        raise ValueError(
+            f"floor_added and floor_removed overlap on {sorted(overlap)}: a retirement "
+            "cannot both revive and un-bind the same invariant entry. The two sets come "
+            "from one before/after fold and are disjoint by construction."
+        )
+
     timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="corpus_entry_retired",
@@ -888,6 +929,8 @@ def corpus_entry_retired_event(
             "reason": reason,
             "tier": tier,
             "attestor": attestor,
+            "floor_direction": floor_direction_for(floor_added, floor_removed),
+            "floor_moved_ids": sorted(floor_added | floor_removed),
         },
     )
 

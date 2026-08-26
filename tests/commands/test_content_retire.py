@@ -11,10 +11,16 @@ from __future__ import annotations
 import json
 import re
 import shlex
+import unicodedata
 import unittest
 from pathlib import Path
 
 from gzkit.cli.main import main
+from gzkit.commands.content.retire import (
+    _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
+    _is_named,
+    ucd_currency_warning,
+)
 from gzkit.content.models import Corpus
 from gzkit.content.models.corpus import effective_corpus
 from gzkit.content.rendition_store import (
@@ -25,6 +31,7 @@ from gzkit.content.rendition_store import (
     save_rendition,
 )
 from gzkit.content.tier_policy import invariant_entries
+from gzkit.ledger_events import corpus_entry_retired_event, floor_direction_for
 from gzkit.traceability import covers
 from gzkit.validate_pkg.ledger_check import validate_ledger
 from tests.commands.common import CliRunner
@@ -70,6 +77,21 @@ def _corpus_fingerprint() -> str:
     read lives here rather than in a test body that is about behavior.
     """
     return corpus_fingerprint(_load_corpus())
+
+
+def _corpus_bytes() -> bytes:
+    """Raw on-disk bytes of the corpus store -- the literal claim REQ-01 makes.
+
+    `_corpus_fingerprint()` LOADS and canonically re-serializes the model through
+    `Corpus.dumps()`, so it is a SEMANTIC check: a refusal path that rewrites or
+    re-normalizes the store without changing its meaning passes the fingerprint
+    assertion. A tier-1 cross-vendor adversary measured exactly that gap on a
+    differently-encoded corpus file (`RAW_EQUAL=False`, `NORMALIZED_EQUAL=True`,
+    `FINGERPRINT_EQUAL=True`, 2026-08-25). REQ-0.35.0-02-01 literally promises "THE
+    CORPUS FILE IS BYTE-UNCHANGED" -- this is the assertion that actually binds that
+    word, kept ADDITIONAL to (never a replacement for) the fingerprint check.
+    """
+    return _CORPUS_PATH.read_bytes()
 
 
 def _corpus_store_exists() -> bool:
@@ -296,6 +318,69 @@ class TestContentRetireDriftWarning(unittest.TestCase):
         self.assertEqual(output.count("shrinks the floor"), 1, "spliced description")
         self.assertIn("rendition-freshness", output)
         self.assertIn("recompose", output.lower())
+
+    def test_help_does_not_claim_shrink_only_while_also_claiming_growth(self) -> None:
+        """The description must not assert a fixed direction and then contradict it.
+
+        The pre-fix text opened with "Retirement only ever shrinks the floor, so
+        every committed rendition still SATISFIES it" and, two clauses later, said a
+        tombstone's retirement "revives its target and GROWS the floor" -- a
+        self-contradiction inside one paragraph. `_floor_direction_prose` in
+        `retire.py` already models both directions (an `added and removed` branch);
+        the help text has to say the same thing the code does. Asserted on the
+        semantic claim -- the fixed-direction phrasing must be absent -- not on a
+        brittle full-string match, so a rewording that keeps the same false claim in
+        different words still fails this test.
+        """
+        output = self._runner.invoke(main, ["content", "retire", "--help"]).output
+        self.assertNotIn("only ever shrinks the floor", output)
+        self.assertIn("GROWS", output, "the growth direction must still be named")
+        self.assertIn(
+            "shrinks the floor",
+            output,
+            "the shrink direction must still be named -- direction-neutral, not grow-only either",
+        )
+
+    def test_help_names_the_delta_not_the_row_kind(self) -> None:
+        """The floor-movement claim must match `_floor_direction_prose`'s FOUR branches.
+
+        `_floor_direction_prose` in `retire.py` computes an `added`/`removed`
+        before/after DELTA over invariant-tier liveness with four outcomes --
+        unchanged (neither), shrank (removed only), GREW (added only), CHANGED
+        (both) -- never a property of what KIND of row was retired
+        (`_floor_liveness_delta`'s own docstring makes this explicit). The
+        prior repair replaced one false two-state claim with another: "retiring
+        an ordinary entry shrinks the floor, but retiring a tombstone REVIVES
+        its target and GROWS it back" is false on the "unchanged" state (any
+        routine compressible retirement moves nothing) and on the "CHANGED"
+        state -- a tier-1 adversary demonstrated it live retiring a
+        `supersedes` replacement, producing both an added and a removed
+        invariant id at once (2026-08-25).
+
+        `test_help_does_not_claim_shrink_only_while_also_claiming_growth` above
+        is insufficient by construction: it only bans the OLD literal and
+        requires generic "shrinks"/"GROWS" tokens, so today's row-kind
+        sentence -- which contains both tokens -- passes it unchanged. This
+        test targets the row-kind claim directly and the two states that claim
+        never names.
+        """
+        output = self._runner.invoke(main, ["content", "retire", "--help"]).output
+        self.assertNotIn(
+            "retiring an ordinary entry shrinks the floor, but retiring a tombstone",
+            output,
+            "the row-kind dichotomy must be gone -- the discriminator is the "
+            "before/after delta, never what kind of row was named",
+        )
+        self.assertIn(
+            "unchanged",
+            output.lower(),
+            "the neither-added-nor-removed state is never named by the row-kind framing",
+        )
+        self.assertIn(
+            "CHANGED",
+            output,
+            "the both-added-and-removed state is never named by the row-kind framing",
+        )
 
 
 class TestContentRetire(unittest.TestCase):
@@ -674,6 +759,29 @@ class TestContentRetireAttestation(unittest.TestCase):
         self.assertIn("invariant", output)
         self.assertNotIn("neither --attestor nor --reason", output)
 
+    def test_attestor_option_help_states_liveness_movement_not_target_tier(self) -> None:
+        """The `--attestor` OPTION's own help line must match the guard it fronts.
+
+        The per-flag help drifted independently of the description above it: it read
+        "required only when the entry is tier=invariant", tying the requirement to
+        the RETIRED row's own tier. The `at_risk` guard in `content_retire_cmd`
+        (retire.py) gates on `_floor_liveness_delta` instead -- retiring a
+        `compressible` tombstone whose target is invariant trips it too, so the old
+        wording sends an operator into that case believing no attestor is needed.
+
+        Isolates the `--attestor` option's OWN help text (not the whole rendered
+        page, which already carries the correct rule in its description) so a fix
+        that only patches the description while leaving this line stale still fails.
+        """
+        output = self._runner.invoke(main, ["content", "retire", "--help"]).output
+        match = re.search(r"--attestor ATTESTOR\s+(.*?)\n\s*--origin", output, re.DOTALL)
+        self.assertIsNotNone(match, msg=output)
+        assert match is not None
+        attestor_help = " ".join(match.group(1).split())
+        self.assertNotIn("tier=invariant", attestor_help)
+        self.assertIn("moves", attestor_help)
+        self.assertIn("invariant-tier liveness", attestor_help)
+
     @covers("REQ-0.35.0-02-01")
     def test_an_invisible_attestor_is_not_a_named_human(self) -> None:
         """U+200B ZERO WIDTH SPACE must not pass as an attestor.
@@ -846,36 +954,144 @@ class TestContentRetireAttestation(unittest.TestCase):
             self.assertNotIn("legacy-row", {e.id for e in effective_corpus(_load_corpus()).entries})
 
     @covers("REQ-0.35.0-02-01")
-    def test_punctuation_and_digits_do_not_answer_who_attested(self) -> None:
-        """The audit record asks WHO — `.`, `7`, or a lone combining mark do not answer.
+    def test_no_who_attestor_classes_leave_corpus_and_ledger_untouched(self) -> None:
+        """Every no-WHO attestor class: non-zero exit, corpus AND ledger both untouched.
 
-        The predicate was "at least one visible character", and an independent review
-        retired invariant canon with each of these, recording the value as the human who
-        authorized it (2026-08-25). A lone surrogate got through too, which cannot even
-        round-trip through the ledger's UTF-8.
+        REQ-0.35.0-02-01 (amended 2026-08-25) literally requires BOTH sides: "THE
+        CORPUS FILE IS BYTE-UNCHANGED, and NO LEDGER EVENT IS WRITTEN." The tests this
+        replaces (`test_punctuation_and_digits_do_not_answer_who_attested`,
+        `test_a_hangul_filler_attestor_does_not_retire_invariant_canon`,
+        `test_default_ignorable_letters_render_as_no_glyph_and_are_not_a_name`) never
+        checked the ledger half at all -- one asserted exit code and corpus fingerprint
+        only, one did the same for a single code point, and one called `_is_named`
+        directly with no store or ledger in play at all. Every one of those stays green
+        if a refusal path is changed to write an audit or retirement ledger event
+        anyway, so the REQ's second side-effect surface was unbound from its `@covers`.
 
-        The bar is now at least one Unicode LETTER after NFKC normalization. That is a
-        plausibility floor, not identity verification — gz has no operator registry to
-        check a name against — but it rejects the values that are certainly not names.
+        Table-driven over every no-WHO class the amended REQ names: empty,
+        whitespace-only, punctuation, digits, a lone combining mark, U+200B, and all
+        four Hangul default-ignorable letters (U+115F, U+1160, U+3164, U+FFA0) --
+        which are General_Category=Lo (letter) yet render at zero advance width, so a
+        bare letter-category bar admits them (`_DEFAULT_IGNORABLE_LETTERS`). Each
+        subTest re-snapshots corpus fingerprint AND corpus BYTES, plus the ledger
+        event count, immediately before its own invocation, so one case's (correctly)
+        unwritten state cannot mask another case actually writing.
+
+        Bytes are asserted ALONGSIDE the fingerprint, never instead of it: the
+        fingerprint alone is a SEMANTIC check (`_corpus_fingerprint()` reloads and
+        re-serializes the model), so a refusal path that rewrites or re-normalizes the
+        store passes it even when the file on disk changed -- measured `RAW_EQUAL=False`
+        while `FINGERPRINT_EQUAL=True` for a differently-encoded corpus file
+        (tier-1 cross-vendor adversary, 2026-08-25). REQ-0.35.0-02-01 promises the file
+        is "BYTE-UNCHANGED", which only `_corpus_bytes()` actually proves.
         """
         rejected = {
+            "empty": "",
+            "whitespace-only": "   ",
             "period": ".",
+            "punctuation-run": "--",
             "digit": "7",
             "lone-combining-mark": "\u0301",
             "zero-width-space": "\u200b",
-            "punctuation-run": "--",
+            "hangul-choseong-filler": "\u115f",
+            "hangul-jungseong-filler": "\u1160",
+            "hangul-filler": "\u3164",
+            "halfwidth-hangul-filler": "\uffa0",
         }
         with self._runner.isolated_filesystem():
             _seed_surface()
             for label, value in rejected.items():
                 with self.subTest(attestor=label):
                     entry_id = self._remember(f"floor doctrine {label}", tier="invariant")
-                    before = _corpus_fingerprint()
+                    corpus_before = _corpus_fingerprint()
+                    bytes_before = _corpus_bytes()
+                    ledger_before = len(_ledger_events())
+
                     result = self._retire(
                         entry_id, args=["--reason", "superseded", "--attestor", value]
                     )
-                    self.assertNotEqual(result.exit_code, 0, msg=f"{label!r} passed as an attestor")
-                    self.assertEqual(_corpus_fingerprint(), before)
+
+                    self.assertNotEqual(
+                        result.exit_code, 0, msg=f"{label!r} ({value!r}) passed as an attestor"
+                    )
+                    self.assertEqual(
+                        _corpus_fingerprint(),
+                        corpus_before,
+                        msg=f"{label!r} moved the corpus",
+                    )
+                    self.assertEqual(
+                        _corpus_bytes(),
+                        bytes_before,
+                        msg=f"{label!r} rewrote the corpus file's bytes",
+                    )
+                    self.assertEqual(
+                        len(_ledger_events()),
+                        ledger_before,
+                        msg=f"{label!r} wrote a ledger event despite the refusal",
+                    )
+
+    @covers("REQ-0.35.0-02-01")
+    def test_the_ucd_version_witness_fires_when_the_bundled_ucd_moves(self) -> None:
+        """The honest witness: fails loudly when the bundled UCD drifts, unlike the pin above.
+
+        `_DEFAULT_IGNORABLE_LETTERS` is a literal frozenset hand-transcribed from
+        DerivedCoreProperties.txt for one named UCD edition
+        (`_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION`). Nothing in the repo referenced
+        `unicodedata.unidata_version` before this fix (measured: zero hits under
+        `src/`), and `pyproject.toml` pins `requires-python >=3.13` with no upper
+        bound — so a future CPython bundling a newer UCD could add a fifth
+        General_Category=Lo Default_Ignorable_Code_Point and `_is_named` would
+        silently resume accepting an invisible glyph as a named attestor.
+
+        The witness WARNS at runtime and asserts hard HERE. An earlier revision
+        raised at module import, which aborted `gz content retire` on any runtime
+        whose UCD differed — and `requires-python >=3.13` has no upper bound, so a
+        declared-SUPPORTED CPython (3.14 bundles UCD 16.0.0) crashed the command
+        outright. A tier-1 cross-vendor adversary found it 2026-08-25 and the
+        operator ruled warn-not-raise: the HARD failure belongs where a maintainer
+        can re-derive the set (CI), not where an operator is mid-retirement.
+
+        Three assertions: a drifted version produces a warning naming both versions
+        and the re-derivation step; the real bundled version produces NO warning
+        (so the witness is not always-firing); and the bundled UCD IS the version
+        the set was derived against (this is the hard CI gate — it fails the suite
+        the moment CPython bundles a newer UCD, which is the signal to re-derive).
+        """
+        message = ucd_currency_warning(version="99.0.0")
+        self.assertIn("99.0.0", message)
+        self.assertIn(_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION, message)
+        self.assertIn("_DEFAULT_IGNORABLE_LETTERS", message)
+        self.assertIn("DerivedCoreProperties", message)
+        # Not always-firing: the real, bundled version must produce no warning.
+        self.assertEqual(ucd_currency_warning(), "")
+        # The hard CI gate the runtime deliberately no longer enforces.
+        self.assertEqual(
+            unicodedata.unidata_version,
+            _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
+            "CPython now bundles a different UCD — re-derive _DEFAULT_IGNORABLE_LETTERS "
+            "from DerivedCoreProperties.txt and update the constant",
+        )
+
+    @covers("REQ-0.35.0-02-01")
+    def test_real_names_across_scripts_still_pass_the_plausibility_floor(self) -> None:
+        """Positive control: the fix must not be satisfiable by rejecting everything.
+
+        Ordinary human names in several scripts must still clear the bar -- a predicate
+        narrowed until it also rejects real names is not a fix, it is a different bug.
+        """
+        real_names = {
+            "latin": "g0",
+            "han": "王芳",
+            "cyrillic": "Иван",
+            "arabic": "أحمد",
+            "devanagari": "राम",
+            "hangul-syllable": "김",
+        }
+        for label, value in real_names.items():
+            with self.subTest(name=label):
+                self.assertTrue(
+                    _is_named(value), msg=f"{label!r} ({value!r}) was rejected as not a name"
+                )
 
     @covers("REQ-0.35.0-02-07")
     def test_reviving_an_invariant_reports_the_floor_growing_not_shrinking(self) -> None:
@@ -911,6 +1127,98 @@ class TestContentRetireAttestation(unittest.TestCase):
                 grow.output.replace(" ", "\n"),
                 "must not claim committed renditions still satisfy a GROWN floor",
             )
+
+    @covers("REQ-0.35.0-02-03")
+    def test_unchanged_delta_needs_no_attestor_and_says_so(self) -> None:
+        """The `unchanged` outcome: a routine compressible retirement moves nothing.
+
+        `_floor_liveness_delta` computes an `(added, removed)` before/after delta over
+        invariant-tier liveness; neither side moves when the retired row was never
+        invariant and revives nothing. This is REQ-03's literal subject -- the delta
+        state the amended Given clause names -- exercised end to end through the CLI
+        rather than through the help-text prose tests, which only ban a literal and
+        cannot see whether the runtime actually reaches this branch.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("routine text", tier="compressible")
+
+            result = self._retire(entry_id, args=["--reason", "superseded"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("The invariant floor is unchanged.", result.output)
+
+    @covers("REQ-0.35.0-02-01")
+    def test_shrank_delta_requires_an_attestor_and_says_so(self) -> None:
+        """The `shrank` outcome: retiring a live invariant row removes a requirement.
+
+        Floor movement in EITHER direction requires a named attestor
+        (`_floor_liveness_delta`'s `at_risk = added | removed`), so the shrink case is
+        gated exactly like the grow case -- only the reported direction differs.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("floor doctrine", tier="invariant")
+
+            result = self._retire(entry_id, args=["--reason", "superseded", "--attestor", "g0"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("The invariant floor shrank", result.output)
+
+    @covers("REQ-0.35.0-02-01")
+    def test_grew_delta_requires_an_attestor_and_says_so(self) -> None:
+        """The `GREW` outcome: retiring a tombstone whose target is invariant.
+
+        Distinct from `test_reviving_an_invariant_reports_the_floor_growing_not_shrinking`
+        above (which supplies an attestor throughout and asserts the message only): this
+        also proves the attestor GATE fires -- omitting it on the growing retirement
+        exits non-zero, exactly as it does for a shrink.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            floor_id = self._remember("floor doctrine", tier="invariant")
+            first = self._retire(floor_id, args=["--reason", "superseded", "--attestor", "g0"])
+            self.assertEqual(first.exit_code, 0, msg=f"premise: {first.output}")
+            tombstone = _load_corpus().entries[-1].id
+
+            without_attestor = self._retire(tombstone, args=["--reason", "undo"])
+            self.assertNotEqual(
+                without_attestor.exit_code,
+                0,
+                msg=f"growing retirement must still require an attestor: {without_attestor.output}",
+            )
+
+            with_attestor = self._retire(tombstone, args=["--reason", "undo", "--attestor", "g0"])
+            self.assertEqual(with_attestor.exit_code, 0, msg=with_attestor.output)
+            self.assertIn("The invariant floor GREW", with_attestor.output)
+
+    @covers("REQ-0.35.0-02-03")
+    def test_unchanged_via_tombstone_needs_no_attestor_and_says_so(self) -> None:
+        """A tombstone over a COMPRESSIBLE target disproves the categorical GREW claim.
+
+        This is the case a tier-1 adversary used to refute the tombstone->GROWS
+        prose: retiring a tombstone whose target is compressible revives nothing
+        invariant-tier, so the delta is `unchanged`, not `GREW` -- the direction
+        depends on the revived entry's TIER, never on the row being a tombstone.
+
+        Note: the fourth theoretical delta, `CHANGED` (both added and removed in one
+        retirement), is reachable only through a `supersedes` replacement row --
+        `supersedes` is a schema field with no CLI surface (`gz content remember` has
+        no `--supersedes` flag; grep of `_register_remember` in
+        `src/gzkit/commands/content/__init__.py` confirms it), so it cannot be
+        constructed through the CLI helpers this test file uses and is not faked here.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            routine_id = self._remember("routine text", tier="compressible")
+            first = self._retire(routine_id, args=["--reason", "superseded"])
+            self.assertEqual(first.exit_code, 0, msg=f"premise: {first.output}")
+            tombstone = _load_corpus().entries[-1].id
+
+            result = self._retire(tombstone, args=["--reason", "undo"])
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("The invariant floor is unchanged.", result.output)
 
     @covers("REQ-0.35.0-02-05")
     def test_the_printed_retry_actually_recovers_not_merely_parses(self) -> None:
@@ -993,11 +1301,15 @@ class TestContentRetireAttestation(unittest.TestCase):
             _seed_surface()
             entry_id = self._remember("doctrine, verbatim: 'x'", tier="invariant")
             before = _corpus_fingerprint()
+            bytes_before = _corpus_bytes()
+            ledger_before = len(_ledger_events())
 
             result = self._retire(entry_id, args=["--reason", "superseded", "--attestor", "   "])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(_corpus_fingerprint(), before)
+            self.assertEqual(_corpus_bytes(), bytes_before, "corpus file's bytes changed")
+            self.assertEqual(len(_ledger_events()), ledger_before, "a ledger event was written")
             self._assert_recovery_commands_run(result.output)
 
     @covers("REQ-0.35.0-02-02")
@@ -1007,11 +1319,15 @@ class TestContentRetireAttestation(unittest.TestCase):
             _seed_surface()
             entry_id = self._remember("some doctrine", tier="compressible")
             before = _corpus_fingerprint()
+            bytes_before = _corpus_bytes()
+            ledger_before = len(_ledger_events())
 
             result = self._retire(entry_id, args=["--reason", "   "])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(_corpus_fingerprint(), before)
+            self.assertEqual(_corpus_bytes(), bytes_before, "corpus file's bytes changed")
+            self.assertEqual(len(_ledger_events()), ledger_before, "a ledger event was written")
             self._assert_recovery_commands_run(result.output)
 
     @covers("REQ-0.35.0-02-03")
@@ -1034,6 +1350,168 @@ class TestContentRetireAttestation(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(len(_load_corpus().entries), before_count + 1)
 
+    @covers("REQ-0.35.0-02-07")
+    def test_the_event_witnesses_the_delta_that_required_the_attestor(self) -> None:
+        """Layer 2 must record the condition that gated authorization, not a proxy for it.
+
+        The attestor gate authorizes on `floor_added | floor_removed`, but the event
+        recorded only the RETIRED ROW'S TIER. A tier-1 cross-vendor adversary measured
+        the consequence (2026-08-25): retiring a compressible tombstone over an
+        invariant entry printed "The invariant floor GREW" while the emitted event
+        carried `tier='compressible'`, and that event with `attestor=''` passed
+        `validate_ledger` with zero errors. An unaudited floor revival was therefore
+        indistinguishable in the ledger from routine compressible retirement, so a
+        regression in the tombstone gate would have stayed ledger-valid forever. This
+        is the presence-check-versus-state failure AGENTS.md opens with, in gzkit's own
+        witness.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            floor_id = self._remember("floor doctrine", tier="invariant")
+            first = self._retire(floor_id, args=["--reason", "superseded", "--attestor", "g0"])
+            self.assertEqual(first.exit_code, 0, msg=f"premise: {first.output}")
+            tombstone = _load_corpus().entries[-1].id
+
+            result = self._retire(tombstone, args=["--reason", "undo", "--attestor", "g0"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            event = [e for e in _ledger_events() if e["event"] == "corpus_entry_retired"][-1]
+            self.assertEqual(
+                event["floor_direction"],
+                "grew",
+                msg=f"the event must record the delta the gate read, got {event!r}",
+            )
+            self.assertEqual(
+                event["floor_moved_ids"],
+                [floor_id],
+                msg="the moved-id set must be EXACT — assertIn would pass on bogus extra ids",
+            )
+            # The proxy that used to be the only signal says 'compressible' here --
+            # which is exactly why it could not witness this retirement.
+            self.assertEqual(event["tier"], "compressible")
+
+    @covers("REQ-0.35.0-02-07")
+    def test_a_routine_retirement_is_distinguishable_from_a_floor_revival(self) -> None:
+        """The unchanged case must be tellable from the grew case by the ledger alone."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            routine_id = self._remember("routine text", tier="compressible")
+
+            result = self._retire(routine_id, args=["--reason", "superseded"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            event = [e for e in _ledger_events() if e["event"] == "corpus_entry_retired"][-1]
+            self.assertEqual(event["floor_direction"], "unchanged")
+            self.assertEqual(event["floor_moved_ids"], [])
+
+    @covers("REQ-0.35.0-02-07")
+    def test_an_impossible_delta_cannot_be_constructed(self) -> None:
+        """One id cannot be both revived and un-bound by a single retirement.
+
+        A round-9 adversary passed the same id in `floor_added` and `floor_removed`
+        and got a ledger-valid `changed` witness naming one id — a state no real
+        before/after fold can produce, accepted by both readers. Deriving the fields
+        from one input closed the round-8 lie; this closes the one that survived it.
+        """
+        with self.assertRaises(ValueError) as ctx:
+            corpus_entry_retired_event(
+                surface="AGENTS.md",
+                retired_entry_id="x",
+                retraction_entry_id="r",
+                reason="probe",
+                tier="compressible",
+                floor_added={"same-id"},
+                floor_removed={"same-id"},
+            )
+        self.assertIn("same-id", str(ctx.exception))
+        self.assertIn("disjoint", str(ctx.exception))
+
+    @covers("REQ-0.35.0-02-07")
+    def test_floor_direction_is_exhaustive_over_the_four_set_combinations(self) -> None:
+        """Table-test the discriminator at the pure helper, including CLI-unreachable CHANGED.
+
+        The end-to-end tests reach `unchanged`, `shrank` and `grew`, but `changed`
+        (both added and removed in one retirement) is reachable only through a
+        `supersedes` replacement row, and `supersedes` has no CLI flag. A tier-1
+        adversary noted the gap at round 7: the helper boundary can cover it without
+        inventing a CLI path, so a regression that mislabels any combination cannot
+        stay green.
+        """
+        cases = {
+            "neither": (set(), set(), "unchanged"),
+            "removed-only": (set(), {"a"}, "shrank"),
+            "added-only": ({"a"}, set(), "grew"),
+            "both": ({"a"}, {"b"}, "changed"),
+        }
+        for label, (added, removed, expected) in cases.items():
+            with self.subTest(combination=label):
+                self.assertEqual(floor_direction_for(added, removed), expected)
+
+    @covers("REQ-0.35.0-02-07")
+    def test_a_shrinking_retirement_is_witnessed_as_shrank(self) -> None:
+        """The shrank direction must be asserted on the EVENT, not only in console prose.
+
+        Round 7 found the shrink case checked only the printed message, so a regression
+        recording the wrong direction on the ledger row would have stayed green.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            floor_id = self._remember("floor doctrine", tier="invariant")
+
+            result = self._retire(floor_id, args=["--reason", "superseded", "--attestor", "g0"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            event = [e for e in _ledger_events() if e["event"] == "corpus_entry_retired"][-1]
+            self.assertEqual(event["floor_direction"], "shrank")
+            self.assertEqual(event["floor_moved_ids"], [floor_id])
+
+    @covers("REQ-0.35.0-02-03")
+    def test_a_visible_reason_without_letters_is_accepted(self) -> None:
+        """`--reason` is prose, not a name: a letterless but visible reason must pass.
+
+        Both reason guards called `_is_named`, which requires a Unicode LETTER after
+        NFKC. A tier-1 cross-vendor adversary probed `--reason 123` on a routine
+        compressible entry and observed exit 1 with the diagnostic "--reason is
+        whitespace-only" -- false on its face, since `123` is neither empty nor
+        whitespace (2026-08-25). The brief and manpage require only a non-empty,
+        non-whitespace reason, and `validate_ledger` accepts any `min_length=1` over
+        `value.strip()`, so a legitimate reference like a GHI number or an ISO date was
+        blocked with misleading recovery prose. `_is_named` is now exclusive to
+        `--attestor`, where the audit record genuinely asks WHO.
+        """
+        letterless = {"digits": "123", "ghi-reference": "#880", "iso-date": "2026-08-25"}
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            for label, reason in letterless.items():
+                with self.subTest(reason=label):
+                    entry_id = self._remember(f"some doctrine {label}", tier="compressible")
+                    before_count = len(_load_corpus().entries)
+
+                    result = self._retire(entry_id, args=["--reason", reason])
+
+                    self.assertEqual(
+                        result.exit_code, 0, msg=f"{reason!r} was refused: {result.output}"
+                    )
+                    self.assertEqual(len(_load_corpus().entries), before_count + 1)
+
+    @covers("REQ-0.35.0-02-02")
+    def test_an_empty_or_whitespace_reason_is_still_refused_accurately(self) -> None:
+        """The reason guard must still fail closed — and say what actually failed."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            for label, reason in {"empty": "", "whitespace-only": "   "}.items():
+                with self.subTest(reason=label):
+                    entry_id = self._remember(f"some doctrine {label}", tier="compressible")
+                    before = _corpus_fingerprint()
+                    events_before = len(_ledger_events())
+
+                    result = self._retire(entry_id, args=["--reason", reason])
+
+                    self.assertNotEqual(result.exit_code, 0, msg=result.output)
+                    self.assertEqual(_corpus_fingerprint(), before)
+                    self.assertEqual(len(_ledger_events()), events_before)
+                    self.assertIn("empty or whitespace-only", result.output)
+
     @covers("REQ-0.35.0-02-05")
     def test_unknown_entry_recovery_prose_carries_all_three_parts(self) -> None:
         """What failed, the cited rule, and a runnable next step — all present."""
@@ -1041,11 +1519,15 @@ class TestContentRetireAttestation(unittest.TestCase):
             _seed_surface()
             self._remember("some doctrine", tier="compressible")
             before = _corpus_fingerprint()
+            bytes_before = _corpus_bytes()
+            ledger_before = len(_ledger_events())
 
             result = self._retire("corpus-nonexistent", args=["--reason", "x"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(_corpus_fingerprint(), before)
+            self.assertEqual(_corpus_bytes(), bytes_before, "corpus file's bytes changed")
+            self.assertEqual(len(_ledger_events()), ledger_before, "a ledger event was written")
             self.assertIn("corpus-nonexistent", result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
@@ -1060,11 +1542,15 @@ class TestContentRetireAttestation(unittest.TestCase):
             entry_id = self._remember("some doctrine", tier="compressible")
             self._retire(entry_id, args=["--reason", "first"])
             before = _corpus_fingerprint()
+            bytes_before = _corpus_bytes()
+            ledger_before = len(_ledger_events())
 
             result = self._retire(entry_id, args=["--reason", "second"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
             self.assertEqual(_corpus_fingerprint(), before)
+            self.assertEqual(_corpus_bytes(), bytes_before, "corpus file's bytes changed")
+            self.assertEqual(len(_ledger_events()), ledger_before, "a ledger event was written")
             self.assertIn(entry_id, result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
@@ -1077,11 +1563,16 @@ class TestContentRetireAttestation(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             self.assertFalse(_corpus_store_exists())
+            # No corpus file exists yet in this case, so there are no bytes to
+            # snapshot -- `assertFalse(_corpus_store_exists())` before and after IS
+            # the byte-unchanged assertion here (there is no file to have changed).
+            ledger_before = len(_ledger_events())
 
             result = self._retire("corpus-anything", args=["--reason", "x"])
 
             self.assertNotEqual(result.exit_code, 0, msg=result.output)
             self.assertFalse(_corpus_store_exists())
+            self.assertEqual(len(_ledger_events()), ledger_before, "a ledger event was written")
             self.assertIn("corpus-anything", result.output)  # what failed
             self.assertIn("GHI #635", result.output)  # cited rule
             # The governed next step must RUN, not merely appear. A substring match
@@ -1227,6 +1718,202 @@ class TestContentRetireAttestation(unittest.TestCase):
             ledger_path = Path(".gzkit") / "ledger.jsonl"
             errors = validate_ledger(ledger_path)
             self.assertEqual(errors, [], msg=f"validator rejected the ledger: {errors}")
+
+
+class TestContentRetireManpageOutputForm(unittest.TestCase):
+    """The retire manpage's console transcripts must match what the CLI emits.
+
+    Every other prose claim OBPI-0.35.0-02 corrected was pinned by a test; the
+    manpage's fenced console blocks were not, and rotted silently while the
+    code moved -- an operator following the stale transcript would compose a
+    recovery command the gate refuses (two independent reviewers, one FAIL,
+    converged on this exact file). These tests invoke the REAL `gz content
+    retire` command and assert the manpage's console blocks contain the
+    load-bearing phrases of what it actually prints. Assertions target the
+    distinguishing phrases and the retry command line, not a whole-block byte
+    match, so an unrelated prose edit elsewhere in the file cannot break them.
+
+    # output-contract: these assertions read `result.output` and the manpage's
+    # rendered console blocks by design (`.gzkit/rules/tests.md` § Output-form
+    # fixture carve-out) -- the manpage's TRANSCRIPT is the contract under test,
+    # not a REQ-derived code behavior, so they live in their own class.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _remember(self, text: str, *, tier: str = "invariant") -> str:
+        """Append one entry and return its id."""
+        result = self._runner.invoke(
+            main,
+            [
+                "content",
+                "remember",
+                "AGENTS.md",
+                "--section",
+                "Prime Directive",
+                "--text",
+                text,
+                "--tier",
+                tier,
+            ],
+        )
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        return _load_corpus().entries[-1].id
+
+    def _manpage_text(self) -> str:
+        path = _PROJECT_ROOT / "docs" / "user" / "manpages" / "content.md"
+        return path.read_text(encoding="utf-8")
+
+    def test_manpage_invariant_tier_transcript_matches_real_cli_output(self) -> None:
+        """Finding 1: the corpus-attestation block must say what the gate really enforces.
+
+        The pre-fix manpage claimed the gate fires because the entry "is
+        tier='invariant'" and demands "BOTH a named --attestor and a --reason" --
+        both false. The real gate fires on retirement MOVING invariant-tier
+        liveness and requires only --attestor (--reason is a separate,
+        earlier-checked guard). Run the real command first and assert it still
+        says what this fixture expects, so the test cannot pass by coincidence
+        if the code's wording drifts out from under this memory.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            entry_id = self._remember("floor text", tier="invariant")
+
+            result = self._runner.invoke(
+                main,
+                [
+                    "content",
+                    "retire",
+                    "AGENTS.md",
+                    "--entry",
+                    entry_id,
+                    "--reason",
+                    "probe",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0, msg=result.output)
+            real_error = result.output
+
+        for phrase in (
+            "moves the liveness of invariant-tier entry",
+            "requires a named --attestor",
+            "nothing written",
+        ):
+            self.assertIn(
+                phrase,
+                real_error,
+                msg=f"real CLI no longer says {phrase!r}: {real_error}",
+            )
+
+        manpage = self._manpage_text()
+
+        # A PHRASE LIST IS NOT A COMPARISON. This guard previously asserted three
+        # cherry-picked phrases against the real output and the manpage SEPARATELY,
+        # never against each other -- so when the refusal grew a direction-aware
+        # rationale clause at round 8, all three phrases survived in both and the
+        # guard stayed green while the transcript diverged from what the CLI prints.
+        # Compare the WHOLE error line, normalising only the entry id, which
+        # legitimately differs between this isolated fixture and the real corpus.
+        placeholder = "corpus-attestation-2026-06-06T06:20:27.327411+00:00"
+        normalized = real_error.strip().splitlines()[0].replace(entry_id, placeholder)
+        self.assertIn(
+            normalized,
+            manpage,
+            msg=(
+                "the manpage transcript no longer matches what the CLI prints.\n"
+                f"CLI: {normalized}\n"
+                "Regenerate the console block from observed output."
+            ),
+        )
+
+        # The pre-fix wording this OBPI was raised to delete must be gone.
+        self.assertNotIn("is tier='invariant'", manpage)
+        self.assertNotIn("requires BOTH a named --attestor and a --reason", manpage)
+
+        # The real retry line orders --reason before --attestor.
+        self.assertIn('--reason "<why>" --attestor "<your name>"', manpage)
+
+    def test_manpage_unknown_entry_transcript_matches_real_cli_output(self) -> None:
+        """Finding 2: the fail-closed-paths retry must carry --attestor.
+
+        The pre-fix manpage's retry line omitted --attestor, which the code
+        always appends. Run the real command first and assert it still says
+        what this fixture expects, so the test cannot pass by coincidence if
+        the code's wording drifts out from under this memory.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            self._remember("some doctrine", tier="compressible")
+
+            result = self._runner.invoke(
+                main,
+                [
+                    "content",
+                    "retire",
+                    "AGENTS.md",
+                    "--entry",
+                    "does-not-exist",
+                    "--reason",
+                    "probe",
+                ],
+            )
+            self.assertNotEqual(result.exit_code, 0, msg=result.output)
+            real_error = result.output
+
+        for phrase in (
+            "no corpus entry 'does-not-exist' in surface 'AGENTS.md'",
+            "Live entry ids include:",
+            '--entry <id> --reason "<why>" --attestor "<your name>"',
+        ):
+            self.assertIn(
+                phrase,
+                real_error,
+                msg=f"real CLI no longer says {phrase!r}: {real_error}",
+            )
+
+        manpage = self._manpage_text()
+
+        for phrase in (
+            "no corpus entry 'does-not-exist' in surface 'AGENTS.md'",
+            "Live entry ids include:",
+            '--entry <id> --reason "<why>" --attestor "<your name>"',
+        ):
+            self.assertIn(
+                phrase,
+                manpage,
+                msg=f"manpage's fail-closed-paths transcript is missing {phrase!r}",
+            )
+
+    def test_manpage_prose_names_the_delta_not_the_row_kind(self) -> None:
+        """The manpage's retire section must describe the same delta the code computes.
+
+        Mirrors `TestContentRetireDriftWarning.test_help_names_the_delta_not_the_row_kind`
+        for the manpage's PROSE (not the byte-verified console transcripts this test
+        does not touch). The pre-fix manpage carried the identical row-kind
+        dichotomy -- "Retiring a *content* row removes a requirement ... Retiring a
+        **tombstone** does the opposite" -- which is false on the unchanged and
+        CHANGED (both-added-and-removed) states `_floor_direction_prose` computes.
+        The "Fail-closed paths" section also still keyed a refusal on the named
+        row's OWN tier ("an invariant-tier target carries no attestor") rather than
+        on whether the retirement MOVES invariant-tier liveness -- the exact gap a
+        tier-1 adversary exploited by retiring a `compressible` tombstone whose
+        target was invariant (2026-08-25).
+        """
+        manpage = self._manpage_text()
+        self.assertNotIn(
+            "Retiring a **tombstone** does the opposite",
+            manpage,
+            "the row-kind dichotomy must be gone from the manpage prose too",
+        )
+        self.assertIn("unchanged", manpage.lower())
+        self.assertIn("CHANGED", manpage)
+        self.assertNotIn(
+            "invariant-tier target carries no attestor",
+            manpage,
+            "the fail-closed-paths clause must key on liveness movement, not the "
+            "named row's own tier",
+        )
 
 
 if __name__ == "__main__":

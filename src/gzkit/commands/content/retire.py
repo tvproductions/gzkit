@@ -8,21 +8,36 @@ a line from the append-only store, which is not a governed operation.
 
 ``gz content retire <surface> --entry <id> [--reason <text>]`` is the governed
 exit. It appends a *retraction row* whose ``retires`` field names the superseded
-id. Nothing is deleted — the retired row stays on disk with its provenance — but
-``tier_policy.invariant_entries`` skips it, so the invariant floor shrinks.
+id, and emits BOTH a ``corpus_entry_appended`` event for that tombstone row and
+a ``corpus_entry_retired`` event carrying the retired entry's tier and
+attestor. Nothing is deleted — the retired row stays on disk with its
+provenance — but ``tier_policy.invariant_entries`` skips it, so that row stops
+binding the invariant floor.
 
-Retirement therefore never invalidates a committed rendition: the floor only
-loses requirements, never gains them. No recomposition is implied, and this
-command never touches a rendered surface.
+Which way the floor moves is a before/after DELTA over invariant-tier liveness,
+never a property of what kind of row was named. Four outcomes: unchanged (no
+invariant entry's liveness moved — the usual case for a routine compressible
+retirement), shrank (an invariant entry stopped binding), GREW (retiring a
+tombstone revived the entry it superseded, AND that revived entry is
+invariant-tier — Algebra 6; reviving a compressible entry moves the floor not
+at all), or CHANGED (both at once). A rendition that satisfied the old floor
+still SATISFIES a shrunk one but may FAIL a GREW or CHANGED one. Either way the
+retraction row moves the
+corpus fingerprint, so a committed rendition's derivation proof no longer
+holds and ``gz validate --rendition-freshness`` requires a recompose and
+re-attest before the next push (GHI #863). This command never touches a
+rendered surface itself, and it fails closed — nothing written — on an
+unknown or already-retired id.
 
-Retirement is corpus attestation (OBPI-0.35.0-02, GHI #635): a tier=invariant
-entry is the 0-Kelvin floor every rendition must carry verbatim, so retiring
-one requires a named ``--attestor``. Routine compressible-tier retirement
-stays frictionless — no ``--attestor`` is required there. ``--reason`` is
-required on EVERY tier: it becomes the retraction row's text and the
-``corpus_entry_retired`` event's reason, and both surfaces reject an empty one
-(operator ruling 2026-08-25). Whitespace-only values for either flag are
-refused as not-attestation.
+Retirement is corpus attestation (OBPI-0.35.0-02, GHI #635): a retirement that
+MOVES invariant-tier liveness — including retiring a *compressible* tombstone
+whose target is invariant — requires a named ``--attestor``, because the
+0-Kelvin floor every rendition must carry verbatim is what moved. Routine
+retirement that leaves invariant-tier liveness untouched stays frictionless —
+no ``--attestor`` is required there. ``--reason`` is required on EVERY tier:
+it becomes the retraction row's text and the ``corpus_entry_retired`` event's
+reason, and both surfaces reject an empty one (operator ruling 2026-08-25).
+Whitespace-only values for either flag are refused as not-attestation.
 """
 
 from __future__ import annotations
@@ -41,6 +56,81 @@ from gzkit.ledger_events import corpus_entry_appended_event, corpus_entry_retire
 
 _ID_SAMPLE = 3
 
+# Unicode's Default_Ignorable_Code_Point property (DerivedCoreProperties.txt) names
+# code points a conformant renderer draws at ZERO advance width regardless of
+# General_Category. Almost every one is already Cs/Cn/Cc/Cf and excluded below; these
+# four are the entire exception -- Unicode classifies them General_Category=Lo
+# (letter) even though they are placeholders for an EMPTY Hangul syllable-composition
+# slot, never a script character a human is named with. A tier-1 cross-vendor
+# adversary found the letter-category bar admitted them, one of which (U+3164) still
+# NFKC-normalizes to another member of this same set (U+1160).
+#
+# Only two of the four are ever tested at the `_is_named` call site below: NFKC
+# normalization runs BEFORE the membership check, and U+3164 -> U+1160 and
+# U+FFA0 -> U+1160 under NFKC (measured against UCD 15.1.0), so `ch` is never
+# U+3164 or U+FFA0 by the time this set is consulted there. All four stay --
+# as a complete, readable statement of the class, and as defense-in-depth for a
+# future caller that tests a pre-normalization string.
+#
+# This is the complete Lo-category subset of Default_Ignorable_Code_Point for UCD
+# 15.1.0 -- the Unicode version bundled with CPython's `unicodedata` at the time
+# this set was derived -- not the three code points the adversary happened to
+# probe. stdlib `unicodedata` has no accessor for Default_Ignorable_Code_Point
+# (the `regex` module's `\p{Default_Ignorable_Code_Point}` would need an
+# ADR-level STDLIB-FIRST departure), so this literal set IS the compliant shape;
+# `ucd_currency_warning` below is the drift witness for the one thing a literal
+# set cannot self-check -- that the UCD it was derived against is still the UCD
+# in use. It WARNS on the retire path and asserts hard only in the test suite
+# (operator ruling 2026-08-25): a maintainer in CI can re-derive the set, an
+# operator mid-retirement cannot.
+_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION = "15.1.0"
+
+_DEFAULT_IGNORABLE_LETTERS = frozenset(
+    {
+        "ᅟ",  # HANGUL CHOSEONG FILLER
+        "ᅠ",  # HANGUL JUNGSEONG FILLER
+        "ㅤ",  # HANGUL FILLER
+        "ﾠ",  # HALFWIDTH HANGUL FILLER
+    }
+)
+
+
+def ucd_currency_warning(version: str | None = None) -> str:
+    """Return the UCD-drift warning text, or ``""`` when the bundled UCD is current.
+
+    ``_DEFAULT_IGNORABLE_LETTERS`` is a hand-transcribed subset of
+    DerivedCoreProperties.txt: stdlib exposes no accessor for
+    ``Default_Ignorable_Code_Point``, so a literal set is the compliant shape
+    under STDLIB-FIRST, but a literal set cannot self-check its own currency.
+    A future CPython bundling a newer UCD would silently change which code
+    points this set excludes, and ``_is_named`` would resume accepting an
+    invisible glyph as a named attestor with nothing to signal it.
+
+    This WARNS; it does not raise. An earlier revision asserted here and the
+    module-level call site therefore aborted ``gz content retire`` at import on
+    any runtime whose UCD differed -- and ``pyproject.toml`` declares
+    ``requires-python >=3.13`` with NO upper bound, so a declared-SUPPORTED
+    CPython (3.14 bundles UCD 16.0.0) crashed the command outright. A tier-1
+    cross-vendor adversary found it 2026-08-25; the operator ruled warn-not-raise
+    the same day. The reasoning is where the witness has to land: a maintainer in
+    CI can re-derive the set, while an operator mid-retirement cannot, so the
+    HARD failure belongs in the test suite (``unidata_version`` is asserted there)
+    and the runtime gets a line on stderr it can act on or ignore.
+    """
+    actual = unicodedata.unidata_version if version is None else version
+    if actual == _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION:
+        return ""
+    return (
+        f"warning: unicodedata.unidata_version is {actual!r}, but "
+        "_DEFAULT_IGNORABLE_LETTERS was derived against UCD "
+        f"{_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION!r}. An invisible attestor "
+        "admitted by the newer UCD would not be refused. Re-derive "
+        "_DEFAULT_IGNORABLE_LETTERS from DerivedCoreProperties.txt for the new "
+        "UCD (the full General_Category=Lo subset of "
+        "Default_Ignorable_Code_Point), then update "
+        "_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION to match."
+    )
+
 
 def _is_named(value: str) -> bool:
     """Return True when *value* is plausibly a human name.
@@ -52,10 +142,13 @@ def _is_named(value: str) -> bool:
     asks WHO, so punctuation and digits do not answer it.
 
     The bar is at least one Unicode LETTER after NFKC normalization, with
-    surrogates, unassigned code points, controls and formats excluded. This is a
-    plausibility floor, not identity verification -- ``gz`` has no operator
-    registry to check a name against. It rejects the values that are certainly not
-    names; it cannot confirm that a name is the person's.
+    surrogates, unassigned code points, controls and formats excluded. That bar was
+    still too weak: General_Category alone cannot tell letter from glyph -- a code
+    point can be category Lo and STILL be `Default_Ignorable_Code_Point`, meaning a
+    renderer draws it with no visible mark at all (`_DEFAULT_IGNORABLE_LETTERS`).
+    This is a plausibility floor, not identity verification -- ``gz`` has no
+    operator registry to check a name against. It rejects the values that are
+    certainly not names; it cannot confirm that a name is the person's.
     """
     try:
         normalized = unicodedata.normalize("NFKC", value)
@@ -67,9 +160,24 @@ def _is_named(value: str) -> bool:
             # Surrogate, unassigned, control, format -- never name content, and a
             # lone surrogate cannot even round-trip through the ledger's UTF-8.
             continue
-        if category.startswith("L"):
+        if category.startswith("L") and ch not in _DEFAULT_IGNORABLE_LETTERS:
             return True
     return False
+
+
+def _at_risk_rationale(added: set[str], removed: set[str]) -> str:
+    """Say which WAY the refused retirement would have moved the floor.
+
+    The refusal used to cite the 2026-08-25 ruling as scoping the blocking arm to
+    floor-tier REMOVAL, on every path — including the tombstone-revival path, where
+    the entry is revived and the floor GROWS. A round-8 adversary caught the
+    diagnostic mischaracterizing the exact class the delta gate was added to catch.
+    """
+    if added and removed:
+        return "this retirement would both revive and un-bind floor canon"
+    if added:
+        return "this retirement would REVIVE floor canon and GROW the floor"
+    return "un-binding floor canon is a canon change"
 
 
 def _floor_direction_prose(added: set[str], removed: set[str]) -> str:
@@ -145,14 +253,22 @@ def _live_id_hint(corpus, surface: str) -> str:
 def content_retire_cmd(
     *, surface: str, entry_id: str, reason: str, origin: str, attestor: str = ""
 ) -> None:
-    """Handle ``gz content retire <surface> --entry <id> [--reason <text>] [--attestor <name>]``.
+    """Handle ``gz content retire <surface> --entry <id> --reason <text> [--attestor <name>]``.
 
-    Exit 0 on a successful retirement; 1 on unknown entry, an entry already
-    retired, a whitespace-only ``--attestor``/``--reason``, or an invariant-tier
-    entry retired without BOTH a named ``--attestor`` and a ``--reason``; 2 on
-    IO error writing the
-    corpus store.
+    ``--reason`` is required on EVERY tier, not optional: it becomes the
+    retraction row's text and the ``corpus_entry_retired`` event's reason, and
+    both surfaces reject an empty one.
+
+    Exit 0 on a successful retirement; 1 on an unknown entry, an entry already
+    retired, a whitespace-only or not-a-name ``--attestor``/``--reason``, or a
+    retirement that MOVES invariant-tier liveness without a named ``--attestor``
+    — the gate reads the before/after liveness delta, never the tier of the row
+    named; 2 on IO error writing the corpus store.
     """
+    drift = ucd_currency_warning()
+    if drift:
+        print(drift, file=sys.stderr)
+
     root = get_project_root()
     corpus = load_corpus(root, surface)
 
@@ -186,21 +302,20 @@ def content_retire_cmd(
     # argparse-required, so an omitted one never reaches here; `--attestor` is
     # optional and arrives as "" when omitted, which the tier gate below handles.
     if attestor and not _is_named(attestor):
-        print(
-            "Error: --attestor is whitespace-only. Whitespace is not "
-            "attestation (AGENTS.md § Operator Doctrine; the ATTESTATION "
-            "GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.\n"
-            f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<your name>"`.',
-            file=sys.stderr,
+        # Two distinct causes, two distinct diagnoses. Reporting every rejected value
+        # as "whitespace-only" told an operator who typed `--attestor 7` the wrong
+        # cause AND the wrong recovery (a tier-1 adversary observed exactly that,
+        # 2026-08-25). The amended REQ-01 names digits, punctuation, combining marks
+        # and invisible letters as no-WHO classes distinct from whitespace.
+        cause = (
+            "is whitespace-only"
+            if not attestor.strip()
+            else "names no human — it carries no visible letter"
         )
-        sys.exit(1)
-
-    if reason and not _is_named(reason):
         print(
-            "Error: --reason is whitespace-only. Whitespace is not "
-            "attestation (AGENTS.md § Operator Doctrine; the ATTESTATION "
-            "GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.\n"
+            f"Error: --attestor {cause}. The audit record asks WHO authorized this "
+            "retirement (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY "
+            "FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
             '--reason "<why>" --attestor "<your name>"`.',
             file=sys.stderr,
@@ -215,9 +330,9 @@ def content_retire_cmd(
     # directly (the adversary retired a row through it with reason="" and wrote an
     # event `gz validate --ledger` then rejected). Enforce the contract HERE, where
     # the invariant actually lives, not only at the parser that usually fronts it.
-    if not _is_named(reason):
+    if not reason.strip():
         print(
-            "Error: --reason is empty or carries no visible character. It becomes the "
+            "Error: --reason is empty or whitespace-only. It becomes the "
             "retraction row's text and the corpus_entry_retired event's reason, and "
             "both reject an empty one (.claude/rules/guardrail-feedback-prose.md); "
             "nothing written.\n"
@@ -250,11 +365,9 @@ def content_retire_cmd(
             f"Error: retiring {entry_id!r} moves the liveness of invariant-tier "
             f"{'entries' if len(at_risk) > 1 else 'entry'} "
             f"{', '.join(sorted(at_risk))} — the 0-Kelvin floor every rendition must carry "
-            "verbatim — so it requires a named --attestor (AGENTS.md § Operator "
-            "Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE "
-            "ruling, which makes removing an entry attested; operator ruling "
-            "2026-08-25 scopes the blocking arm to floor-tier removal); "
-            "nothing written.\n"
+            f"verbatim — {_at_risk_rationale(floor_added, floor_removed)}, so it requires a "
+            "named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION "
+            "GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
             '--reason "<why>" --attestor "<your name>"`.',
             file=sys.stderr,
@@ -304,6 +417,8 @@ def content_retire_cmd(
                 reason=reason,
                 tier=target.tier,
                 attestor=attestor,
+                floor_added=floor_added,
+                floor_removed=floor_removed,
             ),
         ),
     ):

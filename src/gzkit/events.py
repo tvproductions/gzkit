@@ -569,9 +569,11 @@ class CorpusEntryRetiredEvent(_EventBase):
     fact an auditor looks for, not merely that a row was added. Nothing is deleted;
     the retired entry keeps its provenance on disk.
 
-    ``tier`` and ``attestor`` (OBPI-0.35.0-02): an auditor asking "who un-bound a
-    0-Kelvin-floor entry, and was it floor-tier at all?" could not answer from the
-    ledger without them. ``tier`` is the RETIRED entry's own tier and is always
+    ``floor_direction`` and ``floor_moved_ids`` are what an auditor asking "was a
+    0-Kelvin-floor entry un-bound or revived, and by whom?" actually needs -- ``tier``
+    is only a PROXY for that question and cannot answer it, because a ``compressible``
+    tombstone over an invariant target moves the floor. ``tier`` and ``attestor``
+    (OBPI-0.35.0-02) remain recorded: ``tier`` is the RETIRED entry's own tier and is always
     known. ``attestor`` is legitimately empty on a routine compressible-tier
     retirement — the corpus-attestation gate guards only the invariant floor
     (`retire.py`), so this field is never required non-empty here.
@@ -591,6 +593,18 @@ class CorpusEntryRetiredEvent(_EventBase):
     # `parse_typed_event` raises. Held by TestTypedModelParsesEveryCommittedLedgerRow.
     tier: str = ""
     attestor: str = ""
+    # `floor_direction` / `floor_moved_ids` (round-6 adversary, 2026-08-25): the
+    # attestor gate authorizes on the invariant-liveness DELTA (`floor_added |
+    # floor_removed`), but this event recorded only the RETIRED ROW'S TIER -- a proxy,
+    # not the state. Measured: retiring a compressible tombstone over an invariant
+    # entry printed "The invariant floor GREW" while the event carried
+    # `tier='compressible'`, and that event with `attestor=''` passed `validate_ledger`
+    # with zero errors. Layer 2 therefore could not tell an unaudited floor revival
+    # from a routine compressible retirement, so a regression in the tombstone gate
+    # would have stayed ledger-valid. Optional with defaults for the same reason `tier`
+    # is: the ledger is append-only and committed rows can never grow the keys.
+    floor_direction: Literal["unchanged", "shrank", "grew", "changed"] | None = None
+    floor_moved_ids: list[str] = Field(default_factory=list)
 
 
 class CompositionCandidateEmittedEvent(_EventBase):

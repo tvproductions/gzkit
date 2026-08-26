@@ -477,6 +477,50 @@ class TestReceiptProvesCrossVendorFromArgv(unittest.TestCase):
     def test_argv_invoking_codex_proves_cross_vendor(self) -> None:
         self.assertTrue(_receipt_proves_cross_vendor(self._receipt(["codex", "exec", "refute"])))
 
+    def test_plugin_dispatch_through_a_runtime_wrapper_proves_cross_vendor(self) -> None:
+        """The operator-mandated tier-1 surface runs `node .../codex-companion.mjs`.
+
+        A scan reading argv[0] alone saw "node" and refused the claim, so the
+        2026-08-25 directive making the Codex PLUGIN the only permitted tier-1
+        surface (and FORBIDDING `codex exec`) made a tier-1 claim structurally
+        unclaimable for any OBPI that obeyed it. Both rules landed the same day.
+        """
+        self.assertTrue(
+            _receipt_proves_cross_vendor(
+                self._receipt(
+                    [
+                        "node",
+                        "/Users/x/.claude/plugins/cache/openai-codex/codex/1.0.6/"
+                        "scripts/codex-companion.mjs",
+                        "adversarial-review",
+                        "--wait",
+                    ]
+                )
+            )
+        )
+
+    def test_a_wrapper_fronting_a_same_vendor_binary_does_not_prove_cross_vendor(self) -> None:
+        """Walking past a wrapper must not become walking until something matches."""
+        self.assertFalse(
+            _receipt_proves_cross_vendor(self._receipt(["node", "/x/claude-helper.mjs", "review"]))
+        )
+
+    def test_a_vendor_named_only_in_the_prompt_does_not_prove_cross_vendor(self) -> None:
+        """The adversary PROMPT is in argv and routinely names vendors.
+
+        Stopping at the first non-wrapper is what keeps a MENTIONED vendor from
+        satisfying the gate — the fail-open this function exists to close. A scan
+        that kept walking would accept this receipt.
+        """
+        self.assertFalse(
+            _receipt_proves_cross_vendor(
+                self._receipt(["node", "/x/claude-helper.mjs", "please ask codex to refute this"])
+            )
+        )
+
+    def test_an_argv_of_only_wrappers_does_not_prove_cross_vendor(self) -> None:
+        self.assertFalse(_receipt_proves_cross_vendor(self._receipt(["node", "uv"])))
+
     def test_absolute_binary_path_still_proves_cross_vendor(self) -> None:
         # The recorded argv may carry a resolved path; the binary name is the claim.
         self.assertTrue(

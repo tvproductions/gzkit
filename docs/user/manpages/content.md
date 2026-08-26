@@ -160,12 +160,16 @@ what a retirement **does** to the floor, not what tier the row it names carries.
 
 #### Corpus attestation (OBPI-0.35.0-02)
 
-Retiring a **`tier=invariant`** entry — the 0-Kelvin floor every rendition must
-carry verbatim — requires a named `--attestor`. Un-binding floor-tier canon is
-a canon change, and `AGENTS.md` § Operator Doctrine's ATTESTATION GRANULARITY
-FOR THE CONTENT SURFACE ruling makes removing an entry attested. Routine
-**`compressible`**-tier retirement needs no attestor; the attestation guards the
-floor, not bookkeeping.
+A retirement that **moves invariant-tier liveness** — the 0-Kelvin floor every
+rendition must carry verbatim — requires a named `--attestor`. That covers the
+common case of retiring a `tier=invariant` entry directly, and it also covers
+retiring a `compressible` **tombstone** whose target is invariant, because that
+retirement revives the invariant row (see above). Un-binding or reviving
+floor-tier canon is a canon change either way, and `AGENTS.md` § Operator
+Doctrine's ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling makes
+removing an entry attested. Routine retirement that does **not** move
+invariant-tier liveness needs no attestor; the attestation guards the floor,
+not bookkeeping.
 
 `--reason` is required on **every** tier. It becomes the retraction row's text
 and the `corpus_entry_retired` event's `reason`, and both surfaces reject an
@@ -173,13 +177,13 @@ empty one — an empty reason fails `gz validate --ledger` and leaves a canon ro
 that says nothing. A whitespace-only `--attestor` or `--reason` is refused on
 every tier: whitespace is not attestation.
 
-Retiring an invariant-tier entry without an attestor fails closed, writing
-nothing:
+A retirement that moves invariant-tier liveness without a named attestor fails
+closed, writing nothing:
 
 ```console
 $ gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "probe"
-Error: corpus entry 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' is tier='invariant' — the 0-Kelvin floor every rendition must carry verbatim. Retiring it un-binds the floor and requires BOTH a named --attestor and a --reason (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling, which makes removing an entry attested); nothing written.
-  Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --attestor "<your name>" --reason "<why>"`.
+Error: retiring 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' moves the liveness of invariant-tier entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 — the 0-Kelvin floor every rendition must carry verbatim — so it requires a named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling, which makes removing an entry attested; operator ruling 2026-08-25 scopes the blocking arm to floor-tier removal); nothing written.
+  Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "<why>" --attestor "<your name>"`.
 $ echo $?
 1
 ```
@@ -200,7 +204,7 @@ surface, the command answers that question itself rather than naming one:
 $ gz content retire AGENTS.md --entry does-not-exist --reason "probe"
 Error: no corpus entry 'does-not-exist' in surface 'AGENTS.md'. Retirement targets an existing entry (append-only corpus store, GHI #635); nothing written.
   Live entry ids include: 'corpus-attestation-2026-06-06T06:20:27.327411+00:00', 'corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00', 'corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00' (+52 more).
-  Retry with `gz content retire AGENTS.md --entry <id> --reason "<why>"`.
+  Retry with `gz content retire AGENTS.md --entry <id> --reason "<why>" --attestor "<your name>"`.
 $ echo $?
 1
 ```
@@ -331,11 +335,13 @@ verdict value itself is never the fail-closed trigger.
 | `--text <text>` | remember | The entry prose to remember (required) |
 | `--tier <tier>` | remember | `invariant` (verbatim at every setpoint) or `compressible` (default) |
 | `--classification <c>` | remember | Advisory-scorecard class: `Mechanical`/`Promotable`/`Judgment`/`Ambiguous` (default `Ambiguous`) |
-| `--origin <provenance>` | remember | HOW the capture arrived, e.g. a GHI or session id (default `cli:content-remember`) |
+| `--origin <provenance>` | remember, retire | HOW the capture/retirement arrived, e.g. a GHI or session id (default `cli:content-remember`/`cli:content-retire`) |
 | `--witness <who>` | remember | WHO vouches for the entry. Recorded provenance, never a gate — capture is never blocked for want of one (GHI #821) |
+| `--entry <id>` | retire | Id of the corpus entry to retire (required) |
+| `--reason <text>` | retire | Why the entry is superseded; becomes the retraction row's text (required on every tier) |
 | `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
-| `--attestor <name>` | commit | Operator attesting the corpus delta this promotion renders; empty fails closed **only when the corpus moved** since the last commit |
+| `--attestor <name>` | retire, commit | Operator retiring (retire) or attesting the corpus delta this promotion renders (commit); empty fails closed **only when** the retirement moves invariant-tier liveness (retire) or the corpus moved since the last commit (commit) |
 | `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor` |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |

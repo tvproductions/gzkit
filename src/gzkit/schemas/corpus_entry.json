@@ -50,7 +50,7 @@
     },
     "retires": {
       "type": ["string", "null"],
-      "description": "Id of an earlier entry this row supersedes (GHI #635). The retired row stays on disk; it simply stops binding the invariant floor, so retirement only ever shrinks the floor and never invalidates a committed rendition."
+      "description": "Id of an earlier entry this row supersedes (GHI #635). The retired row stays on disk with its provenance; it simply stops binding the invariant floor. Retirement USUALLY shrinks the floor, but it is not shrink-only: retiring a tombstone REVIVES the entry that tombstone retired, and when that revived entry is invariant-tier the floor GROWS instead (reviving a compressible entry leaves the floor unchanged). Either direction moves the corpus fingerprint, so a committed rendition still satisfies a shrunk floor but is no longer PROVABLE against it until recomposed and re-attested (GHI #863)."
     },
     "supersedes": {
       "type": ["string", "null"],
