@@ -90,7 +90,7 @@ session cost as a first-class constraint, not an afterthought.
 ## Decisions Made
 
 - [operator-ruled] Rule GHI #885 arm 1, #878 and #888 jointly; then "ratify all three, fold the fourth into #888 as arm 2".
-- [operator-ruled] Repair the seven via a DISTINCT event type, never a backfilled `corpus_entry_retired`.
+- [operator-ruled] Repair the seven via a DISTINCT event type, never a backfilled `corpus_entry_retired` — backfilling would be a fabricated receipt under AGENTS.md § Attestation.
 - [operator-ruled] Move the block band p95 to p99 ("do #1"); derive the label ("fix the label and commit it").
 - [operator-ruled] Pool the registration-seam work ("this sounds like absolute insanity, yes to pool").
 - [operator-ruled] Do NOT file further GHIs for findings surfaced this session ("everytime you touch the codebase you create several GHIs"). Three findings are therefore captured in the pool ADR and these handoffs rather than as issues.
