@@ -254,6 +254,14 @@ Always use `uv run` for Python commands. `gz --help` for full catalog.
 uv run gz check     # All quality checks (lint, format, test, typecheck)
 uv run gz check --fast  # Inner loop: skips suite/behave/docs; never satisfies the gate
 uv run gz status    # Gate status
+```
+
+`git add -A` BEFORE `gz check`. A full pass is recorded as verified only when
+nothing is unstaged, because the gate must have tested the tree a commit will
+carry — so on a dirty tree the pre-push `--reuse-verified` gate cannot reuse it
+and pays the whole suite again.
+
+```bash
 uv run gz state     # Artifact relationships
 uv run gz agent sync control-surfaces  # Regenerate surfaces
 ```

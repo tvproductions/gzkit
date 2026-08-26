@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de",
   "corpus_entry_count": 79,
-  "rendition_fingerprint": "72821a804de4f4c3e7adfecf7764780745b075a484d7bece246fcb237be7580b",
-  "committed_ts": "2026-08-26T11:02:52.736716+00:00",
+  "rendition_fingerprint": "d0c17b080bdf9f8c015c6250fafaa594645135824a5d615427d1ef96d94a69bb",
+  "committed_ts": "2026-08-26T11:10:59.274947+00:00",
   "attestor": "g0",
-  "attestation_text": "add gz check --fast to AGENTS.md execution rules — one line in the Execution Rules block naming the inner-loop scope that skips suite/behave/docs and never satisfies the gate; corpus unchanged, invariant floor 21214B unmoved, added because nine full 8870-test suite runs cost ~21 minutes in this session while the flag already existed unadvertised"
+  "attestation_text": "do #1 - make pre-push reuse the verified tree — the hook already passes --reuse-verified (.pre-commit-config.yaml:159); the mechanism never fired because gz check ran against a tree left dirty by the post-commit ledger hook, so _record_full_pass declined to record it. The remedy is workflow, and this line makes it discoverable: stage before checking. Corpus unchanged at fingerprint 8459d30b0fba, invariant floor 21214B unmoved"
 }
