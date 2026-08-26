@@ -103,6 +103,52 @@ The scope of amendment is per-metric mapping only. The trigger-semantic
 vocabulary itself (`block` / `warn` / `advise`) is foundation doctrine
 and amendable only via ADR-0.0.28 ceremony.
 
+### Amendment record — `radon_raw_nloc`, 2026-08-26
+
+| Field | Value |
+|---|---|
+| Metric | `radon_raw_nloc` |
+| Prior mapping | `advise=p75 (311.75)`, `warn=p90 (733.2)`, `block=p95 (1031.9)` |
+| New mapping | `advise=p75 (311.75)`, `warn=p90 (733.2)`, `warn=p95 (1031.9)`, `block=p99 (3143.82)` |
+| Authorization | Operator, verbatim: *"do #1"* / *"fix the label and commit it"* (2026-08-26) |
+| Consequence | All five `data/module_size_grandfather.json` entries fell under the new band and were surrendered the same day; the ratchet list is now empty. |
+
+**Rationale.** The distilled-characteristics document reports inter-project
+variance of **1,093,055** on `radon_raw_nloc` and characterises it in its own
+words as *"high variance, the corpus disagrees and per-domain narration
+matters"*. The contrast is `radon_cc` at variance **0.0833**, where the same
+document says the corpus *"speaks with one voice"*. The thirteen corpus projects
+span a web framework, a package manager, a type checker, a TUI toolkit and a
+stdlib subset; they have no shared norm for module length and the document does
+not claim they do. Blocking at p95 therefore rejected ordinary between-domain
+variation rather than naming a defect, and the observed cost was concrete: on
+2026-08-26 a 45-line test fixture added under GHI #885 tipped a module over the
+band and forced a file split that improved nothing.
+
+p99 is chosen over removing the band because § Invariant requires every metric
+to carry a `block` band — *"a metric without a `block` band is prose, not a
+threshold"*. p99 keeps the gate real while reserving it for a module larger than
+99% of modules across the corpus, which is an outlier claim the corpus can still
+support despite its variance.
+
+**Two protocol departures, disclosed rather than worked around.**
+
+1. This record lives here, not in the doctrine-amendment-protocol home the
+   protocol names. That home is `ADR-pool.doctrine-amendment-protocol` —
+   **Pending, 0/0 OBPIs**. It is designed, not built, so the protocol
+   forward-references a surface that cannot yet receive a record.
+2. No Gate 5 receipt is cited. The protocol asks for one; `AGENTS.md`
+   § Operator Doctrine (2026-08-17) rules that Gate 5 means OBPI/ADR completion
+   attestation and nothing else. A threshold amendment is neither, so the
+   operator's verbatim authorization above is the record.
+
+**The validator does not enforce this.** The protocol states *"Silent edits are
+forbidden by the validator (exit 3)"*. Measured 2026-08-26:
+`validate_complexity_thresholds` checks that the data file exists, loads under
+Pydantic, and covers the canonical metrics. It has no concept of an amendment
+record and cannot detect a silent edit — the claim is doctrine declared without
+mechanism, and this record is voluntary compliance, not a gate's output.
+
 ## Refresh portability
 
 When a corpus refresh produces a new distilled-characteristics

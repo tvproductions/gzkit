@@ -86,13 +86,40 @@ with contextlib.suppress(AttributeError):
     sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
 
 
-def _block_band() -> float:
-    """Return the canonical ``radon_raw_nloc`` block threshold."""
+def _block_row() -> dict:
+    """Return the canonical ``radon_raw_nloc`` block band row."""
     table = json.loads(_THRESHOLDS.read_text(encoding="utf-8"))
     for band in table["bands"]:
         if band["metric"] == _METRIC and band["trigger_semantic"] == "block":
-            return float(band["absolute_number"])
+            return {**band, "corpus_revision": table.get("corpus_revision")}
     raise SystemExit(f"no block band for {_METRIC} in {_THRESHOLDS}")
+
+
+def _block_band() -> float:
+    """Return the canonical ``radon_raw_nloc`` block threshold."""
+    return float(_block_row()["absolute_number"])
+
+
+def _band_label() -> str:
+    """Return the block band's provenance, DERIVED from the table.
+
+    The percentile was hardcoded as ``p95`` in both report strings while the
+    number was read from the table. When the block band moved to p99 on operator
+    amendment (2026-08-26), the gate began printing the new number beside the old
+    percentile -- a value in prose drifting from the authority it cites, which
+    `.claude/rules/governance-core.md` names non-negotiable. Deriving both from
+    one read makes that state unrepresentable.
+    """
+    row = _block_row()
+    pct = row.get("corpus_percentile")
+    rev = row.get("corpus_revision")
+    # Degrade honestly rather than crash or invent: the label is provenance, and
+    # a gate that dies formatting its own header is worse than one that admits
+    # the table it read carries no percentile (a minimal planted table, as the
+    # negative-control fixture uses, legitimately omits both keys).
+    pct_text = f"p{pct}" if pct is not None else "percentile unrecorded"
+    rev_text = f"corpus revision {rev}" if rev is not None else "corpus revision unrecorded"
+    return f"{pct_text}, {rev_text}"
 
 
 def _measure() -> dict[str, int]:
@@ -150,7 +177,7 @@ def compute_breaches(block: float, sizes: dict[str, int], listed: dict[str, int]
             breaches.append(
                 f"  {path} is {sloc} SLOC, over the {block} block band, and is not "
                 f"grandfathered.\n"
-                f"    Why: {_METRIC} blocks at {block} (p95, corpus revision 1) per "
+                f"    Why: {_METRIC} blocks at {block} ({_band_label()}) per "
                 f".gzkit/rules/complexity-thresholds.json — the one canonical table.\n"
                 f"    Fix: split it by cohesion. Adding it to "
                 f"data/module_size_grandfather.json to go green is the laundering "
@@ -230,7 +257,7 @@ def main(argv: list[str]) -> int:
 
     over = [p for p, s in sizes.items() if s > block]
     slack = sum(max(0, recorded - sizes[p]) for p, recorded in listed.items() if p in sizes)
-    print(f"module-size gate — {_METRIC} block band {block} (p95, corpus revision 1)")
+    print(f"module-size gate — {_METRIC} block band {block} ({_band_label()})")
     print(f"  modules measured:  {len(sizes)}")
     print(f"  over the band:     {len(over)}")
     print(f"  grandfathered:     {len(listed)} (shrink-only)")

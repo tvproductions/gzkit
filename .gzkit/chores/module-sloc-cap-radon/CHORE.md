@@ -15,7 +15,23 @@ Enforce module size against the **one canonical threshold table**
 |---|---|---|---|
 | advise | p75 | 311.75 | advisory |
 | warn | p90 | 733.2 | advisory |
-| **block** | **p95** | **1031.9** | **fails the chore** |
+| warn | p95 | 1031.9 | advisory |
+| **block** | **p99** | **3143.82** | **fails the chore** |
+
+> Dated illustration of `.gzkit/rules/complexity-thresholds.json` as of 2026-08-26,
+> not the authority — the chore reads the table, never this transcription.
+>
+> **Amended 2026-08-26 (operator override): block moved p95 -> p99.** The
+> distilled-characteristics document reports inter-project variance of
+> **1,093,055** on `radon_raw_nloc` and states in its own words *"high variance,
+> the corpus disagrees and per-domain narration matters"* — against **0.0833** for
+> `radon_cc`, where it says the corpus *"speaks with one voice"*. Thirteen projects
+> spanning a web framework, a package manager, a type checker and a TUI toolkit
+> have no shared norm for module length, so p95 was blocking ordinary variation
+> between domains rather than naming a defect. p99 keeps a `block` band — the
+> § Invariant requires every metric to carry one — while reserving it for a genuine
+> outlier. Every grandfather entry fell under the new band and was surrendered the
+> same day, emptying the ratchet list.
 
 `radon_raw_nloc` is radon's `sloc` field — see
 `gzkit.complexity.measurement._run_radon_raw`, which records `entry.get("sloc")`
