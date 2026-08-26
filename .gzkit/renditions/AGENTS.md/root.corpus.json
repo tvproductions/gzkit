@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de",
   "corpus_entry_count": 79,
-  "rendition_fingerprint": "d6dc854a90394c6204ef2226222c9de5747cbe97007cbb0a917556696e6534a2",
-  "committed_ts": "2026-08-23T14:34:09.958980+00:00",
+  "rendition_fingerprint": "72821a804de4f4c3e7adfecf7764780745b075a484d7bece246fcb237be7580b",
+  "committed_ts": "2026-08-26T11:02:52.736716+00:00",
   "attestor": "g0",
-  "attestation_text": "THAT IS IRON LAW/CANON — operator ruling 2026-08-23, seated as an invariant-tier entry under § Operator Doctrine directly ABOVE the rule it supersedes. Corpus 78→79. The operator's four verbatim statements are preserved exactly and are uncompressible by tier. Pure add: nothing dropped, combined, or rewritten; the invariant floor validated the text byte-exactly against the corpus row. Corpus attestation, NEVER Gate 5."
+  "attestation_text": "add gz check --fast to AGENTS.md execution rules — one line in the Execution Rules block naming the inner-loop scope that skips suite/behave/docs and never satisfies the gate; corpus unchanged, invariant floor 21214B unmoved, added because nine full 8870-test suite runs cost ~21 minutes in this session while the flag already existed unadvertised"
 }

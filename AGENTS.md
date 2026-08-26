@@ -252,6 +252,7 @@ Always use `uv run` for Python commands. `gz --help` for full catalog.
 
 ```bash
 uv run gz check     # All quality checks (lint, format, test, typecheck)
+uv run gz check --fast  # Inner loop: skips suite/behave/docs; never satisfies the gate
 uv run gz status    # Gate status
 uv run gz state     # Artifact relationships
 uv run gz agent sync control-surfaces  # Regenerate surfaces
