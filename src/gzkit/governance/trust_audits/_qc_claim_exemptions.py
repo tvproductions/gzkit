@@ -75,6 +75,7 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # Byte-compares rendition playback against committed AGENTS.md. The only
     # non-finding return is "no committed rendition exists" — nothing to compare.
     "invariant-coherence": EXEMPTS_NONE,
+    "corpus-retirement-witness": EXEMPTS_NONE,
     # Requires a substantive `## Why foundation tier?` on every foundation ADR.
     # The sidecar filter selects WHICH files are ADRs; it admits no failing ADR.
     "kind-invariance": EXEMPTS_NONE,

@@ -122,13 +122,18 @@ def _inert_fields(entry: CorpusEntry) -> set[str]:
     }
 
 
-def _tombstone_target(entry: CorpusEntry) -> str | None:
+def tombstone_target(entry: CorpusEntry) -> str | None:
     """Return the id *entry* retires, whichever pointer names it, or ``None``.
 
     Algebra 4 gives the two pointers different roles in the projection, but
     Algebra 2 and Algebra 5 treat them identically: BOTH register a tombstone
     edge against an earlier row. Reading them through one accessor is what stops
     a fence from covering ``retires`` and quietly missing ``supersedes``.
+
+    PUBLIC because that trap is not model-internal (GHI #885):
+    ``trust_audits.corpus_retirement_witness`` walks these same edges to assert a
+    Layer-2 witness, and a fence that re-derived the pointer pair locally would
+    be free to drift from the fold it claims to guard.
     """
     return entry.retires if entry.retires is not None else entry.supersedes
 
@@ -169,7 +174,7 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
                 f"({entry.retires!r}) and 'supersedes' ({entry.supersedes!r}); "
                 "an entry may hold at most one tombstone pointer (Algebra 3)"
             )
-        target = _tombstone_target(entry)
+        target = tombstone_target(entry)
         if target is not None:
             if target == entry.id:
                 raise ValueError(
@@ -192,7 +197,7 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
     live = _liveness(entries)
     claimed: dict[str, str] = {}
     for entry in entries:
-        target = _tombstone_target(entry)
+        target = tombstone_target(entry)
         if target is None or not live[entry.id]:
             continue
         if target in claimed:
@@ -218,7 +223,7 @@ def _tombstones_by_target(entries: tuple[CorpusEntry, ...]) -> dict[str, list[st
     """
     edges: dict[str, list[str]] = {}
     for entry in entries:
-        target = _tombstone_target(entry)
+        target = tombstone_target(entry)
         if target is not None:
             edges.setdefault(target, []).append(entry.id)
     return edges

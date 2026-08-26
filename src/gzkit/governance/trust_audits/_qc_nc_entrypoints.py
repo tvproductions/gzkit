@@ -398,6 +398,14 @@ def _ep_rendition_floor_coherence(root: Path) -> list[ValidationError]:
     return validate_rendition_floor_coherence(root)
 
 
+def _ep_corpus_retirement_witness(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.corpus_retirement_witness import (  # noqa: PLC0415
+        validate_corpus_retirement_witness,
+    )
+
+    return validate_corpus_retirement_witness(root)
+
+
 def _ep_invariant_coherence(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.invariant_coherence import (  # noqa: PLC0415
         validate_invariant_coherence,

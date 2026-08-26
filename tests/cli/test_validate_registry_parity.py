@@ -60,6 +60,12 @@ _GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
 _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     "rule_version_markers",
     "invariant_witness",
+    # corpus_retirement_witness — a Layer-1 tombstone with no Layer-2 witness
+    # (GHI #885, GHI #878). DEFAULT tier deliberately: the class it catches
+    # produced seven live instances on `main` while every gate read green, so a
+    # flag-gated check nobody runs would be inert exactly where inertness caused
+    # the defect.
+    "corpus_retirement_witness",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

@@ -935,6 +935,51 @@ def corpus_entry_retired_event(
     )
 
 
+def corpus_retirement_reconciled_event(
+    surface: str,
+    retired_entry_id: str,
+    retraction_entry_id: str,
+    reason: str,
+    origin: str = "",
+) -> LedgerEvent:
+    """Create a corpus_retirement_reconciled event (GHI #885 arm 2, GHI #878).
+
+    Layer-2 accounting for a retraction row that reached the corpus WITHOUT the
+    governed ``gz content retire`` path — either hand-appended (the #885 bypass)
+    or left behind when the verb died between its corpus write and its ledger
+    appends (the #878 partial-write window).
+
+    DELIBERATELY NOT ``corpus_entry_retired``. Emitting that type here would
+    stamp today's timestamp and an attestor onto a procedure that never ran — a
+    fabricated receipt under ``AGENTS.md`` § Attestation, and the exact
+    presence-for-proof substitution GHI #885 exists to remove. This event
+    asserts only what is true: a tombstone was FOUND without a witness and
+    accounted for on ``ts``. It carries no attestor and no floor delta, because
+    the reconciler observed neither — the retirement it describes happened at an
+    unknown earlier time under unknown authority, and ``origin`` preserves
+    whatever forensic trace the corpus row itself carries.
+
+    ``gz validate --corpus-retirement-witness`` accepts it as a witness. That is
+    the point: the gate asks whether Layer 2 accounts for the canon change, not
+    whether the change was governed. Whether it WAS governed is readable from
+    which event type answers — and that distinction survives only because the
+    two types are separate.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    return LedgerEvent(
+        event="corpus_retirement_reconciled",
+        id=f"corpus-retirement-reconciled-{timestamp}",
+        ts=timestamp,
+        extra={
+            "surface": surface,
+            "retired_entry_id": retired_entry_id,
+            "retraction_entry_id": retraction_entry_id,
+            "reason": reason,
+            "origin": origin,
+        },
+    )
+
+
 def brief_reconciled_event(
     brief_id: str,
     has_drift: bool,

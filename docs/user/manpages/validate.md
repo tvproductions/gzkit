@@ -16,6 +16,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--gate-callers] [--exemption-controls] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
+            [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
@@ -1595,6 +1596,53 @@ genuinely derives canon's invariants rather than passing a timestamp-only freshn
 
 **Related:** ADR-0.0.37 (CMS pipeline), GHI #623 (corrective gate), `--rendition-freshness`,
 `--invariant-coherence`.
+
+### `--corpus-retirement-witness`
+
+Fail-closed when a corpus retirement changed canon with no Layer-2 witness naming it.
+For every entry in `.gzkit/corpus/<surface>.jsonl` carrying a `retires` or `supersedes`
+pointer, asserts that the ledger holds a `corpus_entry_retired` **or**
+`corpus_retirement_reconciled` event whose `retired_entry_id` equals that pointer's
+target. One error per unwitnessed retirement, so a repair pass can act per subject.
+
+A retraction row **is** a canon change — `Corpus.retired_ids()` folds it and the target
+leaves the effective corpus — so `AGENTS.md` § Architectural Boundaries #6 requires it to
+trace to Layer 2. Two ingresses break that: a row appended by hand, so `gz content retire`
+never runs (GHI #885), and the verb dying between its corpus write and its ledger appends
+(GHI #878). Both leave one signature, which is why one gate detects both.
+
+**This is a subject-bound check, not a presence check.** A witness matches a tombstone by
+`retired_entry_id`, never by event type alone. Measured on this repository 2026-08-26
+before the gate landed: twelve corpus rows carried a retirement pointer, five
+`corpus_entry_retired` events existed, and seven retirements had no witness at all — while
+every validator in the tree read green, because nothing compared a witness to the id it
+claimed to witness. `AGENTS.md` § DO IT RIGHT: *"A PRESENCE CHECK ANSWERS 'is something
+armed', NEVER 'did the governed procedure run'."*
+
+Runs in the default `gz check` scope rather than flag-gated: the class it catches produced
+seven live instances while every gate read green, so an explicit-only check would be inert
+exactly where inertness caused the defect.
+
+**Usage:**
+
+```bash
+gz validate --corpus-retirement-witness
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every corpus retirement has a witness naming the id it retired | — |
+| 3 | One or more retirements changed canon with no Layer-2 witness | Run `gz content reconcile-retirements <surface>` |
+
+**When to use:** It runs in `gz check`, so the usual encounter is a failure. Invoke it
+directly after any corpus mutation that did not go through `gz content retire`, or to
+confirm a reconciliation pass converged.
+
+**Related:** GHI #885 (bypass ingress, seven live instances), GHI #878 (partial-write
+window), `gz content reconcile-retirements` (the repair arm), `--rendition-floor-coherence`,
+`--ledger`.
 
 ### `--invariant-coherence`
 

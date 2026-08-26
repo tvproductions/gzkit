@@ -488,6 +488,46 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
 
 def _register_advise_rendition(content_commands: argparse._SubParsersAction) -> None:
     p = content_commands.add_parser(
+        "reconcile-retirements",
+        help="Append a Layer-2 witness for corpus retirements that have none",
+        description=(
+            "Repair arm for `gz validate --corpus-retirement-witness` (GHI #885, GHI #878). "
+            "For each retraction row whose retired id has no ledger witness, append one "
+            "`corpus_retirement_reconciled` event naming that id. Deliberately NOT a "
+            "backfilled `corpus_entry_retired`: that would stamp today's timestamp onto a "
+            "governed procedure that never ran, which AGENTS.md § Attestation calls a "
+            "fabricated receipt. This verb records only what is true — a tombstone was found "
+            "unwitnessed and accounted for. Idempotent: a second run writes nothing."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content reconcile-retirements AGENTS.md --dry-run",
+                "gz content reconcile-retirements AGENTS.md",
+                "gz content reconcile-retirements AGENTS.md "
+                '--reason "hand-appended under GHI #862"',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface whose corpus to reconcile (e.g. AGENTS.md).")
+    p.add_argument(
+        "--reason",
+        default=None,
+        help="Reason recorded on each event; defaults to a found-without-witness statement.",
+    )
+    p.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="List the retirements that would be reconciled; write nothing.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("reconcile_retirements", "content_reconcile_retirements_cmd")(
+            surface=a.surface,
+            reason=a.reason,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p = content_commands.add_parser(
         "advise-rendition",
         help="Record an advisory info-retained-per-byte verdict for a candidate rendition",
         description=(

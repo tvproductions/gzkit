@@ -31,6 +31,7 @@ from typing import Any
 from gzkit.enforcement import enforces, get_enforcement_registry
 
 from . import _qc_nc_composite as _cx
+from . import _qc_nc_corpus as _cr
 from . import _qc_nc_entrypoints as _ep
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 
@@ -1324,6 +1325,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_rendition_floor_coherence,
     ),
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
+    ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),
     (
         "session-green-gate",

@@ -263,7 +263,9 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         # compose by OBPI-0.0.37-21; commit by OBPI-0.0.37-22; advise-rendition by
         # OBPI-0.0.37-24; retire by GHI #635 — the append-only corpus had no
         # governed retirement path, so a superseded entry bound the invariant
-        # floor permanently)
+        # floor permanently; reconcile-retirements by GHI #885 — seven tombstones
+        # had changed canon with no ledger witness and `retire` fails closed on an
+        # already-retired id, so repair had no governed path at all)
         expected_subcommands = {
             "import",
             "list",
@@ -275,6 +277,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "compose",
             "commit",
             "advise-rendition",
+            "reconcile-retirements",
         }
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)

@@ -840,6 +840,21 @@ def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --invariant-coherence", cwd=project_root)
 
 
+def run_corpus_retirement_witness_audit(project_root: Path) -> QualityResult:
+    """Run the corpus retirement-witness gate: Layer-1 tombstone vs Layer-2 witness.
+
+    Fails closed when a corpus retraction row changed canon with no ledger event
+    naming the id it retired (GHI #885 bypass ingress, GHI #878 partial write).
+    Subject-bound: a witness matches by ``retired_entry_id``, never by event type
+    alone. Wired here explicitly even though the scope is default-tier, matching
+    its `invariant_coherence` sibling -- the reachability ratchet reads the
+    curated pipeline, not the bare-`gz validate` default tier, so a scope absent
+    here reads as ungated. Recovery: `uv run gz content reconcile-retirements
+    <surface>`.
+    """
+    return run_command("uv run gz validate --corpus-retirement-witness", cwd=project_root)
+
+
 def run_session_green_gate_audit(project_root: Path) -> QualityResult:
     """Run the session-green-gate declaration audit (ADR-0.0.68 / OBPI-0.0.68-02).
 

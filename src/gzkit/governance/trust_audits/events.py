@@ -69,6 +69,15 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "corpus audits. It records which canon is *current*, not a relationship between "
         "artifacts: the corpus is a per-surface content store, not an artifact graph node."
     ),
+    "corpus_retirement_reconciled": (
+        "After-the-fact accounting for a retraction row that reached the corpus outside "
+        "`gz content retire` — hand-appended (GHI #885) or orphaned by a crash between "
+        "the corpus write and the ledger appends (GHI #878). Read by "
+        "`gz validate --corpus-retirement-witness` as a witness that Layer 2 accounts "
+        "for the canon change. Same disposition as `corpus_entry_retired` above and for "
+        "the same reason: it records which canon is current inside a per-surface content "
+        "store, never a relationship between artifact-graph nodes."
+    ),
     "brief_reconciled": (
         "Brief reconciliation summary record (ADR-0.0.37, OBPI-06). Consumed by "
         "`gz obpi brief-drift` operators and reconciliation audits; does not add or "

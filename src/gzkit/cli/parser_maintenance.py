@@ -859,6 +859,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Rendition omits a corpus invariant-tier entry; fail-closed (GHI #623).",
     )
     p_validate.add_argument(
+        "--corpus-retirement-witness",
+        dest="check_corpus_retirement_witness",
+        action="store_true",
+        help="Corpus retirement lacks a subject-matching ledger witness (GHI #885).",
+    )
+    p_validate.add_argument(
         "--kind-invariance",
         dest="check_kind_invariance",
         action="store_true",
@@ -1043,6 +1049,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_setpoint_coherence=a.check_setpoint_coherence,
             check_rendition_freshness=a.check_rendition_freshness,
             check_rendition_floor_coherence=a.check_rendition_floor_coherence,
+            check_corpus_retirement_witness=a.check_corpus_retirement_witness,
             check_kind_invariance=a.check_kind_invariance,
             check_persona_witness=a.check_persona_witness,
             check_receipt_shape=a.check_receipt_shape,

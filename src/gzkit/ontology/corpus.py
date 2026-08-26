@@ -93,6 +93,14 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # is current within a per-surface content store, never a lineage edge
         # between artifacts.
         "corpus_entry_retired",
+        # After-the-fact accounting for a retraction row that reached the corpus
+        # outside `gz content retire` (GHI #885 bypass, GHI #878 partial write).
+        # Dispositioned with its two siblings above and for the same reason: it
+        # records a fact ABOUT canon currency inside one per-surface content
+        # store, never a lineage edge between artifacts. Kept a distinct
+        # discriminator from corpus_entry_retired on purpose — collapsing them
+        # would erase whether the retirement was governed.
+        "corpus_retirement_reconciled",
         "discovered_from",
         "distribution_baseline_regenerated",
         "enforcement_claim_verified",

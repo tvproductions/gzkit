@@ -1214,6 +1214,35 @@
         }
       }
     },
+    "corpus_retirement_reconciled": {
+      "required": [
+        "surface",
+        "retired_entry_id",
+        "retraction_entry_id",
+        "reason"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "retired_entry_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "retraction_entry_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "origin": {
+          "type": "string"
+        }
+      }
+    },
     "intrinsic-complexity-attestation": {
       "required": [
         "file_path",

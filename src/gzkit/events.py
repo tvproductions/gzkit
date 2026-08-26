@@ -607,6 +607,36 @@ class CorpusEntryRetiredEvent(_EventBase):
     floor_moved_ids: list[str] = Field(default_factory=list)
 
 
+class CorpusRetirementReconciledEvent(_EventBase):
+    """corpus_retirement_reconciled event — after-the-fact tombstone accounting (GHI #885).
+
+    A retraction row reached the corpus without the governed ``gz content retire``
+    path: hand-appended (#885's bypass) or orphaned by a crash between the corpus
+    write and the ledger appends (#878's partial-write window). This event records
+    that a tombstone was FOUND unwitnessed and accounted for — never that the
+    governed retirement ran.
+
+    Kept DISTINCT from ``CorpusEntryRetiredEvent`` on purpose. Backfilling that
+    type would retroactively witness a procedure nobody performed, which
+    ``AGENTS.md`` § Attestation calls a fabricated receipt. Because the types are
+    separate, an auditor reading Layer 2 can still tell a governed retirement from
+    a reconciled one — collapsing them would destroy exactly the distinction
+    ``--corpus-retirement-witness`` was built to preserve.
+
+    No ``attestor`` and no floor delta: the reconciler observed neither. The
+    retirement happened at an unknown earlier time under unknown authority, and
+    inventing either field would be the same fabrication in a smaller costume.
+    ``origin`` carries whatever forensic trace the corpus row itself holds.
+    """
+
+    event: Literal["corpus_retirement_reconciled"]
+    surface: str
+    retired_entry_id: str
+    retraction_entry_id: str
+    reason: str
+    origin: str = ""
+
+
 class CompositionCandidateEmittedEvent(_EventBase):
     """composition_candidate_emitted event — authoring-time candidate (OBPI-0.0.37-21).
 
@@ -1082,6 +1112,7 @@ TypedLedgerEvent = Annotated[
     | ChoreDecommissionProcessedEvent
     | CorpusEntryAppendedEvent
     | CorpusEntryRetiredEvent
+    | CorpusRetirementReconciledEvent
     | CompositionCandidateEmittedEvent
     | RenditionCommittedEvent
     | RenditionAdvisorVerdictEvent

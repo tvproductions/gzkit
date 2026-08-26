@@ -79,6 +79,9 @@ from gzkit.governance.trust_audits.complexity_thresholds import (
     BOOTSTRAP_MODE_NOTICE_PREFIX,
     validate_complexity_thresholds,
 )
+from gzkit.governance.trust_audits.corpus_retirement_witness import (
+    validate_corpus_retirement_witness,
+)
 from gzkit.governance.trust_audits.cross_platform import (
     audit_line_endings,
     audit_subprocess_errors,
@@ -268,6 +271,7 @@ __all__ = [
     "validate_invariant_coherence",
     "validate_intrinsic_attestation",
     "validate_pointer_integrity",
+    "validate_corpus_retirement_witness",
     "validate_rendition_floor_coherence",
     "validate_rendition_freshness",
     "validate_setpoint_coherence",

@@ -37,6 +37,7 @@ from gzkit.events import (
     ConstitutionCreatedEvent,
     CorpusEntryAppendedEvent,
     CorpusEntryRetiredEvent,
+    CorpusRetirementReconciledEvent,
     DiscoveredFromEvent,
     DistributionBaselineRegeneratedEvent,
     EnforcementClaimVerifiedEvent,
@@ -301,6 +302,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "chore_decommission_processed": ChoreDecommissionProcessedEvent,
     "corpus_entry_appended": CorpusEntryAppendedEvent,
     "corpus_entry_retired": CorpusEntryRetiredEvent,
+    # After-the-fact witness for a tombstone that bypassed `gz content retire`
+    # (GHI #885) or survived a partial write (GHI #878)
+    "corpus_retirement_reconciled": CorpusRetirementReconciledEvent,
     "composition_candidate_emitted": CompositionCandidateEmittedEvent,
     "rendition_committed": RenditionCommittedEvent,
     "rendition_advisor_verdict": RenditionAdvisorVerdictEvent,

@@ -240,6 +240,61 @@ whose liveness moved. `tier` remains recorded as the retired row's own tier.
 `attestor` is empty on a retirement that moves nothing, which is why the schema
 declares it without a length floor.
 
+### reconcile-retirements
+
+Append a Layer-2 witness for corpus retirements that have none. This is the
+repair arm of `gz validate --corpus-retirement-witness` (GHI #885, GHI #878).
+
+```
+gz content reconcile-retirements <surface> [--reason <text>] [--dry-run]
+```
+
+A retraction row **is** a canon change: `Corpus.retired_ids()` folds the on-disk
+pointer and the target leaves the effective corpus. Two paths leave that change
+with no ledger witness — a row appended by hand, so `gz content retire` never
+runs (GHI #885), or the verb dying between its corpus write and its ledger
+appends (GHI #878). Both leave the same signature, and this verb repairs both.
+
+**It emits `corpus_retirement_reconciled`, never `corpus_entry_retired`.** That
+distinction is the point. Backfilling the governed type would stamp today's
+timestamp — and, on the invariant floor, an attestor — onto a procedure nobody
+performed, which `AGENTS.md` § Attestation calls a fabricated receipt.
+Re-running the governed verb is not available either: `retire` fails closed on
+an already-retired id. So the only honest record is a different sentence — *a
+tombstone was found without a witness and accounted for on this date* — and that
+is the only sentence this verb writes. Because the two types stay separate, an
+auditor reading Layer 2 can still tell a governed retirement from a reconciled
+one long afterwards.
+
+**Idempotent.** It emits only for tombstones the witness gate still reports, so
+a second run over a reconciled surface writes nothing and exits 0.
+
+Observed on the gzkit repository, 2026-08-26, repairing the seven rows GHI #885
+found (elided to two for length):
+
+```
+$ gz content reconcile-retirements AGENTS.md --dry-run
+AGENTS.md: 7 unwitnessed retirement(s) would be reconciled:
+  corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:19.779516+00:00
+    via row corpus-retraction-...-2026-08-22T20:21:54.365168+00:00  origin='GHI #862; operator ruling 2026-08-22'
+  ...
+
+$ gz content reconcile-retirements AGENTS.md
+reconciled corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:19.779516+00:00
+...
+
+AGENTS.md: 7 reconciled, 0 still unwitnessed.
+```
+
+The retraction row's `origin` prose is carried onto the event: it is the only
+surviving forensic difference between a governed and a hand-written tombstone,
+so the repair preserves it rather than overwriting it with its own provenance.
+
+Exit 0 when the surface is fully witnessed (before or after the run), 1 when the
+surface has no corpus store, 3 when a row selected for repair survives its own
+repair — a state that means the event did not bind to the subject the gate
+reads, and is reported loudly rather than as a clean exit over a still-red gate.
+
 ### compose
 
 Validate and stage a **candidate rendition** from the corpus. This is the
