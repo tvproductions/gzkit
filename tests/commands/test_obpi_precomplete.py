@@ -10,6 +10,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.commands.obpi_precomplete import (
+    _check_adversarial_validation,
     _check_arb_receipts_present,
     _check_behave_req_coverage_scoped,
     _check_brief_headings_scoped,
@@ -674,6 +675,122 @@ class TestPrecompleteTaskEnvelopeCoherence(unittest.TestCase):
             path = self._seed(root, req_atomic=["REQ-0.0.64-04-01"])
             result = _check_task_envelope_coherence(root, path)
             self.assertTrue(result.ok, msg=result.message)
+
+
+class TestPrecompleteAdversarialValidationCheck(unittest.TestCase):
+    """The Step-4b precondition reads the VERDICT, not the heading (GHI #879).
+
+    A heading match cannot tell a brief recording ``REFUTED`` from one recording
+    ``NOT-REFUTED``, so the pre-flight reported READY on refuted work and an agent
+    read that as authorization to solicit attestation. Each test below drives one
+    verdict the section can record; together they enumerate what the check must
+    distinguish.
+    """
+
+    @staticmethod
+    def _seed(step_4b_body: str, *, lane: str = "Heavy", trailing: str = "") -> Path:
+        """Write a brief whose Step-4b section carries ``step_4b_body``."""
+        import tempfile
+
+        td = tempfile.mkdtemp()
+        path = Path(td) / "OBPI-0.1.0-01-fixture.md"
+        path.write_text(
+            f"---\nid: OBPI-0.1.0-01\nparent: ADR-0.1.0\nstatus: pending\n"
+            f"lane: {lane}\n---\n\n# Fixture\n\n"
+            "### Step 4b - Independent Adversarial Validation\n\n"
+            f"{step_4b_body}\n" + trailing,
+            encoding="utf-8",
+        )
+        return path
+
+    def test_fails_when_the_recorded_verdict_is_a_refutation(self) -> None:
+        """The reported instance: READY on a brief recording REFUTED, twice."""
+        path = self._seed(
+            "| Round | Verdict |\n|---|---|\n"
+            "| 1 | `REFUTED` |\n| 2 (post-fix) | `REFUTED` - 5 further findings |\n"
+        )
+        result = _check_adversarial_validation(path)
+        self.assertEqual(result.name, "adversarial_validation")
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("refuted", result.message.lower())
+        self.assertIsNotNone(result.remediation)
+
+    def test_fails_when_the_recorded_verdict_carries_caveats(self) -> None:
+        """A known caveat must never be handed to the operator dressed as clean."""
+        result = _check_adversarial_validation(
+            self._seed("**Verdict: REFUTED-WITH-CAVEATS** - two findings deferred.")
+        )
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("refuted-with-caveats", result.message.lower())
+
+    def test_passes_when_the_recorded_verdict_is_not_refuted(self) -> None:
+        """A clean verdict is the one state that licenses the next step."""
+        result = _check_adversarial_validation(
+            self._seed("**Verdict: NOT-REFUTED (SHIP)** - job `review-abc`, zero findings.")
+        )
+        self.assertTrue(result.ok, msg=result.message)
+        self.assertIn("not-refuted", result.message.lower())
+
+    def test_not_refuted_is_never_read_as_a_refutation(self) -> None:
+        """`refuted` is a substring of `not-refuted`; a naive scan inverts the verdict.
+
+        This is the GHI #888 failure shape applied to verdicts - a denial read as an
+        assertion. The boundary is asserted on its own so a future regex edit that
+        drops the token guards fails here rather than in the field.
+        """
+        result = _check_adversarial_validation(self._seed("Verdict: not-refuted."))
+        self.assertTrue(result.ok, msg=result.message)
+
+    def test_fails_when_the_section_records_no_verdict_at_all(self) -> None:
+        """A section that says nothing is the presence-check hole in its pure form."""
+        result = _check_adversarial_validation(
+            self._seed("The adversary was dispatched and produced findings.")
+        )
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIsNotNone(result.remediation)
+
+    def test_passes_when_the_degraded_human_floor_is_recorded(self) -> None:
+        """`degraded-human-only` is a recordable floor, not a refutation.
+
+        The completion chokepoint returns early on it, so blocking here would make
+        the pre-flight stricter than the gate it fronts.
+        """
+        result = _check_adversarial_validation(
+            self._seed("**Verdict: degraded-human-only** - no cross-vendor adversary available.")
+        )
+        self.assertTrue(result.ok, msg=result.message)
+
+    def test_verdict_scan_stops_at_the_end_of_the_step_4b_section(self) -> None:
+        """A verdict word in a LATER section is prose, not this OBPI's Step-4b verdict."""
+        result = _check_adversarial_validation(
+            self._seed(
+                "**Verdict: NOT-REFUTED** - zero findings.",
+                trailing=(
+                    "\n### Value Narrative\n\nBefore this OBPI a refuted claim could "
+                    "reach attestation.\n"
+                ),
+            )
+        )
+        self.assertTrue(result.ok, msg=result.message)
+
+    def test_missing_step_4b_section_still_fails(self) -> None:
+        """GHI #676's original assertion survives the content check."""
+        import tempfile
+
+        td = tempfile.mkdtemp()
+        path = Path(td) / "OBPI-0.1.0-01-fixture.md"
+        path.write_text(
+            "---\nid: OBPI-0.1.0-01\nparent: ADR-0.1.0\nstatus: pending\n"
+            "lane: Heavy\n---\n\n# Fixture\n",
+            encoding="utf-8",
+        )
+        result = _check_adversarial_validation(path)
+        self.assertFalse(result.ok, msg=result.message)
+
+    def test_lite_lane_brief_is_exempt_regardless_of_verdict(self) -> None:
+        """Step 4b is a heavy-lane gate; the lite lane never reaches the verdict read."""
+        result = _check_adversarial_validation(self._seed("**Verdict: REFUTED**", lane="Lite"))
+        self.assertTrue(result.ok, msg=result.message)
 
 
 if __name__ == "__main__":  # pragma: no cover

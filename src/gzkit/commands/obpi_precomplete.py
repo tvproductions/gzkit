@@ -18,6 +18,7 @@ The ``gz-obpi-pipeline`` skill wires this in as Stage 5 Step 0.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -521,13 +522,86 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
     )
 
 
+# The Step-4b section ends at the next heading of the same or shallower depth.
+# Bounding the verdict scan matters: every brief goes on to narrate the defect it
+# fixed, and "a refuted claim could reach attestation" in a Value Narrative is
+# prose about the past, not this OBPI's verdict.
+_NEXT_HEADING_RE = re.compile(r"^#{2,3}\s+", re.MULTILINE)
+
+# The two verdicts that must never read as clean. `refuted` is what the completion
+# chokepoint blocks without a resolution; `refuted-with-caveats` is included because
+# Step 4b's own rule is "never hand the operator a known caveat dressed as clean",
+# and the pre-flight's whole job is to put that in front of a human.
+_REFUTATION_VERDICTS = frozenset({"refuted", "refuted-with-caveats"})
+
+
+def _verdict_pattern() -> re.Pattern[str]:
+    r"""Compile a scanner over the completion command's own verdict vocabulary.
+
+    Built from ``ADVERSARY_VERDICTS`` rather than a second literal list: a
+    vocabulary maintained in two places is the two-copies-one-binds failure this
+    repository keeps paying for, and the pre-flight must read exactly what the
+    chokepoint accepts.
+
+    Two independent guards stop `refuted` from matching inside `not-refuted` or
+    `refuted-with-caveats`. Alternation is ordered longest-first because `re` takes
+    the leftmost branch that matches, and the ``[\w-]`` lookaround pair refuses a
+    token glued to another word by a letter or a hyphen. Either alone would close
+    the hole; both are kept because a denial silently read as an assertion is the
+    exact defect this check exists to stop.
+    """
+    alternatives = "|".join(sorted(_verdict_vocabulary(), key=len, reverse=True))
+    return re.compile(rf"(?<![\w-])({alternatives})(?![\w-])", re.IGNORECASE)
+
+
+def _verdict_vocabulary() -> tuple[str, ...]:
+    """Return the verdicts `gz obpi complete --adversary-verdict` accepts, verbatim."""
+    from gzkit.commands.obpi_complete_adversarial import (  # noqa: PLC0415
+        ADVERSARY_VERDICTS,
+    )
+
+    return ADVERSARY_VERDICTS
+
+
+def _step_4b_verdicts(text: str, step_4b_end: int) -> list[str]:
+    """Return the verdict tokens recorded in the Step-4b section, in order."""
+    rest = text[step_4b_end:]
+    next_heading = _NEXT_HEADING_RE.search(rest)
+    section = rest[: next_heading.start()] if next_heading else rest
+    return [m.group(1).lower() for m in _verdict_pattern().finditer(section)]
+
+
 def _check_adversarial_validation(brief_path: Path) -> CheckResult:
-    """Heavy-lane briefs MUST carry Step-4b evidence BEFORE completion (GHI #676).
+    """Heavy-lane briefs MUST record a Step-4b verdict that is not a refutation.
 
     Checks the brief, not the ledger: ``gz obpi complete`` writes the
     ``adversarial_validation`` event, so at precomplete time no such event can
     exist yet. The brief section is the pre-check; the ledger event is the durable
     receipt. Surfacing the gap here spares the operator a rejected completion.
+
+    **The predicate is the recorded verdict, not the heading (GHI #879).** GHI #676
+    landed this check as ``_STEP_4B_RE.search(text)`` — a heading match, to which a
+    brief recording ``REFUTED`` and one recording ``NOT-REFUTED`` are the same input.
+    It reported ``READY: all 10 preconditions met`` on ``OBPI-0.35.0-02``, whose
+    section records ``REFUTED`` twice, and an agent read that as authorization to
+    solicit attestation. AGENTS.md § PRIME DIRECTIVE names the shape: *"A PRESENCE
+    CHECK ANSWERS 'is something armed', NEVER 'did the governed procedure run'."*
+    The failure direction is what made it costly — it reported green, so it actively
+    licensed the next step.
+
+    What this check does NOT claim: which verdict is the STANDING one. Rounds are
+    narrated in prose, and position is not the answer — ``OBPI-0.34.0-04`` opens with
+    ``Verdict: NOT-REFUTED (SHIP)`` and then discusses six earlier refutations, so a
+    last-token rule reads it backwards. So the check fails closed on a refutation
+    APPEARING at all and says plainly that it cannot tell whether it stands. That is
+    the honest direction for a pre-flight: it converts a green that licenses into a
+    red that requires a human to read the section.
+
+    The asymmetry with ``gz obpi complete`` is deliberate and preserved. This is the
+    bypassable pre-flight; the chokepoint is ``_enforce_adversarial_validation``,
+    which accepts a standing refutation alongside ``--adversary-resolution``. This
+    check adds no new gate — it stops the pre-flight from reporting green about a
+    state the chokepoint would refuse.
     """
     from gzkit.governance.trust_audits.adversarial_validation import (  # noqa: PLC0415
         _STEP_4B_RE,
@@ -552,7 +626,8 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
             message="lite-lane brief; Step 4b evidence not required",
         )
 
-    if not _STEP_4B_RE.search(text):
+    step_4b = _STEP_4B_RE.search(text)
+    if not step_4b:
         return CheckResult(
             name="adversarial_validation",
             ok=False,
@@ -568,10 +643,44 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
             ),
         )
 
+    verdicts = _step_4b_verdicts(text, step_4b.end())
+    if not verdicts:
+        return CheckResult(
+            name="adversarial_validation",
+            ok=False,
+            message=(
+                "Step 4b section records no recognized verdict "
+                f"({', '.join(sorted(_verdict_vocabulary()))})"
+            ),
+            remediation=(
+                "State the adversary's verdict in the Step 4b section using the same "
+                "vocabulary `gz obpi complete --adversary-verdict` accepts. A section "
+                "that names no verdict is indistinguishable from one that was never "
+                "run, which is the gap Step 4b exists to close."
+            ),
+        )
+
+    refutations = sorted({v for v in verdicts if v in _REFUTATION_VERDICTS})
+    if refutations:
+        return CheckResult(
+            name="adversarial_validation",
+            ok=False,
+            message=f"Step 4b records {', '.join(refutations)}",
+            remediation=(
+                "Read the Step 4b section and establish which verdict STANDS — this "
+                "check cannot tell from prose. If the refutation was overturned in a "
+                "later round, say so in the section. If it stands, either return to "
+                "Stage 2 and fix the refuted claim, or complete with the refutation "
+                "recorded: --adversary-verdict refuted --adversary-resolution '<what "
+                "was fixed and how the adversary's own check was re-run>'. A known "
+                "refutation must never be handed to the operator dressed as clean."
+            ),
+        )
+
     return CheckResult(
         name="adversarial_validation",
         ok=True,
-        message="Step 4b evidence section present",
+        message=f"Step 4b records {', '.join(sorted(set(verdicts)))}",
     )
 
 
