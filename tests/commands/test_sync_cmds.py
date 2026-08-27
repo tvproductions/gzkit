@@ -521,8 +521,9 @@ class TestSyncCommand(unittest.TestCase):
             # second run (measured 2026-08-27: 111 paths, then 105, then stable).
             # Dry-run reports sync's FIXED POINT; a single apply reports one
             # iteration toward it, and comparing those two compares different
-            # things. Tracked separately -- the non-convergence is a real defect
-            # in `sync_all`'s pass order, not in the planner (GHI #891).
+            # things. The non-convergence is a real defect in `sync_all`'s pass
+            # order, not in the planner: tracked as GHI #892, whose regression
+            # witness is this preamble becoming unnecessary.
             self.assertEqual(
                 runner.invoke(main, ["agent", "sync", "control-surfaces"]).exit_code, 0
             )
