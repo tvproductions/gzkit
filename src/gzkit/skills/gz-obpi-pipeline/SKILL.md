@@ -408,7 +408,7 @@ Run the standard quality checks sequentially (these are always inline, never dis
 # Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts
 uv run gz arb ruff
 uv run gz arb typecheck
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 
 # If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
@@ -601,7 +601,7 @@ Include the exact command and its output or expected output.>
 
 ```bash
 # arb:unittest — full unittest sweep
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 
 # arb:ruff — lint
 uv run gz arb ruff

@@ -241,6 +241,18 @@ dev = [
     # diagnostics 0.0.69 surfaced were latent defects the older release could not
     # see, so the checker moving is the signal to fix the code (GHI #789).
     "ty>=0.0.69",
+    # Pinned here rather than fetched via `uv run --with` (operator ruling
+    # 2026-08-27, GHI #856). It backs the canonical "Tests pass" attestation
+    # (`CANONICAL_STEP_COMMANDS["unittest"]`), and an ARB receipt is durable
+    # EVIDENCE -- it must not rest on a runner resolved from the network at run
+    # time, whose version is whatever `uv` picked that day. Pinning is what
+    # discharges that objection; it is also plain conformance, not a departure:
+    # every other Python verifier in this toolchain (ruff, ty, behave, coverage,
+    # radon, xenon) is pinned here and invoked as `uv run <tool>`. The
+    # "un-pinned xenon/gitleaks precedent" cited when the accelerator was adopted
+    # (GHI #512) does not exist -- xenon is two lines below, and gitleaks is a
+    # native binary rather than a Python package.
+    "unittest-parallel>=1.7.2",
     "vulture>=2.16",
     "wily>=1.12.2",
     "xenon>=0.9.3",

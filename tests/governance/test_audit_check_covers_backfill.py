@@ -1971,8 +1971,13 @@ class TestPatchLeakageIntoSiblingModules(unittest.TestCase):
     ``resolve_adr_file`` stayed a ``MagicMock`` for the rest of the PROCESS, so
     ``gz adr audit-check ADR-pool.sample`` resolved to whichever ADR id the last
     layered patch had been given and the pool-ADR guard never fired. The
-    canonical ``uv run -m unittest -q`` invocation that attests "Tests pass" for
-    Gate 5 was green only in one traversal order.
+    THEN-canonical ``uv run -m unittest -q`` invocation that attested "Tests
+    pass" for Gate 5 was green only in one traversal order. (That invocation is
+    no longer canonical — GHI #856 moved it to the pinned ``unittest-parallel``
+    runner once this leak was fixed and the suite measured order-independent
+    across three shuffled seeds. The order-independence this class guards is
+    what a parallel attestation runner depends on, so the guarantee below became
+    load-bearing rather than merely tidy.)
 
     The assertion is on the OBSERVABLE property — no mock survives this class —
     rather than on how ``_stop_patches`` unwinds. A test pinned to the helper's

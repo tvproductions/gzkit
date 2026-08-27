@@ -122,7 +122,15 @@ GZ_VERIFIER_VERBS: frozenset[str] = frozenset(
 #: canonical invocation emits a LINT receipt rather than a step receipt, and
 #: `pytest` is forbidden outright by `.gzkit/rules/tests.md` § General Rules —
 #: if one ever appears, its exit status still must not be masked.
-_DECLARED_BEYOND_ARB: frozenset[str] = frozenset({"behave", "ruff", "pytest"})
+#:
+#: `unittest` joined this set when the canonical step moved to the pinned
+#: `unittest-parallel` runner (GHI #856). It is NOT redundant with that entry:
+#: `_canonical_program_names` derives only what the table names, so the swap
+#: silently dropped `unittest` from `VERIFIER_PROGRAMS` — and `uv run -m unittest`
+#: is still how a scoped run is spelled at ~3,100 call sites in this repo, every
+#: one of which must keep failing closed when piped. Membership here is what
+#: `_module_verifier` reads for the `-m <module>` form.
+_DECLARED_BEYOND_ARB: frozenset[str] = frozenset({"behave", "ruff", "pytest", "unittest"})
 
 #: Coverage this gate structurally cannot provide. Stated so a green is never
 #: read as total (the `unwitnessable.md` precedent the resume gate follows).

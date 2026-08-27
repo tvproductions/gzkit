@@ -759,6 +759,7 @@ dev = [
     { name = "radon" },
     { name = "ruff" },
     { name = "ty" },
+    { name = "unittest-parallel" },
     { name = "vulture" },
     { name = "wily" },
     { name = "xenon" },
@@ -799,6 +800,7 @@ dev = [
     { name = "radon", specifier = ">=6.0.1" },
     { name = "ruff", specifier = ">=0.16.2" },
     { name = "ty", specifier = ">=0.0.69" },
+    { name = "unittest-parallel", specifier = ">=1.7.2" },
     { name = "vulture", specifier = ">=2.16" },
     { name = "wily", specifier = ">=1.12.2" },
     { name = "xenon", specifier = ">=0.9.3" },
@@ -1319,6 +1321,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/55/e3/70399cb7dd41c10ac53367ae42139cf4b1ca5f36bb3dc6c9d33acdb43655/typing_inspection-0.4.2.tar.gz", hash = "sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464", size = 75949, upload-time = "2025-10-01T02:14:41.687Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/dc/9b/47798a6c91d8bdb567fe2698fe81e0c6b7cb7ef4d13da4114b41d239f65d/typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7", size = 14611, upload-time = "2025-10-01T02:14:40.154Z" },
+]
+
+[[package]]
+name = "unittest-parallel"
+version = "1.8.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "coverage" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2a/ea/f362b5f240db72f8029273b89af5c59217a3c1c9ee71d937e6ea7f5b274c/unittest_parallel-1.8.6.tar.gz", hash = "sha256:13e304d9a46ce49daa0af7354cb16f86751e0fa45c376aecd9ab379e54d7841d", size = 11806, upload-time = "2026-08-22T17:28:47.821Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/45/4c/8d1732d73eb2399f1e5a5097ae30dbdf85da12c2da6d0135b22748333fe9/unittest_parallel-1.8.6-py3-none-any.whl", hash = "sha256:7f04b0ada502f6b3d655ef49ea2a785f0e37869f9d0ce7a075c1a18ec204ac93", size = 10412, upload-time = "2026-08-22T17:28:46.791Z" },
 ]
 
 [[package]]

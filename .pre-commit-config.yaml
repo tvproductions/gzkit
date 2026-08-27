@@ -169,17 +169,25 @@ repos:
       - id: unittest
         name: unittest
         # unittest-parallel runs the stdlib unittest suite across worker
-        # processes (~15s wall vs ~52s serial baseline, 10-core host). Invoked
-        # via `uv run --with` — NOT `uvx` — because a test runner must import
-        # project code (gzkit, pydantic) and `uvx`'s isolated env lacks the
-        # project dependencies. `--with` keeps unittest-parallel un-pinned
-        # (absent from pyproject.toml), matching the un-pinned xenon/gitleaks
-        # precedent. The serial canonical/ARB attestation path is unchanged
-        # (see GHI #512 Non-goals).
+        # processes (41.34s wall vs 144.23s serial, 8,912 tests, 10-core host,
+        # measured 2026-08-27). It is a PINNED `dev` dependency in
+        # pyproject.toml, so this is `uv run unittest-parallel` — not `uvx`
+        # (whose isolated env lacks gzkit/pydantic, which a test runner must
+        # import) and no longer `uv run --with` (which re-resolved it from the
+        # network on every run).
+        #
+        # This entry MUST equal `CANONICAL_STEP_COMMANDS["unittest"]`. It is the
+        # one copy that cannot derive — YAML read by pre-commit before Python
+        # runs — so it is pinned by equality instead, in
+        # `tests/arb/test_unittest_runner_lockstep.py`. The prior comment here
+        # justified `--with` as "matching the un-pinned xenon/gitleaks
+        # precedent"; that precedent never existed (xenon is pinned above and
+        # invoked as `uv run xenon`; gitleaks is a native binary), and the gap
+        # between this hook and the attestation surface was GHI #856.
         # `--buffer` replays a test's output only when it fails or errors, so a
         # PASSING negative-path test no longer prints convincing fail-closed
         # prose into the log (GHI #723). Failures still show their own stderr.
-        entry: uv run --with unittest-parallel unittest-parallel -t . -s tests --buffer
+        entry: uv run unittest-parallel -t . -s tests --buffer
         language: system
         pass_filenames: false
         types: [python]

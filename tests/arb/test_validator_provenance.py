@@ -99,7 +99,7 @@ class ProvenanceChecking(unittest.TestCase):
                 root,
                 "drifted-ut",
                 "unittest",
-                ["python", "-m", "unittest"],  # missing `uv run` and `-q`
+                ["python", "-m", "unittest"],  # neither `uv run` nor the parallel runner
             )
             result = validate_receipts(limit=10, root=root)
             self.assertEqual(result.non_canonical_provenance, 1)
@@ -236,6 +236,69 @@ class RetiredCanonIsJudgedAtTheReceiptsOwnTimestamp(unittest.TestCase):
                 "typecheck",
                 ["uv", "run", "ty", "check", "some-scope-nobody-canonized"],
                 timestamp="2020-01-01T00:00:00Z",
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.non_canonical_provenance, 1)
+
+
+class UnittestRunnerSupersessionKeepsHistoryValid(unittest.TestCase):
+    """The serial→parallel swap must not re-judge 952 truthful receipts (GHI #856).
+
+    `CANONICAL_STEP_COMMANDS["unittest"]` moved from the serial stdlib runner to
+    the pinned `unittest-parallel` accelerator on 2026-08-27. 952 receipts carry
+    the serial command; each is an accurate record of a real serial run of the
+    whole suite. Judging them against today's canon would make the validator
+    assert a falsehood about history — the write-forward-only violation the
+    grandfather clause exists to prevent.
+
+    The scope did not change (both forms run the whole discovered suite), so no
+    receipt's coverage claim shifts — only the runner that achieved it. That is
+    what makes supersession the right instrument here rather than invalidation.
+    """
+
+    def _retired_serial(self) -> tuple[str, list[str]]:
+        return RETIRED_STEP_COMMANDS["unittest"][0]
+
+    def test_the_new_canonical_command_validates(self) -> None:
+        """Positive control, derived — the table had none for `unittest` before."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(root, "fresh", "unittest", CANONICAL_STEP_COMMANDS["unittest"])
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(result.non_canonical_provenance, 0)
+            self.assertEqual(result.valid, 1)
+
+    def test_a_serial_receipt_predating_the_swap_stays_canonical(self) -> None:
+        """The 952 receipts on disk keep their standing."""
+        retired_at, command = self._retired_serial()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root, "historic-ut", "unittest", command, timestamp="2026-08-26T09:45:39Z"
+            )
+            result = validate_receipts(limit=10, root=root)
+            self.assertEqual(
+                result.non_canonical_provenance,
+                0,
+                msg=(
+                    f"retired_at={retired_at}: the newest serial receipt on disk is "
+                    "2026-08-26T09:45:39Z, so a boundary that rejects it has been "
+                    "set earlier than the run it is meant to grandfather."
+                ),
+            )
+
+    def test_the_serial_command_run_after_the_swap_is_rejected(self) -> None:
+        """The clause grandfathers history, never a stale invocation today.
+
+        This is the edge that makes the row a rule rather than an escape hatch:
+        an agent following a stale skill doc after the swap emits the serial
+        command, and that receipt must be caught rather than waved through.
+        """
+        _, command = self._retired_serial()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_step_receipt(
+                root, "stale-ut", "unittest", command, timestamp="2026-09-01T00:00:00Z"
             )
             result = validate_receipts(limit=10, root=root)
             self.assertEqual(result.non_canonical_provenance, 1)

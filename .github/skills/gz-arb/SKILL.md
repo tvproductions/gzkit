@@ -41,7 +41,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
      type-check claims). Do not restate the scope from memory: the verb
      and the gate both READ `CANONICAL_STEP_COMMANDS["typecheck"]`, so
      the table is the answer whenever this line disagrees with it.
-   - `uv run gz arb step --name unittest -- uv run -m unittest -q` —
+   - `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer` —
      canonical for tests-pass claims
    - `uv run gz arb coverage run -m unittest discover -s tests -t .` —
      canonical for coverage-floor claims
@@ -72,7 +72,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 # AGENTS.md § Attestation § Canonical invocations.
 uv run gz arb ruff src tests
 uv run gz arb typecheck
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 uv run gz arb coverage run -m unittest discover -s tests -t .
 uv run gz arb validate --limit 10
 uv run gz arb advise --limit 10

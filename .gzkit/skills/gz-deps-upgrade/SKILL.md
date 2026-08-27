@@ -115,7 +115,7 @@ order, not skipping the floor-bump or the verification step.
 10. **Emit canonical ARB unittest receipt** (per AGENTS.md § Attestation).
 
     ```bash
-    uv run gz arb step --name unittest -- uv run -m unittest -q
+    uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
     ```
 
     Capture the receipt path (`artifacts/receipts/arb-step-unittest-*.json`)

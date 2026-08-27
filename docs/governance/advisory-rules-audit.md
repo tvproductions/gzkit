@@ -60,7 +60,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mx-mode.md` | `1.3.0` |
 | `pythonic.md` | `0.5.0` |
 | `tool-skill-runbook-alignment.md` | `0.4.0` |
-| `tests.md` | `0.17.0` |
+| `tests.md` | `0.18.0` |
 | `task-discovery.md` | `0.7.0` |
 | `token-block-discipline.md` | `0.6.0` |
 
@@ -168,6 +168,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 71 | **Eval-awareness corollary.** Audit-helper names MUST NOT pattern-match as audit-step names | **Judgment** | **Re-scored 2026-08-08 (rule `0.15.0`), Movement C rules arm.** The tractable check (flag helpers named `assert_*audit*passes*` under `tests/**`) was scored a promotion candidate for months and never built, because nothing has been observed for it to catch — the row's own note said "low catch-rate expected; listed for completeness rather than urgency." Under the § Recommended promotion order freeze that is a reason not to build it, not a backlog item. The rule now states the clause binds at authoring and review time only, and names what would reclassify it: a named, observed instance. |
 | 72 | **Derivation rule** / **per-increment rhythm** / **unit-test purpose** — tests derive from OBPI acceptance criteria, one test → one observed RED → minimum code to GREEN | **Judgment** | "Derived from the REQ rather than from a run of the code" is not recoverable from the artifact after the fact; the RED witness (row 67) is the closest mechanical proxy and covers the rhythm's observable half only. |
 | 75 | **Do not slice horizontally.** Authoring every test for a brief and then every implementation is not TDD with a long cycle — it produces tests insensitive to change. | **Judgment** | **Added 2026-08-09 (rule `0.16.0`), GHI #567 Move 2(b).** Authoring ORDER leaves no artifact to inspect: the committed tree is identical whether the tests were written one-at-a-time or in a batch, so no scan over `tests/**` can recover which happened. The nearest mechanical proxy is the RED witness (row 67), and it is per-REQ by construction — `gz arb red --req <REQ-ID>` proves one test failed without its implementation, which is exactly the evidence a horizontal slice never produces, but its absence is equally consistent with the REQ simply not having been run. **No mechanical witness, and none is planned.** Reclassify on a named, observed instance of a batch-authored suite that shipped and was caught late. |
+| 87 | **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. | **Mechanical** | **Added 2026-08-27 (rule `0.18.0`), GHI #856 — the clause had never been scored at all**, in either half; it entered at rule `0.13.0` (GHI #724) and this ledger's filename-presence predecessor could not see an unscored clause inside a listed file. Enforced arm: `uv run gz smoke` exits 3 on breach AND on an empty tier (an empty subset satisfies any budget trivially), wired as the `Smoke tier` step of `gz check`. Witness `NC:smoke-tier`, and note precisely what it covers: it plants a populated project whose smoke tier is EMPTY, so it witnesses the empty-tier arm. A real 60s BREACH is not planted by any control — stated rather than implied, since a row that reads as fully witnessed when half of it is not is the exact false-Mechanical shape this column's freeze was ruled against. The companion half declares an INTENTIONAL ABSENCE rather than an unenforced rule — the full tier's runtime ratchets with the REQ set by design, so a constant ceiling over it could only ever be breached — and there is therefore nothing to promote. The measured figures in that bullet are a DATED RECORD, never a threshold (`.claude/rules/governance-core.md` § Non-negotiable rules); they were two generations stale until `0.18.0` re-measured them, and the sentence *"parallelism does not rescue it"* was routinely misread as a general ruling against parallel execution — a reading that would now contradict `CANONICAL_STEP_COMMANDS["unittest"]`, which runs `unittest-parallel`. |
 
 ### Chores Workflow (`.gzkit/rules/chores.md`)
 
@@ -429,9 +430,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 65 | 52% |
+| **Mechanical** | 66 | 52% |
 | **Promotable** | 13 | 10% |
-| **Judgment** | 49 | 39% |
+| **Judgment** | 49 | 38% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;

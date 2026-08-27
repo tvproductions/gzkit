@@ -33,18 +33,22 @@ __all__ = ["CANONICAL_STEP_COMMANDS"]
 # claims to be a heavy-lane attestation label while measuring a different
 # scope. Extending this table widens the provenance net; do not shrink it.
 #
-# ``typecheck`` is the one entry whose gate mirrors it *by construction*:
-# ``quality.run_typecheck`` reads this list rather than re-spelling the command,
-# so the GHI #199 divergence cannot recur there. The claim used to be made of
-# all four gates in prose with nothing asserting it — and it was already false
-# for ``run_tests``, which deliberately runs the ``unittest-parallel``
-# accelerator while this table holds the serial attestation form. State the
-# coupling per entry, never as a blanket:
+# Two entries now mirror their gate *by construction* — the gate READS this list
+# rather than re-spelling the command, so a GHI #199 divergence cannot recur.
+# The claim was once made of all four gates in prose with nothing asserting it,
+# and it was false for ``run_tests`` for months (GHI #856). State the coupling
+# per entry, never as a blanket, and let a test assert each one:
 #
 #   typecheck -> ``quality.run_typecheck`` DERIVES from this entry
-#   unittest  -> ``quality.run_tests`` deliberately DIFFERS (parallel runner)
+#   unittest  -> ``quality.run_tests`` DERIVES from this entry (GHI #856)
 #   coverage  -> operator-invoked; no ``gz check`` gate runs it
 #   mkdocs    -> ``quality.run_mkdocs`` runs the same command, re-spelled
+#
+# Derivation is pinned by MUTATION tests, not by equality: see
+# ``tests/arb/test_typecheck_scope_lockstep.py`` and
+# ``tests/arb/test_unittest_runner_lockstep.py``. A test comparing the two
+# current values would pass just as well against two independent copies that
+# happen to agree today, which is precisely the state that shipped both defects.
 CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # Scope widened 2026-08-08 from ``src`` to the whole tree minus ``features``
     # (operator ruling). ``src``-only left the SessionStart orientation hook —
@@ -66,36 +70,44 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # catch a gate that is red on a co-equal supported platform
     # (`.gzkit/rules/cross-platform.md`: "Windows, macOS, Linux — co-equal").
     "typecheck": ["uv", "run", "ty", "check", ".", "--exclude", "features"],
-    # SERIAL ON PURPOSE, and the purpose is recorded here for the first time
-    # (operator ratification 2026-08-26). `quality.run_tests` runs the same suite
-    # through `unittest-parallel` at roughly a third the wall clock -- measured
-    # 2026-08-26 on a 10-core host: 142.6s serial against ~44s parallel inside
-    # `gz check`. An attestation therefore pays a ~100s premium over the gate,
-    # and the reason is a dependency-provenance one, not a performance oversight:
+    # PARALLEL, and the gate derives from it (operator re-ruling 2026-08-27,
+    # GHI #856). This entry was SERIAL until that ruling while every gate ran the
+    # accelerator, so the command an agent runs most often -- the one proving
+    # "Tests pass" for Gate 5 -- was the slow one. Measured 2026-08-27 at
+    # `2c81cb7d`, 10-core M-series, same 8,912 tests, both exit 0: 144.23s serial
+    # against 41.34s parallel. 3.49x, ~103s per attestation.
     #
-    #   `unittest-parallel` is invoked as `uv run --with unittest-parallel ...`
-    #   and is deliberately NOT in `pyproject.toml` (GHI #512, matching how
-    #   ruff/ty/xenon/gitleaks are wielded). It is resolved from the network at
-    #   run time, so its version is whatever `uv` picked that day. An ARB receipt
-    #   is EVIDENCE; evidence must not rest on an unpinned, network-fetched
-    #   accelerator, and stdlib-first doctrine keeps the attestation path on the
-    #   stdlib runner. The gate may use the accelerator because a gate is a
-    #   verdict recomputed on demand; a receipt is a durable claim about a run.
+    # The 2026-08-26 ratification (`c67d3b25`) held the serial form on a
+    # DEPENDENCY-PROVENANCE argument, never a performance one: `unittest-parallel`
+    # was invoked as `uv run --with unittest-parallel ...`, resolved from the
+    # network at run time, so its version was whatever `uv` picked that day -- and
+    # an ARB receipt is durable EVIDENCE, which must not rest on that. That
+    # objection was correct. It is DISCHARGED rather than overridden: the runner is
+    # now a declared `dev` dependency, hash-locked in `uv.lock` (1.8.6), so the
+    # invocation drops `--with` and resolves from the lockfile. Pinning also made
+    # it faster -- 41.34s pinned against 52.02s via `--with`, which was paying a
+    # network resolve on every run.
     #
-    # DISCLOSURE: no prior rationale existed anywhere. Searched 2026-08-26 --
-    # this table's header comment stated the divergence without a reason,
-    # `quality.run_tests` said "intentionally left serial" without one,
-    # `docs/governance/arb-middleware.md` does not mention it, and neither
-    # `git log --grep=serial` nor `git log -S` on this entry finds a deciding
-    # commit. GHI #512 adopted the parallel runner for the PRE-COMMIT HOOK ONLY
-    # and this table was never revisited; the word "intentionally" was added
-    # later, describing the status quo. The argument above is a reconstruction
-    # the operator ratified, not a decision recovered from the record.
+    # The precedent that argued against pinning does not exist. GHI #512 and
+    # `.pre-commit-config.yaml` both cited "the un-pinned xenon/gitleaks
+    # precedent"; `xenon` is a pinned `dev` entry invoked as `uv run xenon`, and
+    # `gitleaks` is a native binary, not a Python package. `unittest-parallel` was
+    # the ONLY Python verifier here wielded via `--with`, so pinning it is
+    # conformance with the convention rather than a stdlib-first departure.
+    # Pinned by `tests/arb/test_unittest_runner_lockstep.py`.
+    #
+    # Order-independence is a PRECONDITION of attesting with a parallel runner and
+    # was measured, not assumed: a parallel runner distributes tests across
+    # processes, so a suite with hidden inter-test ordering dependence would report
+    # differently under it. GHI #857 found exactly such a dependence on 2026-08-22
+    # (4 tests, every seed); it was fixed by `f7c3c8de`, and the shuffle probe was
+    # re-run at `2c81cb7d` across three seeds -- 8,912 tests, 0 failures each.
+    # Re-run that probe before widening this entry's scope again.
     #
     # Changing this string is a receipt-shape change: `gz arb validate` compares
     # emitted receipts against it and `RETIRED_STEP_COMMANDS` carries the
-    # supersession. Do not "optimise" it without re-ruling the argument above.
-    "unittest": ["uv", "run", "-m", "unittest", "-q"],
+    # supersession. Do not change it without re-ruling the argument above.
+    "unittest": ["uv", "run", "unittest-parallel", "-t", ".", "-s", "tests", "--buffer"],
     "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
     # Reserved by ADR-0.0.22 (security-sensitivity-doctrine), OBPI-05.

@@ -276,7 +276,7 @@ uv run gz agent sync control-surfaces  # Regenerate surfaces
 |----------------|----------------------|---------------------|
 | Lint clean | `uv run gz arb ruff` | `arb-ruff-` |
 | Type check clean | `uv run gz arb typecheck` | `arb-step-typecheck-` |
-| Tests pass | `uv run gz arb step --name unittest -- uv run -m unittest -q` | `arb-step-unittest-` |
+| Tests pass | `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer` | `arb-step-unittest-` |
 | Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-step-coverage-` |
 | Docs build clean | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | `arb-step-mkdocs-` |
 

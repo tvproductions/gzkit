@@ -2,8 +2,8 @@
   "algorithm": "sha256",
   "corpus_fingerprint": "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de",
   "corpus_entry_count": 79,
-  "rendition_fingerprint": "d0c17b080bdf9f8c015c6250fafaa594645135824a5d615427d1ef96d94a69bb",
-  "committed_ts": "2026-08-26T11:10:59.274947+00:00",
+  "rendition_fingerprint": "018b84939b2e7213f3587938c65d61d10f6cea9f88d28ffd25dc7ba9a5c96ae2",
+  "committed_ts": "2026-08-27T09:14:01.038421+00:00",
   "attestor": "g0",
-  "attestation_text": "do #1 - make pre-push reuse the verified tree — the hook already passes --reuse-verified (.pre-commit-config.yaml:159); the mechanism never fired because gz check ran against a tree left dirty by the post-commit ledger hook, so _record_full_pass declined to record it. The remedy is workflow, and this line makes it discoverable: stage before checking. Corpus unchanged at fingerprint 8459d30b0fba, invariant floor 21214B unmoved"
+  "attestation_text": "Pin the runner, then swap — operator ruling 2026-08-27 on GHI #856, settling a conflict between the issue's 2026-08-22 plan and the 2026-08-26 serial ratification at canonical_steps.py. One row of § Attestation moves: the 'Tests pass' invocation becomes 'uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer'. Corpus UNCHANGED (invariant floor 21214B unmoved, 79 entries); this is a rendition change, not a canon change. Grounded: 144.23s serial vs 41.34s parallel over the same 8,912 tests at 2c81cb7d, both exit 0; order-independence re-confirmed across three shuffled seeds after #857's fix f7c3c8de; unittest-parallel now a pinned dev dependency (1.8.6, hash-locked in uv.lock), which discharges the dependency-provenance objection rather than overriding it."
 }

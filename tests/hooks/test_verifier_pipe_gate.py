@@ -232,6 +232,47 @@ class TestCanonicalRegistryCoherence(unittest.TestCase):
                 )
 
 
+class TestVerifiersThatLeftTheCanonicalTable(unittest.TestCase):
+    """Coverage must not be a side effect of a command's presence in the table.
+
+    `_canonical_program_names` derives from `CANONICAL_STEP_COMMANDS`, so the
+    sibling test above only ever asserts what the table currently names. That
+    makes it blind in one direction: a verifier REMOVED from the table silently
+    loses protection, and the removal looks like an edit to a different concern.
+
+    GHI #856 walked into exactly that. Moving the canonical `unittest` step to
+    the pinned `unittest-parallel` runner dropped bare `unittest` out of
+    `VERIFIER_PROGRAMS` — while `uv run -m unittest <module>` remained how a
+    scoped run is spelled at ~3,100 call sites in this repo. `_DECLARED_BEYOND_ARB`
+    is what holds it, and this is the test that says so.
+    """
+
+    def test_a_scoped_module_run_is_still_protected(self) -> None:
+        """The `-m unittest` form no longer appears in any canonical command."""
+        self.assertEqual(
+            masked_verifier("uv run -m unittest tests.arb.test_validator -v | tail -5"),
+            "unittest",
+            msg=(
+                "Bare `unittest` lost pipe-gate protection. It left "
+                "CANONICAL_STEP_COMMANDS when the canonical step moved to "
+                "unittest-parallel (GHI #856); `_DECLARED_BEYOND_ARB` must carry it."
+            ),
+        )
+
+    def test_both_runners_are_protected_at_once(self) -> None:
+        """The swap adds a verifier; it must not trade one for the other."""
+        self.assertEqual(masked_verifier("uv run -m unittest -q | tail -5"), "unittest")
+        self.assertEqual(
+            masked_verifier("uv run unittest-parallel -t . -s tests --buffer | tail -5"),
+            "unittest-parallel",
+        )
+
+    def test_naming_a_runner_is_not_running_one(self) -> None:
+        """Negative control: resolution is by command head, never token presence."""
+        self.assertIsNone(masked_verifier("grep -rn unittest-parallel src/ | head -5"))
+        self.assertIsNone(masked_verifier("echo unittest | tail -1"))
+
+
 class TestDecideContract(unittest.TestCase):
     """The hook-facing verdict."""
 

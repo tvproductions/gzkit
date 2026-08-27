@@ -51,7 +51,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 6. Run the test under ARB to produce the GREEN receipt:
 
    ```bash
-   uv run gz arb step --name unittest -- uv run -m unittest -q
+   uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
    ```
 
    Capture the receipt ID printed (`arb-step-unittest-<timestamp>`).

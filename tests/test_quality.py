@@ -1,6 +1,7 @@
 """Tests for gzkit quality module."""
 
 import re
+import shlex
 import sys
 import tempfile
 import unittest
@@ -265,7 +266,14 @@ class TestTestRunnerBuffersPassingOutput(unittest.TestCase):
             )
             run_tests(Path(tmpdir))
             mock_run_command.assert_called_once()
-            return str(mock_run_command.call_args.args[0])
+            command = mock_run_command.call_args.args[0]
+
+        # `run_tests` passes ARGV, not a command string, since it began DERIVING
+        # from `CANONICAL_STEP_COMMANDS["unittest"]` (GHI #856). Joined rather
+        # than `str()`-ed so these assertions keep reading the command as a
+        # human writes it; `str(list)` would put quotes and commas between every
+        # token and silently break substring checks that are still correct.
+        return shlex.join(command) if not isinstance(command, str) else command
 
     def test_runner_buffers_test_output(self) -> None:
         self.assertIn(

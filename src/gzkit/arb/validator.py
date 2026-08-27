@@ -76,6 +76,24 @@ RETIRED_STEP_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
         # today under the glob form ran on Linux, where it did exclude correctly.
         ("2026-08-09T23:47:55Z", ["uv", "run", "ty", "check", ".", "--exclude", "features/**"]),
     ],
+    "unittest": [
+        # Swapped from the serial stdlib runner to the pinned ``unittest-parallel``
+        # accelerator (operator re-ruling 2026-08-27, GHI #856), once pinning the
+        # runner in ``pyproject.toml`` discharged the dependency-provenance
+        # objection that had held the serial form. 952 receipts carry this command
+        # and every one truthfully records a real serial run of the whole suite, so
+        # they stay canonical as of their own timestamps. SCOPE is unchanged — both
+        # forms run the whole discovered suite — so no receipt's coverage claim
+        # shifts, only the runner that achieved it.
+        #
+        # Boundary is the landing day, not an arbitrary date: the newest receipt
+        # carrying this command is 2026-08-26T09:45:39Z, measured across all 1110
+        # ``arb-step-unittest-*`` receipts by ``timestamp_utc`` — NOT by mtime,
+        # which a checkout rewrites. A receipt carrying this command AFTER the
+        # boundary is a stale invocation and is still rejected, which is the whole
+        # point of the check.
+        ("2026-08-27T00:00:00Z", ["uv", "run", "-m", "unittest", "-q"]),
+    ],
 }
 
 
