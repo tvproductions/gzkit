@@ -779,6 +779,33 @@ class Ledger:
             graph[canonical_id]["parked_to"] = None
 
     @staticmethod
+    def _apply_obpi_operator_block_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        """Set/clear the reversible ``blocked_on_operator`` flag (GHI #887).
+
+        Two-way like ``parked`` and unlike ``withdrawn``: ``obpi_unblocked``
+        clears it, so the graph reflects the net of the append-only sequence
+        rather than a one-way latch. Carries the awaited action as well as the
+        reason — a node that says it is blocked without saying what a human owes
+        moves the stall instead of surfacing it.
+        """
+        if event.event not in {"obpi_blocked_on_operator", "obpi_unblocked"}:
+            return
+        if canonical_id not in graph or graph[canonical_id].get("type") != "obpi":
+            return
+        if event.event == "obpi_blocked_on_operator":
+            graph[canonical_id]["blocked_on_operator"] = True
+            graph[canonical_id]["blocked_reason"] = event.extra.get("reason")
+            graph[canonical_id]["blocked_next_action"] = event.extra.get("next_operator_action")
+        else:
+            graph[canonical_id]["blocked_on_operator"] = False
+            graph[canonical_id]["blocked_reason"] = None
+            graph[canonical_id]["blocked_next_action"] = None
+
+    @staticmethod
     def _apply_obpi_superseded_metadata(
         graph: dict[str, dict[str, Any]],
         canonical_id: str,
@@ -821,6 +848,7 @@ class Ledger:
         cls._apply_pipeline_launched_metadata(graph, canonical_id, event)
         cls._apply_obpi_withdrawn_metadata(graph, canonical_id, event)
         cls._apply_obpi_parked_metadata(graph, canonical_id, event)
+        cls._apply_obpi_operator_block_metadata(graph, canonical_id, event)
         cls._apply_obpi_superseded_metadata(graph, canonical_id, event)
         cls._apply_obpi_completion_repudiated_metadata(graph, canonical_id, event)
 
@@ -967,11 +995,13 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     constitution_created_event,
     gate_checked_event,
     lifecycle_transition_event,
+    obpi_blocked_on_operator_event,
     obpi_completion_repudiated_event,
     obpi_completion_uncovered_accept_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
     obpi_superseded_event,
+    obpi_unblocked_event,
     obpi_withdrawn_event,
     pipeline_launched_event,
     pipeline_marker_purged_event,

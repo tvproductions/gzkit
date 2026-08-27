@@ -129,6 +129,7 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
     yield _check_task_envelope_coherence(project_root, brief_path)
     yield _check_adversarial_validation(brief_path)
+    yield _check_operator_block(project_root, obpi_id)
     yield _check_stage2_dispatch(project_root, obpi_id)
 
 
@@ -681,6 +682,70 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
         name="adversarial_validation",
         ok=True,
         message=f"Step 4b records {', '.join(sorted(set(verdicts)))}",
+    )
+
+
+def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
+    """Refuse READY while ``obpi_id`` awaits an operator ruling (GHI #887).
+
+    Reads Layer 2 rather than the pipeline marker's ``required_human_action`` key.
+    ``ADR-0.0.9`` Rule 5, verbatim: *"Layer 3 artifacts cannot block gates. Only
+    L1 (canon) and L2 (events) can be gate evidence."*
+
+    The failure this closes is the licensing direction, the same one GHI #879
+    recorded on the Step-4b verdict: an agent reads ``READY: all N preconditions
+    met`` as authorization and solicits attestation. On ``OBPI-0.35.0-02`` four
+    operator decisions were outstanding while the pipeline kept running, and
+    nothing could say so.
+
+    A missing or unreadable ledger passes. Absence of evidence is not a blocker —
+    fabricating one would make the check unfalsifiable in a fresh project tree.
+    """
+    from gzkit.obpi_lifecycle import operator_block_state  # noqa: PLC0415
+
+    ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    try:
+        text = ledger_path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return CheckResult(
+            name="operator_block",
+            ok=True,
+            message="no ledger readable; no operator block recorded",
+        )
+
+    events: list[dict] = []
+    for line in text.splitlines():
+        if not line.strip():
+            continue
+        try:
+            parsed = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            events.append(parsed)
+
+    entry = operator_block_state(events).get(obpi_id)
+    if entry is None:
+        return CheckResult(
+            name="operator_block",
+            ok=True,
+            message="no outstanding operator ruling",
+        )
+
+    return CheckResult(
+        name="operator_block",
+        ok=False,
+        message=(
+            f"waiting on an operator ruling: {entry['reason']} "
+            f"(action awaited: {entry['next_operator_action']})"
+        ),
+        remediation=(
+            "Completion cannot be solicited while a named human decision is "
+            "outstanding. Record the ruling with `uv run gz obpi unblock "
+            f'{obpi_id} --ruling "<decision>" --operator "<who>"`, then re-run '
+            "this check. If the ruling never lands, the honest state is blocked, "
+            "not ready."
+        ),
     )
 
 

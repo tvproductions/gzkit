@@ -7,9 +7,9 @@
     "constitution_created",
     "discovered_from",
     "intrinsic-complexity-attestation",
-    "mx_session_closed",
-    "mx_session_opened",
+    "obpi_blocked_on_operator",
     "obpi_superseded",
+    "obpi_unblocked",
     "task_escalated",
     "validates"
   ]

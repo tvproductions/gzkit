@@ -8,7 +8,7 @@ all public symbols are re-exported below for backward compatibility.
 from __future__ import annotations
 
 import json
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.lock_manager import list_locks, resolve_agent
 from gzkit.models.persona import load_persona
+from gzkit.obpi_lifecycle import operator_block_state
 
 # ---------------------------------------------------------------------------
 # Re-exports: pipeline_dispatch (task models, classification, review)
@@ -469,6 +470,38 @@ def _stage2_drift_blocker(
     return []
 
 
+def operator_block_blockers(
+    events: Iterable[Mapping[str, Any]],
+    obpi_id: str,
+) -> list[str]:
+    """Refuse a pipeline launch while ``obpi_id`` awaits a human ruling (GHI #887).
+
+    Reads Layer 2 — ``ADR-0.0.9`` Rule 5 is verbatim that *"Layer 3 artifacts
+    cannot block gates. Only L1 (canon) and L2 (events) can be gate evidence."*
+    The pipeline marker already carries ``required_human_action``, and gating on
+    it would have been the cheaper repair and a Rule-5 breach.
+
+    Placed at LAUNCH, not at ``gz obpi complete``. The incident's spend was four
+    ``pipeline_launched`` events in one day against a brief no verdict could
+    rescue; completion is the operator's own act, and a human attesting IS the
+    ruling a block awaits, so gating there would cost two commands for one
+    decision.
+    """
+    blocked = operator_block_state(events)
+    entry = blocked.get(obpi_id)
+    if entry is None:
+        return []
+    return [
+        f"Pipeline launch blocked: {obpi_id} is waiting on an operator ruling. "
+        f"Reason: {entry['reason']}. "
+        f"Operator action awaited: {entry['next_operator_action']}. "
+        "Every stage from here spends against a claim that cannot be accepted "
+        "until that decision lands (GHI #887). Record the ruling with "
+        f'`uv run gz obpi unblock {obpi_id} --ruling "<decision>" --operator "<who>"`, '
+        "then re-launch."
+    ]
+
+
 def check_reconcile_receipt_gate(
     obpi_id: str,
     brief_path: Path,
@@ -765,6 +798,7 @@ __all__ = [
     "load_dispatch_state",
     "load_dispatch_summary",
     "load_model_routing_config",
+    "operator_block_blockers",
     "load_persona_for_dispatch",
     "persist_dispatch_state",
     "persist_dispatch_summary",

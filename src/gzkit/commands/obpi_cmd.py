@@ -38,7 +38,9 @@ from gzkit.hooks.obpi import ObpiValidator
 from gzkit.ledger import (
     Ledger,
     normalize_req_proof_inputs,
+    obpi_blocked_on_operator_event,
     obpi_receipt_emitted_event,
+    obpi_unblocked_event,
     obpi_withdrawn_event,
     parse_frontmatter_value,
     pipeline_launched_event,
@@ -54,6 +56,7 @@ from gzkit.pipeline_runtime import (
     check_reconcile_receipt_gate,
     clear_stale_pipeline_markers,
     load_plan_audit_receipt,
+    operator_block_blockers,
     pipeline_concurrency_blockers,
     pipeline_marker_payload,
     pipeline_plans_dir,
@@ -154,6 +157,85 @@ def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> N
         console.print(f"  Parent ADR: {parent}")
     console.print(f"  Reason: {reason}")
     console.print(f"  Attestor: {attestor}")
+
+
+def _resolve_obpi_for_block(obpi: str) -> tuple[Ledger, str, str]:
+    """Resolve ``obpi`` to (ledger, canonical id, parent) or raise GzCliError."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+    canonical_id = ledger.canonicalize_id(obpi)
+    info = ledger.get_artifact_graph().get(canonical_id, {})
+    if info.get("type") != "obpi":
+        msg = f"OBPI not found in ledger: {canonical_id}"
+        raise GzCliError(msg)  # noqa: TRY003
+    parent = info.get("parent", "")
+    return ledger, canonical_id, parent if isinstance(parent, str) else ""
+
+
+def obpi_block_cmd(obpi: str, reason: str, next_action: str, dry_run: bool) -> None:
+    """Record that an OBPI is waiting on an operator ruling (GHI #887).
+
+    Not a terminal disposition and not attested: the block is an ordinary,
+    reversible statement that the next legitimate action belongs to a human, and
+    ``AGENTS.md`` § Attestation reserves that register for completed work. Any
+    agent may record one — recording the stall is the honest act, and requiring a
+    human to authorize saying "a human is needed" would reproduce the deadlock.
+    """
+    if not reason.strip() or not next_action.strip():
+        console.print(
+            "[red]Error:[/red] --reason and --next-action must both be non-empty. "
+            "A block naming no awaited action is a complaint, not a state a "
+            "second reader can discharge."
+        )
+        raise SystemExit(1)
+
+    ledger, canonical_id, parent = _resolve_obpi_for_block(obpi)
+    event = obpi_blocked_on_operator_event(
+        obpi_id=canonical_id,
+        parent=parent,
+        reason=reason,
+        next_operator_action=next_action,
+    )
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.model_dump(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print(f"[yellow]Blocked on operator:[/yellow] {canonical_id}")
+    console.print(f"  Reason: {reason}")
+    console.print(f"  Operator action awaited: {next_action}")
+    console.print("  The pipeline will refuse to launch against this OBPI until it is unblocked.")
+
+
+def obpi_unblock_cmd(obpi: str, ruling: str, operator: str, dry_run: bool) -> None:
+    """Record the operator's ruling and release the block (GHI #887).
+
+    ``--ruling`` carries the operator's decision verbatim per ``AGENTS.md``
+    § Attestation — the agent seats the operator's words, never rewrites them.
+    """
+    if not ruling.strip() or not operator.strip():
+        console.print(
+            "[red]Error:[/red] --ruling and --operator must both be non-empty. "
+            "The ruling is what makes the block's discharge readable from the "
+            "ledger rather than only from the session that produced it."
+        )
+        raise SystemExit(1)
+
+    ledger, canonical_id, parent = _resolve_obpi_for_block(obpi)
+    event = obpi_unblocked_event(
+        obpi_id=canonical_id, parent=parent, ruling=ruling, operator=operator
+    )
+    if dry_run:
+        console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
+        console.print(json.dumps(event.model_dump(), indent=2))
+        return
+
+    ledger.append(event)
+    console.print(f"[green]Unblocked:[/green] {canonical_id}")
+    console.print(f"  Ruling: {ruling}")
+    console.print(f"  Operator: {operator}")
 
 
 def obpi_supersede_cmd(obpi: str, by: str, rationale: str, attestor: str, dry_run: bool) -> None:
@@ -586,6 +668,20 @@ def _run_pipeline_full_launch_task_start(
         console.print(f"  - {task_id}")
 
 
+def _enforce_operator_block(ledger: Ledger, obpi_id: str) -> None:
+    """Refuse the launch while ``obpi_id`` awaits a human ruling (GHI #887).
+
+    Reads Layer 2, never the pipeline marker: ADR-0.0.9 Rule 5 is verbatim that
+    only L1 and L2 can be gate evidence. Placed before the marker write and the
+    ``pipeline_launched`` event, so a blocked OBPI buys no stage sequence and
+    leaves no marker behind.
+    """
+    blockers = operator_block_blockers((event.model_dump() for event in ledger.read_all()), obpi_id)
+    if blockers:
+        _print_pipeline_blockers(obpi_id, blockers)
+        raise SystemExit(3)
+
+
 def _run_airlock_in_diagnostic(obpi_id: str, obpi_file: Path, project_root: Path) -> None:
     """Reach the airlock-IN primitive at the Stage-1 seam (ADR-0.33.0 tracer).
 
@@ -682,6 +778,8 @@ def obpi_pipeline_cmd(
     if reconcile_blockers:
         _print_pipeline_blockers(obpi_id, reconcile_blockers)
         raise SystemExit(3)
+
+    _enforce_operator_block(ledger, obpi_id)
 
     _run_airlock_in_diagnostic(obpi_id, obpi_file, project_root)
 

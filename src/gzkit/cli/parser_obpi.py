@@ -387,6 +387,66 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         )
     )
 
+    p_obpi_block = obpi_commands.add_parser(
+        "block",
+        help="Record that an OBPI is waiting on an operator ruling",
+        description=(
+            "Record an obpi_blocked_on_operator event. The pipeline refuses to "
+            "launch against a blocked OBPI until `gz obpi unblock` records the "
+            "ruling (GHI #887). Reversible and unattested: the block states that "
+            "the next legitimate action belongs to a human, not that work ended."
+        ),
+        epilog=build_epilog(
+            [
+                'gz obpi block OBPI-0.35.0-02 --reason "REQ-04 contradicts its own'
+                ' counterexample test" --next-action "amend REQ-04 under attestation,'
+                ' or change persistence to append without reserializing"',
+            ]
+        ),
+    )
+    p_obpi_block.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
+    p_obpi_block.add_argument(
+        "--reason", required=True, help="Why the OBPI cannot proceed without a human"
+    )
+    p_obpi_block.add_argument(
+        "--next-action",
+        dest="next_action",
+        required=True,
+        help="The concrete decision the operator owes (non-empty)",
+    )
+    add_dry_run_flag(p_obpi_block)
+    p_obpi_block.set_defaults(
+        func=lambda a: _lazy("obpi_block_cmd")(
+            obpi=a.obpi, reason=a.reason, next_action=a.next_action, dry_run=a.dry_run
+        )
+    )
+
+    p_obpi_unblock = obpi_commands.add_parser(
+        "unblock",
+        help="Record the operator ruling that releases a blocked OBPI",
+        description=(
+            "Record an obpi_unblocked event, releasing the block recorded by "
+            "`gz obpi block` and restoring pipeline launch (GHI #887). --ruling "
+            "carries the operator's decision verbatim."
+        ),
+        epilog=build_epilog(
+            [
+                'gz obpi unblock OBPI-0.35.0-02 --ruling "amend REQ-04" --operator "g0"',
+            ]
+        ),
+    )
+    p_obpi_unblock.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.21.0-01)")
+    p_obpi_unblock.add_argument(
+        "--ruling", required=True, help="The operator's decision, verbatim (non-empty)"
+    )
+    p_obpi_unblock.add_argument("--operator", required=True, help="Who ruled (non-empty)")
+    add_dry_run_flag(p_obpi_unblock)
+    p_obpi_unblock.set_defaults(
+        func=lambda a: _lazy("obpi_unblock_cmd")(
+            obpi=a.obpi, ruling=a.ruling, operator=a.operator, dry_run=a.dry_run
+        )
+    )
+
     p_obpi_supersede = obpi_commands.add_parser(
         "supersede",
         help="Supersede one OBPI by another",

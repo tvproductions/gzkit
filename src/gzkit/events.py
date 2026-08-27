@@ -352,6 +352,47 @@ class ObpiUnparkedEvent(_EventBase):
     reason: str = Field(..., min_length=1, description="Transition that released the park")
 
 
+class ObpiBlockedOnOperatorEvent(_EventBase):
+    """obpi_blocked_on_operator event — the OBPI's next legitimate action is a human's.
+
+    Authored under GHI #887. Measured on ``OBPI-0.35.0-02`` over 2026-08-25/26:
+    the brief became structurally uncompletable — every remaining finding needed
+    an operator decision, not an implementation — and the pipeline kept launching
+    against it. 21 ``red_receipt_emitted``, 10 ``task_started``, ZERO
+    ``task_completed``, 4 ``pipeline_launched``, 4 agents, three adversary rounds
+    run after the claim could no longer be accepted regardless of their verdict.
+
+    Distinct from ``obpi_parked``, whose required ``parked_to`` names the pool id
+    the parent ADR became: here the parent is live and the brief is fine. Distinct
+    from ``task_blocked``, which is one TASK inside the brief, not the brief.
+
+    ``next_operator_action`` is required alongside ``reason`` and carries the
+    concrete decision awaited. A reason alone records a complaint; naming the
+    action is what makes the block dischargeable by someone other than its author.
+    """
+
+    event: Literal["obpi_blocked_on_operator"]
+    reason: str = Field(..., min_length=1, description="Why the OBPI cannot proceed")
+    next_operator_action: str = Field(
+        ..., min_length=1, description="The concrete decision the operator owes"
+    )
+
+
+class ObpiUnblockedEvent(_EventBase):
+    """obpi_unblocked event — the operator ruled and the OBPI may proceed (GHI #887).
+
+    Composes with ``obpi_blocked_on_operator`` as a forward corrective pair over
+    the append-only ledger; ``gzkit.obpi_lifecycle.operator_block_state`` nets the
+    sequence. ``ruling`` carries the operator's decision so the block's discharge
+    is readable from Layer 2 rather than only from the session that produced it —
+    the same durability argument GHI #676 made for the Step-4b verdict.
+    """
+
+    event: Literal["obpi_unblocked"]
+    ruling: str = Field(..., min_length=1, description="The operator's decision, verbatim")
+    operator: str = Field(..., min_length=1, description="Who ruled")
+
+
 class ObpiSupersededEvent(_EventBase):
     """obpi_superseded event — one OBPI superseded by another (OBPI-0.31.0-02).
 
@@ -1094,6 +1135,8 @@ TypedLedgerEvent = Annotated[
     | ObpiWithdrawnEvent
     | ObpiParkedEvent
     | ObpiUnparkedEvent
+    | ObpiBlockedOnOperatorEvent
+    | ObpiUnblockedEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
     | SecurityFloorOverriddenEvent

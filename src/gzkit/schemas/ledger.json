@@ -1891,6 +1891,38 @@
           "min_length": 1
         }
       }
+    },
+    "obpi_blocked_on_operator": {
+      "required": [
+        "reason",
+        "next_operator_action"
+      ],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        },
+        "next_operator_action": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
+    "obpi_unblocked": {
+      "required": [
+        "ruling",
+        "operator"
+      ],
+      "properties": {
+        "ruling": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

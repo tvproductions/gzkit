@@ -156,6 +156,47 @@ def security_floor_overridden_event(
     )
 
 
+def obpi_blocked_on_operator_event(
+    obpi_id: str,
+    parent: str,
+    reason: str,
+    next_operator_action: str,
+) -> LedgerEvent:
+    """Create an obpi_blocked_on_operator event (GHI #887).
+
+    Both payload fields are required with no default. The block exists so a
+    reader other than its author can discharge it, and a block naming no awaited
+    action is a complaint rather than a state — the shape that let the incident
+    run: four agents each re-derived that a human was needed and none could say so.
+    """
+    return LedgerEvent(
+        event="obpi_blocked_on_operator",
+        id=obpi_id,
+        parent=parent,
+        extra={"reason": reason, "next_operator_action": next_operator_action},
+    )
+
+
+def obpi_unblocked_event(
+    obpi_id: str,
+    parent: str,
+    ruling: str,
+    operator: str,
+) -> LedgerEvent:
+    """Create an obpi_unblocked event (GHI #887).
+
+    The inverse of :func:`obpi_blocked_on_operator_event`. ``ruling`` carries the
+    operator's decision verbatim per ``AGENTS.md`` § Attestation — the agent seats
+    the operator's words, never rewrites them.
+    """
+    return LedgerEvent(
+        event="obpi_unblocked",
+        id=obpi_id,
+        parent=parent,
+        extra={"ruling": ruling, "operator": operator},
+    )
+
+
 def obpi_superseded_event(
     obpi_id: str,
     parent: str,

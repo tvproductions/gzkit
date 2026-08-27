@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-25
 metadata:
-  skill-version: "6.41.0"
+  skill-version: "6.42.0"
 model: sonnet
 ---
 
@@ -1010,6 +1010,50 @@ verified reality — fewer GHIs, less friction, the brief stays honest.
 **Lock bracket:** Lock is claimed at Stage 1 and released at Stage 5 AND on any abort/handoff. No orphaned locks.
 
 **Handoff creation:** On any abort, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context for the next session.
+
+---
+
+## Blocked on the Operator (GHI #887)
+
+**When the next legitimate action is a human's, say so in the ledger and stop.**
+
+A brief becomes *blocked* — not failed, not abandoned — when every remaining
+finding needs an operator decision rather than an implementation: a REQ amendment
+under attestation, an allowlist widening, a Denied-Path collision, a
+conflicting-canon ruling. `AGENTS.md` § Behavior Rules — Always #18 and #9 both
+address the agent here (*"Surface blocking failures clearly and upfront"*;
+*"STOP, name confusion, present tradeoff, wait"*), and until GHI #887 neither had
+a state the pipeline could enter.
+
+```bash
+uv run gz obpi block {OBPI-SLUG} \
+  --reason "<what cannot proceed without a human>" \
+  --next-action "<the concrete decision the operator owes>"
+```
+
+While the block stands, `gz obpi pipeline` refuses to launch against the OBPI
+(exit 3) and `gz obpi precomplete` reports it instead of `READY`. The operator
+clears it with their own words:
+
+```bash
+uv run gz obpi unblock {OBPI-SLUG} --ruling "<decision>" --operator "<who>"
+```
+
+**Why this is not a lock, a park, or a withdrawal.** The lock says *who is
+working*; `obpi_parked` says *the parent ADR left active status* (its `parked_to`
+is a pool id, and here the parent is live); withdrawal is permanent and attested.
+A block says only that a decision is owed, and it is reversible by construction.
+
+**No attestor is required to record a block.** Requiring a human to authorize
+the statement *"a human is needed"* would reproduce the deadlock it exists to
+break. The ruling that clears it is the operator's; the observation that one is
+needed is the agent's, and recording it is the honest act.
+
+**Measured cost of not having this** (`OBPI-0.35.0-02`, 2026-08-25/26): 21
+`red_receipt_emitted`, 10 `task_started`, **zero** `task_completed`, four
+`pipeline_launched` and three adversary rounds in the 24 hours after the brief
+became structurally uncompletable. Four agents each re-derived that a human was
+needed; none could record it, so each kept working the surrounding surface.
 
 ---
 

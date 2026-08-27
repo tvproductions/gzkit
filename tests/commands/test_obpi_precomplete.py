@@ -16,6 +16,7 @@ from gzkit.commands.obpi_precomplete import (
     _check_brief_headings_scoped,
     _check_brief_readiness,
     _check_lock_held,
+    _check_operator_block,
     _check_plan_audit_receipt,
     _check_reconcile_idempotent,
     _check_task_envelope_coherence,
@@ -436,7 +437,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi_id"], "OBPI-0.1.0-01")
             self.assertIn("ready", payload)
-            self.assertEqual(len(payload["checks"]), 10)
+            self.assertEqual(len(payload["checks"]), 11)
             self.assertEqual(
                 {c["name"] for c in payload["checks"]},
                 {
@@ -450,6 +451,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
                     "task_envelope_coherence",
                     "adversarial_validation",  # GHI #676
                     "stage2_dispatch",  # GHI #845
+                    "operator_block",  # GHI #887
                 },
             )
 
@@ -791,6 +793,111 @@ class TestPrecompleteAdversarialValidationCheck(unittest.TestCase):
         """Step 4b is a heavy-lane gate; the lite lane never reaches the verdict read."""
         result = _check_adversarial_validation(self._seed("**Verdict: REFUTED**", lane="Lite"))
         self.assertTrue(result.ok, msg=result.message)
+
+
+class TestPrecompleteOperatorBlockCheck(unittest.TestCase):
+    """Precomplete must not report READY while a human ruling is outstanding (GHI #887).
+
+    `gz obpi precomplete` exists to spare the operator a rejected completion, and
+    an agent reads `READY: all N preconditions met` as authorization to solicit
+    attestation. On `OBPI-0.35.0-02` four operator decisions were pending while the
+    pipeline kept running; nothing in the vocabulary could say so.
+    """
+
+    OBPI = "OBPI-0.1.0-01"
+
+    @staticmethod
+    def _seed(root: Path, events: list[dict]) -> None:
+        gzkit_dir = root / ".gzkit"
+        gzkit_dir.mkdir(parents=True, exist_ok=True)
+        (gzkit_dir / "ledger.jsonl").write_text(
+            "".join(json.dumps(e) + "\n" for e in events), encoding="utf-8"
+        )
+
+    def test_passes_when_no_block_is_recorded(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._seed(root, [])
+            result = _check_operator_block(root, self.OBPI)
+            self.assertEqual(result.name, "operator_block")
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_fails_while_an_operator_ruling_is_outstanding(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._seed(
+                root,
+                [
+                    {
+                        "event": "obpi_blocked_on_operator",
+                        "id": self.OBPI,
+                        "reason": "REQ-04 amendment",
+                        "next_operator_action": "amend REQ-04 under attestation",
+                    }
+                ],
+            )
+            result = _check_operator_block(root, self.OBPI)
+            self.assertFalse(result.ok, msg=result.message)
+            self.assertIn("amend REQ-04 under attestation", result.message)
+            self.assertIsNotNone(result.remediation)
+            assert result.remediation is not None
+            self.assertIn("gz obpi unblock", result.remediation)
+
+    def test_passes_again_once_the_operator_has_ruled(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._seed(
+                root,
+                [
+                    {
+                        "event": "obpi_blocked_on_operator",
+                        "id": self.OBPI,
+                        "reason": "REQ-04 amendment",
+                        "next_operator_action": "amend REQ-04",
+                    },
+                    {
+                        "event": "obpi_unblocked",
+                        "id": self.OBPI,
+                        "ruling": "amended",
+                        "operator": "g0",
+                    },
+                ],
+            )
+            result = _check_operator_block(root, self.OBPI)
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_a_sibling_obpis_block_does_not_stall_this_one(self) -> None:
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            self._seed(
+                root,
+                [
+                    {
+                        "event": "obpi_blocked_on_operator",
+                        "id": "OBPI-0.1.0-02",
+                        "reason": "unrelated",
+                        "next_operator_action": "rule on the sibling",
+                    }
+                ],
+            )
+            result = _check_operator_block(root, self.OBPI)
+            self.assertTrue(result.ok, msg=result.message)
+
+    def test_a_missing_ledger_does_not_invent_a_block(self) -> None:
+        """Absence of a ledger is absence of evidence, never a fabricated blocker."""
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as td:
+            result = _check_operator_block(Path(td), self.OBPI)
+            self.assertTrue(result.ok, msg=result.message)
 
 
 if __name__ == "__main__":  # pragma: no cover

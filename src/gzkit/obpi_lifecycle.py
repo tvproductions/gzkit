@@ -32,6 +32,9 @@ COMPLETION_EVENTS = frozenset({"obpi_receipt_emitted"})
 _PARK = "obpi_parked"
 _UNPARK = "obpi_unparked"
 
+_BLOCK = "obpi_blocked_on_operator"
+_UNBLOCK = "obpi_unblocked"
+
 
 def _event_type(event: Mapping[str, Any]) -> str:
     return str(event.get("event", ""))
@@ -83,6 +86,49 @@ def park_state(events: Iterable[Mapping[str, Any]]) -> dict[str, bool]:
         elif kind == _UNPARK:
             state[str(event.get("id", ""))] = False
     state.pop("", None)
+    return state
+
+
+def operator_block_state(
+    events: Iterable[Mapping[str, Any]],
+) -> dict[str, dict[str, str]]:
+    """Return ``{obpi_id: {reason, next_operator_action}}`` for OBPIs awaiting a human.
+
+    Block and unblock compose as forward corrective events by
+    last-event-wins, the same way :func:`park_state` composes — the ledger is
+    append-only, so current state is the net of the sequence, never an edit
+    (``AGENTS.md`` Never #2). An unblock for an OBPI that was never blocked is
+    inert rather than synthesizing a record.
+
+    **Why this lives in Layer 2 rather than the pipeline marker (GHI #887).**
+    The marker already carries ``required_human_action`` and ``next_command``
+    keys, and the cheaper repair would have been to populate them and gate stage
+    advance on them. ``ADR-0.0.9`` Rule 5 forbids it in as many words: *"Layer 3
+    artifacts cannot block gates. Only L1 (canon) and L2 (events) can be gate
+    evidence. L3 can surface warnings but never fail-close a gate."* Markers are
+    named Layer 3 in that ADR's own table, so a guard reading one would be a gate
+    decision tracing to Layer 3 — the defect GHI #886 files against Stage-2
+    dispatch credit, reproduced on a second fact.
+
+    ``obpi_parked`` could not carry this. Its ``parked_to`` field is required
+    non-empty and names the pool id the parent ADR became, so the vocabulary
+    already spends that term on a different subject: a parked OBPI is fine and
+    its parent left, whereas a blocked one is fine, its parent is live, and a
+    human owes it a decision.
+    """
+    state: dict[str, dict[str, str]] = {}
+    for event in events:
+        kind = _event_type(event)
+        obpi_id = str(event.get("id", ""))
+        if not obpi_id:
+            continue
+        if kind == _BLOCK:
+            state[obpi_id] = {
+                "reason": _field(event, "reason"),
+                "next_operator_action": _field(event, "next_operator_action"),
+            }
+        elif kind == _UNBLOCK:
+            state.pop(obpi_id, None)
     return state
 
 

@@ -56,6 +56,8 @@ uv run gz airlock out --target <OBPI> --dry-run # Airlock-OUT exit drift-diff me
 uv run gz obpi repudiate OBPI-<X.Y.Z-NN> --cause <enum> --reason "..." --attestor "<human>" # Repudiate fraudulent/erroneous completion (reverse-and-keep; OBPI stays live)
 uv run gz obpi withdraw OBPI-<X.Y.Z-NN> --reason "..." --attestor "<human>" # Withdraw OBPI from counts (permanent retirement; witnessed transition)
 uv run gz obpi supersede OBPI-<X.Y.Z-NN> --by OBPI-<X.Y.Z-MM> --rationale "..." --attestor "<human>" # Supersede one OBPI by another (witnessed transition; superseded node marked in graph)
+uv run gz obpi block OBPI-<X.Y.Z-NN> --reason "..." --next-action "..." # Record an outstanding operator ruling (reversible, unattested; blocks pipeline launch)
+uv run gz obpi unblock OBPI-<X.Y.Z-NN> --ruling "..." --operator "<who>" # Record the ruling verbatim and release the block
 uv run gz obpi lock claim OBPI-<X.Y.Z-NN>  # Claim OBPI work lock
 uv run gz obpi lock release OBPI-<X.Y.Z-NN> # Release OBPI work lock
 uv run gz obpi lock check OBPI-<X.Y.Z-NN>  # Check if OBPI is locked
