@@ -1007,6 +1007,8 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     pipeline_marker_purged_event,
     prd_created_event,
     project_init_event,
+    stage2_dispatch_recorded_event,
+    stage2_single_driver_declared_event,
 )
 from gzkit.ledger_proof import (  # noqa: E402, F401
     normalize_req_proof_inputs,

@@ -393,6 +393,53 @@ class ObpiUnblockedEvent(_EventBase):
     operator: str = Field(..., min_length=1, description="Who ruled")
 
 
+class Stage2DispatchRecordedEvent(_EventBase):
+    """stage2_dispatch_recorded event — one mandated Stage-2 role produced input.
+
+    Authored under GHI #886. Dispatch credit previously lived ONLY in the
+    pipeline marker under ``.claude/plans/``, which ``ADR-0.0.9``'s own table
+    names Layer 3. Rule 5 of that ADR forecloses reading it for a verdict:
+    *"Layer 3 artifacts cannot block gates. Only L1 (canon) and L2 (events) can
+    be gate evidence."*
+
+    Measured on ``OBPI-0.35.0-02``, 2026-08-26: implementer + spec-reviewer +
+    quality-reviewer were dispatched and recorded 3/3 across two tasks, their
+    findings drove two fix cycles, and the records were destroyed by
+    ``gz obpi pipeline --clear-stale`` — the SANCTIONED recovery path. The gate
+    then reported 0 of 3 against a run that had complied, and the loss was
+    indistinguishable from the dispatch never having happened.
+
+    The sibling that got this right is ``adversarial_validation``, whose own
+    docstring states the principle this event was missing: without a ledger row
+    the verdict lives only in an agent transcript or a vendor cache, so a run
+    that skipped the gate and one that passed it leave identical records.
+    """
+
+    event: Literal["stage2_dispatch_recorded"]
+    role: str = Field(..., min_length=1, description="Mandated Stage-2 role dispatched")
+    model: str = Field(..., min_length=1, description="Model tier the role was dispatched at")
+    task_id: int = Field(..., description="TASK the dispatch was made against")
+
+
+class Stage2SingleDriverDeclaredEvent(_EventBase):
+    """stage2_single_driver_declared event — a knowingly undispatched Stage 2 (GHI #886).
+
+    The declaration is the COMPLIANT path for a session that genuinely cannot
+    dispatch, and it is what converts the Stage-5 gate from BLOCK to PASS. It
+    therefore has exactly the durability requirement its sibling has: a
+    declaration destroyed by ``--clear-stale`` silently returns a declared run to
+    the silent single-driver state the gate exists to refuse.
+
+    Fixing only ``stage2_dispatch_recorded`` would have left the gate
+    half-durable — the same defect surviving on the other half of the same
+    verdict, which is the instance-not-class shape ``AGENTS.md`` § DO IT RIGHT #1
+    forbids.
+    """
+
+    event: Literal["stage2_single_driver_declared"]
+    reason: str = Field(..., min_length=1, description="Why this run could not dispatch")
+
+
 class ObpiSupersededEvent(_EventBase):
     """obpi_superseded event — one OBPI superseded by another (OBPI-0.31.0-02).
 
@@ -1137,6 +1184,8 @@ TypedLedgerEvent = Annotated[
     | ObpiUnparkedEvent
     | ObpiBlockedOnOperatorEvent
     | ObpiUnblockedEvent
+    | Stage2DispatchRecordedEvent
+    | Stage2SingleDriverDeclaredEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
     | SecurityFloorOverriddenEvent

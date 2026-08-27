@@ -26,9 +26,10 @@ changing it.
 
 ## Runtime Behavior
 
-- Appends a `SubagentDispatchRecord` to the active pipeline marker's
-  `dispatch_state` via `persist_dispatch_state`, so `gz obpi precomplete` can
-  attest the dispatch at Stage 5
+- Appends a `stage2_dispatch_recorded` event to `.gzkit/ledger.jsonl`, which is
+  what `gz obpi precomplete` credits at Stage 5. The active pipeline marker's
+  `dispatch_state` is refreshed too, but only as a cache `gz roles` reads — no
+  verdict consults it (GHI #886)
 - Prints the full mandated roster after every invocation, including roles that
   have not been dispatched
 - **Credit is never inferred.** A role reports `DISPATCHED` only when a record
@@ -43,12 +44,32 @@ changing it.
 
 `--single-driver` is the compliant path for a session that genuinely cannot
 dispatch — a cron run, a harness without an Agent tool, an operator instruction
-forbidding subagents. The declaration and its reason are written to the marker
-and rendered in the channel.
+forbidding subagents. The declaration and its reason are recorded as a
+`stage2_single_driver_declared` ledger event and rendered in the channel.
 
 Declared single-driver **passes** `gz obpi precomplete`. Silent single-driver
 does not. A gate with no compliant path for a dispatch-less session is
 un-compliable, and an un-compliable gate gets worked around rather than obeyed.
+
+## Why the ledger, not the marker
+
+Both facts this command records are **Layer-2 evidence** (GHI #886). `ADR-0.0.9`
+names pipeline markers Layer 3 and its Rule 5 states the consequence: *"Layer 3
+artifacts cannot block gates. Only L1 (canon) and L2 (events) can be gate
+evidence."*
+
+Measured on `OBPI-0.35.0-02`, 2026-08-26: a run that dispatched 3/3 across two
+tasks had its credit destroyed by `gz obpi pipeline --clear-stale` — the
+sanctioned recovery path, not misuse — and Stage 5 then reported 0 of 3 against a
+run that had complied. Because the channel never infers credit (correctly), the
+loss was unrecoverable except by a prose declaration asserting the lost fact.
+
+Two consequences worth knowing at the command line:
+
+- Dispatch credit and a single-driver declaration both **survive** clearing the
+  marker and relaunching the pipeline.
+- Hand-writing `dispatch_state` or `single_driver_declaration` into a marker file
+  buys **nothing**. Only this command's ledger events are credited.
 
 ## Exit Codes
 

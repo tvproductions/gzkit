@@ -10,6 +10,8 @@
     "obpi_blocked_on_operator",
     "obpi_superseded",
     "obpi_unblocked",
+    "stage2_dispatch_recorded",
+    "stage2_single_driver_declared",
     "task_escalated",
     "validates"
   ]

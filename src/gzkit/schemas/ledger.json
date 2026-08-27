@@ -1923,6 +1923,37 @@
           "min_length": 1
         }
       }
+    },
+    "stage2_dispatch_recorded": {
+      "required": [
+        "role",
+        "model",
+        "task_id"
+      ],
+      "properties": {
+        "role": {
+          "type": "string",
+          "min_length": 1
+        },
+        "model": {
+          "type": "string",
+          "min_length": 1
+        },
+        "task_id": {
+          "type": "integer"
+        }
+      }
+    },
+    "stage2_single_driver_declared": {
+      "required": [
+        "reason"
+      ],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

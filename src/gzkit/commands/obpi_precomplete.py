@@ -167,8 +167,11 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
             ),
         )
 
-    channel = dispatch_channel(plans_dir, obpi_id)
-    declaration = single_driver_declaration(plans_dir, obpi_id)
+    # project_root, not plans_dir: since GHI #886 the channel's evidence is the
+    # Layer-2 ledger, and the marker below is consulted only to answer whether a
+    # pipeline is running at all.
+    channel = dispatch_channel(project_root, obpi_id)
+    declaration = single_driver_declaration(project_root, obpi_id)
     rendered = render_dispatch_channel(channel, declaration=declaration)
 
     if not is_single_driver(channel) or declaration:

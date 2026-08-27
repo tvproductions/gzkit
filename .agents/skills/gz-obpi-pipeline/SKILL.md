@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-25
 metadata:
-  skill-version: "6.42.0"
+  skill-version: "6.43.0"
 model: sonnet
 ---
 
@@ -304,7 +304,7 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
 
    e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.
 
-   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This persists a `SubagentDispatchRecord` to the active marker so Stage 5 can attest it. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. Declared single-driver passes Stage 5; silent single-driver does not.
+   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This appends a `stage2_dispatch_recorded` event to the ledger, which is what Stage 5 credits; the marker's `dispatch_state` is refreshed only as a cache. The credit therefore SURVIVES `--clear-stale` and a relaunch (GHI #886) — it did not before 2026-08-27, and a compliant 3/3 run lost its whole review record to that sanctioned recovery path. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. Declared single-driver passes Stage 5; silent single-driver does not.
 
    g. **Handle result status:**
       - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)
@@ -347,8 +347,8 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          ```
          Wait for both to complete. Parse `ReviewResult` from each using `parse_review_result()`.
 
-      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This creates `SubagentDispatchRecord` entries for each
-         reviewer (role="Spec Reviewer" / role="Quality Reviewer") with model, timestamps, and result.
+      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This records one `stage2_dispatch_recorded` ledger event per
+         reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.
 
       vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result)`:
          - Both reviewers pass → **advance** to next task (or complete if last task)

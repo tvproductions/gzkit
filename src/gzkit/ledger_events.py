@@ -197,6 +197,46 @@ def obpi_unblocked_event(
     )
 
 
+def stage2_dispatch_recorded_event(
+    obpi_id: str,
+    parent: str,
+    role: str,
+    model: str,
+    task_id: int,
+) -> LedgerEvent:
+    """Create a stage2_dispatch_recorded event (GHI #886).
+
+    One row per dispatched role. The channel credits a role from these rows and
+    from nothing else, so the append-only ledger — not the disposable pipeline
+    marker — is what a Stage-5 verdict traces to.
+    """
+    return LedgerEvent(
+        event="stage2_dispatch_recorded",
+        id=obpi_id,
+        parent=parent,
+        extra={"role": role, "model": model, "task_id": task_id},
+    )
+
+
+def stage2_single_driver_declared_event(
+    obpi_id: str,
+    parent: str,
+    reason: str,
+) -> LedgerEvent:
+    """Create a stage2_single_driver_declared event (GHI #886).
+
+    ``reason`` is required and non-empty for the same argument that makes the
+    declaration permissible at all: declaring is compliant precisely because it
+    is VISIBLE, and a declaration naming no reason discloses nothing.
+    """
+    return LedgerEvent(
+        event="stage2_single_driver_declared",
+        id=obpi_id,
+        parent=parent,
+        extra={"reason": reason},
+    )
+
+
 def obpi_superseded_event(
     obpi_id: str,
     parent: str,

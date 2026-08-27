@@ -57,6 +57,25 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "durable relationship between artifacts, and since the gate's retirement they "
         "gate nothing at all."
     ),
+    "stage2_dispatch_recorded": (
+        "One mandated Stage-2 role produced receipted independent input (GHI #886). "
+        "Process evidence about HOW an OBPI's Stage 2 was executed, not a relationship "
+        "between artifacts: the OBPI is already a graph node via `obpi_created`, and "
+        "this adds no second artifact to link it to. Its sole consumer is "
+        "`_check_stage2_dispatch`, which counts roles at Stage 5. Same disposition and "
+        "same reasoning as `red_receipt_emitted` one entry down — evidence attaching to "
+        "a governance act, not lineage. Contrast `obpi_blocked_on_operator`, which DOES "
+        "carry a handler: that one is a reversible STATE of the node itself, so `gz "
+        "state` must show it; a dispatch record is an accumulating log, and there is no "
+        "flag on the node it would set."
+    ),
+    "stage2_single_driver_declared": (
+        "A knowingly-undispatched Stage 2, declared with its reason (GHI #886). Waived "
+        "on identical grounds to `stage2_dispatch_recorded` above, and deliberately "
+        "given the same disposition: the two are the two halves of one Stage-5 verdict, "
+        "and splitting their treatment would be the instance-not-class shape this pair "
+        "was fixed together to avoid."
+    ),
     "red_receipt_emitted": (
         "Base-tree RED falsifiability witness for one BEHAVIOR REQ (GHI #642). Evidence "
         "that the REQ's covering test fails without its implementation; read by "

@@ -73,6 +73,8 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "adr_annotated",
         "adr_eval_completed",
         "adversarial_validation",
+        "stage2_dispatch_recorded",
+        "stage2_single_driver_declared",
         "agent_sync_completed",
         "airlock_in",
         "airlock_out",

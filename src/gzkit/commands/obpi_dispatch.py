@@ -51,7 +51,7 @@ def obpi_dispatch_cmd(
         if not reason:
             print("--single-driver requires --reason.")  # noqa: T201
             return 1
-        declare_single_driver(plans_dir, obpi_id, reason=reason)
+        declare_single_driver(project_root, obpi_id, reason=reason)
     elif role:
         if role not in MANDATED_STAGE2_ROLES:
             allowed = ", ".join(MANDATED_STAGE2_ROLES)
@@ -60,12 +60,12 @@ def obpi_dispatch_cmd(
         if not model:
             print("--role requires --model (the dispatch model tier).")  # noqa: T201
             return 1
-        record_dispatch(plans_dir, obpi_id, role=role, model=model, task_id=task_id)
+        record_dispatch(project_root, obpi_id, role=role, model=model, task_id=task_id)
 
     print(  # noqa: T201
         render_dispatch_channel(
-            dispatch_channel(plans_dir, obpi_id),
-            declaration=single_driver_declaration(plans_dir, obpi_id),
+            dispatch_channel(project_root, obpi_id),
+            declaration=single_driver_declaration(project_root, obpi_id),
         )
     )
     return 0

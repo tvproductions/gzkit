@@ -73,6 +73,8 @@ from gzkit.events import (
     RenditionCommittedEvent,
     SecurityFloorOverriddenEvent,
     SessionExitBookmarkSkippedEvent,
+    Stage2DispatchRecordedEvent,
+    Stage2SingleDriverDeclaredEvent,
     SurfaceWeightRecalibratedEvent,
     TaskBlockedEvent,
     TaskCompletedEvent,
@@ -339,6 +341,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,
     "obpi_unblocked": ObpiUnblockedEvent,
+    "stage2_dispatch_recorded": Stage2DispatchRecordedEvent,
+    "stage2_single_driver_declared": Stage2SingleDriverDeclaredEvent,
     "obpi_unparked": ObpiUnparkedEvent,
     # Foundation Sunset terminality witness (ADR-0.34.0, OBPI-04)
     "foundation_grandfathered": FoundationGrandfatheredEvent,
