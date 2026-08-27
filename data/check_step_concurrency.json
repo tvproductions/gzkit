@@ -2,7 +2,7 @@
   "_doc": "Concurrency declaration for `gz check` steps (GHI #835). MEASURED, never assumed: each step ran alone against a marker file and anything newer afterwards is something that step wrote, which catches writes outside git as well as tracked ones. The GHI is explicit that this declaration is the deliverable and the speedup only its consequence -- 'A parallel runner over steps with an undeclared dependency is a flaky gate, which is strictly worse than a slow one.' A step absent from `steps` fails the gate closed (tests/governance/test_check_step_concurrency.py); a new step is DECLARED, never defaulted. `measured_seconds` is a dated record for routing attention, never a threshold anything enforces.",
   "measured": "2026-08-22",
   "measured_at_commit": "884c4e67",
-  "protocol": "Writers run serially, in list order, before any read-only step starts. Read-only steps then run concurrently. This preserves the one measured producer->consumer edge (Behave builds dist/, Validate default scopes reads it) without needing a general dependency graph.",
+  "protocol": "Writers run serially, in list order, before any read-only step starts. Read-only steps then run concurrently. This preserves the one measured producer->consumer edge (Behave builds dist/, Validate default scopes reads it) without needing a general dependency graph. That edge is now CROSS-PHASE rather than in-list: GHI #891 made Validate default scopes read_only, and the phase boundary carries the dependency more strongly than list order did, because every writer finishes before any reader begins.",
   "steps": {
     "Lint": {
       "class": "read_only",
@@ -41,20 +41,8 @@
       "measured_seconds": 4.17
     },
     "Validate default scopes": {
-      "class": "writes",
-      "paths": [
-        ".agents/",
-        ".claude/",
-        ".copilotignore/",
-        ".github/",
-        ".gzkit/",
-        "AGENTS.md/",
-        "CLAUDE.md/",
-        "docs/",
-        "src/",
-        "tests/"
-      ],
-      "why": "Rewrites vendor persona mirrors under .agents/personas/. A validator that mutates canonical mirrors is its own smell (recorded, not fixed here); what matters for concurrency is that Skill audit, Parity check, Surface fidelity and Fidelity presence all READ those mirrors.",
+      "class": "read_only",
+      "why": "Reclassified from `writes` under GHI #891, and only once the write became IMPOSSIBLE rather than rare. `check_sync_parity` used to establish parity by PERFORMING `sync_all()` and restoring afterwards; it now renders into `surface_write.capture_surface_writes` and byte-compares, so no input -- clean tree or drifted -- reaches a write. That distinction is the whole point: a static `read_only` on a validator that writes only on drift would be a scheduling guarantee that is false exactly when the gate is red, which is when a concurrent step would read a torn mirror. Witnessed by `tests/test_validate_sync_parity.py::SyncParityDriftedTreeIsNonMutatingTest`, on ctime rather than mtime -- the old restore called `os.utime`, so an mtime probe read clean against a tree that had just been rewritten.",
       "measured_seconds": 3.1
     },
     "Skill audit": {

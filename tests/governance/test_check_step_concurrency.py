@@ -99,18 +99,34 @@ class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
         self.assertEqual([n for n, _ in serial], ["Behave", "Docs build"])
         self.assertEqual([n for n, _ in concurrent], ["Lint"])
 
-    def test_writers_keep_their_relative_list_order(self) -> None:
-        """Behave must precede Validate default scopes, which consumes its wheel."""
+    def test_behave_completes_before_validate_reads_its_wheel(self) -> None:
+        """Behave must precede Validate default scopes, which consumes its wheel.
+
+        Asserted against the FULL execution order -- serial phase, then the
+        concurrent phase -- rather than against positions within the writers
+        list. The edge is a producer/consumer fact about `dist/*.whl`; which
+        phase each step lands in is the scheduler's business, and a test that
+        reads `serial.index(...)` asserts the implementation instead. It broke
+        for exactly that reason when GHI #891 made Validate default scopes
+        read_only: the guarantee had strengthened -- every writer now finishes
+        before any reader starts -- while the assertion said it had vanished.
+        """
         from gzkit.commands.quality import _build_check_steps, _partition_steps_by_concurrency
 
-        serial, _ = _partition_steps_by_concurrency(_build_check_steps())
-        names = [n for n, _ in serial]
+        serial, concurrent = _partition_steps_by_concurrency(_build_check_steps())
+        order = [n for n, _ in serial] + [n for n, _ in concurrent]
 
+        self.assertIn("Behave", order)
+        self.assertIn("Validate default scopes", order)
         self.assertLess(
-            names.index("Behave"),
-            names.index("Validate default scopes"),
+            order.index("Behave"),
+            order.index("Validate default scopes"),
             "Validate default scopes reads the wheel Behave builds",
         )
+        # Guard the assertion above against passing vacuously: it holds trivially
+        # if both ever land in the same phase in list order, so pin the fact that
+        # actually carries it -- the producer is a writer and so runs first.
+        self.assertIn("Behave", [n for n, _ in serial], "Behave must remain a serial writer")
 
     def test_an_undeclared_step_runs_serially_never_concurrently(self) -> None:
         """A step nobody measured must never land in the concurrent phase.

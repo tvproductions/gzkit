@@ -1,20 +1,28 @@
 """Sync parity validation for generated control surfaces.
 
 Detects drift between files in the working tree and what ``sync_all()`` would
-produce for the current canonical state. The check uses a snapshot-sync-compare
-protocol: every file under a tracked surface root is hashed, ``sync_all()`` runs
-in place, drift is reported, and the snapshot is restored so the validator is
-non-mutating from the caller's perspective.
+produce for the current canonical state. ``sync_all()`` runs inside
+:func:`gzkit.surface_write.capture_surface_writes`, so it renders the canonical
+bytes without touching the tree and the check is a pure byte comparison.
+
+It was a snapshot-sync-compare protocol until 2026-08-27: hash every file, run
+``sync_all()`` IN PLACE, report drift, restore. That made the validator write the
+surface it claims to inspect -- on a clean tree after GHI #890, and on a drifted
+tree always, because sync laid the canonical bytes down and the envelope put the
+drift back. A validator that can write under ANY input cannot carry a static
+``read_only`` classification: rarity is not the property a scheduler needs,
+impossibility is (GHI #891). The restore also called ``os.utime``, so an mtime
+probe could not see the writes it was masking -- ctime is the witness that works,
+because it moves on write and cannot be set from userspace.
 
 Any transient generated content (e.g. the ``- **Updated**: YYYY-MM-DD`` line in
 ``AGENTS.md``) is normalized before comparison so operational timestamps do not
 surface as false drift.
 """
 
-import os
+import contextlib
 import re
 from pathlib import Path
-from typing import NamedTuple
 
 from gzkit.config import (
     CODEX_CONFIG_DEFAULT_PATH,
@@ -23,6 +31,7 @@ from gzkit.config import (
 )
 from gzkit.core.validation_rules import ValidationError
 from gzkit.rules import nested_agents_md_paths
+from gzkit.surface_write import capture_surface_writes
 from gzkit.sync_surfaces import is_managed_codex_config, render_codex_config, sync_all
 
 SURFACE_ROOTS: tuple[str, ...] = (
@@ -47,9 +56,12 @@ def _nested_agents_md(project_root: Path) -> list[str]:
 
     This was a hand-maintained 3-entry tuple, and that was the defect: ``sync_all``
     writes one nested ``AGENTS.md`` per shared-rule subtree — ~19 on this tree —
-    so ``_snapshot`` captured 3 and ``_restore`` could put back only those 3. A
-    read-only ``gz validate --surfaces`` therefore left 16 files modified, and
-    reported as drift the very bytes it had just written. Deriving the set from
+    so the old snapshot captured 3 and the restore could put back only those 3.
+    A read-only ``gz validate --surfaces`` therefore left 16 files modified, and
+    reported as drift the very bytes it had just written. The snapshot/restore
+    envelope is gone (GHI #891), but the completeness requirement outlived it:
+    this set is also what ``_render_expected`` carries at current bytes for the
+    files sync never touches. Deriving it from
     :func:`gzkit.rules.nested_agents_md_paths` makes snapshot/restore complete by
     construction rather than by remembering to extend a literal.
     """
@@ -60,13 +72,6 @@ def _nested_agents_md(project_root: Path) -> list[str]:
 
 _SYNC_DATE_LINE = re.compile(rb"^- \*\*Updated\*\*: \d{4}-\d{2}-\d{2}", re.MULTILINE)
 _PYTHON_RUNTIME_CACHE_SUFFIXES = frozenset({".pyc", ".pyo"})
-
-
-class _FileSnapshot(NamedTuple):
-    content: bytes
-    mode: int
-    atime_ns: int
-    mtime_ns: int
 
 
 def _is_python_runtime_cache(path: Path) -> bool:
@@ -106,77 +111,77 @@ def _normalize(content: bytes) -> bytes:
     return _SYNC_DATE_LINE.sub(b"- **Updated**: <DATE>", content)
 
 
-def _snapshot(files: set[Path]) -> dict[Path, _FileSnapshot]:
-    """Read current bytes for each file into an in-memory snapshot."""
-    snapshot: dict[Path, _FileSnapshot] = {}
+def _read_bytes_map(files: set[Path]) -> dict[Path, bytes]:
+    """Read current bytes for each file, skipping any that cannot be read."""
+    contents: dict[Path, bytes] = {}
     for path in files:
         try:
-            stat = path.stat()
-            snapshot[path] = _FileSnapshot(
-                content=path.read_bytes(),
-                mode=stat.st_mode & 0o7777,
-                atime_ns=stat.st_atime_ns,
-                mtime_ns=stat.st_mtime_ns,
-            )
+            contents[path] = path.read_bytes()
         except OSError:
             continue
-    return snapshot
+    return contents
 
 
-def _existing_surface_dirs(project_root: Path, config: GzkitConfig) -> set[Path]:
-    """Capture directories under tracked roots so restore removes only new ones."""
-    project_root = project_root.resolve()
-    roots = [*SURFACE_ROOTS, *_nested_agents_md(project_root), config.paths.codex_config]
-    existing = {project_root}
-    for rel in roots:
-        path = project_root / rel
-        parent = path if path.is_dir() else path.parent
-        while parent.is_relative_to(project_root) and parent != project_root:
-            if parent.is_dir():
-                existing.add(parent.resolve())
-            parent = parent.parent
-        if path.is_dir():
-            existing.update(p.resolve() for p in path.rglob("*") if p.is_dir())
-    return existing
+def _render_expected(project_root: Path, config: GzkitConfig) -> dict[Path, bytes]:
+    """Return the bytes ``sync_all()`` would leave on disk, without writing any.
 
+    Three sources compose into one expected map:
 
-def _restore(
-    project_root: Path,
-    snapshot: dict[Path, _FileSnapshot],
-    created: set[Path],
-    existing_dirs: set[Path],
-) -> None:
-    """Write snapshot content back to disk and remove files sync_all created."""
-    project_root = project_root.resolve()
-    for path, entry in snapshot.items():
-        try:
-            current = path.read_bytes() if path.is_file() else None
-        except OSError:
-            current = None
-        if current == entry.content:
-            continue
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(entry.content)
-        path.chmod(entry.mode)
-        os.utime(path, ns=(entry.atime_ns, entry.mtime_ns))
-    for path in created:
-        try:
-            path.unlink()
-        except FileNotFoundError:
-            continue
-    parents = {parent.resolve() for path in created for parent in path.parents}
-    new_dirs = sorted(
-        parents - existing_dirs,
-        key=lambda path: len(path.parts),
-        reverse=True,
+    * files sync means to WRITE -- captured with their intended bytes, including
+      the ones already matching, because an unchanged write still asserts "this
+      file should exist with these content";
+    * files sync means to DELETE -- excluded, so they fall out of the caller's
+      diff as stale;
+    * files sync never touches -- carried at their CURRENT bytes. Omitting them
+      would report every unmanaged file under a surface root as stale, which is
+      the one way a render-and-compare check can be wrong where a
+      sync-and-restore check was right.
+    """
+    current = _collect_files(project_root, config)
+    expected = _read_bytes_map(current)
+    with capture_surface_writes() as sink:
+        sync_all(project_root, config, emit_event=False)
+    for path in sink.removed:
+        expected.pop(path, None)
+    tracked = _tracked_roots(project_root, config)
+    expected.update(
+        {
+            path: payload
+            for path, payload in sink.written.items()
+            if path in current or _is_tracked(path, tracked)
+        }
     )
-    for directory in new_dirs:
-        if directory == project_root or not directory.is_relative_to(project_root):
-            continue
-        try:
-            directory.rmdir()
-        except (FileNotFoundError, OSError):
-            continue
+    return expected
+
+
+def _tracked_roots(project_root: Path, config: GzkitConfig) -> set[Path]:
+    """Return the roots :func:`_collect_files` walks, resolved."""
+    roots = {(project_root / rel).resolve() for rel in SURFACE_ROOTS}
+    roots.update(path.resolve() for path in nested_agents_md_paths(project_root))
+    with contextlib.suppress(ValueError):
+        roots.add(resolve_codex_config_path(project_root, config.paths.codex_config).resolve())
+    roots.add(resolve_codex_config_path(project_root, CODEX_CONFIG_DEFAULT_PATH).resolve())
+    return roots
+
+
+def _is_tracked(path: Path, tracked: set[Path]) -> bool:
+    """Whether ``path`` falls inside the parity domain.
+
+    ``sync_all`` writes surfaces this check does not track -- the vendor persona
+    mirrors under ``.agents/personas/``, ``.claude/personas/`` and
+    ``.github/personas/`` are generated on every run and appear in no entry of
+    ``SURFACE_ROOTS``. The old shape could not notice: ``expected`` was built by
+    re-walking ``_collect_files`` AFTER the sync, so anything outside the tracked
+    roots fell out of both sides at once. Rendering into a sink makes the write
+    set visible for the first time, and without this filter 22 always-present
+    persona files report as "sync_all() would create it".
+
+    The parity DOMAIN is deliberately unchanged here: this fix removes the write,
+    and widening what parity covers is a separate question with its own drift to
+    triage. That the persona mirrors are generated-but-unchecked is disclosed as
+    a follow-on, not quietly fixed under this one.
+    """
+    return path in tracked or any(path.is_relative_to(root) for root in tracked)
 
 
 def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
@@ -190,28 +195,18 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    pre_files = _collect_files(project_root, config)
-    snapshot = _snapshot(pre_files)
-    existing_dirs = _existing_surface_dirs(project_root, config)
-
-    created: set[Path] = set()
     planned: list[str] = []
-    try:
+    with capture_surface_writes():
         raw_planned = list(sync_all(project_root, config, emit_event=False))
-        for entry in raw_planned:
-            candidate = Path(entry)
-            if candidate.is_absolute():
-                try:
-                    planned.append(candidate.relative_to(project_root).as_posix())
-                except ValueError:
-                    planned.append(candidate.as_posix())
-            else:
+    for entry in raw_planned:
+        candidate = Path(entry)
+        if candidate.is_absolute():
+            try:
+                planned.append(candidate.relative_to(project_root).as_posix())
+            except ValueError:
                 planned.append(candidate.as_posix())
-        post_files = _collect_files(project_root, config)
-        created = post_files - pre_files
-    finally:
-        _restore(project_root, snapshot, created, existing_dirs)
-
+        else:
+            planned.append(candidate.as_posix())
     return sorted(set(planned))
 
 
@@ -223,8 +218,7 @@ def snapshot_surfaces(project_root: Path, config: GzkitConfig | None = None) -> 
     to feed that snapshot to ``check_sync_parity(..., expected=...)``
     without paying a second ``sync_all`` pass.
     """
-    files = _collect_files(project_root, config)
-    return {path: entry.content for path, entry in _snapshot(files).items()}
+    return _read_bytes_map(_collect_files(project_root, config))
 
 
 def compute_expected_surfaces(
@@ -232,31 +226,15 @@ def compute_expected_surfaces(
 ) -> dict[Path, bytes]:
     """Run ``sync_all()`` and return the bytes it produces, keyed by absolute path.
 
-    The caller's working tree is not mutated: the sync executes inside the
-    same snapshot-restore envelope used by ``check_sync_parity``. Intended for
+    The caller's working tree is not mutated: the sync renders into a capture
+    sink rather than onto disk (GHI #891). Intended for
     callers (tests, repeated audits) that will compare many tree states
     against the same canonical output and want to pay the sync cost once.
     """
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    pre_files = _collect_files(project_root, config)
-    snapshot = _snapshot(pre_files)
-    existing_dirs = _existing_surface_dirs(project_root, config)
-    created: set[Path] = set()
-    expected: dict[Path, bytes] = {}
-    try:
-        sync_all(project_root, config, emit_event=False)
-        post_files = _collect_files(project_root, config)
-        created = post_files - pre_files
-        for path in post_files:
-            try:
-                expected[path] = path.read_bytes()
-            except OSError:
-                continue
-    finally:
-        _restore(project_root, snapshot, created, existing_dirs)
-    return expected
+    return _render_expected(project_root, config)
 
 
 def _diff_against_expected(
@@ -372,10 +350,9 @@ def check_sync_parity(
 ) -> list[ValidationError]:
     """Detect drift between generated surfaces and the output of ``sync_all()``.
 
-    By default the check runs ``sync_all()`` against ``project_root`` in place
-    and compares pre/post content for every tracked surface file. After
-    comparison, the pre-sync snapshot is restored so the caller sees no net
-    file mutation.
+    By default the check renders what ``sync_all()`` would produce into a
+    capture sink and byte-compares it against the tree. Nothing is written --
+    not on a clean tree, and not on a drifted one (GHI #891).
 
     If ``expected`` is supplied (produced by ``compute_expected_surfaces``
     or by ``snapshot_surfaces`` when the caller already knows the tree is
@@ -393,9 +370,7 @@ def check_sync_parity(
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
     pre_files = _collect_files(project_root, config)
-    snapshot = _snapshot(pre_files)
-    snapshot_bytes = {path: entry.content for path, entry in snapshot.items()}
-    existing_dirs = _existing_surface_dirs(project_root, config)
+    snapshot_bytes = _read_bytes_map(pre_files)
     codex_errors = _codex_config_parity_errors(project_root, config)
 
     try:
@@ -417,64 +392,12 @@ def check_sync_parity(
             *_diff_against_expected(project_root, snapshot_bytes, pre_files, expected),
         ]
 
-    errors = codex_errors
-    created: set[Path] = set()
-    try:
-        sync_all(project_root, config, emit_event=False)
-        post_files = _collect_files(project_root, config)
-        created = post_files - pre_files
-        removed = pre_files - post_files
-        shared = pre_files & post_files
-
-        for path in sorted(shared):
-            old = _normalize(snapshot_bytes.get(path, b""))
-            try:
-                new = _normalize(path.read_bytes())
-            except OSError as exc:
-                errors.append(
-                    ValidationError(
-                        type="surface",
-                        artifact=path.relative_to(project_root).as_posix(),
-                        message=f"Failed to re-read surface after sync: {exc}",
-                    )
-                )
-                continue
-            if old != new:
-                errors.append(
-                    ValidationError(
-                        type="surface",
-                        artifact=path.relative_to(project_root).as_posix(),
-                        message=(
-                            "Generated surface is out of sync with canonical state. "
-                            "Run `uv run gz agent sync control-surfaces` to repair."
-                        ),
-                    )
-                )
-
-        for path in sorted(created):
-            errors.append(
-                ValidationError(
-                    type="surface",
-                    artifact=path.relative_to(project_root).as_posix(),
-                    message=(
-                        "Generated surface missing — sync_all() would create it. "
-                        "Run `uv run gz agent sync control-surfaces` to repair."
-                    ),
-                )
-            )
-
-        for path in sorted(removed):
-            errors.append(
-                ValidationError(
-                    type="surface",
-                    artifact=path.relative_to(project_root).as_posix(),
-                    message=(
-                        "Stale surface — sync_all() would remove it. "
-                        "Run `uv run gz agent sync control-surfaces` to repair."
-                    ),
-                )
-            )
-    finally:
-        _restore(project_root, snapshot, created, existing_dirs)
-
-    return errors
+    return [
+        *codex_errors,
+        *_diff_against_expected(
+            project_root,
+            snapshot_bytes,
+            pre_files,
+            _render_expected(project_root, config),
+        ),
+    ]

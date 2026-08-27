@@ -26,7 +26,7 @@ from gzkit.ledger import (
     parse_frontmatter_value,
     resolve_adr_lane,
 )
-from gzkit.surface_write import write_if_changed
+from gzkit.surface_write import ensure_dir, write_if_changed
 from gzkit.utils import capture_validation_anchor_with_warnings
 
 # Governance artifact patterns
@@ -500,7 +500,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
 
     """
     hooks_path = project_root / hooks_dir
-    hooks_path.mkdir(parents=True, exist_ok=True)
+    ensure_dir(hooks_path)
 
     script_path = hooks_path / "ledger-writer.py"
 

@@ -17,7 +17,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
-from gzkit.surface_write import write_text_if_changed
+from gzkit.surface_write import dir_exists, ensure_dir, remove_if_present, write_text_if_changed
 
 _logger = logging.getLogger(__name__)
 
@@ -336,7 +336,7 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
 
     instructions_dir = project_root / ".github" / "instructions"
     rules_dir = project_root / config.paths.claude_rules
-    rules_dir.mkdir(parents=True, exist_ok=True)
+    ensure_dir(rules_dir)
 
     updated: list[str] = []
     expected_names: set[str] = set()
@@ -376,15 +376,80 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
     if rules_dir.exists():
         for existing in rules_dir.iterdir():
             if existing.is_file() and existing.name not in expected_names:
-                existing.unlink()
+                remove_if_present(existing)
 
     return updated
 
 
+def _classify_canonical_rules(project_root: Path) -> list[ClassifiedRule]:
+    """Classify rules straight from ``.gzkit/rules/`` canon.
+
+    Equivalent to :func:`classify_instruction_rules` BY CONSTRUCTION, not by
+    resemblance: ``apply_to`` is built the same way
+    :func:`render_rule_for_copilot` builds it, and the same
+    ``_convert_apply_to_paths`` / ``_is_global_pattern`` /
+    ``_extract_subtree_prefix`` helpers do the rest. The copilot rendering emits
+    only ``applyTo``, so ``audience`` and ``excludeAgent`` are already absent
+    from every canon-rendered instruction file and their defaults here lose
+    nothing.
+    """
+    canonical_dir = project_root / ".gzkit" / "rules"
+    if not canonical_dir.is_dir():
+        return []
+    classified: list[ClassifiedRule] = []
+    for rule in load_rules(canonical_dir):
+        apply_to = ", ".join(rule.frontmatter.paths)
+        patterns = _convert_apply_to_paths(apply_to)
+        is_global = all(_is_global_pattern(p) for p in patterns)
+        subtree_prefixes: list[str] = []
+        if not is_global:
+            for pattern in patterns:
+                prefix = _extract_subtree_prefix(pattern)
+                if prefix is None or _is_vendor_mirror_prefix(prefix):
+                    continue
+                if prefix not in subtree_prefixes:
+                    subtree_prefixes.append(prefix)
+        classified.append(
+            ClassifiedRule(
+                filename=f"{rule.frontmatter.id.replace('-', '_')}.instructions.md",
+                audience="shared",
+                apply_to=apply_to,
+                # `_RENDER_HEADER` prefix, exactly as `render_rule_for_copilot`
+                # emits it: the body that reached this classifier used to be the
+                # RENDERED file's, header included, and nested `AGENTS.md`
+                # embedded that header per section. Dropping it would be a
+                # cosmetic improvement and a 92-line churn across 29 generated
+                # surfaces, which is not this GHI's business. Byte-identical
+                # output keeps the equivalence claim exact rather than
+                # "equivalent apart from a marker".
+                body=f"{_RENDER_HEADER}\n{rule.body}",
+                is_global=is_global,
+                subtree_prefixes=subtree_prefixes,
+            )
+        )
+    return classified
+
+
 def _shared_subtree_rules(project_root: Path) -> dict[str, list[ClassifiedRule]]:
-    """Group shared, non-global rules by the subtree each one applies to."""
+    """Group shared, non-global rules by the subtree each one applies to.
+
+    Canon first (GHI #891). This used to read ONLY ``.github/instructions/`` --
+    a GENERATED surface -- to decide what to generate, held together by an
+    ordering comment in ``sync_all`` asking the caller to render Copilot rules
+    first. A derived view feeding a derived view is what ``AGENTS.md``
+    § Architectural Boundaries #6 forbids, and it made ``sync_all``
+    unable to render without first writing: under a capture sink the instruction
+    files are not on disk, classification came back empty, and all 14 nested
+    ``AGENTS.md`` silently vanished from the plan.
+
+    The instruction-file path remains as the fallback for trees with no
+    ``.gzkit/rules/`` canon -- an adopter hand-authoring ``.github/instructions/``
+    directly -- where those files ARE the source rather than a rendering of one.
+    """
+    canonical = _classify_canonical_rules(project_root)
+    rules = canonical if canonical else classify_instruction_rules(project_root)
     subtree_rules: dict[str, list[ClassifiedRule]] = {}
-    for rule in classify_instruction_rules(project_root):
+    for rule in rules:
         if rule.audience != "shared" or rule.is_global:
             continue
         for prefix in rule.subtree_prefixes:
@@ -405,7 +470,11 @@ def nested_agents_md_paths(project_root: Path) -> set[Path]:
     paths: set[Path] = set()
     for subtree in _shared_subtree_rules(project_root):
         subtree_dir = project_root / subtree
-        if subtree_dir.is_dir():
+        # `dir_exists`, not `is_dir`: inside a captured sync the directory an
+        # earlier pass would create is not on disk yet, and `is_dir` would answer
+        # about the PRE-sync tree -- silently dropping `.gzkit/skills/AGENTS.md`
+        # from the plan (GHI #891).
+        if dir_exists(subtree_dir):
             paths.add(subtree_dir / "AGENTS.md")
     return paths
 
@@ -431,7 +500,13 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
 
     for subtree, rules_for_subtree in sorted(subtree_rules.items()):
         subtree_dir = project_root / subtree
-        if not subtree_dir.is_dir():
+        # `dir_exists`, matching `nested_agents_md_paths` above. The two MUST ask
+        # the same question: the helper exists so a caller can know this writer's
+        # write set, and a guard that differs by even one predicate reintroduces
+        # the drift GHI #890 closed. Under a capture sink an earlier pass's
+        # directory is recorded rather than created, so a bare `is_dir` here
+        # dropped `src/AGENTS.md` from the plan while apply mode still wrote it.
+        if not dir_exists(subtree_dir):
             continue
 
         agents_path = subtree_dir / "AGENTS.md"
@@ -546,7 +621,7 @@ def _cleanup_stale_nested_agents(
         try:
             first_line = agents_file.read_text(encoding="utf-8").split("\n", 1)[0]
             if "Generated by gzkit" in first_line:
-                agents_file.unlink()
+                remove_if_present(agents_file)
         except (OSError, UnicodeDecodeError):
             pass
 
@@ -743,7 +818,7 @@ def render_rules_to_dir(
         ``project_root`` is given, else absolute strings.
 
     """
-    target_dir.mkdir(parents=True, exist_ok=True)
+    ensure_dir(target_dir)
 
     render_fn = render_rule_for_claude if renderer == "claude" else render_rule_for_copilot
     suffix = ".md" if renderer == "claude" else ".instructions.md"
@@ -764,14 +839,19 @@ def render_rules_to_dir(
         write_text_if_changed(target, output)
         written.append(_render_path_str(target, project_root))
 
-    for existing in target_dir.iterdir():
+    # Guarded rather than an unguarded walk: `ensure_dir` above is a no-op under
+    # a capture sink, and a stale-file sweep over a directory that does not exist
+    # has nothing to sweep. The old snapshot envelope hid this -- sync CREATED an
+    # empty `.github/instructions` on every parity check and the restore removed
+    # it again, so that mkdir was load-bearing by accident.
+    for existing in sorted(target_dir.iterdir()) if target_dir.is_dir() else ():
         if existing.is_file() and existing.name not in expected_names:
             try:
                 content = existing.read_text(encoding="utf-8")
             except UnicodeDecodeError:
                 continue
             if "Generated by gz agent sync" in content:
-                existing.unlink()
+                remove_if_present(existing)
 
     return written
 

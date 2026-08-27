@@ -143,6 +143,109 @@ class SyncParityNonMutatingTest(_SyncParityBase):
         )
 
 
+class SyncParityDriftedTreeIsNonMutatingTest(_SyncParityBase):
+    """The validator must not write on a DRIFTED tree either (GHI #891).
+
+    #890 closed the healthy path: on a clean tree ``sync_all`` now writes
+    nothing. The unhealthy path is the one that matters for scheduling, because
+    a red gate is exactly when a concurrent step would read a torn mirror. A
+    validator that can write under ANY input cannot carry a static
+    ``read_only`` classification -- rarity is not the property the scheduler
+    needs, impossibility is.
+
+    **Asserted on ctime, not mtime.** The old snapshot-restore envelope called
+    ``os.utime`` to put the original mtime back, so an mtime probe returns a
+    false clean -- the first attempt at this measurement returned ``0`` moved
+    files against a tree that had just been rewritten. ctime moves on write and
+    cannot be set from userspace, so no restore envelope can forge it.
+    """
+
+    _mutable_paths = ("AGENTS.md",)
+
+    def test_drifted_tree_parity_check_writes_nothing(self) -> None:
+        root = Path.cwd()
+        agents_md = root / "AGENTS.md"
+
+        # Planting the drift doubles as the probe's own sanity check: if ctime
+        # does not move for a write we KNOW happened, a clean result below
+        # proves nothing. Asserted here rather than as a standalone test so the
+        # sensitivity check cannot drift away from the claim it underwrites.
+        unwritten_ctime = agents_md.stat().st_ctime_ns
+        drifted = agents_md.read_text(encoding="utf-8") + "\n<!-- hand-edited drift -->\n"
+        agents_md.write_text(drifted, encoding="utf-8")
+        self.assertNotEqual(
+            unwritten_ctime,
+            agents_md.stat().st_ctime_ns,
+            "ctime probe is insensitive — a clean result would be meaningless",
+        )
+
+        before = {path: path.stat().st_ctime_ns for path in _collect_files(root) if path.is_file()}
+        self.assertGreater(len(before), 50, "surface set should cover the generated tree")
+
+        errors = check_sync_parity(root)
+
+        moved = sorted(
+            path.relative_to(root).as_posix()
+            for path, ctime in before.items()
+            if path.is_file() and path.stat().st_ctime_ns != ctime
+        )
+        self.assertEqual(
+            [],
+            moved,
+            f"check_sync_parity wrote {len(moved)} surface files on a drifted tree: {moved[:10]}",
+        )
+        self.assertTrue(errors, "planted drift must still fail closed")
+        self.assertEqual(
+            drifted,
+            agents_md.read_text(encoding="utf-8"),
+            "planted drift must be left in place, not silently repaired",
+        )
+
+
+class SyncParityTouchesNoTreeShapeTest(_SyncParityBase):
+    """Beyond file bytes: the check must not add or remove anything (GHI #891).
+
+    The ctime probe above watches FILES that already exist, so it is blind to a
+    validator that creates a directory or deletes a surface. Both are real
+    powers of ``sync_all`` -- it creates vendor mirror trees, and it prunes
+    stale rules, unshippable chore files and orphaned nested ``AGENTS.md``. A
+    sink that suppressed writes but let those through would still be a writer,
+    and the file-ctime assertion would have reported green.
+    """
+
+    _mutable_paths = ("AGENTS.md",)
+
+    @staticmethod
+    def _tree_shape(root: Path) -> set[str]:
+        """Every path under a tracked surface root, files and directories alike."""
+        shape: set[str] = set()
+        for rel in ("AGENTS.md", "CLAUDE.md", ".claude", ".github", ".agents", ".gzkit"):
+            base = root / rel
+            if base.is_file():
+                shape.add(base.relative_to(root).as_posix())
+            elif base.is_dir():
+                for path in base.rglob("*"):
+                    if "__pycache__" in path.parts:
+                        continue
+                    shape.add(path.relative_to(root).as_posix())
+        return shape
+
+    def test_drifted_tree_check_creates_and_removes_nothing(self) -> None:
+        root = Path.cwd()
+        agents_md = root / "AGENTS.md"
+        agents_md.write_text(
+            agents_md.read_text(encoding="utf-8") + "\n<!-- drift -->\n", encoding="utf-8"
+        )
+        before = self._tree_shape(root)
+        self.assertGreater(len(before), 50, "shape probe must cover the generated tree")
+
+        check_sync_parity(root)
+
+        after = self._tree_shape(root)
+        self.assertEqual(sorted(after - before), [], "check_sync_parity created paths")
+        self.assertEqual(sorted(before - after), [], "check_sync_parity removed paths")
+
+
 class SyncParityContentDriftTest(_SyncParityBase):
     """A hand-edited generated surface must surface as drift."""
 

@@ -515,6 +515,18 @@ class TestSyncCommand(unittest.TestCase):
         """
         runner = CliRunner()
         with _InitFromTemplate():
+            # Converge the tree first. `sync_all` is not idempotent in ONE pass:
+            # the skills mirror runs before `sync_nested_agents_md`, so the six
+            # `**/skills/**/AGENTS.md` mirrors are a generation stale until a
+            # second run (measured 2026-08-27: 111 paths, then 105, then stable).
+            # Dry-run reports sync's FIXED POINT; a single apply reports one
+            # iteration toward it, and comparing those two compares different
+            # things. Tracked separately -- the non-convergence is a real defect
+            # in `sync_all`'s pass order, not in the planner (GHI #891).
+            self.assertEqual(
+                runner.invoke(main, ["agent", "sync", "control-surfaces"]).exit_code, 0
+            )
+
             dry_result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
             self.assertEqual(dry_result.exit_code, 0)
 
@@ -533,6 +545,76 @@ class TestSyncCommand(unittest.TestCase):
                     dry_result.output,
                     f"dry-run must list {path} from apply-mode write set",
                 )
+
+    def test_removing_generated_instructions_does_not_change_the_plan(self) -> None:
+        """The plan derives from `.gzkit/rules/` canon, never from what sync emits.
+
+        `_shared_subtree_rules` used to classify by READING
+        `.github/instructions/` -- a generated surface -- to decide what to
+        generate, held together by an ordering comment asking `sync_all` to
+        render Copilot rules first. A derived view feeding a derived view is
+        what Architectural Boundary 6 forbids, and it made `sync_all` unable to
+        plan without first writing: under a capture sink the instruction files
+        are absent, classification came back empty, and all 14 nested
+        `AGENTS.md` vanished from the plan (GHI #891).
+
+        Deleting the generated surface is the sharpest form of the question --
+        if the plan still names the same nested `AGENTS.md`, canon is the source.
+        """
+        from gzkit.validate_pkg.sync_parity import plan_sync_all
+
+        runner = CliRunner()
+        with _InitFromTemplate():
+            root = Path.cwd()
+            runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
+            nested_before = {p for p in plan_sync_all(root) if p.endswith("AGENTS.md")}
+            self.assertTrue(nested_before, "fixture must plan nested AGENTS.md at all")
+
+            shutil.rmtree(root / ".github" / "instructions")
+            nested_after = {p for p in plan_sync_all(root) if p.endswith("AGENTS.md")}
+
+            self.assertEqual(
+                sorted(nested_before - nested_after),
+                [],
+                "nested AGENTS.md dropped out of the plan when the generated "
+                "instruction files were removed — classification is reading a "
+                "derived surface instead of canon",
+            )
+
+    def test_plan_includes_surfaces_under_a_directory_sync_would_create(self) -> None:
+        """A pass that branches on a directory an EARLIER pass creates must still fire.
+
+        Inside a captured sync nothing is written, so `Path.is_dir()` answers
+        about the pre-sync tree and every branch guarded on it silently drops
+        what it would have produced. `surface_write.dir_exists` answers from the
+        sink's recorded intent instead -- including parent directories, since
+        the real call is `mkdir(parents=True)` (GHI #891).
+        """
+        from gzkit.validate_pkg.sync_parity import plan_sync_all
+
+        runner = CliRunner()
+        with _InitFromTemplate():
+            root = Path.cwd()
+            runner.invoke(main, ["agent", "sync", "control-surfaces"])
+            runner.invoke(main, ["agent", "sync", "control-surfaces"])
+
+            # Remove the whole `.github` tree. Sync recreates it, and
+            # `.github/AGENTS.md` comes from a pass that branches on `.github`
+            # being a directory -- a branch nothing on disk can satisfy until
+            # sync itself creates it, which under a sink it never does.
+            self.assertTrue((root / ".github").is_dir(), "fixture must have a .github tree")
+            shutil.rmtree(root / ".github")
+
+            planned = set(plan_sync_all(root))
+
+            self.assertIn(
+                ".github/AGENTS.md",
+                planned,
+                "the plan lost a surface under a directory sync would have created - "
+                "the existence probe answered about the pre-sync tree",
+            )
 
     def test_agent_sync_dry_run_does_not_mutate_disk(self) -> None:
         """Dry-run must not modify any file on disk."""

@@ -37,7 +37,7 @@ from gzkit.hooks.scripts.validation import (
     _ledger_writer_script,
     _obpi_completion_validator_script,
 )
-from gzkit.surface_write import write_if_changed, write_text_if_changed
+from gzkit.surface_write import ensure_dir, write_if_changed, write_text_if_changed
 
 
 def _claude_hooks_readme() -> str:
@@ -488,7 +488,7 @@ def _write_hook_dir(
     surface underneath its caller (GHI #890). Staging puts the comparison
     after normalization, where it can match.
     """
-    hooks_path.mkdir(parents=True, exist_ok=True)
+    ensure_dir(hooks_path)
     written: list[str] = []
     with tempfile.TemporaryDirectory(prefix="gzkit-hooks-") as staging_name:
         staging = Path(staging_name)
@@ -550,7 +550,7 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     # Write settings.json — merge to preserve user-added hooks
     gzkit_settings = generate_claude_settings(config)
     settings_path = project_root / config.paths.claude_settings
-    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(settings_path.parent)
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 

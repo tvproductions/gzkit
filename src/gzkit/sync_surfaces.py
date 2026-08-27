@@ -31,7 +31,13 @@ from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
-from gzkit.surface_write import write_if_changed, write_text_if_changed
+from gzkit.surface_write import (
+    ensure_dir,
+    remove_dir_if_empty,
+    remove_if_present,
+    write_if_changed,
+    write_text_if_changed,
+)
 from gzkit.sync_skills import (
     bootstrap_canonical_skills,
     collect_skills_catalog,
@@ -199,7 +205,7 @@ def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
 
     """
     manifest_path = project_root / ".gzkit" / "manifest.json"
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(manifest_path.parent)
 
     write_text_if_changed(manifest_path, json.dumps(manifest, indent=2) + "\n")
 
@@ -344,7 +350,7 @@ def _discovery_index_payload(project_root: Path, config: GzkitConfig) -> dict[st
 def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
     """Generate .github/discovery-index.json control surface."""
     discovery_path = project_root / config.paths.discovery_index
-    discovery_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(discovery_path.parent)
     payload = _discovery_index_payload(project_root, config)
     write_text_if_changed(discovery_path, json.dumps(payload, indent=2) + "\n")
 
@@ -468,7 +474,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
     content = render_surface_template("copilot", **context)
 
     copilot_path = project_root / config.paths.copilot_instructions
-    copilot_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(copilot_path.parent)
     write_text_if_changed(copilot_path, content)
 
 
@@ -495,7 +501,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
     gzkit_settings = generate_claude_settings(config)
 
     settings_path = project_root / config.paths.claude_settings
-    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(settings_path.parent)
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
@@ -528,7 +534,7 @@ def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
     """Create the Codex baseline without replacing operator-owned content."""
     root = project_root.resolve()
     config_path = resolve_codex_config_path(root, config.paths.codex_config)
-    config_path.parent.mkdir(parents=True, exist_ok=True)
+    ensure_dir(config_path.parent)
     rendered = render_codex_config()
     default_path = resolve_codex_config_path(root, CODEX_CONFIG_DEFAULT_PATH)
     if (
@@ -536,7 +542,7 @@ def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
         and default_path.is_file()
         and default_path.read_bytes() in (b"", rendered.encode())
     ):
-        default_path.unlink()
+        remove_if_present(default_path)
     if config_path.exists():
         if not config_path.is_file():
             raise ValueError(f"Codex config path is not a regular file: {config_path}")
@@ -678,11 +684,8 @@ def render_content_surface(
     Idempotent: bytes-identical destinations are left untouched.
     """
     rendered = render_content_model(model, vendor, temperature=temperature)
-    dest_path.parent.mkdir(parents=True, exist_ok=True)
-    if dest_path.exists() and dest_path.read_bytes() == rendered:
-        return
-    dest_path.write_bytes(rendered)
-    updated.append(dest_path.relative_to(project_root).as_posix())
+    if write_if_changed(dest_path, rendered):
+        updated.append(dest_path.relative_to(project_root).as_posix())
 
 
 def _write_bytes_if_changed(
@@ -694,11 +697,8 @@ def _write_bytes_if_changed(
     copied — the chores registry ships filtered, so there is no source file whose
     bytes equal the destination's (GHI #728). Same idempotence contract.
     """
-    dest_file.parent.mkdir(parents=True, exist_ok=True)
-    if dest_file.exists() and dest_file.read_bytes() == payload:
-        return
-    dest_file.write_bytes(payload)
-    updated.append(dest_file.relative_to(project_root).as_posix())
+    if write_if_changed(dest_file, payload):
+        updated.append(dest_file.relative_to(project_root).as_posix())
 
 
 def _copy_if_changed(
@@ -746,12 +746,12 @@ def _prune_unshippable_chores(pkg_chores: Path, project_root: Path, updated: lis
         if not path.is_file() or "__pycache__" in path.parts:
             continue
         if _classify_chore_file(path, project_root=project_root) in _UNSHIPPABLE_CHORE_CLASSES:
-            path.unlink()
+            remove_if_present(path)
             updated.append(path.relative_to(project_root).as_posix())
     # Bottom-up so a directory emptied by the pass above is itself collected.
     for path in sorted(pkg_chores.rglob("*"), reverse=True):
         if path.is_dir() and "__pycache__" not in path.parts and not any(path.iterdir()):
-            path.rmdir()
+            remove_dir_if_empty(path)
 
 
 def _sync_classified_flat(
@@ -932,7 +932,7 @@ def sync_persona_mirrors(
                 continue
 
         target_dir = project_root / target_dir_rel
-        target_dir.mkdir(parents=True, exist_ok=True)
+        ensure_dir(target_dir)
 
         for persona_path in persona_files:
             try:
