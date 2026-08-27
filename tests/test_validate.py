@@ -4,8 +4,10 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 
 from gzkit.core.validation_rules import ValidationError
+from gzkit.schemas import load_schema
 from gzkit.validate import (
     extract_headers,
     parse_frontmatter,
@@ -13,6 +15,35 @@ from gzkit.validate import (
     validate_ledger,
     validate_manifest,
 )
+from gzkit.validate_pkg.ledger_check import _validate_ledger_conditionals
+
+# Sentinel for "this key is absent from the row", distinct from an empty value.
+# The conditional-rule tests turn on exactly that difference: an omitted
+# discriminator must leave the rule dormant, while an empty guarded field must
+# trip it.
+_ABSENT = object()
+
+
+def _conditional_findings(
+    entry: dict[str, Any], conditionals: list[dict[str, Any]]
+) -> list[ValidationError]:
+    """Run one ad-hoc conditional rule list against *entry*.
+
+    Exercises rule forms that are not (and should not be) authored into the
+    shipped `ledger.json` -- a misauthored `when` clause, a rule missing its
+    recovery prose. Driving those through `validate_ledger` would mean
+    shipping a broken rule to prove the validator rejects broken rules.
+    """
+    errors: list[ValidationError] = []
+    _validate_ledger_conditionals(
+        entry=entry,
+        event_name=str(entry.get("event", "")),
+        conditionals=conditionals,
+        errors=errors,
+        ledger_path=Path("ledger.jsonl"),
+        line_no=1,
+    )
+    return errors
 
 
 class TestParseFrontmatter(unittest.TestCase):
@@ -1028,6 +1059,251 @@ class TestValidateLedger(unittest.TestCase):
                 "must be one of" in error.message and "not-a-real-event" in error.message
                 for error in errors
             )
+        )
+
+
+class TestLedgerConditionalRules(unittest.TestCase):
+    """Cross-field conditional rules in ledger.json (GHI #882).
+
+    Every other rule form in `ledger_check.py` reads one field in isolation:
+    an unconditional `required` list, and per-field type/enum/min/min_length.
+    An invariant spanning TWO fields was therefore inexpressible, so where a
+    runtime gate's condition is recorded in the payload the validator could
+    detect a violation by inspection but never reject one.
+
+    The instance that surfaced it: `gz content retire` refuses a retirement
+    that moves invariant-tier liveness without a named `--attestor`, and
+    `corpus_entry_retired` records `floor_direction` — the gate's own
+    discriminator. A hand-authored row with `floor_direction: "grew"` and
+    `attestor: ""` validated clean.
+
+    These tests assert the RULE FORM, not the one event: an event whose
+    payload carries a discriminator plus a field required only for some of
+    its values. Binding the assertions to `corpus_entry_retired` alone would
+    reproduce the bespoke-check repair the GHI names as wrong.
+    """
+
+    MOVED_DIRECTIONS = ("shrank", "grew", "changed")
+
+    def _retirement(self, **overrides: object) -> dict[str, object]:
+        entry: dict[str, object] = {
+            "schema": "gzkit.ledger.v1",
+            "event": "corpus_entry_retired",
+            "id": "corpus-entry-retired-2026-08-27T00:00:00+00:00",
+            "ts": "2026-08-27T00:00:00+00:00",
+            "surface": "AGENTS.md",
+            "retired_entry_id": "corpus-some-entry",
+            "retraction_entry_id": "corpus-retraction-some-entry",
+            "reason": "superseded by a sharper statement",
+            "tier": "invariant",
+        }
+        entry.update(overrides)
+        return {k: v for k, v in entry.items() if v is not _ABSENT}
+
+    def _validate(self, *entries: dict[str, object]) -> list[ValidationError]:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+            f.flush()
+            return validate_ledger(Path(f.name))
+
+    def test_moving_the_floor_without_a_witness_is_rejected(self) -> None:
+        """The gate's own condition, asserted at Layer 2.
+
+        This is the defect verbatim from GHI #882: an event that records a
+        floor move and an empty attestor described a state the runtime gate
+        refuses to produce, and the validator accepted it.
+        """
+        for direction in self.MOVED_DIRECTIONS:
+            with self.subTest(floor_direction=direction):
+                errors = self._validate(
+                    self._retirement(
+                        floor_direction=direction,
+                        floor_moved_ids=["corpus-operator-doctrine"],
+                        attestor="",
+                    )
+                )
+                self.assertTrue(
+                    any(error.field == "attestor" for error in errors),
+                    f"floor_direction={direction!r} with an empty attestor must be "
+                    f"rejected, got: {errors}",
+                )
+
+    def test_a_whitespace_attestor_is_not_a_witness(self) -> None:
+        """Same stripped-length semantics the unconditional guard already uses.
+
+        A raw character count is satisfied by whitespace, so the conditional
+        form must measure the same way its unconditional sibling does or the
+        gate is reopened one space at a time.
+        """
+        errors = self._validate(
+            self._retirement(
+                floor_direction="grew",
+                floor_moved_ids=["corpus-operator-doctrine"],
+                attestor="   ",
+            )
+        )
+        self.assertTrue(
+            any(error.field == "attestor" for error in errors),
+            f"a whitespace-only attestor must be rejected, got: {errors}",
+        )
+
+    def test_an_omitted_attestor_is_reported_as_missing(self) -> None:
+        """Absent is not the same shape as empty, and both must fail.
+
+        `then.required` and `then.properties` are separate arms; an event that
+        simply omits the key never reaches the min_length arm at all.
+        """
+        errors = self._validate(
+            self._retirement(
+                floor_direction="grew",
+                floor_moved_ids=["corpus-operator-doctrine"],
+                attestor=_ABSENT,
+            )
+        )
+        self.assertTrue(
+            any(error.field == "attestor" for error in errors),
+            f"an omitted attestor must be rejected when the floor moved, got: {errors}",
+        )
+
+    def test_a_named_attestor_satisfies_the_condition(self) -> None:
+        """The rule must not fail closed on the state it exists to require."""
+        errors = self._validate(
+            self._retirement(
+                floor_direction="grew",
+                floor_moved_ids=["corpus-operator-doctrine"],
+                attestor="g0",
+            )
+        )
+        self.assertEqual(errors, [], f"a witnessed floor move must validate, got: {errors}")
+
+    def test_an_unchanged_floor_needs_no_attestor(self) -> None:
+        """`attestor` is LEGITIMATELY empty on a routine compressible retirement.
+
+        This is why the requirement could not simply join `required` with a
+        `min_length` — the asymmetry between the two directions is the whole
+        reason a conditional form was needed.
+        """
+        errors = self._validate(
+            self._retirement(
+                tier="compressible",
+                floor_direction="unchanged",
+                floor_moved_ids=[],
+                attestor="",
+            )
+        )
+        self.assertEqual(
+            errors, [], f"an unchanged floor must not require an attestor, got: {errors}"
+        )
+
+    def test_a_row_predating_the_discriminator_is_untouched(self) -> None:
+        """Append-only history must keep validating (GHI #877's split).
+
+        The five committed `corpus_entry_retired` rows predate
+        `floor_direction` entirely. A conditional keyed on a field's PRESENCE
+        and value is dormant on them by construction — this test pins that
+        property rather than trusting it, because the alternative reading
+        (absent discriminator treated as any-value) would reject every
+        historical row and the ledger cannot be edited to comply.
+        """
+        errors = self._validate(
+            self._retirement(
+                tier="invariant",
+                floor_direction=_ABSENT,
+                floor_moved_ids=_ABSENT,
+                attestor=_ABSENT,
+            )
+        )
+        self.assertEqual(
+            errors, [], f"a row predating floor_direction must still validate, got: {errors}"
+        )
+
+    def test_recovery_prose_names_the_condition_and_a_next_step(self) -> None:
+        """A fail-closed surface owes three-part recovery prose.
+
+        `.claude/rules/guardrail-feedback-prose.md` § Invariant binds every
+        fail-closed validator: what failed, why it is forbidden, and the
+        governed next step. A conditional rule's "why" is specific to that
+        rule, so the schema carries it and the validator composes — a bare
+        "missing required field: attestor" would tell a reader nothing about
+        the condition that made it required.
+        """
+        errors = self._validate(
+            self._retirement(
+                floor_direction="grew",
+                floor_moved_ids=["corpus-operator-doctrine"],
+                attestor="",
+            )
+        )
+        messages = [error.message for error in errors if error.field == "attestor"]
+        self.assertTrue(messages, "expected an attestor finding")
+        joined = " ".join(messages)
+        self.assertIn("floor_direction", joined, "the message must name the condition")
+        self.assertIn("grew", joined, "the message must name the observed value")
+        self.assertIn("gz content retire", joined, "the message must name a governed next step")
+
+    def test_an_unsupported_conditional_is_reported_not_silently_skipped(self) -> None:
+        """A rule the validator cannot read must fail loud, never go inert.
+
+        This is the presence-check family AGENTS.md names: a gate whose only
+        witness is that a rule was authored. A misauthored `when` clause that
+        the validator quietly ignores reads exactly like a passing check, and
+        every row it was meant to guard sails through. Schema-authoring
+        defects are surfaced as findings against the rows they failed to
+        cover.
+        """
+        errors = _conditional_findings(
+            self._retirement(floor_direction="grew", attestor=""),
+            [{"when": {"field": "floor_direction", "matches": "^g"}, "then": {}}],
+        )
+        self.assertTrue(
+            any("unsupported" in error.message for error in errors),
+            f"an unreadable conditional must be reported, got: {errors}",
+        )
+
+    def test_a_conditional_without_recovery_prose_is_unsupported(self) -> None:
+        """The prose bar is mechanical for this rule form, not aspirational.
+
+        `guardrail-feedback-prose.md` is scored advisory repo-wide because no
+        witness could attribute prose quality generally. Here it is decidable:
+        a conditional rule carries its own `because` text or the validator
+        cannot compose a three-part message, so an omitted one is a schema
+        defect rather than a terse-but-valid rule.
+        """
+        errors = _conditional_findings(
+            self._retirement(floor_direction="grew", attestor=""),
+            [
+                {
+                    "when": {"field": "floor_direction", "in": ["grew"]},
+                    "then": {"required": ["attestor"]},
+                }
+            ],
+        )
+        self.assertTrue(
+            any("unsupported" in error.message for error in errors),
+            f"a conditional with no `because` prose must be reported, got: {errors}",
+        )
+
+    def test_every_moving_direction_is_covered_by_the_shipped_rule(self) -> None:
+        """The enum's non-`unchanged` members are the family, exhaustively.
+
+        Enumerated from the schema rather than transcribed: a fifth direction
+        added later with no conditional coverage is the same defect this GHI
+        closes, and a hand-written list would not notice it.
+        """
+        schema = load_schema("ledger")
+        rules = schema["events"]["corpus_entry_retired"]
+        enum = set(rules["properties"]["floor_direction"]["enum"])
+        guarded: set[str] = set()
+        for rule in rules.get("conditional", []):
+            when = rule.get("when", {})
+            if when.get("field") == "floor_direction":
+                guarded.update(when.get("in", []))
+        self.assertEqual(
+            enum - {"unchanged"},
+            guarded,
+            "every floor_direction that MOVES the floor must be guarded; "
+            "`unchanged` is the only value that legitimately needs no attestor",
         )
 
 

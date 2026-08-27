@@ -139,6 +139,140 @@ def _validate_ledger_field(
         )
 
 
+def _conditional_predicate(when: Any) -> tuple[str, list[Any]] | None:
+    """Return ``(field, allowed)`` when *when* is a supported predicate, else None.
+
+    The only supported form is ``{"field": <name>, "in": [<values>]}`` -- a
+    discriminator matched against a closed value set. That is deliberately
+    narrow: every conditional invariant observed on this schema has that shape,
+    and a richer predicate language grows a surface for a rule to be authored
+    that reads as a guard while selecting nothing.
+
+    Readability is answered separately from selection so an unreadable rule can
+    be REPORTED rather than skipped. A guard the validator quietly ignores is
+    indistinguishable from a passing one -- the presence-check family AGENTS.md
+    names, where the only witness is that a rule was authored.
+    """
+    if not isinstance(when, dict):
+        return None
+    field = when.get("field")
+    allowed = when.get("in")
+    if not isinstance(field, str) or not field or not isinstance(allowed, list):
+        return None
+    return field, allowed
+
+
+def _validate_ledger_conditionals(
+    entry: dict[str, Any],
+    event_name: str,
+    conditionals: Any,
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    """Apply cross-field rules: constraints keyed on another field's value.
+
+    Every other check in this module reads one field in isolation -- an
+    unconditional `required` list, and per-field type/enum/min/min_length. An
+    invariant spanning two fields was therefore inexpressible, so wherever a
+    runtime gate's condition is recorded in the payload the ledger held enough
+    to DETECT a violation by inspection but not enough to REJECT one (GHI #882).
+
+    The class is any event carrying both a discriminator and a field required
+    only for some of its values. `corpus_entry_retired` is the instance that
+    surfaced it: `gz content retire` refuses a retirement moving invariant-tier
+    liveness without a named `--attestor`, records which way the floor moved in
+    `floor_direction`, and a hand-authored row pairing a moved floor with an
+    empty attestor validated clean. `attestor` cannot simply join `required`
+    with a `min_length` -- it is legitimately empty on a routine compressible
+    retirement, and that asymmetry is the whole reason a conditional form is
+    needed rather than a bespoke check for this one event.
+
+    Each rule carries its own `because` prose. `gz validate --ledger` is a
+    fail-closed surface, so `.claude/rules/guardrail-feedback-prose.md`
+    § Invariant binds it to three parts -- what failed, why it is forbidden,
+    the governed next step -- and the "why" is specific to the rule, not to
+    the mechanism. A rule with no `because` cannot compose that message and is
+    refused as unsupported, which makes the prose bar mechanical here rather
+    than aspirational.
+    """
+    if not isinstance(conditionals, list):
+        return
+
+    for rule in conditionals:
+        when = rule.get("when") if isinstance(rule, dict) else None
+        then = rule.get("then") if isinstance(rule, dict) else None
+        because = rule.get("because") if isinstance(rule, dict) else None
+        predicate = _conditional_predicate(when)
+        if (
+            predicate is None
+            or not isinstance(then, dict)
+            or not isinstance(because, str)
+            or not because.strip()
+        ):
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"Event '{event_name}' declares an unsupported conditional rule: "
+                f"{json.dumps(rule, sort_keys=True, default=str)}. A conditional needs "
+                'a `when` of the form {"field": <name>, "in": [<values>]}, a `then` '
+                "object, and non-empty `because` recovery prose "
+                "(.claude/rules/guardrail-feedback-prose.md § Invariant); an "
+                "unevaluated rule would go inert and read exactly like a passing "
+                "check. Repair the rule in `src/gzkit/schemas/ledger.json`, then "
+                "re-run `uv run gz validate --ledger`.",
+                field="event",
+            )
+            continue
+
+        when_field, allowed = predicate
+        # An entry that does not CARRY the discriminator never fires. The ledger
+        # is append-only, so a field introduced today is absent from every row
+        # already committed; reading absence as "matches any value" would reject
+        # history that no edit is permitted to repair (GHI #877).
+        if when_field not in entry or entry[when_field] not in allowed:
+            continue
+
+        observed = entry[when_field]
+        condition = f"{when_field} is {observed!r}"
+
+        for field in then.get("required", []):
+            if field in entry:
+                continue
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"Event '{event_name}' is missing field '{field}', required when "
+                f"{condition}. {because}",
+                field=field,
+            )
+
+        properties = then.get("properties", {})
+        if not isinstance(properties, dict):
+            continue
+        for field, field_rule in properties.items():
+            if field not in entry or not isinstance(field_rule, dict):
+                continue
+            # Reuse the per-field checks so the conditional arm and the
+            # unconditional one cannot drift -- notably `min_length`, which
+            # measures the STRIPPED length. Re-message rather than mutate:
+            # ValidationError is frozen, and the finding is only actionable
+            # once it names the condition that made the field required.
+            scratch: list[ValidationError] = []
+            _validate_ledger_field(entry[field], field, field_rule, scratch, ledger_path, line_no)
+            errors.extend(
+                error.model_copy(
+                    update={
+                        "message": f"{error.message.rstrip('.')}, required when "
+                        f"{condition}. {because}"
+                    }
+                )
+                for error in scratch
+            )
+
+
 def _validate_obpi_receipt_evidence(
     entry: dict[str, Any],
     errors: list[ValidationError],
@@ -291,20 +425,31 @@ def _validate_ledger_event_fields(
         )
 
     properties = event_rule.get("properties", {})
-    if not isinstance(properties, dict):
-        return
+    if isinstance(properties, dict):
+        for field, rule in properties.items():
+            if field not in entry or not isinstance(rule, dict):
+                continue
+            _validate_ledger_field(
+                entry[field],
+                field,
+                rule,
+                errors,
+                ledger_path,
+                line_no,
+            )
 
-    for field, rule in properties.items():
-        if field not in entry or not isinstance(rule, dict):
-            continue
-        _validate_ledger_field(
-            entry[field],
-            field,
-            rule,
-            errors,
-            ledger_path,
-            line_no,
-        )
+    # Guarded rather than returned early on a malformed `properties`: the
+    # conditional and evidence arms are independent of it, and a schema defect
+    # in one arm silently disarming the others is the inertness this rule form
+    # exists to refuse.
+    _validate_ledger_conditionals(
+        entry=entry,
+        event_name=event_name,
+        conditionals=event_rule.get("conditional", []),
+        errors=errors,
+        ledger_path=ledger_path,
+        line_no=line_no,
+    )
 
     if event_name == "obpi_receipt_emitted":
         _validate_obpi_receipt_evidence(entry, errors, ledger_path, line_no)
