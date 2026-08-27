@@ -110,7 +110,7 @@ calls.
 
 - [operator-ruled] Take GHI #879 first, in the triage ranking order (verbatim selection: "#879 first, per ranking"). Booked to Layer 2 against the resumed handoff.
 - [operator-ruled] Take GHI #887 next (verbatim: "take #887 next").
-- [operator-ruled] Author a fresh handoff and sync (verbatim: "create fresh handoff, gut sync").
+- [operator-ruled] Author a fresh handoff and sync (verbatim: "create fresh handoff, git sync").
 - [agent-chose] Read #887's design question as ALREADY ANSWERED by ADR-0.0.9 Rule 5 rather than re-eliciting it, naming the rule that governed per Operator Economy of Effort #7.
 - [agent-chose] Routed #887 as a direct fix despite its schema, CLI and runtime breadth, on operator doctrine that a GHI-tracked defect routes to direct fix regardless of the ceremony criteria. No OBPI machinery was touched.
 - [agent-chose] Placed the #887 gate at pipeline LAUNCH rather than at completion, because completion is the operator's own act and a human attesting IS the ruling a block awaits.

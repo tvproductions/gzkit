@@ -6,8 +6,8 @@ Generates hooks for GitHub Copilot (when hook support is available).
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
-from gzkit.hooks.claude import _ruff_format_dir
 from gzkit.hooks.core import write_hook_script
+from gzkit.surface_write import write_text_if_changed
 
 
 def setup_copilot_hooks(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
@@ -29,8 +29,6 @@ def setup_copilot_hooks(project_root: Path, config: GzkitConfig | None = None) -
     # Write hook script (same format as Claude for now)
     script_path = write_hook_script(project_root, "copilot", config.paths.copilot_hooks)
     created.append(script_path.relative_to(project_root).as_posix())
-
-    _ruff_format_dir(project_root / config.paths.copilot_hooks)
 
     return created
 
@@ -70,5 +68,5 @@ def setup_copilotignore(project_root: Path) -> Path:
     """
     content = generate_copilotignore(project_root)
     ignore_path = project_root / ".copilotignore"
-    ignore_path.write_text(content, encoding="utf-8", newline="\n")
+    write_text_if_changed(ignore_path, content)
     return ignore_path

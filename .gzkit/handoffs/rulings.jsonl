@@ -552,7 +552,7 @@
 {"ts": "2026-08-27T08:29:52Z", "source": "20260827T082944Z-session-closed-879-and-887-landed.md", "text": "Write the handoff and sync (verbatim: \"write hand off, git sync\")."}
 {"ts": "2026-08-27T08:30:34Z", "source": "20260827T083027Z-session-closed-879-and-887-landed.md", "text": "[operator-ruled] Take GHI #879 first, in the triage ranking order (verbatim: \"#879 first, per ranking\")."}
 {"ts": "2026-08-27T08:30:34Z", "source": "20260827T083027Z-session-closed-879-and-887-landed.md", "text": "[operator-ruled] Take GHI #887 next (verbatim: \"take #887 next\")."}
-{"ts": "2026-08-27T08:30:34Z", "source": "20260827T083027Z-session-closed-879-and-887-landed.md", "text": "[operator-ruled] Author a fresh handoff and sync at session end (verbatim: \"create fresh handoff, gut sync\")."}
+{"ts": "2026-08-27T08:30:34Z", "source": "20260827T083027Z-session-closed-879-and-887-landed.md", "text": "[operator-ruled] Author a fresh handoff and sync at session end (verbatim: \"create fresh handoff, git sync\")."}
 {"ts": "2026-08-27T09:49:34Z", "source": "20260827T094930Z-ghi-856-parallel-attestation-and-gate-composition.md", "text": "Take GHI #879 first, in the triage ranking order (verbatim selection: \"#879 first, per ranking\"). Booked to Layer 2 against the resumed handoff."}
 {"ts": "2026-08-27T09:49:34Z", "source": "20260827T094930Z-ghi-856-parallel-attestation-and-gate-composition.md", "text": "Take GHI #887 next (verbatim: \"take #887 next\")."}
-{"ts": "2026-08-27T09:49:34Z", "source": "20260827T094930Z-ghi-856-parallel-attestation-and-gate-composition.md", "text": "Author a fresh handoff and sync (verbatim: \"create fresh handoff, gut sync\")."}
+{"ts": "2026-08-27T09:49:34Z", "source": "20260827T094930Z-ghi-856-parallel-attestation-and-gate-composition.md", "text": "Author a fresh handoff and sync (verbatim: \"create fresh handoff, git sync\")."}

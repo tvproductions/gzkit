@@ -5,6 +5,8 @@ This module contains the governance enforcement logic that all agent hooks use.
 
 import re
 import sys
+import tempfile
+from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,7 @@ from gzkit.ledger import (
     parse_frontmatter_value,
     resolve_adr_lane,
 )
+from gzkit.surface_write import write_if_changed
 from gzkit.utils import capture_validation_anchor_with_warnings
 
 # Governance artifact patterns
@@ -500,10 +503,51 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
     hooks_path.mkdir(parents=True, exist_ok=True)
 
     script_path = hooks_path / "ledger-writer.py"
-    script_content = generate_hook_script(hook_type, project_root)
-    script_path.write_text(script_content, encoding="utf-8", newline="\n")
 
-    # Make executable on Unix
-    script_path.chmod(0o755)
+    # Stage-format-write. The generated template is not ruff-clean, so writing
+    # it straight to ``hooks_path`` and formatting afterwards rewrote the file
+    # twice on every sync -- raw template, then normalized back to the bytes
+    # already on disk. Nothing downstream can see that round trip, and it is
+    # what let a read-only ``gz validate --surfaces`` move the hook surface
+    # underneath its caller (GHI #890). Formatting a staging copy puts the
+    # comparison after normalization, where it can match.
+    with tempfile.TemporaryDirectory(prefix="gzkit-hook-") as staging_name:
+        staged = Path(staging_name) / script_path.name
+        staged.write_bytes(generate_hook_script(hook_type, project_root).encode("utf-8"))
+        _ruff_format_dir(staged.parent, project_root / "pyproject.toml")
+        write_if_changed(script_path, staged.read_bytes(), mode=0o755)
 
     return script_path
+
+
+def _ruff_format_dir(directory: Path, config_path: Path | None = None) -> None:
+    """Run ``ruff format`` on a generated hook directory.
+
+    Generated hook sources are derived from dedented string templates that do
+    not always match ruff's line-length and blank-line rules exactly. Running
+    ruff format as a post-sync normalization step keeps sync_all output
+    byte-stable against the pre-commit formatter, which is what the sync-parity
+    validator compares against.
+    """
+    import subprocess  # noqa: PLC0415
+
+    if not directory.is_dir():
+        return
+    command = ["uv", "run", "ruff", "format"]
+    if config_path is not None and config_path.is_file():
+        # ``directory`` may be a staging tree outside the project, where ruff's
+        # upward config discovery would find nothing and fall back to its
+        # 88-char default. pyproject.toml pins line-length 100 and its own
+        # per-file-ignores comment records that ".claude/hooks/ is itself
+        # ruff-formatted at line-length 100" -- discovering the wrong width
+        # would make every hook differ forever instead of once.
+        command += ["--config", str(config_path)]
+    with suppress(FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
+        subprocess.run(
+            [*command, str(directory)],
+            capture_output=True,
+            text=True,
+            errors="replace",
+            timeout=60,
+            check=False,
+        )

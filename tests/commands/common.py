@@ -273,7 +273,7 @@ def _write_obpi(
 _uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
 _ruff_format_patchers = (
     patch("gzkit.hooks.claude._ruff_format_dir", return_value=None),
-    patch("gzkit.hooks.copilot._ruff_format_dir", return_value=None),
+    patch("gzkit.hooks.core._ruff_format_dir", return_value=None),
 )
 
 
@@ -285,9 +285,11 @@ def start_init_subprocess_patches() -> None:
 
     * ``_run_uv_sync`` — each real ``uv sync`` costs ~1s.
     * ``_ruff_format_dir`` — each call spawns ``uv run ruff format`` on a
-      generated hooks directory; ``gz init`` invokes it 4 times (~600ms
-      total per init). Hook templates are already formatted; skipping the
-      format step does not affect behavioral correctness under test.
+      staging hooks directory (~600ms total per init). Both call sites are
+      stubbed: ``hooks.claude`` for the Claude hook set and ``hooks.core``
+      for ``write_hook_script``, which the Copilot path routes through. The
+      symbol lives in ``hooks.core``; ``hooks.claude`` imports it, so that
+      name must be patched too or the Claude call site runs for real.
 
     Paired with ``stop_init_subprocess_patches()`` in ``tearDownModule``.
     GHI #183: per-test budget for test_init/test_skills/test_sync_cmds/

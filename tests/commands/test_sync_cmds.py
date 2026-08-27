@@ -504,9 +504,20 @@ class TestSyncCommand(unittest.TestCase):
                 )
 
     def test_agent_sync_dry_run_reports_complete_write_set(self) -> None:
-        """Dry-run output must list every path that sync_all() would touch."""
+        """Dry-run output must list every path that sync_all() would touch.
+
+        Dry-run runs FIRST, because it is the non-mutating half: both halves
+        must observe the same starting tree for the comparison to mean
+        anything. Applying first and then planning compares two different
+        states, and passed only while sync rewrote unchanged files on every
+        run -- once sync became idempotent the second call legitimately had
+        less to report (GHI #890).
+        """
         runner = CliRunner()
         with _InitFromTemplate():
+            dry_result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
+            self.assertEqual(dry_result.exit_code, 0)
+
             apply_result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             self.assertEqual(apply_result.exit_code, 0)
             applied = {
@@ -516,8 +527,6 @@ class TestSyncCommand(unittest.TestCase):
             }
             self.assertTrue(applied, "apply-mode must report at least one updated path")
 
-            dry_result = runner.invoke(main, ["agent", "sync", "control-surfaces", "--dry-run"])
-            self.assertEqual(dry_result.exit_code, 0)
             for path in applied:
                 self.assertIn(
                     path,
@@ -616,12 +625,27 @@ class TestSyncCommand(unittest.TestCase):
             self.assertTrue(stale_skill.exists())
 
     def test_agent_sync_output_is_deterministic_across_repeated_runs(self) -> None:
-        """Repeated sync command output is stable for unchanged inputs."""
+        """Repeated sync command output is stable for unchanged inputs.
+
+        The first run after a template init has real work to do, so the
+        comparison starts from the run after it -- "unchanged inputs" is a
+        precondition, not something the first call satisfies.
+
+        Note what this does NOT assert. A synced tree still prints ~105
+        "Updated" lines, because the reported list is the WRITE SET (what sync
+        is responsible for) rather than the CHANGE SET (what moved on disk);
+        ``plan_sync_all`` and ``--dry-run`` both consume it as a plan. Since
+        GHI #890 those lines no longer imply a write happened. Making the label
+        honest is an operator-facing output change and is deliberately not
+        bundled here.
+        """
         runner = CliRunner()
         with _InitFromTemplate():
+            warmup = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             first = runner.invoke(main, ["agent", "sync", "control-surfaces"])
             second = runner.invoke(main, ["agent", "sync", "control-surfaces"])
 
+            self.assertEqual(warmup.exit_code, 0)
             self.assertEqual(first.exit_code, 0)
             self.assertEqual(second.exit_code, 0)
             self.assertEqual(first.output, second.output)

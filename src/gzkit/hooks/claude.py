@@ -4,10 +4,13 @@ Generates Claude hook settings for governance-safe pre/post edit automation.
 """
 
 import json
+import tempfile
+from collections.abc import Callable
 from contextlib import suppress
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.hooks.core import _ruff_format_dir
 from gzkit.hooks.scripts.ghi import _ghi_triage_chat_silence_script
 from gzkit.hooks.scripts.mx import _mx_awareness_script
 from gzkit.hooks.scripts.pipeline import (
@@ -34,6 +37,7 @@ from gzkit.hooks.scripts.validation import (
     _ledger_writer_script,
     _obpi_completion_validator_script,
 )
+from gzkit.surface_write import write_if_changed, write_text_if_changed
 
 
 def _claude_hooks_readme() -> str:
@@ -135,34 +139,13 @@ def _claude_hooks_readme() -> str:
 
 
 def _write_hook_file(path: Path, content: str, executable: bool = False) -> None:
-    """Write a generated Claude hook artifact."""
-    path.write_text(content, encoding="utf-8", newline="\n")
-    if executable:
-        path.chmod(0o755)
+    """Write a generated Claude hook artifact when its bytes differ.
 
-
-def _ruff_format_dir(directory: Path) -> None:
-    """Run ``ruff format`` on a generated hook directory.
-
-    Generated hook sources are derived from dedented string templates that do
-    not always match ruff's line-length and blank-line rules exactly. Running
-    ruff format as a post-sync normalization step keeps sync_all output
-    byte-stable against the pre-commit formatter, which is what the sync-parity
-    validator compares against.
+    Conditional so a caller that merely *inspects* the surface does not move
+    all 17 hook files underneath itself (GHI #890); ``chmod`` still runs on
+    every call because it moves ctime, never mtime.
     """
-    import subprocess  # noqa: PLC0415
-
-    if not directory.is_dir():
-        return
-    with suppress(FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
-        subprocess.run(
-            ["uv", "run", "ruff", "format", str(directory)],
-            capture_output=True,
-            text=True,
-            errors="replace",
-            timeout=60,
-            check=False,
-        )
+    write_text_if_changed(path, content, mode=0o755 if executable else None)
 
 
 def _hook_command(hooks_dir: str, script: str) -> str:
@@ -489,6 +472,40 @@ def merge_settings(
     return merged
 
 
+def _write_hook_dir(
+    project_root: Path,
+    hooks_path: Path,
+    scripts: tuple[tuple[str, Callable[[], str], bool], ...],
+) -> list[str]:
+    """Render hooks, normalize them with ruff, then write only what changed.
+
+    ``ruff format`` runs on a STAGING copy rather than on ``hooks_path``. Four
+    of the generated templates are not ruff-clean, so writing them straight to
+    disk and formatting afterwards rewrote each of those files twice per sync:
+    once as the raw template, once normalized back to the bytes already there.
+    The round trip leaves no trace in ``git status`` or in a bytes comparison,
+    and it is what made a read-only ``gz validate --surfaces`` move the hook
+    surface underneath its caller (GHI #890). Staging puts the comparison
+    after normalization, where it can match.
+    """
+    hooks_path.mkdir(parents=True, exist_ok=True)
+    written: list[str] = []
+    with tempfile.TemporaryDirectory(prefix="gzkit-hooks-") as staging_name:
+        staging = Path(staging_name)
+        for filename, render, _ in scripts:
+            (staging / filename).write_bytes(render().encode("utf-8"))
+        _ruff_format_dir(staging, project_root / "pyproject.toml")
+        for filename, _, executable in scripts:
+            target = hooks_path / filename
+            write_if_changed(
+                target,
+                (staging / filename).read_bytes(),
+                mode=0o755 if executable else None,
+            )
+            written.append(target.relative_to(project_root).as_posix())
+    return written
+
+
 def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
     """Set up Claude Code hooks for the project.
 
@@ -503,89 +520,32 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    created = []
-
     hooks_path = project_root / config.paths.claude_hooks
-    hooks_path.mkdir(parents=True, exist_ok=True)
 
-    # Write hook scripts
-    instruction_router_path = hooks_path / "instruction-router.py"
-    _write_hook_file(instruction_router_path, _instruction_router_script(), executable=True)
-    created.append(instruction_router_path.relative_to(project_root).as_posix())
-
-    post_edit_ruff_path = hooks_path / "post-edit-ruff.py"
-    _write_hook_file(post_edit_ruff_path, _post_edit_ruff_script(), executable=True)
-    created.append(post_edit_ruff_path.relative_to(project_root).as_posix())
-
-    plan_audit_gate_path = hooks_path / "plan-audit-gate.py"
-    _write_hook_file(plan_audit_gate_path, _plan_audit_gate_script(), executable=True)
-    created.append(plan_audit_gate_path.relative_to(project_root).as_posix())
-
-    pipeline_router_path = hooks_path / "pipeline-router.py"
-    _write_hook_file(pipeline_router_path, _pipeline_router_script(), executable=True)
-    created.append(pipeline_router_path.relative_to(project_root).as_posix())
-
-    pipeline_gate_path = hooks_path / "pipeline-gate.py"
-    _write_hook_file(pipeline_gate_path, _pipeline_gate_script(), executable=True)
-    created.append(pipeline_gate_path.relative_to(project_root).as_posix())
-
-    pipeline_completion_reminder_path = hooks_path / "pipeline-completion-reminder.py"
-    _write_hook_file(
-        pipeline_completion_reminder_path,
-        _pipeline_completion_reminder_script(),
-        executable=True,
+    # (filename, renderer, executable). A table rather than seventeen repeated
+    # write blocks, so the staging pass in ``_write_hook_dir`` can treat every
+    # generated hook uniformly.
+    scripts: tuple[tuple[str, Callable[[], str], bool], ...] = (
+        ("instruction-router.py", _instruction_router_script, True),
+        ("post-edit-ruff.py", _post_edit_ruff_script, True),
+        ("plan-audit-gate.py", _plan_audit_gate_script, True),
+        ("pipeline-router.py", _pipeline_router_script, True),
+        ("pipeline-gate.py", _pipeline_gate_script, True),
+        ("pipeline-completion-reminder.py", _pipeline_completion_reminder_script, True),
+        ("ghi-triage-chat-silence.py", _ghi_triage_chat_silence_script, True),
+        ("session-start-advisement.py", _session_start_advisement_script, True),
+        ("session-exit-bookmark.py", _session_exit_bookmark_script, True),
+        ("verifier-pipe-gate.py", _verifier_pipe_gate_script, True),
+        ("session-staleness-check.py", _session_staleness_check_script, True),
+        ("obpi-completion-validator.py", _obpi_completion_validator_script, True),
+        ("ledger-writer.py", _ledger_writer_script, True),
+        ("stop-turn-feedback.py", _stop_turn_feedback_script, True),
+        ("mx-awareness.py", _mx_awareness_script, True),
+        ("control-surface-sync.py", _control_surface_sync_script, True),
+        ("README.md", _claude_hooks_readme, False),
     )
-    created.append(pipeline_completion_reminder_path.relative_to(project_root).as_posix())
 
-    ghi_triage_chat_silence_path = hooks_path / "ghi-triage-chat-silence.py"
-    _write_hook_file(
-        ghi_triage_chat_silence_path,
-        _ghi_triage_chat_silence_script(),
-        executable=True,
-    )
-    created.append(ghi_triage_chat_silence_path.relative_to(project_root).as_posix())
-
-    session_start_advisement_path = hooks_path / "session-start-advisement.py"
-    _write_hook_file(
-        session_start_advisement_path, _session_start_advisement_script(), executable=True
-    )
-    created.append(session_start_advisement_path.relative_to(project_root).as_posix())
-
-    session_exit_bookmark_path = hooks_path / "session-exit-bookmark.py"
-    _write_hook_file(session_exit_bookmark_path, _session_exit_bookmark_script(), executable=True)
-    created.append(session_exit_bookmark_path.relative_to(project_root).as_posix())
-
-    verifier_pipe_gate_path = hooks_path / "verifier-pipe-gate.py"
-    _write_hook_file(verifier_pipe_gate_path, _verifier_pipe_gate_script(), executable=True)
-    created.append(verifier_pipe_gate_path.relative_to(project_root).as_posix())
-
-    session_staleness_path = hooks_path / "session-staleness-check.py"
-    _write_hook_file(session_staleness_path, _session_staleness_check_script(), executable=True)
-    created.append(session_staleness_path.relative_to(project_root).as_posix())
-
-    obpi_validator_path = hooks_path / "obpi-completion-validator.py"
-    _write_hook_file(obpi_validator_path, _obpi_completion_validator_script(), executable=True)
-    created.append(obpi_validator_path.relative_to(project_root).as_posix())
-
-    ledger_writer_path = hooks_path / "ledger-writer.py"
-    _write_hook_file(ledger_writer_path, _ledger_writer_script(), executable=True)
-    created.append(ledger_writer_path.relative_to(project_root).as_posix())
-
-    stop_turn_feedback_path = hooks_path / "stop-turn-feedback.py"
-    _write_hook_file(stop_turn_feedback_path, _stop_turn_feedback_script(), executable=True)
-    created.append(stop_turn_feedback_path.relative_to(project_root).as_posix())
-
-    mx_awareness_path = hooks_path / "mx-awareness.py"
-    _write_hook_file(mx_awareness_path, _mx_awareness_script(), executable=True)
-    created.append(mx_awareness_path.relative_to(project_root).as_posix())
-
-    control_surface_sync_path = hooks_path / "control-surface-sync.py"
-    _write_hook_file(control_surface_sync_path, _control_surface_sync_script(), executable=True)
-    created.append(control_surface_sync_path.relative_to(project_root).as_posix())
-
-    readme_path = hooks_path / "README.md"
-    _write_hook_file(readme_path, _claude_hooks_readme())
-    created.append(readme_path.relative_to(project_root).as_posix())
+    created = _write_hook_dir(project_root, hooks_path, scripts)
 
     # Write settings.json — merge to preserve user-added hooks
     gzkit_settings = generate_claude_settings(config)
@@ -594,12 +554,8 @@ def setup_claude_hooks(project_root: Path, config: GzkitConfig | None = None) ->
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
-    with settings_path.open("w", newline="\n") as f:
-        json.dump(merged, f, indent=2)
-        f.write("\n")
+    write_text_if_changed(settings_path, json.dumps(merged, indent=2) + "\n")
 
     created.append(settings_path.relative_to(project_root).as_posix())
-
-    _ruff_format_dir(hooks_path)
 
     return created

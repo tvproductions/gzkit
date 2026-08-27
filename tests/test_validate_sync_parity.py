@@ -7,7 +7,11 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli import main
-from gzkit.validate_pkg.sync_parity import check_sync_parity, snapshot_surfaces
+from gzkit.validate_pkg.sync_parity import (
+    _collect_files,
+    check_sync_parity,
+    snapshot_surfaces,
+)
 from tests.commands.common import CliRunner
 
 _uv_sync_patcher = patch("gzkit.commands.init_cmd._run_uv_sync", return_value=None)
@@ -100,6 +104,42 @@ class SyncParityCleanTreeTest(_SyncParityBase):
             before,
             after,
             "check_sync_parity must call sync_all with emit_event=False",
+        )
+
+
+class SyncParityNonMutatingTest(_SyncParityBase):
+    """The parity validator observes generated surfaces; it never writes them.
+
+    Architectural Boundary 6 — a derived view must never silently become
+    source-of-truth, and a validator that establishes parity by *performing*
+    ``sync_all()`` is writing the surface it claims to be inspecting. The
+    ledger arm of this property is asserted by
+    ``test_default_sync_parity_check_does_not_emit_ledger_event``; this is the
+    filesystem arm (GHI #890).
+
+    Asserted on mtime rather than content because the writes are
+    byte-identical: ``git status`` stays clean while 102 canonical files --
+    ``AGENTS.md``, every ``.claude/rules/`` mirror, all 17 hook scripts --
+    move underneath the caller. mtime is what makes the mutation observable,
+    and it is what classes the ``gz check`` step as a writer.
+    """
+
+    def test_clean_tree_parity_check_writes_nothing(self) -> None:
+        root = Path.cwd()
+        before = {path: path.stat().st_mtime_ns for path in _collect_files(root) if path.is_file()}
+        self.assertGreater(len(before), 50, "surface set should cover the generated tree")
+
+        check_sync_parity(root)
+
+        moved = sorted(
+            path.relative_to(root).as_posix()
+            for path, mtime in before.items()
+            if path.is_file() and path.stat().st_mtime_ns != mtime
+        )
+        self.assertEqual(
+            [],
+            moved,
+            f"check_sync_parity wrote {len(moved)} surface files: {moved[:10]}",
         )
 
 

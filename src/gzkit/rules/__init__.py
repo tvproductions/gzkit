@@ -17,6 +17,7 @@ import yaml
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.config import GzkitConfig
+from gzkit.surface_write import write_text_if_changed
 
 _logger = logging.getLogger(__name__)
 
@@ -369,7 +370,7 @@ def sync_claude_rules(project_root: Path, config: GzkitConfig | None = None) -> 
                 output = f"---\npaths:\n{paths_yaml}\n---\n{body}"
 
             target = rules_dir / target_name
-            target.write_text(output, encoding="utf-8", newline="\n")
+            write_text_if_changed(target, output)
             updated.append(target.relative_to(project_root).as_posix())
 
     if rules_dir.exists():
@@ -453,25 +454,95 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
             + "\n"
         )
 
-        agents_path.write_text(content, encoding="utf-8", newline="\n")
+        write_text_if_changed(agents_path, content)
         updated.append(agents_path.relative_to(project_root).as_posix())
 
-    _cleanup_stale_nested_agents(project_root, expected_paths)
+    _cleanup_stale_nested_agents(
+        project_root, expected_paths, _mirror_owned_roots(project_root, config)
+    )
 
     return updated
 
 
-def _cleanup_stale_nested_agents(project_root: Path, expected_paths: set[Path]) -> None:
+def _mirror_owned_roots(project_root: Path, config: GzkitConfig) -> tuple[tuple[Path, Path], ...]:
+    """``(mirror_root, canonical_root)`` pairs whose ``AGENTS.md`` files are copies.
+
+    ``sync_skill_mirror`` copies the canonical skills tree into each vendor
+    path, and ``sync_pkg_surfaces`` copies it into the wheel-shipping package
+    tree. The canonical root travels with each mirror because a copy is only
+    stale when its SOURCE is gone -- excluding mirror trees outright would keep
+    them from churning but would also orphan a copy forever once the canonical
+    file it mirrors is retired, and ``sync_skill_mirror`` is documented as
+    "intentionally additive/non-destructive", so nothing else would remove it.
+    """
+    canonical = project_root / config.paths.skills
+    mirrors = (
+        config.paths.claude_skills,
+        config.paths.copilot_skills,
+        config.paths.codex_skills,
+        "src/gzkit/skills",
+    )
+    pairs = {
+        (project_root / rel, canonical)
+        for rel in mirrors
+        if rel and project_root / rel != canonical
+    }
+    return tuple(sorted(pairs))
+
+
+def _mirror_root_for(
+    agents_file: Path, mirror_roots: tuple[tuple[Path, Path], ...]
+) -> tuple[Path, Path] | None:
+    """Return the ``(mirror_root, canonical_root)`` pair owning ``agents_file``."""
+    for pair in mirror_roots:
+        if agents_file.is_relative_to(pair[0]):
+            return pair
+    return None
+
+
+def _cleanup_stale_nested_agents(
+    project_root: Path,
+    expected_paths: set[Path],
+    mirror_roots: tuple[tuple[Path, Path], ...] = (),
+) -> None:
     """Remove nested AGENTS.md files not in the expected set.
 
-    Only deletes files bearing the gzkit generated marker.
+    Only deletes files bearing the gzkit generated marker, and never removes a
+    mirror copy whose canonical source survives -- those trees belong to the
+    skill and package mirror writers.
+
+    The exclusion is load-bearing rather than defensive. A canonical nested
+    ``AGENTS.md`` carries the generated marker, so every mirror copy of it
+    carries the marker too while never appearing in ``expected_paths``.
+    Scanning the whole project therefore deleted six mirrored files on each
+    sync -- ``.claude/skills/``, ``.agents/skills/``, ``.github/skills/`` --
+    which the mirror pass re-created moments later. The final tree looks
+    untouched, so neither ``git status`` nor a bytes comparison shows it; what
+    it actually does is briefly remove a governance surface and rewrite it on
+    every run (GHI #890).
+
+    Deletion is decided for the whole sweep before any file is unlinked.
+    Deciding as it walks makes the outcome depend on ``rglob`` order: a
+    canonical file and its mirror are both marker-bearing, so visiting the
+    canonical first deletes it and leaves the mirror looking like an orphan,
+    while visiting the mirror first spares it. Same tree, two results.
     """
     root_agents = project_root / "AGENTS.md"
-    for agents_file in project_root.rglob("AGENTS.md"):
-        if agents_file == root_agents:
-            continue
-        if agents_file in expected_paths:
-            continue
+    candidates = [
+        path
+        for path in project_root.rglob("AGENTS.md")
+        if path != root_agents and path not in expected_paths
+    ]
+    surviving_canonicals = {path for path in candidates if not _mirror_root_for(path, mirror_roots)}
+    for agents_file in candidates:
+        pair = _mirror_root_for(agents_file, mirror_roots)
+        if pair is not None:
+            mirror_root, canonical_root = pair
+            counterpart = canonical_root / agents_file.relative_to(mirror_root)
+            # A copy is stale only when its source is gone -- either absent now,
+            # or slated for removal by this same sweep.
+            if counterpart.is_file() and counterpart not in surviving_canonicals:
+                continue
         try:
             first_line = agents_file.read_text(encoding="utf-8").split("\n", 1)[0]
             if "Generated by gzkit" in first_line:
@@ -690,7 +761,7 @@ def render_rules_to_dir(
         expected_names.add(filename)
         output = render_fn(rule)
         target = target_dir / filename
-        target.write_text(output, encoding="utf-8", newline="\n")
+        write_text_if_changed(target, output)
         written.append(_render_path_str(target, project_root))
 
     for existing in target_dir.iterdir():

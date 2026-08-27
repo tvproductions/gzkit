@@ -31,6 +31,7 @@ from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
 from gzkit.rules import sync_claude_rules as sync_claude_rules  # noqa: F401
 from gzkit.rules import sync_nested_agents_md as sync_nested_agents_md  # noqa: F401
+from gzkit.surface_write import write_if_changed, write_text_if_changed
 from gzkit.sync_skills import (
     bootstrap_canonical_skills,
     collect_skills_catalog,
@@ -200,9 +201,7 @@ def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
     manifest_path = project_root / ".gzkit" / "manifest.json"
     manifest_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with manifest_path.open("w", newline="\n") as f:
-        json.dump(manifest, f, indent=2)
-        f.write("\n")
+    write_text_if_changed(manifest_path, json.dumps(manifest, indent=2) + "\n")
 
 
 # ---------------------------------------------------------------------------
@@ -347,7 +346,7 @@ def sync_discovery_index(project_root: Path, config: GzkitConfig) -> None:
     discovery_path = project_root / config.paths.discovery_index
     discovery_path.parent.mkdir(parents=True, exist_ok=True)
     payload = _discovery_index_payload(project_root, config)
-    discovery_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8", newline="\n")
+    write_text_if_changed(discovery_path, json.dumps(payload, indent=2) + "\n")
 
 
 # ---------------------------------------------------------------------------
@@ -387,7 +386,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig, consumer: str | None
     if consumer is None:
         consumer = agent_contract_consumer(project_root)
     if rendition_exists(project_root, "AGENTS.md", consumer):
-        agents_path.write_bytes(load_rendition(project_root, "AGENTS.md", consumer))
+        write_if_changed(agents_path, load_rendition(project_root, "AGENTS.md", consumer))
         return
 
     # Nothing committed for this consumer. Bootstrap belongs to a ROUTED consumer:
@@ -439,7 +438,7 @@ def sync_agents_md(project_root: Path, config: GzkitConfig, consumer: str | None
         temperature = "heavy"
     content_bytes = render_content_model(model, consumer, temperature=temperature)
 
-    agents_path.write_bytes(content_bytes)
+    write_if_changed(agents_path, content_bytes)
 
 
 def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
@@ -454,7 +453,7 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     content = render_surface_template("claude", **context)
 
     claude_path = project_root / config.paths.claude_md
-    claude_path.write_text(content, encoding="utf-8", newline="\n")
+    write_text_if_changed(claude_path, content)
 
 
 def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
@@ -470,7 +469,7 @@ def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
 
     copilot_path = project_root / config.paths.copilot_instructions
     copilot_path.parent.mkdir(parents=True, exist_ok=True)
-    copilot_path.write_text(content, encoding="utf-8", newline="\n")
+    write_text_if_changed(copilot_path, content)
 
 
 # ---------------------------------------------------------------------------
@@ -500,9 +499,7 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
 
     merged = merge_settings(settings_path, gzkit_settings, config.paths.claude_hooks)
 
-    with settings_path.open("w", newline="\n") as f:
-        json.dump(merged, f, indent=2)
-        f.write("\n")
+    write_text_if_changed(settings_path, json.dumps(merged, indent=2) + "\n")
 
 
 def render_codex_config() -> str:
@@ -546,7 +543,7 @@ def sync_codex_config(project_root: Path, config: GzkitConfig) -> str:
         existing = config_path.read_bytes()
         if existing:
             return config_path.relative_to(root).as_posix()
-    config_path.write_text(rendered, encoding="utf-8", newline="\n")
+    write_text_if_changed(config_path, rendered)
     return config_path.relative_to(root).as_posix()
 
 
@@ -623,9 +620,7 @@ def sync_copilotignore(project_root: Path) -> None:
 
     """
     copilotignore_path = project_root / ".copilotignore"
-    copilotignore_path.write_text(
-        generate_copilotignore(project_root), encoding="utf-8", newline="\n"
-    )
+    write_text_if_changed(copilotignore_path, generate_copilotignore(project_root))
 
 
 # ---------------------------------------------------------------------------
@@ -946,7 +941,7 @@ def sync_persona_mirrors(
                 continue
             rendered = render_persona_for_vendor(vendor_name, fm, body)
             out_path = target_dir / persona_path.name
-            out_path.write_text(rendered, encoding="utf-8", newline="\n")
+            write_text_if_changed(out_path, rendered)
             updated.append(str(Path(target_dir_rel) / persona_path.name))
 
     return updated

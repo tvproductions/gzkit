@@ -1,0 +1,193 @@
+"""Generated control surfaces are written only when their bytes change (GHI #890).
+
+``gz validate --surfaces`` proves sync parity by *performing* a sync, so every
+unconditional writer in the sync path made a read-only validator mutate the tree
+it was inspecting -- 102 canonical files on every invocation, byte-identical, so
+``git status`` stayed clean while mtimes churned.
+
+These are unit-level pins. The end-to-end assertion lives in
+``tests.test_validate_sync_parity.SyncParityNonMutatingTest``, but its fixture is
+a bare temp project where ``uv run ruff`` does not resolve, so ``_ruff_format_dir``
+no-ops there and the fixture cannot reach the ruff arm at all. That arm is pinned
+directly here instead.
+"""
+
+import os
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from gzkit.hooks import core as hooks_core
+from gzkit.rules import _cleanup_stale_nested_agents
+from gzkit.surface_write import write_if_changed, write_text_if_changed
+
+
+class WriteIfChangedTest(unittest.TestCase):
+    """The primitive every generated-surface writer funnels through."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory(prefix="gzkit-write-")
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def test_identical_payload_leaves_the_file_untouched(self) -> None:
+        target = self.root / "surface.md"
+        self.assertTrue(write_if_changed(target, b"body\n"))
+        before = target.stat().st_mtime_ns
+        os.utime(target, ns=(before - 10**9, before - 10**9))
+        stamped = target.stat().st_mtime_ns
+
+        self.assertFalse(write_if_changed(target, b"body\n"))
+        self.assertEqual(
+            stamped,
+            target.stat().st_mtime_ns,
+            "an unchanged surface must not be rewritten; mtime is the observable",
+        )
+
+    def test_differing_payload_is_written(self) -> None:
+        target = self.root / "surface.md"
+        write_if_changed(target, b"old\n")
+        self.assertTrue(write_if_changed(target, b"new\n"))
+        self.assertEqual(b"new\n", target.read_bytes())
+
+    def test_mode_is_enforced_even_when_content_matches(self) -> None:
+        """Hooks must stay executable; chmod moves ctime, never mtime."""
+        target = self.root / "hook.py"
+        write_if_changed(target, b"#!/usr/bin/env python\n", mode=0o755)
+        target.chmod(0o644)
+
+        self.assertFalse(write_if_changed(target, b"#!/usr/bin/env python\n", mode=0o755))
+        self.assertEqual(0o755, target.stat().st_mode & 0o777)
+
+    def test_text_sibling_writes_utf8_without_newline_translation(self) -> None:
+        target = self.root / "surface.md"
+        write_text_if_changed(target, "line\nline\n")
+        self.assertEqual(b"line\nline\n", target.read_bytes())
+
+
+class RuffFormatConfigTest(unittest.TestCase):
+    """Staged hook formatting must carry the project's ruff config."""
+
+    def test_staging_format_passes_project_config(self) -> None:
+        """Without --config, ruff discovers nothing and falls back to 88 chars.
+
+        ``pyproject.toml`` pins ``line-length = 100`` and its own
+        per-file-ignores comment records that the emitted hooks are
+        "ruff-formatted at line-length 100". A staging tree lives outside the
+        project, so config discovery would silently use a different width and
+        every hook would differ forever instead of once.
+        """
+        with tempfile.TemporaryDirectory(prefix="gzkit-fmt-") as name:
+            staging = Path(name) / "hooks"
+            staging.mkdir()
+            (staging / "h.py").write_text("x = 1\n", encoding="utf-8")
+            config = Path(name) / "pyproject.toml"
+            config.write_text("[tool.ruff]\nline-length = 100\n", encoding="utf-8")
+
+            with patch("subprocess.run") as run:
+                hooks_core._ruff_format_dir(staging, config)
+
+        run.assert_called_once()
+        argv = list(run.call_args.args[0])
+        self.assertIn("--config", argv)
+        self.assertIn(str(config), argv)
+        self.assertLess(
+            argv.index("--config"),
+            argv.index(str(staging)),
+            "--config must precede the target so ruff applies it to that tree",
+        )
+
+    def test_absent_config_is_not_passed(self) -> None:
+        """A project without pyproject.toml keeps ruff's own discovery."""
+        with tempfile.TemporaryDirectory(prefix="gzkit-fmt-") as name:
+            staging = Path(name) / "hooks"
+            staging.mkdir()
+            (staging / "h.py").write_text("x = 1\n", encoding="utf-8")
+
+            with patch("subprocess.run") as run:
+                hooks_core._ruff_format_dir(staging, Path(name) / "pyproject.toml")
+
+        self.assertNotIn("--config", list(run.call_args.args[0]))
+
+
+class NestedAgentsCleanupTest(unittest.TestCase):
+    """Cleanup owns the canonical tree; mirror copies belong to the mirror pass."""
+
+    _MARKER = "<!-- Generated by gzkit -->\n"
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory(prefix="gzkit-cleanup-")
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def _pairs(self) -> tuple[tuple[Path, Path], ...]:
+        return ((self.root / ".claude/skills", self.root / ".gzkit/skills"),)
+
+    def _seed(self, rel: str) -> Path:
+        path = self.root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(self._MARKER + "body\n", encoding="utf-8")
+        return path
+
+    def test_orphaned_mirror_copy_is_removed(self) -> None:
+        """A copy whose canonical source is gone is a genuine orphan.
+
+        Excluding mirror trees outright would stop the churn and also strand
+        this file forever: ``sync_skill_mirror`` is documented as
+        "intentionally additive/non-destructive", so nothing else removes it.
+        Scoping the exclusion by canonical counterpart keeps both properties.
+        """
+        orphan = self._seed(".claude/skills/retired/AGENTS.md")
+
+        _cleanup_stale_nested_agents(self.root, set(), self._pairs())
+
+        self.assertFalse(orphan.is_file(), "mirror copy with no canonical source must go")
+
+    def test_mirror_survives_regardless_of_walk_order(self) -> None:
+        """Deletion is decided for the whole sweep, not as ``rglob`` walks.
+
+        A canonical file and its mirror both carry the marker. Deciding per
+        file makes the result depend on which one ``rglob`` yields first --
+        canonical-first deletes it and orphans the mirror; mirror-first spares
+        both. Seeding the canonical as expected pins the real sync's shape.
+        """
+        self._seed(".gzkit/skills/AGENTS.md")
+        canonical = self.root / ".gzkit/skills/AGENTS.md"
+        mirror = self._seed(".claude/skills/AGENTS.md")
+
+        _cleanup_stale_nested_agents(self.root, {canonical}, self._pairs())
+
+        self.assertTrue(canonical.is_file())
+        self.assertTrue(mirror.is_file(), "mirror-owned AGENTS.md must not be deleted")
+
+    def test_retired_canonical_takes_its_mirror_with_it(self) -> None:
+        """When the canonical is retired in this sweep, its mirror goes too."""
+        canonical = self._seed(".gzkit/skills/AGENTS.md")
+        mirror = self._seed(".claude/skills/AGENTS.md")
+
+        _cleanup_stale_nested_agents(self.root, set(), self._pairs())
+
+        self.assertFalse(canonical.is_file())
+        self.assertFalse(mirror.is_file(), "a mirror of a retired canonical is stale")
+
+    def test_genuinely_stale_canonical_file_is_still_removed(self) -> None:
+        """The exclusion must not disarm the cleanup it scopes."""
+        stale = self._seed("docs/retired/AGENTS.md")
+
+        _cleanup_stale_nested_agents(self.root, set(), self._pairs())
+
+        self.assertFalse(stale.is_file(), "stale generated AGENTS.md must still be removed")
+
+    def test_unmarked_file_is_never_removed(self) -> None:
+        hand_written = self.root / "docs" / "AGENTS.md"
+        hand_written.parent.mkdir(parents=True, exist_ok=True)
+        hand_written.write_text("operator-authored\n", encoding="utf-8")
+
+        _cleanup_stale_nested_agents(self.root, set(), ())
+
+        self.assertTrue(hand_written.is_file())
+
+
+if __name__ == "__main__":
+    unittest.main()
