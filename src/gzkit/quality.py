@@ -427,9 +427,32 @@ def run_tests(project_root: Path) -> QualityResult:
 def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResult:
     """Run BDD scenarios via behave, optionally filtered by tag list.
 
-    ADR closeout (``gz test --bdd``) runs the full suite; OBPI-scoped
-    pipeline stages can pass ``tags`` (e.g. ``["@REQ-0.0.16-01-05"]``) to
-    run only scenarios covering that OBPI's requirements.
+    Three verification contracts share this one function. State the scope per
+    call site, never as a blanket -- the ``tags`` parameter existing is not
+    evidence that a caller passing none has overlooked it:
+
+      ``quality.run_all_checks``     -> NO tags; the ``gz check`` gate
+      ``gz test --bdd``              -> NO tags; ADR closeout, same full scope
+      ``_run_obpi_scoped_behave``    -> tags from ``resolve_obpi_behave_tags``,
+                                        i.e. the REQs of one OBPI brief
+
+    THE GATE RUNS UNFILTERED ON PURPOSE, and the purpose is recorded here for
+    the first time (operator ruling 2026-08-26; the call had read as an
+    unreasoned claim). Measured that day: 443 scenarios across 68 feature
+    files, of which 326 carry an effective ``@REQ-`` tag and 117 do NOT. The
+    untagged 117 cluster by file rather than scattering -- 29 in
+    ``subagent_pipeline.feature``, 12 in ``task_governance.feature``, 9 each in
+    ``obpi_lock.feature`` and ``persona.feature`` -- and NO feature file
+    carries a feature-level tag, so tag inheritance covers nothing. A
+    ``@REQ``-based filter at the gate would therefore drop a quarter of the
+    suite silently, which is a gate verifying less rather than a gate running
+    faster. The rest of the vocabulary cannot partition it either: past
+    ``@wip`` (35, already excluded beneath every call by ``behave.ini``'s
+    ``default_tags = ~@wip``) and ``@dispatch`` (31), every tag is a
+    near-singleton. Behave is ~34% of ``gz check`` wall clock (34.2s of 100.4s,
+    10-core host, same date); that cost is bought coverage. Re-measure before
+    proposing any selection predicate -- these are dated measurements, not
+    thresholds anything reads.
 
     Args:
         project_root: Project root directory.
@@ -556,6 +579,8 @@ def run_all_checks(project_root: Path) -> CheckResult:
     format_check = run_format_check(project_root)
     typecheck = run_typecheck(project_root)
     test = run_tests(project_root)
+    # Unfiltered on purpose -- see ``run_behave``'s docstring for the
+    # 2026-08-26 measurement (117 of 443 scenarios carry no ``@REQ`` tag).
     behave = run_behave(project_root)
     skill_audit = run_skill_audit(project_root)
     parity_check = run_parity_check(project_root)
