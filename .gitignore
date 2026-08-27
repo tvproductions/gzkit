@@ -95,3 +95,12 @@ site/
 # real name through history until the 2026-08-20 PII sweep, where it survived
 # --replace-text (a 165-byte binary) and had to be purged as a path. Never tracked.
 ~$*
+
+# Corpus store write-discipline sidecars (GHI #875/#880/#881). `append_entry` takes an
+# OS lock on `<surface>.jsonl.lock` and stages the new content beside the target before
+# one atomic `os.replace`. Both live in `.gzkit/corpus/`, which IS tracked — the corpus
+# is Layer-1 canon — so they must be ignored by name or every corpus write dirties the
+# tree. The `.jsonl` globs in corpus_retirement_witness.py and bullet_retention.py do
+# not see them; git would. Staging files are unlinked on failure, but survive SIGKILL.
+.gzkit/corpus/*.lock
+.gzkit/corpus/*.tmp
