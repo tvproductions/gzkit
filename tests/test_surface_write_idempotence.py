@@ -189,5 +189,75 @@ class NestedAgentsCleanupTest(unittest.TestCase):
         self.assertTrue(hand_written.is_file())
 
 
+class HookStagingOrderTest(unittest.TestCase):
+    """Normalization must happen BEFORE the comparison, not after the write.
+
+    Four generated hook templates are not ruff-clean. Writing them straight to
+    the hooks directory and formatting afterwards produces the right bytes by
+    the end of the call, so no bytes comparison anywhere can see the defect --
+    the file is simply written twice, and the second write restores what the
+    first displaced. Only the ORDER distinguishes the two implementations,
+    which is what these tests pin.
+
+    ``_ruff_format_dir`` is stubbed with a formatter that rewrites its input,
+    so "the written bytes are the post-format bytes" becomes observable
+    without needing a resolvable ``uv run ruff``.
+    """
+
+    _NORMALIZED = b"# normalized by the formatter\n"
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory(prefix="gzkit-stage-")
+        self.root = Path(self._tmp.name)
+        self.addCleanup(self._tmp.cleanup)
+
+    def _formatter(self, directory: Path, config_path: Path | None = None) -> None:
+        for path in Path(directory).glob("*.py"):
+            path.write_bytes(self._NORMALIZED)
+
+    def test_claude_hooks_write_post_format_bytes(self) -> None:
+        from gzkit.hooks.claude import _write_hook_dir
+
+        hooks = self.root / ".claude" / "hooks"
+        scripts = (("h.py", lambda: "x=1\n", True),)
+
+        with patch("gzkit.hooks.claude._ruff_format_dir", side_effect=self._formatter):
+            _write_hook_dir(self.root, hooks, scripts)
+
+        self.assertEqual(
+            self._NORMALIZED,
+            (hooks / "h.py").read_bytes(),
+            "the raw template reached disk, so formatting ran after the write",
+        )
+
+    def test_claude_hooks_second_sync_writes_nothing(self) -> None:
+        from gzkit.hooks.claude import _write_hook_dir
+
+        hooks = self.root / ".claude" / "hooks"
+        scripts = (("h.py", lambda: "x=1\n", True),)
+
+        with patch("gzkit.hooks.claude._ruff_format_dir", side_effect=self._formatter):
+            _write_hook_dir(self.root, hooks, scripts)
+            target = hooks / "h.py"
+            stamped = target.stat().st_mtime_ns - 10**9
+            os.utime(target, ns=(stamped, stamped))
+
+            _write_hook_dir(self.root, hooks, scripts)
+
+        self.assertEqual(
+            stamped,
+            target.stat().st_mtime_ns,
+            "an already-normalized hook must not be rewritten on the next sync",
+        )
+
+    def test_copilot_hook_writes_post_format_bytes(self) -> None:
+        """``write_hook_script`` carries the same order; it is a separate path."""
+        with patch("gzkit.hooks.core._ruff_format_dir", side_effect=self._formatter):
+            written = hooks_core.write_hook_script(self.root, "copilot", ".github/copilot/hooks")
+
+        self.assertEqual(self._NORMALIZED, written.read_bytes())
+        self.assertEqual(0o755, written.stat().st_mode & 0o777)
+
+
 if __name__ == "__main__":
     unittest.main()
