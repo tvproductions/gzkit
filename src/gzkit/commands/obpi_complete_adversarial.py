@@ -108,8 +108,11 @@ def _receipt_binary_name(argv_head: str) -> str:
 def _receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
     """Return True when the receipt records a cross-vendor binary that actually ran.
 
-    The proof is ``step.command[0]`` — the argv ARB executed — never a caller-supplied
-    display name. This is the distinction the name channel cannot make by construction:
+    The proof is ``step.command`` — the argv ARB executed — never a caller-supplied
+    display name. It is NOT anchored at position 0: the scan walks past
+    ``_RUNTIME_WRAPPERS`` to the binary they front, because reading position 0 alone saw
+    ``node`` and refused every conforming plugin dispatch (GHI #884). This is the
+    distinction the name channel cannot make by construction:
     a name can MENTION a vendor while describing its absence (two adversary names in
     `.gzkit/ledger.jsonl` read "codex-unavailable"), and any scan admitting a mentioned
     vendor would classify those degraded Claude-family runs as tier 1 — failing OPEN on

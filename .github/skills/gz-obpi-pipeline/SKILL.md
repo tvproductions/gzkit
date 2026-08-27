@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-25
 metadata:
-  skill-version: "6.40.0"
+  skill-version: "6.41.0"
 model: sonnet
 ---
 
@@ -742,9 +742,13 @@ If the run cannot be ARB-wrapped, that is a **tier-2 outcome** and must be recor
 to make a receipt appear is the substitution this gate exists to catch.
 
 The gate **resolves** the receipt: it must exist, record `exit_status: 0`, and its
-`step.command[0]` must be a recognized different-vendor binary. Precedence is
-**proven > declared > inferred**, and a receipt contradicting a declared tier 1 fails
-closed.
+`step.command` must invoke a recognized different-vendor binary. The scan walks past a
+bounded set of runtime wrappers (`node`, `npx`, `python`, `uv`, ...) to the binary they
+front and **stops at the first non-wrapper**, so the mandated plugin dispatch
+`node .../codex-companion.mjs` proves tier 1 while a vendor named only in the
+adversary's PROMPT does not (GHI #884). Reading `command[0]` alone saw `node` and
+refused every conforming dispatch. Precedence is **proven > declared > inferred**, and
+a receipt contradicting a declared tier 1 fails closed.
 
 **The receipt is MANDATORY for any cross-vendor claim (GHI #780).** It was optional
 until 2026-08-09, which closed nothing: the gate cannot tell *"no receipt because the
