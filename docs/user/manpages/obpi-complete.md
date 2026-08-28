@@ -209,24 +209,24 @@ reaping rather than surrendered without one.
 
 ```bash
 gz obpi complete OBPI-0.0.14-01 \
-  --attestor jeff \
+  --attestor g0 \
   --attestation-text "Lock commands verified"
 
 gz obpi complete OBPI-0.0.14-01 \
-  --attestor jeff \
+  --attestor g0 \
   --attestation-text "Verified" \
   --implementation-summary "- Files: obpi_complete.py" \
   --key-proof "gz obpi complete exits 0" \
   --json
 
 gz obpi complete OBPI-0.0.14-01 \
-  --attestor jeff \
+  --attestor g0 \
   --attestation-text "Verified" \
   --dry-run
 
 # Accept an uncovered REQ with a recorded rationale (requires active pipeline marker)
 gz obpi complete OBPI-0.0.14-01 \
-  --attestor jeff \
+  --attestor g0 \
   --attestation-text "Verified" \
   --accept-uncovered REQ-0.0.14-01-03 \
   --accept-uncovered-reason "REQ validated by manual integration walkthrough; no unit harness exists" \

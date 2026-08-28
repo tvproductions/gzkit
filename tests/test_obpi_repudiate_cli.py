@@ -281,7 +281,7 @@ class TestObpiRepudiateCmdParserRejectsInvalidCause(unittest.TestCase):
                         "--reason",
                         "smoke",
                         "--attestor",
-                        "Jeff",
+                        "g0",
                     ]
                 )
         finally:

@@ -14,7 +14,7 @@ approach.
 
 | Framework | Creator | License | Type | GitHub Stars |
 |-----------|---------|---------|------|-------------|
-| **GZKit** | Jeff (AirlineOps) | MIT | Python CLI + methodology | — |
+| **GZKit** | g0 (AirlineOps) | MIT | Python CLI + methodology | — |
 | **OpenSpec** | Fission AI (YC) | MIT | Node CLI + markdown | 27k+ |
 | **Spec Kit** | GitHub | MIT | Python CLI + methodology | — |
 | **BMAD** | BMad Code, LLC | MIT | Template set + methodology | 39k+ |

@@ -42,7 +42,7 @@ Feature: Universal OBPI attestation doctrine surface
     Given the workspace is initialized
     And ADR-0.1.0 exists
     And I run the gz command "specify demo --parent ADR-0.1.0-f"
-    When I emit-receipt for OBPI "OBPI-0.1.0-01-demo" with attestor "human:jeff" and evidence
+    When I emit-receipt for OBPI "OBPI-0.1.0-01-demo" with attestor "human:g0" and evidence
       """
       {"value_narrative":"v","key_proof":"k"}
       """
@@ -59,7 +59,7 @@ Feature: Universal OBPI attestation doctrine surface
     Given the workspace is initialized
     And ADR-0.1.0 exists
     And I run the gz command "specify demo --parent ADR-0.1.0-f"
-    When I emit-receipt for OBPI "OBPI-0.1.0-01-demo" with attestor "human:jeff" and evidence
+    When I emit-receipt for OBPI "OBPI-0.1.0-01-demo" with attestor "human:g0" and evidence
       """
       {"value_narrative":"v","key_proof":"k","human_attestation":true,"attestation_text":"bdd test attestation","attestation_date":"2026-01-01"}
       """

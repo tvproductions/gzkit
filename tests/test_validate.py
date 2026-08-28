@@ -646,7 +646,7 @@ class TestValidateLedger(unittest.TestCase):
                     "id": "ADR-0.3.0",
                     "ts": "2026-02-14T00:00:02+00:00",
                     "receipt_event": "completed",
-                    "attestor": "human:jeff",
+                    "attestor": "human:g0",
                     "evidence": {"scope": "OBPI-0.3.0-04"},
                 },
                 {
@@ -656,7 +656,7 @@ class TestValidateLedger(unittest.TestCase):
                     "parent": "ADR-0.3.0",
                     "ts": "2026-02-14T00:00:03+00:00",
                     "receipt_event": "validated",
-                    "attestor": "human:jeff",
+                    "attestor": "human:g0",
                     "evidence": {
                         "acceptance": "observed",
                         "parent_lane": "heavy",
@@ -850,7 +850,7 @@ class TestValidateLedger(unittest.TestCase):
                         "parent": "ADR-0.3.0",
                         "ts": "2026-02-14T00:00:03+00:00",
                         "receipt_event": "completed",
-                        "attestor": "human:jeff",
+                        "attestor": "human:g0",
                         "evidence": {
                             "req_proof_inputs": [
                                 {
@@ -883,7 +883,7 @@ class TestValidateLedger(unittest.TestCase):
                         "parent": "ADR-0.3.0",
                         "ts": "2026-02-14T00:00:03+00:00",
                         "receipt_event": "completed",
-                        "attestor": "human:jeff",
+                        "attestor": "human:g0",
                         "evidence": {
                             "req_proof_inputs": [
                                 {
@@ -921,7 +921,7 @@ class TestValidateLedger(unittest.TestCase):
                         "parent": "ADR-0.3.0",
                         "ts": "2026-02-14T00:00:03+00:00",
                         "receipt_event": "completed",
-                        "attestor": "human:jeff",
+                        "attestor": "human:g0",
                         "evidence": {
                             "scope_audit": {
                                 "allowlist": [""],
@@ -991,7 +991,7 @@ class TestValidateLedger(unittest.TestCase):
                         "id": "ADR-0.3.0",
                         "ts": "2026-02-14T00:00:00+00:00",
                         "receipt_event": "completed",
-                        "attestor": "human:jeff",
+                        "attestor": "human:g0",
                         "evidence": ["not", "an", "object"],
                     }
                 )
@@ -1035,7 +1035,7 @@ class TestValidateLedger(unittest.TestCase):
                             "id": "ADR-0.3.0",
                             "ts": "2026-02-14T00:00:00+00:00",
                             "receipt_event": value,
-                            "attestor": "human:jeff",
+                            "attestor": "human:g0",
                         }
                     )
                     + "\n"
@@ -1059,7 +1059,7 @@ class TestValidateLedger(unittest.TestCase):
                         "id": "ADR-0.3.0",
                         "ts": "2026-02-14T00:00:00+00:00",
                         "receipt_event": "not-a-real-event",
-                        "attestor": "human:jeff",
+                        "attestor": "human:g0",
                     }
                 )
                 + "\n"

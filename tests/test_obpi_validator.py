@@ -236,7 +236,7 @@ status: {status}
 
     def test_validate_heavy_completed_valid_attestation(self):
         attestation = (
-            f"- Attestor: human:jeff\n- Attestation: Looks good\n- Date: {date.today().isoformat()}"
+            f"- Attestor: human:g0\n- Attestation: Looks good\n- Date: {date.today().isoformat()}"
         )
         path = self._create_obpi(
             "ADR-0.2.0",

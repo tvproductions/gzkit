@@ -449,11 +449,11 @@ class TestTaskEscalatedEvent(unittest.TestCase):
 
     def test_serialize_includes_reason(self) -> None:
         """task_escalated carries reason and escalated_to."""
-        evt = _escalated(reason="Needs human decision", escalated_to="jeff")
+        evt = _escalated(reason="Needs human decision", escalated_to="g0")
         data = json.loads(evt.model_dump_json())
         self.assertEqual(data["event"], "task_escalated")
         self.assertEqual(data["reason"], "Needs human decision")
-        self.assertEqual(data["escalated_to"], "jeff")
+        self.assertEqual(data["escalated_to"], "g0")
 
     @covers("REQ-0.22.0-02-01")
     @covers("REQ-0.22.0-02-03")
@@ -614,9 +614,7 @@ class TestParseTaskTrailers(unittest.TestCase):
     @covers("REQ-0.22.0-03-01")
     @covers("REQ-0.22.0-03-03")
     def test_ignores_non_task_trailers(self) -> None:
-        msg = (
-            "Fix bug\n\nCo-Authored-By: Someone\nTask: TASK-0.20.0-01-01-01\nSigned-off-by: Jeff\n"
-        )
+        msg = "Fix bug\n\nCo-Authored-By: Someone\nTask: TASK-0.20.0-01-01-01\nSigned-off-by: g0\n"
         result = parse_task_trailers(msg)
         self.assertEqual(len(result), 1)
         self.assertEqual(str(result[0]), "TASK-0.20.0-01-01-01")

@@ -2935,7 +2935,7 @@ All 5 GovZero gates satisfied.
 - `uv run gz closeout ADR-0.14.0-multi-agent-instruction-architecture-unification`
 - `uv run gz attest ADR-0.14.0-multi-agent-instruction-architecture-unification --status completed`
 - `uv run gz audit ADR-0.14.0-multi-agent-instruction-architecture-unification`
-- `uv run gz adr emit-receipt ADR-0.14.0-multi-agent-instruction-architecture-unification --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.14.0-multi-agent-instruction-architecture-unification --event validated --attestor "human:g0" --evidence-json ...`
 
 ## v0.12.0 (2026-03-13)
 
@@ -2960,7 +2960,7 @@ All 5 GovZero gates satisfied for `ADR-0.12.0-obpi-pipeline-enforcement-parity`.
 - `uv run gz closeout ADR-0.12.0-obpi-pipeline-enforcement-parity`
 - `uv run gz attest ADR-0.12.0-obpi-pipeline-enforcement-parity --status completed`
 - `uv run gz audit ADR-0.12.0-obpi-pipeline-enforcement-parity`
-- `uv run gz adr emit-receipt ADR-0.12.0-obpi-pipeline-enforcement-parity --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.12.0-obpi-pipeline-enforcement-parity --event validated --attestor "human:g0" --evidence-json ...`
 
 ## v0.11.0 (2026-03-12)
 
@@ -2985,7 +2985,7 @@ All 5 GovZero gates satisfied for `ADR-0.11.0-airlineops-obpi-completion-pipelin
 - `uv run gz closeout ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
 - `uv run gz attest ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --status completed`
 - `uv run gz audit ADR-0.11.0-airlineops-obpi-completion-pipeline-parity`
-- `uv run gz adr emit-receipt ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.11.0-airlineops-obpi-completion-pipeline-parity --event validated --attestor "human:g0" --evidence-json ...`
 
 ## v0.10.0 (2026-03-10)
 
@@ -3011,7 +3011,7 @@ All 5 GovZero gates satisfied for `ADR-0.10.0-obpi-runtime-surface`.
 - `uv run gz closeout ADR-0.10.0-obpi-runtime-surface`
 - `uv run gz attest ADR-0.10.0-obpi-runtime-surface --status completed`
 - `uv run gz audit ADR-0.10.0-obpi-runtime-surface`
-- `uv run gz adr emit-receipt ADR-0.10.0-obpi-runtime-surface --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.10.0-obpi-runtime-surface --event validated --attestor "human:g0" --evidence-json ...`
 
 ## v0.9.0 (2026-03-09)
 
@@ -3036,7 +3036,7 @@ All 5 GovZero gates satisfied for `ADR-0.9.0-airlineops-surface-breadth-parity`.
 - `uv run gz closeout ADR-0.9.0-airlineops-surface-breadth-parity`
 - `uv run gz attest ADR-0.9.0-airlineops-surface-breadth-parity --status completed`
 - `uv run gz audit ADR-0.9.0-airlineops-surface-breadth-parity`
-- `uv run gz adr emit-receipt ADR-0.9.0-airlineops-surface-breadth-parity --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.9.0-airlineops-surface-breadth-parity --event validated --attestor "human:g0" --evidence-json ...`
 
 ## v0.8.0 (2026-03-07)
 
@@ -3071,7 +3071,7 @@ All 5 GovZero gates satisfied for `ADR-0.8.0-gz-chores-system`.
 - `uv run gz closeout ADR-0.8.0-gz-chores-system`
 - `uv run gz audit ADR-0.8.0-gz-chores-system`
 - `uv run gz attest ADR-0.8.0-gz-chores-system --status completed`
-- `uv run gz adr emit-receipt ADR-0.8.0-gz-chores-system --event validated --attestor "human:jeff" --evidence-json ...`
+- `uv run gz adr emit-receipt ADR-0.8.0-gz-chores-system --event validated --attestor "human:g0" --evidence-json ...`
 - `uv run gz adr status ADR-0.8.0-gz-chores-system --json`
 
 ## v0.7.0 (2026-03-06)

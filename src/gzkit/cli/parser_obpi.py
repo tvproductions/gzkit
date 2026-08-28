@@ -137,7 +137,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_obpi_pipeline.add_argument(
         "--attestor",
-        help="Attestor identity for Stage 5 (e.g. jeff or agent:<name>)",
+        help="Attestor identity for Stage 5 (e.g. g0 or agent:<name>)",
     )
     p_obpi_pipeline.add_argument(
         "--evidence-json",
@@ -564,13 +564,13 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                'gz obpi complete OBPI-0.1.0-01 --attestor jeff --attestation-text "Verified"',
+                'gz obpi complete OBPI-0.1.0-01 --attestor g0 --attestation-text "Verified"',
                 (
-                    "gz obpi complete OBPI-0.1.0-01 --attestor jeff "
+                    "gz obpi complete OBPI-0.1.0-01 --attestor g0 "
                     '--attestation-text "Verified" --json'
                 ),
                 (
-                    "gz obpi complete OBPI-0.1.0-01 --attestor jeff "
+                    "gz obpi complete OBPI-0.1.0-01 --attestor g0 "
                     '--attestation-text "Verified" --dry-run'
                 ),
             ]

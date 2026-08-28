@@ -175,7 +175,7 @@ class TestReadExistingKeyProof(unittest.TestCase):
     def test_returns_content_when_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "<!-- One concrete usage example, command, or before/after behavior. -->",
-            "gz obpi complete OBPI-0.0.14-01 --attestor jeff exits 0",
+            "gz obpi complete OBPI-0.0.14-01 --attestor g0 exits 0",
         )
         result = _read_existing_key_proof(brief)
         self.assertIsNotNone(result)
@@ -209,8 +209,8 @@ class TestUpdateHumanAttestation(unittest.TestCase):
         content = (
             "## Human Attestation\n\n- Attestor: `<name>`\n- Attestation: n/a\n- Date: YYYY-MM-DD\n"
         )
-        result = _update_human_attestation(content, "jeff", "Lock commands verified", "2026-04-05")
-        self.assertIn("- Attestor: `jeff`", result)
+        result = _update_human_attestation(content, "g0", "Lock commands verified", "2026-04-05")
+        self.assertIn("- Attestor: `g0`", result)
         self.assertIn("- Attestation: Lock commands verified", result)
         self.assertIn("- Date: 2026-04-05", result)
 
@@ -223,7 +223,7 @@ class TestBuildCompletedBrief(unittest.TestCase):
     def test_sets_frontmatter_status(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="Verified",
             implementation_summary="- Files: obpi_complete.py\n- Tests: 5 added",
             key_proof="gz obpi complete exits 0",
@@ -235,7 +235,7 @@ class TestBuildCompletedBrief(unittest.TestCase):
     def test_sets_brief_status_line(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="Verified",
             implementation_summary="- Files: obpi_complete.py",
             key_proof="gz obpi complete exits 0",
@@ -248,13 +248,13 @@ class TestBuildCompletedBrief(unittest.TestCase):
     def test_updates_human_attestation(self):
         result = _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="All lock commands verified",
             implementation_summary="- Files: obpi_complete.py",
             key_proof="gz obpi complete exits 0",
             date_completed="2026-04-05",
         )
-        self.assertIn("- Attestor: `jeff`", result)
+        self.assertIn("- Attestor: `g0`", result)
         self.assertIn("- Attestation: All lock commands verified", result)
 
 
@@ -270,7 +270,7 @@ class TestValidateWouldBeContent(unittest.TestCase):
     def _completed_content(self) -> str:
         return _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="Verified",
             implementation_summary="- Files: obpi_complete.py\n- Tests: 5 added",
             key_proof="gz obpi complete exits 0",
@@ -308,7 +308,7 @@ class TestValidateWouldBeContent(unittest.TestCase):
         """GHI-126: placeholder date like _(pending)_ must be rejected."""
         content = _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="attest completed",
             implementation_summary="- Files: obpi_complete.py",
             key_proof="gz obpi complete exits 0",
@@ -322,7 +322,7 @@ class TestValidateWouldBeContent(unittest.TestCase):
         """GHI-126: missing Attestation line must be rejected."""
         content = _build_completed_brief(
             content=_MINIMAL_BRIEF,
-            attestor="jeff",
+            attestor="g0",
             attestation_text="n/a",
             implementation_summary="- Files: obpi_complete.py",
             key_proof="gz obpi complete exits 0",
@@ -367,7 +367,7 @@ class TestSubstantiveChecks(unittest.TestCase):
     def test_real_key_proof_is_substantive(self):
         brief = _MINIMAL_BRIEF.replace(
             "<!-- One concrete usage example, command, or before/after behavior. -->",
-            "gz obpi complete OBPI-0.0.14-01 --attestor jeff exits 0",
+            "gz obpi complete OBPI-0.0.14-01 --attestor g0 exits 0",
         )
         self.assertTrue(_has_substantive_key_proof(brief))
 
@@ -389,7 +389,7 @@ class TestAuditLedger(unittest.TestCase):
             entry = _build_attestation_audit_entry(
                 obpi_id="OBPI-0.0.14-02",
                 adr_id="ADR-0.0.14",
-                attestor="jeff",
+                attestor="g0",
                 attestation_text="Verified",
                 date="2026-04-05",
                 requires_human=True,
@@ -440,7 +440,7 @@ class TestBuildAttestationEntry(unittest.TestCase):
         entry = _build_attestation_audit_entry(
             obpi_id="OBPI-0.0.14-02",
             adr_id="ADR-0.0.14",
-            attestor="jeff",
+            attestor="g0",
             attestation_text="Lock commands verified",
             date="2026-04-05",
             requires_human=True,
@@ -520,7 +520,7 @@ class TestObpiCompleteCmdBriefNotFound(SilencedConsoleTestCase):
             with self.assertRaises(SystemExit) as ctx:
                 obpi_complete_cmd(
                     obpi="OBPI-0.0.14-02",
-                    attestor="jeff",
+                    attestor="g0",
                     attestation_text="Verified",
                     implementation_summary="- Files: test.py",
                     key_proof="exits 0",
@@ -556,7 +556,7 @@ class TestObpiCompleteCmdAlreadyCompleted(SilencedConsoleTestCase):
             with self.assertRaises(SystemExit) as ctx:
                 obpi_complete_cmd(
                     obpi="OBPI-0.0.14-02",
-                    attestor="jeff",
+                    attestor="g0",
                     attestation_text="Verified",
                     implementation_summary="- Files: test.py",
                     key_proof="exits 0",
@@ -606,7 +606,7 @@ class TestObpiCompleteCmdDryRun(SilencedConsoleTestCase):
 
             obpi_complete_cmd(
                 obpi="OBPI-0.0.14-02",
-                attestor="jeff",
+                attestor="g0",
                 attestation_text="Verified",
                 implementation_summary="- Files: obpi_complete.py",
                 key_proof="gz obpi complete exits 0",
@@ -669,7 +669,7 @@ class TestObpiCompleteCmdJsonOutput(unittest.TestCase):
             try:
                 obpi_complete_cmd(
                     obpi="OBPI-0.0.14-02",
-                    attestor="jeff",
+                    attestor="g0",
                     attestation_text="Verified",
                     implementation_summary="- Files: obpi_complete.py",
                     key_proof="gz obpi complete exits 0",
@@ -752,7 +752,7 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
 
             obpi_complete_cmd(
                 obpi="OBPI-0.0.14-02",
-                attestor="jeff",
+                attestor="g0",
                 attestation_text="Lock commands verified",
                 implementation_summary=(
                     "- Files: obpi_complete.py, parser_artifacts.py\n- Tests: 11 added"
@@ -770,7 +770,7 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
             updated = obpi_file.read_text(encoding="utf-8")
             self.assertIn("status: Completed", updated)
             self.assertIn("**Status:** Completed", updated)
-            self.assertIn("- Attestor: `jeff`", updated)
+            self.assertIn("- Attestor: `g0`", updated)
             self.assertIn("- Attestation: Lock commands verified", updated)
             self.assertIn("obpi_complete.py, parser_artifacts.py", updated)
 
@@ -848,7 +848,7 @@ class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
             with self.assertRaises(SystemExit) as ctx:
                 obpi_complete_cmd(
                     obpi="OBPI-0.0.14-02",
-                    attestor="jeff",
+                    attestor="g0",
                     attestation_text="Verified",
                     implementation_summary="- Files: obpi_complete.py",
                     key_proof="gz obpi complete exits 0",

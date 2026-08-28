@@ -59,7 +59,7 @@ Records a validation event tied to a specific git commit.
     "coverage_percent": 48.5,
     "gate2_pass": true
   },
-  "attestor": "human:jeff"
+  "attestor": "human:g0"
 }
 ```
 
@@ -81,7 +81,7 @@ Records a validation event tied to a specific git commit.
 | `event` | string | Yes | One of: `validated`, `completed`, `compliance_check` |
 | `anchor` | object | Yes | Temporal anchor (see below) |
 | `evidence` | object | No | Evidence payload (test results, coverage, etc.) |
-| `attestor` | string | Yes | Human attestor (must be `human:<name>`, e.g., `human:jeff`). Only humans can attest — agents record evidence via the `agent` field. |
+| `attestor` | string | Yes | Human attestor (must be `human:<name>`, e.g., `human:g0`). Only humans can attest — agents record evidence via the `agent` field. |
 
 For OBPI-scoped completion receipts (`obpi_receipt_emitted` with `receipt_event=completed`),
 runtime evidence must include value narrative + key proof semantics, and

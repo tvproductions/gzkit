@@ -3,7 +3,7 @@
 ## Student Greenfield Project Suitability
 
 **Date:** 2026-03-08
-**Evaluator:** Claude (Opus 4.6), commissioned by Jeff
+**Evaluator:** Claude (Opus 4.6), commissioned by g0
 **Target audience:** CIDM 6330/6395 graduate students
 **Test candidate:** RHEA (Repository Harness for Entity Abstraction)
 

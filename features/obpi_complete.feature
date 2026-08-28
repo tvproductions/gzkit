@@ -5,7 +5,7 @@ Feature: OBPI atomic completion
 
   Scenario: Missing OBPI exits 1
     Given the workspace is initialized
-    When I run "gz obpi complete NONEXISTENT-99 --attestor jeff --attestation-text Verified"
+    When I run "gz obpi complete NONEXISTENT-99 --attestor g0 --attestation-text Verified"
     Then it exits with code 1
 
   Scenario: Help text shows required flags

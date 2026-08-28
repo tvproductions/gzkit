@@ -294,7 +294,7 @@ def _make_ledger_with_events(ledger_path: Path, adr_id: str) -> Ledger:
     ledger = Ledger(ledger_path)
     ledger.append(gate_checked_event(adr_id, 2, "pass", "uv run gz test", 0))
     ledger.append(gate_checked_event(adr_id, 5, "pass", "uv run gz lint", 0))
-    ledger.append(attested_event(adr_id, "completed", "human:Jeff"))
+    ledger.append(attested_event(adr_id, "completed", "human:g0"))
     return ledger
 
 
@@ -364,7 +364,7 @@ class TestAuditMdAttestationRecord(unittest.TestCase):
             _, audit_file, _ = _call_write_audit_artifacts(tmp, ledger=ledger)
             content = audit_file.read_text(encoding="utf-8")
             self.assertIn("## Attestation Record", content)
-            self.assertIn("human:Jeff", content)
+            self.assertIn("human:g0", content)
             self.assertIn("completed", content)
 
     def test_attestation_section_fallback_when_no_event(self):
@@ -651,7 +651,7 @@ def _make_ledger_with_obpis(ledger_path: Path, adr_id: str) -> Ledger:
             )
     ledger.append(gate_checked_event(adr_id, 2, "pass", "uv run gz test", 0))
     ledger.append(gate_checked_event(adr_id, 5, "pass", "uv run gz lint", 0))
-    ledger.append(attested_event(adr_id, "completed", "human:Jeff"))
+    ledger.append(attested_event(adr_id, "completed", "human:g0"))
     ledger.append(closeout_initiated_event(adr_id, by="agent", mode="standard"))
     return ledger
 
@@ -717,7 +717,7 @@ class TestAggregateAuditEvidence(unittest.TestCase):
             result = aggregate_audit_evidence(ledger, "ADR-0.19.0-f", graph)
             att = result["attestation"]
             self.assertIsNotNone(att)
-            self.assertEqual(att["by"], "human:Jeff")
+            self.assertEqual(att["by"], "human:g0")
             self.assertEqual(att["status"], "completed")
             self.assertIn("ts", att)
 

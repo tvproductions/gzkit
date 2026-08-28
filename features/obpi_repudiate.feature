@@ -5,7 +5,7 @@ Feature: gz obpi repudiate — operator-gated completion repudiation
   @REQ-0.0.71-02-01
   Scenario: Repudiate verb is registered and dry-run reaches the lookup path
     Given the workspace is initialized
-    When I run "gz obpi repudiate NONEXISTENT-99 --cause model-induced-fabrication --reason smoke --attestor Jeff --dry-run"
+    When I run "gz obpi repudiate NONEXISTENT-99 --cause model-induced-fabrication --reason smoke --attestor g0 --dry-run"
     Then it exits with code 1
 
   @REQ-0.0.71-02-02
@@ -17,13 +17,13 @@ Feature: gz obpi repudiate — operator-gated completion repudiation
   @REQ-0.0.71-02-03
   Scenario: Empty reason fails closed (exit 1) before any ledger write
     Given the workspace is initialized
-    When I run "gz obpi repudiate NONEXISTENT-99 --cause operator-error --reason '' --attestor Jeff"
+    When I run "gz obpi repudiate NONEXISTENT-99 --cause operator-error --reason '' --attestor g0"
     Then it exits with code 1
 
   @REQ-0.0.71-02-05
   Scenario: Invalid cause value rejected by parser (exit 2)
     Given the workspace is initialized
-    When I run "gz obpi repudiate OBPI-0.0.71-02 --cause bad-cause --reason smoke --attestor Jeff"
+    When I run "gz obpi repudiate OBPI-0.0.71-02 --cause bad-cause --reason smoke --attestor g0"
     Then it exits with code 2
 
   Scenario: Help text shows required flags

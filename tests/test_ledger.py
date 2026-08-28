@@ -198,7 +198,7 @@ class TestEventFactories(unittest.TestCase):
         event = obpi_receipt_emitted_event(
             "OBPI-0.6.0-01-demo",
             "validated",
-            "human:jeff",
+            "human:g0",
             {"note": "observed"},
             parent_adr="ADR-0.6.0-demo",
             obpi_completion="not_completed",
@@ -207,7 +207,7 @@ class TestEventFactories(unittest.TestCase):
         self.assertEqual(event.id, "OBPI-0.6.0-01-demo")
         self.assertEqual(event.parent, "ADR-0.6.0-demo")
         self.assertEqual(event.extra["receipt_event"], "validated")
-        self.assertEqual(event.extra["attestor"], "human:jeff")
+        self.assertEqual(event.extra["attestor"], "human:g0")
         self.assertEqual(event.extra["obpi_completion"], "not_completed")
 
 
@@ -668,7 +668,7 @@ class TestLedger(unittest.TestCase):
                 obpi_receipt_emitted_event(
                     "OBPI-0.6.0-01-demo",
                     "validated",
-                    "human:jeff",
+                    "human:g0",
                     {"acceptance": "observed"},
                 )
             )
@@ -714,7 +714,7 @@ class TestLedger(unittest.TestCase):
                 obpi_receipt_emitted_event(
                     "OBPI-0.7.0-01",
                     "completed",
-                    "jeff",
+                    "g0",
                     evidence={
                         "human_attestation": True,
                         "attestation_text": "attest completed — evidence",
@@ -730,7 +730,7 @@ class TestLedger(unittest.TestCase):
                 "obpi_receipt_emitted with human_attestation=True must set attested=True",
             )
             self.assertEqual(obpi["attestation_status"], "attested_completed")
-            self.assertEqual(obpi["attestation_by"], "jeff")
+            self.assertEqual(obpi["attestation_by"], "g0")
 
     def test_get_artifact_graph_does_not_mark_attested_without_human_attestation(
         self,
@@ -752,7 +752,7 @@ class TestLedger(unittest.TestCase):
                 obpi_receipt_emitted_event(
                     "OBPI-0.7.1-01",
                     "completed",
-                    "jeff",
+                    "g0",
                     evidence={"acceptance": "observed"},
                 )
             )
@@ -1060,7 +1060,7 @@ class TestLedger(unittest.TestCase):
             human_attestation={
                 "present": True,
                 "valid": True,
-                "attestor": "human:jeff",
+                "attestor": "human:g0",
                 "date": "2026-03-10",
             },
         )
@@ -1505,7 +1505,7 @@ class TestTypedEventModels(unittest.TestCase):
             "parent": "ADR-0.6.0-demo",
             "ts": "2026-01-01T00:00:00+00:00",
             "receipt_event": "validated",
-            "attestor": "human:jeff",
+            "attestor": "human:g0",
             "evidence": {"acceptance": "observed"},
             "obpi_completion": "completed",
         }
@@ -1680,7 +1680,7 @@ class TestEventAnchor(unittest.TestCase):
             "id": "ADR-0.25.0",
             "ts": "2026-01-01T00:00:00+00:00",
             "receipt_event": "validated",
-            "attestor": "human:jeff",
+            "attestor": "human:g0",
             "anchor": {"commit": "abc1234", "semver": "0.25.0"},
         }
         event = parse_typed_event(data)
@@ -1706,7 +1706,7 @@ class TestEventAnchor(unittest.TestCase):
             "parent": "ADR-0.25.0",
             "ts": "2026-01-01T00:00:00+00:00",
             "receipt_event": "completed",
-            "attestor": "human:jeff",
+            "attestor": "human:g0",
             "anchor": {"commit": "abc1234", "semver": "0.25.0", "tag": "v0.25.0"},
         }
         event = parse_typed_event(data)
@@ -1730,7 +1730,7 @@ class TestEventAnchor(unittest.TestCase):
             "parent": "ADR-0.25.0",
             "ts": "2026-01-01T00:00:00+00:00",
             "receipt_event": "completed",
-            "attestor": "human:jeff",
+            "attestor": "human:g0",
             "anchor": {"commit": "xyz", "semver": "bad"},
         }
         with self.assertRaises(PydanticValidationError):
@@ -1747,7 +1747,7 @@ class TestEventAnchor(unittest.TestCase):
             "parent": "ADR-0.25.0",
             "ts": "2026-01-01T00:00:00+00:00",
             "receipt_event": "completed",
-            "attestor": "human:jeff",
+            "attestor": "human:g0",
         }
         event = parse_typed_event(data)
         self.assertIsInstance(event, ObpiReceiptEmittedEvent)

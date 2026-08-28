@@ -590,7 +590,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "validated",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     '{"gate":5,"attestation_text":"attest completed -- ADR-0.1.0-f validated"}',
                 ],
@@ -613,7 +613,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     "{bad json}",
                 ],
@@ -635,7 +635,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--dry-run",
                 ],
             )
@@ -720,7 +720,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
@@ -741,7 +741,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "validated",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     '{"acceptance":"observed"}',
                 ],
@@ -766,7 +766,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     "{bad json}",
                 ],
@@ -791,7 +791,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     (
                         '{"value_narrative":"before/after capability",'
@@ -822,7 +822,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
@@ -843,7 +843,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     (
                         '{"value_narrative":"capability now exists",'
@@ -869,7 +869,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     (
                         '{"value_narrative":"manual completion now auditable",'
@@ -903,7 +903,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                 brief_status="Draft",
                 implementation_line="src/demo.py",
                 lane="Lite",
-                human_attestation=("human:jeff", "attest completed", "2026-03-21"),
+                human_attestation=("human:g0", "attest completed", "2026-03-21"),
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
@@ -916,7 +916,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     (
                         '{"value_narrative":"vendor manifest schema implemented",'
@@ -947,7 +947,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "docs/design/adr/pre-release/ADR-0.1.0-f/obpis/OBPI-0.1.0-01-demo.md"
                 ),
                 lane="Heavy",
-                human_attestation=("human:jeff", "attest completed", "2026-03-11"),
+                human_attestation=("human:g0", "attest completed", "2026-03-11"),
                 allowed_paths=[obpi_path.as_posix()],
             )
             ledger = Ledger(Path(".gzkit/ledger.jsonl"))
@@ -971,7 +971,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                     "--evidence-json",
                     evidence_json,
                 ],
@@ -1028,7 +1028,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
                     "--event",
                     "completed",
                     "--attestor",
-                    "human:jeff",
+                    "human:g0",
                 ],
             )
             self.assertNotEqual(result.exit_code, 0)
