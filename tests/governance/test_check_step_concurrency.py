@@ -83,11 +83,14 @@ class TestEveryStepIsDeclared(unittest.TestCase):
 
 
 class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
-    """The measured producer->consumer edge must survive the runner's phasing.
+    """Every writer must finish before any reader that has not opted out.
 
-    Behave builds `dist/*.whl`; `gz validate --distribution`, inside the
-    Validate default scopes step, reads it. Measured 2026-08-22 — this is the
-    concrete dependency the GHI asked to be established before parallelizing.
+    A CONSERVATIVE DEFAULT against undeclared dependencies, not the
+    preservation of a named edge. This docstring claimed until 2026-08-28 that
+    Behave builds `dist/*.whl` and `gz validate --distribution` reads it;
+    nothing in the gate reads that wheel (GHI #905). What these tests can
+    observe is the classification and the ordering it produces — never that any
+    consumption depends on it, which is why the name below no longer says so.
     """
 
     def test_partition_places_every_writer_ahead_of_every_reader(self) -> None:
@@ -99,17 +102,24 @@ class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
         self.assertEqual([n for n, _ in serial], ["Behave", "Docs build"])
         self.assertEqual([n for n, _ in concurrent], ["Lint"])
 
-    def test_behave_completes_before_validate_reads_its_wheel(self) -> None:
-        """Behave must precede Validate default scopes, which consumes its wheel.
+    def test_the_writer_lane_drains_before_validate_default_scopes_runs(self) -> None:
+        """Behave is classified a writer, Validate default scopes a reader.
+
+        RENAMED 2026-08-28 (GHI #905). The prior name --
+        `test_behave_completes_before_validate_reads_its_wheel` -- described a
+        consumption this test never observed and that does not happen: nothing
+        in the gate reads `dist/*.whl`. The ordering it asserts is real; only
+        its stated reason was not, and a green test carrying a false reason is
+        worse than no test, because the reason is what the next reader trusts.
 
         Asserted against the FULL execution order -- serial phase, then the
         concurrent phase -- rather than against positions within the writers
-        list. The edge is a producer/consumer fact about `dist/*.whl`; which
-        phase each step lands in is the scheduler's business, and a test that
-        reads `serial.index(...)` asserts the implementation instead. It broke
-        for exactly that reason when GHI #891 made Validate default scopes
-        read_only: the guarantee had strengthened -- every writer now finishes
-        before any reader starts -- while the assertion said it had vanished.
+        list. Which phase each step lands in is the scheduler's business, and a
+        test that reads `serial.index(...)` asserts the implementation instead.
+        It broke for exactly that reason when GHI #891 made Validate default
+        scopes read_only: the guarantee had strengthened -- every writer now
+        finishes before any reader starts -- while the assertion said it had
+        vanished.
         """
         from gzkit.commands.quality import _build_check_steps, _partition_steps_by_concurrency
 
@@ -121,11 +131,11 @@ class TestWritersRunBeforeReadOnlySteps(unittest.TestCase):
         self.assertLess(
             order.index("Behave"),
             order.index("Validate default scopes"),
-            "Validate default scopes reads the wheel Behave builds",
+            "Validate default scopes is a reader, so it runs after the writer lane",
         )
         # Guard the assertion above against passing vacuously: it holds trivially
         # if both ever land in the same phase in list order, so pin the fact that
-        # actually carries it -- the producer is a writer and so runs first.
+        # actually carries it -- Behave is a writer and so runs in the serial lane.
         self.assertIn("Behave", [n for n, _ in serial], "Behave must remain a serial writer")
 
     def test_an_undeclared_step_runs_serially_never_concurrently(self) -> None:

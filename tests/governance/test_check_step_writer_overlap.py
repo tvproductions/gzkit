@@ -1,9 +1,11 @@
 """One measured reader may overlap the writer lane; nothing else may (GHI #904).
 
-The writer/reader phase boundary is a conservative approximation of a single
-producer->consumer edge — ``Behave`` builds ``dist/*.whl`` and ``Validate default
-scopes`` reads it — and it charged every OTHER reader for that one pair. Measured
-2026-08-28 at ``d3cf81b0``:
+The writer/reader phase boundary is a conservative default against UNDECLARED
+dependencies, and it charged every reader for a dependency none of them turned
+out to have. This paragraph read until 2026-08-28 that the boundary approximated
+a single producer->consumer edge — ``Behave`` builds ``dist/*.whl`` and
+``Validate default scopes`` reads it; nothing in the gate reads that wheel
+(GHI #905). Measured 2026-08-28 at ``d3cf81b0``:
 
     writer phase (fully serial, no reader may start):
        29.17s  Behave

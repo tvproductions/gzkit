@@ -717,10 +717,14 @@ def _partition_steps_by_concurrency(
 ) -> tuple[list[tuple[str, CheckStepRunner]], list[tuple[str, CheckStepRunner]]]:
     """Split steps into (serial writers, concurrent read-only), preserving order.
 
-    Writers keep their relative list order because one measured producer→consumer
-    edge depends on it: ``Behave`` builds ``dist/*.whl`` and
-    ``gz validate --distribution`` — inside ``Validate default scopes`` — reads
-    that wheel (measured 2026-08-22, GHI #835).
+    Writers keep their relative list order as a CONSERVATIVE DEFAULT, not to
+    preserve a named edge.  Until 2026-08-28 this paragraph read that one
+    measured producer→consumer edge depended on it — ``Behave`` builds
+    ``dist/*.whl`` and ``gz validate --distribution`` reads that wheel.  Nothing
+    in the gate reads it (GHI #905): ``--distribution`` is the static T0 audit
+    and walks the SOURCE tree, and T0's wheel-reading arm is
+    ``tests/test_packaging.py``, which builds its own wheel hermetically.  List
+    order is kept because keeping it is free and reordering is unmeasured.
 
     An UNDECLARED step runs SERIALLY.  Serial is the conservative class — always
     correct, merely slower — so defaulting there can never introduce the race
@@ -757,24 +761,23 @@ def _run_check_steps(
     """Run every step and return results in the declared list order.
 
     Two phases, per the declaration's stated protocol: writers serially first,
-    then every read-only step concurrently.  Ordering the phases this way
-    preserves the measured dependency edge without needing a general dependency
-    graph — three steps write, and the only consumer among them runs after its
-    producer already.
+    then every read-only step concurrently.  The boundary is a conservative
+    default against UNDECLARED dependencies — no measured edge crosses it (GHI
+    #905) — so it holds without needing a general dependency graph.
 
     **One reader is allowed to overlap the writer phase (GHI #904.)** The phase
-    boundary is a conservative approximation of a single producer→consumer edge
-    (``Behave`` builds ``dist/*.whl``, ``Validate default scopes`` reads it), and
-    it charged every OTHER reader for that one pair. ``Test`` is the extreme
+    boundary charges every reader for a dependency none of them turned out to
+    have. ``Test`` is the extreme
     case: 31.99s of work idle behind 33.01s of writers it has no edge to, on the
     command a session runs most. A step joins the overlap lane only by carrying
     ``overlaps_writers`` in the declaration — see
     :func:`_steps_overlapping_writers` for the measurement that admits ``Test``
     and for why the flag is opt-in rather than inferred.
 
-    Writers still run SERIALLY AMONG THEMSELVES, in list order, because that is
-    what the ``Behave``→``Validate default scopes`` edge rests on. They are
-    submitted as ONE task for exactly that reason: a lane, not a fan-out.
+    Writers still run SERIALLY AMONG THEMSELVES, in list order, because no
+    WRITER-side safety argument has been made — ``overlaps_writers`` is a
+    reader-side measurement and does not carry one. They are submitted as ONE
+    task for exactly that reason: a lane, not a fan-out.
 
     Threads (not processes) are correct because every runner shells out through
     ``run_command``: the work happens in subprocesses, so the GIL is not in the
