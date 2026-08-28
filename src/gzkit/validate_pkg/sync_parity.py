@@ -34,6 +34,21 @@ from gzkit.rules import nested_agents_md_paths
 from gzkit.surface_write import capture_surface_writes
 from gzkit.sync_surfaces import is_managed_codex_config, render_codex_config, sync_all
 
+#: Every root ``gz validate --surfaces`` compares against ``sync_all``'s output.
+#:
+#: A hand-maintained list cannot announce what it has fallen behind: a file
+#: outside these roots drops out of BOTH sides of the comparison at once and
+#: cancels, so the check reports clean on a domain it does not cover. That is
+#: how 21 vendor persona mirrors and one copilot hook stayed unchecked while
+#: ``sync_all`` rewrote them on every run (GHI #893) -- persona mirrors being
+#: governance surfaces under ``AGENTS.md`` § Persona, where a hand-edit silently
+#: changes agent behaviour.
+#:
+#: The witness is a census, not vigilance:
+#: ``tests/test_validate_sync_parity.py::SyncParityDomainCoversEveryWriteTest``
+#: asserts every path ``sync_all`` writes is declared here, under a nested
+#: ``AGENTS.md`` path, or on that test's explicit out-of-domain list. Adding a
+#: surface to the writer without adding it here now fails that test.
 SURFACE_ROOTS: tuple[str, ...] = (
     ".gzkit/manifest.json",
     "AGENTS.md",
@@ -43,10 +58,14 @@ SURFACE_ROOTS: tuple[str, ...] = (
     ".github/instructions",
     ".claude/settings.json",
     ".claude/hooks",
+    ".github/copilot/hooks",
     ".claude/rules",
     ".claude/skills",
     ".agents/skills",
     ".github/skills",
+    ".agents/personas",
+    ".claude/personas",
+    ".github/personas",
     ".copilotignore",
 )
 
