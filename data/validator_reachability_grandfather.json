@@ -32,7 +32,6 @@
     "--invariant-witness",
     "--ledger",
     "--manifest",
-    "--obpi-lifecycle-coherence",
     "--okf-conformance",
     "--ontology-purity",
     "--orphaned-implementation",

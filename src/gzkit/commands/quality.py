@@ -45,6 +45,12 @@ CheckStepRunner = Callable[[pathlib.Path], Any]
 #
 # Fallback: if a step name is absent (future step not yet registered), check()
 # derives a kebab-case guard_name from the display name and uses ERROR level.
+# THE FALLBACK DOES NOT MAKE AN ENTRY OPTIONAL (GHI #787).  The validator
+# reachability ratchet regexes THIS DICT to decide whether a scope is gated, and
+# it cannot see a derived name, so a step missing here is filed as reachable from
+# nothing while it runs on every commit.  Every step belongs in this dict; see
+# _build_check_steps' family-A item 7 and tests/governance/
+# test_check_registry_coherence.py, which fails closed on the disagreement.
 from gzkit.mx import levels as _mx_levels  # noqa: E402 — after type alias
 
 _STEP_GUARD_META: dict[str, tuple[str, int]] = {
@@ -69,6 +75,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Corpus retirement witness": ("corpus-retirement-witness", _mx_levels.ERROR),
     "Wheel path literals": ("wheel-path-literals", _mx_levels.ERROR),
     "Brief structure": ("brief-structure", _mx_levels.ERROR),
+    "OBPI lifecycle coherence": ("obpi-lifecycle-coherence", _mx_levels.ERROR),
     "Session green gate": ("session-green-gate", _mx_levels.ERROR),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
     "Kind invariance": ("kind-invariance", _mx_levels.ERROR),
@@ -422,50 +429,92 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
           for the claim's OWN reason — a fixture that trips a neighbouring check
           proves nothing about this one.
 
+       5. ``QC_CLAIM_EXEMPTS`` in ``_qc_claim_exemptions`` — an ``@enforces``
+          control registers with ``exempts=None`` (UNDECLARED) until the claim is
+          declared here, and ``gz validate --exemption-controls`` discloses it.
+          Declare ``EXEMPTS_NONE`` when the gate carries no project-controllable
+          admit path; NEVER silence it via ``exemption_control_grandfather.json``,
+          the laundering ADR-0.0.74 Boundary Invariant #8 forbids.
+       6. ``data/check_step_concurrency.json`` — every step declares ``read_only``
+          or ``writes``; ``tests/governance/test_check_step_concurrency.py`` fails
+          closed on an undeclared step. MEASURE it (run the step alone, see what
+          it wrote) — never guess, and never default to ``read_only``.
+       7. ``_STEP_GUARD_META`` above. REQUIRED, and this list called it optional
+          until GHI #787 was reopened — the correction, not a restatement. The
+          reachability ratchet
+          (``.gzkit/chores/control-surface-validator-reachability``) decides
+          whether a scope is gated by regexing THIS DICT out of this module, so a
+          step absent from it is filed as reachable from nothing however loudly it
+          runs. ``_seam``'s kebab-case fallback keeps the MX seam correct and is
+          invisible to that regex, which is exactly why the dict read as a
+          refinement. Measured when the correction landed: ``OBPI lifecycle
+          coherence`` had run as a step while ``--obpi-lifecycle-coherence`` sat in
+          the ungated grandfather as protecting nothing.
+
     B. SCOPE obligations — when the step wraps a NEW ``gz validate`` scope, which
        is the overwhelmingly common case and the reason family A alone reads as
        the whole duty. Registering the scope additionally obliges:
 
-       5. ``data/check_scope_membership.json`` — add the stem to ``in_check`` AND
+       8. ``data/check_scope_membership.json`` — add the stem to ``in_check`` AND
           bump ``_counts.registry_scopes`` / ``_counts.in_check``
           (``tests/governance/test_check_scope_parity.py``).
-       6. ``_POST_SNAPSHOT_EXPLICIT_ADDITIONS`` in
-          ``tests/cli/test_validate_registry_parity.py`` — plus
+       9. The post-snapshot admission list in
+          ``tests/cli/test_validate_registry_parity.py``, WHICH ONE DEPENDS ON THE
+          SCOPE'S TIER — this is the only genuinely tier-dependent obligation in
+          either family, and having no branch here is what let GHI #787's own fix
+          read as complete for default-tier work. DEFAULT tier goes in
+          ``_POST_SNAPSHOT_DEFAULT_ADDITIONS``, a TUPLE whose order must match
+          registry order; EXPLICIT tier goes in
+          ``_POST_SNAPSHOT_EXPLICIT_ADDITIONS``, a frozenset. Add
           ``_POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED`` if the scope owns a solo
           early-return lifecycle. The goldens beside them are measured evidence of
           the pre-collapse truth; a new scope is DECLARED alongside, never appended
           to them.
-       7. ``SOLO_ONLY_KWARGS`` and ``_DISPATCH_DEFAULTS`` in
+      10. ``SOLO_ONLY_KWARGS`` and ``_DISPATCH_DEFAULTS`` in
           ``tests/cli/test_validate_solo_scope_refusal.py``, for a solo scope —
           ``_dispatch_early_return_scopes`` takes keyword-only args, so a new one
           breaks every case in that suite until declared.
-       8. A per-flag section in ``docs/user/manpages/validate.md``
+      11. A per-flag section in ``docs/user/manpages/validate.md``
           (``uv run gz cli audit``, exit 1).
 
-    NOT an obligation: ``_STEP_GUARD_META`` above. ``check()`` derives a
-    kebab-case guard name at ``ERROR`` level for an unlisted step, and that
-    fallback is documented at the dict. Adding an entry is a refinement, not a
-    duty — naming it here would overstate the list in the other direction, which
-    is the same defect mirrored.
+    Promoting a scope to DEFAULT tier also changes its INPUT contract: the QC
+    negative controls exercise default scopes against synthetic project roots that
+    ship no wheel, so an audit that hard-exits on a missing repository artifact is
+    wrong there. Absence is "nothing delivered"; only an UNPARSEABLE artifact stays
+    fatal.
 
-    THIS LIST IS A MAP, NOT THE ENFORCEMENT. Every surface above carries its own
-    fail-closed witness, and they work: landing the ``Gate callers`` step
-    (GHI #785) against the four-item version produced 14 loud test failures plus a
-    ``cli audit`` refusal, each naming its own remedy. Nothing was silently wrong
-    — the cost of an incomplete map is a wasted round-trip, never a false green.
-    That is also why nothing grades this docstring: asserting prose mentions each
-    consumer would grep content rather than exercise behavior, the shape
-    ``gz validate --tautological-test-audit`` rejects and
-    ``.claude/rules/guardrail-feedback-prose.md`` § Enforcement posture refuses on
-    the stated ground that an inferential prose-grader is weaker than a real
-    enforcement consumer. Keep the map accurate by hand; the territory is guarded.
+    THIS LIST IS A MAP, NOT THE ENFORCEMENT — with one measured exception, below.
+    Every surface above carries its own fail-closed witness, and they work: landing
+    the ``Gate callers`` step (GHI #785) against the four-item version produced 14
+    loud test failures plus a ``cli audit`` refusal, each naming its own remedy.
+    The cost of an incomplete map is normally a wasted round-trip, never a false
+    green. Nothing grades this docstring for the same reason it has never been
+    graded: asserting prose mentions each consumer would grep content rather than
+    exercise behavior, the shape ``gz validate --tautological-test-audit`` rejects
+    and ``.claude/rules/guardrail-feedback-prose.md`` § Enforcement posture refuses
+    on the stated ground that an inferential prose-grader is weaker than a real
+    enforcement consumer.
+
+    THE EXCEPTION IS ITEM 7, and it is why that refusal does not settle this whole
+    surface. Its witness fires only at pre-commit, i.e. AFTER ``gz check`` has
+    returned 0 and the work is believed finished, so for that one item the map was
+    load-bearing and it was wrong. ``tests/governance/test_check_registry_coherence.py``
+    now asserts that the ratchet's derived gated-set and the live step list agree,
+    in both directions. That is NOT prose-grading — both sides are produced by
+    executing real code — which is why it is built where the docstring grader was
+    refused. Keep the rest of the map accurate by hand; that territory is guarded.
 
     Enumerated in GHI #744's close ("worth recording for the next person") and
     restated here because that record lived only in a closed issue: wiring the
     module-size step (GHI-less, ``59931cb07``) re-derived the whole list by
     breaking 23 tests. Family B was added under GHI #787, after the next person
-    re-derived it again by breaking 14. Point of use is the only placement that
-    binds.
+    re-derived it again by breaking 14. That fix was itself incomplete and the
+    issue reopened 19 days later, when landing one scope (GHI #900, ``22ad1659``)
+    cost 8 full ``gz check`` runs at roughly one further registration each; items
+    5-7 and the tier branch in item 9 are that correction, and 5-8 renumbered to
+    8-11 to seat them. The recurrence at the next count up — 4, then 8, then 11 —
+    is the finding, not the specific items. Point of use is the only placement
+    that binds.
     """
     from gzkit.quality import (
         run_adr_status_fresh_audit,
