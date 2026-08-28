@@ -1,0 +1,21 @@
+{
+  "_doc": "Which dispatch surfaces doctrine MANDATES for a Step-4b tier-1 adversary. THIS FILE IS THE AUTHORITY the wrapper set must cover; the canonical invocation shown in each directive is a human-facing worked example of it, not the source (.gzkit/rules/governance-core.md -- execution reads state from JSON, never from prose). Read by tests/governance/test_mandated_tier1_dispatch.py, which asserts every argv here resolves cross-vendor through the production predicate. WHY THIS FILE EXISTS: GHI #884 replaced an argv[0] anchor with a walk past _RUNTIME_WRAPPERS, and that set enumerated nine interpreters with nothing declaring the universe they were drawn from -- unfalsifiable by construction (GHI #895). The coupling matters because the failure is a REFUSAL, not a silent gap: the walk stops at the first non-wrapper, so a mandated surface fronted by an absent member makes the gate reject a claim its receipt genuinely proves, which is GHI #884's own symptom recurring. Adding an entry here is a decision, not bookkeeping: it asserts the operator has mandated that surface, and it obliges _RUNTIME_WRAPPERS to cover the runtime fronting it. `_RUNTIME_WRAPPERS` stays PERMISSIVE and may hold runtimes this file does not name -- over-inclusion is fenced separately by the no-wrapper-is-a-vendor-name assertion, since the walk SKIPS wrappers and a vendor prefix admitted there would step over the very binary that proves the tier.",
+  "mandated": [
+    {
+      "surface": "OpenAI Codex plugin for Claude Code (openai/codex-plugin-cc)",
+      "directive": "gz-obpi-pipeline SKILL.md, section 'THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE' (operator directive, 2026-08-25)",
+      "directive_path": ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "runtime": "node",
+      "binary": "codex-companion.mjs",
+      "argv": [
+        "node",
+        "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs",
+        "adversarial-review",
+        "--wait",
+        "--scope",
+        "working-tree",
+        "<focus text>"
+      ]
+    }
+  ]
+}

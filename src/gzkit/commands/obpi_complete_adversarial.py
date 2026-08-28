@@ -90,8 +90,19 @@ def _is_cross_vendor_adversary(adversary: str) -> bool:
 # ['node', '.../codex-companion.mjs', ...] — and a scan reading argv[0] alone sees
 # 'node' and refuses the claim. Both rules landed the same day, which made a tier-1
 # claim structurally unclaimable for any OBPI following the directive.
+#
+# The set is PERMISSIVE — membership needs no individual mandate — but it is no
+# longer unwitnessed (GHI #895). `data/mandated_tier1_dispatch.json` declares which
+# dispatch surfaces doctrine MANDATES, and every argv it names must resolve through
+# this walk; a future directive naming a runtime absent from here fails closed at
+# that coupling. The coupling is what makes the set falsifiable: on its own it
+# enumerated interpreters with nothing declaring the universe they came from, and
+# under-coverage does not fail open — the walk stops at the first non-wrapper, so an
+# absent member REFUSES a conforming claim, which is GHI #884's symptom recurring.
+# Over-inclusion is fenced from the other side: no member may itself be a vendor
+# prefix, or the walk would skip the binary that proves the tier.
 _RUNTIME_WRAPPERS: frozenset[str] = frozenset(
-    {"node", "nodejs", "npx", "python", "python3", "uv", "uvx", "bunx", "deno"}
+    {"node", "nodejs", "npx", "python", "python3", "uv", "uvx", "bun", "bunx", "deno"}
 )
 
 
