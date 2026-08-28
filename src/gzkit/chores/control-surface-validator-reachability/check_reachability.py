@@ -36,7 +36,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import sys
+from collections.abc import Iterator
 from pathlib import Path
 
 #: Flags that are presentation or mutation, never a check to be reached.
@@ -141,10 +143,57 @@ def check_registry_members(root: Path) -> set[str]:
     return set(_CHECK_REGISTRY_RE.findall(quality.read_text(encoding="utf-8", errors="replace")))
 
 
+def _repo_files(root: Path) -> Iterator[Path]:
+    """Yield repo CONTENT — tracked files plus untracked ones git does not ignore.
+
+    Deliberately git's list rather than ``rglob("*")``. Every caller class this
+    module tiers (hook, workflow, test, doc) is repo content by construction, so
+    the two answers agree on what matters; where they differ is generated output,
+    which can only add false callers.
+
+    The difference is not marginal. Measured 2026-08-28 against this repo:
+    ``rglob("*")`` returns **367,088 paths against 7,241 tracked files**, and
+    **324,827** of them are extensionless entries under the gitignored
+    ``.ruff_cache/``. The suffix filter below excludes ``.pyc/.png/.jpg/.gz/.zip``
+    and nothing else, so every one of those was READ in full, searching for a
+    string a ruff cache entry cannot contain -- ~36s of this hook's 42.7s, paid
+    on every commit including a whitespace-only one (GHI #902).
+
+    Naming ``.ruff_cache`` in :data:`_SKIP_DIRS` would fix that instance and
+    leave the class open: the set already names six directories, every one of
+    them gitignored, and the next tool to add a cache re-opens it. Asking git is
+    the same question without a list to maintain.
+
+    Falls back to the pruned walk when git cannot answer -- an export, a tarball,
+    an adopter running the chore outside a repository -- so the scan degrades to
+    slow rather than to empty. Silently scanning nothing is the false-green this
+    ratchet exists to prevent.
+    """
+    proc = subprocess.run(  # noqa: S603
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if proc.returncode != 0:
+        for path in root.rglob("*"):
+            if path.is_file() and not any(
+                part in _SKIP_DIRS for part in path.relative_to(root).parts
+            ):
+                yield path
+        return
+    for rel in proc.stdout.split("\0"):
+        if rel:
+            yield root / rel
+
+
 def callers(root: Path) -> dict[str, set[str]]:
     """Map each `--flag` to the set of caller classes that invoke it."""
     found: dict[str, set[str]] = {}
-    for path in root.rglob("*"):
+    for path in _repo_files(root):
         if not path.is_file():
             continue
         rel = path.relative_to(root).as_posix()
@@ -301,8 +350,6 @@ def sweep(root: Path) -> int:
     code under test is the working tree rather than whatever `gz` resolves to on
     PATH — the wheel-vs-tree trap `_qc_nc_entrypoints` documents.
     """
-    import subprocess  # noqa: PLC0415
-
     matrix = build_matrix(root)
     failures: list[tuple[int, str, str]] = []
     for flag in sorted(matrix):

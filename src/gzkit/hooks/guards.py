@@ -6,8 +6,9 @@ Unittest-only policy enforcement: scan for pytest usage and reject it.
 from __future__ import annotations
 
 import re
+import subprocess
 import sys
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from gzkit.mx import levels as _mx_levels
@@ -52,10 +53,46 @@ EXCLUDE_PATH_SNIPPETS = (
 )
 
 
+def _repo_files(root: Path) -> Iterator[Path]:
+    """Yield repo CONTENT — tracked files plus untracked ones git does not ignore.
+
+    ``rglob("*")`` enumerates the whole filesystem under ``root`` and discards
+    the excluded directories only AFTER visiting them, which is the cost this
+    guard was paying: 367,088 paths walked against 7,241 tracked files, 324,827
+    of them under the gitignored ``.ruff_cache/`` (measured 2026-08-28,
+    GHI #902). The suffix filter below then dropped every one, so the work was
+    pure enumeration -- but enumeration of 45x the repository.
+
+    :data:`EXCLUDE_DIRS` names eight directories and every one is gitignored, so
+    asking git subsumes the list rather than competing with it. The filters below
+    are kept regardless: they encode SEMANTIC exclusions (``docs/``, this
+    module's own test file) that have nothing to do with what git tracks.
+
+    Falls back to the walk when git cannot answer, so the guard degrades to slow
+    rather than to scanning nothing -- a pytest-import guard that silently
+    inspects zero files is exactly the false-green it exists to prevent.
+    """
+    proc = subprocess.run(  # noqa: S603
+        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if proc.returncode != 0:
+        yield from root.rglob("*")
+        return
+    for rel in proc.stdout.split("\0"):
+        if rel:
+            yield root / rel
+
+
 def iter_files(root: Path) -> Iterable[Path]:
     """Iterate over files to scan, excluding common generated/virtual paths."""
-    for p in root.rglob("*"):
-        if p.is_dir():
+    for p in _repo_files(root):
+        if p.is_dir() or not p.is_file():
             continue
         if p.suffix.lower() not in SCAN_EXTS:
             continue
