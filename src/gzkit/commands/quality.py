@@ -678,6 +678,40 @@ def _step_concurrency_classes() -> dict[str, str]:
     return {name: entry["class"] for name, entry in data["steps"].items()}
 
 
+def _steps_overlapping_writers() -> set[str]:
+    """Return the read-only steps MEASURED not to read anything a writer produces.
+
+    These may run while the serial writer phase is still going. Everything else
+    waits for it, which is what the runner did for every reader until GHI #904.
+
+    **Opt-in, never inferred.** A step overlaps only by carrying
+    ``overlaps_writers: true`` in the declaration; absence means "wait", so the
+    conservative behaviour is what you get by saying nothing. That is the same
+    polarity :func:`_partition_steps_by_concurrency` already uses for ``class``,
+    and it is load-bearing rather than stylistic: inverting it would make an
+    unmeasured step overlap by default, which is precisely the flaky gate GHI
+    #835 refused -- *"A parallel runner over steps with an undeclared dependency
+    is a flaky gate, which is strictly worse than a slow one."*
+
+    The bar for the flag is a measurement on BOTH sides, not an absence of known
+    conflict. For ``Test``, measured 2026-08-28 with the same marker protocol
+    that produced ``class``: ``Behave`` writes exactly one path
+    (``dist/py_gzkit-*.whl``) and ``Docs build`` writes only under ``site/``,
+    while ``Test`` is declared ``read_only`` (it writes nothing) and every
+    reference to ``dist/`` or ``site/`` under ``tests/`` is an EXCLUSION -- those
+    trees are named there as "not live state".
+    """
+    path = get_project_root() / "data" / "check_step_concurrency.json"
+    if not path.is_file():
+        return set()
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return {
+        name
+        for name, entry in data["steps"].items()
+        if entry.get("overlaps_writers") is True and entry.get("class") == "read_only"
+    }
+
+
 def _partition_steps_by_concurrency(
     steps: list[tuple[str, CheckStepRunner]],
 ) -> tuple[list[tuple[str, CheckStepRunner]], list[tuple[str, CheckStepRunner]]]:
@@ -728,22 +762,61 @@ def _run_check_steps(
     graph — three steps write, and the only consumer among them runs after its
     producer already.
 
+    **One reader is allowed to overlap the writer phase (GHI #904.)** The phase
+    boundary is a conservative approximation of a single producer→consumer edge
+    (``Behave`` builds ``dist/*.whl``, ``Validate default scopes`` reads it), and
+    it charged every OTHER reader for that one pair. ``Test`` is the extreme
+    case: 31.99s of work idle behind 33.01s of writers it has no edge to, on the
+    command a session runs most. A step joins the overlap lane only by carrying
+    ``overlaps_writers`` in the declaration — see
+    :func:`_steps_overlapping_writers` for the measurement that admits ``Test``
+    and for why the flag is opt-in rather than inferred.
+
+    Writers still run SERIALLY AMONG THEMSELVES, in list order, because that is
+    what the ``Behave``→``Validate default scopes`` edge rests on. They are
+    submitted as ONE task for exactly that reason: a lane, not a fan-out.
+
     Threads (not processes) are correct because every runner shells out through
     ``run_command``: the work happens in subprocesses, so the GIL is not in the
     path.  The MX seam and the progress tick both stay on this thread, which
-    keeps the single-firing-point requirement (REQ-0.0.74-20-01) intact.
+    keeps the single-firing-point requirement (REQ-0.0.74-20-01) intact — every
+    ``_seam`` call below happens after a ``.result()``, never inside a worker.
     """
     serial, concurrent = _partition_steps_by_concurrency(steps)
+    # No writers means no lane to overlap, so every reader belongs in ONE pool.
+    # Splitting them anyway would halve the pool and reorder progress to buy
+    # nothing -- caught by `tests/unit/test_progress_indication.py`, whose step
+    # list is two readers and no writer.
+    overlapping = _steps_overlapping_writers() if serial else set()
+    early = [(n, r) for n, r in concurrent if n in overlapping]
+    gated = [(n, r) for n, r in concurrent if n not in overlapping]
     collected: dict[str, QualityResult] = {}
 
-    for name, runner in serial:
-        progress.advance(name)
-        collected[name] = _seam(name, runner(project_root), project_root)
+    def _run_writer_lane() -> list[tuple[str, QualityResult]]:
+        """Run every writer in list order. One task, so the order is preserved."""
+        return [(name, runner(project_root)) for name, runner in serial]
 
-    if concurrent:
-        workers = min(_MAX_CONCURRENT_STEPS, len(concurrent), (os.cpu_count() or 4))
+    if early:
+        workers = min(_MAX_CONCURRENT_STEPS, len(early) + 1, (os.cpu_count() or 4))
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            pending = {pool.submit(runner, project_root): name for name, runner in concurrent}
+            lane = pool.submit(_run_writer_lane)
+            pending = {pool.submit(runner, project_root): name for name, runner in early}
+            for future in as_completed(pending):
+                name = pending[future]
+                progress.advance(name)
+                collected[name] = _seam(name, future.result(), project_root)
+            for name, result in lane.result():
+                progress.advance(name)
+                collected[name] = _seam(name, result, project_root)
+    else:
+        for name, runner in serial:
+            progress.advance(name)
+            collected[name] = _seam(name, runner(project_root), project_root)
+
+    if gated:
+        workers = min(_MAX_CONCURRENT_STEPS, len(gated), (os.cpu_count() or 4))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            pending = {pool.submit(runner, project_root): name for name, runner in gated}
             for future in as_completed(pending):
                 name = pending[future]
                 progress.advance(name)
