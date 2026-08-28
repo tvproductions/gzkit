@@ -1078,6 +1078,17 @@ def init(
     # Set up hooks
     _setup_init_hooks(project_root, config)
 
+    # Re-sync control surfaces LAST, on the same terms as the repair path above:
+    # idempotent, not reported as generated a second time. The first sync ran
+    # before scaffold_core_rules, so it rendered vendor mirrors from a
+    # .gzkit/rules/ that did not exist yet -- 25 .claude/rules/, 25
+    # .github/instructions/ and 8 nested AGENTS.md files were simply absent, and
+    # a brand-new project failed `gz validate --surfaces` out of the box until
+    # the operator ran a sync nobody told them about (GHI #908). The rules are on
+    # disk by now, which is the state the comment above already anticipates for
+    # "subsequent gz init --repair and gz agent sync runs".
+    sync_all(project_root, config)
+
     # Record init event
     ledger = Ledger(ledger_path)
     ledger.append(project_init_event(project_name, mode))

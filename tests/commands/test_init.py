@@ -10,6 +10,7 @@ from gzkit.cli import main
 from gzkit.commands.init_cmd import _normalize_package_name
 from gzkit.config import GzkitConfig
 from gzkit.traceability import covers
+from gzkit.validate_pkg.sync_parity import check_sync_parity
 from tests.commands.common import (
     CliRunner,
     start_init_subprocess_patches,
@@ -142,11 +143,16 @@ class TestInitProjectSkeleton(unittest.TestCase):
         with runner.isolated_filesystem():
             result = runner.invoke(main, ["init"])
             self.assertEqual(result.exit_code, 0)
-            # Directory name becomes the package name
-            src_dirs = list(Path("src").iterdir())
-            self.assertGreaterEqual(len(src_dirs), 1)
-            package_dir = src_dirs[0]
-            self.assertTrue((package_dir / "__init__.py").exists())
+            # The directory name becomes the package name -- assert that, rather
+            # than trusting iterdir() order. src/ also carries the generated
+            # nested AGENTS.md now that init leaves a synced tree (GHI #908), and
+            # which entry comes back first is the filesystem's choice.
+            package_dir = Path("src") / _normalize_package_name(Path.cwd().name)
+            present = sorted(entry.name for entry in Path("src").iterdir())
+            self.assertTrue(
+                (package_dir / "__init__.py").exists(),
+                f"expected a package at {package_dir}; src/ holds {present}",
+            )
 
     def test_init_creates_tests_init(self) -> None:
         """init creates tests/__init__.py."""
@@ -718,3 +724,41 @@ class TestInitTemplatesScaffolding(unittest.TestCase):
             template_file.write_text("OPERATOR-EDIT", encoding="utf-8")
             runner.invoke(main, ["init"])  # repair mode
             self.assertEqual(template_file.read_text(encoding="utf-8"), "OPERATOR-EDIT")
+
+
+class TestInitLeavesASyncedTree(unittest.TestCase):
+    """The scaffolder must satisfy the gate it ships (GHI #908).
+
+    ``gz init`` ran its only ``sync_all`` BEFORE ``scaffold_core_rules``, so the
+    vendor mirrors were rendered from a ``.gzkit/rules/`` directory that did not
+    exist yet and nothing re-rendered them afterwards. Measured 2026-08-28 at
+    ``1fd8d6ec`` on an empty directory: ``gz init --yes`` exited 0 and then
+    ``gz validate --surfaces`` exited 1 with 58 missing surfaces -- 25
+    ``.claude/rules/``, 25 ``.github/instructions/`` and 8 nested ``AGENTS.md``.
+    A brand-new project failed its own surface gate, and the repair was a
+    command the operator had no reason to know they needed.
+
+    The ordering discipline already existed one function over: the repair path
+    re-syncs LAST, after every scaffolder, under the comment "Always re-sync
+    control surfaces (idempotent, not counted as repairs)". Only the fresh-init
+    path was missing it.
+
+    This asserts the property rather than the ordering, because the ordering is
+    one way to satisfy it and the property is what the operator experiences: the
+    tree ``gz init`` produces is already synced.
+    """
+
+    def test_init_leaves_no_sync_parity_drift(self) -> None:
+        """A freshly initialized tree passes the surface gate with no repair."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, result.output)
+
+            errors = check_sync_parity(Path.cwd())
+
+        self.assertEqual(
+            sorted(error.artifact for error in errors),
+            [],
+            "gz init scaffolded a tree its own surface gate rejects",
+        )

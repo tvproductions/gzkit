@@ -244,14 +244,64 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         Path("tests").mkdir(parents=True, exist_ok=True)
         Path("tests/test_cli.py").write_text("import unittest\n", encoding="utf-8")
         Path("tests/test_sync.py").write_text("import unittest\n", encoding="utf-8")
-        # Eval suite surfaces: synced instruction → rule pair
+        # Eval suite surfaces: a synced instruction → rule pair. The name must
+        # not collide with a rule gz init actually scaffolds -- this pair was
+        # called governance_core until 2026-08-28, and once init began leaving a
+        # synced tree (GHI #908) the real .claude/rules/governance-core.md landed
+        # beside it. The drift audit accepts underscore and hyphen spellings as
+        # the same rule, so the stub body was compared against the real one and
+        # reported drift that neither file had.
         Path(".github/instructions").mkdir(parents=True, exist_ok=True)
-        body = "# Governance Core\n\nRules here."
-        Path(".github/instructions/governance_core.instructions.md").write_text(
+        body = "# Fixture Sync Pair\n\nRules here."
+        Path(".github/instructions/fixture_sync_pair.instructions.md").write_text(
             '---\napplyTo: "**/*"\n---\n\n' + body, encoding="utf-8"
         )
         Path(".claude/rules").mkdir(parents=True, exist_ok=True)
-        Path(".claude/rules/governance_core.md").write_text(body, encoding="utf-8")
+        Path(".claude/rules/fixture_sync_pair.md").write_text(body, encoding="utf-8")
+
+        TestConfigAndCliAuditCommands._seed_rule_scope_paths()
+
+    # Paths named by the applyTo globs of the rules gz init scaffolds. They are
+    # gzkit's OWN source paths, so an adopter tree can never satisfy them and
+    # `gz readiness audit` reports every one as unreachable. This fixture already
+    # fabricates gzkit-shaped paths for the same reason (src/gzkit/templates/
+    # obpi.md above); these extend that. The leak itself is tracked separately --
+    # seeding here keeps the readiness assertion meaningful, it does not repair
+    # the scaffolder.
+    _RULE_SCOPE_PATHS = (
+        "CHANGELOG.md",
+        "RELEASE_NOTES.md",
+        "data/exemplar_corpus.json",
+        "data/security_surfaces.json",
+        "docs/design/adr/ADR-0.0.0-fixture/obpis/OBPI-0.0.0-01-fixture.md",
+        "docs/governance/complexity/fixture.md",
+        ".claude/agents/fixture.md",
+        ".gzkit/handoffs/fixture.md",
+        ".gzkit/locks/exchange/fixture.md",
+        "scripts/session_orientation.py",
+        "src/gzkit/chores/fixture.py",
+        "src/gzkit/cli/fixture.py",
+        "src/gzkit/commands/issue_cmd.py",
+        "src/gzkit/commands/obpi_complete.py",
+        "src/gzkit/commands/obpi_lock.py",
+        "src/gzkit/complexity/thresholds.py",
+        "src/gzkit/exchange_records.py",
+        "src/gzkit/governance/fixture.py",
+        "src/gzkit/hooks/guards.py",
+        "src/gzkit/lock_manager.py",
+        "src/gzkit/mx/awareness.py",
+        "src/gzkit/pipeline_runtime.py",
+        "src/gzkit/schemas/complexity_thresholds.json",
+    )
+
+    @staticmethod
+    def _seed_rule_scope_paths() -> None:
+        """Create one file per applyTo glob the scaffolded rules declare."""
+        for relative in TestConfigAndCliAuditCommands._RULE_SCOPE_PATHS:
+            target = Path(relative)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            if not target.exists():
+                target.write_text("", encoding="utf-8")
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()
