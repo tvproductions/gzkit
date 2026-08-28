@@ -13,6 +13,7 @@ directly here instead.
 """
 
 import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,38 @@ from unittest.mock import patch
 from gzkit.hooks import core as hooks_core
 from gzkit.rules import _cleanup_stale_nested_agents
 from gzkit.surface_write import write_if_changed, write_text_if_changed
+
+
+def _assert_mode_0o755(case: unittest.TestCase, mode: int, *, writable: bool, why: str) -> None:
+    """Assert ``mode=0o755`` landed, in the permission bits the platform has.
+
+    POSIX carries the full triplet, so the literal is asserted directly. NTFS
+    has no execute bit and ``os.chmod`` toggles only the read-only attribute,
+    so every writable file reads back ``0o666`` and ``0o755`` is unreachable by
+    construction -- ``AssertionError: 493 != 438`` on ``windows-latest`` while
+    ``ubuntu-latest`` passed the same run (GHI #901).
+
+    ``writable`` is asserted on BOTH legs, before the branch: it is the one bit
+    of ``0o755`` that NTFS does represent, so it carries the claim on the side
+    where the octal literal cannot. The Windows leg then asserts the documented
+    no-op rather than returning early, matching
+    ``tests.test_hooks.test_execute_bit_is_set_wherever_the_platform_has_one``
+    -- a runtime that DOES start carrying the bit fails here and the branch
+    gets revisited, instead of drifting into an untrue comment.
+
+    Takes already-observed VALUES rather than a path, so the ``stat``/``access``
+    calls stay in the test bodies that also drive production code. A helper that
+    read the filesystem itself would be a filesystem op plus an assertion with
+    no production call in the same function -- the exact shape
+    ``gz check``'s tautological-test audit flags, and it flagged the first
+    draft of this helper for precisely that reason.
+    """
+    case.assertTrue(stat.S_ISREG(mode), f"not a regular file: {oct(mode)}")
+    case.assertTrue(writable, why)
+    if os.name == "nt":
+        case.assertFalse(mode & stat.S_IXUSR, "NTFS is not expected to carry S_IXUSR")
+    else:
+        case.assertEqual(0o755, mode & 0o777, f"mode not enforced: {oct(mode & 0o777)}")
 
 
 class WriteIfChangedTest(unittest.TestCase):
@@ -52,13 +85,29 @@ class WriteIfChangedTest(unittest.TestCase):
         self.assertEqual(b"new\n", target.read_bytes())
 
     def test_mode_is_enforced_even_when_content_matches(self) -> None:
-        """Hooks must stay executable; chmod moves ctime, never mtime."""
+        """Hooks must stay executable; on POSIX chmod moves ctime, never mtime.
+
+        The drift is planted as read-only rather than ``0o644`` so the
+        enforcement is observable on every platform (GHI #901). Windows chmod
+        carries only the read-only attribute, so ``0o644`` and ``0o755`` both
+        read back ``0o666`` and a Windows leg planted at ``0o644`` asserts
+        nothing whatsoever -- the file it checks is byte-identical AND
+        mode-identical to the one it started with, whether or not
+        ``write_if_changed`` re-applied anything. Read-only -> writable states
+        the same claim in the one bit NTFS represents, so the planted drift is
+        real drift on both legs.
+        """
         target = self.root / "hook.py"
         write_if_changed(target, b"#!/usr/bin/env python\n", mode=0o755)
-        target.chmod(0o644)
+        target.chmod(0o444)
 
         self.assertFalse(write_if_changed(target, b"#!/usr/bin/env python\n", mode=0o755))
-        self.assertEqual(0o755, target.stat().st_mode & 0o777)
+        _assert_mode_0o755(
+            self,
+            target.stat().st_mode,
+            writable=os.access(target, os.W_OK),
+            why="mode was not re-applied on the byte-identical path",
+        )
 
     def test_text_sibling_writes_utf8_without_newline_translation(self) -> None:
         target = self.root / "surface.md"
@@ -256,7 +305,12 @@ class HookStagingOrderTest(unittest.TestCase):
             written = hooks_core.write_hook_script(self.root, "copilot", ".github/copilot/hooks")
 
         self.assertEqual(self._NORMALIZED, written.read_bytes())
-        self.assertEqual(0o755, written.stat().st_mode & 0o777)
+        _assert_mode_0o755(
+            self,
+            written.stat().st_mode,
+            writable=os.access(written, os.W_OK),
+            why="staged hook was written read-only",
+        )
 
 
 if __name__ == "__main__":

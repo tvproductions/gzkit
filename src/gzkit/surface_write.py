@@ -211,11 +211,15 @@ def write_if_changed(path: Path, payload: bytes, *, mode: int | None = None) -> 
         path: Destination file. Parent directories are created as needed.
         payload: Exact bytes the surface should contain.
         mode: When given, the permission bits the file must carry. Applied on
-            every call, including the unchanged path -- ``chmod`` moves ctime,
-            never mtime, so enforcing it costs nothing a caller must avoid.
-            Skipped entirely under a capture sink, where nothing is touched;
-            that unconditional ``chmod`` is why 17 hook scripts moved ctime on
-            every parity check while an mtime probe read clean (GHI #891).
+            every call, including the unchanged path -- on POSIX ``chmod``
+            moves ctime, never mtime, so enforcing it costs nothing a caller
+            must avoid. Skipped entirely under a capture sink, where nothing is
+            touched; that unconditional ``chmod`` is why 17 hook scripts moved
+            ctime on every parity check while an mtime probe read clean
+            (GHI #891). Windows honours only the read-only attribute here, so
+            an executable bit is requested and silently not granted, and
+            ``st_ctime`` there is the creation time and moves for neither arm
+            (GHI #901) -- both are limits of the platform, not of this call.
 
     Returns:
         True when the on-disk bytes differ from ``payload``. Under a capture

@@ -57,6 +57,39 @@ def tearDownModule() -> None:
         _uv_sync_patcher.stop()
 
 
+def _write_probe_ns(path: Path) -> int:
+    """Timestamp that moves when ``path`` is written, strongest the platform offers.
+
+    POSIX answers ctime: it moves on every write AND every metadata change, and
+    it cannot be set from userspace, so no snapshot-restore envelope can forge
+    it. That unforgeability is the whole reason the drifted-tree probe exists --
+    the validator this suite watches used to write and then put the stamp back
+    (GHI #891).
+
+    Windows has no metadata-change time to answer with. ``st_ctime`` there is
+    the file CREATION time, so it moves for neither a write nor a chmod; the
+    probe read insensitive and the sensitivity check below caught it rather than
+    reporting a clean it had not earned (GHI #901). mtime is the strongest
+    remaining signal and it is **strictly weaker**: a validator that wrote and
+    then called ``os.utime`` would read clean on Windows. So the legs assert
+    different strengths of the same property, stated rather than blurred --
+    POSIX catches a restored write, Windows catches only an unrestored one.
+
+    The gap is narrower than that sounds, because it is not the only witness:
+    ``SyncParityTouchesNoTreeShapeTest`` compares path SETS and is fully
+    platform-neutral, so a validator that created or deleted anything is caught
+    identically on both legs. What Windows alone cannot see is an in-place
+    rewrite of an existing file whose mtime is restored afterwards.
+
+    Python 3.12 deprecated Windows ``st_ctime`` and documents that it will
+    become the metadata-change time in a future release, at which point this
+    branch collapses and both legs get the strong probe. Written as a branch on
+    the platform rather than a skip so that day is a one-line deletion.
+    """
+    st = path.stat()
+    return st.st_mtime_ns if os.name == "nt" else st.st_ctime_ns
+
+
 class _SyncParityBase(unittest.TestCase):
     """Snapshot any files a test mutates and restore them in tearDown."""
 
@@ -158,6 +191,9 @@ class SyncParityDriftedTreeIsNonMutatingTest(_SyncParityBase):
     false clean -- the first attempt at this measurement returned ``0`` moved
     files against a tree that had just been rewritten. ctime moves on write and
     cannot be set from userspace, so no restore envelope can forge it.
+
+    Windows has no such stamp and falls back to mtime; :func:`_write_probe_ns`
+    carries which leg gets which strength and why (GHI #901).
     """
 
     _mutable_paths = ("AGENTS.md",)
@@ -166,28 +202,30 @@ class SyncParityDriftedTreeIsNonMutatingTest(_SyncParityBase):
         root = Path.cwd()
         agents_md = root / "AGENTS.md"
 
-        # Planting the drift doubles as the probe's own sanity check: if ctime
-        # does not move for a write we KNOW happened, a clean result below
+        # Planting the drift doubles as the probe's own sanity check: if the
+        # stamp does not move for a write we KNOW happened, a clean result below
         # proves nothing. Asserted here rather than as a standalone test so the
-        # sensitivity check cannot drift away from the claim it underwrites.
-        unwritten_ctime = agents_md.stat().st_ctime_ns
+        # sensitivity check cannot drift away from the claim it underwrites --
+        # and it earned that placement, catching the Windows leg the day
+        # _write_probe_ns did not yet exist (GHI #901).
+        unwritten = _write_probe_ns(agents_md)
         drifted = agents_md.read_text(encoding="utf-8") + "\n<!-- hand-edited drift -->\n"
         agents_md.write_text(drifted, encoding="utf-8")
         self.assertNotEqual(
-            unwritten_ctime,
-            agents_md.stat().st_ctime_ns,
-            "ctime probe is insensitive — a clean result would be meaningless",
+            unwritten,
+            _write_probe_ns(agents_md),
+            "write probe is insensitive — a clean result would be meaningless",
         )
 
-        before = {path: path.stat().st_ctime_ns for path in _collect_files(root) if path.is_file()}
+        before = {path: _write_probe_ns(path) for path in _collect_files(root) if path.is_file()}
         self.assertGreater(len(before), 50, "surface set should cover the generated tree")
 
         errors = check_sync_parity(root)
 
         moved = sorted(
             path.relative_to(root).as_posix()
-            for path, ctime in before.items()
-            if path.is_file() and path.stat().st_ctime_ns != ctime
+            for path, stamp in before.items()
+            if path.is_file() and _write_probe_ns(path) != stamp
         )
         self.assertEqual(
             [],
@@ -205,12 +243,15 @@ class SyncParityDriftedTreeIsNonMutatingTest(_SyncParityBase):
 class SyncParityTouchesNoTreeShapeTest(_SyncParityBase):
     """Beyond file bytes: the check must not add or remove anything (GHI #891).
 
-    The ctime probe above watches FILES that already exist, so it is blind to a
+    The write probe above watches FILES that already exist, so it is blind to a
     validator that creates a directory or deletes a surface. Both are real
     powers of ``sync_all`` -- it creates vendor mirror trees, and it prunes
     stale rules, unshippable chore files and orphaned nested ``AGENTS.md``. A
     sink that suppressed writes but let those through would still be a writer,
-    and the file-ctime assertion would have reported green.
+    and the per-file write-probe assertion would have reported green. This arm
+    compares path SETS, so unlike that probe it is fully platform-neutral --
+    which is why it carries proportionally more of the guarantee on Windows
+    (:func:`_write_probe_ns`).
     """
 
     _mutable_paths = ("AGENTS.md",)
