@@ -2,6 +2,7 @@
 
 import os
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -70,10 +71,16 @@ def _write_probe_ns(path: Path) -> int:
     the file CREATION time, so it moves for neither a write nor a chmod; the
     probe read insensitive and the sensitivity check below caught it rather than
     reporting a clean it had not earned (GHI #901). mtime is the strongest
-    remaining signal and it is **strictly weaker**: a validator that wrote and
-    then called ``os.utime`` would read clean on Windows. So the legs assert
-    different strengths of the same property, stated rather than blurred --
-    POSIX catches a restored write, Windows catches only an unrestored one.
+    remaining signal and it is **strictly weaker** in two separate ways, both
+    measured on ``windows-latest`` rather than assumed:
+
+    1. It is forgeable. A validator that wrote and then called ``os.utime``
+       reads clean on Windows, where on POSIX ctime cannot be put back.
+    2. It is coarse. A write issued close enough to the preceding ``stat``
+       records a byte-identical stamp -- observed directly, ``1787907512451441900
+       == 1787907512451441900`` for a write that certainly happened. This is why
+       the sensitivity check below settles the probe against the snapshot it
+       must out-resolve, rather than merely asserting that one write moved it.
 
     The gap is narrower than that sounds, because it is not the only witness:
     ``SyncParityTouchesNoTreeShapeTest`` compares path SETS and is fully
@@ -88,6 +95,34 @@ def _write_probe_ns(path: Path) -> int:
     """
     st = path.stat()
     return st.st_mtime_ns if os.name == "nt" else st.st_ctime_ns
+
+
+def _probe_outresolves(snapshot_ns: int, scratch: Path, timeout_s: float = 5.0) -> bool:
+    """Can the probe tell "written after ``snapshot_ns``" from "not written"?
+
+    That is the exact property the drifted-tree measurement rests on, and it is
+    strictly narrower than the question the old check asked ("did SOME write
+    move the stamp"). A probe can pass that one and still be useless here: the
+    write it witnessed happened BEFORE the snapshot, and the writes the test
+    hunts happen after it.
+
+    Answers by writing ``scratch`` until its own stamp passes ``snapshot_ns``,
+    which settles two failure modes with one loop. A coarse clock resolves
+    within a tick or two and returns True. A probe that does not move for a
+    write at all -- Windows ``st_ctime``, which is the creation time -- never
+    passes and returns False at the deadline, so the guard the loop replaces is
+    kept whole rather than relaxed into a sleep.
+
+    ``scratch`` must sit on the same filesystem as the surfaces being measured;
+    a probe settled against another volume's clock proves nothing about theirs.
+    """
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        scratch.write_bytes(b"probe\n")
+        if _write_probe_ns(scratch) > snapshot_ns:
+            return True
+        time.sleep(0.005)
+    return False
 
 
 class _SyncParityBase(unittest.TestCase):
@@ -202,23 +237,27 @@ class SyncParityDriftedTreeIsNonMutatingTest(_SyncParityBase):
         root = Path.cwd()
         agents_md = root / "AGENTS.md"
 
-        # Planting the drift doubles as the probe's own sanity check: if the
-        # stamp does not move for a write we KNOW happened, a clean result below
-        # proves nothing. Asserted here rather than as a standalone test so the
-        # sensitivity check cannot drift away from the claim it underwrites --
-        # and it earned that placement, catching the Windows leg the day
-        # _write_probe_ns did not yet exist (GHI #901).
-        unwritten = _write_probe_ns(agents_md)
         drifted = agents_md.read_text(encoding="utf-8") + "\n<!-- hand-edited drift -->\n"
         agents_md.write_text(drifted, encoding="utf-8")
-        self.assertNotEqual(
-            unwritten,
-            _write_probe_ns(agents_md),
-            "write probe is insensitive — a clean result would be meaningless",
-        )
 
         before = {path: _write_probe_ns(path) for path in _collect_files(root) if path.is_file()}
         self.assertGreater(len(before), 50, "surface set should cover the generated tree")
+
+        # The snapshot's own sanity check: unless a write made NOW records a
+        # stamp past every stamp in `before`, the comparison after
+        # `check_sync_parity` cannot distinguish "wrote nothing" from "wrote
+        # too fast to see", and a clean result below proves nothing. Asserted
+        # inline rather than as a standalone test so it cannot drift away from
+        # the claim it underwrites -- and it has now caught two distinct
+        # Windows defects from that position (GHI #901). The scratch file is
+        # rooted inside the tree under measurement so it shares its filesystem
+        # clock, and is gone before the validator runs.
+        with tempfile.TemporaryDirectory(dir=root, prefix=".probe-") as probe_dir:
+            self.assertTrue(
+                _probe_outresolves(max(before.values()), Path(probe_dir) / "scratch"),
+                "write probe cannot out-resolve the snapshot — a clean result "
+                "below would be meaningless",
+            )
 
         errors = check_sync_parity(root)
 
