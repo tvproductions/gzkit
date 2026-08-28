@@ -999,7 +999,19 @@ class TestValidateLedger(unittest.TestCase):
             )
             f.flush()
             errors = validate_ledger(Path(f.name))
-            self.assertTrue(any("must be an object" in error.message for error in errors))
+
+        # Assert the SEMANTIC this test names -- the wrongly-typed field is
+        # reported, against that field, with line context -- rather than the
+        # message wording. `evidence` became union-declared when the schema was
+        # aligned to its typed model (GHI #883), which changes the phrasing
+        # without changing the verdict this test exists to pin.
+        offending = [error for error in errors if error.field == "evidence"]
+        self.assertTrue(offending, f"evidence type violation not reported: {errors}")
+        self.assertIn("evidence", offending[0].message)
+        self.assertTrue(
+            any(str(part).isdigit() for part in str(offending[0].artifact).split(":")),
+            f"error carries no line context: {offending[0].artifact}",
+        )
 
     def test_audit_receipt_emitted_accepts_runtime_emitted_events(self) -> None:
         """GHI #414: schema accepts every ``receipt_event`` value the runtime emits.

@@ -33,7 +33,10 @@
       ],
       "properties": {
         "parent": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         }
       }
@@ -51,7 +54,10 @@
           ]
         },
         "parent": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -65,7 +71,10 @@
           "min_length": 1
         },
         "session": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         },
         "task_id": {
@@ -101,7 +110,10 @@
           "min_length": 1
         },
         "reason": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         },
         "task_id": {
@@ -141,7 +153,10 @@
           "type": "integer"
         },
         "evidence": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "task_id": {
           "type": [
@@ -169,7 +184,10 @@
           ]
         },
         "evidence": {
-          "type": "object"
+          "type": [
+            "object",
+            "null"
+          ]
         }
       }
     },
@@ -193,10 +211,16 @@
           "min_length": 1
         },
         "evidence": {
-          "type": "object"
+          "type": [
+            "object",
+            "null"
+          ]
         },
         "anchor": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "required": [
             "commit",
             "semver"
@@ -241,7 +265,10 @@
           "min_length": 1
         },
         "evidence": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "properties": {
             "value_narrative": {
               "type": "string",
@@ -419,7 +446,10 @@
           }
         },
         "obpi_completion": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "enum": [
             "completed",
             "attested_completed",
@@ -427,7 +457,10 @@
           ]
         },
         "anchor": {
-          "type": "object",
+          "type": [
+            "object",
+            "null"
+          ],
           "required": [
             "commit",
             "semver"
@@ -458,7 +491,10 @@
           "min_length": 1
         },
         "reason": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         },
         "task_id": {
@@ -511,11 +547,17 @@
           "min_length": 1
         },
         "source_framework": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         },
         "rationale": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         }
       }
@@ -828,7 +870,12 @@
           "type": "string",
           "min_length": 1
         },
-        "tag": {},
+        "tag": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "ghi_summary": {
           "type": "array"
         },
@@ -874,7 +921,10 @@
           "min_length": 1
         },
         "entry": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -991,7 +1041,10 @@
           "min_length": 1
         },
         "escalated_to": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         }
       }
@@ -1198,7 +1251,10 @@
           "type": "string"
         },
         "floor_direction": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "enum": [
             "unchanged",
             "shrank",
@@ -1234,7 +1290,7 @@
               }
             }
           },
-          "because": "A retirement that moves invariant-tier liveness changes the 0-Kelvin floor every rendition must carry verbatim, and the runtime gate in `gz content retire` refuses one without a named --attestor (AGENTS.md § Operator Doctrine, the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling: removing an entry is attested). A row recording the move with no witness contradicts the gate it is the Layer-2 witness for. The ledger is append-only -- do not edit the row; re-run `gz content retire <surface> --entry <id> --reason \"<why>\" --attestor \"<name>\"` so the event is emitted by the gate that enforces the condition. `floor_direction: \"unchanged\"` is a routine compressible retirement and needs no attestor."
+          "because": "A retirement that moves invariant-tier liveness changes the 0-Kelvin floor every rendition must carry verbatim, and the runtime gate in `gz content retire` refuses one without a named --attestor (AGENTS.md \u00a7 Operator Doctrine, the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling: removing an entry is attested). A row recording the move with no witness contradicts the gate it is the Layer-2 witness for. The ledger is append-only -- do not edit the row; re-run `gz content retire <surface> --entry <id> --reason \"<why>\" --attestor \"<name>\"` so the event is emitted by the gate that enforces the condition. `floor_direction: \"unchanged\"` is a routine compressible retirement and needs no attestor."
         }
       ]
     },
@@ -1695,19 +1751,34 @@
           "min_length": 1
         },
         "job_id": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "refuted_claim": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "resolution": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "adversary_tier": {
-          "type": "integer"
+          "type": [
+            "integer",
+            "null"
+          ]
         },
         "adversary_receipt": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -1736,7 +1807,10 @@
           "min_length": 7
         },
         "obpi_id": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "test_names": {
           "type": "array"
@@ -1893,10 +1967,16 @@
           "min_length": 1
         },
         "backfill": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "attestor": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

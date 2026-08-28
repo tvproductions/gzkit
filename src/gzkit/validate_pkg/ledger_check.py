@@ -50,6 +50,52 @@ def _append_ledger_error(
     )
 
 
+#: JSON-Schema type name -> the Python types that satisfy it. `number` admits
+#: both because JSON draws no int/float line; `integer` keeps accepting `bool`
+#: exactly as it did before this map existed, since `bool` subclasses `int` and
+#: narrowing that is a separate decision from the three holes GHI #883 named.
+_JSON_TYPE_PYTHON: dict[str, tuple[type, ...]] = {
+    "string": (str,),
+    "integer": (int,),
+    "number": (int, float),
+    "object": (dict,),
+    "array": (list,),
+    "boolean": (bool,),
+    "null": (type(None),),
+}
+
+#: Phrasing for a single declared type, preserved verbatim from before the union
+#: form existed so operator-facing messages (and the assertions reading them) do
+#: not churn for a change that is not about them.
+_SINGLE_TYPE_PHRASE: dict[str, str] = {
+    "string": "must be a string.",
+    "integer": "must be an integer.",
+    "number": "must be a number.",
+    "object": "must be an object.",
+    "array": "must be an array.",
+    "boolean": "must be a boolean.",
+    "null": "must be null.",
+}
+
+
+def _declared_types(rule: dict[str, Any]) -> tuple[str, ...]:
+    """Return the type names a field rule permits, for either declaration form.
+
+    `type` is a string or a LIST of strings. Before GHI #883 the check compared
+    ``rule.get("type") == "string"``, and a list never equals a string, so every
+    branch fell through and a union-declared field was checked for nothing at
+    all -- 14 fields across 12 event types accepted any value whatsoever. The
+    silence is what made it survive: an unchecked field looks exactly like a
+    field that passed.
+    """
+    declared = rule.get("type")
+    if isinstance(declared, str):
+        return (declared,)
+    if isinstance(declared, list):
+        return tuple(name for name in declared if isinstance(name, str))
+    return ()
+
+
 def _validate_ledger_field(
     value: Any,
     field: str,
@@ -58,42 +104,28 @@ def _validate_ledger_field(
     ledger_path: Path,
     line_no: int,
 ) -> None:
-    expected_type = rule.get("type")
-    if expected_type == "string":
-        if not isinstance(value, str):
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"Field '{field}' must be a string.",
-                field=field,
-            )
-            return
-    elif expected_type == "integer":
-        if not isinstance(value, int):
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"Field '{field}' must be an integer.",
-                field=field,
-            )
-            return
-    elif expected_type == "object" and not isinstance(value, dict):
-        _append_ledger_error(
-            errors,
-            ledger_path,
-            line_no,
-            f"Field '{field}' must be an object.",
-            field=field,
+    """Validate one field against its schema rule, recursing into array items.
+
+    Kept in agreement with `gzkit.events.parse_typed_event` by
+    `tests/governance/test_ledger_reader_parity.py`: a row this accepts must be
+    replayable by the typed reader and vice versa, which is a property neither
+    reader can check alone (GHI #883).
+    """
+    declared = _declared_types(rule)
+    permitted = tuple(
+        python_type for name in declared for python_type in _JSON_TYPE_PYTHON.get(name, ())
+    )
+    if permitted and not isinstance(value, permitted):
+        phrase = (
+            _SINGLE_TYPE_PHRASE[declared[0]]
+            if len(declared) == 1 and declared[0] in _SINGLE_TYPE_PHRASE
+            else f"must be one of the declared types {list(declared)}."
         )
-        return
-    elif expected_type == "array" and not isinstance(value, list):
         _append_ledger_error(
             errors,
             ledger_path,
             line_no,
-            f"Field '{field}' must be an array.",
+            f"Field '{field}' {phrase}",
             field=field,
         )
         return
@@ -128,7 +160,28 @@ def _validate_ledger_field(
                 field=field,
             )
 
+    # Descend into declared item types. The outer `isinstance(value, list)` check
+    # alone let `floor_moved_ids: [7]` pass the schema and then fail typed replay
+    # (GHI #883) — the failure surfacing far from the write that caused it. Every
+    # array field declaring `items` had the same hole.
+    items_rule = rule.get("items")
+    if isinstance(value, list) and isinstance(items_rule, dict):
+        for index, item in enumerate(value):
+            _validate_ledger_field(
+                item,
+                f"{field}[{index}]",
+                items_rule,
+                errors,
+                ledger_path,
+                line_no,
+            )
+
     allowed = rule.get("enum")
+    # An explicit null on a nullable field carries no value to enum-check. The
+    # enum constrains what the field says when it says anything; `null` is the
+    # field declining to say, which the type check above has already permitted.
+    if value is None and "null" in declared:
+        return
     if isinstance(allowed, list) and value not in allowed:
         _append_ledger_error(
             errors,
