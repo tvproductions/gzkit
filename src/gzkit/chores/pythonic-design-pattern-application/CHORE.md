@@ -1,6 +1,6 @@
 # CHORE: Pythonic Design Pattern Application
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Lane:** Lite
 **Slug:** `pythonic-design-pattern-application`
 
@@ -32,12 +32,18 @@ The mechanical-delta requirement is the binding part: the rewrite must not regre
 ## Python example corpus requirement
 
 Before applying a rewrite, read the matching Python example from the local
-examples archive when present:
+examples archive **when present**. The archive is a third-party asset gzkit does not
+ship, so **no default path is provided** — point `DESIGN_PATTERNS_ARCHIVE` at your own
+copy. A hardcoded default resolves only on the machine that authored it, which makes it
+a note to one reader rather than an instruction (GHI #900). When it is unset, record
+the absence in the application evidence and treat the role-map step as unwitnessed.
 
 ```bash
-export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
-unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/main.py | sed -n '1,220p'
-unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/Output.txt
+# Set this to wherever your copy of the archive lives; unset it to skip the step.
+if [ -n "${DESIGN_PATTERNS_ARCHIVE:-}" ]; then
+  unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/main.py | sed -n '1,220p'
+  unzip -p "$DESIGN_PATTERNS_ARCHIVE" Python/src/Strategy/Conceptual/Output.txt
+fi
 ```
 
 The archive example is not source material to copy into gzkit. It is a witness

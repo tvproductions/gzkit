@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-25
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---
@@ -23,7 +23,10 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 - `root`: source tree to scan (default `src`)
 - `out`: markdown candidates report path (default `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`)
 - `xenon_band` (optional): xenon hot-spot band to cross-reference, default `B`
-- `DESIGN_PATTERNS_ARCHIVE` (optional): local Refactoring Guru archive, defaulting in this repo to `/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip`
+- `DESIGN_PATTERNS_ARCHIVE` (optional): path to your own copy of the local Refactoring
+  Guru archive. **No default** — it is a third-party asset gzkit does not ship, and a
+  hardcoded default resolves only on the machine that authored it (GHI #900). Unset,
+  the corpus step is skipped and the chore records the disposition as provisional.
 
 ## Outputs
 

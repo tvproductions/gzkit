@@ -1,6 +1,6 @@
 # CHORE: Pythonic Design Pattern Detection
 
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Lane:** Lite
 **Slug:** `pythonic-design-pattern-detection`
 
@@ -22,11 +22,17 @@ This is the same relationship gzkit has with `click` (per AGENTS.md § Stdlib-Fi
 
 ## Python example corpus
 
-The local examples archive is the required example corpus when present:
+The local examples archive is the required example corpus **when present**. It is a
+third-party asset gzkit does not ship, so **no default path is provided** — point
+`DESIGN_PATTERNS_ARCHIVE` at your own copy. A hardcoded default resolves only on the
+machine that authored it, which makes it a note to one reader rather than an
+instruction (GHI #900).
 
 ```bash
-export DESIGN_PATTERNS_ARCHIVE="/Users/jeff/Library/Mobile Documents/com~apple~CloudDocs/Design_Patterns_Book/design-patterns-en.zip"
-unzip -l "$DESIGN_PATTERNS_ARCHIVE" 'Python/src/*/Conceptual/*'
+# Set this to wherever your copy of the archive lives; unset it to skip the step.
+if [ -n "${DESIGN_PATTERNS_ARCHIVE:-}" ]; then
+  unzip -l "$DESIGN_PATTERNS_ARCHIVE" 'Python/src/*/Conceptual/*'
+fi
 ```
 
 For every candidate, read the matching `Python/src/<Pattern>/Conceptual/main.py`
@@ -46,6 +52,11 @@ Required per-candidate notes:
 Do not mark a candidate `not-pythonic-rewrite` until the archive example has
 been read. Absence of an AST hit is not evidence of Pythonic shape; the example
 corpus is the human-eye review surface.
+
+When `DESIGN_PATTERNS_ARCHIVE` is unset the corpus is unavailable, and the
+per-candidate notes record that in place of an example path. A disposition reached
+without the corpus is **provisional** and must say so: a missing review surface is a
+recorded limitation of the run, never a silent pass.
 
 ## Full pattern example table (all 22)
 

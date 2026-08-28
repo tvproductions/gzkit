@@ -1569,7 +1569,9 @@ When running parity scans, canonical root resolution is deterministic and fail-c
 
 1. explicit override (if provided)
 2. sibling path `../airlineops`
-3. absolute fallback `/Users/jeff/Documents/Code/airlineops`
+
+There is deliberately no absolute fallback — a hardcoded machine path resolves for
+one reader only (GHI #900). Pass an explicit override instead.
 
 If none resolve, stop and report blockers. Do not claim parity completion without canonical-root evidence.
 

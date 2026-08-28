@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-12
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
 model: haiku
 ---
 
@@ -52,8 +52,10 @@ GovZero mining rule:
 2. Resolve canonical root deterministically:
    - explicit override (if provided)
    - sibling path `../airlineops`
-   - absolute fallback `/Users/jeff/Documents/Code/airlineops`
-   Fail closed if none resolve.
+   Fail closed if none resolve. There is deliberately no absolute fallback: a
+   hardcoded machine path is a rung that can only ever resolve for one reader,
+   which makes a ladder look deterministic while being shorter than it reads
+   for everyone else (GHI #900). Pass an explicit override instead.
    Record canonical-root evidence in the parity report.
 3. Read canonical source declarations:
    `docs/design/lodestar/govzero-doctrine.md`, `docs/design/lodestar/README.md`, `AGENTS.md`.

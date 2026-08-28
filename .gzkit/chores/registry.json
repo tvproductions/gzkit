@@ -239,7 +239,7 @@
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
       "timeoutSeconds": 120
@@ -247,7 +247,7 @@
     {
       "slug": "pythonic-design-pattern-detection",
       "title": "Pythonic Design Pattern Detection (AST Scanner + refactoring.guru Catalogue)",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "path": ".gzkit/chores/pythonic-design-pattern-detection",
       "lane": "lite",
       "timeoutSeconds": 120
