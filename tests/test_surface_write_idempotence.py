@@ -135,7 +135,7 @@ class RuffFormatConfigTest(unittest.TestCase):
             config.write_text("[tool.ruff]\nline-length = 100\n", encoding="utf-8")
 
             with patch("subprocess.run") as run:
-                hooks_core._ruff_format_dir(staging, config)
+                hooks_core._ruff_format_dir(staging, Path(name))
 
         run.assert_called_once()
         argv = list(run.call_args.args[0])
@@ -155,7 +155,7 @@ class RuffFormatConfigTest(unittest.TestCase):
             (staging / "h.py").write_text("x = 1\n", encoding="utf-8")
 
             with patch("subprocess.run") as run:
-                hooks_core._ruff_format_dir(staging, Path(name) / "pyproject.toml")
+                hooks_core._ruff_format_dir(staging, Path(name))
 
         self.assertNotIn("--config", list(run.call_args.args[0]))
 

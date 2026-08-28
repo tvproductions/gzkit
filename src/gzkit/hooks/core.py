@@ -514,13 +514,13 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
     with tempfile.TemporaryDirectory(prefix="gzkit-hook-") as staging_name:
         staged = Path(staging_name) / script_path.name
         staged.write_bytes(generate_hook_script(hook_type, project_root).encode("utf-8"))
-        _ruff_format_dir(staged.parent, project_root / "pyproject.toml")
+        _ruff_format_dir(staged.parent, project_root)
         write_if_changed(script_path, staged.read_bytes(), mode=0o755)
 
     return script_path
 
 
-def _ruff_format_dir(directory: Path, config_path: Path | None = None) -> None:
+def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> None:
     """Run ``ruff format`` on a generated hook directory.
 
     Generated hook sources are derived from dedented string templates that do
@@ -528,12 +528,21 @@ def _ruff_format_dir(directory: Path, config_path: Path | None = None) -> None:
     ruff format as a post-sync normalization step keeps sync_all output
     byte-stable against the pre-commit formatter, which is what the sync-parity
     validator compares against.
+
+    Everything the formatter resolves is derived from ``project_root``, never
+    from ambient process state. ``uv run`` picks ITS project from the working
+    directory, so a caller standing outside the tree it was syncing formatted
+    with a different environment -- or, in a tree ``uv`` cannot build, failed to
+    format at all and had the failure swallowed by the suppression below. Either
+    way the same root produced different bytes depending on where the caller
+    stood, which no call site could show (GHI #909).
     """
     import subprocess  # noqa: PLC0415
 
     if not directory.is_dir():
         return
     command = ["uv", "run", "ruff", "format"]
+    config_path = project_root / "pyproject.toml" if project_root is not None else None
     if config_path is not None and config_path.is_file():
         # ``directory`` may be a staging tree outside the project, where ruff's
         # upward config discovery would find nothing and fall back to its
@@ -550,4 +559,5 @@ def _ruff_format_dir(directory: Path, config_path: Path | None = None) -> None:
             errors="replace",
             timeout=60,
             check=False,
+            cwd=project_root,
         )

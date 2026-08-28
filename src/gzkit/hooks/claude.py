@@ -494,7 +494,7 @@ def _write_hook_dir(
         staging = Path(staging_name)
         for filename, render, _ in scripts:
             (staging / filename).write_bytes(render().encode("utf-8"))
-        _ruff_format_dir(staging, project_root / "pyproject.toml")
+        _ruff_format_dir(staging, project_root)
         for filename, _, executable in scripts:
             target = hooks_path / filename
             write_if_changed(
