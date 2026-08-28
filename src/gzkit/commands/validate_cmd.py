@@ -186,7 +186,11 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "cli_alignment",
         "explicit",
         True,
-        lambda r, _f: _ta().audit_cli_alignment(r) + _ta().audit_manpage_alignment(r),
+        lambda r, _f: (
+            _ta().audit_cli_alignment(r)
+            + _ta().audit_manpage_alignment(r)
+            + _ta().audit_skill_code_citations(r)
+        ),
     ),
     _ScopeEntry("event_handlers", "explicit", True, lambda r, _f: _ta().audit_event_handlers(r)),
     _ScopeEntry("event_schemas", "explicit", True, lambda r, _f: _ta().audit_event_schemas(r)),

@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.1.2"
+  skill-version: "0.1.3"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -45,7 +45,7 @@ full diagnosis (archetype, authority, proof range, recommended move) without
 waiting for xenon-as-gate to trip.
 
 ```bash
-gz complexity advise src/gzkit/commands/validate.py
+gz complexity advise src/gzkit/commands/validate_cmd.py
 gz complexity advise src/gzkit/ --json
 ```
 

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-07
 metadata:
-  skill-version: "2.7.0"
+  skill-version: "2.7.1"
 model: opus
 ---
 
@@ -381,7 +381,7 @@ to produce one. Fix that instinct.
 
 ### Example 6 — Heavy-surface defect (still direct fix, not OBPI)
 
-**Input**: GHI #N describes a defect in `gz validate --frontmatter` that fails to detect a specific schema-drift pattern. The fix touches `src/gzkit/governance/trust_audits.py` (validator), `src/gzkit/schemas/adr.json` (schema rule), and adds two new unit tests — roughly 80 lines across 3 files. Heavy-lane surface, foundation-adjacent.
+**Input**: GHI #N describes a defect in `gz validate --frontmatter` that fails to detect a specific schema-drift pattern. The fix touches `src/gzkit/governance/trust_audits/` (validator package), `src/gzkit/schemas/adr.json` (schema rule), and adds two new unit tests — roughly 80 lines across 3 files. Heavy-lane surface, foundation-adjacent.
 
 **Process**: Phase 1 classifies as single prescribed fix. Phase 2 routes to **direct fix despite the heavy-surface scope** — defect remedies are direct fixes regardless of which schema, CLI verb, or runtime contract they touch. The 80-line / 3-file count is a routing fact recorded in the commit body, not a trigger to author an OBPI. Apply edits, write the RED tests, GREEN, commit `fix(validate): detect schema-drift pattern X (GHI #N)`. Phase 3 verifies trailer; class-of-failure (the pattern is closed across all schemas, not just the one observed); test semantics (REQ-derived, not string-shape); heavy-lane ARB receipts. Phase 4 closes with `fixed` disposition citing commit SHAs + receipt IDs.
 

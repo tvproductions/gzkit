@@ -29,6 +29,9 @@ _DOC_PROSE_VERBS: frozenset[str] = frozenset()
 # reference to manpages/gz-<verb>.md is a dead operator-doc pointer using a
 # convention no manpage file uses (GHI #532).
 _MANPAGE_GZ_PREFIX_REF = re.compile(r"manpages/(gz-[a-z0-9-]+\.md)")
+#: Skill prose citing a gzkit implementation module (GHI #896). Existence only —
+#: whether the prose still describes the code is a reading, not a state.
+_SRC_MODULE_REF = re.compile(r"src/gzkit/[a-z0-9_/]+\.py")
 _BRIEF_STATUS_RE = re.compile(r"^status:\s*(.+)$", re.MULTILINE)
 _ADR_PACKAGE_MARKER = "design/adr"
 
@@ -311,6 +314,66 @@ def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
                             f"convention; manpages live at {MANPAGE_DIR.as_posix()}/<verb>.md. "
                             f"Drop the gz- prefix (-> manpages/{bad[3:]}). "
                             f"(governance-core § Operator-doc verb resolution; GHI #532.)"
+                        ),
+                    )
+                )
+    return errors
+
+
+def audit_skill_code_citations(project_root: Path) -> list[ValidationError]:
+    """Fail closed on skill prose citing a ``src/gzkit/`` module that does not exist.
+
+    This function walks the same ``.gzkit/skills/**/SKILL.md`` surface as
+    :func:`audit_cli_alignment` and :func:`audit_manpage_alignment`, which resolve
+    the ``gz <verb>`` strings a skill NAMES and the manpage filenames it POINTS AT.
+    Neither read the implementation a skill DESCRIBES, so a rename or a
+    module-to-package split left the pointer rotting with nothing objecting
+    (GHI #896). Measured before this arm existed: three cited paths did not
+    resolve across seven skills, and ``uv run gz check`` was green.
+
+    The class is the one ``AGENTS.md`` § DO IT RIGHT 1a names from the other side —
+    a skill citing ``src/gzkit/<module>.py`` is a CONSUMER of that module's path,
+    and nothing verified the consumer when the surface moved. Its canonical
+    instance is GHI #884's origin: ``69bc4a84`` mandated the Codex plugin as the
+    only tier-1 dispatch surface and, in the same commit, left the prose
+    describing that gate claiming the proof was ``step.command[0]``.
+
+    Scope is the EXISTENCE half only, deliberately. Whether prose still describes
+    what the code DOES is a reading, not a state gzkit models; whether a cited
+    path resolves is mechanical, and it is the half that measured 3-for-3 wrong.
+    Non-``src/gzkit`` paths are out of scope for the same reason — widening
+    without measuring is how a checklist comes to undercount its obligations
+    (GHI #854).
+    """
+    errors: list[ValidationError] = []
+    skills_root = project_root / ".gzkit" / "skills"
+    if not skills_root.is_dir():
+        return errors
+    for skill_md in sorted(skills_root.rglob("SKILL.md")):
+        try:
+            text = skill_md.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        for lineno, line in enumerate(text.splitlines(), 1):
+            for match in _SRC_MODULE_REF.finditer(line):
+                relpath = match.group(0)
+                if (project_root / relpath).is_file():
+                    continue
+                package = project_root / relpath[: -len(".py")]
+                recovery = (
+                    f"It is now the package {relpath[: -len('.py')]}/ — cite that, or the "
+                    "specific module inside it."
+                    if package.is_dir()
+                    else "Cite the module that replaced it, or drop the pointer."
+                )
+                errors.append(
+                    ValidationError(
+                        type="skill_code_citation",
+                        artifact=(f"{skill_md.relative_to(project_root).as_posix()}:{lineno}"),
+                        message=(
+                            f"`{relpath}` does not exist, so this skill points an agent at "
+                            f"a module that is not there. {recovery} "
+                            "(GHI #896; AGENTS.md § DO IT RIGHT 1a.)"
                         ),
                     )
                 )

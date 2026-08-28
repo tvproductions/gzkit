@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-12
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 model: haiku
 ---
 
@@ -75,7 +75,7 @@ GovZero mining rule:
      - `AGENTS.md`, `CLAUDE.md`
      - `docs/governance/GovZero/**/*.md`
      - `docs/user/manpages/*`, `docs/user/concepts/*`, `docs/user/runbook.md`
-     - runtime control surfaces (`src/gzkit/cli.py`, ledger events, validation commands)
+     - runtime control surfaces (`src/gzkit/cli/`, ledger events, validation commands)
 5. Produce a GovZero mining inventory:
    - list each mined norm/habit
    - cite source file/path

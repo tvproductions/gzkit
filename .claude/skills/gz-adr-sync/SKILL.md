@@ -4,7 +4,7 @@ description: End-to-end ADR governance sync — discover @covers evidence, recon
 category: adr-operations
 compatibility: GovZero v6 framework
 metadata:
-  skill-version: "7.1.1"
+  skill-version: "7.1.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
 gz_command: register-adrs
@@ -70,5 +70,5 @@ uv run gz lint
 
 ## References
 
-- Command implementation: `src/gzkit/cli.py`
+- Command implementation: `src/gzkit/cli/`
 - User docs: `docs/user/manpages/register-adrs.md`, `docs/user/manpages/adr-status.md`, `docs/user/manpages/adr-audit-check.md`

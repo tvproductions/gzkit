@@ -4,7 +4,7 @@ description: Show the ADR table for summary requests, or show focused lifecycle 
 category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.12.1"
+  skill-version: "1.12.2"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -69,5 +69,5 @@ Locked by: `tests/commands/test_status.py::TestLifecycleStatusSemantics::test_ad
 
 ## References
 
-- Command implementation: `src/gzkit/cli.py`
+- Command implementation: `src/gzkit/cli/`
 - User docs: `docs/user/manpages/adr-status.md`, `docs/user/manpages/status.md`

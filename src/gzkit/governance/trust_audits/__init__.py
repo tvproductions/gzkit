@@ -65,6 +65,7 @@ from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
     audit_manpage_alignment,
     audit_skill_alignment,
+    audit_skill_code_citations,
 )
 from gzkit.governance.trust_audits.closeout_proof import validate_closeout_proof
 from gzkit.governance.trust_audits.code_quality import (
@@ -219,6 +220,7 @@ __all__ = [
     "audit_distribution",
     "audit_cli_alignment",
     "audit_manpage_alignment",
+    "audit_skill_code_citations",
     "audit_doc_surface_parity",
     "audit_lifecycle_pointers",
     "audit_event_handlers",

@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-25
 metadata:
-  skill-version: "0.1.2"
+  skill-version: "0.1.3"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
@@ -46,7 +46,7 @@ surfaces hints for information only.
 
 ```bash
 # Ad-hoc authoring-time review
-gz complexity guide src/gzkit/commands/validate.py
+gz complexity guide src/gzkit/commands/validate_cmd.py
 gz complexity guide src/gzkit/ --json
 ```
 

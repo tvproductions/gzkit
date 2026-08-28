@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-07-27
 model: haiku
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.5.1"
 ---
 
 # gz check
@@ -131,5 +131,5 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 
 ## References
 
-- Command implementation: `src/gzkit/cli.py`
+- Command implementation: `src/gzkit/cli/`
 - User docs: `docs/user/manpages/index.md`
