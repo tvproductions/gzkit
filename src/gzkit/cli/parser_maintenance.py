@@ -785,6 +785,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="T0 static distribution audit — three drift classes, exit 3 (ADR-0.0.32-07).",
     )
     p_validate.add_argument(
+        "--wheel-path-literals",
+        dest="check_wheel_path_literals",
+        action="store_true",
+        help="Wheel-shipped instruction text carries no machine-local path, exit 3 (GHI #900).",
+    )
+    p_validate.add_argument(
         "--changelog",
         dest="check_changelog",
         action="store_true",
@@ -1037,6 +1043,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_deprecated_verb_prescription=a.check_deprecated_verb_prescription,
             check_distribution=a.check_distribution,
             check_distribution_regenerate=a.check_distribution_regenerate,
+            check_wheel_path_literals=a.check_wheel_path_literals,
             check_changelog=a.check_changelog,
             check_bullet_retention=a.check_bullet_retention,
             check_surface_weight=a.check_surface_weight,

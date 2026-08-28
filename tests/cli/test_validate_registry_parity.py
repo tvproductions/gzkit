@@ -60,6 +60,14 @@ _GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
 _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     "rule_version_markers",
     "invariant_witness",
+    # wheel_path_literals — environment-rooted path literals in wheel-shipped
+    # instruction text (GHI #900). DEFAULT tier deliberately, on the same
+    # reasoning as its neighbour below: `--distribution` proved the bytes
+    # ARRIVE and read green for as long as four shipped files told adopters to
+    # open a path that existed on one laptop. A flag-gated resolvability check
+    # would be inert in exactly the situation that produced the defect — nobody
+    # was running a check they had not yet thought to write.
+    "wheel_path_literals",
     # corpus_retirement_witness — a Layer-1 tombstone with no Layer-2 witness
     # (GHI #885, GHI #878). DEFAULT tier deliberately: the class it catches
     # produced seven live instances on `main` while every gate read green, so a

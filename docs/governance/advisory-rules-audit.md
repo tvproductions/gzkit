@@ -54,6 +54,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `agents-md-map-doctrine.md` | `0.7.0` |
 | `chores.md` | `0.3.2` |
 | `cli.md` | `0.5.0` |
+| `cross-platform.md` | `0.6.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
 | `governance-core.md` | `0.13.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
@@ -194,6 +195,9 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 44 | No `shell=True` in subprocess | **Mechanical** | **Made true 2026-08-08 — the row was false when written, and is the fifth of row 18's class.** It cited two ruff codes while the `S` family was absent from the `select` list under `tool.ruff.lint`, so neither ran anywhere. The single `shell=True` site in the package (`src/gzkit/governance/stage4_evidence.py`, operator-authored demo commands from the brief) already carried a justified `# noqa: S602` that suppressed nothing, because a suppression naming a rule that never runs is invisible — the `# noqa: BLE0001` failure of row 18, one rule over. `S602` is now selected individually and the existing noqa starts meaning something; the promotion cost zero fixes. Its second citation is **dropped as miscited**: that code is ruff's `subprocess-without-shell-equals-true`, which fires on subprocess calls that do *not* use a shell — the near-inverse of this clause — and carries 35 live hits. Naming the ruff *rule* rather than its bare code is deliberate here: `gz validate --advisory-scorecard` now refuses a Mechanical row citing an unreachable code, and it cannot tell a witness citation from a disclaimer, so a Mechanical row may not narrate a disabled code by token. That constraint is the check working — a Mechanical row's job is to name its witness. |
 | 45 | The CLI entrypoint handles UTF-8 at startup | **Mechanical** | Rule 9 audit `--utf8-prefix` covers this |
 | 45a | fresh `python -c` or helper scripts | **Mechanical** | Enforced by `gz validate --utf8-prefix` (GHI #275 — scope extended from rule-9 prefix scan to gz-pipe patterns in docs/skills/features + `tools/**/*.py` entry-point AST walk) |
+| 45b | Render relative paths via `.as_posix()` | **Promotable** | **Scored 2026-08-28 (rule `0.6.0`, GHI #900) — the clause had never been scored.** It was carried by the pre-ledger grandfather, which the version bump retired; the grandfather is shrink-only, so a newly written row cannot re-enter it and had to be scored for real. Enforced by `tests/governance/test_path_separator_portability.py` (GHI #383) — a unit test, which this scorecard does not accept as Mechanical (see 62c/62d): a unit test proves the property holds today, a registered `NC:<claim-id>` proves the *gate* refuses a violation. Promotion path: author an `@enforces` control planting a `str(Path.relative_to(...))` rendering and cite its claim id here. |
+| 45c | Text-mode subprocess captures pass `errors="replace"` | **Promotable** | **Scored 2026-08-28 (rule `0.6.0`, GHI #900) — the clause landed at rule `0.5.0` and no row ever named it.** Same grandfather retirement as 45b. `audit_subprocess_errors` is a real audit function with teeth, but it is reached only from `tests/governance/test_subprocess_errors_replace.py`, not from a registered negative control, so it is scored on the same terms as 45b rather than on the strength of the function existing. Promotion path: enroll the audit as an `@enforces` claim and cite it here. |
+| 45d | Wheel-delivered instruction text names no path only its authoring environment can resolve | **Mechanical** | Enforced by `gz validate --wheel-path-literals` (GHI #900), in the default `gz check` scope, witnessed by `NC:wheel-path-literals` — whose fixture plants the same literal both inside and outside the include block and whose entrypoint filters to the shipped file, so the control cannot pass on a scan that ignored the block. The audit reads the same `[tool.hatch.build.targets.wheel] include` block `--distribution` reads, so witness scope cannot drift from delivery scope. **Its boundary is stated, not implied:** `~/`, `$HOME/`, `/tmp`, `/usr`, `/var` and `/private` are deliberately not flagged — the first two expand per reader and are the remedy this clause steers toward, the rest resolve on every POSIX machine (23 legitimate `/tmp` uses measured in wheel `.md` at authoring). A machine-specific path under one of those roots is therefore uncaught, which is why this row claims delivered-root resolvability and not portability in general. |
 
 ### Defect Fix Routing (`.gzkit/rules/defect-fix-routing.md`)
 
@@ -430,9 +434,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 66 | 52% |
-| **Promotable** | 13 | 10% |
-| **Judgment** | 49 | 38% |
+| **Mechanical** | 67 | 51% |
+| **Promotable** | 15 | 11% |
+| **Judgment** | 49 | 37% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -441,7 +445,11 @@ decays in whichever direction the next reader's grep happens to point.
      corrected to the actual scored-row total (103) when row 75 landed, and to
      119 when rows 76-85 landed with the CLI doctrine scoring (GHI #810), and to
      122 when row 17i landed with the attested-REQ-retirement scoring (GHI #823), and to
-     126 when row 86 landed with the new-verb coupled-obligation scoring (GHI #854). -->
+     126 when row 86 landed with the new-verb coupled-obligation scoring (GHI #854), and to
+     131 when rows 45b-45d landed with the cross-platform re-scoring (GHI #900) — the
+     rule left its pre-ledger grandfather pin behind at rule `0.6.0`, so three clauses that
+     had never been scored were scored for real. Two came in Promotable, not Mechanical:
+     unit-test enforcement is not a registered negative control. -->
 
 
 **The third state is NO LONGER empty (2026-08-16) — and that is this table

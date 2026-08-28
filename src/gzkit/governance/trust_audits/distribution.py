@@ -108,15 +108,35 @@ def audit_distribution(project_root: Path) -> list[ValidationError]:
     return _collect_errors(on_disk_files, included_files, baseline_entries, project_root)
 
 
-def _load_inputs(
-    project_root: Path,
-) -> tuple[list[str], set[str], list[str], list[str]]:
-    """Load pyproject.toml include globs and baseline manifest.  Raises SystemExit(2) on failure."""
+def wheel_build_config(
+    project_root: Path, *, missing_ok: bool = False
+) -> tuple[list[str], list[str]]:
+    """Return the wheel's ``(include globs, package roots)`` from pyproject.toml.
+
+    Shared with :mod:`gzkit.governance.trust_audits.wheel_path_literals` so the
+    resolvability witness reads the *same* declaration the delivery gate reads.
+    A second transcribed copy of this list would cover the trees that existed
+    the day it was written and silently miss the next one added (GHI #900).
+
+    ``missing_ok`` is the difference between an explicit-tier and a
+    default-tier caller. ``--distribution`` runs only where an operator points
+    it, so an absent pyproject.toml is a broken invocation. The resolvability
+    witness runs in the default ``gz check`` scope, which the QC negative
+    controls exercise against synthetic project roots that ship no wheel at
+    all — there, "no build config" means "no delivered instruction text", which
+    is a clean result rather than a failure. An *unparseable* pyproject.toml
+    stays fatal for both: that is real breakage, not absence.
+
+    Raises ``SystemExit(2)`` when pyproject.toml is unparseable, or when it is
+    missing and ``missing_ok`` is false.
+    """
     pyproject = project_root / "pyproject.toml"
     try:
         with pyproject.open("rb") as f:
             data = tomllib.load(f)
     except FileNotFoundError as exc:
+        if missing_ok:
+            return [], []
         print(f"distribution-audit: pyproject.toml not found: {exc}", file=sys.stderr)
         raise SystemExit(2) from exc
     except tomllib.TOMLDecodeError as exc:
@@ -126,8 +146,14 @@ def _load_inputs(
     wheel_target: dict[str, Any] = (
         data.get("tool", {}).get("hatch", {}).get("build", {}).get("targets", {}).get("wheel", {})
     )
-    include_globs: list[str] = wheel_target.get("include", [])
-    package_roots: list[str] = wheel_target.get("packages", [])
+    return wheel_target.get("include", []), wheel_target.get("packages", [])
+
+
+def _load_inputs(
+    project_root: Path,
+) -> tuple[list[str], set[str], list[str], list[str]]:
+    """Load pyproject.toml include globs and baseline manifest.  Raises SystemExit(2) on failure."""
+    include_globs, package_roots = wheel_build_config(project_root)
 
     manifest_path = project_root / "data" / "distribution_baseline_manifest.json"
     try:

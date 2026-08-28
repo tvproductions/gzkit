@@ -867,6 +867,24 @@ def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --invariant-coherence", cwd=project_root)
 
 
+def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
+    """Run the delivered-instruction resolvability gate over wheel-shipped Markdown.
+
+    Fails closed when content the wheel hands an adopter names a path only the
+    authoring environment can resolve (GHI #900). ``--distribution`` proves the
+    bytes ARRIVE; it never asked whether the instruction they carry RESOLVES.
+
+    Wired here explicitly even though the scope is default-tier, for the reason
+    its `corpus_retirement_witness` sibling records: the reachability ratchet
+    reads this curated pipeline, not the bare-`gz validate` default tier, so a
+    scope absent here reads as ungated -- which for a check whose whole subject
+    is inert coverage would be the defect wearing the fix's clothes. Recovery:
+    replace the literal with a reader-supplied override, a repo-relative path,
+    or a `$HOME`/`~` form, and move the surrounding prose with it.
+    """
+    return run_command("uv run gz validate --wheel-path-literals", cwd=project_root)
+
+
 def run_corpus_retirement_witness_audit(project_root: Path) -> QualityResult:
     """Run the corpus retirement-witness gate: Layer-1 tombstone vs Layer-2 witness.
 

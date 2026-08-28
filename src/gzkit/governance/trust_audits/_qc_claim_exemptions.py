@@ -76,6 +76,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # non-finding return is "no committed rendition exists" — nothing to compare.
     "invariant-coherence": EXEMPTS_NONE,
     "corpus-retirement-witness": EXEMPTS_NONE,
+    # Scans wheel-shipped Markdown for environment-rooted path literals. Nothing
+    # project-controllable admits a literal it has judged in violation: there is no
+    # waiver table, allowlist, escape marker or opt-in flag. The roots it does NOT
+    # flag (~/, $HOME/, /tmp, /usr, /var, /private) are a fixed code property that
+    # defines what a violation IS -- the threshold case the bar above excludes --
+    # and the .md-only walk is a scope predicate, also excluded. GHI #900.
+    "wheel-path-literals": EXEMPTS_NONE,
     # Requires a substantive `## Why foundation tier?` on every foundation ADR.
     # The sidecar filter selects WHICH files are ADRs; it admits no failing ADR.
     "kind-invariance": EXEMPTS_NONE,

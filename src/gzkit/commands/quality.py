@@ -67,6 +67,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Rendition floor coherence": ("rendition-floor-coherence", _mx_levels.ERROR),
     "Invariant coherence": ("invariant-coherence", _mx_levels.ERROR),
     "Corpus retirement witness": ("corpus-retirement-witness", _mx_levels.ERROR),
+    "Wheel path literals": ("wheel-path-literals", _mx_levels.ERROR),
     "Brief structure": ("brief-structure", _mx_levels.ERROR),
     "Session green gate": ("session-green-gate", _mx_levels.ERROR),
     "Closeout proof": ("closeout-proof", _mx_levels.ERROR),
@@ -520,6 +521,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_unscoped_rules_audit,
         run_validate_default_scopes,
         run_waiver_ratchet_audit,
+        run_wheel_path_literals_audit,
     )
 
     return [
@@ -546,6 +548,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Rendition floor coherence", run_rendition_floor_coherence_audit),
         ("Invariant coherence", run_invariant_coherence_audit),
         ("Corpus retirement witness", run_corpus_retirement_witness_audit),
+        ("Wheel path literals", run_wheel_path_literals_audit),
         ("Brief structure", run_brief_structure_audit),
         ("Session green gate", run_session_green_gate_audit),
         ("Closeout proof", run_closeout_proof_audit),

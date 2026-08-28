@@ -175,6 +175,7 @@ from gzkit.governance.trust_audits.transcribed_counts import (
 )
 from gzkit.governance.trust_audits.vendor_manifest import validate_vendor_manifest
 from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet
+from gzkit.governance.trust_audits.wheel_path_literals import audit_wheel_path_literals
 
 
 def validate_surface_fidelity(project_root: Path) -> list[ValidationError]:
@@ -218,6 +219,7 @@ __all__ = [
     "audit_chores_layout",
     "audit_class_size",
     "audit_distribution",
+    "audit_wheel_path_literals",
     "audit_cli_alignment",
     "audit_manpage_alignment",
     "audit_skill_code_citations",

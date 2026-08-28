@@ -830,6 +830,35 @@ def _build_rendition_floor_coherence() -> Path:
     return root
 
 
+def _build_wheel_path_literals() -> Path:
+    """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
+
+    The pyproject declares the include block itself rather than reusing a
+    canned one, because the property under control is that the audit reads
+    THAT block: a witness scoped by a transcribed glob would pass here while
+    missing the next tree added to a real wheel (GHI #900).
+
+    The same literal is also planted OUTSIDE the include block, so the control
+    cannot pass on a scan that simply walks every Markdown file it can find.
+    """
+    root = _mkroot("wheel-path-literals")
+    _write(
+        root / "pyproject.toml",
+        "[project]\nname = 'gzkit-qc-nc'\nversion = '0.0.0'\n\n"
+        "[tool.hatch.build.targets.wheel]\n"
+        'packages = ["src/gzkit"]\n'
+        "include = [\n"
+        '    "src/gzkit/skills/**/*.md",\n'
+        "]\n",
+    )
+    _write(
+        root / "src" / "gzkit" / "skills" / "nc-demo" / "SKILL.md",
+        "# NC demo\n\nOpen `/Users/someone/Archive/corpus.zip` before deciding.\n",
+    )
+    _write(root / "docs" / "not-shipped.md", "Open `/Users/someone/Archive/corpus.zip`.\n")
+    return root
+
+
 def _build_validate_default_scopes() -> Path:
     """Build a canonical rule whose version marker disagrees with its block quote.
 
@@ -1293,6 +1322,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_advisory_scorecard_ruff_reachability,
         _ep._ep_advisory_scorecard,
         "row 2 is scored **Mechanical** and cites ruff S602",
+    ),
+    (
+        "wheel-path-literals",
+        _build_wheel_path_literals,
+        _ep._ep_wheel_path_literals,
+        "ships an instruction naming",
     ),
     (
         "validate-default-scopes",

@@ -290,6 +290,20 @@ def _ep_python_version_pins(root: Path) -> list[ValidationError]:
     return audit_python_version_pins(root)
 
 
+def _ep_wheel_path_literals(root: Path) -> list[ValidationError]:
+    """Return findings for the WHEEL-SHIPPED doc only.
+
+    The fixture plants the same literal in an unshipped ``docs/`` file. An
+    unfiltered control would pass on a scan that ignored the include block
+    entirely, which is the one property this control exists to witness.
+    """
+    from gzkit.governance.trust_audits.wheel_path_literals import (  # noqa: PLC0415
+        audit_wheel_path_literals,
+    )
+
+    return [e for e in audit_wheel_path_literals(root) if "SKILL.md" in e.artifact]
+
+
 def _ep_validate_default_scopes(root: Path) -> list[ValidationError]:
     """Run the whole default `gz validate` tier, as the bare invocation does."""
     from gzkit.commands.validate_cmd import _collect_errors  # noqa: PLC0415

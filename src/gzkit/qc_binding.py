@@ -107,6 +107,12 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Rendition floor coherence": ("audit", "docs/", "bound", "python_function"),
     "Invariant coherence": ("audit", "docs/", "bound", "python_function"),
     "Corpus retirement witness": ("audit", ".gzkit/", "bound", "python_function"),
+    # Enrolled in the same commit it joined `gz check`, per the precedent above.
+    # Subject is `src/`: the population is the wheel-shipped Markdown under it,
+    # selected by pyproject's own include block rather than a transcribed glob.
+    # `python_function` like its sibling — the step shells out to `gz validate`,
+    # but the catch/no-catch decision is gzkit Python, not an external tool.
+    "Wheel path literals": ("audit", "src/", "bound", "python_function"),
     "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),

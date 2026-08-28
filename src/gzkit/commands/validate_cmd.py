@@ -359,6 +359,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _ta().validate_lock_exchange_coupling(r),
     ),
     _ScopeEntry("distribution", "explicit", True, lambda r, _f: _ta().audit_distribution(r)),
+    _ScopeEntry(  # default tier: a fence behind a remembered flag is inert (GHI #900)
+        "wheel_path_literals",
+        "default",
+        True,
+        lambda r, _f: _ta().audit_wheel_path_literals(r),
+    ),
     _ScopeEntry("changelog", "explicit", True, lambda r, _f: _changelog_runner(r)),
     _ScopeEntry(
         "bullet_retention", "explicit", True, lambda r, _f: _ta().validate_bullet_retention(r)
@@ -1311,6 +1317,7 @@ def validate(
     check_lock_exchange_coupling: bool = False,
     check_distribution: bool = False,
     check_distribution_regenerate: bool = False,
+    check_wheel_path_literals: bool = False,
     check_changelog: bool = False,
     check_bullet_retention: bool = False,
     check_surface_weight: bool = False,
@@ -1443,6 +1450,7 @@ def validate(
         "advisor_proof_binding": check_advisor_proof_binding,
         "lock_exchange_coupling": check_lock_exchange_coupling,
         "distribution": check_distribution,
+        "wheel_path_literals": check_wheel_path_literals,
         "changelog": check_changelog,
         "bullet_retention": check_bullet_retention,
         "surface_weight": check_surface_weight,

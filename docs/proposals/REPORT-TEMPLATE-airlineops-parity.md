@@ -23,13 +23,20 @@
 - Resolution order used:
   1. explicit override (if provided)
   2. sibling path `../airlineops`
-  3. absolute fallback `/Users/jeff/Documents/Code/airlineops`
 - Selected canonical root:
-- Fallback engaged (yes/no):
+- Override supplied (yes/no; record the value used):
 - Fail-closed behavior statement: if no candidate resolves, stop and report blockers; do not emit parity conclusions.
 - Evidence commands:
   - `test -d ../airlineops && echo "sibling present" || echo "sibling missing"`
-  - `test -d /Users/jeff/Documents/Code/airlineops && echo "absolute fallback present" || echo "absolute fallback missing"`
+  - if an override was supplied to the skill invocation, the same `test -d` against
+    that value, with the value recorded above
+
+> The ladder is two rungs deliberately. A third rung naming an absolute machine
+> path resolved for one reader only, which made the order look deterministic
+> while being shorter than it read for everyone else — dropped from
+> `airlineops-parity-scan/SKILL.md` under GHI #900. Pass an explicit override
+> instead; this template seeds future reports, so a literal here would
+> reintroduce the rung one report at a time.
 
 ---
 

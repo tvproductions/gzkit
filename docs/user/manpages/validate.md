@@ -9,7 +9,8 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--instructions] [--briefs] [--personas]
             [--interviews] [--decomposition]
             [--requirements] [--commit-trailers]
-            [--taxonomy] [--chores-layout] [--distribution] [--changelog]
+            [--taxonomy] [--chores-layout] [--distribution] [--wheel-path-literals]
+            [--changelog]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
@@ -823,6 +824,59 @@ uv run gz validate --distribution
 # Machine-readable output
 uv run gz validate --distribution --json
 ```
+
+### `--wheel-path-literals`
+
+Fails closed when wheel-shipped instruction text names a path only its authoring
+environment can resolve (GHI #900). Runs in the **default** `gz check` scope, so
+the flag is for scoping a single run rather than for switching the check on.
+
+`--distribution` proves the canonical surfaces *arrive* byte-for-byte. It says
+nothing about whether the instruction those bytes carry can **resolve** for the
+adopter they were delivered to: four shipped files told a reader to open a path
+that existed on one laptop while the delivery gate read green throughout.
+
+**Scope** — every `.md` covered by `[tool.hatch.build.targets.wheel] include`,
+read from the same declaration `--distribution` reads, so witness scope cannot
+drift from delivery scope. Shipped `.py` and `.json` are out of scope: they are
+code and data, not steps a reader resolves.
+
+#### What fails closed
+
+| Root | Example shape |
+|------|---------------|
+| A named user's home | `/Users/<name>/…`, `/home/<name>/…` |
+| A Windows drive | `<Drive>:\…`, `<Drive>:/…` |
+| Machine provisioning | `/opt/…`, `/srv/…`, `/mnt/…` |
+
+Deliberately **not** flagged: `~/` and `$HOME/` expand per reader and are the
+remedy this check steers toward; `/tmp`, `/usr`, `/var` and `/private` resolve
+on every POSIX machine. A machine-specific path under one of those roots is
+therefore uncaught — a stated limit, not an implied one.
+
+#### Exit codes
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every delivered instruction resolves for its reader | — |
+| 1 | A delivered instruction names an environment-rooted path | Replace it with a reader-supplied override (an env var carrying **no** default), a repo-relative path, or a `$HOME`/`~` form — and move the surrounding prose with it, so a step that becomes unsatisfiable says so instead of silently skipping |
+
+Measured, not transcribed: a planted violation in a wheel-shipped `SKILL.md`
+exits **1** here and is reported with `path:line` attribution by `gz check`. The
+neighbouring sections' `3` belongs to scopes that own their own exit lifecycle;
+this scope reports through the aggregate run.
+
+#### Examples
+
+```bash
+# Scope a run to this check alone
+uv run gz validate --wheel-path-literals
+
+# Machine-readable output
+uv run gz validate --wheel-path-literals --json
+```
+
+Rule home: `.gzkit/rules/cross-platform.md` § Delivered path literals.
 
 ### `--changelog`
 
