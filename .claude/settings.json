@@ -21,6 +21,10 @@
           {
             "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/scripts/session_orientation.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/settings-local-backup.py\""
           }
         ]
       }
@@ -92,6 +96,10 @@
           {
             "type": "command",
             "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-turn-feedback.py\""
+          },
+          {
+            "type": "command",
+            "command": "uv run python \"$CLAUDE_PROJECT_DIR/.claude/hooks/settings-local-backup.py\""
           }
         ]
       }
