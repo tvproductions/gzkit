@@ -15,6 +15,15 @@ when the live file is missing but snapshots exist.
 
 Stdlib only, per AGENTS.md § STDLIB-FIRST DOCTRINE.
 
+LIVES IN ``scripts/``, NOT ``.claude/hooks/``, and must stay here.
+``_is_gzkit_owned_hook`` (src/gzkit/hooks/claude.py) classifies a hook as
+gzkit-owned by testing ``hooks_dir in command``, so ANY script under
+``.claude/hooks/`` is treated as gzkit's own output and its registration is
+dropped by ``gz agent sync control-surfaces`` unless the generator emits it.
+Measured 2026-08-29: registered under ``.claude/hooks/`` in 5c042f64, both
+registrations were silently stripped by the next sync. ``session_orientation.py``
+is the precedent for a project-local hook that survives.
+
 Books, never refuses: a backup failure must not cost the operator a session.
 
 Exit codes:
