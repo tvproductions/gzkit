@@ -117,3 +117,68 @@ class TestComposerEngine(unittest.TestCase):
         candidate_text = f"{_INVARIANT_TEXT}\nsome content"
         with self.assertRaises(ValueError):
             compose(self._root, "AGENTS.md", "unknown-vendor", candidate_text)
+
+
+class ComposeResolvesContentTypeFromSurfaceTest(unittest.TestCase):
+    """The owning content type comes from the surface registry, never a literal default.
+
+    GHI #921. ``compose`` defaulted ``content_type`` to ``"AgentContract"`` and never
+    called ``content_type_for_surface``, so every surface — a ``Rule`` corpus included —
+    was graded at AgentContract's setpoint. The registry existed for exactly this
+    question and was consulted nowhere.
+    """
+
+    _RULE_SURFACE = ".gzkit/rules/probe.md"
+
+    _MANIFEST = {
+        "content_type_routes": {"AgentContract": ["root"], "Rule": ["claude"]},
+        "content_type_temperatures": {
+            "AgentContract": {"root": "lite"},
+            "Rule": {"claude": "heavy"},
+        },
+        "surface_content_types": {_RULE_SURFACE: "Rule"},
+    }
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self._root = Path(self._tmp.name)
+        (self._root / "data").mkdir()
+        (self._root / "data" / "vendor-manifest.json").write_text(
+            json.dumps(self._MANIFEST), encoding="utf-8"
+        )
+        for surface in (self._RULE_SURFACE, "UNMAPPED.md"):
+            append_entry(
+                self._root,
+                surface,
+                CorpusEntry(
+                    id="e-invariant",
+                    surface=surface,
+                    section="core",
+                    tier="invariant",
+                    classification="Mechanical",
+                    text=_INVARIANT_TEXT,
+                    origin="test",
+                    ts="2026-08-29T00:00:00Z",
+                ),
+            )
+
+    def test_rule_surface_composes_at_its_own_declared_setpoint(self) -> None:
+        """A Rule-owned surface resolves Rule's setpoint, not AgentContract's.
+
+        ``AgentContract`` declares no ``claude`` temperature here, so resolving the
+        owner from the surface is the only way this call can succeed: a hardcoded
+        default fails closed inside ``temperature_for``.
+        """
+        rendition = compose(self._root, self._RULE_SURFACE, "claude", f"{_INVARIANT_TEXT}\nbody")
+
+        self.assertEqual(rendition.setpoint, "heavy")
+
+    def test_unmapped_surface_fails_closed_naming_the_registry(self) -> None:
+        """A surface the manifest declares no owner for is refused, not guessed."""
+        with self.assertRaises(ValueError) as ctx:
+            compose(self._root, "UNMAPPED.md", "claude", f"{_INVARIANT_TEXT}\nbody")
+
+        message = str(ctx.exception)
+        self.assertIn("surface_content_types", message)
+        self.assertIn("UNMAPPED.md", message)

@@ -18,7 +18,7 @@ from pathlib import Path
 from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.rendition import ByteEvidence, CandidateRendition
 from gzkit.content.tier_policy import assert_invariant_verbatim, invariant_entries
-from gzkit.content.vendors import temperature_for
+from gzkit.content.vendors import content_type_for_surface, temperature_for
 
 
 def compose(
@@ -27,14 +27,16 @@ def compose(
     consumer: str,
     candidate_text: str,
     *,
-    content_type: str = "AgentContract",
+    content_type: str | None = None,
 ) -> CandidateRendition:
     """Validate and account a candidate rendition for *surface* toward *consumer*.
 
     Steps:
     1. Fail closed when no corpus store exists for *surface*.
-    2. Resolve the compression setpoint via ``temperature_for``
-       (raises ``ValueError`` when undeclared).
+    2. Resolve the owning content type from *surface* via
+       ``content_type_for_surface`` (an explicit *content_type* overrides), then
+       the compression setpoint via ``temperature_for``. Both raise ``ValueError``
+       when undeclared -- an unmapped surface is never composed under a guess.
     3. Validate invariant-tier verbatim presence in *candidate_text*
        (raises ``ValueError`` on violation — the 0-Kelvin floor).
     4. Compute per-tier byte evidence.
@@ -49,7 +51,16 @@ def compose(
 
     corpus = load_corpus(root, surface)
 
-    setpoint = temperature_for(content_type, consumer, project_root=root)
+    owner = content_type or content_type_for_surface(surface, project_root=root)
+    if owner is None:
+        raise ValueError(
+            f"No content type declared for surface {surface!r}; declare it in "
+            "surface_content_types in data/vendor-manifest.json. Composing under a "
+            "guessed owner would grade the candidate against another type's setpoint "
+            "and invariant floor (GHI #921)."
+        )
+
+    setpoint = temperature_for(owner, consumer, project_root=root)
 
     # Centralized invariant-tier enforcement (OBPI-0.0.37-23): the 0-Kelvin
     # floor is owned by tier_policy — the single composer-consumable surface.
