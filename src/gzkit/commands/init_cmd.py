@@ -274,8 +274,17 @@ def _scaffold_project_skeleton(
 ) -> list[str]:
     """Create the minimal Python project skeleton.
 
-    Creates pyproject.toml, src/<package>/__init__.py, and tests/__init__.py.
-    Idempotent: skips any artifact that already exists.
+    Creates pyproject.toml, README.md, src/<package>/__init__.py, and
+    tests/__init__.py. Idempotent: skips any artifact that already exists.
+
+    The README is here because the manifest above NAMES it. A generated
+    manifest referencing a file the generator does not create is syntactically
+    valid, so every static check accepts it and only a build reads the
+    reference -- and `gz init` never performs one. The tree it produced could
+    not be built at all: hatchling raised "Readme file does not exist:
+    README.md", so every `uv run` in a freshly scaffolded project failed,
+    including the `uv run gz ...` form init's own closing output recommends
+    (GHI #910).
 
     Returns a list of human-readable descriptions of created artifacts.
     """
@@ -320,6 +329,27 @@ def _scaffold_project_skeleton(
             )
             pyproject_path.write_text(pyproject_content, encoding="utf-8")
             created.append("Created pyproject.toml")
+
+    # --- README.md ---
+    # Named by `readme` in the manifest written above; see this function's
+    # docstring for why the pair must land together (GHI #910).
+    readme_path = project_root / "README.md"
+    if not readme_path.exists():
+        if dry_run:
+            created.append("Would create README.md")
+        else:
+            readme_content = (
+                f"# {project_name}\n"
+                "\n"
+                f"{project_name}\n"
+                "\n"
+                "## Governance\n"
+                "\n"
+                "This project is governed by gzkit. Read `AGENTS.md` for the agent\n"
+                "contract, and run `uv run gz status` for current gate state.\n"
+            )
+            readme_path.write_text(readme_content, encoding="utf-8")
+            created.append("Created README.md")
 
     # --- src/<package>/__init__.py ---
     package_dir = project_root / source_root / package_name

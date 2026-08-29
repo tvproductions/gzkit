@@ -762,3 +762,90 @@ class TestInitLeavesASyncedTree(unittest.TestCase):
             [],
             "gz init scaffolded a tree its own surface gate rejects",
         )
+
+
+class TestScaffoldedManifestIsSelfConsistent(unittest.TestCase):
+    """The scaffolder must not name a file it does not create (GHI #910).
+
+    `gz init` wrote `readme = "README.md"` into the pyproject and never created
+    the file, so the tree it produced could not be built. Measured 2026-08-28 at
+    `515c95dc` on an empty directory:
+
+        $ uv run gz init --yes          -> exit 0
+        $ uv run python -c "print(1)"   -> exit 1
+          OSError: Readme file does not exist: README.md
+
+    Every `uv run` in a freshly scaffolded project failed that way — including
+    `uv run gz <anything>`, which is the invocation form init's own closing
+    output tells the operator to use.
+
+    The class is a generated manifest naming a peer by path: a readme, a
+    license, a packaging include. Such a manifest is syntactically valid, so
+    every static check accepts it; only an actual build reads the reference, and
+    `gz init` never performs one. `test_scaffolded_pyproject_names_no_missing_file`
+    is written against the class rather than the readme instance for that
+    reason — it is the cheaper assertion and it catches the next one too.
+    """
+
+    @staticmethod
+    def _declared_file_references(pyproject: dict) -> list[str]:
+        """Return every path in the manifest that must exist on disk.
+
+        The PEP 621 file-valued fields plus hatchling's packaging includes.
+        `readme` and `license` each accept a bare string or a `{file = ...}`
+        table, and both spellings name a file the tree has to carry.
+        """
+        project = pyproject.get("project", {})
+        declared: list[str] = []
+
+        for key in ("readme", "license"):
+            value = project.get(key)
+            if isinstance(value, str) and key == "readme":
+                declared.append(value)
+            elif isinstance(value, dict) and "file" in value:
+                declared.append(value["file"])
+
+        declared.extend(project.get("license-files", []))
+        wheel = pyproject.get("tool", {}).get("hatch", {}).get("build", {})
+        declared.extend(wheel.get("targets", {}).get("wheel", {}).get("packages", []))
+        return declared
+
+    def test_init_creates_the_readme_its_manifest_names(self) -> None:
+        """The instance: `readme = "README.md"` and no README.md."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, result.output)
+
+            self.assertTrue(Path("README.md").is_file(), "manifest names a README init never wrote")
+
+    def test_scaffolded_pyproject_names_no_missing_file(self) -> None:
+        """The class: every path the manifest declares exists in the tree."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            result = runner.invoke(main, ["init"])
+            self.assertEqual(result.exit_code, 0, result.output)
+
+            pyproject = tomllib.loads(Path("pyproject.toml").read_text(encoding="utf-8"))
+            declared = self._declared_file_references(pyproject)
+            self.assertTrue(declared, "no file references found; the extractor lost its subject")
+            missing = sorted(ref for ref in declared if not Path(ref).exists())
+
+        self.assertEqual(
+            missing,
+            [],
+            "the scaffolded manifest references paths the scaffolder did not create",
+        )
+
+    def test_a_pre_existing_readme_is_left_alone(self) -> None:
+        """Idempotent, on the same terms as every other skeleton artifact."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            Path("README.md").write_text("# Operator's own README\n", encoding="utf-8")
+
+            result = runner.invoke(main, ["init"])
+
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertEqual(
+                Path("README.md").read_text(encoding="utf-8"), "# Operator's own README\n"
+            )
