@@ -31,9 +31,9 @@ Split into its own module for the same reason ``_qc_nc_entrypoints`` was
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
+from gzkit.enforcement import create_fixture_tempdir
 from gzkit.governance.trust_audits.surface_weight import _YELLOW_CEILING
 
 # Every ledger timestamp here must post-date the task-envelope enforcement epoch
@@ -48,7 +48,7 @@ _UNUSED_OBPI = "OBPI-9.9.9-01"
 
 
 def _root(slug: str) -> Path:
-    return Path(tempfile.mkdtemp(prefix=f"gzkit-qc-nc-{slug}-"))
+    return create_fixture_tempdir(prefix=f"gzkit-qc-nc-{slug}-")
 
 
 def _put(path: Path, content: str) -> None:

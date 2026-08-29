@@ -203,18 +203,22 @@ class ResumeGateExemptionControlTests(unittest.TestCase):
             self.assertFalse(hasattr(gate, name), f"{name} survived the arm it belonged to")
 
     def test_the_exemption_control_catches_a_mis_targeted_booking(self) -> None:
-        import shutil
-
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.handoff_resume_gate import (
             _build_mis_targeted_booking_violation,
             _ep_resume_gate_booking_coupling,
         )
 
-        root = _build_mis_targeted_booking_violation()
-        try:
-            self.assertEqual(_ep_resume_gate_booking_coupling(root), 1)
-        finally:
-            shutil.rmtree(root, ignore_errors=True)
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="handoff-resume-booking-coupling-test",
+                fixture=_build_mis_targeted_booking_violation,
+                entrypoint=_ep_resume_gate_booking_coupling,
+                source_fn="test.handoff_resume_booking_coupling",
+            )
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
 
     def test_the_fixture_plants_two_handoffs_so_the_control_can_discriminate(self) -> None:
         """A one-handoff fixture would pass against a gate comparing nothing.
@@ -223,16 +227,33 @@ class ResumeGateExemptionControlTests(unittest.TestCase):
         the control could not tell a working coupling from an absent one — the
         facade shape the enforcement floor exists to refuse.
         """
-        import shutil
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
+        from gzkit.handoff_resume_gate import (
+            _build_mis_targeted_booking_violation,
+            _ep_resume_gate_booking_coupling,
+        )
 
-        from gzkit.handoff_resume_gate import _build_mis_targeted_booking_violation
+        planted: list[str] = []
 
-        root = _build_mis_targeted_booking_violation()
-        try:
-            planted = sorted(p.name for p in (root / ".gzkit" / "handoffs").glob("*.md"))
-            self.assertEqual(len(planted), 2, f"need two candidates to discriminate: {planted}")
-        finally:
-            shutil.rmtree(root, ignore_errors=True)
+        def inspect_fixture(root: Path) -> int:
+            planted.extend(sorted(p.name for p in (root / ".gzkit" / "handoffs").glob("*.md")))
+            return _ep_resume_gate_booking_coupling(root)
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="handoff-resume-two-handoff-test",
+                fixture=_build_mis_targeted_booking_violation,
+                entrypoint=inspect_fixture,
+                source_fn="test.handoff_resume_two_handoffs",
+            )
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertEqual(
+            len(planted),
+            2,
+            f"need two candidates to discriminate: {planted}",
+        )
 
 
 class FloorBookmarkIsAFloorNotAPreferenceTests(unittest.TestCase):

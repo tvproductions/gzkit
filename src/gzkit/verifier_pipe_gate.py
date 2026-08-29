@@ -58,7 +58,6 @@ Coverage limits are declared, not hidden — see :data:`UNWITNESSABLE`.
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -390,10 +389,12 @@ def _build_masked_verifier_violation() -> Path:
     The random token is unknowable at mutation-authoring time, so a broken
     :func:`masked_verifier` cannot special-case a fixed sentinel to sneak past
     the control (the Step-4b facade attack — a FIXED string proves only that the
-    gate refuses THAT string, never the general rule). The root itself is the
-    fixture so the runner's ``shutil.rmtree`` cleans it.
+    gate refuses THAT string, never the general rule). The root is allocated
+    inside the active runner-owned workspace.
     """
-    return Path(tempfile.mkdtemp(prefix="gzkit-verifier-pipe-nc-"))
+    from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
+
+    return create_fixture_tempdir(prefix="gzkit-verifier-pipe-nc-")
 
 
 def _ep_verifier_pipe_gate(root: Path) -> int:

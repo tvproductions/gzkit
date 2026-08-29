@@ -19,6 +19,7 @@ on shape.
 from __future__ import annotations
 
 import unittest
+from pathlib import Path
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.verifier_pipe_gate import decide, masked_verifier
@@ -166,18 +167,30 @@ class TestExemptionControlIsRegisteredAndCatches(unittest.TestCase):
 
     def test_the_exemption_control_catches_a_named_but_unused_escape(self) -> None:
         """The differential the rule control cannot express."""
-        import shutil
-
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.verifier_pipe_gate import (
             _build_masked_verifier_violation,
             _ep_verifier_escape_must_be_used,
         )
 
-        root = _build_masked_verifier_violation()
-        try:
-            self.assertEqual(_ep_verifier_escape_must_be_used(root), 1)
-        finally:
-            shutil.rmtree(root, ignore_errors=True)
+        signals: list[int] = []
+
+        def capture(root: Path) -> int:
+            signal = _ep_verifier_escape_must_be_used(root)
+            signals.append(signal)
+            return signal
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="verifier-pipe-escape-test",
+                fixture=_build_masked_verifier_violation,
+                entrypoint=capture,
+                source_fn="test.verifier_pipe_escape",
+            )
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertEqual(signals, [1])
 
 
 class TestVerifierInvocationForms(unittest.TestCase):

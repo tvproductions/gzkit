@@ -13,8 +13,9 @@ validator; only the runner does, via ``entrypoint(fixture())``.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
+
+from gzkit.enforcement import create_fixture_tempdir
 
 _TS = "2026-01-01T00:00:00+00:00"
 
@@ -27,7 +28,7 @@ def build_retirement_witness() -> Path:
     must not (GHI #885). That asymmetry is what makes the control genuine and
     un-forced rather than a fixture the validator cannot help but flag.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-qc-nc-corpus-retirement-"))
+    root = create_fixture_tempdir(prefix="gzkit-qc-nc-corpus-retirement-")
     base = {
         "surface": "AGENTS.md",
         "section": "attestation",

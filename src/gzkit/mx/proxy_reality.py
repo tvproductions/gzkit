@@ -13,13 +13,13 @@ and not merely named (ADR-0.0.74 Boundary Invariant #5).
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.enforcement import (
     EXEMPTS_NONE,
+    create_fixture_tempdir,
     enforces,
     get_enforcement_registry,
     set_known_claims,
@@ -109,10 +109,9 @@ def _build_proxy_reality_violation() -> Path:
     """Plant a known proxy-reality violation in a fresh ledger.
 
     The violation is a ``model-induced-fabrication`` repudiation event. The
-    runner removes the temp dir after the entrypoint runs; the fixture uses
-    ``mkdtemp`` rather than a context manager per the qc_binding NC convention.
+    fixture builds inside the active runner-owned workspace.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-proxy-reality-nc-"))
+    root = create_fixture_tempdir(prefix="gzkit-proxy-reality-nc-")
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
     (gzkit_dir / "ledger.jsonl").write_text(

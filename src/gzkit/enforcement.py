@@ -16,10 +16,10 @@ from __future__ import annotations
 
 import dis
 import re
-import shutil
 import tempfile
 import types
 from collections.abc import Callable
+from contextvars import ContextVar
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
@@ -46,6 +46,7 @@ _GATE_PACKAGE_PREFIX = "gzkit."
 
 _ENFORCEMENT_REGISTRY: list[EnforcementClaimRecord] = []
 _KNOWN_CLAIMS: frozenset[str] | None = None
+_FIXTURE_PARENT: ContextVar[Path | None] = ContextVar("gzkit_fixture_parent", default=None)
 
 
 class EnforcementClaimRecord(BaseModel):
@@ -321,22 +322,24 @@ def _render_findings(result: Any) -> str:
     return ""
 
 
-def _is_disposable_fixture(path: Path) -> bool:
-    """Report whether ``path`` lies under the temp root, so the runner may remove it.
+def create_fixture_tempdir(prefix: str) -> Path:
+    """Create a fixture directory inside the current runner-owned workspace.
 
-    ``_mkroot`` -- the only sanctioned NC fixture builder -- returns
-    ``tempfile.mkdtemp(...)``, so this is the invariant the cleanup was already
-    relying on without asserting it. Both sides are resolved because ``TMPDIR``
-    is a symlink on macOS (``/var/folders/...`` -> ``/private/var/folders/...``),
-    and comparing one resolved path against an unresolved root would reject every
-    legitimate fixture.
-
-    An ``OSError`` from ``resolve()`` (a broken symlink, a permission wall)
-    answers NO: the runner must be able to prove a path is disposable before
-    removing it, never merely fail to prove it is not.
+    The runner, not fixture code, owns the workspace lifecycle. Calling this
+    helper outside ``_run_single_claim`` is a fixture-authoring error: without an
+    active runner there is no cleanup authority to grant.
     """
+    parent = _FIXTURE_PARENT.get()
+    if parent is None:
+        msg = "create_fixture_tempdir() requires an active _run_single_claim runner"
+        raise RuntimeError(msg)
+    return Path(tempfile.mkdtemp(prefix=prefix, dir=parent))
+
+
+def _is_runner_owned_fixture(path: Path, parent: Path) -> bool:
+    """Report whether ``path`` lies inside this claim run's private workspace."""
     try:
-        return path.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve())
+        return path.resolve().is_relative_to(parent.resolve())
     except OSError:
         return False
 
@@ -346,30 +349,48 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
 
     Uniform signal: ``bool(result)`` — truthy = entrypoint caught the violation (PASS);
     falsy = entrypoint did not catch (FACADE). Either side raising = TEST_BUG.
-    Cleans up the fixture path with ``shutil.rmtree`` after the run.
+    The runner creates and cleans one private workspace; a fixture-returned path
+    is data passed to the entrypoint, never authority to choose the cleanup target.
     """
-    fixture_path: Path | None = None
     try:
-        fixture_result = record.fixture()
-        if isinstance(fixture_result, Path):
-            # Checked BEFORE `fixture_path` is bound, so a refused path is never
-            # reachable by the `finally` cleanup below (GHI #920).
-            if not _is_disposable_fixture(fixture_result):
-                return ClaimRunResult(
-                    claim_id=record.claim_id,
-                    outcome="TEST_BUG",
-                    source_fn=record.source_fn,
-                    message=(
-                        f"TEST_BUG: fixture() for claim {record.claim_id!r} returned a path "
-                        f"outside the temp root and the runner REFUSED to run it: "
-                        f"{fixture_result}. This runner removes the fixture path it is given "
-                        f"(shutil.rmtree) once the entrypoint has run, so a fixture must "
-                        f"return a tree built for this run and owned by it -- never a live "
-                        f"directory. Build it with _mkroot() in _qc_negative_controls, which "
-                        f"returns tempfile.mkdtemp(...). Nothing was deleted."
-                    ),
-                )
-            fixture_path = fixture_result
+        with tempfile.TemporaryDirectory(prefix=f"gzkit-nc-{record.claim_id}-") as tmp:
+            return _run_claim_in_workspace(record, Path(tmp))
+    except OSError as exc:
+        return ClaimRunResult(
+            claim_id=record.claim_id,
+            outcome="TEST_BUG",
+            source_fn=record.source_fn,
+            message=(
+                f"TEST_BUG: runner workspace failed for claim {record.claim_id!r}: {exc!r}. "
+                "The runner could not create or clean its private fixture workspace."
+            ),
+        )
+
+
+def _run_claim_in_workspace(record: EnforcementClaimRecord, fixture_parent: Path) -> ClaimRunResult:
+    """Build and execute one claim inside ``fixture_parent``, which the runner owns."""
+    try:
+        token = _FIXTURE_PARENT.set(fixture_parent)
+        try:
+            fixture_result = record.fixture()
+        finally:
+            _FIXTURE_PARENT.reset(token)
+        if isinstance(fixture_result, Path) and not _is_runner_owned_fixture(
+            fixture_result, fixture_parent
+        ):
+            return ClaimRunResult(
+                claim_id=record.claim_id,
+                outcome="TEST_BUG",
+                source_fn=record.source_fn,
+                message=(
+                    f"TEST_BUG: fixture() for claim {record.claim_id!r} returned a path "
+                    f"outside this runner-owned workspace and the runner REFUSED to run "
+                    f"it: {fixture_result}. Temp-root containment is not ownership; a "
+                    "fixture must build its tree with create_fixture_tempdir() during "
+                    "this claim run. The returned path was not used as a cleanup target, "
+                    "and nothing outside the private workspace was deleted."
+                ),
+            )
     # `record.fixture` is an arbitrary registered callable, so its raisable set
     # is open by construction. Catching broadly is what turns a broken fixture
     # into a reported TEST_BUG instead of an aborted enforcement-floor run —
@@ -404,12 +425,6 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
                 f"Repro: call {record.source_fn!r}(fixture()) directly and observe the exception."
             ),
         )
-    finally:
-        # Only ever a temp path: `fixture_path` is bound above solely after
-        # `_is_disposable_fixture` proved it (GHI #920).
-        if fixture_path is not None:
-            shutil.rmtree(fixture_path, ignore_errors=True)
-
     if caught and record.expect is not None:
         rendered = _render_findings(ep_result)
         if record.expect not in rendered:

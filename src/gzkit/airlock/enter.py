@@ -20,7 +20,6 @@ writes L1 canon and its verdict is NEVER a Gate-5 completion attestation (BI #1,
 
 from __future__ import annotations
 
-import tempfile
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -36,7 +35,12 @@ from gzkit.airlock.model import (
     SeamKind,
     SeamMap,
 )
-from gzkit.enforcement import enforces, get_enforcement_registry, set_known_claims
+from gzkit.enforcement import (
+    create_fixture_tempdir,
+    enforces,
+    get_enforcement_registry,
+    set_known_claims,
+)
 from gzkit.governance.brief_path_validity import extract_allowed_paths
 from gzkit.ledger import Ledger, LedgerEvent
 
@@ -213,17 +217,16 @@ _AIRLOCK_CLAIM_IDS: frozenset[str] = frozenset({"airlock-in-unaccounted-seam"})
 def _build_unaccounted_seam_violation() -> Path:
     """Plant a RUNTIME-UNIQUE un-accounted seam in a fresh temp dir.
 
-    The dependent id is derived from the ``mkdtemp``-random root name — it is
+    The dependent id is derived from the runner-random root name — it is
     unknowable at mutation-authoring time, so a broken ``_decide`` cannot special-
     case the sentinel to sneak past the control (Step-4b facade attack, 2026-07-11:
     a FIXED sentinel proves only that ``_decide`` blocks THAT ONE string, not the
     general rule). The un-accounted brief (``brief.md``) names nothing, so the
     dependent stays un-accounted; the accounted control (``accounted.md``) names it,
     so the SAME dependent is accounted — the differential the entrypoint reconciles.
-    Returns the temp ROOT (not a bare file) so the runner's ``shutil.rmtree(fixture())``
-    cleans it without leaking the parent — the qc_binding NC convention.
+    Returns the fixture root inside the runner-owned workspace.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-airlock-nc-"))
+    root = create_fixture_tempdir(prefix="gzkit-airlock-nc-")
     dep = f"DEP-UNACCOUNTED-{root.name}"
     (root / "brief.md").write_text(
         "# Brief\n\n## Allowed Paths\n\n- `src/gzkit/airlock/enter.py`\n\n"

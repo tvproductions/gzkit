@@ -8,7 +8,6 @@ so the core runs with NO ontology projection built (hexagonal rule 6).
 
 from __future__ import annotations
 
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -406,42 +405,56 @@ class TestAirlockEnforcementClaimRegistration(unittest.TestCase):
         the NC has decayed back into theatre.
         """
         import gzkit.airlock.enter as airlock_mod
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
 
         original = airlock_mod._decide
-        root = airlock_mod._build_unaccounted_seam_violation()
-        try:
+        observed: dict[str, int] = {}
 
-            def sentinel_special_case(unaccounted, override):
-                # Recognizes the OLD fixed sentinel; blind to the runtime-unique id.
-                fixed = any(edge.target == "DEP-UNACCOUNTED-NC" for edge in unaccounted)
-                if fixed and (override is None or override.revoked):
-                    return Decision.HOLD
-                return Decision.PROCEED
+        def sentinel_special_case(unaccounted, override):
+            # Recognizes the OLD fixed sentinel; blind to the runtime-unique id.
+            fixed = any(edge.target == "DEP-UNACCOUNTED-NC" for edge in unaccounted)
+            if fixed and (override is None or override.revoked):
+                return Decision.HOLD
+            return Decision.PROCEED
 
-            mutations = {
-                "sentinel-special-case": sentinel_special_case,
-                "always-proceed": lambda _u, _o: Decision.PROCEED,
-                "always-hold": lambda _u, _o: Decision.HOLD,
-            }
-            for name, mutation in mutations.items():
-                airlock_mod._decide = mutation  # ty: ignore[invalid-assignment]
-                bit = airlock_mod._ep_airlock_unaccounted_seam(root)
-                self.assertEqual(
-                    bit,
-                    0,
-                    f"the {name} mutation must be caught (NC returns falsy) — a gate that "
-                    "does not track accountedness for an arbitrary seam is a facade",
-                )
+        mutations = {
+            "sentinel-special-case": sentinel_special_case,
+            "always-proceed": lambda _u, _o: Decision.PROCEED,
+            "always-hold": lambda _u, _o: Decision.HOLD,
+        }
 
-            airlock_mod._decide = original
-            self.assertEqual(
-                airlock_mod._ep_airlock_unaccounted_seam(root),
-                1,
-                "the genuine gate still bites (control for the mutation assertions above)",
+        def exercise_mutations(root: Path) -> int:
+            try:
+                for name, mutation in mutations.items():
+                    airlock_mod._decide = mutation  # ty: ignore[invalid-assignment]
+                    observed[name] = airlock_mod._ep_airlock_unaccounted_seam(root)
+            finally:
+                airlock_mod._decide = original
+            observed["genuine"] = airlock_mod._ep_airlock_unaccounted_seam(root)
+            return observed["genuine"]
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="airlock-mutation-test",
+                fixture=airlock_mod._build_unaccounted_seam_violation,
+                entrypoint=exercise_mutations,
+                source_fn="test.airlock_mutations",
             )
-        finally:
-            airlock_mod._decide = original
-            shutil.rmtree(root, ignore_errors=True)
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+        for name in mutations:
+            self.assertEqual(
+                observed[name],
+                0,
+                f"the {name} mutation must be caught (NC returns falsy) — a gate that "
+                "does not track accountedness for an arbitrary seam is a facade",
+            )
+        self.assertEqual(
+            observed["genuine"],
+            1,
+            "the genuine gate still bites (control for the mutation assertions above)",
+        )
 
 
 if __name__ == "__main__":

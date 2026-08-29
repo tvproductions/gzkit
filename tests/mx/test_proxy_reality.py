@@ -168,45 +168,65 @@ class TestLiveNegativeControl(unittest.TestCase):
         runs through the real ``proxy_reality.scan()`` production path —
         no stub, no mock of the detector itself.
         """
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.mx.proxy_reality import _build_proxy_reality_violation, _ep_proxy_reality
 
-        violation_root = _build_proxy_reality_violation()
-        try:
-            result = _ep_proxy_reality(violation_root)
-        finally:
-            import shutil
+        signals: list[int] = []
 
-            shutil.rmtree(violation_root, ignore_errors=True)
+        def capture(root: Path) -> int:
+            signal = _ep_proxy_reality(root)
+            signals.append(signal)
+            return signal
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="proxy-reality-live-nc-test",
+                fixture=_build_proxy_reality_violation,
+                entrypoint=capture,
+                source_fn="test.proxy_reality_live_nc",
+            )
+        )
 
         # The violation is caught: count > 0 (truthy)
-        self.assertGreater(result, 0, "live NC must catch the planted violation (count > 0)")
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertGreater(signals[0], 0, "live NC must catch the planted violation (count > 0)")
 
     @covers("REQ-0.0.74-13-02")
     def test_live_nc_fixture_creates_ledger_with_repudiated_event(self) -> None:
         """The fixture builds a valid temp ledger containing a planted repudiation event."""
-        import shutil
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
+        from gzkit.mx.proxy_reality import _build_proxy_reality_violation, _ep_proxy_reality
 
-        from gzkit.mx.proxy_reality import _build_proxy_reality_violation
+        planted_events: list[dict] = []
 
-        violation_root = _build_proxy_reality_violation()
-        try:
-            ledger_path = violation_root / ".gzkit" / "ledger.jsonl"
-            self.assertTrue(ledger_path.exists())
+        def inspect_fixture(root: Path) -> int:
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
             lines = [
                 json.loads(line)
                 for line in ledger_path.read_text(encoding="utf-8").splitlines()
                 if line.strip()
             ]
-            self.assertTrue(
-                any(
-                    e.get("event") == "obpi_completion_repudiated"
-                    and e.get("cause") == "model-induced-fabrication"
-                    for e in lines
-                ),
-                "fixture must plant a model-induced-fabrication repudiation event",
+            planted_events.extend(lines)
+            return _ep_proxy_reality(root)
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="proxy-reality-fixture-content-test",
+                fixture=_build_proxy_reality_violation,
+                entrypoint=inspect_fixture,
+                source_fn="test.proxy_reality_fixture_content",
             )
-        finally:
-            shutil.rmtree(violation_root, ignore_errors=True)
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertTrue(
+            any(
+                event.get("event") == "obpi_completion_repudiated"
+                and event.get("cause") == "model-induced-fabrication"
+                for event in planted_events
+            ),
+            "fixture must plant a model-induced-fabrication repudiation event",
+        )
 
     @covers("REQ-0.0.74-13-02")
     def test_live_nc_entrypoint_never_stubs_detector(self) -> None:

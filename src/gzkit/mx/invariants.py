@@ -13,13 +13,13 @@ OBPI-0.0.74-13's proxy-reality detector per the §5 enforcement-claim rule.
 
 from __future__ import annotations
 
-import tempfile
 from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
 from gzkit.enforcement import (
     EXEMPTS_NONE,
+    create_fixture_tempdir,
     enforces,
     get_enforcement_registry,
     set_known_claims,
@@ -69,7 +69,7 @@ def _build_gate5_ledger_violation() -> Path:
     corrupted ledger: an invalid-JSON line plus a line missing the required
     ``id``/``ts`` fields. The runner removes the temp dir after the entrypoint runs.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-gate5-ledger-nc-"))
+    root = create_fixture_tempdir(prefix="gzkit-gate5-ledger-nc-")
     gzkit_dir = root / ".gzkit"
     gzkit_dir.mkdir(parents=True, exist_ok=True)
     (gzkit_dir / "ledger.jsonl").write_text(

@@ -21,13 +21,13 @@ Usage::
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.enforcement import (
     EnforcementClaimRecord,
     _run_single_claim,
+    create_fixture_tempdir,
     enforces,
     get_enforcement_registry,
 )
@@ -251,7 +251,7 @@ def _build_qc_binding_violation() -> Path:
     ``copy-vs-self`` shape ``THEATER_SIGNATURES`` names, planted rather than
     declared.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-qc-nc-qc-binding-"))
+    root = create_fixture_tempdir(prefix="gzkit-qc-nc-qc-binding-")
     planted = root / "src" / "gzkit" / "governance" / "trust_audits" / "planted_facade.py"
     planted.parent.mkdir(parents=True, exist_ok=True)
     planted.write_text(

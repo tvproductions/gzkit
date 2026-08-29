@@ -44,7 +44,6 @@ operator's verbatim ruling — is unchanged and is now the whole mechanism.
 
 from __future__ import annotations
 
-import tempfile
 from pathlib import Path
 
 from gzkit.handoff_validation import HandoffValidationError, parse_frontmatter
@@ -217,7 +216,9 @@ def _build_mis_targeted_booking_violation() -> Path:
     exists to refuse. The runtime-random root name keeps both paths unknowable
     at mutation-authoring time.
     """
-    root = Path(tempfile.mkdtemp(prefix="gzkit-booking-nc-"))
+    from gzkit.enforcement import create_fixture_tempdir  # noqa: PLC0415
+
+    root = create_fixture_tempdir(prefix="gzkit-booking-nc-")
     handoffs = root / ".gzkit" / "handoffs"
     handoffs.mkdir(parents=True, exist_ok=True)
     for name, stamp in (

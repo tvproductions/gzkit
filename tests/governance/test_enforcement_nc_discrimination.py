@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import tempfile
 import unittest
+from collections.abc import Callable
 from pathlib import Path
 
 
@@ -213,10 +214,19 @@ class TestRewrittenFixturesPlantExactlyOneViolation(unittest.TestCase):
         "line-endings",
     )
 
-    def test_each_rewritten_fixture_yields_only_its_own_finding(self) -> None:
-        import shutil
-        from pathlib import Path
+    @staticmethod
+    def _capture_findings(
+        entrypoint: Callable[[Path], list[object]], findings: list[object]
+    ) -> Callable[[Path], list[object]]:
+        def capture(root: Path) -> list[object]:
+            observed = entrypoint(root)
+            findings.extend(observed)
+            return observed
 
+        return capture
+
+    def test_each_rewritten_fixture_yields_only_its_own_finding(self) -> None:
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.governance.trust_audits import _qc_negative_controls as ncs
 
         table = {entry[0]: entry for entry in ncs._QC_NEGATIVE_CONTROL_TABLE}
@@ -224,12 +234,23 @@ class TestRewrittenFixturesPlantExactlyOneViolation(unittest.TestCase):
         for claim in self.CLAIMS:
             with self.subTest(claim=claim):
                 _cid, fixture, entrypoint, expect = table[claim]
-                root = fixture()
-                try:
-                    findings = entrypoint(root)
-                finally:
-                    shutil.rmtree(Path(root), ignore_errors=True)
+                findings: list[object] = []
 
+                result = _run_single_claim(
+                    EnforcementClaimRecord(
+                        claim_id=claim,
+                        fixture=fixture,
+                        entrypoint=self._capture_findings(entrypoint, findings),
+                        source_fn=f"test.{claim}",
+                        expect=expect,
+                    )
+                )
+
+                self.assertEqual(
+                    result.outcome,
+                    "PASS",
+                    result.message,
+                )
                 self.assertEqual(
                     len(findings),
                     1,
@@ -293,13 +314,10 @@ class TestQcBindingCertifiesABehavioralChannel(unittest.TestCase):
 
     def test_claim_goes_facade_when_the_facade_is_not_planted(self) -> None:
         """Mutation: a fixture that plants nothing must NOT keep the control green."""
-        import tempfile
-        from pathlib import Path
-
-        from gzkit.enforcement import _run_single_claim
+        from gzkit.enforcement import _run_single_claim, create_fixture_tempdir
 
         gutted = self._record().model_copy(
-            update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mutation-"))}
+            update={"fixture": lambda: create_fixture_tempdir(prefix="gzkit-nc-mutation-")}
         )
 
         self.assertEqual(
@@ -375,16 +393,13 @@ class TestCompositeClaimsAreDecomposed(unittest.TestCase):
 
     def test_every_sibling_goes_facade_when_nothing_is_planted(self) -> None:
         """The mutation that matters: a fixture that stops planting must redden."""
-        import tempfile
-        from pathlib import Path
-
-        from gzkit.enforcement import _run_single_claim
+        from gzkit.enforcement import _run_single_claim, create_fixture_tempdir
 
         registry = self._registry()
         for claim in self.SIBLINGS:
             with self.subTest(claim=claim):
                 gutted = registry[claim].model_copy(
-                    update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mut-"))}
+                    update={"fixture": lambda: create_fixture_tempdir(prefix="gzkit-nc-mut-")}
                 )
                 self.assertEqual(
                     _run_single_claim(gutted).outcome,
@@ -405,19 +420,33 @@ class TestHandoffPopulatedSectionsFixtureIsolation(unittest.TestCase):
     """
 
     def test_fixture_isolates_the_empty_section_finding(self) -> None:
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.governance.trust_audits._qc_nc_composite import (
             build_handoff_populated_sections,
         )
-        from gzkit.quality import run_handoff_document_audit
+        from gzkit.governance.trust_audits._qc_nc_entrypoints import (
+            _ep_handoff_documents_populated,
+        )
 
-        root = build_handoff_populated_sections()
-        result = run_handoff_document_audit(root)
+        finding_sets: list[list[str]] = []
 
-        self.assertFalse(result.success, "a present-but-empty handoff must fail the audit")
-        finding_lines = [
-            line for line in result.stdout.splitlines() if line.startswith(".gzkit/handoffs/")
-        ]
-        self.assertTrue(finding_lines, f"expected blocking findings; got: {result.stdout!r}")
+        def capture(root: Path) -> list[str]:
+            findings = _ep_handoff_documents_populated(root)
+            finding_sets.append(findings)
+            return findings
+
+        claim_result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="handoff-documents-populated-sections",
+                fixture=build_handoff_populated_sections,
+                entrypoint=capture,
+                source_fn="test.handoff_populated_sections",
+                expect="Empty required section",
+            )
+        )
+        self.assertEqual(claim_result.outcome, "PASS", claim_result.message)
+        finding_lines = [line for line in finding_sets[0] if line.startswith(".gzkit/handoffs/")]
+        self.assertTrue(finding_lines, f"expected blocking findings; got: {finding_lines!r}")
         for line in finding_lines:
             self.assertIn(
                 "Empty required section",
@@ -458,16 +487,13 @@ class TestRemainingClaimsBite(unittest.TestCase):
 
     def test_each_claim_goes_facade_on_a_bare_directory(self) -> None:
         """A bare dir is the shape every one of these previously accepted."""
-        import tempfile
-        from pathlib import Path
-
-        from gzkit.enforcement import _run_single_claim
+        from gzkit.enforcement import _run_single_claim, create_fixture_tempdir
 
         registry = self._registry()
         for claim in self.CLAIMS:
             with self.subTest(claim=claim):
                 gutted = registry[claim].model_copy(
-                    update={"fixture": lambda: Path(tempfile.mkdtemp(prefix="gzkit-nc-mut-"))}
+                    update={"fixture": lambda: create_fixture_tempdir(prefix="gzkit-nc-mut-")}
                 )
                 self.assertEqual(
                     _run_single_claim(gutted).outcome,
@@ -597,15 +623,49 @@ class TestSubstringChannelIsInvariantUnderColour(unittest.TestCase):
         import os
         from unittest.mock import patch
 
+        from gzkit.enforcement import EnforcementClaimRecord, _run_single_claim
         from gzkit.governance.trust_audits._qc_nc_entrypoints import _ep_preflight
         from gzkit.governance.trust_audits._qc_negative_controls import _build_preflight
 
+        forced_signals: list[int] = []
+
+        def capture_forced(root: Path) -> int:
+            signal = _ep_preflight(root)
+            forced_signals.append(signal)
+            return signal
+
+        forced_record = EnforcementClaimRecord(
+            claim_id="preflight-forced-colour",
+            fixture=_build_preflight,
+            entrypoint=capture_forced,
+            source_fn="test.preflight_forced_colour",
+        )
         with patch.dict(os.environ, {"FORCE_COLOR": "3", "COLORTERM": "truecolor"}):
-            forced = _ep_preflight(_build_preflight())
+            forced_result = _run_single_claim(forced_record)
+
+        plain_signals: list[int] = []
+
+        def capture_plain(root: Path) -> int:
+            signal = _ep_preflight(root)
+            plain_signals.append(signal)
+            return signal
+
+        plain_record = forced_record.model_copy(
+            update={
+                "claim_id": "preflight-plain-output",
+                "entrypoint": capture_plain,
+                "source_fn": "test.preflight_plain_output",
+            }
+        )
 
         scrubbed_env = {k: v for k, v in os.environ.items() if k != "FORCE_COLOR"}
         with patch.dict(os.environ, scrubbed_env, clear=True):
-            plain = _ep_preflight(_build_preflight())
+            plain_result = _run_single_claim(plain_record)
+
+        self.assertEqual(forced_result.outcome, "PASS", forced_result.message)
+        self.assertEqual(plain_result.outcome, "PASS", plain_result.message)
+        forced = forced_signals[0]
+        plain = plain_signals[0]
 
         self.assertEqual(
             forced,

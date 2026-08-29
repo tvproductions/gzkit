@@ -7,9 +7,9 @@ surface so the qc_binding audit and the meta-validator runner share ONE engine
 
 Each claim is split into:
 
-* ``_build_<claim>() -> Path`` — builds the known violation in a fresh temp dir and
-  returns its path. The runner (``enforcement._run_single_claim``) removes the dir
-  after the entrypoint runs, so fixtures use ``mkdtemp`` rather than a context manager.
+* ``_build_<claim>() -> Path`` — builds the known violation in a fresh directory
+  inside the runner-owned workspace and returns its path. The runner owns and
+  removes that workspace after the entrypoint runs.
 * ``_ep_<claim>`` (in ``_qc_nc_entrypoints.py``) — the production enforcement path the
   runner invokes as ``entrypoint(fixture())``.
 
@@ -23,12 +23,11 @@ absolute).
 from __future__ import annotations
 
 import json
-import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from gzkit.enforcement import enforces, get_enforcement_registry
+from gzkit.enforcement import create_fixture_tempdir, enforces, get_enforcement_registry
 
 from . import _qc_nc_composite as _cx
 from . import _qc_nc_corpus as _cr
@@ -41,8 +40,8 @@ from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 
 
 def _mkroot(slug: str) -> Path:
-    """Return a fresh temp dir Path; the runner removes it after the entrypoint runs."""
-    return Path(tempfile.mkdtemp(prefix=f"gzkit-qc-nc-{slug}-"))
+    """Return a fresh directory owned by the active enforcement runner."""
+    return create_fixture_tempdir(prefix=f"gzkit-qc-nc-{slug}-")
 
 
 def _write(path: Path, content: str) -> None:

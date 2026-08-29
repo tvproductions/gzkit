@@ -26,6 +26,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.enforcement import (
+    EnforcementClaimRecord,
+    _run_single_claim,
     get_enforcement_registry,
     registered_claims,
     reset_enforcement_registry,
@@ -126,17 +128,27 @@ class TestGate5LedgerLiveNC(unittest.TestCase):
         # Run the real validate_ledger path against the synthetic violation: it must
         # return a non-empty error list (truthy = caught). The fixture never calls
         # the validator — only the entrypoint does.
-        root = _build_gate5_ledger_violation()
-        try:
-            errors = _ep_gate5_ledger(root)
-            self.assertTrue(
-                errors,
-                "validate_ledger must flag the corrupted ledger — a falsy result is a FACADE",
-            )
-        finally:
-            import shutil
+        caught_errors: list[object] = []
 
-            shutil.rmtree(root, ignore_errors=True)
+        def capture(root: Path) -> list[object]:
+            errors = _ep_gate5_ledger(root)
+            caught_errors.extend(errors)
+            return errors
+
+        result = _run_single_claim(
+            EnforcementClaimRecord(
+                claim_id="gate5-ledger-live-nc-test",
+                fixture=_build_gate5_ledger_violation,
+                entrypoint=capture,
+                source_fn="test.gate5_ledger_live_nc",
+            )
+        )
+
+        self.assertEqual(result.outcome, "PASS", result.message)
+        self.assertTrue(
+            caught_errors,
+            "validate_ledger must flag the corrupted ledger — a falsy result is a FACADE",
+        )
 
     @covers("REQ-0.0.74-17-03")
     def test_ledger_nc_does_not_flag_valid_ledger(self) -> None:

@@ -20,6 +20,7 @@ from gzkit.enforcement import (
     EnforcementClaimRecord,
     RunnerResult,
     _run_single_claim,
+    create_fixture_tempdir,
     reset_enforcement_registry,
     run_meta_validator,
     set_known_claims,
@@ -31,7 +32,7 @@ _TEST_CLAIMS = frozenset({"lint", "format", "typecheck"})
 
 def _fixture_catches() -> Path:
     """Returns a violation path where the entrypoint WILL flag an error."""
-    root = Path(tempfile.mkdtemp(prefix="gzkit-test-"))
+    root = create_fixture_tempdir(prefix="gzkit-test-")
     (root / "violation.txt").write_text("violation", encoding="utf-8")
     return root
 
@@ -44,7 +45,7 @@ def _entrypoint_catches(root: Path) -> list[str]:
 
 def _fixture_passes() -> Path:
     """Returns a 'violation' path that is actually clean — FACADE."""
-    root = Path(tempfile.mkdtemp(prefix="gzkit-test-"))
+    root = create_fixture_tempdir(prefix="gzkit-test-")
     return root
 
 
@@ -55,7 +56,7 @@ def _entrypoint_passes(root: Path) -> list[str]:
 
 def _fixture_int_catches() -> Path:
     """Fixture for an int-signal entrypoint (non-zero = caught)."""
-    root = Path(tempfile.mkdtemp(prefix="gzkit-test-"))
+    root = create_fixture_tempdir(prefix="gzkit-test-")
     (root / "bad.py").write_text("x = 1\n", encoding="utf-8")
     return root
 
@@ -75,7 +76,7 @@ def _entrypoint_ok(root: Path) -> list[str]:
 
 
 def _fixture_ok() -> Path:
-    return Path(tempfile.mkdtemp(prefix="gzkit-test-"))
+    return create_fixture_tempdir(prefix="gzkit-test-")
 
 
 def _entrypoint_raises(root: Path) -> list[str]:
@@ -158,12 +159,15 @@ class TestRunSingleClaim(unittest.TestCase):
         self.assertIn("entrypoint", result.message.lower())
 
     @covers("REQ-0.0.74-16-01")
-    def test_cleanup_is_called_after_pass(self) -> None:
-        """Runner cleans up the fixture path after the entrypoint runs."""
+    def test_runner_workspace_is_cleaned_after_pass(self) -> None:
+        """Runner cleans its workspace after entrypoint execution.
+
+        The returned fixture path is observation data, not cleanup authority.
+        """
         created: list[Path] = []
 
         def _fixture_tracking() -> Path:
-            root = Path(tempfile.mkdtemp(prefix="gzkit-test-"))
+            root = create_fixture_tempdir(prefix="gzkit-test-")
             created.append(root)
             (root / "violation.txt").write_text("v", encoding="utf-8")
             return root
@@ -176,7 +180,7 @@ class TestRunSingleClaim(unittest.TestCase):
         )
         _run_single_claim(record)
         self.assertEqual(len(created), 1)
-        self.assertFalse(created[0].exists(), "fixture path should be cleaned up")
+        self.assertFalse(created[0].exists(), "runner workspace should be cleaned up")
 
 
 class TestRunMetaValidator(unittest.TestCase):
