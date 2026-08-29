@@ -17,6 +17,11 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+### Fixed
+
+- The Behave shard planner enumerates feature files recursively, so a feature nested below `features/` is sharded rather than dropped into no process; the conservation test now builds its expected set from what the fixture authored instead of re-asking the planner's own glob, and the `dist/` write-race guard discovers builders recursively on the same grounds (GHI #917)
+- Two private step-module helpers that were defined and never called are removed — a patcher teardown that read as a discharged obligation while `after_scenario` actually owned it, and a 46-line duplicate seeder that lost its caller; a new fence fails on any uncalled private helper under `features/steps/` (GHI #918)
+
 ## v0.34.6 (2026-08-29)
 
 ### Release highlights
