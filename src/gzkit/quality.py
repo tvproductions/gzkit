@@ -4,6 +4,7 @@ Provides unified interface to linting, formatting, testing, and type checking.
 """
 
 import ast
+import concurrent.futures
 import json
 import os
 import re
@@ -469,7 +470,116 @@ def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResu
     if tags:
         tag_arg = ",".join(tags)
         return run_command(f"uv run -m behave --tags={tag_arg}", cwd=project_root)
-    return run_command("uv run -m behave", cwd=project_root)
+
+    shards = _plan_behave_shards(project_root, _behave_shard_count(project_root))
+    if len(shards) < 2:
+        return run_command("uv run -m behave", cwd=project_root)
+    return _run_behave_shards(project_root, shards)
+
+
+def _behave_shard_count(project_root: Path) -> int:
+    """Return the declared Behave shard count; 1 means single-process.
+
+    Read from ``data/check_step_concurrency.json`` under the root PASSED IN,
+    never an ambient one -- the same discipline `_ruff_format_dir` had to learn
+    the hard way (GHI #909), and the cwd-capture shape GHI #857 tracks.
+
+    An absent or unreadable declaration means one process, which is exactly
+    today's behaviour. That is the case in ADOPTER projects, on the same footing
+    as ``_step_concurrency_classes``: the declaration describes gzkit's own step
+    set and is project-local, so this speedup is gzkit's own and adopters are
+    unaffected rather than broken. Shipping it to them would mean inventing a
+    package-data surface, which is scope this change does not carry.
+    """
+    path = project_root / "data" / "check_step_concurrency.json"
+    if not path.is_file():
+        return 1
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        count = int(data["steps"]["Behave"]["shards"])
+    except (json.JSONDecodeError, OSError, KeyError, TypeError, ValueError):
+        return 1
+    return max(count, 1)
+
+
+def _plan_behave_shards(project_root: Path, count: int) -> list[list[Path]]:
+    """Partition ``features/*.feature`` into ``count`` size-balanced shards.
+
+    Longest-processing-time: heaviest file first, each into the lightest shard
+    so far. Byte size is a proxy for runtime, and a coarse one -- it is used
+    because it is free and monotonic, not because it is accurate.
+
+    THE PARTITION IS THE SAFETY PROPERTY. Every file lands in exactly one shard,
+    which is what conserves the scenario set and what keeps the one feature that
+    writes ``dist/`` inside a single process. Balance is only the speedup.
+    """
+    features_dir = project_root / "features"
+    if count < 2 or not features_dir.is_dir():
+        return []
+    by_weight = sorted(features_dir.glob("*.feature"), key=lambda p: p.stat().st_size, reverse=True)
+    if len(by_weight) < 2:
+        return []
+
+    buckets: list[list[Path]] = [[] for _ in range(min(count, len(by_weight)))]
+    weights = [0] * len(buckets)
+    for feature in by_weight:
+        lightest = weights.index(min(weights))
+        buckets[lightest].append(feature)
+        weights[lightest] += feature.stat().st_size
+    return buckets
+
+
+def _run_behave_shards(project_root: Path, shards: list[list[Path]]) -> QualityResult:
+    """Run each shard in its own process and aggregate one QualityResult.
+
+    Threads dispatch subprocesses; nothing behave-related runs in this
+    interpreter. That matters because ``features/environment.py`` ``chdir``s per
+    scenario and ``os.chdir`` is process-global -- scenarios can never be
+    threaded inside one interpreter, and can always be split across processes.
+    """
+
+    def one(shard: list[Path]) -> QualityResult:
+        argv = ["uv", "run", "-m", "behave", *[str(path) for path in shard]]
+        return run_command(argv, cwd=project_root)
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(shards)) as pool:
+        results = list(pool.map(one, shards))
+    return _aggregate_shard_results(results, [[p.name for p in shard] for shard in shards])
+
+
+def _aggregate_shard_results(
+    results: list[QualityResult], shard_names: list[list[str]]
+) -> QualityResult:
+    """Fold shard results into one, FAILING SHARDS FIRST and attributed.
+
+    Concurrent runs produce one summary each, so without ordering and
+    attribution an operator scrolls a 400-scenario transcript to find which one
+    broke. A gate whose failures are hard to read is a gate people route around,
+    which is a worse outcome than the seconds this saves.
+    """
+    ordered = sorted(range(len(results)), key=lambda i: results[i].success)
+    blocks: list[str] = []
+    error_blocks: list[str] = []
+    for i in ordered:
+        result = results[i]
+        verdict = "passed" if result.success else f"FAILED (exit {result.returncode})"
+        header = (
+            f"===== behave shard {i + 1}/{len(results)} {verdict} "
+            f"[{', '.join(shard_names[i])}] ====="
+        )
+        blocks.append(f"{header}\n{result.stdout}")
+        if result.stderr:
+            error_blocks.append(f"{header}\n{result.stderr}")
+
+    codes = [result.returncode for result in results]
+    failed = [code for code in codes if code != 0]
+    return QualityResult(
+        success=not failed,
+        command=f"uv run -m behave (sharded x{len(results)})",
+        stdout="\n".join(blocks),
+        stderr="\n".join(error_blocks),
+        returncode=max(failed) if failed else 0,
+    )
 
 
 class DriftAdvisoryResult(BaseModel):
