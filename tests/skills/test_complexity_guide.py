@@ -18,16 +18,13 @@ from typing import cast
 import yaml
 
 from gzkit.traceability import covers
+from tests.vendor_surfaces import skill_mirror_paths
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SKILL_DIR = PROJECT_ROOT / ".gzkit" / "skills" / "gz-complexity-guide"
 SKILL_PATH = SKILL_DIR / "SKILL.md"
 
-VENDOR_MIRROR_PATHS = (
-    PROJECT_ROOT / ".claude" / "skills" / "gz-complexity-guide" / "SKILL.md",
-    PROJECT_ROOT / ".agents" / "skills" / "gz-complexity-guide" / "SKILL.md",
-    PROJECT_ROOT / ".github" / "skills" / "gz-complexity-guide" / "SKILL.md",
-)
+VENDOR_MIRROR_PATHS = skill_mirror_paths("gz-complexity-guide")
 
 
 def _read_skill_text() -> str:

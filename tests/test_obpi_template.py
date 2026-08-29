@@ -6,9 +6,12 @@ from pathlib import Path
 
 from gzkit.traceability import covers
 
+# Canonical source, not a vendor mirror: the template is authored under
+# .gzkit/skills and copied outward, so reading a mirror made this suite depend
+# on which vendors the project happens to render (GHI #921).
 TEMPLATE_PATH = (
     Path(__file__).resolve().parents[1]
-    / ".github"
+    / ".gzkit"
     / "skills"
     / "gz-obpi-specify"
     / "assets"

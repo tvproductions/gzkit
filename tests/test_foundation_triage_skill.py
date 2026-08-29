@@ -20,12 +20,12 @@ from pathlib import Path
 
 from gzkit.skills import _parse_frontmatter
 from gzkit.traceability import covers
+from tests.vendor_surfaces import skill_mirror_paths
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _CANONICAL_SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-foundation-triage" / "SKILL.md"
 _WHEEL_SKILL = _REPO_ROOT / "src" / "gzkit" / "skills" / "gz-foundation-triage" / "SKILL.md"
 _CLAUDE_MIRROR = _REPO_ROOT / ".claude" / "skills" / "gz-foundation-triage" / "SKILL.md"
-_GITHUB_MIRROR = _REPO_ROOT / ".github" / "skills" / "gz-foundation-triage" / "SKILL.md"
 _AGENTS_MIRROR = _REPO_ROOT / ".agents" / "skills" / "gz-foundation-triage" / "SKILL.md"
 _TRIAGE_SCRIPT = _REPO_ROOT / ".gzkit" / "skills" / "gz-foundation-triage" / "scripts" / "triage.py"
 
@@ -174,12 +174,20 @@ class TestREQ06_VendorMirrorByteParity(unittest.TestCase):
         )
 
     @covers("REQ-0.0.57-03-06")
-    def test_github_mirror_byte_equals_canonical(self) -> None:
-        self.assertTrue(_GITHUB_MIRROR.exists(), f"missing github mirror: {_GITHUB_MIRROR}")
-        self.assertEqual(
-            _CANONICAL_SKILL.read_bytes(),
-            _GITHUB_MIRROR.read_bytes(),
-        )
+    def test_every_rendered_vendor_mirror_byte_equals_canonical(self) -> None:
+        """Byte-parity holds for each mirror the project renders.
+
+        Was pinned to the copilot mirror specifically. The REQ asserts mirror
+        byte-parity, not that any particular vendor is rendered, so it is
+        retargeted at the rendered set rather than deleted (GHI #921).
+        """
+        for mirror in skill_mirror_paths("gz-foundation-triage"):
+            with self.subTest(mirror=mirror.as_posix()):
+                self.assertTrue(mirror.exists(), f"missing vendor mirror: {mirror}")
+                self.assertEqual(
+                    _CANONICAL_SKILL.read_bytes(),
+                    mirror.read_bytes(),
+                )
 
     @covers("REQ-0.0.57-03-06")
     def test_agents_mirror_byte_equals_canonical(self) -> None:

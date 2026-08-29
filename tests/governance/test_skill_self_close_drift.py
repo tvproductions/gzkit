@@ -17,10 +17,12 @@ import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
+from tests.vendor_surfaces import PROJECT_ROOT, skill_mirror_paths
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Directories an agent reads at runtime — all must be clean post-sweep.
+# Canon plus every rendered vendor surface; absent roots are simply not scanned.
 _SCAN_DIRS = [
     ".gzkit/skills",
     ".gzkit/rules",
@@ -250,22 +252,14 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         import re as _re
 
         # Map canonical skill path → list of vendor mirror paths
+        # Mirrors follow vendor enablement. The list was hardcoded across three
+        # vendors, so it demanded a tree sync had correctly stopped writing
+        # (GHI #921).
         mirror_map = {
-            ".gzkit/skills/gz-obpi-pipeline/SKILL.md": [
-                ".claude/skills/gz-obpi-pipeline/SKILL.md",
-                ".github/skills/gz-obpi-pipeline/SKILL.md",
-                ".agents/skills/gz-obpi-pipeline/SKILL.md",
-            ],
-            ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md": [
-                ".claude/skills/gz-adr-closeout-ceremony/SKILL.md",
-                ".github/skills/gz-adr-closeout-ceremony/SKILL.md",
-                ".agents/skills/gz-adr-closeout-ceremony/SKILL.md",
-            ],
-            ".gzkit/skills/gz-obpi-lock/SKILL.md": [
-                ".claude/skills/gz-obpi-lock/SKILL.md",
-                ".github/skills/gz-obpi-lock/SKILL.md",
-                ".agents/skills/gz-obpi-lock/SKILL.md",
-            ],
+            f".gzkit/skills/{slug}/SKILL.md": [
+                mirror.relative_to(PROJECT_ROOT).as_posix() for mirror in skill_mirror_paths(slug)
+            ]
+            for slug in ("gz-obpi-pipeline", "gz-adr-closeout-ceremony", "gz-obpi-lock")
         }
 
         def _extract_skill_version(text: str) -> str | None:

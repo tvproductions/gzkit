@@ -19,12 +19,11 @@ from pathlib import Path
 import yaml
 
 from gzkit.traceability import covers
+from tests.vendor_surfaces import skill_mirror_paths
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SKILL_PATH = PROJECT_ROOT / ".gzkit" / "skills" / "gz-justify" / "SKILL.md"
-CLAUDE_MIRROR = PROJECT_ROOT / ".claude" / "skills" / "gz-justify" / "SKILL.md"
-AGENTS_MIRROR = PROJECT_ROOT / ".agents" / "skills" / "gz-justify" / "SKILL.md"
-GITHUB_MIRROR = PROJECT_ROOT / ".github" / "skills" / "gz-justify" / "SKILL.md"
+VENDOR_MIRRORS = skill_mirror_paths("gz-justify")
 
 _EXISTING_H2_SECTIONS = (
     "Purpose",
@@ -120,7 +119,7 @@ class TestGzJustifyComplexityAmendment(unittest.TestCase):
         edited directly (both are defects per .gzkit/rules/skill-surface-sync.md).
         """
         canonical = SKILL_PATH.read_text(encoding="utf-8")
-        for mirror_path in (CLAUDE_MIRROR, AGENTS_MIRROR, GITHUB_MIRROR):
+        for mirror_path in VENDOR_MIRRORS:
             # No existence assertion: `read_text` raises FileNotFoundError, which
             # names the missing mirror just as clearly without asserting on the
             # filesystem (`.claude/rules/tests.md` § The discriminator).

@@ -19,17 +19,16 @@ from pathlib import Path
 
 import yaml
 from behave import given, then
+from tests.vendor_surfaces import skill_mirror_paths
 
 # Resolve the canonical project root (parent of features/) so the skill-amendment
 # scenarios can read .gzkit/skills/gz-justify/SKILL.md regardless of the per-scenario
 # tempdir cwd that environment.py sets up.
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _CANONICAL_SKILL = _PROJECT_ROOT / ".gzkit" / "skills" / "gz-justify" / "SKILL.md"
-_VENDOR_MIRRORS = (
-    _PROJECT_ROOT / ".claude" / "skills" / "gz-justify" / "SKILL.md",
-    _PROJECT_ROOT / ".agents" / "skills" / "gz-justify" / "SKILL.md",
-    _PROJECT_ROOT / ".github" / "skills" / "gz-justify" / "SKILL.md",
-)
+# Mirrors follow vendor enablement; a hardcoded list asserted a tree sync had
+# correctly stopped writing (GHI #921).
+_VENDOR_MIRRORS = skill_mirror_paths("gz-justify")
 
 # CC = 5 — crosses advise (>=4) but not warn (>=7)
 _ADVISE_SOURCE = """\

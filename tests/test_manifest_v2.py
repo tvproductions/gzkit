@@ -224,11 +224,10 @@ class TestManifestVendorsBlock(unittest.TestCase):
     """The manifest carries the vendor enablement the sync gate reads.
 
     The v2 schema has always declared a ``vendors`` property and
-    ``_has_manifest_vendors`` gates every vendor-surface branch on its presence,
-    but ``generate_manifest`` never emitted it. The gate therefore read False on
-    every synced project forever, so ``vendor_aware`` could not become True and
-    each disabled vendor tree was written anyway — the opt-in switch was
-    unreachable from config.
+    ``generate_manifest`` never emitted it, so the manifest could not report
+    what the project declared. The sync gate now reads canon directly
+    (``has_vendor_declaration``), but the manifest is still the published
+    projection of enablement and must carry it.
     """
 
     def _generate(self, config: GzkitConfig) -> dict:

@@ -18,6 +18,7 @@ from pydantic import ValidationError
 
 from gzkit.complexity.citation import Citation, is_portable, parse_citation
 from gzkit.traceability import covers
+from tests.vendor_surfaces import rule_mirror_paths
 
 CANONICAL_FORM = (
     "docs/governance/complexity/distilled-characteristics-2026-05-04.md "
@@ -200,10 +201,7 @@ class TestVendorMirrorIdempotence(unittest.TestCase):
         # Per .gzkit/rules/skill-surface-sync.md § Surface layout, rule
         # mirrors land at .claude/rules/ (kebab-case) and
         # .github/instructions/ (snake-case + .instructions.md suffix).
-        mirrors = [
-            repo_root / ".claude/rules/complexity-doctrine.md",
-            repo_root / ".github/instructions/complexity_doctrine.instructions.md",
-        ]
+        mirrors = rule_mirror_paths("complexity_doctrine")
         for mirror_path in mirrors:
             with self.subTest(mirror=mirror_path.relative_to(repo_root).as_posix()):
                 self.assertTrue(

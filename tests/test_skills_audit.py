@@ -1132,3 +1132,65 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class DisabledVendorMirrorAuditTest(unittest.TestCase):
+    """A disabled vendor's skill mirror is not demanded by the audit.
+
+    ``audit_skills`` hardcoded all three mirror roots, so a project that
+    disabled a vendor still had that vendor's mirror required — one blocking
+    SKA-MIRROR-DIR-MISSING per canonical skill. Sync had already stopped
+    writing the tree, so the audit demanded exactly what sync declined to
+    produce and no sync could ever clear it.
+    """
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self._root = Path(self._tmp.name)
+        _write_skill(self._root, ".gzkit/skills", "demo-skill")
+        _write_skill(self._root, ".claude/skills", "demo-skill")
+        _write_skill(self._root, ".agents/skills", "demo-skill")
+
+    def _missing_mirror_paths(self, config: GzkitConfig) -> set[str]:
+        report = audit_skills(self._root, config)
+        return {
+            issue.path
+            for issue in report.issues
+            if issue.code == "SKA-MIRROR-DIR-MISSING" and issue.blocking
+        }
+
+    def test_disabled_vendor_mirror_is_not_required(self) -> None:
+        """With copilot disabled, its absent mirror raises no blocking issue."""
+        config = GzkitConfig.model_validate(
+            {
+                "vendors": {
+                    "claude": {"enabled": True, "surface_root": ".claude"},
+                    "codex": {"enabled": True, "surface_root": ".agents"},
+                    "copilot": {"enabled": False, "surface_root": ".github"},
+                }
+            }
+        )
+
+        missing = self._missing_mirror_paths(config)
+
+        self.assertFalse({p for p in missing if ".github" in p})
+
+    def test_enabled_vendor_mirror_is_still_required(self) -> None:
+        """The gate still bites for a vendor the project actually enabled.
+
+        Guards against 'fixing' the audit by disabling it: an enabled vendor
+        whose mirror is absent must still fail.
+        """
+        config = GzkitConfig.model_validate(
+            {
+                "vendors": {
+                    "claude": {"enabled": True, "surface_root": ".claude"},
+                    "copilot": {"enabled": True, "surface_root": ".github"},
+                }
+            }
+        )
+
+        missing = self._missing_mirror_paths(config)
+
+        self.assertTrue({p for p in missing if ".github" in p})

@@ -585,3 +585,57 @@ class TestOrchestrator(unittest.TestCase):
             errors = audit_instructions(root)
 
             self.assertEqual(errors, [])
+
+
+class CanonicalRulesSupersedeInstructionSourceTest(unittest.TestCase):
+    """Where `.gzkit/rules/` canon exists, `.github/instructions/` is not a source.
+
+    The drift audit compared `.claude/rules/` against `.github/instructions/` --
+    one derived view judged against another, which is what Architectural
+    Boundary 6 forbids and what GHI #891 corrected in `_shared_subtree_rules`.
+    Both are rendered FROM `.gzkit/rules/`, so with copilot disabled every
+    Claude rule was reported an orphan "with no source instruction" while its
+    actual source sat in canon, unchanged.
+
+    The instruction path survives as the fallback for a legacy adopter who
+    hand-authors `.github/instructions/` with no canon -- there those files ARE
+    the source.
+    """
+
+    def test_claude_rules_are_not_orphans_when_canon_exists(self) -> None:
+        """A canonical rule with no copilot mirror is not an orphan."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            canon = root / ".gzkit" / "rules"
+            canon.mkdir(parents=True)
+            (canon / "sample.md").write_text(
+                '---\nid: sample\npaths:\n  - "**"\n---\n\n# Sample\n', encoding="utf-8"
+            )
+            rules = root / ".claude" / "rules"
+            rules.mkdir(parents=True)
+            (rules / "sample.md").write_text("# Sample\n", encoding="utf-8")
+
+            errors = audit_generated_surface_drift(root)
+
+            self.assertEqual(errors, [])
+
+    def test_legacy_instruction_source_still_audited_without_canon(self) -> None:
+        """With no canon, hand-authored instructions remain the source of truth.
+
+        Guards against 'fixing' the orphan report by disabling the audit: a
+        legacy tree must still catch a missing rule file.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (root / ".claude" / "rules").mkdir(parents=True)
+
+            (inst / "missing.instructions.md").write_text(
+                _instruction_file("**/*", "# Missing rule"), encoding="utf-8"
+            )
+
+            errors = audit_generated_surface_drift(root)
+
+            self.assertEqual(len(errors), 1)
+            self.assertIn("missing", errors[0].message)

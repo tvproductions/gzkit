@@ -237,6 +237,15 @@ class GzkitConfig(BaseModel):
         if not self.project_name:
             data.pop("project_name", None)
 
+        # Never materialize a DEFAULTED vendors block. Its presence is what
+        # `has_vendor_declaration` reads to decide the project opted into
+        # vendor-gated sync, so writing the defaults here would silently opt
+        # every `gz init` adopter in -- and the defaults disable codex and
+        # copilot, so their surfaces would stop rendering without anyone
+        # declaring that. An explicitly-set block is preserved (GHI #921).
+        if "vendors" not in self.model_fields_set:
+            data.pop("vendors", None)
+
         with config_path.open("w") as f:
             json.dump(data, f, indent=2)
             f.write("\n")

@@ -7,6 +7,7 @@ from typing import Any, cast
 from rich.table import Table
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.config import GzkitConfig
 from gzkit.doc_coverage.manifest import MANPAGE_DIR, MANPAGE_INDEX
 
 _MANPAGE_INDEX_POSIX = MANPAGE_INDEX.as_posix()
@@ -138,6 +139,21 @@ def _readiness_overall_score(discipline_scores: dict[str, dict[str, Any]]) -> fl
     )
 
 
+def _vendor_enabled(project_root: Path, vendor: str) -> bool:
+    """Whether *vendor*'s control surface is rendered for this project.
+
+    Legacy projects declare no vendors and render every surface, matching
+    ``sync_all``'s own gate -- readiness must require exactly what sync writes.
+    """
+    from gzkit.sync_surfaces import has_vendor_declaration
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    if not has_vendor_declaration(config):
+        return True
+    vendor_config = getattr(config.vendors, vendor, None)
+    return bool(vendor_config and vendor_config.enabled)
+
+
 def readiness_audit_cmd(as_json: bool) -> None:
     """Audit agent readiness using four disciplines and five specification primitives."""
     project_root = get_project_root()
@@ -199,7 +215,10 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 "id": "copilot_instructions",
                 "kind": "file",
                 "path": ".github/copilot-instructions.md",
-                "required": True,
+                # Required only where the project renders it. A hardcoded True
+                # reported a disabled vendor's absent surface as a readiness
+                # defect the project could never clear (GHI #921).
+                "required": _vendor_enabled(project_root, "copilot"),
                 "issue": "required control surface .github/copilot-instructions.md missing",
             },
             {

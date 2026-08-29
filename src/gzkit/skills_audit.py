@@ -648,6 +648,7 @@ def audit_skills(
     """Audit skill naming, metadata, and canonical/mirror parity."""
     # Late import to avoid circular dependency (skills_mirror imports from skills_audit).
     from gzkit.skills_mirror import validate_mirror_root
+    from gzkit.sync_surfaces import has_vendor_declaration
 
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
@@ -655,12 +656,22 @@ def audit_skills(
         msg = "max_review_age_days must be positive."
         raise ValueError(msg)
 
-    checked_roots = [
-        config.paths.skills,
-        config.paths.codex_skills,
-        config.paths.claude_skills,
-        config.paths.copilot_skills,
-    ]
+    # Mirror expectations follow vendor enablement, on the SAME predicate
+    # ``sync_all`` uses. The roots were hardcoded, so a project that disabled a
+    # vendor still had that vendor's mirror required -- one blocking
+    # SKA-MIRROR-DIR-MISSING per canonical skill, against a tree sync had
+    # already stopped writing. No sync could clear it (GHI #921).
+    vendor_aware = has_vendor_declaration(config)
+    mirror_roots = tuple(
+        root
+        for root, vendor in (
+            (config.paths.codex_skills, config.vendors.codex),
+            (config.paths.claude_skills, config.vendors.claude),
+            (config.paths.copilot_skills, config.vendors.copilot),
+        )
+        if not vendor_aware or vendor.enabled
+    )
+    checked_roots = [config.paths.skills, *mirror_roots]
     issues: list[SkillAuditIssue] = []
 
     root_paths = {root: project_root / root for root in checked_roots}
@@ -692,11 +703,6 @@ def audit_skills(
             if fm and fm.get("lifecycle_state") == "active":
                 _validate_skill_manpage(project_root, issues, skill_name, index_content)
 
-    mirror_roots = (
-        config.paths.codex_skills,
-        config.paths.claude_skills,
-        config.paths.copilot_skills,
-    )
     for root_name in mirror_roots:
         validate_mirror_root(project_root, issues, root_paths[root_name], canonical_dirs)
 

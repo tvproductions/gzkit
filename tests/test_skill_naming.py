@@ -4,13 +4,16 @@ import re
 import unittest
 from pathlib import Path
 
+from tests.vendor_surfaces import PROJECT_ROOT, skill_mirror_roots
+
 KEBAB_CASE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+# Canonical + wheel copy, then one mirror per vendor the project renders. A
+# hardcoded vendor list asserted a root sync had correctly stopped writing
+# (GHI #921).
 SKILL_ROOTS = (
     ".gzkit/skills",  # authored source (project canonical)
     "src/gzkit/skills",  # synced copy for wheel shipping (ADR-0.0.32-01)
-    ".agents/skills",
-    ".claude/skills",
-    ".github/skills",
+    *(root.relative_to(PROJECT_ROOT).as_posix() for root in skill_mirror_roots()),
 )
 
 

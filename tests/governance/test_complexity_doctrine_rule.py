@@ -31,6 +31,7 @@ from pathlib import Path
 
 from gzkit.rules import RuleFrontmatter, _parse_canonical_frontmatter
 from gzkit.traceability import covers
+from tests.vendor_surfaces import rule_mirror_paths
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "complexity-doctrine.md"
@@ -194,10 +195,7 @@ class ComplexityDoctrineCrossSurfaceBindings(unittest.TestCase):
 
     @covers("REQ-0.0.27-01-08")
     def test_vendor_mirrors_carry_rule_version_marker(self) -> None:
-        mirrors = (
-            _PROJECT_ROOT / ".claude" / "rules" / "complexity-doctrine.md",
-            _PROJECT_ROOT / ".github" / "instructions" / "complexity_doctrine.instructions.md",
-        )
+        mirrors = rule_mirror_paths("complexity_doctrine")
         for mirror in mirrors:
             with self.subTest(mirror=mirror.relative_to(_PROJECT_ROOT).as_posix()):
                 self.assertTrue(

@@ -13,15 +13,12 @@ from pathlib import Path
 from gzkit.core.models import SkillFrontmatter
 from gzkit.core.validation_rules import parse_frontmatter
 from gzkit.governance.trust_audits.router_tables import audit_router_tables
+from tests.vendor_surfaces import skill_mirror_roots
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_ROOT = PROJECT_ROOT / ".gzkit" / "skills"
 PKG_ROOT = PROJECT_ROOT / "src" / "gzkit" / "skills"
-VENDOR_MIRROR_ROOTS = (
-    PROJECT_ROOT / ".agents" / "skills",
-    PROJECT_ROOT / ".claude" / "skills",
-    PROJECT_ROOT / ".github" / "skills",
-)
+VENDOR_MIRROR_ROOTS = skill_mirror_roots()
 
 ALL_ROUTER_SLUGS = (
     "gz-workflow",

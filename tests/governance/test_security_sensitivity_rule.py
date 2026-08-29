@@ -31,6 +31,7 @@ from pathlib import Path
 
 from gzkit.rules import RuleFrontmatter, _parse_canonical_frontmatter
 from gzkit.traceability import covers
+from tests.vendor_surfaces import rule_mirror_paths
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _RULE_PATH = _PROJECT_ROOT / ".gzkit" / "rules" / "security-sensitivity.md"
@@ -202,10 +203,7 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
         assert canonical_marker is not None
         expected = canonical_marker.group(0)
 
-        mirrors = (
-            _PROJECT_ROOT / ".claude" / "rules" / "security-sensitivity.md",
-            _PROJECT_ROOT / ".github" / "instructions" / "security_sensitivity.instructions.md",
-        )
+        mirrors = rule_mirror_paths("security_sensitivity")
         for mirror in mirrors:
             with self.subTest(mirror=mirror.relative_to(_PROJECT_ROOT)):
                 self.assertTrue(

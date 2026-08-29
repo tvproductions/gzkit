@@ -11,11 +11,13 @@ import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
+from tests.vendor_surfaces import skill_mirror_roots
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _CANONICAL_SKILLS_ROOT = _PROJECT_ROOT / ".gzkit" / "skills"
-_CLAUDE_SKILLS_ROOT = _PROJECT_ROOT / ".claude" / "skills"
-_GITHUB_SKILLS_ROOT = _PROJECT_ROOT / ".github" / "skills"
+# Mirror roots follow vendor enablement; a hardcoded copilot root asserted a
+# tree sync had correctly stopped writing (GHI #921).
+_VENDOR_SKILL_ROOTS = skill_mirror_roots()
 
 _INVARIANCE_TEST = "Foundation = without it, we wouldn't be doing the project"
 _HEXAGONAL_LENS = "ports point to invariance; adapters are features"
@@ -156,35 +158,39 @@ class TestSkillMirrorParity(unittest.TestCase):
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_design_claude_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-design", _CLAUDE_SKILLS_ROOT)
+        self._assert_mirror_parity("gz-design", _VENDOR_SKILL_ROOTS[0])
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_plan_claude_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-plan", _CLAUDE_SKILLS_ROOT)
+        self._assert_mirror_parity("gz-plan", _VENDOR_SKILL_ROOTS[0])
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_adr_create_claude_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-adr-create", _CLAUDE_SKILLS_ROOT)
+        self._assert_mirror_parity("gz-adr-create", _VENDOR_SKILL_ROOTS[0])
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_adr_promote_claude_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-adr-promote", _CLAUDE_SKILLS_ROOT)
+        self._assert_mirror_parity("gz-adr-promote", _VENDOR_SKILL_ROOTS[0])
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_design_github_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-design", _GITHUB_SKILLS_ROOT)
+        for _root in _VENDOR_SKILL_ROOTS:
+            self._assert_mirror_parity("gz-design", _root)
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_plan_github_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-plan", _GITHUB_SKILLS_ROOT)
+        for _root in _VENDOR_SKILL_ROOTS:
+            self._assert_mirror_parity("gz-plan", _root)
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_adr_create_github_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-adr-create", _GITHUB_SKILLS_ROOT)
+        for _root in _VENDOR_SKILL_ROOTS:
+            self._assert_mirror_parity("gz-adr-create", _root)
 
     @covers("REQ-0.0.35-02-05")
     def test_gz_adr_promote_github_mirror_parity(self) -> None:
-        self._assert_mirror_parity("gz-adr-promote", _GITHUB_SKILLS_ROOT)
+        for _root in _VENDOR_SKILL_ROOTS:
+            self._assert_mirror_parity("gz-adr-promote", _root)
 
 
 class TestSkillEditSurgical(unittest.TestCase):
