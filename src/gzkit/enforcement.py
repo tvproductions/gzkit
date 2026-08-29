@@ -17,6 +17,7 @@ from __future__ import annotations
 import dis
 import re
 import shutil
+import tempfile
 import types
 from collections.abc import Callable
 from pathlib import Path
@@ -320,6 +321,26 @@ def _render_findings(result: Any) -> str:
     return ""
 
 
+def _is_disposable_fixture(path: Path) -> bool:
+    """Report whether ``path`` lies under the temp root, so the runner may remove it.
+
+    ``_mkroot`` -- the only sanctioned NC fixture builder -- returns
+    ``tempfile.mkdtemp(...)``, so this is the invariant the cleanup was already
+    relying on without asserting it. Both sides are resolved because ``TMPDIR``
+    is a symlink on macOS (``/var/folders/...`` -> ``/private/var/folders/...``),
+    and comparing one resolved path against an unresolved root would reject every
+    legitimate fixture.
+
+    An ``OSError`` from ``resolve()`` (a broken symlink, a permission wall)
+    answers NO: the runner must be able to prove a path is disposable before
+    removing it, never merely fail to prove it is not.
+    """
+    try:
+        return path.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve())
+    except OSError:
+        return False
+
+
 def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     """Run one enforcement claim's NC: fixture() → path, entrypoint(path) → result.
 
@@ -331,6 +352,23 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     try:
         fixture_result = record.fixture()
         if isinstance(fixture_result, Path):
+            # Checked BEFORE `fixture_path` is bound, so a refused path is never
+            # reachable by the `finally` cleanup below (GHI #920).
+            if not _is_disposable_fixture(fixture_result):
+                return ClaimRunResult(
+                    claim_id=record.claim_id,
+                    outcome="TEST_BUG",
+                    source_fn=record.source_fn,
+                    message=(
+                        f"TEST_BUG: fixture() for claim {record.claim_id!r} returned a path "
+                        f"outside the temp root and the runner REFUSED to run it: "
+                        f"{fixture_result}. This runner removes the fixture path it is given "
+                        f"(shutil.rmtree) once the entrypoint has run, so a fixture must "
+                        f"return a tree built for this run and owned by it -- never a live "
+                        f"directory. Build it with _mkroot() in _qc_negative_controls, which "
+                        f"returns tempfile.mkdtemp(...). Nothing was deleted."
+                    ),
+                )
             fixture_path = fixture_result
     # `record.fixture` is an arbitrary registered callable, so its raisable set
     # is open by construction. Catching broadly is what turns a broken fixture
@@ -367,6 +405,8 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
             ),
         )
     finally:
+        # Only ever a temp path: `fixture_path` is bound above solely after
+        # `_is_disposable_fixture` proved it (GHI #920).
         if fixture_path is not None:
             shutil.rmtree(fixture_path, ignore_errors=True)
 
