@@ -17,6 +17,12 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.7 (2026-08-29)
+
+### Release highlights
+
+- A feature file nested below `features/` was planned into no Behave shard and run by no process, reported as a pass; discovery is now recursive and the conservation test no longer asks the planner's own question to decide what the planner should have found (GHI #917)
+
 ### Fixed
 
 - The Behave shard planner enumerates feature files recursively, so a feature nested below `features/` is sharded rather than dropped into no process; the conservation test now builds its expected set from what the fixture authored instead of re-asking the planner's own glob, and the `dist/` write-race guard discovers builders recursively on the same grounds (GHI #917)

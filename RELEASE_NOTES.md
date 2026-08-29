@@ -1,5 +1,58 @@
 # gzkit Release Notes
 
+## v0.34.7 (2026-08-29)
+
+### Highlights
+
+A single-defect release. `gz check`'s BDD sharding, added in v0.34.6, planned
+feature files with a non-recursive glob while handing each behave process only
+the paths it planned — so a feature file organized into a subdirectory would
+have been sharded into nothing and run by no one, under a green `✓ Behave`.
+Nothing was being dropped today, because `features/` is currently flat; the
+release closes the property before anyone reorganizes a 68-file directory.
+
+The accompanying test change matters more than the one-word fix. The
+conservation test that was supposed to catch this built its expected file set
+using the same glob the planner used, so it compared the planner against its
+own assumption and passed. It now enumerates from what the fixture authored —
+knowledge the planner never consults.
+
+### Bug fixes
+
+- **#917** — A feature file nested below `features/` was planned into no shard
+  and run by no behave process, reported as a pass. Feature discovery is now
+  recursive, matching behave's own, and the `dist/` write-race guard discovers
+  builders on the same terms.
+
+### Gate Evidence
+
+- Qualifier: behavior-level GHIs closed since `v0.34.6`
+  (2026-08-29T03:49:13-05:00). 2 discovered — 1 qualified, 1 excluded.
+- **#918 excluded correctly, and deliberately not backfilled.** Its fix
+  `4c513a93` touched `features/steps/` and `tests/` and **zero** `src/gzkit/`
+  files, so it carries neither the `runtime` label nor a src diff. The wheel
+  packages only `src/gzkit` (`pyproject.toml`
+  `[tool.hatch.build.targets.wheel]`), so the change is not present in the
+  released artifact. § Step 1a backfill would be wrong here — this is not a
+  mislabeled runtime fix, it is not a runtime fix. Recorded in `CHANGELOG.md`
+  as the developer-facing projection; excluded from the narrative and from
+  Stats.
+- **Coupled-surface repair inside #917.** Making the planner recursive *armed*
+  the `dist/` write-race guard rather than leaving it dormant: a nested
+  wheel-builder previously ran in no shard (a gap, no race), and afterward
+  would run in some shard while the guard still reported a single writer.
+  Both were fixed in `fa098fc0` per `AGENTS.md` § DO IT RIGHT 1a.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `uv run gz patch release` (0.34.6 → 0.34.7).
+- Manifest: `docs/releases/PATCH-v0.34.7.md`; `patch-release` ledger event
+  appended.
+- Operator approval: verbatim *"Approved as drafted"* — g0, 2026-08-29.
+- Git-sync: `uv run gz git-sync --apply` run immediately before publish.
+
+### Stats
+
+- 1 GHI closed
+
 ## v0.34.6 (2026-08-29)
 
 ### Highlights
