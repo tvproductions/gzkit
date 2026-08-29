@@ -12,6 +12,7 @@ Feature: Patch release discovery CLI
 
   Scenario: Dry run reports discovery without executing
     Given the workspace is initialized in heavy mode
+    And the gh CLI is authenticated
     When I run the gz command "patch release --dry-run"
     Then the command exits with code 0
     And the output contains "Patch Release Discovery"
@@ -19,6 +20,7 @@ Feature: Patch release discovery CLI
 
   Scenario: Dry run JSON output is well-formed
     Given the workspace is initialized in heavy mode
+    And the gh CLI is authenticated
     When I run the gz command "patch release --dry-run --json"
     Then the command exits with code 0
     And JSON path "ghi_count" equals "0"

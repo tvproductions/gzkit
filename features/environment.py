@@ -20,6 +20,7 @@ import logging  # noqa: E402
 import shutil  # noqa: E402
 import tempfile  # noqa: E402
 from pathlib import Path  # noqa: E402
+from unittest import mock  # noqa: E402
 
 # Scenarios whose observable IS a warning — the `--receipt-shape` warn-only path,
 # where emitting the record is the behavior under test. Their logs must not reach
@@ -97,6 +98,17 @@ def before_scenario(context, scenario) -> None:
 
 def after_scenario(context, scenario) -> None:
     """Restore cwd, clean up the temporary workspace, and unset env overrides."""
+    # A step that calls ``patcher.start()`` without a matching ``stop()`` leaves
+    # the patch installed for the REST OF THE PROCESS, and step modules routinely
+    # patch by module attribute -- ``mock.patch("<mod>.subprocess.run", ...)``
+    # rebinds the singleton ``subprocess`` module's ``run``, so the reach is
+    # global, not module-local. Left standing, such a patch silently satisfies a
+    # LATER feature's precondition: `features/patch_release.feature` passed in CI
+    # only because `evaluation_feedback_loop.feature` ran first and left a fake
+    # `gh` behind, and both scenarios failed the moment Behave sharding (GHI #906)
+    # put them in different processes. Tearing down here binds patcher lifetime to
+    # the scenario that started it, so a scenario's preconditions must be its own.
+    mock.patch.stopall()
     os.chdir(context._original_cwd)
     shutil.rmtree(context._tmpdir, ignore_errors=True)
     if hasattr(context, "_orig_arb_receipts_root"):
