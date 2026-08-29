@@ -1,5 +1,167 @@
 # gzkit Release Notes
 
+## v0.34.6 (2026-08-29)
+
+### Highlights
+
+This release is about **the first hour of a new gzkit project.** `gz init`
+scaffolded a tree that failed its own surface gate with 58 missing files, named
+a `README.md` it never created — so `uv run` could not build the project on the
+very first command init recommends — and shipped rules scoped to gzkit's own
+directory layout, so an adopter's first `gz readiness audit` failed on findings
+that described gzkit rather than them. Nine issues here are that path, end to
+end, including the maintainer's personal name in 92 `--help` examples and two
+skills whose subject only gzkit can have.
+
+The second story is **what the gates cost.** Committing a one-file change fell
+from 59.0s to 8.2s. Three independent scheduling fixes and a four-way BDD shard
+took the full `gz check` gate down on every measured run, and the canonical
+attestation invocation — which resolved a test runner from the network and ran
+roughly 3x slower than the gate it attests to — now uses the same pinned
+parallel runner the gates already use.
+
+Third: **gates that could be satisfied falsely, or not at all.** `gz obpi
+precomplete` reported READY on a *refuted* adversarial verdict. The tier-1
+adversary proof matched on `command[0]`, which the mandated plugin dispatch can
+never match. And an interrupted corpus write could destroy canon outright.
+
+### New features
+
+- **#887** — `gz obpi block` / `gz obpi unblock` record that a brief is waiting
+  on a named operator decision; while a block stands the pipeline refuses to
+  launch and `precomplete` reports it as a precondition.
+- **#906** — BDD scenarios run across four parallel processes with all 408
+  conserved, failing shards reported first.
+- **#882** — Ledger schema rules take a `when`/`then`/`because` form, so
+  `gz validate --ledger` can assert a runtime gate's own condition; a rule the
+  validator cannot read is reported rather than skipped.
+
+### Improvements
+
+- **#902** — Committing a one-file change costs 8.2s instead of 59.0s.
+- **#856** — The canonical `unittest` attestation invocation runs the pinned,
+  hash-locked parallel runner the gates use — 144.23s to 41.34s, and no longer
+  resolves a runner from the network.
+- **#904** — `gz check` runs the Test step alongside the writer lane instead of
+  idling behind it (72.1s to 60.8s, measured at that fix).
+- **#890**, **#891** — `gz validate` no longer rewrites 102 canonical files on
+  every invocation, and is classified read-only, so four gate steps run
+  alongside it rather than queueing behind it.
+- **#872** — Session-start advisement warns when the clone is behind origin,
+  qualifying the handoff it names with a commit count and a `git pull --ff-only`
+  instruction.
+- **#899** — `--help` and the manpages record the operator as `g0`, so the wheel
+  no longer ships a maintainer's personal name in an adopter's first examples.
+- **#915** — Skills whose subject only gzkit can have are withheld from adopter
+  trees, along with every router row pointing at them: 68 of 70 delivered, no
+  dangling references.
+
+### Bug fixes
+
+**A new project's first run**
+
+- **#910** — A freshly scaffolded project could not build; the scaffolder
+  declared a `README.md` it never wrote.
+- **#908** — `gz init` left a tree that failed `gz validate --surfaces` with 58
+  missing generated surfaces.
+- **#911** — Rules delivered to adopters carried gzkit's own paths; unreachable
+  `applyTo` patterns on a fresh tree fell from 33 to 14, with every
+  gzkit-internal one removed.
+- **#912** — A brand-new project failed readiness on findings that described its
+  age rather than a defect.
+- **#913** — `gz cli audit` crashed with an unhandled `FileNotFoundError` on a
+  project with no doc-coverage manifest, and required adopters to document
+  gzkit's own CLI to pass readiness.
+- **#900** — Four wheel-shipped chore and skill files told readers to open a
+  path that existed only on the maintainer's laptop.
+- **#909** — Syncing surfaces into a tree other than the current directory
+  produced different bytes than syncing from inside it; 5 of 591 files differed.
+
+**Gates that did not hold**
+
+- **#879** — `gz obpi precomplete` reported READY whenever the evidence heading
+  merely existed, including on a refuted verdict.
+- **#884** — The tier-1 adversarial proof could not be satisfied by the
+  operator-mandated plugin dispatch.
+- **#895** — A conforming tier-1 dispatch fronted by `bun` was refused at OBPI
+  completion.
+- **#886** — Stage-2 dispatch credit did not survive pipeline-marker clearing,
+  so completion reported 0-of-3 against a review that had happened.
+- **#876** — Brief-reconcile compared allowlist globs literally, reporting drift
+  against files the brief legitimately covered.
+- **#787** — A `gz check` step gating a validator scope was invisible to the
+  reachability ratchet, filing a running check as protecting nothing.
+- **#893** — Hand-edits to 22 generated surfaces — 21 persona mirrors and a
+  hook — passed `gz validate --surfaces` silently.
+- **#914** — A hook formatter that could not run was indistinguishable from a
+  clean format, surfacing only as unexplained drift.
+- **#883** — `gz validate --ledger` checked nullable declarations and array item
+  types for nothing.
+- **#885** — Corpus retirements had no ledger witness; seven live ones were
+  unwitnessed.
+
+**Canon durability**
+
+- **#881** — A failed corpus append could destroy canon; any failure now leaves
+  the prior corpus byte-identical.
+- **#880** — Concurrent corpus appends silently dropped rows from canon.
+- **#875** — An invalid corpus entry was persisted before it was validated,
+  leaving the corpus unreadable.
+
+**Portability and pointers**
+
+- **#901** — The full `gz check` gate failed on Windows; three probes assumed
+  POSIX permission bits and a moving ctime, and one leg asserted nothing at all.
+- **#896** — Seven `src/gzkit/` pointers in skill prose named modules that no
+  longer existed.
+- **#905** — The `gz check` scheduler documented and tested a dependency that
+  nothing implemented.
+
+### Known issues
+
+- **#907** — The witness gap named by #899 is open; the authorship repair closed
+  the repairable tier only.
+- **#917** — The BDD shard planner's glob is non-recursive and would drop nested
+  feature files; the conservation test shares the blind spot. No nested feature
+  file exists today, so nothing is currently dropped.
+- **#918** — A `gh` patcher teardown helper in `features/steps/justify_steps.py`
+  is defined and never called. Its consequence is already neutralized by #916.
+
+### Gate Evidence
+
+- Qualifier: behavior-level GHIs closed since `v0.34.5`
+  (2026-08-23T16:54:10-05:00). 39 discovered — 34 qualified, 1 excluded (#916),
+  4 adjudicated under `gz-patch-release` § Step 1c.
+- **#892 — adjudicated *routed, not shipped*.** Closed **withdrawn**: three-pass
+  hashing falsified its premise (`sync_all` converges in one pass). The real
+  findings became #908 and #909, both qualified above. Excluded from the
+  narrative and from Stats.
+- **#903 — adjudicated *citing commit is the remedy, not reader-facing*.**
+  `f6b3eaa6 chore(data)` refreshed `data/check_step_concurrency.json`, a dated
+  attention-routing record whose own `_doc` states it enforces nothing. No
+  `runtime` label, no `src/` diff. Recorded in `CHANGELOG.md` as maintenance;
+  excluded from the narrative and from Stats.
+- **#917, #918 — adjudicated *context only*.** Both still OPEN; their only
+  citing commits are `chore(handoffs)` entries recording that they were filed.
+  Listed under Known issues; excluded from Stats.
+- **#916 excluded correctly.** Its fix `4de926d2` touched `features/steps/`,
+  test infrastructure rather than shipped runtime.
+- **#915 evidence correction.** Its closing comment cited `37843341` and
+  `6e50b90d`, which resolve as objects but are unreachable from `main`. The
+  durable citations are `379ac35a` and `c92237e0`; corrected on the issue during
+  this ceremony.
+- Version sync: `pyproject.toml`, `src/gzkit/__init__.py`, README badge, via
+  `uv run gz patch release` (0.34.5 → 0.34.6).
+- Manifest: `docs/releases/PATCH-v0.34.6.md`; `patch-release` ledger event
+  appended.
+- Operator approval: verbatim *"Approved, and fix GHI #915's SHAs"* — g0,
+  2026-08-29.
+- Git-sync: `uv run gz git-sync --apply` run immediately before publish.
+
+### Stats
+
+- 34 GHIs closed
+
 ## v0.34.5 (2026-08-23)
 
 ### Highlights

@@ -17,6 +17,62 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.6 (2026-08-29)
+
+### Release highlights
+
+- A `gz init` tree is usable on its first command: it builds under `uv`, passes `gz validate --surfaces` with no follow-up sync, carries rules scoped to paths an adopter can have, and no longer ships the maintainer's personal name or machine-local paths (GHI #908, GHI #910, GHI #911, GHI #899, GHI #900)
+- Gate wall-clock falls across the board — a one-file commit drops from 59.0s to 8.2s, BDD shards four ways, `gz validate` stops rewriting 102 files per invocation, and the canonical attestation invocation stops resolving a test runner from the network (GHI #902, GHI #906, GHI #890, GHI #891, GHI #856)
+- Three gates that reported green without holding are bound to observed state: `precomplete` no longer reports READY on a refuted verdict, the tier-1 adversary proof is satisfiable by the mandated dispatch, and an interrupted corpus write can no longer destroy canon (GHI #879, GHI #884, GHI #881)
+
+### Added
+
+- `gz obpi block` and `gz obpi unblock` record that a brief awaits a named operator decision; the pipeline refuses to launch while a block stands (exit 3), and `precomplete` reports it as an eleventh precondition (GHI #887)
+- `gz check` shards BDD execution across four parallel processes, conserving all 408 scenarios and reporting failing shards first; 65.1s to 48.5s at that fix (GHI #906)
+- Ledger schema rules accept a conditional `when`/`then`/`because` form, so `gz validate --ledger` can assert a runtime gate's own condition; the first consumer requires an `attestor` on any `corpus_entry_retired` whose `floor_direction` moves invariant-tier liveness, and an unreadable rule is reported rather than skipped (GHI #882)
+- `gz validate --corpus-retirement-witness` runs in the default `gz check` scope, and `gz content reconcile-retirements` emits `corpus_retirement_reconciled` for legacy hand-written tombstones (GHI #885)
+- `gz validate` fails on any home- or drive-rooted literal in shipped instruction text (GHI #900)
+
+### Changed
+
+- The canonical `unittest` attestation invocation runs `unittest-parallel` 1.8.6, hash-locked in `uv.lock`, rather than resolving a runner from the network: 144.23s to 41.34s (GHI #856)
+- `gz check` runs the Test step alongside the writer lane instead of idling behind it; 72.1s to 60.8s at that fix (GHI #904)
+- `gz validate`'s default scope is classified read-only, so four gate steps run alongside it instead of queueing behind it (GHI #891)
+- Session-start and resume advisement warns when the clone is behind origin, qualifying the named handoff with a commit count and a `git pull --ff-only` instruction (GHI #872)
+- The wheel withholds skills whose subject only gzkit can have (`airlineops-parity-scan`, `gz-competitor-radar`) and every router row pointing at them: 68 of 70 delivered, no dangling references; `audit_router_tables` also widened to see `gz-skill-router`'s table header, previously structurally invisible to the router gate (GHI #915)
+- The Pythonic-pattern design-patterns archive is an unset-by-default environment variable whose absence makes a disposition explicitly provisional (GHI #900)
+- `gz obpi complete --help` and the manpages record the operator as `g0`; 92 occurrences across 19 files repaired (GHI #899)
+- `data/check_step_concurrency.json` re-measured 2026-08-28 at `d3cf81b0`, all 58 steps run alone and reporting success; one entry had drifted 7x (28.67s to 4.05s) and was routing attention as the third most expensive step in the gate. `class` deliberately not re-derived — a different protocol, and re-deriving it casually would put a guess where a measurement is (GHI #903)
+
+### Fixed
+
+- `gz init` scaffolded a `pyproject.toml` naming a `README.md` it never created, so `uv run` failed on the first command init recommends (GHI #910)
+- `gz init` left a tree that failed `gz validate --surfaces` with 58 missing generated surfaces (GHI #908)
+- Rules delivered to adopters carried gzkit's own paths; unreachable `applyTo` patterns on a fresh tree fell from 33 to 14, with every gzkit-internal pattern removed (GHI #911)
+- The reachability audit could not distinguish an unsatisfiable glob from one a young project had not yet populated, so a new project failed readiness on findings describing its age (GHI #912)
+- `gz cli audit` raised an unhandled `FileNotFoundError` on a project with no doc-coverage manifest, and required adopters to document gzkit's own CLI to pass the readiness eval (GHI #913)
+- Four wheel-shipped chore and skill files instructed readers to open a path resolvable only on the maintainer's machine (GHI #900)
+- `sync_all` wrote relative to the process working directory rather than the `project_root` it was given; 5 of 591 files differed between in-tree and out-of-tree syncs, now 0 (GHI #909)
+- `gz obpi precomplete` reported `adversarial_validation` READY whenever the evidence heading existed, including on `refuted` and `refuted-with-caveats` verdicts (GHI #879)
+- The Step-4b tier-1 adversarial proof read `command[0]` instead of walking the runtime-wrapper set, so the operator-mandated Codex plugin dispatch could never satisfy the gate; the skill, its wheel twin, the vendor mirrors, and the function docstring now describe the walk (GHI #884)
+- A conforming tier-1 dispatch fronted by `bun` was refused at OBPI completion; the runtime allowlist is held in agreement with the directive mandating dispatch surfaces (GHI #895)
+- Stage-2 dispatch credit and single-driver declarations lived only in the Layer-3 pipeline marker, so `clear-stale` destroyed them and `precomplete` reported 0-of-3 against a review that had happened (GHI #886)
+- `gz check`'s brief-reconcile scope compared allowlist globs literally, reporting drift against files a glob such as `src/gzkit/cli/**` legitimately covers; matching is subtree-bounded, so a sibling outside the pattern is still flagged (GHI #876)
+- A `gz check` step gating a validator scope was invisible to the validator-reachability ratchet; the disagreement now fails a coherence test, and registering the one live instance (`--obpi-lifecycle-coherence`) drained the ungated baseline 52 to 51 (GHI #787)
+- 22 generated surfaces — 21 vendor persona mirrors and the Copilot ledger-writer hook — were absent from `SURFACE_ROOTS`, so hand-edits passed `gz validate --surfaces` silently (GHI #893)
+- A hook formatter that could not run swallowed its failure, making it indistinguishable from a clean format and surfacing only as unexplained sync drift; the full diagnostic now reaches stderr and the status is returned (GHI #914)
+- `gz validate --ledger` fell through on nullable declarations (`{"type": ["string","null"]}`) and array item types, checking those fields for nothing; the two canonical ledger readers now agree (GHI #883)
+- Hand-written corpus tombstones retired canon with no ledger witness; a retirement now requires a witness whose `retired_entry_id` equals the tombstone target, and seven previously unwitnessed retirements were reconciled to 12/12 (GHI #885)
+- A failed corpus append could destroy canon; writes stage to a same-directory temp file, fsync, then atomically replace, so any failure leaves the prior corpus byte-identical (GHI #881)
+- Concurrent corpus appends silently dropped rows from canon; writers serialize under an exclusive store lock with uniquely-named staging files, verified across 20 barrier-synchronized trials with zero losses (GHI #880)
+- `append_entry` persisted before validating, so an unresolvable tombstone reached disk and left the corpus unreadable (GHI #875)
+- The full `gz check` gate failed on `windows-latest`; three probes assumed POSIX permission bits and a moving ctime, and one leg had been asserting nothing at all (GHI #901)
+- Pre-commit repo scanners walked 367k paths against 7,241 tracked files, and the reachability ratchet accepted gitignored caches, candidate renditions, and ARB receipts as evidence that a validator scope was reachable; a one-file commit fell from 59.0s to 8.2s (GHI #902)
+- `gz validate` rewrote 102 canonical files on every invocation — `AGENTS.md`, every vendor rules mirror, 17 hook scripts — and six governance surfaces briefly vanished mid-sync (GHI #890)
+- `gz validate` wrote canonical surfaces even on a drifted tree, blocking its classification as read-only (GHI #891)
+- Seven stale `src/gzkit/` pointers in skill prose named modules that no longer existed; `gz validate --cli-alignment` now fails on a skill citing a missing module and names the package that replaced it (GHI #896)
+- The `gz check` scheduler documented and tested a wheel-consumption dependency that nothing implemented; delivery verification was confirmed intact and only the false justification was retired (GHI #905)
+
 ## v0.34.5 (2026-08-23)
 
 ### Release highlights
