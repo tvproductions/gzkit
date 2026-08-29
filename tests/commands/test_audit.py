@@ -259,36 +259,15 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
         Path(".claude/rules").mkdir(parents=True, exist_ok=True)
         Path(".claude/rules/fixture_sync_pair.md").write_text(body, encoding="utf-8")
 
-        TestConfigAndCliAuditCommands._seed_rule_scope_paths()
-
-    # Paths named by applyTo globs that a BRAND-NEW project has not populated
-    # yet -- no ADRs authored, no changelog written, no handoff recorded. These
-    # are adopter-real; they are empty, not unsatisfiable, and the reachability
-    # audit does not distinguish the two.
+    # The seeding that stood here is GONE, and its absence is the measurement.
     #
-    # This list carried 16 more entries until GHI #911 landed the delivery-time
-    # path classifier. Those named gzkit's OWN source tree (`src/gzkit/**`,
-    # `scripts/`, `data/`), which an adopter can never have and which is why the
-    # rules no longer deliver them. Their removal here is the end-to-end witness
-    # that the classifier works: the fixture stops compensating for a leak.
-    _RULE_SCOPE_PATHS = (
-        "CHANGELOG.md",
-        "RELEASE_NOTES.md",
-        "docs/design/adr/ADR-0.0.0-fixture/obpis/OBPI-0.0.0-01-fixture.md",
-        "docs/governance/complexity/fixture.md",
-        ".claude/agents/fixture.md",
-        ".gzkit/handoffs/fixture.md",
-        ".gzkit/locks/exchange/fixture.md",
-    )
-
-    @staticmethod
-    def _seed_rule_scope_paths() -> None:
-        """Create one file per applyTo glob the scaffolded rules declare."""
-        for relative in TestConfigAndCliAuditCommands._RULE_SCOPE_PATHS:
-            target = Path(relative)
-            target.parent.mkdir(parents=True, exist_ok=True)
-            if not target.exists():
-                target.write_text("", encoding="utf-8")
+    # It began at 23 paths under GHI #908, fell to 7 when GHI #911 stopped
+    # delivering rules that scope gzkit's own source tree, and reaches 0 here:
+    # GHI #912 taught the reachability audit that an adopter-real glob matching
+    # nothing describes a project's youth, not its configuration. Every path it
+    # created existed to make a young tree look mature enough to pass a check
+    # that could not tell the two apart. A fixture that compensates for a
+    # predicate is an accommodation with a shelf life, and this one has expired.
 
     def test_check_config_paths_passes_for_valid_layout(self) -> None:
         runner = CliRunner()

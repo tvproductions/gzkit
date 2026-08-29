@@ -28,6 +28,21 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
     return "\n".join(lines)
 
 
+def _framework_tree(root: Path) -> Path:
+    """Mark ``root`` as the gzkit repo itself rather than a project using it.
+
+    ``_is_framework_tree`` keys on the package source being present, so a test
+    that wants the strict every-pattern-must-match reading has to say so out
+    loud. A bare temp directory is an ADOPTER tree; asserting framework
+    semantics against one is how a reachability test goes green because the
+    discriminator moved rather than because the behaviour holds (GHI #912).
+    """
+    package = root / "src" / "gzkit"
+    package.mkdir(parents=True, exist_ok=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    return root
+
+
 class TestReachability(unittest.TestCase):
     """Test audit_instruction_reachability().
 
@@ -52,9 +67,10 @@ class TestReachability(unittest.TestCase):
             self.assertEqual(errors, [])
 
     @covers("REQ-0.17.0-02-06")
-    def test_glob_matches_nothing_errors(self) -> None:
+    def test_framework_tree_flags_a_glob_matching_nothing(self) -> None:
+        """On gzkit itself every pattern must match: this is where canon lives."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            root = _framework_tree(Path(tmp))
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "missing.instructions.md").write_text(
@@ -66,6 +82,85 @@ class TestReachability(unittest.TestCase):
             self.assertEqual(len(errors), 1)
             self.assertIn("nonexistent/**", errors[0].message)
             self.assertIn("zero files", errors[0].message)
+
+    def test_framework_tree_flags_an_unpopulated_adopter_path(self) -> None:
+        """Strictness survives at the source, which is what catches a typo.
+
+        ``docs/design/adr/**`` is adopter-real, so an adopter tree stays silent
+        about it. gzkit is where the corpus is authored, so a pattern naming a
+        directory this repo does not have is a defect in canon and must fire
+        before the rule ships (GHI #912).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _framework_tree(Path(tmp))
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "adr.instructions.md").write_text(
+                _instruction_file("docs/design/adr/**", "# ADR rules"), encoding="utf-8"
+            )
+
+            errors = audit_instruction_reachability(root)
+
+            self.assertEqual(len(errors), 1)
+            self.assertIn("docs/design/adr/**", errors[0].message)
+
+    def test_adopter_tree_permits_an_unpopulated_subtree(self) -> None:
+        """A rule scoped to work the project has not done yet is not a defect.
+
+        The whole point of scoping a rule to ``docs/design/adr/**`` is that it
+        arms the moment the operator authors an ADR. Reporting it on day one
+        describes the project's youth, not its configuration (GHI #912).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "adr.instructions.md").write_text(
+                _instruction_file("docs/design/adr/**", "# ADR rules"), encoding="utf-8"
+            )
+
+            errors = audit_instruction_reachability(root)
+
+            self.assertEqual(errors, [])
+
+    def test_adopter_tree_permits_an_uncreated_literal_file(self) -> None:
+        """A literal path is the same question as a glob, and gets the answer.
+
+        ``CHANGELOG.md`` has no glob segment at all, so any predicate reasoning
+        about directory prefixes abstains on it rather than deciding it. The
+        tree discriminator answers it the same way it answers a subtree.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "changelog.instructions.md").write_text(
+                _instruction_file("CHANGELOG.md", "# Changelog rules"), encoding="utf-8"
+            )
+
+            errors = audit_instruction_reachability(root)
+
+            self.assertEqual(errors, [])
+
+    def test_adopter_tree_flags_a_leaked_framework_path(self) -> None:
+        """The leak backstop survives the relaxation, which is the whole bargain.
+
+        An adopter can never have ``src/gzkit/``. GHI #911 stops these at the
+        delivery boundary; this audit is the independent witness that fires when
+        the classifier misses one or a mirror is hand-edited.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "mx.instructions.md").write_text(
+                _instruction_file("src/gzkit/mx/**", "# MX rules"), encoding="utf-8"
+            )
+
+            errors = audit_instruction_reachability(root)
+
+            self.assertEqual(len(errors), 1)
+            self.assertIn("src/gzkit/mx/**", errors[0].message)
 
     def test_global_pattern_always_passes(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -90,14 +185,14 @@ class TestReachability(unittest.TestCase):
 
     def test_multi_pattern_flags_only_unreachable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            root = _framework_tree(Path(tmp))
             inst = root / ".github" / "instructions"
             inst.mkdir(parents=True)
             (inst / "multi.instructions.md").write_text(
                 _instruction_file("src/**,missing/**", "# Multi"), encoding="utf-8"
             )
             src = root / "src"
-            src.mkdir()
+            src.mkdir(exist_ok=True)
             (src / "app.py").write_text("", encoding="utf-8")
 
             errors = audit_instruction_reachability(root)
