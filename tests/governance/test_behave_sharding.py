@@ -45,10 +45,41 @@ REPO = Path(__file__).resolve().parents[2]
 
 
 def _fixture_features(root: Path, sizes: dict[str, int]) -> None:
+    """Write fixture feature files; a name containing ``/`` is nested.
+
+    Nesting is not decoration. Behave itself recurses into ``features/``, so a
+    planner that does not is a scope change wearing a speedup's clothes -- and
+    a conservation test with only top-level fixtures cannot see it (GHI #917).
+    """
     features = root / "features"
     features.mkdir(parents=True, exist_ok=True)
     for name, size in sizes.items():
-        (features / name).write_text("x" * size, encoding="utf-8")
+        path = features / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("x" * size, encoding="utf-8")
+
+
+def _wheel_building_features(features_root: Path) -> list[str]:
+    """Feature files that drive the declared ``dist/`` write, found RECURSIVELY.
+
+    Recursive because behave's feature discovery is, and because
+    ``_plan_behave_shards`` now shards what behave would run (GHI #917). A
+    non-recursive scan here would clear a nested second writer for takeoff:
+    the planner would place it in some shard, the partition would no longer
+    hold both writers in one process, and this guard would report one writer
+    while two raced on ``dist/``.
+
+    Contrast ``features/steps``, enumerated NON-recursively at the call site.
+    That asymmetry is deliberate and measured: behave loads nested step modules
+    only under ``use_nested_step_modules``, which ``behave.ini`` does not set,
+    so a nested step file is never loaded and flagging one would be a false
+    writer. Do not "tidy" the two into agreement.
+    """
+    return sorted(
+        path.relative_to(features_root).as_posix()
+        for path in features_root.rglob("*.feature")
+        if "build the wheel with uv build" in path.read_text(encoding="utf-8")
+    )
 
 
 class TestShardPlanner(unittest.TestCase):
@@ -58,13 +89,21 @@ class TestShardPlanner(unittest.TestCase):
         """Conservation: no scenario is dropped and none is run twice."""
         with tempfile.TemporaryDirectory(prefix="gzkit-shard-") as name:
             root = Path(name)
-            _fixture_features(root, {f"f{i}.feature": 100 * (i + 1) for i in range(11)})
+            authored = {f"f{i}.feature": 100 * (i + 1) for i in range(11)}
+            authored["sub/nested.feature"] = 550
+            _fixture_features(root, authored)
 
             shards = _plan_behave_shards(root, 4)
 
             planned = [path for shard in shards for path in shard]
-            on_disk = sorted((root / "features").glob("*.feature"))
-            self.assertEqual(sorted(planned), on_disk, "the partition lost or duplicated a file")
+            # Enumerated from what the fixture AUTHORED, never by re-running the
+            # planner's own discovery call. An expected set built with the
+            # planner's glob agrees with the planner by construction and cannot
+            # fail when that glob is wrong -- which is how a nested file went
+            # missing from every shard while this assertion stayed green
+            # (GHI #917).
+            expected = sorted((root / "features") / name for name in authored)
+            self.assertEqual(sorted(planned), expected, "the partition lost or duplicated a file")
             self.assertEqual(len(planned), len(set(planned)), "a feature file was assigned twice")
 
     def test_no_shard_is_empty_when_files_outnumber_shards(self) -> None:
@@ -213,14 +252,28 @@ class TestDeclaredWriteStaysInOneShard(unittest.TestCase):
         # feature files carry "distribution" in their names and only this one
         # builds anything -- a name-shaped check reports two false writers and
         # would have to be silenced, which is how a fence stops being read.
-        builders = sorted(
-            path.name
-            for path in (REPO / "features").glob("*.feature")
-            if "build the wheel with uv build" in path.read_text(encoding="utf-8")
-        )
+        builders = _wheel_building_features(REPO / "features")
 
         self.assertEqual(step_modules, ["distribution_invariant_steps.py"])
         self.assertEqual(builders, ["distribution_invariant.feature"])
+
+    def test_a_nested_wheel_builder_is_visible_to_the_writer_guard(self) -> None:
+        """The guard must see a writer anywhere behave would run one.
+
+        Without this, the guard above passes by describing the repo's current
+        flat layout rather than by checking the property it claims. Nesting
+        `features/` is an ordinary thing to do to a directory holding 68 files
+        (GHI #917).
+        """
+        with tempfile.TemporaryDirectory(prefix="gzkit-writer-") as name:
+            features = Path(name) / "features"
+            (features / "sub").mkdir(parents=True)
+            (features / "quiet.feature").write_text("Given nothing\n", encoding="utf-8")
+            (features / "sub" / "nested.feature").write_text(
+                "When I build the wheel with uv build\n", encoding="utf-8"
+            )
+
+            self.assertEqual(_wheel_building_features(features), ["sub/nested.feature"])
 
 
 if __name__ == "__main__":

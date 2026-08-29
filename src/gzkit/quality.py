@@ -512,11 +512,18 @@ def _plan_behave_shards(project_root: Path, count: int) -> list[list[Path]]:
     THE PARTITION IS THE SAFETY PROPERTY. Every file lands in exactly one shard,
     which is what conserves the scenario set and what keeps the one feature that
     writes ``dist/`` inside a single process. Balance is only the speedup.
+
+    Discovery is RECURSIVE because behave's own is: ``uv run -m behave`` walks
+    ``features/`` to any depth, while ``_run_behave_shards`` passes only the
+    paths planned here. A non-recursive glob therefore does not shard the work
+    differently, it drops it -- silently, under a green ``✓ Behave`` (GHI #917).
     """
     features_dir = project_root / "features"
     if count < 2 or not features_dir.is_dir():
         return []
-    by_weight = sorted(features_dir.glob("*.feature"), key=lambda p: p.stat().st_size, reverse=True)
+    by_weight = sorted(
+        features_dir.rglob("*.feature"), key=lambda p: p.stat().st_size, reverse=True
+    )
     if len(by_weight) < 2:
         return []
 
