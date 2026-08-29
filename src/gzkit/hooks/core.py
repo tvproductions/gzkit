@@ -6,7 +6,6 @@ This module contains the governance enforcement logic that all agent hooks use.
 import re
 import sys
 import tempfile
-from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -520,7 +519,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
     return script_path
 
 
-def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> None:
+def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> str | None:
     """Run ``ruff format`` on a generated hook directory.
 
     Generated hook sources are derived from dedented string templates that do
@@ -532,15 +531,34 @@ def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> None:
     Everything the formatter resolves is derived from ``project_root``, never
     from ambient process state. ``uv run`` picks ITS project from the working
     directory, so a caller standing outside the tree it was syncing formatted
-    with a different environment -- or, in a tree ``uv`` cannot build, failed to
-    format at all and had the failure swallowed by the suppression below. Either
-    way the same root produced different bytes depending on where the caller
-    stood, which no call site could show (GHI #909).
+    with a different environment (GHI #909).
+
+    A FORMATTER THAT COULD NOT RUN IS NOT A FORMATTER THAT RAN, and this
+    function used to report them identically (GHI #914). Two suppressions
+    composed into silence: one swallowed a formatter that could not be
+    LAUNCHED, and ``check=False`` with the result never bound swallowed one that
+    launched and exited non-zero, along with the ``stderr`` saying why. Because
+    normalization is what the sync-parity comparison is measured against, a
+    silent no-op surfaces later as unexplained drift and sends the reader to
+    debug the renderer instead of the environment.
+
+    Both channels are load-bearing and neither substitutes for the other: the
+    stderr line is what an operator reading output sees, and the return value is
+    what a caller could branch on. Nothing branches on it today -- reporting the
+    fact is deliberately separated from deciding what to do about it, since
+    raising would break ``sync_all`` in trees where it previously degraded
+    quietly.
+
+    Returns:
+        ``None`` when the directory formatted cleanly, or when there was
+        nothing to format. Otherwise a one-line reason the formatting did not
+        happen, already written to stderr.
+
     """
     import subprocess  # noqa: PLC0415
 
     if not directory.is_dir():
-        return
+        return None
     command = ["uv", "run", "ruff", "format"]
     config_path = project_root / "pyproject.toml" if project_root is not None else None
     if config_path is not None and config_path.is_file():
@@ -551,8 +569,8 @@ def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> None:
         # ruff-formatted at line-length 100" -- discovering the wrong width
         # would make every hook differ forever instead of once.
         command += ["--config", str(config_path)]
-    with suppress(FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError):
-        subprocess.run(
+    try:
+        completed = subprocess.run(
             [*command, str(directory)],
             capture_output=True,
             text=True,
@@ -561,3 +579,29 @@ def _ruff_format_dir(directory: Path, project_root: Path | None = None) -> None:
             check=False,
             cwd=project_root,
         )
+    except (FileNotFoundError, subprocess.TimeoutExpired, subprocess.SubprocessError) as exc:
+        return _report_format_failure(directory, f"could not run ({type(exc).__name__}: {exc})")
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        return _report_format_failure(
+            directory,
+            f"exited {completed.returncode}"
+            + (f"\n{detail}" if detail else " with no diagnostic output"),
+        )
+    return None
+
+
+def _report_format_failure(directory: Path, reason: str) -> str:
+    """Write a formatting failure to stderr and return it for a caller to use.
+
+    The captured diagnostic is passed through WHOLE rather than reduced to a
+    line. Measured on the unbuildable-tree fixture, ``uv`` puts a benign
+    ``VIRTUAL_ENV`` warning first and remediation hints last, with the actual
+    cause in the middle -- so first-line and last-line are both wrong, and
+    picking either rebuilds the lossy channel this function exists to replace.
+    A formatting failure is rare; verbose on failure and silent on success is
+    the right trade (GHI #914).
+    """
+    message = f"ruff format did not run on {directory}: {reason}"
+    print(f"Warning: {message}", file=sys.stderr)  # noqa: T201
+    return message
