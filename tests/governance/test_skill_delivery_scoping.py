@@ -226,5 +226,114 @@ class TestDeliveredCatalogue(unittest.TestCase):
         self.assertEqual(offenders, [], "the distribution gate rejects the withheld slugs")
 
 
+class TestRouterRowsFollowTheBoundary(unittest.TestCase):
+    """A withheld skill must leave no route pointing at it.
+
+    `gz validate --router-tables` (OBPI-0.27.0-03, terminal) already fails
+    CLOSED at exit 3 when a router routes an intent to a slug with no canonical
+    SKILL.md. Withholding a skill without withholding its routes therefore does
+    not merely leave noise -- it hands the adopter a tree that fails its own
+    gate. Measured on a fresh `gz init` tree before this filter existed: exit 3,
+    two errors, naming `gz-context`'s `parity` row and `gz-project`'s
+    `competitor radar` row.
+    """
+
+    def test_a_row_routing_to_a_withheld_slug_is_dropped(self) -> None:
+        """Only the offending row goes; the table and its neighbours stay."""
+        from gzkit.governance.trust_audits.router_tables import scope_router_rows_for_delivery
+
+        body = (
+            "# gz-context\n\n"
+            "| Intent | Skill |\n"
+            "|---|---|\n"
+            "| handoff | `gz-session-handoff` |\n"
+            "| parity | `airlineops-parity-scan` |\n"
+        )
+        scoped = scope_router_rows_for_delivery(body, delivered={"gz-session-handoff"})
+        self.assertIn("| handoff | `gz-session-handoff` |", scoped)
+        self.assertNotIn("airlineops-parity-scan", scoped)
+        self.assertIn("| Intent | Skill |", scoped, "the table header must survive")
+
+    def test_a_non_router_body_is_returned_unchanged(self) -> None:
+        """No intent table means not a router; the filter must not touch it.
+
+        The parser treats the absent header as the structural signal that a
+        skill is not a router. A filter that stripped backticked slugs from
+        ordinary prose would rewrite most of the catalogue.
+        """
+        from gzkit.governance.trust_audits.router_tables import scope_router_rows_for_delivery
+
+        body = "# gz-check\n\nRun `gz check`. See `airlineops-parity-scan` for parity.\n"
+        self.assertEqual(scope_router_rows_for_delivery(body, delivered=set()), body)
+
+    def test_a_qualified_intent_header_is_still_a_router(self) -> None:
+        """`| Intent / Keyword | Skill |` is a router table too.
+
+        The header pattern required `Intent` to be the WHOLE first cell, so
+        `gz-skill-router` -- the discovery router AGENTS.md sends agents to --
+        was invisible to both this filter and `audit_router_tables`, its ~40
+        rows unchecked by the very REQ that shipped the audit
+        (REQ-0.27.0-03-01: *"every routed skill resolves to a registered skill
+        on disk"*). Two dangling rows survived the delivery filter that way.
+        """
+        from gzkit.governance.trust_audits.router_tables import scope_router_rows_for_delivery
+
+        body = (
+            "| Intent / Keyword | Skill |\n"
+            "|---|---|\n"
+            "| handoff, session | `gz-session-handoff` |\n"
+            "| parity, airlineops | `airlineops-parity-scan` |\n"
+        )
+        scoped = scope_router_rows_for_delivery(body, delivered={"gz-session-handoff"})
+        self.assertIn("gz-session-handoff", scoped)
+        self.assertNotIn("airlineops-parity-scan", scoped)
+
+    def test_no_delivered_skill_names_a_withheld_slug_anywhere(self) -> None:
+        """The class witness: not one table row, but every reference at all.
+
+        A row the filter drops and a diagram line it cannot parse are the same
+        defect to an agent reading the delivered file -- an instruction naming
+        a skill that is not there, inside the surface AGENTS.md § SKILLS FIRST
+        tells it to prefer.
+        """
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import _classify_skill_file, scaffold_core_skills
+
+        canonical = REPO_ROOT / ".gzkit" / "skills"
+        withheld = {
+            d.name
+            for d in canonical.iterdir()
+            if d.is_dir()
+            and (d / "SKILL.md").is_file()
+            and _classify_skill_file((d / "SKILL.md"), project_root=REPO_ROOT) == "project_local"
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scaffold_core_skills(root, GzkitConfig())
+            offenders = [
+                f"{path.parent.name}: {line.strip()}"
+                for path in sorted((root / ".gzkit" / "skills").glob("*/SKILL.md"))
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if any(slug in line for slug in withheld)
+            ]
+            self.assertEqual(offenders, [], "delivered skills still name a withheld slug")
+
+    def test_a_scaffolded_tree_passes_its_own_router_gate(self) -> None:
+        """The end-to-end property, run through the real gate rather than a proxy."""
+        from gzkit.config import GzkitConfig
+        from gzkit.governance.trust_audits.router_tables import audit_router_tables
+        from gzkit.skills import scaffold_core_skills
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scaffold_core_skills(root, GzkitConfig())
+            unresolved = [
+                error.artifact
+                for error in audit_router_tables(root)
+                if error.type == "router_tables"
+            ]
+            self.assertEqual(unresolved, [], "a delivered router points at a withheld skill")
+
+
 if __name__ == "__main__":
     unittest.main()

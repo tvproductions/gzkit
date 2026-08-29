@@ -529,20 +529,35 @@ def scaffold_core_skills(
     skills_dir = project_root / config.paths.skills
     skills_dir.mkdir(parents=True, exist_ok=True)
 
-    created: list[Path] = []
+    from gzkit.governance.trust_audits.router_tables import (  # noqa: PLC0415
+        scope_router_rows_for_delivery,
+    )
+
+    # Resolve the delivered set BEFORE writing anything. A router's rows are
+    # scoped against what this scaffold actually lands, and a filter applied
+    # slug-by-slug would judge each row against a set still being built --
+    # dropping a valid route purely because its target sorts later (GHI #915).
+    payloads: dict[str, bytes] = {}
     for slug_resource in _iter_canonical_skill_slugs():
-        slug = slug_resource.name
+        content_bytes = slug_resource.joinpath("SKILL.md").read_bytes()
+        frontmatter, _ = _parse_frontmatter(content_bytes.decode("utf-8"))
+        if (frontmatter.get("lifecycle_state") or "active") == "retired":
+            continue
+        payloads[slug_resource.name] = content_bytes
+    delivered = set(payloads)
+
+    created: list[Path] = []
+    for slug, content_bytes in payloads.items():
         target_dir = skills_dir / slug
         target_file = target_dir / "SKILL.md"
         if skip_existing and target_file.exists():
             continue
-        skill_src = slug_resource.joinpath("SKILL.md")
-        content_bytes = skill_src.read_bytes()
-        frontmatter, _ = _parse_frontmatter(content_bytes.decode("utf-8"))
-        if (frontmatter.get("lifecycle_state") or "active") == "retired":
-            continue
+        scoped = scope_router_rows_for_delivery(content_bytes.decode("utf-8"), delivered=delivered)
         target_dir.mkdir(parents=True, exist_ok=True)
-        target_file.write_bytes(content_bytes)
+        # LF pinned: this is a generated surface now that routers are
+        # scoped at delivery, so the byte-for-byte write no longer covers
+        # it and a Windows default would emit CRLF (GHI #681).
+        target_file.write_text(scoped, encoding="utf-8", newline="\n")
         created.append(target_file)
 
     return created

@@ -26,8 +26,19 @@ from pathlib import Path
 
 from gzkit.validate import ValidationError
 
-_INTENT_TABLE_HEADER = re.compile(r"\|\s*Intent\s*\|\s*Skill\s*\|", re.IGNORECASE)
+# `Intent` need only OPEN the first cell. Requiring it to be the whole cell made
+# `gz-skill-router` -- the discovery router AGENTS.md sends agents to, and the
+# largest one -- structurally invisible here: its header reads
+# `| Intent / Keyword | Skill |`, so its ~40 rows were never resolved against
+# disk by the REQ that shipped this audit (REQ-0.27.0-03-01). Found because two
+# rows survived the GHI #915 delivery filter, which reads the same pattern.
+_INTENT_TABLE_HEADER = re.compile(r"\|\s*Intent\b[^|]*\|\s*Skill\s*\|", re.IGNORECASE)
 _INTENT_ROW = re.compile(r"\|\s*([^|`]+?)\s*\|\s*`([^`]+)`\s*\|")
+#: The other shape a router catalogues a route in: an ASCII decision tree whose
+#: branch ends in the slug. Not read by the audit -- widening what fails a gate
+#: is a separate ruling -- but read by the delivery filter, because an agent
+#: reading a delivered diagram cannot tell a decorative branch from a live one.
+_DIAGRAM_ROUTE = re.compile(r"─+→\s*([a-z0-9][a-z0-9-]*)\s*$")
 _CANONICAL_SKILLS_DIR = Path(".gzkit") / "skills"
 
 
@@ -54,6 +65,52 @@ def _router_rows(skill_path: Path) -> list[tuple[str, str]]:
     if not _INTENT_TABLE_HEADER.search(body):
         return []
     return [(intent.strip(), slug) for intent, slug in _INTENT_ROW.findall(body)]
+
+
+def scope_router_rows_for_delivery(body: str, *, delivered: set[str]) -> str:
+    """Drop intent-table rows routing to a slug the delivery boundary withheld.
+
+    THIS IS THE ROUTER ARM OF GHI #915's FENCE, and it is not cosmetic. This
+    module's own audit fails CLOSED at exit 3 on a route to a slug with no
+    canonical SKILL.md, so withholding a skill without withholding its routes
+    hands an adopter a tree that fails its own gate -- measured on a fresh
+    `gz init`: two errors, `gz-context`'s `parity` row and `gz-project`'s
+    `competitor radar` row.
+
+    Filtering at delivery rather than editing the canonical router is the same
+    ruling GHI #911 made for rule `paths:`: gzkit HAS both skills and must keep
+    routing to them, so a scrub of the canonical body would fix adopters by
+    degrading the framework.
+
+    Reads through the SAME two regexes ``audit_router_tables`` reads, so the
+    rows this drops and the rows that audit inspects cannot come to disagree.
+    A body with no intent table is returned untouched -- the absent header is
+    the structural signal that a skill is not a router, and a filter that
+    stripped backticked slugs from ordinary prose would rewrite the catalogue.
+    """
+    if not _INTENT_TABLE_HEADER.search(body):
+        return body
+    kept: list[str] = []
+    for line in body.splitlines(keepends=True):
+        if _routed_slug(line) not in (None, *delivered):
+            continue
+        kept.append(line)
+    return "".join(kept)
+
+
+def _routed_slug(line: str) -> str | None:
+    """Return the slug a router line routes to, or None if it routes nowhere.
+
+    Two shapes, because routers catalogue routes two ways: a pipe-table row and
+    an ASCII decision-tree branch. Both are read here so the fence does not
+    depend on which shape a given router happened to use.
+    """
+    if line.lstrip().startswith("|"):
+        row = _INTENT_ROW.search(line)
+        if row is not None:
+            return row.group(2)
+    branch = _DIAGRAM_ROUTE.search(line.rstrip())
+    return branch.group(1) if branch is not None else None
 
 
 def audit_router_tables(project_root: Path) -> list[ValidationError]:
