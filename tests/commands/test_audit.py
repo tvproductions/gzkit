@@ -261,37 +261,24 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
 
         TestConfigAndCliAuditCommands._seed_rule_scope_paths()
 
-    # Paths named by the applyTo globs of the rules gz init scaffolds. They are
-    # gzkit's OWN source paths, so an adopter tree can never satisfy them and
-    # `gz readiness audit` reports every one as unreachable. This fixture already
-    # fabricates gzkit-shaped paths for the same reason (src/gzkit/templates/
-    # obpi.md above); these extend that. The leak itself is tracked separately --
-    # seeding here keeps the readiness assertion meaningful, it does not repair
-    # the scaffolder.
+    # Paths named by applyTo globs that a BRAND-NEW project has not populated
+    # yet -- no ADRs authored, no changelog written, no handoff recorded. These
+    # are adopter-real; they are empty, not unsatisfiable, and the reachability
+    # audit does not distinguish the two.
+    #
+    # This list carried 16 more entries until GHI #911 landed the delivery-time
+    # path classifier. Those named gzkit's OWN source tree (`src/gzkit/**`,
+    # `scripts/`, `data/`), which an adopter can never have and which is why the
+    # rules no longer deliver them. Their removal here is the end-to-end witness
+    # that the classifier works: the fixture stops compensating for a leak.
     _RULE_SCOPE_PATHS = (
         "CHANGELOG.md",
         "RELEASE_NOTES.md",
-        "data/exemplar_corpus.json",
-        "data/security_surfaces.json",
         "docs/design/adr/ADR-0.0.0-fixture/obpis/OBPI-0.0.0-01-fixture.md",
         "docs/governance/complexity/fixture.md",
         ".claude/agents/fixture.md",
         ".gzkit/handoffs/fixture.md",
         ".gzkit/locks/exchange/fixture.md",
-        "scripts/session_orientation.py",
-        "src/gzkit/chores/fixture.py",
-        "src/gzkit/cli/fixture.py",
-        "src/gzkit/commands/issue_cmd.py",
-        "src/gzkit/commands/obpi_complete.py",
-        "src/gzkit/commands/obpi_lock.py",
-        "src/gzkit/complexity/thresholds.py",
-        "src/gzkit/exchange_records.py",
-        "src/gzkit/governance/fixture.py",
-        "src/gzkit/hooks/guards.py",
-        "src/gzkit/lock_manager.py",
-        "src/gzkit/mx/awareness.py",
-        "src/gzkit/pipeline_runtime.py",
-        "src/gzkit/schemas/complexity_thresholds.json",
     )
 
     @staticmethod

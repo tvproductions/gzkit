@@ -794,6 +794,76 @@ def _render_path_str(target: Path, project_root: Path | None) -> str:
         return target.as_posix()
 
 
+#: Path prefixes only the gzkit repository can satisfy. `src/gzkit/` is the
+#: package source -- an adopter installs py-gzkit as a dependency and never
+#: vendors it. `scripts/` and `data/` are this repo's own registries and
+#: harnesses (`scripts/session_orientation.py`, `data/exemplar_corpus.json`,
+#: `data/security_surfaces.json`); `gz init` scaffolds neither.
+#:
+#: `.gzkit/` is deliberately ABSENT and that is the load-bearing distinction:
+#: it is the governance directory of WHOEVER RUNS GZ, so `.gzkit/handoffs/**`
+#: and `.gzkit/locks/exchange/**` are adopter-real. A first classification of
+#: this corpus matched the literal "gzkit" and reported four rules as wholly
+#: framework-internal; three were false for exactly this reason.
+_FRAMEWORK_INTERNAL_PREFIXES = ("src/gzkit/", "scripts/", "data/")
+
+
+def _is_framework_internal_path(path: str) -> bool:
+    """Return whether ``path`` names something only the gzkit repo can have."""
+    return path.startswith(_FRAMEWORK_INTERNAL_PREFIXES)
+
+
+def _is_framework_tree(project_root: Path | None) -> bool:
+    """Return whether ``project_root`` IS gzkit rather than a project using it.
+
+    Keyed on the package source being present in the tree, which is true of this
+    repository and of nothing else: an adopter depends on py-gzkit and does not
+    carry `src/gzkit/`. Derived from the root PASSED IN, never an ambient one --
+    the discipline `_ruff_format_dir` learned under GHI #909.
+
+    ``None`` means the caller did not say, and the conservative answer is "yes,
+    the framework": it preserves today's rendering exactly rather than silently
+    stripping scope from a caller that never opted in.
+    """
+    if project_root is None:
+        return True
+    return (project_root / "src" / "gzkit" / "__init__.py").is_file()
+
+
+def _scope_rule_for_delivery(
+    rule: CanonicalRule, project_root: Path | None
+) -> CanonicalRule | None:
+    """Narrow a rule's paths to what the delivery target can actually have.
+
+    gzkit's canonical rules serve TWO consumers -- this repository and every
+    adopter -- and `paths:` can only say one thing. Scrubbing the canonical
+    frontmatter would fix adopters by degrading the framework: strip
+    `src/gzkit/mx/**` from mx-mode and gzkit stops scoping that rule to the code
+    it governs. Filtering at the delivery boundary keeps the canonical rule whole
+    and lets each consumer see the scopes that mean something to it (GHI #911).
+
+    Returns ``None`` when nothing adopter-real survives. A rule scoped to nothing
+    is not a smaller rule, it is noise: `RuleFrontmatter.paths` carries
+    ``min_length=1`` precisely because an unscoped rule is not a rule. Exactly
+    one canonical rule is in that position today (`cli`, scoping only
+    `src/gzkit/commands/**`).
+
+    This mirrors `_prune_unshippable_chores` (GHI #783) one level down, including
+    its reason for keying on a classifier: the class definition is the contract,
+    and a glob restating one shape of it would drift.
+    """
+    if _is_framework_tree(project_root):
+        return rule
+    deliverable = [p for p in rule.frontmatter.paths if not _is_framework_internal_path(p)]
+    if not deliverable:
+        return None
+    if deliverable == rule.frontmatter.paths:
+        return rule
+    return rule.model_copy(
+        update={"frontmatter": rule.frontmatter.model_copy(update={"paths": deliverable})}
+    )
+
+
 def render_rules_to_dir(
     rules: list[CanonicalRule],
     target_dir: Path,
@@ -832,9 +902,15 @@ def render_rules_to_dir(
     expected_names: set[str] = set()
 
     for rule in rules:
-        filename = name_fn(rule)
+        deliverable = _scope_rule_for_delivery(rule, project_root)
+        if deliverable is None:
+            # Wholly framework-internal: not delivered, and deliberately NOT added
+            # to expected_names, so the stale sweep below removes a copy an
+            # earlier version of this renderer wrote (GHI #911).
+            continue
+        filename = name_fn(deliverable)
         expected_names.add(filename)
-        output = render_fn(rule)
+        output = render_fn(deliverable)
         target = target_dir / filename
         write_text_if_changed(target, output)
         written.append(_render_path_str(target, project_root))
@@ -869,6 +945,7 @@ __all__ = [
     "ClassifiedRule",
     "RuleFrontmatter",
     "_classify_rule_file",
+    "_is_framework_internal_path",
     "_iter_canonical_rule_slugs",
     "classify_instruction_rules",
     "load_rule",
