@@ -102,5 +102,7 @@ site/
 # is Layer-1 canon — so they must be ignored by name or every corpus write dirties the
 # tree. The `.jsonl` globs in corpus_retirement_witness.py and bullet_retention.py do
 # not see them; git would. Staging files are unlinked on failure, but survive SIGKILL.
-.gzkit/corpus/*.lock
-.gzkit/corpus/*.tmp
+.gzkit/corpus/**/*.lock
+.gzkit/corpus/**/*.tmp
+# The `**` is load-bearing: a rule-surface corpus nests under its own path
+# (.gzkit/corpus/.gzkit/rules/<name>.md.jsonl), which a single-level glob misses.
