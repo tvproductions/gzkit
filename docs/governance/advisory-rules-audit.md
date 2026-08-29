@@ -56,7 +56,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `cli.md` | `0.5.0` |
 | `cross-platform.md` | `0.6.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.0` |
-| `governance-core.md` | `0.13.0` |
+| `governance-core.md` | `0.14.0` |
 | `guardrail-feedback-prose.md` | `0.2.0` |
 | `mx-mode.md` | `1.3.0` |
 | `pythonic.md` | `0.5.0` |
@@ -95,6 +95,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 12 | Use GitHub gitignore template for `.gitignore` scaffolding | **Judgment** | Only applies to `gz init` / scaffolding skills; hard to mechanize retrospectively |
 
 ### Governance Core (`.gzkit/rules/governance-core.md`)
+
+**Re-scored 2026-08-29 at rule `0.14.0` (GHI #921 diet pass).** Every binding clause was re-read against the rewritten file: 9 bullets, 3 binding sections, 6 numbered workflow steps, 4 table rows and 5 `gz` invocations — all structurally retained (16,885 B -> 8,314 B; narrative lifted to [`governance-core-rationale.md`](governance-core-rationale.md), version chain to [`rule-version-history.md`](rule-version-history.md#governance-coremd)). **No binding clause changed**, so no score below moves. One correction landed from the re-read: the rule's § Operator-doc verb resolution claimed *"Exit 3 on any unresolvable reference"* — row 17e had already measured that as wrong in 2026-08-09 and the rule was never corrected, so the drift survived four rule versions. Verified again this pass against `src/gzkit/commands/validate_cmd.py:946`: neither `cli_alignment` nor `manpage_alignment` is in `_POLICY_BREACH_ERROR_TYPES`, so the scope exits 1. The rule now states exit 1 and cites the file. This is the case row 17e's note anticipated — a scorecard correcting a rule that never absorbed it.
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
