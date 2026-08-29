@@ -246,52 +246,6 @@ def _seed_reconcile_receipt(obpi_id: str, brief_path: Path) -> None:
     )
 
 
-def _seed_pipeline_marker(obpi_id: str) -> None:
-    """Write a GHI #412-authentic marker + matching ledger event for the seeded brief.
-
-    The parent ADR mirrors the convention used by ``_seed_brief`` callers
-    (``ADR-FIXTURE-<obpi_id[-5:]>``); the nonce is fresh per call so the
-    marker passes :func:`_validate_active_pipeline_marker`.
-    """
-    from datetime import UTC, datetime
-
-    marker_dir = Path(".claude") / "plans"
-    marker_dir.mkdir(parents=True, exist_ok=True)
-    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    parent_adr = f"ADR-FIXTURE-{obpi_id[-5:]}"
-    nonce = "fedcba9876543210fedcba9876543210"
-    marker_path = marker_dir / f".pipeline-active-{obpi_id}.json"
-    payload = {
-        "obpi_id": obpi_id,
-        "parent_adr": parent_adr,
-        "lane": "heavy",
-        "entry": "full",
-        "execution_mode": "normal",
-        "current_stage": "ceremony",
-        "started_at": timestamp,
-        "updated_at": timestamp,
-        "receipt_state": "pass",
-        "nonce": nonce,
-        "blockers": [],
-    }
-    marker_path.write_text(json.dumps(payload), encoding="utf-8")
-    ledger_path = Path(".gzkit") / "ledger.jsonl"
-    ledger_path.parent.mkdir(parents=True, exist_ok=True)
-    event = {
-        "schema": "gzkit.ledger.v1",
-        "event": "pipeline_launched",
-        "id": obpi_id,
-        "ts": timestamp,
-        "parent": parent_adr,
-        "nonce": nonce,
-        "marker_path": marker_path.as_posix(),
-        "lane": "heavy",
-        "entry": "full",
-    }
-    with ledger_path.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(event) + "\n")
-
-
 # ---------------------------------------------------------------------------
 # Fixture test file builders
 # ---------------------------------------------------------------------------

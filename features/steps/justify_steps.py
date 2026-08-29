@@ -20,11 +20,9 @@ from behave import given, then
 
 from gzkit.justify.walkthrough import SECTION_HEADINGS, SECTION_PROMPTS
 
-_GH_PATCHERS_KEY = "_justify_gh_patcher"
-
 
 @given('gh issue view returns fixture body for "{anchor}"')
-def step_mock_gh_issue_view(context, anchor: str) -> None:
+def step_mock_gh_issue_view(_context, anchor: str) -> None:
     number = anchor.replace("GHI-", "").replace("#", "")
     payload = {
         "number": int(number),
@@ -40,9 +38,12 @@ def step_mock_gh_issue_view(context, anchor: str) -> None:
             return (0, stdout, "")
         return (1, "", "fake_run_exec: unexpected command")
 
-    patcher = mock.patch("gzkit.justify.anchors.run_exec", side_effect=fake_run_exec)
-    patcher.start()
-    setattr(context, _GH_PATCHERS_KEY, patcher)
+    # Started and deliberately NOT stopped here: `after_scenario` calls
+    # `mock.patch.stopall()`, which binds every patcher's lifetime to the
+    # scenario that started it (GHI #916). A local teardown would be a second
+    # owner of the same obligation, and the one this module used to carry was
+    # never wired -- it read as handled while handling nothing (GHI #918).
+    mock.patch("gzkit.justify.anchors.run_exec", side_effect=fake_run_exec).start()
 
 
 @given('a fixture OBPI brief for "{identifier}"')
@@ -134,10 +135,3 @@ def step_output_names_unfilled(context) -> None:
     assert any(token in output for token in ("section", "ordinal", "unfilled", "5")), (
         f"validate output should name an unfilled section; got: {output!r}"
     )
-
-
-def _stop_gh_patcher(context) -> None:
-    patcher = getattr(context, _GH_PATCHERS_KEY, None)
-    if patcher is not None:
-        patcher.stop()
-        delattr(context, _GH_PATCHERS_KEY)
