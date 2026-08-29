@@ -218,3 +218,53 @@ class TestManifestV2Validation(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestManifestVendorsBlock(unittest.TestCase):
+    """The manifest carries the vendor enablement the sync gate reads.
+
+    The v2 schema has always declared a ``vendors`` property and
+    ``_has_manifest_vendors`` gates every vendor-surface branch on its presence,
+    but ``generate_manifest`` never emitted it. The gate therefore read False on
+    every synced project forever, so ``vendor_aware`` could not become True and
+    each disabled vendor tree was written anyway — the opt-in switch was
+    unreachable from config.
+    """
+
+    def _generate(self, config: GzkitConfig) -> dict:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            return generate_manifest(Path(tmpdir), config)
+
+    def test_vendors_block_is_emitted(self) -> None:
+        """generate_manifest emits the vendors block the schema declares."""
+        manifest = self._generate(GzkitConfig())
+        self.assertIn("vendors", manifest)
+
+    def test_vendors_block_projects_configured_enablement(self) -> None:
+        """A vendor disabled in config is disabled in the emitted manifest.
+
+        This is the property the sync gate depends on: it reads enablement back
+        out of the manifest, so a projection that dropped the flag would gate on
+        a default rather than on what the project declared.
+        """
+        config = GzkitConfig.model_validate(
+            {"vendors": {"copilot": {"enabled": False, "surface_root": ".github"}}}
+        )
+
+        vendors = self._generate(config)["vendors"]
+
+        self.assertFalse(vendors["copilot"]["enabled"])
+        self.assertTrue(vendors["claude"]["enabled"])
+
+    def test_emitted_vendors_block_passes_schema_validation(self) -> None:
+        """The emitted block satisfies the schema that declared it."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            manifest = generate_manifest(root, GzkitConfig())
+            (root / ".gzkit").mkdir(exist_ok=True)
+            path = root / ".gzkit" / "manifest.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+
+            errors = validate_manifest(path)
+
+        self.assertEqual(errors, [])

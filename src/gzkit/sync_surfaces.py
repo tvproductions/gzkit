@@ -174,6 +174,14 @@ def generate_manifest(
             "docs": "uv run mkdocs build --strict",
             "bdd": "uv run -m behave features/",
         },
+        # Vendor enablement. The v2 schema has always declared this block and
+        # `_has_manifest_vendors` gates every vendor-surface branch on its
+        # presence -- but nothing emitted it, so the gate read False on every
+        # synced project and `vendor_aware` could never become True. Each
+        # disabled vendor tree was written anyway, leaving the config switch
+        # unreachable. Projected from config so the gate reads back what the
+        # project declared (GHI #921).
+        "vendors": config.vendors.model_dump(),
         "gates": {
             "lite": [1, 2],
             "heavy": [1, 2, 3, 4, 5],
