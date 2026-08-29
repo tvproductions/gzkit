@@ -16,6 +16,7 @@ from gzkit.instruction_audit import (
     audit_generated_surface_drift,
     audit_instruction_reachability,
 )
+from gzkit.rules import _is_framework_tree
 
 # ---------------------------------------------------------------------------
 # Models
@@ -315,6 +316,17 @@ def _check_workflow_relocation_negative(project_root: Path) -> EvalResult:
 
 
 def _check_workflow_docs_positive(project_root: Path) -> EvalResult:
+    # `docs/user/manpages/` documents `gz`'s OWN verbs, and the quality commands
+    # this case looks for -- readiness, parity, skill audit -- are gzkit's. An
+    # adopter discovers them upstream, not by reproducing gzkit's docs layout in
+    # their own repo, so asserting the surface there measures whether they have
+    # copied this project rather than whether they are ready (GHI #913).
+    if not _is_framework_tree(project_root):
+        return EvalResult(
+            case_id="workflow-docs-positive",
+            passed=True,
+            detail="Not the gzkit tree; `gz` command docs are gzkit's to carry",
+        )
     index = project_root / MANPAGE_INDEX
     if not index.is_file():
         return EvalResult(

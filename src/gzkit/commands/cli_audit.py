@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from gzkit.commands.common import console, get_project_root
-from gzkit.doc_coverage.manifest import MANPAGE_DIR, MANPAGE_INDEX
+from gzkit.doc_coverage.manifest import MANIFEST_PATH, MANPAGE_DIR, MANPAGE_INDEX
+from gzkit.rules import _is_framework_tree
 
 if TYPE_CHECKING:
     from gzkit.doc_coverage.models import CoverageReport
@@ -173,6 +174,32 @@ def cli_audit_cmd(as_json: bool) -> None:
     """Validate CLI manpage/doc coverage for command surfaces."""
     project_root = get_project_root()
     issues: list[dict[str, str]] = []
+
+    # `config/doc-coverage.json` is the roster of THIS project's CLI verbs, and
+    # `gz init` scaffolds no `config/` at all -- so in an adopter tree the verb
+    # used to die on an unhandled FileNotFoundError from `load_manifest`. The
+    # absence is a state, and the TREE decides what it means: an adopter with no
+    # manifest has nothing to audit, while gzkit missing its own is a defect.
+    # Keying on absence alone would make the check vacuous exactly where it
+    # matters -- the same discriminator GHI #912 established (GHI #913).
+    manifest_rel = MANIFEST_PATH.as_posix()
+    if not (project_root / MANIFEST_PATH).is_file():
+        if not _is_framework_tree(project_root):
+            if as_json:
+                print(json.dumps({"valid": True, "issues": [], "skipped": manifest_rel}, indent=2))  # noqa: T201
+            else:
+                console.print(
+                    f"[green]CLI audit skipped:[/green] no doc-coverage manifest "
+                    f"at {manifest_rel}; nothing to audit."
+                )
+            return
+        issues.append({"path": manifest_rel, "issue": "doc-coverage manifest missing"})
+        if as_json:
+            print(json.dumps({"valid": False, "issues": issues}, indent=2))  # noqa: T201
+        else:
+            console.print("[red]CLI audit failed.[/red]")
+            console.print(f"  - {manifest_rel}: doc-coverage manifest missing")
+        raise SystemExit(1)
 
     index_rel = MANPAGE_INDEX.as_posix()
     index_path = project_root / MANPAGE_INDEX

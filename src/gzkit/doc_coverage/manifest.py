@@ -7,7 +7,13 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import get_project_root
 
-_MANIFEST_PATH = Path("config") / "doc-coverage.json"
+MANIFEST_PATH: Path = Path("config") / "doc-coverage.json"
+"""Project-relative path to the doc-coverage manifest.
+
+Public because callers must be able to ask whether it EXISTS before asking
+`load_manifest` to read it -- the absence is a meaningful state, not an error
+condition to discover by exception (GHI #913).
+"""
 
 MANPAGE_DIR: Path = Path("docs") / "user" / "manpages"
 """Project-relative root of the canonical operator manpage surface (GHI #425)."""
@@ -71,7 +77,7 @@ def load_manifest(project_root: Path | None = None) -> DocCoverageManifest:
     """
     if project_root is None:
         project_root = get_project_root()
-    manifest_path = project_root / _MANIFEST_PATH
+    manifest_path = project_root / MANIFEST_PATH
     raw = json.loads(manifest_path.read_text(encoding="utf-8"))
     return DocCoverageManifest.model_validate(raw)
 

@@ -22,6 +22,19 @@ def _instruction_file(apply_to: str, body: str, *, exclude_agent: str | None = N
     return "\n".join(lines)
 
 
+def _framework_tree(root: Path) -> Path:
+    """Mark ``root`` as the gzkit repo itself rather than a project using it.
+
+    ``_is_framework_tree`` keys on the package source being present. A bare temp
+    directory is an ADOPTER tree, so a test asserting that gzkit's own docs
+    surface is required has to say which tree it means (GHI #913).
+    """
+    package = root / "src" / "gzkit"
+    package.mkdir(parents=True, exist_ok=True)
+    (package / "__init__.py").write_text("", encoding="utf-8")
+    return root
+
+
 def _scaffold_project(root: Path) -> None:
     """Create minimal project structure for eval to pass."""
     # AGENTS.md with Project Identity
@@ -177,8 +190,9 @@ class TestRunEvalSuite(unittest.TestCase):
             self.assertFalse(wf_neg.passed)
 
     def test_command_index_missing_ref_fails_docs_positive(self) -> None:
+        """gzkit must document its own quality verbs; this is the framework tree."""
         with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
+            root = _framework_tree(Path(tmp))
             _scaffold_project(root)
             # Rewrite index without quality command refs
             (root / "docs" / "user" / "manpages" / "index.md").write_text(
@@ -187,6 +201,27 @@ class TestRunEvalSuite(unittest.TestCase):
             result = run_eval_suite(root)
             docs_result = next(r for r in result.results if r.case_id == "workflow-docs-positive")
             self.assertFalse(docs_result.passed)
+
+    def test_adopter_tree_is_not_required_to_document_gz(self) -> None:
+        """An adopter does not author manpages for someone else's CLI.
+
+        ``workflow-docs-positive`` asks whether operators can discover
+        readiness/parity/skill audit -- all `gz` verbs, documented upstream in
+        gzkit. Asserting the surface against a project that merely depends on
+        py-gzkit measures whether that project has reproduced gzkit's docs
+        layout, which is not a readiness property of theirs (GHI #913).
+        """
+        import shutil
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _scaffold_project(root)
+            shutil.rmtree(root / "docs")
+
+            result = run_eval_suite(root)
+
+            docs_result = next(r for r in result.results if r.case_id == "workflow-docs-positive")
+            self.assertTrue(docs_result.passed)
 
 
 class TestExtensibility(unittest.TestCase):

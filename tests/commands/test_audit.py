@@ -335,6 +335,44 @@ class TestConfigAndCliAuditCommands(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("passed", result.output.lower())
 
+    def test_cli_audit_reports_cleanly_when_adopter_has_no_manifest(self) -> None:
+        """An adopter has no doc-coverage manifest, and that is not a failure.
+
+        `config/doc-coverage.json` is gzkit's own command roster and `gz init`
+        scaffolds no `config/` at all, so the verb used to die on an unhandled
+        FileNotFoundError surfaced through the generic handler. Nothing to audit
+        is a clean answer, not a crash (GHI #913).
+        """
+        runner = CliRunner()
+        with _InitFromTemplate():
+            self.assertFalse(Path("config/doc-coverage.json").exists())
+
+            result = runner.invoke(main, ["cli", "audit"])
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertNotIn("unexpected error", result.output.lower())
+            self.assertIn("no doc-coverage manifest", result.output.lower())
+
+    def test_cli_audit_flags_a_missing_manifest_on_the_framework_tree(self) -> None:
+        """gzkit losing its own manifest is a defect, and must not read as clean.
+
+        Keying the fence on the manifest's absence alone would make the check
+        vacuous exactly where it matters. The tree decides whether absence is
+        expected -- the same discriminator GHI #912 established.
+        """
+        runner = CliRunner()
+        with _InitFromTemplate():
+            package = Path("src/gzkit")
+            package.mkdir(parents=True, exist_ok=True)
+            (package / "__init__.py").write_text("", encoding="utf-8")
+            self.assertFalse(Path("config/doc-coverage.json").exists())
+
+            result = runner.invoke(main, ["cli", "audit"])
+
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertNotIn("unexpected error", result.output.lower())
+            self.assertIn("doc-coverage.json", result.output)
+
     def test_cli_audit_detects_mismatch(self) -> None:
         runner = CliRunner()
         with _InitFromTemplate():
