@@ -586,3 +586,4 @@
 {"ts": "2026-08-29T08:35:34Z", "source": "20260829T083531Z-ci-green-916-closed-917-918-open.md", "text": "Push the fix to origin/main so CI could verify against a real unauthenticated runner (verbatim selection: \"Push now\")."}
 {"ts": "2026-08-29T08:35:34Z", "source": "20260829T083531Z-ci-green-916-closed-917-918-open.md", "text": "Commit the prior session's exit bookmark (verbatim: \"yes, commit it\") and push it (verbatim: \"push it too\")."}
 {"ts": "2026-08-29T08:35:34Z", "source": "20260829T083531Z-ci-green-916-closed-917-918-open.md", "text": "File both residual findings as GHIs (verbatim: \"file both of those GHIs\")."}
+{"ts": "2026-08-29T13:29:20Z", "source": "20260829T132918Z-repo-deletion-recovery-v0347.md", "text": "Push the handoff and close GHI #916 (verbatim: \"push, close 916\")."}
