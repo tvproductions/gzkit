@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.34.3",
+  "gzkit_version": "0.34.5",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -40,7 +40,6 @@
       "tool-skill-runbook-alignment.md"
     ],
     "skills": [
-      "airlineops-parity-scan/SKILL.md",
       "ghi-author/SKILL.md",
       "ghi-close/SKILL.md",
       "ghi-triage/SKILL.md",
@@ -63,7 +62,6 @@
       "gz-chore-runner/SKILL.md",
       "gz-chores/SKILL.md",
       "gz-cli-audit/SKILL.md",
-      "gz-competitor-radar/SKILL.md",
       "gz-complexity-advisor/SKILL.md",
       "gz-complexity-distill/SKILL.md",
       "gz-complexity-guide/SKILL.md",

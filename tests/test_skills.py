@@ -196,12 +196,23 @@ class TestSkillsLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-08-03")
     @covers("REQ-0.0.32-15-10")  # audit-exempt: regression-invariant-overlay OBPI-01 byte parity
     def test_dual_surface_byte_parity(self) -> None:
-        """Authored .gzkit/skills/<slug>/SKILL.md must be byte-identical to src/gzkit copy."""
+        """Authored .gzkit/skills/<slug>/SKILL.md must be byte-identical to src/gzkit copy.
+
+        Parity binds the DELIVERED set, not the authored one. A skill declared
+        `project_local` is absent from the package tree on purpose (GHI #915),
+        so demanding a copy of it would make the fence itself the failure.
+        Gated on the classifier rather than a slug list, so a later declaration
+        is covered without editing this test.
+        """
+        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
+
         authored_root = _PROJECT_ROOT / ".gzkit" / "skills"
         pkg_root = _PROJECT_ROOT / "src" / "gzkit" / "skills"
         for slug_dir in authored_root.iterdir():
             authored = slug_dir / "SKILL.md"
             if not authored.exists():
+                continue
+            if _classify_skill_file(authored, project_root=_PROJECT_ROOT) != "canonical":
                 continue
             pkg_copy = pkg_root / slug_dir.name / "SKILL.md"
             self.assertTrue(

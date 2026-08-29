@@ -37,14 +37,14 @@ Feature: gz upgrade surface-only refresh
   @REQ-0.0.32-14-03
   Scenario: EDITED conflict detection without --force exits 3
     Given the workspace is initialized
-    And the project has an EDITED skill at ".gzkit/skills/airlineops-parity-scan/SKILL.md"
+    And the project has an EDITED skill at ".gzkit/skills/gz-status/SKILL.md"
     When I run the gz command "upgrade --surface skills"
     Then the command exits with code 3
 
   @REQ-0.0.32-14-04
   Scenario: --force overwrites EDITED artifacts and exits 0
     Given the workspace is initialized
-    And the project has an EDITED skill at ".gzkit/skills/airlineops-parity-scan/SKILL.md"
+    And the project has an EDITED skill at ".gzkit/skills/gz-status/SKILL.md"
     When I run the gz command "upgrade --surface skills --force"
     Then the command exits with code 0
 

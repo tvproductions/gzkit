@@ -2,6 +2,10 @@
 name: gz-competitor-radar
 description: Run a monthly B+ competitor-discovery radar for spec-driven and agent-workflow tools, render JSON-governed reports, grill suggested gzkit moves, and route approved opportunities without unattended governance mutation.
 compatibility: Project-local skill contract.
+# Withheld from delivery: this radar judges candidates by whether they name a
+# gzkit-relevant strength and recommends gzkit governance moves, and the wheel
+# ships only `src/gzkit/skills/**/*.md`, so its scripts never arrive (GHI #915).
+project_local: true
 category: agent-operations
 metadata:
   skill-version: "1.0.1"

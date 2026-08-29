@@ -3,6 +3,9 @@ name: airlineops-parity-scan
 persona: main-session
 description: Run a repeatable governance parity scan between ../airlineops (canon) and gzkit (extraction).
 category: cross-repository
+# Withheld from delivery: this scan's subject is `../airlineops`, a sibling
+# checkout only the gzkit repository has (GHI #915).
+project_local: true
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-07-12

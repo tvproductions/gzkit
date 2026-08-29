@@ -18,19 +18,69 @@ from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HA
 
 _CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
 
+#: Frontmatter key declaring a skill gzkit-internal, so the delivery boundary
+#: withholds it (GHI #915). Named for the chores registry's ``projectLocal``
+#: because it is the same class one tier up; spelled in the skills surface's own
+#: snake_case idiom, and living in the SKILL.md itself because skills carry no
+#: registry to declare it in.
+_PROJECT_LOCAL_KEY = "project_local"
+
+
+def _skill_slug_of(path: Path) -> str | None:
+    """Return the skill slug a path sits under, for either surface spelling.
+
+    Sync passes ``<root>/.gzkit/skills/<slug>/...``; the prune and the
+    distribution audit pass ``src/gzkit/skills/<slug>/...``. Both must resolve to
+    the same slug or a withheld skill stays invisible to the audit that should
+    catch it leaking. Mirrors :func:`gzkit.chores._chore_slug_of`.
+    """
+    parts = path.parts
+    for index, part in enumerate(parts):
+        if part == "skills" and index + 1 < len(parts):
+            return parts[index + 1]
+    return None
+
+
+def _declares_project_local(skill_md: Path) -> bool:
+    """Return whether a ``SKILL.md`` declares itself gzkit-internal.
+
+    Strict on the value: only the literal ``true`` declares. An unreadable file,
+    a missing key, or any other value ships, which preserves today's delivery
+    exactly rather than withholding a skill on a typo -- the same fail-toward-
+    the-status-quo posture ``_project_local_slugs`` takes with its registry.
+    """
+    try:
+        content = skill_md.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    frontmatter, _body = _parse_frontmatter(content)
+    return frontmatter.get(_PROJECT_LOCAL_KEY, "").strip().lower() == "true"
+
 
 def _classify_skill_file(
     path: Path,
     *,
     project_root: Path | None = None,
-) -> Literal["canonical", "package_only", "runtime_state"]:
-    """Classify a skills-surface file into one of three content classes.
+) -> Literal["canonical", "package_only", "runtime_state", "project_local"]:
+    """Classify a skills-surface file into one of four content classes.
 
     canonical: SKILL.md and every other authored skill asset (README.md,
                supporting scripts that ship as part of the skill).
-    package_only: ``__init__.py``, ``__pycache__/**``.
+    package_only: ``__init__.py``, ``__pycache__/**``, and retired skills.
     runtime_state: (currently unused for the skills surface; reserved for
                    parity with ``_classify_chore_file``.)
+    project_local: every file under a slug whose ``SKILL.md`` declares
+               ``project_local: true`` -- a skill whose SUBJECT only the gzkit
+               repository can have, which must not reach the wheel or an adopter
+               (GHI #915).
+
+    THE DECLARATION IS THE CONTRACT, not a scan of the body. A census of the 70
+    canonical skills against the framework-internal path prefixes GHI #911
+    settled on hits 23, nearly all falsely: ``gz-check`` and ``ghi-author``
+    merely cite a gzkit path as an example, and ``gz-competitor-radar``'s
+    ``scripts/`` hits name its own skill-local directory. That is the drift
+    ``_prune_unshippable_chores`` refuses in its own docstring -- *"a glob would
+    restate one shape of it and then drift."*
 
     Signature-compatible with :func:`gzkit.chores._classify_chore_file`. See
     ``.gzkit/rules/skill-surface-sync.md`` § class-classifier.
@@ -42,6 +92,13 @@ def _classify_skill_file(
     if name == "__init__.py" or "__pycache__" in parts:
         return "package_only"
 
+    # project_local: the whole slug is withheld, whatever the file type. Checked
+    # before any per-file class because the declaration is per-slug -- a skill's
+    # supporting scripts must follow its SKILL.md, or the fence leaks around it.
+    slug = _skill_slug_of(path)
+    if slug is not None and _declares_project_local(_canonical_skill_md(path, slug, project_root)):
+        return "project_local"
+
     if name == "SKILL.md":
         try:
             content = path.read_text(encoding="utf-8")
@@ -51,10 +108,29 @@ def _classify_skill_file(
         if (frontmatter.get("lifecycle_state") or "active") == "retired":
             return "package_only"
 
-    # ``project_root`` accepted for API symmetry with the chores classifier.
-    _ = project_root
-
     return "canonical"
+
+
+def _canonical_skill_md(path: Path, slug: str, project_root: Path | None) -> Path:
+    """Resolve the CANONICAL ``SKILL.md`` that declares ``slug``'s class.
+
+    The declaration is authored once, on the ``.gzkit/`` side, so a PACKAGE-side
+    path must be answered from its canonical counterpart rather than from itself
+    -- otherwise the prune would read the stale copy it is about to delete and
+    conclude the slug still ships.
+
+    A canonical path answers from its OWN slug directory rather than from a
+    reconstructed ``.gzkit/skills/<slug>``, because the canonical skills root is
+    configurable (``config.paths.skills``) and a reconstructed one would silently
+    stop finding the declaration the moment a project moved that surface.
+    """
+    for index, part in enumerate(path.parts):
+        if part != "skills" or index + 1 >= len(path.parts):
+            continue
+        if path.parts[index - 2 : index] == ("src", "gzkit") and project_root is not None:
+            return Path(project_root) / ".gzkit" / "skills" / slug / "SKILL.md"
+        return Path(*path.parts[: index + 2]) / "SKILL.md"
+    return path
 
 
 def _iter_canonical_skill_slugs() -> Iterator[Traversable]:

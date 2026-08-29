@@ -30,6 +30,15 @@ _EXCLUDED_SEGMENTS: frozenset[str] = frozenset(
     {"__pycache__", ".venv", "dist", "build", "node_modules"}
 )
 
+#: Classifier verdicts meaning "absent from the wheel on purpose". Named once
+#: because the auditor and the regenerator must agree on it: they held separate
+#: transcriptions and had already drifted apart, the regenerator still omitting
+#: `project_local` after GHI #728 added it to the auditor. Nothing failed only
+#: because the prune keeps such files off the package tree the regenerator walks
+#: — a second mechanism covering for the gap rather than the gap being closed
+#: (GHI #915).
+_NOT_SHIPPED_CLASSES: frozenset[str] = frozenset({"package_only", "runtime_state", "project_local"})
+
 # The audit's domain.  Deriving it from the baseline manifest's own keys made the
 # audit blind to any canonical surface the manifest omitted — it could report that
 # a listed member was wrong but never that a member was missing, so `src/gzkit/chores`
@@ -88,7 +97,7 @@ def _is_package_only(rel_posix: str, project_root: Path | None = None) -> bool:
         result = classifier(path, project_root=project_root)  # type: ignore
     except TypeError:
         result = classifier(path)
-    return result in ("package_only", "runtime_state", "project_local")
+    return result in _NOT_SHIPPED_CLASSES
 
 
 def audit_distribution(project_root: Path) -> list[ValidationError]:
@@ -319,7 +328,7 @@ def regenerate_distribution_baseline(project_root: Path) -> dict[str, Any]:
                     cls = classifier(path, project_root=project_root)  # type: ignore
                 except TypeError:
                     cls = classifier(path)
-                if cls in ("package_only", "runtime_state"):
+                if cls in _NOT_SHIPPED_CLASSES:
                     continue
             entry = path.relative_to(root_path).as_posix()
             entries.append(entry)

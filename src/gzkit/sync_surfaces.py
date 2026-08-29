@@ -754,6 +754,42 @@ def _prune_unshippable_chores(pkg_chores: Path, project_root: Path, updated: lis
             remove_dir_if_empty(path)
 
 
+# Content classes that must never exist under the wheel-shipping skills tree.
+# `package_only` (`__init__.py`, and a retired skill the wheel still carries for
+# an upgrade path) legitimately lives there and MUST survive the prune.
+_UNSHIPPABLE_SKILL_CLASSES = frozenset({"runtime_state", "project_local"})
+
+
+def _prune_unshippable_skills(pkg_skills: Path, project_root: Path, updated: list[str]) -> None:
+    """Remove package-side skill files whose class must never ship (GHI #915).
+
+    The same missing direction ``_prune_unshippable_chores`` was written for, one
+    tier over: ``sync_pkg_surfaces`` walks the CANONICAL side, so declining to
+    copy a slug cannot remove the copy an earlier sync already made. Every skill
+    now declared ``project_local`` shipped for the life of the project before the
+    declaration existed, so on the first run after this change the prune is the
+    ONLY thing that takes them out of the wheel tree.
+
+    Keys on the classifier rather than a slug list for the reason its chores
+    sibling gives: the class definition is the contract, and a transcribed list
+    would cover the slugs declared the day it was written and miss the next one.
+    """
+    from gzkit.skills import _classify_skill_file  # noqa: PLC0415
+
+    if not pkg_skills.is_dir():
+        return
+    for path in sorted(pkg_skills.rglob("*")):
+        if not path.is_file() or "__pycache__" in path.parts:
+            continue
+        if _classify_skill_file(path, project_root=project_root) in _UNSHIPPABLE_SKILL_CLASSES:
+            remove_if_present(path)
+            updated.append(path.relative_to(project_root).as_posix())
+    # Bottom-up so a directory emptied by the pass above is itself collected.
+    for path in sorted(pkg_skills.rglob("*"), reverse=True):
+        if path.is_dir() and "__pycache__" not in path.parts and not any(path.iterdir()):
+            remove_dir_if_empty(path)
+
+
 def _sync_classified_flat(
     canonical_dir: Path,
     pkg_dir: Path,
@@ -800,15 +836,20 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
 
     # Skills: .gzkit/skills/<slug>/SKILL.md → src/gzkit/skills/<slug>/SKILL.md
     if _pkg_surface_exists(project_root, "skills"):
-        from gzkit.sync_skills import _retired_skill_names  # noqa: PLC0415
+        from gzkit.skills import _classify_skill_file  # noqa: PLC0415
 
         canonical_skills = project_root / config.paths.skills
-        retired = _retired_skill_names(canonical_skills)
         for skill_dir in sorted(canonical_skills.iterdir()):
-            if not skill_dir.is_dir() or skill_dir.name in retired:
+            if not skill_dir.is_dir():
                 continue
             skill_md = skill_dir / "SKILL.md"
             if not skill_md.exists():
+                continue
+            # One gate, not two. The classifier already answers "retired" with
+            # `package_only`, so reading it here retires the parallel
+            # `_retired_skill_names` scan AND is what lets the `project_local`
+            # class reach this boundary at all (GHI #915).
+            if _classify_skill_file(skill_md, project_root=project_root) != "canonical":
                 continue
             _copy_if_changed(
                 skill_md, pkg_root / "skills" / skill_dir.name / "SKILL.md", project_root, updated
@@ -880,6 +921,7 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
     # ship. Runs unconditionally on the package tree — a canonical tree that has
     # gone missing must not strand residue in the wheel (GHI #783).
     _prune_unshippable_chores(pkg_chores, project_root, updated)
+    _prune_unshippable_skills(pkg_root / "skills", project_root, updated)
 
     return updated
 

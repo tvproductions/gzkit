@@ -43,9 +43,19 @@ SURFACE_PKG_MAP: dict[str, str] = {
 
 
 class _SurfaceClassifier(Protocol):
+    """The shape every per-surface classifier shares.
+
+    Carries all four content classes, not the three the surfaces in
+    ``_SURFACE_CLASSIFIERS`` happened to use when this was written: the chores
+    classifier has returned ``project_local`` since GHI #728, and the skills
+    classifier joined it at GHI #915. Naming only what the current members
+    return makes this protocol a transcription of today's membership rather
+    than a statement of the contract.
+    """
+
     def __call__(
         self, path: Path, *, project_root: Path | None = None
-    ) -> Literal["canonical", "package_only", "runtime_state"]: ...
+    ) -> Literal["canonical", "package_only", "runtime_state", "project_local"]: ...
 
 
 _SURFACE_CLASSIFIERS: dict[str, _SurfaceClassifier] = {
