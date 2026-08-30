@@ -71,10 +71,10 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `governance-core.md` | `0.14.0` |
 | `guardrail-feedback-prose.md` | `0.3.0` |
 | `mx-mode.md` | `1.4.0` |
-| `pythonic.md` | `0.5.0` |
+| `pythonic.md` | `0.5.1` |
 | `tool-skill-runbook-alignment.md` | `0.5.0` |
 | `tests.md` | `0.19.0` |
-| `task-discovery.md` | `0.7.0` |
+| `task-discovery.md` | `0.7.1` |
 | `token-block-discipline.md` | `0.7.0` |
 
 **Pre-ledger debt is frozen, not laundered.** The rules still enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json) carry rows written before this ledger existed, against versions nobody recorded. They are enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json), pinned at their current versions and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 Boundary Invariant #8). The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves its pinned version behind and must be scored for real before `gz check` goes green. Debt can only shrink, and it cannot follow a rule forward in silence.

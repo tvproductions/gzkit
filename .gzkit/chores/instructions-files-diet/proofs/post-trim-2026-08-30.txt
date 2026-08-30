@@ -1,0 +1,13 @@
+post-trim 2026-08-30 — instructions-files-diet, rules arm (GHI #921)
+operator ruling: "do 1 and 2"  (rank-band 1-2; items 3-5 declined, carried forward)
+
+canonical .gzkit/rules/*.md : 171,994 B across 25 files   (pre-run 175,979 B; delta -3,985)
+delivered .claude/rules/*.md: 170,423 B
+
+bytes per consumer (per-turn co-load):
+  src/gzkit/commands/foo.py         63,928 B  (was 67,913;  -3,985)   version-blockquote now 6,251 B
+  src/gzkit/governance/x.py         50,632 B  (was 54,617;  -3,985)   version-blockquote now 3,932 B
+  tests/test_foo.py                 46,098 B  (was 48,473;  -2,375)   version-blockquote now 2,086 B
+  .gzkit/rules/tests.md             35,688 B  (was 37,298;  -1,610)   version-blockquote now 1,806 B
+
+version-blockquote total across 25 rules: 13,009 B (was 16,994)

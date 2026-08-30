@@ -2920,3 +2920,82 @@ Ran 7730 tests in 84.230s
 
 OK
 ```
+
+---
+
+## Run 2026-08-30 — rules arm, GHI #921
+
+**§ 4 operator ruling (verbatim):** `do 1 and 2`
+
+Ruled IN — rank-band 1 and 2 of `proofs/recommendation-2026-08-30.md`:
+
+| # | Item | Scope |
+|---|---|---|
+| 1 | `.gzkit/rules/pythonic.md` | `**/*.py` |
+| 2 | `.gzkit/rules/task-discovery.md` | `src/gzkit/**`, `docs/design/adr/**`, `.gzkit/**` |
+
+**Carried forward as DECLINED** (not silently dropped; re-rank in the next run's § 3):
+
+| # | Item | Saving forgone |
+|---|---|---|
+| 3 | `.gzkit/rules/cli.md` | 2,119 B |
+| 4 | `.gzkit/rules/chores.md` | 845 B |
+| 5 | `.gzkit/rules/gate5-runbook-code-covenant.md` | 691 B |
+
+**§ 2 measurements at ruling.** Required delta: **zero** — no vendor cap binds
+`.claude/rules/**`. Discretionary management-valve trim under § Posture, ranked by
+per-turn co-load rather than by a gap to close.
+
+**Scope correction found during § 5.** The recommendation costed a
+first-sentence-retention compress. On reading the two blockquotes in full, both
+carry accumulated `Prior <version>` chains that the established lift had already
+routed to `docs/governance/rule-version-history.md` — `pythonic.md` still held
+`0.4.0`, `0.3.0`, `0.2.1`; `task-discovery.md` still held `0.6.0`, `0.5.2`,
+`0.5.1`. The conforming action is therefore the established lift, not a novel
+compress: the whole superseded chain moves to history and the rule keeps a
+one-sentence current entry. This is also what `.gzkit/rules/skill-surface-sync.md`
+§ Non-negotiable rules #2 already requires — a rule carries *"a visible
+`> **Rule version:** X.Y.Z` block quote with a one-sentence rationale."* Both
+files were out of conformance with that clause, so this run is a conformance
+repair, and the saving is larger than the ruled estimate rather than different in
+kind. No unruled item was touched.
+
+### § 5–8 result
+
+Both ruled items applied; no unruled item touched.
+
+| Rule | Version | Before | After | Saved |
+|---|---|---|---|---|
+| `pythonic.md` | `0.5.0` → `0.5.1` | 10,334 | 7,959 | **2,375** |
+| `task-discovery.md` | `0.7.0` → `0.7.1` | 13,271 | 11,661 | **1,610** |
+| | | | | **3,985** |
+
+Canonical `.gzkit/rules/*.md` 175,979 → **171,994 B**. Version-blockquote mass
+across the 25 rules 16,994 → **13,009 B**. Per-turn co-load for a
+`src/gzkit/commands/**` edit 67,913 → **63,928 B**.
+
+**Content-neutrality proof.** For each rule, `git show HEAD:<file>` and the edited
+file were compared with every `> **Rule version:**` line deleted from both. The
+only surviving difference in each is the one-line `<!-- rule-version: -->` marker,
+which the bump requires — no binding content moved, and the transform replaced the
+exact extracted blockquote *string* rather than a line range.
+
+**Live-claim check before lifting** (the cost this chore's § 3 asks for, verified
+rather than assumed): each lifted entry's live assertions are independently carried
+in the rule body — `task-discovery.md:77` states `tasks:` schema enforcement *"is
+live on both readers"*, and `pythonic.md:79-81` tabulates all three `ty`
+suppression forms. Nothing live left the per-turn surface.
+
+**Coupled surfaces updated in the same edit:** `docs/governance/rule-version-history.md`
+(both sections retitled and the lifted chains prepended, newest-first) and the
+`docs/governance/advisory-rules-audit.md` Coverage Ledger rows, which the scorecard
+fails closed against on any version bump.
+
+**§ 7 validation — all exit 0:** `--invariant-coherence`, `--instructions-files-budget`,
+`--advisory-scorecard`, `--documents --surfaces`, `gz lint`, `mkdocs build --strict`,
+and `uv run -m unittest -q` (**9,123 tests, OK, 121s**). `gz agent sync
+control-surfaces` propagated to `.claude/rules/` and `src/gzkit/rules/`.
+
+**§ 5c convergence:** no cap binds this arm, so the terminating condition is "all
+ruled items applied" — met. Items 3–5 remain declined and are NOT extended into on
+agent judgment; they return to § 3 for a fresh ruling next run.
