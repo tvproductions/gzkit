@@ -58,7 +58,10 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
-Lifted at version `0.3.0` (rule now at `0.3.1`).
+Lifted at version `0.5.0` (rule now at `0.5.1`).
+
+> **Rule version:** `0.5.0` — § Adding CLI Features — New Subcommand now enumerates all seven mechanically-checked obligations, read out of the validators rather than transcribed from memory. The prior list named four surfaces and omitted three that fail closed: the `config/doc-coverage.json` manifest entry, the handler docstring, and the wielding skill. Measured 2026-08-22 on the `gz handoff rulings` registration — the first full suite run returned **21 failures, every one a deterministic consequence of adding ONE verb**, against a 136s unit tier invoked three times. None was a surprise to the gates; all three were a surprise to the checklist. The gap is not enforcement — every obligation here already fails closed — it is that the pre-flight list disagreed with the post-flight check, so the cheapest surfaces in the repo were discovered by its slowest gate. Scoped deliberately to **per-verb** obligations: § New Subcommand's closing paragraph names what a fixed list structurally cannot catch, so this is not read as a completeness claim. Prior `0.4.0` — GHI #810: links the canonical specification, and adds § Command shape so this file can be scored for real. This rule declared clig.dev as its baseline while the 1,037-line specification elaborating it — `docs/design/cli-standards-v3.md`, named canonical by ADR-0.0.4 (Validated, foundation, heavy) — was cited by that ADR and by **no rule or governance surface**, so the per-turn contract never reached it. Meanwhile this file sat in `data/advisory_scorecard_grandfather.json` pinned at `0.3.1` — pre-ledger debt, never scored. The two facts compound: measured 2026-08-16, every CLI rule with a mechanical arm holds at or near 100% (exit codes, epilogs, manpage coverage, skill alignment) and every rule that is prose only sits at or near 0% (`--json` 73/136, formatter chokepoint 1,230 bypasses, structlog 1 `get_logger`, `--log-file` absent). This edit drops the pin by construction, which per `docs/governance/advisory-rules-audit.md` compels the scoring pass. Prior `0.3.1` — reconciled § Core Principles — Consistency to the mechanism it names, so the audit checks usage-line agreement (`0.3.0`, GHI #693); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+
 
 > **Rule version:** `0.3.0` — reconciled § Core Principles — Consistency to the
 > mechanism it names (GHI #693, operator ruling 2026-07-17: this is a
@@ -82,7 +85,10 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 ## `gate5-runbook-code-covenant.md`
 
-Lifted at version `0.2.0` (rule now at `0.2.1`).
+Lifted at version `0.3.0` (rule now at `0.3.1`).
+
+> **Rule version:** `0.3.0` — Movement C family closure, rules arm: the placeholder-output-examples prohibition now states its advisory posture in its own text, with the measurement behind it. Scored **Promotable** on a proposed regex scan; the probe that would have justified building it found zero placeholder tokens in scope and eight legitimate elision lines that a scan would have demanded be edited. Re-scored `Judgment` at `docs/governance/advisory-rules-audit.md` row 49; re-scoring without this text edit would have been laundering (operator ruling 2026-08-08). Prior `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.36 — attestation is universal and the validation bundle must cite ARB-wrapped invocations (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd). Binding rules unchanged.
+
 
 > **Rule version:** `0.2.0` — reconciled to ADR-0.0.24 and ADR-0.0.36 (Pass A
 > conflict-matrix rows 15 and 19, run 2026-07-16). § Do Not scoped attestation
@@ -98,7 +104,10 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 
 ## `chores.md`
 
-Lifted at version `0.3.0` (rule now at `0.3.1`).
+Lifted at version `0.3.2` (rule now at `0.3.3`).
+
+> **Rule version:** `0.3.2` — marks this version-history line `deprecated-verb-ok`, matching the precedent already set at [Rule Version History](../../docs/governance/rule-version-history.md#choresmd). `0.3.1` repointed § Correct Evidence off `gz gates`, and recording *which* verb it repointed away from made this line the file's only remaining `gz gates` occurrence — so `gz validate --deprecated-verb-prescription`, the checker shipped alongside that repoint under GHI #705, failed the file for describing the fix it shipped. The escape marker exists for exactly this: a line that documents a deprecation rather than prescribing one. Nothing caught it for the same reason `--audits` sat broken — the scope is not in `gz check`. Binding rules unchanged. Prior `0.3.1` — repointed § Correct Evidence onto `gz check` (`0.3.0`, GHI #705); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd). <!-- deprecated-verb-ok: version history records the repoint, does not prescribe it -->
+
 
 > **Rule version:** `0.3.0` — § Correct Evidence prescribed `gz gates`, which <!-- deprecated-verb-ok: version history records the repoint, does not prescribe it -->
 > announces its own deprecation at runtime; repointed to `gz check` (GHI #705).

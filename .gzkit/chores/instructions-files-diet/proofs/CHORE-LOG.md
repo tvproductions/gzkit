@@ -2999,3 +2999,75 @@ control-surfaces` propagated to `.claude/rules/` and `src/gzkit/rules/`.
 **§ 5c convergence:** no cap binds this arm, so the terminating condition is "all
 ruled items applied" — met. Items 3–5 remain declined and are NOT extended into on
 agent judgment; they return to § 3 for a fresh ruling next run.
+
+---
+
+## Run 2026-08-30b — rules arm continued, GHI #921
+
+**§ 4 operator ruling (verbatim):** `do 3, 4, and 5`
+
+Discharges the three items carried forward as DECLINED from run 2026-08-30. The
+chore's § 3 backlog for this arm is now empty.
+
+| # | Item | Version | Scope |
+|---|---|---|---|
+| 3 | `.gzkit/rules/cli.md` | `0.5.0` → `0.5.1` | `src/gzkit/commands/**` |
+| 4 | `.gzkit/rules/chores.md` | `0.3.2` → `0.3.3` | `src/gzkit/chores/**` |
+| 5 | `.gzkit/rules/gate5-runbook-code-covenant.md` | `0.3.0` → `0.3.1` | `docs/**`, `src/gzkit/**` |
+
+Same conformance-repair shape as items 1–2: all three carried accumulated `Prior`
+chains (`cli` 0.4.0/0.3.1, `chores` 0.3.1, `gate5` 0.2.1) beneath an
+already-lifted pointer, so each was out of conformance with
+`.gzkit/rules/skill-surface-sync.md` § Non-negotiable rules #2. Saving therefore
+exceeds the ruled first-sentence estimate rather than differing in kind.
+
+**Coupled mechanism checked before touching `chores.md`.** Its blockquote is a
+single line carrying a trailing `<!-- deprecated-verb-ok: ... -->` escape marker,
+read by `gz validate --deprecated-verb-prescription`
+(`src/gzkit/governance/trust_audits/deprecated_verb_prescription.py:45`), and it
+is the file's only remaining `gz gates` occurrence. The marker is on the same line
+as the mention, so it travels with the lift intact; the replacement blockquote
+names no deprecated verb and therefore needs no marker of its own.
+
+**Live-claim check before lifting** — each lifted entry's live assertions are
+independently carried in the rule body: `cli.md:104-110` enumerates all seven
+per-verb obligations, `gate5-runbook-code-covenant.md:43` states the
+placeholder prohibition's advisory posture in the prohibition's own text, and
+`chores.md:101-105` shows § Correct Evidence already pointing at `gz check`.
+
+### § 5–8 result (run b)
+
+All three ruled items applied; the § 3 backlog for this arm is empty.
+
+| Rule | Version | Before | After | Saved |
+|---|---|---|---|---|
+| `cli.md` | `0.5.0` → `0.5.1` | 11,929 | 10,107 | **1,822** |
+| `chores.md` | `0.3.2` → `0.3.3` | 6,103 | 5,550 | **553** |
+| `gate5-runbook-code-covenant.md` | `0.3.0` → `0.3.1` | 3,748 | 3,388 | **360** |
+| | | | | **2,735** |
+
+Session total across both runs: canonical `.gzkit/rules/*.md` 175,979 →
+**169,259 B** (−6,720). Version-blockquote mass 16,994 → **10,274 B**.
+Per-turn co-load for a `src/gzkit/commands/**` edit 67,913 → **61,746 B** (−6,167).
+
+**Content-neutrality proof.** Same method as run a: each file compared against
+`git show HEAD:<file>` with every `> **Rule version:**` line stripped from both.
+The sole surviving difference in each of the three is the one-line
+`<!-- rule-version: -->` marker the bump requires.
+
+**Escape-marker outcome.** The lifted `chores.md` line carried its
+`deprecated-verb-ok` marker into `rule-version-history.md` (marker count there
+2 → 3), and `chores.md` now contains **zero** `gz gates` occurrences, so the
+escape it needed no longer has anything to except. `gz validate
+--deprecated-verb-prescription` exits 0.
+
+**§ 7 validation — all exit 0:** `--invariant-coherence`,
+`--instructions-files-budget`, `--advisory-scorecard`,
+`--deprecated-verb-prescription`, `--documents`, `--surfaces`, `gz lint`,
+`mkdocs build --strict`, and `uv run -m unittest -q` (**9,123 tests, OK, 117s**).
+`gz agent sync control-surfaces` updated 87 surfaces.
+
+**§ 5c convergence:** no cap binds this arm; terminating condition "all ruled
+items applied" is met and no unruled item was touched. The next § 3 for this arm
+would have to rank new material — the version-chain family is discharged across
+all 25 canonical rules.

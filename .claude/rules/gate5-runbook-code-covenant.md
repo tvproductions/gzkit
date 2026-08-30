@@ -7,9 +7,9 @@ paths:
 
 # Gate 5 Runbook-Code Covenant (gzkit)
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.3.1 -->
 
-> **Rule version:** `0.3.0` — Movement C family closure, rules arm: the placeholder-output-examples prohibition now states its advisory posture in its own text, with the measurement behind it. Scored **Promotable** on a proposed regex scan; the probe that would have justified building it found zero placeholder tokens in scope and eight legitimate elision lines that a scan would have demanded be edited. Re-scored `Judgment` at `docs/governance/advisory-rules-audit.md` row 49; re-scoring without this text edit would have been laundering (operator ruling 2026-08-08). Prior `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.36 — attestation is universal and the validation bundle must cite ARB-wrapped invocations (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd). Binding rules unchanged.
+> **Rule version:** `0.3.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.3.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gate5-runbook-code-covenantmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `docs/**` and `src/gzkit/**`, this rule loads on every docs or source edit, so narrative is the most expensive thing it can carry.
 
 Documentation is a first-class deliverable and must track behavior changes in the same patch set.
 

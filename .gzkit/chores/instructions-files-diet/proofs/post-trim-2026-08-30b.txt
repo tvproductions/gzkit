@@ -1,0 +1,15 @@
+post-trim 2026-08-30b — instructions-files-diet, rules arm continued (GHI #921)
+operator ruling: "do 3, 4, and 5"  (backlog for this arm now empty)
+
+canonical .gzkit/rules/*.md : 169,259 B across 25 files
+  session start 175,979 B -> run-a 171,994 -> now 169,259   (session delta -6,720)
+delivered .claude/rules/*.md: 167,688 B
+
+per-turn co-load:
+  src/gzkit/commands/foo.py         61,746 B   (session start 67,913;  -6,167)
+  src/gzkit/governance/x.py         50,272 B   (session start 54,617;  -4,345)
+  tests/test_foo.py                 46,098 B   (session start 48,473;  -2,375)
+  docs/governance/note.md           15,696 B   (session start 16,056;  -360)
+  .gzkit/rules/tests.md             35,688 B   (session start 37,298;  -1,610)
+
+version-blockquote total across 25 rules: 10,274 B (session start 16,994)

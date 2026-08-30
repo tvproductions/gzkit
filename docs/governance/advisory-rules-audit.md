@@ -64,10 +64,10 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `model-selection.md` | `0.6.0` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.12.0` |
-| `chores.md` | `0.3.2` |
-| `cli.md` | `0.5.0` |
+| `chores.md` | `0.3.3` |
+| `cli.md` | `0.5.1` |
 | `cross-platform.md` | `0.7.0` |
-| `gate5-runbook-code-covenant.md` | `0.3.0` |
+| `gate5-runbook-code-covenant.md` | `0.3.1` |
 | `governance-core.md` | `0.14.0` |
 | `guardrail-feedback-prose.md` | `0.3.0` |
 | `mx-mode.md` | `1.4.0` |
