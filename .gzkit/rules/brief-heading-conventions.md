@@ -7,12 +7,9 @@ description: Brief evidence sections must use H3 (not H2) — enforced by gz val
 
 # Brief Heading Conventions (gzkit)
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
-> **Rule version:** `0.1.0` — adds the body-level version marker required by
-> `skill-surface-sync.md` § Non-negotiable rules #2, which this file never
-> carried (Pass A run 2026-07-16 marker sweep). Content unchanged; no conflict
-> row was raised against this rule.
+> **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#brief-heading-conventionsmd). Binding rules unchanged.
 
 OBPI brief evidence sections MUST use H3 (`###`), not H2 (`##`).
 

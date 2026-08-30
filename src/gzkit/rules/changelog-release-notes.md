@@ -6,11 +6,11 @@ paths:
 description: Release-documentation files follow the Good Docs Project templates, adapted to gzkit's GHI-tracked, commit-to-main reality
 ---
 
-<!-- rule-version: 1.1.0 -->
+<!-- rule-version: 1.2.0 -->
 
 # Changelog & Release Notes Discipline
 
-> **Rule version:** `1.1.0` — the hermetic `gz validate --changelog` structural scope landed; corrected the release-notes enforcement wording (no mechanical release-notes validator exists) (GHI #685).
+> **Rule version:** `1.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `1.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#changelog-release-notesmd). Binding rules unchanged.
 
 > **Source of authority:** Good Docs Project templates —
 > [changelog](https://www.thegooddocsproject.dev/template/changelog),

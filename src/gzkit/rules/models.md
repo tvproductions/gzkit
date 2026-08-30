@@ -5,11 +5,11 @@ paths:
 description: Pydantic data model policy
 ---
 
-<!-- rule-version: 0.1.0 -->
+<!-- rule-version: 0.2.0 -->
 
 # Data Model Policy (canonical)
 
-> **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
+> **Rule version:** `0.2.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.1.0` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#modelsmd). Binding rules unchanged.
 
 - Use **Pydantic `BaseModel`** for all data models; no stdlib `dataclasses`.
 - Use `ConfigDict(frozen=True, extra="forbid")` for immutable models.

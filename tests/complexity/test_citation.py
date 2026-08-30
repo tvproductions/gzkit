@@ -117,7 +117,7 @@ class TestRuleCitationContractSection(unittest.TestCase):
 
 
 class TestRuleVersionConsistency(unittest.TestCase):
-    """The body-level marker and visible block-quote both bump to 0.2.0 together."""
+    """The body-level marker and visible block-quote bump together."""
 
     @covers("REQ-0.0.27-05-06")
     def test_body_marker_and_block_quote_agree(self) -> None:
@@ -133,7 +133,7 @@ class TestRuleVersionConsistency(unittest.TestCase):
         body_version = body_match.group(1)
         quote_version = block_quote_match.group(1)
         self.assertEqual(body_version, quote_version)
-        self.assertEqual(body_version, "0.3.1")
+        self.assertEqual(body_version, "0.4.0")
 
 
 class TestSchemaShape(unittest.TestCase):
@@ -190,9 +190,9 @@ class TestVendorMirrorIdempotence(unittest.TestCase):
     def test_canonical_rule_body_present_in_each_vendor_mirror(self) -> None:
         repo_root = Path(__file__).resolve().parents[2]
         canonical = (repo_root / ".gzkit/rules/complexity-doctrine.md").read_text(encoding="utf-8")
-        # The 0.3.1 rule-version marker is the load-bearing canonical signal —
+        # The rule-version marker is the load-bearing canonical signal —
         # every mirror MUST reflect the bumped version.
-        self.assertIn("<!-- rule-version: 0.3.1 -->", canonical)
+        self.assertIn("<!-- rule-version: 0.4.0 -->", canonical)
         # The formalized tuple definition is the substantive payload of this OBPI;
         # every mirror MUST carry it in body form (not just the marker).
         canonical_marker = "(distilled_characteristics_path, section_anchor, corpus_revision)"
@@ -209,7 +209,7 @@ class TestVendorMirrorIdempotence(unittest.TestCase):
                     f"vendor mirror missing: {mirror_path.as_posix()}",
                 )
                 mirror_body = mirror_path.read_text(encoding="utf-8")
-                self.assertIn("<!-- rule-version: 0.3.1 -->", mirror_body)
+                self.assertIn("<!-- rule-version: 0.4.0 -->", mirror_body)
                 self.assertIn(canonical_marker, mirror_body)
 
 

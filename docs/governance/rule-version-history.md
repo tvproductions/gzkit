@@ -124,6 +124,10 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 > Discipline names for SUPPORT and STRUCTURAL-FENCE REQs. Prior: unversioned
 > since authoring.
 
+### Lifted 2026-08-30 at version `0.2.1` (rule now at `0.3.0`)
+
+> **Rule version:** `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.59 — ARB-wrapped audit commands and per-REQ-kind diagnosis branches (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
+
 ## `gh-cli.md`
 
 Lifted at version `0.3.0` (rule now at `0.3.1`).
@@ -137,6 +141,10 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 > never reconciled to it. The invocation is retained (annotated) rather than
 > deleted: it is load-bearing inside `/ghi-author`. Prior `0.2.0` — diet pass
 > under GHI #327; compressed cross-repo filing section.
+
+### Lifted 2026-08-30 at version `0.3.1` (rule now at `0.4.0`)
+
+> **Rule version:** `0.3.1` — reconciled § Allowed commands to AGENTS.md § Always #13, annotating the `/ghi-author`-only invocation (`0.3.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd). Binding rules unchanged.
 
 ## `task-discovery.md`
 
@@ -173,6 +181,10 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 > code-architecture directive (deps behind adapters, stdlib + Pydantic core,
 > parameterize every external dependency).
 
+### Lifted 2026-08-30 at version `0.2.1` (rule now at `0.3.0`)
+
+> **Rule version:** `0.2.1` — seats HA inside the DDD → HA → BDD → TDD spine and adds the binding cohesion doctrine (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#hexagonal-architecturemd). Binding rules unchanged.
+
 ## `agent-failure-modes.md`
 
 Lifted at version `0.6.0` (rule now at `0.6.1`, re-sourced to current-card-only
@@ -206,6 +218,10 @@ verbatim:
 > Fabrication backstops off the removed TTY `ATTEST` authenticity gate onto
 > AGENTS.md § Never #1 (operator-verbatim attestation + audit), per the
 > canon-owner attestation declaration.
+
+### Lifted 2026-08-30 at version `0.6.2` (rule now at `0.7.0`)
+
+> **Rule version:** `0.6.2` — Fable/Mythos 5 card consumed (GHI #751): patterns 1–6 now carry direct current-generation observations — the card's own § 2.3.3 failure tags use this taxonomy's vocabulary (`Safeguard circumvention` / `Fabrication` / `Skipped cheap verification` / `Reckless action` / `Correction fails`) with real-usage cluster frequencies — and pattern 9 gains Anthropic-side corroboration (§§ 6.1.2, 6.4.1.2: grader-satisfying reasoning, almost never verbalized). Prior `0.6.1` — re-sourced to current-card-only citations; origin lineage lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agent-failure-modesmd). Patterns and backstops unchanged since `0.6.0` (nine patterns).
 
 ## `agents-md-map-doctrine.md`
 
@@ -303,3 +319,36 @@ Lifted 2026-08-29 at version `0.6.0` (rule now at `0.7.0`).
 Lifted 2026-08-29 at version `0.4.0` (rule now at `0.5.0`).
 
 > **Rule version:** `0.4.0` — § When to apply — *Authoring a new CLI verb* now names the wielding skill as **one of seven** obligations and points at `.gzkit/rules/cli.md` § Adding CLI Features — New Subcommand as the authority, instead of reading as the whole requirement. Measured 2026-08-22: the new-verb obligation set was described in three places and no two agreed — this row named 1 obligation, `cli.md` § Consistency named 3, and `cli.md` § New Subcommand named 4, against 7 that fail closed. An author who found this row first shipped a skill and nothing else. This is GHI #787's class recurring on a second surface: a point-of-use coupling checklist that undercounts its own obligations, discovered by the slowest gate rather than the cheapest. One authority, others point at it. Prior `0.3.0` — Movement C family closure, rules arm: adds § Enforcement posture, which states in the rule's own text that Invariant 1 is mechanical while Invariants 2 and 3 are advisory by design. The scorecard carried rows 29 and 30 as **Promotable** for months on the premise that the skill→runbook cross-reference and output-form fixtures were merely unbuilt. They are not merely unbuilt: both invariants turn on *"the same operator moment"*, and no repository surface represents an operator moment as a comparable object — the runbook prescribes verbs in prose, so a checker would have to score the agreement of two prose surfaces, which is grading by shape. The section also names the mechanical witness that DOES exist nearby (`gz validate --cli-alignment`, which catches the renamed-verb half of Invariant 2) so the advisory scope is the residue, not the whole. Re-scored `Judgment` at `docs/governance/advisory-rules-audit.md` rows 29 and 30; re-scoring without this text edit would have been laundering (operator ruling 2026-08-08). Prior `0.2.0` — lifted pedagogy, canonical violations, and enforcement details to rationale doc under GHI #327.
+
+## `brief-heading-conventions.md`
+
+Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
+
+> **Rule version:** `0.1.0` — adds the body-level version marker required by
+> `skill-surface-sync.md` § Non-negotiable rules #2, which this file never
+> carried (Pass A run 2026-07-16 marker sweep). Content unchanged; no conflict
+> row was raised against this rule.
+
+## `changelog-release-notes.md`
+
+Lifted 2026-08-30 at version `1.1.0` (rule now at `1.2.0`).
+
+> **Rule version:** `1.1.0` — the hermetic `gz validate --changelog` structural scope landed; corrected the release-notes enforcement wording (no mechanical release-notes validator exists) (GHI #685).
+
+## `complexity-doctrine.md`
+
+Lifted 2026-08-30 at version `0.3.1` (rule now at `0.4.0`).
+
+> **Rule version:** `0.3.1` — renamed prohibited `## Corpus Anti-Patterns` heading → `## Corpus Disqualifiers` (OBPI-0.0.54-04 shape conformance pass).
+
+## `complexity-thresholds.md`
+
+Lifted 2026-08-30 at version `0.4.0` (rule now at `0.5.0`).
+
+> **Rule version:** `0.4.0` — GHI #469: corrected `> See [...]` pointer paths from file-relative `../../docs/...` to repo-root-relative `docs/...` so `gz validate --pointer-anchors` resolves them correctly (ADR-0.0.33 Invariant 3).
+
+## `models.md`
+
+Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
+
+> **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).

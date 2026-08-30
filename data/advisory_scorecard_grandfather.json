@@ -4,43 +4,6 @@
   "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
   "mechanism": "shrink-ratchet",
   "entries_path": "grandfathered_rules",
-  "baseline_count": 9,
-  "grandfathered_rules": [
-    {
-      "file": "adr-audit.md",
-      "version": "0.2.1"
-    },
-    {
-      "file": "agent-failure-modes.md",
-      "version": "0.6.2"
-    },
-    {
-      "file": "brief-heading-conventions.md",
-      "version": "0.1.0"
-    },
-    {
-      "file": "changelog-release-notes.md",
-      "version": "1.1.0"
-    },
-    {
-      "file": "complexity-doctrine.md",
-      "version": "0.3.1"
-    },
-    {
-      "file": "complexity-thresholds.md",
-      "version": "0.4.0"
-    },
-    {
-      "file": "gh-cli.md",
-      "version": "0.3.1"
-    },
-    {
-      "file": "hexagonal-architecture.md",
-      "version": "0.2.1"
-    },
-    {
-      "file": "models.md",
-      "version": "0.1.0"
-    }
-  ]
+  "baseline_count": 0,
+  "grandfathered_rules": []
 }

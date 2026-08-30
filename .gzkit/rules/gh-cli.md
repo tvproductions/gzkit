@@ -7,11 +7,11 @@ paths:
 description: GitHub CLI guardrails and cross-repo filing protocol.
 ---
 
-<!-- rule-version: 0.3.1 -->
+<!-- rule-version: 0.4.0 -->
 
 # GitHub CLI Guardrails (gzkit)
 
-> **Rule version:** `0.3.1` — reconciled § Allowed commands to AGENTS.md § Always #13, annotating the `/ghi-author`-only invocation (`0.3.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd). Binding rules unchanged.
+> **Rule version:** `0.4.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.3.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd). Binding rules unchanged.
 
 Use `gh` for defect tracking, ADR closeout, release ceremony, or active brief / explicit user request.
 
