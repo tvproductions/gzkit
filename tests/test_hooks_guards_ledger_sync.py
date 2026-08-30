@@ -69,6 +69,34 @@ class TestForbidManualLedgerEdits(unittest.TestCase):
 class TestForbidSkillSyncDrift(unittest.TestCase):
     """forbid_skill_sync_drift rejects canonical edits missing their mirrors."""
 
+    def _project(self):
+        """A project root declaring claude+codex and disabling copilot.
+
+        The guard derives its mirror roots from `.gzkit.json`, so a test that
+        asserts which vendors it names must supply a declared vendor set --
+        `has_vendor_declaration` reads `model_fields_set`, and an undeclared
+        config is deliberately treated as "every root applies".
+        """
+        import json  # noqa: PLC0415
+        import tempfile  # noqa: PLC0415
+        from pathlib import Path  # noqa: PLC0415
+
+        tmp = tempfile.TemporaryDirectory()
+        self.root = Path(tmp.name)
+        (self.root / ".gzkit.json").write_text(
+            json.dumps(
+                {
+                    "vendors": {
+                        "claude": {"enabled": True, "surface_root": ".claude"},
+                        "codex": {"enabled": True, "surface_root": ".agents"},
+                        "copilot": {"enabled": False, "surface_root": ".github"},
+                    }
+                }
+            ),
+            encoding="utf-8",
+        )
+        return tmp
+
     def test_no_staged_diff_returns_zero(self) -> None:
         with mock.patch.object(guards, "_run_git", return_value=""):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
@@ -108,10 +136,50 @@ class TestForbidSkillSyncDrift(unittest.TestCase):
         ):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 1)
 
-    def test_canonical_rule_with_github_mirror_returns_zero(self) -> None:
-        names = "A\t.gzkit/rules/new-rule.md\nA\t.github/instructions/new-rule.md\n"
+    def test_canonical_rule_with_claude_mirror_returns_zero(self) -> None:
+        """`.claude/rules/` is the surviving rule mirror.
+
+        Retargeted 2026-08-29 (GHI #921) from `.github/instructions/`, which the
+        Copilot drop deleted. The assertion this test makes -- a canonical rule
+        staged with its vendor mirror satisfies the guard -- is unchanged; only
+        the vendor that supplies the mirror moved. Codex consumes rules through
+        the nested `AGENTS.md` projection and has no `.agents/rules/` tree, so
+        `.claude/rules/` is the whole rule-mirror set.
+        """
+        names = "A\t.gzkit/rules/new-rule.md\nA\t.claude/rules/new-rule.md\n"
         with mock.patch.object(guards, "_run_git", return_value=names):
             self.assertEqual(guards.forbid_skill_sync_drift(mock.sentinel.root), 0)
+
+    def test_canonical_skill_with_codex_mirror_returns_zero(self) -> None:
+        """`.agents/skills/` is a live mirror and must satisfy the skill guard.
+
+        Added 2026-08-29 (GHI #921): the guard named `.github/skills/` as the
+        alternative to `.claude/skills/` and never learned about Codex, so a
+        skill staged with only its Codex mirror was reported as drift.
+        """
+        names = "M\t.gzkit/skills/foo/SKILL.md\nM\t.agents/skills/foo/SKILL.md\n"
+        with self._project(), mock.patch.object(guards, "_run_git", return_value=names):
+            self.assertEqual(guards.forbid_skill_sync_drift(self.root), 0)
+
+    def test_guard_names_no_retired_vendor_tree(self) -> None:
+        """The guard's error text may not name a dropped vendor's tree.
+
+        A guard that tells an operator to look for `.github/skills/` after the
+        Copilot drop sends them to a path that cannot exist; the remedy it
+        prints is then unfollowable.
+        """
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        buf = io.StringIO()
+        names = "M\t.gzkit/skills/foo/SKILL.md\n"
+        with (
+            self._project(),
+            mock.patch.object(guards, "_run_git", return_value=names),
+            contextlib.redirect_stdout(buf),
+        ):
+            guards.forbid_skill_sync_drift(self.root)
+        self.assertNotIn(".github/", buf.getvalue())
 
     def test_canonical_rule_deletion_without_mirror_returns_zero(self) -> None:
         """Retire-on-delete (GHI #464) applies to rule deletions identically."""

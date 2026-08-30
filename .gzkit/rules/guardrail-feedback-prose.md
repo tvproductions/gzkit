@@ -7,24 +7,11 @@ paths:
 description: Fail-closed guardrail output must be agent-actionable three-part prose
 ---
 
-<!-- rule-version: 0.2.0 -->
+<!-- rule-version: 0.3.0 -->
 
 # Guardrail Feedback Prose (gzkit)
 
-> **Rule version:** `0.2.0` — Movement C family closure, rules arm: § Mechanical
-> promotion path is replaced by § Enforcement posture, which states the advisory
-> disposition **in the rule's own text** and names what would reclassify it. The
-> section had declared *"This rule is **Promotable**"* while describing, in the
-> same paragraph, why the mechanism it promised was deliberately not built — a
-> discipline declared with no witness and no statement that none is coming, which
-> is the third state the family-closure criterion forbids. Nothing is being
-> weakened: the per-surface covering-test channel that actually enforces this bar
-> is now named as the enforcement rather than as an interim measure. Re-scored
-> `Judgment` at `docs/governance/advisory-rules-audit.md` row 61; re-scoring
-> without this text edit would have been laundering (operator ruling 2026-08-08).
-> Prior `0.1.0` — initial authoring under ADR-0.0.70 (Buetow
-> adoption): the feedback text IS the prompt a human would otherwise have
-> typed; engineer it as one.
+> **Rule version:** `0.3.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#guardrail-feedback-prosemd). Binding rules unchanged.
 
 ## Invariant
 

@@ -6,11 +6,11 @@ paths:
 description: Security-sensitivity third axis of attestation rigor (ADR-0.0.22).
 ---
 
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.6.0 -->
 
 # Security Sensitivity (gzkit)
 
-> **Rule version:** `0.5.1` — aligned the MX-marker path in § 3 to code truth: the hangar marker file is `.gzkit/mx.json` (`src/gzkit/mx/marker.py:29`), not `.gzkit/mx-active` (GHI #650). Prior `0.5.0` — named two unenforced surfaces the rule had been asserting as binding (Pass A conflict-matrix rows 22 and 23, run 2026-07-16). The auto-detect floor's "escape is fail-closed" language silently does not hold inside the MX hangar — `sensitivity` is not in `GATE5_INVARIANTS`, so the scope resolves ADVISORY and its exit-3 errors are dropped; the demotion is deliberate (a fail-closed sensitivity scope would lock the hangar against the briefs an operator enters it to repair — GHI #682) but was unannounced. The § Registry contract's self-bootstrapping clause presupposes an editing brief, which the operator-canon direct-fix path never has, leaving the floor unenforced on the path canon mandates. Both are now stated rather than implied. Prior `0.4.0` — GHI #625: the auto-detect floor now fails closed (`sensitivity-floor-violation`, exit 3) on an *omitted* declaration over a registered overlap, not only on a *wrong* one; pre-cutover briefs are grandfathered via `data/sensitivity_floor_grandfather.json`. Prior `0.3.2` — renamed prohibited `## Anti-patterns` heading → `## Do Not` (OBPI-0.0.54-04 shape conformance pass).
+> **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#security-sensitivitymd). Binding rules unchanged.
 
 ## Invariant
 

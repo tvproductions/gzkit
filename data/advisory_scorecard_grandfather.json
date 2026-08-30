@@ -4,7 +4,7 @@
   "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
   "mechanism": "shrink-ratchet",
   "entries_path": "grandfathered_rules",
-  "baseline_count": 23,
+  "baseline_count": 9,
   "grandfathered_rules": [
     {
       "file": "adr-audit.md",
@@ -39,20 +39,8 @@
       "version": "0.2.1"
     },
     {
-      "file": "model-selection.md",
-      "version": "0.5.1"
-    },
-    {
       "file": "models.md",
       "version": "0.1.0"
-    },
-    {
-      "file": "security-sensitivity.md",
-      "version": "0.5.1"
-    },
-    {
-      "file": "skill-surface-sync.md",
-      "version": "0.11.0"
     }
   ]
 }

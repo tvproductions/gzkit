@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.6.0 -->
 
-> **Rule version:** `0.5.1` — discharges the fable-calibration pending note via the card consumption (GHI #751); routing unchanged. Prior `0.5.0` — adds the `fable` tier (operator ruling 2026-08-02: "It seems like we should incorporate fable for the cases and times"): Mythos-class judgment work — doctrine evaluation, design dialogues, adversarial review, system-card evaluation — under operator supervision. Fable is NOT the pipeline or mechanical default; initial effort calibration landed with the card consumption (GHI #751) — see `docs/governance/opus-tuning.md` § Fable (Mythos-class) calibration: start `high` not `max`, expect prompt-steerable overeagerness, and treat cyber-classifier fallback to a prior Opus tier as silent degradation. `skill_model` Literal and router test extended in the same commit. Prior `0.4.0` — adds operative claim 5 (subagent claims are relayed only with independent evidence), closing the relay gap the Claude Opus 5 System Card § 6.1.3 named: *"the model can relay claims from subagents to users without verifying them"*, with multi-agent coverage acknowledged as an unmeasured limitation of that card's whole audit. gzkit dispatches `narrator`/`implementer`/`quality-reviewer`/`spec-reviewer` and relays their output into ceremony evidence, so the gap was live here. Also retires the two-generations-stale model mapping (`opus` → `claude-opus-4-7`) and compresses it to one line. Prior `0.3.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
+> **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd). Binding rules unchanged.
 
 ## Operative claims (binding)
 
