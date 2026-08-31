@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/git-sync/SK
 | `.gzkit/skills/git-sync/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/git-sync/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/git-sync/SKILL.md` | Codex mirror | Read |
-| `.github/skills/git-sync/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

@@ -35,7 +35,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-context-
 | `.gzkit/skills/gz-context-diet/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-context-diet/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-context-diet/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-context-diet/SKILL.md` | Copilot mirror | Read |
 | `src/gzkit/chores/instructions-files-diet/CHORE.md` | Underlying chore procedure | Read |
 
 ## Related Skills and Commands

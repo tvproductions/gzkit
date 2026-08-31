@@ -1456,8 +1456,10 @@ the project's `.gzkit/templates/` directory. Once written, `.gzkit/templates/` i
 the project canonical source-of-truth — `render_template()` uses project-first →
 package-fallback resolution. Operators customize templates there.
 
-The 11 canonical template slugs are: `adr`, `adr_pool`, `agents`, `audit`,
-`audit_plan`, `claude`, `closeout`, `constitution`, `copilot`, `obpi`, `prd`.
+The canonical template slugs are whatever `gzkit.templates` ships — that package
+directory is the authority, never a count transcribed here. Measured 2026-08-31:
+`adr`, `adr_pool`, `agents`, `audit`, `audit_plan`, `changelog`, `claude`,
+`closeout`, `constitution`, `obpi`, `prd`, `release_notes`.
 
 ```bash
 # Scaffold canonical templates (done automatically by gz init)

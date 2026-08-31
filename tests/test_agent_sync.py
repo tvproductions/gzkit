@@ -204,7 +204,6 @@ class TestSyncAllVendorAware(unittest.TestCase):
             project_root = Path(tmpdir)
             vendors = VendorsConfig(
                 claude=VendorConfig(enabled=True, surface_root=".claude"),
-                copilot=VendorConfig(enabled=False, surface_root=".github"),
                 codex=VendorConfig(enabled=False, surface_root=".agents"),
             )
             config = GzkitConfig(project_name="test", vendors=vendors)
@@ -219,11 +218,6 @@ class TestSyncAllVendorAware(unittest.TestCase):
                         "enabled": True,
                         "surface_root": ".claude",
                         "instruction_format": "claude-rules",
-                    },
-                    "copilot": {
-                        "enabled": False,
-                        "surface_root": ".github",
-                        "instruction_format": "github-instructions",
                     },
                     "codex": {
                         "enabled": False,
@@ -249,10 +243,6 @@ class TestSyncAllVendorAware(unittest.TestCase):
             # Claude skills should be mirrored (enabled)
             claude_skill = project_root / ".claude" / "skills" / "test-skill" / "SKILL.md"
             self.assertTrue(claude_skill.exists())
-
-            # Copilot skills should NOT be mirrored (disabled)
-            copilot_skill = project_root / ".github" / "skills" / "test-skill" / "SKILL.md"
-            self.assertFalse(copilot_skill.exists())
 
             # Codex skills should NOT be mirrored (disabled)
             codex_skill = project_root / ".agents" / "skills" / "test-skill" / "SKILL.md"

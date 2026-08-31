@@ -31,7 +31,6 @@ from gzkit.commands.register import (
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.governance.trust_audits.session_green_gate import configured_hooks_path
 from gzkit.hooks.claude import setup_claude_hooks
-from gzkit.hooks.copilot import setup_copilot_hooks, setup_copilotignore
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -851,13 +850,6 @@ def _setup_init_hooks(project_root: Path, config: GzkitConfig) -> None:
     claude_files = setup_claude_hooks(project_root, config)
     for path in claude_files:
         console.print(f"  Created {path}")
-
-    copilot_files = setup_copilot_hooks(project_root, config)
-    for path in copilot_files:
-        console.print(f"  Created {path}")
-
-    setup_copilotignore(project_root)
-    console.print("  Created .copilotignore")
 
 
 def _register_existing_artifacts(

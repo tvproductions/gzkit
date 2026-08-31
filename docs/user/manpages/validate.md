@@ -197,10 +197,10 @@ The surfaces scope enforces three contracts:
    validate against the canonical Pydantic models.
 3. **Canonical sync parity** — every generated surface file (`AGENTS.md`,
    `CLAUDE.md`, `.claude/rules/**`, `.claude/hooks/**`, `.claude/skills/**`,
-   `.agents/skills/**`, `.github/skills/**`, `.github/instructions/**`,
-   `.github/copilot-instructions.md`, `.github/discovery-index.json`,
-   `.claude/settings.json`, `.copilotignore`, and nested `AGENTS.md` under
-   `src/`, `tests/`) must match what `sync_all()` would write for the current
+   `.agents/skills/**`, `.claude/personas/**`, `.agents/personas/**`,
+   `.github/discovery-index.json`, `.claude/settings.json`, and the nested
+   `AGENTS.md`/`CLAUDE.md` projections) must match what `sync_all()` would
+   write for the current
    canonical state. Hand edits to generated surfaces surface as drift findings
    pointing at `uv run gz agent sync control-surfaces` for repair.
 

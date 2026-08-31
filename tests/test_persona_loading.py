@@ -7,7 +7,6 @@ from gzkit.personas import (
     VENDOR_ADAPTERS,
     render_persona_claude,
     render_persona_codex,
-    render_persona_copilot,
     render_persona_for_vendor,
 )
 from gzkit.traceability import covers
@@ -106,34 +105,6 @@ class TestRenderPersonaCodex(unittest.TestCase):
         self.assertNotIn("- methodical:", result)
 
 
-class TestRenderPersonaCopilot(unittest.TestCase):
-    """Copilot adapter produces copilot-instructions.md fragments."""
-
-    @covers("REQ-0.0.13-04-03")
-    def test_produces_h2_heading(self) -> None:
-        """Copilot output uses a ## heading (embeddable in instructions file)."""
-        result = render_persona_copilot(_FM)
-        self.assertIn("## Persona: tester", result)
-
-    @covers("REQ-0.0.13-04-03")
-    def test_contains_grounding(self) -> None:
-        """Copilot output includes the grounding text."""
-        result = render_persona_copilot(_FM)
-        self.assertIn("I verify every claim with evidence.", result)
-
-    @covers("REQ-0.0.13-04-03")
-    def test_contains_inline_traits(self) -> None:
-        """Copilot output lists traits inline."""
-        result = render_persona_copilot(_FM)
-        self.assertIn("Behavioral traits: methodical, test-first", result)
-
-    @covers("REQ-0.0.13-04-03")
-    def test_contains_inline_anti_traits(self) -> None:
-        """Copilot output lists anti-traits inline."""
-        result = render_persona_copilot(_FM)
-        self.assertIn("Behaviors to avoid: shallow-compliance, scope-creep", result)
-
-
 class TestVendorFallback(unittest.TestCase):
     """Unknown vendor falls back to raw canonical markdown."""
 
@@ -173,13 +144,6 @@ class TestAdapterDeterminism(unittest.TestCase):
         self.assertEqual(a, b)
 
     @covers("REQ-0.0.13-04-05")
-    def test_copilot_deterministic(self) -> None:
-        """Copilot adapter produces identical output on repeated calls."""
-        a = render_persona_copilot(_FM, _BODY)
-        b = render_persona_copilot(_FM, _BODY)
-        self.assertEqual(a, b)
-
-    @covers("REQ-0.0.13-04-05")
     def test_fallback_deterministic(self) -> None:
         """Fallback rendering produces identical output on repeated calls."""
         a = render_persona_for_vendor("opencode", _FM, _BODY)
@@ -190,9 +154,13 @@ class TestAdapterDeterminism(unittest.TestCase):
 class TestVendorRegistry(unittest.TestCase):
     """VENDOR_ADAPTERS registry is complete and consistent."""
 
-    def test_registry_has_three_vendors(self) -> None:
-        """Registry contains exactly claude, codex, copilot."""
-        self.assertEqual(set(VENDOR_ADAPTERS.keys()), {"claude", "codex", "copilot"})
+    def test_registry_matches_the_declared_vendor_set(self) -> None:
+        """Registry contains exactly the vendors gzkit renders personas for.
+
+        Keyed by vendor name, so a retired vendor left here would keep claiming
+        a persona surface nothing writes any more (GHI #924).
+        """
+        self.assertEqual(set(VENDOR_ADAPTERS.keys()), {"claude", "codex"})
 
     def test_all_adapters_callable(self) -> None:
         """Every registered adapter is callable."""

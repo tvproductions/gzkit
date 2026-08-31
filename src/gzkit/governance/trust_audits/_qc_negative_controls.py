@@ -154,7 +154,6 @@ def _build_readiness_audit() -> Path:
     root = _mkroot("readiness-audit")
     _write(root / "AGENTS.md", "# Agents\n")
     # The violation: CLAUDE.md — the one required surface deliberately absent.
-    _write(root / ".github" / "copilot-instructions.md", "# Copilot\n")
     _write(root / ".github" / "discovery-index.json", "{}\n")
     _write(root / "docs" / "user" / "reference" / "agent-input-disciplines.md", "# Disciplines\n")
     _write(

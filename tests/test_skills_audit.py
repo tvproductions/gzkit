@@ -72,7 +72,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
 
-            with self.assertRaisesRegex(ValueError, "Claude Code, Codex, and GitHub Copilot"):
+            with self.assertRaisesRegex(ValueError, "Claude Code and Codex"):
                 scaffold_skill(
                     project_root,
                     "demo-skill",
@@ -97,7 +97,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=_skill_frontmatter("demo-skill", owner="other-owner"),
             )
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -134,12 +133,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=_skill_frontmatter("demo-skill", compatibility="GovZero v6"),
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=_skill_frontmatter("demo-skill", compatibility="GovZero v6"),
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -158,7 +151,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(project_root, config.paths.skills, "demo-skill")
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
             _write_skill(project_root, config.paths.claude_skills, "demo-skill")
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             report = audit_skills(project_root, config)
             self.assertTrue(report.valid)
@@ -192,14 +184,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                     "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
                 ),
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=_skill_frontmatter(
-                    "demo-skill", metadata={"govzero_layer": "Layer 99 - Unknown"}
-                ),
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -221,16 +205,13 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
             )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
             self.assertTrue(
                 any(
                     issue.code == "SKA-DESCRIPTION-TOO-LONG"
-                    and "Claude Code, Codex, and GitHub Copilot" in issue.message
+                    and "Claude Code and Codex" in issue.message
                     for issue in report.issues
                 )
             )
@@ -265,12 +246,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=_skill_frontmatter("demo-skill", metadata=metadata),
-            )
 
             report = audit_skills(project_root, config)
             self.assertTrue(report.valid)
@@ -282,7 +257,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
 
             _write_skill(project_root, config.paths.skills, "demo-skill")
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -304,7 +278,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(project_root, config.paths.skills, "demo-skill")
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
             _write_skill(project_root, config.paths.claude_skills, "demo-skill")
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
             _write_skill(project_root, config.paths.claude_skills, "stale-skill")
 
             report = audit_skills(project_root, config)
@@ -331,7 +304,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 frontmatter=_skill_frontmatter("demo-skill", lifecycle_state="invalid"),
             )
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -364,12 +336,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=stale_frontmatter,
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=stale_frontmatter,
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -381,7 +347,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             config.paths.skills,
             config.paths.codex_skills,
             config.paths.claude_skills,
-            config.paths.copilot_skills,
         ):
             _write_skill(project_root, root_rel, "demo-skill", frontmatter=fm)
 
@@ -469,7 +434,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             for root_rel in (
                 config.paths.skills,
                 config.paths.claude_skills,
-                config.paths.copilot_skills,
             ):
                 _write_skill(project_root, root_rel, "demo-skill", frontmatter=versionless)
 
@@ -488,7 +452,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             for root_rel in (
                 config.paths.skills,
                 config.paths.claude_skills,
-                config.paths.copilot_skills,
             ):
                 _write_skill(project_root, root_rel, "demo-skill")
 
@@ -516,12 +479,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=stale_frontmatter,
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=stale_frontmatter,
-            )
 
             report = audit_skills(project_root, config, max_review_age_days=365)
             self.assertTrue(report.valid)
@@ -541,9 +498,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             )
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
-            )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
             )
 
             report = audit_skills(project_root, config)
@@ -572,9 +526,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
             )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
-            )
 
             report = audit_skills(project_root, config)
             self.assertTrue(report.valid)
@@ -595,9 +546,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             )
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
-            )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
             )
 
             report = audit_skills(project_root, config)
@@ -633,9 +581,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             )
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
-            )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
             )
 
             report = audit_skills(project_root, config)
@@ -682,12 +627,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                     lifecycle_transition_evidence="Audit evidence recorded.",
                 ),
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=canonical_frontmatter,
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -716,9 +655,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
             )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -745,9 +681,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             )
             _write_skill(
                 project_root, config.paths.claude_skills, "demo-skill", frontmatter=frontmatter
-            )
-            _write_skill(
-                project_root, config.paths.copilot_skills, "demo-skill", frontmatter=frontmatter
             )
 
             report = audit_skills(project_root, config)
@@ -797,12 +730,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                     deprecation_announced_on=date.today().isoformat(),
                 ),
             )
-            _write_skill(
-                project_root,
-                config.paths.copilot_skills,
-                "demo-skill",
-                frontmatter=canonical_frontmatter,
-            )
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -822,7 +749,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             _write_skill(project_root, config.paths.skills, "demo-skill")
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
             _write_skill(project_root, config.paths.claude_skills, "demo-skill")
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
             _write_skill(project_root, config.paths.claude_skills, "DemoSkill")
 
             report = audit_skills(project_root, config)
@@ -842,8 +768,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
 
             _write_skill(project_root, config.paths.skills, "demo-skill")
             _write_skill(project_root, config.paths.codex_skills, "demo-skill")
-            _write_skill(project_root, config.paths.claude_skills, "demo-skill")
-            (project_root / config.paths.copilot_skills / "demo-skill").mkdir(
+            (project_root / config.paths.claude_skills / "demo-skill").mkdir(
                 parents=True, exist_ok=True
             )
 
@@ -851,7 +776,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             self.assertFalse(report.valid)
             self.assertTrue(
                 any(
-                    issue.path.endswith(".github/skills/demo-skill")
+                    issue.path.endswith(".claude/skills/demo-skill")
                     and "Missing mirrored SKILL.md." in issue.message
                     for issue in report.issues
                 )
@@ -870,7 +795,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 frontmatter=_skill_frontmatter("wrong-name"),
             )
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             report = audit_skills(project_root, config)
             self.assertFalse(report.valid)
@@ -900,7 +824,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "demo-skill",
                 include_frontmatter=False,
             )
-            _write_skill(project_root, config.paths.copilot_skills, "demo-skill")
 
             before = audit_skills(project_root, config)
             self.assertFalse(before.valid)
@@ -911,10 +834,10 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             canonical = (project_root / config.paths.skills / "demo-skill" / "SKILL.md").read_text(
                 encoding="utf-8"
             )
-            copilot = (
-                project_root / config.paths.copilot_skills / "demo-skill" / "SKILL.md"
+            codex = (
+                project_root / config.paths.codex_skills / "demo-skill" / "SKILL.md"
             ).read_text(encoding="utf-8")
-            self.assertEqual(canonical, copilot)
+            self.assertEqual(canonical, codex)
 
             after = audit_skills(project_root, config)
             self.assertTrue(after.valid)
@@ -936,7 +859,6 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
             for mirror_rel in (
                 config.paths.codex_skills,
                 config.paths.claude_skills,
-                config.paths.copilot_skills,
             ):
                 mirrored_cache = (
                     project_root
@@ -980,7 +902,6 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
             config.paths.skills,
             config.paths.codex_skills,
             config.paths.claude_skills,
-            config.paths.copilot_skills,
         ):
             _write_skill_with_body(project_root, root_rel, "demo-skill", "Canonical body line.")
         return project_root, config
@@ -1024,10 +945,7 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
             )
             canonical_asset.parent.mkdir(parents=True, exist_ok=True)
             canonical_asset.write_text("canonical asset content", encoding="utf-8")
-            for mirror_rel in (
-                config.paths.codex_skills,
-                config.paths.copilot_skills,
-            ):
+            for mirror_rel in (config.paths.codex_skills,):
                 mirror_asset = project_root / mirror_rel / "demo-skill" / "assets" / "template.md"
                 mirror_asset.parent.mkdir(parents=True, exist_ok=True)
                 mirror_asset.write_text("canonical asset content", encoding="utf-8")
@@ -1051,7 +969,6 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
                 config.paths.skills,
                 config.paths.codex_skills,
                 config.paths.claude_skills,
-                config.paths.copilot_skills,
             ):
                 asset = project_root / rel / "demo-skill" / "assets" / "template.md"
                 asset.parent.mkdir(parents=True, exist_ok=True)
@@ -1104,7 +1021,6 @@ class TestSkillAuditMirrorPackageParity(unittest.TestCase):
             for mirror_rel in (
                 config.paths.codex_skills,
                 config.paths.claude_skills,
-                config.paths.copilot_skills,
             ):
                 pycache = project_root / mirror_rel / "demo-skill" / "scripts" / "__pycache__"
                 self.assertFalse(
@@ -1148,9 +1064,11 @@ class DisabledVendorMirrorAuditTest(unittest.TestCase):
         self._tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self._tmp.cleanup)
         self._root = Path(self._tmp.name)
+        # `.agents/skills` is deliberately ABSENT: it is the mirror under test,
+        # and both cases below turn on whether the audit demands a tree that is
+        # not on disk. Creating it here would make the enabled case vacuous.
         _write_skill(self._root, ".gzkit/skills", "demo-skill")
         _write_skill(self._root, ".claude/skills", "demo-skill")
-        _write_skill(self._root, ".agents/skills", "demo-skill")
 
     def _missing_mirror_paths(self, config: GzkitConfig) -> set[str]:
         report = audit_skills(self._root, config)
@@ -1161,20 +1079,19 @@ class DisabledVendorMirrorAuditTest(unittest.TestCase):
         }
 
     def test_disabled_vendor_mirror_is_not_required(self) -> None:
-        """With copilot disabled, its absent mirror raises no blocking issue."""
+        """With a vendor disabled, its absent mirror raises no blocking issue."""
         config = GzkitConfig.model_validate(
             {
                 "vendors": {
                     "claude": {"enabled": True, "surface_root": ".claude"},
-                    "codex": {"enabled": True, "surface_root": ".agents"},
-                    "copilot": {"enabled": False, "surface_root": ".github"},
+                    "codex": {"enabled": False, "surface_root": ".agents"},
                 }
             }
         )
 
         missing = self._missing_mirror_paths(config)
 
-        self.assertFalse({p for p in missing if ".github" in p})
+        self.assertFalse({p for p in missing if ".agents" in p})
 
     def test_enabled_vendor_mirror_is_still_required(self) -> None:
         """The gate still bites for a vendor the project actually enabled.
@@ -1186,11 +1103,11 @@ class DisabledVendorMirrorAuditTest(unittest.TestCase):
             {
                 "vendors": {
                     "claude": {"enabled": True, "surface_root": ".claude"},
-                    "copilot": {"enabled": True, "surface_root": ".github"},
+                    "codex": {"enabled": True, "surface_root": ".agents"},
                 }
             }
         )
 
         missing = self._missing_mirror_paths(config)
 
-        self.assertTrue({p for p in missing if ".github" in p})
+        self.assertTrue({p for p in missing if ".agents" in p})

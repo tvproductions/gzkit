@@ -158,7 +158,7 @@ class TestGenerateManifest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             manifest = generate_manifest(Path(tmpdir), GzkitConfig())
         manifest["schema"] = "gzkit.manifest.v1"
-        for key in ("canonical_rules", "canonical_schemas", "claude_rules", "instructions"):
+        for key in ("canonical_rules", "canonical_schemas", "claude_rules"):
             manifest["control_surfaces"].pop(key)
         for key in ("bdd", "docs"):
             manifest["verification"].pop(key)
@@ -254,8 +254,6 @@ class TestGenerateManifest(unittest.TestCase):
                 "claude_skills",
                 "codex_config",
                 "codex_skills",
-                "copilot_skills",
-                "instructions",
                 "claude_rules",
                 "personas",
             }
@@ -533,7 +531,6 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
             claude = (project_root / config.paths.claude_md).read_text(encoding="utf-8")
-            copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
             self.assertIn("guarded git sync -> completion", agents)
             self.assertIn("uv run gz obpi pipeline <OBPI-ID>", agents)
@@ -543,8 +540,6 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertNotIn("uv run -m unittest discover tests", agents)
             # Slim CLAUDE.md delegates governance via @AGENTS.md directive
             self.assertIn("AGENTS.md", claude)
-            self.assertIn("uv run gz obpi pipeline <OBPI-ID>", copilot)
-            self.assertIn("AGENTS.md", copilot)
 
     def test_sync_manifest_uses_gz_native_verification_defaults(self) -> None:
         """Generated manifests use gz-native verification commands."""
@@ -562,7 +557,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertIn('"bdd": "uv run -m behave features/"', manifest)
 
     def test_sync_points_generated_surfaces_to_skill_catalog_command(self) -> None:
-        """Generated AGENTS/CLAUDE/Copilot files avoid embedding the skill catalog."""
+        """Generated AGENTS/CLAUDE files avoid embedding the skill catalog."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
@@ -577,17 +572,12 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             agents = (project_root / config.paths.agents_md).read_text(encoding="utf-8")
             claude = (project_root / config.paths.claude_md).read_text(encoding="utf-8")
-            copilot = (project_root / config.paths.copilot_instructions).read_text(encoding="utf-8")
 
             self.assertNotIn("`demo-skill`", agents)
             self.assertIn("uv run gz skill list", agents)
             self.assertIn(".gzkit/skills/<skill-name>/", agents)
             # Slim CLAUDE.md no longer includes skill catalog
             self.assertNotIn("`demo-skill`", claude)
-            # Slim copilot no longer includes skill catalog
-            self.assertNotIn("`demo-skill`", copilot)
-            self.assertIn("AGENTS.md", copilot)
-            self.assertIn("Available Skills", copilot)
 
     def test_sync_skills_catalog_indirection_omits_frontmatter_description(self) -> None:
         """AGENTS points to the live skill catalog instead of embedding descriptions."""
@@ -607,7 +597,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertNotIn("---: ---", agents)
 
     def test_sync_mirrors_skills_into_all_tool_directories(self) -> None:
-        """Canonical skills are mirrored into Claude, Codex, and Copilot paths."""
+        """Canonical skills are mirrored into every declared vendor skill path."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
@@ -622,26 +612,26 @@ class TestSyncControlSurfaces(unittest.TestCase):
             updated = sync_all(project_root, config)
             claude_mirror = project_root / config.paths.claude_skills / "audit-skill" / "SKILL.md"
             codex_mirror = project_root / config.paths.codex_skills / "audit-skill" / "SKILL.md"
-            copilot_mirror = project_root / config.paths.copilot_skills / "audit-skill" / "SKILL.md"
 
             self.assertTrue(claude_mirror.exists())
             self.assertTrue(codex_mirror.exists())
-            self.assertTrue(copilot_mirror.exists())
             source_text = source_file.read_text(encoding="utf-8")
             self.assertEqual(claude_mirror.read_text(encoding="utf-8"), source_text)
             self.assertEqual(codex_mirror.read_text(encoding="utf-8"), source_text)
-            self.assertEqual(copilot_mirror.read_text(encoding="utf-8"), source_text)
             self.assertIn(".claude/skills/audit-skill/SKILL.md", updated)
             self.assertIn(".agents/skills/audit-skill/SKILL.md", updated)
-            self.assertIn(".github/skills/audit-skill/SKILL.md", updated)
 
-    def test_sync_bootstraps_canonical_from_legacy_copilot_mirror(self) -> None:
-        """When canonical is empty, sync seeds it from legacy Copilot skills."""
+    def test_sync_bootstraps_canonical_from_legacy_github_skills_mirror(self) -> None:
+        """When canonical is empty, sync seeds it from a legacy `.github/skills` tree.
+
+        The Copilot vendor is retired (GHI #924), but the legacy path stays a
+        bootstrap CANDIDATE so an adopter migrating an old tree is still seeded.
+        Hence the literal rather than a config field: nothing declares it now."""
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
 
-            legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
+            legacy_skill = project_root / ".github/skills" / "legacy-skill"
             legacy_skill.mkdir(parents=True, exist_ok=True)
             (legacy_skill / "SKILL.md").write_text(
                 "# SKILL.md\n\n## Legacy Skill\n", encoding="utf-8"
@@ -724,7 +714,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
 
-            legacy_skill = project_root / config.paths.copilot_skills / "legacy-skill"
+            legacy_skill = project_root / ".github/skills" / "legacy-skill"
             legacy_skill.mkdir(parents=True, exist_ok=True)
             (legacy_skill / "SKILL.md").write_text(
                 _skill_markdown("legacy-skill"), encoding="utf-8"
@@ -771,10 +761,7 @@ class TestSyncControlSurfaces(unittest.TestCase):
 
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertTrue(
-                any(
-                    "maximum is 1024 for Claude Code, Codex, and GitHub Copilot" in blocker
-                    for blocker in blockers
-                )
+                any("maximum is 1024 for Claude Code and Codex" in blocker for blocker in blockers)
             )
 
     def test_canonical_sync_preflight_allows_unknown_metadata_keys(self) -> None:

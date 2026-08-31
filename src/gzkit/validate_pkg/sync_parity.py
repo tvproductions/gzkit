@@ -53,20 +53,14 @@ SURFACE_ROOTS: tuple[str, ...] = (
     ".gzkit/manifest.json",
     "AGENTS.md",
     "CLAUDE.md",
-    ".github/copilot-instructions.md",
     ".github/discovery-index.json",
-    ".github/instructions",
     ".claude/settings.json",
     ".claude/hooks",
-    ".github/copilot/hooks",
     ".claude/rules",
     ".claude/skills",
     ".agents/skills",
-    ".github/skills",
     ".agents/personas",
     ".claude/personas",
-    ".github/personas",
-    ".copilotignore",
 )
 
 

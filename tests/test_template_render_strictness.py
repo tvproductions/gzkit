@@ -140,7 +140,7 @@ class TestSurfaceRenderIsLenient(unittest.TestCase):
         also raised, the split would be decorative and adopters would break.
         """
         try:
-            render_surface_template("copilot", project_name="demo")
+            render_surface_template("claude", project_name="demo")
         except MissingTemplateVariableError:  # pragma: no cover
             self.fail("surface render must not enforce strictness")
 

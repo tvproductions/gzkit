@@ -50,7 +50,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-adr-sync
 | `.gzkit/skills/gz-adr-sync/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-adr-sync/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-adr-sync/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-adr-sync/SKILL.md` | Copilot mirror | Read |
 
 ## Archived predecessors
 

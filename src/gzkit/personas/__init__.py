@@ -253,20 +253,6 @@ def render_persona_codex(fm: PersonaFrontmatter, body: str = "") -> str:
     return "\n\n".join(sections)
 
 
-def render_persona_copilot(fm: PersonaFrontmatter, body: str = "") -> str:
-    """Render a persona frame as a copilot-instructions.md-compatible fragment.
-
-    Produces a compact markdown section with heading, grounding, and inline
-    trait/anti-trait lists suitable for ``.github/copilot-instructions.md``.
-    """
-    sections: list[str] = [f"## Persona: {fm.name}"]
-    sections.append(fm.grounding.strip())
-    sections.append("Behavioral traits: " + ", ".join(fm.traits))
-    if fm.anti_traits:
-        sections.append("Behaviors to avoid: " + ", ".join(fm.anti_traits))
-    return "\n\n".join(sections)
-
-
 def _rebuild_raw_persona(fm: PersonaFrontmatter, body: str) -> str:
     """Reconstruct canonical persona markdown from frontmatter and body.
 
@@ -286,7 +272,6 @@ def _rebuild_raw_persona(fm: PersonaFrontmatter, body: str) -> str:
 VENDOR_ADAPTERS: dict[str, Callable[[PersonaFrontmatter, str], str]] = {
     "claude": render_persona_claude,
     "codex": render_persona_codex,
-    "copilot": render_persona_copilot,
 }
 """Registry mapping vendor name to persona adapter function."""
 

@@ -23,7 +23,6 @@ def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitCon
     mirror_roots = (
         config.paths.codex_skills,
         config.paths.claude_skills,
-        config.paths.copilot_skills,
     )
     return any(_is_path_within_root(path, root) for root in mirror_roots)
 

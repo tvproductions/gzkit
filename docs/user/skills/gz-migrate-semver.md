@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-migrate-
 | `.gzkit/skills/gz-migrate-semver/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-migrate-semver/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-migrate-semver/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-migrate-semver/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

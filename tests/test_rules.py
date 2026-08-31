@@ -1178,10 +1178,48 @@ class TestNestedClaudeRedirect(unittest.TestCase):
     def test_no_redirect_inside_another_vendors_surface_root(self) -> None:
         """Another vendor's own tree keeps its own discovery convention.
 
-        ``.github`` is Copilot's declared ``surface_root``. The subtree rules
-        still render there, because that tree is Copilot's to read; seeding it
-        with ``CLAUDE.md`` would claim a surface gzkit does not own there.
+        ``.opencode`` is OpenCode's declared ``surface_root``. The subtree
+        rules still render there, because that tree is OpenCode's to read;
+        seeding it with ``CLAUDE.md`` would claim a surface gzkit does not own.
+
+        The example was ``.github`` until the Copilot vendor was retired
+        (GHI #924). The exclusion derives from the DECLARED vendor set, so the
+        subject had to move to a root that is still declared -- which is the
+        property that makes this a rule rather than a literal list. It is
+        ``.opencode`` and not ``.agents`` because ``.agents`` is also a vendor
+        MIRROR root, filtered by ``_is_vendor_mirror_prefix`` before the writer
+        ever sees it -- so it could never exercise this exclusion.
         """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "opencode.instructions.md").write_text(
+                _instruction_file(".opencode/**", "# OpenCode policy"), encoding="utf-8"
+            )
+            (root / ".opencode").mkdir()
+
+            sync_nested_agents_md(root)
+
+            self.assertTrue((root / ".opencode" / "AGENTS.md").exists())
+            self.assertFalse(
+                (root / ".opencode" / "CLAUDE.md").exists(),
+                "wrote a Claude redirect into another vendor's surface root",
+            )
+
+    def test_redirect_lands_in_github_now_that_no_vendor_claims_it(self) -> None:
+        """A tree no declared vendor owns takes the redirect like any subtree.
+
+        The counterpart to the exclusion above. ``.github`` was excluded only
+        because Copilot declared it as a ``surface_root``; with that vendor
+        retired (GHI #924) the tree carries GitHub's own convention, not an
+        agent vendor's, so the exclusion's stated ground no longer applies and
+        ``.github`` is an ordinary rule-scoped subtree. Asserting this pins the
+        outcome as INTENDED rather than letting it appear as a side effect of
+        the vendor removal.
+        """
+        from gzkit.rules import nested_agents_md_paths
+
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             inst = root / ".github" / "instructions"
@@ -1190,13 +1228,12 @@ class TestNestedClaudeRedirect(unittest.TestCase):
                 _instruction_file(".github/**", "# Workflow policy"), encoding="utf-8"
             )
 
+            declared = nested_agents_md_paths(root)
             sync_nested_agents_md(root)
 
             self.assertTrue((root / ".github" / "AGENTS.md").exists())
-            self.assertFalse(
-                (root / ".github" / "CLAUDE.md").exists(),
-                "wrote a Claude redirect into another vendor's surface root",
-            )
+            self.assertTrue((root / ".github" / "CLAUDE.md").exists())
+            self.assertIn(root / ".github" / "CLAUDE.md", declared)
 
     def test_stale_redirect_is_cleaned_up(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

@@ -171,9 +171,9 @@ def render_template(name: str, **kwargs: Any) -> str:
 def render_surface_template(name: str, **kwargs: Any) -> str:
     """Load and render a control-surface template. Lenient — passthrough preserved.
 
-    This is the path for surfaces adopters may customise: AGENTS.md, CLAUDE.md,
-    and the Copilot instructions, rendered from ``.gzkit/templates/`` when a
-    project-local copy exists. A token gzkit has no value for belongs to the
+    This is the path for surfaces adopters may customise -- AGENTS.md and
+    CLAUDE.md -- rendered from ``.gzkit/templates/`` when a project-local copy
+    exists. A token gzkit has no value for belongs to the
     adopter's template, not to a gzkit bug, so it survives the render.
 
     Strictness here would break ``gz agent sync`` for every project that

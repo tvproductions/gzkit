@@ -40,7 +40,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic
 | `.gzkit/skills/gz-pythonic-pattern-apply/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-pythonic-pattern-apply/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-pythonic-pattern-apply/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-pythonic-pattern-apply/SKILL.md` | Copilot mirror | Read |
 | `src/gzkit/chores/pythonic-design-pattern-application/CHORE.md` | Chore canon (evidence-file template) | Read |
 | `design-patterns-en.zip` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`) | Read |
 

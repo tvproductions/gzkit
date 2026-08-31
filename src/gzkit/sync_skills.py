@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
+from gzkit.rules import NESTED_SURFACE_NAMES
 
 # ---------------------------------------------------------------------------
 # Skill constants
@@ -296,17 +297,27 @@ def sync_skill_mirror(
     target_dir: str,
     *,
     exclude_dirs: set[str] | None = None,
+    config: GzkitConfig | None = None,
 ) -> list[str]:
     """Copy canonical skills into a tool-local mirror directory.
 
     This is intentionally additive/non-destructive: files are copied/updated,
     but extra files already present in the mirror are preserved.
 
+    Generated nested surfaces are filtered by :func:`_forbidden_mirror_names`
+    rather than delivered blind. The canonical tree carries the nested writer's
+    output (``AGENTS.md`` and its ``CLAUDE.md`` redirect), and a wholesale
+    ``rglob`` copy pushes a Claude discovery file into every mirror root --
+    including another vendor's, which is the surface the writer's own
+    foreign-root exclusion refuses to claim (GHI #925).
+
     Args:
         project_root: Project root directory.
         source_dir: Canonical skills path.
         target_dir: Tool-local mirrored skills path.
         exclude_dirs: Top-level directory names to skip (e.g. retired skills).
+        config: Project configuration; loaded when omitted. Read only to derive
+            the declared vendor set.
 
     Returns:
         List of mirrored files that were written.
@@ -317,6 +328,8 @@ def sync_skill_mirror(
     if not source_root.exists():
         return []
 
+    forbidden_names = _forbidden_mirror_names(project_root, target_dir, config)
+
     updated: list[str] = []
     for source_file in sorted(source_root.rglob("*")):
         if not source_file.is_file():
@@ -326,6 +339,8 @@ def sync_skill_mirror(
 
         relative_path = source_file.relative_to(source_root)
         if exclude_dirs and relative_path.parts and relative_path.parts[0] in exclude_dirs:
+            continue
+        if source_file.name in forbidden_names:
             continue
 
         target_file = target_root / relative_path
@@ -339,6 +354,30 @@ def sync_skill_mirror(
         updated.append(target_file.relative_to(project_root).as_posix())
 
     return updated
+
+
+def _forbidden_mirror_names(
+    project_root: Path, target_dir: str, config: GzkitConfig | None = None
+) -> frozenset[str]:
+    """Return generated nested-surface filenames this mirror root must not receive.
+
+    Asks the writer's own rule rather than carrying a literal: a ``CLAUDE.md``
+    is refused inside a foreign vendor's ``surface_root`` because that tree
+    carries its own vendor's discovery convention. The mirror runs downstream
+    of :func:`gzkit.rules.sync_nested_agents_md` and previously knew nothing
+    about it, so ``rglob`` re-delivered the very file the writer had declined
+    to write there (GHI #925). Derived from the declared vendor set, so
+    retiring a vendor removes its root here in the same edit -- the property
+    ``_foreign_vendor_roots`` was written to hold.
+    """
+    from gzkit.rules import _foreign_vendor_roots, _within_any  # noqa: PLC0415
+
+    if config is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+    target_root = project_root / target_dir
+    if _within_any(target_root, _foreign_vendor_roots(project_root, config)):
+        return frozenset({"CLAUDE.md"})
+    return frozenset()
 
 
 def _is_python_runtime_cache(path: Path) -> bool:
@@ -361,7 +400,6 @@ def _has_skill_files(path: Path) -> bool:
 def _legacy_skill_candidate_paths(config: GzkitConfig) -> list[str]:
     """Return ordered legacy skill roots used for bootstrap fallback."""
     return [
-        config.paths.copilot_skills,
         ".github/skills",
         config.paths.claude_skills,
         config.paths.codex_skills,
@@ -478,7 +516,7 @@ def _canonical_skill_dirs(project_root: Path, config: GzkitConfig) -> tuple[list
 
 def _mirror_roots(project_root: Path, config: GzkitConfig) -> list[Path]:
     """Return unique mirror roots in deterministic order."""
-    roots = [config.paths.codex_skills, config.paths.claude_skills, config.paths.copilot_skills]
+    roots = [config.paths.codex_skills, config.paths.claude_skills]
     seen: set[str] = set()
     result: list[Path] = []
     for root in roots:
@@ -509,17 +547,24 @@ def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = Non
         if not mirror_root.exists():
             continue
 
+        # A nested surface this root must not receive is stale even though the
+        # canonical tree has a file of the same name -- that canonical presence
+        # is exactly why the old literal skip let a foreign-root `CLAUDE.md`
+        # survive every sweep (GHI #925).
+        forbidden = _forbidden_mirror_names(
+            project_root, mirror_root.relative_to(project_root).as_posix(), config
+        )
         entries = sorted(
             (path for path in mirror_root.rglob("*") if path.is_dir() or path.is_file()),
             key=lambda path: (len(path.relative_to(mirror_root).parts), path.as_posix()),
         )
         for mirror_entry in entries:
             rel = mirror_entry.relative_to(mirror_root)
-            if rel.name == "AGENTS.md":
+            if rel.name in NESTED_SURFACE_NAMES and rel.name not in forbidden:
                 continue
             # Treat mirrors of retired skills as stale.
             is_retired = rel.parts and rel.parts[0] in retired
-            if not is_retired and (canonical_root / rel).exists():
+            if rel.name not in forbidden and not is_retired and (canonical_root / rel).exists():
                 continue
 
             rel_project = mirror_entry.relative_to(project_root).as_posix()
@@ -546,7 +591,6 @@ def sync_skill_mirrors(
     """
     vendor_skill_map = {
         "claude": config.paths.claude_skills,
-        "copilot": config.paths.copilot_skills,
         "codex": config.paths.codex_skills,
     }
 
@@ -562,7 +606,9 @@ def sync_skill_mirrors(
                 continue
         seen.add(target)
         updated.extend(
-            sync_skill_mirror(project_root, config.paths.skills, target, exclude_dirs=retired)
+            sync_skill_mirror(
+                project_root, config.paths.skills, target, exclude_dirs=retired, config=config
+            )
         )
     return updated
 
@@ -571,5 +617,9 @@ def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
     """Backward-compatible wrapper for older call sites."""
     retired = _retired_skill_names(project_root / config.paths.skills)
     return sync_skill_mirror(
-        project_root, config.paths.skills, config.paths.claude_skills, exclude_dirs=retired
+        project_root,
+        config.paths.skills,
+        config.paths.claude_skills,
+        exclude_dirs=retired,
+        config=config,
     )

@@ -37,7 +37,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-deps-upg
 | `.gzkit/skills/gz-deps-upgrade/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-deps-upgrade/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-deps-upgrade/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-deps-upgrade/SKILL.md` | Copilot mirror | Read |
 | `pyproject.toml` | Pin/floor source of truth | Read/Write |
 | `uv.lock` | Resolution snapshot | Read/Write |
 

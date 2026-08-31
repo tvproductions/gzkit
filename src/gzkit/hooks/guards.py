@@ -260,7 +260,9 @@ def _vendor_mirror_roots(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
     roots were hardcoded to ``.claude/**`` and ``.github/**``, so after the
     Copilot drop this guard told operators to produce ``.github/skills/`` and
     ``.github/instructions/`` mirrors under trees that no longer exist, while
-    never checking the live Codex tree at all. ``has_vendor_declaration``
+    never checking the live Codex tree at all. The Copilot vendor itself is now
+    undeclared (GHI #924), so those roots can no longer be derived at all.
+    ``has_vendor_declaration``
     distinguishes a declared vendor set from ``VendorsConfig``'s defaults --
     matching ``skills_audit`` and ``sync_all``, which must ask the same
     question this does.
@@ -286,7 +288,6 @@ def _vendor_mirror_roots(root: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
         for path, vendor in (
             (config.paths.claude_skills, config.vendors.claude),
             (config.paths.codex_skills, config.vendors.codex),
-            (config.paths.copilot_skills, config.vendors.copilot),
         )
         if not vendor_aware or vendor.enabled
     )

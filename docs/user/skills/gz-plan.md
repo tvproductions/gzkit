@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-plan/SKI
 | `.gzkit/skills/gz-plan/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-plan/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-plan/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-plan/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

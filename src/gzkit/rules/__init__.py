@@ -632,7 +632,6 @@ def _mirror_owned_roots(project_root: Path, config: GzkitConfig) -> tuple[tuple[
     canonical = project_root / config.paths.skills
     mirrors = (
         config.paths.claude_skills,
-        config.paths.copilot_skills,
         config.paths.codex_skills,
         "src/gzkit/skills",
     )

@@ -297,7 +297,7 @@ def _check_workflow_relocation_positive(project_root: Path) -> EvalResult:
 
 
 def _check_workflow_relocation_negative(project_root: Path) -> EvalResult:
-    # Only root-level skills/ is legacy; .github/skills/ is a valid Copilot mirror
+    # Only root-level skills/ is legacy; declared vendor mirrors are valid.
     legacy_locations = [
         project_root / "skills",
     ]

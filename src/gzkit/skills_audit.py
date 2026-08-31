@@ -667,7 +667,6 @@ def audit_skills(
         for root, vendor in (
             (config.paths.codex_skills, config.vendors.codex),
             (config.paths.claude_skills, config.vendors.claude),
-            (config.paths.copilot_skills, config.vendors.copilot),
         )
         if not vendor_aware or vendor.enabled
     )

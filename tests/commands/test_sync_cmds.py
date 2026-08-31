@@ -561,6 +561,12 @@ class TestSyncCommand(unittest.TestCase):
 
         Deleting the generated surface is the sharpest form of the question --
         if the plan still names the same nested `AGENTS.md`, canon is the source.
+
+        The deleted surface is now `.claude/rules/`. `.github/instructions/` was
+        the original subject and is no longer emitted at all: the Copilot vendor
+        that rendered it is retired (GHI #924). `.claude/rules/` occupies the
+        same role -- a rule surface RENDERED from canon -- so the question the
+        test asks is unchanged; only the artifact it deletes has moved.
         """
         from gzkit.validate_pkg.sync_parity import plan_sync_all
 
@@ -573,7 +579,7 @@ class TestSyncCommand(unittest.TestCase):
             nested_before = {p for p in plan_sync_all(root) if p.endswith("AGENTS.md")}
             self.assertTrue(nested_before, "fixture must plan nested AGENTS.md at all")
 
-            shutil.rmtree(root / ".github" / "instructions")
+            shutil.rmtree(root / ".claude" / "rules")
             nested_after = {p for p in plan_sync_all(root) if p.endswith("AGENTS.md")}
 
             self.assertEqual(
@@ -625,7 +631,6 @@ class TestSyncCommand(unittest.TestCase):
             for surface_root in (
                 "AGENTS.md",
                 "CLAUDE.md",
-                ".github/copilot-instructions.md",
                 ".claude/hooks",
                 ".claude/skills",
             ):
@@ -798,42 +803,6 @@ class TestSyncCommand(unittest.TestCase):
             self.assertIsInstance(rule_count, int)
             assert isinstance(rule_count, int)
             self.assertGreaterEqual(rule_count, 0)
-
-    def test_agent_sync_regenerates_copilot_instructions_with_canonical_rules(self) -> None:
-        """copilot-instructions.md regenerates from template even when canonical
-        rules exist (GHI #247). Previously the master file was inside the
-        ``else`` branch and only regenerated when canonical_rules was empty."""
-        runner = CliRunner()
-        with _InitFromTemplate():
-            # Scaffold a minimal canonical rule so canonical_rules is non-empty
-            # — this is the branch that previously skipped the master file.
-            rules_dir = Path(".gzkit/rules")
-            rules_dir.mkdir(parents=True, exist_ok=True)
-            (rules_dir / "sample.md").write_text(
-                "---\n"
-                "id: sample-rule\n"
-                "description: Fixture rule for GHI #247 regression test.\n"
-                "paths:\n"
-                '  - "**"\n'
-                "---\n\n# Sample rule\n",
-                encoding="utf-8",
-            )
-
-            target = Path(".github/copilot-instructions.md")
-            marker = "# DRIFT-SENTINEL GHI-247\n"
-            target.write_text(marker, encoding="utf-8")
-
-            result = runner.invoke(main, ["agent", "sync", "control-surfaces"])
-
-            self.assertEqual(result.exit_code, 0, msg=f"sync failed: {result.output}")
-            regenerated = target.read_text(encoding="utf-8")
-            self.assertNotEqual(
-                regenerated,
-                marker,
-                "copilot-instructions.md was not regenerated from template "
-                "when canonical rules exist (GHI #247 regression).",
-            )
-            self.assertIn(".github/copilot-instructions.md", result.output)
 
 
 class TestBuildSyncCommitMessage(unittest.TestCase):

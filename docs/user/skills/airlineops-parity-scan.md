@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/airlineops-
 | `.gzkit/skills/airlineops-parity-scan/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/airlineops-parity-scan/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/airlineops-parity-scan/SKILL.md` | Codex mirror | Read |
-| `.github/skills/airlineops-parity-scan/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

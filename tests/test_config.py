@@ -31,7 +31,6 @@ class TestPathConfig(unittest.TestCase):
         self.assertEqual(config.canonical_schemas, ".gzkit/schemas")
         self.assertEqual(config.claude_skills, ".claude/skills")
         self.assertEqual(config.codex_skills, ".agents/skills")
-        self.assertEqual(config.copilot_skills, ".github/skills")
 
     def test_paths_chores_default_resolves(self) -> None:
         """PathConfig.chores defaults to .gzkit/chores.
@@ -229,7 +228,6 @@ class TestVendorsConfig(unittest.TestCase):
         from gzkit.config import VendorsConfig
 
         config = VendorsConfig()
-        self.assertFalse(config.copilot.enabled)
         self.assertFalse(config.codex.enabled)
         self.assertFalse(config.gemini.enabled)
         self.assertFalse(config.opencode.enabled)
@@ -239,7 +237,6 @@ class TestVendorsConfig(unittest.TestCase):
         from gzkit.config import VendorsConfig
 
         config = VendorsConfig()
-        self.assertEqual(config.copilot.surface_root, ".github")
         self.assertEqual(config.codex.surface_root, ".agents")
         self.assertEqual(config.gemini.surface_root, ".gemini")
         self.assertEqual(config.opencode.surface_root, ".opencode")
@@ -252,7 +249,7 @@ class TestGzkitConfigVendors(unittest.TestCase):
         """GzkitConfig includes vendors field with defaults."""
         config = GzkitConfig()
         self.assertTrue(config.vendors.claude.enabled)
-        self.assertFalse(config.vendors.copilot.enabled)
+        self.assertFalse(config.vendors.codex.enabled)
 
     def test_load__no_vendors__uses_defaults(self) -> None:
         """Loading config without vendors key uses defaults (backward compat)."""
@@ -262,7 +259,7 @@ class TestGzkitConfigVendors(unittest.TestCase):
 
             config = GzkitConfig.load(config_file)
             self.assertTrue(config.vendors.claude.enabled)
-            self.assertFalse(config.vendors.copilot.enabled)
+            self.assertFalse(config.vendors.codex.enabled)
 
     def test_load__with_vendors__parses(self) -> None:
         """Loading config with vendors key parses vendor enablement."""
@@ -277,10 +274,10 @@ class TestGzkitConfigVendors(unittest.TestCase):
                     "surface_root": ".claude",
                     "instruction_format": "claude-rules",
                 },
-                "copilot": {
+                "gemini": {
                     "enabled": True,
-                    "surface_root": ".github",
-                    "instruction_format": "github-instructions",
+                    "surface_root": ".gemini",
+                    "instruction_format": "generic",
                 },
             },
         }
@@ -290,7 +287,7 @@ class TestGzkitConfigVendors(unittest.TestCase):
 
             config = GzkitConfig.load(Path(f.name))
             self.assertTrue(config.vendors.claude.enabled)
-            self.assertTrue(config.vendors.copilot.enabled)
+            self.assertTrue(config.vendors.gemini.enabled)
             self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None
             # Unspecified vendors get defaults
             self.assertFalse(config.vendors.codex.enabled)

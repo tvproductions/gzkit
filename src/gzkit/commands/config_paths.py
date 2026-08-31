@@ -86,8 +86,6 @@ def _collect_control_surface_issues(
         "canonical_schemas",
         "claude_skills",
         "codex_skills",
-        "copilot_skills",
-        "instructions",
         "claude_rules",
         "personas",
     }
@@ -295,14 +293,12 @@ def check_config_paths_cmd(as_json: bool) -> None:
         "paths.skills": config.paths.skills,
         "paths.claude_skills": config.paths.claude_skills,
         "paths.codex_skills": config.paths.codex_skills,
-        "paths.copilot_skills": config.paths.copilot_skills,
     }
     required_files = {
         "paths.ledger": config.paths.ledger,
         "paths.manifest": config.paths.manifest,
         "paths.agents_md": config.paths.agents_md,
         "paths.claude_md": config.paths.claude_md,
-        "paths.copilot_instructions": config.paths.copilot_instructions,
         "paths.discovery_index": config.paths.discovery_index,
     }
 

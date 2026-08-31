@@ -134,12 +134,6 @@ from gzkit.sync_surfaces import (
     sync_claude_settings as sync_claude_settings,
 )
 from gzkit.sync_surfaces import (
-    sync_copilot_instructions as sync_copilot_instructions,
-)
-from gzkit.sync_surfaces import (
-    sync_copilotignore as sync_copilotignore,
-)
-from gzkit.sync_surfaces import (
     sync_discovery_index as sync_discovery_index,
 )
 from gzkit.sync_surfaces import (

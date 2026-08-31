@@ -52,8 +52,6 @@
     "claude_skills": ".claude/skills",
     "codex_config": ".codex/config.toml",
     "codex_skills": ".agents/skills",
-    "copilot_skills": ".github/skills",
-    "instructions": ".github/instructions",
     "claude_rules": ".claude/rules",
     "personas": ".gzkit/personas"
   },
@@ -70,11 +68,6 @@
       "enabled": true,
       "surface_root": ".claude",
       "instruction_format": "claude-rules"
-    },
-    "copilot": {
-      "enabled": false,
-      "surface_root": ".github",
-      "instruction_format": "github-instructions"
     },
     "codex": {
       "enabled": true,

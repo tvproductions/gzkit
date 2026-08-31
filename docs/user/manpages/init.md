@@ -32,7 +32,7 @@ gz init [OPTIONS]
 3. Detects project structure (source, tests, docs paths)
 4. Creates Python project skeleton (`pyproject.toml`, `src/<project>/`, `tests/`)
 5. Generates `CLAUDE.md` from governance canon
-6. Sets up agent hooks (Claude, Copilot)
+6. Sets up agent hooks (Claude)
 7. Creates `design/` directories for governance artifacts
 8. Scans for existing PRDs/ADRs and offers to register them
 9. Writes `.pre-commit-config.yaml` declaring the pre-push `gz check` gate
@@ -247,9 +247,10 @@ version without overwriting existing ones (`skip_existing=True` semantics always
 
 As of OBPI-0.0.32-12, `gz init` copies canonical template `.md` content from the
 wheel's package surface (`importlib.resources.files("gzkit.templates")`) into the
-project's `.gzkit/templates/<name>.md`. The 11 canonical template slugs are:
-`adr`, `adr_pool`, `agents`, `audit`, `audit_plan`, `claude`, `closeout`,
-`constitution`, `copilot`, `obpi`, `prd`.
+project's `.gzkit/templates/<name>.md`. The canonical template slugs are whatever `gzkit.templates` ships — that package
+directory is the authority, never a count transcribed here. Measured 2026-08-31:
+`adr`, `adr_pool`, `agents`, `audit`, `audit_plan`, `changelog`, `claude`,
+`closeout`, `constitution`, `obpi`, `prd`, `release_notes`.
 
 Once written, `.gzkit/templates/` is the **project canonical source-of-truth** —
 `render_template()` consults the project copy first when present
@@ -348,7 +349,6 @@ Initializing gzkit for my-project in lite mode...
   Scaffolded 2 default personas
   Generated CLAUDE.md
   Created .claude/settings.json
-  Created .copilotignore
 
 gzkit initialized successfully!
 

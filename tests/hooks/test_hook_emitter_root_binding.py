@@ -32,7 +32,6 @@ from unittest import mock
 
 from gzkit.config import GzkitConfig
 from gzkit.hooks.claude import setup_claude_hooks
-from gzkit.hooks.copilot import setup_copilot_hooks
 
 GZKIT_REPO = Path(__file__).resolve().parents[2]
 
@@ -58,7 +57,6 @@ def _emit_all_hooks(project_root: Path, config: GzkitConfig, *, standing_in: Pat
     os.chdir(standing_in)
     try:
         setup_claude_hooks(project_root, config)
-        setup_copilot_hooks(project_root, config)
     finally:
         os.chdir(previous)
 

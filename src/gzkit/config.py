@@ -46,12 +46,6 @@ class VendorsConfig(BaseModel):
         ),
         description="Claude Code agent surface",
     )
-    copilot: VendorConfig = Field(
-        default_factory=lambda: VendorConfig(
-            enabled=False, surface_root=".github", instruction_format="github-instructions"
-        ),
-        description="GitHub Copilot agent surface",
-    )
     codex: VendorConfig = Field(
         default_factory=lambda: VendorConfig(
             enabled=False, surface_root=".agents", instruction_format="generic"
@@ -105,10 +99,7 @@ class PathConfig(BaseModel):
     claude_skills: str = ".claude/skills"
     codex_config: str = CODEX_CONFIG_DEFAULT_PATH
     codex_skills: str = ".agents/skills"
-    copilot_skills: str = ".github/skills"
-    copilot_instructions: str = ".github/copilot-instructions.md"
     discovery_index: str = ".github/discovery-index.json"
-    copilot_hooks: str = ".github/copilot/hooks"
     skills: str = ".gzkit/skills"
     personas: str = ".gzkit/personas"
     chores: str = ".gzkit/chores"
@@ -240,8 +231,8 @@ class GzkitConfig(BaseModel):
         # Never materialize a DEFAULTED vendors block. Its presence is what
         # `has_vendor_declaration` reads to decide the project opted into
         # vendor-gated sync, so writing the defaults here would silently opt
-        # every `gz init` adopter in -- and the defaults disable codex and
-        # copilot, so their surfaces would stop rendering without anyone
+        # every `gz init` adopter in -- and the defaults disable every vendor
+        # but claude, so their surfaces would stop rendering without anyone
         # declaring that. An explicitly-set block is preserved (GHI #921).
         if "vendors" not in self.model_fields_set:
             data.pop("vendors", None)

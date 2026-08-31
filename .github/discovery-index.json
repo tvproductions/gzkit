@@ -15,13 +15,11 @@
       "CLAUDE.md"
     ],
     "control_surfaces": {
-      "copilot_instructions": ".github/copilot-instructions.md",
       "discovery_index": ".github/discovery-index.json",
       "skills_canonical": ".gzkit/skills",
       "skills_mirrors": [
         ".claude/skills",
-        ".agents/skills",
-        ".github/skills"
+        ".agents/skills"
       ]
     }
   },
@@ -52,7 +50,6 @@
   "discovery_checklist": {
     "governance": [
       ".github/discovery-index.json",
-      ".github/copilot-instructions.md",
       "AGENTS.md"
     ],
     "context": [

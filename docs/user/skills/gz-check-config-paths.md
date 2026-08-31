@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-check-co
 | `.gzkit/skills/gz-check-config-paths/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-check-config-paths/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-check-config-paths/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-check-config-paths/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

@@ -174,7 +174,6 @@ Standardized and synchronized by `gz agent sync control-surfaces`.
 - Canonical skills: `{skills_canon_path}`
 - Claude skill mirror: `{skills_claude_path}`
 - Codex skill mirror: `{skills_codex_path}`
-- Copilot skill mirror: `{skills_copilot_path}`
 
 ### Skills Protocol
 

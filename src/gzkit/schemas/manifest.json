@@ -133,8 +133,7 @@
         "hooks",
         "skills",
         "claude_skills",
-        "codex_skills",
-        "copilot_skills"
+        "codex_skills"
       ],
       "properties": {
         "agents_md": {
@@ -172,14 +171,6 @@
         "codex_skills": {
           "type": "string",
           "description": "Directory for Codex skill mirror"
-        },
-        "copilot_skills": {
-          "type": "string",
-          "description": "Directory for Copilot skill mirror"
-        },
-        "instructions": {
-          "type": "string",
-          "description": "Directory for GitHub instruction files"
         },
         "claude_rules": {
           "type": "string",
@@ -229,9 +220,6 @@
       "description": "Vendor enablement configuration for agent harnesses",
       "properties": {
         "claude": {
-          "$ref": "#/$defs/vendorConfig"
-        },
-        "copilot": {
           "$ref": "#/$defs/vendorConfig"
         },
         "codex": {

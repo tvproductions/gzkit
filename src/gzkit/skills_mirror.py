@@ -167,8 +167,25 @@ def _validate_mirror_skill_assets(
     canonical_dir: Path,
     mirror_dir: Path,
 ) -> None:
-    """Ensure every canonical supporting file exists in the mirror with matching bytes."""
-    canonical_assets = _collect_package_files(canonical_dir)
+    """Ensure every canonical supporting file exists in the mirror with matching bytes.
+
+    Assets the mirror root is FORBIDDEN to receive are excluded from both sides
+    of the comparison. The canonical skills tree carries the nested writer's
+    generated ``CLAUDE.md``, and a foreign vendor's ``surface_root`` must not be
+    seeded with another vendor's discovery file -- so demanding parity on that
+    name would require exactly the leak ``_forbidden_mirror_names`` refuses, and
+    this audit would fail closed on a correctly-synced tree (GHI #925).
+    """
+    from gzkit.sync_skills import _forbidden_mirror_names  # noqa: PLC0415
+
+    forbidden = _forbidden_mirror_names(
+        project_root, mirror_dir.relative_to(project_root).as_posix()
+    )
+    canonical_assets = {
+        rel: path
+        for rel, path in _collect_package_files(canonical_dir).items()
+        if path.name not in forbidden
+    }
     mirror_assets = _collect_package_files(mirror_dir)
 
     for rel in sorted(set(canonical_assets) - set(mirror_assets)):

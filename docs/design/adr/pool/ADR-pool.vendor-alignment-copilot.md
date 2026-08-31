@@ -1,6 +1,6 @@
 ---
 id: ADR-pool.vendor-alignment-copilot
-status: Pool
+status: Superseded
 parent: PRD-GZKIT-1.0.0
 lane: lite
 enabler: null
@@ -11,7 +11,17 @@ inspired_by: copilot-docs-2026-03
 
 ## Status
 
-Pool
+Superseded
+
+> **Superseded 2026-08-31 (GHI #924).** The vendor this backlog item exists to
+> align with no longer exists in gzkit. Copilot was dropped on 2026-08-29 under
+> the booked ruling *"we will drop copilot, effective immediately"* (`65001830`,
+> 154 files / 1,015,407 B removed), and GHI #924 removed the declarations that
+> survived that drop — `VendorsConfig.copilot`, the `copilot_*` path fields,
+> `schemas/manifest.json`'s Copilot keys, `src/gzkit/hooks/copilot.py`, both
+> `templates/copilot.md`, and the distribution-baseline entry. There is nothing
+> left to align. The record stays on disk as the design conversation that was
+> had; it is void as backlog.
 
 ## Date
 

@@ -36,7 +36,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-bri
 | `.gzkit/skills/gz-obpi-brief-drift/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-obpi-brief-drift/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-obpi-brief-drift/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-obpi-brief-drift/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

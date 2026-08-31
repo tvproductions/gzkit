@@ -1,6 +1,6 @@
 """Control surface synchronization for gzkit sync.
 
-Handles discovery index generation, Claude/Copilot surface sync,
+Handles discovery index generation, Claude surface sync,
 manifest generation, and the main ``sync_all`` orchestration entry point.
 
 Extracted from sync.py to keep modules under 600 lines.
@@ -25,7 +25,6 @@ from gzkit.config import (
 )
 from gzkit.content.render import render as render_content_model
 from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
-from gzkit.hooks.copilot import generate_copilotignore, setup_copilot_hooks
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
@@ -161,8 +160,6 @@ def generate_manifest(
             "claude_skills": config.paths.claude_skills,
             "codex_config": config.paths.codex_config,
             "codex_skills": config.paths.codex_skills,
-            "copilot_skills": config.paths.copilot_skills,
-            "instructions": ".github/instructions",
             "claude_rules": ".claude/rules",
             "personas": config.paths.personas,
         },
@@ -269,7 +266,6 @@ uv run gz test                       # Run tests""".format(module=project_name.r
         "skills_canon_path": config.paths.skills,
         "skills_claude_path": config.paths.claude_skills,
         "skills_codex_path": config.paths.codex_skills,
-        "skills_copilot_path": config.paths.copilot_skills,
         "skills_catalog": skills_catalog,
     }
 
@@ -296,13 +292,11 @@ def _discovery_index_payload(project_root: Path, config: GzkitConfig) -> dict[st
         "governance": {
             "agent_contracts": [config.paths.agents_md, config.paths.claude_md],
             "control_surfaces": {
-                "copilot_instructions": config.paths.copilot_instructions,
                 "discovery_index": config.paths.discovery_index,
                 "skills_canonical": config.paths.skills,
                 "skills_mirrors": [
                     config.paths.claude_skills,
                     config.paths.codex_skills,
-                    config.paths.copilot_skills,
                 ],
             },
         },
@@ -324,7 +318,6 @@ def _discovery_index_payload(project_root: Path, config: GzkitConfig) -> dict[st
         "discovery_checklist": {
             "governance": [
                 config.paths.discovery_index,
-                config.paths.copilot_instructions,
                 config.paths.agents_md,
             ],
             "context": ["parent_adr", "related_obpis"],
@@ -470,22 +463,6 @@ def sync_claude_md(project_root: Path, config: GzkitConfig) -> None:
     write_text_if_changed(claude_path, content)
 
 
-def sync_copilot_instructions(project_root: Path, config: GzkitConfig) -> None:
-    """Generate copilot-instructions.md from template + .gzkit/agents.local.md.
-
-    Args:
-        project_root: Project root directory.
-        config: Project configuration.
-
-    """
-    context = get_project_context(project_root, config)
-    content = render_surface_template("copilot", **context)
-
-    copilot_path = project_root / config.paths.copilot_instructions
-    ensure_dir(copilot_path.parent)
-    write_text_if_changed(copilot_path, content)
-
-
 # ---------------------------------------------------------------------------
 # Claude settings and drift detection
 # ---------------------------------------------------------------------------
@@ -619,22 +596,6 @@ def detect_claude_settings_drift(project_root: Path, config: GzkitConfig) -> lis
                 )
 
     return diffs
-
-
-# ---------------------------------------------------------------------------
-# Copilot ignore
-# ---------------------------------------------------------------------------
-
-
-def sync_copilotignore(project_root: Path) -> None:
-    """Generate .copilotignore for governance artifacts.
-
-    Args:
-        project_root: Project root directory.
-
-    """
-    copilotignore_path = project_root / ".copilotignore"
-    write_text_if_changed(copilotignore_path, generate_copilotignore(project_root))
 
 
 # ---------------------------------------------------------------------------
@@ -982,7 +943,6 @@ def sync_persona_mirrors(
 
     vendor_persona_map = {
         "claude": config.vendors.claude.surface_root + "/personas",
-        "copilot": config.vendors.copilot.surface_root + "/personas",
         "codex": config.vendors.codex.surface_root + "/personas",
     }
 
@@ -1093,40 +1053,18 @@ def sync_all(
         updated.append(config.paths.claude_settings)
         updated.extend(setup_claude_hooks(project_root, config))
 
-    # Copilot surfaces — render canonical rules to .github/instructions/ BEFORE
-    # sync_nested_agents_md so that subsequent runs see the same instruction
-    # files as the first run (idempotency invariant).
-    if not vendor_aware or config.vendors.copilot.enabled:
-        if canonical_rules:
-            rendered = render_rules_to_dir(
-                canonical_rules,
-                project_root / ".github" / "instructions",
-                "copilot",
-                project_root=project_root,
-            )
-            updated.extend(rendered)
-
-        # Copilot reads both the master instructions file AND per-rule files;
-        # the master file must regenerate from templates/copilot.md regardless of
-        # whether per-rule files are also rendered. (GHI #247)
-        sync_copilot_instructions(project_root, config)
-        updated.append(config.paths.copilot_instructions)
-
-        sync_copilotignore(project_root)
-        updated.append(".copilotignore")
-
-        updated.extend(setup_copilot_hooks(project_root, config))
-
     # Vendor-NEUTRAL despite its `.github/` home: the discovery index describes
     # the repository's governance surfaces to any reader, and OBPI Discovery
-    # Checklists cite it. It sat inside the copilot branch above, so disabling
-    # copilot deleted a surface seven live briefs reference (GHI #921).
+    # Checklists cite it. It once sat inside the (now removed) Copilot branch,
+    # so disabling that vendor deleted a surface seven live briefs reference
+    # (GHI #921). Its `.github/` path is GitHub's convention, not an agent
+    # vendor's — which is why it outlived the Copilot drop (GHI #924).
     sync_discovery_index(project_root, config)
     updated.append(config.paths.discovery_index)
 
-    # Generate nested AGENTS.md files AFTER copilot rule rendering so that
-    # both the first and subsequent runs see the same .github/instructions/
-    # state, making sync idempotent across repeated invocations.
+    # Generate nested AGENTS.md files after every vendor surface has been
+    # written, so the first and subsequent runs observe the same tree and sync
+    # stays idempotent across repeated invocations.
     updated.extend(sync_nested_agents_md(project_root, config))
 
     # Vendor-aware skill mirrors

@@ -85,7 +85,6 @@ Tier B artifacts are computed from Tier A sources. They improve performance or c
 | `.claude/skills/` | Mirrored skill definitions | `uv run gz agent sync control-surfaces` |
 | `.claude/plans/` | Plan files, pipeline markers, receipts | Pipeline execution / plan mode |
 | `.agents/skills/` | Codex skill mirror | `uv run gz agent sync control-surfaces` |
-| `.github/skills/` | Copilot skill mirror | `uv run gz agent sync control-surfaces` |
 | `site/` | Built documentation (gitignored) | `uv run mkdocs build` |
 | `artifacts/receipts/` | ARB receipt artifacts | `uv run -m gzkit arb <tool>` |
 

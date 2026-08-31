@@ -121,7 +121,6 @@ class TestAgentsTemplateSemantic(unittest.TestCase):
             skills_canon_path=".gzkit/skills",
             skills_claude_path=".claude/skills",
             skills_codex_path=".agents/skills",
-            skills_copilot_path=".github/skills",
             skills_catalog="(none)",
             sync_date="2026-01-01",
             local_content="",
@@ -187,13 +186,6 @@ class TestAdapterTemplatesReferenceCanon(unittest.TestCase):
         self.assertNotIn("`test-skill`", content)
         self.assertIn("AGENTS.md", content)
 
-    @covers("REQ-0.17.0-03-03")
-    def test_copilot_adapter_references_agents_for_skills(self) -> None:
-        content = render_surface_template("copilot", skills_catalog="- `test-skill`: Desc")
-        self.assertNotIn("`test-skill`", content)
-        self.assertIn("AGENTS.md", content)
-        self.assertIn("Available Skills", content)
-
     def test_agents_template_points_to_live_catalog(self) -> None:
         content = render_surface_template("agents", skills_catalog="- `test-skill`: Desc")
         self.assertNotIn("`test-skill`", content)
@@ -218,22 +210,8 @@ class TestRootSurfaceSlimming(unittest.TestCase):
             skills_canon_path=".gzkit/skills",
             skills_claude_path=".claude/skills",
             skills_codex_path=".agents/skills",
-            skills_copilot_path=".github/skills",
             skills_catalog="(none)",
             sync_date="2026-01-01",
-            local_content="",
-        )
-        self.copilot = render_surface_template(
-            "copilot",
-            project_name="test-project",
-            project_purpose="Test purpose",
-            tech_stack="Python 3.13+",
-            coding_conventions="Ruff defaults",
-            skills_canon_path=".gzkit/skills",
-            skills_claude_path=".claude/skills",
-            skills_codex_path=".agents/skills",
-            skills_copilot_path=".github/skills",
-            build_commands="uv sync",
             local_content="",
         )
 
@@ -256,12 +234,6 @@ class TestRootSurfaceSlimming(unittest.TestCase):
         self.assertIn("gz check", self.agents)
         self.assertNotIn("gz prd", self.agents)
         self.assertNotIn("gz constitute", self.agents)
-
-    @covers("REQ-0.17.0-03-06")
-    def test_copilot_no_inline_ceremony(self) -> None:
-        """Copilot template defers OBPI ceremony to AGENTS.md."""
-        self.assertNotIn("Provide value narrative", self.copilot)
-        self.assertIn("AGENTS.md", self.copilot)
 
 
 class TestListTemplates(unittest.TestCase):

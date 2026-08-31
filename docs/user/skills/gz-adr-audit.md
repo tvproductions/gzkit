@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-adr-audi
 | `.gzkit/skills/gz-adr-audit/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-adr-audit/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-adr-audit/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-adr-audit/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

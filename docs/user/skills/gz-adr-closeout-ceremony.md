@@ -33,7 +33,6 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-adr-clos
 | `.gzkit/skills/gz-adr-closeout-ceremony/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-adr-closeout-ceremony/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-adr-closeout-ceremony/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-adr-closeout-ceremony/SKILL.md` | Copilot mirror | Read |
 
 ## Related Skills and Commands
 

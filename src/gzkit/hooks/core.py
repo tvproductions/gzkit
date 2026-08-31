@@ -392,7 +392,7 @@ def generate_hook_script(hook_type: str, project_root: Path) -> str:
     """Generate a hook script for the specified agent type.
 
     Args:
-        hook_type: Type of hook ("claude" or "copilot").
+        hook_type: Type of hook (e.g. "claude").
         project_root: Project root directory.
 
     Returns:
@@ -491,7 +491,7 @@ def write_hook_script(project_root: Path, hook_type: str, hooks_dir: str) -> Pat
 
     Args:
         project_root: Project root directory.
-        hook_type: Type of hook ("claude" or "copilot").
+        hook_type: Type of hook (e.g. "claude").
         hooks_dir: Directory for hooks relative to project root.
 
     Returns:

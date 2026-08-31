@@ -212,16 +212,6 @@ def readiness_audit_cmd(as_json: bool) -> None:
                 "issue": "required control surface CLAUDE.md missing",
             },
             {
-                "id": "copilot_instructions",
-                "kind": "file",
-                "path": ".github/copilot-instructions.md",
-                # Required only where the project renders it. A hardcoded True
-                # reported a disabled vendor's absent surface as a readiness
-                # defect the project could never clear (GHI #921).
-                "required": _vendor_enabled(project_root, "copilot"),
-                "issue": "required control surface .github/copilot-instructions.md missing",
-            },
-            {
                 "id": "discovery_index",
                 "kind": "file",
                 "path": ".github/discovery-index.json",

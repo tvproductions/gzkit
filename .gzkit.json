@@ -28,11 +28,6 @@
       "surface_root": ".agents",
       "instruction_format": "generic"
     },
-    "copilot": {
-      "enabled": false,
-      "surface_root": ".github",
-      "instruction_format": "github-instructions"
-    },
     "gemini": {
       "enabled": false,
       "surface_root": ".gemini",

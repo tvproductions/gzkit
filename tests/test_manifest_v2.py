@@ -164,7 +164,6 @@ class TestManifestV2Validation(unittest.TestCase):
                 "skills": ".gzkit/skills",
                 "claude_skills": ".claude/skills",
                 "codex_skills": ".agents/skills",
-                "copilot_skills": ".github/skills",
             },
             "verification": {
                 "lint": "uv run gz lint",
@@ -203,7 +202,6 @@ class TestManifestV2Validation(unittest.TestCase):
                 "skills": "s",
                 "claude_skills": "cs",
                 "codex_skills": "xs",
-                "copilot_skills": "ps",
             },
             "verification": {"lint": "l", "format": "f", "typecheck": "t", "test": "x"},
             "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
@@ -247,12 +245,12 @@ class TestManifestVendorsBlock(unittest.TestCase):
         a default rather than on what the project declared.
         """
         config = GzkitConfig.model_validate(
-            {"vendors": {"copilot": {"enabled": False, "surface_root": ".github"}}}
+            {"vendors": {"codex": {"enabled": False, "surface_root": ".agents"}}}
         )
 
         vendors = self._generate(config)["vendors"]
 
-        self.assertFalse(vendors["copilot"]["enabled"])
+        self.assertFalse(vendors["codex"]["enabled"])
         self.assertTrue(vendors["claude"]["enabled"])
 
     def test_emitted_vendors_block_passes_schema_validation(self) -> None:

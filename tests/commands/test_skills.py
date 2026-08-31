@@ -130,7 +130,7 @@ class TestSkillCommands(unittest.TestCase):
 
     @staticmethod
     def _set_skill_last_reviewed_all_roots(skill_name: str, last_reviewed: str) -> None:
-        roots = [".gzkit/skills", ".agents/skills", ".claude/skills", ".github/skills"]
+        roots = [".gzkit/skills", ".agents/skills", ".claude/skills"]
         for root in roots:
             skill_file = Path(root) / skill_name / "SKILL.md"
             content = skill_file.read_text(encoding="utf-8")

@@ -70,7 +70,6 @@ existing same-date document — REQ-0.0.27-04-05 no-overwrite guard).
 | `.gzkit/skills/gz-complexity-distill/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-complexity-distill/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-complexity-distill/SKILL.md` | Codex mirror | Read |
-| `.github/skills/gz-complexity-distill/SKILL.md` | Copilot mirror | Read |
 | `data/exemplar_corpus.json` | Pinned-SHA corpus (single source of truth) | Read |
 | `src/gzkit/complexity/distillation.py` | Engine (render functions, frozen models) | Read |
 | `docs/governance/complexity/distilled-characteristics-{date}.md` | Output document | Write |

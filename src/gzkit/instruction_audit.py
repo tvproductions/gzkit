@@ -199,9 +199,10 @@ def audit_generated_surface_drift(project_root: Path) -> list[ValidationError]:
     # Canon first (GHI #891, GHI #921). This audit compares `.claude/rules/`
     # against `.github/instructions/` -- but where `.gzkit/rules/` exists BOTH
     # are rendered from it, so the comparison judges one derived view by another
-    # (Architectural Boundary 6). With copilot disabled the copilot mirror is
-    # absent by design, and every Claude rule was reported an orphan "with no
-    # source instruction" while its real source sat in canon, unchanged.
+    # (Architectural Boundary 6). Once the Copilot mirror stopped rendering,
+    # every Claude rule was reported an orphan "with no source instruction"
+    # while its real source sat in canon, unchanged. The vendor is now
+    # undeclared entirely (GHI #924), so nothing writes that tree at all.
     # Canon-derived rendering is witnessed by `gz validate --surfaces` and the
     # sync-parity check, not here. The instruction path survives as the fallback
     # for a legacy adopter hand-authoring `.github/instructions/` with no canon,
