@@ -311,3 +311,32 @@ class TestConcurrentDoubleRetireIsRefused(unittest.TestCase):
                 len(refused), 1, f"trial {trial}: expected one Algebra-7 refusal, got {outcomes}"
             )
             self.assertEqual(len(load_corpus(self._root, surface).entries), 2)
+
+
+class TestDuplicateIdNeverReachesDisk(unittest.TestCase):
+    """GHI #874 — the write boundary refuses an alias, and leaves the store intact.
+
+    Same boundary discipline as ``TestAppendValidatesBeforePersisting`` (GHI #875):
+    an append the READ boundary would refuse must never be persisted, because the
+    store is append-only and has no delete path to recover through.
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self._root = Path(self._tempdir.name)
+        (self._root / ".gzkit").mkdir()
+
+    def tearDown(self) -> None:
+        self._tempdir.cleanup()
+
+    def test_appending_an_existing_id_is_refused_and_changes_nothing(self) -> None:
+        append_entry(self._root, "AGENTS.md", _entry("c1"))
+        path = corpus_path(self._root, "AGENTS.md")
+        before = path.read_text(encoding="utf-8")
+
+        with self.assertRaises(ValueError) as caught:
+            append_entry(self._root, "AGENTS.md", _entry("c1", section="prime-directive"))
+
+        self.assertIn("'c1'", str(caught.exception))
+        self.assertEqual(path.read_text(encoding="utf-8"), before)
+        self.assertEqual(len(load_corpus(self._root, "AGENTS.md").entries), 1)

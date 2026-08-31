@@ -20,6 +20,7 @@ from gzkit.content.models.corpus import (
     BASELINE_IDENTITY_FIELDS,
     POST_BASELINE_IDENTITY_FIELDS,
     effective_corpus,
+    validate_tombstone_algebra,
 )
 from gzkit.content.rendition_store import corpus_fingerprint
 from gzkit.content.tier_policy import assert_invariant_verbatim, invariant_entries
@@ -1130,3 +1131,85 @@ class TestRetiredIdsAndLiveEntryWithTextUnderUnRetirement(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestEntryIdsAddressExactlyOneRow(unittest.TestCase):
+    """GHI #874 — ``id`` is an entry's ADDRESS, so two rows may never share one.
+
+    ``ADR-0.0.37`` § Decision Re-Alignment part 1 makes ``id`` the address of a
+    corpus entry; two rows at one address has no defined meaning. Nothing enforced
+    it: ``validate_tombstone_algebra`` built ``known`` and ``earlier`` as SETS, so a
+    duplicate collapsed silently, and ``_liveness`` then keyed a dict by ``id`` and
+    overwrote one row's verdict with another's.
+
+    These assert the semantic (one address, one row), not the message text — the
+    id must be NAMED because the store is an append log an operator has to search
+    by hand, but which words surround it is not the contract.
+    """
+
+    def test_two_rows_sharing_an_id_are_refused(self) -> None:
+        """The plainest shape: one address, two rows, no defined meaning."""
+        entries = (_entry(id="a"), _entry(id="a", text="a different claim"))
+
+        with self.assertRaises(ValueError) as caught:
+            validate_tombstone_algebra(entries)
+
+        self.assertIn("'a'", str(caught.exception))
+
+    def test_a_content_row_may_not_alias_a_tombstone_id(self) -> None:
+        """The GHI's hand-traced consequence: an ordinary row silently leaves canon.
+
+        ``[X(a), T(t, retires=a), Z(t), W(w, retires=t)]`` passed Algebra 2 and
+        Algebra 7, then ``_liveness`` wrote key ``"t"`` twice and ``effective_corpus``
+        dropped BOTH rows keyed ``"t"`` — ``Z``'s only offence being that it shared
+        an id with a tombstone.
+        """
+        entries = (
+            _entry(id="a"),
+            _entry(id="t", retires="a"),
+            _entry(id="t", text="an ordinary content row that aliases the tombstone"),
+            _entry(id="w", retires="t"),
+        )
+
+        with self.assertRaises(ValueError) as caught:
+            validate_tombstone_algebra(entries)
+
+        self.assertIn("'t'", str(caught.exception))
+
+    def test_the_liveness_default_premise_is_enforced_not_merely_documented(self) -> None:
+        """``_liveness``' docstring premise must be a refused shape, not a hope.
+
+        Both OBPI-0.35.0-01 Stage-2 reviewers falsified the claim that the
+        ``live.get`` default is unreachable on a corpus that passed validation, using
+        ``[A(x), T1(t1, retires=x), B(x)]``. It validated, and the reverse pass reached
+        ``B(x)`` before ``T1`` resolved. The verdict came out right only because the
+        earliest row is written last and overwrites the key — loop write order, not a
+        guaranteed property. Refusing the duplicate is what makes the premise true.
+        """
+        entries = (
+            _entry(id="x"),
+            _entry(id="t1", retires="x"),
+            _entry(id="x", text="a second row at the same address"),
+        )
+
+        with self.assertRaises(ValueError) as caught:
+            validate_tombstone_algebra(entries)
+
+        self.assertIn("'x'", str(caught.exception))
+
+    def test_distinct_ids_are_untouched(self) -> None:
+        """The guard must refuse aliases only — a legal log still loads."""
+        entries = (
+            _entry(id="a"),
+            _entry(id="t", retires="a"),
+            _entry(id="b"),
+        )
+
+        validate_tombstone_algebra(entries)
+
+    def test_the_committed_corpus_carries_no_aliases(self) -> None:
+        """The real store must satisfy the invariant this guard now enforces."""
+        corpus = load_corpus(_PROJECT_ROOT, "AGENTS.md")
+        ids = [entry.id for entry in corpus.entries]
+
+        self.assertEqual(len(ids), len(set(ids)))

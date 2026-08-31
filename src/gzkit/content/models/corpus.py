@@ -139,12 +139,23 @@ def tombstone_target(entry: CorpusEntry) -> str | None:
 
 
 def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
-    """Fail closed on a corpus that breaks Algebra 2 or Algebra 3 (OBPI-0.35.0-01).
+    """Fail closed on a corpus that breaks Algebra 1, 2, 3 or 7 (OBPI-0.35.0-01).
 
-    Algebra 2 (TARGETS): ``retires`` and ``supersedes`` each name exactly one id
-    appearing STRICTLY EARLIER in the append log. Algebra 3 (EXCLUSIVITY): no row
-    populates both pointers. Algebra 7 (NO SILENT DOUBLE-RETIRE): at most one
-    LIVE tombstone may target a given entry.
+    Algebra 1 (IDENTITY): every ``id`` names exactly one row. Algebra 2 (TARGETS):
+    ``retires`` and ``supersedes`` each name exactly one id appearing STRICTLY
+    EARLIER in the append log. Algebra 3 (EXCLUSIVITY): no row populates both
+    pointers. Algebra 7 (NO SILENT DOUBLE-RETIRE): at most one LIVE tombstone may
+    target a given entry.
+
+    Clause 1 is checked BEFORE all others because every later clause reads ids
+    through a set or a dict — ``known``, ``earlier``, ``claimed``, and the
+    ``_liveness`` verdict map. A set silently absorbs a duplicate and a dict
+    silently overwrites one, so an alias does not fail those checks, it makes
+    them answer a question about a different row (GHI #874). Enforcing identity
+    first is also what makes ``_liveness``' premise TRUE rather than merely
+    documented: its ``live.get`` default was falsified during the OBPI-0.35.0-01
+    two-stage review by ``[A(x), T1(t1, retires=x), B(x)]``, which reached the
+    default because two rows shared address ``x``.
 
     Clauses 2 and 3 exist to keep the Algebra 5 reverse pass total. That pass reads
     ``live[t]`` for every tombstone ``t`` targeting a row, and it is only safe to
@@ -165,7 +176,21 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
             row in an append log that only ever grows.
 
     """
-    known = {entry.id for entry in entries}
+    seen: set[str] = set()
+    for entry in entries:
+        if entry.id in seen:
+            raise ValueError(
+                f"corpus entry id {entry.id!r} appears more than once; an id is an "
+                "entry's ADDRESS (ADR-0.0.37 Decision Re-Alignment part 1), so it must "
+                "name exactly one row (Algebra 1). Two rows at one address make the "
+                "Algebra 5 fold ambiguous: it keys liveness by id, so one row's verdict "
+                "overwrites the other's and BOTH can leave the effective corpus (GHI "
+                "#874). The store is append-only, so resolve this by appending a row "
+                "with a fresh id, never by editing the log"
+            )
+        seen.add(entry.id)
+
+    known = seen
     earlier: set[str] = set()
     for entry in entries:
         if entry.retires is not None and entry.supersedes is not None:
