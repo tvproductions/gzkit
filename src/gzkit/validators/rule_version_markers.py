@@ -31,12 +31,17 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from gzkit.rules import NESTED_SURFACE_NAMES
+
 if TYPE_CHECKING:
     from gzkit.core.validation_rules import ValidationError
 
 # The package-internal agent contract is a generated concatenation, not an
 # authored rule; skill-surface-sync excludes it from rule scaffolding.
-_EXEMPT_FILENAMES = frozenset({"AGENTS.md"})
+#: Generated per-subtree surfaces are not rules and carry no rule-version
+#: marker. Sourced from ``gzkit.rules`` so this scanner and the rule loader
+#: cannot disagree about what counts as a rule file (GHI #923).
+_EXEMPT_FILENAMES = NESTED_SURFACE_NAMES
 
 _MARKER_RE = re.compile(r"<!--\s*rule-version:\s*(\d+\.\d+\.\d+)\s*-->")
 _BLOCKQUOTE_RE = re.compile(r">\s*\*\*Rule version:\*\*\s*`(\d+\.\d+\.\d+)`")

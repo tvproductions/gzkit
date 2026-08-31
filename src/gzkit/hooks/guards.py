@@ -12,6 +12,7 @@ from collections.abc import Iterable, Iterator
 from pathlib import Path
 
 from gzkit.mx import levels as _mx_levels
+from gzkit.rules import NESTED_SURFACE_NAMES
 
 EXCLUDE_DIRS = {
     ".git",
@@ -355,7 +356,9 @@ def forbid_skill_sync_drift(root: Path) -> int:
                 errors.append(error)
         if path.startswith(".gzkit/rules/") and path.endswith(".md"):
             rel = path[len(".gzkit/rules/") :]
-            if Path(rel).name == "AGENTS.md":
+            # Generated per-subtree surfaces are projections, not canonical
+            # rules, and have no vendor mirror to keep in step (GHI #923).
+            if Path(rel).name in NESTED_SURFACE_NAMES:
                 continue
             error = _missing_mirror_error(path, rel, rule_roots, staged_paths)
             if error:

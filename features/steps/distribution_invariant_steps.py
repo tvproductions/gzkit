@@ -28,6 +28,8 @@ from pathlib import Path
 
 from behave import given, then, when
 
+from gzkit.rules import NESTED_SURFACE_NAMES
+
 
 def _gzkit_project_root() -> Path:
     env = os.environ.get("GZKIT_PROJECT_ROOT")
@@ -169,7 +171,10 @@ def step_no_extra_artifacts(context) -> None:
     extras: list[str] = []
     surface_patterns = {
         "skills": lambda p: p.name == "SKILL.md",
-        "rules": lambda p: p.suffix == ".md" and p.name != "AGENTS.md",
+        # Generated per-subtree surfaces are Layer-3 projections `gz agent sync`
+        # writes at init, never wheel-shipped canon -- the baseline holds zero of
+        # them. The Claude redirect joined AGENTS.md there under GHI #923.
+        "rules": lambda p: p.suffix == ".md" and p.name not in NESTED_SURFACE_NAMES,
         "personas": lambda p: p.suffix == ".md",
         "templates": lambda p: p.suffix == ".md",
     }

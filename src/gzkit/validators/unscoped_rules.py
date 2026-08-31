@@ -21,6 +21,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from gzkit.rules import NESTED_SURFACE_NAMES
+
 _NULL_TOKENS = {"", "null", "~"}
 _UNIVERSAL_GLOB = "**"
 # One unquoted / single-quoted / double-quoted scalar.
@@ -168,7 +170,7 @@ def run_unscoped_rules(project_root: Path) -> UnscopedRulesResult:
     rules_dir = project_root / _CANONICAL_RULES_DIR
     # Hierarchical AGENTS.md is the canonical home per the invariant (not a
     # rule file) — exclude it from the rule-file scan.
-    rule_files = sorted(p for p in rules_dir.glob("*.md") if p.name != "AGENTS.md")
+    rule_files = sorted(p for p in rules_dir.glob("*.md") if p.name not in NESTED_SURFACE_NAMES)
     violations: list[Violation] = []
 
     for rule_path in rule_files:

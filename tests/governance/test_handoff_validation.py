@@ -34,6 +34,7 @@ from gzkit.handoff_validation import (
     validate_sections_populated,
     validate_sections_present,
 )
+from gzkit.rules import NESTED_SURFACE_NAMES
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -224,7 +225,8 @@ class HandoffWorkContinuityScopeTests(unittest.TestCase):
         self.assertTrue(handoffs.is_dir(), "handoffs directory absent")
         rejected: list[str] = []
         for path in sorted(handoffs.glob("*.md")):
-            if path.name == "AGENTS.md":
+            # Generated per-subtree surfaces are not handoffs (GHI #923).
+            if path.name in NESTED_SURFACE_NAMES:
                 continue
             try:
                 HandoffFrontmatter(**parse_frontmatter(path.read_text(encoding="utf-8")))

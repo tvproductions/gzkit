@@ -10,6 +10,7 @@ from pathlib import Path
 
 from gzkit.rules import (
     _GENERATED_MARKER,
+    NESTED_SURFACE_NAMES,
     classify_instruction_rules,
     sync_claude_rules,
     sync_nested_agents_md,
@@ -109,7 +110,10 @@ class TestSyncNestedAgentsMd(unittest.TestCase):
 
             updated = sync_nested_agents_md(root)
 
-            self.assertEqual(len(updated), 1)
+            # Both surfaces are reported: the subtree rules and the Claude
+            # redirect beside them (GHI #923). Named rather than counted so the
+            # assertion says which files the sync owes the ledger.
+            self.assertEqual(sorted(updated), ["tests/AGENTS.md", "tests/CLAUDE.md"])
             agents = root / "tests" / "AGENTS.md"
             self.assertTrue(agents.exists())
             content = agents.read_text(encoding="utf-8")
@@ -695,12 +699,15 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-03-01")
     @covers("REQ-0.0.32-08-06")
     def test_dual_surface_rule_count(self) -> None:
-        # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
+        # Generated per-subtree surfaces are package-internal, not canonical rule
+        # slugs (OBPI-04); the Claude redirect joined AGENTS.md there under GHI #923.
         canonical = self._repo_root() / ".gzkit" / "rules"
         package = self._repo_root() / "src" / "gzkit" / "rules"
-        canonical_count = len([p for p in canonical.glob("*.md") if p.name != "AGENTS.md"])
+        canonical_count = len(
+            [p for p in canonical.glob("*.md") if p.name not in NESTED_SURFACE_NAMES]
+        )
         package_count = (
-            len([p for p in package.glob("*.md") if p.name != "AGENTS.md"])
+            len([p for p in package.glob("*.md") if p.name not in NESTED_SURFACE_NAMES])
             if package.exists()
             else 0
         )
@@ -715,12 +722,15 @@ class TestRulesLayoutDualSurface(unittest.TestCase):
     @covers("REQ-0.0.32-08-03")
     @covers("REQ-0.0.32-15-10")  # audit-exempt: regression-invariant-overlay OBPI-03 byte parity
     def test_dual_surface_byte_parity(self) -> None:
-        # AGENTS.md is package-internal (not a canonical rule slug per OBPI-04).
+        # Generated per-subtree surfaces are package-internal, not canonical rule
+        # slugs (OBPI-04); the Claude redirect joined AGENTS.md there under GHI #923.
         canonical = self._repo_root() / ".gzkit" / "rules"
         package = self._repo_root() / "src" / "gzkit" / "rules"
-        canonical_slugs = {p.name for p in canonical.glob("*.md") if p.name != "AGENTS.md"}
+        canonical_slugs = {
+            p.name for p in canonical.glob("*.md") if p.name not in NESTED_SURFACE_NAMES
+        }
         package_slugs = (
-            {p.name for p in package.glob("*.md") if p.name != "AGENTS.md"}
+            {p.name for p in package.glob("*.md") if p.name not in NESTED_SURFACE_NAMES}
             if package.exists()
             else set()
         )
@@ -1109,3 +1119,155 @@ class TestSyncClassifierIntegration(unittest.TestCase):
             content,
             "sync_surfaces.py must import and consult _classify_template_file for templates sync",
         )
+
+
+class TestNestedClaudeRedirect(unittest.TestCase):
+    """Nested subtree rules must reach Claude, not Codex alone (GHI #923).
+
+    ``sync_nested_agents_md`` emits ``AGENTS.md`` in each rule-bearing subtree.
+    That filename is Codex's discovery convention; Claude discovers nested
+    instruction files as ``CLAUDE.md``. Without a sibling redirect every shared
+    subtree rule is delivered to one vendor and withheld from the other, which
+    is the vendor-parity intent these tests pin.
+    """
+
+    def test_redirect_is_written_beside_each_nested_agents_md(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "tests.instructions.md").write_text(
+                _instruction_file("tests/**", "# Test Policy\n\nUse unittest."), encoding="utf-8"
+            )
+            (root / "tests").mkdir()
+
+            sync_nested_agents_md(root)
+
+            redirect = root / "tests" / "CLAUDE.md"
+            self.assertTrue(redirect.exists(), "no nested CLAUDE.md beside the nested AGENTS.md")
+            content = redirect.read_text(encoding="utf-8")
+            self.assertIn(_GENERATED_MARKER, content)
+            # The import, not a copy: the redirect must not duplicate the body,
+            # or the two surfaces can disagree after a later sync.
+            self.assertIn("@AGENTS.md", content)
+            self.assertNotIn("Use unittest.", content)
+
+    def test_redirect_is_reported_in_the_write_set(self) -> None:
+        """``sync_parity`` snapshots from the helper, so it must name every write.
+
+        A helper that under-reports its writer is the drift GHI #890 closed:
+        restore could only put back the paths it knew about.
+        """
+        from gzkit.rules import nested_agents_md_paths
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "tests.instructions.md").write_text(
+                _instruction_file("tests/**", "# Test Policy"), encoding="utf-8"
+            )
+            (root / "tests").mkdir()
+
+            declared = nested_agents_md_paths(root)
+            sync_nested_agents_md(root)
+
+            self.assertIn(root / "tests" / "CLAUDE.md", declared)
+            self.assertIn(root / "tests" / "AGENTS.md", declared)
+
+    def test_no_redirect_inside_another_vendors_surface_root(self) -> None:
+        """Another vendor's own tree keeps its own discovery convention.
+
+        ``.github`` is Copilot's declared ``surface_root``. The subtree rules
+        still render there, because that tree is Copilot's to read; seeding it
+        with ``CLAUDE.md`` would claim a surface gzkit does not own there.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            (inst / "workflows.instructions.md").write_text(
+                _instruction_file(".github/**", "# Workflow policy"), encoding="utf-8"
+            )
+
+            sync_nested_agents_md(root)
+
+            self.assertTrue((root / ".github" / "AGENTS.md").exists())
+            self.assertFalse(
+                (root / ".github" / "CLAUDE.md").exists(),
+                "wrote a Claude redirect into another vendor's surface root",
+            )
+
+    def test_stale_redirect_is_cleaned_up(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            stale_dir = root / "old_subtree"
+            stale_dir.mkdir()
+            (stale_dir / "AGENTS.md").write_text(
+                f"{_GENERATED_MARKER}\n# Stale\n", encoding="utf-8"
+            )
+            stale_redirect = stale_dir / "CLAUDE.md"
+            stale_redirect.write_text(f"{_GENERATED_MARKER}\n\n@AGENTS.md\n", encoding="utf-8")
+
+            (inst / "tests.instructions.md").write_text(
+                _instruction_file("tests/**", "# Test rules"), encoding="utf-8"
+            )
+            (root / "tests").mkdir()
+
+            sync_nested_agents_md(root)
+
+            self.assertFalse(stale_redirect.exists(), "stale Claude redirect survived the sync")
+
+    def test_hand_written_claude_md_is_preserved(self) -> None:
+        """Only generated redirects are ours to remove."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            inst = root / ".github" / "instructions"
+            inst.mkdir(parents=True)
+            manual_dir = root / "manual"
+            manual_dir.mkdir()
+            manual = manual_dir / "CLAUDE.md"
+            manual.write_text("# Hand-written Claude rules\n", encoding="utf-8")
+
+            (inst / "tests.instructions.md").write_text(
+                _instruction_file("tests/**", "# Test rules"), encoding="utf-8"
+            )
+            (root / "tests").mkdir()
+
+            sync_nested_agents_md(root)
+
+            self.assertTrue(manual.exists())
+            self.assertIn("Hand-written", manual.read_text(encoding="utf-8"))
+
+
+class TestGeneratedSurfacesAreNotRules(unittest.TestCase):
+    """Generated per-subtree surfaces are not rule files (GHI #923).
+
+    ``.gzkit/rules/`` is itself a rule-bearing subtree, so the nested surface
+    writer emits into the directory ``load_rules`` scans. ``load_rules`` skipped
+    ``AGENTS.md`` by literal name, which was a one-member allowlist for a
+    family: adding the Claude redirect beside it made ``.gzkit/rules/CLAUDE.md``
+    parse as a rule and raise on the missing frontmatter delimiter.
+    """
+
+    def test_generated_surfaces_in_the_rules_dir_are_skipped(self) -> None:
+        from gzkit.rules import _GENERATED_MARKER as marker
+        from gzkit.rules import load_rules
+
+        with tempfile.TemporaryDirectory() as tmp:
+            rules_dir = Path(tmp) / "rules"
+            rules_dir.mkdir()
+            (rules_dir / "real.md").write_text(
+                '---\nid: real\npaths:\n  - "src/**"\ndescription: A real rule\n---\n\n# Real\n',
+                encoding="utf-8",
+            )
+            for generated in ("AGENTS.md", "CLAUDE.md"):
+                (rules_dir / generated).write_text(
+                    f"{marker}\n# generated surface, no frontmatter\n", encoding="utf-8"
+                )
+
+            loaded = load_rules(rules_dir)
+
+            self.assertEqual([rule.frontmatter.id for rule in loaded], ["real"])
