@@ -688,6 +688,80 @@ class TestSyncControlSurfaces(unittest.TestCase):
             self.assertTrue(stale_dir.exists())
             self.assertTrue(stale_file.exists())
 
+    def test_generated_claude_redirect_is_not_mirrored_into_a_foreign_root(self) -> None:
+        """The mirror honours the nested writer's own foreign-root exclusion.
+
+        ``sync_skill_mirror`` runs downstream of ``sync_nested_agents_md``, so the
+        canonical tree it copies already carries that writer's output -- an
+        ``AGENTS.md`` and its ``CLAUDE.md`` redirect. A wholesale ``rglob`` copy
+        re-delivers the redirect into every mirror root, including a vendor's whose
+        tree carries its own discovery convention and which the writer therefore
+        declined to write into (GHI #925). The semantic under test is the writer's:
+        no vendor's ``surface_root`` is seeded with another vendor's discovery file.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            canonical = project_root / config.paths.skills
+            demo_skill = canonical / "demo-skill"
+            demo_skill.mkdir(parents=True, exist_ok=True)
+            (demo_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
+            # Written WITHOUT the generated-surface marker on purpose. A marker-bearing
+            # redirect is reaped by the stale sweep in a tree this small -- no rule is
+            # scoped to the canonical skills dir, so the nested writer emits no
+            # ``AGENTS.md`` there and therefore no redirect beside it. The unmarked form
+            # is preserved (``test_hand_written_claude_md_is_preserved``), which is what
+            # puts a ``CLAUDE.md`` in the canonical tree for ``rglob`` to pick up -- the
+            # precondition the defect needs.
+            (canonical / "CLAUDE.md").write_text("@AGENTS.md\n", encoding="utf-8")
+
+            sync_all(project_root, config)
+
+            codex_redirect = project_root / config.paths.codex_skills / "CLAUDE.md"
+            claude_redirect = project_root / config.paths.claude_skills / "CLAUDE.md"
+
+            self.assertFalse(
+                codex_redirect.exists(),
+                "a foreign vendor's surface_root must not receive a CLAUDE.md",
+            )
+            self.assertTrue(
+                claude_redirect.exists(),
+                "the exclusion must not overshoot into Claude's own surface_root",
+            )
+
+    def test_forbidden_nested_surface_in_a_foreign_root_is_reported_stale(self) -> None:
+        """A canonical file of the same name does not excuse a forbidden mirror copy.
+
+        ``NESTED_SURFACE_NAMES`` members are normally exempt from the stale sweep,
+        because the canonical tree legitimately carries them. That blanket exemption
+        is why a foreign-root ``CLAUDE.md`` survived every sweep before GHI #925: the
+        sweep saw a generated-surface name and skipped it. The exemption must yield
+        to the forbidden set, so a redirect sitting where no vendor may claim one is
+        surfaced for the operator's non-destructive recovery rather than preserved.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+
+            demo_skill = project_root / config.paths.skills / "demo-skill"
+            demo_skill.mkdir(parents=True, exist_ok=True)
+            (demo_skill / "SKILL.md").write_text(_skill_markdown("demo-skill"), encoding="utf-8")
+
+            sync_all(project_root, config)
+
+            leaked = project_root / config.paths.codex_skills / "CLAUDE.md"
+            leaked.write_text("@AGENTS.md\n", encoding="utf-8")
+            kept = project_root / config.paths.claude_skills / "CLAUDE.md"
+            kept.parent.mkdir(parents=True, exist_ok=True)
+            kept.write_text("@AGENTS.md\n", encoding="utf-8")
+
+            stale_paths = find_stale_mirror_paths(project_root, config)
+
+            self.assertIn(".agents/skills/CLAUDE.md", stale_paths)
+            self.assertNotIn(".claude/skills/CLAUDE.md", stale_paths)
+            self.assertTrue(leaked.exists(), "the sweep reports, it never deletes")
+
     def test_canonical_sync_preflight_blocks_missing_skill_frontmatter(self) -> None:
         """Canonical corruption is reported as a blocking preflight error."""
         with tempfile.TemporaryDirectory() as tmpdir:
