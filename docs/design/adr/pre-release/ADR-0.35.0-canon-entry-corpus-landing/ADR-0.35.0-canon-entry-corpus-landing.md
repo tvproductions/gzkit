@@ -223,13 +223,13 @@ pool item (operator ruling, 2026-07-21).
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 7
+- Baseline Selected: 9
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 1
 - Split Total: 3
-- Final Target OBPI Count: 10
+- Final Target OBPI Count: 12
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -246,10 +246,14 @@ pool item (operator ruling, 2026-07-21).
      Observability 2   — lineage map, coverage %, ratchet, advisory prose.
      Lineage 2         — the tombstone fold is a historical lineage migration.
 
-     Baseline Selected 7 inside the 5+ band: the dimension total is at the top
+     Baseline Selected 9 inside the 5+ band: the dimension total is at the top
      of the scale (10/10), so the band's floor understates the work. Raised
      6 -> 7 on 2026-08-02 (operator-ruled, GHI #737) when the `classification`
-     reader was folded in as checklist item 10. The BASELINE is the right dial
+     reader was folded in as checklist item 10. Raised 7 -> 9 on 2026-09-01
+     (operator-ruled, GHI #921 + GHI #922) when the corpus shape witness and
+     the `.gzkit/rules/**` corpus family were folded in as items 11 and 12 —
+     the same dial and the same reason as the #737 raise: added scope moves the
+     BASELINE, never a split adder. The BASELINE is the right dial
      for this, not a split adder: the split rules divide a fixed scope, and
      this amendment ADDS scope — one more narrative unit on the section-
      ownership seam. `Final Target OBPI Count` is derived (baseline + splits),
@@ -297,6 +301,8 @@ pool item (operator ruling, 2026-07-21).
 - [ ] `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
 - [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-pool.vendor-alignment-codex
 - [ ] `classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)
+- [ ] Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922)
+- [ ] Corpus the `.gzkit/rules/**` family -- the canonical rule files become addressed corpus entries under their own surface, closing the largest remaining under-population named in the SOURCE-OF-TRUTH DIRECTION above; the generated nested `AGENTS.md` render from the corpus rather than from uncorpused rule text (GHI #921)
 
 ## Q&A Transcript
 
