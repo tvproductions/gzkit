@@ -10,7 +10,9 @@ continues_from: .gzkit/handoffs/20260901T081455Z-ghi-924-925-closed-untested-gua
 
 ## Current State Summary
 
-The campaign's TOPMOST position was moved to the CMS / corpora / rendering work by operator ruling, four commits landed, and one GHI closed. `c7f85a45` is unpushed at authoring time; everything before it is on origin. No locks, no pipeline marker, no OBPI scope, no open TASK.
+The campaign's TOPMOST position was moved to the CMS / corpora / rendering work by operator ruling, five commits landed, and one GHI closed. Tree is clean and fully synced: `git rev-list --left-right --count origin/main...HEAD` returns `0 0`, HEAD is `6210ae7c`. No locks, no pipeline marker, no OBPI scope, no open TASK.
+
+AMENDED 2026-09-01T14:12Z, same session. This document was authored one commit ahead of its own sync and then updated on operator instruction ("update the handoff"). Four sites claimed `c7f85a45` was unpushed and that divergence was `0 1`; both had moved by the time the document was committed, and `6210ae7c` — the sync that carried this file itself — did not exist when it was written. The predecessor handoff failed in exactly this way, asserting a clean tree while three governance artifacts including itself sat uncommitted, so the amendment is recorded rather than silently overwritten.
 
 The session began as a handoff review and became four distinct pieces of work, each operator-initiated in turn: file the untested-guard GHI (#927), correct GHI #873's ownership paragraph, extend ADR-0.35.0 and amend its binding fold algebra, and reseat the campaign queue. Two GHIs were authored (#927, #928) and one closed (#873, `fixed`).
 
@@ -61,9 +63,11 @@ COMMIT TRAILER CONVENTION, STILL UNRULED after four sessions. The harness asks f
 
 ## Pending Work / Open Loops
 
-ONE COMMIT UNPUSHED at authoring time: `c7f85a45` (campaign amendment). Everything else is on origin, tree otherwise clean, no locks. Push it or confirm a successor did.
+NOTHING UNPUSHED. `0 0` against origin, tree clean, no locks. `c7f85a45` (campaign amendment) was unpushed when this document was first written and was carried to origin by `6210ae7c` together with this file; that claim is corrected here rather than left standing. This session leaves no in-flight work.
 
-THIRTY-TWO GHIs OPEN, all routed direct-fix, ranked this session via `/ghi-triage`. The rank input is preserved at `.gzkit/cache/triage/rank.json` so the ordering can be re-rendered rather than re-derived. Three carry `blocking` severity; three carry `latent`; the rest `degrading`.
+THIRTY-TWO GHIs OPEN, all routed direct-fix, ranked this session via `/ghi-triage`. Three carry `blocking` severity, three `latent`, the rest `degrading`.
+
+THE RANKING DOES NOT SURVIVE THIS MACHINE, and an earlier draft of this document claimed it did. The rank input sits at `.gzkit/cache/triage/rank.json`, which `.gitignore:56` excludes via `.gzkit/cache/` — so it was never committed, a `git clean` removes it, and a successor on another checkout will not find it. Re-run `/ghi-triage` rather than expecting the file. The ordering is reproducible because the judgment behind it is recorded in § Immediate Next Steps, not because the artifact persists.
 
 OPEN and now HOMED, deliberately not closed: #921 and #922. Each has a routing comment naming its ADR-0.35.0 checklist item. They stay open because a checklist item is a home to initiate from, not a landing site — closing them `superseded` against an unauthored brief is the dead-letter shape.
 
@@ -83,9 +87,9 @@ UNRULED and carried forward for the fourth session: whether commits should carry
 
 Run these before trusting any claim above.
 
-`git rev-list --left-right --count origin/main...HEAD` expected `0 1` at authoring time — one unpushed commit, `c7f85a45`. Anything else means a successor pushed it or work landed after this document.
+`git rev-list --left-right --count origin/main...HEAD` expects `0 0`. Anything else means work landed after this document was amended. (It read `0 1` when the document was first authored, before its own sync.)
 
-`git log --oneline -4` expects `c7f85a45`, `d4caa874`, `d3ff4ae9`, `6072792b`.
+`git log --oneline -5` expects `6210ae7c`, `c7f85a45`, `d4caa874`, `d3ff4ae9`, `6072792b`.
 
 `uv run gz obpi lock list` expects `No active locks.`
 
@@ -117,7 +121,8 @@ Commits landed this session:
 - `6072792b` fix(corpus): scope un-retirement to pure tombstones (GHI #873) — ADR-0.35.0 § Decision algebra amendment plus its implementation
 - `d3ff4ae9` docs(adr-0.35.0): extend the checklist to the corpus shape witness and rules family (GHI #921, GHI #922) — items 11 and 12, scorecard baseline 7 -> 9, final target 10 -> 12
 - `d4caa874` test(corpus): drive a three-link supersedes chain, not just two (GHI #873)
-- `c7f85a45` docs(campaign): seat the CMS/corpora/rendering work as TOPMOST (operator-ratified) — UNPUSHED at authoring time
+- `c7f85a45` docs(campaign): seat the CMS/corpora/rendering work as TOPMOST (operator-ratified)
+- `6210ae7c` chore: update .gzkit (3 files) (gz git-sync) — this handoff document, one carried-forward line in `.gzkit/handoffs/rulings.jsonl`, and the `improvement` insight record. It did NOT carry the triage rank input; see the correction in § Pending
 
 Surfaces changed:
 
