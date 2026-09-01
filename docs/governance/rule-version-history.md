@@ -157,7 +157,38 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 ## `task-discovery.md`
 
-Lifted at version `0.7.0` (rule now at `0.7.1`).
+<!-- lifted-from: .claude/rules/task-discovery.md#task-discovery-gzkit -->
+
+Lifted at version `0.7.1` (rule now at `0.8.0`).
+
+> **Rule version:** `0.8.0` — operator ruling 2026-09-01 (verbatim *"never"*) CLOSED the
+> commit-trailer set to `Task:`, `Ceremony:`, and `Eval-feedback-source:`, and corrected the
+> auto-stamp's suppression clause. **Why the question kept recurring:** it had been argued
+> across five sessions from a 30-day average that straddles a step change, so each session
+> sampled a different slice and reached a different answer — the last framing was "the repo
+> is 21% consistent (149 of 705)". Measured per-day at the ruling, it is not a consistency
+> rate at all: `Claude-Session:` appears in **0 of 26** commits on 2026-08-19, first appears
+> 2026-08-20 (`3ac1c7d0`), reaches **7 of 7** on 2026-08-30, and is **0 of 19** across
+> 2026-08-31 and 2026-09-01. That is an 11-day window tracking a per-session agent-harness
+> reminder, not repo doctrine — `Claude-Session` occurs nowhere in `src/`, `data/`, `docs/`,
+> or `.gzkit/rules/`, and is validated and read by nothing. **The "always" option was
+> costed and rejected:** 196 of 700 commits in the window are `gz git-sync` ceremony commits
+> whose trailers come from the fixed `_SYNC_COMMIT_TRAILERS` constant
+> (`src/gzkit/commands/sync.py`), so adopting it would require changing that producer *plus*
+> a new validator arm, or it re-drifts the instant the harness setting flips — which the
+> window proves it does. Against that, the trailer's only asset is a session URL that
+> resolves for one account and ships dead to wheel adopters. The counter-argument was
+> recorded rather than suppressed: session forensics is genuinely valuable here, and Layer-2
+> session provenance is only ~17% populated (87 of 500 recent ledger rows carry
+> `session_id`), so the redundancy case is not airtight — the ruling rests on the harness
+> provenance and the producer cost, not on redundancy. **Suppression correction:** the rule
+> had claimed since `0.5.0` that "an authored trailer of ANY form suppresses" the
+> `prepare-commit-msg-task-trailers` stamp. False — the hook returns early only when
+> `has_task_trailer()` is true, and that matches `Task:` specifically. Verified against
+> `gzkit.tasks.has_task_trailer`: a `Claude-Session:`-only message returns `False` (stamp
+> still fires); `Task:` in either order returns `True`.
+
+> **Rule version:** `0.7.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.7.0`–`0.5.1` version chain is lifted here, restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.
 
 > **Rule version:** `0.7.0` — GHI #753: `tasks:` schema enforcement is LIVE, and the deferral that promised it is retired. From `0.2.0` this rule declared the check "deferred to OBPI-0.0.64-04" in three places (the channel table, § Convention: Frontmatter `tasks:`, and the `BriefStructure.tasks` field docstring). That OBPI's seven REQs never scoped it — they cover signatures (a)/(b)/(c), `req_atomic`, `gz task envelope diagnose`, the `gz check` join, and a structural fence — so it reached `attested_completed` correctly on its own scope while the deferral became permanent, because nothing couples "X is deferred to Y" to "Y's REQ set contains X". Both arms now ship: `BriefStructure._validate_tasks` on the model path and signature (e) on the corpus path, each delegating to `TaskId.parse` rather than restating the grammar. Latent until #752 made the channel producer-populated; corpus-safe because zero briefs carried a `tasks:` entry at landing. Prior `0.6.0` — GHI #752: the `tasks:` channel is now PRODUCER-STAMPED by `gz task start`, and `@advances` is DEMOTED to advisory. Two of the four channels produced zero keys repo-wide, so Signature (c) compared 7 of 534 OBPIs. The two were not symmetric: `task_start` already resolves the OBPI id when it mints the TASK, so `tasks:` is runtime-known and was merely being asked of an author (the convention that decayed to ~15% on the trailer channel and to 0% here); `@advances` names the function an author judges materially advances a TASK, which no runtime can determine. Narrowing the envelope to `ledger` x `commit_trailer` was rejected — since `0.5.0` the trailer is stamped *from* the ledger, so those two are partly one source and their agreement is partly tautological. A brief-authored `tasks:` restores an independent witness. Prior `0.5.2` — repointed the unruled witness question from GHI #731 (closed) to #752. Prior `0.5.1` — commit-trailer channel is producer-stamped (`0.5.0`, GHI #731); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd).
 
