@@ -51,7 +51,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 | Rule file | Scored at rule-version |
 |---|---|
-| `agents-md-map-doctrine.md` | `0.8.0` |
+| `agents-md-map-doctrine.md` | `0.9.0` |
 | `adr-audit.md` | `0.3.0` |
 | `agent-failure-modes.md` | `0.7.0` |
 | `brief-heading-conventions.md` | `0.2.0` |
