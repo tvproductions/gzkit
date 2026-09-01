@@ -735,25 +735,23 @@ class TestEffectiveCorpusSupersedes(unittest.TestCase):
         )
 
     @covers("REQ-0.35.0-01-05")
-    def test_superseding_a_replacement_restores_the_original_row(self) -> None:
-        """A `supersedes` edge is REVOCABLE, exactly like a `retires` edge (Algebra 5 + 6).
+    def test_superseding_a_replacement_leaves_only_the_newest_wording(self) -> None:
+        """A `supersedes` edge is IRREVOCABLE (Algebra 4/6, amended 2026-09-01, GHI #873).
 
-        `[X, S1(supersedes=X), S2(supersedes=S1)]` folds to `[X, S2]`, NOT to
-        `[S2]`. The reverse pass reads `live(X) = not any(live(t) for t
-        targeting X)`; S2 kills S1, so S1's retirement of X is itself undone and
-        X returns. That is not a quirk of this implementation — it is Algebra 6's
-        stated mechanism ("retiring the tombstone makes its target live again")
-        applied through D2's "BOTH `retires` and `supersedes` register a
-        tombstone edge."
+        `[X, S1(supersedes=X), S2(supersedes=S1)]` folds to `[S2]`. A replacement
+        row retires its target PERMANENTLY: superseding S1 ends S1's own life but
+        does not revive what S1 replaced, so one piece of canon is stated once.
 
-        This test asserts the PINNED algebra, not the author's intuition. The
-        intuitive answer is `[S2]` — an amendment of an amendment should surely
-        leave only the newest wording — and encoding that would have been
-        choosing the algebra at implementation time, which brief requirement 3
-        explicitly refuses. It is pinned here rather than left latent because
-        the consequence is sharp and reachable (amend an amendment and the
-        original wording returns to canon), and a REQ-05 suite that tested only
-        the one-link case would have hidden it entirely.
+        This asserts the AMENDED algebra, not the author's intuition. Until the
+        operator ruled, the pinned algebra gave `[X, S2]` — because a `supersedes`
+        row was a tombstone for liveness, superseding one un-retired whatever it
+        had replaced, republishing the original wording beside the newest. The
+        implementation was faithful; the algebra was wrong (GHI #873). The
+        amendment scopes un-retirement to PURE `retires` tombstones, which is the
+        case it was always for: a pure tombstone carries no text of its own, so
+        reviving its target restores the only wording in the lineage.
+
+        Fails on the pre-amendment fold, which yields `["row-x", "repl-2"]`.
         """
         self.assertEqual(
             _folded_ids(
@@ -761,7 +759,41 @@ class TestEffectiveCorpusSupersedes(unittest.TestCase):
                 _entry(id="repl-1", supersedes="row-x", text="second wording"),
                 _entry(id="repl-2", supersedes="repl-1", text="third wording"),
             ),
-            ["row-x", "repl-2"],
+            ["repl-2"],
+        )
+
+    def test_retiring_a_replacement_does_not_revive_what_it_replaced(self) -> None:
+        """The permanence holds for a PURE tombstone aimed at a replacement too.
+
+        `[X, S1(supersedes=X), T(retires=S1)]` folds to `[]`, never to `["row-x"]`.
+        Retiring the replacement withdraws the newest wording; it does not restore
+        the wording that replacement had superseded. Without this case the
+        amendment could be satisfied by special-casing only a `supersedes` chain,
+        which would leave the same duplicate-canon state reachable one edge over.
+        """
+        self.assertEqual(
+            _folded_ids(
+                _entry(id="row-x", text="first wording"),
+                _entry(id="repl-1", supersedes="row-x", text="second wording"),
+                _entry(id="tomb-1", retires="repl-1"),
+            ),
+            [],
+        )
+
+    def test_pure_tombstone_un_retirement_still_restores_its_target(self) -> None:
+        """Algebra 6's affordance is SCOPED by the amendment, never removed.
+
+        `[X, T1(retires=X), T2(retires=T1)]` still folds to `["row-x"]`. This is
+        the regression fence on the amendment: narrowing un-retirement to pure
+        tombstones must not break the case un-retirement exists for.
+        """
+        self.assertEqual(
+            _folded_ids(
+                _entry(id="row-x", text="first wording"),
+                _entry(id="tomb-1", retires="row-x"),
+                _entry(id="tomb-2", retires="tomb-1"),
+            ),
+            ["row-x"],
         )
 
 

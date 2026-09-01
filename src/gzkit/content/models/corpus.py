@@ -19,7 +19,8 @@ the invariant-tier *designation* + presence enforcement (OBPI-23).
 
 from __future__ import annotations
 
-from typing import Literal
+from collections.abc import Sequence
+from typing import Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict
 
@@ -236,37 +237,67 @@ def validate_tombstone_algebra(entries: tuple[CorpusEntry, ...]) -> None:
         claimed[target] = entry.id
 
 
-def _tombstones_by_target(entries: tuple[CorpusEntry, ...]) -> dict[str, list[str]]:
-    """Map each targeted entry id to the ids of the rows that tombstone it.
+class _Edge(NamedTuple):
+    """One tombstone edge: the tombstoning row's id, and whether it REPLACES.
+
+    The flag is the whole point. Algebra 4 gives ``retires`` and ``supersedes``
+    different retire semantics — pure tombstones are revocable by un-retirement,
+    replacements are not (amended 2026-09-01, GHI #873) — and :func:`_liveness`
+    cannot tell them apart from a bare id.
+    """
+
+    id: str
+    is_replacement: bool
+
+
+def _tombstones_by_target(entries: tuple[CorpusEntry, ...]) -> dict[str, list[_Edge]]:
+    """Map each targeted entry id to the rows that tombstone it, WITH their role.
 
     BOTH pointers register an edge. Algebra 5 is stated over "tombstones
     targeting e", and Algebra 4 gives ``supersedes`` the retire-AND-replace
     role — so a replacement removes its target exactly as a pure tombstone does.
-    The two roles diverge only in :func:`effective_corpus`, which additionally
-    drops rows whose ``retires`` is set. Registering ``retires`` alone would
-    publish both the old and the corrected wording side by side.
+    Registering ``retires`` alone would publish both the old and the corrected
+    wording side by side.
+
+    The ROLE travels with the edge because the two roles diverge in
+    :func:`_liveness`, not only in :func:`effective_corpus`: a replacement kills
+    its target permanently, a pure tombstone only while itself live (ADR-0.35.0
+    § Decision, algebra amended 2026-09-01, GHI #873). A bare id cannot express
+    that difference, and the bug the amendment closes is exactly what a
+    role-blind edge set produces.
     """
-    edges: dict[str, list[str]] = {}
+    edges: dict[str, list[_Edge]] = {}
     for entry in entries:
         target = tombstone_target(entry)
         if target is not None:
-            edges.setdefault(target, []).append(entry.id)
+            edges.setdefault(target, []).append(_Edge(entry.id, entry.supersedes is not None))
     return edges
 
 
 def _liveness(entries: tuple[CorpusEntry, ...]) -> dict[str, bool]:
     """Return ``{entry id: is live}`` via the Algebra 5 single reverse pass.
 
-    ``live(e) = not any(live(t) for t in tombstones targeting e)``, evaluated
-    LAST to FIRST. Because Algebra 2 guarantees every tombstone strictly follows
-    its target, one backward loop resolves every dependency before it is read —
-    so this is a single reverse pass, NEVER a fixpoint iteration and NEVER
-    unbounded recursion.
+    ``live(e) = not any(is_replacement(t) or live(t) for t in tombstones
+    targeting e)``, evaluated LAST to FIRST. Because Algebra 2 guarantees every
+    tombstone strictly follows its target, one backward loop resolves every
+    dependency before it is read — so this is a single reverse pass, NEVER a
+    fixpoint iteration and NEVER unbounded recursion.
 
     That ordering is what makes Algebra 6 work: in ``[X, T1(retires=X),
     T2(retires=T1)]``, T2 is resolved live, which kills T1, which restores X.
     A flat ``{e.retires for e in entries}`` set cannot express this — it yields
     ``{X, T1}`` and leaves X retired forever, silently.
+
+    UN-RETIREMENT IS SCOPED TO PURE TOMBSTONES (algebra amended 2026-09-01,
+    operator-ruled, GHI #873). The ``is_replacement(t)`` disjunct is what scopes
+    it: a ``supersedes`` row retires its target PERMANENTLY, so its own death
+    never revives what it replaced. Without the disjunct the recurrence read
+    ``supersedes`` as revocable, and ``[X, S1(supersedes=X), S2(supersedes=S1)]``
+    folded to ``[X, S2]`` — the original wording republished beside the newest,
+    which is the duplicate-canon state ADR-0.35.0 exists to remove
+    (§ Consequences Negative #5). Un-retirement remains total over the case it
+    was written for: a pure tombstone carries no text, so reviving its target
+    restores the only wording in that lineage.
 
     An unresolved tombstone is REFUSED, never guessed at. Every tombstone ``t``
     targeting the row being resolved must already carry a liveness value at the
@@ -314,17 +345,17 @@ def _liveness(entries: tuple[CorpusEntry, ...]) -> dict[str, bool]:
     edges = _tombstones_by_target(entries)
     live: dict[str, bool] = {}
     for entry in reversed(entries):
-        tombstones = edges.get(entry.id, ())
+        tombstones: Sequence[_Edge] = edges.get(entry.id, ())
         for tombstone in tombstones:
-            if tombstone not in live:
+            if tombstone.id not in live:
                 raise ValueError(
                     f"corpus entry {entry.id!r} is targeted by tombstone "
-                    f"{tombstone!r}, whose own liveness is UNRESOLVED at that point "
+                    f"{tombstone.id!r}, whose own liveness is UNRESOLVED at that point "
                     "in the reverse pass; the append log is out of order (a tombstone "
                     "must strictly follow its target, Algebra 2) or carries duplicate "
                     "entry ids, so liveness is not computable for this corpus"
                 )
-        live[entry.id] = not any(live[t] for t in tombstones)
+        live[entry.id] = not any(t.is_replacement or live[t.id] for t in tombstones)
     return live
 
 
