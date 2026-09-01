@@ -762,6 +762,25 @@ class TestEffectiveCorpusSupersedes(unittest.TestCase):
             ["repl-2"],
         )
 
+    def test_a_three_link_supersedes_chain_leaves_only_the_last(self) -> None:
+        """GHI #873 names the class as "two or MORE `supersedes` rows"; two is not it.
+
+        `[X, S1(->X), S2(->S1), S3(->S2)]` folds to `[S3]`. The two-link case
+        alone would pass under a fix that special-cased one edge, and the
+        original defect was precisely an algebra that behaved differently as a
+        lineage lengthened — the one-link case was correct all along and the
+        two-link case was not. Permanence has to hold per EDGE, not at a depth.
+        """
+        self.assertEqual(
+            _folded_ids(
+                _entry(id="row-x", text="first wording"),
+                _entry(id="repl-1", supersedes="row-x", text="second wording"),
+                _entry(id="repl-2", supersedes="repl-1", text="third wording"),
+                _entry(id="repl-3", supersedes="repl-2", text="fourth wording"),
+            ),
+            ["repl-3"],
+        )
+
     def test_retiring_a_replacement_does_not_revive_what_it_replaced(self) -> None:
         """The permanence holds for a PURE tombstone aimed at a replacement too.
 
