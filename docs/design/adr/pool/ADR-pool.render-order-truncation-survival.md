@@ -101,6 +101,36 @@ attestation.
 
 ## Decision
 
+**ABSORBED 2026-09-02 (operator-ruled) — THIS SCOPE NOW LIVES AT
+`ADR-0.35.0-canon-entry-corpus-landing`, CHECKLIST ITEM 13, AS
+`OBPI-0.35.0-13-render-order-truncation-survival`. Do not implement from this
+document; it is retained as the design record and the three binding constraints
+below travel with the work.**
+
+The route was chosen over promotion precisely because promotion was NOT available:
+a promoted feature ADR would sit above `ADR-0.35.0` in semver while that ADR holds
+unlanded OBPIs, against both the booked *"only one feature at a time"* ruling and
+ascending-semver order. Folding adds no ADR to the pre-1.0 board, which is what
+§ Alternatives 2 objected to.
+
+§ Alternatives 1 below rejected this same fold, on the ground that ADR-0.35.0's
+§ Intent scoped the generator and orchestrator *"**not** render-order policy"*, and
+that *"asserting it absorbs this scope without an operator ruling would be inventing
+a destination."* That objection is DISCHARGED, not overridden: the qualifier was
+*"without an operator ruling"*, the ruling now exists, and ADR-0.35.0 § Intent was
+amended in the same pass to state the absorption rather than leave it assumed.
+
+**What reopened it.** The deferral trigger fired 2026-08-17 and the operator ruled
+the parking should STAND — against a breach of 595 B, one section. Re-measured
+2026-09-01 the breach is 11,768 B, and nearly all of it is verbatim operator canon:
+`operator-doctrine-verbatim-canon` straddles the cap losing 11,173 B, and
+`architectural-boundaries` is lost entire. A pure reorder closes 9,766 B of that,
+82%; the residual 2,002 B is routed to the `instructions-files-diet` chore by the
+same ruling. Dated record, not authoritative — re-derive with
+`uv run gz validate --instructions-files-budget`.
+
+Original decision, retained:
+
 Deferred to post-1.0. Parked here rather than folded into an active ADR
 because only this half is expensive, and it pays off **only once the cap
 binds** — the GHI #712 witness makes the binding condition observable in

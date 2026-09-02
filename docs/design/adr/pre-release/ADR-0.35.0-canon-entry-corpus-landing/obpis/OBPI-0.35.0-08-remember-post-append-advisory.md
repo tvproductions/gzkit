@@ -48,6 +48,33 @@ tasks:
 
 ## ADR Item
 
+> **ANNOTATED 2026-09-02 (operator-ruled) — THIS BRIEF'S `status: Active` IS RESIDUE, NOT A DRAW.**
+> It was started by an agent on 2026-08-23 WITHOUT operator consent — the IRON LAW
+> violation recorded verbatim in `AGENTS.md` § Operator Doctrine (*"NEVER, EVER, EVER,
+> EVER DO OBPI WORK ON YOUR OWN. NEVER!"*). Operator, 2026-09-01, verbatim: *"08 was a
+> misbehaved agent"* / *"it was a rogue agent who decided to run the OBPI without my
+> consent."* The ledger carries the residue — `brief_reconciled`, four
+> `red_receipt_emitted`, `brief_reconcile_drift_detected` and `obpi_lock_claimed`, all
+> dated 2026-08-23.
+>
+> **DO NOT RESUME THIS BRIEF ON THE STRENGTH OF ITS STATUS.** `gz adr status` reports it
+> `in_progress` beside `OBPI-0.35.0-03`, which is the brief actually in flight (operator,
+> 2026-09-01: *"03 (08 was a misbehaved agent)"*). An agent has already once read exactly
+> this state as license to work it. The work itself remains legitimate and UNDRAWN; only
+> the operator may draw it.
+>
+> It stays `Active` deliberately. There is no governed reversal from `Active` back to
+> unstarted — `get_allowed_transitions('OBPI','Active')` returns `['Completed',
+> 'Abandoned']` and no CLI verb supplies the missing edge — which is the whole of
+> **GHI #930**, now folded into **GHI #611**'s corrective-action primitive by operator
+> ruling. This brief is that gap's only live reproduction, so clearing it would erase the
+> evidence; `Abandoned` is refused because it would mark legitimate, undrawn work
+> permanently abandoned under closed abandon categories (ADR-0.0.41).
+>
+> Annotation authored by the direct path under an explicit operator ruling — no lock, no
+> pipeline marker, no TASK, no dispatch — on the precedent set for `OBPI-0.35.0-01`.
+
+
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #8 - "`gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append"
 

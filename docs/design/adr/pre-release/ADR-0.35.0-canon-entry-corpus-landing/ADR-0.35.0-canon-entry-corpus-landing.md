@@ -38,6 +38,28 @@ Two further defects fold in. `composer.py:63-65` computes `compressible_bytes_af
 
 Goal: make canon capture safe and give the seam a real, fail-closed witness over a named and growing fraction of the contract. Discharges GHI #654 (orchestration gap) and GHI #635 (duplicate invariant entries) -- the same wound.
 
+AMENDED 2026-09-02 (operator-ruled) -- RENDER ORDER IS NOW IN SCOPE, absorbed from
+`ADR-pool.render-order-truncation-survival`. That pool ADR's § Alternatives 1 rejected
+folding here because this § Intent scoped the corpus->candidate generator and the
+`content land` orchestrator, "**not** render-order policy", and warned that "asserting
+it absorbs this scope without an operator ruling would be inventing a destination." The
+operator ruling is what makes the destination real; it is recorded rather than assumed.
+
+The absorption is coherent rather than opportunistic: this ADR already owns the
+corpus->rendition seam, and render order is a property of that rendition. § Decision 3's
+section-ownership work and the survival declaration rank the same sections, so ordering
+them is the seam's own concern, not a neighbouring one.
+
+WHY IT MOVED NOW. The pool ADR's deferral trigger ("it pays off only once the cap binds")
+fired on 2026-08-17 and the operator ruled the parking should STAND -- against a breach of
+595 B, one section. Re-measured 2026-09-01 the breach is 11,768 B: `operator-doctrine-verbatim-canon`
+straddles the codex cap losing 11,173 B, and `architectural-boundaries` is lost entire.
+Nearly all of what goes undelivered is verbatim operator canon. The premise under that
+standing ruling had moved roughly twentyfold, which is what reopened it. Do not read these
+figures as authoritative -- they are a dated record; re-derive via
+`uv run gz validate --instructions-files-budget` (`.gzkit/rules/governance-core.md`
+§ Non-negotiable rules).
+
 ## Decision
 
 <!-- The tombstone fold's algebra is pinned in item 1 below. It is the one
@@ -211,6 +233,23 @@ never deleted. Recorded here so `ADR-pool.attested-record-edit-doctrine`
 inherits the ruling rather than re-litigating it. This ADR does not block on that
 pool item (operator ruling, 2026-07-21).
 
+**BI-09 — `Pillar.order` is document order, never a criticality axis.** The field
+carries render/document order for round-trip fidelity
+(`src/gzkit/content/models/agent_contract.py:18`, *"Render order (ascending)."*;
+built one-per-`##`-section "in document order",
+`src/gzkit/content/parse/markdown_parser.py:295`), and
+`gz validate --invariant-coherence` — in the default `gz check` scope —
+byte-compares deterministic rendition playback against the committed surface. A
+render-order policy therefore needs a SECOND axis, or the recomposed surface and
+its rendition must be committed together; it may never overload this field with
+criticality. Ranking comes from the ratified
+`data/agents_md_survival_declaration.json`, never from inferred criticality —
+`Bullet.classification` / `Bullet.witness` were built, measured and REFUTED
+2026-07-24 because gzkit's most binding material is tables, which rank 0.
+Audited at closeout as the STRUCTURAL-FENCE proof channel for REQ-0.35.0-13-06.
+Absorbed with the render-order scope from
+`ADR-pool.render-order-truncation-survival` (operator ruling 2026-09-02).
+
 ## Decomposition Scorecard
 
 <!-- Deterministic OBPI sizing: score each dimension 0/1/2. -->
@@ -223,13 +262,13 @@ pool item (operator ruling, 2026-07-21).
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 9
+- Baseline Selected: 10
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 1
 - Split Total: 3
-- Final Target OBPI Count: 12
+- Final Target OBPI Count: 13
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -277,6 +316,20 @@ pool item (operator ruling, 2026-07-21).
        rollback". Flagged up front rather than discovered mid-flight; that
        contingency has NOT fired, and if it does the target goes 10 -> 11.
 
+     AMENDED 2026-09-02 (operator-ruled): 10 + 3 = 13. The unit arrives by
+       ABSORPTION from `ADR-pool.render-order-truncation-survival`, so it raises
+       the BASELINE and is deliberately NOT recorded as a split -- a split divides
+       narrative this ADR already owned, and calling it one would misreport where
+       the work came from and imply the baseline had been under-counted at
+       authoring, which it had not. Baseline is the right home on this ADR's own
+       precedent: the 2026-08-02 amendment below moved 7 -> 9 for the same reason,
+       folded scope, with the note that the baseline's job is "how many narrative
+       units that fixed dimension profile is being asked to carry". The
+       dimension scores are UNCHANGED: render-order permutation opens no new
+       dimension, it is Interface/Observability work on the same corpus->rendition
+       seam already scored 2/2, and the pool ADR records the mechanism as
+       "cheap and already prototyped" (~60 lines, reusable as-is).
+
      AMENDED 2026-08-02 (operator-ruled, GHI #737): 7 + 3 = 10. The dimension
        scores are UNCHANGED — the classification cut opens no new dimension, it
        is Interface/Observability work on the section-ownership seam item 3
@@ -303,6 +356,7 @@ pool item (operator ruling, 2026-07-21).
 - [ ] `classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)
 - [ ] Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922)
 - [ ] Corpus the `.gzkit/rules/**` family -- the canonical rule files become addressed corpus entries under their own surface, closing the largest remaining under-population named in the SOURCE-OF-TRUTH DIRECTION above; the generated nested `AGENTS.md` render from the corpus rather than from uncorpused rule text (GHI #921)
+- [ ] Render-order permutation for truncation survival -- order `AGENTS.md` sections so every rank at or above `must_survive_through_rank` renders before the consuming vendor's project-doc byte cap; ranking source is the ratified `data/agents_md_survival_declaration.json`, never inferred criticality. Absorbed from `ADR-pool.render-order-truncation-survival` by operator ruling 2026-09-02 (GHI #815)
 
 ## Q&A Transcript
 
