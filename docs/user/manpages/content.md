@@ -240,6 +240,72 @@ whose liveness moved. `tier` remains recorded as the retired row's own tier.
 `attestor` is empty on a retirement that moves nothing, which is why the schema
 declares it without a length floor.
 
+### unown
+
+Un-own a `corpus-owned` section, the one legitimate move that RAISES the
+decrease-only unowned-byte ratchet (ADR-0.35.0 § Decision item 3: *"an
+undefined reversal path is the one agents invent"*). Same corpus-attestation
+shape as `gz content retire`, with one deliberate difference: un-owning a
+section is a canon change **every time**, so it never reaches the
+unchanged-canon exemption `gz content commit` carries forward a standing
+attestation through — `--attestor` and `--reason` are unconditionally
+required, never conditional on what moved.
+
+```bash
+gz content unown <surface> --section <id> --attestor <name> --reason <text>
+gz content unown AGENTS.md --section attestation --attestor "g0" --reason "materialized as prose doc instead"
+```
+
+#### Corpus attestation (OBPI-0.35.0-04)
+
+Empty or whitespace-only `--attestor` or `--reason` fails closed (exit 1),
+writing nothing — the declaration on disk stays byte-unchanged and no
+`section_ownership_unowned` ledger event is emitted (REQ-0.35.0-04-04):
+
+```console
+$ gz content unown AGENTS.md --section attestation --attestor "" --reason "probe"
+Error: --attestor is empty or whitespace-only.
+Why forbidden: un-owning a section is a canon change with the same corpus-attestation shape as `gz content retire` -- it always requires a named attestor and a reason, fail-closed, with no unchanged-canon exemption (REQ-0.35.0-04-04; AGENTS.md § Operator Doctrine). Nothing written.
+  Retry with `gz content unown AGENTS.md --section attestation --attestor "<your name>" --reason "<why>"`.
+$ echo $?
+1
+```
+
+Given a non-empty attestor and reason against a `corpus-owned` section, the
+section flips to `unowned` and the decrease-only ratchet floor RISES by
+exactly that section's measured byte span (REQ-0.35.0-04-05):
+
+```console
+$ gz content unown AGENTS.md --section governance-doctrine-surfaces --attestor "g0" --reason "materialized as prose doc instead"
+Un-owned section 'governance-doctrine-surfaces' of 'AGENTS.md'. Unowned-byte floor rose from 8637 to 10977 (+2340 B). Attested by g0: materialized as prose doc instead
+$ echo $?
+0
+```
+
+#### Fail-closed paths
+
+The command **fails closed** (exit 1, nothing written) when `--attestor` or
+`--reason` is empty or whitespace-only, when `--section` names no id in the
+surface's ownership declaration, or when the named section is already
+`unowned` — there is nothing to raise the floor by. Exit 2 signals a partial
+write: the declaration on disk already carries the raised floor but the
+ledger witness failed, so the operator is told exactly which surface is out
+of sync rather than a bare non-zero.
+
+#### Ledger witnesses
+
+A successful raise emits exactly one `section_ownership_unowned` event,
+after the declaration write succeeds:
+
+| Event | Carries |
+|-------|---------|
+| `section_ownership_unowned` | the surface, the section id, the prior and new `unowned_byte_floor`, the attestor, and the reason |
+
+```console
+$ cat .gzkit/ledger.jsonl
+{"schema":"gzkit.ledger.v1","event":"section_ownership_unowned","id":"section-ownership-unowned-AGENTS.md-governance-doctrine-surfaces-2026-09-02T15:45:20.303343+00:00","ts":"2026-09-02T15:45:20.303343+00:00","surface":"AGENTS.md","section":"governance-doctrine-surfaces","prior_unowned_byte_floor":8637,"new_unowned_byte_floor":10977,"attestor":"g0","reason":"materialized as prose doc instead"}
+```
+
 ### reconcile-retirements
 
 Append a Layer-2 witness for corpus retirements that have none. This is the

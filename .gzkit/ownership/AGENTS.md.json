@@ -1,0 +1,30 @@
+{
+  "surface": "AGENTS.md",
+  "sections": {
+    "agents-md": "unowned",
+    "architectural-boundaries": "unowned",
+    "attestation": "corpus-owned",
+    "behavior-rules": "corpus-owned",
+    "control-surfaces": "unowned",
+    "defect-fix-routing": "corpus-owned",
+    "do-it-right-craftsmanship-maxim": "corpus-owned",
+    "execution-rules": "unowned",
+    "gate-covenant": "corpus-owned",
+    "governance-doctrine-surfaces": "corpus-owned",
+    "local-agent-rules": "unowned",
+    "make-llm-stochastic-vibes-inert-anti-vibing-mantra": "unowned",
+    "obpi-acceptance-protocol": "corpus-owned",
+    "operator-doctrine-verbatim-canon": "corpus-owned",
+    "operator-economy-of-effort-design-dialogue-mode": "corpus-owned",
+    "pattern-discovery": "unowned",
+    "persona": "unowned",
+    "prime-directive-ownership": "corpus-owned",
+    "project-identity": "unowned",
+    "skills": "unowned",
+    "skills-first-execution-routing": "unowned",
+    "stdlib-first-doctrine-dependency-posture": "unowned"
+  },
+  "unowned_byte_floor": 8637,
+  "measured_at": "2026-09-02T19:42:47.447619+00:00",
+  "floor_event_id": null
+}

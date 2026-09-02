@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.governance.brief_reconcile import ReconcileResult
-from gzkit.ledger import Ledger
+from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.ledger_events import (
     brief_reconcile_drift_detected_event,
     brief_reconciled_event,
@@ -111,3 +112,42 @@ def emit_brief_reconcile_drift_detected(root: Path, result: ReconcileResult) -> 
             ],
         )
     )
+
+
+def emit_unowned_ratchet_updated(
+    root: Path,
+    event_id: str,
+    surface: str,
+    prior_unowned_byte_floor: int,
+    new_unowned_byte_floor: int,
+) -> str:
+    """Append an unowned_ratchet_updated event to the project ledger (OBPI-0.35.0-04).
+
+    Layer-2 witness that *surface*'s decrease-only unowned-byte ratchet floor
+    moved from *prior_unowned_byte_floor* to *new_unowned_byte_floor*
+    (REQ-0.35.0-04-03). Only the decrease-or-equal path calls this helper --
+    a refused increase attempt (REQ-0.35.0-04-02) writes no event at all.
+
+    *event_id* is CALLER-MINTED, never minted here -- the caller must embed
+    the same id in the declaration's ``floor_event_id`` chain pointer BEFORE
+    this append, so the durable-state write (Layer-1) and the ledger witness
+    (Layer-2) agree on which event proves the new floor
+    (REQ-0.35.0-04-02's attested-chain requirement). Returns *event_id*
+    unchanged, mirroring the mint-then-embed-then-emit shape
+    ``commands/content/unown.py`` uses for its own event.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    ledger.append(
+        LedgerEvent(
+            event="unowned_ratchet_updated",
+            id=event_id,
+            ts=timestamp,
+            extra={
+                "surface": surface,
+                "prior_unowned_byte_floor": prior_unowned_byte_floor,
+                "new_unowned_byte_floor": new_unowned_byte_floor,
+            },
+        )
+    )
+    return event_id

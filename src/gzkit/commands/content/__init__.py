@@ -52,6 +52,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_edit(content_commands)
     _register_remember(content_commands)
     _register_retire(content_commands)
+    _register_unown(content_commands)
     _register_compose(content_commands)
     _register_commit(content_commands)
     _register_advise_rendition(content_commands)
@@ -390,6 +391,49 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
             reason=a.reason,
             origin=a.origin,
             attestor=a.attestor,
+        )
+    )
+
+
+def _register_unown(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "unown",
+        help="Attested raise-path: un-own a corpus-owned section and raise the ratchet",
+        description=(
+            "Un-own a 'corpus-owned' section, the one legitimate move that RAISES the "
+            "decrease-only unowned-byte ratchet (`gz content remember`'s ordinary path is "
+            "decrease-or-equal only). Same corpus-attestation shape as `gz content retire`: "
+            "empty or whitespace-only --attestor or --reason exits non-zero and writes "
+            "nothing -- un-owning a section is a canon change every time, so it never "
+            "reaches an unchanged-canon exemption (unlike `gz content commit`). On success, "
+            "emits a section_ownership_unowned ledger event carrying the section id, the "
+            "prior and new unowned-byte floor, the attestor, and the reason."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content unown AGENTS.md --section attestation "
+                '--attestor "g0" --reason "materialized as prose doc instead"',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface the section belongs to (e.g. AGENTS.md).")
+    p.add_argument("--section", required=True, help="Section id to un-own (kebab-case).")
+    p.add_argument(
+        "--attestor",
+        default="",
+        help="Operator un-owning the section; required and never empty.",
+    )
+    p.add_argument(
+        "--reason",
+        default="",
+        help="Why the section is being un-owned; required and never empty.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("unown", "content_unown_cmd")(
+            surface=a.surface,
+            section=a.section,
+            attestor=a.attestor,
+            reason=a.reason,
         )
     )
 

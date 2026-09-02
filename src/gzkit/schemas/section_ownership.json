@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OwnershipDeclaration",
+  "description": "Section-ownership declaration for a control surface (ADR-0.35.0 § Decision item 4). Mirrors gzkit.content.ownership.OwnershipDeclaration. Every H1/H2 section of the declared surface MUST have exactly one entry in `sections` -- there is no undeclared third state (REQ-0.35.0-04-01).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["surface", "sections", "unowned_byte_floor", "measured_at", "floor_event_id"],
+  "properties": {
+    "surface": {
+      "type": "string",
+      "description": "Control surface name (e.g. 'AGENTS.md')."
+    },
+    "sections": {
+      "type": "object",
+      "description": "Section id (stable kebab-case, keyed on id never on heading title -- REQ-0.35.0-04-06) mapped to its ownership state.",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["corpus-owned", "unowned"]
+      }
+    },
+    "unowned_byte_floor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Decrease-only ratchet floor: the summed byte span of the sections declared 'unowned'."
+    },
+    "measured_at": {
+      "type": "string",
+      "description": "ISO 8601 timestamp the declaration's byte spans were measured. Illustrative provenance only -- coverage and spans are re-derived at run time, never trusted from this field (governance-core.md)."
+    },
+    "floor_event_id": {
+      "type": ["string", "null"],
+      "description": "The ledger event id that last set unowned_byte_floor -- an unowned_ratchet_updated or section_ownership_unowned event whose new_unowned_byte_floor must equal this declaration's stored floor. Null ONLY for a genesis declaration, permitted solely when the stored floor equals the summed byte span of the sections declared 'unowned' (REQ-0.35.0-04-02). A direct hand-edit of unowned_byte_floor with no matching attested transition fails closed on load."
+    }
+  }
+}

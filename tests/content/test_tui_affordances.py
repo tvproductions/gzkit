@@ -265,7 +265,10 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         # governed retirement path, so a superseded entry bound the invariant
         # floor permanently; reconcile-retirements by GHI #885 — seven tombstones
         # had changed canon with no ledger witness and `retire` fails closed on an
-        # already-retired id, so repair had no governed path at all)
+        # already-retired id, so repair had no governed path at all; unown by
+        # OBPI-0.35.0-04 — the attested raise-path is the ONLY move that raises the
+        # decrease-only unowned-byte ratchet, and ADR-0.35.0 § Decision item 3 requires
+        # it precisely because "an undefined reversal path is the one agents invent")
         expected_subcommands = {
             "import",
             "list",
@@ -278,6 +281,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "commit",
             "advise-rendition",
             "reconcile-retirements",
+            "unown",
         }
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)
