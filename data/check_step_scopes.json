@@ -1,0 +1,21 @@
+{
+  "_doc": "Per-scope step membership for the `gz check` runner (GHI #950). A scope names the steps it DROPS, never the steps it keeps, so a newly registered step is IN every scope until someone deliberately excludes it -- the conservative polarity, matching `overlaps_writers` in data/check_step_concurrency.json. This file exists because the roster was a module-level frozenset in src/gzkit/commands/quality.py, which made 'which steps does the push gate actually run' a code question rather than a declared one. A scope missing from `scopes`, or a missing file, means NO skips: the runner falls back to the full sweep rather than silently dropping steps it could not read a policy for. `records_verified` is the load-bearing field -- a scope that drops any step is a PARTIAL verification, and letting a partial pass record the fingerprint the pre-push gate reuses is precisely the presence-check failure AGENTS.md names ('A PRESENCE CHECK ANSWERS is something armed, NEVER did the governed procedure run'). Only the unnamed full scope records.",
+  "scopes": {
+    "fast": {
+      "skips": [
+        "Test",
+        "Behave",
+        "Docs build"
+      ],
+      "records_verified": false,
+      "rationale": "Inner-loop scope. Drops the three expensive steps and substitutes `Test (changed)`, which runs only the tests the working tree touches. Explicitly does NOT satisfy the pre-push gate."
+    },
+    "prepush": {
+      "skips": [
+        "Behave"
+      ],
+      "records_verified": false,
+      "rationale": "Behave is Heavy-lane / closeout-scope by src/gzkit/commands/sync.py's own ruling ('Behave no longer runs as a sync pre-gate ... behave is Heavy-lane / closeout-scope'), but that ruling was applied to git-sync's gate and never reached the `gz check` the pre-push hook calls, so it kept running on every push through the other door. Measured 2026-09-02: 30.61s, the single largest step in the sweep, against 29.10s for Test and 3.90s for Docs build. CI runs the FULL sweep including Behave on the same commit (.github/workflows/ci.yml), so paying it locally buys nothing the push does not already get server-side minutes later. Removing the step from `gz check` outright was rejected: `Behave` is a declared writer in data/check_step_concurrency.json and is named by test_check_step_writer_overlap.py, test_behave_sharding.py and test_check_step_concurrency.py, so deletion would ripple through the concurrency subsystem to buy the same seconds a scope entry buys here."
+    }
+  }
+}

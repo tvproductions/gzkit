@@ -32,7 +32,18 @@
     "check_step_concurrency.json": {
       "owner": "gzkit/quality.py",
       "kind": "code",
-      "purpose": "Per-step concurrency policy for the `gz check` runner."
+      "purpose": "Per-step concurrency policy for the `gz check` runner.",
+      "relates_to": [
+        "check_step_scopes.json"
+      ]
+    },
+    "check_step_scopes.json": {
+      "owner": "gzkit/commands/quality.py",
+      "kind": "code",
+      "purpose": "Which `gz check` steps each scope drops, and whether that scope may record a verified fingerprint.",
+      "relates_to": [
+        "check_step_concurrency.json"
+      ]
     },
     "config_registry.json": {
       "owner": "gzkit/governance/trust_audits/config_registry.py",

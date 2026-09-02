@@ -640,14 +640,66 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     ]
 
 
-def _select_check_steps(*, fast: bool) -> list[tuple[str, CheckStepRunner]]:
+def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
+    """Return the per-scope step policy from ``data/check_step_scopes.json``.
+
+    Deliberately NOT cached, for the same reason as
+    :func:`_load_check_step_classes`: caching against ``get_project_root()`` is
+    the import-time-capture shape that makes a value outlive the cwd it resolved
+    under (GHI #857). A missing or unreadable file returns ``{}``, and every
+    consumer below treats that as "no skips" — the conservative direction.
+    """
+    path = get_project_root() / "data" / "check_step_scopes.json"
+    if not path.is_file():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    scopes = data.get("scopes")
+    return scopes if isinstance(scopes, dict) else {}
+
+
+def _scope_skips(scope: str) -> frozenset[str]:
+    """Return the step names *scope* drops, empty for an undeclared scope.
+
+    Polarity is deliberate: a scope names what it DROPS, so a newly registered
+    step runs everywhere until someone excludes it, and an unknown scope name
+    (a typo, a missing file) drops nothing rather than silently emptying the
+    gate.
+    """
+    entry = _load_check_step_scopes().get(scope) or {}
+    skips = entry.get("skips")
+    return frozenset(skips) if isinstance(skips, list) else frozenset()
+
+
+def _scope_records_verified(scope: str) -> bool:
+    """Whether *scope* may record the fingerprint the pre-push gate reuses.
+
+    Only the full sweep may. A scope that drops any step is a PARTIAL
+    verification, and a partial verification that can satisfy a gate is the
+    presence-check failure ``AGENTS.md`` names. ``record_verified`` already
+    admits only ``scope="full"``; this reads the declaration so the claim lives
+    beside the skip list it depends on rather than being implied by a caller.
+    """
+    if scope == "full":
+        return True
+    entry = _load_check_step_scopes().get(scope) or {}
+    return entry.get("records_verified") is True
+
+
+def _select_check_steps(*, fast: bool, prepush: bool = False) -> list[tuple[str, CheckStepRunner]]:
     """Return the step list for this scope, substituting scoped tests when fast."""
     steps = _build_check_steps()
-    if not fast:
-        return steps
-    kept = [(name, runner) for name, runner in steps if name not in _FAST_SKIPPED_STEPS]
-    kept.append(("Test (changed)", _run_changed_tests))
-    return kept
+    if fast:
+        skipped = _scope_skips("fast")
+        kept = [(name, runner) for name, runner in steps if name not in skipped]
+        kept.append(("Test (changed)", _run_changed_tests))
+        return kept
+    if prepush:
+        skipped = _scope_skips("prepush")
+        return [(name, runner) for name, runner in steps if name not in skipped]
+    return steps
 
 
 # Concurrency ceiling for the read-only phase.  Deliberately below the core
@@ -895,17 +947,31 @@ def _report_reuse_skip(project_root: pathlib.Path, *, as_json: bool) -> bool:
     return True
 
 
-def _record_and_announce_pass(project_root: pathlib.Path, *, fast: bool) -> None:
+def _record_and_announce_pass(
+    project_root: pathlib.Path, *, fast: bool, prepush: bool = False
+) -> None:
     """Announce a passing run, recording the fingerprint only for a FULL one.
 
     A ``--fast`` pass is deliberately never recorded: it skipped the expensive
     steps by design, and letting a partial verification satisfy the gate is the
     presence-check failure ``AGENTS.md`` names.
+
+    A ``prepush`` pass is not recorded either, and for exactly the same reason
+    (GHI #950): it drops ``Behave``. Recording it would mint a fingerprint
+    asserting a full sweep passed over content no full sweep ever ran on, and the
+    next push would reuse that assertion.
     """
+    if prepush and not _scope_records_verified("prepush"):
+        console.print(
+            "\n[green]✓ Pre-push checks passed.[/green] "
+            f"[yellow](scoped — {', '.join(sorted(_scope_skips('prepush')))} not run; "
+            "CI runs the full sweep on this commit)[/yellow]"
+        )
+        return
     if fast:
         console.print(
             "\n[green]✓ Fast checks passed.[/green] "
-            f"[yellow](scoped — {', '.join(sorted(_FAST_SKIPPED_STEPS))} not run; "
+            f"[yellow](scoped — {', '.join(sorted(_scope_skips('fast')))} not run; "
             "this does NOT satisfy the pre-push gate)[/yellow]"
         )
         return
@@ -992,9 +1058,6 @@ def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
 #: format, typecheck, and every governance validator — stays, because the whole
 #: remainder is cheaper than any one of these three and it is where the
 #: governance value lives.
-_FAST_SKIPPED_STEPS: frozenset[str] = frozenset({"Test", "Behave", "Docs build"})
-
-
 def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = False) -> None:
     """Run all quality checks (lint + format + typecheck + test + governance audits).
 
@@ -1007,6 +1070,15 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
     full check (GHI #835). A fix used to pay the full ~148s twice: once when the
     agent verified, then again at ``git push`` over a tree that had not changed.
     The second run cannot reach a different verdict.
+
+    ``reuse_verified`` also SELECTS the ``prepush`` scope (GHI #950): it is set by
+    exactly one caller, the ``gz-check-pre-push`` hook, so it is the marker for
+    "this is the push gate". That scope drops ``Behave`` per
+    ``data/check_step_scopes.json`` — 30.61s measured, the largest step in the
+    sweep, already ruled Heavy-lane/closeout-scope by ``sync.py``, and re-run in
+    full by CI on the same commit. Like ``fast``, a prepush run never records a
+    verified fingerprint: it is a partial sweep, and a partial verification that
+    could satisfy a gate is the presence-check failure ``AGENTS.md`` names.
     """
     import json
     import sys
@@ -1020,7 +1092,7 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
     if reuse_verified and not fast and _report_reuse_skip(project_root, as_json=as_json):
         return
 
-    steps = _select_check_steps(fast=fast)
+    steps = _select_check_steps(fast=fast, prepush=reuse_verified)
 
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
         results = _run_check_steps(steps, project_root, progress)
@@ -1045,7 +1117,9 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
             "checks": {name: r.success for name, r in results},
             "drift": drift.to_dict(),
         }
-        if all(r.success for _, r in results) and not fast:
+        # `prepush` is excluded on the same ground as `fast` (GHI #950): both are
+        # partial sweeps, and only a full one may mint the reuse fingerprint.
+        if all(r.success for _, r in results) and not fast and not reuse_verified:
             _record_full_pass(project_root)
         if flag_health is not None:
             payload["flag_health"] = flag_health.model_dump()
@@ -1064,7 +1138,7 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
 
     all_passed = all(r.success for _, r in results)
     if all_passed:
-        _record_and_announce_pass(project_root, fast=fast)
+        _record_and_announce_pass(project_root, fast=fast, prepush=reuse_verified)
     else:
         console.print("\n[red]❌ Some checks failed.[/red]")
         _render_step_failures(results)
