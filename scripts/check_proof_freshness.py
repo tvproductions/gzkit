@@ -21,11 +21,25 @@ A proof is stale when any file in the surface it audits has a newer last-commit
 date than the proof itself. Uncommitted proofs are treated as fresh — they are
 being written right now.
 
+That comparison cannot express a chore whose staleness is driven from *outside*
+the repository. ``frontier-model-card-currency`` scans vendor publication hubs;
+no repo file's commit date moves when Anthropic or OpenAI ships a system card,
+so its registry stays internally valid — and its criteria stay green — for as
+long as nobody looks. Measured 2026-09-02 under GHI #935: both criteria passed
+while the Mythos-class ``current`` entry had been superseded since 2026-09-01
+(GHI #934), found only because an operator happened to supply the new card URL.
+
+Such chores are gated on the second arm below: wall-clock elapsed time since
+the procedure last ran, keyed by ``_SCAN_INTERVALS``. The witness is the
+timestamped block ``gz chores run`` appends to ``CHORE-LOG.md``, never a
+hand-authored narrative heading — see ``_newest_scan_timestamp``.
+
 Exit codes: 0 fresh, 1 usage/IO error, 3 policy breach (stale evidence).
 """
 
 from __future__ import annotations
 
+import re
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -63,6 +77,24 @@ _AUDITED_SURFACES: dict[str, tuple[str, ...]] = {
     ),
 }
 
+# Chores whose staleness is externally driven have no in-repo signal to key on,
+# so they gate on elapsed time instead of on a surface's commit date. The value
+# is the maximum age, in days, of the newest recorded run.
+#
+# 30d is derived from measured Anthropic tracked-tier publication intervals
+# (n=4 across 2026-04-16..2026-09-01: min 12d, median 40.5d, mean 34.5d). It is
+# the largest interval that keeps at most one release outstanding against that
+# mean, and it would have fired on 2026-09-01 — the publication day of the card
+# whose 30 days of undetected staleness produced GHI #935. Re-derive it, do not
+# transcribe it, when the observed cadence moves.
+_SCAN_INTERVALS: dict[str, int] = {
+    "frontier-model-card-currency": 30,
+}
+
+# ``gz chores run`` appends "## <ISO timestamp>"; findings sections are written
+# by hand as "## <date> — <prose>". Only the former witnesses a governed run.
+_RUN_HEADING = re.compile(r"^##[ \t]+(\d{4}-\d{2}-\d{2}T[0-9:.+\-]+)[ \t]*$", re.MULTILINE)
+
 
 def _last_commit_epoch(path: str) -> int | None:
     """Return the unix time of the newest commit touching *path*, or None."""
@@ -97,15 +129,78 @@ def _iso(epoch: int) -> str:
     return datetime.fromtimestamp(epoch, UTC).date().isoformat()
 
 
-def main(argv: list[str]) -> int:
-    """Report whether *slug*'s proofs postdate the surfaces they audit."""
-    if len(argv) != 1 or argv[0] not in _AUDITED_SURFACES:
+def _newest_scan_timestamp(log_text: str) -> datetime | None:
+    """Return the newest recorded run stamp in *log_text*, or None.
+
+    Reads only the timestamped blocks ``gz chores run`` appends. Narrative
+    headings a human wrote (``## 2026-09-02 — findings``) are deliberately not
+    matched: keying on them would make appending prose enough to mark the chore
+    fresh, rebuilding the gate whose only witness is that an artifact exists
+    (``AGENTS.md`` § DO IT RIGHT). File order is not trusted either — the newest
+    stamp wins wherever it sits.
+    """
+    stamps: list[datetime] = []
+    for raw in _RUN_HEADING.findall(log_text):
+        try:
+            when = datetime.fromisoformat(raw)
+        except ValueError:
+            continue
+        # A stamp written without an offset is read as UTC rather than skipped;
+        # dropping it would silently age the log toward a false breach.
+        stamps.append(when if when.tzinfo else when.replace(tzinfo=UTC))
+    return max(stamps, default=None)
+
+
+def _check_scan_interval(slug: str, interval_days: int) -> int:
+    """Report whether *slug*'s last recorded run is within *interval_days*."""
+    log = _PROJECT_ROOT / ".gzkit" / "chores" / slug / "proofs" / "CHORE-LOG.md"
+    print(f"scan-interval gate — {slug}")
+    print(f"  maximum age:  {interval_days}d")
+
+    newest = _newest_scan_timestamp(log.read_text(encoding="utf-8")) if log.is_file() else None
+    if newest is None:
+        reason = (
+            "no CHORE-LOG.md" if not log.is_file() else "no timestamped run block in CHORE-LOG.md"
+        )
+        print("  last run:     never", file=sys.stderr)
         print(
-            f"usage: check_proof_freshness.py <{' | '.join(sorted(_AUDITED_SURFACES))}>",
+            f"\nPOLICY BREACH:\n  {slug} has no run on record ({reason}).\n"
+            f"    Why: absence of a record is not evidence of a recent run, and this "
+            f"chore's subject changes outside the repository — nothing else will "
+            f"signal that it is stale.\n"
+            f"    Fix: run `uv run gz chores run {slug}` and commit the log.",
             file=sys.stderr,
         )
+        return 3
+
+    age = (datetime.now(UTC) - newest).days
+    print(f"  last run:     {newest.date().isoformat()} ({age}d ago)")
+    if age > interval_days:
+        print(
+            f"\nPOLICY BREACH:\n  {slug} last ran {newest.date().isoformat()}, "
+            f"{age}d ago, exceeding its {interval_days}d interval.\n"
+            f"    Why: this chore's criteria check the shape of what was already "
+            f"consumed, never whether anything newer has published. They report "
+            f"green for as long as nobody looks.\n"
+            f"    Fix: run `uv run gz chores run {slug}`, route any drift it "
+            f"finds, and commit the log.",
+            file=sys.stderr,
+        )
+        return 3
+
+    print("\nPASS: the last recorded run is within the scan interval.")
+    return 0
+
+
+def main(argv: list[str]) -> int:
+    """Report whether *slug*'s evidence is current, by whichever arm gates it."""
+    known = sorted({*_AUDITED_SURFACES, *_SCAN_INTERVALS})
+    if len(argv) != 1 or argv[0] not in known:
+        print(f"usage: check_proof_freshness.py <{' | '.join(known)}>", file=sys.stderr)
         return 1
     slug = argv[0]
+    if slug in _SCAN_INTERVALS:
+        return _check_scan_interval(slug, _SCAN_INTERVALS[slug])
     surfaces = _AUDITED_SURFACES[slug]
     proofs_dir = _PROJECT_ROOT / ".gzkit" / "chores" / slug / "proofs"
     proofs = sorted(p for p in proofs_dir.glob("*.md") if p.name != "CHORE-LOG.md")

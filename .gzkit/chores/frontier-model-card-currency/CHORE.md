@@ -59,6 +59,38 @@ for superseded models."
   numbers; a card for a newer model in the same tier voids the values until
   re-derived (`docs/governance/opus-tuning.md` § Recalibration).
 
+## Cadence
+
+**Mechanically gated.** The maximum age of a recorded run is the
+`frontier-model-card-currency` entry in `_SCAN_INTERVALS`
+(`scripts/check_proof_freshness.py`), enforced as criterion 1 of
+`acceptance.json`. The interval is not restated here: a value written in a
+Markdown doc is illustrative, never authoritative
+(`.claude/rules/governance-core.md`), and a cadence this file merely *declared*
+would be the doctrine-declared-without-mechanism shape `AGENTS.md` forbids.
+Read the constant; its comment carries the measured publication intervals the
+number was derived from, and says to re-derive rather than transcribe it when
+the observed vendor cadence moves.
+
+The gate reads the timestamped blocks `gz chores run` appends to
+`proofs/CHORE-LOG.md` — never the hand-authored findings headings beside them.
+Appending prose is authorship, not a run.
+
+**Event triggers (run regardless of the interval):**
+
+- An operator supplies a card URL, or a vendor release is noticed in passing
+- Before a release ceremony, or before ADR/OBPI work whose evidence cites any
+  path in the registry's `doctrine_surfaces`
+- Between OBPI implementations as a hygiene checkpoint, per the cadence of
+  `.gzkit/chores/dependency-currency/CHORE.md` § Source that this chore mirrors
+
+**Why a clock at all (GHI #935):** criteria 2 and 3 check the registry's
+*shape*; nothing in this repository changes when a vendor publishes, so without
+an elapsed-time arm the chore reports `All criteria pass` for as long as nobody
+looks. On 2026-09-02 it did exactly that, 31 days after its previous run, while
+the Mythos-class `current` entry had been superseded since 2026-09-01 (GHI
+#934) — caught only because the operator supplied the URL.
+
 ## Workflow
 
 ### 1. Inventory the registry
