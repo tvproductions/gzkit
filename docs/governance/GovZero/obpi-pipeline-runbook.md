@@ -287,7 +287,7 @@ Pipeline failed at which stage?
 
 ### Stale Marker Recovery
 
-Pipeline markers older than 4 hours are stale. Clean them up:
+Pipeline markers older than 24 hours are stale. Clean them up:
 
 ```bash
 uv run gz obpi pipeline --clear-stale

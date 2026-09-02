@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from gzkit.ledger import pipeline_marker_purged_event
 from gzkit.pipeline_runtime import (
+    STALE_MARKER_HOURS,
     clear_stale_pipeline_markers,
     extract_brief_status,
     find_active_pipeline_marker,
@@ -238,7 +239,7 @@ class TestPipelineRuntime(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
             old_time = (
-                (datetime.now(UTC) - timedelta(hours=5))
+                (datetime.now(UTC) - timedelta(hours=STALE_MARKER_HOURS + 1))
                 .replace(microsecond=0)
                 .isoformat()
                 .replace("+00:00", "Z")
@@ -271,7 +272,7 @@ class TestPipelineRuntime(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
             old_time = (
-                (datetime.now(UTC) - timedelta(hours=5))
+                (datetime.now(UTC) - timedelta(hours=STALE_MARKER_HOURS + 1))
                 .replace(microsecond=0)
                 .isoformat()
                 .replace("+00:00", "Z")

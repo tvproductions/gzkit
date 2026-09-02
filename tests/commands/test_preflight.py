@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from gzkit.cli import main
+from gzkit.pipeline_markers import STALE_MARKER_HOURS
 from tests.commands.common import CliRunner, _quick_init
 
 
@@ -24,7 +25,7 @@ class TestPreflightCommand(unittest.TestCase):
             _quick_init("lite")
             plans_dir = Path(".claude/plans")
             plans_dir.mkdir(parents=True, exist_ok=True)
-            stale_time = (datetime.now(UTC) - timedelta(hours=5)).isoformat()
+            stale_time = (datetime.now(UTC) - timedelta(hours=STALE_MARKER_HOURS + 1)).isoformat()
             marker = {
                 "obpi_id": "OBPI-0.1.0-01",
                 "updated_at": stale_time,
@@ -85,7 +86,7 @@ class TestPreflightCommand(unittest.TestCase):
             _quick_init("lite")
             plans_dir = Path(".claude/plans")
             plans_dir.mkdir(parents=True, exist_ok=True)
-            stale_time = (datetime.now(UTC) - timedelta(hours=5)).isoformat()
+            stale_time = (datetime.now(UTC) - timedelta(hours=STALE_MARKER_HOURS + 1)).isoformat()
             marker_path = plans_dir / ".pipeline-active-OBPI-0.1.0-01.json"
             marker_path.write_text(
                 json.dumps({"obpi_id": "OBPI-0.1.0-01", "updated_at": stale_time}),

@@ -31,7 +31,16 @@ def _claude_home() -> Path:
 
 PIPELINE_RECEIPT_FILE = ".plan-audit-receipt.json"
 PIPELINE_LEGACY_MARKER = ".pipeline-active.json"
-STALE_MARKER_HOURS = 4
+# Operator ruling 2026-09-02: 4h was too short for the real cadence of this
+# work. A marker's age is not evidence of abandonment — an OBPI checkpointed
+# mid-flight, with its lock held and a `resume_point` recorded, is a LIVE
+# session that a 4h TTL called stale within one working block. Measured
+# instance: OBPI-0.35.0-04 checkpointed at 12:45Z and its two markers were
+# reported stale by every `gz check` from 16:45Z onward, locally and in CI,
+# regardless of what was being pushed. 24h matches the staleness threshold
+# ADR-0.0.22 already set for security-scan receipts, so the repo now carries
+# one number for "how old before we stop believing this", not two.
+STALE_MARKER_HOURS = 24
 
 _OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+")
 

@@ -38,14 +38,26 @@ class TestScopeDeclarationIsRead(unittest.TestCase):
         )
 
     @covers("REQ-0.0.68-01-01")
-    def test_behave_is_absent_from_the_prepush_sweep_and_present_in_the_full_one(self) -> None:
-        """The change this config exists to make, asserted on the step list itself."""
+    def test_the_prepush_sweep_is_the_full_one_minus_exactly_the_declared_skips(self) -> None:
+        """The change this config exists to make, asserted on the step list itself.
+
+        The count is derived from the declaration rather than written here: a
+        hard-coded difference would have to be edited every time a scope entry
+        changes, which is the second copy this file exists to remove.
+        """
         full = [name for name, _ in _select_check_steps(fast=False)]
         prepush = [name for name, _ in _select_check_steps(fast=False, prepush=True)]
-        self.assertIn("Behave", full, "the full sweep still owes a BDD run")
-        self.assertNotIn("Behave", prepush, "the push gate must not pay Behave; CI runs it")
-        self.assertIn("Test", prepush, "dropping Behave must not gut the gate")
-        self.assertEqual(len(full) - len(prepush), 1, "prepush drops Behave and nothing else")
+        declared = _scope_skips("prepush")
+
+        self.assertEqual(
+            set(full) - set(prepush), set(declared), "prepush drops exactly the declared steps"
+        )
+        self.assertEqual(len(full) - len(prepush), len(declared))
+        for step in declared:
+            self.assertIn(step, full, f"{step} must still run in the full sweep")
+        self.assertIn("Test", prepush, "scoping the gate must not gut it")
+        self.assertIn("Lint", prepush)
+        self.assertIn("Typecheck", prepush)
 
 
 class TestScopePolarityIsConservative(unittest.TestCase):

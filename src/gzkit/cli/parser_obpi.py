@@ -148,7 +148,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "--clear-stale",
         dest="clear_stale",
         action="store_true",
-        help="Remove pipeline markers older than 4 hours",
+        help="Remove pipeline markers older than 24 hours",
     )
     p_obpi_pipeline.add_argument(
         "--no-subagents",
