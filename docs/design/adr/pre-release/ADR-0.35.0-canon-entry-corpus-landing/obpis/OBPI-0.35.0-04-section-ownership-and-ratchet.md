@@ -10,10 +10,12 @@ allowlist:
 - src/gzkit/commands/content/__init__.py
 - src/gzkit/cli/**
 - src/gzkit/schemas/section_ownership.json
+- config/doc-coverage.json
 - .gzkit/ownership/AGENTS.md.json
 - src/gzkit/governance/events.py
 - tests/content/test_ownership.py
 - tests/commands/test_content_unown.py
+- tests/content/test_tui_affordances.py
 - features/**
 - docs/user/manpages/content.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md
@@ -34,6 +36,15 @@ verification:
 - uv run gz validate --req-kind-discipline
 - uv run gz cli audit
 - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-04-01-01
+  - TASK-0.35.0-04-02-01
+  - TASK-0.35.0-04-03-01
+  - TASK-0.35.0-04-04-01
+  - TASK-0.35.0-04-05-01
+  - TASK-0.35.0-04-06-01
+  - TASK-0.35.0-04-07-01
+  - TASK-0.35.0-04-08-01
 ---
 
 # OBPI-0.35.0-04-section-ownership-and-ratchet: Section Ownership And Ratchet
@@ -60,6 +71,22 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 > `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
 > Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
+> **AMENDED 2026-09-02 (operator-ruled): the ratchet is measured in SECTION-SPAN BYTES.**
+> Operator ruling, verbatim: *"span-based, consistent with REQ-05"*. As authored, this
+> brief defined its unit twice and incompatibly. REQ-05 raises the floor "by that
+> section's byte count" (a span), while REQ-02/07 quoted 22,378 unowned B and 31.2%
+> coverage of 31,990 B — figures computed as (document bytes − corpus-entry TEXT bytes),
+> which is not a span and was never distributed across the 14 sections REQ-07 attributed
+> it to. Re-measured at the authoring commit (`4738aa69`), the 14 unowned sections spanned
+> 11,607 B, not 22,378 B. The ruling settles the unit as span-based; REQ-02, REQ-07 and
+> REQ-08 are amended to it, and the corpus-addressed roster is refreshed from 8 sections
+> to the measured 10 (`gate-covenant` and
+> `operator-economy-of-effort-design-dialogue-mode` were captured after authoring).
+> COUPLING NOTE: the parent ADR's § Decision item 4 and § Consequences Positive #4 still
+> carry the entry-witness figures (31.2%, 354 B → 22,378 B). Those items are scoped to
+> OBPI-0.35.0-05 and -06, not to this brief, and are left for the operator to rule on
+> separately rather than amended from inside an OBPI whose allowlist excludes the ADR body.
+
 **Dependency order (ADR-0.35.0 § Scope Minimization):** 04 has no prerequisite inside ADR-0.35.0 and may land in parallel with 01-03. 05 depends on 01 + 04; 06 depends on 04 + 05. Per § Scope Minimization, 04 and 06 are cut together or not at all — cutting 06 alone leaves ownership as a claim with no enforcement, which IS pre-mortem #2.
 
 ## Lane
@@ -76,9 +103,23 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 - `src/gzkit/commands/content/unown.py` — the attested ratchet-raise command **CREATE**
 - `src/gzkit/commands/content/__init__.py`, `src/gzkit/cli/**` — parser registration for the raise-path verb only
 - `src/gzkit/schemas/section_ownership.json` — declaration schema **CREATE**
+- `config/doc-coverage.json` — doc-surface exemption entry for the new `content unown`
+  verb, matching the identical entry all 11 sibling `content` verbs already carry.
+  ADDED 2026-09-02 by operator ruling (Gate Friction escalation): `gz cli audit` is a
+  brief-declared verification command, and it fail-closes on the new verb's five doc
+  surfaces; the manifest is the coupled surface the brief under-declared at authoring.
 - `.gzkit/ownership/AGENTS.md.json` — the day-one declaration and ratchet floor **CREATE**
 - `src/gzkit/governance/events.py` — ownership and ratchet ledger events
 - `tests/content/test_ownership.py`, `tests/commands/test_content_unown.py` — covering tests **CREATE**
+- `tests/content/test_tui_affordances.py` — admit `unown` to the `gz content`
+  subcommand fence bound to REQ-0.0.34-05-05. ADDED 2026-09-02 by operator ruling
+  ("add to allowed"; Gate Friction escalation, same shape as the
+  `config/doc-coverage.json` entry above): the fence pins a hardcoded roster, and
+  Task 3's registration of `unown` fail-closes `uv run gz test`, a brief-declared
+  verification command. The test's own docstring rules the disposition — *"the
+  fence is updated to admit it, not relaxed"* — and six sibling verbs were admitted
+  the same way. The fence is the coupled surface this brief under-declared at
+  authoring; the roster is widened by one id, never weakened.
 - `features/**` — Gate 4 scenarios for the attested raise-path
 - `docs/user/manpages/content.md` — the raise-path section
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` — this brief's evidence sections
@@ -95,13 +136,13 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 ## Requirements (FAIL-CLOSED)
 
 1. ALWAYS declare a closed enum. A section's ownership is exactly one of `corpus-owned` or `unowned`. Any third value, or a section present in AGENTS.md with no declaration, is fail-closed — an undeclared section is the silent third state this OBPI exists to remove.
-2. DAY-ONE BASELINE (re-measured before this brief was written, and to be re-measured at implementation time): AGENTS.md is 31,990 B across 22 H1/H2 sections. Eight sections are corpus-addressed — `attestation`, `behavior-rules`, `defect-fix-routing`, `do-it-right-craftsmanship-maxim`, `governance-doctrine-surfaces`, `obpi-acceptance-protocol`, `operator-doctrine-verbatim-canon`, `prime-directive-ownership` — carrying 9,612 B invariant + 354 B compressible = 9,966 B. The remaining 22,378 B across 14 sections is the day-one unowned ratchet floor.
+2. DAY-ONE BASELINE — SPAN-BASED (operator-ruled 2026-09-02; re-derived at implementation time, never stored). "Unowned bytes" means the summed BYTE SPAN of the sections declared `unowned`, consistent with REQ-05's *"the ratchet floor RISES by that section's byte count"*. Measured 2026-09-02: AGENTS.md is 46,876 B across 22 H1/H2 sections. TEN sections are corpus-addressed — `attestation`, `behavior-rules`, `defect-fix-routing`, `do-it-right-craftsmanship-maxim`, `gate-covenant`, `governance-doctrine-surfaces`, `obpi-acceptance-protocol`, `operator-doctrine-verbatim-canon`, `operator-economy-of-effort-design-dialogue-mode`, `prime-directive-ownership` — spanning 38,239 B. The remaining 8,637 B across 12 sections is the day-one unowned ratchet floor. Every figure here is ILLUSTRATIVE of the measure and MUST be re-derived at implementation time (`.claude/rules/governance-core.md` — a value written in a Markdown doc is never authoritative).
 3. NEVER let the ratchet increase without attestation. Recording an unowned-byte total GREATER than the stored floor MUST be refused. Decrease or equality updates the floor; an increase is only reachable through the attested raise-path.
 4. ALWAYS gate the raise-path at the corpus attestation, fail-closed, with the SAME shape as gz content withdraw: empty or whitespace-only `--attestor` or `--reason` exits non-zero and writes nothing. Un-owning a section is the same act on the same kind of canon, so it takes the same ceremony (ADR § Reversibility).
 5. ALWAYS emit a ledger event on both moves — an ownership transition and a ratchet-floor change — carrying the section id, the prior and new byte totals, and, on a raise, the attestor and reason.
 6. NEVER couple ownership to a section TITLE. Declarations key on the stable kebab-case section id used by the corpus `section` field, so renaming an H2 heading does not silently orphan a declaration (`DESIGN_FORCING_FUNCTIONS.md` § 2 assumption a1).
-7. ALWAYS record the coverage figure alongside the ratchet so it can be read without recomputation: 9,966 of 31,990 B = 31.2%, 8 of 22 sections.
-8. NAMED HONESTLY IN THE BRIEF, NOT MARKETED: three of the eight owned sections (`governance-doctrine-surfaces`, `obpi-acceptance-protocol`, `defect-fix-routing`) carry exactly ONE corpus entry each, and `governance-doctrine-surfaces`'s single entry is `compressible` tier, so it is not on the invariant floor at all. "8 of 22 sections" is functionally four sections plus three tokens (ADR § Consequences Negative #1). The implementation MUST NOT round, average, or otherwise present the figure as stronger than this.
+7. ALWAYS record the coverage figure alongside the ratchet so it can be read without recomputation: owned span over total span, plus the owned-section count out of 22 — measured 2026-09-02 as 38,239 of 46,876 B = 81.6%, 10 of 22 sections.
+8. NAMED HONESTLY IN THE BRIEF, NOT MARKETED: the span-based measure INFLATES apparent coverage relative to how much of the contract is actually witnessed, because an owned section's FULL span counts even where a single corpus entry backs it. Four of the ten owned sections (`gate-covenant`, `governance-doctrine-surfaces`, `obpi-acceptance-protocol`, `operator-economy-of-effort-design-dialogue-mode`) carry exactly ONE corpus entry each, and `governance-doctrine-surfaces`'s single entry is `compressible` tier, so it is not on the invariant floor at all. "10 of 22 sections / 81.6%" is functionally six sections plus four tokens (ADR § Consequences Negative #1). The implementation MUST surface the per-section entry-count histogram alongside the percentage, and MUST NOT round, average, or otherwise present the figure as stronger than this.
 9. ALWAYS emit three-part recovery prose on every fail-closed exit per `.claude/rules/guardrail-feedback-prose.md`.
 10. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
@@ -200,8 +241,8 @@ uv run mkdocs build --strict
 <!-- gz-validate-skip: command-shape -->
 ```bash
 uv run gz content unown --help
-uv run gz content unown AGENTS.md --section attestation --attestor "" --reason "probe"
-uv run python -c "import json, pathlib; d = json.loads(pathlib.Path('.gzkit/ownership/AGENTS.md.json').read_text(encoding='utf-8')); print('owned', sum(1 for v in d['sections'].values() if v == 'corpus-owned'), '| unowned floor', d['unowned_byte_floor'], '| coverage', d['coverage_pct'])"
+uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before = d.read_bytes(); r = subprocess.run(['uv','run','gz','content','unown','AGENTS.md','--section','attestation','--attestor','','--reason','probe'], capture_output=True, text=True); sys.exit(0 if r.returncode != 0 and d.read_bytes() == before else 1)"
+uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership import compute_baseline; d = json.loads(pathlib.Path('.gzkit/ownership/AGENTS.md.json').read_text(encoding='utf-8')); corpus = Corpus.loads(pathlib.Path('.gzkit/corpus/AGENTS.md.jsonl').read_text(encoding='utf-8')); b = compute_baseline(pathlib.Path('AGENTS.md').read_text(encoding='utf-8'), corpus); print('owned', sum(1 for v in d['sections'].values() if v == 'corpus-owned'), '| unowned floor', d['unowned_byte_floor'], '| coverage', b.coverage_pct)"
 ```
 
 ## Acceptance Criteria
@@ -220,7 +261,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-04-04 [behavior]: Given the attested raise-path invoked with an empty or whitespace-only `--attestor` or `--reason`, when it runs, then it exits non-zero, the ownership declaration and ratchet floor are byte-unchanged, and no ledger event is written.
 - [ ] REQ-0.35.0-04-05 [behavior]: Given the attested raise-path invoked with a non-empty attestor and reason against a `corpus-owned` section, when it runs, then the section becomes `unowned`, the ratchet floor RISES by that section's byte count, and a ledger event records the section id, both floor values, the attestor, and the reason.
 - [ ] REQ-0.35.0-04-06 [behavior]: Given an AGENTS.md whose H2 heading TEXT changed while its kebab-case section id is unchanged, when the ownership store is loaded, then the declaration still resolves — ownership keys on the id, never on the title.
-- [ ] REQ-0.35.0-04-07 [behavior]: Given the day-one AGENTS.md and corpus, when the baseline is computed, then it reports 8 owned sections, 22,378 unowned bytes across 14 sections, and 31.2% coverage of 31,990 B — derived by measurement, never by a stored constant.
+- [ ] REQ-0.35.0-04-07 [behavior]: Given the day-one AGENTS.md and corpus, when the baseline is computed, then it reports the owned-section count, the summed BYTE SPAN of the `unowned` sections, and coverage as owned-span over total-span — every figure derived by measurement at run time, never read from a stored constant. (Span-based per the operator ruling of 2026-09-02; measured that day as 10 owned sections, 8,637 unowned B across 12 sections, 81.6% of 46,876 B.)
 - [ ] REQ-0.35.0-04-08 [support]: The day-one declaration at `.gzkit/ownership/AGENTS.md.json` is present and validates against `src/gzkit/schemas/section_ownership.json` — witnessed by an `artifact_edited` ledger event citing `.gzkit/ownership/AGENTS.md.json` — and `gz validate --documents` admits the shape.
 
 ## Completion Checklist
@@ -296,7 +337,44 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **Content-layer ledger write (architectural debt, deferred to OBPI-0.35.0-05).**
+  `record_unowned_total` (`src/gzkit/content/ownership.py`) takes a filesystem `root`
+  and calls `emit_unowned_ratchet_updated`, departing from the established split that
+  `composer.py` ("caller writes to disk and ledger") and `commands/content/commit.py`
+  encode: the content layer stays pure, the command layer writes the ledger. Confirmed
+  by independent review 2026-09-02. It fails `.claude/rules/hexagonal-architecture.md`
+  operative rule 6 (core testable without an adapter) — the success path cannot be
+  exercised without a real `Ledger` file write.
+  KEPT DELIBERATELY, not overlooked: within this brief's allowlist there is NO
+  command-layer caller for the ordinary decrease-only path. `commands/content/unown.py`
+  implements the attested RAISE path (REQ-04/05), a structurally different operation
+  with no reason to call `record_unowned_total`, and `src/gzkit/content/composer.py` —
+  the analogous real caller — is in this brief's Denied Paths as OBPI-0.35.0-05 scope.
+  Moving emission out would leave REQ-0.35.0-04-03's "a ratchet ledger event is
+  emitted" unprovable by any `@covers` test this OBPI is authorised to write. The
+  natural home is OBPI-0.35.0-05's materialization caller, mirroring `commit.py`.
+  A prior ruling by this session's orchestrator — move it to `unown.py` at Task 3 —
+  was CHALLENGED AND OVERTURNED by the reviewer on the reasoning above.
+- **`emit_unowned_ratchet_updated` constructs `LedgerEvent` inline (minor).**
+  It is the sole outlier among six `emit_*` helpers in
+  `src/gzkit/governance/events.py`; every other delegates to a `*_event()` constructor
+  in `ledger_events.py`. Forced here because `ledger_events.py` is outside this brief's
+  allowlist. No functional drift today; costs standalone unit-testability of the event
+  shape and risks drift from the canonical constructor pattern.
+- **`no ledger event "{event}" was emitted` step lives outside the sanctioned shared
+  home (minor).** `features/content_unown.feature`'s REQ-0.35.0-04-04 scenarios reach
+  for this generic ledger-absence assertion, but its only definition is in
+  `features/steps/content_retire_steps.py`, not in `features/steps/gz_steps.py` where a
+  cross-feature shared step belongs. Behave resolves it through its global step
+  registry, so the scenarios pass today; the failure mode if
+  `content_retire_steps.py` is ever renamed or deleted is a loud undefined-step
+  collection error, never a silent pass. KEPT DELIBERATELY, not overlooked: relocating
+  the definition would require deleting it from `content_retire_steps.py`, and that
+  file is Gate-4 evidence for OBPI-0.35.0-02, which is already attested-completed —
+  editing it here is out of this brief's allowlist and out of scope for a completed
+  OBPI's evidence surface. The natural fix is a follow-up that moves the step to
+  `gz_steps.py` and updates `content_retire_steps.py`'s own docstring in the same
+  patch, under whatever OBPI or GHI next touches that surface.
 
 ## Human Attestation
 

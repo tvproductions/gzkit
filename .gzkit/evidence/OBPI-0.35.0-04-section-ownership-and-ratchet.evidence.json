@@ -1,0 +1,48 @@
+{
+  "obpi_id": "OBPI-0.35.0-04-section-ownership-and-ratchet",
+  "generated_at": "2026-09-02T19:00:09.562194+00:00",
+  "demos": [
+    {
+      "command": "uv run gz content unown --help",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "usage: gz content unown [-h] --section SECTION [--attestor ATTESTOR]\n                        [--reason REASON] [--quiet | --verbose] [--debug]\n                        surface\n\nUn-own a 'corpus-owned' section, the one legitimate move that RAISES the decrease-only unowned-byte ratchet (`gz content remember`'s ordinary path is decrease-or-equal only). Same corpus-attestation shape as `gz content retire`: empty or whitespace-only --attestor or --reason exits non-zero and writes nothing -- un-owning a section is a canon change every time, so it never reaches an unchanged-canon exemption (unlike `gz content commit`). On success, emits a section_ownership_unowned ledger event carrying the section id, the prior and new unowned-byte floor, the attestor, and the reason.\n\npositional arguments:\n  surface              Control surface the section belongs to (e.g.\n                       AGENTS.md).\n\noptions:\n  -h, --help           show this help message and exit\n  --section SECTION    Section id to un-own (kebab-case).\n  --attestor ATTESTOR  Operator un-owning the section; required and never\n                       empty.\n  --reason REASON      Why the section is being un-owned; required and never\n                       empty.\n  --quiet, -q          Suppress non-error output\n  --verbose, -v        Enable verbose output\n  --debug              Enable debug mode with full tracebacks\n\nExamples\n    gz content unown AGENTS.md --section attestation --attestor \"g0\" --reason \"materialized as prose doc instead\"\n\nExit codes\n    0   Success\n    1   User/config error\n    2   System/IO error\n    3   Policy breach"
+    },
+    {
+      "command": "uv run python -c \"import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before = d.read_bytes(); r = subprocess.run(['uv','run','gz','content','unown','AGENTS.md','--section','attestation','--attestor','','--reason','probe'], capture_output=True, text=True); sys.exit(0 if r.returncode != 0 and d.read_bytes() == before else 1)\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": ""
+    },
+    {
+      "command": "uv run python -c \"import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership import compute_baseline; d = json.loads(pathlib.Path('.gzkit/ownership/AGENTS.md.json').read_text(encoding='utf-8')); corpus = Corpus.loads(pathlib.Path('.gzkit/corpus/AGENTS.md.jsonl').read_text(encoding='utf-8')); b = compute_baseline(pathlib.Path('AGENTS.md').read_text(encoding='utf-8'), corpus); print('owned', sum(1 for v in d['sections'].values() if v == 'corpus-owned'), '| unowned floor', d['unowned_byte_floor'], '| coverage', b.coverage_pct)\"",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "owned 10 | unowned floor 8637 | coverage 81.57479307108116"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-fa0254a3498343a19f9c5897070ef556.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-5922df12c0324073badce450451958d0.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-7577c7a1b02944e8a6826ce849964b78.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 8,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": []
+}
