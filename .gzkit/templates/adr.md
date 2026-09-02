@@ -58,7 +58,10 @@ date: {date}
 
 ## Checklist
 
-<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
+<!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps.
+     The box is a ROW MARKER, never a status claim: leave it `- [ ]`. Completion
+     lives in the ledger — read it with `uv run gz adr status`, never from this
+     page. A `[x]` here is rejected by `gz validate --documents` (GHI #928). -->
 
 {checklist}
 

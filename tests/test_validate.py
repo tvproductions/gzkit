@@ -250,6 +250,132 @@ Test evidence.
                 )
             )
 
+    def _adr_with_checklist(self, checklist: str) -> str:
+        """Return a valid two-item ADR body carrying the given checklist rows."""
+        return f"""---
+id: ADR-0.1.0
+status: Draft
+semver: 0.1.0
+lane: lite
+parent: OBPI-core
+date: 2026-01-01
+---
+
+# ADR-0.1.0: Test
+
+## Intent
+
+Test intent.
+
+## Decision
+
+Test decision.
+
+## Consequences
+
+Test consequences.
+
+## Decomposition Scorecard
+
+- Data/State: 0
+- Logic/Engine: 0
+- Interface: 0
+- Observability: 0
+- Lineage: 0
+- Dimension Total: 0
+- Baseline Range: 1-2
+- Baseline Selected: 1
+- Split Single-Narrative: 1
+- Split Surface Boundary: 0
+- Split State Anchor: 0
+- Split Testability Ceiling: 0
+- Split Total: 1
+- Final Target OBPI Count: 2
+
+## Feature Checklist
+
+{checklist}
+
+## Evidence
+
+Test evidence.
+
+## Attestation Block
+
+| Term | Status | Attested By | Date | Reason |
+|------|--------|-------------|------|--------|
+"""
+
+    def test_checklist_tick_is_rejected(self) -> None:
+        """A ticked row asserts completion state the ADR body cannot witness (GHI #928)."""
+        body = self._adr_with_checklist("- [x] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertTrue(any(e.type == "decomposition" for e in errors))
+        tick_errors = [e for e in errors if "completion state" in e.message]
+        self.assertEqual(len(tick_errors), 1)
+        self.assertIn("OBPI-0.1.0-01", tick_errors[0].message)
+
+    def test_uppercase_checklist_tick_is_rejected(self) -> None:
+        """`[X]` is the same claim as `[x]` and must not slip the check (GHI #928)."""
+        body = self._adr_with_checklist("- [X] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertTrue(any("completion state" in e.message for e in errors))
+
+    def test_unticked_checklist_is_accepted(self) -> None:
+        """The empty box is the row marker and stays legal (GHI #928)."""
+        body = self._adr_with_checklist("- [ ] OBPI-0.1.0-01: One\n- [ ] OBPI-0.1.0-02: Two")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertEqual([e for e in errors if "completion state" in e.message], [])
+
+    def test_every_tick_is_named_not_just_the_first(self) -> None:
+        """Two ticked rows produce two findings, so remediation is not iterative."""
+        body = self._adr_with_checklist("- [x] OBPI-0.1.0-01: One\n- [x] OBPI-0.1.0-02: Two")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertEqual(len([e for e in errors if "completion state" in e.message]), 2)
+
+    def test_tick_is_rejected_on_a_grandfathered_adr(self) -> None:
+        """The ticked population IS the terminal population (GHI #928).
+
+        Every ADR carrying a tick when this was measured read `status: Validated`,
+        which `is_adr_shape_grandfathered` exempts from decomposition checks. A tick
+        gate that inherits that exemption can never observe the rows it exists to
+        police — it would report green on the entire population it was built for.
+        """
+        body = self._adr_with_checklist(
+            "- [x] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done"
+        ).replace("status: Draft", "status: Validated")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertEqual(len([e for e in errors if "completion state" in e.message]), 1)
+
+    def test_grandfathered_adr_keeps_its_shape_exemption(self) -> None:
+        """Hoisting the tick check must not drag the rest of decomposition with it."""
+        body = self._adr_with_checklist(
+            "- [ ] OBPI-0.1.0-01: One"  # one row against a target of 2
+        ).replace("status: Draft", "status: Validated")
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+            f.write(body)
+            f.flush()
+            errors = validate_document(Path(f.name), "adr")
+        self.assertEqual(
+            [e for e in errors if "Checklist count must match scorecard final target" in e.message],
+            [],
+        )
+
     def test_missing_frontmatter_field(self) -> None:
         """Missing frontmatter field returns error."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:

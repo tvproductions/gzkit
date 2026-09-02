@@ -57,15 +57,15 @@ Adopt a tranche-based breadth parity execution protocol:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [x] OBPI-0.9.0-01: Import non-blocking `.claude/hooks` tranche with
+- [ ] OBPI-0.9.0-01: Import non-blocking `.claude/hooks` tranche with
       `.claude/settings.json` wiring and intake matrix evidence.
-- [x] OBPI-0.9.0-02: Adapt blocking/deferred canonical `.claude/hooks` for gzkit
+- [ ] OBPI-0.9.0-02: Adapt blocking/deferred canonical `.claude/hooks` for gzkit
       compatibility and record decisions with verification evidence.
-- [x] OBPI-0.9.0-03: Produce `.gzkit/**` parity intake matrix and tranche sequence
+- [ ] OBPI-0.9.0-03: Produce `.gzkit/**` parity intake matrix and tranche sequence
       with explicit import/defer/exclude rationale.
-- [x] OBPI-0.9.0-04: Execute approved `.gzkit/**` import tranche and synchronize
+- [ ] OBPI-0.9.0-04: Execute approved `.gzkit/**` import tranche and synchronize
       generated mirror/control surfaces.
-- [x] OBPI-0.9.0-05: Produce parity QC and closeout evidence package for heavy-lane
+- [ ] OBPI-0.9.0-05: Produce parity QC and closeout evidence package for heavy-lane
       gate readiness and attestation review.
 
 ## Q&A Transcript

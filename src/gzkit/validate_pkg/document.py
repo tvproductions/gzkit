@@ -9,7 +9,12 @@ from gzkit.core.validation_rules import (
     extract_headers,
     parse_frontmatter,
 )
-from gzkit.decomposition import active_checklist_items, parse_checklist_items, parse_scorecard
+from gzkit.decomposition import (
+    active_checklist_items,
+    extract_markdown_section,
+    parse_checklist_items,
+    parse_scorecard,
+)
 from gzkit.frontmatter import read_frontmatter
 from gzkit.schemas import load_schema
 
@@ -206,6 +211,47 @@ def _validate_obpi_id_matches_stem(
     return []
 
 
+#: A ticked Feature Checklist row. The mark's VALUE is parsed away everywhere
+#: downstream (``parse_checklist_items`` puts ``[ xX]`` in a character class with
+#: no capture group), but it still RENDERS to a human or agent reading the ADR as
+#: a completion claim -- and it disagreed with the ledger on 51 of 60 ADRs when
+#: GHI #928 measured it, always by under-claiming. The empty box stays legal: it
+#: is the only syntactic marker demarcating a checklist row from a prose bullet,
+#: and that demarcation is what the scorecard cardinality check below counts.
+_TICKED_CHECKLIST_ROW_RE = re.compile(r"^\s*-\s*\[[xX]\]\s*(.+?)\s*$")
+
+
+def _validate_checklist_ticks(body: str, artifact_path: str) -> list[ValidationError]:
+    """Reject Feature Checklist rows that assert completion state (GHI #928)."""
+    section = extract_markdown_section(body, "Feature Checklist")
+    if section is None:
+        section = extract_markdown_section(body, "Checklist")
+    if section is None:
+        return []
+
+    errors: list[ValidationError] = []
+    for raw_line in section.splitlines():
+        match = _TICKED_CHECKLIST_ROW_RE.match(raw_line.rstrip())
+        if match is None:
+            continue
+        row = match.group(1)
+        errors.append(
+            ValidationError(
+                type="decomposition",
+                artifact=artifact_path,
+                message=(
+                    f"Checklist row asserts completion state: '{row[:70]}'. An ADR "
+                    "body is Layer-1 canon and cannot witness completion -- the "
+                    "ledger is the authority (AGENTS.md § Never #7); read it with "
+                    "`uv run gz adr status`. Write `- [ ]`: the empty box is a row "
+                    "marker, never a status claim (GHI #928)."
+                ),
+                field="Feature Checklist",
+            )
+        )
+    return errors
+
+
 def _validate_adr_decomposition(body: str, artifact_path: str) -> list[ValidationError]:
     """Validate deterministic ADR decomposition scorecard semantics."""
     errors: list[ValidationError] = []
@@ -360,6 +406,16 @@ def validate_document(path: Path, schema_name: str) -> list[ValidationError]:
         errors.extend(validate_headers(headers, schema, str(path)))
         if schema_name == "adr":
             errors.extend(_validate_adr_decomposition(body, str(path)))
+
+    # Deliberately OUTSIDE the grandfather branch. The exemption above covers
+    # authoring-era SHAPE requirements -- sections and fields an author could not
+    # have known to supply. A tick is not a shape requirement; it is a completion
+    # claim that contradicts Layer-2, and the terminal ADRs the exemption protects
+    # are precisely the ones that carry it (all 58 ticked rows measured under
+    # GHI #928 sat in `status: Validated` ADRs). Inheriting the exemption would
+    # make this gate green on its entire population.
+    if schema_name == "adr":
+        errors.extend(_validate_checklist_ticks(body, str(path)))
 
     if schema_name == "obpi":
         errors.extend(_validate_obpi_id_matches_stem(frontmatter, path))

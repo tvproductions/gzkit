@@ -123,17 +123,17 @@ This ADR extends existing gzkit work rather than replacing it:
 
 ## Checklist
 
-- [x] OBPI-0.11.0-01: Define the OBPI transaction contract, scope isolation
+- [ ] OBPI-0.11.0-01: Define the OBPI transaction contract, scope isolation
       rules, and parallel-safe execution doctrine.
-- [x] OBPI-0.11.0-02: Deliver the blocking completion validator pipeline with
+- [ ] OBPI-0.11.0-02: Deliver the blocking completion validator pipeline with
       changed-files audit and git-sync enforcement.
-- [x] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
+- [ ] OBPI-0.11.0-03: Deliver recorder and receipt semantics for git-anchored
       OBPI completion evidence.
-- [x] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
+- [ ] OBPI-0.11.0-04: Deliver anchor-aware OBPI drift detection and
       reconciliation surfaces.
-- [x] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
+- [ ] OBPI-0.11.0-05: Port the `gz-obpi-pipeline` skill into `.gzkit` and sync
       mirror control surfaces.
-- [x] OBPI-0.11.0-06: Align templates, closeout guidance, and operator docs to
+- [ ] OBPI-0.11.0-06: Align templates, closeout guidance, and operator docs to
       the faithful AirlineOps completion pipeline.
 
 ## Q&A Transcript

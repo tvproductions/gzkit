@@ -107,9 +107,9 @@ Use `docs/user/concepts/workflow.md`, `docs/user/concepts/lifecycle.md`, and
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [x] OBPI-0.10.0-01: Define the OBPI runtime contract and derived state model.
-- [x] OBPI-0.10.0-02: Deliver OBPI-native query and reconcile command surfaces.
-- [x] OBPI-0.10.0-03: Integrate OBPI proof state with lifecycle guidance and parity-dependent operator flows.
+- [ ] OBPI-0.10.0-01: Define the OBPI runtime contract and derived state model.
+- [ ] OBPI-0.10.0-02: Deliver OBPI-native query and reconcile command surfaces.
+- [ ] OBPI-0.10.0-03: Integrate OBPI proof state with lifecycle guidance and parity-dependent operator flows.
 
 ## Q&A Transcript
 

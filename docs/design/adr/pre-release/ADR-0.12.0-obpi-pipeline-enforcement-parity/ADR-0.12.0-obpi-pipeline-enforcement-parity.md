@@ -126,9 +126,9 @@ This ADR deliberately builds on earlier work instead of replacing it:
 
 <!-- Each item becomes an OBPI (One Brief Per Item). Sequential numbering, no gaps. -->
 
-- [x] OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define
+- [ ] OBPI-0.12.0-01: Inventory the canonical AirlineOps hook chain and define
       the gzkit parity contract.
-- [x] OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible
+- [ ] OBPI-0.12.0-02: Port the plan-exit audit gate with gzkit-compatible
       blocking behavior.
 - [ ] OBPI-0.12.0-03: Port the pipeline router and active-marker bridge that
       hand approved plan work into `gz-obpi-pipeline`.
@@ -138,7 +138,7 @@ This ADR deliberately builds on earlier work instead of replacing it:
       unfinished pipeline state before commit and push.
 - [ ] OBPI-0.12.0-06: Register the hook chain in settings and align tests,
       docs, and operator verification with the enforced runtime.
-- [x] OBPI-0.12.0-07: Port `gz-plan-audit` and the receipt-generation contract
+- [ ] OBPI-0.12.0-07: Port `gz-plan-audit` and the receipt-generation contract
       consumed by the plan-exit gate and pipeline router.
 
 ## Q&A Transcript
