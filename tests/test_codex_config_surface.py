@@ -438,24 +438,11 @@ class CodexDocCapCoherenceTest(unittest.TestCase):
             "generated Codex config and data/vendor-manifest.json disagree on the cap",
         )
 
-    def test_recorded_cap_clears_the_current_contract(self):
-        """The declared cap leaves the rendered AgentContract deliverable.
-
-        A cap that the contract already exceeds is not a setting, it is a
-        silent truncation. Asserts the real delivered surface, not a fixture.
-        """
-        from pathlib import Path as _Path
-
-        root = _Path(__file__).resolve().parents[1]
-        import json as _json
-
-        recorded = _json.loads((root / "data" / "vendor-manifest.json").read_text("utf-8"))[
-            "content_type_delivery_caps"
-        ]["AgentContract"]["codex"]
-        agents_md_bytes = len((root / "AGENTS.md").read_bytes())
-        self.assertLess(
-            agents_md_bytes,
-            recorded,
-            f"AGENTS.md is {agents_md_bytes} B against a {recorded} B declared cap "
-            f"-- {agents_md_bytes - recorded} B would be truncated undelivered",
-        )
+    # The "does the cap clear the live AGENTS.md" assertion deliberately does
+    # NOT live here. It is a claim about mutable repo state, not about code, so
+    # as a unittest it can only ever restate whatever the tree happens to hold
+    # -- the shape `gz validate --tautological-test-audit` refuses. That check
+    # is already owned, in the right tier, by the delivered-surface witness
+    # (`gz validate --instructions-files-budget`), which reports the live byte
+    # distance to the cap. This class keeps only the deterministic invariant:
+    # the two surfaces that record the cap must agree.
