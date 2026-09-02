@@ -127,7 +127,7 @@ Solution (architecture) → Implement (iterative stories)
 | **PRD support** | Yes (`gz prd`) | Proposal.md per change | Yes (spec document) | Yes (one-page PRD) |
 | **Architecture decisions** | Formal ADRs with lifecycle | Design.md per change | Implicit in plan | Architecture sketch |
 | **Work decomposition** | Tasks / OBPI briefs | Tasks.md checklist | Tasks from plan | User stories |
-| **Change isolation** | Branch-per-ADR (convention) | Filesystem-level (changes/) | None explicit | None explicit |
+| **Change isolation** | OBPI Allowed/Denied Paths (on `main`) | Filesystem-level (changes/) | None explicit | None explicit |
 | **Quality gates** | 5 formal gates | None formal — fluid | Constitution check | Acceptance criteria |
 | **Human attestation** | Explicit ceremony | Not formalized | Not formalized | PR review loops |
 | **Audit trail** | JSONL ledger (append-only) | Git history of specs/ | None | Artifacts in repo |
