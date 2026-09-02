@@ -60,3 +60,27 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+## 2026-09-02 — Mythos-tier drift detected; routed to GHI #934
+
+- **DRIFT (Anthropic, Mythos-class tier).** Claude Fable 5.1 / Mythos 5.1 System Card, **2026-09-01**, supersedes the registry's `current` Fable 5 / Mythos 5 (2026-06-09). Verified against the primary PDF (244pp, operator-supplied URL, text-extracted — not secondary reporting). Nine `doctrine_surfaces` still sole-source the superseded card. Routed to **GHI #934** with a blocker comment naming the refresh sequence; no registry, doctrine, or PDF write performed (lane is read-only scan).
+- **NO DRIFT (Anthropic, Opus tier).** Claude Opus 5 (2026-07-24) remains the newest Opus-tier card on the vendor hub. Registry entry correct.
+- **OPEN QUESTION (OpenAI).** `GPT-5.6 — August Updates` (2026-08-06) is newer than the registry's GPT-5.6 card (2026-07-09) but reads as an addendum to the same family, not a new tier — a registry-`notes` refresh at most under § Anti-patterns ("one `current` entry per vendor tier"). Not read against primary source. Operator ruling needed.
+- **OPEN QUESTION (scope).** Claude Sonnet 5 (June 2026) is on the Anthropic hub with no registry entry. § 2 says "any tier with no registry entry, is drift", but whether the Sonnet tier is in this registry's frontier scope is unresolved by the chore text.
+- **CHORE-DEFINITION GAP.** `CHORE.md` declares no cadence or trigger — `grep -inE "cadence|trigger|schedule|when to run"` returns nothing — so detection depends on operator prompting. Sibling `gz-complexity-distill` carries explicit cadence triggers. This run happened only because the operator supplied the card URL; the card had been public since 2026-09-01. Recorded as an insight, not bundled into GHI #934.
+
+## 2026-09-02T02:11:01-04:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.24s) -- exit 0 == 0
+
+```text
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```
