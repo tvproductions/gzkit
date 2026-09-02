@@ -1211,6 +1211,23 @@ def _build_waiver_ratchet() -> Path:
     return root
 
 
+def _build_config_registry() -> Path:
+    root = _mkroot("config-registry")
+    # A registry on disk that NO registry declares: neither config_registry.json
+    # nor the waiver-ratchet globs claim it, so it is the silent bypass the gate
+    # exists to catch. The declared entry is planted valid and self-consistent so
+    # the fixture fails for the undeclared-surface reason and not for a phantom
+    # or an unverified owner -- failing for the wrong reason would prove nothing
+    # about THIS claim.
+    _write(
+        root / "data" / "config_registry.json",
+        '{"registries":{"config_registry.json":{"owner":"m.py","kind":"code","purpose":"self"}}}',
+    )
+    _write(root / "src" / "m.py", "# reads config_registry.json\n")
+    _write(root / "data" / "undeclared_thresholds.json", "{}")
+    return root
+
+
 def _build_exemption_controls() -> Path:
     root = _mkroot("exemption-controls")
     # An EMPTY disclosed-list against a claim that has declared nothing: the
@@ -1426,6 +1443,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("fidelity-presence", _build_fidelity_presence, _ep._ep_fidelity_presence),
     ("waiver-ratchet", _build_waiver_ratchet, _ep._ep_waiver_ratchet),
+    ("config-registry", _build_config_registry, _ep._ep_config_registry),
     ("gate-callers", _build_gate_callers, _ep._ep_gate_callers),
     ("exemption-controls", _build_exemption_controls, _ep._ep_exemption_controls),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),

@@ -1,0 +1,110 @@
+{
+  "_doc": "Declaration registry for gzkit's policy/threshold config surface (GHI #929). Companion to data/waiver_ratchet_registry.json, which owns the waiver/grandfather family. Together the two are EXHAUSTIVE over data/*.json: `gz validate --config-registry` fail-closes on any top-level data registry that is neither matched by waiver_ratchet's filename globs nor declared here, so a new registry cannot enter the tree unowned. Each entry names a VERIFIED consumer, never an asserted one — the validator reads the declared owner and confirms it actually references the file, because a registry that merely lists filenames would be the presence-check-standing-in-for-a-state-check failure AGENTS.md forbids. `kind` selects which consumer channel is verified: 'code' owners must be a module under src/ that references the file; 'doc' owners must be a markdown surface that does. `relates_to` is checked for SYMMETRY, giving two registries that encode one concept a mechanical relation instead of a prose reconciliation buried in a _doc string that no parser reads (the measured instance in GHI #929: vendor-manifest's codex cap versus instructions_files_budget's ceiling, deliberately decoupled by operator ruling 2026-07-06 and discoverable only by reading a 20358-char comment). Adding a registry to data/ WITHOUT declaring it here is the silent-bypass this gate closes.",
+  "registries": {
+    "active_campaign.json": {
+      "owner": "gzkit/knowledge/generate.py",
+      "kind": "code",
+      "purpose": "Active campaign identity and status, discharged out of transcribed prose."
+    },
+    "advisor_archetype_rules.json": {
+      "owner": "gzkit/complexity/advisor/archetype_rules.py",
+      "kind": "code",
+      "purpose": "Complexity advisor archetype matching rules."
+    },
+    "agents_md_survival_declaration.json": {
+      "owner": "gzkit/governance/trust_audits/surface_delivery_witness.py",
+      "kind": "code",
+      "purpose": "Ranked AGENTS.md section survival order and must_survive_through_rank threshold.",
+      "relates_to": [
+        "vendor-manifest.json"
+      ]
+    },
+    "audit_thresholds.json": {
+      "owner": "gzkit/commands/adr_audit.py",
+      "kind": "code",
+      "purpose": "ADR audit scoring thresholds."
+    },
+    "check_scope_membership.json": {
+      "owner": "gzkit/governance/trust_audits/gate_callers.py",
+      "kind": "code",
+      "purpose": "Which validator scopes run under default `gz check` versus flag-gated."
+    },
+    "check_step_concurrency.json": {
+      "owner": "gzkit/quality.py",
+      "kind": "code",
+      "purpose": "Per-step concurrency policy for the `gz check` runner."
+    },
+    "config_registry.json": {
+      "owner": "gzkit/governance/trust_audits/config_registry.py",
+      "kind": "code",
+      "purpose": "This registry — the declaration index for the policy/threshold config family."
+    },
+    "distribution_baseline_manifest.json": {
+      "owner": "gzkit/governance/trust_audits/distribution.py",
+      "kind": "code",
+      "purpose": "Byte-equivalence baseline for the wheel-shipped canonical surface (ADR-0.0.31). Explicitly EXCLUDED from data/waiver_ratchet_registry.json as not gate-bearing-waiver, which is precisely why it needs an owner declared here."
+    },
+    "eval_feedback_thresholds.json": {
+      "owner": "gzkit/governance/trust_audits/evaluation_justify_binding.py",
+      "kind": "code",
+      "purpose": "Evaluation-feedback-loop scoring thresholds."
+    },
+    "exemplar_corpus.json": {
+      "owner": "gzkit/models/exemplar.py",
+      "kind": "code",
+      "purpose": "Empirically-measured exemplar corpus grounding complexity calibration."
+    },
+    "flags.json": {
+      "owner": "gzkit/flags/registry.py",
+      "kind": "code",
+      "purpose": "Feature-flag registry."
+    },
+    "frontier_model_cards.json": {
+      "owner": "CLAUDE.md",
+      "kind": "doc",
+      "purpose": "Frontier model cards for vendor tuning guidance. Doc-owned: cited by CLAUDE.md and the governance tuning surfaces; no code consumer reads it today, and this entry records that honestly rather than asserting a module that does not exist."
+    },
+    "instructions_files_budget.json": {
+      "owner": "gzkit/governance/trust_audits/instructions_files_budget.py",
+      "kind": "code",
+      "purpose": "Per-file char budgets for instructions/memory surfaces, and the decoupled ceiling.",
+      "relates_to": [
+        "vendor-manifest.json"
+      ]
+    },
+    "mandated_tier1_dispatch.json": {
+      "owner": "gzkit/commands/obpi_complete_adversarial.py",
+      "kind": "code",
+      "purpose": "Which OBPI completions mandate a tier-1 adversarial dispatch."
+    },
+    "security_surfaces.json": {
+      "owner": "gzkit/models/security_surfaces.py",
+      "kind": "code",
+      "purpose": "Registered security-sensitive surfaces driving the third sensitivity axis."
+    },
+    "surface_weight_floor.json": {
+      "owner": "gzkit/governance/trust_audits/surface_weight.py",
+      "kind": "code",
+      "purpose": "Per-surface weight floors for the surface-weight audit."
+    },
+    "transcribed_count_surfaces.json": {
+      "owner": "gzkit/governance/trust_audits/transcribed_counts.py",
+      "kind": "code",
+      "purpose": "Surfaces where a transcribed live count is refused in favour of a Layer-2 read."
+    },
+    "vendor-manifest.json": {
+      "owner": "gzkit/governance/trust_audits/vendor_manifest.py",
+      "kind": "code",
+      "purpose": "Vendor delivery routes and content_type_delivery_caps (gzkit's belief about each vendor's physical truncation).",
+      "relates_to": [
+        "instructions_files_budget.json",
+        "agents_md_survival_declaration.json"
+      ]
+    },
+    "waiver_ratchet_registry.json": {
+      "owner": "gzkit/governance/trust_audits/waiver_ratchet.py",
+      "kind": "code",
+      "purpose": "Declaration index for the waiver/grandfather family — the companion registry this one is exhaustive with."
+    }
+  }
+}

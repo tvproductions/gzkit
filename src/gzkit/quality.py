@@ -1278,6 +1278,19 @@ def run_waiver_ratchet_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --waiver-ratchet", cwd=project_root)
 
 
+def run_config_registry_audit(project_root: Path) -> QualityResult:
+    """Run the config-registry declaration gate (GHI #929).
+
+    Fails closed (exit 3) when a top-level ``data/*.json`` registry is owned by
+    neither ``data/config_registry.json`` nor ``data/waiver_ratchet_registry.json``,
+    when a declared registry is a phantom, when a declared owner does not actually
+    reference its registry, or when a ``relates_to`` edge is one-way. Companion to
+    the waiver-ratchet gate; between them the two are exhaustive over ``data/*.json``.
+    Recovery: uv run gz validate --config-registry to see the offending surfaces.
+    """
+    return run_command("uv run gz validate --config-registry", cwd=project_root)
+
+
 def run_gate_callers_audit(project_root: Path) -> QualityResult:
     """Run the uncalled-gate inventory (GHI #785).
 

@@ -105,6 +105,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # consulted solely by the unregistered-file scan, never by these checks.
     "waiver-ratchet-closed-set-lock": EXEMPTS_NONE,
     "waiver-ratchet-dated-cutover": EXEMPTS_NONE,
+    # Companion gate to `waiver-ratchet` (GHI #929). Unlike that umbrella claim it
+    # carries NO exemption surface at all: `data/config_registry.json` has no
+    # `excluded` list, so every top-level `data/*.json` must be owned by it or by
+    # the waiver registry. The two are exhaustive by construction, and an escape
+    # hatch here would reopen exactly the unowned-config hole the gate closes.
+    "config-registry": EXEMPTS_NONE,
     # --- Tier-B pass, 2026-08-14 (GHI #797) --------------------------------
     # Criteria (a)-(d) over the AGENTS.md template and rendered file. Table rows
     # and fenced blocks are excluded from paragraph counting because neither IS a

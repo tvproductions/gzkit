@@ -80,6 +80,7 @@ from gzkit.governance.trust_audits.complexity_thresholds import (
     BOOTSTRAP_MODE_NOTICE_PREFIX,
     validate_complexity_thresholds,
 )
+from gzkit.governance.trust_audits.config_registry import audit_config_registry
 from gzkit.governance.trust_audits.corpus_retirement_witness import (
     validate_corpus_retirement_witness,
 )
@@ -239,6 +240,7 @@ __all__ = [
     "audit_fidelity_presence",
     "audit_exemption_controls",
     "audit_gate_callers",
+    "audit_config_registry",
     "audit_waiver_ratchet",
     "audit_deprecated_verb_prescription",
     "audit_orphaned_implementation",

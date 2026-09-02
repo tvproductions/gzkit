@@ -629,6 +629,14 @@ def _ep_fidelity_presence(root: Path) -> list[ValidationError]:
     return audit_fidelity_presence(root, grandfather=frozenset())
 
 
+def _ep_config_registry(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.config_registry import (  # noqa: PLC0415
+        audit_config_registry,
+    )
+
+    return audit_config_registry(root)
+
+
 def _ep_waiver_ratchet(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.waiver_ratchet import audit_waiver_ratchet  # noqa: PLC0415
 

@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--gate-callers] [--exemption-controls] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence]
             [--corpus-retirement-witness]
@@ -1328,6 +1328,49 @@ uv run gz validate --fidelity-presence --json
 |------|---------|----------|
 | 0 | Every non-pool ADR Decision carries a block (or is grandfathered) | — |
 | 3 | One or more non-pool ADR Decisions lack a parseable `## Fidelity Assertions` block | Add a block with at least one claim/command/expected-exit row (see the stub in `.gzkit/templates/adr.md`); re-run `uv run gz validate --fidelity-presence` |
+
+### `--config-registry`
+
+Config-registry declaration gate (GHI #929). `data/` accumulated 41 top-level
+registries read from 93 source modules with no owner, no loader and no coherence
+gate. The waiver/grandfather family already had all three via
+`data/waiver_ratchet_registry.json`; this scope is its companion for the
+remaining policy/threshold family, and the two are **exhaustive** over
+`data/*.json` — a registry belonging to neither is fail-closed as the silent
+bypass an unowned config surface is.
+
+Four arms, all mechanical:
+
+- **exhaustiveness** — every top-level `data/*.json` is either owned by the
+  waiver registry (matched by its filename globs, or declared in its `surfaces`
+  list) or declared in `data/config_registry.json`. A file in the waiver
+  registry's `excluded` list is deliberately *not* counted as owned: excluded
+  means "not a gate-bearing waiver", which is precisely the case that needs an
+  owner declared here instead.
+- **no phantoms** — every declared registry exists on disk.
+- **verified owner** — the declared `owner` is read and confirmed to actually
+  reference the registry filename. A registry that merely *listed* owners would
+  be a presence check standing in for a state check, which `AGENTS.md` § DO IT
+  RIGHT forbids. `kind` selects the channel: `code` verifies a module under
+  `src/`, `doc` verifies a markdown surface (used by
+  `frontier_model_cards.json`, which is cited by `CLAUDE.md` and the governance
+  tuning surfaces but read by no code — recorded honestly rather than asserting
+  a module that does not exist).
+- **symmetric relation** — `relates_to` must be declared from both sides, giving
+  two registries that encode one concept a machine-checked relation instead of a
+  reconciliation buried in a `_doc` string no parser reads. The live instance is
+  `vendor-manifest.json`'s codex delivery cap against
+  `instructions_files_budget.json`'s ceiling, deliberately decoupled by operator
+  ruling 2026-07-06.
+
+| Exit | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every config registry carries a verified owner | — |
+| 3 | A registry is undeclared, phantom, unowned, or asymmetrically related | Declare it in `data/config_registry.json` with an `owner` and a `kind`, or fix the named incoherence |
+
+```bash
+uv run gz validate --config-registry
+```
 
 ### `--waiver-ratchet`
 

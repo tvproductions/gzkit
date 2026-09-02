@@ -336,6 +336,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "fidelity_presence", "explicit", False, lambda r, _f: _ta().audit_fidelity_presence(r)
     ),
     _ScopeEntry("waiver_ratchet", "explicit", False, lambda r, _f: _ta().audit_waiver_ratchet(r)),
+    _ScopeEntry("config_registry", "explicit", False, lambda r, _f: _ta().audit_config_registry(r)),
     _ScopeEntry("gate_callers", "explicit", False, lambda r, _f: _ta().audit_gate_callers(r)),
     _ScopeEntry(
         "exemption_controls", "explicit", False, lambda r, _f: _ta().audit_exemption_controls(r)
@@ -625,6 +626,26 @@ def _run_fidelity_presence_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print("[bold]Validated:[/bold] fidelity-presence\n")
     console.print(f"[red]❌ {len(errors)} block-less ADR Decision(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+    raise SystemExit(3)
+
+
+def _run_config_registry_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for `gz validate --config-registry` (exit 0/3)."""
+    from gzkit.governance.trust_audits.config_registry import (  # noqa: PLC0415
+        audit_config_registry,
+    )
+
+    errors = audit_config_registry(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    console.print("[bold]Validated:[/bold] config-registry\n")
+    if not errors:
+        console.print("[green]✓ Every config registry carries a verified owner.[/green]")
+        raise SystemExit(0)
+    console.print(f"[red]❌ {len(errors)} unowned/incoherent config registry surface(s):[/red]\n")
     for e in errors:
         console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
     raise SystemExit(3)
@@ -1152,6 +1173,7 @@ def _dispatch_early_return_scopes(
     check_qc_binding: bool,
     check_fidelity_presence: bool,
     check_waiver_ratchet: bool,
+    check_config_registry: bool,
     check_gate_callers: bool,
     check_exemption_controls: bool,
     check_audits: bool,
@@ -1210,6 +1232,7 @@ def _dispatch_early_return_scopes(
                 ("--qc-binding", check_qc_binding),
                 ("--fidelity-presence", check_fidelity_presence),
                 ("--waiver-ratchet", check_waiver_ratchet),
+                ("--config-registry", check_config_registry),
                 ("--gate-callers", check_gate_callers),
                 ("--exemption-controls", check_exemption_controls),
             )
@@ -1238,20 +1261,30 @@ def _dispatch_early_return_scopes(
         # --allowlist-only without --unscoped-rules still prints the listing.
         _run_unscoped_rules_scope(project_root, as_json=as_json, allowlist_only=True)
         return True
-    if check_qc_binding:
-        _run_qc_binding_scope(project_root, as_json=as_json)
-        return True
-    if check_fidelity_presence:
-        _run_fidelity_presence_scope(project_root, as_json=as_json)
-        return True
-    if check_waiver_ratchet:
-        _run_waiver_ratchet_scope(project_root, as_json=as_json)
-        return True
-    if check_gate_callers:
-        _inventory().run_gate_callers_scope(project_root, as_json=as_json)
-    if check_exemption_controls:
-        _inventory().run_exemption_controls_scope(project_root, as_json=as_json)
-        return True
+    # Uniform tail: every remaining solo scope takes exactly
+    # ``(project_root, as_json=...)`` and raises SystemExit on all paths, so it
+    # dispatches from a table rather than a per-scope `if` rung. The ladder this
+    # replaces is what tipped the function past its complexity ceiling when the
+    # config-registry scope was added (GHI #929); a table absorbs the next scope
+    # for free. `gate_callers` had no `return True` under the ladder — that was
+    # unreachable, not load-bearing (`run_gate_callers_scope` exits on every
+    # path), and the table normalizes it.
+    # The two inventory scopes resolve their runner through ``_inventory()``
+    # LAZILY inside the branch, exactly as the ladder did: building the table
+    # with ``_inventory().run_...`` would import that module on every dispatch,
+    # including invocations that request none of these scopes.
+    uniform: tuple[tuple[bool, Callable[[], Callable[..., None]]], ...] = (
+        (check_qc_binding, lambda: _run_qc_binding_scope),
+        (check_fidelity_presence, lambda: _run_fidelity_presence_scope),
+        (check_waiver_ratchet, lambda: _run_waiver_ratchet_scope),
+        (check_config_registry, lambda: _run_config_registry_scope),
+        (check_gate_callers, lambda: _inventory().run_gate_callers_scope),
+        (check_exemption_controls, lambda: _inventory().run_exemption_controls_scope),
+    )
+    for requested, resolve_scope in uniform:
+        if requested:
+            resolve_scope()(project_root, as_json=as_json)
+            return True
     return False
 
 
@@ -1352,6 +1385,7 @@ def validate(
     check_qc_binding: bool = False,
     check_fidelity_presence: bool = False,
     check_waiver_ratchet: bool = False,
+    check_config_registry: bool = False,
     check_gate_callers: bool = False,
     check_exemption_controls: bool = False,
     check_audits: bool = False,
@@ -1501,6 +1535,7 @@ def validate(
         check_qc_binding=check_qc_binding,
         check_fidelity_presence=check_fidelity_presence,
         check_waiver_ratchet=check_waiver_ratchet,
+        check_config_registry=check_config_registry,
         check_gate_callers=check_gate_callers,
         check_exemption_controls=check_exemption_controls,
         check_audits=check_audits,

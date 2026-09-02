@@ -711,6 +711,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Waiver-ratchet honesty gate (ADR-0.0.73). Exit 0: ratcheted; 3: unratcheted.",
     )
     p_validate.add_argument(
+        "--config-registry",
+        dest="check_config_registry",
+        action="store_true",
+        default=False,
+        help="Config-registry declaration gate (GHI #929). Exit 0: owned; 3: unowned.",
+    )
+    p_validate.add_argument(
         "--gate-callers",
         dest="check_gate_callers",
         action="store_true",
@@ -1023,6 +1030,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_qc_binding=a.check_qc_binding,
             check_fidelity_presence=a.check_fidelity_presence,
             check_waiver_ratchet=a.check_waiver_ratchet,
+            check_config_registry=a.check_config_registry,
             check_gate_callers=a.check_gate_callers,
             check_exemption_controls=a.check_exemption_controls,
             check_audits=a.check_audits,

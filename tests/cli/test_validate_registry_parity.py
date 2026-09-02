@@ -128,6 +128,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "qc_binding",
         "fidelity_presence",
         "waiver_ratchet",
+        "config_registry",
         "status_writer_coverage",
         "transcribed_adr_counts",
         "pool_interview",
@@ -253,8 +254,19 @@ _GOLDEN_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
 #   gate_callers — same shape (GHI #785): a solo early-return lifecycle, so
 #   counting itself as "another scope active" would fire the #704 refusal
 #   against `gz validate --gate-callers` run alone.
+#   config_registry — same shape (GHI #929): the config-registry declaration gate
+#   owns a solo early-return lifecycle exactly as `waiver_ratchet` does, so it is
+#   excluded for the same legitimate reason. It is the companion gate to
+#   `waiver_ratchet`; between them the two are exhaustive over `data/*.json`.
 _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
-    {"qc_binding", "fidelity_presence", "waiver_ratchet", "gate_callers", "exemption_controls"}
+    {
+        "qc_binding",
+        "fidelity_presence",
+        "waiver_ratchet",
+        "config_registry",
+        "gate_callers",
+        "exemption_controls",
+    }
 )
 
 
