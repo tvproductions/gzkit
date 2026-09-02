@@ -134,7 +134,10 @@ def _walk_body(node: ast.FunctionDef | ast.AsyncFunctionDef) -> list[ast.AST]:
 
 
 def _calls_production_code(
-    node: ast.FunctionDef | ast.AsyncFunctionDef, gzkit_names: frozenset[str]
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    gzkit_names: frozenset[str],
+    helpers: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] | None = None,
+    depth: int = 0,
 ) -> bool:
     """Return True if the function exercises project computation.
 
@@ -146,27 +149,136 @@ def _calls_production_code(
     audit targets. This discriminator stops the scan from flagging the ~88% of
     filesystem-touching tests that are in fact behavioral.
     """
+    if any(_exercises_production_symbol(child, gzkit_names) for child in _walk_body(node)):
+        return True
+    return _calls_production_via_helper(node, gzkit_names, helpers, depth)
+
+
+def _exercises_production_symbol(child: ast.AST, gzkit_names: frozenset[str]) -> bool:
+    """Return True if one AST node exercises gzkit production code.
+
+    Split out of :func:`_calls_production_code` to keep that function under the
+    xenon complexity ceiling once GHI #947's two further signals landed.
+    """
+    # GHI #947 gap A -- a production symbol can be EXERCISED without being
+    # CALLED. `get_args(_Ownership)` passes a gzkit Literal as an argument and
+    # `_OWNERSHIP_VALUES` is a bare load; both couple the test to production
+    # just as tightly as a call, and both change the test's verdict when
+    # production changes. Only `Load` context counts: a name being assigned is
+    # not being exercised.
+    if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load):
+        return child.id in gzkit_names
+    if not isinstance(child, ast.Call):
+        return False
+    func = child.func
+    if isinstance(func, ast.Name):
+        return func.id in gzkit_names
+    if not isinstance(func, ast.Attribute):
+        return False
+    if func.attr == _CLI_INVOKE_ATTR or _attr_root_name(func) in gzkit_names:
+        return True
+    return func.attr in _SUBPROCESS_LAUNCH_ATTRS and any(
+        isinstance(arg, ast.List)
+        and any(isinstance(el, ast.Constant) and el.value in _CLI_ENTRY_TOKENS for el in arg.elts)
+        for arg in child.args
+    )
+
+
+def _calls_production_via_helper(
+    node: ast.FunctionDef | ast.AsyncFunctionDef,
+    gzkit_names: frozenset[str],
+    helpers: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] | None,
+    depth: int,
+) -> bool:
+    """Return True if a same-module helper the function calls exercises production code.
+
+    GHI #947 gap B -- the production call may be one frame away, in a helper
+    defined in the same test module (`_unown(...)` wrapping `runner.invoke`) or
+    a sibling method (`self._unown_once()`). Walking only the test body
+    penalized ordinary helper extraction: the better-factored the file, the more
+    false positives it produced. Same ground as `_class_setup_map`, which
+    already reaches outside the body for setUp. Depth-bounded and self-call-safe;
+    helpers resolve by NAME, so a helper shadowing a builtin resolves to the
+    local def, which is the one that would actually run.
+    """
+    if not helpers or depth >= _HELPER_RESOLUTION_MAX_DEPTH:
+        return False
     for child in _walk_body(node):
         if not isinstance(child, ast.Call):
             continue
-        func = child.func
-        if isinstance(func, ast.Name) and func.id in gzkit_names:
+        name = _called_local_name(child.func)
+        target = helpers.get(name) if name else None
+        if (
+            target is not None
+            and target is not node
+            and _calls_production_code(target, gzkit_names, helpers, depth + 1)
+        ):
             return True
-        if isinstance(func, ast.Attribute):
-            if func.attr == _CLI_INVOKE_ATTR:
-                return True
-            if _attr_root_name(func) in gzkit_names:
-                return True
-            if func.attr in _SUBPROCESS_LAUNCH_ATTRS and any(
-                isinstance(arg, ast.List)
-                and any(
-                    isinstance(el, ast.Constant) and el.value in _CLI_ENTRY_TOKENS
-                    for el in arg.elts
-                )
-                for arg in child.args
-            ):
-                return True
     return False
+
+
+# One hop covers the observed shape (test -> helper -> CLI). Deeper chains are
+# rare and each level multiplies the walk, so the bound is a cost ceiling rather
+# than a claim that two hops cannot happen.
+_HELPER_RESOLUTION_MAX_DEPTH = 2
+
+_RAISE_ASSERTION_ATTRS: frozenset[str] = frozenset({"assertRaises", "assertRaisesRegex"})
+
+
+def _called_local_name(func: ast.expr) -> str | None:
+    """Return the local helper name a call targets (``_f()`` or ``self._f()``)."""
+    if isinstance(func, ast.Name):
+        return func.id
+    if (
+        isinstance(func, ast.Attribute)
+        and isinstance(func.value, ast.Name)
+        and func.value.id == "self"
+    ):
+        return func.attr
+    return None
+
+
+def _asserts_only_raises(node: ast.FunctionDef | ast.AsyncFunctionDef) -> bool:
+    """Return True if every assertion in the function asserts that something RAISES.
+
+    GHI #947 gap C. A tautological content echo reads a file and asserts its text
+    back at itself; that is impossible to express as a raise-assertion, so a
+    function whose assertions are ALL `assertRaises`/`assertRaisesRegex` is never
+    the shape this audit targets. The measured instances load the shipped
+    `section_ownership.json` and assert `jsonschema.validate` rejects a bad
+    instance -- contract tests of shipped gzkit *content* that exercise no gzkit
+    *function*, so `_calls_production_code` was correct on its own terms and
+    still wrong about them.
+
+    Deliberately requires ALL assertions, not any: a function that asserts a
+    raise AND echoes file content is still echoing file content.
+    """
+    kinds = [
+        child.func.attr
+        for child in _walk_body(node)
+        if isinstance(child, ast.Call)
+        and isinstance(child.func, ast.Attribute)
+        and child.func.attr.startswith("assert")
+    ]
+    has_bare_assert = any(isinstance(child, ast.Assert) for child in _walk_body(node))
+    return bool(kinds) and not has_bare_assert and all(k in _RAISE_ASSERTION_ATTRS for k in kinds)
+
+
+def _local_function_map(
+    tree: ast.Module,
+) -> dict[str, ast.FunctionDef | ast.AsyncFunctionDef]:
+    """Map every function name defined in the module to its node (GHI #947 gap B).
+
+    Covers module-level helpers (`_unown(...)`) and class methods
+    (`self._unown_once()`) in one flat namespace, because the resolution is by
+    name and the two call shapes are indistinguishable in what they exercise. A
+    name defined twice keeps the LAST definition, matching Python's own binding.
+    """
+    out: dict[str, ast.FunctionDef | ast.AsyncFunctionDef] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            out[node.name] = node
+    return out
 
 
 def _class_setup_map(
@@ -350,6 +462,7 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
         gzkit_names = _gzkit_imported_names(tree)
         setup_map = _class_setup_map(tree)
         module_attrs = _module_backed_self_attrs(tree)
+        helpers = _local_function_map(tree)
 
         for node in ast.walk(tree):
             if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -371,9 +484,12 @@ def scan_test_tree(tests_path: Path) -> list[TautologicalTestOperation]:
             # A test that exercises project computation (calls gzkit code or the
             # CLI) is behavioral/contract, not a tautological echo — exempt it.
             setup = setup_map.get(id(node))
-            if _calls_production_code(node, gzkit_names) or (
-                setup is not None and _calls_production_code(setup, gzkit_names)
+            if _calls_production_code(node, gzkit_names, helpers) or (
+                setup is not None and _calls_production_code(setup, gzkit_names, helpers)
             ):
+                continue
+            # GHI #947 gap C — see `_asserts_only_raises`.
+            if _asserts_only_raises(node):
                 continue
             # Static-analysis fences (reading source code as data) and behavioral
             # tests that call a dynamically-loaded project module via a self-attr

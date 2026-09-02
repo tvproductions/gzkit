@@ -907,6 +907,102 @@ class TestDecoratorsAreNotBehavior(unittest.TestCase):
         )
         self.assertEqual(ops, [], "a body that calls production code is still behavioral")
 
+    @covers("REQ-0.0.59-04-01")
+    def test_production_symbol_used_as_a_value_exempts(self) -> None:
+        """GHI #947 gap A — a gzkit symbol can be exercised without being called.
+
+        `_calls_production_code` only inspected `ast.Call.func`, so a test
+        pinning a production constant against a shipped artifact looked like a
+        content echo. The measured instance was the ownership-enum drift fence
+        (`test_ownership.py:542`), which compares the schema's enum to the
+        `_Ownership` Literal and the `_OWNERSHIP_VALUES` frozenset — three
+        hand-authored copies of one closed set. Its proposed disposition was
+        `convert`, and converting it away from reading the schema would have
+        destroyed the invariant it guards.
+        """
+        ops = self._scan(
+            """\
+            import json
+            import unittest
+            from pathlib import Path
+            from typing import get_args
+            from gzkit.content.ownership import _Ownership, _OWNERSHIP_VALUES
+
+            _SCHEMA_PATH = Path("src/gzkit/schemas/section_ownership.json")
+
+            class TestEnumSingleSourced(unittest.TestCase):
+                def test_schema_literal_and_frozenset_all_agree(self):
+                    schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+                    enum = set(schema["properties"]["sections"]["enum"])
+                    self.assertEqual(enum, set(get_args(_Ownership)))
+                    self.assertEqual(enum, _OWNERSHIP_VALUES)
+            """
+        )
+        self.assertEqual(ops, [], "a production symbol read as a value is still exercised")
+
+    @covers("REQ-0.0.59-04-01")
+    def test_production_call_through_a_same_module_helper_exempts(self) -> None:
+        """GHI #947 gap B — the CLI invocation can be one frame away.
+
+        `_walk_body` walks only the test function, so a test driving the CLI
+        through a module-level helper looked like it ran no project code. This
+        penalized ordinary helper extraction: the better-factored the test file,
+        the more false positives it produced. Measured on
+        `test_content_unown.py`, where three non-mutation invariants all reach
+        `runner.invoke(main, ...)` via a `_unown(...)` helper.
+        """
+        ops = self._scan(
+            """\
+            import unittest
+            from pathlib import Path
+            from click.testing import CliRunner
+            from gzkit.cli import main
+
+            def _unown(runner, *, attestor, reason):
+                return runner.invoke(main, ["content", "unown", "Doc.md"])
+
+            class TestRefusal(unittest.TestCase):
+                def test_refusal_leaves_the_declaration_byte_unchanged(self):
+                    runner = CliRunner()
+                    before = Path("d.json").read_bytes()
+                    result = _unown(runner, attestor="", reason="r")
+                    self.assertNotEqual(result.exit_code, 0)
+                    self.assertEqual(before, Path("d.json").read_bytes())
+            """
+        )
+        self.assertEqual(ops, [], "production code reached via a helper is still exercised")
+
+    @covers("REQ-0.0.59-04-01")
+    def test_asserting_only_that_an_operation_raises_exempts(self) -> None:
+        """GHI #947 gap C — a content echo cannot be written as a raise assertion.
+
+        The schema negative tests (`test_ownership.py:491/504/519`) load the
+        shipped `section_ownership.json` and assert `jsonschema.validate` REJECTS
+        a bad instance. They exercise no gzkit *function*, so the predicate was
+        correct on its own terms — but they are contract tests of shipped gzkit
+        *content*, and they fail if the schema is loosened. The discriminating
+        property is the assertion form: echoing file content back at itself is
+        impossible to express as `assertRaises`, so a function whose assertions
+        are all raise-assertions is never the tautology this audit targets.
+        """
+        ops = self._scan(
+            """\
+            import json
+            import unittest
+            import jsonschema
+            from pathlib import Path
+
+            _SCHEMA_PATH = Path("src/gzkit/schemas/section_ownership.json")
+
+            class TestSchemaRejects(unittest.TestCase):
+                def test_schema_rejects_a_value_outside_the_closed_enum(self):
+                    schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+                    with self.assertRaises(jsonschema.ValidationError):
+                        jsonschema.validate({"sections": {"a": "half-owned"}}, schema)
+            """
+        )
+        self.assertEqual(ops, [], "asserting an operation raises is behavior, not a content echo")
+
 
 if __name__ == "__main__":
     unittest.main()
