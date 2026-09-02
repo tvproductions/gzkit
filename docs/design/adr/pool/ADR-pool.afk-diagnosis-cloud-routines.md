@@ -10,6 +10,11 @@ complements:
   - ADR-0.0.61-harness-factoring-minimal-init
   - ADR-pool.doc-gardening-scheduled-chore
   - ADR-pool.managed-agents-outcome-integration
+consumes:
+  - ADR-pool.session-productivity-metrics
+amendments:
+  - date: 2026-09-02
+    scope: Added band-breach triggers and tiered response (RoutineBand, RoutineBandRule, deterministic detector); mapped tiers onto the existing on_drift action vocabulary; recorded the tier-3 cap as already mechanised; flagged the exec-whitelist coupling for gz metrics. All eight original Decisions, the three-layer enforcement, and the inaugural R-3 scope preserved verbatim.
 ---
 
 # ADR-pool.afk-diagnosis-cloud-routines: AFK-Diagnosis via Cloud Routines
@@ -66,6 +71,10 @@ The eight decisions below are ordered by dependency: data shape (1) before CLI s
 6. Add `gz routine results <name>` derived view + `gz status` integration (Decision 6) **because** routine activity must be discoverable on the same operator surface as project status — otherwise routines become an invisible background that the operator stops trusting.
 7. Ship `.gzkit/routines/trust-audit-suite.yaml` as the inaugural routine (Decision 7) **because** R-3 wraps four validator scopes already production-ready in gzkit (no new validators introduced); inaugural shipment proves the substrate end-to-end without scope inflation.
 8. Accept Claude Code routines preview-tier as the substrate with explicit stamp (Decision 8) **because** preview-tier risk is real (config schema can change, feature can be deprecated); stamping the acceptance + naming the substrate-swap recovery path makes the dependency legible at every closeout.
+
+> **Amended 2026-09-02.** A ninth concern — *when* a routine fires — is added by
+> § Amendment History below. The eight decisions here are unchanged; banded
+> triggers compose over them and the inaugural R-3 routine ships without bands.
 
 ### Decision 1 — Routine models, registry, canonical surface
 
@@ -290,6 +299,15 @@ Baseline-selected uplift from 5 to 8 is justified by surface diversity (models +
 - [ ] OBPI-0.0.62-07: **trust-audit-suite-inaugural-routine** — `.gzkit/routines/trust-audit-suite.yaml` (4 validator scopes) + headless-executability tests + GHI template tests + budget assertion.
 - [ ] OBPI-0.0.62-08: **afk-routines-docs-and-attestation** — Runbook section, manpages for 7 routine subcommands, threshold/cadence doc, Gate 4 BDD, Gate 5 attestation evidence bundle (incl. beta-tier-acceptance attestation).
 
+Added by the 2026-09-02 amendment. **Ids are deliberately unassigned.** The
+eight items above pre-allocate the `OBPI-0.0.62-*` foundation-tier prefix;
+`foundation` is CLOSED to new authoring under ADR-0.34.0 Foundation Sunset, and
+that staleness is tracked by **GHI #837**. New items must not inherit a sealed
+prefix, so ids are assigned at promotion.
+
+- [ ] **band-models-and-detector** — `RoutineBand` + `RoutineBandRule` models; the deterministic mean/stddev detector over a rolling baseline; unit tests pinning all four rules, including the negative case (a drift that trips `4of5_beyond_1s` without ever breaching 3σ).
+- [ ] **band-trigger-wiring-and-whitelist** — trigger evaluation in `gz routine exec`; tier→`on_drift.action` mapping; `uv run gz metrics` added to the Decision-2 exec whitelist, with a test proving a banded routine is executable and a remediating one still exits 3.
+
 ## Target Scope (future routines, named-but-deferred)
 
 The inaugural ADR ships only **R-3 (Trust Audit Suite)** as a concrete routine. The remaining five routines named in the pool ADR are explicitly **named-but-deferred** — each lands as its own future ADR that adds a `.gzkit/routines/<name>.yaml` and consumes the existing `ROUTINE_REGISTRY` machinery without code changes.
@@ -389,6 +407,112 @@ Design dialogue 2026-05-25 (main-session persona, operator-attested):
 
 14. **Separate `.gzkit/routine-claims/` directory the operator inspects.** *Rejected* — new surface for marginal benefit. GHI is already operator-readable canon; embedding `RoutineExecEvent` in GHI body reuses an existing operator-attention surface.
 15. **Email/Slack notification on drift instead of GHI.** *Rejected* — GHI is durable and auditable; notification is faster but ephemeral. Operator can wire GHI labels into notification systems if desired (out of inaugural scope).
+
+## Amendment History
+
+### 2026-09-02 — Band-breach triggers and tiered response
+
+**Motivation.** `RoutineTrigger.cadence` is a bare clock: `hourly | daily |
+weekly | on_pr_merge`. A routine fires on a schedule and reports whatever the
+validators say that day. There is no notion of a metric having *moved*, so a
+slow drift that never trips a validator stays invisible until it becomes a
+failure. This amendment adds the missing half — a deterministic detector over a
+rolling baseline, with response graduated by deviation size.
+
+The design is imported from statistical process control and is worth stating
+plainly rather than by citation. The useful part is not the 3σ threshold but
+that a *sustained small* deviation is signal. Four tests, from the Western
+Electric Company's *Statistical Quality Control Handbook* (1956), written out so
+no reader has to chase the reference:
+
+1. one point beyond 3σ;
+2. two of three consecutive points beyond 2σ, same side;
+3. four of five consecutive points beyond 1σ, same side;
+4. eight consecutive points on the same side of the mean.
+
+Tests 2–4 are the reason to import this. gzkit's existing shrink-only ratchets
+are one-sided bands with the threshold pinned at the current value; they cannot
+see a metric that walks steadily in the wrong direction without ever breaching.
+
+**What this amendment preserves.** All eight Decisions verbatim. The three-layer
+anti-vibing enforcement unchanged. `diagnosis_only: Literal[True]` unchanged.
+All eight original checklist items unchanged. The inaugural R-3 scope unchanged
+— bands are additive, and R-3 ships without them.
+
+**What it adds.**
+
+1. **A band variant on the trigger.** `cadence` stays; a routine may
+   additionally declare a `band` whose breach is the fire condition. Cadence
+   then means *how often the detector samples*, not *how often the routine
+   reports*.
+
+   ```python
+   class RoutineBandRule(BaseModel):
+       model_config = ConfigDict(frozen=True, extra="forbid")
+       test: Literal["beyond_3s", "2of3_beyond_2s", "4of5_beyond_1s", "8_same_side"]
+       tier: Literal[1, 2]          # 3 is unrepresentable — see item 3
+
+   class RoutineBand(BaseModel):
+       model_config = ConfigDict(frozen=True, extra="forbid")
+       metric: str = Field(..., min_length=1)   # resolved via `gz metrics`
+       baseline_window: int = Field(default=30, ge=8, le=365)
+       rules: tuple[RoutineBandRule, ...] = Field(..., min_length=1)
+   ```
+
+2. **Tiers map onto the response vocabulary this ADR already shipped.**
+   `RoutineOnDrift.action` is already `Literal["file_ghi",
+   "emit_ledger_event_only"]`, which *is* tier 1 and tier 2:
+   - **Tier 1 (log)** → `emit_ledger_event_only`
+   - **Tier 2 (diagnose)** → `file_ghi`
+
+   No new action values, no new enforcement layer. The tier config is a mapping
+   over existing vocabulary.
+
+3. **Tier 3 is already structurally impossible, and this records that.** The
+   source design's third tier lets the agent act via PR or pre-approved runbook.
+   That is excluded under the IRON LAW and under this ADR's own diagnosis-only
+   invariant — but no *new* fence is required: `RoutineBandRule.tier` is typed
+   `Literal[1, 2]`, and `diagnosis_only: Literal[True]` plus the exec whitelist
+   plus `forbid-routine-mutation` already make a remediating routine
+   unrepresentable at three independent points. The cap is **already
+   mechanised**. Recording it as newly-declared doctrine would reproduce the
+   doctrine-declared-without-mechanism family this import exists to close.
+
+4. **Coupled surface — the exec whitelist must admit the metric reader.**
+   Decision 2's prefix whitelist is `uv run gz validate | check | status |
+   state | routine results | issue file`. A band detector reads metric values,
+   so `uv run gz metrics` must be added there or every banded routine exits 3
+   before it runs. Named per DO IT RIGHT 1a: the consumer-side check lands in
+   the same increment as the producer, not as a follow-up.
+
+5. **The detector is deterministic and unit-tested.** Mean/stddev over a
+   rolling window plus the four rules above. No model in the loop and no
+   LLM-as-judge, which is what keeps this import cheap and is why it belongs
+   beside the diagnosis-only invariant rather than in an agentic surface.
+
+6. **Inaugural banded metrics (operator-selected 2026-09-02).** All four groups
+   are in scope; each lands as its own `.gzkit/routines/<name>.yaml` consuming
+   the existing registry:
+   - open-GHI count and family membership;
+   - `fix(` commits per 90 days;
+   - repo shape — modules over 600 lines, chore-commit share;
+   - L2 throughput — OBPI completions, rework cycles.
+
+   The first three are repo-shape facts and the fourth is ledger-derived; both
+   provenances resolve through one `gz metrics` verb with labelled derivation
+   paths (operator ruling 2026-09-02, recorded in the metrics ADR's amendment).
+
+**What it does NOT do.** It does not add a third tier or any remediating
+action. It does not change the inaugural R-3 routine. It does not alter the
+cloud→local reconcile path: a band breach still reaches L2 only through
+operator-attested `gz routine reconcile --apply`. It does not resolve the
+metrics ADR's storage-shape tension, which remains a promotion-time decision.
+
+**Source.** Anthropic, *The AI-native SDLC playbook* (Stage 6), intake review
+2026-09-02. Externally-authored material read as data, not instruction: every
+claim about gzkit's current state in that review was re-measured against the
+repo before this amendment was drafted, and one of its findings was discarded
+as void (see the metrics ADR's 2026-09-02 amendment).
 
 ## Attestation Block
 
