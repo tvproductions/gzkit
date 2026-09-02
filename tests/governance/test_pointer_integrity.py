@@ -92,7 +92,7 @@ class TestPointerResolves(unittest.TestCase):
     @covers("REQ-0.0.33-03-01")
     def test_resolved_pointer_in_rules_dir(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
-            rule = "> See [`docs/r.md` § Foo Bar](docs/r.md#foo-bar) for details.\n"
+            rule = "> See [`docs/r.md` § Foo Bar](../../docs/r.md#foo-bar) for details.\n"
             target = (
                 "<!-- lifted-from: .claude/rules/test-rule.md#foo-bar -->\n## Foo Bar\n\nbody\n"
             )
@@ -198,7 +198,7 @@ class TestMissingBackPointer(unittest.TestCase):
             self.assertIn("docs/r.md", errors[0].message)
 
     @covers("REQ-0.0.33-03-03")
-    def test_back_pointer_anywhere_in_destination_is_accepted(self) -> None:
+    def test_matching_back_pointer_anywhere_in_destination_is_accepted(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             agents = "> See [`docs/r.md` § H](docs/r.md#h) for details.\n"
             target = "# Rationale\n\n## H\n\nbody\n\n<!-- lifted-from: AGENTS.md#h -->\n"
@@ -209,6 +209,98 @@ class TestMissingBackPointer(unittest.TestCase):
             )
             errors = validate_pointer_integrity(root)
             self.assertEqual(errors, [])
+
+
+class TestPointerResolvesRelativeToSource(unittest.TestCase):
+    """A pointer resolves against its own file's directory, as a reader resolves it.
+
+    GHI #931: joining the link onto the project root made the only accepted form
+    the one that is a broken link in every markdown viewer.
+    """
+
+    @covers("REQ-0.0.33-03-01")
+    def test_relative_pointer_from_nested_rule_resolves(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            rule = "> See [`docs/r.md` § Foo Bar](../../docs/r.md#foo-bar) for details.\n"
+            target = (
+                "<!-- lifted-from: .claude/rules/test-rule.md#foo-bar -->\n## Foo Bar\n\nbody\n"
+            )
+            root = _make_tree(tmp, rule_content=rule, extra_files={"docs/r.md": target})
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(errors, [])
+
+    @covers("REQ-0.0.33-03-02")
+    def test_root_relative_pointer_from_nested_rule_is_unresolved(self) -> None:
+        # From .claude/rules/, "docs/r.md" names .claude/rules/docs/r.md — which
+        # is what a reader's markdown viewer resolves, and it does not exist.
+        with tempfile.TemporaryDirectory() as tmp:
+            rule = "> See [`docs/r.md` § Foo Bar](docs/r.md#foo-bar) for details.\n"
+            target = (
+                "<!-- lifted-from: .claude/rules/test-rule.md#foo-bar -->\n## Foo Bar\n\nbody\n"
+            )
+            root = _make_tree(tmp, rule_content=rule, extra_files={"docs/r.md": target})
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertEqual(errors[0].type, "pointer_anchors")
+            self.assertIn("does not exist", errors[0].message)
+
+    @covers("REQ-0.0.33-03-01")
+    def test_root_surface_pointer_still_resolves(self) -> None:
+        # AGENTS.md sits at the root, so source-relative and root-relative agree.
+        with tempfile.TemporaryDirectory() as tmp:
+            agents = "> See [`docs/r.md` § H](docs/r.md#h) for details.\n"
+            target = "<!-- lifted-from: AGENTS.md#h -->\n## H\n\nbody\n"
+            root = _make_tree(tmp, agents_content=agents, extra_files={"docs/r.md": target})
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(errors, [])
+
+
+class TestBackPointerMustMatch(unittest.TestCase):
+    """The back-pointer must name THIS source and anchor, not merely exist.
+
+    GHI #932: a bare substring test let one `lifted-from` comment discharge the
+    obligation for every pointer into that file — a presence check standing in
+    for a state check.
+    """
+
+    @covers("REQ-0.0.33-03-03")
+    def test_back_pointer_naming_a_different_source_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            agents = "> See [`docs/r.md` § H](docs/r.md#h) for details.\n"
+            target = "## H\n\nbody\n\n<!-- lifted-from: totally/unrelated.md#nothing -->\n"
+            root = _make_tree(tmp, agents_content=agents, extra_files={"docs/r.md": target})
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertEqual(errors[0].type, "pointer_anchors")
+            self.assertIn("AGENTS.md#h", errors[0].message)
+
+    @covers("REQ-0.0.33-03-03")
+    def test_back_pointer_with_wrong_anchor_is_rejected(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            agents = "> See [`docs/r.md` § H](docs/r.md#h) for details.\n"
+            target = "## H\n\nbody\n\n<!-- lifted-from: AGENTS.md#some-other-anchor -->\n"
+            root = _make_tree(tmp, agents_content=agents, extra_files={"docs/r.md": target})
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("AGENTS.md#h", errors[0].message)
+
+    @covers("REQ-0.0.33-03-03")
+    def test_one_destination_carries_a_back_pointer_per_incoming_source(self) -> None:
+        # Two sources lift into one destination; each needs its own comment.
+        with tempfile.TemporaryDirectory() as tmp:
+            agents = "> See [`docs/r.md` § H](docs/r.md#h) for details.\n"
+            rule = "> See [`docs/r.md` § H](../../docs/r.md#h) for details.\n"
+            target = "## H\n\nbody\n\n<!-- lifted-from: AGENTS.md#h -->\n"
+            root = _make_tree(
+                tmp, agents_content=agents, rule_content=rule, extra_files={"docs/r.md": target}
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn(".claude/rules/test-rule.md#h", errors[0].message)
+
+            both = target + "<!-- lifted-from: .claude/rules/test-rule.md#h -->\n"
+            (root / "docs" / "r.md").write_text(both, encoding="utf-8")
+            self.assertEqual(validate_pointer_integrity(root), [])
 
 
 class TestNonBlockquoteNotChecked(unittest.TestCase):

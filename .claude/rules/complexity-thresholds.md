@@ -89,10 +89,10 @@ from the cited corpus distillation:
 - `lizard_nesting_depth` -- parser defect, all-zero corpus (GHI #404)
 - `cohesion_lcom4` -- parser defect, all-zero corpus (GHI #404)
 
-> See [rationale doc](docs/governance/complexity/complexity-thresholds-rationale.md#bootstrap-absolutes-req-11-carve-out----one-shot) for the full carve-out contract and one-shot semantics.
+> See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#bootstrap-absolutes-req-11-carve-out----one-shot) for the full carve-out contract and one-shot semantics.
 
 ## Operator-amendable mapping protocol
 
 Amendments to `(metric, band, trigger)` mappings flow through the doctrine-amendment-protocol stub (ADR-0.0.27 OBPI-02). **Silent edits are forbidden** by the validator (OBPI-0.0.28-03 -- `gz validate --complexity-thresholds`).
 
-> See [rationale doc](docs/governance/complexity/complexity-thresholds-rationale.md#operator-amendable-mapping-protocol) for the full amendment protocol.
+> See [rationale doc](../../docs/governance/complexity/complexity-thresholds-rationale.md#operator-amendable-mapping-protocol) for the full amendment protocol.

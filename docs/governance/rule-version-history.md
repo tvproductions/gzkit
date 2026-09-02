@@ -157,7 +157,7 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 ## `task-discovery.md`
 
-<!-- lifted-from: .claude/rules/task-discovery.md#task-discovery-gzkit -->
+<!-- lifted-from: .claude/rules/task-discovery.md#task-discoverymd -->
 
 Lifted at version `0.7.1` (rule now at `0.8.0`).
 

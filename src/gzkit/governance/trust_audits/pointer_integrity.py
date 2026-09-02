@@ -4,11 +4,14 @@ Walks the per-turn surface corpus (``AGENTS.md``, ``CLAUDE.md``,
 ``.claude/rules/**``), extracts every ``> See [...](path#anchor)``
 blockquote pointer, and asserts:
 
-1. The referenced ``path`` exists on disk.
+1. The referenced ``path`` exists on disk, resolved RELATIVE TO THE SOURCE
+   FILE's directory — the same resolution a reader's markdown viewer performs
+   (GHI #931).
 2. The ``#anchor`` resolves to a heading in the destination file (using
    mkdocs-compatible slugification).
-3. The destination file carries a matching
-   ``<!-- lifted-from: <source-path>#<anchor> -->`` back-pointer.
+3. The destination file carries a back-pointer that MATCHES this pointer:
+   ``<!-- lifted-from: <source-path>#<anchor> -->`` naming this source and this
+   anchor. A comment naming some other source does not discharge it (GHI #932).
 
 Returns a ``ValidationError(type="pointer_anchors")`` for every unresolved
 pointer or missing back-pointer. An empty list means the surface is clean.
@@ -20,6 +23,7 @@ are checked. Inline markdown links and unrelated blockquotes are ignored.
 from __future__ import annotations
 
 import contextlib
+import os
 import re
 from pathlib import Path
 
@@ -28,6 +32,7 @@ from gzkit.core.validation_rules import ValidationError
 _SURFACE_FILES = ("AGENTS.md", "CLAUDE.md")
 _HEADING_RE = re.compile(r"^#{1,6}\s+(.+)", re.MULTILINE)
 _LINK_RE = re.compile(r"\(([^()\s]+#[^()\s]+)\)")
+_LIFTED_FROM_RE = re.compile(r"<!--\s*lifted-from:\s*(\S+?)\s*-->")
 
 
 def validate_pointer_integrity(project_root: Path) -> list[ValidationError]:
@@ -94,7 +99,8 @@ def _validate_pointer(
     anchor: str,
 ) -> list[ValidationError]:
     """Return errors for one resolved (path#anchor) pointer."""
-    dest_path = project_root / path_part
+    source_dir = (project_root / source_rel).parent
+    dest_path = Path(os.path.normpath(source_dir / path_part))
     if not dest_path.exists() or not dest_path.is_file():
         return [
             _make_error(
@@ -125,12 +131,24 @@ def _validate_pointer(
             )
         ]
 
-    if "<!-- lifted-from:" not in dest_content:
+    back_pointers = _LIFTED_FROM_RE.findall(dest_content)
+    if not back_pointers:
         return [
             _make_error(
                 f"Missing back-pointer: destination {path_part} (referenced by "
                 f"{source_rel}:{lineno}#{anchor}) lacks "
                 f"`<!-- lifted-from: -->` comment",
+                source_rel,
+            )
+        ]
+
+    expected = f"{source_rel}#{anchor}"
+    if expected not in back_pointers:
+        return [
+            _make_error(
+                f"Unmatched back-pointer: destination {path_part} (referenced by "
+                f"{source_rel}:{lineno}#{anchor}) carries "
+                f"{sorted(back_pointers)} but none names `{expected}`",
                 source_rel,
             )
         ]

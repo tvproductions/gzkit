@@ -11,7 +11,7 @@ description: Four-channel TASK attribution discovery taxonomy for governance tra
 
 # TASK Discovery (gzkit)
 
-> **Rule version:** `0.8.0` — operator ruling 2026-09-01 (verbatim *"never"*) CLOSES the trailer set, and the auto-stamp's suppression clause is corrected: only an authored `Task:` trailer suppresses the stamp, never a trailer of any form. See § Convention: Commit trailer. Prior `0.7.1`–`0.5.1` lifted to [Rule Version History](docs/governance/rule-version-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.8.0` — operator ruling 2026-09-01 (verbatim *"never"*) CLOSES the trailer set, and the auto-stamp's suppression clause is corrected: only an authored `Task:` trailer suppresses the stamp, never a trailer of any form. See § Convention: Commit trailer. Prior `0.7.1`–`0.5.1` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.
 
 ## Invariant
 

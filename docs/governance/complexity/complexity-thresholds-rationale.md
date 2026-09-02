@@ -1,4 +1,3 @@
-<!-- lifted-from: .claude/rules/complexity-thresholds.md -->
 # Complexity Thresholds -- Rationale and Pedagogy
 
 Lifted from [`.gzkit/rules/complexity-thresholds.md`](../../../.gzkit/rules/complexity-thresholds.md) under GHI #327 (instructions-files-diet). The threshold data lives in the sibling [`.gzkit/rules/complexity-thresholds.json`](../../../.gzkit/rules/complexity-thresholds.json) (data source-of-truth, GHI #426); the `.md` rule file carries the doctrine narrative and invariant. This document carries the extended rationale, citation contract details, bootstrap carve-out narrative, amendment protocol, refresh portability, and anti-patterns.
@@ -25,6 +24,8 @@ remains valid at `corpus_revision = 1` and `corpus_revision = 2`
 citations for amendment but does not auto-rewrite.
 
 ## Bootstrap absolutes (REQ-11 carve-out -- one-shot)
+
+<!-- lifted-from: .claude/rules/complexity-thresholds.md#bootstrap-absolutes-req-11-carve-out----one-shot -->
 
 The bootstrap-absolutes carve-out names exactly three metrics whose
 threshold rows do not derive from the cited corpus distillation:
@@ -84,6 +85,8 @@ responsibilities. Once the parser is fixed and a fresh distillation
 lands, these rows graduate from bootstrap to cited.
 
 ## Operator-amendable mapping protocol
+
+<!-- lifted-from: .claude/rules/complexity-thresholds.md#operator-amendable-mapping-protocol -->
 
 Amendments to `(metric, band, trigger)` mappings -- for example,
 shifting the default `(advise=p75, warn=p90, block=p95)` to
