@@ -83,14 +83,25 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 6. NEVER: edit the surface-delivery witness or the vendor cap to obtain a green reading. Both are in Denied Paths.
 7. ALWAYS: treat this as a Layer-1 canon change. An agent silently reordering the canon it is governed by is the failure gzkit exists to prevent (pool ADR constraint 2).
 
-> **OPEN OPERATOR QUESTION — do not resolve in-flight (Behavior Rules — Always #9).**
-> `ADR-pool.render-order-truncation-survival` constraint 2 requires operator Gate-5
-> attestation through the recompose ceremony. The attestation-granularity ruling of
-> 2026-08-17 says verbatim *"a rerender of unhanged canon does not require my
-> attestation"* (spelling preserved), and an order-only permutation preserves every
-> entry verbatim — which reads as disposition (1), or at most (4) *"trims and
-> compressions ... might invite a review"*. The two point different ways. Surface it
-> and let the operator rule; do NOT pick one.
+> **RULED 2026-09-02 — OPERATOR GATE-5 ATTESTATION IS REQUIRED for this permutation.**
+> The question below was surfaced and is now closed; it is retained as the record of
+> what was weighed. `ADR-pool.render-order-truncation-survival` constraint 2 requires
+> operator Gate-5 attestation through the recompose ceremony. The attestation-
+> granularity ruling of 2026-08-17 says verbatim *"a rerender of unhanged canon does
+> not require my attestation"* (spelling preserved), and an order-only permutation
+> preserves every entry verbatim — which reads as disposition (1), or at most (4)
+> *"trims and compressions ... might invite a review"*. The two point different ways,
+> and the operator ruled constraint 2 governs.
+>
+> The ground for the ruling, recorded so it is not re-argued: the granularity ruling
+> partitions on whether **what canon IS** changes, and disposition (4) attaches review
+> to a trim precisely because it *"changes what canon LOOKS like without changing what
+> canon IS"*. An order-only permutation changes neither — but its whole PURPOSE is to
+> change which canon is **delivered** under the codex cap, and undelivered canon is not
+> in force. Changing the in-force governing set for a vendor is a stronger claim than
+> either disposition (1) or (4) contemplates, so it takes the attestation constraint 2
+> already specified. Recorded, not drawn: no lock, no pipeline marker, no TASK, no
+> dispatch (IRON LAW — only the operator initiates OBPI work).
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
