@@ -1,5 +1,6 @@
 # gzkit-managed-codex-config: v1
 sandbox_mode = "workspace-write"
+project_doc_max_bytes = 65536
 [features]
 hooks = true
 

@@ -1,26 +1,60 @@
 {
   "content_type_routes": {
-    "AgentContract": ["root"],
-    "Bullet": ["claude"],
-    "Chore": ["claude"],
-    "Handoff": ["claude"],
-    "Persona": ["claude"],
-    "Rule": ["claude"],
-    "Scenario": ["claude"],
-    "Skill": ["claude"]
+    "AgentContract": [
+      "root"
+    ],
+    "Bullet": [
+      "claude"
+    ],
+    "Chore": [
+      "claude"
+    ],
+    "Handoff": [
+      "claude"
+    ],
+    "Persona": [
+      "claude"
+    ],
+    "Rule": [
+      "claude"
+    ],
+    "Scenario": [
+      "claude"
+    ],
+    "Skill": [
+      "claude"
+    ]
   },
   "content_type_delivery_caps": {
-    "AgentContract": {"codex": 32768}
+    "AgentContract": {
+      "codex": 65536
+    }
   },
   "content_type_temperatures": {
-    "AgentContract": {"root": "lite"},
-    "Bullet": {"claude": "heavy"},
-    "Chore": {"claude": "heavy"},
-    "Handoff": {"claude": "heavy"},
-    "Persona": {"claude": "heavy"},
-    "Rule": {"claude": "heavy"},
-    "Scenario": {"claude": "heavy"},
-    "Skill": {"claude": "heavy"}
+    "AgentContract": {
+      "root": "lite"
+    },
+    "Bullet": {
+      "claude": "heavy"
+    },
+    "Chore": {
+      "claude": "heavy"
+    },
+    "Handoff": {
+      "claude": "heavy"
+    },
+    "Persona": {
+      "claude": "heavy"
+    },
+    "Rule": {
+      "claude": "heavy"
+    },
+    "Scenario": {
+      "claude": "heavy"
+    },
+    "Skill": {
+      "claude": "heavy"
+    }
   },
   "surface_content_types": {
     "AGENTS.md": "AgentContract"

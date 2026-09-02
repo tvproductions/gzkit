@@ -494,9 +494,21 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
 
 
 def render_codex_config() -> str:
-    """Render the project-local Codex execution baseline."""
+    """Render the project-local Codex execution baseline.
+
+    ``project_doc_max_bytes`` raises Codex's 32768-byte default for root
+    ``AGENTS.md`` (openai/codex#7138). It is a SETTING, not a vendor-imposed
+    limit -- gzkit generates this file, so leaving it unset was a choice, and
+    at the default 30% of the agent contract (including the IRON LAW) was
+    truncated away from the named cross-vendor adversary (GHI #815).
+
+    The value is mirrored in ``data/vendor-manifest.json``
+    ``content_type_delivery_caps``, which the delivery witness compares
+    against. ``CodexDocCapCoherenceTest`` fail-closes if the two diverge.
+    """
     return f"""{CODEX_CONFIG_MARKER}
 sandbox_mode = "workspace-write"
+project_doc_max_bytes = 65536
 [features]
 hooks = true
 

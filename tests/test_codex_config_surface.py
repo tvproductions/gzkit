@@ -402,3 +402,60 @@ class TestCodexConfigGeneration(unittest.TestCase):
         config_path = Path(__file__).parents[1] / ".codex" / "config.toml"
 
         self.assertEqual(config_path.read_text(encoding="utf-8"), render_codex_config())
+
+
+class CodexDocCapCoherenceTest(unittest.TestCase):
+    """The generated Codex config must declare the cap gzkit records for it.
+
+    ``project_doc_max_bytes`` is a Codex SETTING, not an immovable vendor fact
+    (openai/codex#7138). gzkit generates ``.codex/config.toml`` and records the
+    cap in ``data/vendor-manifest.json``; before GHI #815 it set neither, so the
+    32768-byte default silently truncated 30% of the agent contract away from
+    the named cross-vendor adversary.
+
+    The value therefore appears in two surfaces. This test is the coherence
+    gate that keeps them one number: raise one without the other and it fails.
+    """
+
+    def test_generated_config_declares_the_recorded_cap(self):
+        """The toml's project_doc_max_bytes equals the vendor-manifest cap."""
+        import json as _json
+        import re as _re
+        from pathlib import Path as _Path
+
+        manifest = _json.loads(
+            (_Path(__file__).resolve().parents[1] / "data" / "vendor-manifest.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        recorded = manifest["content_type_delivery_caps"]["AgentContract"]["codex"]
+
+        match = _re.search(r"^project_doc_max_bytes\s*=\s*(\d+)$", render_codex_config(), _re.M)
+        self.assertIsNotNone(match, "generated Codex config declares no project_doc_max_bytes")
+        self.assertEqual(
+            int(match.group(1)),
+            recorded,
+            "generated Codex config and data/vendor-manifest.json disagree on the cap",
+        )
+
+    def test_recorded_cap_clears_the_current_contract(self):
+        """The declared cap leaves the rendered AgentContract deliverable.
+
+        A cap that the contract already exceeds is not a setting, it is a
+        silent truncation. Asserts the real delivered surface, not a fixture.
+        """
+        from pathlib import Path as _Path
+
+        root = _Path(__file__).resolve().parents[1]
+        import json as _json
+
+        recorded = _json.loads((root / "data" / "vendor-manifest.json").read_text("utf-8"))[
+            "content_type_delivery_caps"
+        ]["AgentContract"]["codex"]
+        agents_md_bytes = len((root / "AGENTS.md").read_bytes())
+        self.assertLess(
+            agents_md_bytes,
+            recorded,
+            f"AGENTS.md is {agents_md_bytes} B against a {recorded} B declared cap "
+            f"-- {agents_md_bytes - recorded} B would be truncated undelivered",
+        )
