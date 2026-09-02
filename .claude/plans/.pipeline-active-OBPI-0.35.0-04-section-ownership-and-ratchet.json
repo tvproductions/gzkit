@@ -117,6 +117,71 @@
       "status": "in_progress",
       "result": null,
       "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-02T20:38:07.694823+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-02T20:39:10.535065+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-02T20:39:10.749721+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 6,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "opus",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-02T20:52:37.980199+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 7,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-02T21:57:44.577997+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
     }
   ]
 }

@@ -8,6 +8,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import NamedTuple
 
+import jsonschema
 from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.commands.common import console, get_project_root
@@ -33,6 +34,7 @@ from gzkit.commands.validate_sensitivity import (
 )
 from gzkit.commands.validate_task_envelope import _validate_task_envelope_coherence
 from gzkit.commands.version_sync import validate_version_consistency
+from gzkit.content.ownership import OwnershipDeclaration
 from gzkit.governance.trust_audits import (
     AttestationReceiptValidationResult,
     validate_attestation_receipts,
@@ -920,6 +922,89 @@ def _validate_exemplar_corpus(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+def _validate_ownership_declarations(project_root: Path) -> list[ValidationError]:
+    """Validate `.gzkit/ownership/*.json` against `section_ownership.json` (REQ-0.35.0-04-08).
+
+    Mirrors `_validate_exemplar_corpus`'s shape: absent directory -> [];
+    JSON parse failure -> one ValidationError; otherwise schema-validate
+    (`jsonschema`) then `OwnershipDeclaration.model_validate` -- one
+    ValidationError per validation failure. Schema-validation catches
+    artifact-vs-schema drift; model-validation catches artifact-vs-code
+    drift (both were silently unwitnessed before this validator existed --
+    Step-4b adversary finding 3, OBPI-0.35.0-04).
+    """
+    ownership_dir = project_root / ".gzkit" / "ownership"
+    if not ownership_dir.is_dir():
+        return []
+
+    schema_path = Path(__file__).parent.parent / "schemas" / "section_ownership.json"
+    schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+    errors: list[ValidationError] = []
+    for decl_path in sorted(ownership_dir.glob("*.json")):
+        artifact = decl_path.relative_to(project_root).as_posix()
+        try:
+            raw = json.loads(decl_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(
+                ValidationError(
+                    type="ownership_declaration",
+                    artifact=artifact,
+                    message=(
+                        f"{artifact} is not valid JSON: {exc}. REQ-0.35.0-04-08 "
+                        "requires `gz validate --documents` to admit the "
+                        "declaration's shape, so a malformed file fails closed "
+                        "here rather than passing vacuously. Fix the JSON syntax "
+                        "and re-run `uv run gz validate --documents`."
+                    ),
+                )
+            )
+            continue
+
+        try:
+            jsonschema.validate(raw, schema)
+        except jsonschema.exceptions.ValidationError as exc:
+            errors.append(
+                ValidationError(
+                    type="ownership_declaration",
+                    artifact=artifact,
+                    message=(
+                        f"{artifact} does not conform to "
+                        "src/gzkit/schemas/section_ownership.json: "
+                        f"{exc.message}. REQ-0.35.0-04-08 requires the "
+                        "declaration to validate against its schema before "
+                        "`gz validate --documents` can admit it. Fix the "
+                        "declaration's shape and re-run "
+                        "`uv run gz validate --documents`."
+                    ),
+                    field=".".join(str(p) for p in exc.absolute_path) or None,
+                )
+            )
+            continue
+
+        try:
+            OwnershipDeclaration.model_validate(raw)
+        except PydanticValidationError as exc:
+            for err in exc.errors():
+                field = ".".join(str(loc) for loc in err["loc"])
+                errors.append(
+                    ValidationError(
+                        type="ownership_declaration",
+                        artifact=artifact,
+                        message=(
+                            f"{artifact} failed OwnershipDeclaration model "
+                            f"validation: {err['msg']}. REQ-0.35.0-04-08 "
+                            "requires the declaration to construct the domain "
+                            "model gzkit code relies on, not merely match the "
+                            "JSON Schema shape. Fix the declaration and re-run "
+                            "`uv run gz validate --documents`."
+                        ),
+                        field=field or None,
+                    )
+                )
+    return errors
+
+
 def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
     """Validate documents declared in the manifest."""
     manifest_path = project_root / ".gzkit" / "manifest.json"
@@ -946,6 +1031,7 @@ def _validate_manifest_documents(project_root: Path) -> list[ValidationError]:
             for doc in doc_iter:
                 errors.extend(validate_document(doc, schema_name))
     errors.extend(_validate_exemplar_corpus(project_root))
+    errors.extend(_validate_ownership_declarations(project_root))
     return errors
 
 

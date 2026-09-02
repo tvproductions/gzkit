@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-04-section-ownership-and-ratchet",
-  "generated_at": "2026-09-02T19:00:09.562194+00:00",
+  "generated_at": "2026-09-02T22:04:48.788256+00:00",
   "demos": [
     {
       "command": "uv run gz content unown --help",
@@ -25,19 +25,19 @@
     {
       "step": "ruff",
       "found": true,
-      "receipt_id": "arb-ruff-fa0254a3498343a19f9c5897070ef556.json",
+      "receipt_id": "arb-ruff-a6b0ed21703e4a51bcc19f0eced5125c.json",
       "exit_status": 0
     },
     {
       "step": "typecheck",
       "found": true,
-      "receipt_id": "arb-step-typecheck-5922df12c0324073badce450451958d0.json",
+      "receipt_id": "arb-step-typecheck-a2428489c01043f3846ed6acd239eb6e.json",
       "exit_status": 0
     },
     {
       "step": "unittest",
       "found": true,
-      "receipt_id": "arb-step-unittest-7577c7a1b02944e8a6826ce849964b78.json",
+      "receipt_id": "arb-step-unittest-ed4edb8ba7fe44269e3eae66bdd48215.json",
       "exit_status": 0
     }
   ],

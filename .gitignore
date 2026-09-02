@@ -106,3 +106,16 @@ site/
 .gzkit/corpus/**/*.tmp
 # The `**` is load-bearing: a rule-surface corpus nests under its own path
 # (.gzkit/corpus/.gzkit/rules/<name>.md.jsonl), which a single-level glob misses.
+
+# Section-ownership write-discipline sidecars (OBPI-0.35.0-04). Same shape as the corpus
+# store above: `gz content unown` takes an OS lock on `<surface>.json.lock` and stages the
+# new declaration beside the target before one atomic `os.replace`. `.gzkit/ownership/` IS
+# tracked — the declaration is the coverage claim gating the unowned-byte ratchet — so the
+# sidecars must be ignored by name or every un-owning dirties the tree. The `.journal` is
+# the crash-recovery record for the declaration/ledger two-store transaction: it is written
+# before either store is touched and cleared after both land, so it exists only mid-flight
+# and must never be committed — a committed journal would make every clone replay a
+# transition that already completed here.
+.gzkit/ownership/**/*.lock
+.gzkit/ownership/**/*.tmp
+.gzkit/ownership/**/*.journal

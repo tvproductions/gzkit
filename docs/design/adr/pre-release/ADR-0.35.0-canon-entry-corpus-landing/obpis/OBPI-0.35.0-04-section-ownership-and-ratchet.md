@@ -3,7 +3,7 @@ id: OBPI-0.35.0-04-section-ownership-and-ratchet
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 4
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - src/gzkit/content/ownership.py
 - src/gzkit/commands/content/unown.py
@@ -13,9 +13,12 @@ allowlist:
 - config/doc-coverage.json
 - .gzkit/ownership/AGENTS.md.json
 - src/gzkit/governance/events.py
+- src/gzkit/commands/validate_cmd.py
+- .gitignore
 - tests/content/test_ownership.py
 - tests/commands/test_content_unown.py
 - tests/content/test_tui_affordances.py
+- tests/commands/test_validate_ownership_declarations.py
 - features/**
 - docs/user/manpages/content.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md
@@ -45,6 +48,11 @@ tasks:
   - TASK-0.35.0-04-06-01
   - TASK-0.35.0-04-07-01
   - TASK-0.35.0-04-08-01
+  - TASK-0.35.0-04-02-02
+  - TASK-0.35.0-04-03-02
+  - TASK-0.35.0-04-05-02
+  - TASK-0.35.0-04-07-02
+  - TASK-0.35.0-04-08-02
 ---
 
 # OBPI-0.35.0-04-section-ownership-and-ratchet: Section Ownership And Ratchet
@@ -120,6 +128,29 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
   fence is updated to admit it, not relaxed"* — and six sibling verbs were admitted
   the same way. The fence is the coupled surface this brief under-declared at
   authoring; the roster is widened by one id, never weakened.
+- `src/gzkit/commands/validate_cmd.py`, `tests/commands/test_validate_ownership_declarations.py`
+  — give REQ-08's SUPPORT proof channel a validator that actually reads the artifact.
+  ADDED 2026-09-02 by operator ruling (Gate Friction escalation, same shape as the two
+  entries above): Step-4b adversary finding 3 demonstrated that `gz validate --documents`
+  never reads `.gzkit/ownership/*.json`, so REQ-08's claim that it *"admits the shape"*
+  was satisfied vacuously — a probe carrying malformed ownership JSON returned
+  `documents_error_count 0`, and for a window the committed declaration did not validate
+  against its own schema while nothing said a word. The operator ruled the repair lives
+  here and extends `--documents` rather than adding a new scope flag, so REQ-08's text
+  becomes literally true as written. Sibling `OBPI-0.35.0-06-validate-rendition-lineage`
+  owns this file too, but its subject is whether rendition text derives from the corpus;
+  the declaration's own well-formedness is this brief's artifact, schema and REQ.
+- `.gitignore` — ignore the write-discipline sidecars the atomic raise-path creates.
+  ADDED 2026-09-02 by operator ruling (Gate Friction escalation, fourth entry of the same
+  coupled-surface shape): finding 2's fix stages `<decl>.json.lock`, `.<decl>.json.<rand>.tmp`
+  and `<decl>.json.journal` inside `.gzkit/ownership/`, which IS tracked because the day-one
+  declaration is committed there. Both Step-4b reviewers graded the omission **major** and
+  cited DO IT RIGHT 1a. `.gitignore` already carries the identical precedent for
+  `.gzkit/corpus/**/*.lock` and `*.tmp` with a comment stating the same reasoning verbatim,
+  and AGENTS.md § Execution Rules mandates `git add -A` before `gz check` — so without this
+  the first real `gz content unown` commits ephemeral runtime state into Layer-1 canon's
+  own directory. The journal in particular is the crash-recovery record and must never be
+  committed.
 - `features/**` — Gate 4 scenarios for the attested raise-path
 - `docs/user/manpages/content.md` — the raise-path section
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` — this brief's evidence sections
@@ -332,6 +363,62 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - Attestation status:
 - Defects noted:
 
+### Step 4b — Independent Adversarial Validation
+
+**Verdict: REFUTED.** Adversary: Codex (tier 1, cross-vendor), dispatched through the
+`openai-codex` plugin runtime (`codex-companion.mjs adversarial-review --wait --scope
+working-tree`), ARB-wrapped. Receipt `arb-step-codexadversary-d04634100678415daada4acd3a6f2881`
+(`exit_status: 0`). Tier-1 readiness was confirmed before dispatch — `ready: true`, runtime mode
+`direct`, no stale broker — so tiers 2 and 3 were forbidden.
+
+This was the SECOND adversarial pass. The first (receipt
+`arb-step-codexadversary-f7a101da3ba3498e94249f2bdb39969f`) also returned REFUTED with five
+findings; all five were repaired across this session and the tree was re-submitted. The second
+pass confirms three of those repairs hold and returns FOUR NEW findings, two of them `[high]`.
+ATTESTATION WAS NOT SOLICITED and the OBPI is NOT completable on this verdict.
+
+| # | Severity | Finding | Origin |
+|---|---|---|---|
+| 1 | high | Genesis and event lookup do not prove an attested transition | Pre-existing — the prior session's finding-4 repair |
+| 2 | high | Journal replay is an unvalidated arbitrary declaration write | INTRODUCED by this session's finding-2 repair |
+| 3 | medium | The ordinary ratchet update is not a recoverable two-store transaction | Already recorded in Tracked Defects |
+| 4 | medium | Atomic replacement is not durable across power loss (no directory fsync) | Already recorded in Tracked Defects |
+
+**Finding 1 — reproduced independently by the orchestrator, not merely accepted.**
+`load_declaration` treats ANY section/floor-coherent declaration carrying `floor_event_id: null`
+as genesis, and nothing proves it is the original genesis state. A probe copied the real
+declaration into a scratch root, flipped `attestation` from `corpus-owned` to `unowned`,
+recomputed the floor so it stayed self-coherent, kept the id null, and loaded it:
+
+    baseline floor: 8637 | floor_event_id: None
+    hand-raised floor: 10182 | ledger exists: False
+    RESULT: ACCEPTED  <-- the ratchet was raised with NO attested transition
+
+The adversary separately showed the non-null branch is only an id/floor equality check: a
+`task_started` event for `Other.md` was accepted as proof for `Doc.md`. Together these defeat
+REQ-0.35.0-04-02's central claim — a hand edit CAN raise the ratchet or reverse ownership
+without an attested `gz content unown`.
+THIS IS THE DOCTRINE THIS OBPI EXISTS TO CLOSE, SITTING INSIDE THE OBPI: `AGENTS.md` — *"A
+PRESENCE CHECK ANSWERS 'is something armed', NEVER 'did the governed procedure run'."* Genesis is
+witnessed by self-coherence, which the attacker simply recomputes. It is a DESIGN GAP, not a bug:
+genesis has no provenance anchor by construction, so the repair shape is an operator decision
+(candidates: a `section_ownership_genesis` ledger event, a commit-SHA anchor, or forbidding a null
+`floor_event_id` after day one).
+
+**Finding 2 — introduced by this session's own repair.** `_replay_pending_transition` validates
+only that the journal is an object carrying selected keys, then writes `declaration_json`
+verbatim and appends its claimed event. The adversary forged a journal that was accepted with
+exit 0, raised the floor `26 -> 1025`, and emitted blank provenance (`Attested by :`).
+Separately `_JOURNAL_FIELDS` omits `ts` while `_append_event_once` reads `record["ts"]`
+(`unown.py:176`), so a field-complete journal can still die on a raw `KeyError` rather than the
+governed three-part refusal — verified by reading both sites.
+
+**Findings 3 and 4 were already disclosed** in this brief's Tracked Defects before the pass; the
+adversary confirmed both by probe rather than by argument, which is the outcome disclosure is for.
+
+**Disposition:** operator-ruled 2026-09-02 to CHECKPOINT and resume in a fresh session rather than
+run a fourth fix cycle on a design decision. No attestation solicited; no completion attempted.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
@@ -353,6 +440,60 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
   Moving emission out would leave REQ-0.35.0-04-03's "a ratchet ledger event is
   emitted" unprovable by any `@covers` test this OBPI is authorised to write. The
   natural home is OBPI-0.35.0-05's materialization caller, mirroring `commit.py`.
+
+- **Journal replay accepts an unvalidated declaration (adversary finding 2, `[high]`, OPEN).**
+  `_replay_pending_transition` (`src/gzkit/commands/content/unown.py`) checks only that the
+  journal is an object carrying `_JOURNAL_FIELDS`, then writes `declaration_json` verbatim and
+  appends its claimed event. It never validates attestor/reason, never recomputes the event id,
+  never compares the intended transition against the live section span, and never proves the
+  journal starts from the declaration currently on disk. A forged journal was accepted with exit
+  0, raised the floor `26 -> 1025`, and printed blank provenance. Additionally `_JOURNAL_FIELDS`
+  omits `ts` while `_append_event_once` reads `record["ts"]`, so a field-complete journal can
+  still escape as a raw `KeyError` instead of the governed three-part refusal.
+  INTRODUCED BY THIS SESSION'S OWN REPAIR of adversary finding 2 — the journal that made the
+  two-store transaction recoverable became a new unattested write path. Recorded rather than
+  fixed because the operator ruled a CHECKPOINT; it is mechanical and should be repaired first
+  on resume.
+
+- **Genesis has no provenance anchor (adversary finding 1, `[high]`, OPEN — DESIGN DECISION).**
+  `load_declaration` accepts any declaration whose stored floor equals its own summed unowned
+  spans and whose `floor_event_id` is null as a legitimate genesis. Self-coherence is trivially
+  re-satisfiable, so a hand edit that flips a section and recomputes the floor loads cleanly with
+  no ledger event in existence — reproduced at floor `8637 -> 10182`. The non-null branch is only
+  an id/floor equality check and accepts an unrelated event type for a different surface. Together
+  these defeat REQ-0.35.0-04-02's claim that the ratchet rises only through the attested path.
+  NOT a bug to patch: genesis has no provenance anchor by construction. The repair shape is an
+  operator ruling — candidates are a `section_ownership_genesis` ledger event, a commit-SHA
+  anchor, or forbidding a null `floor_event_id` after day one.
+
+- **Declaration write-lock primitive is a PRIVATE cross-module import (structural debt).**
+  `src/gzkit/content/ownership.py` imports `_exclusive_store_lock` from
+  `src/gzkit/content/corpus_store.py`. Raised as a `minor` finding by the Step-4b task-6
+  quality review 2026-09-02, which judged the compromise ACCEPTABLE — the rejected
+  alternative was duplicating the platform-conditional `fcntl`/`msvcrt` pair, and two
+  implementations of an OS lock drift silently and only manifest under concurrency. Both
+  modules are intra-package, so this is not a layer violation. It is nonetheless a real
+  liability: the leading underscore is `corpus_store`'s declaration that the symbol is not
+  part of its contract, its docstring reasons entirely in corpus terms, and neither ruff
+  nor any test would signal breakage if a future refactor renamed or inlined it.
+  RIGHT HOME: a neutral module exporting a PUBLIC `exclusive_file_lock(path)` that both
+  `corpus_store` and `ownership` call — nothing about `flock`/`msvcrt.locking` on a
+  `<name>.lock` sidecar is content-specific. Pure relocation, ~30 lines, zero behaviour
+  change. NOT done here because `corpus_store.py` is outside this brief's Allowed Paths.
+  Recorded per PRIME DIRECTIVE #6 — the source comment at the import site is a note, not
+  a tracker.
+
+- **No directory `fsync` after `os.replace` in `write_declaration_atomically`.**
+  Raised `minor` by the Step-4b task-6 spec review 2026-09-02. File CONTENTS are fsync'd
+  before the rename, but the rename itself is not, and two renames into one directory
+  carry no ordering guarantee without it. On host power loss the declaration rename can
+  be durable while the journal rename is not, leaving a declaration naming an unresolvable
+  `floor_event_id` with no journal to complete it — the bricked state the journal exists
+  to prevent, requiring exactly the hand-edit ADR-0.35.0 § Consequences Negative #4 closes.
+  SCOPED OUT DELIBERATELY: process-level death (`kill -9`, the adversary's weapon) does not
+  reach this window; only power or kernel loss does. Both reviewers graded it minor on that
+  basis. Recorded rather than fixed so the durability claim's real boundary is stated
+  rather than implied.
   A prior ruling by this session's orchestrator — move it to `unown.py` at Task 3 —
   was CHALLENGED AND OVERTURNED by the reviewer on the reasoning above.
 - **`emit_unowned_ratchet_updated` constructs `LedgerEvent` inline (minor).**

@@ -10,13 +10,21 @@ attested exception: the same corpus-attestation shape as `gz content retire`
 
 from __future__ import annotations
 
+import contextlib
 import json
+import os
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.cli.main import main
-from gzkit.content.ownership import load_declaration, measure_section_spans
+from gzkit.commands.content.unown import content_unown_cmd
+from gzkit.content.ownership import (
+    OwnershipLoadError,
+    load_declaration,
+    measure_section_spans,
+)
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
@@ -262,6 +270,347 @@ class TestContentUnownPartialFailure(unittest.TestCase):
             self.assertEqual(declaration["sections"]["alpha-section"], "unowned")
             self.assertEqual(declaration["unowned_byte_floor"], _SEED_FLOOR + span)
             self.assertIn(_DECLARATION_PATH.as_posix(), result.output)
+
+
+class TestContentUnownIsSerialized(unittest.TestCase):
+    """Two concurrent un-ownings of DIFFERENT sections must BOTH land.
+
+    An unlocked whole-file read-modify-write loses one of them: both runs exit
+    0, both emit a `section_ownership_unowned` ledger event, and the surviving
+    declaration carries only ONE transition. That residue is worse than a
+    refusal -- a Layer-2 event asserts a floor raise that Layer-1 silently
+    discarded, on the ONE governed path that may raise the ratchet at all.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-05")
+    def test_two_concurrent_unownings_of_different_sections_both_land(self) -> None:
+        """Would break if the read-modify-write stopped being serialized, or if
+        the second writer kept using a declaration it read before acquiring.
+
+        The interleave is FORCED, not raced: a rendezvous inside the loaded
+        read makes both workers observe the pre-transition floor before either
+        writes, which is exactly the window the unlocked code lost an update
+        in. The rendezvous is time-bounded and its breakage suppressed, so a
+        correctly-serialized implementation -- where the second worker cannot
+        reach the read until the first has committed -- proceeds rather than
+        deadlocking.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            spans = measure_section_spans(_SURFACE_TEXT)
+            sections = ("doc-title", "alpha-section")
+
+            import gzkit.commands.content.unown as unown_module  # noqa: PLC0415
+
+            rendezvous = threading.Barrier(len(sections))
+            real_load = unown_module.load_declaration
+
+            def load_then_rendezvous(*args, **kwargs):
+                loaded = real_load(*args, **kwargs)
+                with contextlib.suppress(threading.BrokenBarrierError, threading.ThreadError):
+                    rendezvous.wait(timeout=0.75)
+                return loaded
+
+            failures: dict[str, BaseException] = {}
+
+            def worker(section: str) -> None:
+                try:
+                    content_unown_cmd(
+                        surface="Doc.md",
+                        section=section,
+                        attestor="g0",
+                        reason=f"concurrent probe for {section}",
+                    )
+                except BaseException as exc:  # noqa: BLE001 - recorded, then asserted on
+                    failures[section] = exc
+
+            with patch.object(unown_module, "load_declaration", load_then_rendezvous):
+                threads = [threading.Thread(target=worker, args=(section,)) for section in sections]
+                for thread in threads:
+                    thread.start()
+                for thread in threads:
+                    thread.join(timeout=30)
+
+            self.assertEqual(failures, {}, f"neither worker may fail: {failures}")
+
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            for section in sections:
+                self.assertEqual(
+                    declaration["sections"][section],
+                    "unowned",
+                    f"{section!r} was un-owned and its transition must survive",
+                )
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                _SEED_FLOOR + spans["doc-title"] + spans["alpha-section"],
+                "the floor must rise by BOTH spans -- a lost update shows up here",
+            )
+            events = [e for e in _ledger_events() if e.get("event") == "section_ownership_unowned"]
+            self.assertEqual(
+                sorted(e["section"] for e in events),
+                sorted(sections),
+                "each landed transition is witnessed exactly once",
+            )
+            # No ledger event may name a floor the declaration never adopted:
+            # the surviving chain pointer must resolve, and the loader that
+            # enforces that is the same one every other caller uses.
+            reloaded = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.unowned_byte_floor, declaration["unowned_byte_floor"])
+
+
+class TestContentUnownIsRecoverable(unittest.TestCase):
+    """An interrupted un-owning is COMPLETABLE on retry, never merely tolerated.
+
+    The declaration must be written before the ledger witnesses it (a witness
+    may never outlive the state it witnesses), and `load_declaration` fails
+    closed when a declaration names an event the ledger does not carry. Both
+    are deliberate, so recovery has to come from the WRITE side: the pending
+    transition is journalled before either store is touched, and a retry
+    finishes the interrupted append instead of starting a new transition.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _seed(self) -> int:
+        _seed_surface()
+        _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+        return measure_section_spans(_SURFACE_TEXT)["alpha-section"]
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_retry_completes_a_transition_interrupted_at_the_ledger_append(self) -> None:
+        """Would break if the residue of a failed ledger append were left
+        unrecoverable -- the pre-fix behaviour, where the declaration named a
+        `floor_event_id` for an event that does not exist and every subsequent
+        run fail-closed on it, bricking the raise-path.
+        """
+        with self._runner.isolated_filesystem():
+            span = self._seed()
+
+            with patch.object(Ledger, "append", side_effect=OSError("disk full")):
+                interrupted = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+            self.assertEqual(interrupted.exit_code, 2, msg=interrupted.output)
+
+            # The interim state is honestly incoherent, never silently wrong:
+            # the loader still fails closed on the unresolvable chain pointer.
+            with self.assertRaises(OwnershipLoadError):
+                load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+
+            retry = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertEqual(
+                retry.exit_code,
+                0,
+                msg=f"a retry must COMPLETE the interrupted move: {retry.output}",
+            )
+            healed = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(healed.sections["alpha-section"], "unowned")
+            self.assertEqual(healed.unowned_byte_floor, _SEED_FLOOR + span)
+            events = [e for e in _ledger_events() if e.get("section") == "alpha-section"]
+            self.assertEqual(len(events), 1, msg=f"exactly one witness: {events}")
+            self.assertEqual(
+                events[0]["id"],
+                healed.floor_event_id,
+                "the recovered append must reuse the id the declaration already names",
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_recovered_transition_raises_the_floor_exactly_once(self) -> None:
+        """Would break if a retry started a FRESH transition instead of
+        finishing the journalled one -- the floor would rise by the section's
+        span twice, permanently over-stating unowned bytes on a ratchet that
+        cannot be raised back down by any other path.
+        """
+        with self._runner.isolated_filesystem():
+            span = self._seed()
+
+            with patch.object(Ledger, "append", side_effect=OSError("disk full")):
+                self._unown_once()
+            self._unown_once()
+            third = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertNotEqual(
+                third.exit_code,
+                0,
+                msg=f"a completed transition has nothing left to do: {third.output}",
+            )
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                _SEED_FLOOR + span,
+                "the floor must rise exactly once for one un-owning",
+            )
+            events = [e for e in _ledger_events() if e.get("section") == "alpha-section"]
+            self.assertEqual(len(events), 1, msg=f"exactly one witness: {events}")
+            residue = sorted(
+                p.name
+                for p in _DECLARATION_PATH.parent.iterdir()
+                if p.name not in {"Doc.md.json", "Doc.md.json.lock"}
+            )
+            self.assertEqual(residue, [], f"a settled transaction leaves no residue: {residue}")
+
+    def _unown_once(self):
+        return _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_failed_declaration_replace_leaves_no_torn_file_and_no_witness(self) -> None:
+        """Would break if the declaration were written with a truncating
+        in-place write: a crash mid-write leaves a half-serialized declaration
+        that no reader can parse, and the fault is injected at the rename --
+        the only step that may make new contents visible.
+        """
+        with self._runner.isolated_filesystem():
+            self._seed()
+            before_bytes = _DECLARATION_PATH.read_bytes()
+            before_events = _ledger_events()
+            real_replace = os.replace
+
+            def refuse_declaration_replace(src, dst, *args, **kwargs):
+                if Path(dst).name == "Doc.md.json":
+                    msg = "disk full"
+                    raise OSError(msg)
+                return real_replace(src, dst, *args, **kwargs)
+
+            with patch("os.replace", side_effect=refuse_declaration_replace):
+                result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertEqual(
+                _DECLARATION_PATH.read_bytes(),
+                before_bytes,
+                "a failed declaration write must leave the file byte-unchanged, never torn",
+            )
+            self.assertEqual(
+                _ledger_events(),
+                before_events,
+                "a witness must never outlive a state that was never adopted",
+            )
+            residue = sorted(
+                p.name
+                for p in _DECLARATION_PATH.parent.iterdir()
+                if p.name not in {"Doc.md.json", "Doc.md.json.lock"}
+            )
+            self.assertEqual(
+                residue, [], f"a rolled-back transaction leaves no staging or journal: {residue}"
+            )
+
+
+class TestContentUnownFailuresSpeakInProse(unittest.TestCase):
+    """Requirement 9: every fail-closed exit names what failed, why it is
+    forbidden (citing the binding rule/REQ), and a governed next step.
+
+    A fail-closed exit that omits the `Why forbidden:` clause hands the
+    operator a symptom with no rule behind it, which is exactly the state that
+    invites a hand-edit of the declaration -- the silent-hand-edit path
+    ADR-0.35.0 exists to close. A raw traceback is the same defect, worse.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    _JOURNAL_PATH = Path(".gzkit") / "ownership" / "Doc.md.json.journal"
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_failed_declaration_write_names_the_rule_it_is_forbidden_by(self) -> None:
+        """Would break if the declaration-write-failure exit printed only a
+        symptom and a next step. Every other fail-closed exit in this command
+        -- including the journal write immediately before it and the ledger
+        append immediately after -- cites the binding REQ; this one is reached
+        with a journal already on disk, so an operator who is not told which
+        rule holds is most likely to 'fix' it by deleting that journal, which
+        is the one file recovery depends on.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            real_replace = os.replace
+
+            def refuse_declaration_replace(src, dst, *args, **kwargs):
+                if Path(dst).name == "Doc.md.json":
+                    msg = "disk full"
+                    raise OSError(msg)
+                return real_replace(src, dst, *args, **kwargs)
+
+            with patch("os.replace", side_effect=refuse_declaration_replace):
+                result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertIn("Why forbidden:", result.output)
+            self.assertIn("REQ-0.35.0-04", result.output)
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_failed_ledger_append_names_the_rule_it_is_forbidden_by(self) -> None:
+        """Would break if this exit stated only the partial success.
+
+        This is the LAST fail-closed exit in the command still missing the
+        literal `Why forbidden:` clause its exact sibling in
+        `_replay_pending_transition` carries -- two paths out of the same
+        interrupted transaction, disagreeing on whether the operator is told
+        which rule binds. It is also the most dangerous one to leave
+        wordless: the declaration on disk now names a `floor_event_id` the
+        ledger lacks, so every subsequent `load_declaration` fails closed,
+        and an operator handed a bare symptom is most likely to 'fix' that by
+        hand-editing the declaration -- the silent-hand-edit path ADR-0.35.0
+        exists to close. The partial success must survive the addition: the
+        un-owning genuinely DID happen, and prose that implies otherwise
+        sends the operator to re-run it.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+            with patch.object(Ledger, "append", side_effect=OSError("disk full")):
+                result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertIn("Why forbidden:", result.output)
+            self.assertIn("REQ-0.35.0-04", result.output)
+            # The partial success stays stated: the declaration really is on
+            # disk with the new floor, so this must not read as "nothing
+            # happened, run it again".
+            self.assertIn("ALREADY HAPPENED", result.output)
+            self.assertIn(self._JOURNAL_PATH.as_posix(), result.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_structurally_wrong_journal_is_refused_in_prose_not_a_traceback(self) -> None:
+        """Would break if the journal guard covered only unparseable JSON.
+
+        A journal that PARSES but is not the expected record -- truncated to
+        `null` by an interrupted write, or an object missing `event_id` --
+        reaches the record's key lookups and raises TypeError/KeyError. That
+        escapes as a raw traceback past the three-part prose this same
+        function already supplies for the unparseable case, and a traceback
+        tells the operator nothing about which file to reconcile.
+        """
+        for label, payload in (
+            ("null", "null"),
+            ("list", "[]"),
+            ("missing-keys", json.dumps({"surface": "Doc.md"})),
+        ):
+            with self.subTest(journal=label), self._runner.isolated_filesystem():
+                _seed_surface()
+                _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+                self._JOURNAL_PATH.write_text(payload, encoding="utf-8")
+
+                result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+                self.assertEqual(result.exit_code, 2, msg=result.output)
+                # A raw TypeError/KeyError escapes the command as an unhandled
+                # exception, which the runner reports as exit 1 with an
+                # "Unexpected error" line -- never as this command's governed
+                # exit 2. Assert the traceback shape is absent explicitly, so
+                # the test names the defect it fences rather than relying on
+                # the exit code alone to imply it.
+                self.assertNotIn("Unexpected error", result.output)
+                self.assertNotIn("Traceback", result.output)
+                # The same three-part prose the unparseable case already gets.
+                self.assertIn(self._JOURNAL_PATH.as_posix(), result.output)
+                self.assertIn("Why forbidden:", result.output)
+                self.assertIn("REQ-0.35.0-04-02", result.output)
 
 
 if __name__ == "__main__":

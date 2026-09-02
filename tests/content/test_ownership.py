@@ -9,7 +9,11 @@ the heading title (REQ-0.35.0-04-06).
 
 from __future__ import annotations
 
+import ast
+import contextlib
+import fcntl
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -19,6 +23,7 @@ from unittest import mock
 import jsonschema
 from pydantic import ValidationError
 
+from gzkit.content import ownership
 from gzkit.content.models.corpus import Corpus, CorpusEntry, effective_corpus
 from gzkit.content.ownership import (
     _OWNERSHIP_VALUES,
@@ -31,6 +36,7 @@ from gzkit.content.ownership import (
     load_declaration,
     measure_section_spans,
     record_unowned_total,
+    write_declaration_atomically,
 )
 from gzkit.content.parse import section_id
 from gzkit.ledger import Ledger, LedgerEvent
@@ -633,19 +639,212 @@ class TestRecordUnownedTotalRatchet(unittest.TestCase):
         # witnesses. Induce a failure on the declaration write and prove no
         # ledger event was emitted -- Layer-2 may never announce a floor that
         # Layer-1 does not durably carry, even under a mid-operation fault.
+        #
+        # The fault is injected at `os.replace` rather than at `Path.write_text`:
+        # the declaration is now written atomically, so the rename is the ONLY
+        # step that can make new contents visible and therefore the only place
+        # a partial write could ever be observed. This is a real OS-level fault
+        # inside the production write, not a stub of it -- so the assertion is
+        # strictly stronger than the truncating-write version it replaces: no
+        # witness, no torn file, and no staging left behind.
+        before = self._declaration_path.read_bytes()
+        real_replace = os.replace
+
+        def refuse_declaration_replace(src, dst, *args, **kwargs):
+            if Path(dst).name == "Doc.md.json":
+                msg = "disk full"
+                raise OSError(msg)
+            return real_replace(src, dst, *args, **kwargs)
+
         with (
-            mock.patch.object(Path, "write_text", side_effect=OSError("disk full")),
+            mock.patch("os.replace", side_effect=refuse_declaration_replace),
             self.assertRaises(OSError),
         ):
             record_unowned_total(self._root, self._declaration, 40)
+
         self.assertFalse(self._ledger_path.exists())
+        self.assertEqual(
+            self._declaration_path.read_bytes(),
+            before,
+            "a failed declaration write must leave the file byte-unchanged, never torn",
+        )
+        residue = sorted(
+            path.name
+            for path in self._declaration_path.parent.iterdir()
+            if path.name not in {"Doc.md.json", "Doc.md.json.lock"}
+        )
+        self.assertEqual(residue, [], f"a rolled-back write leaves no staging file: {residue}")
+
+
+class TestRecordUnownedTotalRefusesAnOnDiskSurfaceMismatch(unittest.TestCase):
+    """`_committed_state` fail-closes when the on-disk `surface` disagrees.
+
+    Genuinely reachable in production: a case-insensitive filesystem resolves
+    `declaration_path(root, "doc.md")` and `declaration_path(root, "Doc.md")`
+    to the SAME file, so a caller holding one surface's declaration can open
+    a file another surface actually wrote. The condition itself needs no
+    case-insensitive filesystem to construct, though -- it is purely "the
+    file at the resolved path names a different surface than the declaration
+    in hand" -- so this test reproduces it directly by writing that file,
+    which is portable across filesystems. Every sibling `OwnershipLoadError`
+    branch in this module is covered; this one previously was not (Step-4b
+    review, closure minor A).
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._root = Path(self._tempdir.name)
+        self._declaration = OwnershipDeclaration(
+            surface="Doc.md",
+            sections={"doc-title": "corpus-owned"},
+            unowned_byte_floor=100,
+            measured_at="2026-09-02T00:00:00Z",
+            floor_event_id="seed-unowned-ratchet-updated-0",
+        )
+        self._path = declaration_path(self._root, self._declaration.surface)
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        # The file living at Doc.md's resolved path actually names a
+        # DIFFERENT surface -- the exact disagreement `_committed_state`
+        # must refuse rather than overwrite.
+        other_surface_declaration = self._declaration.model_copy(update={"surface": "Other.md"})
+        self._path.write_text(
+            other_surface_declaration.model_dump_json(indent=2) + "\n", encoding="utf-8"
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_on_disk_surface_disagreement_fails_closed_and_never_writes(self) -> None:
+        before = self._path.read_bytes()
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            record_unowned_total(self._root, self._declaration, 40)
+
+        message = str(ctx.exception)
+        self.assertIn(str(self._path), message)
+        self.assertIn("Other.md", message)
+        self.assertIn("Doc.md", message)
+        self.assertEqual(
+            self._path.read_bytes(),
+            before,
+            "a surface-mismatched file must be left byte-unchanged, never "
+            "overwritten with another surface's declaration",
+        )
+
+
+class TestRecordUnownedTotalIsTransactional(unittest.TestCase):
+    """`record_unowned_total` writes the SAME file as the attested raise-path.
+
+    A lock only serializes when EVERY writer takes it, and an event id nobody
+    can reproduce makes an interrupted run unrecoverable rather than untidy --
+    so these are properties of this writer, not of its sibling.
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._root = Path(self._tempdir.name) / "a"
+        self._declaration = OwnershipDeclaration(
+            surface="Doc.md",
+            sections={"doc-title": "corpus-owned", "alpha-section": "unowned"},
+            unowned_byte_floor=100,
+            measured_at="2026-09-02T00:00:00Z",
+            floor_event_id="seed-unowned-ratchet-updated-0",
+        )
+        self._path = declaration_path(self._root, "Doc.md")
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._path.write_text(self._declaration.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_minted_event_id_is_reproducible_from_the_transitions_own_content(
+        self,
+    ) -> None:
+        """Would break if the id embedded a wall-clock timestamp.
+
+        The declaration is written before its ledger witness, so an interrupted
+        run leaves a declaration naming an event the ledger lacks --
+        `load_declaration` then fails closed forever. A retry can only complete
+        that move if it mints the SAME id, which a `datetime.now()` id can
+        never do.
+        """
+        other_root = Path(self._tempdir.name) / "b"
+        first = record_unowned_total(self._root, self._declaration, 40)
+        second = record_unowned_total(other_root, self._declaration, 40)
+        self.assertEqual(
+            first.floor_event_id,
+            second.floor_event_id,
+            "the same transition from the same predecessor must mint the same id",
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_distinct_predecessor_mints_a_distinct_event_id(self) -> None:
+        """Would break if the id were a bare content fingerprint.
+
+        Two genuinely distinct recordings of the same total -- lower, restore,
+        lower again -- start from different predecessors. A pure content hash
+        would collide and silently drop the second witness, so the id must be a
+        CHAIN LINK over the declaration's current `floor_event_id`.
+        """
+        from_seed = record_unowned_total(self._root, self._declaration, 40)
+        successor = self._declaration.model_copy(
+            update={"floor_event_id": from_seed.floor_event_id}
+        )
+        from_successor = record_unowned_total(Path(self._tempdir.name) / "c", successor, 40)
+        self.assertNotEqual(from_seed.floor_event_id, from_successor.floor_event_id)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_declaration_write_and_its_witness_both_happen_inside_the_lock(self) -> None:
+        """Would break if this writer did not take the lock its sibling takes.
+
+        A lock serializes only if EVERY writer takes it: a non-participating
+        second writer reopens the lost-update race the attested raise-path just
+        closed -- both readers see the pre-transition floor, the second clobbers
+        the first, and one transition is discarded while its witness still
+        claims it happened.
+
+        Scoped deliberately to the two DURABLE WRITES: this test asserts their
+        ORDER inside the lock. That the committed floor is re-read under the
+        same lock -- the other half of the read-modify-write -- is asserted by
+        `TestRecordUnownedTotalReadsTheFloorInsideTheLock`, which observes the
+        outcome rather than the call order.
+        """
+        trace: list[str] = []
+        real_lock = ownership.exclusive_declaration_lock
+        real_write = ownership.write_declaration_atomically
+        real_emit = ownership.emit_unowned_ratchet_updated
+
+        @contextlib.contextmanager
+        def traced_lock(path: Path):
+            trace.append("lock-enter")
+            with real_lock(path):
+                yield
+            trace.append("lock-exit")
+
+        def traced_write(path: Path, text: str) -> None:
+            trace.append("declaration-write")
+            return real_write(path, text)
+
+        def traced_emit(*args, **kwargs):
+            trace.append("ledger-append")
+            return real_emit(*args, **kwargs)
+
+        with (
+            mock.patch.object(ownership, "exclusive_declaration_lock", traced_lock),
+            mock.patch.object(ownership, "write_declaration_atomically", traced_write),
+            mock.patch.object(ownership, "emit_unowned_ratchet_updated", traced_emit),
+        ):
+            record_unowned_total(self._root, self._declaration, 40)
+
+        self.assertEqual(
+            trace,
+            ["lock-enter", "declaration-write", "ledger-append", "lock-exit"],
+            "both durable writes must be enclosed by the declaration lock",
+        )
 
 
 class TestComputeBaseline(unittest.TestCase):
     """REQ-0.35.0-04-07/-08: the baseline is derived at call time, never stored."""
 
     @covers("REQ-0.35.0-04-07")
-    def test_baseline_against_real_agents_md_matches_independently_rederived_figures(
+    def test_baseline_arithmetic_is_self_consistent_against_the_real_surface_and_corpus(
         self,
     ) -> None:
         surface_text = _AGENTS_MD_PATH.read_text(encoding="utf-8")
@@ -711,6 +910,7 @@ class TestComputeBaseline(unittest.TestCase):
             "single-entry owned section -- pick a real REQ-08 fixture",
         )
 
+    @covers("REQ-0.35.0-04-07")
     def test_baseline_is_recomputed_when_the_corpus_changes_not_read_from_a_constant(
         self,
     ) -> None:
@@ -737,6 +937,522 @@ class TestComputeBaseline(unittest.TestCase):
         self.assertEqual(addressed_baseline.owned_section_count, 1)
         self.assertEqual(addressed_baseline.entry_count_by_section, {"doc-title": 1})
         self.assertLess(addressed_baseline.unowned_byte_span, empty_baseline.unowned_byte_span)
+
+    @covers("REQ-0.35.0-04-07")
+    def test_baseline_deltas_a_known_perturbation_by_exactly_that_amount(self) -> None:
+        """Differential control for REQ-0.35.0-04-07 (Step-4b adversary finding 5).
+
+        The class's other covering test re-derives its expectation by
+        re-executing `compute_baseline`'s own algorithm against the same
+        primitives, so it only proves `compute_baseline` equals a copy of
+        itself -- the adversary substituted a STORED DAY-ONE SNAPSHOT for
+        live computation and that test class still passed whole.
+
+        This control cannot be fooled that way: it PERTURBS the real surface
+        and corpus by a quantity constructed independently of any
+        `compute_baseline` primitive (a plain `len(text.encode("utf-8"))` on
+        a string this test wrote, and one corpus entry this test constructed),
+        and asserts every reported figure moves by EXACTLY that quantity. If
+        `compute_baseline` returned a frozen snapshot instead of measuring
+        live, EVERY delta asserted below would read zero -- that is the
+        precise failure mode this control exists to catch, made explicit in
+        the final block below.
+        """
+        surface_text = _AGENTS_MD_PATH.read_text(encoding="utf-8")
+        corpus = Corpus.loads(_CORPUS_PATH.read_text(encoding="utf-8"))
+        before = compute_baseline(surface_text, corpus)
+
+        # --- Control 1: SURFACE perturbation --------------------------------
+        # Append one synthetic H2 section, addressed by no corpus entry,
+        # directly at the end of the document (no leading blank line: the
+        # real AGENTS.md already ends with a newline, so the new heading
+        # line starts EXACTLY at the old EOF offset). `measure_section_spans`
+        # bounds the final section's span at EOF (see its own module
+        # function docstring / the boundary loop above), so appending there cannot
+        # change any EXISTING section's span -- only the new section's own
+        # span, which runs from its heading to the new EOF, is added.
+        appended_section = (
+            "## REQ-04-07 Differential Control Probe Section\n"
+            "Synthetic probe body addressed by no corpus entry.\n"
+        )
+        appended_byte_len = len(appended_section.encode("utf-8"))
+        perturbed_surface_text = surface_text + appended_section
+        probe_section_id = section_id("REQ-04-07 Differential Control Probe Section")
+        self.assertNotIn(
+            probe_section_id,
+            measure_section_spans(surface_text),
+            "fixture collision: pick a probe title whose section id does "
+            "not already exist in AGENTS.md",
+        )
+
+        after_surface = compute_baseline(perturbed_surface_text, corpus)
+
+        self.assertEqual(
+            after_surface.total_section_count,
+            before.total_section_count + 1,
+            "appending one H2 section must increase the section count by "
+            "exactly 1 -- a stored snapshot would report zero delta",
+        )
+        self.assertEqual(
+            after_surface.total_byte_span,
+            before.total_byte_span + appended_byte_len,
+            "total_byte_span must grow by EXACTLY the bytes appended -- a "
+            "stored snapshot would report zero delta here",
+        )
+        self.assertEqual(
+            after_surface.unowned_byte_span,
+            before.unowned_byte_span + appended_byte_len,
+            "the new section is addressed by no corpus entry, so the "
+            "entire appended span must land in unowned_byte_span",
+        )
+        self.assertEqual(
+            after_surface.owned_section_count,
+            before.owned_section_count,
+            "the appended section is unowned, so owned_section_count must not move",
+        )
+        self.assertLess(
+            after_surface.coverage_pct,
+            before.coverage_pct,
+            "adding unowned span against a fixed owned span must strictly decrease coverage_pct",
+        )
+
+        # --- Control 2: CORPUS perturbation ----------------------------------
+        # Address one section that is currently unowned, WITHOUT touching the
+        # surface text at all.
+        spans = measure_section_spans(surface_text)
+        unowned_section_ids = sorted(set(spans) - set(before.entry_count_by_section))
+        self.assertTrue(
+            unowned_section_ids,
+            "fixture drift: AGENTS.md/corpus no longer has any unowned "
+            "section to address -- pick a different REQ-07 fixture",
+        )
+        target_section_id = unowned_section_ids[0]
+        addressed_corpus = corpus.append(
+            CorpusEntry(
+                id="req-04-07-differential-control-probe-entry",
+                surface="AGENTS.md",
+                section=target_section_id,
+                tier="invariant",
+                classification="Mechanical",
+                text="REQ-0.35.0-04-07 differential control probe entry.",
+                origin="test",
+                ts="2026-09-02T00:00:00Z",
+            )
+        )
+
+        after_corpus = compute_baseline(surface_text, addressed_corpus)
+
+        self.assertEqual(
+            after_corpus.owned_section_count,
+            before.owned_section_count + 1,
+            "addressing one previously-unowned section must increase "
+            "owned_section_count by exactly 1",
+        )
+        self.assertEqual(
+            after_corpus.total_byte_span,
+            before.total_byte_span,
+            "the surface did not change, so total_byte_span must not move",
+        )
+        self.assertLess(
+            after_corpus.unowned_byte_span,
+            before.unowned_byte_span,
+            "addressing a section must strictly decrease unowned_byte_span",
+        )
+        self.assertGreater(
+            after_corpus.coverage_pct,
+            before.coverage_pct,
+            "addressing a section must strictly increase coverage_pct",
+        )
+        self.assertIn(target_section_id, after_corpus.entry_count_by_section)
+
+        # --- Control 3: the snapshot-detection assertion ---------------------
+        # The point of the whole control, made explicit rather than merely
+        # implied by the individual assertions above: a stored day-one
+        # snapshot would report IDENTICAL figures for `before`,
+        # `after_surface`, and `after_corpus` regardless of either
+        # perturbation, so every delta below would read zero.
+        self.assertNotEqual(after_surface.total_byte_span, before.total_byte_span)
+        self.assertNotEqual(after_surface.unowned_byte_span, before.unowned_byte_span)
+        self.assertNotEqual(after_corpus.owned_section_count, before.owned_section_count)
+        self.assertNotEqual(after_corpus.unowned_byte_span, before.unowned_byte_span)
+
+
+class TestWriteDeclarationAtomically(unittest.TestCase):
+    """A declaration write is all-or-nothing -- no reader ever sees a torn file.
+
+    `Path.write_text` truncates the target before it writes, so an interrupted
+    write leaves a half-serialized declaration on disk. A torn declaration is
+    not merely a lost update: it is an unreadable coverage claim on the ONE
+    surface that gates the unowned-byte ratchet, so every reader of it fails
+    closed until a human repairs it by hand -- the silent-hand-edit path
+    ADR-0.35.0 exists to close.
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._path = Path(self._tempdir.name) / "Doc.md.json"
+        self._original = '{"unowned_byte_floor": 100}\n'
+        self._path.write_text(self._original, encoding="utf-8")
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_failed_replace_leaves_the_target_byte_unchanged(self) -> None:
+        """Would break if production went back to a truncating in-place write.
+
+        The failure is injected at the rename, which is the ONLY step that may
+        make the new contents visible; everything before it must be confined
+        to staging.
+        """
+        before = self._path.read_bytes()
+        raised: list[OSError] = []
+        with mock.patch("os.replace", side_effect=OSError("disk full")):
+            try:
+                write_declaration_atomically(self._path, '{"unowned_byte_floor": 999}\n')
+            except OSError as exc:  # noqa: PERF203 - one call, not a loop body
+                raised.append(exc)
+
+        self.assertEqual(
+            self._path.read_bytes(),
+            before,
+            "a failed declaration write must leave the target byte-unchanged, "
+            "never a partially-written file",
+        )
+        self.assertTrue(
+            raised, "a failed atomic replace must propagate to the caller, never be swallowed"
+        )
+        residue = sorted(p.name for p in self._path.parent.iterdir() if p.name != "Doc.md.json")
+        self.assertEqual(residue, [], f"staging files must be cleaned up, found {residue}")
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_successful_write_replaces_the_contents_and_leaves_no_staging(self) -> None:
+        """Would break if the staging file were left behind or never renamed in."""
+        write_declaration_atomically(self._path, '{"unowned_byte_floor": 42}\n')
+
+        self.assertEqual(self._path.read_text(encoding="utf-8"), '{"unowned_byte_floor": 42}\n')
+        residue = sorted(p.name for p in self._path.parent.iterdir() if p.name != "Doc.md.json")
+        self.assertEqual(residue, [], f"staging files must be cleaned up, found {residue}")
+
+    @unittest.skipUnless(os.name == "posix", "F_GETFL access-mode probe is POSIX-only")
+    @covers("REQ-0.35.0-04-05")
+    def test_the_descriptor_handed_to_fsync_is_open_for_writing(self) -> None:
+        """Would break if the durability barrier fsynced a READ-ONLY handle.
+
+        On Windows `os.fsync` is `_commit` -> `FlushFileBuffers`, which needs
+        GENERIC_WRITE; a read handle returns ERROR_ACCESS_DENIED and `os.fsync`
+        raises OSError. That OSError is caught by this module's own `except
+        OSError` and re-raised, so the FIRST step of every declaration write
+        fails and `gz content unown` -- including its recovery path -- can
+        never complete on Windows. The access mode of the descriptor is
+        therefore the semantic under test, not an implementation detail.
+        """
+        observed: list[int] = []
+        real_fsync = os.fsync
+
+        def probing_fsync(fd: int) -> None:
+            observed.append(fcntl.fcntl(fd, fcntl.F_GETFL) & os.O_ACCMODE)
+            return real_fsync(fd)
+
+        with mock.patch("gzkit.content.ownership.os.fsync", side_effect=probing_fsync):
+            write_declaration_atomically(self._path, '{"surface": "Doc.md"}\n')
+
+        self.assertTrue(observed, "the durability barrier must actually fsync")
+        for mode in observed:
+            self.assertIn(
+                mode,
+                (os.O_WRONLY, os.O_RDWR),
+                "fsync must be handed a writable descriptor; a read handle "
+                "makes this write unrunnable on Windows",
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_the_bytes_on_disk_are_byte_identical_to_the_text_handed_in(self) -> None:
+        """Would break if newline translation were left at the platform default.
+
+        The declaration is a TRACKED artifact, so on Windows a default-newline
+        write turns every `\n` into `\r\n` and the committed JSON differs by
+        platform. `newline="\n"` is pinned, so this assertion is GREEN on
+        both: the fence FIRES only on Windows and is INERT on POSIX, where
+        the default translation is already a no-op. A regression that drops
+        that pin therefore reads green in every POSIX run of this suite and
+        RED only on Windows -- the same one-sided blindness the
+        writable-descriptor test above carries, and the reason both are
+        written as cross-platform fences rather than local assertions.
+        """
+        text = '{\n  "surface": "Doc.md"\n}\n'
+        write_declaration_atomically(self._path, text)
+        self.assertEqual(self._path.read_bytes(), text.encode("utf-8"))
+
+
+class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):
+    """REQ-0.35.0-04-02: the refusal is decided against the COMMITTED floor.
+
+    `record_unowned_total` receives a declaration the caller read at some
+    earlier moment. Deciding the decrease-only comparison against that
+    parameter alone lets two callers holding the same pre-read floor commit
+    40 and then 60 -- an INCREASE through the one path REQ-0.35.0-04-02
+    forbids raising the floor from -- and the result is internally consistent,
+    so `load_declaration` accepts it. The authoritative floor is the one on
+    disk at write time.
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._root = Path(self._tempdir.name)
+        self._ledger_path = self._root / ".gzkit" / "ledger.jsonl"
+        self._declaration = OwnershipDeclaration(
+            surface="Doc.md",
+            sections={"doc-title": "corpus-owned", "alpha-section": "unowned"},
+            unowned_byte_floor=100,
+            measured_at="2026-09-02T00:00:00Z",
+            floor_event_id="seed-unowned-ratchet-updated-0",
+        )
+        self._path = declaration_path(self._root, "Doc.md")
+        self._path.parent.mkdir(parents=True, exist_ok=True)
+        self._path.write_text(self._declaration.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+    def _persisted_floor(self) -> int:
+        return int(json.loads(self._path.read_text(encoding="utf-8"))["unowned_byte_floor"])
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_stale_read_second_caller_cannot_raise_the_committed_floor(self) -> None:
+        """Would pass if the comparison used the caller's stale parameter.
+
+        Both callers hold the SAME declaration read before either wrote --
+        floor 100. The first commits 40. The second's 60 is below the stale
+        100 it holds but ABOVE the 40 now committed, so accepting it raises
+        the ratchet. The refusal must be decided against 40.
+        """
+        stale = self._declaration
+        record_unowned_total(self._root, stale, 40)
+        self.assertEqual(self._persisted_floor(), 40)
+
+        refusal: str | None = None
+        try:
+            record_unowned_total(self._root, stale, 60)
+        except RatchetRefusedError as exc:
+            refusal = str(exc)
+
+        # The durable claim first: a raise through this path is the defect,
+        # and it is observable on disk whether or not an exception was raised.
+        self.assertEqual(
+            self._persisted_floor(),
+            40,
+            "a stale-read caller raised the committed ratchet floor through the "
+            "ordinary path, which REQ-0.35.0-04-02 forbids",
+        )
+        self.assertIsNotNone(
+            refusal,
+            "recording 60 over a committed floor of 40 must be REFUSED, not accepted",
+        )
+        assert refusal is not None
+        self.assertIn("REQ-0.35.0-04-02", refusal)
+        self.assertIn("60", refusal)
+        # The prose must name that the refusal is against the CURRENT committed
+        # floor, which may have moved since the caller read it -- otherwise the
+        # operator reads "above the stored value" and checks the wrong number.
+        self.assertIn("40", refusal)
+        self.assertIn("gz content unown", refusal)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_minted_id_chains_on_the_predecessor_that_is_actually_on_disk(self) -> None:
+        """Would pass if the chain link were read off the caller's parameter.
+
+        The event id is a CHAIN LINK over the predecessor `floor_event_id`. If
+        it is minted from the id the caller read rather than the one committed
+        at write time, the link names a predecessor that is no longer the
+        predecessor -- a broken chain wearing a valid-looking id, which
+        `load_declaration`'s chain validation cannot detect because the stored
+        floor and its minted event still agree.
+        """
+        committed = self._declaration.model_copy(
+            update={"floor_event_id": "committed-unowned-ratchet-updated-9"}
+        )
+        self._path.write_text(committed.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+        # The caller still holds the OLD chain link it read before the commit.
+        stale = self._declaration  # floor_event_id="seed-unowned-ratchet-updated-0"
+        minted = record_unowned_total(self._root, stale, 40)
+
+        # Reference: the same move made by a caller whose declaration already
+        # carries the committed predecessor. Semantics, not a hardcoded digest.
+        reference = record_unowned_total(Path(self._tempdir.name) / "reference", committed, 40)
+        self.assertEqual(
+            minted.floor_event_id,
+            reference.floor_event_id,
+            "the minted id must chain on the predecessor committed at write time",
+        )
+        from_stale = record_unowned_total(Path(self._tempdir.name) / "from-stale", stale, 40)
+        self.assertNotEqual(
+            minted.floor_event_id,
+            from_stale.floor_event_id,
+            "chaining on the stale predecessor would mint a different id -- proving "
+            "the assertion above is not vacuous",
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_attested_section_flip_committed_in_between_survives_this_write(self) -> None:
+        """The in-lock re-read must govern the WHOLE persisted object.
+
+        `gz content unown` commits an attested transition: `alpha-section`
+        flips to `unowned` and the floor RISES to 200. A caller still holding
+        the PRE-FLIP declaration (floor 100, `alpha-section` corpus-owned)
+        then records 90 -- legal against the committed 200, so it is accepted
+        and must land. If the persisted object is built from the CALLER'S
+        stale copy with only the two ratchet scalars patched, that write
+        silently REVERTS the attested flip while its ledger event still
+        stands, and the reverted file is self-consistent enough that
+        `load_declaration` accepts it forever. That is the same lost-update
+        class the committed-floor re-read closes, one field over, on the same
+        locked file -- so the re-read has to decide the sections map too.
+        """
+        stale = self._declaration.model_copy(
+            update={"sections": {"doc-title": "corpus-owned", "alpha-section": "corpus-owned"}}
+        )
+        attested = self._declaration.model_copy(
+            update={
+                "sections": {"doc-title": "corpus-owned", "alpha-section": "unowned"},
+                "unowned_byte_floor": 200,
+                "measured_at": "2026-09-02T12:00:00Z",
+                "floor_event_id": "attested-section-ownership-unowned-1",
+            }
+        )
+        self._path.write_text(attested.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+        returned = record_unowned_total(self._root, stale, 90)
+
+        persisted = json.loads(self._path.read_text(encoding="utf-8"))
+        # The recording itself must have landed -- otherwise the flip would
+        # survive merely because nothing was written, and the assertion below
+        # would be vacuous.
+        self.assertEqual(persisted["unowned_byte_floor"], 90)
+        self.assertEqual(
+            persisted["sections"]["alpha-section"],
+            "unowned",
+            "recording a total through the ordinary path reverted an attested "
+            "section flip committed in between, leaving its ledger event "
+            "announcing a transition the declaration no longer carries",
+        )
+        self.assertEqual(
+            persisted["measured_at"],
+            "2026-09-02T12:00:00Z",
+            "the persisted declaration must carry the committed measurement, "
+            "not the moment the stale caller happened to read",
+        )
+        # The returned object is the declaration as COMMITTED, so a caller who
+        # persists or compares it does not reintroduce the staleness this
+        # re-read exists to close.
+        self.assertEqual(returned.sections["alpha-section"], "unowned")
+        self.assertEqual(returned.measured_at, "2026-09-02T12:00:00Z")
+        self.assertEqual(returned.unowned_byte_floor, 90)
+
+    @covers("REQ-0.35.0-04-03")
+    def test_a_first_write_with_no_declaration_on_disk_uses_the_callers_floor(self) -> None:
+        """The genuine first-write case: nothing committed to be stale against.
+
+        Falling back to the parameter here is not a weakening of the in-lock
+        re-read -- with no file on disk there is no committed floor for the
+        caller's read to have gone stale against, and refusing would make the
+        very first recording unreachable.
+        """
+        fresh = Path(self._tempdir.name) / "fresh"
+        updated = record_unowned_total(fresh, self._declaration, 40)
+
+        path = declaration_path(fresh, "Doc.md")
+        persisted = json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(persisted["unowned_byte_floor"], 40)
+        self.assertEqual(persisted["floor_event_id"], updated.floor_event_id)
+
+        events = [
+            json.loads(line)
+            for line in (fresh / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+        self.assertEqual(len(events), 1)
+        self.assertEqual(events[0]["prior_unowned_byte_floor"], 100)
+        self.assertEqual(events[0]["new_unowned_byte_floor"], 40)
+
+
+class TestNoDefinitionInThisModuleIsShadowed(unittest.TestCase):
+    """A test that cannot fail is the exact class this OBPI exists to kill.
+
+    Python rebinds a duplicate `class` or `def` name silently: the second
+    definition replaces the first, `unittest` collects only the survivor, and
+    the suite reports OK while every assertion in the shadowed definition is
+    never executed. This happened during authoring -- a duplicate
+    `TestWriteDeclarationAtomically` swallowed a block of assertions and
+    nothing reported it. The hazard is self-detecting from here on.
+    """
+
+    def setUp(self) -> None:
+        self._module = ast.parse(Path(__file__).read_text(encoding="utf-8"), filename=__file__)
+
+    def test_no_top_level_class_name_is_defined_twice(self) -> None:
+        names = [node.name for node in self._module.body if isinstance(node, ast.ClassDef)]
+        duplicates = sorted({name for name in names if names.count(name) > 1})
+        self.assertEqual(
+            duplicates,
+            [],
+            f"these class names are defined more than once, so the earlier "
+            f"definition's tests never run: {duplicates}",
+        )
+
+    def test_no_method_name_is_defined_twice_within_a_class(self) -> None:
+        shadowed: list[str] = []
+        for klass in (n for n in self._module.body if isinstance(n, ast.ClassDef)):
+            names = [
+                node.name
+                for node in klass.body
+                if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
+            ]
+            shadowed.extend(
+                f"{klass.name}.{name}" for name in sorted(set(names)) if names.count(name) > 1
+            )
+        self.assertEqual(
+            shadowed,
+            [],
+            f"these methods are defined more than once in their class, so the "
+            f"earlier definition never runs: {sorted(shadowed)}",
+        )
+
+    def test_no_definition_follows_a_module_level_unittest_main_call(self) -> None:
+        """A `unittest.main()` block above a definition drops it, silently.
+
+        Under `unittest discover` every definition binds and the suite is
+        green, so nothing reports the hazard. Run this file DIRECTLY as a
+        script and execution stops at `unittest.main()`: every class and
+        function below it never binds, is never collected, and its assertions
+        never run -- including this guard itself. That is the same
+        "assertions present but not executed" family as a shadowed
+        definition, which is why it belongs to this guard rather than beside
+        it. The `if __name__ == "__main__":` block belongs at the END of the
+        file, with nothing after it.
+        """
+        last_main = -1
+        for index, node in enumerate(self._module.body):
+            for child in ast.walk(node):
+                if (
+                    isinstance(child, ast.Call)
+                    and isinstance(child.func, ast.Attribute)
+                    and child.func.attr == "main"
+                    and isinstance(child.func.value, ast.Name)
+                    and child.func.value.id == "unittest"
+                ):
+                    last_main = index
+        if last_main == -1:
+            return
+        stranded = [
+            node.name
+            for node in self._module.body[last_main + 1 :]
+            if isinstance(node, ast.ClassDef | ast.FunctionDef | ast.AsyncFunctionDef)
+        ]
+        self.assertEqual(
+            stranded,
+            [],
+            f"these definitions follow a module-level unittest.main() call, so "
+            f"running this file as a script never binds them and their "
+            f"assertions never execute: {stranded}",
+        )
 
 
 if __name__ == "__main__":
