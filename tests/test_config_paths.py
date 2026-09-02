@@ -12,6 +12,7 @@ from gzkit.commands.config_paths import (
     _flatten_manifest_paths,
     _is_path_covered_by_manifest,
 )
+from gzkit.config import GzkitConfig
 
 
 def covers(target: str):  # noqa: D401
@@ -95,7 +96,7 @@ class TestSourcePathLiteralScan(unittest.TestCase):
                 'path = "data/eval"\n',
                 encoding="utf-8",
             )
-            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, GzkitConfig())
             self.assertEqual(issues, [])
 
     @covers("REQ-0.0.7-05-02")
@@ -110,7 +111,7 @@ class TestSourcePathLiteralScan(unittest.TestCase):
                 'output_dir = "artifacts/unknown/reports"\n',
                 encoding="utf-8",
             )
-            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, GzkitConfig())
             self.assertTrue(len(issues) > 0)
             self.assertIn("unmapped path literal", issues[0]["issue"])
 
@@ -131,7 +132,7 @@ class TestSourcePathLiteralScan(unittest.TestCase):
                 'FORBIDDEN = "ops/chores/"\nPLACEHOLDER = "config/file.json"\n',
                 encoding="utf-8",
             )
-            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, GzkitConfig())
             self.assertEqual(issues, [])
 
     def test_url_not_flagged(self):
@@ -144,15 +145,68 @@ class TestSourcePathLiteralScan(unittest.TestCase):
                 'endpoint = "https://docs/design/api"\n',
                 encoding="utf-8",
             )
-            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST)
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, GzkitConfig())
             self.assertEqual(issues, [])
 
     def test_missing_src_dir_no_issues(self):
         """If src/gzkit/ doesn't exist, no issues returned."""
         with tempfile.TemporaryDirectory() as tmp:
-            issues = _collect_source_path_literal_issues(Path(tmp), SAMPLE_MANIFEST)
+            issues = _collect_source_path_literal_issues(Path(tmp), SAMPLE_MANIFEST, GzkitConfig())
             self.assertEqual(issues, [])
 
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestPathConfigDeclaredDefaults(unittest.TestCase):
+    """A literal declared as a PathConfig default is governed by config.
+
+    The scanner's question is "is this literal governed by config?", and
+    ``GzkitConfig.paths`` is config. Before GHI #938 the scanner consulted the
+    manifest alone, so a declared ``PathConfig`` default was reported unmapped
+    -- including at the ``config.py`` line that declares it.
+    """
+
+    @covers("REQ-0.0.7-05-02")
+    def test_declared_default_not_flagged(self):
+        """A literal equal to a PathConfig default is not an unmapped literal."""
+        config = GzkitConfig()
+        # Precondition: the manifest genuinely does not carry this path, so a
+        # pass can only come from config coverage, never from manifest overlap.
+        self.assertFalse(
+            _is_path_covered_by_manifest(
+                config.paths.discovery_index, _flatten_manifest_paths(SAMPLE_MANIFEST)
+            )
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
+            (src / "declares.py").write_text(
+                f'discovery_index: str = "{config.paths.discovery_index}"\n',
+                encoding="utf-8",
+            )
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, config)
+            self.assertEqual(issues, [])
+
+    @covers("REQ-0.0.7-05-02")
+    def test_undeclared_sibling_still_flagged(self):
+        """Config coverage is exact: a sibling under the same root stays flagged.
+
+        Boundary test. Deriving parent directories from config defaults would
+        make ``.github`` itself covered and silently exempt every ``.github/**``
+        literal, which is the opposite of what the audit is for.
+        """
+        config = GzkitConfig()
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            src = root / "src" / "gzkit"
+            src.mkdir(parents=True)
+            (src / "sibling.py").write_text(
+                'legacy = ".github/skills"\n',
+                encoding="utf-8",
+            )
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, config)
+            self.assertEqual(len(issues), 1)
+            self.assertIn(".github/skills", issues[0]["issue"])

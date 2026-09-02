@@ -185,6 +185,23 @@ def _flatten_manifest_paths(manifest: dict[str, Any]) -> set[str]:
     return paths
 
 
+def _flatten_config_paths(config: GzkitConfig) -> set[str]:
+    """Return the path values ``GzkitConfig.paths`` declares.
+
+    Deliberately EXACT: unlike :func:`_flatten_manifest_paths` this derives no
+    parent directories. Deriving them would add ``.github`` from
+    ``.github/discovery-index.json`` and, through the prefix rule in
+    :func:`_is_path_covered_by_manifest`, silently exempt every ``.github/**``
+    literal in the tree -- the opposite of what this audit exists to do.
+    Pinned by ``TestPathConfigDeclaredDefaults.test_undeclared_sibling_still_flagged``.
+    """
+    return {
+        value.strip("/").replace("\\", "/")
+        for value in config.paths.model_dump().values()
+        if isinstance(value, str) and value
+    }
+
+
 def _is_path_covered_by_manifest(literal: str, manifest_paths: set[str]) -> bool:
     """Check if a path literal is covered by any manifest entry.
 
@@ -224,19 +241,24 @@ _EXEMPT_PATH_LITERALS: frozenset[str] = frozenset(
 def _collect_source_path_literal_issues(
     project_root: Path,
     manifest: dict[str, Any],
+    config: GzkitConfig,
 ) -> list[dict[str, str]]:
-    """Scan source for path literals not mapped to manifest keys.
+    """Scan source for path literals not governed by config.
 
     Uses AST to find string constants in src/gzkit/ that look like
     filesystem paths (contain a ``/`` and start with a known directory
-    prefix). Literals that don't map to any manifest entry are flagged.
+    prefix). A literal is governed when the manifest maps it OR when
+    ``GzkitConfig.paths`` declares it as a default -- both are config
+    surfaces, and checking only the manifest reported a declared
+    ``PathConfig`` default as unmapped, including at the ``config.py``
+    line declaring it (GHI #938).
     """
     issues: list[dict[str, str]] = []
     src_dir = project_root / "src" / "gzkit"
     if not src_dir.exists():
         return issues
 
-    manifest_paths = _flatten_manifest_paths(manifest)
+    manifest_paths = _flatten_manifest_paths(manifest) | _flatten_config_paths(config)
     path_prefix_re = __import__("re").compile(_PATH_SEGMENT_RE)
 
     for py_file in sorted(src_dir.rglob("*.py")):
@@ -307,7 +329,7 @@ def check_config_paths_cmd(as_json: bool) -> None:
     issues.extend(_collect_manifest_artifact_issues(project_root, manifest, legacy_obpi_path))
     issues.extend(_collect_control_surface_issues(project_root, manifest))
     issues.extend(_collect_obpi_path_contract_issues(project_root, config, legacy_obpi_path))
-    issues.extend(_collect_source_path_literal_issues(project_root, manifest))
+    issues.extend(_collect_source_path_literal_issues(project_root, manifest, config))
 
     result = {"valid": not issues, "issues": issues}
     if as_json:
