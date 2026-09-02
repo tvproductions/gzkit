@@ -90,11 +90,13 @@ class TestSignatureA(unittest.TestCase):
                             "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
+                    # Exemplar worklog type. Was `artifact_edited` until GHI #947
+                    # removed that type from `_TASK_WORKLOG_TYPES`; `gate_checked`
+                    # carries a `task_id` and has no carve-out, so it exercises the
+                    # same general signature (a) rule this test is about.
                     json.dumps(
                         {
-                            "event": "artifact_edited",
-                            "path": "src/foo.py",
-                            "session": "s1",
+                            "event": "gate_checked",
                             "id": "evt-2",
                             "schema_": "1.0",
                             "timestamp": "2026-05-30T15:01:00Z",
@@ -491,14 +493,33 @@ class TestSignatureA(unittest.TestCase):
                 len(errors), 0, "commit-locus artifact_edited must not trip signature (a)"
             )
 
-    def test_tool_locus_artifact_edited_still_trips_signature_a(self) -> None:
-        """The carve-out is keyed to `commit`, so the 5158-row tool-locus arm is untouched.
+    def test_tool_locus_artifact_edited_cannot_trip_signature_a(self) -> None:
+        """The tool locus has no attribution channel either, so it cannot fail (GHI #947).
 
-        Negative control for the test above (GHI #869). The tool locus records an
-        edit AT edit time, when a live TASK is knowable and attributable, so an
-        unattributed tool-locus row is genuine drift and MUST still fail. Without
-        this pin, widening the carve-out to every `artifact_edited` row would look
-        identical to the correct fix.
+        INVERTED 2026-09-02. This pin previously asserted the opposite, on the
+        premise that "the tool locus records an edit AT edit time, when a live
+        TASK is knowable and attributable". Measured, that premise is false in
+        both halves:
+
+        * ``artifact_edited_event`` (``ledger_events.py``) accepts no ``task_id``
+          parameter at all, so ``record_artifact_edit`` cannot record one even
+          when it knows which TASK is live -- the identical "sole caller cannot
+          supply one even in principle" property GHI #869 established for the
+          commit locus.
+        * There is no single current TASK to attribute to. TASKs are listed per
+          OBPI, and ``gz obpi pipeline`` auto-starts one per REQ; 12 were active
+          across two OBPIs when this was measured.
+
+        So ``artifact_edited`` never satisfied ``_TASK_WORKLOG_TYPES``' own
+        stated membership criterion -- "worklog event types that carry an
+        optional ``task_id`` field" -- and gating it produced rows that fail
+        permanently against an append-only ledger, blocking every later push.
+        The type is out of the roster; both loci are ungated for it.
+
+        The negative control this once provided is preserved in kind by
+        ``test_attested_without_task_id_still_trips_signature_a``: types that DO
+        carry a ``task_id`` must still fail unattributed, so removing one type
+        from the roster is not the same as disarming signature (a).
         """
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
@@ -531,7 +552,51 @@ class TestSignatureA(unittest.TestCase):
                 e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
             ]
             self.assertEqual(
-                len(errors), 1, "an unattributed TOOL-locus row is real drift and must still fail"
+                len(errors),
+                0,
+                "a tool-locus row has no task_id channel, so gating it can only fail forever",
+            )
+
+    def test_attested_without_task_id_still_trips_signature_a(self) -> None:
+        """Replacement negative control for the inversion above (GHI #947).
+
+        Dropping ``artifact_edited`` from ``_TASK_WORKLOG_TYPES`` must not be
+        mistakable for disarming signature (a). ``attested`` remains in the
+        roster and its producer DOES carry a ``task_id``, so an unattributed
+        ``attested`` row under a live TASK is genuine drift and must still fail.
+        Without this pin, deleting the whole roster would look identical to the
+        correct fix.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "event": "task_started",
+                            "task_id": "TASK-0.35.0-08-01-01",
+                            "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
+                            "id": "evt-1",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T13:12:21Z",
+                        }
+                    ),
+                    json.dumps(
+                        {
+                            "event": "attested",
+                            "id": "evt-2",
+                            "schema_": "1.0",
+                            "timestamp": "2026-08-23T14:24:09Z",
+                        }
+                    ),
+                ],
+            )
+            errors = [
+                e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message
+            ]
+            self.assertEqual(
+                len(errors), 1, "an unattributed attested row is real drift and must still fail"
             )
 
     @covers("REQ-0.0.64-04-01")
@@ -1664,13 +1729,15 @@ class TestPendingObpiAllSignatures(unittest.TestCase):
                             "timestamp": "2026-05-30T15:00:00Z",
                         }
                     ),
-                    # artifact_edited on a plain src/ path (not a brief / ADR-decision /
-                    # manpage carve-out) with NO task_id, while the TASK is active.
+                    # A worklog event with NO task_id while the TASK is active.
+                    # Was `artifact_edited` on a plain src/ path until GHI #947
+                    # removed that type from `_TASK_WORKLOG_TYPES`; `gate_checked`
+                    # carries a `task_id` and has no carve-out, so signature (a)
+                    # is still exercised on its own terms.
                     json.dumps(
                         {
-                            "event": "artifact_edited",
+                            "event": "gate_checked",
                             "obpi_id": "OBPI-0.0.64-04",
-                            "path": "src/gzkit/foo.py",
                             "id": "evt-2",
                             "schema_": "1.0",
                             "timestamp": "2026-05-30T15:01:00Z",

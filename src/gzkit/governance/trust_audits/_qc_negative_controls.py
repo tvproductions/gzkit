@@ -1107,11 +1107,16 @@ def _build_task_envelope_coherence() -> Path:
                 "obpi_id": "OBPI-0.0.1-01",
                 "task_id": "TASK-0.0.1-01-01-01",
             },
+            # A worklog event under an active TASK with no task_id, which
+            # signature (a) must flag. Was `artifact_edited` until GHI #947
+            # removed that type from `_TASK_WORKLOG_TYPES` (its producers carry
+            # no `task_id` parameter, so gating it could only fail forever);
+            # `gate_checked` is still gated and carries one, so this control
+            # keeps proving the gate has teeth.
             {
-                "event": "artifact_edited",
+                "event": "gate_checked",
                 "ts": "2026-06-01T00:00:01+00:00",
                 "obpi_id": "OBPI-0.0.1-01",
-                "path": "src/demo.py",
             },
         ],
     )

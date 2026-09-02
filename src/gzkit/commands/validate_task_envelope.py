@@ -24,9 +24,22 @@ from gzkit.validate import ValidationError
 # Worklog event types that carry an optional ``task_id`` field per ADR-0.0.64-01.
 # Signature (a) only fires for these — non-worklog events (e.g. obpi_lock_*) are
 # governance/ceremony events, not labor units.
+#
+# ``artifact_edited`` was REMOVED 2026-09-02 (GHI #947) because it never met this
+# roster's own membership criterion: ``artifact_edited_event`` accepts no
+# ``task_id`` parameter, so NEITHER of its producers can supply one — not the
+# commit-locus backstop (GHI #847/#869) and not the tool-locus hook
+# (``hooks/core.py:record_artifact_edit``). There is also no single current TASK
+# to attribute to: TASKs are listed per OBPI and ``gz obpi pipeline`` auto-starts
+# one per REQ. Gating a type whose producers cannot attribute makes its rows fail
+# PERMANENTLY against an append-only ledger, which then blocks every later push
+# including commits unrelated to the OBPI whose TASKs happened to be open
+# (measured 2026-09-02 at ledger :15690, a tool-locus row with no ``commit``).
+# GHI #869 fixed only the commit-locus half by keying a carve-out to ``commit``,
+# on the premise that the tool locus could attribute; that premise was false, so
+# the carve-out is gone and the type is out of the roster entirely.
 _TASK_WORKLOG_TYPES: frozenset[str] = frozenset(
     {
-        "artifact_edited",
         "attested",
         "gate_checked",
         "audit_receipt_emitted",
@@ -314,22 +327,13 @@ def _sig_a_is_not_labor_event(
     if ev_type == "composition_rendered":
         return True
 
-    # A commit-locus backstop row (GHI #847; the ``commit`` field is its
-    # discriminator) is derived from a commit diff AFTER the fact and has no
-    # attribution channel: ``artifact_edited_event`` accepts no ``task_id``
-    # parameter, so its sole caller cannot supply one even in principle. Gating it
-    # on attribution makes the row fail PERMANENTLY — the ledger is append-only,
-    # so it can never be repaired, and it then blocks every subsequent push,
-    # including commits unrelated to the OBPI whose TASKs happened to be open
-    # (measured 2026-08-23 at ledger :15362, an AGENTS.md canon render). Same
-    # ground as ``composition_rendered`` above; attributing it to an arbitrary
-    # live TASK would be FALSE attribution, which is worse than none.
-    #
-    # Keyed to ``commit`` so the arm that matters is untouched: the TOOL locus
-    # records an edit AT edit time, when a live TASK is knowable, and those rows
-    # (5158 of 5164 measured 2026-08-23) still fail unattributed (GHI #869).
-    if ev_type == "artifact_edited" and ev.get("commit"):
-        return True
+    # NOTE (GHI #947): a ``commit``-keyed carve-out for commit-locus
+    # ``artifact_edited`` rows lived here from GHI #869 until 2026-09-02. It is
+    # gone because ``artifact_edited`` left ``_TASK_WORKLOG_TYPES`` entirely —
+    # see that roster's comment — so the final ``ev_type not in`` test below now
+    # excuses BOTH loci and this branch could never fire. The reasoning it
+    # carried (attributing to an arbitrary live TASK would be FALSE attribution,
+    # worse than none) is preserved there and still governs.
 
     if _is_active_obpi_brief_reflection_event(ev, active_tasks_by_obpi):
         return True
