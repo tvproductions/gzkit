@@ -562,10 +562,19 @@ class TestSignatureA(unittest.TestCase):
 
         Dropping ``artifact_edited`` from ``_TASK_WORKLOG_TYPES`` must not be
         mistakable for disarming signature (a). ``attested`` remains in the
-        roster and its producer DOES carry a ``task_id``, so an unattributed
-        ``attested`` row under a live TASK is genuine drift and must still fail.
-        Without this pin, deleting the whole roster would look identical to the
-        correct fix.
+        roster, so an unattributed ``attested`` row under a live TASK still
+        trips the signature. Without this pin, deleting the whole roster would
+        look identical to the correct fix.
+
+        This docstring asserted "its producer DOES carry a ``task_id``" until
+        2026-09-03. That was false and is corrected here (GHI #950):
+        ``attested_event`` is ``(adr_id, status, by, reason)`` -- no ``task_id``
+        parameter -- so ``attested`` fails the same membership criterion that
+        evicted ``artifact_edited``. What this test pins is therefore narrower
+        than the original claim: that the roster is still ARMED, not that its
+        remaining members are attributable. Whether they should be in it at all
+        is #950's subject; until that is ruled, do not read this pin as evidence
+        the roster is coherent.
         """
         with tempfile.TemporaryDirectory() as td:
             root = Path(td)
