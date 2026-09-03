@@ -192,3 +192,57 @@ def emit_section_ownership_genesis(
         )
     )
     return event_id
+
+
+def emit_section_ownership_reanchored(
+    root: Path,
+    event_id: str,
+    surface: str,
+    sections_digest: str,
+    prior_unowned_byte_floor: int,
+    new_unowned_byte_floor: int,
+    predecessor_event_id: str,
+    reason: str,
+) -> str:
+    """Append a section_ownership_reanchored event to the project ledger (OBPI-0.35.0-04).
+
+    Layer-2 witness for a LEGITIMATE migration of *surface*'s unowned-byte
+    ratchet floor. It exists because ``section_ownership_genesis`` is restricted
+    to a surface's FIRST ownership event: the loader used to accept a LATE
+    genesis row as a fresh baseline, so minting one re-declared "day one" and
+    reset the floor to whatever the miner chose (Step-4b round-4 CRITICAL). With
+    genesis first-only, a real schema migration -- ``sections_digest`` arriving
+    mid-flight is the motivating case -- needs somewhere to land that is NOT a
+    second day-one. This is that landing place.
+
+    *predecessor_event_id*, *prior_unowned_byte_floor* and *reason* are what
+    make the row a LINK rather than a root: they name the ownership event this
+    re-anchors, the floor it moves from, and why the move was legitimate, so a
+    reader can walk the chain back to the surface's one true genesis. An
+    emitter that dropped any of the three would produce a row a late genesis
+    row is indistinguishable from.
+
+    *event_id* is CALLER-MINTED, never minted here, mirroring
+    ``emit_section_ownership_genesis``: the caller embeds the same id in the
+    declaration's ``floor_event_id`` chain pointer BEFORE this append, so
+    Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
+    proves the re-anchored floor.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    ledger.append(
+        LedgerEvent(
+            event="section_ownership_reanchored",
+            id=event_id,
+            ts=timestamp,
+            extra={
+                "surface": surface,
+                "sections_digest": sections_digest,
+                "prior_unowned_byte_floor": prior_unowned_byte_floor,
+                "new_unowned_byte_floor": new_unowned_byte_floor,
+                "predecessor_event_id": predecessor_event_id,
+                "reason": reason,
+            },
+        )
+    )
+    return event_id

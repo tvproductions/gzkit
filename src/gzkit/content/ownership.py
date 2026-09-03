@@ -55,10 +55,18 @@ _H2_PREFIX = "## "
 _OWNERSHIP_EVENT_TYPES: frozenset[str] = frozenset(
     {
         "section_ownership_genesis",
+        "section_ownership_reanchored",
         "section_ownership_unowned",
         "unowned_ratchet_updated",
     }
 )
+
+# The one type that may open a surface's chain. Every other ownership event is a
+# LINK and must name the floor it moves from; genesis is the root and names none.
+# Step-4b round-4 (CRITICAL) turned that exemption into the attack: genesis was
+# not restricted to the FIRST event, so minting a second one re-declared day one
+# at any floor the miner chose, with no attestor and no reason.
+_GENESIS_EVENT: str = "section_ownership_genesis"
 
 
 class OwnershipDeclaration(BaseModel):
@@ -430,9 +438,133 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
         raise OwnershipLoadError(msg)
 
     _refuse_wrong_direction_witness(path, event, floor_event_id)
+    _refuse_unchained_witness(path, ledger, event, floor_event_id, declared_surface)
     _refuse_unwitnessed_section_map(path, event, floor_event_id, declared_sections)
 
     return OwnershipDeclaration.model_validate(raw)
+
+
+def _ownership_chain(ledger: Any, surface: str) -> list[Any]:
+    """Return *surface*'s ownership events in ledger order.
+
+    The ledger is append-only, so file order IS chronological order and the
+    predecessor of any event is simply the one before it in this list. Reading
+    the chain rather than trusting a claim is the whole point: an event's
+    `prior_unowned_byte_floor` is the mover's own assertion about where it
+    started, and Step-4b round-4 showed that assertion being fabricated.
+    """
+    return [
+        event
+        for event in ledger.read_all()
+        if event.event in _OWNERSHIP_EVENT_TYPES and event.extra.get("surface") == surface
+    ]
+
+
+def _refuse_unchained_witness(
+    path: Path, ledger: Any, event: Any, floor_event_id: str, declared_surface: str
+) -> None:
+    """Fail closed when a witness is not chained to the surface's real predecessor.
+
+    Step-4b round-4 CRITICAL. `load_declaration` verified that the witness's
+    CLAIMED `prior` and `new` were consistent with each other and with its own
+    type, and never once asked the ledger what the floor actually was before.
+    Two attacks fall out of that, and both were reproduced:
+
+    A real raise was laundered as a decrease by naming a fictitious higher
+    start -- observed `actual_previous_floor=18`,
+    `accepted_claimed_transition=138 -> 38`, `actual_floor_rose=True`,
+    `attestor_present=False`, `reason_present=False`. And a LATE
+    `section_ownership_genesis` row was accepted as a fresh baseline --
+    observed `late_genesis_load=late-genesis`, `late_genesis_has_attestor=False`
+    -- because nothing required genesis to be a surface's FIRST ownership event.
+
+    A chain is what distinguishes a plausible record from proof of the governed
+    transition. The predecessor here is read from the ledger, never from the
+    row asking to be trusted.
+    """
+    chain = _ownership_chain(ledger, declared_surface)
+    position = next(
+        (index for index, candidate in enumerate(chain) if candidate.id == floor_event_id),
+        None,
+    )
+    if position is None:
+        # The event resolved by id but does not appear in this surface's chain;
+        # the surface cross-check upstream already refuses that mismatch.
+        return
+
+    if event.event == _GENESIS_EVENT:
+        if position != 0:
+            first = chain[0]
+            msg = (
+                f"What failed: {path.as_posix()!r} names floor_event_id "
+                f"{floor_event_id!r}, a {_GENESIS_EVENT!r} event that is NOT the "
+                f"first ownership event for {declared_surface!r} -- "
+                f"{first.id!r} precedes it.\n"
+                "Why forbidden: REQ-0.35.0-04-02 -- genesis is the ROOT of a "
+                "surface's chain, so there may be exactly one and it must come "
+                "first. A later genesis row re-declares day one at whatever floor "
+                "it carries, with no prior floor to move from, no attestor and no "
+                "reason -- resetting the ratchet using a row that is entirely "
+                "schema-valid. A legitimate migration is a LINK, not a second "
+                "root.\n"
+                "Next step: record the change as a 'section_ownership_reanchored' "
+                "event naming its predecessor and the floor it moves from, then "
+                "repoint floor_event_id at it and retry."
+            )
+            raise OwnershipLoadError(msg)
+        return
+
+    if position == 0:
+        msg = (
+            f"What failed: {path.as_posix()!r} names floor_event_id "
+            f"{floor_event_id!r}, a {event.event!r} event that OPENS "
+            f"{declared_surface!r}'s chain with no genesis beneath it.\n"
+            f"Why forbidden: REQ-0.35.0-04-02 -- only {_GENESIS_EVENT!r} may be a "
+            "surface's first ownership event. Any other type is a link, and a "
+            "link with nothing before it names a predecessor that does not "
+            "exist.\n"
+            f"Next step: record {declared_surface!r}'s genesis first, then chain "
+            "this transition to it and retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    predecessor = chain[position - 1]
+    actual_prior = predecessor.extra.get("new_unowned_byte_floor")
+    claimed_prior = event.extra.get("prior_unowned_byte_floor")
+    if claimed_prior != actual_prior:
+        msg = (
+            f"What failed: {path.as_posix()!r} names floor_event_id "
+            f"{floor_event_id!r}, which claims to move FROM floor "
+            f"{claimed_prior!r}, but {declared_surface!r}'s preceding ownership "
+            f"event {predecessor.id!r} recorded floor {actual_prior!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- a witness's prior floor is the "
+            "mover's own claim about where it started, and a claim is not "
+            "provenance. Naming a fictitious higher start makes a RAISE read as "
+            "a decrease, so the direction guard passes and the floor rises "
+            "outside the attested path with no attestor and no reason. The "
+            "predecessor is read from the ledger precisely so the row cannot "
+            "choose it.\n"
+            "Next step: make the change through `gz content unown`, which chains "
+            "the new event to the real predecessor, then repoint floor_event_id "
+            "at it and retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    named = event.extra.get("predecessor_event_id")
+    if named is not None and named != predecessor.id:
+        msg = (
+            f"What failed: {path.as_posix()!r} names floor_event_id "
+            f"{floor_event_id!r}, which names predecessor {named!r}, but "
+            f"{declared_surface!r}'s preceding ownership event is "
+            f"{predecessor.id!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- a row that names a predecessor "
+            "other than its real one is claiming a place in the chain it does "
+            "not hold, which is how a transition is made to appear to continue "
+            "state it never saw.\n"
+            "Next step: re-record the transition against the real predecessor, "
+            "then repoint floor_event_id at it and retry."
+        )
+        raise OwnershipLoadError(msg)
 
 
 def _refuse_unwitnessed_section_map(
@@ -504,7 +636,35 @@ def _refuse_wrong_direction_witness(path: Path, event: Any, floor_event_id: str)
     """
     prior = event.extra.get("prior_unowned_byte_floor")
     new = event.extra.get("new_unowned_byte_floor")
-    if not isinstance(prior, int) or not isinstance(new, int):
+
+    if event.event == _GENESIS_EVENT:
+        # The root of a chain names no predecessor floor, so it asserts no
+        # direction. Genesis's own constraint -- that it be FIRST -- is enforced
+        # by `_refuse_unchained_witness`, not here.
+        return
+
+    if not isinstance(prior, int):
+        # Step-4b round-4: this early return used to fire for EVERY type whose
+        # `prior` was absent, so omitting the field bought exemption from the
+        # very check the field exists to enable
+        # (`missing_prior_non_genesis_load=raise-without-prior`). Only genesis
+        # is exempt, and it returned above.
+        msg = (
+            f"What failed: {path.as_posix()!r} names floor_event_id "
+            f"{floor_event_id!r}, a {event.event!r} event recording NO "
+            "prior_unowned_byte_floor.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- only "
+            f"{_GENESIS_EVENT!r} may open a chain without naming the floor it "
+            "moves from. Every other ownership event is a LINK: without a prior "
+            "floor there is nothing to check a direction against, so the row "
+            "witnesses a transition it declines to describe.\n"
+            "Next step: repoint floor_event_id at an event that records its "
+            "prior_unowned_byte_floor, or raise the floor through `gz content "
+            "unown` so it gains one, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    if not isinstance(new, int):
         return
 
     if event.event == "unowned_ratchet_updated" and new > prior:

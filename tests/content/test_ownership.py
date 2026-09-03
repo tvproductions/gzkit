@@ -41,7 +41,11 @@ from gzkit.content.ownership import (
     write_declaration_atomically,
 )
 from gzkit.content.parse import section_id
-from gzkit.governance.events import emit_section_ownership_genesis
+from gzkit.events import parse_typed_event
+from gzkit.governance.events import (
+    emit_section_ownership_genesis,
+    emit_section_ownership_reanchored,
+)
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.traceability import covers
 
@@ -369,6 +373,12 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
         """
         spans = measure_section_spans(_SIMPLE_SURFACE)
         coherent_floor = spans["alpha-section"] + spans["beta-section"]
+        # Seed the surface's ROOT before any link. A chain whose first event is
+        # a ratchet row names a predecessor that does not exist, which the
+        # round-4 chain guard refuses -- and rightly: `record_unowned_total`
+        # never required a genesis to precede it, so this fixture used to build
+        # a rootless chain and call it attested.
+        genesis_event_id = self._seed_genesis_event("Doc.md", coherent_floor)
         genesis = OwnershipDeclaration(
             surface="Doc.md",
             sections={
@@ -378,7 +388,7 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
             },
             unowned_byte_floor=coherent_floor,
             measured_at="2026-09-02T00:00:00Z",
-            floor_event_id=None,
+            floor_event_id=genesis_event_id,
         )
         path = declaration_path(self._root, genesis.surface)
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -1774,6 +1784,98 @@ class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):
         self.assertEqual(events[0]["new_unowned_byte_floor"], 40)
 
 
+class TestSectionOwnershipReanchoredEmitter(unittest.TestCase):
+    """The re-anchor emitter writes a WALKABLE chain link, never a new root.
+
+    Genesis is restricted to a surface's FIRST ownership event, because the
+    loader used to accept a LATE genesis row as a fresh baseline and so a
+    minted one reset the ratchet floor (Step-4b round-4 CRITICAL). A legitimate
+    floor migration therefore needs an event that names the ownership event it
+    supersedes; an emitter that drops that pointer produces a row
+    indistinguishable from the second day-one the restriction exists to forbid.
+    """
+
+    _SURFACE = "AGENTS.md"
+    _DIGEST = "digest-abc123"
+    _PREDECESSOR = "section-ownership-genesis-agents-md"
+    _EVENT_ID = "section-ownership-reanchored-agents-md"
+    _REASON = "sections_digest field added to the declaration mid-flight"
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._root = Path(self._tempdir.name)
+        (self._root / ".gzkit").mkdir(parents=True)
+
+    def _emit(self) -> str:
+        return emit_section_ownership_reanchored(
+            self._root,
+            self._EVENT_ID,
+            self._SURFACE,
+            self._DIGEST,
+            8637,
+            8637,
+            self._PREDECESSOR,
+            self._REASON,
+        )
+
+    def _rows(self) -> list[dict[str, object]]:
+        path = self._root / ".gzkit" / "ledger.jsonl"
+        if not path.is_file():
+            return []
+        return [
+            json.loads(line)
+            for line in path.read_text(encoding="utf-8").splitlines()
+            if line.strip()
+        ]
+
+    def test_emitter_appends_exactly_one_witness_row(self) -> None:
+        returned = self._emit()
+        rows = self._rows()
+        self.assertEqual(
+            len(rows),
+            1,
+            "a re-anchor is witnessed by its ledger row; an emitter that "
+            "appends nothing leaves the declaration's floor_event_id pointing "
+            "at an id no reader can resolve",
+        )
+        self.assertEqual(rows[0]["event"], "section_ownership_reanchored")
+        self.assertEqual(
+            returned,
+            self._EVENT_ID,
+            "the id is CALLER-MINTED and returned unchanged, so the caller can "
+            "embed the same id in the declaration before the append",
+        )
+
+    def test_emitted_row_names_what_it_reanchors_and_why(self) -> None:
+        """The chain fields are what stop a re-anchor being a second day-one."""
+        self._emit()
+        row = self._rows()[0]
+        self.assertEqual(
+            row.get("predecessor_event_id"),
+            self._PREDECESSOR,
+            "without the predecessor pointer a reader cannot walk back to the "
+            "surface's one true genesis, which is exactly the severed chain a "
+            "late genesis row produced",
+        )
+        self.assertEqual(
+            row.get("prior_unowned_byte_floor"),
+            8637,
+            "a re-anchor MOVES a floor, so it must state the floor it moved "
+            "from; a row carrying only the new floor is unauditable",
+        )
+        self.assertEqual(
+            row.get("reason"),
+            self._REASON,
+            "the reason is what a later reader has to reconstruct why the "
+            "migration was legitimate rather than an attacker re-flooring",
+        )
+        parsed = parse_typed_event(row)
+        self.assertEqual(parsed.surface, self._SURFACE)
+        self.assertEqual(parsed.sections_digest, self._DIGEST)
+        self.assertEqual(parsed.new_unowned_byte_floor, 8637)
+
+
 class TestNoDefinitionInThisModuleIsShadowed(unittest.TestCase):
     """A test that cannot fail is the exact class this OBPI exists to kill.
 
@@ -1854,6 +1956,184 @@ class TestNoDefinitionInThisModuleIsShadowed(unittest.TestCase):
             f"running this file as a script never binds them and their "
             f"assertions never execute: {stranded}",
         )
+
+
+class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittest.TestCase):
+    """Step-4b round-4 CRITICAL: provenance was self-certified, not chained.
+
+    The loader read the witness's OWN claimed `prior_unowned_byte_floor` and
+    never compared it to what the ledger actually said before. Three distinct
+    holes composed into one: a fabricated predecessor claim passed unchallenged,
+    a LATE `section_ownership_genesis` row was accepted as a fresh day-one
+    baseline, and the missing-`prior` exemption meant for genesis was reachable
+    by every other event type. Each is pinned separately below so a regression
+    names which one broke.
+    """
+
+    def _seed_unowned_event(
+        self,
+        surface: str,
+        prior: int,
+        new: int,
+        *,
+        sections: dict[str, str] | None = None,
+        event_id: str | None = None,
+        omit_prior: bool = False,
+        event: str = "section_ownership_unowned",
+    ) -> str:
+        """Append a raise-path witness DIRECTLY, so a test can forge its claims.
+
+        The governed emitter cannot express a forged predecessor, which is
+        exactly the point: the attack this class defends against does not go
+        through the command path, so the fixture must not either.
+        """
+        digest = sections_digest(self._DEFAULT_FIXTURE_SECTIONS if sections is None else sections)
+        eid = event_id or f"{event.replace('_', '-')}-{surface}-{new}"
+        extra: dict[str, object] = {
+            "surface": surface,
+            "sections_digest": digest,
+            "new_unowned_byte_floor": new,
+        }
+        if not omit_prior:
+            extra["prior_unowned_byte_floor"] = prior
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(
+                event=event,
+                id=eid,
+                ts="2026-09-03T00:00:00+00:00",
+                extra=extra,
+            )
+        )
+        return eid
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_witness_claiming_a_fabricated_predecessor_is_refused(self) -> None:
+        """A raise disguised as a decrease by lying about where it started.
+
+        The adversary observed `actual_previous_floor=18`,
+        `accepted_claimed_transition=138 -> 38`, `actual_floor_rose=True`,
+        `attestor_present=False`. The direction guard passed because 138 -> 38
+        IS a decrease -- in the witness's own fiction. Against the real chain
+        the floor ROSE, so the row must not witness it.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        # The real chain starts LOW, so the move the forged row hides is a RAISE.
+        self._seed_genesis_event("Doc.md", spans["alpha-section"])
+        real_span = spans["alpha-section"] + spans["beta-section"]
+        # Claiming a fictitious HIGHER start makes the row read as a decrease,
+        # so the direction guard passes. The floor and the span agree, so the
+        # `<=` invariant passes too. Only the chain can catch this.
+        forged = self._seed_unowned_event(
+            "Doc.md",
+            138,
+            real_span,
+            event_id="forged",
+            event="unowned_ratchet_updated",
+        )
+
+        path = self._write_declaration(
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=real_span,
+            floor_event_id=forged,
+        )
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("predecessor", str(caught.exception).lower())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_late_genesis_row_cannot_witness_a_fresh_baseline(self) -> None:
+        """Genesis is a surface's FIRST ownership event or it is nothing.
+
+        Observed: `late_genesis_load=late-genesis`, `late_genesis_has_prior=False`,
+        `late_genesis_has_attestor=False`. Minting a second day-one re-declared
+        the baseline at whatever floor the miner chose, with no attestor and no
+        reason -- the ratchet reset by construction.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        first = self._seed_genesis_event("Doc.md", spans["alpha-section"])
+        self.assertTrue(first)
+        raised = spans["alpha-section"] + spans["beta-section"]
+        # A DISTINCT id: the fixture's helper derives its id from the section
+        # digest, so a second call would collide with the first rather than
+        # model the attack, which mints a genuinely new row.
+        late = "section-ownership-genesis-Doc.md-late"
+        emit_section_ownership_genesis(
+            self._root,
+            late,
+            "Doc.md",
+            sections_digest(self._DEFAULT_FIXTURE_SECTIONS),
+            raised,
+        )
+        self.assertNotEqual(first, late)
+
+        path = self._write_declaration(
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=raised,
+            floor_event_id=late,
+        )
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(caught.exception).lower()
+        self.assertIn("genesis", message)
+        self.assertIn("first", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_non_genesis_witness_missing_its_prior_floor_is_refused(self) -> None:
+        """The missing-`prior` exemption belongs to genesis alone.
+
+        Observed: `missing_prior_non_genesis_load=raise-without-prior`. The
+        direction guard returned early for ANY event whose `prior` was not an
+        int, so omitting the field bought exemption from the very check the
+        field exists to enable.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        self._seed_genesis_event("Doc.md", spans["alpha-section"])
+        raised = spans["alpha-section"] + spans["beta-section"]
+        witness = self._seed_unowned_event(
+            "Doc.md", 0, raised, event_id="no-prior", omit_prior=True
+        )
+
+        path = self._write_declaration(
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=raised,
+            floor_event_id=witness,
+        )
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("prior", str(caught.exception).lower())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_reanchor_row_witnesses_a_migrated_floor(self) -> None:
+        """The legitimate migration path must still LOAD.
+
+        Genesis-first would otherwise strand every surface whose schema moved
+        after day one -- including this repository's own AGENTS.md, whose
+        committed declaration points at a second genesis row minted when
+        `sections_digest` arrived. A re-anchor is a LINK: it names its
+        predecessor and the floor it moves from.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = spans["alpha-section"] + spans["beta-section"]
+        genesis = self._seed_genesis_event("Doc.md", floor)
+        digest = sections_digest(self._DEFAULT_FIXTURE_SECTIONS)
+        reanchor = emit_section_ownership_reanchored(
+            self._root,
+            "section-ownership-reanchored-Doc.md-1",
+            "Doc.md",
+            digest,
+            floor,
+            floor,
+            genesis,
+            "schema migration: sections_digest",
+        )
+
+        path = self._write_declaration(
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=floor,
+            floor_event_id=reanchor,
+        )
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.unowned_byte_floor, floor)
 
 
 if __name__ == "__main__":

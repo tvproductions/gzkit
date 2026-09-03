@@ -13,6 +13,12 @@ allowlist:
 - config/doc-coverage.json
 - .gzkit/ownership/AGENTS.md.json
 - src/gzkit/governance/events.py
+- src/gzkit/events.py
+- src/gzkit/schemas/ledger.json
+- src/gzkit/ontology/corpus.py
+- data/ledger_vocabulary_grandfather.json
+- tests/test_schemas.py
+- src/gzkit/ledger.py
 - src/gzkit/commands/validate_cmd.py
 - .gitignore
 - tests/content/test_ownership.py
@@ -156,6 +162,14 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` — this brief's evidence sections
 
 ## Denied Paths
+
+> **`src/gzkit/ledger.py` is declared in the allowlist but is READ-ONLY here.**
+> The covering tests import `Ledger` to arrange and read ownership events, and
+> `--brief-reconcile` derives `missing_in_brief` from those test imports, so the
+> declaration is what makes the brief honest about its test surface. It does NOT
+> license editing the module: the one defect found against it — a non-crash-durable
+> `append` (round-4 finding 3) — was ROUTED OUT to GHI #952 by operator ruling
+> precisely because the fix changes durability for every event producer in the repo.
 
 - `AGENTS.md` — this OBPI declares ownership OVER sections; it never edits them
 - `src/gzkit/content/composer.py` — materialization is OBPI-0.35.0-05
@@ -411,54 +425,153 @@ lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED-WITH-CAVEATS (round 3), caveat operator-accepted 2026-09-03.**
+**Verdict: REFUTED (round 4, the STANDING verdict). Receipt
+`arb-step-codexadversary-54fac48a53cc46d8b31595036399df08`, `exit_status: 0`.**
 
-Rounds 1 and 2 both returned REFUTED. Round 1's five findings were repaired; round 2
-returned four more, two `[high]`. This section records round 3.
+Four rounds ran. Rounds 1, 2 and 3 each returned REFUTED and each round's findings were
+repaired before the next was dispatched; round 4 re-ran against the repaired tree. Round 4
+is the verdict that STANDS — rounds 1-3 are recorded below as history, and their REFUTED
+verdicts describe trees that no longer exist. This section states that explicitly because
+`gz obpi precomplete` reads the section for a standing verdict and cannot infer supersession
+from prose.
+
+Adversary for every round: Codex, tier 1 cross-vendor, dispatched through the `openai-codex`
+plugin runtime (`codex-companion.mjs adversarial-review --wait --scope working-tree`),
+ARB-wrapped. Tier-1 readiness was confirmed BEFORE each dispatch (`ready: true`, runtime mode
+`direct`, no stale broker), so tiers 2 and 3 were forbidden throughout.
 
 **Round 2's four findings, dispositioned:**
 
 | # | Severity | Finding | Disposition |
 |---|---|---|---|
 | 1 | high | Genesis had no provenance anchor | **FIXED.** Operator ruled 2026-09-03: anchor genesis to a `section_ownership_genesis` ledger event and forbid a null `floor_event_id` outright. The genesis branch is deleted; the loader has ONE uniform path. Reproduced attack now refuses. |
-| 2 | high | Journal replay was an unvalidated arbitrary declaration write | **FIXED.** Six independent checks; the successor is re-derived from the on-disk predecessor and the journal's own `declaration_json` bytes never reach disk. |
-| 3 | medium | `record_unowned_total`'s two-store transaction is not recoverable | **DEFERRED, disclosed.** No production caller exists; the shared-journal lift belongs to OBPI-0.35.0-05's materialization path. Round 3 was asked to rule on the deferral's defensibility and was cut off before answering. |
+| 2 | high | Journal replay was an unvalidated arbitrary declaration write | **FIXED.** Six independent checks; the successor is re-derived from the on-disk predecessor and the journal's own `declaration_json` bytes never reach disk. Independent spec review additionally caught that the eligibility check was missing entirely and that four tests were refused by a different check than the one they named; both repaired. |
+| 3 | medium | `record_unowned_total`'s two-store transaction is not recoverable | **DEFERRED, disclosed** — and the deferral was subsequently RULED DEFENSIBLE by round 3 (see below). |
 | 4 | medium | No directory fsync after `os.replace` | **FIXED**, with a proven negative control (barrier removed -> `no directory was fsynced`). |
 
-**Round 3 (this round).** Adversary: Codex, tier 1 cross-vendor, dispatched through the
-`openai-codex` plugin runtime (`codex-companion.mjs adversarial-review --wait --scope
-working-tree`), ARB-wrapped. Tier-1 readiness was confirmed BEFORE dispatch — `ready: true`,
-runtime mode `direct`, no stale broker — so tiers 2 and 3 were forbidden.
+**Round 3a — a cut-off run, retained as a worked example, NOT a witness.** Receipt
+`arb-step-codexadversary-9631113ec5f44bb4bf64e1fe38cecd46` records `exit_status: 1`: the run
+terminated on an upstream content filter (*"This content was flagged for possible cybersecurity
+risk"*, `Turn failed`) after completing substantive analysis. Its summary line read "No material
+findings" and was very nearly read as a pass, while its own body carried a real finding above
+the cut. It does NOT meet the exit-0 bar for a tier-1 claim and is not counted as a round.
+Its finding — the coordinated declaration+journal edit — was carried forward, ruled on by the
+operator, and is recorded in Tracked Defects as an accepted residual.
 
-**The run terminated on an upstream content filter** (*"This content was flagged for possible
-cybersecurity risk"*, `Turn failed`) after completing substantive analysis. Receipt
-`arb-step-codexadversary-9631113ec5f44bb4bf64e1fe38cecd46` therefore records
-`exit_status: 1`, NOT 0. This is stated rather than papered over: the receipt does not
-meet the gate's exit-0 bar for a tier-1 claim, and the tier is recorded accordingly.
+**Round 3 — REFUTED, superseded.** Receipt
+`arb-step-codexadversary-209abafb666f4572ae68ab464d0a99fe`, `exit_status: 0`, 2026-09-03T06:30:47Z.
+One critical and three high findings, ALL FOUR NOW REPAIRED:
 
-**Round 3's finding, ACCEPTED as a residual by operator ruling.** Verbatim:
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | critical | "A permitted decrease-event type can raise the floor without the governed command." A probe emitted `unowned_ratchet_updated` with `prior=26, new=83` and observed `floor_raised=True, load=ACCEPTED, ledger_validation_errors=0`. | **FIXED** in `779ff0ba`. Each event type is now held to the transition it can witness. `section_ownership_genesis` is deliberately exempt (it records no prior floor and asserts no direction), carried by the missing-`prior` guard rather than the type dispatch — its negative control needed BOTH exemption paths defeated to fail. |
+| 2 | high | "Ratchet slack permits an unledgered corpus-owned-to-unowned reversal." Floor 83, unowned sum 26; flipping `alpha-section` gave `after_unowned_sum=83, after_load=unowned, floor_event_id_unchanged=True`, ledger count 1 before and 1 after. | **FIXED** in `779ff0ba`, by the adversary's own recommendation: a canonical digest of the whole section map is bound to every ownership event and re-derived by the loader from the declaration. The `<=` relation the legitimate-shrink case needs is preserved. The digest lives ONLY on the event — a copy stored beside the sections it summarizes would be a second source of truth that can disagree with itself. |
+| 3 | high | "A post-replace directory-fsync failure deletes the recovery journal after changing state." Injected fourth-fsync failure gave `exit=2, alpha_state=unowned, floor_changed=True, ownership_event_count=0, journal_exists=False, post_failure_load=REJECTED`, while the command printed `Nothing written` and `the declaration is byte-unchanged`. | **FIXED** in `0488f8f4`. A regression this session introduced with the round-2 finding-4 fsync repair, and reachable by plain failing media with no adversary involved. The journal is now retained on any declaration-write `OSError`, and the prose no longer asserts a premise it cannot know. |
+| 4 | high | "Already-landed recovery bypasses live-state validation and clears the journal on an invalid state." After an injected ledger-append failure, expanding the section before retry gave `retry_exit=0, journal_exists_after_retry=False, ownership_event_count=1`, then `post_retry_load=REJECTED`. | **FIXED** in `0488f8f4`. A coherence gate now runs on BOTH branches and fails closed, retaining the journal. `_replay_pending_transition` crossed the xenon C ceiling under these additions, so its validation half was extracted as `_apply_unlanded_transition`. |
 
-> A coordinated declaration+journal edit is accepted: the replay probe raised the floor
-> 26 -> 1025, flipped the section, minted and appended a `section_ownership_unowned`
-> witness, cleared the journal, and then passed `load_declaration`.
+Round 3 also answered two questions carried into it, and both answers are recorded rather than
+paraphrased away:
 
-Every replay check holds individually. The limitation is structural: each check compares
-the journal against the **declaration on disk**, and an actor who can write the journal can
-write the declaration too. Forge both coherently and the code mints a genuine ledger event —
-which routes around the loader protection round 2 finding 1 installed. It is the same shape
-as the genesis gap: coherence with attacker-controlled state is not proof.
+- **The round-2 finding-3 deferral is defensible.** Verbatim: *"The two accepted residuals still
+  reason correctly: (a) `record_unowned_total` can leave an unrecoverable declaration/ledger gap,
+  but has no production caller and is deferred to OBPI-0.35.0-05."* An earlier reading of this
+  session recorded the deferral question as unanswered; that was a conflation with round 3a,
+  which was cut off. Round 3 answered it.
+- **What `_mint_event_id` establishes.** Verbatim: *"Recomputing `_mint_event_id` proves only
+  that the journal is internally consistent with its own surface, section, floors, attestor,
+  reason, and parent. It does not prove the command ran, authenticate provenance, corroborate
+  those values against live state, or prove the measured span."* It further observed that
+  `parent_event_id` is omitted from the final ledger row, so ledger-only recomputation is
+  unavailable afterward.
 
-**Operator ruling 2026-09-03 (selection: accept and complete with the caveat recorded):**
-an actor with write access to `.gzkit/ownership/` is inside the trust boundary, and the
-honest defense at that point is AUDITABILITY rather than prevention — the forged transition
-lands in the append-only ledger carrying its attestor and reason, so it is discoverable
-rather than silent. The alternative considered and declined was a fresh anchor design of the
-same weight as the genesis ruling. Recorded in Tracked Defects; NOT dressed as clean.
+Round 3 confirmed one guard was real by mutation rather than by inspection: *"after an in-memory
+AST mutation removed exactly one prior-floor comparison, it failed with `AssertionError: 0 != 2`
+... That test is a real guard, not an any-rejection false positive."*
+
+**Round 4 (this round) — REFUTED. THIS IS THE STANDING VERDICT.** Receipt
+`arb-step-codexadversary-54fac48a53cc46d8b31595036399df08`, `exit_status: 0`. The run
+completed cleanly: the log carries no `Turn failed`, no `Codex error`, and no content-filter
+termination, so unlike round 3a this receipt DOES meet the exit-0 bar for a tier-1 claim.
+
+Three NEW findings, one critical and two high. None of them is the accepted
+declaration+journal residual — the adversary says so explicitly: *"The findings above are
+distinct: they allow false provenance or destroy recoverability outside that accepted
+two-file coherent-edit case."* All three are OPEN.
+
+| # | Severity | Finding (adversary's own words, abridged) | Status |
+|---|---|---|---|
+| 1 | critical | "Transition direction is self-certified instead of chained to the real predecessor" (`src/gzkit/content/ownership.py:363-433`). The loader checks only the event's CLAIMED `prior` and `new`; it never verifies `prior_unowned_byte_floor` against the preceding ledger state, and genesis is not restricted to the first ownership event for a surface. A real raise 18 -> 38 was accepted by claiming the fictitious decrease 138 -> 38: `actual_previous_floor=18`, `accepted_claimed_transition=138 -> 38`, `actual_floor_rose=True`, `ledger_schema_errors=[]`, `attestor_present=False`, `reason_present=False`. A LATE genesis is also accepted as a fresh baseline (`late_genesis_load=late-genesis`, `late_genesis_has_attestor=False`), and the missing-`prior` guard is reachable by non-genesis events. | **OPEN** |
+| 2 | high | "Already-landed replay can write a digest for the wrong map and destroy recovery state" (`src/gzkit/commands/content/unown.py:401-456`). The shared coherence gate checks only `landed_floor` and `live_unowned_span`; `_append_event_once` hashes `record['declaration_json']` rather than the declaration on disk, and `_mint_event_id` omits both `declaration_json` and the map, so a changed-but-valid journal map passes id recomputation. Observed: `journal_unlinked=True`, disk digest `380c4e7a...`, ledger digest `a21473dc...`, then `post_replay_loader=REJECTED`. | **OPEN** |
+| 3 | high | "Recovery journal is cleared before the ledger witness is durable" (`src/gzkit/commands/content/unown.py:521-542`). `Ledger.append` writes and flushes the Python stream but never fsyncs: `Ledger.append_has_fsync=False`. A power loss can preserve the already-fsynced declaration and the journal deletion while losing the buffered ledger row, leaving a new floor whose witness AND recovery journal are both absent. | **ROUTED OUT** to GHI #952 (operator ruling 2026-09-03) — the ledger module is outside this brief's allowlist and the fix changes durability for every event producer in the repo, not just the ownership path. |
+
+**Round 4 CONFIRMED the round-3 repairs it was asked to attack.** These are recorded because a
+later round must not re-derive them:
+
+- The map-digest binding works and does not over-refuse: `slack_control=ACCEPTED`,
+  `slack_flip=REJECTED` for digest mismatch, `legitimate_shrink=ACCEPTED`, and both
+  `digest_absent` and `digest_null` `REJECTED`. Verbatim: *"The map digest itself correctly
+  closes the ratchet-slack edit while preserving legitimate surface shrink; `<=` remains the
+  correct relation."* Ordering was stable and separator/whitespace/Unicode variants produced
+  distinct digests; no canonicalization ambiguity was found.
+- The post-swap `OSError` repair (round-3 finding 3) held: `exit_code=2`,
+  `journal_unlink_called=False`, `says_journal_retained=True`, `claims_nothing_written=False`.
+- Two guards were proven real BY MUTATION, not inspection: deleting
+  `_refuse_unwitnessed_section_map(...)` turned its named test `PASS -> FAIL: OwnershipLoadError
+  not raised`; deleting `_refuse_wrong_direction_witness(...)` turned its named test
+  `PASS -> FAIL: 'decrease-only' not found`.
+
+**Round 4 answered REQ-0.35.0-04-02's open wording question, and the answer is against us.**
+Verbatim: *"REQ-0.35.0-04-02's absolute 'increase is only reachable through the attested
+raise-path' is literally false: the loader accepts schema-valid ledger witnesses whose claimed
+predecessor is fabricated, and accepts later genesis rows as fresh baselines."* The question was
+deliberately held open across two rounds so a clean adversary could rule on it rather than the
+REQ being narrowed to make a gate pass. It has ruled: the gap is in the CODE, not the wording.
+
+**Three caveats on round 4's own evidence, recorded rather than suppressed:**
+
+1. **Its canonical execution was environment-blocked.** Verbatim: *"`uv run` exited 2 because
+   its cache/temp paths were read-only. Direct targeted unittest execution likewise produced
+   four setup errors: `FileNotFoundError: No usable temporary directory`."* It fell back to
+   read-only in-memory probes and the installed `.venv` entrypoint. Its findings carry concrete
+   observed output, but they were not produced through the canonical runner.
+2. **`gz validate --ledger` is VACUOUS for both transition types.** Live counts were
+   `genesis=2, ratchet-updated=0, unowned=0`, so `--ledger` exercises only genesis, and
+   `--event-schemas` proves discriminator-name parity rather than transition semantics. This is
+   the mechanical counterpart of the never-fired disclosure already recorded in
+   `data/ledger_vocabulary_grandfather.json`.
+3. **The any-rejection helper was NOT eliminated.** `_assert_refused_and_untouched` still exists
+   at `tests/content/test_ownership.py:848`; of its eight call sites, three (1062, 1088, 1118)
+   pin no defect message. The adversary allows that those three "currently have independent
+   exit-code or follow-up assertions," but states plainly that *"the requested 'no such helper
+   remains' condition is not met."*
+
+**The two carried-forward residuals were re-affirmed.** (a) The round-2 finding-3 deferral is
+*"defensible as a sequencing decision because repository search found no production caller —
+only tests — and OBPI-0.35.0-05 is explicitly required to lift the shared journal before
+activating the path. It is not defensible after any production caller is connected."* (b) The
+coordinated declaration+journal residual *"holds within its exact trust-boundary premise."*
+
+**Weakest point (verbatim):** *"provenance is inferred from a witness's internally
+self-consistent claims instead of being chained to the preceding ledger state; the gate still
+confuses a plausible record with proof of the governed transition."*
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
+
+- **Ledger append is not crash-durable (round-4 adversary finding 3, `[high]`,
+  ROUTED OUT to GHI #952 — operator-ruled 2026-09-03).**
+  `Ledger.append` writes and flushes the Python stream but never calls `os.fsync`
+  (`Ledger.append_has_fsync=False`; independently confirmed — a repo-wide fsync grep
+  over the ledger module returns nothing). `_commit_transition` unlinks the recovery
+  journal immediately after the append returns, so a power loss can preserve the
+  already-fsynced declaration AND the journal deletion while losing the buffered
+  ledger row — leaving a raised floor whose witness and recovery journal are both
+  absent. NOT FIXED HERE: the ledger module is outside this brief's allowlist,
+  it is a registered `ledger_integrity` security surface, and the durability gap
+  belongs to every event producer in the repo rather than to the ownership path
+  that surfaced it. Tracked at GHI #952.
 
 - **Coordinated declaration+journal edit raises the floor (round-3 adversary finding,
   `[medium-high]`, ACCEPTED RESIDUAL — operator-ruled 2026-09-03).**

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from typing import Literal, get_args, get_origin
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from gzkit.events import (
     AdrAnnotatedEvent,
@@ -72,6 +72,7 @@ from gzkit.events import (
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
     SectionOwnershipGenesisEvent,
+    SectionOwnershipReanchoredEvent,
     SectionOwnershipUnownedEvent,
     SecurityFloorOverriddenEvent,
     SessionExitBookmarkSkippedEvent,
@@ -82,8 +83,10 @@ from gzkit.events import (
     TaskCompletedEvent,
     TaskEscalatedEvent,
     TaskStartedEvent,
+    TypedLedgerEvent,
     UnownedRatchetUpdatedEvent,
     ValidatesEvent,
+    parse_typed_event,
 )
 from gzkit.models.frontmatter import (
     AdrFrontmatter,
@@ -352,6 +355,10 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "section_ownership_genesis": SectionOwnershipGenesisEvent,
     "unowned_ratchet_updated": UnownedRatchetUpdatedEvent,
     "section_ownership_unowned": SectionOwnershipUnownedEvent,
+    # The CHAINED successor to genesis: genesis is a surface's FIRST ownership
+    # event only, so a legitimate floor migration lands here instead of minting
+    # a second day-one (Step-4b round-4 CRITICAL finding).
+    "section_ownership_reanchored": SectionOwnershipReanchoredEvent,
     "obpi_unparked": ObpiUnparkedEvent,
     # Foundation Sunset terminality witness (ADR-0.34.0, OBPI-04)
     "foundation_grandfathered": FoundationGrandfatheredEvent,
@@ -437,6 +444,124 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
                     missing,
                     f"{model_cls.__name__} missing base required fields: {missing}",
                 )
+
+
+def _live_event_discriminators() -> set[str]:
+    """Introspect the LIVE ``TypedLedgerEvent`` discriminator registry.
+
+    Read off the discriminated union itself rather than a hand-kept list, so a
+    type that is declared everywhere EXCEPT the union cannot read as registered.
+    """
+    union, _field = get_args(TypedLedgerEvent)
+    return {get_args(member.model_fields["event"].annotation)[0] for member in get_args(union)}
+
+
+class TestSectionOwnershipReanchoredRegistration(unittest.TestCase):
+    """``section_ownership_reanchored`` -- the CHAINED re-anchor (OBPI-0.35.0-04).
+
+    A re-anchor carries a legitimate migration of a surface's ratchet floor
+    without minting a second ``section_ownership_genesis``. Genesis is a
+    surface's FIRST ownership event and nothing else, because a LATE genesis row
+    is a fresh "day one" that resets the floor -- the Step-4b round-4 finding.
+    The re-anchor must therefore be distinguishable from genesis by SHAPE, not
+    by convention: it states what it re-anchors FROM, WHICH event it re-anchors,
+    and WHY.
+    """
+
+    _GENESIS_SHAPED_PAYLOAD = {
+        "schema": "gzkit.ledger.v1",
+        "event": "section_ownership_reanchored",
+        "id": "section-ownership-reanchored-agents-md",
+        "ts": "2026-09-03T00:00:00+00:00",
+        "surface": "AGENTS.md",
+        "new_unowned_byte_floor": 10182,
+    }
+
+    _CHAINED_PAYLOAD = {
+        "schema": "gzkit.ledger.v1",
+        "event": "section_ownership_reanchored",
+        "id": "section-ownership-reanchored-agents-md",
+        "ts": "2026-09-03T00:00:00+00:00",
+        "surface": "AGENTS.md",
+        "prior_unowned_byte_floor": 8637,
+        "new_unowned_byte_floor": 8637,
+        "predecessor_event_id": "section-ownership-genesis-agents-md",
+        "reason": "sections_digest field added mid-flight",
+    }
+
+    def test_sections_digest_is_carried_but_never_required(self) -> None:
+        """The ledger is append-only, so the digest is nullable on both surfaces.
+
+        Genesis got exactly this treatment: rows minted before the field
+        existed must still parse, and the loader — not the schema — is where a
+        witness lacking a digest is refused. The re-anchor inherits that split
+        rather than inventing a stricter on-disk contract the loader would then
+        have to soften.
+        """
+        rules = load_schema("ledger")["events"]["section_ownership_reanchored"]
+        self.assertEqual(
+            rules.get("properties", {}).get("sections_digest", {}).get("type"),
+            ["string", "null"],
+            "a re-anchor witnesses a section map, so it must be able to carry that map's digest",
+        )
+        self.assertNotIn(
+            "sections_digest",
+            rules.get("required", ()),
+            "requiring the digest on disk would refuse append-only rows minted "
+            "before the field existed — the enforcement point is the loader",
+        )
+        parsed = parse_typed_event(dict(self._CHAINED_PAYLOAD) | {"sections_digest": "abc123"})
+        self.assertEqual(
+            parsed.sections_digest,
+            "abc123",
+            "the digest must round-trip through the typed model, not merely be "
+            "tolerated by the schema",
+        )
+
+    def test_ledger_schema_declares_the_same_chain_the_model_requires(self) -> None:
+        """`gz validate --ledger` reads the JSON schema, never the model.
+
+        A chain the model enforces and the schema does not is a chain an
+        on-disk row can omit while the ledger validator still reads green.
+        """
+        rules = load_schema("ledger").get("events", {}).get("section_ownership_reanchored", {})
+        self.assertEqual(
+            set(rules.get("required", ())),
+            {
+                "surface",
+                "prior_unowned_byte_floor",
+                "new_unowned_byte_floor",
+                "predecessor_event_id",
+                "reason",
+            },
+            "the on-disk contract must demand the same three chain fields as "
+            "the model, or a genesis-shaped re-anchor row validates on the "
+            "ledger path",
+        )
+
+    def test_model_refuses_a_genesis_shaped_payload(self) -> None:
+        """A re-anchor stating no chain IS a second day-one, so it is refused."""
+        with self.assertRaises(ValidationError) as caught:
+            parse_typed_event(dict(self._GENESIS_SHAPED_PAYLOAD))
+        missing = {
+            error["loc"][-1] for error in caught.exception.errors() if error["type"] == "missing"
+        }
+        self.assertEqual(
+            missing,
+            {"prior_unowned_byte_floor", "predecessor_event_id", "reason"},
+            "the chain is what separates a re-anchor from a fresh genesis: it "
+            "must state the floor it moves FROM, the ownership event it "
+            "re-anchors, and the reason the migration was legitimate",
+        )
+
+    def test_discriminator_is_registered_in_the_live_typed_union(self) -> None:
+        self.assertIn(
+            "section_ownership_reanchored",
+            _live_event_discriminators(),
+            "a re-anchor must be its OWN ledger event type -- reusing "
+            "section_ownership_genesis to carry a migration is exactly the "
+            "late-genesis floor reset this type exists to make unnecessary",
+        )
 
 
 # ---------------------------------------------------------------------------

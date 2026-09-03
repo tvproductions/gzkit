@@ -2081,6 +2081,42 @@
         }
       }
     },
+    "section_ownership_reanchored": {
+      "required": [
+        "surface",
+        "prior_unowned_byte_floor",
+        "new_unowned_byte_floor",
+        "predecessor_event_id",
+        "reason"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "sections_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
+        },
+        "prior_unowned_byte_floor": {
+          "type": "integer"
+        },
+        "new_unowned_byte_floor": {
+          "type": "integer"
+        },
+        "predecessor_event_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
+    },
     "unowned_ratchet_updated": {
       "required": [
         "surface",

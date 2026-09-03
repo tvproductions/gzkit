@@ -158,7 +158,11 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # not lineage between governance artifacts. The corpus graph edges
         # PRD -> ADR -> OBPI; a section's ownership state is read from the
         # declaration store and its ledger chain, never from this projection.
+        # `section_ownership_reanchored` is dispositioned on the same ground:
+        # it is a LINK in that ledger chain, and the chain is the loader's to
+        # walk, never this projection's.
         "section_ownership_genesis",
+        "section_ownership_reanchored",
         "section_ownership_unowned",
         "task_completed",
         "task_escalated",

@@ -1239,6 +1239,43 @@ class SectionOwnershipUnownedEvent(_EventBase):
     reason: str
 
 
+class SectionOwnershipReanchoredEvent(_EventBase):
+    """section_ownership_reanchored event — the CHAINED re-anchor of a floor.
+
+    Exists because `section_ownership_genesis` is restricted to a surface's
+    FIRST ownership event (Step-4b round-4 CRITICAL finding: the loader accepted
+    a LATE genesis row as a fresh baseline, so minting one reset the ratchet
+    floor to whatever the attacker chose). Once genesis is first-only, a
+    LEGITIMATE floor migration — the `sections_digest` field arriving mid-flight
+    is the motivating case — has nowhere to land. This type is that landing
+    place, and it is deliberately not a second day-one.
+
+    The three fields genesis does NOT carry are the whole point.
+    ``prior_unowned_byte_floor`` states what the re-anchor moves FROM,
+    ``predecessor_event_id`` names the ownership event it re-anchors, and
+    ``reason`` records why the migration was legitimate. Together they make the
+    event a LINK in the chain a reader can walk back to the one true genesis,
+    rather than a new root that severs it.
+    """
+
+    event: Literal["section_ownership_reanchored"]
+    surface: str
+    sections_digest: str | None = Field(
+        default=None,
+        description=(
+            "Fingerprint of the section-ownership map this event witnesses. Optional on "
+            "the MODEL because the ledger is append-only and carries rows minted before "
+            "the field existed; `load_declaration` refuses to trust a witness lacking it, "
+            "so the enforcement point is the loader, never the schema (GHI: Step-4b "
+            "round-3 finding 2)."
+        ),
+    )
+    prior_unowned_byte_floor: int
+    new_unowned_byte_floor: int
+    predecessor_event_id: str
+    reason: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1310,7 +1347,8 @@ TypedLedgerEvent = Annotated[
     | FoundationGrandfatheredEvent
     | SectionOwnershipGenesisEvent
     | UnownedRatchetUpdatedEvent
-    | SectionOwnershipUnownedEvent,
+    | SectionOwnershipUnownedEvent
+    | SectionOwnershipReanchoredEvent,
     Field(discriminator="event"),
 ]
 
