@@ -10,9 +10,15 @@
     "obpi_blocked_on_operator",
     "obpi_superseded",
     "obpi_unblocked",
+    "section_ownership_unowned",
     "stage2_dispatch_recorded",
     "stage2_single_driver_declared",
     "task_escalated",
+    "unowned_ratchet_updated",
     "validates"
-  ]
+  ],
+  "notes": {
+    "section_ownership_unowned": "OBPI-0.35.0-04. Producer IS wired -- `_append_event_once` in src/gzkit/commands/content/unown.py emits it on the attested raise-path. Zero rows exist because `gz content unown` has not yet been run against this repository; the day-one declaration was minted at genesis and no section has been un-owned. Drains on the first real un-owning.",
+    "unowned_ratchet_updated": "OBPI-0.35.0-04. Producer is `emit_unowned_ratchet_updated`, called only by `record_unowned_total`, which has NO production caller -- the disclosed, deliberate deferral recorded in the brief's Tracked Defects (Step-4b round-2 finding 3). Its caller is OBPI-0.35.0-05's materialization path. This entry is the honest witness that the type records nothing today, and it drains when that caller lands."
+  }
 }

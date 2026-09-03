@@ -71,6 +71,8 @@ from gzkit.events import (
     RedReceiptEmittedEvent,
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
+    SectionOwnershipGenesisEvent,
+    SectionOwnershipUnownedEvent,
     SecurityFloorOverriddenEvent,
     SessionExitBookmarkSkippedEvent,
     Stage2DispatchRecordedEvent,
@@ -80,6 +82,7 @@ from gzkit.events import (
     TaskCompletedEvent,
     TaskEscalatedEvent,
     TaskStartedEvent,
+    UnownedRatchetUpdatedEvent,
     ValidatesEvent,
 )
 from gzkit.models.frontmatter import (
@@ -343,6 +346,12 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "obpi_unblocked": ObpiUnblockedEvent,
     "stage2_dispatch_recorded": Stage2DispatchRecordedEvent,
     "stage2_single_driver_declared": Stage2SingleDriverDeclaredEvent,
+    # Section-ownership declaration and the decrease-only unowned-byte
+    # ratchet (OBPI-0.35.0-04). Genesis is a witnessed ledger STATE, never
+    # a self-coherent declaration shape an attacker can recompute.
+    "section_ownership_genesis": SectionOwnershipGenesisEvent,
+    "unowned_ratchet_updated": UnownedRatchetUpdatedEvent,
+    "section_ownership_unowned": SectionOwnershipUnownedEvent,
     "obpi_unparked": ObpiUnparkedEvent,
     # Foundation Sunset terminality witness (ADR-0.34.0, OBPI-04)
     "foundation_grandfathered": FoundationGrandfatheredEvent,

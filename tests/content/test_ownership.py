@@ -14,6 +14,7 @@ import contextlib
 import fcntl
 import json
 import os
+import stat
 import tempfile
 import unittest
 from pathlib import Path
@@ -39,6 +40,7 @@ from gzkit.content.ownership import (
     write_declaration_atomically,
 )
 from gzkit.content.parse import section_id
+from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.traceability import covers
 
@@ -48,6 +50,8 @@ _SCHEMA_PATH = (
     Path(__file__).resolve().parents[2] / "src" / "gzkit" / "schemas" / "section_ownership.json"
 )
 _AGENTS_MD_PATH = Path(__file__).resolve().parents[2] / "AGENTS.md"
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_AGENTS_MD_DECLARATION_PATH = _REPO_ROOT / ".gzkit" / "ownership" / "AGENTS.md.json"
 
 _SIMPLE_SURFACE = (
     "# Doc Title\n"
@@ -100,6 +104,18 @@ class _DeclarationFixtureMixin:
             encoding="utf-8",
         )
         return path
+
+    def _seed_genesis_event(self, surface: str, floor: int) -> str:
+        """Emit a real `section_ownership_genesis` event into this fixture's ledger.
+
+        Returns the minted event id so a caller can point a declaration's
+        `floor_event_id` at a genuinely ledger-resolvable proof rather than a
+        hand-typed string -- the fixture must be as real as the attack it
+        defends against.
+        """
+        event_id = f"section-ownership-genesis-{surface}-test"
+        emit_section_ownership_genesis(self._root, event_id, surface, floor)
+        return event_id
 
 
 class TestMeasureSectionSpans(unittest.TestCase):
@@ -271,12 +287,17 @@ class TestLoadDeclarationFailClosed(_DeclarationFixtureMixin, unittest.TestCase)
         self.assertIn("object", message)
 
     def test_fully_declared_surface_loads_cleanly(self) -> None:
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = spans["alpha-section"] + spans["beta-section"]
+        event_id = self._seed_genesis_event("Doc.md", floor)
         path = self._write_declaration(
             {
                 "doc-title": "corpus-owned",
                 "alpha-section": "unowned",
                 "beta-section": "unowned",
-            }
+            },
+            unowned_byte_floor=floor,
+            floor_event_id=event_id,
         )
         declaration = load_declaration(path, _SIMPLE_SURFACE, self._root)
         self.assertIsInstance(declaration, OwnershipDeclaration)
@@ -294,9 +315,14 @@ class TestOwnershipKeysOnSectionId(_DeclarationFixtureMixin, unittest.TestCase):
         # kebab-case id (behavior-rules) via the canonical slugifier -- a
         # renamed heading whose id survives must not orphan its declaration.
         renamed_surface = "# Doc Title\npreamble\n## Behavior, RULES!!\nrenamed body\n"
+        spans = measure_section_spans(renamed_surface)
+        floor = spans["behavior-rules"]
+        event_id = self._seed_genesis_event("Doc.md", floor)
         path = self._write_declaration(
             {"doc-title": "corpus-owned", "behavior-rules": "unowned"},
             surface_text=renamed_surface,
+            unowned_byte_floor=floor,
+            floor_event_id=event_id,
         )
         declaration = load_declaration(path, renamed_surface, self._root)
         self.assertEqual(declaration.sections["behavior-rules"], "unowned")
@@ -341,16 +367,130 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
         return path
 
     @covers("REQ-0.35.0-04-02")
-    def test_genesis_declaration_with_coherent_floor_loads_cleanly(self) -> None:
+    def test_null_floor_event_id_is_refused_the_genesis_branch_no_longer_exists(self) -> None:
+        # The Step-4b adversary's exact probe: a null floor_event_id was
+        # witnessed only by self-coherence (the stored floor equalling the
+        # summed span of its own declared-'unowned' sections), which the
+        # attacker simply recomputes after flipping a section. There is no
+        # longer a genesis branch that trusts a null id at all -- EVERY
+        # floor, day-one included, must resolve to a real ledger event.
         path = self._write_declaration(
             {
                 "doc-title": "corpus-owned",
                 "alpha-section": "unowned",
                 "beta-section": "unowned",
-            }
+            },
+            floor_event_id=None,
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("null", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_floor_event_id_resolving_to_the_wrong_event_type_is_refused(self) -> None:
+        # The adversary showed a `task_started` event accepted as proof --
+        # ANY event type resolving to the right id used to pass. Only the
+        # recognized ownership roster (section_ownership_genesis,
+        # section_ownership_unowned, unowned_ratchet_updated) may witness a
+        # floor, even when the floor VALUE happens to match.
+        ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
+        ledger.append(
+            LedgerEvent(
+                event="task_started",
+                id="wrong-type-event",
+                extra={"surface": "Doc.md", "new_unowned_byte_floor": 83},
+            )
+        )
+        path = self._write_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=83,
+            floor_event_id="wrong-type-event",
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("task_started", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_floor_event_id_resolving_to_a_different_surface_is_refused(self) -> None:
+        # An event for "Other.md" accepted as proof for "Doc.md" used to pass
+        # whenever the floor value happened to agree.
+        ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
+        ledger.append(
+            LedgerEvent(
+                event="unowned_ratchet_updated",
+                id="other-surface-event",
+                extra={
+                    "surface": "Other.md",
+                    "prior_unowned_byte_floor": 0,
+                    "new_unowned_byte_floor": 83,
+                },
+            )
+        )
+        path = self._write_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=83,
+            floor_event_id="other-surface-event",
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("Other.md", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unowned_span_exceeding_the_stored_floor_is_refused(self) -> None:
+        # The reproduced attack: flip a corpus-owned section ('doc-title') to
+        # 'unowned' WITHOUT touching the stored floor or its real, resolving
+        # floor_event_id. The true unowned span now sits ABOVE the floor the
+        # chain check alone would still accept.
+        event_id = self._seed_genesis_event("Doc.md", 83)
+        path = self._write_declaration(
+            {
+                "doc-title": "unowned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=83,
+            floor_event_id=event_id,
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("83", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unowned_span_below_the_stored_floor_loads_cleanly(self) -> None:
+        # A legitimate AGENTS.md shrink before the next ratchet recording:
+        # the true unowned span may sit BELOW the stored floor -- the ratchet
+        # is decrease-only, so `<=` is the correct relation, never `==`.
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        true_span = spans["alpha-section"] + spans["beta-section"]
+        stored_floor = true_span + 10
+        event_id = self._seed_genesis_event("Doc.md", stored_floor)
+        path = self._write_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=stored_floor,
+            floor_event_id=event_id,
         )
         declaration = load_declaration(path, _SIMPLE_SURFACE, self._root)
-        self.assertIsNone(declaration.floor_event_id)
+        self.assertEqual(declaration.unowned_byte_floor, stored_floor)
 
     @covers("REQ-0.35.0-04-02")
     def test_direct_hand_edit_of_the_floor_fails_closed_the_adversary_attack(self) -> None:
@@ -379,9 +519,8 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
     def test_hand_edited_floor_with_nulled_event_id_still_fails_closed(self) -> None:
         # Closing the loophole the chain check alone would leave open: an
         # attacker who hand-raises the floor AND nulls floor_event_id must
-        # still be caught, this time by genesis coherence -- a null-id
-        # declaration proves itself only by the summed-span rule, and a
-        # hand-raised floor disagrees with that sum too.
+        # still be caught -- a null floor_event_id is refused outright now,
+        # there is no genesis branch left for it to hide behind.
         path = self._seed_attested_declaration()
         raw = json.loads(path.read_text(encoding="utf-8"))
         raw["unowned_byte_floor"] = raw["unowned_byte_floor"] + 1
@@ -483,9 +622,24 @@ class TestSectionOwnershipSchema(unittest.TestCase):
             "sections": {"attestation": "corpus-owned", "skills": "unowned"},
             "unowned_byte_floor": 8637,
             "measured_at": "2026-09-02T00:00:00Z",
-            "floor_event_id": None,
+            "floor_event_id": "section-ownership-genesis-AGENTS.md-example",
         }
         jsonschema.validate(instance, schema)
+
+    def test_schema_rejects_a_null_floor_event_id(self) -> None:
+        # REQ-0.35.0-04-02: the genesis branch no longer exists -- a null
+        # floor_event_id is refused at the schema level too, not merely by
+        # the loader.
+        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+        instance = {
+            "surface": "AGENTS.md",
+            "sections": {"attestation": "corpus-owned", "skills": "unowned"},
+            "unowned_byte_floor": 8637,
+            "measured_at": "2026-09-02T00:00:00Z",
+            "floor_event_id": None,
+        }
+        with self.assertRaises(jsonschema.ValidationError):
+            jsonschema.validate(instance, schema)
 
     def test_schema_rejects_a_value_outside_the_closed_enum(self) -> None:
         schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -525,6 +679,28 @@ class TestSectionOwnershipSchema(unittest.TestCase):
         }
         with self.assertRaises(jsonschema.ValidationError):
             jsonschema.validate(instance, schema)
+
+
+class TestCommittedDeclarationLoadsCleanly(unittest.TestCase):
+    """REQ-0.35.0-04-08: the day-one declaration validates and loads for real.
+
+    Not a scratch fixture -- the actual `.gzkit/ownership/AGENTS.md.json`
+    against the actual `AGENTS.md` and the actual project root, so this
+    would fail if the genesis event minted for the committed declaration
+    were ever missing or repointed to the wrong id.
+    """
+
+    # No @covers here BY DESIGN. REQ-0.35.0-04-08 is a SUPPORT REQ, and its
+    # proof channel is a path-citing ledger event plus a structural validator
+    # (`gz validate --documents`), never a test decoration (ADR-0.0.59,
+    # GHI #571). Decorating it would be the category error the brief's own
+    # Acceptance Criteria warn against; the test is still valuable as a live
+    # regression guard, it simply is not REQ-08's proof.
+    def test_committed_agents_md_declaration_loads_against_the_real_ledger(self) -> None:
+        surface_text = _AGENTS_MD_PATH.read_text(encoding="utf-8")
+        declaration = load_declaration(_AGENTS_MD_DECLARATION_PATH, surface_text, _REPO_ROOT)
+        self.assertIsNotNone(declaration.floor_event_id)
+        self.assertEqual(declaration.surface, "AGENTS.md")
 
 
 class TestOwnershipEnumSingleSourced(unittest.TestCase):
@@ -1149,7 +1325,16 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
         real_fsync = os.fsync
 
         def probing_fsync(fd: int) -> None:
-            observed.append(fcntl.fcntl(fd, fcntl.F_GETFL) & os.O_ACCMODE)
+            # Directory descriptors are EXEMPT, not overlooked. A directory
+            # cannot be opened for writing on POSIX -- O_RDONLY is the only
+            # way to obtain a syncable handle -- and the directory barrier is
+            # guarded by `os.name == "posix"`, so it never executes on the
+            # platform whose GENERIC_WRITE requirement this fence protects.
+            # Narrowing to regular files keeps the fence load-bearing for the
+            # descriptor that DOES cross to Windows; dropping the assertion
+            # wholesale is what would silently re-admit the read-handle bug.
+            if not stat.S_ISDIR(os.fstat(fd).st_mode):
+                observed.append(fcntl.fcntl(fd, fcntl.F_GETFL) & os.O_ACCMODE)
             return real_fsync(fd)
 
         with mock.patch("gzkit.content.ownership.os.fsync", side_effect=probing_fsync):
@@ -1181,6 +1366,43 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
         text = '{\n  "surface": "Doc.md"\n}\n'
         write_declaration_atomically(self._path, text)
         self.assertEqual(self._path.read_bytes(), text.encode("utf-8"))
+
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
+    @covers("REQ-0.35.0-04-02")
+    def test_the_parent_directory_is_synced_so_the_rename_is_durable(self) -> None:
+        """Would break if the barrier stopped at the file descriptor.
+
+        Step-4b adversary finding 4. Syncing the staging descriptor makes the
+        BYTES durable and says nothing about the RENAME: on POSIX the directory
+        entry `os.replace` rewrites is buffered metadata, so a power loss right
+        after the swap can leave the directory still naming the old inode. The
+        write is then atomic but NOT durable, on the one artifact gating the
+        unowned-byte ratchet.
+
+        The assertion is on the fsync TARGETS, not on a call count: a count
+        cannot tell a second file-descriptor sync from a directory sync, so it
+        would stay green if the barrier were pointed at the wrong object. Here
+        the parent directory must appear among the synced fds, which is false
+        unless the directory itself was opened and synced.
+        """
+        synced_dirs: list[str] = []
+        real_fsync = os.fsync
+
+        def tracking_fsync(fd: int) -> None:
+            try:
+                if stat.S_ISDIR(os.fstat(fd).st_mode):
+                    synced_dirs.append(os.path.realpath(f"/dev/fd/{fd}"))
+            except OSError:
+                pass
+            real_fsync(fd)
+
+        with mock.patch.object(os, "fsync", tracking_fsync):
+            write_declaration_atomically(self._path, '{"surface": "Doc.md"}\n')
+
+        self.assertTrue(
+            synced_dirs,
+            msg="no directory was fsynced -- the rename is atomic but not durable",
+        )
 
 
 class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):

@@ -30,7 +30,7 @@ _WELL_FORMED_DECLARATION = {
     },
     "unowned_byte_floor": 42,
     "measured_at": "2026-09-01T00:00:00Z",
-    "floor_event_id": None,
+    "floor_event_id": "section-ownership-genesis-AGENTS.md-test",
 }
 
 

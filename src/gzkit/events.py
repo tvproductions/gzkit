@@ -1157,6 +1157,58 @@ class HandoffResumeBlockedEvent(_EventBase):
     tool_name: str = Field(..., min_length=1, description="Tool whose call was refused")
 
 
+class SectionOwnershipGenesisEvent(_EventBase):
+    """section_ownership_genesis event — the day-one unowned-byte ratchet floor.
+
+    Layer-2 witness for a surface's FIRST declared floor (OBPI-0.35.0-04). It
+    exists because a genesis declaration used to be witnessed only by
+    self-coherence — its stored floor merely agreeing with the summed span of
+    its own `unowned` sections — and that is precisely what an attacker
+    recomputes after hand-editing the declaration. A Step-4b adversary raised a
+    floor 8637 -> 10182 with no ledger file in existence and the loader accepted
+    it. `load_declaration` now refuses a null `floor_event_id` outright, so
+    genesis is a witnessed STATE rather than a coherent SHAPE, which is what
+    AGENTS.md demands of any gate ("name the STATE it must observe").
+    """
+
+    event: Literal["section_ownership_genesis"]
+    surface: str
+    new_unowned_byte_floor: int
+
+
+class UnownedRatchetUpdatedEvent(_EventBase):
+    """unowned_ratchet_updated event — the ordinary, decrease-only floor move.
+
+    Emitted when a recorded total is less than or equal to the stored floor
+    (REQ-0.35.0-04-03). An increase is unreachable here by construction; raising
+    the floor is the attested `gz content unown` path alone, which emits
+    `section_ownership_unowned` instead.
+    """
+
+    event: Literal["unowned_ratchet_updated"]
+    surface: str
+    prior_unowned_byte_floor: int
+    new_unowned_byte_floor: int
+
+
+class SectionOwnershipUnownedEvent(_EventBase):
+    """section_ownership_unowned event — the ATTESTED raise-path.
+
+    The only path by which the ratchet floor may rise (REQ-0.35.0-04-05). It
+    carries `attestor` and `reason` because un-owning a section is a change to
+    canon and takes the same ceremony as any other, and because those two fields
+    are what a later reader has to reconstruct why coverage shrank.
+    """
+
+    event: Literal["section_ownership_unowned"]
+    surface: str
+    section: str
+    prior_unowned_byte_floor: int
+    new_unowned_byte_floor: int
+    attestor: str
+    reason: str
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1225,7 +1277,10 @@ TypedLedgerEvent = Annotated[
     | HandoffResumeBlockedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent
-    | FoundationGrandfatheredEvent,
+    | FoundationGrandfatheredEvent
+    | SectionOwnershipGenesisEvent
+    | UnownedRatchetUpdatedEvent
+    | SectionOwnershipUnownedEvent,
     Field(discriminator="event"),
 ]
 

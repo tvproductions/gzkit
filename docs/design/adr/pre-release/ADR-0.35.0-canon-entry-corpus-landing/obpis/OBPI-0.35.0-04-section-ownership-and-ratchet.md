@@ -349,80 +349,131 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI, gzkit asserted an invariant floor over ALL of `AGENTS.md` while
+verifying it over none of it: which sections the corpus actually backs was silence,
+not a fact. This ships the closed-enum ownership declaration, the decrease-only
+unowned-byte ratchet, and the attested `gz content unown` raise-path — so "how much
+of the contract is witnessed" becomes an explicit, fail-closed, ledger-anchored
+number instead of an assumption.
+
+The measure is named honestly rather than marketed (REQ-08): span-based coverage
+INFLATES apparent witnessing, because an owned section's full byte span counts even
+where a single corpus entry backs it. Four of the ten owned sections carry exactly
+one entry, and one of those is `compressible` tier — so "10 of 22 sections" is
+functionally six sections plus four tokens.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+Three rounds of tier-1 cross-vendor adversarial review drove the design. The
+load-bearing repair is that a ratchet floor is now witnessed by a ledger STATE, never
+by a declaration agreeing with itself:
+
+```
+$ uv run python /tmp/probe_v2.py      # scratch root holding the REAL ledger
+control (unmodified)       : ACCEPTED      <- no false positive on the real tree
+attack A (flip+recompute)  : REFUSED       <- the originally reproduced attack
+attack B (flip, keep floor): REFUSED       <- caught by span coherence alone
+legit shrink (sum < floor) : ACCEPTED      <- proves the relation is <=, not ==
+```
+
+Attack B refuses citing REQ-0.35.0-04-02: *"the true unowned span may legitimately
+sit BELOW the stored floor (a surface shrink before the next ratchet recording), but
+it may never sit above."* Before the repair, attack A loaded cleanly with no ledger
+file in existence (floor 8637 -> 10182).
+
+Full suite 9259 tests green, receipt `arb-step-unittest-824691c6b184421ea828cfab16abe9bb`;
+lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
+`arb-step-typecheck-31f339cc29ac42c5a5b7de515d093ea3`; docs
+`arb-step-mkdocs-13bcc36cf24c404bace5f68390fa061a`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- Files created/modified: `src/gzkit/content/ownership.py` (uniform ledger-anchored
+  load path; null `floor_event_id` refused; event type + surface + floor checks;
+  always-on `unowned span <= stored floor`; parent-directory fsync after
+  `os.replace`), `src/gzkit/commands/content/unown.py` (journal replay hardened —
+  re-mint, on-disk predecessor continuity, real measured span, `corpus-owned`
+  eligibility, derived-not-verbatim successor write, `NoReturn` refusal helper),
+  `src/gzkit/governance/events.py` + `src/gzkit/events.py` + `src/gzkit/schemas/ledger.json`
+  + `src/gzkit/ontology/corpus.py` (three ownership event types registered across
+  schema, typed-model union, and ontology disposition),
+  `src/gzkit/schemas/section_ownership.json`, `.gzkit/ownership/AGENTS.md.json`
+  (repointed to genesis event `section-ownership-genesis-AGENTS.md-8632cf1aa340695d`).
+- Tests added: `TestLoadDeclarationChainValidation` (5), `TestContentUnownReplayJournalValidation` (7),
+  `TestSectionOwnershipSchema`, `TestCommittedDeclarationLoadsCleanly`, directory-fsync durability test.
+- Negative controls: all six replay checks and the durability barrier were each
+  deleted in isolation and their named test observed to FAIL, then restored — the
+  tests are guards, not decoration.
+- Date completed: 2026-09-03
+- Attestation status: operator-attested (Gate 5)
+- Defects noted: see Tracked Defects — one accepted residual (coordinated
+  declaration+journal edit) and one deferred architectural item (OBPI-0.35.0-05).
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED.** Adversary: Codex (tier 1, cross-vendor), dispatched through the
-`openai-codex` plugin runtime (`codex-companion.mjs adversarial-review --wait --scope
-working-tree`), ARB-wrapped. Receipt `arb-step-codexadversary-d04634100678415daada4acd3a6f2881`
-(`exit_status: 0`). Tier-1 readiness was confirmed before dispatch — `ready: true`, runtime mode
-`direct`, no stale broker — so tiers 2 and 3 were forbidden.
+**Verdict: REFUTED-WITH-CAVEATS (round 3), caveat operator-accepted 2026-09-03.**
 
-This was the SECOND adversarial pass. The first (receipt
-`arb-step-codexadversary-f7a101da3ba3498e94249f2bdb39969f`) also returned REFUTED with five
-findings; all five were repaired across this session and the tree was re-submitted. The second
-pass confirms three of those repairs hold and returns FOUR NEW findings, two of them `[high]`.
-ATTESTATION WAS NOT SOLICITED and the OBPI is NOT completable on this verdict.
+Rounds 1 and 2 both returned REFUTED. Round 1's five findings were repaired; round 2
+returned four more, two `[high]`. This section records round 3.
 
-| # | Severity | Finding | Origin |
+**Round 2's four findings, dispositioned:**
+
+| # | Severity | Finding | Disposition |
 |---|---|---|---|
-| 1 | high | Genesis and event lookup do not prove an attested transition | Pre-existing — the prior session's finding-4 repair |
-| 2 | high | Journal replay is an unvalidated arbitrary declaration write | INTRODUCED by this session's finding-2 repair |
-| 3 | medium | The ordinary ratchet update is not a recoverable two-store transaction | Already recorded in Tracked Defects |
-| 4 | medium | Atomic replacement is not durable across power loss (no directory fsync) | Already recorded in Tracked Defects |
+| 1 | high | Genesis had no provenance anchor | **FIXED.** Operator ruled 2026-09-03: anchor genesis to a `section_ownership_genesis` ledger event and forbid a null `floor_event_id` outright. The genesis branch is deleted; the loader has ONE uniform path. Reproduced attack now refuses. |
+| 2 | high | Journal replay was an unvalidated arbitrary declaration write | **FIXED.** Six independent checks; the successor is re-derived from the on-disk predecessor and the journal's own `declaration_json` bytes never reach disk. |
+| 3 | medium | `record_unowned_total`'s two-store transaction is not recoverable | **DEFERRED, disclosed.** No production caller exists; the shared-journal lift belongs to OBPI-0.35.0-05's materialization path. Round 3 was asked to rule on the deferral's defensibility and was cut off before answering. |
+| 4 | medium | No directory fsync after `os.replace` | **FIXED**, with a proven negative control (barrier removed -> `no directory was fsynced`). |
 
-**Finding 1 — reproduced independently by the orchestrator, not merely accepted.**
-`load_declaration` treats ANY section/floor-coherent declaration carrying `floor_event_id: null`
-as genesis, and nothing proves it is the original genesis state. A probe copied the real
-declaration into a scratch root, flipped `attestation` from `corpus-owned` to `unowned`,
-recomputed the floor so it stayed self-coherent, kept the id null, and loaded it:
+**Round 3 (this round).** Adversary: Codex, tier 1 cross-vendor, dispatched through the
+`openai-codex` plugin runtime (`codex-companion.mjs adversarial-review --wait --scope
+working-tree`), ARB-wrapped. Tier-1 readiness was confirmed BEFORE dispatch — `ready: true`,
+runtime mode `direct`, no stale broker — so tiers 2 and 3 were forbidden.
 
-    baseline floor: 8637 | floor_event_id: None
-    hand-raised floor: 10182 | ledger exists: False
-    RESULT: ACCEPTED  <-- the ratchet was raised with NO attested transition
+**The run terminated on an upstream content filter** (*"This content was flagged for possible
+cybersecurity risk"*, `Turn failed`) after completing substantive analysis. Receipt
+`arb-step-codexadversary-9631113ec5f44bb4bf64e1fe38cecd46` therefore records
+`exit_status: 1`, NOT 0. This is stated rather than papered over: the receipt does not
+meet the gate's exit-0 bar for a tier-1 claim, and the tier is recorded accordingly.
 
-The adversary separately showed the non-null branch is only an id/floor equality check: a
-`task_started` event for `Other.md` was accepted as proof for `Doc.md`. Together these defeat
-REQ-0.35.0-04-02's central claim — a hand edit CAN raise the ratchet or reverse ownership
-without an attested `gz content unown`.
-THIS IS THE DOCTRINE THIS OBPI EXISTS TO CLOSE, SITTING INSIDE THE OBPI: `AGENTS.md` — *"A
-PRESENCE CHECK ANSWERS 'is something armed', NEVER 'did the governed procedure run'."* Genesis is
-witnessed by self-coherence, which the attacker simply recomputes. It is a DESIGN GAP, not a bug:
-genesis has no provenance anchor by construction, so the repair shape is an operator decision
-(candidates: a `section_ownership_genesis` ledger event, a commit-SHA anchor, or forbidding a null
-`floor_event_id` after day one).
+**Round 3's finding, ACCEPTED as a residual by operator ruling.** Verbatim:
 
-**Finding 2 — introduced by this session's own repair.** `_replay_pending_transition` validates
-only that the journal is an object carrying selected keys, then writes `declaration_json`
-verbatim and appends its claimed event. The adversary forged a journal that was accepted with
-exit 0, raised the floor `26 -> 1025`, and emitted blank provenance (`Attested by :`).
-Separately `_JOURNAL_FIELDS` omits `ts` while `_append_event_once` reads `record["ts"]`
-(`unown.py:176`), so a field-complete journal can still die on a raw `KeyError` rather than the
-governed three-part refusal — verified by reading both sites.
+> A coordinated declaration+journal edit is accepted: the replay probe raised the floor
+> 26 -> 1025, flipped the section, minted and appended a `section_ownership_unowned`
+> witness, cleared the journal, and then passed `load_declaration`.
 
-**Findings 3 and 4 were already disclosed** in this brief's Tracked Defects before the pass; the
-adversary confirmed both by probe rather than by argument, which is the outcome disclosure is for.
+Every replay check holds individually. The limitation is structural: each check compares
+the journal against the **declaration on disk**, and an actor who can write the journal can
+write the declaration too. Forge both coherently and the code mints a genuine ledger event —
+which routes around the loader protection round 2 finding 1 installed. It is the same shape
+as the genesis gap: coherence with attacker-controlled state is not proof.
 
-**Disposition:** operator-ruled 2026-09-02 to CHECKPOINT and resume in a fresh session rather than
-run a fourth fix cycle on a design decision. No attestation solicited; no completion attempted.
+**Operator ruling 2026-09-03 (selection: accept and complete with the caveat recorded):**
+an actor with write access to `.gzkit/ownership/` is inside the trust boundary, and the
+honest defense at that point is AUDITABILITY rather than prevention — the forged transition
+lands in the append-only ledger carrying its attestor and reason, so it is discoverable
+rather than silent. The alternative considered and declined was a fresh anchor design of the
+same weight as the genesis ruling. Recorded in Tracked Defects; NOT dressed as clean.
 
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
+
+- **Coordinated declaration+journal edit raises the floor (round-3 adversary finding,
+  `[medium-high]`, ACCEPTED RESIDUAL — operator-ruled 2026-09-03).**
+  Every check in `_replay_pending_transition` compares the journal against the
+  declaration ON DISK. An actor able to write the journal can write the declaration
+  too; forging both coherently makes the code mint a genuine `section_ownership_unowned`
+  witness and clear the journal, routing around the loader protection installed for
+  round-2 finding 1. Reproduced by the adversary at floor 26 -> 1025.
+  NOT A BUG TO PATCH AT THIS LAYER: coherence with attacker-controlled state cannot
+  prove provenance, which is the same limit that made genesis unanchorable before it
+  gained a ledger witness. The operator ruled to ACCEPT: write access to
+  `.gzkit/ownership/` is inside the trust boundary, and the defense there is
+  AUDITABILITY — the forged transition is recorded in the append-only ledger carrying
+  its attestor and reason rather than applied silently. Revisit if the threat model
+  ever admits an actor holding canon-directory write access.
 
 - **Content-layer ledger write (architectural debt, deferred to OBPI-0.35.0-05).**
   `record_unowned_total` (`src/gzkit/content/ownership.py`) takes a filesystem `root`

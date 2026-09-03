@@ -28,8 +28,8 @@
       "description": "ISO 8601 timestamp the declaration's byte spans were measured. Illustrative provenance only -- coverage and spans are re-derived at run time, never trusted from this field (governance-core.md)."
     },
     "floor_event_id": {
-      "type": ["string", "null"],
-      "description": "The ledger event id that last set unowned_byte_floor -- an unowned_ratchet_updated or section_ownership_unowned event whose new_unowned_byte_floor must equal this declaration's stored floor. Null ONLY for a genesis declaration, permitted solely when the stored floor equals the summed byte span of the sections declared 'unowned' (REQ-0.35.0-04-02). A direct hand-edit of unowned_byte_floor with no matching attested transition fails closed on load."
+      "type": "string",
+      "description": "The ledger event id that last set unowned_byte_floor -- a section_ownership_genesis, unowned_ratchet_updated, or section_ownership_unowned event whose new_unowned_byte_floor equals this declaration's stored floor, and whose surface equals this declaration's surface. Never null, including for a day-one declaration: every ratchet floor, genesis included, is witnessed by a ledger event rather than by self-coherence, which an attacker can simply recompute (REQ-0.35.0-04-02). A direct hand-edit of unowned_byte_floor with no matching attested transition fails closed on load."
     }
   }
 }

@@ -34,10 +34,11 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, NoReturn
 
 from gzkit.commands.common import get_project_root
 from gzkit.content.ownership import (
+    OwnershipDeclaration,
     OwnershipLoadError,
     declaration_journal_path,
     declaration_path,
@@ -109,10 +110,13 @@ def _load_declaration_or_exit(path: Path, surface_text: str, root: Path):
 
 _EVENT = "section_ownership_unowned"
 
-# Every field a journalled record must carry to be replayable: the three
-# `_replay_pending_transition` reads plus the five `_append_event_once` reads.
-# A record missing any of them cannot complete the interrupted transition, so
-# it is refused in prose rather than half-applied.
+# Every field a journalled record must carry to be replayable: the
+# `_replay_pending_transition` reads (including `parent_event_id`, needed to
+# re-mint `event_id` and check it against the on-disk chain pointer) plus the
+# `_append_event_once` reads (including `ts`, read at unown.py:176). A record
+# missing any of them cannot complete the interrupted transition, so it is
+# refused in prose rather than half-applied or left to crash with a raw
+# KeyError.
 _JOURNAL_FIELDS: tuple[str, ...] = (
     "event_id",
     "surface",
@@ -122,6 +126,8 @@ _JOURNAL_FIELDS: tuple[str, ...] = (
     "attestor",
     "reason",
     "declaration_json",
+    "parent_event_id",
+    "ts",
 )
 
 
@@ -186,7 +192,144 @@ def _append_event_once(root: Path, record: dict[str, Any]) -> None:
     )
 
 
-def _replay_pending_transition(root: Path, path: Path, journal_path: Path) -> dict[str, Any] | None:
+def _refuse_forged_journal(journal_path: Path, defect: str) -> NoReturn:
+    """Refuse and exit 2: the journal is CRASH-RECOVERY STATE ONLY.
+
+    Shared by every `_replay_pending_transition` defect that reaches past
+    "parses to a dict carrying the right keys": a journal must be able to
+    FINISH a transition its own content proves started from the live on-disk
+    predecessor, never to INVENT one. A hand-authored journal that parses
+    cleanly but disagrees with the on-disk chain, the deterministic event id,
+    or the recomputed successor is exactly as forged as one that fails to
+    parse at all, and gets the same governed refusal.
+    """
+    print(
+        f"Error: the pending-transition journal {journal_path.as_posix()!r} is "
+        f"unreadable or malformed: {defect}.\n"
+        "Why forbidden: an un-owning is completed from its journal, so a "
+        "journal that cannot be proven to continue the live on-disk "
+        "predecessor makes an interrupted raise unrecoverable and no further "
+        "un-owning of this surface may proceed on top of it "
+        "(REQ-0.35.0-04-02); nothing written.\n"
+        f"  Inspect {journal_path.as_posix()!r} against the ledger, reconcile "
+        "the declaration by hand, then delete the journal and retry.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+
+
+def _apply_unlanded_transition(
+    path: Path,
+    journal_path: Path,
+    record: dict[str, Any],
+    on_disk: dict[str, Any],
+    surface_text: str,
+) -> None:
+    """Prove a not-yet-landed journal continues the declaration on disk, then apply it.
+
+    Extracted from `_replay_pending_transition`, which had grown to rank D on the
+    xenon ceiling by conflating two responsibilities the reader has to separate
+    anyway: proving the journal is not forged, and applying the transition it
+    describes. An auditor asking "can a hand-authored journal move the floor"
+    should not have to read the write/rollback machinery to answer it.
+
+    Every check here is a REFUSAL that exits; reaching the end means the journal
+    is corroborated by the live declaration and surface, and the DERIVED successor
+    has been written.
+    """
+    # The declaration write never landed: the journal must PROVE it
+    # continues the declaration actually on disk, never merely claim to.
+    if on_disk.get("unowned_byte_floor") != record["prior_unowned_byte_floor"]:
+        _refuse_forged_journal(
+            journal_path,
+            f"prior_unowned_byte_floor {record['prior_unowned_byte_floor']!r} "
+            "does not match the floor currently on disk "
+            f"({on_disk.get('unowned_byte_floor')!r}) -- the journal does not "
+            "start from the declaration on disk",
+        )
+    if on_disk.get("floor_event_id") != record["parent_event_id"]:
+        _refuse_forged_journal(
+            journal_path,
+            f"parent_event_id {record['parent_event_id']!r} does not match "
+            f"the on-disk floor_event_id ({on_disk.get('floor_event_id')!r})",
+        )
+    try:
+        span = measure_section_spans(surface_text)[record["section"]]
+    except KeyError:
+        _refuse_forged_journal(
+            journal_path,
+            f"section {record['section']!r} does not exist on the live surface",
+        )
+    if record["new_unowned_byte_floor"] != record["prior_unowned_byte_floor"] + span:
+        _refuse_forged_journal(
+            journal_path,
+            f"new_unowned_byte_floor {record['new_unowned_byte_floor']!r} does "
+            "not equal the on-disk floor plus section "
+            f"{record['section']!r}'s real measured byte span "
+            f"({record['prior_unowned_byte_floor'] + span!r})",
+        )
+    try:
+        predecessor = OwnershipDeclaration(**on_disk)
+    except (TypeError, ValueError) as exc:
+        _refuse_forged_journal(journal_path, f"on-disk declaration does not validate: {exc}")
+    # The section must actually BE 'corpus-owned' on the on-disk predecessor
+    # -- the same eligibility the live command path enforces at unown.py
+    # (`current != "corpus-owned"` refusal). Without this check, a journal
+    # naming an ALREADY-unowned section with a self-consistent event id, a
+    # real prior floor/parent, and a real measured span still passes every
+    # check above: flipping an already-'unowned' section to 'unowned' is a
+    # no-op on `sections`, so the derived successor JSON matches too, and
+    # the floor is durably inflated a second time for one section with a
+    # genuine ledger event witnessing a flip that never happened.
+    predecessor_status = predecessor.sections.get(record["section"])
+    if predecessor_status != "corpus-owned":
+        _refuse_forged_journal(
+            journal_path,
+            f"section {record['section']!r} is {predecessor_status!r} on the "
+            "on-disk predecessor, not 'corpus-owned' -- only a corpus-owned "
+            "section may be un-owned",
+        )
+    new_sections = dict(predecessor.sections)
+    new_sections[record["section"]] = "unowned"
+    expected_declaration = predecessor.model_copy(
+        update={
+            "sections": new_sections,
+            "unowned_byte_floor": record["new_unowned_byte_floor"],
+            "floor_event_id": record["event_id"],
+        }
+    )
+    expected_declaration_json = expected_declaration.model_dump_json(indent=2) + "\n"
+    if expected_declaration_json != record["declaration_json"]:
+        _refuse_forged_journal(
+            journal_path,
+            "declaration_json does not match the successor derived from "
+            "the on-disk predecessor and the journalled transition -- a "
+            "journal may finish a transition, never invent one",
+        )
+
+    # Write the DERIVED successor, never the journal's own claimed bytes
+    # verbatim -- the two are proven equal above, but the derived value is
+    # the one this code actually stands behind.
+    try:
+        write_declaration_atomically(path, expected_declaration_json)
+    except OSError as exc:
+        print(
+            f"Error completing the interrupted un-owning of "
+            f"{record['section']!r}: cannot write {path.as_posix()!r}: {exc}.\n"
+            "Why forbidden: the journalled transition must be re-applied to "
+            "the declaration before its ledger witness is written -- Layer 2 "
+            "may never announce a floor Layer 1 does not carry "
+            "(REQ-0.35.0-04-05). The journal is retained.\n"
+            "  Check file permissions and disk space, then retry the same "
+            "command to complete it.",
+            file=sys.stderr,
+        )
+        sys.exit(2)
+
+
+def _replay_pending_transition(
+    root: Path, path: Path, journal_path: Path, surface_text: str
+) -> dict[str, Any] | None:
     """Finish any journalled transition left behind by an interrupted run.
 
     Runs INSIDE the declaration lock and BEFORE `load_declaration`, because an
@@ -196,6 +339,12 @@ def _replay_pending_transition(root: Path, path: Path, journal_path: Path) -> di
     re-apply the journalled declaration if it never landed, complete the append
     under the SAME event id, then clear the journal. Returns the completed
     record, or None when there was nothing pending.
+
+    The journal is CRASH-RECOVERY STATE ONLY, never a second write path: every
+    field is proven to CONTINUE the live on-disk predecessor before anything
+    is written, so a hand-forged journal cannot mint a floor raise or an
+    ownership flip that the real `content_unown_cmd` transition never
+    produced (Step-4b adversary finding 2).
     """
     if not journal_path.exists():
         return None
@@ -219,40 +368,68 @@ def _replay_pending_transition(root: Path, path: Path, journal_path: Path) -> di
             if missing:
                 defect = f"missing required field(s) {', '.join(missing)}"
     if defect is not None:
-        print(
-            f"Error: the pending-transition journal {journal_path.as_posix()!r} is "
-            f"unreadable or malformed: {defect}.\n"
-            "Why forbidden: an un-owning is completed from its journal, so an "
-            "unreadable journal makes an interrupted raise unrecoverable and no "
-            "further un-owning of this surface may proceed on top of it "
-            "(REQ-0.35.0-04-02); nothing written.\n"
-            f"  Inspect {journal_path.as_posix()!r} against the ledger, reconcile "
-            "the declaration by hand, then delete the journal and retry.",
-            file=sys.stderr,
+        _refuse_forged_journal(journal_path, defect)
+
+    # The replay path takes the SAME fail-closed shape as the command path
+    # for a blank attestor/reason (REQ-0.35.0-04-04) -- reuse the one
+    # governed check rather than a second copy that could drift from it.
+    _refuse_blank_attestation(
+        record["surface"], record["section"], record["attestor"], record["reason"]
+    )
+
+    # `event_id` must re-mint from the record's OWN claimed content -- a
+    # journal whose id does not match what `_mint_event_id` derives from its
+    # own fields did not come from a real `_commit_transition` run.
+    if _mint_event_id(record, record["parent_event_id"]) != record["event_id"]:
+        _refuse_forged_journal(
+            journal_path,
+            f"event_id {record['event_id']!r} does not re-mint from the journal's own content",
         )
-        sys.exit(2)
 
     try:
         on_disk = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         on_disk = {}
+
     if on_disk.get("floor_event_id") != record["event_id"]:
-        # The declaration write never landed: re-apply it from the journal.
-        try:
-            write_declaration_atomically(path, record["declaration_json"])
-        except OSError as exc:
-            print(
-                f"Error completing the interrupted un-owning of "
-                f"{record['section']!r}: cannot write {path.as_posix()!r}: {exc}.\n"
-                "Why forbidden: the journalled transition must be re-applied to "
-                "the declaration before its ledger witness is written -- Layer 2 "
-                "may never announce a floor Layer 1 does not carry "
-                "(REQ-0.35.0-04-05). The journal is retained.\n"
-                "  Check file permissions and disk space, then retry the same "
-                "command to complete it.",
-                file=sys.stderr,
-            )
-            sys.exit(2)
+        # The declaration write never landed, so the journal must PROVE it
+        # continues the declaration actually on disk rather than merely claim
+        # to. When it HAS landed, that proof is unavailable by construction
+        # (the predecessor is gone) and the coherence gate below is what
+        # guards the completion instead.
+        _apply_unlanded_transition(path, journal_path, record, on_disk, surface_text)
+
+    # Coherence gate, applied on BOTH branches (Step-4b round-3 finding 4).
+    # The already-landed branch -- where the declaration write survived but the
+    # ledger append did not -- reached the append and the journal unlink having
+    # validated NOTHING: every predecessor, span, eligibility and derived-
+    # successor check lives inside the not-yet-landed branch above. A run
+    # interrupted at the append, whose surface then GREW before the retry, was
+    # therefore completed and its journal consumed while leaving a declaration
+    # the canonical loader rejects (measured: unowned 131 against floor 83,
+    # `retry_exit=0`, `post_retry_load=REJECTED`) -- recovery reporting success
+    # while destroying the only record that could have recovered it.
+    #
+    # Re-assert the loader's own invariant against the LIVE surface before
+    # witnessing anything: an interrupted transition may only be completed into
+    # a state the loader would accept. Failing closed here RETAINS the journal,
+    # so the transition stays completable once the surface is reconciled.
+    landed = json.loads(path.read_text(encoding="utf-8"))
+    landed_floor = landed.get("unowned_byte_floor")
+    live_unowned_span = sum(
+        span
+        for sid, span in measure_section_spans(surface_text).items()
+        if landed.get("sections", {}).get(sid) == "unowned"
+    )
+    if landed_floor != record["new_unowned_byte_floor"] or live_unowned_span > landed_floor:
+        _refuse_forged_journal(
+            journal_path,
+            f"the declaration on disk carries floor {landed_floor!r} with a live "
+            f"unowned span of {live_unowned_span} -- completing this transition "
+            f"would leave a declaration the loader rejects (expected floor "
+            f"{record['new_unowned_byte_floor']!r}, and the span may never exceed "
+            "the floor). The surface changed after the transition was journalled",
+        )
 
     try:
         _append_event_once(root, record)
@@ -303,17 +480,33 @@ def _commit_transition(path: Path, journal_path: Path, root: Path, record: dict[
     try:
         write_declaration_atomically(path, record["declaration_json"])
     except OSError as exc:
-        with contextlib.suppress(OSError):
-            journal_path.unlink()
+        # The journal is RETAINED here (Step-4b round-3 finding 3). This branch
+        # used to delete it and report "Nothing written" on the premise that the
+        # write was all-or-nothing, so an error proved the declaration
+        # byte-unchanged. That premise DIED when the parent-directory fsync
+        # barrier was added: it runs AFTER `os.replace` has already swapped the
+        # file, so an OSError here may mean the declaration carries the new floor
+        # while no ledger witness exists. Deleting the journal on that path
+        # destroyed the only record able to complete the transition and left a
+        # declaration the loader rejects forever -- while telling the operator
+        # nothing had happened. Measured: `floor_changed=True`,
+        # `ownership_event_count=0`, `journal_exists=False`,
+        # `post_failure_load=REJECTED`.
+        #
+        # Retaining is safe in BOTH directions: if the replace genuinely never
+        # landed, the next run replays the journal and every check above
+        # re-validates it against the declaration actually on disk.
         print(
-            f"Error writing ownership declaration {path.as_posix()!r}: {exc}. "
-            "Nothing written.\n"
+            f"Error writing ownership declaration {path.as_posix()!r}: {exc}.\n"
             "Why forbidden: the declaration must carry the new floor durably "
             "BEFORE its ledger witness is written -- Layer 2 may never announce "
-            "a floor Layer 1 does not carry (REQ-0.35.0-04-05). The write is "
-            "atomic, so the declaration is byte-unchanged, and the journal has "
-            "been cleared, so no transition is left pending.\n"
-            "  Check file/directory permissions and disk space, then retry.",
+            "a floor Layer 1 does not carry (REQ-0.35.0-04-05). This write is "
+            "NOT provably all-or-nothing: the durability barrier runs after the "
+            "atomic swap, so the declaration may or may not already carry the "
+            "new floor. The journal is RETAINED so the transition stays "
+            "completable either way.\n"
+            "  Check file/directory permissions and disk space, then retry the "
+            "same command to complete it.",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -376,7 +569,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
     # may raise the ratchet at all. The declaration is re-read INSIDE the lock:
     # any value read before acquiring is stale by construction.
     with exclusive_declaration_lock(path):
-        recovered = _replay_pending_transition(root, path, journal_path)
+        recovered = _replay_pending_transition(root, path, journal_path, surface_text)
         if recovered is not None and recovered["section"] == section:
             print(
                 f"Completed the interrupted un-owning of section {section!r} of "
@@ -424,12 +617,17 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
             "reason": reason,
             "ts": datetime.now(UTC).isoformat(),
         }
+        # `parent_event_id` is PERSISTED on the record (not merely passed as an
+        # argument) so a replay of an interrupted transition can re-mint
+        # `event_id` from the journal's own content and check it, rather than
+        # trusting a claimed id it has no way to reproduce.
+        record["parent_event_id"] = declaration.floor_event_id
         # Mint the event id BEFORE writing anything, and reuse this exact id for
         # the ledger append below -- the declaration's `floor_event_id` chain
         # pointer must name the event that actually witnesses this raise
         # (REQ-0.35.0-04-02's attested-chain requirement), never a second,
         # independently-derived id.
-        record["event_id"] = _mint_event_id(record, declaration.floor_event_id)
+        record["event_id"] = _mint_event_id(record, record["parent_event_id"])
         new_declaration = declaration.model_copy(
             update={
                 "sections": new_sections,

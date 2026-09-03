@@ -18,13 +18,16 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+import gzkit.commands.content.unown as unown_module
 from gzkit.cli.main import main
 from gzkit.commands.content.unown import content_unown_cmd
 from gzkit.content.ownership import (
+    OwnershipDeclaration,
     OwnershipLoadError,
     load_declaration,
     measure_section_spans,
 )
+from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
@@ -42,12 +45,13 @@ _SURFACE_TEXT = (
 _DECLARATION_PATH = Path(".gzkit") / "ownership" / "Doc.md.json"
 _LEDGER_PATH = Path(".gzkit") / "ledger.jsonl"
 
-# A genesis declaration (floor_event_id=None) is only load-bearing valid when
-# its floor equals the summed span of its own declared-'unowned' sections
-# (REQ-0.35.0-04-02) -- derive that sum from measure_section_spans, never
-# hardcode it, so the default seed stays coherent regardless of
-# _SURFACE_TEXT's exact byte layout. With the default alpha="corpus-owned",
-# beta-section is the only section declared 'unowned' at seed time.
+# A day-one declaration is witnessed by a real `section_ownership_genesis`
+# ledger event, never by self-coherence: a null `floor_event_id` is fail-closed
+# (REQ-0.35.0-04-02), because a floor that merely agrees with its own summed
+# span is exactly what an attacker recomputes after a hand edit. The seed floor
+# is derived from measure_section_spans, never hardcoded, so it stays coherent
+# regardless of _SURFACE_TEXT's exact byte layout. With the default
+# alpha="corpus-owned", beta-section is the only section 'unowned' at seed time.
 _SEED_FLOOR = measure_section_spans(_SURFACE_TEXT)["beta-section"]
 
 
@@ -65,6 +69,10 @@ def _seed_declaration(*, alpha: str = "corpus-owned", floor: int | None = None) 
         spans = measure_section_spans(_SURFACE_TEXT)
         floor = sum(span for sid, span in spans.items() if sections[sid] == "unowned")
     _DECLARATION_PATH.parent.mkdir(parents=True, exist_ok=True)
+    # Mint the genesis witness FIRST and embed its id, because the emitter's
+    # contract is caller-minted ids: Layer-1 (the declaration) and Layer-2 (the
+    # ledger) must agree on which event proves the day-one floor.
+    genesis_event_id = f"section-ownership-genesis-Doc.md-{floor}"
     _DECLARATION_PATH.write_text(
         json.dumps(
             {
@@ -72,11 +80,12 @@ def _seed_declaration(*, alpha: str = "corpus-owned", floor: int | None = None) 
                 "sections": sections,
                 "unowned_byte_floor": floor,
                 "measured_at": "2026-09-02T00:00:00Z",
-                "floor_event_id": None,
+                "floor_event_id": genesis_event_id,
             }
         ),
         encoding="utf-8",
     )
+    emit_section_ownership_genesis(Path("."), genesis_event_id, "Doc.md", floor)
 
 
 def _ledger_events() -> list[dict]:
@@ -381,6 +390,119 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         return measure_section_spans(_SURFACE_TEXT)["alpha-section"]
 
+    @covers("REQ-0.35.0-04-05")
+    def test_a_post_swap_durability_failure_keeps_the_journal_and_says_so(self) -> None:
+        """Would break if an ambiguous declaration-write error cleared the journal.
+
+        Step-4b round-3 finding 3, and a regression introduced by this OBPI's own
+        round-2 finding-4 repair. The parent-directory fsync barrier runs AFTER
+        `os.replace` has swapped the file, so an `OSError` from it means the
+        declaration may ALREADY carry the new floor while no ledger witness
+        exists. The handler used to treat every such error as pre-commit: it
+        deleted the journal and printed "Nothing written" and "the declaration is
+        byte-unchanged". Both were false, the transition became uncompletable,
+        and `load_declaration` rejected the declaration permanently.
+
+        The failure is injected on the DIRECTORY fsync specifically -- the file
+        descriptor is synced before the swap, the directory after it, so failing
+        only the second reproduces the post-swap window and nothing else. This is
+        a plain `EIO`: no adversary, just failing media or an NFS mount.
+        """
+        import stat as _stat
+
+        with self._runner.isolated_filesystem():
+            self._seed()
+            real_fsync = os.fsync
+            # `write_declaration_atomically` writes the JOURNAL first and the
+            # DECLARATION second, and both sync the same parent directory. Fail
+            # only the second directory sync, so the journal lands intact and the
+            # fault is isolated to the post-swap window on the declaration --
+            # failing the first would merely test the journalling branch, where
+            # "Nothing written" is entirely true.
+            directory_syncs = 0
+
+            def fail_second_directory_fsync(fd: int) -> None:
+                nonlocal directory_syncs
+                if _stat.S_ISDIR(os.fstat(fd).st_mode):
+                    directory_syncs += 1
+                    if directory_syncs >= 2:
+                        raise OSError(5, "Input/output error")
+                    return None
+                return real_fsync(fd)
+
+            fail_directory_fsync = fail_second_directory_fsync
+
+            with patch("gzkit.content.ownership.os.fsync", side_effect=fail_directory_fsync):
+                result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            residue = [p.name for p in _DECLARATION_PATH.parent.iterdir()]
+            self.assertIn(
+                "Doc.md.json.journal",
+                residue,
+                "the journal is the ONLY record able to complete a transition whose "
+                "declaration may already have landed; it must survive",
+            )
+            self.assertNotIn(
+                "Nothing written",
+                result.output,
+                "the command must not claim nothing happened when the atomic swap "
+                "may already have changed the declaration",
+            )
+            self.assertNotIn(
+                "byte-unchanged",
+                result.output,
+                "the command must not assert a premise it cannot know after the swap",
+            )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_replay_refuses_to_complete_into_a_state_the_loader_would_reject(self) -> None:
+        """Would break if the already-landed replay branch skipped validation.
+
+        Step-4b round-3 finding 4. Every predecessor/span/eligibility check lives
+        inside the branch where the on-disk `floor_event_id` differs from the
+        journal's event. When the declaration write already landed and only the
+        ledger append failed, replay reached the append and the journal unlink
+        having validated nothing. Growing the newly-unowned section before the
+        retry then produced `retry_exit=0` with the journal consumed and a
+        declaration the canonical loader rejects -- recovery reporting success
+        while destroying the record that could have recovered it.
+        """
+        with self._runner.isolated_filesystem():
+            self._seed()
+            real_append = Ledger.append
+
+            def refuse_append(self_ledger, event):  # noqa: ANN001, ANN202
+                msg = "ledger unavailable"
+                raise OSError(msg)
+
+            with patch.object(Ledger, "append", refuse_append):
+                first = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+            self.assertEqual(first.exit_code, 2, msg=first.output)
+            self.assertTrue((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
+
+            # The surface GROWS before the retry: the section that was un-owned
+            # is now far larger, so the floor the journal would complete into no
+            # longer covers the live unowned span.
+            Path("Doc.md").write_text(
+                _SURFACE_TEXT.replace("alpha body", "alpha body " + ("x" * 400)),
+                encoding="utf-8",
+            )
+            Ledger.append = real_append
+
+            retry = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertNotEqual(
+                retry.exit_code,
+                0,
+                msg=f"replay must refuse a state the loader would reject: {retry.output}",
+            )
+            self.assertTrue(
+                (_DECLARATION_PATH.parent / "Doc.md.json.journal").exists(),
+                "a refused replay must RETAIN the journal so the transition stays "
+                "completable once the surface is reconciled",
+            )
+
     @covers("REQ-0.35.0-04-02")
     def test_a_retry_completes_a_transition_interrupted_at_the_ledger_append(self) -> None:
         """Would break if the residue of a failed ledger append were left
@@ -494,8 +616,26 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
                 for p in _DECLARATION_PATH.parent.iterdir()
                 if p.name not in {"Doc.md.json", "Doc.md.json.lock"}
             )
+            # No STAGING file may survive -- a rolled-back write leaves no
+            # half-serialized temp behind. The JOURNAL is a different artifact
+            # and is deliberately retained (Step-4b round-3 finding 3): the
+            # declaration write is no longer provably all-or-nothing, because
+            # the parent-directory durability barrier runs AFTER `os.replace`.
+            # An OSError therefore cannot distinguish "never landed" from
+            # "landed but not yet durable", and deleting the journal on that
+            # ambiguity destroyed the only record able to complete the
+            # transition. Retaining it is safe in both directions: replay
+            # re-validates every field against the declaration actually on disk.
             self.assertEqual(
-                residue, [], f"a rolled-back transaction leaves no staging or journal: {residue}"
+                [name for name in residue if name.endswith(".tmp")],
+                [],
+                f"a rolled-back transaction leaves no staging file: {residue}",
+            )
+            self.assertIn(
+                "Doc.md.json.journal",
+                residue,
+                "the journal must be RETAINED after an ambiguous declaration-write "
+                "failure -- it is the only record that can complete the transition",
             )
 
 
@@ -611,6 +751,370 @@ class TestContentUnownFailuresSpeakInProse(unittest.TestCase):
                 self.assertIn(self._JOURNAL_PATH.as_posix(), result.output)
                 self.assertIn("Why forbidden:", result.output)
                 self.assertIn("REQ-0.35.0-04-02", result.output)
+
+
+class TestContentUnownReplayJournalValidation(unittest.TestCase):
+    """Step-4b adversary finding 2: a forged journal must never author an
+    arbitrary declaration write or floor raise.
+
+    `_replay_pending_transition` is CRASH-RECOVERY STATE ONLY -- it may
+    complete a transition proven to continue the live on-disk predecessor and
+    the real measured section spans, never invent a new one. Every case here
+    hand-authors `.gzkit/ownership/Doc.md.json.journal` the way the reported
+    adversary run did (accepted with exit 0, floor raised 26 -> 1025, blank
+    provenance) and asserts the replay path now refuses it instead.
+    """
+
+    _JOURNAL_PATH = Path(".gzkit") / "ownership" / "Doc.md.json.journal"
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _seed(self) -> tuple[int, int]:
+        _seed_surface()
+        _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+        span = measure_section_spans(_SURFACE_TEXT)["alpha-section"]
+        return _SEED_FLOOR, span
+
+    def _on_disk_parent(self) -> str | None:
+        """The chain pointer actually on disk, for forging an otherwise-valid journal.
+
+        A forged journal must be wrong in EXACTLY ONE field -- the one its test
+        names. Hardcoding `parent_event_id=self._on_disk_parent()` was correct only while the
+        day-one declaration carried a null `floor_event_id`; now that genesis is
+        witnessed by a real ledger event, a null parent is itself a second
+        defect, and the parent-mismatch check fires FIRST and masks the check
+        under test. Reading the live pointer keeps each test a guard for its own
+        check rather than an alias for this one.
+        """
+        return json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))["floor_event_id"]
+
+    def _base_record(
+        self,
+        *,
+        prior_floor: int,
+        new_floor: int,
+        parent_event_id: str | None,
+        section: str = "alpha-section",
+    ) -> dict:
+        return {
+            "surface": "Doc.md",
+            "section": section,
+            "prior_unowned_byte_floor": prior_floor,
+            "new_unowned_byte_floor": new_floor,
+            "attestor": "g0",
+            "reason": "moving to prose doc",
+            "ts": "2026-09-02T00:00:00+00:00",
+            "parent_event_id": parent_event_id,
+            "declaration_json": "{}",
+            # Placeholder -- callers overwrite with a genuinely re-minted id
+            # unless the test is specifically exercising a non-re-minting id.
+            "event_id": "not-a-real-event-id",
+        }
+
+    def _derive_declaration_json(self, *, section: str, new_floor: int, event_id: str) -> str:
+        """Build the JSON a CORRECT replay would derive for this transition.
+
+        Mirrors `_replay_pending_transition`'s own derivation exactly: read
+        the live on-disk predecessor, flip `section` to 'unowned', set the
+        new floor and event id. Tests use this to build a forged journal's
+        `declaration_json` so that ONLY the field under test disagrees with
+        a genuine transition -- never a confound like a bare `"{}"`
+        placeholder, which fails the declaration_json-equality check
+        regardless of whether the check the test actually names still
+        exists (the check that check fires LAST, so a wrong-on-its-face
+        placeholder masks every earlier check being deleted).
+        """
+        on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+        predecessor = OwnershipDeclaration(**on_disk)
+        new_sections = dict(predecessor.sections)
+        new_sections[section] = "unowned"
+        successor = predecessor.model_copy(
+            update={
+                "sections": new_sections,
+                "unowned_byte_floor": new_floor,
+                "floor_event_id": event_id,
+            }
+        )
+        return successor.model_dump_json(indent=2) + "\n"
+
+    def _write_journal(self, record: dict) -> None:
+        self._JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
+        self._JOURNAL_PATH.write_text(json.dumps(record), encoding="utf-8")
+
+    def _assert_refused_and_untouched(
+        self, *, exit_code: int = 2, req: str = "REQ-0.35.0-04-02", defect: str | None = None
+    ):
+        """Assert the journal was refused, and — when *defect* is given — that
+        it was refused BY THE CHECK UNDER TEST rather than by any other.
+
+        Asserting only "some refusal happened" is what made four of these
+        tests false guards: every check exits 2, prints "Why forbidden:" and
+        cites the same REQ, so deleting the check a test names left a
+        DIFFERENT check to satisfy the assertions and the test stayed green.
+        *defect* pins the specific message, so the test fails when its own
+        check is removed — which is the only thing that makes it a guard.
+        """
+        before_bytes = _DECLARATION_PATH.read_bytes()
+        before_ledger = len(_ledger_events())
+
+        result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+        self.assertEqual(result.exit_code, exit_code, msg=result.output)
+        self.assertEqual(
+            _DECLARATION_PATH.read_bytes(),
+            before_bytes,
+            "a refused journal must leave the declaration byte-unchanged",
+        )
+        self.assertEqual(
+            len(_ledger_events()),
+            before_ledger,
+            "a refused journal must emit no ledger event",
+        )
+        self.assertIn("Why forbidden:", result.output)
+        self.assertIn(req, result.output)
+        self.assertNotIn("Traceback", result.output)
+        self.assertNotIn("Unexpected error", result.output)
+        if defect is not None:
+            self.assertIn(
+                defect,
+                result.output,
+                f"refused, but NOT by the check under test: expected {defect!r}",
+            )
+        return result
+
+    @covers("REQ-0.35.0-04-02")
+    def test_event_id_that_does_not_re_mint_is_refused(self) -> None:
+        """Would break if replay trusted a journal's claimed `event_id`
+        without re-deriving it from the journal's own content -- exactly the
+        adversary's forged journal, accepted with exit 0 in the reported
+        finding.
+
+        Every OTHER field is genuinely self-consistent (real prior floor,
+        real parent, real span, a correctly-DERIVED `declaration_json` keyed
+        to the placeholder event_id) so only the re-mint check can catch
+        this.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=prior_floor + span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            # event_id is left as the placeholder, which does not re-mint.
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(
+                defect="does not re-mint from the journal's own content"
+            )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_mismatched_prior_floor_is_refused(self) -> None:
+        """Would break if replay never checked that the journal starts from
+        the declaration currently on disk.
+
+        `event_id` genuinely re-mints from the record's own (forged) content,
+        `parent_event_id` genuinely matches the on-disk chain pointer, and
+        `declaration_json` is correctly DERIVED for this forged transition --
+        only the prior-floor check can catch this.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            forged_prior = prior_floor + 999
+            record = self._base_record(
+                prior_floor=forged_prior,
+                new_floor=forged_prior + span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(defect="does not match the floor currently on disk")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_mismatched_parent_event_id_is_refused(self) -> None:
+        """Would break if replay never checked the journal's chain pointer
+        against the declaration's actual `floor_event_id`.
+
+        Every other field is genuinely self-consistent -- only the
+        parent-pointer check can catch this.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            forged_parent = "section-ownership-unowned-Doc.md-beta-section-deadbeefdeadbeef"
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=prior_floor + span,
+                parent_event_id=forged_parent,
+            )
+            record["event_id"] = unown_module._mint_event_id(record, forged_parent)
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(defect="does not match the on-disk floor_event_id")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_arbitrary_floor_jump_disconnected_from_measured_span_is_refused(self) -> None:
+        """Reproduces the adversary's exact forgery: an unvalidated floor
+        raise disconnected from any real section span.
+
+        `event_id` genuinely re-mints from the record's own content,
+        `prior_unowned_byte_floor`/`parent_event_id` genuinely match the
+        declaration on disk, and `declaration_json` is correctly DERIVED for
+        this forged transition -- only the real-measured-span check can
+        catch this.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, _span = self._seed()
+            forged_new_floor = prior_floor + 999
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=forged_new_floor,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(
+                defect="does not equal the on-disk floor plus section"
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_already_unowned_section_named_in_journal_is_refused(self) -> None:
+        """CRITICAL (Step-4b adversary finding 2, round 2): a journal naming
+        a section that is ALREADY 'unowned' on the on-disk predecessor must
+        be refused, even when every other field is genuinely self-consistent.
+
+        Would break if replay never checked section eligibility the way the
+        live command path does (`current != "corpus-owned"` at
+        unown.py:508-516): flipping an already-'unowned' section to
+        'unowned' is a no-op on `sections`, so the derived successor JSON
+        matches the journal's claim regardless of a real, correctly-derived
+        `declaration_json` -- the floor would be durably inflated a SECOND
+        time for one section, witnessed by a genuine ledger event recording
+        a flip that never happened, on a ratchet the ordinary path can never
+        lower back down.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, _alpha_span = self._seed()
+            beta_span = measure_section_spans(_SURFACE_TEXT)["beta-section"]
+            record = self._base_record(
+                section="beta-section",
+                prior_floor=prior_floor,
+                new_floor=prior_floor + beta_span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = self._derive_declaration_json(
+                section="beta-section",
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(defect="not 'corpus-owned'")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_declaration_json_disagreeing_with_derived_successor_is_refused(self) -> None:
+        """Would break if replay trusted `declaration_json` verbatim instead
+        of deriving the successor from the on-disk predecessor and comparing.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=prior_floor + span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = json.dumps(
+                {
+                    "surface": "Doc.md",
+                    "sections": {
+                        "doc-title": "corpus-owned",
+                        "alpha-section": "unowned",
+                        "beta-section": "unowned",
+                    },
+                    "unowned_byte_floor": prior_floor + span,
+                    "measured_at": "2026-09-02T00:00:00Z",
+                    "floor_event_id": record["event_id"],
+                }
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched()
+
+    @covers("REQ-0.35.0-04-04")
+    def test_blank_attestor_in_journal_is_refused_same_shape_as_command_path(self) -> None:
+        """The replay path takes the SAME fail-closed shape as the command
+        path for a blank attestor/reason (REQ-0.35.0-04-04).
+
+        Every other field -- including a correctly-DERIVED `declaration_json`
+        -- is genuinely self-consistent, so only the blank-attestation check
+        can catch this.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=prior_floor + span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["attestor"] = "   "
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            self._write_journal(record)
+            self._assert_refused_and_untouched(exit_code=1, req="REQ-0.35.0-04-04")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_field_complete_journal_missing_ts_is_refused_not_a_keyerror(self) -> None:
+        """Would break if `_JOURNAL_FIELDS` omitted `ts` while
+        `_append_event_once` still read `record["ts"]` -- a field-complete
+        journal missing only `ts` would die on a raw `KeyError` instead of
+        the governed three-part refusal.
+
+        Asserts the EXACT defect phrase production emits for a missing `ts`
+        field, never a bare substring like `"ts"` -- that substring occurs
+        inside `_refuse_forged_journal`'s own boilerplate ("...completed
+        from **its** journal...") and would pass vacuously on every refusal
+        regardless of whether `ts` is actually checked.
+        """
+        with self._runner.isolated_filesystem():
+            prior_floor, span = self._seed()
+            record = self._base_record(
+                prior_floor=prior_floor,
+                new_floor=prior_floor + span,
+                parent_event_id=self._on_disk_parent(),
+            )
+            record["event_id"] = unown_module._mint_event_id(record, record["parent_event_id"])
+            record["declaration_json"] = self._derive_declaration_json(
+                section=record["section"],
+                new_floor=record["new_unowned_byte_floor"],
+                event_id=record["event_id"],
+            )
+            del record["ts"]
+            self._write_journal(record)
+            result = self._assert_refused_and_untouched()
+            self.assertIn(self._JOURNAL_PATH.as_posix(), result.output)
+            self.assertIn("missing required field(s) ts", result.output)
 
 
 if __name__ == "__main__":

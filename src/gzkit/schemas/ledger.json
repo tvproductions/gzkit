@@ -2058,6 +2058,74 @@
           "min_length": 1
         }
       }
+    },
+    "section_ownership_genesis": {
+      "required": [
+        "surface",
+        "new_unowned_byte_floor"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "new_unowned_byte_floor": {
+          "type": "integer"
+        }
+      }
+    },
+    "unowned_ratchet_updated": {
+      "required": [
+        "surface",
+        "prior_unowned_byte_floor",
+        "new_unowned_byte_floor"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "prior_unowned_byte_floor": {
+          "type": "integer"
+        },
+        "new_unowned_byte_floor": {
+          "type": "integer"
+        }
+      }
+    },
+    "section_ownership_unowned": {
+      "required": [
+        "surface",
+        "section",
+        "prior_unowned_byte_floor",
+        "new_unowned_byte_floor",
+        "attestor",
+        "reason"
+      ],
+      "properties": {
+        "surface": {
+          "type": "string",
+          "min_length": 1
+        },
+        "section": {
+          "type": "string",
+          "min_length": 1
+        },
+        "prior_unowned_byte_floor": {
+          "type": "integer"
+        },
+        "new_unowned_byte_floor": {
+          "type": "integer"
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

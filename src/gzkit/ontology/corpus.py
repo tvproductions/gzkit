@@ -152,9 +152,18 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "rendition_committed",
         "security_floor_overridden",
         "task_blocked",
+        # Section ownership and the unowned-byte ratchet (OBPI-0.35.0-04).
+        # DISPOSITIONED OUT, not overlooked: these image which SECTIONS of a
+        # control surface the corpus owns, which is a property of the surface,
+        # not lineage between governance artifacts. The corpus graph edges
+        # PRD -> ADR -> OBPI; a section's ownership state is read from the
+        # declaration store and its ledger chain, never from this projection.
+        "section_ownership_genesis",
+        "section_ownership_unowned",
         "task_completed",
         "task_escalated",
         "task_started",
+        "unowned_ratchet_updated",
         "validates",
     }
 )

@@ -36,13 +36,29 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.content.corpus_store import _exclusive_store_lock
 from gzkit.content.models.corpus import Corpus, effective_corpus
 from gzkit.content.parse import section_id
-from gzkit.governance.events import emit_unowned_ratchet_updated
+from gzkit.governance.events import (
+    emit_unowned_ratchet_updated,
+)
 from gzkit.ledger import Ledger
 
 _Ownership = Literal["corpus-owned", "unowned"]
 _OWNERSHIP_VALUES: frozenset[str] = frozenset({"corpus-owned", "unowned"})
 _H1_PREFIX = "# "
 _H2_PREFIX = "## "
+
+# The recognized roster of ledger event types that may witness a section-
+# ownership floor (REQ-0.35.0-04-02). ANY event type used to pass here as
+# long as its id resolved and its recorded floor matched -- the Step-4b
+# adversary showed a `task_started` event accepted as proof. Only these three
+# event types carry the `extra["surface"]` / `extra["new_unowned_byte_floor"]`
+# shape `load_declaration` cross-checks against.
+_OWNERSHIP_EVENT_TYPES: frozenset[str] = frozenset(
+    {
+        "section_ownership_genesis",
+        "section_ownership_unowned",
+        "unowned_ratchet_updated",
+    }
+)
 
 
 class OwnershipDeclaration(BaseModel):
@@ -74,12 +90,17 @@ class OwnershipDeclaration(BaseModel):
     floor_event_id: str | None = Field(
         ...,
         description=(
-            "The ledger event id that last set unowned_byte_floor -- an "
-            "unowned_ratchet_updated or section_ownership_unowned event whose "
-            "new_unowned_byte_floor must equal unowned_byte_floor. Null ONLY "
-            "for a genesis declaration, permitted solely when unowned_byte_floor "
-            "equals the summed byte span of the sections declared 'unowned' "
-            "(REQ-0.35.0-04-02)."
+            "The ledger event id that last set unowned_byte_floor -- a "
+            "section_ownership_genesis, unowned_ratchet_updated, or "
+            "section_ownership_unowned event whose new_unowned_byte_floor "
+            "equals unowned_byte_floor and whose surface equals this "
+            "declaration's surface. Never null at the loader: every floor, "
+            "day-one included, is witnessed by a real ledger event rather "
+            "than by self-coherence (REQ-0.35.0-04-02). Modeled as "
+            "`str | None` here only because a raw on-disk value must be "
+            "readable long enough for `load_declaration` to refuse a null "
+            "one with recovery prose -- `OwnershipDeclaration.model_validate` "
+            "is never reached on that path."
         ),
     )
 
@@ -172,23 +193,34 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
       * a declared section value outside {'corpus-owned', 'unowned'};
       * a section measured in *surface_text* with no declaration;
       * a declared section id absent from *surface_text*;
+      * a summed unowned byte span that EXCEEDS the stored `unowned_byte_floor`
+        -- always checked, on every load (REQ-0.35.0-04-02). Below or equal
+        LOADS CLEANLY: the ratchet is decrease-only, so a legitimate surface
+        shrink legitimately leaves the true span below the recorded floor.
       * an `unowned_byte_floor` that cannot be proven by an attested ledger
         transition (REQ-0.35.0-04-02).
 
     The last check is the fail-closed guard against a direct, unattested
     hand-edit of the floor: `gz content unown` is meant to be the ONLY way
     the floor rises, but nothing stops a hand-edit of this JSON file unless
-    the load path itself refuses to trust an unproven number. Two shapes are
-    accepted:
+    the load path itself refuses to trust an unproven number. There is ONE
+    uniform path -- a null `floor_event_id` is refused outright, including
+    for a day-one declaration: self-coherence (the stored floor merely
+    agreeing with the summed span at load time) is exactly what an attacker
+    who hand-raises the floor can simply recompute, so it is never accepted
+    as a proof. Every declaration's `floor_event_id` must instead resolve to
+    a real ledger event, and ALL of the following must hold:
 
-      * `floor_event_id` names a ledger event in `.gzkit/ledger.jsonl` under
-        *root* whose `new_unowned_byte_floor` equals the stored
-        `unowned_byte_floor` -- the attested-chain proof.
-      * `floor_event_id` is `null` AND `unowned_byte_floor` equals the summed
-        byte span of the sections declared 'unowned' -- the genesis proof.
-        This is the load-bearing half: without it, hand-raising the floor
-        AND nulling `floor_event_id` together would walk straight past the
-        chain check above.
+      * the id resolves to an event in `.gzkit/ledger.jsonl` under *root*;
+      * the event's TYPE is in the recognized ownership roster
+        (`_OWNERSHIP_EVENT_TYPES`) -- ANY event type used to pass here as
+        long as its id resolved, and the Step-4b adversary showed a
+        `task_started` event accepted as proof;
+      * the event's `extra["surface"]` equals this declaration's `surface`
+        -- an event for a different surface used to pass whenever the floor
+        value happened to agree;
+      * the event's recorded `new_unowned_byte_floor` equals the declaration's
+        stored `unowned_byte_floor` -- the attested-chain proof.
 
     Every failure names the offending section id or value and carries
     three-part recovery prose (what failed / why forbidden / governed next
@@ -248,64 +280,129 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
 
     stored_floor = raw.get("unowned_byte_floor")
     floor_event_id = raw.get("floor_event_id")
+    declared_surface = raw.get("surface")
 
-    if floor_event_id is None:
-        genesis_floor = sum(
-            span for sid, span in measured.items() if declared_sections.get(sid) == "unowned"
+    # ALWAYS-ON, regardless of how floor_event_id resolves: the true
+    # unowned span may LEGITIMATELY sit at or below the stored floor (a
+    # surface shrink before the next ratchet recording is a correct tree),
+    # but it may never sit ABOVE it. `<=` is the relation, never `==` --
+    # an equality check would fail closed on that legitimate shrink. `>`
+    # is the reproduced attack: flipping a corpus-owned section to
+    # 'unowned' raises the true span past the recorded floor.
+    unowned_span_sum = sum(
+        span for sid, span in measured.items() if declared_sections.get(sid) == "unowned"
+    )
+    if unowned_span_sum > stored_floor:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
+            f"{stored_floor!r}, but the summed byte span of its declared-"
+            f"'unowned' sections is {unowned_span_sum}, which exceeds it.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- the unowned-byte ratchet is "
+            "decrease-only. The true unowned span may legitimately sit BELOW "
+            "the stored floor (a surface shrink before the next ratchet "
+            "recording), but it may never sit ABOVE it -- exceeding the "
+            "floor is the reproduced attack, where flipping a "
+            "'corpus-owned' section to 'unowned' raises the true span past "
+            "the recorded floor.\n"
+            "Next step: restore the flipped section(s) to their prior "
+            "ownership value, or raise the floor through `gz content "
+            "unown` so it gains a fresh, attested floor_event_id covering "
+            "the new total, then retry."
         )
-        if stored_floor != genesis_floor:
-            msg = (
-                f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
-                f"{stored_floor!r} with floor_event_id null, but the summed byte "
-                f"span of its declared-'unowned' sections is {genesis_floor}.\n"
-                "Why forbidden: REQ-0.35.0-04-02 -- the ratchet floor is only "
-                "reachable through the attested raise-path (`gz content unown`). "
-                "A null floor_event_id is permitted ONLY for a genesis "
-                "declaration whose floor is provably the coherent sum of its "
-                "own unowned spans; a floor that disagrees with that sum is an "
-                "unattested direct edit with no chain to prove it.\n"
-                f"Next step: either set unowned_byte_floor to {genesis_floor} "
-                "in a genuine genesis declaration, or raise it through "
-                "`gz content unown` so it gains a valid floor_event_id, then "
-                "retry."
-            )
-            raise OwnershipLoadError(msg)
-    else:
-        ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
-        event = ledger.latest_event(floor_event_id)
-        if event is None:
-            msg = (
-                f"What failed: {path.as_posix()!r} declares floor_event_id "
-                f"{floor_event_id!r}, which resolves to no event in "
-                f"{(root / '.gzkit' / 'ledger.jsonl').as_posix()!r}.\n"
-                "Why forbidden: REQ-0.35.0-04-02 -- an increase is only "
-                "reachable through the attested raise-path, and a floor "
-                "chain pointer naming an event that does not exist proves "
-                "nothing.\n"
-                "Next step: restore the declaration to a state whose "
-                "floor_event_id resolves in the ledger, or raise the floor "
-                "again through `gz content unown` so it gains a fresh, "
-                "resolvable floor_event_id, then retry."
-            )
-            raise OwnershipLoadError(msg)
-        event_floor = event.extra.get("new_unowned_byte_floor")
-        if event_floor != stored_floor:
-            msg = (
-                f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
-                f"{stored_floor!r}, but its floor_event_id {floor_event_id!r} "
-                f"resolves to a ledger event recording "
-                f"new_unowned_byte_floor {event_floor!r}.\n"
-                "Why forbidden: REQ-0.35.0-04-02 -- an increase is only "
-                "reachable through the attested raise-path; a stored floor "
-                "that disagrees with the event it claims to be proven by is "
-                "an unattested direct edit (e.g. a hand-raised floor after "
-                "the attested event was written).\n"
-                f"Next step: set unowned_byte_floor back to {event_floor!r} "
-                "to match the attested event, or raise it again through "
-                "`gz content unown` so it gains a fresh floor_event_id, then "
-                "retry."
-            )
-            raise OwnershipLoadError(msg)
+        raise OwnershipLoadError(msg)
+
+    # ONE uniform path: a null floor_event_id is refused outright, day-one
+    # declarations included. Self-coherence (the stored floor merely
+    # agreeing with the summed span above) is exactly what an attacker who
+    # hand-raises the floor can simply recompute -- there is no longer a
+    # genesis branch that trusts it.
+    if floor_event_id is None:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares floor_event_id "
+            "null.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- every ratchet floor, "
+            "including a surface's day-one declaration, must be witnessed "
+            "by a real ledger event (`section_ownership_genesis` for "
+            "day-one, `unowned_ratchet_updated` or "
+            "`section_ownership_unowned` for a later raise). A null "
+            "floor_event_id was witnessed only by self-coherence -- the "
+            "stored floor agreeing with the summed unowned span -- which an "
+            "attacker can simply recompute after hand-editing the "
+            "declaration.\n"
+            f"Next step: mint a `section_ownership_genesis` event for "
+            f"{declared_surface!r} (or the appropriate raise event) and set "
+            "floor_event_id to its id, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    event = ledger.latest_event(floor_event_id)
+    if event is None:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares floor_event_id "
+            f"{floor_event_id!r}, which resolves to no event in "
+            f"{(root / '.gzkit' / 'ledger.jsonl').as_posix()!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- an increase is only "
+            "reachable through the attested raise-path, and a floor "
+            "chain pointer naming an event that does not exist proves "
+            "nothing.\n"
+            "Next step: restore the declaration to a state whose "
+            "floor_event_id resolves in the ledger, or raise the floor "
+            "again through `gz content unown` so it gains a fresh, "
+            "resolvable floor_event_id, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    if event.event not in _OWNERSHIP_EVENT_TYPES:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares floor_event_id "
+            f"{floor_event_id!r}, which resolves to a {event.event!r} "
+            "event, not a recognized section-ownership event.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- only "
+            f"{sorted(_OWNERSHIP_EVENT_TYPES)} events may witness a "
+            "section-ownership floor; any other event type resolving to "
+            "the right id proves nothing about this declaration's floor.\n"
+            "Next step: repoint floor_event_id at a "
+            "section_ownership_genesis, unowned_ratchet_updated, or "
+            "section_ownership_unowned event, or raise the floor again "
+            "through `gz content unown` so it gains one, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    event_surface = event.extra.get("surface")
+    if event_surface != declared_surface:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares surface "
+            f"{declared_surface!r} and floor_event_id {floor_event_id!r}, "
+            f"but that event witnesses surface {event_surface!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- an event witnessing a "
+            "DIFFERENT surface's floor proves nothing about this "
+            "declaration's floor, even when the recorded value happens to "
+            "agree.\n"
+            f"Next step: repoint floor_event_id at an event that witnesses "
+            f"{declared_surface!r}, or raise the floor again through `gz "
+            "content unown` so it gains one, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    event_floor = event.extra.get("new_unowned_byte_floor")
+    if event_floor != stored_floor:
+        msg = (
+            f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
+            f"{stored_floor!r}, but its floor_event_id {floor_event_id!r} "
+            f"resolves to a ledger event recording "
+            f"new_unowned_byte_floor {event_floor!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- an increase is only "
+            "reachable through the attested raise-path; a stored floor "
+            "that disagrees with the event it claims to be proven by is "
+            "an unattested direct edit (e.g. a hand-raised floor after "
+            "the attested event was written).\n"
+            f"Next step: set unowned_byte_floor back to {event_floor!r} "
+            "to match the attested event, or raise it again through "
+            "`gz content unown` so it gains a fresh floor_event_id, then "
+            "retry."
+        )
+        raise OwnershipLoadError(msg)
 
     return OwnershipDeclaration.model_validate(raw)
 
@@ -363,6 +460,21 @@ def write_declaration_atomically(path: Path, text: str) -> None:
         with contextlib.suppress(OSError):
             staging.unlink()
         raise
+    # The fsync above makes the file's BYTES durable; it says nothing about the
+    # RENAME. On POSIX the directory entry `os.replace` rewrites is itself
+    # buffered metadata, so a power loss immediately after the swap can leave
+    # the directory still naming the old inode -- the replacement is atomic but
+    # not durable, and this store is the ONE artifact gating the unowned-byte
+    # ratchet. Syncing the parent directory is what commits the entry.
+    # Windows has no directory handle to sync (`os.open` on a directory raises
+    # PermissionError), so the barrier is POSIX-only by construction rather
+    # than by omission.
+    if os.name == "posix":
+        dir_fd = os.open(path.parent, os.O_RDONLY)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
 
 
 @contextlib.contextmanager

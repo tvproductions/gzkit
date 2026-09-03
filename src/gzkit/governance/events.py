@@ -151,3 +151,40 @@ def emit_unowned_ratchet_updated(
         )
     )
     return event_id
+
+
+def emit_section_ownership_genesis(
+    root: Path,
+    event_id: str,
+    surface: str,
+    new_unowned_byte_floor: int,
+) -> str:
+    """Append a section_ownership_genesis event to the project ledger (OBPI-0.35.0-04).
+
+    Layer-2 witness for *surface*'s DAY-ONE unowned-byte ratchet floor. Mirrors
+    ``emit_unowned_ratchet_updated``'s shape so ``load_declaration`` reads both
+    event types with the same ``extra["surface"]`` / ``extra["new_unowned_byte_floor"]``
+    accessors -- a genesis declaration is no longer witnessed by self-coherence
+    (a null ``floor_event_id`` an attacker can simply recompute), it is
+    witnessed by this ledger event, exactly like every subsequent raise.
+
+    *event_id* is CALLER-MINTED, never minted here, mirroring
+    ``emit_unowned_ratchet_updated``: the caller must embed the same id in the
+    declaration's ``floor_event_id`` chain pointer BEFORE this append, so
+    Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
+    proves the genesis floor.
+    """
+    timestamp = datetime.now(UTC).isoformat()
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    ledger.append(
+        LedgerEvent(
+            event="section_ownership_genesis",
+            id=event_id,
+            ts=timestamp,
+            extra={
+                "surface": surface,
+                "new_unowned_byte_floor": new_unowned_byte_floor,
+            },
+        )
+    )
+    return event_id
