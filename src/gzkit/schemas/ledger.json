@@ -2071,6 +2071,13 @@
         },
         "new_unowned_byte_floor": {
           "type": "integer"
+        },
+        "sections_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },
@@ -2090,6 +2097,13 @@
         },
         "new_unowned_byte_floor": {
           "type": "integer"
+        },
+        "sections_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "min_length": 1
         }
       }
     },
@@ -2123,6 +2137,13 @@
         },
         "reason": {
           "type": "string",
+          "min_length": 1
+        },
+        "sections_digest": {
+          "type": [
+            "string",
+            "null"
+          ],
           "min_length": 1
         }
       }

@@ -45,6 +45,7 @@ from gzkit.content.ownership import (
     exclusive_declaration_lock,
     load_declaration,
     measure_section_spans,
+    sections_digest,
     write_declaration_atomically,
 )
 from gzkit.ledger import Ledger, LedgerEvent
@@ -183,6 +184,12 @@ def _append_event_once(root: Path, record: dict[str, Any]) -> None:
             extra={
                 "surface": record["surface"],
                 "section": record["section"],
+                # The map the transition COMMITS TO, read from the successor the
+                # journal carries -- so the witness names the ownership state it
+                # actually produced, never merely the floor it moved to.
+                "sections_digest": sections_digest(
+                    json.loads(record["declaration_json"])["sections"]
+                ),
                 "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
                 "new_unowned_byte_floor": record["new_unowned_byte_floor"],
                 "attestor": record["attestor"],

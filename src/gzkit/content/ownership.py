@@ -22,7 +22,7 @@ import hashlib
 import json
 import os
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 from typing import Any, Literal
 
@@ -107,6 +107,31 @@ class OwnershipDeclaration(BaseModel):
 
 class OwnershipLoadError(ValueError):
     """Raised when a declaration or its surface fails the closed-enum/coverage cross-check."""
+
+
+def sections_digest(sections: Mapping[str, str]) -> str:
+    """Canonical fingerprint of a complete section-ownership map.
+
+    Step-4b round-3 finding 2 (`[high]`). The ratchet's ledger witness bound only
+    the scalar floor, and the loader's span check is `<=` because the ratchet is
+    decrease-only. Those two facts compose into a hole: whenever the stored floor
+    sits ABOVE the true summed span -- the legitimate state after a surface
+    shrink, before the next recording -- that slack is room to flip a section from
+    `corpus-owned` to `unowned` while the sum stays under the floor. Reproduced:
+    a flip accepted with the ledger holding exactly one row before and after, so
+    coverage was LOST with no transition record at all.
+
+    A scalar cannot witness a map. This binds the whole map to the event that
+    corroborates it, so any ownership change without a matching witness fails
+    closed regardless of what the floor arithmetic permits.
+
+    The digest lives ONLY on the ledger event, never on the declaration: a stored
+    copy alongside the sections it summarizes is a second source of truth that can
+    disagree with itself, and re-deriving it here means the comparison is always
+    against what the declaration actually says.
+    """
+    canonical = json.dumps(dict(sorted(sections.items())), separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:32]
 
 
 def measure_section_spans(surface_text: str) -> dict[str, int]:
@@ -404,7 +429,107 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
         )
         raise OwnershipLoadError(msg)
 
+    _refuse_wrong_direction_witness(path, event, floor_event_id)
+    _refuse_unwitnessed_section_map(path, event, floor_event_id, declared_sections)
+
     return OwnershipDeclaration.model_validate(raw)
+
+
+def _refuse_unwitnessed_section_map(
+    path: Path, event: Any, floor_event_id: str, declared_sections: dict[str, str]
+) -> None:
+    """Fail closed when the ownership MAP is not the one its witness recorded.
+
+    Step-4b round-3 finding 2 (`[high]`). Every other check on this path
+    corroborates the scalar floor; none of them looks at WHICH sections are
+    owned. Because the span check is `<=` (correctly -- the ratchet is
+    decrease-only, so a legitimate surface shrink leaves the true sum below the
+    stored floor), any slack between sum and floor is room to flip a section from
+    `corpus-owned` to `unowned` with the arithmetic still satisfied. Measured on
+    a fixture carrying one section's worth of slack: the flip loaded cleanly and
+    the ledger held one row before and one row after, so the coverage loss had no
+    witness anywhere.
+
+    Comparing the recomputed map digest against the one the event recorded closes
+    that, and does so without weakening the `<=` relation the shrink case needs.
+    """
+    recorded = event.extra.get("sections_digest")
+    actual = sections_digest(declared_sections)
+    if recorded == actual:
+        return
+
+    if recorded is None:
+        why = (
+            "the event records no sections_digest at all, so it witnesses only a "
+            "floor VALUE and cannot corroborate which sections are owned"
+        )
+    else:
+        why = f"the event witnesses the map {recorded!r} while this declaration's map is {actual!r}"
+    msg = (
+        f"What failed: {path.as_posix()!r} declares a section-ownership map that "
+        f"its floor_event_id {floor_event_id!r} does not witness -- {why}.\n"
+        "Why forbidden: REQ-0.35.0-04-02 and REQ-0.35.0-04-05 -- an ownership "
+        "transition is reachable only through the attested path. The floor is a "
+        "SCALAR and cannot witness a MAP: while the stored floor sits above the "
+        "true summed span (the legitimate state after a surface shrink), that "
+        "slack is enough room to move a section from 'corpus-owned' to 'unowned' "
+        "with the arithmetic still satisfied and no transition recorded "
+        "anywhere.\n"
+        "Next step: make the ownership change through `gz content unown`, which "
+        "records the new map alongside its attestor and reason, then repoint "
+        "floor_event_id at that event and retry."
+    )
+    raise OwnershipLoadError(msg)
+
+
+def _refuse_wrong_direction_witness(path: Path, event: Any, floor_event_id: str) -> None:
+    """Fail closed when a witness records a move its own TYPE cannot make.
+
+    Step-4b round-3 finding 1 (`[critical]`). Membership of
+    `_OWNERSHIP_EVENT_TYPES` was treated as sufficient, so the roster admitted
+    any listed type in EITHER direction. `unowned_ratchet_updated` is the
+    ORDINARY, decrease-only path -- `record_unowned_total` refuses to emit it
+    for an increase -- yet a row carrying `prior=26, new=83` was accepted as
+    proof of a RAISE, observed as `floor_raised=True, load=ACCEPTED,
+    ledger_validation_errors=0`. That defeats REQ-0.35.0-04-02's central claim
+    directly: the floor rose with no `gz content unown`, no attestor and no
+    reason, using a schema-valid row of a type that structurally cannot mean
+    what it was read to mean.
+
+    A type is a CLAIM about which transition occurred, so the loader must hold
+    each type to the transition it is able to witness -- exactly the distinction
+    between "an allowed discriminator appeared" and "the governed procedure
+    ran". `section_ownership_genesis` records no prior floor and so asserts no
+    direction; it is the day-one baseline and is deliberately exempt.
+    """
+    prior = event.extra.get("prior_unowned_byte_floor")
+    new = event.extra.get("new_unowned_byte_floor")
+    if not isinstance(prior, int) or not isinstance(new, int):
+        return
+
+    if event.event == "unowned_ratchet_updated" and new > prior:
+        direction, permitted = "an INCREASE", "decrease-only"
+    elif event.event == "section_ownership_unowned" and new <= prior:
+        direction, permitted = "a DECREASE-or-equal", "raise-only"
+    else:
+        return
+
+    msg = (
+        f"What failed: {path.as_posix()!r} names floor_event_id "
+        f"{floor_event_id!r}, an {event.event!r} event recording "
+        f"{direction} ({prior} -> {new}).\n"
+        f"Why forbidden: REQ-0.35.0-04-02 -- {event.event!r} is the "
+        f"{permitted} path, so a row of that type recording the opposite "
+        "move cannot witness it. Accepting one lets a floor rise outside "
+        "the attested raise-path, with no attestor and no reason, purely "
+        "because an allowed event type carried a matching floor value. An "
+        "event TYPE is a claim about which transition occurred; a row that "
+        "contradicts its own type witnesses nothing.\n"
+        "Next step: raise the floor through `gz content unown`, which emits "
+        "a section_ownership_unowned event carrying the attestor and reason, "
+        "then repoint floor_event_id at it and retry."
+    )
+    raise OwnershipLoadError(msg)
 
 
 def write_declaration_atomically(path: Path, text: str) -> None:
@@ -673,6 +798,11 @@ def record_unowned_total(
             root,
             event_id=event_id,
             surface=declaration.surface,
+            # The COMMITTED map, not the caller's copy -- `updated` is built from
+            # the declaration re-read inside the lock, so the witness names the
+            # ownership state actually on disk even when the caller's parameter
+            # went stale against an attested flip committed in between.
+            sections_digest=sections_digest(updated.sections),
             prior_unowned_byte_floor=floor,
             new_unowned_byte_floor=total,
         )

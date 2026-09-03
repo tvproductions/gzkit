@@ -1173,6 +1173,16 @@ class SectionOwnershipGenesisEvent(_EventBase):
 
     event: Literal["section_ownership_genesis"]
     surface: str
+    sections_digest: str | None = Field(
+        default=None,
+        description=(
+            "Fingerprint of the section-ownership map this event witnesses. Optional on "
+            "the MODEL because the ledger is append-only and carries rows minted before "
+            "the field existed; `load_declaration` refuses to trust a witness lacking it, "
+            "so the enforcement point is the loader, never the schema (GHI: Step-4b "
+            "round-3 finding 2)."
+        ),
+    )
     new_unowned_byte_floor: int
 
 
@@ -1187,6 +1197,16 @@ class UnownedRatchetUpdatedEvent(_EventBase):
 
     event: Literal["unowned_ratchet_updated"]
     surface: str
+    sections_digest: str | None = Field(
+        default=None,
+        description=(
+            "Fingerprint of the section-ownership map this event witnesses. Optional on "
+            "the MODEL because the ledger is append-only and carries rows minted before "
+            "the field existed; `load_declaration` refuses to trust a witness lacking it, "
+            "so the enforcement point is the loader, never the schema (GHI: Step-4b "
+            "round-3 finding 2)."
+        ),
+    )
     prior_unowned_byte_floor: int
     new_unowned_byte_floor: int
 
@@ -1202,6 +1222,16 @@ class SectionOwnershipUnownedEvent(_EventBase):
 
     event: Literal["section_ownership_unowned"]
     surface: str
+    sections_digest: str | None = Field(
+        default=None,
+        description=(
+            "Fingerprint of the section-ownership map this event witnesses. Optional on "
+            "the MODEL because the ledger is append-only and carries rows minted before "
+            "the field existed; `load_declaration` refuses to trust a witness lacking it, "
+            "so the enforcement point is the loader, never the schema (GHI: Step-4b "
+            "round-3 finding 2)."
+        ),
+    )
     section: str
     prior_unowned_byte_floor: int
     new_unowned_byte_floor: int

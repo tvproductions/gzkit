@@ -118,6 +118,7 @@ def emit_unowned_ratchet_updated(
     root: Path,
     event_id: str,
     surface: str,
+    sections_digest: str,
     prior_unowned_byte_floor: int,
     new_unowned_byte_floor: int,
 ) -> str:
@@ -145,6 +146,7 @@ def emit_unowned_ratchet_updated(
             ts=timestamp,
             extra={
                 "surface": surface,
+                "sections_digest": sections_digest,
                 "prior_unowned_byte_floor": prior_unowned_byte_floor,
                 "new_unowned_byte_floor": new_unowned_byte_floor,
             },
@@ -157,6 +159,7 @@ def emit_section_ownership_genesis(
     root: Path,
     event_id: str,
     surface: str,
+    sections_digest: str,
     new_unowned_byte_floor: int,
 ) -> str:
     """Append a section_ownership_genesis event to the project ledger (OBPI-0.35.0-04).
@@ -183,6 +186,7 @@ def emit_section_ownership_genesis(
             ts=timestamp,
             extra={
                 "surface": surface,
+                "sections_digest": sections_digest,
                 "new_unowned_byte_floor": new_unowned_byte_floor,
             },
         )

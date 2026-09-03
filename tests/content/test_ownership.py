@@ -37,6 +37,7 @@ from gzkit.content.ownership import (
     load_declaration,
     measure_section_spans,
     record_unowned_total,
+    sections_digest,
     write_declaration_atomically,
 )
 from gzkit.content.parse import section_id
@@ -105,16 +106,31 @@ class _DeclarationFixtureMixin:
         )
         return path
 
-    def _seed_genesis_event(self, surface: str, floor: int) -> str:
+    _DEFAULT_FIXTURE_SECTIONS = {
+        "doc-title": "corpus-owned",
+        "alpha-section": "unowned",
+        "beta-section": "unowned",
+    }
+
+    def _seed_genesis_event(
+        self, surface: str, floor: int, *, sections: dict[str, str] | None = None
+    ) -> str:
         """Emit a real `section_ownership_genesis` event into this fixture's ledger.
 
         Returns the minted event id so a caller can point a declaration's
         `floor_event_id` at a genuinely ledger-resolvable proof rather than a
         hand-typed string -- the fixture must be as real as the attack it
         defends against.
+
+        *sections* is the map the witness records. It defaults to the map this
+        module's declarations use, so a caller testing a floor-side property need
+        not restate it; a caller testing a MAP-side property passes its own, and
+        an event whose digest disagrees with the declaration is exactly what the
+        loader must refuse.
         """
-        event_id = f"section-ownership-genesis-{surface}-test"
-        emit_section_ownership_genesis(self._root, event_id, surface, floor)
+        digest = sections_digest(self._DEFAULT_FIXTURE_SECTIONS if sections is None else sections)
+        event_id = f"section-ownership-genesis-{surface}-{digest[:12]}"
+        emit_section_ownership_genesis(self._root, event_id, surface, digest, floor)
         return event_id
 
 
@@ -317,7 +333,11 @@ class TestOwnershipKeysOnSectionId(_DeclarationFixtureMixin, unittest.TestCase):
         renamed_surface = "# Doc Title\npreamble\n## Behavior, RULES!!\nrenamed body\n"
         spans = measure_section_spans(renamed_surface)
         floor = spans["behavior-rules"]
-        event_id = self._seed_genesis_event("Doc.md", floor)
+        event_id = self._seed_genesis_event(
+            "Doc.md",
+            floor,
+            sections={"doc-title": "corpus-owned", "behavior-rules": "unowned"},
+        )
         path = self._write_declaration(
             {"doc-title": "corpus-owned", "behavior-rules": "unowned"},
             surface_text=renamed_surface,
@@ -388,6 +408,157 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
         self.assertIn("REQ-0.35.0-04-02", message)
         self.assertIn("null", message)
 
+    @covers("REQ-0.35.0-04-05")
+    def test_an_ownership_flip_inside_ratchet_slack_is_refused(self) -> None:
+        """Would break if the witness bound only the floor and not the map.
+
+        Step-4b round-3 finding 2 (`[high]`). The span check is `<=` because the
+        ratchet is decrease-only, so whenever the stored floor sits ABOVE the true
+        summed span -- the legitimate state after a surface shrink -- that slack
+        is room to move a section from `corpus-owned` to `unowned` with the
+        arithmetic still satisfied. Measured before the fix: the flip loaded
+        cleanly with the ledger holding one row before and one row after, so the
+        coverage loss had no witness anywhere.
+
+        The fixture carries EXACTLY one section's worth of slack, so the flipped
+        map's summed span equals the stored floor and every scalar check still
+        passes. Only the map digest can refuse it.
+        """
+        sections = {
+            "doc-title": "corpus-owned",
+            "alpha-section": "corpus-owned",
+            "beta-section": "unowned",
+        }
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        slack_floor = spans["beta-section"] + spans["alpha-section"]
+        event_id = self._seed_genesis_event("Doc.md", slack_floor, sections=sections)
+
+        baseline = self._write_declaration(
+            sections, unowned_byte_floor=slack_floor, floor_event_id=event_id
+        )
+        self.assertEqual(
+            load_declaration(baseline, _SIMPLE_SURFACE, self._root).sections["alpha-section"],
+            "corpus-owned",
+            "control: the unflipped declaration must load, or the refusal below proves nothing",
+        )
+
+        flipped = dict(sections)
+        flipped["alpha-section"] = "unowned"
+        path = self._write_declaration(
+            flipped, unowned_byte_floor=slack_floor, floor_event_id=event_id
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("does not witness", message)
+        self.assertIn("REQ-0.35.0-04-05", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_decrease_only_event_may_not_witness_a_raise(self) -> None:
+        """Would break if roster membership alone were treated as corroboration.
+
+        Step-4b round-3 finding 1 (`[critical]`), reproducing the adversary's
+        probe. `unowned_ratchet_updated` is the ORDINARY path and
+        `record_unowned_total` refuses to emit it for an increase -- so a row of
+        that type recording `prior=26, new=83` describes a move its own type
+        cannot make. The loader checked only that the type was on the roster,
+        the surface matched, and the floor value agreed, so the raise was
+        ACCEPTED with no attestor, no reason, and no `gz content unown`.
+
+        The assertion is on the DIRECTION prose, not merely on refusal: three
+        other checks in this loader also refuse and cite the same REQ, so a bare
+        "it raised" assertion would pass with this gate deleted.
+        """
+        ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
+        ledger.append(
+            LedgerEvent(
+                event="unowned_ratchet_updated",
+                id="wrong-direction-event",
+                extra={
+                    "surface": "Doc.md",
+                    "prior_unowned_byte_floor": 26,
+                    "new_unowned_byte_floor": 83,
+                },
+            )
+        )
+        path = self._write_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=83,
+            floor_event_id="wrong-direction-event",
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("decrease-only", message)
+        self.assertIn("26 -> 83", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_raise_only_event_may_not_witness_a_decrease(self) -> None:
+        """Would break if the direction gate checked only one of the two types.
+
+        The mirror of the case above: `section_ownership_unowned` is the ATTESTED
+        RAISE path, so a row of that type recording a decrease-or-equal move is
+        equally self-contradictory. Testing only the raise direction would leave
+        half the gate unwitnessed.
+        """
+        ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
+        ledger.append(
+            LedgerEvent(
+                event="section_ownership_unowned",
+                id="backwards-raise-event",
+                extra={
+                    "surface": "Doc.md",
+                    "section": "alpha-section",
+                    "prior_unowned_byte_floor": 83,
+                    "new_unowned_byte_floor": 26,
+                    "attestor": "g0",
+                    "reason": "probe",
+                },
+            )
+        )
+        path = self._write_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "corpus-owned",
+                "beta-section": "unowned",
+            },
+            unowned_byte_floor=26,
+            floor_event_id="backwards-raise-event",
+        )
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn("raise-only", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_genesis_records_no_prior_floor_and_is_exempt_from_the_direction_gate(
+        self,
+    ) -> None:
+        """Would break if the direction gate rejected a legitimate genesis load.
+
+        `section_ownership_genesis` carries no `prior_unowned_byte_floor`, so it
+        asserts no direction and must load cleanly. This is the negative control
+        for the gate above: without it, a gate that refused every event lacking a
+        prior floor would look identical to a correct one on the two tests above.
+        """
+        sections = {
+            "doc-title": "corpus-owned",
+            "alpha-section": "unowned",
+            "beta-section": "unowned",
+        }
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = sum(span for sid, span in spans.items() if sections[sid] == "unowned")
+        event_id = self._seed_genesis_event("Doc.md", floor)
+        path = self._write_declaration(sections, unowned_byte_floor=floor, floor_event_id=event_id)
+        declaration = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(declaration.floor_event_id, event_id)
+
     @covers("REQ-0.35.0-04-02")
     def test_floor_event_id_resolving_to_the_wrong_event_type_is_refused(self) -> None:
         # The adversary showed a `task_started` event accepted as proof --
@@ -455,7 +626,15 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
         # 'unowned' WITHOUT touching the stored floor or its real, resolving
         # floor_event_id. The true unowned span now sits ABOVE the floor the
         # chain check alone would still accept.
-        event_id = self._seed_genesis_event("Doc.md", 83)
+        event_id = self._seed_genesis_event(
+            "Doc.md",
+            83,
+            sections={
+                "doc-title": "unowned",
+                "alpha-section": "unowned",
+                "beta-section": "unowned",
+            },
+        )
         path = self._write_declaration(
             {
                 "doc-title": "unowned",

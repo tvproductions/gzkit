@@ -26,6 +26,7 @@ from gzkit.content.ownership import (
     OwnershipLoadError,
     load_declaration,
     measure_section_spans,
+    sections_digest,
 )
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.ledger import Ledger
@@ -85,7 +86,9 @@ def _seed_declaration(*, alpha: str = "corpus-owned", floor: int | None = None) 
         ),
         encoding="utf-8",
     )
-    emit_section_ownership_genesis(Path("."), genesis_event_id, "Doc.md", floor)
+    emit_section_ownership_genesis(
+        Path("."), genesis_event_id, "Doc.md", sections_digest(sections), floor
+    )
 
 
 def _ledger_events() -> list[dict]:
