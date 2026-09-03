@@ -612,6 +612,54 @@ a forged map flipping an already-`unowned` section so the two maps were identica
 produced PASSING tests that witnessed nothing; both were caught only by asking why a test
 passed without its fix. Round 5 was told to hunt for that shape and found no more.
 
+## Threat Model (binding for this OBPI's Step 4b)
+
+**This section exists because its absence cost roughly nine hours.** Step 4b ran five
+rounds against an ABSOLUTE claim ("no ownership transition can occur without ..."). An
+adversary instructed to REFUTE an absolute security property can always escalate the
+attacker one notch, so the gate could not converge by construction. Rounds 4 and 5 then
+spent their effort hardening attacks that sit strictly INSIDE a residual the operator had
+already accepted at round 3. The boundary below is what makes the claim refutable in a
+bounded way, and therefore closable.
+
+### In scope — MUST be prevented
+
+An actor with **no write access to `.gzkit/`**. Concretely, everything reachable through
+the `gz` CLI, through ordinary operation, and through FAILURE: a disk error, an
+interrupted run, a crash between the declaration write and the ledger append, an NFS
+mount that fails a directory fsync. No adversary is required to reach any of these.
+
+Three findings were in this class and are FIXED: the post-swap `OSError` that deleted the
+recovery journal while printing "Nothing written" (round-3 finding 3); the already-landed
+replay branch that completed having validated nothing (round-3 finding 4); and recovery
+consuming the journal while leaving a declaration the loader rejects (round-5 finding 3).
+
+### Out of scope — DISCLOSED RESIDUAL, defended by auditability
+
+An actor **with write access to `.gzkit/`**, including the ability to append arbitrary rows
+to `.gzkit/ledger.jsonl`.
+
+The operator ruled this boundary at round 3 for `.gzkit/ownership/`: such an actor is
+inside the trust boundary, and the defence is AUDITABILITY — the transition lands in the
+append-only ledger carrying its attestor and reason — never prevention. The ledger sits
+under the same directory and the same access, so the ruling covers it. An actor who can
+append arbitrary ledger rows can forge attestations, completions and receipts across the
+whole governance surface; moving a byte floor is the least thing available to them.
+Preventing it at the ownership layer while that holds is theatre.
+
+**Defence-in-depth is still kept, not reverted.** The chain replay, the migration-only
+re-anchor, the duplicate-id refusal and the integer-floor check all remain: they are cheap,
+they are proven by negative control, and several also catch ordinary corruption. They are
+recorded here as DEFENCE-IN-DEPTH BEYOND THE BOUNDARY rather than as gate conditions, so a
+future round does not re-litigate them as blockers.
+
+### What this does NOT license
+
+It does not license a weaker `gz content unown`. Every raise still requires the attested
+path, an attestor and a reason. It does not license skipping Step 4b. And it does not
+license widening the residual by argument: extending it to any surface outside `.gzkit/`
+is a fresh operator ruling, never an inference from this one.
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
