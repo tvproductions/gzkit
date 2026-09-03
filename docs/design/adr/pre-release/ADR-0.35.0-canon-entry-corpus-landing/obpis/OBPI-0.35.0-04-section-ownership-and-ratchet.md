@@ -425,11 +425,20 @@ lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED (round 4). Receipt `arb-step-codexadversary-54fac48a53cc46d8b31595036399df08`,
-`exit_status: 0`. ALL THREE FINDINGS ARE NOW DISCHARGED — two fixed, one routed out by
-operator ruling — so this refutation NO LONGER STANDS against the current tree. A round 5
-is required before attestation: the tree changed substantially after round 4 ran, and a
-verdict describing a superseded tree is not a witness. Do NOT complete against round 4.**
+**Verdict: REFUTED (round 5, the STANDING verdict). Receipt
+`arb-step-codexadversary-93c85d5b7ab44fcf8bd2ea90d6495fd3`, `exit_status: 0`, no cut-off
+markers. All five findings are now DISCHARGED, so this refutation no longer stands against
+the current tree — a ROUND 6 is required before attestation. Do NOT complete against round 5.**
+
+**A CONVERGENCE RULE NOW GOVERNS THIS GATE (operator ruling 2026-09-03).** Step 4b converges
+when a round returns NO critical and NO high findings; medium and below are disclosed in
+Tracked Defects or routed to a GHI, never silently. *"Clean adversary or we cannot pass"*
+against an adversary instructed to REFUTE is unbounded by construction. Measured here: five
+rounds, 53 minutes of adversary compute across a 12.5-hour wall clock — 7%. The rest was fix
+cycles. A second rule accompanies it: when a round's *Weakest point* names the SAME ROOT as
+the prior round, STOP dispatching and bring the design decision to the operator. Rounds 2, 3
+and 4 each patched a different surfacing of one root cause at roughly 3h per cycle; the
+operator ruled round 4's design in a single exchange and it closed in one pass.
 
 Four rounds ran. Rounds 1, 2 and 3 each returned REFUTED and each round's findings were
 repaired before the next was dispatched; round 4 re-ran against the repaired tree. Round 4
@@ -557,6 +566,51 @@ coordinated declaration+journal residual *"holds within its exact trust-boundary
 **Weakest point (verbatim):** *"provenance is inferred from a witness's internally
 self-consistent claims instead of being chained to the preceding ledger state; the gate still
 confuses a plausible record with proof of the governed transition."*
+
+**Round 5 — REFUTED, all five findings DISCHARGED.** Receipt
+`arb-step-codexadversary-93c85d5b7ab44fcf8bd2ea90d6495fd3`, `exit_status: 0`. Two critical,
+two high, one medium. Its weakest point named the SAME ROOT as round 4 one layer deeper —
+*"`_refuse_unchained_witness` is called a ledger walk, but it validates one edge. Everything
+behind that edge — including this repository's acknowledged second genesis — is trusted
+without replay."* That repetition triggered the escalation rule, so the design went to the
+operator rather than into another fix cycle.
+
+**Operator design ruling 2026-09-03**, three parts: replay the COMPLETE prefix from genesis
+(rejected: caching the verdict; keeping terminal-edge and disclosing the gap); constrain a
+re-anchor to MIGRATION-ONLY, floor and map both unchanged (rejected: adding attestor/reason
+instead; allowing an attested floor change, which would be a second raise-path alongside
+`gz content unown`); and treat later genesis rows as INERT rather than illegitimate
+(rejected: rejecting such chains outright, which strands the committed `AGENTS.md`
+permanently; a third first-class supersession event).
+
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | critical | "The ledger 'walk' validates only the terminal edge." Root 0, a middle claiming `100 -> 50`, a tail claiming `50 -> 40` gave `load=ACCEPTED floor=40`, `net_unattested_raise=0->40`, `unique_ids=True`. An invalid middle laundered by appending one locally-consistent tail. | **FIXED.** `_refuse_broken_prefix` replays every edge from the root. Negative control: reverting the loop to the terminal edge alone reproduces the laundering and fails the named test. |
+| 2 | critical | "Re-anchor is an unconstrained, unattested ownership-change path." `load=ACCEPTED floor=12 alpha=unowned`, `attestor_present=False` — ownership changed and the floor rose 0->12 with no `gz content unown`. | **FIXED.** A hole this OBPI INTRODUCED while closing round 4's. `_refuse_non_migration_reanchor` requires floor unchanged and map unchanged. The map arm is deliberately vacuous when the predecessor records no digest — that vacuum IS the migration the type exists for. |
+| 3 | high | "Existing same-id witness bypasses landed-map binding and consumes recovery." `existing_digest_matches_landed=False`, `journal_unlinked=True`, then `post_replay_load=REJECTED`. | **FIXED.** Round 4's map binding guarded the append path and left the early return open. Idempotence now means "this exact witness is already recorded", proven by semantic equality across type, surface, section, floors, attestation, reason and digest. |
+| 4 | high | "Duplicate ids bind the last payload to the first row's predecessor." `latest_event` returns the LAST payload while positional lookup finds the FIRST. `accepted_claimed_predecessor=g floor=100` against `actual_predecessor_of_latest_dup=mid floor=60`. | **FIXED.** The ambiguity is refused outright rather than reconciled: an id that does not name exactly one row makes a chain unreplayable. |
+| 5 | medium | "A non-integer new floor bypasses direction validation." `prior=0,new=12.0` gave `load=ACCEPTED floor=12 type=int`; only the separate ledger validator objected. | **FIXED.** Fails closed on any non-integer floor before equality or direction, excluding `bool` explicitly since it is an `int` subclass. |
+
+**A consequence of the INERT ruling, applied rather than hidden.** With later genesis rows
+skipped, the re-anchor minted earlier this session names a row no longer in the chain, so
+`AGENTS.md` would have been stranded — the exact outcome the INERT ruling exists to prevent.
+A link naming an inert genesis is therefore treated as naming the root: inert rows are
+skipped, the root is then the surface's only genesis, and a genesis row carries no prior
+floor, so naming one asserts the state the root asserts. The FLOOR edge is still enforced
+against the real predecessor and the map binding still holds, so this grants nothing an
+attacker can use. No second re-anchor mint was needed.
+
+**Round 5 also confirmed** the round-4 chain guard is non-vacuous by mutation
+(`named_test_result=FAIL`), that the three unpinned `_assert_refused_and_untouched` call
+sites do not currently mask their targets, and that the LITERAL text of REQ-0.35.0-04-02
+agrees with `record_unowned_total` (`Ran 2 tests ... OK`) — the disagreement round 4 reported
+was with a broader paraphrase, not the requirement as written.
+
+**Two of this session's own test fixtures were silently vacuous and had to be rebuilt** — a
+hand-typed `event_id` that failed id-recomputation before reaching the branch under test, and
+a forged map flipping an already-`unowned` section so the two maps were identical. Both
+produced PASSING tests that witnessed nothing; both were caught only by asking why a test
+passed without its fix. Round 5 was told to hunt for that shape and found no more.
 
 ## Tracked Defects
 

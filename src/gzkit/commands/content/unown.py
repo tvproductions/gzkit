@@ -177,7 +177,7 @@ def _landed_sections(root: Path, record: dict[str, Any]) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))["sections"]
 
 
-def _append_event_once(root: Path, record: dict[str, Any]) -> None:
+def _append_event_once(root: Path, record: dict[str, Any], journal_path: Path) -> None:
     """Append *record*'s ledger event unless the ledger already carries that id.
 
     The append is the step a retry resumes at, so it MUST be idempotent: a run
@@ -185,27 +185,54 @@ def _append_event_once(root: Path, record: dict[str, Any]) -> None:
     otherwise emit a second witness for one transition.
     """
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
-    if ledger.latest_event(record["event_id"]) is not None:
+    # The map the transition COMMITS TO, read from the declaration ACTUALLY ON
+    # DISK -- so the witness names the ownership state that exists, never the
+    # one a journal claims. Reading it from `record["declaration_json"]` let a
+    # forged journal author the digest for a map that never landed (round-4
+    # finding 2). Derived BEFORE the existence check, because the expected
+    # witness is what an existing row must be compared against.
+    expected = {
+        "surface": record["surface"],
+        "section": record["section"],
+        "sections_digest": sections_digest(_landed_sections(root, record)),
+        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
+        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
+        "attestor": record["attestor"],
+        "reason": record["reason"],
+    }
+
+    existing = ledger.latest_event(record["event_id"])
+    if existing is not None:
+        # Step-4b round-5 `[high]`: this returned on the mere EXISTENCE of the
+        # id, before the landed map was derived or compared -- so the round-4
+        # map binding guarded the append path and left this one open. Observed
+        # `existing_digest_matches_landed=False`, `ledger_append_count=0`,
+        # `journal_unlinked=True`, then `post_replay_load=REJECTED`. Idempotence
+        # means "this exact witness is already recorded", never "something wears
+        # this id".
+        divergent = [
+            field for field, value in expected.items() if existing.extra.get(field) != value
+        ]
+        if existing.event != _EVENT:
+            divergent.insert(0, "event")
+        if divergent:
+            _refuse_forged_journal(
+                journal_path,
+                f"the ledger already carries {record['event_id']!r}, but it "
+                f"disagrees with the witness this transition would record on "
+                f"{', '.join(divergent)} -- completing would consume the journal "
+                "while leaving a declaration whose witness describes a different "
+                "transition. An id already being present is not proof that the "
+                "SAME transition was already witnessed",
+            )
         return
+
     ledger.append(
         LedgerEvent(
             event=_EVENT,
             id=record["event_id"],
             ts=record["ts"],
-            extra={
-                "surface": record["surface"],
-                "section": record["section"],
-                # The map the transition COMMITS TO, read from the declaration
-                # ACTUALLY ON DISK -- so the witness names the ownership state
-                # that exists, never the one a journal claims. Reading it from
-                # `record["declaration_json"]` let a forged journal author the
-                # digest for a map that never landed (round-4 finding 2).
-                "sections_digest": sections_digest(_landed_sections(root, record)),
-                "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
-                "new_unowned_byte_floor": record["new_unowned_byte_floor"],
-                "attestor": record["attestor"],
-                "reason": record["reason"],
-            },
+            extra=expected,
         )
     )
 
@@ -495,7 +522,7 @@ def _replay_pending_transition(
     _refuse_incoherent_landed_state(path, journal_path, record, surface_text)
 
     try:
-        _append_event_once(root, record)
+        _append_event_once(root, record, journal_path)
     except OSError as exc:
         print(
             f"Error completing the interrupted un-owning of {record['section']!r}: "
@@ -575,7 +602,7 @@ def _commit_transition(path: Path, journal_path: Path, root: Path, record: dict[
         sys.exit(2)
 
     try:
-        _append_event_once(root, record)
+        _append_event_once(root, record, journal_path)
     except OSError as exc:
         print(
             f"Error writing ledger event for {record['surface']!r}/"

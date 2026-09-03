@@ -2136,5 +2136,214 @@ class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittes
         self.assertEqual(loaded.unowned_byte_floor, floor)
 
 
+class TestOwnershipPrefixIsReplayedWhole(_DeclarationFixtureMixin, unittest.TestCase):
+    """Step-4b round-5: the 'walk' validated one edge, so the past was trusted.
+
+    Round 4's repair chained a witness to its IMMEDIATE predecessor and stopped
+    there. Round 5's weakest point named the consequence: *"`_refuse_unchained_
+    witness` is called a ledger walk, but it validates one edge. Everything
+    behind that edge -- including this repository's acknowledged second genesis
+    -- is trusted without replay."* An invalid middle record was laundered by
+    appending one locally-consistent tail.
+
+    Operator ruled 2026-09-03: replay the COMPLETE prefix from the surface's
+    single genesis; constrain a re-anchor to migration-only (floor AND map
+    unchanged); treat later genesis rows as INERT rather than illegitimate.
+    """
+
+    def _append(
+        self,
+        event: str,
+        *,
+        surface: str = "Doc.md",
+        event_id: str,
+        prior: int | None = None,
+        new: int | None = None,
+        sections: dict[str, str] | None = None,
+        predecessor: str | None = None,
+        omit_digest: bool = False,
+    ) -> str:
+        extra: dict[str, object] = {"surface": surface}
+        if new is not None:
+            extra["new_unowned_byte_floor"] = new
+        if prior is not None:
+            extra["prior_unowned_byte_floor"] = prior
+        if not omit_digest:
+            extra["sections_digest"] = sections_digest(
+                self._DEFAULT_FIXTURE_SECTIONS if sections is None else sections
+            )
+        if predecessor is not None:
+            extra["predecessor_event_id"] = predecessor
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(event=event, id=event_id, ts="2026-09-03T00:00:00+00:00", extra=extra)
+        )
+        return event_id
+
+    def _declare(self, floor: int, event_id: str) -> Path:
+        return self._write_declaration(
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=floor,
+            floor_event_id=event_id,
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_broken_middle_edge_is_not_laundered_by_a_valid_tail(self) -> None:
+        """The reproduced laundering: root 0, broken middle 100->50, tail 50->40.
+
+        Observed before repair: `load=ACCEPTED floor=40`,
+        `net_unattested_raise=0->40`, `unique_ids=True`,
+        `validate_ledger_errors=0`. Every id distinct, so this is not the
+        duplicate-id defect -- it is the terminal-edge defect.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        real_span = spans["alpha-section"] + spans["beta-section"]
+        self._append("section_ownership_genesis", event_id="g", new=0)
+        # The middle claims to start at 100; the root recorded 0.
+        self._append("unowned_ratchet_updated", event_id="mid", prior=100, new=50)
+        # The tail is locally consistent with the middle, and only with it.
+        self._append("section_ownership_unowned", event_id="tail", prior=50, new=real_span)
+
+        path = self._declare(real_span, "tail")
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("mid", str(caught.exception))
+
+    @covers("REQ-0.35.0-04-02")
+    def test_duplicate_ownership_event_ids_are_refused(self) -> None:
+        """`latest_event` returns the LAST payload; position lookup found the FIRST.
+
+        Observed: `load=ACCEPTED floor=200`,
+        `actual_predecessor_of_latest_dup=mid floor=60`,
+        `accepted_claimed_predecessor=g floor=100`, `duplicate_id_count=2`.
+        The record passed against a predecessor it did not follow.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        real_span = spans["alpha-section"] + spans["beta-section"]
+        # Every row's direction is LEGAL for its own type, so the direction
+        # guard cannot fire first and mask the ambiguity under test.
+        self._append("section_ownership_genesis", event_id="g", new=0)
+        self._append("section_ownership_unowned", event_id="dup", prior=0, new=40)
+        self._append("unowned_ratchet_updated", event_id="mid", prior=40, new=40)
+        self._append("section_ownership_unowned", event_id="dup", prior=0, new=real_span)
+
+        path = self._declare(real_span, "dup")
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("duplicate", str(caught.exception).lower())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_reanchor_may_not_change_the_floor(self) -> None:
+        """Migration-only, operator-ruled. A re-anchor that moves the floor is a
+        second raise-path alongside `gz content unown`, which is the exact thing
+        REQ-0.35.0-04-02 forbids. Observed before repair:
+        `load=ACCEPTED floor=12 alpha=unowned`, `attestor_present=False`.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        real_span = spans["alpha-section"] + spans["beta-section"]
+        self._append("section_ownership_genesis", event_id="g", new=0)
+        self._append(
+            "section_ownership_reanchored",
+            event_id="ra",
+            prior=0,
+            new=real_span,
+            predecessor="g",
+        )
+
+        path = self._declare(real_span, "ra")
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("floor", str(caught.exception).lower())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_reanchor_may_not_change_the_section_map(self) -> None:
+        """Migration-only binds the MAP as well as the floor.
+
+        A re-anchor whose predecessor already records a digest may not record a
+        different one -- that would be an ownership change wearing a migration's
+        name. Where the predecessor records NO digest (the genesis rows minted
+        before `sections_digest` existed) there is nothing to compare, and that
+        vacuum IS the migration this type was created to carry.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        moved = dict(self._DEFAULT_FIXTURE_SECTIONS)
+        moved["doc-title"] = "unowned"
+        # The floor covers the MOVED map's span, and the re-anchor leaves it
+        # unchanged -- so the floor arm cannot fire and only the map arm can.
+        floor = sum(spans.values())
+        self._append("section_ownership_genesis", event_id="g", new=floor)
+        self._append(
+            "section_ownership_reanchored",
+            event_id="ra",
+            prior=floor,
+            new=floor,
+            sections=moved,
+            predecessor="g",
+        )
+
+        # The DECLARATION agrees with the re-anchor's map, so the pre-existing
+        # unwitnessed-map check passes and cannot mask the rule under test.
+        path = self._write_declaration(moved, unowned_byte_floor=floor, floor_event_id="ra")
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("map", str(caught.exception).lower())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_later_genesis_row_is_inert_not_fatal(self) -> None:
+        """Operator-ruled: only the FIRST genesis is a root; later ones are skipped.
+
+        The committed AGENTS.md chain carries two genesis rows and the
+        append-only ledger can lose neither. Treating the second as an ERROR
+        would strand the surface permanently; treating it as INERT leaves an
+        attacker's appended genesis rows achieving nothing.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = spans["alpha-section"] + spans["beta-section"]
+        self._append("section_ownership_genesis", event_id="g1", new=floor, omit_digest=True)
+        self._append("section_ownership_genesis", event_id="g2", new=floor)
+        self._append(
+            "section_ownership_reanchored",
+            event_id="ra",
+            prior=floor,
+            new=floor,
+            predecessor="g1",
+        )
+
+        path = self._declare(floor, "ra")
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.unowned_byte_floor, floor)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_non_integer_new_floor_is_refused(self) -> None:
+        """The remaining early return accepted values Pydantic later coerced.
+
+        Observed: a forged ordinary event with `prior=0,new=12.0` gave
+        `load=ACCEPTED floor=12 type=int` -- only the separate ledger validator
+        objected, so the canonical loader accepted a prohibited ordinary-path
+        raise until some other command happened to validate the ledger.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        real_span = spans["alpha-section"] + spans["beta-section"]
+        # The floor covers the live span, so the span invariant cannot fire
+        # first and mask the type check under test.
+        self._append("section_ownership_genesis", event_id="g", new=0)
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(
+                event="unowned_ratchet_updated",
+                id="floaty",
+                ts="2026-09-03T00:00:00+00:00",
+                extra={
+                    "surface": "Doc.md",
+                    "sections_digest": sections_digest(self._DEFAULT_FIXTURE_SECTIONS),
+                    "prior_unowned_byte_floor": 0,
+                    "new_unowned_byte_floor": float(real_span),
+                },
+            )
+        )
+        path = self._declare(real_span, "floaty")
+        with self.assertRaises(OwnershipLoadError) as caught:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertIn("integer", str(caught.exception).lower())
+
+
 if __name__ == "__main__":
     unittest.main()

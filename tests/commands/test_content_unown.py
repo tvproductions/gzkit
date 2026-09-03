@@ -29,7 +29,7 @@ from gzkit.content.ownership import (
     sections_digest,
 )
 from gzkit.governance.events import emit_section_ownership_genesis
-from gzkit.ledger import Ledger
+from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
 
@@ -1236,6 +1236,91 @@ class TestAlreadyLandedReplayBindsTheLandedMap(unittest.TestCase):
             # then destroying that record, leaving `post_replay_loader=REJECTED`
             # with nothing left to recover from.
             self.assertIn("map", (result.output or "").lower())
+
+    @covers("REQ-0.35.0-04-05")
+    def test_an_existing_row_wearing_the_same_id_must_match_semantically(self) -> None:
+        """Step-4b round-5 `[high]`: idempotence was keyed on the id alone.
+
+        `_append_event_once` returned on the mere EXISTENCE of the id, before
+        the landed map was derived or compared -- so round 4's map binding
+        guarded the append path and left this one wide open. Observed
+        `existing_digest_matches_landed=False`, `ledger_append_count=0`,
+        `journal_unlinked=True`, then `post_replay_load=REJECTED`. Idempotence
+        must mean "this exact witness is already recorded", never "something
+        wears this id".
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            span = measure_section_spans(_SURFACE_TEXT)["alpha-section"]
+            new_floor = _SEED_FLOOR + span
+            on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            predecessor = OwnershipDeclaration(**on_disk)
+            event_id = _mint_event_id(
+                {
+                    "surface": "Doc.md",
+                    "section": "alpha-section",
+                    "prior_unowned_byte_floor": _SEED_FLOOR,
+                    "new_unowned_byte_floor": new_floor,
+                    "attestor": "g0",
+                    "reason": "moving to prose doc",
+                },
+                on_disk["floor_event_id"],
+            )
+            landed_sections = dict(predecessor.sections)
+            landed_sections["alpha-section"] = "unowned"
+            landed = predecessor.model_copy(
+                update={
+                    "sections": landed_sections,
+                    "unowned_byte_floor": new_floor,
+                    "floor_event_id": event_id,
+                }
+            )
+            _DECLARATION_PATH.write_text(landed.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+            # A row already wearing this id, but describing a DIFFERENT map.
+            wrong = dict(landed_sections)
+            wrong["doc-title"] = "unowned"
+            Ledger(Path(".gzkit") / "ledger.jsonl").append(
+                LedgerEvent(
+                    event="section_ownership_unowned",
+                    id=event_id,
+                    ts="2026-09-02T00:00:00+00:00",
+                    extra={
+                        "surface": "Doc.md",
+                        "section": "alpha-section",
+                        "sections_digest": sections_digest(wrong),
+                        "prior_unowned_byte_floor": _SEED_FLOOR,
+                        "new_unowned_byte_floor": new_floor,
+                        "attestor": "g0",
+                        "reason": "moving to prose doc",
+                    },
+                )
+            )
+
+            record = {
+                "surface": "Doc.md",
+                "section": "alpha-section",
+                "prior_unowned_byte_floor": _SEED_FLOOR,
+                "new_unowned_byte_floor": new_floor,
+                "attestor": "g0",
+                "reason": "moving to prose doc",
+                "ts": "2026-09-02T00:00:00+00:00",
+                "parent_event_id": on_disk["floor_event_id"],
+                "declaration_json": landed.model_dump_json(indent=2) + "\n",
+                "event_id": event_id,
+            }
+            self._JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
+            self._JOURNAL_PATH.write_text(json.dumps(record), encoding="utf-8")
+
+            result = _unown(self._runner, attestor="g0", reason="moving to prose doc")
+
+            self.assertNotEqual(result.exit_code, 0)
+            self.assertTrue(
+                self._JOURNAL_PATH.exists(),
+                "an id collision must RETAIN the journal, not consume it",
+            )
+            self.assertIn("sections_digest", (result.output or ""))
 
 
 if __name__ == "__main__":

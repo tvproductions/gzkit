@@ -444,77 +444,241 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
     return OwnershipDeclaration.model_validate(raw)
 
 
-def _ownership_chain(ledger: Any, surface: str) -> list[Any]:
-    """Return *surface*'s ownership events in ledger order.
+def _ownership_chain(ledger: Any, surface: str) -> tuple[list[Any], set[str]]:
+    """Return *surface*'s ownership chain in ledger order, later genesis INERT.
 
-    The ledger is append-only, so file order IS chronological order and the
-    predecessor of any event is simply the one before it in this list. Reading
-    the chain rather than trusting a claim is the whole point: an event's
-    `prior_unowned_byte_floor` is the mover's own assertion about where it
-    started, and Step-4b round-4 showed that assertion being fabricated.
+    The ledger is append-only, so file order IS chronological order. Only a
+    surface's FIRST `section_ownership_genesis` is its root; subsequent genesis
+    rows are SKIPPED rather than treated as errors (operator ruling
+    2026-09-03). The append-only ledger cannot lose the second genesis this
+    repository already carries, so rejecting such a chain would strand the
+    surface permanently -- while skipping leaves an attacker's appended genesis
+    rows achieving nothing at all.
     """
-    return [
-        event
-        for event in ledger.read_all()
-        if event.event in _OWNERSHIP_EVENT_TYPES and event.extra.get("surface") == surface
-    ]
+    chain: list[Any] = []
+    inert: set[str] = set()
+    seen_root = False
+    for event in ledger.read_all():
+        if event.event not in _OWNERSHIP_EVENT_TYPES:
+            continue
+        if event.extra.get("surface") != surface:
+            continue
+        if event.event == _GENESIS_EVENT:
+            if seen_root:
+                inert.add(event.id)
+                continue
+            seen_root = True
+        chain.append(event)
+    return chain, inert
+
+
+def _refuse_duplicate_chain_ids(path: Path, chain: list[Any], surface: str) -> None:
+    """Fail closed when a surface's chain carries the same id twice.
+
+    Step-4b round-5 `[high]`. `Ledger.latest_event` returns the LAST matching
+    payload while a positional lookup finds the FIRST matching row, so the two
+    disagree about which row is under test: observed `load=ACCEPTED floor=200`
+    with `actual_predecessor_of_latest_dup=mid floor=60` but
+    `accepted_claimed_predecessor=g floor=100`. The record passed against a
+    predecessor it did not follow. Rather than reconcile the two lookups, refuse
+    the ambiguity -- a chain in which an id does not name exactly one row cannot
+    be replayed at all.
+    """
+    seen: set[str] = set()
+    for event in chain:
+        if event.id in seen:
+            msg = (
+                f"What failed: {path.as_posix()!r} names surface {surface!r}, whose "
+                f"ownership chain carries the id {event.id!r} more than once.\n"
+                "Why forbidden: REQ-0.35.0-04-02 -- an event id must name exactly "
+                "one row for a chain to be replayable. With a duplicate, the "
+                "payload read for validation and the row used to locate the "
+                "predecessor can be DIFFERENT rows, so a record is checked "
+                "against a predecessor it never followed.\n"
+                "Next step: the ledger is append-only, so resolve this by "
+                "re-recording the transition under a fresh, unique id and "
+                "repointing floor_event_id at it, then retry."
+            )
+            raise OwnershipLoadError(msg)
+        seen.add(event.id)
+
+
+def _refuse_broken_prefix(
+    path: Path, chain: list[Any], upto: int, surface: str, inert_genesis: set[str]
+) -> None:
+    """Replay EVERY edge from the root through position *upto*.
+
+    Step-4b round-5 CRITICAL. Round 4's repair validated the terminal edge and
+    stopped, so everything behind it was trusted: an invalid middle record was
+    laundered by appending one locally-consistent tail. Reproduced with wholly
+    unique ids -- root 0, a middle claiming `100 -> 50`, a tail claiming
+    `50 -> 40` -- giving `load=ACCEPTED floor=40` and a
+    `net_unattested_raise=0 -> 40`. The adversary's own summary: the walk
+    "validates one edge. Everything behind that edge ... is trusted without
+    replay."
+
+    Operator ruled 2026-09-03: replay the complete prefix. Chains are short --
+    this repository's AGENTS.md carries three rows -- so the cost is nil and the
+    class of defect closes rather than moving one link further back.
+    """
+    if not chain:
+        return
+    root = chain[0]
+    if root.event != _GENESIS_EVENT:
+        msg = (
+            f"What failed: {path.as_posix()!r} names surface {surface!r}, whose "
+            f"ownership chain OPENS with a {root.event!r} event ({root.id!r}) "
+            "rather than a genesis.\n"
+            f"Why forbidden: REQ-0.35.0-04-02 -- only {_GENESIS_EVENT!r} may be a "
+            "surface's first ownership event. Any other type is a link, and a "
+            "link with nothing before it names a predecessor that does not "
+            "exist.\n"
+            f"Next step: record {surface!r}'s genesis first, then chain its "
+            "transitions to it and retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    for index in range(1, upto + 1):
+        event = chain[index]
+        predecessor = chain[index - 1]
+        _refuse_wrong_direction_witness(path, event, event.id)
+        actual_prior = predecessor.extra.get("new_unowned_byte_floor")
+        claimed_prior = event.extra.get("prior_unowned_byte_floor")
+        if claimed_prior != actual_prior:
+            msg = (
+                f"What failed: {path.as_posix()!r} rests on chain link {event.id!r}, "
+                f"which claims to move FROM floor {claimed_prior!r}, but its real "
+                f"predecessor {predecessor.id!r} recorded floor {actual_prior!r}.\n"
+                "Why forbidden: REQ-0.35.0-04-02 -- the WHOLE prefix is replayed, "
+                "not merely the last edge. Validating only the terminal link let "
+                "an invalid middle record be laundered by appending one locally "
+                "consistent tail, so a floor could rise with nothing attesting "
+                "any step of the path it claims to have taken.\n"
+                "Next step: re-record the affected transition through `gz content "
+                "unown` so it chains to the real predecessor, then repoint "
+                "floor_event_id at it and retry."
+            )
+            raise OwnershipLoadError(msg)
+
+        named = event.extra.get("predecessor_event_id")
+        # A link may name an INERT genesis row: those are skipped by the chain,
+        # so a link minted while such a row still counted names the row that sat
+        # where the root now sits. This is the completion of the operator's
+        # 2026-09-03 INERT ruling, not a softening -- refusing these would strand
+        # exactly the surface that ruling exists to rescue. It grants an attacker
+        # nothing: the FLOOR edge is still checked against the REAL predecessor,
+        # the map binding still holds, and a genesis row carries no prior floor,
+        # so naming one asserts the same state the root asserts.
+        names_inert_root = named in inert_genesis and predecessor.event == _GENESIS_EVENT
+        if named is not None and named != predecessor.id and not names_inert_root:
+            msg = (
+                f"What failed: {path.as_posix()!r} rests on chain link {event.id!r}, "
+                f"which names predecessor {named!r}, but its real predecessor is "
+                f"{predecessor.id!r}.\n"
+                "Why forbidden: REQ-0.35.0-04-02 -- a row naming a predecessor "
+                "other than its real one claims a place in the chain it does not "
+                "hold, which is how a transition is made to appear to continue "
+                "state it never saw.\n"
+                "Next step: re-record the transition against its real predecessor "
+                "and retry."
+            )
+            raise OwnershipLoadError(msg)
+
+        if event.event == "section_ownership_reanchored":
+            _refuse_non_migration_reanchor(path, event, predecessor)
+
+
+def _refuse_non_migration_reanchor(path: Path, event: Any, predecessor: Any) -> None:
+    """Hold a re-anchor to MIGRATION-ONLY: floor unchanged, map unchanged.
+
+    Step-4b round-5 CRITICAL, and a hole this OBPI introduced while closing
+    round 4's: the new type fell through the direction guard with no constraint
+    on its map, so it was an unattested ownership-change path in its own right.
+    Reproduced schema-valid: `load=ACCEPTED floor=12 alpha=unowned`,
+    `attestor_present=False` -- ownership changed and the floor rose 0 -> 12
+    with no `gz content unown`.
+
+    Operator ruled 2026-09-03: a re-anchor may only re-point a declaration at an
+    EQUIVALENT state, which is exactly the `sections_digest` migration it was
+    created to carry. Any real ownership change goes through the attested path.
+
+    The map arm is deliberately vacuous when the predecessor records NO digest:
+    the genesis rows minted before `sections_digest` existed have none, and
+    supplying it is the migration itself. There is nothing to compare against,
+    and inventing a comparison would forbid the one case the type exists for.
+    """
+    prior = event.extra.get("prior_unowned_byte_floor")
+    new = event.extra.get("new_unowned_byte_floor")
+    if prior != new:
+        msg = (
+            f"What failed: {path.as_posix()!r} rests on re-anchor {event.id!r}, "
+            f"which moves the floor {prior!r} -> {new!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- a re-anchor is MIGRATION-ONLY. "
+            "It re-points a declaration at an equivalent state so a schema change "
+            "can land; it is not a second raise-path. A re-anchor that moves the "
+            "floor raises it outside `gz content unown`, with no attestor and no "
+            "reason -- the exact bypass the ratchet exists to forbid.\n"
+            "Next step: make the floor change through `gz content unown`, which "
+            "records its attestor and reason, then retry."
+        )
+        raise OwnershipLoadError(msg)
+
+    predecessor_digest = predecessor.extra.get("sections_digest")
+    event_digest = event.extra.get("sections_digest")
+    if predecessor_digest is not None and event_digest != predecessor_digest:
+        msg = (
+            f"What failed: {path.as_posix()!r} rests on re-anchor {event.id!r}, "
+            f"which records section map {event_digest!r} while its predecessor "
+            f"{predecessor.id!r} records {predecessor_digest!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- a re-anchor is MIGRATION-ONLY in "
+            "the MAP as well as the floor. Changing which sections are owned, "
+            "under a type that carries no attestor and no reason, is an ownership "
+            "change wearing a migration's name.\n"
+            "Next step: make the ownership change through `gz content unown`, "
+            "then retry."
+        )
+        raise OwnershipLoadError(msg)
 
 
 def _refuse_unchained_witness(
     path: Path, ledger: Any, event: Any, floor_event_id: str, declared_surface: str
 ) -> None:
-    """Fail closed when a witness is not chained to the surface's real predecessor.
+    """Fail closed unless the WHOLE prefix behind this witness replays cleanly.
 
-    Step-4b round-4 CRITICAL. `load_declaration` verified that the witness's
-    CLAIMED `prior` and `new` were consistent with each other and with its own
-    type, and never once asked the ledger what the floor actually was before.
-    Two attacks fall out of that, and both were reproduced:
-
-    A real raise was laundered as a decrease by naming a fictitious higher
-    start -- observed `actual_previous_floor=18`,
-    `accepted_claimed_transition=138 -> 38`, `actual_floor_rose=True`,
-    `attestor_present=False`, `reason_present=False`. And a LATE
-    `section_ownership_genesis` row was accepted as a fresh baseline --
-    observed `late_genesis_load=late-genesis`, `late_genesis_has_attestor=False`
-    -- because nothing required genesis to be a surface's FIRST ownership event.
-
-    A chain is what distinguishes a plausible record from proof of the governed
-    transition. The predecessor here is read from the ledger, never from the
-    row asking to be trusted.
+    Round 4 chained a witness to its immediate predecessor; round 5 showed that
+    validating one edge trusts everything behind it. This now locates the
+    witness in its surface's chain and replays every edge from the root to it.
     """
-    chain = _ownership_chain(ledger, declared_surface)
+    chain, inert_genesis = _ownership_chain(ledger, declared_surface)
+    _refuse_duplicate_chain_ids(path, chain, declared_surface)
+
     position = next(
         (index for index, candidate in enumerate(chain) if candidate.id == floor_event_id),
         None,
     )
     if position is None:
-        # The event resolved by id but does not appear in this surface's chain;
-        # the surface cross-check upstream already refuses that mismatch.
-        return
-
-    if event.event == _GENESIS_EVENT:
-        if position != 0:
-            first = chain[0]
+        # Either the surface cross-check upstream already refused a mismatch, or
+        # the witness is a later genesis row the chain deliberately treats as
+        # inert. A row skipped as inert may not witness a declaration: it is not
+        # part of the chain, so there is no prefix to replay behind it.
+        if event.event == _GENESIS_EVENT:
             msg = (
                 f"What failed: {path.as_posix()!r} names floor_event_id "
-                f"{floor_event_id!r}, a {_GENESIS_EVENT!r} event that is NOT the "
-                f"first ownership event for {declared_surface!r} -- "
-                f"{first.id!r} precedes it.\n"
+                f"{floor_event_id!r}, a {_GENESIS_EVENT!r} row that is NOT "
+                f"{declared_surface!r}'s first ownership event.\n"
                 "Why forbidden: REQ-0.35.0-04-02 -- genesis is the ROOT of a "
-                "surface's chain, so there may be exactly one and it must come "
-                "first. A later genesis row re-declares day one at whatever floor "
-                "it carries, with no prior floor to move from, no attestor and no "
-                "reason -- resetting the ratchet using a row that is entirely "
-                "schema-valid. A legitimate migration is a LINK, not a second "
-                "root.\n"
-                "Next step: record the change as a 'section_ownership_reanchored' "
-                "event naming its predecessor and the floor it moves from, then "
-                "repoint floor_event_id at it and retry."
+                "chain, so only the first one counts and every later one is "
+                "INERT. A later genesis re-declares day one at whatever floor it "
+                "carries, with no prior floor to move from, no attestor and no "
+                "reason.\n"
+                "Next step: record the change as a "
+                "'section_ownership_reanchored' event naming its predecessor, "
+                "then repoint floor_event_id at it and retry."
             )
             raise OwnershipLoadError(msg)
         return
 
-    if position == 0:
+    if position == 0 and event.event != _GENESIS_EVENT:
         msg = (
             f"What failed: {path.as_posix()!r} names floor_event_id "
             f"{floor_event_id!r}, a {event.event!r} event that OPENS "
@@ -528,43 +692,7 @@ def _refuse_unchained_witness(
         )
         raise OwnershipLoadError(msg)
 
-    predecessor = chain[position - 1]
-    actual_prior = predecessor.extra.get("new_unowned_byte_floor")
-    claimed_prior = event.extra.get("prior_unowned_byte_floor")
-    if claimed_prior != actual_prior:
-        msg = (
-            f"What failed: {path.as_posix()!r} names floor_event_id "
-            f"{floor_event_id!r}, which claims to move FROM floor "
-            f"{claimed_prior!r}, but {declared_surface!r}'s preceding ownership "
-            f"event {predecessor.id!r} recorded floor {actual_prior!r}.\n"
-            "Why forbidden: REQ-0.35.0-04-02 -- a witness's prior floor is the "
-            "mover's own claim about where it started, and a claim is not "
-            "provenance. Naming a fictitious higher start makes a RAISE read as "
-            "a decrease, so the direction guard passes and the floor rises "
-            "outside the attested path with no attestor and no reason. The "
-            "predecessor is read from the ledger precisely so the row cannot "
-            "choose it.\n"
-            "Next step: make the change through `gz content unown`, which chains "
-            "the new event to the real predecessor, then repoint floor_event_id "
-            "at it and retry."
-        )
-        raise OwnershipLoadError(msg)
-
-    named = event.extra.get("predecessor_event_id")
-    if named is not None and named != predecessor.id:
-        msg = (
-            f"What failed: {path.as_posix()!r} names floor_event_id "
-            f"{floor_event_id!r}, which names predecessor {named!r}, but "
-            f"{declared_surface!r}'s preceding ownership event is "
-            f"{predecessor.id!r}.\n"
-            "Why forbidden: REQ-0.35.0-04-02 -- a row that names a predecessor "
-            "other than its real one is claiming a place in the chain it does "
-            "not hold, which is how a transition is made to appear to continue "
-            "state it never saw.\n"
-            "Next step: re-record the transition against the real predecessor, "
-            "then repoint floor_event_id at it and retry."
-        )
-        raise OwnershipLoadError(msg)
+    _refuse_broken_prefix(path, chain, position, declared_surface, inert_genesis)
 
 
 def _refuse_unwitnessed_section_map(
@@ -664,8 +792,25 @@ def _refuse_wrong_direction_witness(path: Path, event: Any, floor_event_id: str)
         )
         raise OwnershipLoadError(msg)
 
-    if not isinstance(new, int):
-        return
+    if not isinstance(new, int) or isinstance(new, bool):
+        # Step-4b round-5 `[medium]`: this early return accepted values Pydantic
+        # later COERCED. A forged `new=12.0` gave `load=ACCEPTED floor=12
+        # type=int` -- the canonical loader admitting a prohibited ordinary-path
+        # raise until some other command happened to run the ledger validator.
+        # `bool` is excluded explicitly because it is an `int` subclass, so
+        # `True` would otherwise read as the floor 1.
+        msg = (
+            f"What failed: {path.as_posix()!r} names floor_event_id "
+            f"{floor_event_id!r}, whose new_unowned_byte_floor is "
+            f"{new!r} ({type(new).__name__}), not an integer.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- a floor is a byte count. A "
+            "non-integer is compared and coerced rather than refused, so a "
+            "forged value slips past the direction check and lands as a floor "
+            "the ordinary path could never have set.\n"
+            "Next step: re-record the transition through `gz content unown` so "
+            "its floors are integers, then retry."
+        )
+        raise OwnershipLoadError(msg)
 
     if event.event == "unowned_ratchet_updated" and new > prior:
         direction, permitted = "an INCREASE", "decrease-only"
