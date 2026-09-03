@@ -660,6 +660,59 @@ path, an attestor and a reason. It does not license skipping Step 4b. And it doe
 license widening the residual by argument: extending it to any surface outside `.gzkit/`
 is a fresh operator ruling, never an inference from this one.
 
+### Step 4b — the BOUNDED round-6 prompt (reuse verbatim)
+
+Rounds 1-5 each prompted an ABSOLUTE claim and could not converge. This is the
+first prompt bounded by § Threat Model: it states the boundary and forbids the
+adversary from reporting an out-of-scope attack as a finding. It is recorded here
+rather than left in scratch because the prompt is the durable artifact — an
+unbounded prompt is what cost this OBPI nine hours, so a later session must not
+have to re-derive this one or fall back to an earlier round's wording.
+
+The round it was written for was dispatched and then stopped by the operator
+before producing a verdict, so no round-6 receipt exists.
+
+```text
+Adversarial CODE CORRECTNESS review of the working tree. Your job is to REFUTE a BOUNDED correctness claim, not to confirm it. Paste observed command output for every check. This is a defensive review of data-integrity invariants in a governance tool.
+
+READ THE THREAT MODEL FIRST. IT IS BINDING ON THIS REVIEW.
+
+`docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` § Threat Model.
+
+IN SCOPE — an actor with NO write access to `.gzkit/`. That means everything reachable through the `gz` CLI, through ordinary operation, and through FAILURE: disk errors, interrupted runs, a crash between the declaration write and the ledger append, a failing directory fsync.
+
+OUT OF SCOPE — an actor WITH write access to `.gzkit/`, including appending arbitrary rows to `.gzkit/ledger.jsonl`. This is an ACCEPTED, DISCLOSED RESIDUAL ruled by the project operator: such an actor is inside the trust boundary and the defence is auditability, not prevention. An actor who can append arbitrary ledger rows can forge attestations, completions and receipts across the entire governance surface — the byte floor is the least thing available to them.
+
+**Do NOT report a finding whose reproduction requires hand-writing a ledger row, hand-editing a declaration, or hand-writing a journal.** Four previous rounds did exactly that and the work was wasted. If your strongest attack needs those capabilities, say so plainly and report NOT-REFUTED with that observation, rather than escalating the attacker to manufacture a finding. Reporting an out-of-scope attack as a finding is the specific failure this instruction exists to prevent.
+
+THE CLAIM TO REFUTE, BOUNDED: "within that threat model, a section-ownership floor changes only through the governed `gz content unown` path; and no ordinary failure — a disk error, an interrupted run, a crash between the two stores — can leave the ownership state unrecoverable, silently wrong, or reported as successful when it is not."
+
+Surfaces: `src/gzkit/content/ownership.py`, `src/gzkit/commands/content/unown.py`, and their tests. Latest commit `6a4ab55d`.
+
+ATTACK THESE, all reachable WITHOUT any special access:
+
+1. THE CLI SURFACE. Can `gz content unown` itself raise a floor without recording an attestor and reason, or record one that disagrees with what it wrote? Can any argument combination — a missing section, a section already unowned, a surface that shrank, repeated invocations, concurrent invocations — produce a declaration the loader then rejects?
+
+2. CRASH RECOVERY, EVERY WINDOW. `_commit_transition` journals, writes the declaration, appends the ledger witness, then unlinks the journal. Inject failure at EACH boundary — before the journal write, between journal and declaration, during the atomic replace, on the post-replace directory fsync, during the ledger append, between the append and the unlink — and for each, state whether the resulting state is recoverable by re-running the command, and whether the command's own prose told the truth about what happened. Prior rounds found real defects here twice; assume more remain.
+
+3. IDEMPOTENCE AND RETRY. Re-running after each of those failures must complete the SAME transition, never a second one and never a different one. `_append_event_once` now derives the expected witness from the landed declaration and requires exact semantic equality on an existing id. Attack the retry path.
+
+4. CONCURRENCY. Two `gz content unown` invocations against the same surface, and against different surfaces sharing a ledger. Is the declaration lock sufficient? Can a lost update or an interleaved append occur?
+
+5. ORDINARY CORRUPTION, NOT FORGERY. A truncated declaration, a truncated journal, a truncated final ledger line, a surface edited between the measure and the write, a section renamed, a file with no trailing newline, a non-UTF-8 byte. These arise from crashes and editors, not attackers.
+
+6. TEST QUALITY — the highest-value target this round. FOUR fixtures in this OBPI were found to be silently vacuous: a hand-typed id that failed recomputation before reaching the branch under test; a forged map flipping an already-`unowned` section so the maps were identical; a floor below the live span; and a direction the type forbids. Each produced a PASSING or wrongly-failing test that witnessed NOTHING. Systematically hunt that shape across `tests/content/test_ownership.py` and `tests/commands/test_content_unown.py`: for each test, delete the check it names and confirm it fails FOR THE RIGHT REASON. Report every test that survives its own check's deletion, and every test that fails via a guard other than the one it names.
+
+ALREADY KNOWN — do not re-derive and do not report:
+  (a) `record_unowned_total` has no journal and no production caller; deferred to OBPI-0.35.0-05.
+  (b) The coordinated declaration+journal edit residual.
+  (c) `Ledger.append` never fsyncs — routed to GHI #952.
+  (d) `gz validate --ledger` cannot corroborate chain semantics.
+  (e) Anything requiring `.gzkit/` write access, per the threat model above.
+
+Report NEW in-scope findings only, ranked by severity. The governing gate converges when NO critical and NO high in-scope findings remain. End with an explicit line "VERDICT: REFUTED" or "VERDICT: NOT-REFUTED" or "VERDICT: REFUTED-WITH-CAVEATS", plus a "Weakest point" section.
+```
+
 ## Tracked Defects
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
