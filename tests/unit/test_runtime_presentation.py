@@ -4,6 +4,7 @@ Verifies status symbols, Rich table usage, color conventions,
 and NO_COLOR/JSON mode behavior.
 """
 
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -118,6 +119,19 @@ class TestStatusTables(unittest.TestCase):
 class TestCheckSymbols(unittest.TestCase):
     """REQ-0.0.4-08-02: gz check output uses check/cross status symbols."""
 
+    def setUp(self) -> None:
+        """Root `check()` at a scratch dir, never the real repo.
+
+        `check()` writes `.gzkit/cache/check-verified.json` on a full-scope pass
+        -- the receipt the pre-push gate reuses. These cases are only safe today
+        because one stubbed step FAILS, which is incidental isolation: making the
+        stubs pass would silently mint a verification receipt for the developer's
+        staged tree (the GHI #949 defect, found in a sibling module).
+        """
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self._root = Path(self._tmp.name)
+
     @covers("REQ-0.0.4-08-02")
     def test_check_output_uses_symbols(self):
         from gzkit.commands import quality
@@ -130,7 +144,7 @@ class TestCheckSymbols(unittest.TestCase):
 
         with (
             patch.object(quality, "console", console),
-            patch.object(quality, "get_project_root", return_value=Path(".")),
+            patch.object(quality, "get_project_root", return_value=self._root),
             patch.object(quality, "_build_check_steps", return_value=steps),
             patch("gzkit.cli.formatters.OutputFormatter", _SilentFormatter),
             patch(
@@ -277,6 +291,19 @@ class TestBlockersPrefix(unittest.TestCase):
 class TestColorConventions(unittest.TestCase):
     """REQ-0.0.4-08-07: Color conventions applied consistently."""
 
+    def setUp(self) -> None:
+        """Root `check()` at a scratch dir, never the real repo.
+
+        `check()` writes `.gzkit/cache/check-verified.json` on a full-scope pass
+        -- the receipt the pre-push gate reuses. These cases are only safe today
+        because one stubbed step FAILS, which is incidental isolation: making the
+        stubs pass would silently mint a verification receipt for the developer's
+        staged tree (the GHI #949 defect, found in a sibling module).
+        """
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+        self._root = Path(self._tmp.name)
+
     def test_quality_colors(self):
         from gzkit.commands import quality
 
@@ -287,7 +314,7 @@ class TestColorConventions(unittest.TestCase):
         ]
         with (
             patch.object(quality, "console", console),
-            patch.object(quality, "get_project_root", return_value=Path(".")),
+            patch.object(quality, "get_project_root", return_value=self._root),
             patch.object(quality, "_build_check_steps", return_value=steps),
             patch("gzkit.cli.formatters.OutputFormatter", _SilentFormatter),
             patch(

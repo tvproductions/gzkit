@@ -5,6 +5,7 @@ suppression in quiet/JSON modes, and non-TTY degradation.
 """
 
 import io
+import tempfile
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
@@ -171,10 +172,20 @@ class TestCheckIntegration(unittest.TestCase):
             ("Test", lambda _: _result(True)),
         ]
 
+        # `check()` records a verified fingerprint into <root>/.gzkit/cache on a
+        # full-scope pass, and every step here is stubbed to pass. Pointing the
+        # root at the REAL repository therefore had this progress-bar test mint
+        # `check-verified.json` for whatever tree was staged — the receipt the
+        # pre-push gate reuses — so merely running the suite stamped the tree as
+        # fully verified and a FAILING `gz check` still left a passing receipt
+        # behind (GHI #949). A tmpdir contains that write and any future one:
+        # the subject here is progress advancement, and nothing this test asserts
+        # needs the real root.
         with (
+            tempfile.TemporaryDirectory() as td,
             patch("gzkit.cli.formatters.OutputFormatter", _FormatterSpy),
             patch.object(quality, "console", SimpleNamespace(print=lambda *_args, **_kwargs: None)),
-            patch.object(quality, "get_project_root", return_value=Path(".")),
+            patch.object(quality, "get_project_root", return_value=Path(td)),
             patch.object(quality, "_build_check_steps", return_value=steps),
             patch(
                 "gzkit.quality.run_drift_advisory",
