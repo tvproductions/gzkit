@@ -166,6 +166,17 @@ def _mint_event_id(record: dict[str, Any], parent_event_id: str | None) -> str:
     return f"section-ownership-unowned-{record['surface']}-{record['section']}-{digest}"
 
 
+def _landed_sections(root: Path, record: dict[str, Any]) -> dict[str, Any]:
+    """Read the section map from the declaration ON DISK for *record*'s surface.
+
+    The witness must describe the state that exists. Deriving it from the
+    journal's own `declaration_json` meant a journal could name any map it
+    liked and have the ledger agree with it.
+    """
+    path = declaration_path(root, record["surface"])
+    return json.loads(path.read_text(encoding="utf-8"))["sections"]
+
+
 def _append_event_once(root: Path, record: dict[str, Any]) -> None:
     """Append *record*'s ledger event unless the ledger already carries that id.
 
@@ -184,12 +195,12 @@ def _append_event_once(root: Path, record: dict[str, Any]) -> None:
             extra={
                 "surface": record["surface"],
                 "section": record["section"],
-                # The map the transition COMMITS TO, read from the successor the
-                # journal carries -- so the witness names the ownership state it
-                # actually produced, never merely the floor it moved to.
-                "sections_digest": sections_digest(
-                    json.loads(record["declaration_json"])["sections"]
-                ),
+                # The map the transition COMMITS TO, read from the declaration
+                # ACTUALLY ON DISK -- so the witness names the ownership state
+                # that exists, never the one a journal claims. Reading it from
+                # `record["declaration_json"]` let a forged journal author the
+                # digest for a map that never landed (round-4 finding 2).
+                "sections_digest": sections_digest(_landed_sections(root, record)),
                 "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
                 "new_unowned_byte_floor": record["new_unowned_byte_floor"],
                 "attestor": record["attestor"],
@@ -334,6 +345,81 @@ def _apply_unlanded_transition(
         sys.exit(2)
 
 
+def _refuse_incoherent_landed_state(
+    path: Path, journal_path: Path, record: dict[str, Any], surface_text: str
+) -> None:
+    """Fail closed unless the landed declaration is a state the loader accepts.
+
+    Extracted from `_replay_pending_transition`, which crossed the xenon C
+    ceiling again once the map arm landed. The seam is the same one the round-3
+    extraction found: proving a journal may be completed is a separate
+    responsibility from completing it, and an auditor checking the first should
+    not have to read the second.
+
+    Applied on BOTH branches. The already-landed branch -- where the declaration
+    write survived but the ledger append did not -- reached the append and the
+    journal unlink having validated NOTHING: every predecessor, span,
+    eligibility and derived-successor check lives in the not-yet-landed branch.
+    Failing closed here RETAINS the journal, so the transition stays completable
+    once the surface is reconciled.
+    """
+    # Coherence gate, applied on BOTH branches (Step-4b round-3 finding 4).
+    # The already-landed branch -- where the declaration write survived but the
+    # ledger append did not -- reached the append and the journal unlink having
+    # validated NOTHING: every predecessor, span, eligibility and derived-
+    # successor check lives inside the not-yet-landed branch above. A run
+    # interrupted at the append, whose surface then GREW before the retry, was
+    # therefore completed and its journal consumed while leaving a declaration
+    # the canonical loader rejects (measured: unowned 131 against floor 83,
+    # `retry_exit=0`, `post_retry_load=REJECTED`) -- recovery reporting success
+    # while destroying the only record that could have recovered it.
+    #
+    # Re-assert the loader's own invariant against the LIVE surface before
+    # witnessing anything: an interrupted transition may only be completed into
+    # a state the loader would accept. Failing closed here RETAINS the journal,
+    # so the transition stays completable once the surface is reconciled.
+    landed = json.loads(path.read_text(encoding="utf-8"))
+    landed_floor = landed.get("unowned_byte_floor")
+    live_unowned_span = sum(
+        span
+        for sid, span in measure_section_spans(surface_text).items()
+        if landed.get("sections", {}).get(sid) == "unowned"
+    )
+    # Step-4b round-4 finding 2: the gate read `landed_floor` and
+    # `live_unowned_span` and never the section MAP, while the witness's digest
+    # was derived from the JOURNAL's claimed declaration. A journal carrying a
+    # different map at the same floor therefore passed, was witnessed with a
+    # digest describing a state that does not exist, and had its journal
+    # consumed -- observed `journal_unlinked=True` with disk and ledger digests
+    # disagreeing, then `post_replay_loader=REJECTED`. A scalar cannot witness a
+    # map here for the same reason it could not witness one in the loader.
+    try:
+        journalled_sections = json.loads(record["declaration_json"])["sections"]
+    except (ValueError, KeyError, TypeError):
+        journalled_sections = None
+    landed_sections = landed.get("sections")
+    if journalled_sections is not None and journalled_sections != landed_sections:
+        _refuse_forged_journal(
+            journal_path,
+            f"the declaration on disk declares the section map "
+            f"{sections_digest(landed_sections or {})!r} while the journal's "
+            f"successor declares {sections_digest(journalled_sections)!r} -- "
+            "completing this transition would witness a map that never landed, "
+            "leaving a declaration the loader rejects. The floor agrees, which is "
+            "exactly why the floor alone cannot witness the map",
+        )
+
+    if landed_floor != record["new_unowned_byte_floor"] or live_unowned_span > landed_floor:
+        _refuse_forged_journal(
+            journal_path,
+            f"the declaration on disk carries floor {landed_floor!r} with a live "
+            f"unowned span of {live_unowned_span} -- completing this transition "
+            f"would leave a declaration the loader rejects (expected floor "
+            f"{record['new_unowned_byte_floor']!r}, and the span may never exceed "
+            "the floor). The surface changed after the transition was journalled",
+        )
+
+
 def _replay_pending_transition(
     root: Path, path: Path, journal_path: Path, surface_text: str
 ) -> dict[str, Any] | None:
@@ -406,37 +492,7 @@ def _replay_pending_transition(
         # guards the completion instead.
         _apply_unlanded_transition(path, journal_path, record, on_disk, surface_text)
 
-    # Coherence gate, applied on BOTH branches (Step-4b round-3 finding 4).
-    # The already-landed branch -- where the declaration write survived but the
-    # ledger append did not -- reached the append and the journal unlink having
-    # validated NOTHING: every predecessor, span, eligibility and derived-
-    # successor check lives inside the not-yet-landed branch above. A run
-    # interrupted at the append, whose surface then GREW before the retry, was
-    # therefore completed and its journal consumed while leaving a declaration
-    # the canonical loader rejects (measured: unowned 131 against floor 83,
-    # `retry_exit=0`, `post_retry_load=REJECTED`) -- recovery reporting success
-    # while destroying the only record that could have recovered it.
-    #
-    # Re-assert the loader's own invariant against the LIVE surface before
-    # witnessing anything: an interrupted transition may only be completed into
-    # a state the loader would accept. Failing closed here RETAINS the journal,
-    # so the transition stays completable once the surface is reconciled.
-    landed = json.loads(path.read_text(encoding="utf-8"))
-    landed_floor = landed.get("unowned_byte_floor")
-    live_unowned_span = sum(
-        span
-        for sid, span in measure_section_spans(surface_text).items()
-        if landed.get("sections", {}).get(sid) == "unowned"
-    )
-    if landed_floor != record["new_unowned_byte_floor"] or live_unowned_span > landed_floor:
-        _refuse_forged_journal(
-            journal_path,
-            f"the declaration on disk carries floor {landed_floor!r} with a live "
-            f"unowned span of {live_unowned_span} -- completing this transition "
-            f"would leave a declaration the loader rejects (expected floor "
-            f"{record['new_unowned_byte_floor']!r}, and the span may never exceed "
-            "the floor). The surface changed after the transition was journalled",
-        )
+    _refuse_incoherent_landed_state(path, journal_path, record, surface_text)
 
     try:
         _append_event_once(root, record)

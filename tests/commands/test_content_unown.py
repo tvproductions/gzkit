@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 import gzkit.commands.content.unown as unown_module
 from gzkit.cli.main import main
-from gzkit.commands.content.unown import content_unown_cmd
+from gzkit.commands.content.unown import _mint_event_id, content_unown_cmd
 from gzkit.content.ownership import (
     OwnershipDeclaration,
     OwnershipLoadError,
@@ -1118,6 +1118,124 @@ class TestContentUnownReplayJournalValidation(unittest.TestCase):
             result = self._assert_refused_and_untouched()
             self.assertIn(self._JOURNAL_PATH.as_posix(), result.output)
             self.assertIn("missing required field(s) ts", result.output)
+
+
+class TestAlreadyLandedReplayBindsTheLandedMap(unittest.TestCase):
+    """Step-4b round-4 finding 2: the already-landed branch witnessed the wrong map.
+
+    When the declaration write LANDED but the ledger append did not, the retry
+    takes a branch whose coherence gate checks only the landed FLOOR and the
+    live unowned SPAN. Neither reads the section map. Meanwhile
+    `_append_event_once` derives the emitted `sections_digest` from the
+    JOURNAL's `declaration_json` rather than from the declaration actually on
+    disk, and `_mint_event_id` omits the map entirely -- so a journal whose map
+    differs from what landed keeps the same event id, passes id recomputation,
+    and is witnessed with a digest describing a state that does not exist.
+
+    The adversary observed `journal_unlinked=True`, disk digest
+    `380c4e7a3bd5f6c924f9bfba9edef3e0`, ledger digest
+    `a21473dc0b8602d21af34bf39f1404ef`, then `post_replay_loader=REJECTED`:
+    recovery reporting success, consuming the only record that could have
+    recovered it, and leaving a declaration the canonical loader cannot read.
+    """
+
+    _JOURNAL_PATH = Path(".gzkit") / "ownership" / "Doc.md.json.journal"
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_journal_map_disagreeing_with_the_landed_declaration_is_refused(self) -> None:
+        """Would break if the already-landed branch witnessed the journal's map."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            span = measure_section_spans(_SURFACE_TEXT)["alpha-section"]
+            new_floor = _SEED_FLOOR + span
+
+            on_disk = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            predecessor = OwnershipDeclaration(**on_disk)
+            # A GENUINELY re-minted id. A hand-typed one fails the
+            # id-recomputation check first and masks the branch under test --
+            # the same confound `_derive_declaration_json` exists to avoid.
+            event_id = _mint_event_id(
+                {
+                    "surface": "Doc.md",
+                    "section": "alpha-section",
+                    "prior_unowned_byte_floor": _SEED_FLOOR,
+                    "new_unowned_byte_floor": new_floor,
+                    "attestor": "g0",
+                    "reason": "moving to prose doc",
+                },
+                on_disk["floor_event_id"],
+            )
+
+            # The declaration that ACTUALLY landed: alpha-section un-owned.
+            landed_sections = dict(predecessor.sections)
+            landed_sections["alpha-section"] = "unowned"
+            landed = predecessor.model_copy(
+                update={
+                    "sections": landed_sections,
+                    "unowned_byte_floor": new_floor,
+                    "floor_event_id": event_id,
+                }
+            )
+            _DECLARATION_PATH.write_text(landed.model_dump_json(indent=2) + "\n", encoding="utf-8")
+
+            # The journal claims a DIFFERENT map at the same floor and the same
+            # event id -- the one field the id does not cover.
+            # `doc-title` is the only section the seed leaves 'corpus-owned',
+            # so it is the only flip that actually changes the map. Flipping an
+            # already-'unowned' section would leave the maps identical and the
+            # test would pass while witnessing nothing.
+            self.assertEqual(landed_sections["doc-title"], "corpus-owned")
+            forged_sections = dict(landed_sections)
+            forged_sections["doc-title"] = "unowned"
+            forged = landed.model_copy(update={"sections": forged_sections})
+            record = {
+                "surface": "Doc.md",
+                "section": "alpha-section",
+                "prior_unowned_byte_floor": _SEED_FLOOR,
+                "new_unowned_byte_floor": new_floor,
+                "attestor": "g0",
+                "reason": "moving to prose doc",
+                "ts": "2026-09-02T00:00:00+00:00",
+                "parent_event_id": on_disk["floor_event_id"],
+                "declaration_json": forged.model_dump_json(indent=2) + "\n",
+                "event_id": event_id,
+            }
+            self._JOURNAL_PATH.parent.mkdir(parents=True, exist_ok=True)
+            self._JOURNAL_PATH.write_text(json.dumps(record), encoding="utf-8")
+
+            result = _unown(
+                self._runner,
+                attestor="g0",
+                reason="moving to prose doc",
+            )
+
+            self.assertNotEqual(
+                result.exit_code,
+                0,
+                "a journal whose map disagrees with the landed declaration must fail closed",
+            )
+            self.assertTrue(
+                self._JOURNAL_PATH.exists(),
+                "the journal must be RETAINED -- it is the only record that can recover this",
+            )
+            witnesses = [r for r in _ledger_events() if r.get("id") == event_id]
+            self.assertEqual(
+                witnesses,
+                [],
+                "no witness may be appended for a map that never landed",
+            )
+            # The declaration deliberately does NOT load here: its
+            # floor_event_id names an event the ledger never received, which is
+            # the interrupted state by construction. That is precisely why the
+            # journal must survive -- it is the only thing that can still
+            # complete the transition. The defect was completing it WRONG and
+            # then destroying that record, leaving `post_replay_loader=REJECTED`
+            # with nothing left to recover from.
+            self.assertIn("map", (result.output or "").lower())
 
 
 if __name__ == "__main__":
