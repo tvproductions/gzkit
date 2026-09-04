@@ -425,15 +425,29 @@ lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED (round 6, the STANDING verdict). Receipt
-`arb-step-codexadversary-a73a8257b2bf4b72bcff42b19e09792c`, `exit_status: 0`, 16.1 min,
-commit `84d6eb85`; the log was grepped for `Turn failed` / `Codex error` /
-`flagged for possible` / content-filter markers and carries none.** Round 6 returned two
-critical, one high, two medium and one low finding, ALL in scope. The four findings inside
-this brief's allowlist are FIXED with mutation-verified tests. The two criticals are NOT
-fixed here: both root in `Ledger.append`, which this brief's § Denied Paths declares
-read-only, and both are ROUTED OUT to **GHI #953** on the precedent set when round-4
-finding 3 was routed to GHI #952.
+**Verdict: REFUTED / `CORROBORATION: NOT-CORROBORATED` (round 8, the STANDING verdict).
+Receipt `arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, `exit_status: 0`,
+commit `b5138874`, dispatched 2026-09-04T01:54:35Z; the log was grepped for `Turn failed` /
+`Codex error` / `flagged for possible` / content-filter markers and carries none, and
+`stdout_truncated` is `False`.** Round 8 returned two high and one medium finding, ALL in
+scope. All three are FIXED at `a90a8d14` with mutation-verified tests.
+
+**NO ADVERSARY ROUND HAS RUN AGAINST THE CURRENT TREE.** `a90a8d14` is the last commit
+touching `src/gzkit/commands/content/unown.py`, and it landed *after* round 8 observed the
+tree. The standing verdict therefore describes a tree that no longer exists, exactly as
+rounds 1-7 do — the difference is that no later round has yet replaced it. A completion
+presented today would be presented against a REFUTED verdict whose findings are discharged
+but whose discharge is uncorroborated. Round 8 additionally **ran in a read-only sandbox**
+(*"The writable CLI suite could not run because the sandbox has no writable temporary
+directory"*), so it could execute neither the failure/concurrency matrix nor the mutation
+sweep and found its three defects by reading. Its NOT-CORROBORATED is therefore partly a
+coverage limit — and a CORROBORATED from that environment would have been equally weak.
+This is the GHI #941 shape: **resolve the writable-workspace problem, or rule that a round
+without it is acceptable, before dispatching round 9.**
+
+Round 6's two criticals remain NOT fixed here: both root in `Ledger.append`, which this
+brief's § Denied Paths declares read-only, and both are ROUTED OUT to **GHI #953** on the
+precedent set when round-4 finding 3 was routed to GHI #952.
 
 **This completion is therefore made WITH THE REFUTATION RECORDED, never dressed as clean.**
 The claim in § Threat Model is amended below to be bounded by the ledger's transaction
@@ -452,17 +466,47 @@ the prior round, STOP dispatching and bring the design decision to the operator.
 and 4 each patched a different surfacing of one root cause at roughly 3h per cycle; the
 operator ruled round 4's design in a single exchange and it closed in one pass.
 
-Four rounds ran. Rounds 1, 2 and 3 each returned REFUTED and each round's findings were
-repaired before the next was dispatched; round 4 re-ran against the repaired tree. Round 4
-is the verdict that STANDS — rounds 1-3 are recorded below as history, and their REFUTED
-verdicts describe trees that no longer exist. This section states that explicitly because
-`gz obpi precomplete` reads the section for a standing verdict and cannot infer supersession
-from prose.
+**Eight rounds ran.** Each round's findings were repaired before the next was dispatched, so
+every round re-ran against a repaired tree. **Round 8 is the verdict that STANDS** — rounds
+1-7 are recorded below as history, and their verdicts describe trees that no longer exist.
+This section states that explicitly because `gz obpi precomplete` reads the section for a
+standing verdict and cannot infer supersession from prose. The same reading rule applies to
+round 8 itself: its findings are discharged at `a90a8d14`, which no round has seen.
+
+**Rounds 1-6 were prompted to REFUTE; rounds 7 and 8 were prompted to CORROBORATE.** That
+wording changed mid-gate on an operator ruling (2026-09-04) and the change is load-bearing,
+not cosmetic — a model told *"your job is to REFUTE this, not to confirm it"* escalates until
+something falls, and its best available outcome is *"I could not refute it"*, which is absence
+of evidence rather than confirmation. Rounds 7 and 8 carry a `CORROBORATION:` line for that
+reason; `NOT-CORROBORATED` is the corroboration-framed statement of the same refusal, and
+`not-refuted` is the CLI enum's passive phrasing of the corroborated state. Round 7 is the
+first round in this gate's history to produce genuine positive corroboration — see its
+record below. Do NOT reuse a rounds-1-6 prompt; build round 9's from the four-part
+Purpose / Method / Boundary / Pass condition block at the head of
+`.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Step 4b.
 
 Adversary for every round: Codex, tier 1 cross-vendor, dispatched through the `openai-codex`
-plugin runtime (`codex-companion.mjs adversarial-review --wait --scope working-tree`),
-ARB-wrapped. Tier-1 readiness was confirmed BEFORE each dispatch (`ready: true`, runtime mode
-`direct`, no stale broker), so tiers 2 and 3 were forbidden throughout.
+plugin runtime (`codex-companion.mjs adversarial-review --wait`), ARB-wrapped. Rounds 1-5 ran
+`--scope working-tree` against a dirty tree; rounds 6-8 ran `--scope branch --base 5108d7cf`,
+because the tree is now clean and working-tree would have shown the adversary nothing. Tier-1
+readiness was confirmed BEFORE each dispatch (`ready: true`, runtime mode `direct`, no stale
+broker), so tiers 2 and 3 were forbidden throughout. Every receipt cited in this section was
+re-verified against Layer 2 on 2026-09-04: `exit_status: 0`, `stdout_truncated: False`, the
+`step.command` invoking `node .../codex-companion.mjs` (which is what PROVES tier 1 — a vendor
+named only in the prompt does not), and no `Turn failed` / `Codex error` /
+`flagged for possible` / content-filter marker in either stream.
+
+> **EVIDENCE-PROVENANCE CAVEAT — every guard in rounds 6, 7 and 8, and every one of the ten
+> mutation verifications, was proven on macOS ONLY.** `tests/content/test_ownership.py`
+> imported `fcntl` at module scope, so on `windows-latest` the file failed to IMPORT and all
+> 69 of its tests were *absent*, not skipped — a zero-collection that reads identically to a
+> green run in a summary line. The production lock was never broken
+> (`corpus_store.py:140` guards its POSIX branch correctly); only the EVIDENCE was missing.
+> Fixed under **GHI #955** at `de9a3cf9`. **Read any pre-`de9a3cf9` green in this section as
+> macOS-only.** First Windows-inclusive green for this OBPI's guards: CI run `33866911329`
+> (2026-09-04), both `check (ubuntu-latest)` and `check (windows-latest)` passing, after
+> `98f2827e` skipped two directory-fsync fault-injection tests whose faults the POSIX-only
+> barrier means Windows never reaches.
 
 **Round 2's four findings, dispositioned:**
 
@@ -679,6 +723,97 @@ null_pointer               killed
 missing_prior              killed
 ```
 
+#### Round 7 — the first CORROBORATION-framed round, and the one that forced the design ruling
+
+Receipt `arb-step-codexadversary-5a988275da32415386087b4a8656b86d`, `exit_status: 0`,
+12.3 min, commit `1c8b15fc`, dispatched 2026-09-04T01:36:14Z. `--scope branch --base
+5108d7cf`. Log grepped for `Turn failed` / `Codex error` / `flagged for possible` /
+content-filter markers — none present; `stdout_truncated: False`.
+**`CORROBORATION: NOT-CORROBORATED` / `VERDICT: REFUTED`, two high findings.**
+
+**This is the first round in the gate's history to produce real positive corroboration, and
+that is the point of recording it.** Rounds 1-6 were told to refute and returned only what
+they broke; round 7 was told to corroborate and had to demonstrate the feature WORKING before
+it could report what it could not confirm. Its observed-corroboration paragraph is the
+evidence the pass condition actually asks for, in its own words (abridged): a legitimate
+raise exited 0, measured +57 B, moved the floor 26→83, reloaded successfully, and emitted
+exactly one witness carrying section, both floors, `attestor=g0` and reason; blank attestor,
+blank reason, unknown section and already-unowned section each exited 1 with declaration and
+ledger unchanged; injected failures at **six** boundaries — before journal write, between
+journal and declaration, during replace, at both directory-fsync boundaries, during ledger
+append, and after append/before unlink — all retried to floor 83, one witness, no journal,
+same journalled event id, loader acceptance; same-surface concurrency landed both distinct
+sections once and duplicate same-section calls yielded one success and one refusal; truncated
+declaration/journal, pre-read section rename and non-UTF-8 input produced governed refusals
+without store mutation; scoped suite 102/102; and the eight guards touched by `3d4f06ac` were
+each deleted independently with none surviving its mutation. **A round that only lists what it
+broke has not met the pass condition. This one met the demonstrate half and failed the
+no-high half.**
+
+**Its `Weakest point` named the SAME ROOT as round 6, and the same-root rule fired.** Verbatim:
+*"the mutable surface is not transactionally version-bound to the declaration, journal, and
+witness; both new failures arise because a scalar re-read is being used as a substitute for
+that missing binding."* Round 6's own fix WAS that scalar re-read. Per the rule booked
+2026-09-03, dispatching STOPPED and the design went to the operator instead of a third patch
+at one root — operator ruling, verbatim: *"bind the surface into the transaction. this has
+never been an issue before."* It closed in one pass, as the rule predicts.
+
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | high | "Final surface check still permits a mid-run edit to commit stale state" (`unown.py:802-803`). The surface is checked, then committed separately. An ordinary editor write at that boundary produced `exit=0`, success prose claiming `26 to 83 (+57 B)`, `stored_floor=83`, `live_unowned_span=653`, `witnesses=1`, `journal_exists=False`, then `post_success_load=REJECTED: OwnershipLoadError` — success reported, recovery state destroyed, declaration rejected by its own canonical loader. | **FIXED at `b5138874`.** The surface digest is now JOURNALLED with the transition, making the surface a versioned participant rather than an unversioned input read twice and hoped about. `_refuse_clean_success_on_a_moved_surface` re-verifies it after the declaration and the ledger witness are both durable and BEFORE the journal is cleared — the only point where the check can still act on the outcome. A pre-flight check cannot cover this by construction: `_refuse_surface_changed_under_us` is KEPT (a refusal there writes nothing at all) but is check-then-act. The transition is NOT rolled back — the witness is a truthful append-only record of what was committed; what is refused is the CLAIM OF CLEAN SUCCESS, and what is retained is the journal, so the state can be reconciled instead of being silently wrong. |
+| 2 | high | "Already-landed recovery consumes the journal after a section rename" (`unown.py:408-447`). After an injected ledger-append failure left declaration and journal, renaming `alpha-section` by ordinary edit and retrying gave `retry_exit=0`, "Completed the interrupted un-owning", one witness, `journal_exists=False`; reload then rejected the undeclared `renamed-section`. "The coherence calculation silently omits live section IDs absent from the landed map, so it validates only the scalar span rather than full declaration/surface coverage." | **FIXED at `b5138874`.** Section-ID coverage is now compared as a SET, not summed. `live_unowned_span` sums only ids present in the landed map, so a renamed section contributed nothing and the scalar check passed while the declaration no longer covered the surface. **A sum cannot witness coverage** — for the same reason a scalar could not witness the map at round 4 or the direction at round 5. A false-positive test is added alongside, pinning that an unchanged surface still completes cleanly: a guard with no false-positive test can be made infinitely strict without any test objecting. |
+
+**Mutation-verified at `b5138874`: all eleven guards touched across rounds 6 and 7** — each
+check deleted in isolation, its named test observed to FAIL, source restored byte-identically.
+
+#### Round 8 — THE STANDING VERDICT, and a round whose environment limited what it could witness
+
+Receipt `arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, `exit_status: 0`,
+commit `b5138874`, dispatched 2026-09-04T01:54:35Z. `--scope branch --base 5108d7cf`. Log
+grepped for the same four failure markers — none present; `stdout_truncated: False`.
+**`CORROBORATION: NOT-CORROBORATED` / `VERDICT: REFUTED`, two high and one medium finding.**
+
+**READ THE COVERAGE LIMIT BEFORE READING THE VERDICT.** Round 8's own `Weakest point`,
+verbatim: *"full filesystem failure/concurrency demonstrations and deletion-based mutation
+checks for all 105 tests could not be executed in this read-only environment."* It observed
+22 read-only ownership tests passing, the committed `AGENTS.md` declaration loading, and the
+blank-attestor / malformed-declaration / malformed-journal / non-UTF-8 / no-trailing-newline
+probes behaving correctly — then found its three defects **by reading the code**. A
+NOT-CORROBORATED from that environment is partly a statement about the sandbox; a
+CORROBORATED from it would have been weak for the same reason. **Round 9 must run in a
+writable workspace or its verdict means little either way (GHI #941).**
+
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | high | "Recovery bypasses the new surface-digest binding" (`unown.py:548-565`). Replay validated the captured surface before `_append_event_once`, then cleared the journal without ever calling `_refuse_clean_success_on_a_moved_surface`: `post_digest_guard_calls=0`, `exit=0`, `event_appended=True`, `journal_exists=False`, clean-success prose after the journalled surface had moved. A second probe changed only a corpus-owned section between attempts; coherence accepted it despite `digest_changed=True`. The fresh path also had a check-to-unlink interval. | **FIXED at `a90a8d14`.** ONE FINALIZATION PATH. The round-7 binding had been implemented on the fresh-commit path only; this applies the operator's already-ruled design to its twin rather than deciding anything new — which is why it was NOT escalated as a fourth same-root design question. The adversary's own recommendation said the same: *"use one finalization path for fresh commits and replay."* The coherence checks were not a substitute: they ran correctly, against the surface as it was before the append. |
+| 2 | high | "The digest binds normalized text, not the surface bytes whose span is governed" (`unown.py:687-700`). Both reads used `Path.read_text`, whose universal-newline handling normalizes CRLF to LF, so the digest hashed the normalized string: `raw_lengths=25,29 decoded_equal=True digests_equal=True measured_totals=25,25`. An LF↔CRLF edit therefore changed the physical byte spans the floor governs WITHOUT firing the digest, and the floor silently undercounted the file. | **FIXED at `a90a8d14`.** The surface is read as raw BYTES, hashed as bytes, and decoded with `bytes.decode` (no translation), so the text measured round-trips to the bytes hashed. **This is not exotic input:** `.claude/rules/cross-platform.md` makes Windows co-equal and an editor there produces CRLF by saving. |
+| 3 | medium | "Recovering a different pending section makes the subsequent 'nothing written' refusal false" (`unown.py:819-851`). The handler returned after recovery only when the recovered section equalled the requested one; otherwise it completed the pending transition, appended its witness, deleted its journal, then fell through into refusal prose reading "nothing written". Observed `exit=1 event_appended=True journal_exists=False`. Reachable with no `.gzkit/` access at all. | **FIXED at `a90a8d14`.** Recovery now ALWAYS terminates its invocation and reports the recovery, regardless of the newly requested section — so later refusal prose can never claim the stores were unchanged after a durable state change. |
+
+**TWO OF ROUND 8'S OWN FIX-TESTS WERE VACUOUS AND WERE CAUGHT BY MUTATION, NOT BY THE SUITE.**
+The digest test called `_surface_digest` directly and SURVIVED a mutation making the read path
+hash normalized text — *a helper can be perfectly correct while nothing routes real input
+through it* — so a test at the seam was added. And round 7's coverage guard began surviving
+its own deletion once round 8's digest guard MASKED it; its test now pins the case where
+coverage is genuinely load-bearing (a journal carrying no `surface_digest`, which the digest
+guard skips by design). **This is the second recorded instance of guard masking in this OBPI**
+(round 6's `_refuse_surface_changed_under_us` masked the read-inside-the-lock fix). Both were
+found only by re-running EVERY mutation after each change. **Re-run the whole set, never only
+the new guards.**
+
+**Mutation-verified at `a90a8d14`: all ten guards across rounds 6, 7 and 8** — each deleted in
+isolation, its named test observed to FAIL, source restored byte-identically. The ten: the
+read-inside-the-lock move, `_refuse_surface_changed_under_us`, the `UnicodeDecodeError` catch,
+the journal-branch prose, the journalled `surface_digest`, the fresh-path post-durability
+verification, the section-ID coverage set comparison, the raw-byte digest at the read seam,
+the replay-path finalization guard, and recovery-always-terminates.
+
+> **The mutation harness itself did not survive its session** (`scratchpad/mutate_all.py` is
+> gone). Re-derive it before trusting any test in this OBPI; the suite going green has never
+> once caught a vacuous test here.
+
+**A scalar has stood in for a structure FOUR times in this OBPI** — the map at round 4, the
+direction at round 5, the span at rounds 6 and 7. When a check compares a number where the
+property is a set or a map, assume that is the next finding.
 
 ## Threat Model (binding for this OBPI's Step 4b)
 
