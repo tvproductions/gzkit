@@ -331,7 +331,7 @@ def chores_plan(slug: str) -> None:
     log_path = _log_path(project_root, chore)
 
     console.print(f"[bold]Chore Plan: {chore.slug}[/bold]")
-    console.print(f"  Title: {chore.title}")
+    console.print(f"  Title: {escape(chore.title)}")
     console.print(f"  Lane: {chore.lane}")
     console.print(f"  Version: {chore.version}")
     console.print(f"  Path: {chore.path}")
@@ -393,7 +393,7 @@ def chores_advise(slug: str) -> None:
         mark = "[green]PASS[/green]" if result.passed else "[red]FAIL[/red]"
         console.print(
             f"  {idx}. {mark}  `{criterion.command}` "
-            f"({result.duration_seconds:.1f}s) -- {result.detail}"
+            f"({result.duration_seconds:.1f}s) -- {escape(result.detail)}"
         )
         if not result.passed:
             all_pass = False

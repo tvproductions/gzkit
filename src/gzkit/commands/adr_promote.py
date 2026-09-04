@@ -6,6 +6,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.adr_promote_utils import (
     _mark_pool_adr_promoted,
     _parse_semver_triplet,
@@ -427,7 +429,7 @@ def adr_promote_cmd(
             f"\n[red]Promotion blocked:[/red] {len(structure_errors)} structural error(s):"
         )
         for err in structure_errors:
-            console.print(f"  - {err}")
+            console.print(f"  - {escape(err)}")
         console.print("  Pass --force to override.")
         raise SystemExit(1)
     if scaffold_count and not force:

@@ -13,6 +13,7 @@ import json
 import sys
 from datetime import date
 
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import console
@@ -139,7 +140,7 @@ def flag_explain_cmd(*, key: str, as_json: bool = False) -> None:
 
     console.print(f"\n[bold]{explanation.key}[/bold]")
     console.print(f"  Category:      {explanation.category}")
-    console.print(f"  Description:   {explanation.description}")
+    console.print(f"  Description:   {escape(explanation.description)}")
     console.print(f"  Owner:         {explanation.owner}")
     console.print(f"  Default:       {explanation.default}")
     console.print(f"  Current value: {explanation.current_value}")

@@ -724,7 +724,7 @@ def _run_unscoped_rules_scope(project_root: Path, *, as_json: bool, allowlist_on
         if v.allowlisted:
             continue
         detected = f" (detected: {v.detected_value!r})" if v.detected_value else ""
-        console.print(f"   [red]→[/red] \\[{v.reason}] {v.file}{detected}")
+        console.print(f"   [red]→[/red] \\[{escape(v.reason)}] {v.file}{detected}")
     console.print(
         "\nRecovery: narrow `paths:` to a concrete glob, fold the content into "
         "AGENTS.md, or add an allowlist entry under `rules.unscoped_allowlist` "
@@ -767,7 +767,7 @@ def _run_sensitivity_scope(
             console.print(f"  matching_categories: {categories or '[]'}")
             console.print(f"  input_globs: {input_globs}")
             if "error" in payload:
-                console.print(f"  [yellow]registry error:[/yellow] {payload['error']}")
+                console.print(f"  [yellow]registry error:[/yellow] {escape(str(payload['error']))}")
         raise SystemExit(0)
 
     records, findings = _sensitivity_records(project_root)

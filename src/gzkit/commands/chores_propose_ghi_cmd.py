@@ -11,6 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.chores.eval_feedback_cluster_lib import ProposalRecord
 from gzkit.commands.common import console, get_project_root
 
@@ -80,7 +82,7 @@ def _process_tty(path: Path, record: ProposalRecord) -> None:
     """Prompt operator in TTY mode; file GHI on PROPOSE confirmation."""
     console.print(f"\n[bold]Proposal:[/bold] {record.cluster_key}")
     console.print(f"  Recurrence: {record.recurrence_count}")
-    console.print(f"  Summary: {record.summary}")
+    console.print(f"  Summary: {escape(record.summary)}")
     console.print(f"  Rule target: {record.proposed_rule_target}")
 
     response = input("File GHI? [PROPOSE/skip]: ").strip().upper()
@@ -119,7 +121,7 @@ def _process_headless(path: Path, record: ProposalRecord) -> None:
     """Mark record advisory in headless mode; no GHI filed."""
     console.print(f"\n[bold]Advisory proposal:[/bold] {record.cluster_key}")
     console.print(f"  Recurrence: {record.recurrence_count}")
-    console.print(f"  Summary: {record.summary}")
+    console.print(f"  Summary: {escape(record.summary)}")
     console.print(f"  Rule target: {record.proposed_rule_target}")
 
     updated_data = ProposalRecord(**record.model_dump() | {"advisory": True})

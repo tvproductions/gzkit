@@ -8,6 +8,8 @@ import shlex
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, get_project_root
 from gzkit.doc_coverage.manifest import MANIFEST_PATH, MANPAGE_DIR, MANPAGE_INDEX
 from gzkit.rules import _is_framework_tree
@@ -167,7 +169,7 @@ def _print_cross_coverage_summary(coverage_report: CoverageReport) -> None:
     if coverage_report.orphaned:
         console.print("\n[yellow]Orphaned documentation:[/yellow]")
         for orphan in coverage_report.orphaned:
-            console.print(f"  - {orphan.reference}: {orphan.detail}")
+            console.print(f"  - {orphan.reference}: {escape(orphan.detail)}")
 
 
 def cli_audit_cmd(as_json: bool) -> None:
@@ -263,7 +265,7 @@ def cli_audit_cmd(as_json: bool) -> None:
         else:
             console.print("[red]CLI audit failed.[/red]")
             for issue in issues:
-                console.print(f"  - {issue['path']}: {issue['issue']}")
+                console.print(f"  - {issue['path']}: {escape(issue['issue'])}")
         _print_cross_coverage_summary(coverage_report)
 
     if issues:

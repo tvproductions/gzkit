@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
+from rich.markup import escape
 
 from gzkit.cli.helpers.exit_codes import (
     EXIT_POLICY_BREACH,
@@ -757,7 +758,7 @@ def _render_human_report(obpi_id: str, checks: list[CheckResult]) -> None:
     console.print(f"\n[bold]Stage 5 precomplete check: {obpi_id}[/bold]\n")
     for check in checks:
         marker = "[green]✓[/green]" if check.ok else "[red]✗[/red]"
-        console.print(f"  {marker} {check.name}: {check.message}")
+        console.print(f"  {marker} {check.name}: {escape(check.message)}")
         if not check.ok and check.remediation:
             console.print(f"      [dim]→ {check.remediation}[/dim]")
     failed = [c for c in checks if not c.ok]

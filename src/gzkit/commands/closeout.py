@@ -5,6 +5,8 @@ from datetime import date
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.closeout_ceremony import (
     CeremonyStep,
     _classify_attestation_verdict,
@@ -139,7 +141,7 @@ def _render_closeout_output(result: dict[str, Any], dry_run: bool) -> None:
         console.print(f"  OBPI Completion: {obpi_completed}/{obpi_total} complete")
         console.print("BLOCKERS:")
         for blocker in blockers:
-            console.print(f"- {blocker}")
+            console.print(f"- {escape(blocker)}")
         if next_steps:
             console.print("Next steps:")
             for step in next_steps:
@@ -335,7 +337,7 @@ def _render_closeout_dry_run(
     if defense_brief:
         console.print("\n  [bold]Defense Brief[/bold] (preview)")
         for line in defense_brief.splitlines():
-            console.print(f"  {line}", markup=False)
+            console.print(f"  {escape(line)}", markup=False)
 
 
 def _record_closeout_initiation(
@@ -608,7 +610,7 @@ def closeout_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     if not dry_run:
         lock = hardening.normal_release_blocked(project_root)
         if lock.blocked:
-            console.print(f"[red]Closeout refused:[/red] {lock.reason}")
+            console.print(f"[red]Closeout refused:[/red] {escape(lock.reason)}")
             raise SystemExit(3)
 
     manifest = load_manifest(project_root)

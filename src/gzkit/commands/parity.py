@@ -2,6 +2,8 @@
 
 import json
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, get_project_root
 
 
@@ -120,7 +122,7 @@ def parity_check_cmd(as_json: bool) -> None:
     else:
         console.print("[red]Parity check failed.[/red]")
         for issue in issues:
-            console.print(f"  - {issue['path']}: {issue['issue']}")
+            console.print(f"  - {issue['path']}: {escape(issue['issue'])}")
 
     if issues:
         raise SystemExit(1)

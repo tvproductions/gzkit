@@ -284,7 +284,7 @@ def task_list_cmd(obpi: str, *, as_json: bool = False) -> None:
     for tid, info in sorted(tasks.items()):
         status = info["status"]
         reason = info.get("reason", "")
-        console.print(f"{tid:<30} {status:<15} {reason}")
+        console.print(f"{tid:<30} {status:<15} {escape(reason)}")
 
 
 def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
@@ -408,7 +408,7 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
             )
         )
     else:
-        console.print(f"[yellow]Blocked[/yellow] {task_id}: {reason}")
+        console.print(f"[yellow]Blocked[/yellow] {task_id}: {escape(reason)}")
 
 
 def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> None:
@@ -450,7 +450,7 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
             )
         )
     else:
-        console.print(f"[red]Escalated[/red] {task_id}: {reason}")
+        console.print(f"[red]Escalated[/red] {task_id}: {escape(reason)}")
 
 
 def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -> None:

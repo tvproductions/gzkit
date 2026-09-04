@@ -4,6 +4,8 @@ from datetime import date
 from pathlib import Path
 from typing import cast
 
+from rich.markup import escape
+
 from gzkit.commands.common import (
     GzCliError,
     _attestation_gate_snapshot,
@@ -177,7 +179,7 @@ def attest(
         console.print(f"  Raw status token: {attest_status}")
         console.print(f"  By: {attester}")
         if reason:
-            console.print(f"  Reason: {reason}")
+            console.print(f"  Reason: {escape(reason)}")
         return
 
     # Record attestation
@@ -226,4 +228,4 @@ def attest(
     console.print(f"  By: {attester}")
     console.print(f"  Date: {today}")
     if reason:
-        console.print(f"  Reason: {reason}")
+        console.print(f"  Reason: {escape(reason)}")

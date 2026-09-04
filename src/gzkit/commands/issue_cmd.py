@@ -17,6 +17,8 @@ import re
 import subprocess
 import sys
 
+from rich.markup import escape
+
 from gzkit import __version__
 from gzkit.commands.common import console
 
@@ -142,7 +144,7 @@ def issue_file_cmd(
     if dry_run:
         console.print(f"Target: {GZKIT_REPO}")
         console.print(f"Label: {label}")
-        console.print(f"Title: {title}")
+        console.print(f"Title: {escape(title)}")
         console.print("Body:")
         console.print(composed)
         return

@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Literal, cast
 
 from pydantic import BaseModel, ConfigDict, Field
+from rich.markup import escape
 
 from gzkit.chores import _classify_chore_file, merge_chores_registry, scaffold_core_chores
 from gzkit.commands.common import (
@@ -622,7 +623,7 @@ def _run_uv_sync(project_root: Path, *, dry_run: bool = False) -> str | None:
     console.print(f"  [yellow]uv sync failed (exit {result.returncode}):[/yellow]")
     if result.stderr:
         for line in result.stderr.strip().splitlines()[:5]:
-            console.print(f"    {line}")
+            console.print(f"    {escape(line)}")
     return None
 
 

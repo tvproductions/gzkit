@@ -150,7 +150,7 @@ def _pipeline_verification_commands(
             continue
         if not is_shell_less_executable(line):
             console.print(
-                f"[red]BLOCKED[/red] Non-shell-less Verification command: {line!r}. "
+                f"[red]BLOCKED[/red] Non-shell-less Verification command: {escape(line)!r}. "
                 "Rewrite as separate single-program lines "
                 "(no &&, ||, |, ;, $(...), or redirects)."
             )
@@ -275,7 +275,7 @@ def _run_pipeline_verify_stage(
         )
         console.print("BLOCKERS:")
         for command, detail in failures:
-            console.print(f"- {command}: {detail}")
+            console.print(f"- {command}: {escape(detail)}")
         raise SystemExit(1)
 
     console.print("")
@@ -509,7 +509,7 @@ def _run_airlock_out_diagnostic(
     if brief_path is None:
         return
     for finding in check_airlock_out_gate(obpi_id, brief_path, project_root, reach_fn=reach_fn):
-        console.print(f"  [yellow]airlock-OUT (diagnostic):[/yellow] {finding}")
+        console.print(f"  [yellow]airlock-OUT (diagnostic):[/yellow] {escape(finding)}")
 
 
 def _run_pipeline_sync_stage(
@@ -542,7 +542,7 @@ def _run_pipeline_sync_stage(
             console.print(f"  [red]FAIL[/red] {label}")
             if detail:
                 for line in detail.splitlines()[:10]:
-                    console.print(f"    {line}")
+                    console.print(f"    {escape(line)}")
             console.print(f"Stage 5 failed at: {label}")
             raise SystemExit(1)
 
@@ -568,7 +568,7 @@ def _run_pipeline_sync_stage(
             console.print(f"  [green]PASS[/green] {label}")
         else:
             detail = (result.stderr or result.stdout or "").strip()
-            console.print(f"  [yellow]WARN[/yellow] {label}: {detail[:200]}")
+            console.print(f"  [yellow]WARN[/yellow] {label}: {escape(detail[:200])}")
 
     remove_pipeline_artifacts(plans_dir, obpi_id)
     console.print("")

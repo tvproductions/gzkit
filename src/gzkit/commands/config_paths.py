@@ -8,6 +8,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, ensure_initialized, get_project_root, load_manifest
 from gzkit.config import GzkitConfig
 
@@ -403,7 +405,7 @@ def check_config_paths_cmd(as_json: bool) -> None:
     else:
         console.print("[red]Config-path audit failed.[/red]")
         for issue in issues:
-            console.print(f"  - {issue['path']}: {issue['issue']}", markup=False)
+            console.print(f"  - {issue['path']}: {escape(issue['issue'])}", markup=False)
 
     if issues:
         raise SystemExit(1)

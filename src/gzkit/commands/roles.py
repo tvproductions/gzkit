@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sys
 
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import console, get_project_root
@@ -74,7 +75,7 @@ def _show_role_registry(project_root: object, *, as_json: bool) -> None:
     if errors:
         console.print("")
         for err in errors:
-            console.print(f"  [yellow]WARNING:[/yellow] {err}")
+            console.print(f"  [yellow]WARNING:[/yellow] {escape(err)}")
 
 
 def _show_pipeline_dispatch(project_root: object, obpi_id: str, *, as_json: bool) -> None:

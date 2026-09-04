@@ -157,7 +157,7 @@ def obpi_withdraw_cmd(obpi: str, reason: str, attestor: str, dry_run: bool) -> N
     console.print(f"  OBPI: {canonical_id}")
     if parent:
         console.print(f"  Parent ADR: {parent}")
-    console.print(f"  Reason: {reason}")
+    console.print(f"  Reason: {escape(reason)}")
     console.print(f"  Attestor: {attestor}")
 
 
@@ -206,7 +206,7 @@ def obpi_block_cmd(obpi: str, reason: str, next_action: str, dry_run: bool) -> N
 
     ledger.append(event)
     console.print(f"[yellow]Blocked on operator:[/yellow] {canonical_id}")
-    console.print(f"  Reason: {reason}")
+    console.print(f"  Reason: {escape(reason)}")
     console.print(f"  Operator action awaited: {next_action}")
     console.print("  The pipeline will refuse to launch against this OBPI until it is unblocked.")
 
@@ -958,7 +958,7 @@ def obpi_validate_cmd(obpi_path: str | None, adr_id: str | None, authored: bool)
         console.print(f"[red]OBPI Validation Failed:[/red] {path.name}")
         console.print("BLOCKERS:")
         for error in all_errors:
-            console.print(f"- {error}")
+            console.print(f"- {escape(error)}")
         raise SystemExit(1)
 
     console.print(f"[green]OBPI Validation Passed:[/green] {path.name}")
@@ -1000,7 +1000,7 @@ def _obpi_validate_batch(
             total_errors += 1
             console.print(f"[red]FAIL[/red] {brief_path.name}")
             for error in all_errors:
-                console.print(f"  - {error}")
+                console.print(f"  - {escape(error)}")
         else:
             console.print(f"[green]PASS[/green] {brief_path.name}")
 

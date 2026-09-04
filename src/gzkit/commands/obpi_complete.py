@@ -16,6 +16,8 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any, NoReturn, cast
 
+from rich.markup import escape
+
 from gzkit.arb.paths import receipts_root
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
@@ -1922,5 +1924,5 @@ def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> NoReturn:
     if as_json:
         print(json.dumps({"status": "error", "obpi_id": obpi_id, "error": msg}))
     else:
-        console.print(f"[red]Error:[/red] {msg}")
+        console.print(f"[red]Error:[/red] {escape(msg)}")
     raise SystemExit(exit_code)

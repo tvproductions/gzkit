@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, cast
 
 import yaml
+from rich.markup import escape
 
 from gzkit.commands.common import (
     GzCliError,
@@ -786,7 +787,7 @@ def _print_specify_dry_run(
         if authored_errors:
             console.print("  Authored validation: [red]BLOCKED[/red]")
             for error in authored_errors:
-                console.print(f"    - {error}")
+                console.print(f"    - {escape(error)}")
         else:
             console.print("  Authored validation: [green]PASS[/green]")
     console.print(f"  Would append ledger event: obpi_created ({obpi_id})")
@@ -897,7 +898,7 @@ def specify(
         console.print(f"[red]Authored brief generation failed:[/red] {obpi_id}")
         console.print("BLOCKERS:")
         for error in authored_errors:
-            console.print(f"- {error}")
+            console.print(f"- {escape(error)}")
         raise SystemExit(1)
 
     _write_specify_outputs(

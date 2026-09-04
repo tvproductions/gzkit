@@ -20,6 +20,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from rich.console import Console
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.color_env import should_disable_color, should_force_terminal
@@ -178,7 +179,7 @@ class OutputFormatter:
         Only shown in debug mode. In json mode, goes to stderr.
         """
         if self._mode == OutputMode.DEBUG:
-            self._console.print(f"[dim]DEBUG: {message}[/dim]")
+            self._console.print(f"[dim]DEBUG: {escape(message)}[/dim]")
         elif self._mode == OutputMode.JSON:
             print(f"DEBUG: {message}", file=sys.stderr)  # noqa: T201
 

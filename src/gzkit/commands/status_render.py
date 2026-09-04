@@ -3,6 +3,7 @@
 from typing import Any, cast
 
 from rich import box
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import (
@@ -139,7 +140,7 @@ def _print_status_gate_section(
 
     if attested:
         detail = f" ({attestation_term})" if attestation_term else ""
-        console.print(f"  Gate 5 (Human): [green]PASS[/green]{detail}")
+        console.print(f"  Gate 5 (Human): [green]PASS[/green]{escape(detail)}")
         return
     console.print("  Gate 5 (Human): [yellow]PENDING[/yellow]")
 
@@ -436,7 +437,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
         console.print(f"Closeout Readiness: {closeout_label}")
         console.print("Closeout Blockers:")
         for blocker in closeout_blockers:
-            console.print(f"  - {blocker}")
+            console.print(f"  - {escape(blocker)}")
 
     # --- QC Pending Checkpoints (specific gates that still need to pass) ---
     if qc_readiness != "ready" and _qc_blockers:

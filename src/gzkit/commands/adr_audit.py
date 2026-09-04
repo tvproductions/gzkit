@@ -1199,7 +1199,7 @@ def _emit_adr_closeout_receipt(
             "Waive each gap with `gz obpi complete --accept-uncovered <REQ-ID> "
             "--accept-uncovered-reason <REASON>` before closing the ADR."
         )
-        console.print(f"[red]Error:[/red] {msg}")
+        console.print(f"[red]Error:[/red] {escape(msg)}")
         raise SystemExit(3)
     anchor = capture_validation_anchor(project_root, adr_id)
     close_event = audit_receipt_emitted_event(

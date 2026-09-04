@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.common import (
     GzCliError,
     _apply_pool_adr_status_overrides,
@@ -364,7 +366,7 @@ def status(
         return
 
     for warning in epic_warnings:
-        console.print(f"[yellow]warning: {warning}[/yellow]")
+        console.print(f"[yellow]warning: {escape(warning)}[/yellow]")
 
     console.print(f"[bold]Lane: {config.mode}[/bold]\n")
 
@@ -439,7 +441,7 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
         if blockers:
             console.print("BLOCKERS:")
             for blocker in blockers:
-                console.print(f"- {blocker}")
+                console.print(f"- {escape(blocker)}")
         else:
             console.print("[green]PASS[/green] OBPI runtime state and proof evidence are coherent.")
             if str(result.get("attestation_state", "")) == "recorded":

@@ -5,6 +5,8 @@ import re
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.common import console
 from gzkit.quality import check_product_proof
 from gzkit.traceability import (
@@ -414,7 +416,7 @@ def _print_adr_covers_check_result(result: dict[str, Any]) -> None:
     if criteria_without_req_ids:
         console.print("[red]FAIL[/red] Acceptance criteria missing REQ IDs:")
         for row in criteria_without_req_ids:
-            console.print(f"  - {row['obpi']}:{row['line']} -> {row['text']}")
+            console.print(f"  - {row['obpi']}:{row['line']} -> {escape(row['text'])}")
     if invalid_requirement_targets:
         console.print("[red]FAIL[/red] REQ IDs with wrong OBPI scope:")
         for row in invalid_requirement_targets:

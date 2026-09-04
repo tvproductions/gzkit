@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import console, get_project_root
@@ -478,7 +479,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
             console.print("Findings:")
             for issue in issues:
                 console.print(
-                    f"  - {issue['discipline']}: {issue['path']} - {issue['issue']}",
+                    f"  - {issue['discipline']}: {issue['path']} - {escape(issue['issue'])}",
                     soft_wrap=True,
                 )
 
@@ -486,7 +487,7 @@ def readiness_audit_cmd(as_json: bool) -> None:
         if eval_failures:
             console.print("Eval failures:")
             for r in eval_failures:
-                console.print(f"  - {r.case_id}: {r.detail}", soft_wrap=True)
+                console.print(f"  - {r.case_id}: {escape(r.detail)}", soft_wrap=True)
 
     if not success:
         raise SystemExit(1)

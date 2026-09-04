@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.cli.helpers.exit_codes import (
     EXIT_POLICY_BREACH,
     EXIT_SUCCESS,
@@ -44,7 +46,7 @@ def frontmatter_reconcile_cmd(*, dry_run: bool = False, as_json: bool = False) -
     try:
         receipt = reconcile_frontmatter(project_root, dry_run=dry_run)
     except UnmappedStatusBlocker as blocker:
-        console.print(f"[red]{blocker}[/red]")
+        console.print(f"[red]{escape(str(blocker))}[/red]")
         raise SystemExit(EXIT_POLICY_BREACH) from blocker
     except (OSError, ValueError) as exc:
         console.print(f"[red]reconcile_frontmatter failed: {exc}[/red]")
@@ -92,7 +94,7 @@ def _render_human_receipt(receipt: object, *, dry_run: bool) -> None:
             console.print(f"      {diff.field}: {diff.before!r} -> {diff.after!r}")
     for refused in receipt.refused_rewrites:
         console.print(f"    [yellow]REFUSED[/yellow] {refused.path}")
-        console.print(f"      {refused.reason}")
+        console.print(f"      {escape(refused.reason)}")
 
 
 __all__ = ["frontmatter_reconcile_cmd"]

@@ -39,6 +39,55 @@ SRC_ROOT = Path(__file__).parent.parent.parent / "src" / "gzkit"
 #: an operator-facing value is being deleted from the terminal at runtime.
 MAX_UNESCAPED_DATA_BRACKETS = 0
 
+#: Identifiers whose value is free-form text — prose a human or a subprocess
+#: wrote, which can contain anything, brackets included. A path, an ID, a
+#: semver or a count cannot; those are left alone rather than escaped for
+#: appearance. This roster is the check's declared subject: a value named
+#: outside it still reaches Rich unescaped, so the check is honest about
+#: covering the family it names and not "all data". Extend the roster when a
+#: new free-text field appears; do not extend the exceptions below to dodge it.
+FREE_TEXT_NAMES = frozenset(
+    {
+        "blocker",
+        "blockers",
+        "body",
+        "comment",
+        "description",
+        "detail",
+        "details",
+        "err",
+        "error",
+        "finding",
+        "issue",
+        "line",
+        "message",
+        "msg",
+        "note",
+        "output",
+        "prose",
+        "reason",
+        "stderr",
+        "stdout",
+        "summary",
+        "text",
+        "title",
+        "violation",
+        "warning",
+    }
+)
+
+#: Calls whose result is a number, so it cannot carry markup.
+NUMERIC_CALLS = frozenset({"len", "sum", "int", "float", "abs", "min", "max", "round"})
+
+#: Expressions whose free-text-looking name holds a structurally bracket-free
+#: value. `row['line']` is `line_no`, an int (`adr_coverage.py:321`) — escaping
+#: it would be both noise and a type error.
+NUMERIC_EXCEPTIONS = frozenset({"row['line']"})
+
+#: Free-text values reaching Rich unescaped. Ratchets to 0 alongside the
+#: bracket count above.
+MAX_UNESCAPED_FREE_TEXT = 0
+
 
 def _is_rich_print(node: ast.Call) -> bool:
     """True when the call is ``<something>console.print(...)``.
@@ -103,6 +152,82 @@ def _unescaped_data_brackets(joined: ast.JoinedStr) -> list[str]:
     return found
 
 
+def _terminal_name(node: ast.expr) -> str | None:
+    """Innermost identifier an expression resolves to, or None.
+
+    `issue.message` -> "message"; `row["text"]` -> "text"; `detail[:200]` ->
+    "detail". A call resolves to None: its result is not named, so the roster
+    cannot speak to it.
+    """
+    while True:
+        if isinstance(node, ast.Name):
+            return node.id
+        if isinstance(node, ast.Attribute):
+            return node.attr
+        if isinstance(node, ast.Subscript):
+            index = node.slice
+            if isinstance(index, ast.Constant) and isinstance(index.value, str):
+                return index.value
+            node = node.value
+            continue
+        return None
+
+
+def _is_escape_call(node: ast.expr) -> bool:
+    """True for `escape(...)` — including `escape(str(...))`."""
+    return (
+        isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "escape"
+    )
+
+
+def _is_numeric_call(node: ast.expr) -> bool:
+    """True for `len(...)` and friends, whose result cannot carry markup."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Name)
+        and node.func.id in NUMERIC_CALLS
+    )
+
+
+def _unescaped_free_text(joined: ast.JoinedStr) -> list[str]:
+    """Free-text-named values interpolated into Rich output without `escape`."""
+    found: list[str] = []
+    for node in joined.values:
+        if not isinstance(node, ast.FormattedValue):
+            continue
+        expression = node.value
+        if _is_escape_call(expression) or _is_numeric_call(expression):
+            continue
+        if isinstance(expression, ast.Constant):
+            continue
+        if ast.unparse(expression) in NUMERIC_EXCEPTIONS:
+            continue
+        name = _terminal_name(expression)
+        # An ALL-CAPS name is a module constant: authored here, not free text.
+        if name is None or name.isupper():
+            continue
+        if name.lower() in FREE_TEXT_NAMES:
+            found.append(ast.unparse(expression))
+    return found
+
+
+def _scan_free_text() -> list[str]:
+    """Every free-text value reaching Rich's markup parser unescaped."""
+    violations: list[str] = []
+    for path in sorted(SRC_ROOT.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not _is_rich_print(node):
+                continue
+            for argument in node.args:
+                if not isinstance(argument, ast.JoinedStr):
+                    continue
+                for expression in _unescaped_free_text(argument):
+                    relative = path.relative_to(SRC_ROOT.parent.parent)
+                    violations.append(f"{relative}:{node.lineno}: {{{expression}}}")
+    return violations
+
+
 def _scan() -> list[str]:
     """Every unescaped data bracket in a Rich-rendered f-string under src/."""
     violations: list[str] = []
@@ -137,8 +262,8 @@ class TestRichMarkupEscaping(unittest.TestCase):
         )
 
     @staticmethod
-    def _brackets_in(source: str) -> list[str]:
-        """Parse one ``console.print`` statement and scan its f-string argument."""
+    def _joined_str_in(source: str) -> ast.JoinedStr:
+        """Extract the f-string argument of one ``console.print`` statement."""
         statement = ast.parse(source).body[0]
         assert isinstance(statement, ast.Expr)
         call = statement.value
@@ -146,7 +271,39 @@ class TestRichMarkupEscaping(unittest.TestCase):
         assert _is_rich_print(call), source
         argument = call.args[0]
         assert isinstance(argument, ast.JoinedStr)
-        return _unescaped_data_brackets(argument)
+        return argument
+
+    def _brackets_in(self, source: str) -> list[str]:
+        """Scan one ``console.print`` statement for unescaped data brackets."""
+        return _unescaped_data_brackets(self._joined_str_in(source))
+
+    def test_no_unescaped_free_text_reaches_rich(self) -> None:
+        """Prose can contain a bracket; Rich will parse it when it does.
+
+        The bracket arm above covers brackets the author wrote. This covers
+        brackets the *data* brought — a validator message, a subprocess line,
+        a blocker built three modules away.
+        """
+        violations = _scan_free_text()
+
+        self.assertLessEqual(
+            len(violations),
+            MAX_UNESCAPED_FREE_TEXT,
+            "These interpolate free-form text straight into Rich's markup "
+            "parser. Wrap each in `escape(...)` at the print site, where the "
+            "value is known to be data:\n  " + "\n  ".join(violations),
+        )
+
+    def test_free_text_detector_is_not_vacuous(self) -> None:
+        """The free-text scanner flags an unescaped message and admits an escaped one."""
+        cases = [
+            ('console.print(f"  {issue.message}")', ["issue.message"]),
+            ('console.print(f"  {escape(issue.message)}")', []),
+            ('console.print(f"  {len(errors)} found")', []),
+        ]
+
+        for source, expected in cases:
+            self.assertEqual(_unescaped_free_text(self._joined_str_in(source)), expected)
 
     def test_detector_flags_a_known_bad_shape(self) -> None:
         """The scanner is not vacuously green — it catches the GHI #944 shape."""

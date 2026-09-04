@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
+from rich.markup import escape
 
 from gzkit.commands.common import (
     GzCliError,
@@ -844,7 +845,7 @@ def _verify_release(project_root: Path, version: str) -> None:
     errors = validate_version_consistency(project_root)
     if errors:
         for e in errors:
-            console.print(f"  [red]Version mismatch: {e.message}[/red]")
+            console.print(f"  [red]Version mismatch: {escape(e.message)}[/red]")
         raise GzCliError("Version inconsistency after release.")
 
     rc, _out, _err = git_cmd(project_root, "tag", "-l", f"v{version}")
@@ -881,7 +882,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     if not dry_run:
         lock = hardening.normal_release_blocked(project_root)
         if lock.blocked:
-            console.print(f"[red]Release refused:[/red] {lock.reason}")
+            console.print(f"[red]Release refused:[/red] {escape(lock.reason)}")
             raise SystemExit(3)
 
     _ensure_gh_available(project_root)

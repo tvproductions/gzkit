@@ -7,6 +7,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.common import (
     GzCliError,
     console,
@@ -759,12 +761,12 @@ def git_sync(
     if warnings:
         console.print("  Warnings:")
         for warning in warnings:
-            console.print(f"    - {warning}")
+            console.print(f"    - {escape(warning)}")
 
     if blockers:
         console.print("  Blockers:")
         for blocker in blockers:
-            console.print(f"    - {blocker}")
+            console.print(f"    - {escape(blocker)}")
         raise SystemExit(1)
 
     if apply:

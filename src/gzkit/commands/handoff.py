@@ -20,6 +20,8 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, get_project_root
 from gzkit.handoff_api import (
     DecisionAttribution,
@@ -190,7 +192,7 @@ def _render_resume(result: ResumeResult, divergence: RemoteDivergence | None = N
         console.print(f"  next steps ({len(result.steps)}):")
         for index, step in enumerate(result.steps, start=1):
             marker = "CITES SETTLED — " if step.cites_settled else ""
-            console.print(f"    {index}. {marker}{step.text}")
+            console.print(f"    {index}. {marker}{escape(step.text)}")
             _render_step_references(step)
         flagged = sum(1 for step in result.steps if step.cites_settled)
         if flagged:
@@ -228,7 +230,7 @@ def _render_decisions(result: ResumeResult) -> None:
             continue
         console.print(f"    {labels[attribution]}:")
         for decision in matching:
-            console.print(f"      - {decision.text}")
+            console.print(f"      - {escape(decision.text)}")
 
 
 #: How many settled rulings a resume renders inline before pointing at the store.

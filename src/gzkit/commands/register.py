@@ -3,6 +3,8 @@
 from pathlib import Path
 from typing import Any
 
+from rich.markup import escape
+
 from gzkit.commands.common import (
     ADR_SEMVER_ID_RE,
     _is_pool_adr_id,
@@ -74,7 +76,7 @@ def warn_unreadable_refused(adr_file: Path) -> None:
     """Print the membrane refusal for a package whose frontmatter cannot be read."""
     reason = unreadable_reason(adr_file) or "its frontmatter block could not be read"
     console.print(
-        f"[red]Refused:[/red] {adr_file.as_posix()} — {reason}.\n"
+        f"[red]Refused:[/red] {adr_file.as_posix()} — {escape(reason)}.\n"
         "  Why: an unreadable package must not collapse into 'no kind' — every "
         "guard downstream reads that as permission (ADR-0.34.0 Foundation Sunset).\n"
         "  Fix: re-save the file as UTF-8 without a BOM and without invisible line "

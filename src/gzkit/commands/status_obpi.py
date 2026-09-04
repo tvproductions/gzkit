@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from rich import box
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import (
@@ -593,4 +594,4 @@ def _render_obpi_status_details(result: dict[str, Any]) -> None:
         console.print("    - none")
         return
     for issue in issues:
-        console.print(f"    - {issue}")
+        console.print(f"    - {escape(issue)}")

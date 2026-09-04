@@ -10,6 +10,8 @@ from __future__ import annotations
 import json
 import sys
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.exchange_records import (
     ABANDON_CATEGORIES,
@@ -155,7 +157,7 @@ def obpi_lock_release_cmd(
             if as_json:
                 print(json.dumps({"status": "invalid_abandon", "error": str(e)}))
             else:
-                console.print(f"[red]{msg}[/red]")
+                console.print(f"[red]{escape(msg)}[/red]")
             sys.exit(1)
 
     existing = read_lock(project_root, obpi_id)

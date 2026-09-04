@@ -49,7 +49,7 @@ def _run_agent_control_sync(dry_run: bool) -> None:
     if preflight_blockers:
         console.print("[red]Sync preflight failed: canonical skills state is corrupted.[/red]")
         for blocker in preflight_blockers:
-            console.print(f"  - {blocker}")
+            console.print(f"  - {escape(blocker)}")
         console.print("\nRecovery:")
         console.print("  1. Fix canonical skills under .gzkit/skills")
         console.print("  2. Run: uv run gz skill audit --json")

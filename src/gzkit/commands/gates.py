@@ -319,12 +319,12 @@ def _run_eval_delta(
     )
 
     if result.passed:
-        console.print(f"  [green]✓[/green] {output}")
+        console.print(f"  [green]✓[/green] {escape(output)}")
         return True
 
     # REQ-5: regression output includes surface, dimension, baseline, current
     for line in output.split("\n"):
-        console.print(f"  [red]{line}[/red]")
+        console.print(f"  [red]{escape(line)}[/red]")
     return False
 
 
