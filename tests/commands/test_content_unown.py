@@ -1550,3 +1550,145 @@ class TestContentUnownJournalFailureProseIsHonest(unittest.TestCase):
                 [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"],
                 [],
             )
+
+
+class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
+    """Step-4b round 7 — a scalar re-read is not a transaction binding.
+
+    Round 6 fixed the lock-entry window by reading the surface inside the lock,
+    and added `_refuse_surface_changed_under_us` before the journal write. Round
+    7's *Weakest point* named that fix as the defect: "the mutable surface is
+    not transactionally version-bound to the declaration, journal, and witness;
+    both new failures arise because a scalar re-read is being used as a
+    substitute for that missing binding." Same root as round 6, third surfacing
+    -- so the operator ruled the design rather than another guard being added.
+
+    The binding: the surface digest is journalled with the transition, and it is
+    re-verified after the declaration and the witness are durable but BEFORE the
+    journal is cleared. A disagreement retains the journal and refuses to report
+    clean success.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    _GROWN = _SURFACE_TEXT.replace(
+        "alpha body line two\n",
+        "alpha body line two\n" + "alpha body grown by an editor\n" * 12,
+    )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_an_edit_between_the_check_and_the_commit_is_not_reported_as_success(self) -> None:
+        """Would break if the post-durability digest re-verification were deleted.
+
+        Round-7 finding 1, `[high]`, at unown.py:802-803 as it then stood: the
+        surface was checked and then committed SEPARATELY, so an ordinary editor
+        write landing between the two produced `exit=0` with success prose
+        claiming `26 to 83 (+57 B)`, `stored_floor=83`, `live_unowned_span=653`,
+        `journal_exists=False`, and then `post_success_load=REJECTED`. The
+        command reported success AND destroyed the recovery state AND left a
+        declaration its own canonical loader rejects.
+
+        The edit is injected at `_commit_transition` itself -- after every
+        pre-flight check has passed, which is precisely the window a check-then-
+        act guard cannot cover.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            real_commit = unown_module._commit_transition
+
+            def edit_then_commit(path, journal_path, root, record):
+                Path("Doc.md").write_text(self._GROWN, encoding="utf-8")
+                return real_commit(path, journal_path, root, record)
+
+            with patch.object(unown_module, "_commit_transition", edit_then_commit):
+                result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertNotEqual(
+                result.exit_code,
+                0,
+                "the command must not report clean success when the surface moved "
+                f"inside the transaction. {result.output}",
+            )
+            self.assertIn("Why forbidden:", result.output)
+            self.assertTrue(
+                (_DECLARATION_PATH.parent / "Doc.md.json.journal").exists(),
+                "recovery state must be RETAINED when the surface moved: the "
+                "journal is the only record able to complete or reconcile it",
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_an_unchanged_surface_still_completes_cleanly(self) -> None:
+        """The false-positive arm: binding must not refuse a legitimate raise.
+
+        Round 7 corroborated that "unchanged input succeeded"; this pins it, so a
+        future tightening of the binding cannot silently convert every ordinary
+        un-owning into a refusal. A guard with no false-positive test is a guard
+        that can be made infinitely strict without any test objecting.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+            result = _unown(self._runner, attestor="g0", reason="legitimate raise")
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            spans = measure_section_spans(_SURFACE_TEXT)
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                spans["beta-section"] + spans["alpha-section"],
+            )
+            load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path("."))
+            self.assertFalse((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_replay_refuses_when_a_section_was_renamed_under_the_landed_map(self) -> None:
+        """Would break if the already-landed branch checked only the scalar span.
+
+        Round-7 finding 2, `[high]`. After an injected ledger-append failure left
+        the declaration and the journal, renaming a section through an ordinary
+        surface edit and retrying gave `retry_exit=0`, "Completed the interrupted
+        un-owning", one witness and `journal_exists=False` -- then the canonical
+        reload REJECTED the undeclared `renamed-section`.
+
+        The cause is that `live_unowned_span` sums only ids PRESENT in the landed
+        map, so a renamed section contributes nothing and the span check passes
+        while the declaration no longer covers the surface. A scalar cannot
+        witness coverage, for the same reason it could not witness the map at
+        round 4 or the direction at round 5.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+            real_append = unown_module._append_event_once
+
+            def fail_append(root, record, journal_path):
+                raise OSError(5, "injected ledger append failure")
+
+            with patch.object(unown_module, "_append_event_once", fail_append):
+                first = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(first.exit_code, 2, msg=first.output)
+            self.assertTrue((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
+
+            # An ordinary editor rename, not an attack: no .gzkit/ access.
+            Path("Doc.md").write_text(
+                _SURFACE_TEXT.replace("## Beta Section", "## Renamed Section"),
+                encoding="utf-8",
+            )
+
+            self.assertIs(unown_module._append_event_once, real_append)
+            retry = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertNotEqual(
+                retry.exit_code,
+                0,
+                f"recovery must not complete into a state the loader rejects. {retry.output}",
+            )
+            self.assertTrue(
+                (_DECLARATION_PATH.parent / "Doc.md.json.journal").exists(),
+                "the journal must be RETAINED so the transition stays completable "
+                "once the rename is reconciled",
+            )

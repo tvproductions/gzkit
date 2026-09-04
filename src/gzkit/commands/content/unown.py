@@ -436,6 +436,32 @@ def _refuse_incoherent_landed_state(
             "exactly why the floor alone cannot witness the map",
         )
 
+    # Step-4b round-7 finding 2: `live_unowned_span` sums only ids PRESENT in the
+    # landed map, so a section RENAMED by an ordinary editor contributes nothing
+    # and the scalar check passes while the declaration no longer covers the
+    # surface at all. Measured: an injected append failure, then a rename, then a
+    # retry gave `retry_exit=0`, "Completed the interrupted un-owning", one
+    # witness and `journal_unlinked=True` -- and the canonical reload then
+    # rejected the undeclared section. Coverage is a SET property; a sum cannot
+    # witness it, for the same reason a scalar could not witness the map at round
+    # 4 or the direction at round 5.
+    live_ids = set(measure_section_spans(surface_text))
+    landed_ids = set(landed_sections or {})
+    if live_ids != landed_ids:
+        missing = sorted(live_ids - landed_ids)
+        stale = sorted(landed_ids - live_ids)
+        _refuse_forged_journal(
+            journal_path,
+            f"the declaration on disk declares sections {sorted(landed_ids)!r} "
+            f"while the live surface carries {sorted(live_ids)!r} "
+            f"(undeclared: {missing!r}; declared but absent: {stale!r}) -- "
+            "completing this transition would witness a declaration that does not "
+            "cover the surface, which the loader rejects. The surface was "
+            "restructured after the transition was journalled, and the summed span "
+            "cannot see it because a renamed section contributes nothing to a sum "
+            "keyed on the landed map",
+        )
+
     if landed_floor != record["new_unowned_byte_floor"] or live_unowned_span > landed_floor:
         _refuse_forged_journal(
             journal_path,
@@ -627,8 +653,71 @@ def _commit_transition(path: Path, journal_path: Path, root: Path, record: dict[
         )
         sys.exit(2)
 
+    _refuse_clean_success_on_a_moved_surface(root, journal_path, record)
+
     with contextlib.suppress(OSError):
         journal_path.unlink()
+
+
+def _refuse_clean_success_on_a_moved_surface(
+    root: Path, journal_path: Path, record: dict[str, Any]
+) -> None:
+    """Re-verify the journalled surface digest before the journal is cleared.
+
+    This is the transaction's binding on the surface, and it runs at the ONLY
+    point where the check is meaningful: after the declaration and the ledger
+    witness are both durable, and before the journal -- the sole recovery
+    record -- is destroyed.
+
+    A pre-flight check cannot cover this. `_refuse_surface_changed_under_us`
+    runs before the journal write and is worth keeping, because a refusal there
+    writes nothing at all; but it is a check-then-act guard, so an edit landing
+    between it and the commit slips through by construction. Step-4b round 7
+    reproduced exactly that: `exit=0`, success prose claiming `26 to 83 (+57 B)`,
+    `stored_floor=83`, `live_unowned_span=653`, `journal_exists=False`, then
+    `post_success_load=REJECTED`. The command reported success, destroyed the
+    recovery state, and left a declaration its own canonical loader rejects.
+
+    The transition is NOT rolled back -- it cannot be, the witness is in an
+    append-only ledger and it is a truthful record of what was committed. What
+    is refused is the CLAIM OF CLEAN SUCCESS, and what is retained is the
+    journal, so the surface can be reconciled and the state completed rather
+    than being silently wrong.
+    """
+    journalled = record.get("surface_digest")
+    if journalled is None:
+        return
+    surface_path = root / record["surface"]
+    try:
+        current = hashlib.sha256(
+            surface_path.read_text(encoding="utf-8").encode("utf-8")
+        ).hexdigest()
+    except (OSError, UnicodeDecodeError) as exc:
+        current = None
+        detail = f"it can no longer be read ({exc})"
+    else:
+        if current == journalled:
+            return
+        detail = "its bytes changed"
+    del current
+    print(
+        f"Error: surface {record['surface']!r} changed DURING the un-owning of "
+        f"section {record['section']!r}: {detail}.\n"
+        "Why forbidden: the floor just witnessed was measured against the surface "
+        "as it was journalled, so the committed declaration may record a byte span "
+        "the surface no longer has, and `load_declaration` fails closed when the "
+        "live span exceeds the floor (REQ-0.35.0-04-05). THE TRANSITION DID LAND: "
+        "the declaration carries the new floor and the ledger carries its witness, "
+        "and neither is retracted -- an append-only witness is a truthful record of "
+        "what was committed. What is refused here is the claim that this completed "
+        "cleanly.\n"
+        f"  The journal is RETAINED at {journal_path.as_posix()!r}. Reconcile the "
+        "surface against the declaration, then re-run `gz content unown` to raise "
+        "the floor over the new span, or restore the surface to the state that was "
+        "measured.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 
 def _read_surface_or_exit(surface_path: Path, surface: str) -> str:
@@ -798,6 +887,19 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
         # intended, never re-decide the transition from a surface that may since
         # have changed.
         record["declaration_json"] = new_declaration.model_dump_json(indent=2) + "\n"
+        # BIND THE SURFACE INTO THE TRANSACTION (Step-4b round 7, operator-ruled
+        # 2026-09-04: "bind the surface into the transaction"). Every value about
+        # to be committed -- the measured span, the new floor, the sections map
+        # digest -- derives from `surface_text`. Journalling its digest makes the
+        # surface a VERSIONED PARTICIPANT in the transition rather than an
+        # unversioned input read twice and hoped about: `_commit_transition`
+        # re-verifies this digest after the declaration and the witness are
+        # durable, so a surface that moved mid-transaction is detected on the one
+        # path that can still act on it. Rounds 6 and 7 both named the absence of
+        # this binding as the weakest point; round 6's scalar re-read was a
+        # substitute for it, and round 7 reproduced the residue the substitute
+        # left.
+        record["surface_digest"] = hashlib.sha256(surface_text.encode("utf-8")).hexdigest()
 
         _refuse_surface_changed_under_us(surface_path, surface, section, surface_text)
         _commit_transition(path, journal_path, root, record)
