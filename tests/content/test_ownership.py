@@ -571,32 +571,51 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
 
     @covers("REQ-0.35.0-04-02")
     def test_floor_event_id_resolving_to_the_wrong_event_type_is_refused(self) -> None:
-        # The adversary showed a `task_started` event accepted as proof --
-        # ANY event type resolving to the right id used to pass. Only the
-        # recognized ownership roster (section_ownership_genesis,
-        # section_ownership_unowned, unowned_ratchet_updated) may witness a
-        # floor, even when the floor VALUE happens to match.
+        """Would break if the event-type roster check were deleted.
+
+        The adversary showed a `task_started` event accepted as proof -- ANY
+        event type resolving to the right id used to pass. Only the recognized
+        ownership roster may witness a floor, even when the floor VALUE agrees.
+
+        Round-6 finding 5: the earlier fixture carried no
+        `prior_unowned_byte_floor`, so deleting the type check merely moved the
+        refusal to the missing-prior guard and the test stayed green witnessing
+        nothing. The forged row is now valid through every OTHER guard -- real
+        genesis beneath it, coherent surface, matching sections digest, a legal
+        decrease direction, and a floor that agrees with the declaration -- so
+        the roster check is the only thing left that can refuse it.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = spans["alpha-section"] + spans["beta-section"]
+        self._seed_genesis_event("Doc.md", floor)
         ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
         ledger.append(
             LedgerEvent(
                 event="task_started",
                 id="wrong-type-event",
-                extra={"surface": "Doc.md", "new_unowned_byte_floor": 83},
+                extra={
+                    "surface": "Doc.md",
+                    "sections_digest": sections_digest(self._DEFAULT_FIXTURE_SECTIONS),
+                    "prior_unowned_byte_floor": floor,
+                    "new_unowned_byte_floor": floor,
+                },
             )
         )
         path = self._write_declaration(
-            {
-                "doc-title": "corpus-owned",
-                "alpha-section": "unowned",
-                "beta-section": "unowned",
-            },
-            unowned_byte_floor=83,
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=floor,
             floor_event_id="wrong-type-event",
         )
         with self.assertRaises(OwnershipLoadError) as ctx:
             load_declaration(path, _SIMPLE_SURFACE, self._root)
         message = str(ctx.exception)
         self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn(
+            "not a recognized section-ownership event",
+            message,
+            "the refusal must come from the ROSTER check, not from a guard "
+            "further down that an incomplete fixture happened to trip",
+        )
         self.assertIn("task_started", message)
 
     @covers("REQ-0.35.0-04-02")
@@ -706,10 +725,18 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
 
     @covers("REQ-0.35.0-04-02")
     def test_hand_edited_floor_with_nulled_event_id_still_fails_closed(self) -> None:
-        # Closing the loophole the chain check alone would leave open: an
-        # attacker who hand-raises the floor AND nulls floor_event_id must
-        # still be caught -- a null floor_event_id is refused outright now,
-        # there is no genesis branch left for it to hide behind.
+        """Would break if the null-floor_event_id refusal were deleted.
+
+        Closing the loophole the chain check alone would leave open: an
+        attacker who hand-raises the floor AND nulls floor_event_id must still
+        be caught -- a null floor_event_id is refused outright, with no genesis
+        branch left for it to hide behind.
+
+        Round-6 finding 5: the assertion used to be `REQ-0.35.0-04-02 in
+        message`, which EVERY guard in this loader emits, so deleting the null
+        refusal left the test green on a different guard's message entirely.
+        The assertion now names the null branch specifically.
+        """
         path = self._seed_attested_declaration()
         raw = json.loads(path.read_text(encoding="utf-8"))
         raw["unowned_byte_floor"] = raw["unowned_byte_floor"] + 1
@@ -718,7 +745,15 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
 
         with self.assertRaises(OwnershipLoadError) as ctx:
             load_declaration(path, _SIMPLE_SURFACE, self._root)
-        self.assertIn("REQ-0.35.0-04-02", str(ctx.exception))
+        message = str(ctx.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn(
+            "declares floor_event_id null",
+            message,
+            "a null pointer must be refused AS a null pointer -- every guard in "
+            "this loader cites REQ-0.35.0-04-02, so citing it proves nothing "
+            "about WHICH guard fired",
+        )
 
     @covers("REQ-0.35.0-04-02")
     def test_floor_event_id_naming_a_nonexistent_event_fails_closed(self) -> None:
@@ -738,6 +773,19 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
 
     @covers("REQ-0.35.0-04-02")
     def test_floor_event_id_naming_an_event_with_a_disagreeing_floor_fails_closed(self) -> None:
+        """Would break if the stored-floor/event-floor equality check were deleted.
+
+        Round-6 finding 5: the earlier fixture recorded `0 -> 999` on an
+        `unowned_ratchet_updated` row, which is an illegal RAISE on the
+        decrease-only path -- so deleting the equality check simply moved the
+        refusal to the direction guard and the test stayed green. The row is
+        now a LEGAL decrease (`floor -> floor - 1`) seated on a real genesis
+        with a matching sections digest, so the only thing wrong with it is
+        that the declaration claims a floor the event does not record.
+        """
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = spans["alpha-section"] + spans["beta-section"]
+        genesis = self._seed_genesis_event("Doc.md", floor)
         ledger = Ledger(self._root / ".gzkit" / "ledger.jsonl")
         ledger.append(
             LedgerEvent(
@@ -745,25 +793,29 @@ class TestLoadDeclarationChainValidation(_DeclarationFixtureMixin, unittest.Test
                 id="unowned-ratchet-updated-Doc.md-mismatch",
                 extra={
                     "surface": "Doc.md",
-                    "prior_unowned_byte_floor": 0,
-                    "new_unowned_byte_floor": 999,
+                    "sections_digest": sections_digest(self._DEFAULT_FIXTURE_SECTIONS),
+                    "parent_event_id": genesis,
+                    "prior_unowned_byte_floor": floor,
+                    "new_unowned_byte_floor": floor - 1,
                 },
             )
         )
         path = self._write_declaration(
-            {
-                "doc-title": "corpus-owned",
-                "alpha-section": "unowned",
-                "beta-section": "unowned",
-            },
-            unowned_byte_floor=83,
+            self._DEFAULT_FIXTURE_SECTIONS,
+            unowned_byte_floor=floor,
             floor_event_id="unowned-ratchet-updated-Doc.md-mismatch",
         )
         with self.assertRaises(OwnershipLoadError) as ctx:
             load_declaration(path, _SIMPLE_SURFACE, self._root)
         message = str(ctx.exception)
         self.assertIn("REQ-0.35.0-04-02", message)
-        self.assertIn("999", message)
+        self.assertIn(
+            "resolves to a ledger event recording",
+            message,
+            "the refusal must come from the floor-EQUALITY check, not from the "
+            "direction guard an illegal fixture direction would have tripped",
+        )
+        self.assertIn(str(floor - 1), message)
 
 
 class TestOwnershipDeclarationModel(unittest.TestCase):
@@ -2090,7 +2142,7 @@ class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittes
         self._seed_genesis_event("Doc.md", spans["alpha-section"])
         raised = spans["alpha-section"] + spans["beta-section"]
         witness = self._seed_unowned_event(
-            "Doc.md", 0, raised, event_id="no-prior", omit_prior=True
+            "Doc.md", 0, raised, event_id="omitted-predecessor-floor", omit_prior=True
         )
 
         path = self._write_declaration(
@@ -2100,7 +2152,16 @@ class TestWitnessMustBeChainedToItsPredecessor(_DeclarationFixtureMixin, unittes
         )
         with self.assertRaises(OwnershipLoadError) as caught:
             load_declaration(path, _SIMPLE_SURFACE, self._root)
-        self.assertIn("prior", str(caught.exception).lower())
+        message = str(caught.exception)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        self.assertIn(
+            "recording NO prior_unowned_byte_floor",
+            message,
+            "the refusal must name the MISSING-PRIOR branch. The former\n"
+            "assertion was `assertIn('prior', message.lower())`, which the\n"
+            "fixture satisfied through its OWN event id 'no-prior' -- the\n"
+            "test could not fail for the wrong-guard reason (round-6 finding 5).",
+        )
 
     @covers("REQ-0.35.0-04-02")
     def test_a_reanchor_row_witnesses_a_migrated_floor(self) -> None:

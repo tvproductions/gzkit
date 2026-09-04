@@ -558,11 +558,17 @@ def _commit_transition(path: Path, journal_path: Path, root: Path, record: dict[
     except OSError as exc:
         print(
             f"Error journalling the un-owning of {record['section']!r}: "
-            f"cannot write {journal_path.as_posix()!r}: {exc}. Nothing written.\n"
+            f"cannot write {journal_path.as_posix()!r}: {exc}.\n"
             "Why forbidden: the pending transition is recorded before either "
             "store is touched so an interrupted raise can be completed rather "
-            "than left unrecoverable (REQ-0.35.0-04-02).\n"
-            "  Check file/directory permissions and disk space, then retry.",
+            "than left unrecoverable (REQ-0.35.0-04-02). The ownership "
+            "declaration and the ledger are BOTH unchanged -- but this write is "
+            "not provably all-or-nothing: the durability barrier runs after the "
+            "atomic swap, so the journal file itself may or may not have "
+            "landed.\n"
+            "  Check file/directory permissions and disk space, then retry the "
+            "same command; a journal that did land is re-validated against the "
+            "declaration on disk before it is replayed.",
             file=sys.stderr,
         )
         sys.exit(2)
@@ -625,6 +631,68 @@ def _commit_transition(path: Path, journal_path: Path, root: Path, record: dict[
         journal_path.unlink()
 
 
+def _read_surface_or_exit(surface_path: Path, surface: str) -> str:
+    """Read the surface, or exit 1 in governed prose. Called INSIDE the lock.
+
+    `UnicodeDecodeError` is caught alongside `OSError` because it is a
+    `ValueError`, not an `OSError`: an ordinary non-UTF-8 byte -- a bad paste,
+    a mis-set editor encoding, a truncated multi-byte sequence -- otherwise
+    escaped every governed failure path and surfaced as a bare
+    `Unexpected error: 'utf-8' codec can't decode byte 0xff...` with no
+    what/why/next-step (Step-4b round-6 finding 6). Nothing is written on
+    either branch: this runs before the declaration is even loaded.
+    """
+    try:
+        return surface_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        print(
+            f"Error: cannot read surface {surface_path.as_posix()!r}: {exc}.\n"
+            "Why forbidden: un-owning a section requires re-measuring its byte span "
+            "against the live surface (REQ-0.35.0-04-05); nothing written.\n"
+            f"  Verify {surface!r} exists at the project root and is UTF-8 encoded, "
+            "then retry.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def _refuse_surface_changed_under_us(
+    surface_path: Path, surface: str, section: str, measured_text: str
+) -> None:
+    """Refuse and exit 1 if the surface changed since it was measured.
+
+    The declaration lock serializes `gz` processes against each other; it does
+    NOT stop an editor writing the surface mid-transition. Every value about to
+    be committed -- the measured span, the new floor, the sections map digest --
+    derives from `measured_text`, so a surface that moved under us would be
+    witnessed at a span it no longer has. Re-reading once more immediately
+    before the journal is written closes the window to the width of this check
+    rather than the width of the whole critical section, and refusing is safe:
+    neither store has been touched yet, and the operator simply retries.
+    """
+    try:
+        current = surface_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        current = None
+        detail = f"it could not be re-read ({exc})"
+    else:
+        if current == measured_text:
+            return
+        detail = "its bytes changed"
+    del current
+    print(
+        f"Error: surface {surface!r} changed while un-owning section {section!r}: "
+        f"{detail}.\n"
+        "Why forbidden: the floor about to be witnessed was measured against the "
+        "surface as it was read; committing it now would record a byte span the "
+        "surface no longer has, and `load_declaration` fails closed on a floor "
+        "the live surface exceeds (REQ-0.35.0-04-05). Nothing written.\n"
+        "  Let the surface settle, then retry the same command.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
 def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str) -> None:
     """Handle ``gz content unown <surface> --section <id> --attestor <n> --reason <t>``.
 
@@ -636,17 +704,6 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
 
     root = get_project_root()
     surface_path = root / surface
-    try:
-        surface_text = surface_path.read_text(encoding="utf-8")
-    except OSError as exc:
-        print(
-            f"Error: cannot read surface {surface_path.as_posix()!r}: {exc}.\n"
-            "Why forbidden: un-owning a section requires re-measuring its byte span "
-            "against the live surface (REQ-0.35.0-04-05); nothing written.\n"
-            f"  Verify {surface!r} exists at the project root, then retry.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     path = declaration_path(root, surface)
     journal_path = declaration_journal_path(root, surface)
@@ -658,7 +715,18 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
     # floor raise that was silently discarded, on the one governed path that
     # may raise the ratchet at all. The declaration is re-read INSIDE the lock:
     # any value read before acquiring is stale by construction.
+    #
+    # The SURFACE is read here too, for the same reason and by the same rule.
+    # It used to be read at the top of the handler, and that snapshot then fed
+    # span arithmetic, replay validation and the committed declaration -- so an
+    # ordinary editor save between the read and the lock made the command
+    # witness a span the surface no longer had, exit 0, and leave a declaration
+    # `load_declaration` rejects (Step-4b round-6 finding 3). The lock excludes
+    # other `gz` processes; it excludes no editor, so acquiring it is necessary
+    # but not sufficient -- `_refuse_surface_changed_under_us` below re-reads
+    # once more before either store is touched.
     with exclusive_declaration_lock(path):
+        surface_text = _read_surface_or_exit(surface_path, surface)
         recovered = _replay_pending_transition(root, path, journal_path, surface_text)
         if recovered is not None and recovered["section"] == section:
             print(
@@ -731,6 +799,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
         # have changed.
         record["declaration_json"] = new_declaration.model_dump_json(indent=2) + "\n"
 
+        _refuse_surface_changed_under_us(surface_path, surface, section, surface_text)
         _commit_transition(path, journal_path, root, record)
 
     print(

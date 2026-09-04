@@ -24,6 +24,7 @@ from gzkit.commands.content.unown import _mint_event_id, content_unown_cmd
 from gzkit.content.ownership import (
     OwnershipDeclaration,
     OwnershipLoadError,
+    exclusive_declaration_lock,
     load_declaration,
     measure_section_spans,
     sections_digest,
@@ -419,9 +420,15 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
             # `write_declaration_atomically` writes the JOURNAL first and the
             # DECLARATION second, and both sync the same parent directory. Fail
             # only the second directory sync, so the journal lands intact and the
-            # fault is isolated to the post-swap window on the declaration --
-            # failing the first would merely test the journalling branch, where
-            # "Nothing written" is entirely true.
+            # fault is isolated to the post-swap window on the declaration.
+            #
+            # This comment used to add that "failing the first would merely test
+            # the journalling branch, where 'Nothing written' is entirely true."
+            # That was WRONG, and Step-4b round-6 finding 4 proved it: the
+            # journal's own directory sync also runs after its rename, so the
+            # journal may already be on disk when it fails. The first-sync case
+            # is now covered by
+            # `TestContentUnownJournalFailureProseIsHonest`.
             directory_syncs = 0
 
             def fail_second_directory_fsync(fd: int) -> None:
@@ -1325,3 +1332,221 @@ class TestAlreadyLandedReplayBindsTheLandedMap(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestContentUnownReadsTheSurfaceInsideTheLock(unittest.TestCase):
+    """Step-4b round-6 findings 3, 4 and 6 — the critical section must own the READ.
+
+    The declaration was already re-read inside `exclusive_declaration_lock`
+    ("any value read before acquiring is stale by construction"), but the
+    SURFACE was not: it was read once at the top of the handler and that
+    snapshot was then used for span arithmetic, replay validation and the
+    committed declaration. The lock excludes other `gz` processes; it excludes
+    no editor at all, so an ordinary save in that window made the command
+    witness a span the surface no longer had.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_surface_edited_on_lock_entry_is_refused_not_committed_stale(self) -> None:
+        """Would break if the surface snapshot were taken before the lock.
+
+        Round-6 finding 3, `[high]`. An editor grows the target section between
+        the handler's read and the lock. Measured on the unfixed tree:
+        `command_exit=0` with a success line claiming the floor rose 26 -> 83,
+        `journal_exists=False`, and a declaration the canonical loader then
+        REJECTED because the summed span (484) exceeded the witnessed floor.
+
+        The assertion is exit 0 with the floor of the GROWN surface, and that
+        strictness is what makes this test witness THIS guard rather than its
+        backstop. An earlier draft accepted "either it succeeds correctly or it
+        refuses"; that draft SURVIVED reverting the read to outside the lock,
+        because `_refuse_surface_changed_under_us` then refused and the
+        permissive branch accepted the refusal. A test that accepts both
+        outcomes of the fix it names witnesses neither -- the round-6 finding-5
+        shape, reproduced in this OBPI's own new test and caught by mutating
+        the guard, never by the suite going green.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+            real_lock = exclusive_declaration_lock
+            grown = _SURFACE_TEXT.replace(
+                "alpha body line two\n",
+                "alpha body line two\n" + "alpha body grown by an editor\n" * 12,
+            )
+
+            @contextlib.contextmanager
+            def grow_surface_on_entry(path):
+                # The edit lands AFTER the handler's read and BEFORE the body of
+                # the critical section runs -- exactly the window an editor save
+                # occupies. Nothing here touches `.gzkit/`.
+                with real_lock(path) as handle:
+                    Path("Doc.md").write_text(grown, encoding="utf-8")
+                    yield handle
+
+            with patch(
+                "gzkit.commands.content.unown.exclusive_declaration_lock",
+                grow_surface_on_entry,
+            ):
+                result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(
+                result.exit_code,
+                0,
+                "an edit landing BEFORE the read must be MEASURED, not refused: "
+                f"the read is inside the lock. {result.output}",
+            )
+            spans = measure_section_spans(grown)
+            expected = spans["beta-section"] + spans["alpha-section"]
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                expected,
+                "a successful raise must witness the span the surface actually has",
+            )
+            self.assertNotEqual(
+                declaration["unowned_byte_floor"],
+                _SEED_FLOOR + measure_section_spans(_SURFACE_TEXT)["alpha-section"],
+                "witnessing the PRE-edit span is the defect this test exists for",
+            )
+            # The canonical loader is the arbiter: exit 0 must mean loadable.
+            load_declaration(_DECLARATION_PATH, grown, Path("."))
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_non_utf8_surface_is_refused_in_governed_prose_not_a_traceback(self) -> None:
+        """Would break if the surface read caught only OSError.
+
+        Round-6 finding 6, `[low]`. `read_text` raises `UnicodeDecodeError` --
+        a `ValueError`, NOT an `OSError` -- so ordinary encoding corruption
+        escaped the three-part fail-closed prose and surfaced as
+        `Unexpected error: 'utf-8' codec can't decode byte 0xff...`. The
+        declaration was left unchanged, so this is prose quality, not
+        corruption; the governed path must still explain itself.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            Path("Doc.md").write_bytes(b"# Doc\n\xff\xfe not utf-8\n")
+
+            result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertNotIn("Unexpected error", result.output)
+            self.assertIn("Why forbidden:", result.output)
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(declaration["unowned_byte_floor"], _SEED_FLOOR)
+
+    @covers("REQ-0.35.0-04-05")
+    def test_a_surface_edited_after_measurement_is_refused_before_either_store(self) -> None:
+        """Would break if `_refuse_surface_changed_under_us` were deleted.
+
+        Reading the surface inside the lock closes the lock-ENTRY window; it
+        does not close the window between the measurement and the journal
+        write, because the lock excludes `gz` processes and an editor is not
+        one. This injects the save at `_mint_event_id` -- after the span has
+        been measured and the new floor computed, before anything is written --
+        which is the residue the read-inside-the-lock fix leaves behind.
+
+        The sibling test above CANNOT witness this guard: its edit lands before
+        the read, so the command measures the grown surface and is correct with
+        no re-check at all. Two windows, two guards, two tests.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            grown = _SURFACE_TEXT.replace(
+                "alpha body line two\n",
+                "alpha body line two\n" + "alpha body grown by an editor\n" * 12,
+            )
+            real_mint = unown_module._mint_event_id
+
+            def grow_surface_then_mint(record, parent_event_id):
+                Path("Doc.md").write_text(grown, encoding="utf-8")
+                return real_mint(record, parent_event_id)
+
+            with patch.object(unown_module, "_mint_event_id", grow_surface_then_mint):
+                result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 1, msg=result.output)
+            self.assertIn("changed while un-owning", result.output)
+            self.assertIn("Why forbidden:", result.output)
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                _SEED_FLOOR,
+                "neither store may be touched when the surface moved under us",
+            )
+            self.assertEqual(
+                [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"],
+                [],
+            )
+            self.assertFalse(
+                (_DECLARATION_PATH.parent / "Doc.md.json.journal").exists(),
+                "the refusal precedes the journal write, so no residue is left",
+            )
+
+
+class TestContentUnownJournalFailureProseIsHonest(unittest.TestCase):
+    """Step-4b round-6 finding 4 — the journal branch inherited a false premise."""
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_post_rename_journal_fsync_failure_does_not_claim_nothing_written(self) -> None:
+        """Would break if the journal handler kept its unconditional "Nothing written."
+
+        Round-6 finding 4, `[medium]`. `write_declaration_atomically` syncs the
+        parent DIRECTORY after `os.replace`, so an `OSError` from that sync
+        means the journal file may ALREADY be on disk. The declaration branch
+        learned this at round 3 and tells the truth; the journal branch kept
+        asserting "Nothing written." The stores really are unchanged here --
+        the lie is about the JOURNAL, and a false account of the failure
+        boundary is what sent round-3's operator down the wrong recovery.
+
+        Failing the FIRST directory fsync isolates the journal's own post-rename
+        window -- the exact case the sibling test at
+        `test_a_post_swap_durability_failure_keeps_the_journal_and_says_so`
+        wrongly documented as one where "Nothing written" is entirely true.
+        """
+        import stat as _stat
+
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            real_fsync = os.fsync
+            directory_syncs = 0
+
+            def fail_first_directory_fsync(fd: int) -> None:
+                nonlocal directory_syncs
+                if _stat.S_ISDIR(os.fstat(fd).st_mode):
+                    directory_syncs += 1
+                    if directory_syncs == 1:
+                        raise OSError(5, "Input/output error")
+                    return None
+                return real_fsync(fd)
+
+            with patch("gzkit.content.ownership.os.fsync", side_effect=fail_first_directory_fsync):
+                result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertNotIn(
+                "Nothing written",
+                result.output,
+                "the journal rename may already have landed when its directory "
+                "sync failed; the command must not assert a premise it cannot know",
+            )
+            declaration = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(
+                declaration["unowned_byte_floor"],
+                _SEED_FLOOR,
+                "the declaration and ledger genuinely ARE unchanged on this branch",
+            )
+            self.assertEqual(
+                [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"],
+                [],
+            )

@@ -425,10 +425,22 @@ lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED (round 5, the STANDING verdict). Receipt
-`arb-step-codexadversary-93c85d5b7ab44fcf8bd2ea90d6495fd3`, `exit_status: 0`, no cut-off
-markers. All five findings are now DISCHARGED, so this refutation no longer stands against
-the current tree — a ROUND 6 is required before attestation. Do NOT complete against round 5.**
+**Verdict: REFUTED (round 6, the STANDING verdict). Receipt
+`arb-step-codexadversary-a73a8257b2bf4b72bcff42b19e09792c`, `exit_status: 0`, 16.1 min,
+commit `84d6eb85`; the log was grepped for `Turn failed` / `Codex error` /
+`flagged for possible` / content-filter markers and carries none.** Round 6 returned two
+critical, one high, two medium and one low finding, ALL in scope. The four findings inside
+this brief's allowlist are FIXED with mutation-verified tests. The two criticals are NOT
+fixed here: both root in `Ledger.append`, which this brief's § Denied Paths declares
+read-only, and both are ROUTED OUT to **GHI #953** on the precedent set when round-4
+finding 3 was routed to GHI #952.
+
+**This completion is therefore made WITH THE REFUTATION RECORDED, never dressed as clean.**
+The claim in § Threat Model is amended below to be bounded by the ledger's transaction
+semantics, because round 6 proved the unamended claim FALSE within this brief's own scope:
+a crash leaving a truncated final ledger row does leave the ownership state unrecoverable.
+Recording the refutation and amending the claim is the honest disposition; completing
+against the old claim would have asserted something a tier-1 adversary disproved.
 
 **A CONVERGENCE RULE NOW GOVERNS THIS GATE (operator ruling 2026-09-03).** Step 4b converges
 when a round returns NO critical and NO high findings; medium and below are disclosed in
@@ -612,6 +624,62 @@ a forged map flipping an already-`unowned` section so the two maps were identica
 produced PASSING tests that witnessed nothing; both were caught only by asking why a test
 passed without its fix. Round 5 was told to hunt for that shape and found no more.
 
+#### Round 6 — the first BOUNDED round, and the one that converged the process (not the claim)
+
+Dispatched with the prompt committed at § Step 4b — the BOUNDED round-6 prompt, verbatim.
+One dispatch parameter differed from rounds 1-5 and the difference was load-bearing:
+those rounds ran `--scope working-tree` against a DIRTY tree, and the tree is now clean, so
+working-tree would have shown the adversary nothing. Proven accidentally before dispatch —
+a stray probe reviewed the empty diff and returned *"Verdict: approve / No material
+findings"* on no code at all, which is exactly the vacuous-clean receipt this gate must
+never accept. Round 6 ran `--scope branch --base 5108d7cf`, presenting this session's three
+ownership fixes including `6a4ab55d`, the round-5 discharge no adversary round had seen.
+
+**The threat model worked.** Zero out-of-scope findings; no escalation to ledger forgery,
+hand-edited declarations or hand-written journals. Every reproduction below was reached
+without any write access to `.gzkit/`. That is the first round of six where the adversary's
+effort landed entirely inside the boundary the operator accepted.
+
+**The convergence rule was applied, not re-litigated.** Two criticals and a high mean NOT
+converged, so this round did not close the gate on its own terms. The *Weakest point* named
+a NEW root — *"declaration locking is mistaken for transaction isolation even though the
+command consumes an unlocked surface snapshot and mutates a shared ledger"* — not a
+re-surfacing of rounds 1-5's chaining root, so the same-root escalation rule did not fire.
+What fired instead is the allowlist: the criticals live in a module this brief may not edit.
+
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | critical | "A failed append can erase another surface's successful witness." Different surfaces take different declaration locks, but `_append_event_once` appends the SHARED ledger with no ledger-wide lock. `thread_A=OSError: injected partial write`, `thread_B=success`, `event_B_present=False`, `final_bytes='SEED\n'` — A's rollback truncation deleted B's committed row after B reported success. | **ROUTED OUT to GHI #953.** Roots in `Ledger.append`; § Denied Paths declares `src/gzkit/ledger.py` read-only, it is a registered `ledger_integrity` security surface, and the gap belongs to every event producer in the repo. Adversary's own framing: *"The critical fixes require a shared ledger transaction boundary, not another declaration-local guard."* |
+| 2 | critical | "A crash leaving a truncated final ledger row makes journal recovery loop forever." `latest_event` raises `JSONDecodeError`; `_replay_pending_transition` catches only `OSError`. `retry_exit=1`, `second_retry_exit=1`, `journal_after_retries=True` — every retry dies before the intact journal can restore the witness. Required no hand-written row: the probe injected a crash inside `Ledger.append`. | **ROUTED OUT to GHI #953**, same module and same reasoning. This is the finding that makes the unamended claim false in scope, so the claim is amended rather than the finding minimised. |
+| 3 | high | "The command can exit 0 using a stale surface snapshot and leave an unloadable declaration." The surface was read BEFORE the lock. `command_exit=0` with a success line claiming 26 -> 83, `journal_exists=False`, then `post_command_loader=REJECTED` because the summed span 484 exceeded the witnessed floor. | **FIXED.** The surface is now read INSIDE the lock, and `_refuse_surface_changed_under_us` re-reads once more before the journal is written — two windows, two guards. Both are mutation-verified: reverting the read to outside the lock kills `test_a_surface_edited_on_lock_entry_is_refused_not_committed_stale`; deleting the re-check kills `test_a_surface_edited_after_measurement_is_refused_before_either_store`. |
+| 4 | medium | "Post-replace journal fsync failure falsely reports that nothing was written." `write_declaration_atomically` may raise from the directory fsync AFTER the journal rename landed, but the handler said `Nothing written.` unconditionally. | **FIXED.** The journal branch now says what the declaration branch has said since round 3: both stores are unchanged, but the journal itself may or may not have landed. The sibling test's comment asserting the opposite — that "Nothing written" is *"entirely true"* on this branch — was WRONG and is corrected in place. |
+| 5 | medium | "Four rejection tests survive deletion of the guard they claim to witness." Substitute reasons were, respectively, missing prior floor; illegal 0->999 direction; event-floor disagreement; predecessor mismatch. The last test's `assertIn('prior', ...)` was satisfied by its own fixture id `no-prior`. | **FIXED.** Every fixture is now valid through all guards EXCEPT the one under test, and every assertion names a branch-specific diagnostic instead of `REQ-0.35.0-04-02`, which every guard in the loader emits. Two of the four now kill their mutation with `OwnershipLoadError not raised` — the strongest signal available, meaning nothing else in the loader objects to the fixture. |
+| 6 | low | "A non-UTF-8 surface escapes the governed failure prose." `read_text` raises `UnicodeDecodeError`, a `ValueError`, so `except OSError` missed it: `exit=1 unchanged=True output=Unexpected error: 'utf-8' codec can't decode byte 0xff...`. | **FIXED.** `_read_surface_or_exit` catches both and emits the three-part what/why/next-step. Mutation-verified. |
+
+**Five vacuous fixtures now, not four — and one of them was written THIS round.** The
+first draft of `test_a_surface_edited_on_lock_entry_is_refused_not_committed_stale`
+accepted *either* a correct success *or* a refusal, and SURVIVED reverting the guard it
+named, because the second guard refused and the permissive branch accepted that refusal. It
+was caught by mutating the guard, never by the suite going green. The lesson round 6 taught
+about this OBPI's old tests applied immediately to its new ones; a test that accepts both
+outcomes of the fix it names witnesses neither.
+
+**Mutation verification, all eight guards touched this round** — each check deleted in
+isolation, its named test observed to FAIL, then restored (the harness asserts byte-identical
+restoration):
+
+```
+A_read_inside_lock         killed
+B_refuse_surface_changed   killed
+C_unicode_decode           killed
+D_journal_prose            killed
+roster_check               killed   (AssertionError: OwnershipLoadError not raised)
+floor_equality             killed   (AssertionError: OwnershipLoadError not raised)
+null_pointer               killed
+missing_prior              killed
+```
+
+
 ## Threat Model (binding for this OBPI's Step 4b)
 
 **This section exists because its absence cost roughly nine hours.** Step 4b ran five
@@ -633,6 +701,37 @@ Three findings were in this class and are FIXED: the post-swap `OSError` that de
 recovery journal while printing "Nothing written" (round-3 finding 3); the already-landed
 replay branch that completed having validated nothing (round-3 finding 4); and recovery
 consuming the journal while leaving a declaration the loader rejects (round-5 finding 3).
+Round 6 added three more, all FIXED: the stale surface snapshot committed under a success
+exit (finding 3), the journal branch's false "Nothing written" (finding 4), and the
+non-UTF-8 surface escaping governed prose (finding 6).
+
+#### AMENDMENT — the claim is bounded by the ledger's transaction semantics (2026-09-04)
+
+**Operator-ruled, on the round-6 evidence.** The claim this gate defends previously read
+that no ordinary failure *"can leave the ownership state unrecoverable, silently wrong, or
+reported as successful when it is not."* Round 6 proved that FALSE inside this brief's own
+scope: a crash leaving a truncated final ledger row makes every retry raise
+`JSONDecodeError` before the intact journal can restore the witness, so the transition
+becomes permanently uncompletable through the governed path. No special access was needed.
+
+The claim is therefore amended, and the amendment is a NARROWING, never a weakening:
+
+> Within the threat model above, **and given a ledger append that is atomic with respect to
+> concurrent writers and leaves no partial record on a crash**, a section-ownership floor
+> changes only through the governed `gz content unown` path, and no ordinary failure can
+> leave the ownership state unrecoverable, silently wrong, or reported as successful when
+> it is not.
+
+The italicised precondition is **not currently true** — that is the point of stating it.
+It is tracked at **GHI #953**, is a property of `src/gzkit/ledger.py` rather than of this
+brief's surfaces, and is shared by every event producer in the repo. Naming it as a
+precondition is what keeps this brief's attested claim honest: the ownership path holds up
+its end, and the end it depends on is disclosed rather than assumed.
+
+**What this amendment does NOT license.** It does not widen the residual to anything else,
+it does not weaken any guard landed in rounds 1-6, and it is not a precedent for amending
+a claim rather than fixing a defect — the two criticals are fixed *somewhere*, just not
+here, and GHI #953 is open with a blocker comment naming the operator's next action.
 
 ### Out of scope — DISCLOSED RESIDUAL, defended by auditability
 
@@ -717,6 +816,32 @@ Report NEW in-scope findings only, ranked by severity. The governing gate conver
 
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
+
+- **Ledger append has no transaction boundary across writers or crashes (round-6 adversary
+  findings 1 and 2, BOTH `[critical]`, ROUTED OUT to GHI #953 — operator-ruled 2026-09-04).**
+  Two distinct in-scope reproductions of one root. (a) CONCURRENT WRITERS: different
+  surfaces take different declaration locks, but `_append_event_once` reads and appends the
+  SHARED ledger with no ledger-wide lock, so a failing writer's rollback truncation deletes
+  a different writer's already-committed row — `thread_A=OSError: injected partial write`,
+  `thread_B=success`, `event_B_present=False`. B reported success and its declaration is
+  permanently unwitnessed with no journal left to replay. (b) CRASH RESIDUE: an interruption
+  leaving partial ledger bytes bypasses `Ledger.append`'s exception rollback; on retry
+  `latest_event` raises `JSONDecodeError` and `_replay_pending_transition` catches only
+  `OSError`, so recovery loops forever (`retry_exit=1`, `second_retry_exit=1`,
+  `journal_after_retries=True`). Neither required `.gzkit/` write access; (b) was reproduced
+  by injecting a crash inside `Ledger.append`.
+  NOT FIXED HERE, on the precedent GHI #952 set from this same brief: `src/gzkit/ledger.py`
+  is declared read-only in § Denied Paths, it is a registered `ledger_integrity` security
+  surface, and the defect belongs to every event producer in the repo rather than to the
+  ownership path that surfaced it. The adversary's own recommendation is a shared
+  transaction boundary, *"not another declaration-local guard"* — a fix of that shape cannot
+  land inside this allowlist without breaching it.
+  **This is the finding that forced § Threat Model's claim amendment.** Unlike #952, these
+  are criticals that falsify the unamended claim in scope, so the claim was narrowed to name
+  ledger atomicity as an explicit precondition rather than left asserting something a tier-1
+  adversary disproved. Tracked at GHI #953, cross-linked to #952 (neither should be designed
+  without the other: the fsync belongs inside the same critical section), open with a blocker
+  comment naming the operator's next concrete action.
 
 - **Ledger append is not crash-durable (round-4 adversary finding 3, `[high]`,
   ROUTED OUT to GHI #952 — operator-ruled 2026-09-03).**
