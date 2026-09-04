@@ -94,33 +94,57 @@ class TestAdversarialValidationGate(unittest.TestCase):
         with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
             _enforce(verdict="refuted", resolution=None)
 
-    def test_refuted_with_resolution_passes(self) -> None:
-        _enforce(verdict="refuted", resolution="membership assertions added; mutation now FAILS")
+    def test_refuted_with_a_resolution_still_blocks(self) -> None:
+        """Would break if a resolution string could still complete a refutation.
 
-    def test_refuted_with_caveats_without_resolution_blocks(self) -> None:
-        """Would break if the chokepoint matched only the bare `refuted` literal.
+        GHI #960, operator ruling verbatim: "refuted is an outcome, but it is an
+        input into if(4a && 4b) pass; else: loop". A refutation is a legitimate
+        OUTCOME of Step 4b; what it is not is a TERMINAL state. Completion is a
+        conjunction, and anything short of it loops back to Stage 2.
 
-        GHI #959. A caveat is a refutation the adversary named and did not withdraw,
-        so Step 4b's rule covers it in as many words -- "never hand the operator a
-        known caveat dressed as clean". The chokepoint tested `verdict == "refuted"`
-        while `obpi_precomplete._REFUTATION_VERDICTS` carried both, so the rule was
-        enforced only in the layer AGENTS.md calls "the bypassable pre-flight".
-        Measured at the fix: 13 of 13 completed refutations recorded no resolution,
-        and the 7 caveated ones were the arm still open.
+        The resolution field is specified to name "what was fixed and how the
+        adversary's own check was re-run" -- but if the adversary re-ran its check
+        and it passed, the verdict is `not-refuted`, not `refuted`. So a truthful
+        fully-discharged `refuted + resolution` is a contradiction: it records a
+        completion against a verdict describing a tree that no longer exists.
+        Binding the resolution to a receipt would only have proven that someone
+        typed a true sentence about a stale verdict.
         """
         with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
-            _enforce(verdict="refuted-with-caveats", resolution=None)
+            _enforce(verdict="refuted", resolution="membership assertions added; mutation FAILS")
 
-    def test_refuted_with_caveats_with_resolution_passes(self) -> None:
-        """The false-positive arm: a caveat that HAS a resolution must still clear.
+    def test_refuted_with_caveats_blocks_with_or_without_a_resolution(self) -> None:
+        """Would break if the caveated half were treated as a completing verdict.
 
-        A guard with no false-positive test can be tightened without any test
-        objecting -- the lesson round 7 of OBPI-0.35.0-04 paid for.
+        A caveat is a refutation the adversary named and did not withdraw (GHI
+        #959), so it takes the same loop exit as a bare refutation (GHI #960).
+        Both arms are asserted here because the resolution string is no longer
+        what distinguishes them -- neither completes.
         """
-        _enforce(
-            verdict="refuted-with-caveats",
-            resolution="regression test added for the injected-only path; adversary re-ran it",
-        )
+        for resolution in (None, "regression test added; adversary re-ran its own check"):
+            with (
+                self.subTest(resolution=resolution),
+                self.assertRaises(SystemExit),
+                contextlib.redirect_stdout(io.StringIO()),
+            ):
+                _enforce(verdict="refuted-with-caveats", resolution=resolution)
+
+    def test_refutation_block_says_it_loops_rather_than_that_the_verdict_is_invalid(
+        self,
+    ) -> None:
+        """Would break if the block read as "this verdict is rejected".
+
+        The message must send the work back round the loop, never imply the
+        verdict word is the problem. An agent told its verdict is invalid is
+        tempted to launder the WORD rather than run another round -- which is the
+        precise substitution Step 4b exists to catch.
+        """
+        buffer = io.StringIO()
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(buffer):
+            _enforce(verdict="refuted", resolution="fixed it", as_json=True)
+        error = json.loads(buffer.getvalue())["error"]
+        self.assertIn("Stage 2", error)
+        self.assertIn("not-refuted", error)
 
     def test_degraded_human_only_is_recordable(self) -> None:
         # The skill's degraded floor must be an explicit, attested value —

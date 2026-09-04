@@ -71,6 +71,8 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
 | "The adversary found something, so the OBPI cannot pass" | Only an IN-SCOPE critical or high blocks. Medium and below are disclosed in Tracked Defects or routed to a GHI. An attack the brief's Threat Model puts outside the boundary is not a finding to fix — say so plainly and do not act on it. |
+| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). If your fixes are real, a re-run returns `not-refuted` — go get that verdict. Completing on the refuted one records the completion against a tree that no longer exists. |
+| "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | **That is verdict laundering and it is the exact substitution Step 4b exists to catch.** The verdict word belongs to the round that ran, not to your assessment of it. `gz obpi precomplete` reads the brief's Step 4b section, so a completion disagreeing with the recorded standing verdict is detectable — and fabricating it is the GHI #643 failure with a different noun. Re-run the adversary. |
 
 ### The Plan-Mode Gate
 
@@ -864,6 +866,8 @@ catch.
 
 **Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator a known caveat dressed as clean. Present the adversary's verdict (and any fix) alongside Step 4a.
 
+**This is now MECHANICAL, not advice (GHI #960).** `gz obpi complete` refuses both refutation verdicts outright — a resolution string does not clear one — so *"return to Stage 2"* is the only path a refuted round has. Do not solicit attestation on a refuted round: the completion it is attesting cannot be recorded. Re-run first, then attest on the verdict that round returns.
+
 Wait for the human to respond "Accepted", "Completed", "attest completed", or equivalent. Do NOT proceed until attestation is received.
 
 Do NOT mark ceremony task `completed` until attestation is received.
@@ -965,17 +969,38 @@ the reconcile output and ADR status refresh.
    emitted BEFORE the completion receipt — so a receipt can never exist without the
    adversarial finding that gated it. Pass `--adversary-verdict` (one of `refuted` |
    `not-refuted` | `refuted-with-caveats` | `degraded-human-only`) and `--adversary`
-   (the vendor/model, or `human` in degraded mode). **Either refutation verdict —
-   `refuted` OR `refuted-with-caveats` — additionally requires `--adversary-resolution`
-   naming what was fixed and how the adversary's own check was re-run** (GHI #959);
-   never hand the operator a known refutation dressed as clean. A CAVEAT is a
-   refutation the adversary named and did not withdraw, so it carries the same
-   obligation: this gate tested the bare `refuted` literal until 2026-09-04, and the
-   caveated half cleared the chokepoint with nothing recorded. Measured at the fix,
-   **13 of 13** completed refutations in `.gzkit/ledger.jsonl` carried NO resolution —
-   three of them shipping while their own verdict named live blockers (*"the mandatory
-   full check is red"*, *"REQ-0.35.0-09-11 was categorically false"*). Prevalence was
-   never precedent; it was the size of the hole.
+   (the vendor/model, or `human` in degraded mode).
+
+   > ### 🛑 A REFUTATION LOOPS — IT NEVER COMPLETES (GHI #960)
+   >
+   > Operator ruling 2026-09-04, verbatim: ***"refuted is an outcome, but it is an input
+   > into if(4a && 4b) pass; else: loop"***. Completion is a CONJUNCTION. A `refuted` or
+   > `refuted-with-caveats` verdict is a legitimate Step-4b outcome and is **not** the
+   > problem — but `gz obpi complete` refuses it **whether or not** a resolution is
+   > supplied, and the OBPI returns to Stage 2.
+   >
+   > **Two exits, both ending in a non-refuting verdict:**
+   > 1. **FIX** the refuted claim, then re-run the adversary.
+   > 2. **BOUND** it — route an out-of-scope finding to a GHI and declare the boundary in
+   >    the brief's `## Threat Model`, then re-run. (This is the mechanism OBPI-0.35.0-04
+   >    built at round 6 for the #952/#953 ledger-atomicity case.)
+   >
+   > Then complete on the verdict THAT round returns, citing the earlier rounds in
+   > `--adversary-resolution` as the record of what was found and discharged.
+   >
+   > **Never relabel a round's verdict to get past the block.** The brief's Step 4b
+   > section is read by `gz obpi precomplete`, so a completion disagreeing with it is the
+   > exact substitution this gate exists to catch.
+   >
+   > **Why a resolution string is not enough.** It is specified to name *"what was fixed
+   > and how the adversary's own check was re-run"* — but if the adversary re-ran its check
+   > and it passed, the verdict is `not-refuted`. A truthful, fully-discharged
+   > `refuted + resolution` is a contradiction: a completion recorded against a verdict
+   > describing a tree that no longer exists. Measured 2026-09-04: **13 of 13** completed
+   > refutations in `.gzkit/ledger.jsonl` carried NO resolution at all, and three shipped
+   > while their own verdict named live blockers (*"the mandatory full check is red"*,
+   > *"REQ-0.35.0-09-11 was categorically false"*, *"three real defects the green Stage-3
+   > evidence missed"*). Prevalence was never precedent; it was the size of the hole.
 
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \

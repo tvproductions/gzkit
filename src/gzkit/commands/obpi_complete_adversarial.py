@@ -52,20 +52,29 @@ ADVERSARY_VERDICTS: tuple[str, ...] = (
     "degraded-human-only",
 )
 
-# The verdicts that must never read as clean, and therefore may never complete
-# without a recorded resolution (GHI #959). A caveat is a refutation the adversary
-# NAMED and did not withdraw, so Step 4b's rule covers it in as many words: "never
-# hand the operator a known caveat dressed as clean." This gate previously tested
-# the bare `refuted` literal, so the caveated half of the same class cleared the
-# chokepoint with nothing recorded — measured at the fix, 13 of 13 completed
-# refutations carried no resolution, and the 7 caveated ones were the arm still open.
+# The verdicts that LOOP rather than complete (GHI #960). Operator ruling 2026-09-04,
+# verbatim: "refuted is an outcome, but it is an input into if(4a && 4b) pass; else:
+# loop". A refutation is a legitimate OUTCOME of Step 4b — these members stay in
+# `ADVERSARY_VERDICTS` and in the ledger schema, and 13 historical rows carry them —
+# what it is not is a TERMINAL state.
+#
+# The escape hatch this closes was a resolution STRING (GHI #959 made it mandatory;
+# this makes it insufficient). The field is specified to name "what was fixed and how
+# the adversary's own check was re-run" — but if the adversary re-ran its check and it
+# passed, the verdict is `not-refuted`. So a truthful, fully-discharged
+# `refuted + resolution` is a contradiction: a completion recorded against a verdict
+# describing a tree that no longer exists. Binding it to a receipt (the #765/#780
+# proven-vs-declared remedy for the TIER claim) was considered and rejected: it would
+# prove someone typed a true sentence about a stale verdict, instrumenting the hatch
+# instead of removing it.
+#
+# A caveat takes the same exit: it is a refutation the adversary NAMED and did not
+# withdraw ("never hand the operator a known caveat dressed as clean").
 #
 # It lives HERE, beside the vocabulary it subsets, because the chokepoint owns the
 # vocabulary and `obpi_precomplete` already imports `ADVERSARY_VERDICTS` rather than
 # restating it — "a vocabulary maintained in two places is the two-copies-one-binds
-# failure this repository keeps paying for" (that module's own words). The pre-flight
-# had the correct membership while the fail-closed layer had a narrower one, which is
-# the same two-copies defect wearing the shape of a doctrine gap.
+# failure this repository keeps paying for" (that module's own words).
 REFUTATION_VERDICTS: frozenset[str] = frozenset({"refuted", "refuted-with-caveats"})
 
 # Step-4b tier order (GHI #678). Codex (a different vendor) is REQUIRED first
@@ -332,14 +341,20 @@ def _enforce_adversarial_validation(
             obpi_id=obpi_id,
         )
 
-    if verdict in REFUTATION_VERDICTS and not resolution:
+    if verdict in REFUTATION_VERDICTS:
         _fail(
-            f"Completion blocked: the adversary returned '{verdict}' for {obpi_id} and no "
-            "resolution is recorded. A known refutation must never be handed to the "
-            "operator dressed as clean, and a CAVEAT is a refutation the adversary named "
-            "and did not withdraw. Fix the refuted claim, re-verify against the "
-            "adversary's own check, then re-run with --adversary-resolution '<what was "
-            "fixed and how the adversary's check was re-run>'.",
+            f"Completion blocked: Step 4b returned '{verdict}' for {obpi_id}, so this OBPI "
+            "LOOPS rather than completes. The verdict itself is a legitimate outcome and is "
+            "not the problem — completion is a conjunction, and 4a passing while 4b refutes "
+            "is the case that sends the work back to Stage 2. Two exits, both ending in a "
+            "non-refuting verdict: FIX the refuted claim and re-run the adversary, or BOUND "
+            "it — route an out-of-scope finding to a GHI and declare the boundary in the "
+            "brief's '## Threat Model', then re-run. Complete on the verdict that round "
+            "returns (--adversary-verdict not-refuted), citing the earlier rounds in "
+            "--adversary-resolution as the record of what was found and discharged. Do NOT "
+            "relabel this round's verdict to get past this message: the brief's Step 4b "
+            "section is read by `gz obpi precomplete`, and a completion disagreeing with it "
+            "is the substitution this gate exists to catch.",
             exit_code=1,
             as_json=as_json,
             obpi_id=obpi_id,
