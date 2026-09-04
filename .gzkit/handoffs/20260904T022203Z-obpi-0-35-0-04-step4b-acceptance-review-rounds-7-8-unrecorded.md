@@ -2,7 +2,7 @@
 mode: CREATE
 adr_id: ADR-0.35.0
 branch: main
-timestamp: '2026-09-04T02:18:01Z'
+timestamp: '2026-09-04T02:22:03Z'
 agent: claude-code
 obpi_id: OBPI-0.35.0-04-section-ownership-and-ratchet
 session_id: ef2cd5ce-6004-43db-a478-3c65982871c5
@@ -11,11 +11,11 @@ continues_from: 20260903T112226Z-obpi-0-35-0-04-threat-model-declared-bounded-ro
 
 ## Current State Summary
 
-OBPI-0.35.0-04 is BLOCKED at 10 of 11 preconditions, solely on `adversarial_validation`. Tree clean, HEAD `a90a8d14`, SIX UNPUSHED COMMITS on main. 9295 tests exit 0; ruff, typecheck, xenon, `--documents --brief-reconcile --ledger --req-kind-discipline` and `--waiver-ratchet` all exit 0. Lock claimed 2026-09-04T01:05:41Z, TTL 1440m.
+OBPI-0.35.0-04 is BLOCKED at 10 of 11 preconditions, solely on `adversarial_validation`. Tree clean, HEAD `efb66044`, EIGHT UNPUSHED COMMITS on main. 9295 tests exit 0; ruff, typecheck, xenon, `--documents --brief-reconcile --ledger --req-kind-discipline` and `--waiver-ratchet` all exit 0. Lock claimed 2026-09-04T01:05:41Z, TTL 1440m.
 
 THREE ADVERSARY ROUNDS RAN THIS SESSION (6, 7, 8). All three returned REFUTED / NOT-CORROBORATED, and every finding inside this brief's allowlist is FIXED with mutation-verified tests. The standing Step-4b verdict is ROUND 8: `arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, exit_status 0, `CORROBORATION: NOT-CORROBORATED`.
 
-THE SESSION'S DURABLE PRODUCT IS THE STEP-4b CORRECTION, NOT THE CODE. Rounds 1-6 were prompted with "your job is to REFUTE a correctness claim, not to confirm it" — wording taken verbatim from the pipeline skill's own Dispatch contract. The operator ruled that inverted: a second independent model is there to CONFIRM the first model's implementation is correct. Traced to `d1848af1` (2026-06-24), a `gz git-sync` chore of 34 files and 3220 insertions that authored the entire Step-4b design without a design commit; GHI #643, the cited authority, uses the word "refute" zero times. Corrected across three commits.
+THE SESSION'S DURABLE PRODUCT IS THE STEP-4b CORRECTION, NOT THE CODE, and its final form is an OPERATOR-SUPPLIED FORMULATION seated at `efb66044` — Purpose: independently corroborate correctness. Method: adversarially attempt to falsify it. Boundary: the brief, requirements, and threat model. Pass condition: positive behavior demonstrated and no critical/high in-scope defect remains. Step 4b is an ACCEPTANCE REVIEW answering "does this implementation correctly fulfill the bounded requirements?"; refutation is step 2 of a four-step method, never the objective. Rounds 1-6 were prompted with "your job is to REFUTE a correctness claim, not to confirm it" — wording taken verbatim from the pipeline skill's own Dispatch contract. The operator ruled that inverted: a second independent model is there to CONFIRM the first model's implementation is correct. Traced to `d1848af1` (2026-06-24), a `gz git-sync` chore of 34 files and 3220 insertions that authored the entire Step-4b design without a design commit; GHI #643, the cited authority, uses the word "refute" zero times. Corrected across three commits.
 
 TWO CRITICALS ARE ROUTED OUT to GHI #953 (ledger has no transaction boundary across writers or crashes). GHI #952 (no fsync) remains open and is its sibling.
 
@@ -27,7 +27,7 @@ MUTATION VERIFICATION IS THE ONLY THING THAT CAUGHT THE VACUOUS TESTS. The suite
 
 GUARD MASKING IS REAL AND RECURRING. Twice a new guard silently made an older guard's test vacuous — round 6's `_refuse_surface_changed_under_us` masked the read-inside-the-lock fix, and round 8's digest guard masked round 7's section-ID coverage check. Both were found only by re-running EVERY mutation after each change, not just the new ones. Re-run the whole set.
 
-THE STEP-4b STANCE IS NOW CORRECT IN THE SKILL — do not re-invert it. `.gzkit/skills/gz-obpi-pipeline/SKILL.md` now leads with why the gate exists (GHI #643: an agent fabricated Stage-4 evidence and the operator attested to it) and why the second model is Codex (a Claude checking Claude is the same eyes twice). Confirmation must be EARNED: a corroborating round demonstrates each guard firing when it should AND not firing when it should not. Six rounds tested refusals and none asked whether the feature still worked.
+THE STEP-4b STANCE IS NOW CORRECT IN THE SKILL — do not re-invert it, and do not re-narrate it. Its canonical form is the operator's four-part block (Purpose / Method / Boundary / Pass condition) at the head of § Step 4b. Three prior agent-authored attempts this session said roughly the same thing in paragraphs and each left the objective implicit; the four-line form is what prevents the technique being mistaken for the objective again. Prefer it verbatim over any paraphrase. `.gzkit/skills/gz-obpi-pipeline/SKILL.md` now leads with why the gate exists (GHI #643: an agent fabricated Stage-4 evidence and the operator attested to it) and why the second model is Codex (a Claude checking Claude is the same eyes twice). Confirmation must be EARNED: a corroborating round demonstrates each guard firing when it should AND not firing when it should not. Six rounds tested refusals and none asked whether the feature still worked.
 
 ROUND 8 RAN IN A READ-ONLY SANDBOX. Verbatim: "The writable CLI suite could not run because the sandbox has no writable temporary directory." It could not execute the failure/concurrency matrix or the mutation sweep, and found its three defects by reading. Its NOT-CORROBORATED is therefore partly a coverage limit — and equally, a CORROBORATED from that environment would have been weak. This is the shape GHI #941 already names. Do not dispatch another round without resolving the writable-workspace problem first, or the verdict means little either way.
 
@@ -36,6 +36,7 @@ A SCALAR HAS STOOD IN FOR A STRUCTURE FOUR TIMES in this OBPI: the map at round 
 ## Decisions Made
 
 - [operator-ruled] Step 4b's purpose is independent CONFIRMATION, not refutation (verbatim: "an adversary is there to corroborate, independently, that the feature is correct"; "the adversarial review in 4b is to have a new model confirm the 4a model's implementation is correct, not to refute claims of correctness out of hand - that doesn't even make sense - documentation should make thos clear" — spelling preserved). Corrected in the pipeline skill across `6da6cf1e`, `1c8b15fc`, `fca2fc57`.
+- [operator-ruled] Step 4b is an ACCEPTANCE REVIEW, and its canon is the operator-supplied four-part formulation seated verbatim at `efb66044` — "Purpose: independently corroborate correctness. Method: adversarially attempt to falsify it. Boundary: the brief, requirements, and threat model. Pass condition: positive behavior demonstrated and no critical/high in-scope defect remains." It names the DECISION the gate supports, which the agent's three prior attempts never did; the June-24 wording confused the reviewer's technique with its objective.
 - [operator-ruled] `NOT-REFUTED` IS the corroborated state, passively phrased (verbatim: "NOT-REFUTED is arguably a passive way of saying CORROBORATED"). No change to `gz obpi complete` is warranted; GHI #954 was narrowed by its author and closed.
 - [operator-ruled] Bind the surface into the transaction (verbatim: "bind the surface into the transaction. this has never been an issue before"). Implemented as a journalled raw-byte surface digest re-verified after both stores are durable and before the journal is cleared.
 - [operator-ruled] "clean adversary, or no dice" — a refutation-recorded completion was declined. Read as the booked convergence bar (no critical, no high, in scope), not zero findings of any severity.
@@ -51,7 +52,7 @@ A SCALAR HAS STOOD IN FOR A STRUCTURE FOUR TIMES in this OBPI: the map at round 
 2. UPDATE THE BRIEF'S STEP 4b SECTION. It records ROUND 6 as the standing verdict; rounds 7 and 8 are not written into it at all. `gz obpi precomplete` reads that section, and any completion or attestation presented against it today would be presented against a stale record. This is the highest-priority correctness gap in the artifact set and it is documentation, not code.
 3. RE-DERIVE THE MUTATION HARNESS before trusting any test in this OBPI. Delete each guard in isolation, run its named test, confirm FAIL for the RIGHT reason, restore byte-identically. Re-run the WHOLE set after any change — two guards were silently masked by later guards during this session and only a full re-run caught them.
 4. THE OPERATOR HAS NOT RULED ON WHAT HAPPENS TO THE SIX UNPUSHED COMMITS. Ask before pushing. Three are code under this OBPI's allowlist; three are the Step-4b documentation correction, which is independently useful and arguably should not wait on this brief.
-5. IF AND WHEN A ROUND DOES RUN, prompt for independent CONFIRMATION with adversarial probing as the method — the corrected framing is in `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Step 4b. Require both a `CORROBORATED | CORROBORATED-WITH-CAVEATS | NOT-CORROBORATED` line and one of the CLI enum words; map `CORROBORATED` to `not-refuted`. Never reuse a rounds-1-6 prompt.
+5. IF AND WHEN A ROUND DOES RUN, build the prompt from the four-part block at the head of `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Step 4b — Purpose / Method / Boundary / Pass condition — and state all four in the prompt. The pass condition is the operative half: positive behavior DEMONSTRATED and no critical/high in-scope defect remaining. A round that only lists what it broke has not met it. Require both a `CORROBORATED | CORROBORATED-WITH-CAVEATS | NOT-CORROBORATED` line and one of the CLI enum words; map `CORROBORATED` to `not-refuted`. Never reuse a rounds-1-6 prompt.
 6. READ THE RECEIPT, NOT THE SUMMARY. Confirm `exit_status: 0` in the emitted `arb-step-codexadversary-*` receipt AND grep the log for `Turn failed` / `Codex error` / `flagged for possible` / content-filter markers before believing any verdict line. Receipt `9631113e...` once printed "No material findings" while dying on a content filter with a real finding above the cut.
 7. ON ATTESTATION, WHICH IS THE OPERATOR'S ALONE: `gz obpi complete` requires `--adversary-verdict`, `--adversary`, `--adversary-tier 1` and `--adversary-receipt`; a tier-1 claim fails closed without a receipt recording `exit_status: 0`.
 
@@ -95,13 +96,15 @@ RE-RUN THE WHOLE MUTATION SET after any change, never only the new guards. Two g
 
 ## Evidence / Artifacts
 
-Commits this session, oldest first — ALL SIX UNPUSHED:
+Commits this session, oldest first — ALL EIGHT UNPUSHED:
 - `3d4f06ac` fix(unown): read the surface inside the lock, and stop four tests witnessing nothing
 - `6da6cf1e` docs(obpi-pipeline): Step 4b confirms correctness, it does not refute it
 - `1c8b15fc` docs(obpi-pipeline): say why Step 4b exists, and correct how the inversion happened
 - `fca2fc57` docs(obpi-pipeline): not-refuted IS the corroborated state, passively phrased
 - `b5138874` fix(unown): bind the surface into the transaction, and check coverage not just span
 - `a90a8d14` fix(unown): one finalization path, a byte-faithful digest, and honest recovery prose
+- `bc2a55e3` chore(handoff): the superseded first draft of this handoff (retained in git history; its file was replaced in-session)
+- `efb66044` docs(obpi-pipeline): Step 4b is an acceptance review — purpose, method, boundary, pass condition
 
 ARB receipts backing the green state (all `exit_status: 0`):
 - `arb-step-unittest-01633b9f07574b7aa06e918fb6c35e46` — 9295 tests
