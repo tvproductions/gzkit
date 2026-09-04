@@ -902,7 +902,7 @@ Report NEW in-scope findings only, ranked by severity. The governing gate conver
   fixed because the operator ruled a CHECKPOINT; it is mechanical and should be repaired first
   on resume.
 
-- **Genesis has no provenance anchor (adversary finding 1, `[high]`, OPEN — DESIGN DECISION).**
+- **Genesis has no provenance anchor (adversary finding 1, `[high]`, RULED AND REPAIRED 2026-09-03).**
   `load_declaration` accepts any declaration whose stored floor equals its own summed unowned
   spans and whose `floor_event_id` is null as a legitimate genesis. Self-coherence is trivially
   re-satisfiable, so a hand edit that flips a section and recomputes the floor loads cleanly with
@@ -912,6 +912,25 @@ Report NEW in-scope findings only, ranked by severity. The governing gate conver
   NOT a bug to patch: genesis has no provenance anchor by construction. The repair shape is an
   operator ruling — candidates are a `section_ownership_genesis` ledger event, a commit-SHA
   anchor, or forbidding a null `floor_event_id` after day one.
+  **AMENDED 2026-09-04. Everything above is the finding AS RECORDED on 2026-09-02 and is kept
+  verbatim; the disposition it states is no longer current.** The operator ruled the next day and
+  the repair shipped in `0488f8f4` (*"fix(ownership): anchor the ratchet to ledger state, and
+  harden journal replay"*), whose message records the ruling verbatim: *"Operator ruled to anchor
+  genesis to a `section_ownership_genesis` ledger event and forbid a null id outright."* That is
+  the FIRST of the three candidates listed above, combined with the THIRD. Both halves of the
+  finding are closed at HEAD, verified by reading the loader rather than the commit message:
+  a null `floor_event_id` is refused outright with no genesis branch remaining
+  (`src/gzkit/content/ownership.py:347`), and the non-null branch no longer accepts any event
+  that resolves — the event must sit on `_OWNERSHIP_EVENT_TYPES` (`:384`) and its
+  `extra["surface"]` must equal the declaration's own surface (`:401`).
+  Amended because the entry was still reading `OPEN — DESIGN DECISION` and inviting a ruling the
+  operator had already given, which is a live invitation to re-rule and land somewhere other than
+  canon. Recorded here rather than deleted: the finding, its reproduction at floor `8637 -> 10182`,
+  and the candidate set the ruling chose from are the audit trail for why the loader has the shape
+  it now has. **Consequence not to lose: `features/steps/content_unown_steps.py` still seeds the
+  `floor_event_id: None` declaration this repair made invalid, so `uv run gz check` has been red
+  since `0488f8f4`. Tracked at GHI #957; that path is in this brief's allowlist, so its routing is
+  the operator's call.**
 
 - **Declaration write-lock primitive is a PRIVATE cross-module import (structural debt).**
   `src/gzkit/content/ownership.py` imports `_exclusive_store_lock` from
