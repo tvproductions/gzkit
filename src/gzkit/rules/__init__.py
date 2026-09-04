@@ -240,6 +240,15 @@ def _extract_subtree_prefix(pattern: str) -> str | None:
     return "/".join(prefix_parts) if prefix_parts else None
 
 
+#: Audit SUBJECTS, not resource paths (GHI #938). The two `.github` entries in
+#: `_VENDOR_MIRROR_ROOTS` below are roster members used to RECOGNISE a rendered
+#: output surface by prefix. The Copilot vendor was retired in `65001830`, so
+#: neither directory exists; they are retained precisely so a stale mirror is
+#: still recognised if one reappears. A config field naming where they live
+#: would assert the opposite of what this roster is for.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/instructions", ".github/skills")
+
+
 _VENDOR_MIRROR_ROOTS: tuple[str, ...] = (
     ".claude",
     ".agents",

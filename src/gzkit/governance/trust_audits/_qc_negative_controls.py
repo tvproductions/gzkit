@@ -44,6 +44,13 @@ def _mkroot(slug: str) -> Path:
     return create_fixture_tempdir(prefix=f"gzkit-qc-nc-{slug}-")
 
 
+#: Audit SUBJECT, not a resource path (GHI #938). `.github/skills` appears in
+#: this module only as a member of the mirror roster a negative control writes
+#: fixtures across, inside a temporary tree — never a location in this
+#: repository. The literal names the population under test.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills",)
+
+
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")

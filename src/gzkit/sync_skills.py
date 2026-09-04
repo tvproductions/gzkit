@@ -397,6 +397,14 @@ def _has_skill_files(path: Path) -> bool:
     return any(path.rglob("SKILL.md"))
 
 
+#: Audit SUBJECT, not a resource path (GHI #938). `.github/skills` is a
+#: LEGACY-LAYOUT SENTINEL: `bootstrap_canonical_skills` names it to detect
+#: "older layouts where `.github/skills` was canonical" and migrate away from
+#: it. Sourcing a retired layout's location from live config would declare it
+#: current, which is the inverse of the migration this module performs.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills",)
+
+
 def _legacy_skill_candidate_paths(config: GzkitConfig) -> list[str]:
     """Return ordered legacy skill roots used for bootstrap fallback."""
     return [

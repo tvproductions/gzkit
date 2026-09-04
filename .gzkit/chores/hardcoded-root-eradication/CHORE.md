@@ -25,6 +25,36 @@ exists as a recurring quality gate to catch and remediate that drift.
 In gzkit terms: if a value depends on project structure, deployment context,
 or user preference, it belongs in config — not in a module-level constant.
 
+### The carve-out: a path literal that is the audit's SUBJECT
+
+The doctrine reaches a literal used to RESOLVE a resource. It does not reach a
+literal that NAMES a surface as the subject of an audit, a roster, a classifier
+predicate, or a retired-layout sentinel. Those cannot be sourced from config,
+because a config field would declare where that surface lives — which is the
+very thing the code is asserting about. A sentinel for a directory that must
+NOT exist is the clearest case: sourcing it from a field describing its
+location would declare it current.
+
+Such a literal is declared at its own site, in the module that owns it:
+
+```python
+#: Audit SUBJECT, not a resource path (GHI #938). `.github/workflows/` is the
+#: POPULATION this control audits, never a path it opens.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/workflows/",)
+```
+
+`gz check-config-paths` credits a literal that its own module declares this
+way. The scoping is the safety property — a declaration never reaches another
+module — and the constant name is exact, so
+`grep -rn _AUDIT_SUBJECT_LITERALS src/` is a COMPLETE exemption census with
+every entry sitting beside its justification. The match is exact, never a
+prefix: declaring `.github` buys no blanket exemption for `.github/**`.
+
+This is a carve-out in the doctrine's SCOPE, not a waiver of it. A literal that
+is genuinely resolved to read something still belongs in config, and declaring
+it a subject to silence the audit is the failure the census grep exists to make
+visible.
+
 ## Anti-Patterns (What to Find)
 
 ### 1. Hardcoded project root derivation

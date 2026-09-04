@@ -238,6 +238,56 @@ _EXEMPT_PATH_LITERALS: frozenset[str] = frozenset(
 )
 
 
+#: The exact module-level constant name a module uses to declare which of its
+#: path literals are audit SUBJECTS rather than resource paths (GHI #938).
+#:
+#: The name is EXACT so that ``grep -rn _AUDIT_SUBJECT_LITERALS src/`` is a
+#: COMPLETE exemption census. Crediting any tuple of path-shaped strings would
+#: make the census unbounded and let ordinary constants silently weaken the
+#: audit; pinned by
+#: ``TestModuleDeclaredAuditSubjects.test_a_differently_named_constant_grants_nothing``.
+_AUDIT_SUBJECT_DECLARATION = "_AUDIT_SUBJECT_LITERALS"
+
+
+def _collect_declared_audit_subjects(tree: ast.Module) -> set[str]:
+    """Return the path literals *tree*'s module declares as audit subjects.
+
+    A literal naming the population a control audits, a vendor-mirror roster
+    iterated to detect a retired layout, or a sentinel for a directory that
+    must NOT exist is the audit's own SUBJECT. There is no config field it
+    could be sourced from: a config field would describe where that surface
+    lives, which is the very thing the check asserts about.
+
+    Only MODULE-LEVEL assignments are read, and only the exact name
+    :data:`_AUDIT_SUBJECT_DECLARATION`. Scoping is the safety property -- the
+    caller applies this per-file, so a declaration credits only the module
+    that makes it. A declaration that leaked across modules would be a central
+    roster with worse ergonomics, and the census grep would name the wrong
+    owner.
+
+    The value's shape is deliberately unconstrained (tuple, list, set,
+    ``frozenset(...)``): every string constant inside it is taken, so the
+    declaration reads naturally with a per-entry comment beside each literal.
+    """
+    declared: set[str] = set()
+    for node in tree.body:
+        targets: list[ast.expr] = []
+        if isinstance(node, ast.Assign):
+            targets = list(node.targets)
+        elif isinstance(node, ast.AnnAssign):
+            targets = [node.target]
+        else:
+            continue
+        if not any(isinstance(t, ast.Name) and t.id == _AUDIT_SUBJECT_DECLARATION for t in targets):
+            continue
+        if node.value is None:
+            continue
+        for inner in ast.walk(node.value):
+            if isinstance(inner, ast.Constant) and isinstance(inner.value, str):
+                declared.add(inner.value.strip().strip("/").replace("\\", "/"))
+    return declared
+
+
 def _collect_source_path_literal_issues(
     project_root: Path,
     manifest: dict[str, Any],
@@ -252,6 +302,12 @@ def _collect_source_path_literal_issues(
     surfaces, and checking only the manifest reported a declared
     ``PathConfig`` default as unmapped, including at the ``config.py``
     line declaring it (GHI #938).
+
+    A literal is also credited when its OWN module declares it an audit
+    subject via :data:`_AUDIT_SUBJECT_DECLARATION`. That covers the literals
+    no config field can govern -- the ones naming a surface the code audits,
+    rosters, or checks for absence. The declaration is read per-file, so it
+    never reaches another module (GHI #938).
     """
     issues: list[dict[str, str]] = []
     src_dir = project_root / "src" / "gzkit"
@@ -269,6 +325,7 @@ def _collect_source_path_literal_issues(
             continue
 
         rel_path = py_file.relative_to(project_root).as_posix()
+        declared_subjects = _collect_declared_audit_subjects(tree)
 
         for node in ast.walk(tree):
             if not isinstance(node, ast.Constant):
@@ -279,6 +336,13 @@ def _collect_source_path_literal_issues(
             if "/" not in value:
                 continue
             if value in _EXEMPT_PATH_LITERALS:
+                continue
+            # Exact match after the same normalization the rest of the audit
+            # uses -- never a prefix test. A prefix test on a declared
+            # ".github/workflows" would exempt every ".github/**" literal in
+            # the module, which is the blinding failure _flatten_config_paths
+            # already refuses for the same reason.
+            if value.strip("/").replace("\\", "/") in declared_subjects:
                 continue
             # Skip URLs, format strings, and very long strings
             if value.startswith(("http://", "https://", "//", "git@")):

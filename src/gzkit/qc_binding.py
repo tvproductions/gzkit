@@ -63,6 +63,14 @@ class QCStep(BaseModel):
 # One entry per step name in _build_check_steps(); KeyError = unclassified step.
 _StepMeta = tuple[str, str, str, str]
 
+#: Audit SUBJECTS, not resource paths (GHI #938). `.github/workflows/` appears
+#: below as the POPULATION the "Python version pins" control audits — the set of
+#: interpreter declarations it reads. It is never joined to a root and opened
+#: here, so no `PathConfig` field could govern it: a field would say where
+#: workflows live, which is the thing this table is asserting ABOUT.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/workflows/",)
+
+
 _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Lint": ("lint", "src/", "bound", "subprocess"),
     "Format": ("format", "src/", "bound", "subprocess"),

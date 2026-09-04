@@ -82,6 +82,13 @@ _SELF_DIRS = (
 )
 
 
+#: Audit SUBJECT, not a resource path (GHI #938). `.github/workflows/` is a
+#: CLASSIFIER PREDICATE in `_classify_path` below: it decides that a caller
+#: found at that prefix is class CI. The scan is handed paths; it does not
+#: resolve this one to read anything.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/workflows/",)
+
+
 def _classify_path(rel: str) -> str:
     """Map a repo-relative path to the caller class it represents."""
     if rel.startswith(".claude/hooks/"):

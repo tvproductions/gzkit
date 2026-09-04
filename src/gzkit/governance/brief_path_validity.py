@@ -29,6 +29,14 @@ from pathlib import Path
 _ALLOWED_HEADING_RE = re.compile(r"^##\s+ALLOWED\s+PATHS(\s*\(.*?\))?\s*$", re.IGNORECASE)
 _BULLET_PATH_RE = re.compile(r"^\s*-\s*`([^`]+)`")
 
+#: Audit SUBJECTS, not resource paths (GHI #938). The `.github` entries in
+#: `_VENDOR_MIRROR_TO_CANONICAL` below are the LEFT side of a mirror->canon map
+#: whose whole purpose is to FAIL a brief that cites a mirror path. They name
+#: what an allowlist must not contain; a config field pointing at them would
+#: govern a location this module exists to refuse.
+_AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills/", ".github/instructions/")
+
+
 _VENDOR_MIRROR_TO_CANONICAL: tuple[tuple[str, str], ...] = (
     (".claude/rules/", ".gzkit/rules/"),
     (".claude/skills/", ".gzkit/skills/"),
