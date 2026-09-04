@@ -213,9 +213,33 @@ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 - [ ] **REQ-0.0.35-04-06:** Given the default `gz check` pipeline, when invoked, then it includes the `--kind-invariance` scope and fails the gate when any foundation ADR fails the check.
 - [ ] **REQ-0.0.35-04-07:** Given the test surface, when run, then every test for this scope is decorated with `@covers(REQ-0.0.35-04-NN)` and `gz adr audit-check ADR-0.0.35-foundation-feature-invariance-test` reports REQ coverage closed.
 - [ ] **REQ-0.0.35-04-08:** Given `features/`, when scenarios are enumerated, then at least one scenario carries `@REQ-0.0.35-04-NN` exercising the `gz validate --kind-invariance` operator flow, and `gz validate --behave-req-tags` reports the brief's REQs covered post-completion.
-- [ ] **REQ-0.0.35-04-09:** Given `docs/user/manpages/gz-validate.md`, when read, then `--kind-invariance` is documented in the flags table and at least one example invocation is shown.
+- [ ] **REQ-0.0.35-04-09:** Given `docs/user/manpages/validate.md`, when read, then `--kind-invariance` is documented in the flags table and at least one example invocation is shown.
 - [ ] **REQ-0.0.35-04-10:** Given `docs/user/runbook.md`, when read, then a cross-reference to the kind-invariance verification step is present.
-- [ ] **REQ-0.0.35-04-11:** Given the closeout commit body, when inspected, then it cites ARB receipts for lint, typecheck, unit tests, coverage, and mkdocs strict per AGENTS.md § Attestation heavy-lane fail-closed rule.
+- [ ] **REQ-0.0.35-04-11:** Given this OBPI's closeout evidence, when inspected, then the ledger carries a `meta-receipt-bind` `audit_receipt_emitted` event for `OBPI-0.0.35-04-kind-invariance-validator` at `exit_status: 0` citing resolved ARB receipts for lint, typecheck, unit tests, coverage, and mkdocs strict per AGENTS.md § Attestation heavy-lane fail-closed rule.
+
+> **AMENDED 2026-09-04 (operator-ruled, GHI #944): REQ-09's manpage path reads
+> `docs/user/manpages/validate.md`.** It read `manpages/gz-validate.md`, a file that
+> does not exist and cannot — `.claude/rules/governance-core.md` § Manpage filename
+> references (GHI #532) rules the `gz-` prefix form unresolvable, manpages being named
+> `<verb>.md`. The covering test has always read the real path, so the binding was
+> right and the requirement's own text was stale. Path only; no REQ semantics change.
+
+> **AMENDED 2026-09-04 (operator-ruled, GHI #944): REQ-11's evidence surface is the
+> ledger's `meta-receipt-bind` event, not the closeout commit body.** Operator verbatim:
+> *"fix those too, against the same ghi (944)"*. The requirement asserted that a closeout
+> commit body cites the five ARB receipt classes. No commit in this repo cites this
+> OBPI's receipt ids — the work landed in `chore: … (gz git-sync)` commits — so the
+> requirement was UNMET as written, and the shifted `@covers` bindings repaired under
+> GHI #944 had hidden that for four months by parking the runbook test in REQ-11's slot.
+>
+> The receipts were never missing. Two `audit_receipt_emitted` events with
+> `receipt_event: meta-receipt-bind` (2026-05-17T19:11:37Z and 19:16:26Z) carry
+> `exit_status: 0` and resolve all five classes plus behave, keyed to this OBPI. The
+> requirement named the wrong surface for evidence that existed. Amended to name the
+> mechanism that actually carries the claim, which is also the stronger witness: the
+> ledger is Layer-2 system-of-record, a commit body is prose. Substance — five receipt
+> classes cited as this OBPI's closeout evidence — is unchanged, and the proof channel
+> stays a `@covers` test (`test_closeout_evidence_cites_arb_receipts`).
 
 ## Completion Checklist
 

@@ -20,6 +20,7 @@ Each binding below now names the REQ whose subject the test actually asserts.
 from __future__ import annotations
 
 import ast
+import json
 import re
 import unittest
 from pathlib import Path
@@ -27,6 +28,9 @@ from pathlib import Path
 from gzkit.traceability import covers
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+
+#: The OBPI whose REQs this file provides structural coverage for.
+OBPI_ID = "OBPI-0.0.35-04-kind-invariance-validator"
 
 
 #: Files whose entire subject is the kind-invariance scope. Every test in one
@@ -142,6 +146,54 @@ class TestKindInvarianceArtifacts(unittest.TestCase):
         runbook = PROJECT_ROOT / "docs" / "user" / "runbook.md"
         content = runbook.read_text(encoding="utf-8")
         self.assertIn("--kind-invariance", content)
+
+    @covers("REQ-0.0.35-04-11")
+    def test_closeout_evidence_cites_arb_receipts(self):
+        """This OBPI's closeout evidence resolves all five ARB receipt classes.
+
+        REQ-11 originally named "the closeout commit body" as the surface. No
+        commit in this repo cites this OBPI's receipt ids — the work landed in
+        git-sync chores — so it was unmet as written, and the shifted bindings
+        repaired under GHI #944 had hidden that by parking the runbook test in
+        its slot. The receipts were never missing; the requirement named the
+        wrong surface for evidence that existed, and was amended 2026-09-04 to
+        name the ledger event that actually carries it.
+
+        Asserts the receipt *classes* AGENTS.md § Attestation names, not the
+        receipt ids: an id is a run of a command, the class is the claim.
+        """
+        required_classes = {
+            "arb-ruff",
+            "arb-step-typecheck",
+            "arb-step-unittest",
+            "arb-step-coverage",
+            "arb-step-mkdocs",
+        }
+        ledger = PROJECT_ROOT / ".gzkit" / "ledger.jsonl"
+
+        bound: set[str] = set()
+        for line in ledger.read_text(encoding="utf-8").splitlines():
+            if OBPI_ID not in line:
+                continue
+            event = json.loads(line)
+            evidence = event.get("evidence") or {}
+            if (
+                event.get("event") != "audit_receipt_emitted"
+                or event.get("receipt_event") != "meta-receipt-bind"
+                or evidence.get("obpi_id") != OBPI_ID
+                or evidence.get("exit_status") != 0
+            ):
+                continue
+            bound |= {
+                receipt_id.rsplit("-", 1)[0]
+                for receipt_id in evidence.get("resolved_receipt_ids", [])
+            }
+
+        self.assertFalse(
+            required_classes - bound,
+            f"closeout evidence for {OBPI_ID} resolves no receipt for: "
+            f"{sorted(required_classes - bound)}",
+        )
 
     def test_validator_tests_assert_semantics_not_strings(self):
         """`test_kind_invariance.py` asserts error type and shape, not message bytes.
