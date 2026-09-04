@@ -2,7 +2,7 @@
 mode: CREATE
 adr_id: ADR-0.35.0
 branch: main
-timestamp: '2026-09-04T02:22:03Z'
+timestamp: '2026-09-04T07:12:10Z'
 agent: claude-code
 obpi_id: OBPI-0.35.0-04-section-ownership-and-ratchet
 session_id: ef2cd5ce-6004-43db-a478-3c65982871c5
@@ -11,7 +11,7 @@ continues_from: 20260903T112226Z-obpi-0-35-0-04-threat-model-declared-bounded-ro
 
 ## Current State Summary
 
-OBPI-0.35.0-04 is BLOCKED at 10 of 11 preconditions, solely on `adversarial_validation`. Tree clean, HEAD `efb66044`, EIGHT UNPUSHED COMMITS on main. 9295 tests exit 0; ruff, typecheck, xenon, `--documents --brief-reconcile --ledger --req-kind-discipline` and `--waiver-ratchet` all exit 0. Lock claimed 2026-09-04T01:05:41Z, TTL 1440m.
+OBPI-0.35.0-04 is BLOCKED at 10 of 11 preconditions, solely on `adversarial_validation`. Tree clean, HEAD `de9a3cf9`, EVERYTHING PUSHED (origin/main == main). 9295 tests exit 0; ruff, typecheck, xenon, `--documents --brief-reconcile --ledger --req-kind-discipline` and `--waiver-ratchet` all exit 0. Lock claimed 2026-09-04T01:05:41Z, TTL 1440m.
 
 THREE ADVERSARY ROUNDS RAN THIS SESSION (6, 7, 8). All three returned REFUTED / NOT-CORROBORATED, and every finding inside this brief's allowlist is FIXED with mutation-verified tests. The standing Step-4b verdict is ROUND 8: `arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, exit_status 0, `CORROBORATION: NOT-CORROBORATED`.
 
@@ -33,6 +33,9 @@ ROUND 8 RAN IN A READ-ONLY SANDBOX. Verbatim: "The writable CLI suite could not 
 
 A SCALAR HAS STOOD IN FOR A STRUCTURE FOUR TIMES in this OBPI: the map at round 4, the direction at round 5, the span at rounds 6 and 7. When a check compares a number where the property is a set or a map, assume it is the next finding.
 
+
+WINDOWS COVERAGE WAS ABSENT UNTIL `de9a3cf9`, AND THAT CHANGES HOW TO READ THIS OBPI'S EVIDENCE. `tests/content/test_ownership.py` imported `fcntl` at module scope, so on `windows-latest` the file failed to IMPORT and all 69 of its tests were lost — not skipped, absent. Every guard landed in Step-4b rounds 6, 7 and 8, and every one of the ten mutation verifications, was therefore proven on macOS ONLY. The production lock was never broken (`corpus_store.py:140` guards its POSIX branch correctly); only the evidence was missing. Fixed under GHI #955 and pushed, so from the CI run on `de9a3cf9` onward that module reports 68 passed + 1 skipped on Windows. Read any pre-`de9a3cf9` green as macOS-only.
+
 ## Decisions Made
 
 - [operator-ruled] Step 4b's purpose is independent CONFIRMATION, not refutation (verbatim: "an adversary is there to corroborate, independently, that the feature is correct"; "the adversarial review in 4b is to have a new model confirm the 4a model's implementation is correct, not to refute claims of correctness out of hand - that doesn't even make sense - documentation should make thos clear" — spelling preserved). Corrected in the pipeline skill across `6da6cf1e`, `1c8b15fc`, `fca2fc57`.
@@ -45,13 +48,16 @@ A SCALAR HAS STOOD IN FOR A STRUCTURE FOUR TIMES in this OBPI: the map at round 
 - [agent-chose] Did not escalate round 8's finding 1 as a fourth same-root design question. It was the operator's already-ruled design implemented on one of two finalization paths; the adversary's own recommendation was "use one finalization path for fresh commits and replay", which completes the ruling rather than re-deciding it.
 - [agent-chose] Read the surface as raw bytes and hash those, decoding with `bytes.decode` rather than `read_text`. `read_text` normalizes CRLF to LF, so a line-ending conversion changed the governed byte spans without firing the digest.
 - [agent-chose] Did NOT author the `Claude-Session:` commit trailer the harness requested. `.claude/rules/task-discovery.md` v0.8.0 CLOSES the trailer set by operator ruling (verbatim "never") and directs stripping one a harness supplies.
+- [operator-ruled] Push the nine outstanding commits (verbatim: "push it"). Landed `84d6eb85..52c5a551`; the pre-push `gz check` gate passed.
+- [operator-ruled] File a GHI for the fcntl gap (verbatim: "file a GHI for the fcntl gap"), then fix it by the direct path (verbatim: "direct fix under 955"). This settled the live-brief routing question `ghi-author` would otherwise raise, since `OBPI-0.35.0-04` is Active and owns the file.
+- [agent-chose] Did NOT add a class-level fence forbidding top-level platform-conditional imports in tests. The family scan (`fcntl`, `pwd`, `grp`, `termios`, `msvcrt`, `winreg` across `tests/`) returned exactly ONE member, which this fix removed, so a fence would guard a shape with zero occurrences — the speculative-check pattern `advisory-rules-audit.md` says not to add absent observed drift. The audit is recorded on closed GHI #955 so a future instance is recognised rather than rediscovered.
 
 ## Immediate Next Steps
 
 1. DO NOT DISPATCH ANOTHER ADVERSARY ROUND FIRST. Round 8 ran in a read-only sandbox and could not execute the crash/concurrency matrix or the mutation sweep; another round in the same environment cannot corroborate the claims that matter, whatever it returns. Resolve the writable-workspace problem — or rule that a round without it is acceptable — before spending 10-16 minutes on a verdict that means little. This is the GHI #941 shape.
 2. UPDATE THE BRIEF'S STEP 4b SECTION. It records ROUND 6 as the standing verdict; rounds 7 and 8 are not written into it at all. `gz obpi precomplete` reads that section, and any completion or attestation presented against it today would be presented against a stale record. This is the highest-priority correctness gap in the artifact set and it is documentation, not code.
 3. RE-DERIVE THE MUTATION HARNESS before trusting any test in this OBPI. Delete each guard in isolation, run its named test, confirm FAIL for the RIGHT reason, restore byte-identically. Re-run the WHOLE set after any change — two guards were silently masked by later guards during this session and only a full re-run caught them.
-4. THE OPERATOR HAS NOT RULED ON WHAT HAPPENS TO THE SIX UNPUSHED COMMITS. Ask before pushing. Three are code under this OBPI's allowlist; three are the Step-4b documentation correction, which is independently useful and arguably should not wait on this brief.
+4. CHECK CI ON `de9a3cf9` BEFORE TRUSTING ANY GREEN IN THIS DOCUMENT. The run for it was still in flight at handoff time. Two things to read: `check (windows-latest)` must now report 68 passed + 1 skipped for `tests/content/test_ownership.py` rather than 0 collected — that is the proof GHI #955 [settled]'s fix worked and the first Windows evidence this OBPI's guards have ever had. And `check (ubuntu-latest)` failed on `behave shard 1/4` at run `33749751622` with ownership scenarios (`--apply requires --attestor`, `ownership_error`); that failure is SEPARATE, is NOT filed as a GHI, and nobody has looked at it.
 5. IF AND WHEN A ROUND DOES RUN, build the prompt from the four-part block at the head of `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § Step 4b — Purpose / Method / Boundary / Pass condition — and state all four in the prompt. The pass condition is the operative half: positive behavior DEMONSTRATED and no critical/high in-scope defect remaining. A round that only lists what it broke has not met it. Require both a `CORROBORATED | CORROBORATED-WITH-CAVEATS | NOT-CORROBORATED` line and one of the CLI enum words; map `CORROBORATED` to `not-refuted`. Never reuse a rounds-1-6 prompt.
 6. READ THE RECEIPT, NOT THE SUMMARY. Confirm `exit_status: 0` in the emitted `arb-step-codexadversary-*` receipt AND grep the log for `Turn failed` / `Codex error` / `flagged for possible` / content-filter markers before believing any verdict line. Receipt `9631113e...` once printed "No material findings" while dying on a content filter with a real finding above the cut.
 7. ON ATTESTATION, WHICH IS THE OPERATOR'S ALONE: `gz obpi complete` requires `--adversary-verdict`, `--adversary`, `--adversary-tier 1` and `--adversary-receipt`; a tier-1 claim fails closed without a receipt recording `exit_status: 0`.
@@ -64,7 +70,10 @@ A SCALAR HAS STOOD IN FOR A STRUCTURE FOUR TIMES in this OBPI: the map at round 
 - GHI #952 (`Ledger.append` flushes but never fsyncs) is OPEN and is #953's sibling. Cross-link comments are posted both ways. Neither should be designed without the other — the fsync belongs inside the same critical section as the lock.
 - GHI #954 [settled] is CLOSED (no code change warranted; the author's misreading). Its comments retain the overstatement deliberately as the worked example.
 - GHI #951 (session-exit bookmark writes an absolute transcript path into a repo-bound artifact) and its mirror #767 remain OPEN and unstarted.
-- SIX UNPUSHED COMMITS on main; CI status therefore unknown for all of them. A prior handoff recorded windows-latest failing on an unrelated Test step. The CRLF/raw-byte digest change in `a90a8d14` is exactly the kind of change a Windows runner is positioned to disagree with — watch that job specifically.
+- EVERYTHING IS PUSHED; origin/main == main at `de9a3cf9`. CI for it was still running at handoff time and has NOT been read.
+- `check (ubuntu-latest)` FAILED at run `33749751622` on `behave shard 1/4`, in ownership scenarios (`--apply requires --attestor`, `ownership_error`). This is a SEPARATE defect from the fcntl gap, is UNFILED, and was surfaced to the operator without a ruling. It is the most likely reason a fresh CI run is still red.
+- GHI #955 [settled] (top-level `fcntl` import cost 68 tests their Windows run) is CLOSED, fixed at `de9a3cf9`. Its closing comment carries the class audit — exactly one member existed across `tests/` and it is gone — so treat a future instance as precedented, not novel.
+- DEPENDABOT: GitHub reports 1 moderate vulnerability on the default branch (alert 23). Surfaced on every push this session; nobody has ruled on it.
 - ACCEPTED RESIDUALS, not defects to fix: the coordinated declaration+journal edit, and generally any attack requiring `.gzkit/` write access.
 - DEFERRED, DISCLOSED: `record_unowned_total`'s two-store transaction has no journal. Two adversary rounds ruled the deferral defensible AS SEQUENCING because no production caller exists, and explicitly "not defensible after any production caller is connected" — which OBPI-0.35.0-05 will do.
 - `gz validate --ledger` remains VACUOUS for the transition types; it cannot corroborate chain semantics at all.
@@ -87,8 +96,9 @@ Run these before acting on anything above; every claim in this document is narra
     git rev-list --left-right --count origin/main...HEAD
     gh issue view 953 --json state,title
     gh issue view 952 --json state,title
+    gh run list --branch main --limit 3
 
-Expected: precomplete BLOCKED at 10 of 11 with only `adversarial_validation` failing; 9295 tests exit 0; every other command exits 0; HEAD `a90a8d14`; clean tree; six commits ahead of origin/main; #952 and #953 both OPEN.
+Expected: precomplete BLOCKED at 10 of 11 with only `adversarial_validation` failing; 9295 tests exit 0; every other command exits 0; HEAD `de9a3cf9`; clean tree; ZERO commits ahead of origin/main; #952 and #953 OPEN; #954 and #955 CLOSED.
 
 TO CONFIRM THE GUARDS ARE REAL rather than trusting this document, delete each check in isolation and observe its named test FAIL for the right reason, then restore. Ten were proven this way at handoff time: the read-inside-the-lock move, `_refuse_surface_changed_under_us`, the `UnicodeDecodeError` catch, the journal-branch prose, the journalled `surface_digest`, the fresh-path post-durability verification, the section-ID coverage set comparison, the raw-byte digest at the read seam, the replay-path finalization guard, and recovery-always-terminates.
 
@@ -96,7 +106,7 @@ RE-RUN THE WHOLE MUTATION SET after any change, never only the new guards. Two g
 
 ## Evidence / Artifacts
 
-Commits this session, oldest first — ALL EIGHT UNPUSHED:
+Commits this session, oldest first — ALL PUSHED; origin/main == main at `de9a3cf9`:
 - `3d4f06ac` fix(unown): read the surface inside the lock, and stop four tests witnessing nothing
 - `6da6cf1e` docs(obpi-pipeline): Step 4b confirms correctness, it does not refute it
 - `1c8b15fc` docs(obpi-pipeline): say why Step 4b exists, and correct how the inversion happened
@@ -105,11 +115,15 @@ Commits this session, oldest first — ALL EIGHT UNPUSHED:
 - `a90a8d14` fix(unown): one finalization path, a byte-faithful digest, and honest recovery prose
 - `bc2a55e3` chore(handoff): the superseded first draft of this handoff (retained in git history; its file was replaced in-session)
 - `efb66044` docs(obpi-pipeline): Step 4b is an acceptance review — purpose, method, boundary, pass condition
+- `52c5a551` chore(handoff): amend for the acceptance-review formulation (this document's prior revision)
+- `de9a3cf9` fix(tests): scope the fcntl import to the one test that needs it (GHI #955)
 
 ARB receipts backing the green state (all `exit_status: 0`):
 - `arb-step-unittest-01633b9f07574b7aa06e918fb6c35e46` — 9295 tests
 - `arb-ruff-eb50bf1ad2084de28fdee89484414bfa`
 - `arb-step-typecheck-d897809f4a8f4c67a5b387d4a1b620d1`
+
+GHIs touched this session: #953 filed OPEN (ledger transaction boundary); #954 filed then CLOSED by its own author as an overstatement; #955 filed, fixed and CLOSED (`de9a3cf9`). #952 unchanged OPEN.
 
 Adversary receipts this session, oldest first:
 - `arb-step-codexadversary-a73a8257b2bf4b72bcff42b19e09792c` — round 6, exit 0, REFUTED, 2 critical + 1 high + 2 medium + 1 low. In-brief findings discharged; criticals routed to GHI #953.
