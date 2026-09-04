@@ -399,6 +399,352 @@ class TestCommandEnvUsage(unittest.TestCase):
             )
 
 
+# ---------------------------------------------------------------------------
+# Private-symbol cross-package imports (GHI #956)
+# ---------------------------------------------------------------------------
+
+#: Frozen baseline of every import of a private (single-underscore) name from a
+#: module in a DIFFERENT package directory. Shrink-only: the test below asserts
+#: set EQUALITY, so a new edge fails and a repaired edge must be pruned here.
+#:
+#: A leading underscore is the owning module's declaration that the symbol is
+#: not part of its contract. Reached from another package, that contract is
+#: enforced by nothing — ruff's `PLC2701` exempts same-package imports and fires
+#: on 1 of 351 private-name imports in this tree, so enabling it would read
+#: green over the rest (measured 2026-09-04, ruff 0.16.2). This roster is the
+#: witness that does not exist otherwise.
+#:
+#: SAME-DIRECTORY imports are deliberately OUT OF SCOPE. 247 of them exist and
+#: they are a different disposition: sibling files of one logically-split module
+#: (`status.py` / `status_obpi.py` / `status_render.py`), where the underscore
+#: means "not outside this cluster" and the cluster IS the directory. Folding
+#: them in would inflate the roster fivefold and route a refactor at code that
+#: is working as designed.
+#:
+#: This roster is pass 1 of an operator-ruled two-pass repair (GHI #956,
+#: 2026-09-04: "roster now, repair after"). It stops the class GROWING today;
+#: it does not bless the 100 entries. Pass 2 adjudicates each edge and either
+#: promotes the symbol to a public name in a home both callers can reach — as
+#: GHI #945 did for the advisory-lock primitive — or relocates it. Every entry
+#: removed here is one edge repaired.
+#: Grouped by IMPORTER so the roster reads as "what does this file reach for",
+#: which is the question a repair pass asks. Paths are relative to src/gzkit/
+#: and owner modules drop their gzkit. prefix; both are constant noise, and
+#: dropping them is what keeps every entry inside the line budget.
+PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
+    "airlock/enter.py": ("governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",),
+    "chores/__init__.py": ("commands.common._confirm",),
+    "chores/control-surface-validator-reachability/check_reachability.py": (
+        "cli.main._build_parser",
+    ),
+    "commands/ceremony_data.py": ("cli.main._build_parser",),
+    "commands/cli_audit.py": (
+        "cli.main._build_parser",
+        "rules._is_framework_tree",
+    ),
+    "commands/covers.py": (
+        "traceability._obpi_sort_key",
+        "traceability._rollup",
+        "traceability._semver_sort_key",
+    ),
+    "commands/init_cmd.py": (
+        "chores._classify_chore_file",
+        "chores._iter_canonical_chore_slugs",
+        "personas._iter_canonical_persona_slugs",
+        "rules._iter_canonical_rule_slugs",
+        "skills._iter_canonical_skill_slugs",
+        "skills._parse_frontmatter",
+        "templates._iter_canonical_template_slugs",
+    ),
+    "commands/obpi_complete.py": (
+        "pipeline_runtime._extract_brief_allowlist",
+        "pipeline_runtime._find_drifted_path",
+    ),
+    "commands/obpi_precomplete.py": (
+        "governance.trust_audits.adversarial_validation._STEP_4B_RE",
+        "governance.trust_audits.briefs._ACCEPTANCE_SECTION",
+        "governance.trust_audits.briefs._BRIEF_EVIDENCE_H3_HEADINGS",
+        "governance.trust_audits.briefs._LANE_IN_FRONTMATTER",
+        "governance.trust_audits.briefs._REQ_ID_IN_BRIEF",
+        "governance.trust_audits.briefs._load_behave_coverage_waivers",
+        "governance.trust_audits.briefs._scan_one_brief_headings",
+    ),
+    "commands/register.py": (
+        "ledger._extract_bare_adr_semver",
+        "ledger._extract_bare_obpi_id",
+    ),
+    "commands/sync.py": (
+        "git_sync._compute_git_sync_state",
+        "git_sync._git_status_lines",
+        "git_sync._head_is_merge_commit",
+        "git_sync._skip_disables_xenon",
+        "git_sync._skip_tokens",
+    ),
+    "commands/upgrade.py": (
+        "personas._classify_persona_file",
+        "rules._classify_rule_file",
+        "skills._classify_skill_file",
+        "templates._classify_template_file",
+    ),
+    "commands/validate_frontmatter.py": (
+        "governance.frontmatter_coherence._is_pool_artifact",
+        "ledger_semantics._derive_obpi_runtime_state",
+    ),
+    "commands/validate_inventory_scopes.py": (
+        "governance.trust_audits.exemption_controls._registry_declarations",
+    ),
+    "commands/validate_req_kind.py": (
+        "req_kind_fence._boundary_invariants_section",
+        "req_kind_fence._fence_obpi_anchored",
+        "req_kind_fence._is_enforcement_asserting",
+    ),
+    "commands/validate_sensitivity.py": (
+        "governance.trust_audits.sensitivity._SENSITIVITY_REGISTRY_REL",
+        "governance.trust_audits.sensitivity._extract_sensitivity_allowed_paths",
+        "governance.trust_audits.sensitivity._iter_sensitivity_briefs",
+        "governance.trust_audits.sensitivity._load_floor_grandfather",
+        "governance.trust_audits.sensitivity._load_sensitivity_registry",
+        "governance.trust_audits.taxonomy._parse_adr_frontmatter",
+    ),
+    "enforcement.py": (
+        "airlock.enter._ensure_airlock_claims_registered",
+        "governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",
+        "mx.invariants._ensure_gate5_claims_registered",
+        "mx.proxy_reality._ensure_grader_gaming_registered",
+    ),
+    "foundation/sunset_migrate.py": (
+        "commands.adr_demote._apply_demote",
+        "commands.adr_demote._build_demote_plan",
+        "commands.adr_demote._derive_pool_slug_from_adr_id",
+    ),
+    "governance/brief_reconcile.py": ("governance.trust_audits.cli._known_cli_verbs",),
+    "governance/frontmatter_coherence.py": ("commands.common._is_pool_adr_id",),
+    "governance/obpi_park_backfill.py": ("governance.trust_audits.taxonomy._live_adr_ids",),
+    "governance/obpi_slug_rename.py": ("ledger._extract_bare_obpi_id",),
+    "governance/trust_audits/_qc_nc_entrypoints.py": (
+        "commands.chores._resolve_chore_dir",
+        "commands.validate_briefs._validate_interviews",
+        "commands.validate_cmd._collect_errors",
+        "commands.validate_req_kind._validate_req_kind_discipline",
+        "commands.validate_task_envelope._validate_task_envelope_coherence",
+    ),
+    "governance/trust_audits/cli.py": ("cli.main._build_parser",),
+    "governance/trust_audits/exemption_controls.py": (
+        "enforcement._ensure_production_claims_registered",
+    ),
+    "governance/trust_audits/qc_binding.py": ("enforcement._run_single_claim",),
+    "governance/trust_audits/release.py": ("enforcement._ensure_production_claims_registered",),
+    "governance/trust_audits/vendor_manifest.py": (
+        "content.vendors._FALLBACK_ROUTES",
+        "content.vendors._FALLBACK_SURFACE_CONTENT_TYPES",
+    ),
+    "handoff_resume_gate.py": (
+        "airlock.enter._AIRLOCK_CLAIM_IDS",
+        "governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",
+    ),
+    "hooks/claude.py": (
+        "hooks.scripts.ghi._ghi_triage_chat_silence_script",
+        "hooks.scripts.mx._mx_awareness_script",
+        "hooks.scripts.pipeline._pipeline_completion_reminder_script",
+        "hooks.scripts.pipeline._plan_audit_gate_script",
+        "hooks.scripts.pipeline._session_staleness_check_script",
+        "hooks.scripts.quality._post_edit_ruff_script",
+        "hooks.scripts.quality._stop_turn_feedback_script",
+        "hooks.scripts.quality._verifier_pipe_gate_script",
+        "hooks.scripts.routing._instruction_router_script",
+        "hooks.scripts.routing._pipeline_gate_script",
+        "hooks.scripts.routing._pipeline_router_script",
+        "hooks.scripts.session_exit._session_exit_bookmark_script",
+        "hooks.scripts.session_exit._session_start_advisement_script",
+        "hooks.scripts.validation._control_surface_sync_script",
+        "hooks.scripts.validation._ledger_writer_script",
+        "hooks.scripts.validation._obpi_completion_validator_script",
+    ),
+    "mx/invariants.py": (
+        "commands.adr_audit._requires_human_obpi_attestation",
+        "commands.adr_audit._validate_obpi_human_attestation_fields",
+        "governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",
+    ),
+    "mx/proxy_reality.py": ("governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",),
+    "qc_binding.py": ("commands.quality._build_check_steps",),
+    "quality.py": ("commands.chores._resolve_chore_dir",),
+    "red_witness.py": ("commands.quality._test_name_from_record",),
+    "req_kind_support.py": (
+        "commands.validate_cmd._default_scope_runners",
+        "commands.validate_cmd._explicit_scope_runners",
+    ),
+    "verb_references.py": ("cli.main._get_parser",),
+    "verifier_pipe_gate.py": (
+        "airlock.enter._AIRLOCK_CLAIM_IDS",
+        "governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",
+    ),
+}
+
+
+def _baseline_edges() -> set[str]:
+    """Flatten the importer-keyed baseline into comparable edge strings."""
+    return {
+        f"{importer} -> {symbol}"
+        for importer, symbols in PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE.items()
+        for symbol in symbols
+    }
+
+
+def _collect_private_cross_package_imports(src_root: Path) -> set[str]:
+    """Return every `<importer> -> <owner>.<_symbol>` edge under *src_root*.
+
+    An edge is counted when a module imports a single-underscore name from a
+    `gzkit.` module whose file sits in a DIFFERENT directory. Dunder names are
+    not private in this sense and are excluded. Relative imports fall out for
+    free: `from .status import _x` records `node.module == "status"`, which the
+    absolute-prefix test already refuses -- an explicit `node.level` guard was
+    written here first and removed as dead, since no mutation of it could
+    change a result.
+
+    Both sides are reduced to REPO-RELATIVE paths before the directory
+    comparison. Comparing an absolute importer path against a relative owner
+    path never matches, which silently admits all 247 same-directory imports
+    and makes the roster measure a class four times larger than the one it
+    names -- observed while authoring this, caught by the baseline count.
+    """
+    edges: set[str] = set()
+    for path in _collect_py_files(src_root):
+        try:
+            tree = _parse_file(path)
+        except SyntaxError:  # pragma: no cover - a syntax error is another test's finding
+            continue
+        rel = path.relative_to(src_root)
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ImportFrom):
+                continue
+            if not node.module or not node.module.startswith("gzkit."):
+                continue
+            owner = Path(node.module[len("gzkit.") :].replace(".", "/"))
+            if owner.parent == rel.parent:
+                continue
+            for alias in node.names:
+                if alias.name.startswith("_") and not alias.name.startswith("__"):
+                    edges.add(
+                        f"{rel.as_posix()} -> {owner.as_posix().replace('/', '.')}.{alias.name}"
+                    )
+    return edges
+
+
+class TestPrivateCrossPackageImportCollector(unittest.TestCase):
+    """The collector's semantics, pinned on a synthetic tree.
+
+    The ratchet tests below assert against the real repository, so a guard
+    whose triggering input does not currently exist there is asserted by
+    nothing. Measured while authoring: the tree contains ZERO dunder
+    cross-module imports, so removing the dunder exclusion changed no result
+    and the real-tree tests stayed green. These fixtures supply the inputs the
+    repository happens not to have.
+    """
+
+    def _collect(self, files: dict[str, str]) -> set[str]:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for rel, body in files.items():
+                target = root / rel
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text(body, encoding="utf-8")
+            return _collect_private_cross_package_imports(root / "src" / "gzkit")
+
+    def test_a_reach_into_another_package_is_counted(self) -> None:
+        """The GHI #945 shape: a private name taken from a different directory."""
+        edges = self._collect(
+            {"src/gzkit/content/ownership.py": "from gzkit.store.corpus import _lock\n"}
+        )
+        self.assertEqual(edges, {"content/ownership.py -> store.corpus._lock"})
+
+    def test_a_sibling_in_the_same_directory_is_not_counted(self) -> None:
+        """Scope. A split module's siblings are a different disposition.
+
+        247 of these exist. Counting them would inflate the roster fivefold and
+        point a refactor at code that is working as designed, where the
+        underscore means "not outside this cluster" and the cluster IS the
+        directory.
+        """
+        edges = self._collect(
+            {"src/gzkit/commands/status_render.py": "from gzkit.commands.status import _inspect\n"}
+        )
+        self.assertEqual(edges, set())
+
+    def test_a_dunder_is_not_a_private_reach(self) -> None:
+        """`__all__` and friends are not a module's private contract.
+
+        No instance exists in the tree today, which is exactly why this is
+        asserted here rather than left to the real-tree ratchet.
+        """
+        edges = self._collect(
+            {"src/gzkit/commands/thing.py": "from gzkit.core.model import __all__\n"}
+        )
+        self.assertEqual(edges, set())
+
+    def test_a_public_name_is_not_counted(self) -> None:
+        """Only the underscore-marked contract is the subject."""
+        edges = self._collect(
+            {"src/gzkit/commands/thing.py": "from gzkit.core.model import Corpus\n"}
+        )
+        self.assertEqual(edges, set())
+
+    def test_a_relative_import_is_not_counted(self) -> None:
+        """A relative import cannot cross a package directory as defined here."""
+        edges = self._collect({"src/gzkit/commands/thing.py": "from .status import _inspect\n"})
+        self.assertEqual(edges, set())
+
+    def test_a_non_gzkit_private_import_is_not_counted(self) -> None:
+        """Third-party internals are another project's contract, not gzkit's."""
+        edges = self._collect(
+            {"src/gzkit/commands/thing.py": "from pydantic._internal import _fields\n"}
+        )
+        self.assertEqual(edges, set())
+
+
+class TestPrivateCrossPackageImportRatchet(unittest.TestCase):
+    """The private-symbol reach across packages may shrink, never grow.
+
+    GHI #945 was one edge of this class: `content/ownership.py` reached
+    `corpus_store._exclusive_store_lock`, and nothing would have signalled
+    breakage if a later refactor had renamed or inlined it. Fixing that one edge
+    left the class open by construction, which is what this ratchet closes.
+    """
+
+    def _current(self) -> set[str]:
+        return _collect_private_cross_package_imports(SRC_ROOT)
+
+    def test_no_new_private_cross_package_import(self) -> None:
+        """A reach not in the baseline is a new edge and must be justified."""
+        added = sorted(self._current() - _baseline_edges())
+        self.assertEqual(
+            added,
+            [],
+            "New import of a private symbol from another package:\n  "
+            + "\n  ".join(added)
+            + "\n\nThe leading underscore is the owning module's statement that the "
+            "symbol is not part of its contract, and nothing but this test enforces "
+            "it. Promote the symbol to a public name in a home both callers can "
+            "reach (see `gzkit.file_lock`, GHI #945), or import a public entry "
+            "point instead. Adding the edge to the baseline is the wrong fix: the "
+            "roster is shrink-only.",
+        )
+
+    def test_baseline_carries_no_repaired_edge(self) -> None:
+        """A repaired edge must be pruned, so the roster measures real debt.
+
+        Without this, the baseline would slowly become fiction — a roster of
+        edges that no longer exist reads as debt that was never paid, and the
+        count stops meaning anything.
+        """
+        stale = sorted(_baseline_edges() - self._current())
+        self.assertEqual(
+            stale,
+            [],
+            "These baseline entries no longer exist and must be removed from "
+            "PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE:\n  " + "\n  ".join(stale),
+        )
+
+
 class TestPolicyTestIsolation(unittest.TestCase):
     """Policy tests themselves must not import from src/gzkit/."""
 
