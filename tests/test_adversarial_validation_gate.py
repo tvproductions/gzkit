@@ -97,6 +97,31 @@ class TestAdversarialValidationGate(unittest.TestCase):
     def test_refuted_with_resolution_passes(self) -> None:
         _enforce(verdict="refuted", resolution="membership assertions added; mutation now FAILS")
 
+    def test_refuted_with_caveats_without_resolution_blocks(self) -> None:
+        """Would break if the chokepoint matched only the bare `refuted` literal.
+
+        GHI #959. A caveat is a refutation the adversary named and did not withdraw,
+        so Step 4b's rule covers it in as many words -- "never hand the operator a
+        known caveat dressed as clean". The chokepoint tested `verdict == "refuted"`
+        while `obpi_precomplete._REFUTATION_VERDICTS` carried both, so the rule was
+        enforced only in the layer AGENTS.md calls "the bypassable pre-flight".
+        Measured at the fix: 13 of 13 completed refutations recorded no resolution,
+        and the 7 caveated ones were the arm still open.
+        """
+        with self.assertRaises(SystemExit), contextlib.redirect_stdout(io.StringIO()):
+            _enforce(verdict="refuted-with-caveats", resolution=None)
+
+    def test_refuted_with_caveats_with_resolution_passes(self) -> None:
+        """The false-positive arm: a caveat that HAS a resolution must still clear.
+
+        A guard with no false-positive test can be tightened without any test
+        objecting -- the lesson round 7 of OBPI-0.35.0-04 paid for.
+        """
+        _enforce(
+            verdict="refuted-with-caveats",
+            resolution="regression test added for the injected-only path; adversary re-ran it",
+        )
+
     def test_degraded_human_only_is_recordable(self) -> None:
         # The skill's degraded floor must be an explicit, attested value —
         # never silence indistinguishable from a passing adversary.

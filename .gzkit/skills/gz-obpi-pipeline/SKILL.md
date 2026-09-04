@@ -965,9 +965,17 @@ the reconcile output and ADR status refresh.
    emitted BEFORE the completion receipt — so a receipt can never exist without the
    adversarial finding that gated it. Pass `--adversary-verdict` (one of `refuted` |
    `not-refuted` | `refuted-with-caveats` | `degraded-human-only`) and `--adversary`
-   (the vendor/model, or `human` in degraded mode). A `refuted` verdict additionally
-   requires `--adversary-resolution` naming what was fixed and how the adversary's own
-   check was re-run — never hand the operator a known refutation dressed as clean.
+   (the vendor/model, or `human` in degraded mode). **Either refutation verdict —
+   `refuted` OR `refuted-with-caveats` — additionally requires `--adversary-resolution`
+   naming what was fixed and how the adversary's own check was re-run** (GHI #959);
+   never hand the operator a known refutation dressed as clean. A CAVEAT is a
+   refutation the adversary named and did not withdraw, so it carries the same
+   obligation: this gate tested the bare `refuted` literal until 2026-09-04, and the
+   caveated half cleared the chokepoint with nothing recorded. Measured at the fix,
+   **13 of 13** completed refutations in `.gzkit/ledger.jsonl` carried NO resolution —
+   three of them shipping while their own verdict named live blockers (*"the mandatory
+   full check is red"*, *"REQ-0.35.0-09-11 was categorically false"*). Prevalence was
+   never precedent; it was the size of the hole.
 
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \

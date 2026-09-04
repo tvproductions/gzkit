@@ -34,6 +34,7 @@ def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> NoReturn:
 
 __all__ = [
     "ADVERSARY_VERDICTS",
+    "REFUTATION_VERDICTS",
     "_build_adversarial_event",
     "_enforce_adversarial_validation",
     "_enforce_adversary_receipt",
@@ -50,6 +51,22 @@ ADVERSARY_VERDICTS: tuple[str, ...] = (
     "refuted-with-caveats",
     "degraded-human-only",
 )
+
+# The verdicts that must never read as clean, and therefore may never complete
+# without a recorded resolution (GHI #959). A caveat is a refutation the adversary
+# NAMED and did not withdraw, so Step 4b's rule covers it in as many words: "never
+# hand the operator a known caveat dressed as clean." This gate previously tested
+# the bare `refuted` literal, so the caveated half of the same class cleared the
+# chokepoint with nothing recorded — measured at the fix, 13 of 13 completed
+# refutations carried no resolution, and the 7 caveated ones were the arm still open.
+#
+# It lives HERE, beside the vocabulary it subsets, because the chokepoint owns the
+# vocabulary and `obpi_precomplete` already imports `ADVERSARY_VERDICTS` rather than
+# restating it — "a vocabulary maintained in two places is the two-copies-one-binds
+# failure this repository keeps paying for" (that module's own words). The pre-flight
+# had the correct membership while the fail-closed layer had a narrower one, which is
+# the same two-copies defect wearing the shape of a doctrine gap.
+REFUTATION_VERDICTS: frozenset[str] = frozenset({"refuted", "refuted-with-caveats"})
 
 # Step-4b tier order (GHI #678). Codex (a different vendor) is REQUIRED first
 # because a Claude validating Claude shares this agent's blind spots — the exact
@@ -315,13 +332,14 @@ def _enforce_adversarial_validation(
             obpi_id=obpi_id,
         )
 
-    if verdict == "refuted" and not resolution:
+    if verdict in REFUTATION_VERDICTS and not resolution:
         _fail(
-            f"Completion blocked: the adversary refuted {obpi_id} and no resolution is "
-            "recorded. A known refutation must never be handed to the operator dressed "
-            "as clean. Fix the refuted claim, re-verify against the adversary's own "
-            "check, then re-run with --adversary-resolution '<what was fixed and how "
-            "the adversary's check was re-run>'.",
+            f"Completion blocked: the adversary returned '{verdict}' for {obpi_id} and no "
+            "resolution is recorded. A known refutation must never be handed to the "
+            "operator dressed as clean, and a CAVEAT is a refutation the adversary named "
+            "and did not withdraw. Fix the refuted claim, re-verify against the "
+            "adversary's own check, then re-run with --adversary-resolution '<what was "
+            "fixed and how the adversary's check was re-run>'.",
             exit_code=1,
             as_json=as_json,
             obpi_id=obpi_id,

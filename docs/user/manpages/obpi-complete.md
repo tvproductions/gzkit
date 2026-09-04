@@ -31,7 +31,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | `--adversary-job-id ID` | Adversary run id, when the runtime supplies one (e.g. a Codex `task-*` id). Recorded as provenance only — **nothing resolves it**, so it is never proof of the tier (GHI #765). |
 | `--adversary-receipt RUN_ID` | ARB step receipt `run_id` proving the tier from the argv that actually ran (GHI #765). **Required for any cross-vendor (tier-1) claim** (GHI #780) — a tier-1 completion citing no receipt is blocked. Unlike `--adversary-job-id`, the gate **resolves** this: the receipt must exist, record `exit_status: 0`, and its `step.command[0]` must be a recognized different-vendor binary. Precedence is **proven > declared > inferred**, and only the `proven` rung admits tier 1 — a receipt contradicting `--adversary-tier 1` fails closed. Produce one with `gz arb step --name codexadversary -- codex exec '<refute prompt>'`. |
 | `--refuted-claim TEXT` | The specific claim the adversary broke, verbatim. |
-| `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict refuted`** — a known refutation may never be handed to the operator dressed as clean. |
+| `--adversary-resolution TEXT` | How a refutation was closed and re-verified. **Required when `--adversary-verdict` is `refuted` OR `refuted-with-caveats`** — a known refutation may never be handed to the operator dressed as clean, and a caveat is a refutation the adversary named and did not withdraw (GHI #959). |
 | `--adversary-fallback-reason TEXT` | Why Codex (tier 1, cross-vendor) was unavailable, when a Claude-family (tier-2) adversary ran. **Required for a non-cross-vendor adversary** (GHI #678) — Codex is required first because a Claude validating Claude shares this agent's blind spots; "it was convenient" is not a reason. |
 | `--adversary-tier {1,2,3}` | Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded. **The declaration governs but does not authorize**: tier 1 named against an adversary that is not a recognized different-vendor model fails closed, tier 1 with no `--adversary-receipt` fails closed (GHI #780), and tier 2/3 still requires `--adversary-fallback-reason` even when the adversary is named after a tier-1 vendor. Omitting it no longer falls back to name-based inference for a tier-1 claim — an unproven cross-vendor name is refused whether or not a tier is declared (GHI #678, #780). |
 | `--json` | Machine-readable JSON output |
@@ -85,7 +85,8 @@ uv run gz obpi complete OBPI-0.0.99-01-example \
   --adversary-verdict degraded-human-only --adversary human
 ```
 
-`--adversary-verdict refuted` without `--adversary-resolution` is blocked. The lite
+`--adversary-verdict refuted` or `refuted-with-caveats` without `--adversary-resolution`
+is blocked. The lite
 lane is exempt, matching the lane that already carries fail-closed Gate 3 and Gate 4.
 
 ### Proving the tier rather than asserting it (GHI #765, #780)

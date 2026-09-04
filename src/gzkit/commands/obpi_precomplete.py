@@ -533,11 +533,27 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
 # prose about the past, not this OBPI's verdict.
 _NEXT_HEADING_RE = re.compile(r"^#{2,3}\s+", re.MULTILINE)
 
-# The two verdicts that must never read as clean. `refuted` is what the completion
-# chokepoint blocks without a resolution; `refuted-with-caveats` is included because
-# Step 4b's own rule is "never hand the operator a known caveat dressed as clean",
-# and the pre-flight's whole job is to put that in front of a human.
-_REFUTATION_VERDICTS = frozenset({"refuted", "refuted-with-caveats"})
+
+# The two verdicts that must never read as clean, READ FROM THE CHOKEPOINT rather
+# than restated here (GHI #959). Both layers now share one membership: the completion
+# command blocks either verdict without a resolution, and this pre-flight puts the
+# same pair in front of a human first.
+#
+# This was a literal set until 2026-09-04, and the copies had DIFFERENT membership --
+# the pre-flight carried both verdicts while the fail-closed chokepoint tested only
+# `refuted`, so Step 4b's "never hand the operator a known caveat dressed as clean"
+# was enforced solely in the layer AGENTS.md calls "the bypassable pre-flight".
+# Sourcing it is the same discipline `_verdict_vocabulary` already applies to
+# `ADVERSARY_VERDICTS`, and for the reason that function names: a vocabulary
+# maintained in two places is the two-copies-one-binds failure this repository
+# keeps paying for.
+def _refutation_verdicts() -> frozenset[str]:
+    """Return the verdicts the completion chokepoint treats as refutations."""
+    from gzkit.commands.obpi_complete_adversarial import (  # noqa: PLC0415
+        REFUTATION_VERDICTS,
+    )
+
+    return REFUTATION_VERDICTS
 
 
 def _verdict_pattern() -> re.Pattern[str]:
@@ -665,7 +681,7 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
             ),
         )
 
-    refutations = sorted({v for v in verdicts if v in _REFUTATION_VERDICTS})
+    refutations = sorted({v for v in verdicts if v in _refutation_verdicts()})
     if refutations:
         return CheckResult(
             name="adversarial_validation",
