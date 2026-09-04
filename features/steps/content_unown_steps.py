@@ -29,7 +29,8 @@ from pathlib import Path
 from behave import given, then, when
 
 from gzkit.cli.main import main
-from gzkit.content.ownership import measure_section_spans
+from gzkit.content.ownership import measure_section_spans, sections_digest
+from gzkit.governance.events import emit_section_ownership_genesis
 
 _SURFACE_TEXT = (
     "# Doc Title\n"
@@ -70,21 +71,36 @@ def step_seed_surface_and_declaration(context, surface: str) -> None:
     `load_declaration` fails closed on any undeclared section (REQ-0.35.0-04-01),
     so the declared `sections` map is built by calling `measure_section_spans`
     against the same text just written, never by hand-typing ids.
+
+    The surface is written as BYTES. `write_text` opens in text mode with
+    `newline=None`, which translates every `\n` to `os.linesep` -- so on Windows
+    the file gains a byte per line while `measure_section_spans` below still
+    measures the untranslated in-memory string, and the seeded floor undercounts
+    the file it is supposed to describe (GHI #958). The production reader is
+    already hardened against exactly this: `_surface_digest` decodes raw bytes
+    rather than using `read_text`, "because the floor this digest protects is a
+    count of PHYSICAL BYTES" (Step-4b round-8 finding 2). The fixture must
+    produce the bytes that reader measures.
     """
-    Path(surface).write_text(_SURFACE_TEXT, encoding="utf-8")
+    Path(surface).write_bytes(_SURFACE_TEXT.encode("utf-8"))
     spans = measure_section_spans(_SURFACE_TEXT)
     sections = dict.fromkeys(spans, "unowned")
     sections["doc-title"] = "corpus-owned"
     sections["alpha-section"] = "corpus-owned"
 
-    # A genesis declaration (floor_event_id=None) is only load-bearing valid
-    # when its floor equals the summed span of its own declared-'unowned'
-    # sections (REQ-0.35.0-04-02) -- derive that sum from the same
-    # measure_section_spans call above, never hardcode it.
+    # The floor is derived from the same measure_section_spans call above, never
+    # hardcoded, so it stays coherent regardless of _SURFACE_TEXT's byte layout.
     seed_floor = sum(span for sid, span in spans.items() if sections[sid] == "unowned")
 
     declaration_path = _declaration_path(surface)
     declaration_path.parent.mkdir(parents=True, exist_ok=True)
+    # Mint the genesis witness id FIRST and embed it, because the emitter's
+    # contract is caller-minted ids: Layer-1 (the declaration) and Layer-2 (the
+    # ledger) must agree on which event proves the day-one floor. A null
+    # `floor_event_id` is fail-closed since `0488f8f4` -- a floor that merely
+    # agrees with its own summed span is what an attacker recomputes after a
+    # hand edit (GHI #957).
+    genesis_event_id = f"section-ownership-genesis-{surface}-{seed_floor}"
     declaration_path.write_text(
         json.dumps(
             {
@@ -92,10 +108,13 @@ def step_seed_surface_and_declaration(context, surface: str) -> None:
                 "sections": sections,
                 "unowned_byte_floor": seed_floor,
                 "measured_at": "2026-09-02T00:00:00Z",
-                "floor_event_id": None,
+                "floor_event_id": genesis_event_id,
             }
         ),
         encoding="utf-8",
+    )
+    emit_section_ownership_genesis(
+        Path("."), genesis_event_id, surface, sections_digest(sections), seed_floor
     )
 
     context.surface = surface

@@ -10,6 +10,7 @@ attested exception: the same corpus-attestation shape as `gz content retire`
 
 from __future__ import annotations
 
+import ast
 import contextlib
 import json
 import os
@@ -57,8 +58,26 @@ _LEDGER_PATH = Path(".gzkit") / "ledger.jsonl"
 _SEED_FLOOR = measure_section_spans(_SURFACE_TEXT)["beta-section"]
 
 
+def _write_surface(text: str) -> None:
+    """Write the byte-measured surface as BYTES, never through text mode.
+
+    `write_text` opens with `newline=None`, which translates every `\n` to
+    `os.linesep` -- so on Windows the file gains a byte per line while
+    `measure_section_spans` still measures the untranslated in-memory string,
+    and every floor derived here undercounts the file it describes. 23 tests in
+    this module failed that way the first time Windows could run them (GHI
+    #958, unblocked by GHI #955).
+
+    The production reader is already hardened against the same asymmetry:
+    `_surface_digest` decodes raw bytes rather than using `read_text`, "because
+    the floor this digest protects is a count of PHYSICAL BYTES" (Step-4b
+    round-8 finding 2). A fixture must produce the bytes that reader measures.
+    """
+    Path("Doc.md").write_bytes(text.encode("utf-8"))
+
+
 def _seed_surface() -> None:
-    Path("Doc.md").write_text(_SURFACE_TEXT, encoding="utf-8")
+    _write_surface(_SURFACE_TEXT)
 
 
 def _seed_declaration(*, alpha: str = "corpus-owned", floor: int | None = None) -> None:
@@ -494,10 +513,7 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
             # The surface GROWS before the retry: the section that was un-owned
             # is now far larger, so the floor the journal would complete into no
             # longer covers the live unowned span.
-            Path("Doc.md").write_text(
-                _SURFACE_TEXT.replace("alpha body", "alpha body " + ("x" * 400)),
-                encoding="utf-8",
-            )
+            _write_surface(_SURFACE_TEXT.replace("alpha body", "alpha body " + ("x" * 400)))
             Ledger.append = real_append
 
             retry = _unown(self._runner, attestor="g0", reason="moving to prose doc")
@@ -1385,7 +1401,7 @@ class TestContentUnownReadsTheSurfaceInsideTheLock(unittest.TestCase):
                 # the critical section runs -- exactly the window an editor save
                 # occupies. Nothing here touches `.gzkit/`.
                 with real_lock(path) as handle:
-                    Path("Doc.md").write_text(grown, encoding="utf-8")
+                    _write_surface(grown)
                     yield handle
 
             with patch(
@@ -1465,7 +1481,7 @@ class TestContentUnownReadsTheSurfaceInsideTheLock(unittest.TestCase):
             real_mint = unown_module._mint_event_id
 
             def grow_surface_then_mint(record, parent_event_id):
-                Path("Doc.md").write_text(grown, encoding="utf-8")
+                _write_surface(grown)
                 return real_mint(record, parent_event_id)
 
             with patch.object(unown_module, "_mint_event_id", grow_surface_then_mint):
@@ -1599,7 +1615,7 @@ class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
             real_commit = unown_module._commit_transition
 
             def edit_then_commit(path, journal_path, root, record):
-                Path("Doc.md").write_text(self._GROWN, encoding="utf-8")
+                _write_surface(self._GROWN)
                 return real_commit(path, journal_path, root, record)
 
             with patch.object(unown_module, "_commit_transition", edit_then_commit):
@@ -1686,10 +1702,7 @@ class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
             journal.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
 
             # An ordinary editor rename, not an attack: no .gzkit/ access.
-            Path("Doc.md").write_text(
-                _SURFACE_TEXT.replace("## Beta Section", "## Renamed Section"),
-                encoding="utf-8",
-            )
+            _write_surface(_SURFACE_TEXT.replace("## Beta Section", "## Renamed Section"))
 
             self.assertIs(unown_module._append_event_once, real_append)
             retry = _unown(self._runner, attestor="g0", reason="probe")
@@ -1759,7 +1772,7 @@ class TestContentUnownRound8(unittest.TestCase):
             real_append = unown_module._append_event_once
 
             def edit_then_append(root, record, journal_path):
-                Path("Doc.md").write_text(self._GROWN, encoding="utf-8")
+                _write_surface(self._GROWN)
                 return real_append(root, record, journal_path)
 
             with patch.object(unown_module, "_append_event_once", edit_then_append):
@@ -1890,3 +1903,57 @@ class TestContentUnownRound8(unittest.TestCase):
                     "a witness landed during this invocation, so no refusal in it "
                     f"may claim the stores were untouched. {second.output}",
                 )
+
+
+class TestSurfaceFixturesWriteBytes(unittest.TestCase):
+    """No fixture may seed the byte-measured surface through text mode.
+
+    The ownership floor is a count of PHYSICAL BYTES. `Path.write_text` opens
+    with `newline=None` and translates every `\n` to `os.linesep`, so a fixture
+    using it produces a file one byte per line longer on Windows than the
+    in-memory string every floor in these tests is derived from. 23 tests here
+    failed exactly that way the first time Windows could run this module (GHI
+    #958) -- and they had been wrong on Windows for as long as they had
+    existed, silent only because GHI #955's import error stopped the module
+    loading at all.
+
+    This is asserted STRUCTURALLY rather than behaviourally on purpose: the
+    defect is invisible on POSIX, where `os.linesep` is already `\n`, so no
+    assertion that runs here can observe it. A test that cannot fail on the
+    machine running it is worth nothing; a test that reads the source can.
+    """
+
+    #: Fixture modules that seed a surface whose bytes an ownership floor measures.
+    _SURFACE_SEEDING_MODULES = (
+        Path(__file__),
+        Path(__file__).parent.parent.parent / "features" / "steps" / "content_unown_steps.py",
+    )
+
+    def test_no_surface_fixture_writes_through_text_mode(self) -> None:
+        """Every surface write goes through `write_bytes`, never `write_text`."""
+        offenders: list[str] = []
+        for module in self._SURFACE_SEEDING_MODULES:
+            tree = ast.parse(module.read_text(encoding="utf-8"), filename=str(module))
+            for node in ast.walk(tree):
+                if not isinstance(node, ast.Call):
+                    continue
+                func = node.func
+                if not isinstance(func, ast.Attribute) or func.attr != "write_text":
+                    continue
+                # Only a write whose TARGET is the measured surface counts. A
+                # declaration or journal is JSON the loader parses, not bytes
+                # any floor is measured against, so translating its newlines
+                # changes nothing the ratchet can observe.
+                target = ast.unparse(func.value)
+                if "Doc.md" in target or target in {"Path(surface)", "surface_path"}:
+                    offenders.append(f"{module.name}:{node.lineno}  {target}.write_text(...)")
+        self.assertEqual(
+            offenders,
+            [],
+            "A byte-measured surface is written through text-mode newline "
+            "translation:\n  " + "\n  ".join(offenders) + "\n\n"
+            "Use `write_bytes(text.encode('utf-8'))`. The production reader "
+            "decodes raw bytes deliberately (`_surface_digest`, Step-4b round-8 "
+            "finding 2) because the floor counts physical bytes; a fixture must "
+            "produce the bytes that reader measures.",
+        )
