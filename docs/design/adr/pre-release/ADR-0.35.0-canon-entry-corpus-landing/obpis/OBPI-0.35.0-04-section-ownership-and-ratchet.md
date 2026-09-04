@@ -929,6 +929,20 @@ Report NEW in-scope findings only, ranked by severity. The governing gate conver
   change. NOT done here because `corpus_store.py` is outside this brief's Allowed Paths.
   Recorded per PRIME DIRECTIVE #6 — the source comment at the import site is a note, not
   a tracker.
+  **TRACKED AT GHI #945; CLOSED `fixed` 2026-09-04 by `5fbc5b3c`.** The promotion landed
+  exactly as RIGHT HOME describes, at package level (`src/gzkit/file_lock.py`,
+  `exclusive_file_lock`) rather than under `content/`, on this entry's own reasoning that
+  the primitive is not content-specific. `ownership.py` now imports the public name and
+  the source comment this entry called "a note, not a tracker" is gone with it.
+  `tests/test_file_lock.py` asserts MUTUAL EXCLUSION between the two callers rather than
+  symbol identity — an identity assertion passes on an alias, and only contention proves
+  both callers reach the same kernel lock on the same sidecar, which is the drift this
+  entry warned about. Nothing in this brief's own REQ set changes: the import site moved,
+  the locking semantics did not, and `tests/content/test_ownership.py` and
+  `tests/commands/test_content_unown.py` pass unchanged (127 tests across the four
+  affected modules, `arb-step-unittest-17ba834f8f4c4a0fb285cc24c20c8554` exit_status=0
+  over the full 9301-test suite). Recorded here because this entry was the only place the
+  finding lived and it named no tracker.
 
 - **No directory `fsync` after `os.replace` in `write_declaration_atomically`.**
   Raised `minor` by the Step-4b task-6 spec review 2026-09-02. File CONTENTS are fsync'd
