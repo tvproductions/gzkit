@@ -160,9 +160,9 @@ def lint() -> None:
     result = run_lint(project_root)
 
     if result.stdout:
-        console.print(result.stdout)
+        console.print(result.stdout, markup=False)
     if result.stderr:
-        console.print(result.stderr)
+        console.print(result.stderr, markup=False)
 
     if result.success:
         console.print("[green]Lint passed.[/green]")
@@ -179,9 +179,9 @@ def format_cmd() -> None:
     result = run_format(project_root)
 
     if result.stdout:
-        console.print(result.stdout)
+        console.print(result.stdout, markup=False)
     if result.stderr:
-        console.print(result.stderr)
+        console.print(result.stderr, markup=False)
 
     if result.success:
         console.print("[green]Format complete.[/green]")
@@ -329,9 +329,9 @@ def _run_obpi_scoped_behave(project_root, obpi: str) -> None:
     console.print(f"Running behave scenarios for {len(tags)} REQ tag(s) of {obpi}...")
     behave_result = run_behave(project_root, tags=tags)
     if behave_result.stdout:
-        console.print(behave_result.stdout)
+        console.print(behave_result.stdout, markup=False)
     if behave_result.stderr:
-        console.print(behave_result.stderr)
+        console.print(behave_result.stderr, markup=False)
     if not behave_result.success:
         console.print("[red]OBPI-scoped behave scenarios failed.[/red]")
         raise SystemExit(behave_result.returncode)
@@ -364,9 +364,9 @@ def test(bdd: bool = False, obpi: str | None = None) -> None:
     console.print("Running unit tests...")
     unit = run_tests(project_root)
     if unit.stdout:
-        console.print(unit.stdout)
+        console.print(unit.stdout, markup=False)
     if unit.stderr:
-        console.print(unit.stderr)
+        console.print(unit.stderr, markup=False)
     if not unit.success:
         console.print("[red]Unit tests failed.[/red]")
         raise SystemExit(unit.returncode)
@@ -378,9 +378,9 @@ def test(bdd: bool = False, obpi: str | None = None) -> None:
     console.print("Running behave scenarios...")
     behave_result = run_behave(project_root)
     if behave_result.stdout:
-        console.print(behave_result.stdout)
+        console.print(behave_result.stdout, markup=False)
     if behave_result.stderr:
-        console.print(behave_result.stderr)
+        console.print(behave_result.stderr, markup=False)
     if behave_result.success:
         console.print("[green]Behave scenarios passed.[/green]")
     else:
@@ -396,9 +396,9 @@ def typecheck() -> None:
     result = run_typecheck(project_root)
 
     if result.stdout:
-        console.print(result.stdout)
+        console.print(result.stdout, markup=False)
     if result.stderr:
-        console.print(result.stderr)
+        console.print(result.stderr, markup=False)
 
     if result.success:
         console.print("[green]Type check passed.[/green]")
@@ -895,9 +895,9 @@ def _render_step_failures(results: list[tuple[str, QualityResult]]) -> None:
             continue
         console.print(f"\n[red]─── {name} output ───[/red]")
         if result.stdout:
-            console.print(result.stdout.rstrip("\n"))
+            console.print(result.stdout.rstrip("\n"), markup=False)
         if result.stderr:
-            console.print(result.stderr.rstrip("\n"))
+            console.print(result.stderr.rstrip("\n"), markup=False)
 
 
 def _record_full_pass(project_root: pathlib.Path) -> None:

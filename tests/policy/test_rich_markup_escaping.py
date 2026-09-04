@@ -79,6 +79,31 @@ FREE_TEXT_NAMES = frozenset(
 #: Calls whose result is a number, so it cannot carry markup.
 NUMERIC_CALLS = frozenset({"len", "sum", "int", "float", "abs", "min", "max", "round"})
 
+#: `str` methods that return a string derived from their receiver. Resolving
+#: through them is not a nicety: `result.stdout.rstrip("\n")` is the CI-relay
+#: site, and a resolver that stopped at the method call read it as unnamed and
+#: passed it. The mutation pass caught that; without this set the guard was
+#: green over the exact line it exists to hold.
+STRING_METHODS = frozenset(
+    {
+        "strip",
+        "rstrip",
+        "lstrip",
+        "format",
+        "join",
+        "replace",
+        "lower",
+        "upper",
+        "title",
+        "casefold",
+        "expandtabs",
+        "removeprefix",
+        "removesuffix",
+        "decode",
+        "splitlines",
+    }
+)
+
 #: Expressions whose free-text-looking name holds a structurally bracket-free
 #: value. `row['line']` is `line_no`, an int (`adr_coverage.py:321`) — escaping
 #: it would be both noise and a type error.
@@ -87,6 +112,31 @@ NUMERIC_EXCEPTIONS = frozenset({"row['line']"})
 #: Free-text values reaching Rich unescaped. Ratchets to 0 alongside the
 #: bracket count above.
 MAX_UNESCAPED_FREE_TEXT = 0
+
+#: `console.print(x)` sites where `x` is a whole value rather than an
+#: f-string. These are the highest-consequence shape in the family: 14 of them
+#: relayed captured subprocess stdout/stderr, so every child command's
+#: diagnostics lost their bracketed tokens on the way through `gz check` — the
+#: surface whose own docstring says it exists because of "28 consecutive
+#: unreadable red CI runs". Fixed with `markup=False`, since child output is
+#: never markup.
+MAX_UNESCAPED_BARE_ARGS = 0
+
+#: The one API that legitimately prints caller-supplied markup. `OutputFormatter`
+#: is the CLI's styling surface: callers pass `"[green]✓ done[/green]"` and
+#: expect it rendered. Its `debug()` sibling escapes, because a debug payload is
+#: data — the class already draws the line, and this records where.
+INTENDED_MARKUP_SITES = frozenset(
+    {
+        ("src/gzkit/cli/formatters.py", "message"),
+        # `line` is assembled two statements up with authored markup
+        # (`[yellow]![/yellow]`) and every data field escaped at construction
+        # (`escape(q.ghi.title)`, `escape(q.warning)`). An entry here rather
+        # than a rename to something outside the roster: an exception you can
+        # read and review beats a name chosen to slip past the check.
+        ("src/gzkit/commands/patch_release.py", "line"),
+    }
+)
 
 
 def _is_rich_print(node: ast.Call) -> bool:
@@ -170,6 +220,13 @@ def _terminal_name(node: ast.expr) -> str | None:
                 return index.value
             node = node.value
             continue
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr in STRING_METHODS
+        ):
+            node = node.func.value
+            continue
         return None
 
 
@@ -209,6 +266,37 @@ def _unescaped_free_text(joined: ast.JoinedStr) -> list[str]:
         if name.lower() in FREE_TEXT_NAMES:
             found.append(ast.unparse(expression))
     return found
+
+
+def _unescaped_bare_args(call: ast.Call, relative: str) -> list[str]:
+    """Free-text values printed whole, with markup parsing left on."""
+    if any(keyword.arg == "markup" for keyword in call.keywords):
+        return []
+    found: list[str] = []
+    for argument in call.args:
+        if isinstance(argument, ast.JoinedStr | ast.Constant) or _is_escape_call(argument):
+            continue
+        name = _terminal_name(argument)
+        if name is None or name.isupper() or name.lower() not in FREE_TEXT_NAMES:
+            continue
+        if (relative, name) in INTENDED_MARKUP_SITES:
+            continue
+        found.append(ast.unparse(argument))
+    return found
+
+
+def _scan_bare_args() -> list[str]:
+    """Every whole free-text value printed through Rich with markup enabled."""
+    violations: list[str] = []
+    for path in sorted(SRC_ROOT.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        relative = path.relative_to(SRC_ROOT.parent.parent).as_posix()
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or not _is_rich_print(node):
+                continue
+            for expression in _unescaped_bare_args(node, relative):
+                violations.append(f"{relative}:{node.lineno}: console.print({expression})")
+    return violations
 
 
 def _scan_free_text() -> list[str]:
@@ -293,6 +381,40 @@ class TestRichMarkupEscaping(unittest.TestCase):
             "parser. Wrap each in `escape(...)` at the print site, where the "
             "value is known to be data:\n  " + "\n  ".join(violations),
         )
+
+    def test_no_bare_free_text_value_is_printed_as_markup(self) -> None:
+        """Printing a whole value hands Rich the data itself to parse.
+
+        The f-string arms above catch a bracket beside an interpolation. This
+        catches the shape with no f-string at all — `console.print(result.stdout)`
+        — which is how captured subprocess output was reaching Rich's parser.
+        """
+        violations = _scan_bare_args()
+
+        self.assertLessEqual(
+            len(violations),
+            MAX_UNESCAPED_BARE_ARGS,
+            "These hand a whole free-text value to Rich's markup parser. Pass "
+            "`markup=False` when the value is not markup (captured process "
+            "output never is), or `escape(...)` when the line also carries "
+            "styling:\n  " + "\n  ".join(violations),
+        )
+
+    def test_bare_arg_detector_is_not_vacuous(self) -> None:
+        """The bare-arg scanner flags an unguarded print and admits both guards."""
+        cases = [
+            ("console.print(result.stdout)", ["result.stdout"]),
+            ("console.print(result.stdout, markup=False)", []),
+            ("console.print(escape(result.stdout))", []),
+            ("console.print(adr_id)", []),
+        ]
+
+        for source, expected in cases:
+            statement = ast.parse(source).body[0]
+            assert isinstance(statement, ast.Expr)
+            call = statement.value
+            assert isinstance(call, ast.Call)
+            self.assertEqual(_unescaped_bare_args(call, "src/gzkit/x.py"), expected)
 
     def test_free_text_detector_is_not_vacuous(self) -> None:
         """The free-text scanner flags an unescaped message and admits an escaped one."""

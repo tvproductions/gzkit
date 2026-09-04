@@ -49,9 +49,9 @@ def _record_gate_result(
 
 def _print_command_output(result: Any) -> None:
     if result.stdout:
-        console.print(result.stdout)
+        console.print(result.stdout, markup=False)
     if result.stderr:
-        console.print(result.stderr)
+        console.print(result.stderr, markup=False)
 
 
 def _render_gate1_frontmatter_drift(errors: list[ValidationError]) -> None:

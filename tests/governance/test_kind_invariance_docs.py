@@ -20,11 +20,11 @@ Each binding below now names the REQ whose subject the test actually asserts.
 from __future__ import annotations
 
 import ast
-import json
 import re
 import unittest
 from pathlib import Path
 
+from gzkit.ledger import Ledger
 from gzkit.traceability import covers
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -169,17 +169,16 @@ class TestKindInvarianceArtifacts(unittest.TestCase):
             "arb-step-coverage",
             "arb-step-mkdocs",
         }
-        ledger = PROJECT_ROOT / ".gzkit" / "ledger.jsonl"
+        ledger = Ledger(PROJECT_ROOT / ".gzkit" / "ledger.jsonl")
 
         bound: set[str] = set()
-        for line in ledger.read_text(encoding="utf-8").splitlines():
-            if OBPI_ID not in line:
+        for event in ledger.read_all():
+            if event.event != "audit_receipt_emitted":
                 continue
-            event = json.loads(line)
-            evidence = event.get("evidence") or {}
+            payload = event.model_dump()
+            evidence = payload.get("evidence") or {}
             if (
-                event.get("event") != "audit_receipt_emitted"
-                or event.get("receipt_event") != "meta-receipt-bind"
+                payload.get("receipt_event") != "meta-receipt-bind"
                 or evidence.get("obpi_id") != OBPI_ID
                 or evidence.get("exit_status") != 0
             ):

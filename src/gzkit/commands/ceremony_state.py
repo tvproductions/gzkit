@@ -256,4 +256,4 @@ def _output(as_json: bool, state: CeremonyState, text: str) -> None:
             )
         )
     else:
-        console.print(text)
+        console.print(text, markup=False)

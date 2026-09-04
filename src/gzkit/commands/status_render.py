@@ -429,7 +429,7 @@ def _render_adr_report(result: dict[str, Any]) -> None:
     if issues:
         console.print("Issues")
         for line in issues:
-            console.print(line)
+            console.print(line, markup=False)
 
     # --- Closeout Blockers (specific reasons beyond the per-OBPI Issues list) ---
     closeout_blockers = cast(list[str], result.get("closeout_blockers", []))

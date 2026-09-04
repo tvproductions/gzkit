@@ -590,9 +590,9 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
 
     for q in result.qualifications:
         styled = _STATUS_STYLE.get(q.status, q.status)
-        line = f"  #{q.ghi.number:<6} {q.ghi.title:<40} {styled}"
+        line = f"  #{q.ghi.number:<6} {escape(q.ghi.title):<40} {styled}"
         if q.warning:
-            line += f"  [yellow]![/yellow] {q.warning}"
+            line += f"  [yellow]![/yellow] {escape(q.warning)}"
         console.print(line)
 
     if result.foundation_closeouts:
