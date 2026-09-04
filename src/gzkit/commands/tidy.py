@@ -70,7 +70,7 @@ def _run_agent_control_sync(dry_run: bool) -> None:
     if blocking_errors:
         console.print("\n[red]Sync post-check failed: unresolved skill parity errors.[/red]")
         for issue in blocking_errors:
-            console.print(f"  [red]ERROR[/red] {issue.path}: {issue.message}")
+            console.print(f"  [red]ERROR[/red] {escape(issue.path)}: {escape(issue.message)}")
         raise SystemExit(1)
 
     stale_paths = find_stale_mirror_paths(project_root, config)

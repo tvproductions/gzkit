@@ -588,7 +588,7 @@ def _run_evaluation_justify_binding_solo(
     console.print("[bold]Validated:[/bold] evaluation-justify-binding\n")
     console.print(f"[red]❌ {len(errors)} violation(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 
@@ -607,7 +607,7 @@ def _run_qc_binding_scope(project_root: Path, *, as_json: bool) -> None:
     console.print("[bold]Validated:[/bold] qc-binding\n")
     console.print(f"[red]❌ {len(errors)} theater finding(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 
@@ -630,7 +630,7 @@ def _run_fidelity_presence_scope(project_root: Path, *, as_json: bool) -> None:
     console.print("[bold]Validated:[/bold] fidelity-presence\n")
     console.print(f"[red]❌ {len(errors)} block-less ADR Decision(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 
@@ -650,7 +650,7 @@ def _run_config_registry_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print(f"[red]❌ {len(errors)} unowned/incoherent config registry surface(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 
@@ -673,7 +673,7 @@ def _run_waiver_ratchet_scope(project_root: Path, *, as_json: bool) -> None:
     console.print("[bold]Validated:[/bold] waiver-ratchet\n")
     console.print(f"[red]❌ {len(errors)} unratcheted waiver surface(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 

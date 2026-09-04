@@ -111,5 +111,35 @@ class TestErrorTypeSurvivesRichMarkup(unittest.TestCase):
         self.assertIn("bold", output)
 
 
+class TestDeferredBracketedTokenSurvivesRendering(unittest.TestCase):
+    """A bracket authored in one module, rendered in another (GHI #944).
+
+    `obpi_cmd._validate_brief_schema` builds `f"[{e.type}] {e.message}"` and
+    hands the string to `obpi_stages._print_pipeline_blockers`, which renders
+    it with `console.print`. The bracket is therefore nowhere near the print
+    call, and `tests/policy/test_rich_markup_escaping.py` — which reads the
+    literal segments of each printed f-string — structurally cannot see it.
+
+    That is the arm the ratchet does not cover, so it is pinned here instead:
+    the escape belongs at the render site, where the string is known to be
+    data, not at the site that happens to have authored the bracket.
+    """
+
+    def test_blocker_carrying_a_bracketed_type_renders_it(self) -> None:
+        """`gz obpi` blockers keep the schema error type the operator needs."""
+        buffer = io.StringIO()
+        console = Console(file=buffer, no_color=True, highlight=False, width=200)
+
+        with patch("gzkit.commands.obpi_stages.console", console):
+            from gzkit.commands import obpi_stages
+
+            obpi_stages._print_pipeline_blockers(
+                "OBPI-0.35.0-04",
+                ["[obpi_schema] brief is missing a required section"],
+            )
+
+        self.assertIn("[obpi_schema]", buffer.getvalue())
+
+
 if __name__ == "__main__":
     unittest.main()

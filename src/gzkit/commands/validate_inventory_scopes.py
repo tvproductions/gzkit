@@ -16,6 +16,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.commands.common import console
 
 
@@ -48,7 +50,7 @@ def run_exemption_controls_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print(f"[red]❌ {len(errors)} exemption-control finding(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)
 
 
@@ -81,5 +83,5 @@ def run_gate_callers_scope(project_root: Path, *, as_json: bool) -> None:
         raise SystemExit(0)
     console.print(f"[red]❌ {len(errors)} gate-caller finding(s):[/red]\n")
     for e in errors:
-        console.print(f"   [red]→[/red] {e.artifact}: {e.message}")
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
     raise SystemExit(3)

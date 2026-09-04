@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.adr_audit import (
     ATTESTATION_TYPE_OPERATOR_VERBATIM,
     _requires_human_obpi_attestation,
@@ -694,7 +696,7 @@ def _run_airlock_in_diagnostic(obpi_id: str, obpi_file: Path, project_root: Path
     L2 encounter regardless of decision.
     """
     for blocker in check_airlock_in_gate(obpi_id, obpi_file, project_root):
-        console.print(f"[yellow]airlock-IN (diagnostic):[/yellow] {blocker}")
+        console.print(f"[yellow]airlock-IN (diagnostic):[/yellow] {escape(blocker)}")
 
 
 def obpi_pipeline_cmd(

@@ -14,6 +14,8 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
+from rich.markup import escape
+
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
@@ -182,7 +184,7 @@ def _print_pipeline_blockers(obpi_id: str, blockers: list[str]) -> None:
     console.print(f"[bold]OBPI pipeline:[/bold] {obpi_id}")
     console.print("BLOCKERS:")
     for blocker in blockers:
-        console.print(f"- {blocker}")
+        console.print(f"- {escape(blocker)}")
 
 
 def _print_pipeline_header(
@@ -213,7 +215,7 @@ def _print_pipeline_header(
     if receipt and receipt.get("plan_file"):
         console.print(f"  Plan File: {receipt['plan_file']}")
     for warning in warnings:
-        console.print(f"  Warning: {warning}")
+        console.print(f"  Warning: {escape(warning)}")
 
 
 def _print_pipeline_implementation_next_steps(obpi_id: str) -> None:
