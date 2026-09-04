@@ -28,14 +28,9 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-# `_exclusive_store_lock` is the project's ONE cross-platform advisory-lock
-# primitive (`flock` on POSIX, `msvcrt.locking` on Windows). Restating it here
-# would mean two implementations of "exclusive access to a content store" that
-# can drift apart; promoting it out of `corpus_store` into a neutral module is
-# the right home and is out of this task's allowed paths.
-from gzkit.content.corpus_store import _exclusive_store_lock
 from gzkit.content.models.corpus import Corpus, effective_corpus
 from gzkit.content.parse import section_id
+from gzkit.file_lock import exclusive_file_lock
 from gzkit.governance.events import (
     emit_unowned_ratchet_updated,
 )
@@ -922,13 +917,15 @@ def exclusive_declaration_lock(path: Path) -> Iterator[None]:
 
     The lock is an OS lock on a sidecar file, never a marker file whose
     presence means "held": a marker outlives the process that made it, so one
-    crash would wedge the raise-path permanently. It reuses
-    `corpus_store._exclusive_store_lock` rather than restating the
-    platform-conditional `flock`/`msvcrt` pair -- one implementation of
-    "exclusive access to a content store", not two that can drift.
+    crash would wedge the raise-path permanently. It calls
+    `gzkit.file_lock.exclusive_file_lock` -- the repository's ONE
+    cross-platform advisory-lock primitive, shared with the corpus store and
+    owned by neither -- rather than restating the platform-conditional
+    `flock`/`msvcrt` pair, because two implementations of an OS lock drift
+    apart and the drift only manifests under concurrency (GHI #945).
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    with _exclusive_store_lock(path):
+    with exclusive_file_lock(path):
         yield
 
 

@@ -14,9 +14,11 @@ That rewrite-the-whole-file shape is why this module owns three disciplines rath
 none — a store with no delete path cannot recover from a bad write, so every failure
 mode of read-modify-write had to be closed at once (GHI #875, #880, #881):
 
-* **Exclusion.** The load-append-commit sequence runs under an exclusive lock, so two
-  writers cannot both compute their new corpus from the same pre-write snapshot and
-  have the later one silently erase the earlier one's row.
+* **Exclusion.** The load-append-commit sequence runs under ``exclusive_file_lock``
+  (``gzkit.file_lock``, the repository's one advisory-lock primitive), so two writers
+  cannot both compute their new corpus from the same pre-write snapshot and have the
+  later one silently erase the earlier one's row. The primitive is shared with the
+  section-ownership declaration store and belongs to neither (GHI #945).
 * **Validation before persistence.** ``Corpus.loads`` validates the tombstone algebra
   and ``Corpus.append`` does not, so the write boundary asserts it explicitly. Without
   that, the store could be left holding bytes its own reader refuses.
@@ -35,13 +37,11 @@ from __future__ import annotations
 
 import contextlib
 import os
-import sys
 import tempfile
-from collections.abc import Iterator
 from pathlib import Path
-from typing import IO
 
 from gzkit.content.models.corpus import Corpus, CorpusEntry, validate_tombstone_algebra
+from gzkit.file_lock import exclusive_file_lock
 
 
 def corpus_path(root: Path, surface: str) -> Path:
@@ -72,7 +72,7 @@ def append_entry(root: Path, surface: str, entry: CorpusEntry) -> Corpus:
     """
     path = corpus_path(root, surface)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with _exclusive_store_lock(path):
+    with exclusive_file_lock(path):
         updated = load_corpus(root, surface).append(entry)
         validate_tombstone_algebra(updated.entries)
         _commit_atomically(path, updated.dumps() + "\n")
@@ -117,54 +117,3 @@ def _commit_atomically(path: Path, text: str) -> None:
         with contextlib.suppress(OSError):
             staging.unlink()
         raise
-
-
-if sys.platform == "win32":  # pragma: no cover - selected by platform, not by test
-
-    def _take_exclusive(handle: IO[bytes]) -> None:
-        """Block until this process holds the lock byte (Windows)."""
-        import msvcrt  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
-
-        msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
-
-    def _release_exclusive(handle: IO[bytes]) -> None:
-        """Release the lock byte (Windows)."""
-        import msvcrt  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
-
-        msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
-
-else:
-
-    def _take_exclusive(handle: IO[bytes]) -> None:
-        """Block until this process holds the lock (POSIX)."""
-        import fcntl  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
-
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
-
-    def _release_exclusive(handle: IO[bytes]) -> None:
-        """Release the lock (POSIX)."""
-        import fcntl  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
-
-        fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
-
-
-@contextlib.contextmanager
-def _exclusive_store_lock(path: Path) -> Iterator[None]:
-    """Serialize the load-append-commit sequence for *path* across writers.
-
-    The lock is an OS lock on a sidecar file, never a marker file whose presence means
-    "held": a marker survives the process that created it, so one crash would wedge an
-    append-only canon store permanently. Both ``flock`` and ``msvcrt.locking`` are
-    released by the kernel when the handle closes — including on abnormal exit.
-
-    The sidecar is NOT the corpus file. The commit replaces the corpus path, which on
-    POSIX gives the new file a different inode; a lock taken on the old inode would
-    protect a file no later writer opens.
-    """
-    lock_path = path.with_name(f"{path.name}.lock")
-    with lock_path.open("ab+") as handle:
-        _take_exclusive(handle)
-        try:
-            yield
-        finally:
-            _release_exclusive(handle)
