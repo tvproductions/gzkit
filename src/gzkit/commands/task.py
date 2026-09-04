@@ -8,6 +8,8 @@ import re
 from pathlib import Path
 from typing import TypedDict
 
+from rich.markup import escape
+
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
 from gzkit.events import (
@@ -768,7 +770,7 @@ def task_fanout_cmd(req_id: str, *, detail: bool = False, as_json: bool = False)
         registry = get_task_registry()
         for row in rows:
             tid = str(row["task_id"])
-            console.print(f"{tid}  [{row['status']}]")
+            console.print(f"{escape(tid)}  \\[{row['status']}]")
             matches = [r for r in registry if r.task_id == tid]
             if matches:
                 for rec in matches:

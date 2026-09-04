@@ -3,6 +3,7 @@
 import json
 from typing import Any
 
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import GzCliError, console, ensure_initialized, get_project_root
@@ -141,8 +142,9 @@ def _print_skill_audit_failure(
         style = "red" if issue.severity == "error" else "yellow"
         scope = "BLOCKING" if issue.blocking else "NON-BLOCKING"
         console.print(
-            f"  [{style}]{issue.severity.upper()}[/{style}] [{issue.code}] [{scope}] "
-            f"{issue.path}: {issue.message}"
+            f"  [{style}]{issue.severity.upper()}[/{style}] "
+            f"\\[{escape(issue.code)}] \\[{scope}] "
+            f"{escape(issue.path)}: {escape(issue.message)}"
         )
 
 

@@ -8,6 +8,8 @@ from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
 
+from rich.markup import escape
+
 from gzkit.commands.adr_audit_covers_backfill import (
     BackfillResult,
     evaluate_backfill_for_audit,
@@ -202,7 +204,7 @@ def _render_audit_check_result(
             "parent-ADR boundary invariant):"
         )
         for cf in advisory_exempt:
-            console.print(f"  - {cf['id']} [{cf['kind']}]")
+            console.print(f"  - {escape(cf['id'])} \\[{cf['kind']}]")
     _print_coverage_section(coverage, [])
     if backfill is not None:
         _render_backfill_section(backfill)

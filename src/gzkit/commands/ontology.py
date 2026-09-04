@@ -21,6 +21,7 @@ import json
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
+from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.state import render_l3_table
@@ -343,7 +344,7 @@ def ontology_trace_cmd(*, node_id: str, as_json: bool = False, as_dot: bool = Fa
     console.print(f"  ancestors:   {', '.join(trace.ancestors) or '(none)'}")
     console.print(f"  descendants: {', '.join(trace.descendants) or '(none)'}")
     for prov in trace.provenance:
-        console.print(f"  [{prov.direction}] {prov.link_type}: {prov.reason}")
+        console.print(f"  \\[{prov.direction}] {escape(prov.link_type)}: {escape(prov.reason)}")
 
 
 def ontology_resense_cmd(*, as_json: bool = False, as_dot: bool = False) -> None:

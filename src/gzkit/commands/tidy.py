@@ -1,5 +1,7 @@
 """Tidy and sync control surfaces command implementations."""
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
@@ -103,7 +105,7 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
     if result.errors:
         console.print(f"  ⚠ [yellow]Found {len(result.errors)} issue(s):[/yellow]\n")
         for error in result.errors:
-            console.print(f"    → [{error.type}] {error.message}")
+            console.print(f"    → \\[{error.type}] {escape(error.message)}")
 
     # Check for orphans
     ledger = Ledger(project_root / config.paths.ledger)

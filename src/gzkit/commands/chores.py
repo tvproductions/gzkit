@@ -14,6 +14,7 @@ from typing import Literal
 
 import structlog
 from pydantic import BaseModel, ConfigDict
+from rich.markup import escape
 from rich.table import Table
 
 from gzkit.commands.common import GzCliError, console, get_project_root
@@ -339,21 +340,27 @@ def chores_plan(slug: str) -> None:
     for idx, c in enumerate(chore.criteria, start=1):
         desc = f" -- {c.description}" if c.description else ""
         if c.criterion_type == "exitCodeEquals":
-            console.print(f"    {idx}. [{c.criterion_type}] `{c.command}` == {c.expected}{desc}")
+            console.print(
+                f"    {idx}. \\[{c.criterion_type}] `{escape(c.command)}` "
+                f"== {escape(str(c.expected))}{escape(desc)}"
+            )
         elif c.criterion_type == "outputNotContains":
             console.print(
-                f"    {idx}. [{c.criterion_type}] "
-                f"`{c.command}` must not contain "
-                f"'{c.not_contains}'{desc}"
+                f"    {idx}. \\[{c.criterion_type}] "
+                f"`{escape(c.command)}` must not contain "
+                f"'{escape(str(c.not_contains))}'{escape(desc)}"
             )
         elif c.criterion_type == "outputContains":
             console.print(
-                f"    {idx}. [{c.criterion_type}] `{c.command}` must contain '{c.contains}'{desc}"
+                f"    {idx}. \\[{c.criterion_type}] `{escape(c.command)}` "
+                f"must contain '{escape(str(c.contains))}'{escape(desc)}"
             )
         elif c.criterion_type == "fileExists":
-            console.print(f"    {idx}. [{c.criterion_type}] path: `{c.path}`{desc}")
+            console.print(
+                f"    {idx}. \\[{c.criterion_type}] path: `{escape(str(c.path))}`{escape(desc)}"
+            )
         else:
-            console.print(f"    {idx}. [{c.criterion_type}] `{c.command}`{desc}")
+            console.print(f"    {idx}. \\[{c.criterion_type}] `{escape(c.command)}`{escape(desc)}")
 
 
 def chores_show(slug: str) -> None:

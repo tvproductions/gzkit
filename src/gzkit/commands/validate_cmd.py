@@ -10,6 +10,7 @@ from typing import NamedTuple
 
 import jsonschema
 from pydantic import ValidationError as PydanticValidationError
+from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
 from gzkit.commands.validate_briefs import (
@@ -787,8 +788,8 @@ def _run_sensitivity_scope(
             )
         else:
             for finding in findings:
-                console.print(f"  [red]→[/red] [{finding.type}] {finding.artifact}")
-                console.print(f"      {finding.message}")
+                console.print(f"  [red]→[/red] \\[{finding.type}] {escape(finding.artifact)}")
+                console.print(f"      {escape(finding.message)}")
 
     if any(f.type in _POLICY_BREACH_ERROR_TYPES for f in findings):
         raise SystemExit(3)
@@ -1137,10 +1138,10 @@ def _print_validation_result(
     console.print(f"[bold]Validated:[/bold] {', '.join(scopes)}\n")
     console.print(f"[red]❌ Validation failed with {len(errors)} error(s):[/red]\n")
     for error in errors:
-        console.print(f"   [red]→[/red] [{error.type}] {error.artifact}")
-        console.print(f"    {error.message}")
+        console.print(f"   [red]→[/red] \\[{error.type}] {escape(error.artifact)}")
+        console.print(f"    {escape(error.message)}")
         if error.field:
-            console.print(f"    Field: {error.field}")
+            console.print(f"    Field: {escape(error.field)}")
         console.print()
 
     if other_errors:
@@ -1191,8 +1192,8 @@ def _render_attestation_result(
     for entry in result.entries:
         marker = "[green]✓[/green]" if entry.status == "resolved" else "[red]→[/red]"
         run_id = entry.run_id or "<malformed>"
-        console.print(f"  {marker} [{entry.status}] {run_id}")
-        console.print(f"      {entry.message}")
+        console.print(f"  {marker} \\[{entry.status}] {escape(run_id)}")
+        console.print(f"      {escape(entry.message)}")
 
 
 def _run_attestation_receipts_scope(

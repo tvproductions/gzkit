@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any, Literal
 
+from rich.markup import escape
+
 from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_USER_ERROR
 from gzkit.commands.common import (
     GzCliError,
@@ -213,7 +215,8 @@ def _run_gate_3_skill_audit(project_root: Path, ledger: Ledger, adr_id: str) -> 
     for issue in report.issues:
         style = "red" if issue.blocking else "yellow"
         console.print(
-            f"  [{style}]{issue.severity.upper()}[/{style}] [{issue.code}] {issue.message}"
+            f"  [{style}]{issue.severity.upper()}[/{style}] "
+            f"\\[{escape(issue.code)}] {escape(issue.message)}"
         )
 
     evidence = f"skills={report.checked_skills} blocking={blocking} warnings={warnings}"
