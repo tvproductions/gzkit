@@ -413,6 +413,7 @@ class TestContentUnownIsRecoverable(unittest.TestCase):
         _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
         return measure_section_spans(_SURFACE_TEXT)["alpha-section"]
 
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
     @covers("REQ-0.35.0-04-05")
     def test_a_post_swap_durability_failure_keeps_the_journal_and_says_so(self) -> None:
         """Would break if an ambiguous declaration-write error cleared the journal.
@@ -1512,6 +1513,7 @@ class TestContentUnownJournalFailureProseIsHonest(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
 
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
     @covers("REQ-0.35.0-04-02")
     def test_a_post_rename_journal_fsync_failure_does_not_claim_nothing_written(self) -> None:
         """Would break if the journal handler kept its unconditional "Nothing written."
