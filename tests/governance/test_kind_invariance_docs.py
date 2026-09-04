@@ -1,9 +1,20 @@
 """Structural coverage for OBPI-0.0.35-04 documentation/feature REQs.
 
-These tests assert artifact presence/shape, not validator behavior. They
-satisfy the REQ-coverage gate for REQ-09 (behave scenario tagged), REQ-10
-(manpage updated), REQ-11 (runbook updated) so `gz obpi complete` does not
-require waiver flags for them.
+These tests assert artifact presence/shape, not validator behavior.
+
+REQ bindings here were shifted one place off the brief from the day the file
+was authored (repaired under GHI #944). The original docstring said the file
+existed to "satisfy the REQ-coverage gate ... so `gz obpi complete` does not
+require waiver flags" — and the gate matches REQ *id strings* found anywhere
+under `tests/`, never the subject a test asserts. Written to clear that gate,
+three artifact tests were mapped onto the last three REQ numbers by position:
+behave->09, manpage->10, runbook->11. The brief's last four are 08 behave,
+09 manpage, 10 runbook, 11 ARB-receipts-in-the-closeout-commit. REQ-11 is the
+one REQ here that no artifact test can prove, so shifting the window by one
+displaced exactly the requirement that was inconvenient, and made the gap
+invisible for four months.
+
+Each binding below now names the REQ whose subject the test actually asserts.
 """
 
 from __future__ import annotations
@@ -37,6 +48,19 @@ SHARED_TEST_FILES = (
 SCOPE_MARKERS = ("kind_invariance", "kind-invariance")
 
 COVERS_RE = re.compile(r"REQ-0\.0\.35-04-\d+")
+
+#: Tests that exercise this scope but prove no REQ of this brief, so they owe
+#: no `@covers`. Demanding one would force a fabricated claim — the exact
+#: defect the shifted bindings above came from. Each entry states what the
+#: test proves instead; the set must stay small and justified, never a
+#: convenience hatch for a test nobody wants to bind.
+NON_REQ_TESTS: dict[str, str] = {
+    # Asserts `.gzkit/rules/tests.md` § Tests assert semantics, not strings.
+    # No REQ of this brief states that discipline.
+    "test_validator_tests_assert_semantics_not_strings": (
+        "repo-wide test-quality discipline, not a requirement of this brief"
+    ),
+}
 
 
 def _test_functions(path: Path) -> list[ast.FunctionDef]:
@@ -77,7 +101,7 @@ def _scope_test_methods(path: Path) -> set[str]:
 def _uncovered_tests(path: Path, *, scope_only: bool) -> set[str]:
     """Tests owing `@covers` that do not carry it."""
     owing = _scope_test_methods(path) if scope_only else _test_methods(path)
-    return owing - _covered_test_methods(path)
+    return owing - _covered_test_methods(path) - set(NON_REQ_TESTS)
 
 
 def fence_roster() -> list[tuple[Path, bool]]:
@@ -96,7 +120,7 @@ def fence_roster() -> list[tuple[Path, bool]]:
 class TestKindInvarianceArtifacts(unittest.TestCase):
     """Verify the documentation/feature artifacts the brief requires."""
 
-    @covers("REQ-0.0.35-04-09")
+    @covers("REQ-0.0.35-04-08")
     def test_behave_scenario_tagged_with_req(self):
         """features/kind_invariance.feature carries @REQ-0.0.35-04-NN tags."""
         feature = PROJECT_ROOT / "features" / "kind_invariance.feature"
@@ -104,7 +128,7 @@ class TestKindInvarianceArtifacts(unittest.TestCase):
         tags = re.findall(r"@REQ-0\.0\.35-04-\d+", content)
         self.assertGreater(len(tags), 0, "feature file must carry @REQ-0.0.35-04-NN tags")
 
-    @covers("REQ-0.0.35-04-10")
+    @covers("REQ-0.0.35-04-09")
     def test_manpage_documents_kind_invariance(self):
         """docs/user/manpages/validate.md lists --kind-invariance with example."""
         manpage = PROJECT_ROOT / "docs" / "user" / "manpages" / "validate.md"
@@ -112,18 +136,23 @@ class TestKindInvarianceArtifacts(unittest.TestCase):
         self.assertIn("--kind-invariance", content)
         self.assertIn("gz validate --kind-invariance", content)
 
-    @covers("REQ-0.0.35-04-11")
+    @covers("REQ-0.0.35-04-10")
     def test_runbook_cross_references_kind_invariance(self):
         """docs/user/runbook.md references the kind-invariance verification step."""
         runbook = PROJECT_ROOT / "docs" / "user" / "runbook.md"
         content = runbook.read_text(encoding="utf-8")
         self.assertIn("--kind-invariance", content)
 
-    @covers("REQ-0.0.35-04-07")
     def test_validator_tests_assert_semantics_not_strings(self):
-        """REQ-07: tests in test_kind_invariance.py assert on error type and shape,
-        not on pinned error message bytes. Mechanical proxy: no assertion against
-        a quoted substring of the validator's error messages.
+        """`test_kind_invariance.py` asserts error type and shape, not message bytes.
+
+        Carries no `@covers`, deliberately. This asserts the discipline in
+        `.gzkit/rules/tests.md` § Tests assert semantics, not strings — which no
+        REQ of this brief states. It previously claimed REQ-07 ("every test for
+        this scope is decorated with `@covers`"), a subject it does not touch.
+        A test that proves no requirement must not claim one; see
+        `NON_REQ_TESTS` for why the fence exempts it rather than forcing a
+        fabricated binding (GHI #944).
         """
         test_file = PROJECT_ROOT / "tests" / "governance" / "test_kind_invariance.py"
         content = test_file.read_text(encoding="utf-8")
@@ -141,7 +170,7 @@ class TestKindInvarianceArtifacts(unittest.TestCase):
                 f"REQ-07 violation: test_kind_invariance.py pins validator error string {phrase!r}",
             )
 
-    @covers("REQ-0.0.35-04-08")
+    @covers("REQ-0.0.35-04-07")
     def test_every_obpi_test_carries_covers_decorator(self):
         """Every test *for this scope* carries `@covers("REQ-0.0.35-04-NN")`.
 
