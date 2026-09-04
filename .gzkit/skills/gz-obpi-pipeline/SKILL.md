@@ -831,12 +831,20 @@ catch.
 
 **Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and DEMONSTRATE the feature working, not merely failing to break. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with pasted output per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
 
-> **The recording enum lags this framing.** `gz obpi complete --adversary-verdict` accepts only
-> `{refuted, not-refuted, refuted-with-caveats, degraded-human-only}` — there is no
-> `corroborated` state, so the strongest recordable outcome is the *absence* of refutation.
-> Until that is fixed, require BOTH lines from the adversary: the confirmation line above for
-> truth, and one of the enum's words for the record, with an explicit instruction that the
-> second must not soften the first. Map `CORROBORATED` → `not-refuted`. Tracked at GHI #954. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
+> **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator
+> ruling 2026-09-04, verbatim: *"NOT-REFUTED is arguably a passive way of saying CORROBORATED"*.
+> A model that attacked the implementation and could not break it has corroborated it, so
+> `CORROBORATED` records as `not-refuted` and that is a faithful record, NOT a rounding. An
+> earlier revision of this note claimed the enum "has no corroboration state" and that the
+> mapping was a documented lie-by-rounding; both were wrong (GHI #954, narrowed by its own
+> author). No change to `gz obpi complete` is warranted.
+>
+> Still require BOTH lines from the adversary — the `CORROBORATED | CORROBORATED-WITH-CAVEATS |
+> NOT-CORROBORATED` line and the enum word — because the distinction that matters is
+> *attacked hard and demonstrated working* versus *looked and found nothing*, and that
+> distinction lives in the PROMPT's demand for positive demonstration, never in the verdict
+> word. Two rounds can both land on `not-refuted` and mean entirely different things; the
+> pasted evidence is what tells them apart. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
 
 **Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
 
