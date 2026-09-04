@@ -561,6 +561,15 @@ def _replay_pending_transition(
         )
         sys.exit(2)
 
+    # ONE finalization path (Step-4b round-8 finding 1). This branch used to
+    # append and unlink without ever calling the digest guard
+    # (`post_digest_guard_calls=0`), so recovery could report clean success
+    # after the journalled surface moved -- the binding covered the fresh
+    # commit and left its twin open. The coherence checks above are not a
+    # substitute: they ran correctly, against the surface as it was before the
+    # append.
+    _refuse_clean_success_on_a_moved_surface(root, journal_path, record)
+
     with contextlib.suppress(OSError):
         journal_path.unlink()
     return record
@@ -689,9 +698,7 @@ def _refuse_clean_success_on_a_moved_surface(
         return
     surface_path = root / record["surface"]
     try:
-        current = hashlib.sha256(
-            surface_path.read_text(encoding="utf-8").encode("utf-8")
-        ).hexdigest()
+        current = _surface_digest(surface_path.read_bytes())
     except (OSError, UnicodeDecodeError) as exc:
         current = None
         detail = f"it can no longer be read ({exc})"
@@ -720,7 +727,26 @@ def _refuse_clean_success_on_a_moved_surface(
     sys.exit(2)
 
 
-def _read_surface_or_exit(surface_path: Path, surface: str) -> str:
+def _surface_digest(raw: bytes) -> str:
+    """Digest the surface's RAW BYTES — never newline-normalized text.
+
+    Step-4b round-8 finding 2. `Path.read_text` applies universal-newline
+    translation, so a CRLF file decodes to the same string as its LF twin and
+    hashed identically: `raw_lengths=25,29 decoded_equal=True
+    digests_equal=True`. The floor this digest protects is a count of PHYSICAL
+    BYTES, so a line-ending conversion changed the governed quantity without
+    firing the binding and the recorded floor silently undercounted the file.
+
+    Not an exotic input: `.claude/rules/cross-platform.md` makes Windows
+    co-equal, and an editor there produces CRLF by saving. The digest must be
+    taken over exactly the bytes whose spans are measured, which is why the
+    read path below decodes with `bytes.decode` (no translation) rather than
+    `read_text` (translation).
+    """
+    return hashlib.sha256(raw).hexdigest()
+
+
+def _read_surface_or_exit(surface_path: Path, surface: str) -> tuple[str, str]:
     """Read the surface, or exit 1 in governed prose. Called INSIDE the lock.
 
     `UnicodeDecodeError` is caught alongside `OSError` because it is a
@@ -732,7 +758,10 @@ def _read_surface_or_exit(surface_path: Path, surface: str) -> str:
     either branch: this runs before the declaration is even loaded.
     """
     try:
-        return surface_path.read_text(encoding="utf-8")
+        raw = surface_path.read_bytes()
+        # `bytes.decode` performs NO newline translation, unlike `read_text`, so
+        # the text measured here is byte-faithful to the bytes hashed beside it.
+        return raw.decode("utf-8"), _surface_digest(raw)
     except (OSError, UnicodeDecodeError) as exc:
         print(
             f"Error: cannot read surface {surface_path.as_posix()!r}: {exc}.\n"
@@ -815,16 +844,39 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
     # but not sufficient -- `_refuse_surface_changed_under_us` below re-reads
     # once more before either store is touched.
     with exclusive_declaration_lock(path):
-        surface_text = _read_surface_or_exit(surface_path, surface)
+        surface_text, surface_digest = _read_surface_or_exit(surface_path, surface)
         recovered = _replay_pending_transition(root, path, journal_path, surface_text)
-        if recovered is not None and recovered["section"] == section:
+        if recovered is not None:
             print(
-                f"Completed the interrupted un-owning of section {section!r} of "
-                f"{surface!r}. Unowned-byte floor rose from "
-                f"{recovered['prior_unowned_byte_floor']} to "
+                f"Completed the interrupted un-owning of section "
+                f"{recovered['section']!r} of {surface!r}. Unowned-byte floor rose "
+                f"from {recovered['prior_unowned_byte_floor']} to "
                 f"{recovered['new_unowned_byte_floor']}. "
                 f"Attested by {recovered['attestor']}: {recovered['reason']}"
             )
+            if recovered["section"] != section:
+                # Step-4b round-8 finding 3: this used to fall THROUGH to the
+                # ordinary refusal paths, whose prose says "nothing written" --
+                # after a witness had landed and its journal had been deleted.
+                # Observed `exit=1 event_appended=True journal_exists=False`
+                # alongside a claim that the stores were untouched, which no
+                # `.gzkit/` access was needed to produce. A recovery is a
+                # durable state change and always terminates the invocation
+                # that performed it; the requested section is a separate run.
+                print(
+                    f"Error: section {section!r} was NOT un-owned by this "
+                    f"invocation — it completed the pending transition for "
+                    f"{recovered['section']!r} instead.\n"
+                    "Why forbidden: a recovery is a durable state change, and "
+                    "reporting it alongside a second, unrelated transition would "
+                    "make either account ambiguous (REQ-0.35.0-04-02). The "
+                    "recovery above DID land; nothing was written for "
+                    f"{section!r}.\n"
+                    f"  Re-run the same command to un-own {section!r} now that "
+                    "the pending transition is complete.",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
             return
 
         declaration = _load_declaration_or_exit(path, surface_text, root)
@@ -899,7 +951,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
         # this binding as the weakest point; round 6's scalar re-read was a
         # substitute for it, and round 7 reproduced the residue the substitute
         # left.
-        record["surface_digest"] = hashlib.sha256(surface_text.encode("utf-8")).hexdigest()
+        record["surface_digest"] = surface_digest
 
         _refuse_surface_changed_under_us(surface_path, surface, section, surface_text)
         _commit_transition(path, journal_path, root, record)

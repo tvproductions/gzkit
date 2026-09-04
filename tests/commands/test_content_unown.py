@@ -1673,6 +1673,18 @@ class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
             self.assertEqual(first.exit_code, 2, msg=first.output)
             self.assertTrue((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
 
+            # A journal carrying NO `surface_digest` -- the shape written by any
+            # run predating the round-8 binding. `_refuse_clean_success_on_a_moved_
+            # surface` returns early on those, so the coverage check below is the
+            # ONLY thing standing between a legacy journal and a completion the
+            # loader rejects. Without this, the digest guard masks the coverage
+            # guard and this test survives deleting the check it names (measured:
+            # `section_id_coverage SURVIVED` after round 8 landed).
+            journal = _DECLARATION_PATH.parent / "Doc.md.json.journal"
+            legacy = json.loads(journal.read_text(encoding="utf-8"))
+            legacy.pop("surface_digest", None)
+            journal.write_text(json.dumps(legacy, indent=2) + "\n", encoding="utf-8")
+
             # An ordinary editor rename, not an attack: no .gzkit/ access.
             Path("Doc.md").write_text(
                 _SURFACE_TEXT.replace("## Beta Section", "## Renamed Section"),
@@ -1692,3 +1704,189 @@ class TestContentUnownBindsTheSurfaceToTheTransaction(unittest.TestCase):
                 "the journal must be RETAINED so the transition stays completable "
                 "once the rename is reconciled",
             )
+
+
+class TestContentUnownRound8(unittest.TestCase):
+    """Step-4b round 8 — the binding must cover EVERY finalization path.
+
+    Round 7's design ruling ("bind the surface into the transaction") was
+    implemented on the fresh-commit path only. Round 8 found that replay clears
+    the journal without ever calling the guard (`post_digest_guard_calls=0`),
+    that the digest hashes NEWLINE-NORMALIZED text rather than the bytes whose
+    span is governed, and that recovering a different pending section leaves a
+    refusal claiming "nothing written" after a witness has landed.
+    """
+
+    _GROWN = _SURFACE_TEXT.replace(
+        "alpha body line two\n",
+        "alpha body line two\n" + "grown by an editor\n" * 12,
+    )
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _interrupt_at_append(self):
+        """Seed, then fail the ledger append: declaration landed, journal kept."""
+        _seed_surface()
+        _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+        def fail(root, record, journal_path):
+            raise OSError(5, "injected ledger append failure")
+
+        with patch.object(unown_module, "_append_event_once", fail):
+            first = _unown(self._runner, attestor="g0", reason="probe")
+        self.assertEqual(first.exit_code, 2, msg=first.output)
+        self.assertTrue((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
+
+    @covers("REQ-0.35.0-04-05")
+    def test_replay_finalization_also_verifies_the_journalled_surface(self) -> None:
+        """Would break if replay cleared the journal without the digest guard.
+
+        Round-8 finding 1, `[high]`. `_replay_pending_transition` validated the
+        captured surface, appended, and unlinked without ever calling
+        `_refuse_clean_success_on_a_moved_surface` -- observed `exit=0
+        surface_after=edited-during-ledger-append event_appended=True
+        journal_exists=False post_digest_guard_calls=0` with clean-success
+        prose. The binding covered one of two finalization paths.
+
+        The edit lands DURING the replay append, after every coherence check has
+        already passed against the unmoved surface. That is why a coherence
+        check cannot substitute for the digest guard: the checks were correct
+        when they ran.
+        """
+        with self._runner.isolated_filesystem():
+            self._interrupt_at_append()
+            real_append = unown_module._append_event_once
+
+            def edit_then_append(root, record, journal_path):
+                Path("Doc.md").write_text(self._GROWN, encoding="utf-8")
+                return real_append(root, record, journal_path)
+
+            with patch.object(unown_module, "_append_event_once", edit_then_append):
+                retry = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertNotEqual(
+                retry.exit_code,
+                0,
+                "replay must not report clean recovery after the journalled "
+                f"surface changed. {retry.output}",
+            )
+            self.assertTrue(
+                (_DECLARATION_PATH.parent / "Doc.md.json.journal").exists(),
+                "recovery state must survive so the transition stays reconcilable",
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_replay_of_an_unmoved_surface_still_completes(self) -> None:
+        """False-positive arm: the replay guard must not break ordinary recovery."""
+        with self._runner.isolated_filesystem():
+            self._interrupt_at_append()
+
+            retry = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(retry.exit_code, 0, msg=retry.output)
+            self.assertFalse((_DECLARATION_PATH.parent / "Doc.md.json.journal").exists())
+            self.assertEqual(
+                len([e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]),
+                1,
+                "recovery completes the transition exactly once",
+            )
+            load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path("."))
+
+    @covers("REQ-0.35.0-04-05")
+    def test_the_digest_binds_raw_bytes_not_newline_normalized_text(self) -> None:
+        """Would break if the digest were computed from `read_text` output.
+
+        Round-8 finding 2, `[high]`. `Path.read_text` applies universal-newline
+        translation, so CRLF collapses to LF before hashing: observed
+        `raw_lengths=25,29 decoded_equal=True digests_equal=True
+        measured_totals=25,25`. A line-ending conversion changes the physical
+        byte spans the floor governs WITHOUT firing the binding, so the recorded
+        floor silently undercounts the file. Not exotic on a project whose
+        `.claude/rules/cross-platform.md` treats Windows as co-equal -- an
+        editor there produces it by saving.
+
+        Asserted on the DIGEST itself, so it pins the binding contract rather
+        than one caller's use of it.
+        """
+        with self._runner.isolated_filesystem():
+            lf = "# Doc Title\npreamble\n## Alpha Section\nbody\n"
+            crlf = lf.replace("\n", "\r\n")
+            Path("lf.md").write_bytes(lf.encode("utf-8"))
+            Path("crlf.md").write_bytes(crlf.encode("utf-8"))
+            self.assertNotEqual(
+                Path("lf.md").stat().st_size,
+                Path("crlf.md").stat().st_size,
+                "fixture sanity: the two files differ in physical bytes",
+            )
+
+            self.assertNotEqual(
+                unown_module._surface_digest(Path("lf.md").read_bytes()),
+                unown_module._surface_digest(Path("crlf.md").read_bytes()),
+                "the digest governs the BYTES whose span is measured; a "
+                "line-ending conversion changes those bytes and must change it",
+            )
+
+    @covers("REQ-0.35.0-04-05")
+    def test_the_read_path_feeds_raw_bytes_to_the_digest(self) -> None:
+        """Would break if `_read_surface_or_exit` hashed `read_text` output.
+
+        The sibling test above pins `_surface_digest`'s own contract by calling
+        it with bytes, and that is NOT enough: it SURVIVED a mutation that made
+        the read path hash newline-normalized text, because it never exercises
+        the read path at all. A helper can be perfectly correct while nothing
+        routes real input through it.
+
+        This test therefore asserts on `_read_surface_or_exit` — the seam where
+        raw bytes must actually reach the digest — and on the decoded text
+        retaining its carriage returns, since the spans measured from that text
+        must agree with the bytes hashed beside it.
+        """
+        with self._runner.isolated_filesystem():
+            lf = "# Doc Title\npreamble\n## Alpha Section\nbody\n"
+            crlf = lf.replace("\n", "\r\n")
+            Path("lf.md").write_bytes(lf.encode("utf-8"))
+            Path("crlf.md").write_bytes(crlf.encode("utf-8"))
+
+            lf_text, lf_digest = unown_module._read_surface_or_exit(Path("lf.md"), "lf.md")
+            crlf_text, crlf_digest = unown_module._read_surface_or_exit(Path("crlf.md"), "crlf.md")
+
+            self.assertNotEqual(
+                lf_digest,
+                crlf_digest,
+                "the read path must hash the surface's RAW bytes; `read_text` "
+                "normalizes CRLF to LF and would make these agree",
+            )
+            self.assertIn("\r", crlf_text, "the decoded text must not be newline-translated")
+            self.assertEqual(
+                len(crlf_text.encode("utf-8")),
+                Path("crlf.md").stat().st_size,
+                "the text measured must round-trip to the bytes hashed, or the "
+                "floor governs a different quantity than the digest protects",
+            )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_recovering_a_different_section_never_claims_nothing_written(self) -> None:
+        """Would break if recovery fell through into the refusal paths.
+
+        Round-8 finding 3, `[medium]`. The handler returned after recovery only
+        when the recovered section equalled the requested one; otherwise it
+        completed the pending transition, appended its witness, deleted its
+        journal, and continued into the unknown-section refusal, whose prose
+        says "nothing written". Observed `exit=1 event_appended=True
+        journal_exists=False`. Operators and automation received an account
+        contradicting the durable state change.
+        """
+        with self._runner.isolated_filesystem():
+            self._interrupt_at_append()
+
+            second = _unown(self._runner, section="does-not-exist", attestor="g0", reason="probe")
+
+            landed = [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
+            if landed:
+                self.assertNotIn(
+                    "nothing written",
+                    second.output.lower(),
+                    "a witness landed during this invocation, so no refusal in it "
+                    f"may claim the stores were untouched. {second.output}",
+                )
