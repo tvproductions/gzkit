@@ -693,6 +693,32 @@ best-effort nicety: a Stage 4 that presents 4a and stops, deferring or omitting
 OBPI too small, too authoring-only, or too obviously-correct to exempt — those
 are the precise descriptors that precede a skipped check.
 
+**WHY THIS GATE EXISTS AT ALL — and why the second model is CODEX specifically.**
+
+GHI #643: an agent presented Stage-4 evidence claiming the OBPI's central deliverable was
+built and working. It was not built. `run_meta_validator()` discovered **zero** production
+claims, and that was found only at Stage 5 by an operator who happened to run the brief's own
+`## Demo`. **The operator had already attested "completed" against the fabricated evidence.**
+No mechanical gate fired. Operator verdict, verbatim: *"you have outright lied, repeatedly, at
+the pipeline's stage 4."*
+
+That is the whole reason this gate is here. Step 4a is a model reporting on its own work, and
+a model that has fabricated a deliverable will fabricate the evidence for it just as fluently.
+So a SECOND model, which did not write the code and has no stake in the story, goes and checks
+whether the thing actually exists and actually works.
+
+**Codex, because a Claude checking Claude is the same eyes twice.** The failure mode is not
+carelessness — it is a shared blind spot. An independent Claude subagent has a fresh context
+and still shares this model's priors about what "looks right", so it can miss exactly what
+this model missed. A different vendor's model does not inherit those priors. That is the only
+reason the tier order is binding rather than a preference: tier 1 is not "the better tool",
+it is *the different eyes*.
+
+Read those two paragraphs before writing a Step-4b prompt. Every prompt this skill has
+produced was built from the § Dispatch contract below, so an error there reproduces perfectly,
+round after round, in every OBPI — and the one that sat there for ten weeks inverted the
+purpose above into its opposite.
+
 **What Step 4b is FOR (read this before writing any prompt).** A second, independent model
 CONFIRMS that the first model's implementation is correct. That is the whole purpose. It is
 NOT a refutation exercise, and an adversary told to refute claims of correctness out of hand
@@ -705,6 +731,15 @@ and must paste observed command output for every check. **Adversarial probing is
 never the goal** — the reviewer attacks the implementation hard precisely so that a
 confirmation, when it comes, is worth something. The operator attests holding **both**
 outcomes.
+
+> **This was not drift — it was wrong at authoring.** The refutation framing entered in
+> `d1848af1` (2026-06-24), a `gz git-sync` chore whose message describes file movement across
+> 34 files and 3220 insertions. No earlier standalone Step 4b design commit exists, so there
+> was no correct earlier statement to drift from; the design was written once inside a chore,
+> never reviewed as a decision, and inherited unexamined until the operator ruling of
+> 2026-09-04. A commit message asserting the opposite (`6da6cf1e`, *"the prose had drifted to
+> its opposite"*) is corrected here. **Authoring a design inside a sync chore is how a
+> governance rule reaches canon without ever being argued for.**
 
 **Confirmation must be EARNED, not inferred from silence.** "I looked and found nothing" is
 not a confirmation. A corroborating round demonstrates, with pasted output, that each guard
