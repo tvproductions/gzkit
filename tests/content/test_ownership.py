@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import ast
 import contextlib
-import fcntl
 import json
 import os
 import stat
@@ -1563,6 +1562,16 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
         therefore the semantic under test, not an implementation detail.
         """
         observed: list[int] = []
+        # Imported HERE, not at module scope. `fcntl` is POSIX-only, and a
+        # top-level import runs BEFORE `@unittest.skipUnless` can fire -- so the
+        # skip guard on this test, which has always been correct, could never
+        # take effect: `windows-latest` failed at module IMPORT and lost all 69
+        # tests in this file rather than skipping the one that needs fcntl
+        # (GHI #955; CI run 33749751622, `ModuleNotFoundError: No module named
+        # 'fcntl'`). A platform-conditional import belongs in the scope of the
+        # thing that needs it, never above the guard that fences it.
+        import fcntl  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
+
         real_fsync = os.fsync
 
         def probing_fsync(fd: int) -> None:
