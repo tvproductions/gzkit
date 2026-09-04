@@ -719,27 +719,37 @@ produced was built from the § Dispatch contract below, so an error there reprod
 round after round, in every OBPI — and the one that sat there for ten weeks inverted the
 purpose above into its opposite.
 
-**What Step 4b is FOR (read this before writing any prompt).** A second, independent model
-CONFIRMS that the first model's implementation is correct. That is the whole purpose. It is
-NOT a refutation exercise, and an adversary told to refute claims of correctness out of hand
-is being asked for something that does not make sense — correctness is the thing being
-checked, not a position to be argued down.
+**What Step 4b is FOR (read this before writing any prompt).**
 
-Step 4a is authored by the same agent that may have fabricated it, so Step 4b does not take
-4a's word for anything: it RE-DERIVES the completion claim from the REQs and the repository
-and must paste observed command output for every check. **Adversarial probing is the METHOD,
-never the goal** — the reviewer attacks the implementation hard precisely so that a
-confirmation, when it comes, is worth something. The operator attests holding **both**
-outcomes.
+**Step 4b is an ACCEPTANCE REVIEW.** The decision it supports is: *"Does this
+implementation correctly fulfill the bounded requirements?"* Therefore its purpose
+must be independent corroboration.
 
-> **This was not drift — it was wrong at authoring.** The refutation framing entered in
-> `d1848af1` (2026-06-24), a `gz git-sync` chore whose message describes file movement across
-> 34 files and 3220 insertions. No earlier standalone Step 4b design commit exists, so there
-> was no correct earlier statement to drift from; the design was written once inside a chore,
-> never reviewed as a decision, and inherited unexamined until the operator ruling of
-> 2026-09-04. A commit message asserting the opposite (`6da6cf1e`, *"the prose had drifted to
-> its opposite"*) is corrected here. **Authoring a design inside a sync chore is how a
-> governance rule reaches canon without ever being argued for.**
+Refutation remains essential, but as a METHOD:
+
+1. Re-derive the claim independently.
+2. Try hard to falsify it within the declared scope.
+3. Demonstrate the intended behavior positively.
+4. Corroborate only if both directions hold.
+
+> **Purpose:** independently corroborate correctness.
+> **Method:** adversarially attempt to falsify it.
+> **Boundary:** the brief, requirements, and threat model.
+> **Pass condition:** positive behavior demonstrated and no critical/high in-scope defect remains.
+
+That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
+unbounded argument.
+
+**The June-24 framing confused the reviewer's TECHNIQUE with its OBJECTIVE.**
+*"Your job is to refute"* creates a motivated critic that can continually expand
+the attacker, or move outside the requirements, until something fails. It also
+produces the exact measured pathology: on OBPI-0.35.0-04, six rounds tested
+refusal paths while none demonstrated that the feature still worked.
+
+Step 4a is authored by the same agent that may have fabricated it, so Step 4b does
+not take 4a's word for anything: it RE-DERIVES the completion claim from the REQs
+and the repository and must paste observed command output for every check. The
+operator attests holding **both** outcomes.
 
 **Confirmation must be EARNED, not inferred from silence.** "I looked and found nothing" is
 not a confirmation. A corroborating round demonstrates, with pasted output, that each guard
