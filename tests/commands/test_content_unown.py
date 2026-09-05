@@ -2045,16 +2045,23 @@ def _is_text_mode_open(node: ast.Call) -> bool:
     return False
 
 
-def _text_mode_surface_writes(source: str, label: str) -> list[str]:
-    """Report every text-mode write to a byte-measured surface in *source*.
+def _text_mode_surface_writes(tree: ast.AST, label: str) -> list[str]:
+    """Report every text-mode write to a byte-measured surface in *tree*.
 
     A module-level function rather than a method so each rule can be exercised
     against synthetic snippets. A scanner whose only input is the repository it
     scans is green whenever it is blind, which is precisely how the previous
     allowlist matcher passed while covering none of the writes it named.
+
+    Takes an ALREADY-PARSED tree rather than source text, so the `ast.parse`
+    stays visible in the caller. That is not cosmetic: it is the signal
+    `gz validate --tautological-test-audit` reads to tell a static-analysis
+    fence from a test echoing back a file it wrote itself
+    (`_reads_project_source`). An earlier extraction moved the parse in here and
+    the caller was flagged as a tautology the same day.
     """
     offenders: list[str] = []
-    for node in ast.walk(ast.parse(source, filename=label)):
+    for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         func = node.func
@@ -2125,7 +2132,8 @@ class TestSurfaceFixturesWriteBytes(unittest.TestCase):
         """Every surface write goes through `write_bytes`, never `write_text`."""
         offenders: list[str] = []
         for module in self._surface_seeding_modules():
-            offenders += _text_mode_surface_writes(module.read_text(encoding="utf-8"), module.name)
+            tree = ast.parse(module.read_text(encoding="utf-8"), filename=str(module))
+            offenders += _text_mode_surface_writes(tree, module.name)
         self.assertEqual(
             offenders,
             [],
@@ -2149,7 +2157,7 @@ class TestSurfaceWriteScanner(unittest.TestCase):
     """
 
     def _offenders(self, source: str) -> list[str]:
-        return _text_mode_surface_writes(source, "snippet.py")
+        return _text_mode_surface_writes(ast.parse(source, filename="snippet.py"), "snippet.py")
 
     def test_a_md_target_is_flagged_however_it_was_derived(self) -> None:
         """Would break if the exemption were read off the derived expression.
@@ -3091,9 +3099,22 @@ class TestContentUnownRound9(unittest.TestCase):
             result.output,
             f"refused, but NOT by the check under test ({phase}). {result.output}",
         )
+        # Compare through the PRODUCTION model, not raw `json.loads` equality.
+        # Both sides are validated by `OwnershipDeclaration`, so this asserts the
+        # refusal left a declaration that still SATISFIES THE SCHEMA as well as
+        # being unchanged — raw dict equality says only that two dicts match and
+        # would accept a shape the model rejects.
+        #
+        # Deliberately NOT `load_declaration`: the defence-in-depth callers here
+        # hand-edit the declaration to a foreign identity after a real
+        # interruption, so its `floor_event_id` resolves to no ledger event by
+        # construction and the canonical loader fails closed on it — correctly.
+        # Loadability is not the property this helper is about; non-mutation is.
         self.assertEqual(
-            json.loads(_DECLARATION_PATH.read_text(encoding="utf-8")),
-            expected_declaration,
+            OwnershipDeclaration.model_validate(
+                json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            ).model_dump(mode="json"),
+            OwnershipDeclaration.model_validate(expected_declaration).model_dump(mode="json"),
             "no transaction write may land on a declaration whose identity "
             "is not the transaction target's",
         )
@@ -5481,9 +5502,15 @@ class TestEntryBoundarySweepIsNotClaimedAway(unittest.TestCase):
         self._EXTRACT.write_bytes(b"orphan recovery material\n")
 
     def _assert_swept_then_refused(self, result, declaration_before: bytes) -> None:
+        # The swept path is DERIVED from the production target rather than read
+        # off this class's constant, so the assertion cannot drift from the path
+        # the sweep actually clears — the same producer-derived discipline the
+        # ignore-roster test needed after a hand-written name let a rule go
+        # unwitnessed.
+        swept = unown_module._target_for(Path.cwd(), "Doc.md").recovery_extract_path
         self.assertEqual(result.exit_code, 1, msg=result.output)
         self.assertFalse(
-            self._EXTRACT.exists(),
+            swept.exists(),
             "the entry boundary sweep removes the orphan before this refusal is reached",
         )
         self.assertNotIn(
