@@ -5749,6 +5749,8 @@ class TestOrphanResidueWarnsAndPermitsFreshWork(unittest.TestCase):
         # output-contract: naming the storage fault IS the behaviour under test.
         with self._runner.isolated_filesystem():
             self._seed_with_an_unremovable_orphan()
+            self._SNAPSHOT.write_bytes(b"old transaction's retained source\n")
+            measured_source = Path("Doc.md").read_bytes()
 
             with _failing_unlink(self._EXTRACT.name, self._SNAPSHOT.name):
                 fresh = _unown(self._runner, attestor="g0", reason="probe")
@@ -5761,6 +5763,7 @@ class TestOrphanResidueWarnsAndPermitsFreshWork(unittest.TestCase):
             self.assertIn("recovery cleanup pending", fresh.output.lower())
             self.assertIn(self._SNAPSHOT.as_posix(), fresh.output)
             self.assertTrue(self._SNAPSHOT.exists())
+            self.assertEqual(self._SNAPSHOT.read_bytes(), measured_source)
             self.assertEqual(len(self._witnesses()), 1)
 
 
