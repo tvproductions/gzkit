@@ -2,7 +2,10 @@
   "default_rationale": {
     "obpi-0.0.59-05-hash-compare-non-mutation": "Hash comparison via Path.read_bytes() before/after running an audit is a legitimate BEHAVIOR test of the audit's non-mutation invariant — assertion is on hash equality, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_promoted_advisory_audits.py)",
     "obpi-0.0.59-05-tempdir-manifest-idempotence": "Test exercises regenerate_distribution_baseline() and asserts on structural equality of the produced manifest across two runs (idempotence invariant). read_text reads a tempdir-scoped manifest produced by the regenerator under test — production-code behavior is tested, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_distribution_audit.py)",
-    "obpi-0.0.59-05-tempdir-ledger-emission": "Test exercises regenerate_distribution_baseline() and asserts that a distribution_baseline_regenerated event is appended to the tempdir ledger. read_text reads a tempdir-scoped ledger.jsonl produced by the regenerator under test — ledger emission BEHAVIOR is tested, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_distribution_audit.py)"
+    "obpi-0.0.59-05-tempdir-ledger-emission": "Test exercises regenerate_distribution_baseline() and asserts that a distribution_baseline_regenerated event is appended to the tempdir ledger. read_text reads a tempdir-scoped ledger.jsonl produced by the regenerator under test — ledger emission BEHAVIOR is tested, not file content. Scanner false-positive. (OBPI-0.0.59-05, file test_distribution_audit.py)",
+    "obpi-0.35.0-04-source-lint-over-fixture-modules": "test_no_surface_fixture_writes_through_text_mode reads the SOURCE TEXT of the fixture-seeding modules and asserts the offender list is empty. The read is of Python source for a lint-style check, never of an artifact the test itself wrote, so the assertion cannot be satisfied by the test's own write. Scanner false-positive. (OBPI-0.35.0-04, file test_content_unown.py)",
+    "obpi-0.35.0-04-declaration-non-mutation": "_assert_refused_without_transaction_writes asserts the ownership declaration is UNCHANGED after a refusal — the read-back IS the non-mutation invariant, and the expected value is the pre-state captured before the command ran, not content the assertion wrote. Same class as obpi-0.0.59-05-hash-compare-non-mutation. Scanner false-positive. (OBPI-0.35.0-04, file test_content_unown.py)",
+    "obpi-0.35.0-04-entry-sweep-removed-the-orphan": "_assert_swept_then_refused asserts the extract does NOT exist because the entry-boundary sweep removed it — absence produced by the code under test is the behavior being witnessed, and the helper additionally pins the exit code and the refusal prose that must not deny the sweep happened. Scanner false-positive. (OBPI-0.35.0-04, file test_content_unown.py)"
   },
   "file_waivers": {
     "tests/governance/test_promoted_advisory_audits.py": [
@@ -11,6 +14,11 @@
     "tests/governance/test_distribution_audit.py": [
       "obpi-0.0.59-05-tempdir-manifest-idempotence",
       "obpi-0.0.59-05-tempdir-ledger-emission"
+    ],
+    "tests/commands/test_content_unown.py": [
+      "obpi-0.35.0-04-source-lint-over-fixture-modules",
+      "obpi-0.35.0-04-declaration-non-mutation",
+      "obpi-0.35.0-04-entry-sweep-removed-the-orphan"
     ]
   }
 }
