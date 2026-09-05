@@ -744,26 +744,53 @@ Refutation remains essential, but as a METHOD:
 That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
 unbounded argument.
 
-**THE ADVERSARY CANNOT EXECUTE, AND THE PASS CONDITION IS WORDED FOR THAT (operator ruling
-2026-09-04).** `codex-companion.mjs` hardcodes `sandbox: "read-only"` on the `adversarial-review`
-path — line 414, a literal, with no flag reaching it, while the generic `task` path one function
-below honours `request.write`. So a Step 4b round can read the repository and cannot run one
-command in it: no crash matrix, no concurrency matrix, no mutation sweep, no negative control.
-This is a permanent property of the mandated transport, not a bad round, and it is why the pass
-condition above says **traced**, never *demonstrated*. Tracked at **GHI #961**.
+**THE ADVERSARY RUNS READ-ONLY: IT CAN EXECUTE, IT CANNOT WRITE (measured 2026-09-04; operator
+ruling same day).** `codex-companion.mjs` hardcodes `sandbox: "read-only"` on the
+`adversarial-review` path — line 414, a literal, with no flag reaching it, while the generic
+`task` path one function below honours `request.write`. **Read-only means the filesystem, not the
+shell.** Measured directly under `codex sandbox`:
 
-Two consequences a future round must not blur:
+| Probe | Result |
+|---|---|
+| `python3 -c "print(2+2)"` | `4` — command execution works |
+| `touch ./probe` | `Operation not permitted` — every write is blocked |
+| `git status --short` | runs, exit 0, warns it cannot create its `/tmp` cache file |
+| `uv run -m unittest …` | **fails outright**: `Failed to initialize cache at ~/.cache/uv` |
+| `.venv/bin/python -m unittest tests.content.test_ownership` | **Ran 69 tests** — 22 pass, **47 error** on `No usable temporary directory` |
 
-- **Do not ask the adversary to run anything.** An unrunnable ask returns findings about the
-  reviewer's own coverage, and those enter a verdict that gates the pipeline — the #941 shape,
-  where a PASS-shaped review reported CONCERNS because the reviewer could not execute. Ask for
-  citations, traces, and readings of the tests.
-- **Executed proof is Step 4a's burden, and Step 4b AUDITS it rather than reproducing it.** The
-  mutation discipline — delete one guard in isolation, run its named test, confirm it FAILS for
-  the right reason, restore byte-identically, then re-run the WHOLE set — belongs to the
-  implementing agent. Step 4b's job is to read that record adversarially and say whether it
-  proves what it claims. Nobody independently RE-RUNS it; that residual is real, it is disclosed
-  here rather than papered over, and it is the substance of GHI #961.
+So the boundary is precise, and it is NOT "cannot execute":
+
+- **It CAN** run read-only commands — `grep`, file reads, `git diff` / `git log`, and the test
+  suite itself **via the venv interpreter directly** (`./.venv/bin/python -m unittest …`).
+- **It CANNOT** write anywhere. That takes out every test needing a writable temp dir (47 of 69
+  in the measured module), the mutation sweep (which must edit a guard and restore it), the
+  crash/concurrency matrix, and any negative control that mutates the tree.
+- **`uv run` is unusable in the sandbox** — uv fails initializing its cache before reaching any
+  test. Never put a `uv run …` command in a Step 4b prompt; give the venv interpreter path.
+
+That is why the pass condition above says **traced** rather than *demonstrated*: the executed
+proof that matters most at this gate is exactly the part the write barrier removes. Tracked at
+**GHI #961**.
+
+Three consequences a future round must not blur:
+
+- **Ask it to run what it CAN run.** A read-only suite run, a grep, a `git log` are all available
+  and are stronger evidence than a pure reading. What you must never do is ask for a write —
+  an unrunnable ask returns findings about the reviewer's own coverage, and those enter a verdict
+  that gates the pipeline (the #941 shape, where a PASS-shaped review reported CONCERNS because
+  the reviewer could not execute). State the write barrier in the prompt so the adversary reports
+  a blocked write as a COVERAGE LIMIT, never as a defect in the code.
+- **Expect partial-failure noise and pre-empt it.** A suite run under the barrier returns real
+  errors that are artifacts of the sandbox, not the implementation — 47 of 69 in the measured
+  case. An adversary not told this will read them as defects. Tell it which failure signature
+  (`No usable temporary directory`) is environmental.
+- **Executed proof of the WRITE-dependent claims is Step 4a's burden, and Step 4b AUDITS it
+  rather than reproducing it.** The mutation discipline — delete one guard in isolation, run its
+  named test, confirm it FAILS for the right reason, restore byte-identically, then re-run the
+  WHOLE set — belongs to the implementing agent, because it needs writes. Step 4b reads that
+  record adversarially and says whether it proves what it claims. Nobody independently re-runs
+  it; that residual is real, disclosed here rather than papered over, and is the substance of
+  GHI #961.
 
 **The June-24 framing confused the reviewer's TECHNIQUE with its OBJECTIVE.**
 *"Your job is to refute"* creates a motivated critic that can continually expand
@@ -784,7 +811,7 @@ never followed with a legitimate input is a false-positive risk not ruled out. A
 directions explicitly: six rounds on OBPI-0.35.0-04 tested refusals and not one asked whether the
 feature still worked.
 
-**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + does-not-trust-4a framing (re-derive from the REQs and the repo; adversarial probing as method) + evidence-backed (cites real `file:line` and the asserting test — it cannot run commands, GHI #961)* — are necessary but NOT sufficient: "independent context" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.
+**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + does-not-trust-4a framing (re-derive from the REQs and the repo; adversarial probing as method) + evidence-backed (cites real `file:line` and the asserting test, plus any read-only command it did run — it can execute but cannot write, GHI #961)* — are necessary but NOT sufficient: "independent context" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.
 
 **Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**
 
@@ -864,7 +891,7 @@ catch.
 
 > This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` no longer preserves name inference for a tier-1 claim — GHI #780 retired that path after measuring that it was not a legacy tail but the only route in use (of 17 recorded `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor by name).
 
-**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); and its evidence base **as already-captured OUTPUT you paste into the prompt, never as commands for it to run** (GHI #961) — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite's result, the brief's `## Demo`, `git status --short` + `git diff`. You run those; the adversary reads them and re-derives against the repository it can browse. Then instruct it to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and TRACE the feature working, not merely failing to break. **The adversary cannot execute (GHI #961), so never ask it to run a command** — ask it to follow the success path through the code and name the test that pins it. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with a `file:line` citation and the asserting test named per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
+**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); and its evidence base, routed by the channel that actually carries it (measured 2026-09-04, GHI #961) — **the transport already supplies the diff automatically**: `collectReviewContext` injects `git status` + `git diff` as `REVIEW_INPUT`, but ONLY while the target is within `DEFAULT_INLINE_DIFF_MAX_FILES = 2` files and 256 KB; past either cap it drops to `inputMode: "self-collect"` and sends file NAMES only, which is every multi-file OBPI. **Your focus text is a shell positional** (`positionals.join(" ")`), not a document channel — there is no `--prompt-file` and no stdin on this path. So do not paste packets into it: name the artifacts BY PATH (the brief, the REQ ids, the test files, `.gzkit/evidence/<OBPI>.evidence.json`) and let the adversary open them, and tell it to run the read-only checks it can. **You** run `gz obpi present-evidence <OBPI>` to build the 4a packet and `gz covers <OBPI> --json` to derive REQ coverage before dispatching — those are the ORCHESTRATOR's commands, and their output belongs in the brief and the evidence packet the adversary then reads by path, never in the focus positional. Then instruct it to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and TRACE the feature working, not merely failing to break. **The adversary runs read-only: it CAN execute, it CANNOT write (GHI #961)** — ask it to follow the success path through the code, name the test that pins it, and run the read-only checks available to it (`./.venv/bin/python -m unittest <module>`, greps, `git log`). Never ask for a `uv run …` command (uv cannot initialize its cache in the sandbox) and never ask for anything that writes; state the write barrier so a blocked write is reported as a coverage limit, not a defect. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with a `file:line` citation and the asserting test named per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
 
 > **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator
 > ruling 2026-09-04, verbatim: *"NOT-REFUTED is arguably a passive way of saying CORROBORATED"*.
