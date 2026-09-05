@@ -9,8 +9,8 @@ Feature: OBPI lock management
 
   Scenario: Claim fails when held by another agent
     Given the workspace is initialized
-    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "codex"
-    When I run "gz obpi lock claim OBPI-0.1.0-01 --json"
+    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "agent-a"
+    When I run "gz obpi lock claim OBPI-0.1.0-01 --agent agent-b --json"
     Then it exits with code 1
     And the JSON output field "status" is "conflict"
 
@@ -23,15 +23,15 @@ Feature: OBPI lock management
 
   Scenario: Release validates ownership
     Given the workspace is initialized
-    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "codex"
-    When I run "gz obpi lock release OBPI-0.1.0-01 --json"
+    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "agent-a"
+    When I run "gz obpi lock release OBPI-0.1.0-01 --agent agent-b --json"
     Then it exits with code 1
     And the JSON output field "status" is "ownership_error"
 
   Scenario: Release with force overrides ownership (register entry via --abandon)
     Given the workspace is initialized
-    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "codex"
-    When I run "gz obpi lock release OBPI-0.1.0-01 --force --abandon wrong_obpi_claimed:demo --json"
+    And an OBPI lock exists for "OBPI-0.1.0-01" held by agent "agent-a"
+    When I run "gz obpi lock release OBPI-0.1.0-01 --agent agent-b --force --abandon wrong_obpi_claimed:demo --json"
     Then it exits with code 0
     And the JSON output field "status" is "released"
 

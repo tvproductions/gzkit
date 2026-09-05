@@ -158,7 +158,18 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
   own directory. The journal in particular is the crash-recovery record and must never be
   committed.
 - `features/**` — Gate 4 scenarios for the attested raise-path
+  and the six-line actor-identity correction in `features/obpi_lock.feature` found
+  by full verification under Codex (operator's 2026-09-05 "fix everything" direction).
+  The latter repairs the fixtures belonging to terminal `OBPI-0.0.14-01`, not the
+  production lock contract: holder and requester must be different agents under
+  both primary runtimes.
 - `docs/user/manpages/content.md` — the raise-path section
+- `.github/workflows/ownership-directory-barrier-probe.yml` — TEMPORARY Windows
+  capability experiment only. Operator authorization, 2026-09-05, verbatim:
+  "fix everything, also what are we going about this OBPI?" This answers the
+  explicit request to add, run, and remove this prepared probe. Record its actual
+  Windows result, then remove the workflow; this exception does not authorize a
+  weaker platform contract or a production durability claim from a capability test.
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` — this brief's evidence sections
 
 ## Denied Paths
@@ -175,7 +186,7 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
 - `src/gzkit/content/composer.py` — materialization is OBPI-0.35.0-05
 - `src/gzkit/governance/trust_audits/**` — `--rendition-lineage` is OBPI-0.35.0-06; this OBPI ships the declaration and the ratchet, not the gate
 - `src/gzkit/content/models/corpus.py` — the corpus model is OBPI-0.35.0-01
-- New dependencies, CI files, lockfiles
+- New dependencies, CI files other than the temporary probe explicitly allowed above, lockfiles
 - Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
@@ -1065,6 +1076,80 @@ source SHA `a4c2e3ad…`; `src/gzkit/commands/content/unown.py` is now `49b2ad58
 **the recorded 18-guard sweep does not establish mutation coverage of the current recovery
 protocol.** The table must be refreshed to the 22-guard sweep and its SHA before the next
 acceptance round is dispatched.
+
+### Codex continuation — 2026-09-05
+
+The operator paused Claude and directed Codex to carry the repair forward. The
+existing implementation stage continues; no new pipeline was launched and no
+completion or replacement adversarial verdict is claimed.
+
+The unsupported-directory-barrier warning exception was corrected against the
+existing preservation/non-success ruling. Before the correction, actual directory
+`fsync` failures permitted new snapshot creation on fresh entry and deletion of
+retained material during cleanup. After correction, unsupported operations enter
+the existing exit-2 refusals; the diagnostic distinguishes an unavailable required
+operation from a transient storage fault. No platform exception was added.
+
+The isolated correction received an implementer pass plus independent specification
+and quality review passes, with all three actual Codex dispatches recorded for the
+recovery correction. It was then integrated while preserving the existing scanner
+and canonical-loader test edits. Live scoped verification ran 183 tests successfully:
+`arb-step-ownershipunown-0b99a378bc45413d84b5828b58720270`. This is a scoped integration
+receipt, not the final full-suite, mutation, or Step-4b evidence.
+
+Equivalent Windows directory durability remains unproved: the current helper's
+Windows return performs no barrier. Its existence does not establish the mandatory
+boundary or authorize the unsupported-error exception. A standalone native Windows
+capability probe is prepared. The operator subsequently authorized its temporary CI
+exception above; it has not yet run on Windows and establishes no platform-equivalence
+claim until actual evidence is evaluated.
+
+The remaining named recovery corrections are integrated: directory-enumeration
+errors are reported rather than treated as an empty result; residue matching treats
+surface names literally; the writer test checks the actual parent inode and ordering;
+reconciliation ends at restored measured bytes and a loader-accepted retry; extraction
+failures do not claim a verified final copy; unreadable/non-UTF-8 source refusals name
+the unverified retained material and a verification route; and the exit-1 documentation
+accounts for recovery writes. The D+E caller also delegates extraction status to the
+helper instead of asserting that a failed extract exists. The manpage example was
+regenerated from actual CLI output.
+
+Independent bounded specification and quality reviews passed. Specification review's
+one remaining D+E diagnostic concern received an observed assertion failure before
+correction, a passing regression afterward, and a passing re-review. The correction
+cycles recorded twelve assertion failures before their corresponding fixes; these
+are direct RED logs, not fabricated ARB RED receipts.
+
+Verification of the integrated correction:
+
+- 190 scoped tests pass: `arb-step-ownershipunown-f76b9086907a418884556220c66134b2`.
+- Full suite: 9,406 tests pass in 27.674 seconds,
+  `arb-step-unittest-5d8aafb1b439413e8072f919aead60d4`.
+- Ruff: `arb-ruff-bf0781b398f544b3a159c19fd899a35d`; formatting check passes.
+- Type checking: `arb-step-typecheck-6a38214d71aa42d1970917f7e933a9c6`.
+- Strict documentation build: `arb-step-mkdocs-ee54e14777f34271b9d58691e5afb0b9`.
+- Raise-path BDD: five scenarios and 29 steps pass, no skips,
+  `arb-step-ownershipbdd-aac398586d884cbcb67f9b8b6b490073`.
+
+Two earlier full-suite attempts failed five tests because the verification sandbox
+blocked `uvx radon` from writing its global tools directory. Captured subprocess output
+established the shared cause, including the hook test. Providing a writable
+`UV_TOOL_DIR` alongside `UV_CACHE_DIR` resolved all five without source changes; the
+passing full-suite receipt above uses that environment correction. The failed receipts
+remain evidence (`arb-step-unittest-30af4f81f79e4dc3a3b4a048a6527d6b` and
+`arb-step-unittest-02f2fb73e6ea4b3cab7c44145723f962`).
+
+These results do not replace the standing Step-4b refutation, establish Windows
+durability, or constitute human attestation. The final mutation binding and required
+adversarial review remain pending the platform correction.
+
+The subsequent full `gz check` passed 58 of 59 checks and exposed a separate
+Claude-first BDD fixture assumption: an implicit Codex requester matched the fixture's
+hardcoded Codex holder. The claim-conflict and ownership-refusal scenarios failed,
+and the force-override scenario did not exercise a different owner. Six feature lines
+now name distinct holder/requester identities explicitly. All 13 lock scenarios and
+66 steps pass under actual Codex detection and simulated Claude detection. Production
+lock code is unchanged; the repair is captured in the insights store and this evidence.
 
 ## Threat Model (binding for this OBPI's Step 4b)
 

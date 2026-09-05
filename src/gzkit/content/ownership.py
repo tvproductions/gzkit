@@ -931,17 +931,12 @@ def write_bytes_atomically(path: Path, data: bytes) -> None:
 BARRIER_UNSUPPORTED_ERRNOS: frozenset[int] = frozenset(
     {errno.EINVAL, errno.ENOSYS, errno.ENOTSUP, errno.EOPNOTSUPP}
 )
-"""Errnos meaning the filesystem HAS NO directory-fsync operation.
+"""Directory-sync errors needing a capability remedy rather than an unchanged retry.
 
-`commit_directory_entry` is already a no-op on Windows, where there is no
-directory handle to sync. These errnos are the SAME disposition arriving
-through an errno instead of through `os.name`: a POSIX export that answers
-`fsync` on a directory with `EINVAL` cannot provide the barrier at all, so a
-caller that treats the raise as a transient fault refuses every invocation
-forever and offers a remedy no retry can reach. A caller needing the ordering
-this barrier establishes MUST classify on this set before refusing; every other
-errno (a full disk, a read-only mount, a permissions change) is a real fault a
-retry can clear.
+These report an unsupported or invalid operation at the attempted location;
+the errno alone does not identify a particular filesystem. Classification
+changes diagnostic guidance, never the requirement to establish the barrier.
+Writers propagate these errors, and cleanup must preserve dependents and refuse.
 """
 
 
@@ -969,11 +964,9 @@ def commit_directory_entry(directory: Path) -> None:
     why the barrier is a function taking one: each entry is committed in the
     directory that holds it.
 
-    Windows has no directory handle to sync (`os.open` on a directory raises
-    PermissionError), so the barrier is POSIX-only BY CONSTRUCTION rather than
-    by omission, and callers on Windows get a no-op that raises nothing. A
-    second statement of this discipline beside the first is the drift GHI #945
-    removed from the file-locking primitive for the same reason.
+    The current Windows path returns without establishing this barrier.
+    Equivalent Windows durability remains unproved; this no-op does not
+    establish the ordering guarantee described above.
     """
     if os.name != "posix":
         return

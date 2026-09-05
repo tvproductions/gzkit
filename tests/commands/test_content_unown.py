@@ -13,6 +13,7 @@ from __future__ import annotations
 import ast
 import contextlib
 import errno
+import hashlib
 import json
 import os
 import re
@@ -4445,6 +4446,41 @@ class TestRecoveryProtocolStateDPlusE(unittest.TestCase):
             self.assertFalse(self._EXTRACTED.exists())
 
     @covers("REQ-0.35.0-04-05")
+    def test_another_unown_cannot_create_headroom_for_the_saved_oversized_edit(self) -> None:
+        """The floor and actual unowned span grow equally when another section is unowned."""
+        with self._runner.isolated_filesystem():
+            self._reach_d_plus_e()
+            surface = Path("Doc.md")
+            newer = surface.read_bytes()
+            refusal = _unown(self._runner, attestor="g0", reason="probe")
+            measured = self._EXTRACTED.read_bytes()
+            surface.write_bytes(measured)
+            recovered = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(recovered.exit_code, 0, recovered.output)
+            before = load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+            spans = measure_section_spans(measured.decode("utf-8"))
+            before_total = sum(
+                spans[sid] for sid, owner in before.sections.items() if owner == "unowned"
+            )
+            raised = _unown(self._runner, section="doc-title", attestor="g0", reason="probe")
+            self.assertEqual(raised.exit_code, 0, raised.output)
+            after = load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+            after_total = sum(
+                spans[sid] for sid, owner in after.sections.items() if owner == "unowned"
+            )
+            self.assertEqual(
+                after.unowned_byte_floor - after_total,
+                before.unowned_byte_floor - before_total,
+                "another unown creates no additional allowance for growth",
+            )
+            surface.write_bytes(newer)
+            with self.assertRaises(OwnershipLoadError):
+                load_declaration(_DECLARATION_PATH, newer.decode("utf-8"), Path("."))
+            # output-contract: the demonstrated invalid remedy must not be advertised.
+            self.assertNotIn("so raise the floor with `gz content unown`", refusal.output)
+            surface.write_bytes(measured)
+
+    @covers("REQ-0.35.0-04-05")
     def test_executing_the_printed_sequence_verbatim_reaches_a_loadable_state(self) -> None:
         """Would break if the printed recovery sequence could not be executed.
 
@@ -4951,6 +4987,266 @@ class TestStagingResidueGlobIsLiteral(unittest.TestCase):
                 "the sweep must find ITS OWN staging residue and nobody else's; "
                 "an unescaped name turns `[1]` into a character class",
             )
+
+
+@contextlib.contextmanager
+def _failing_directory_listing(directory: Path):
+    """Inject at scandir while leaving pathlib's enumeration/error handling real."""
+    root = directory.resolve()
+    real_scandir = os.scandir
+    attempts: list[str] = []
+
+    def scandir(path="."):
+        if not isinstance(path, int) and Path(path).resolve() == root:
+            attempts.append(str(path))
+            raise OSError(errno.EACCES, "injected recovery directory listing failure")
+        return real_scandir(path)
+
+    with (
+        patch.object(os, "scandir", scandir),
+        patch("pathlib.Path._globber.scandir", staticmethod(scandir)),
+    ):
+        yield attempts
+
+
+class TestRecoveryStagingInspectionFailures(unittest.TestCase):
+    """An unreadable directory is unknown recovery material, never an empty sweep."""
+
+    _JOURNAL = _DECLARATION_PATH.with_name("Doc.md.json.journal")
+    _SNAPSHOT = _DECLARATION_PATH.with_name("Doc.md.json.journal.source")
+    _EXTRACT = Path("Doc.md.unowning-recovery")
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_extraction_listing_failure_is_reported_on_retries_then_heals(self) -> None:
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration()
+            with patch.object(
+                unown_module, "_append_event_once", side_effect=OSError("append fault")
+            ):
+                first = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(first.exit_code, 2, first.output)
+            measured = self._SNAPSHOT.read_bytes()
+            Path("Doc.md").write_bytes(measured + b"editor addition\n")
+            with _crash_at_replace(self._EXTRACT.name):
+                extraction = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(extraction.exit_code, 2, extraction.output)
+            residue = list(Path(".").glob(".Doc.md.unowning-recovery.*.tmp"))
+            self.assertEqual(len(residue), 1)
+            self.assertEqual(residue[0].read_bytes(), measured)
+            Path("Doc.md").write_bytes(measured)
+            observations = []
+            for _ in range(2):
+                with _failing_directory_listing(Path(".")) as attempts:
+                    retry = _unown(self._runner, attestor="g0", reason="probe")
+                observations.append((retry, len(attempts), residue[0].exists()))
+            healed = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(healed.exit_code, 1, healed.output)
+            self.assertFalse(residue[0].exists())
+            self.assertFalse(self._JOURNAL.exists())
+            self.assertFalse(self._SNAPSHOT.exists())
+            self.assertEqual(Path("Doc.md").read_bytes(), measured)
+            loaded = load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+            self.assertEqual(loaded.sections["alpha-section"], "unowned")
+            self.assertEqual(
+                len([e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]), 1
+            )
+            for number, (retry, attempts, retained) in enumerate(observations):
+                with self.subTest(retry=number):
+                    self.assertGreater(attempts, 0)
+                    self.assertTrue(retained)
+                    # output-contract: disclose unknown inspection and its real storage fault.
+                    self.assertIn("injected recovery directory listing failure", retry.output)
+                    self.assertIn(".Doc.md.unowning-recovery.", retry.output)
+                    if number == 0:
+                        self.assertEqual(retry.exit_code, 2, retry.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unknown_orphan_family_cannot_exempt_new_transaction_cleanup(self) -> None:
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration()
+            measured = Path("Doc.md").read_bytes()
+            with _crash_at_replace(self._SNAPSHOT.name):
+                interrupted = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(interrupted.exit_code, 2, interrupted.output)
+            self.assertFalse(self._JOURNAL.exists())
+            residue = list(self._SNAPSHOT.parent.glob(f".{self._SNAPSHOT.name}.*.tmp"))
+            self.assertEqual(len(residue), 1)
+            self.assertEqual(residue[0].read_bytes(), measured)
+            with _failing_directory_listing(self._SNAPSHOT.parent) as attempts:
+                run = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertGreater(len(attempts), 0)
+            self.assertEqual(run.exit_code, 2, run.output)
+            self.assertTrue(residue[0].exists())
+            self.assertTrue(
+                self._SNAPSHOT.exists(), "unknown cleanup cannot discharge this snapshot"
+            )
+            # output-contract: entry warns, finalization still reports its own failed inspection.
+            self.assertIn("Warning:", run.output)
+            self.assertIn("injected recovery directory listing failure", run.output)
+            healed = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(healed.exit_code, 1, healed.output)
+            self.assertFalse(residue[0].exists())
+            self.assertFalse(self._SNAPSHOT.exists())
+            loaded = load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+            self.assertEqual(loaded.sections["alpha-section"], "unowned")
+
+
+class TestFailedExtractionDoesNotClaimAbsence(unittest.TestCase):
+    """A failed write can leave an older extract or a visible replacement."""
+
+    @covers("REQ-0.35.0-04-05")
+    def test_witnessed_recovery_does_not_claim_an_extract_that_failed_to_land(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration()
+            with patch.object(unown_module, "_clear_recovery_state", lambda target, **_: None):
+                first = _unown(runner, attestor="g0", reason="probe")
+            self.assertEqual(first.exit_code, 0, first.output)
+            snapshot = _DECLARATION_PATH.with_name("Doc.md.json.journal.source")
+            journal = _DECLARATION_PATH.with_name("Doc.md.json.journal")
+            measured = snapshot.read_bytes()
+            newer = measured + b"editor addition\n"
+            Path("Doc.md").write_bytes(newer)
+            extract = Path("Doc.md.unowning-recovery")
+            events = _ledger_events()
+            with _crash_at_replace(extract.name):
+                refused = _unown(runner, attestor="g0", reason="probe")
+            self.assertEqual(refused.exit_code, 2, refused.output)
+            self.assertFalse(extract.exists())
+            self.assertTrue(journal.exists())
+            self.assertEqual(snapshot.read_bytes(), measured)
+            self.assertEqual(Path("Doc.md").read_bytes(), newer)
+            self.assertEqual(_ledger_events(), events)
+            # output-contract: failed extraction cannot establish a usable final copy.
+            self.assertNotIn("the extract is retained beside the surface", refused.output)
+            self.assertIn("unconfirmed", refused.output)
+            Path("Doc.md").write_bytes(measured)
+            recovered = _unown(runner, attestor="g0", reason="probe")
+            self.assertEqual(recovered.exit_code, 0, recovered.output)
+            self.assertEqual(_ledger_events(), events)
+            load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+
+    @covers("REQ-0.35.0-04-05")
+    def test_existing_and_replaced_extracts_remain_unconfirmed_after_write_fault(self) -> None:
+        runner = CliRunner()
+        boundaries = ("replace", "directory-barrier") if os.name == "posix" else ("replace",)
+        for boundary in boundaries:
+            with self.subTest(boundary=boundary), runner.isolated_filesystem():
+                _seed_surface()
+                _seed_declaration()
+                with patch.object(
+                    unown_module, "_append_event_once", side_effect=OSError("append")
+                ):
+                    first = _unown(runner, attestor="g0", reason="probe")
+                self.assertEqual(first.exit_code, 2, first.output)
+                snapshot = _DECLARATION_PATH.with_name("Doc.md.json.journal.source")
+                extract = Path("Doc.md.unowning-recovery")
+                measured = snapshot.read_bytes()
+                newer = measured + b"editor addition\n"
+                Path("Doc.md").write_bytes(newer)
+                older_copy = b"an older extraction\n"
+                write_bytes_atomically(extract, older_copy)
+                failure = (
+                    _crash_at_replace(extract.name)
+                    if boundary == "replace"
+                    else _failing_directory_barrier_after_replace(extract.name)
+                )
+                with failure:
+                    refused = _unown(runner, attestor="g0", reason="probe")
+                self.assertEqual(refused.exit_code, 2, refused.output)
+                self.assertEqual(snapshot.read_bytes(), measured)
+                self.assertEqual(Path("Doc.md").read_bytes(), newer)
+                self.assertEqual(
+                    extract.read_bytes(), older_copy if boundary == "replace" else measured
+                )
+                retried = _unown(runner, attestor="g0", reason="probe")
+                self.assertEqual(retried.exit_code, 2, retried.output)
+                self.assertEqual(extract.read_bytes(), measured)
+                Path("Doc.md").write_bytes(snapshot.read_bytes())
+                recovered = _unown(runner, attestor="g0", reason="probe")
+                self.assertEqual(recovered.exit_code, 0, recovered.output)
+                load_declaration(_DECLARATION_PATH, measured.decode("utf-8"), Path("."))
+                # output-contract: an observed surviving file cannot be described as absent.
+                self.assertNotIn("no extract exists", refused.output)
+                self.assertIn(extract.as_posix(), refused.output)
+                self.assertIn("unconfirmed", refused.output)
+                self.assertNotIn("diff that copy against", refused.output)
+
+
+class TestUnreadablePendingSourceNamesRecoveryMaterial(unittest.TestCase):
+    """Early source refusal preserves pending evidence and identifies a usable route."""
+
+    @covers("REQ-0.35.0-04-05")
+    def test_unreadable_and_non_utf8_source_retries_name_unverified_retention(self) -> None:
+        runner = CliRunner()
+        for condition in ("unreadable", "non-utf8"):
+            with self.subTest(condition=condition), runner.isolated_filesystem():
+                _seed_surface()
+                _seed_declaration()
+                with patch.object(
+                    unown_module, "_append_event_once", side_effect=OSError("append")
+                ):
+                    first = _unown(runner, attestor="g0", reason="probe")
+                self.assertEqual(first.exit_code, 2, first.output)
+                journal = _DECLARATION_PATH.with_name("Doc.md.json.journal")
+                snapshot = _DECLARATION_PATH.with_name("Doc.md.json.journal.source")
+                retained = snapshot.read_bytes()
+                journal_before = journal.read_bytes()
+                declaration_before = _DECLARATION_PATH.read_bytes()
+                ledger_before = _ledger_events()
+                newer = b"newer raw bytes\xff\n" if condition == "non-utf8" else b"newer work\n"
+                Path("Doc.md").write_bytes(newer)
+                real_read = Path.read_bytes
+
+                def read(path, condition=condition, real_read=real_read):
+                    if condition == "unreadable" and path.name == "Doc.md":
+                        raise OSError(errno.EACCES, "injected source read failure")
+                    return real_read(path)
+
+                refusals = []
+                for _ in range(2):
+                    with patch.object(Path, "read_bytes", read):
+                        refused = _unown(runner, attestor="g0", reason="probe")
+                    refusals.append(refused)
+                    self.assertEqual(refused.exit_code, 1, refused.output)
+                    self.assertEqual(Path("Doc.md").read_bytes(), newer)
+                    self.assertEqual(snapshot.read_bytes(), retained)
+                    self.assertEqual(journal.read_bytes(), journal_before)
+                    self.assertEqual(_DECLARATION_PATH.read_bytes(), declaration_before)
+                    self.assertEqual(_ledger_events(), ledger_before)
+                with tempfile.TemporaryDirectory() as outside:
+                    saved = Path(outside) / "newer.saved"
+                    saved.write_bytes(Path("Doc.md").read_bytes())
+                    self.assertFalse(saved.resolve().is_relative_to(Path.cwd().resolve()))
+                    self.assertEqual(
+                        hashlib.sha256(snapshot.read_bytes()).hexdigest(),
+                        json.loads(journal_before)["surface_digest"],
+                    )
+                    Path("Doc.md").write_bytes(snapshot.read_bytes())
+                    recovered = _unown(runner, attestor="g0", reason="probe")
+                    self.assertEqual(recovered.exit_code, 0, recovered.output)
+                    load_declaration(_DECLARATION_PATH, retained.decode("utf-8"), Path("."))
+                    self.assertEqual(saved.read_bytes(), newer)
+                self.assertFalse(journal.exists())
+                self.assertFalse(snapshot.exists())
+                self.assertEqual(
+                    len([e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]),
+                    1,
+                )
+                for number, refused in enumerate(refusals):
+                    with self.subTest(retry=number):
+                        # output-contract: locate evidence without claiming unperformed validation.
+                        self.assertIn(snapshot.as_posix(), refused.output)
+                        self.assertIn(journal.as_posix(), refused.output)
+                        self.assertIn("not read or verified", refused.output)
+                        self.assertIn("surface_digest", refused.output)
+                        self.assertIn("OUTSIDE this repository", refused.output)
 
 
 class TestJournalStorageFaultIsNotForgery(unittest.TestCase):
@@ -5564,25 +5860,35 @@ class TestEntryBoundarySweepIsNotClaimedAway(unittest.TestCase):
             self._assert_swept_then_refused(refused, declaration_before)
 
 
-class TestAnUnavailableBarrierIsDisclosedNotRefusedForever(unittest.TestCase):
-    """A barrier the filesystem CANNOT provide is disclosed; it is not a refusal.
+@contextlib.contextmanager
+def _unsupported_directory_fsync(code: int):
+    """Fail every actual directory fsync; regular-file fsyncs still execute."""
+    attempts: list[int] = []
+    real_fsync = os.fsync
 
-    `commit_directory_entry` is already a no-op on Windows, where there is no
-    directory handle to sync -- the barrier is unavailable BY CONSTRUCTION and
-    the command runs. A POSIX export that answers `fsync` on a directory with
-    `EINVAL` is the same disposition arriving through an errno instead of
-    through `os.name`, and treating it as a fault made EVERY invocation exit 2,
-    including a first-ever run with no journal and nothing to sweep.
+    def fsync(fd: int):
+        if stat.S_ISDIR(os.fstat(fd).st_mode):
+            attempts.append(code)
+            raise OSError(code, "injected unsupported directory fsync")
+        return real_fsync(fd)
 
-    The remedy prose is what makes that unrecoverable rather than merely
-    strict: it told the operator to fix *"an export (NFS, a network share) that
-    cannot fsync a directory"* and re-run, which is not a condition a re-run --
-    or the operator -- can clear. A remedy naming a fault its own retry cannot
-    reach is a promise the command does not keep.
+    with patch("gzkit.content.ownership.os.fsync", side_effect=fsync):
+        yield attempts
+
+
+class TestUnavailableBarrierPreservesRecoveryMaterial(unittest.TestCase):
+    """Unsupported operations cannot waive the mandatory durability boundary.
+
+    The plan requires preservation and non-success when durable journal
+    absence cannot be established. These are POSIX error-injection tests;
+    Windows durability remains unproved. All four names are exercised even
+    where ENOTSUP and EOPNOTSUPP are aliases on the host.
     """
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
     _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
+    _EXTRACT = Path("Doc.md.unowning-recovery")
+    _ERRNOS = ("EINVAL", "ENOSYS", "ENOTSUP", "EOPNOTSUPP")
 
     def setUp(self) -> None:
         self._runner = CliRunner()
@@ -5592,33 +5898,94 @@ class TestAnUnavailableBarrierIsDisclosedNotRefusedForever(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
     @covers("REQ-0.35.0-04-02")
-    def test_a_filesystem_that_cannot_fsync_a_directory_still_un_owns_and_says_so(self) -> None:
-        """Would break if an unavailable barrier bricked the command on that filesystem."""
-        # output-contract: the disclosure accompanying the completed run is the behaviour.
-        with self._runner.isolated_filesystem():
-            _seed_surface()
-            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+    def test_unavailable_barrier_on_fresh_entry_prevents_transaction_start(self) -> None:
+        """No snapshot path may be created or reused past an unestablished boundary."""
+        self._exercise_unsupported_barriers(entry="fresh")
 
-            with _failing_standalone_directory_barrier(errno.EINVAL) as probe:
-                run = _unown(self._runner, attestor="g0", reason="probe")
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
+    @covers("REQ-0.35.0-04-02")
+    def test_unavailable_barrier_after_journal_unlink_preserves_dependents(self) -> None:
+        """A visible journal deletion cannot authorize destroying measured bytes."""
+        self._exercise_unsupported_barriers(entry="journal-present")
 
-            self.assertGreater(probe.attempts, 0, "the boundary must be ATTEMPTED, not assumed")
-            self.assertEqual(
-                run.exit_code,
-                0,
-                "a barrier this filesystem cannot provide is the Windows disposition "
-                f"reached by errno; refusing it forever bricks the raise-path: {run.output}",
-            )
-            self.assertEqual(len(self._witnesses()), 1, "the un-owning landed")
-            self.assertFalse(self._JOURNAL.exists())
-            self.assertFalse(self._SNAPSHOT.exists())
-            self.assertIn("cannot fsync", run.output.lower())
-            self.assertIn(
-                "warning",
-                run.output.lower(),
-                "an ordering guarantee this run could not establish is DISCLOSED, "
-                "never passed over in silence",
-            )
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
+    @covers("REQ-0.35.0-04-02")
+    def test_unavailable_barrier_on_journal_absent_retry_preserves_dependents(self) -> None:
+        """Retries must prove the boundary even when the journal is already absent."""
+        self._exercise_unsupported_barriers(entry="journal-absent")
+
+    def _exercise_unsupported_barriers(self, *, entry: str) -> None:
+        for name in self._ERRNOS:
+            with self.subTest(errno=name), self._runner.isolated_filesystem():
+                _seed_surface()
+                _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+                source_before = Path("Doc.md").read_bytes()
+                if entry != "fresh":
+                    with patch.object(
+                        unown_module, "_clear_recovery_state", lambda target, **_: None
+                    ):
+                        first = _unown(self._runner, attestor="g0", reason="probe")
+                    self.assertEqual(first.exit_code, 0, first.output)
+                    # Produce the extraction through the real recovery path.
+                    Path("Doc.md").write_bytes(source_before + b"editor addition\n")
+                    extraction = _unown(self._runner, attestor="g0", reason="probe")
+                    self.assertEqual(extraction.exit_code, 2, extraction.output)
+                    self.assertEqual(self._EXTRACT.read_bytes(), source_before)
+                    Path("Doc.md").write_bytes(source_before)
+                    if entry == "journal-absent":
+                        # Model visible unlink without an established durability barrier.
+                        self._JOURNAL.unlink()
+                declaration_before = _DECLARATION_PATH.read_bytes()
+                ledger_before = _ledger_events()
+                material_before = self._dependent_bytes()
+                observations = []
+                for _ in range(2):
+                    with _unsupported_directory_fsync(getattr(errno, name)) as attempts:
+                        refused = _unown(self._runner, attestor="g0", reason="probe")
+                    observations.append(
+                        (
+                            refused,
+                            len(attempts),
+                            self._dependent_bytes(),
+                            _ledger_events(),
+                            _DECLARATION_PATH.read_bytes(),
+                        )
+                    )
+                healed = _unown(self._runner, attestor="g0", reason="probe")
+                self.assertEqual(healed.exit_code, 0 if entry == "fresh" else 1, healed.output)
+                self.assertEqual(Path("Doc.md").read_bytes(), source_before)
+                self.assertFalse(self._JOURNAL.exists())
+                self.assertEqual(self._dependent_bytes(), {})
+                self.assertEqual(len(self._witnesses()), 1)
+                loaded = load_declaration(
+                    _DECLARATION_PATH, source_before.decode("utf-8"), Path(".")
+                )
+                self.assertEqual(loaded.sections["alpha-section"], "unowned")
+                if entry != "fresh":
+                    self.assertEqual(_DECLARATION_PATH.read_bytes(), declaration_before)
+                    self.assertEqual(_ledger_events(), ledger_before)
+                for retry, observation in enumerate(observations):
+                    refused, attempts, material, ledger, declaration = observation
+                    with self.subTest(retry=retry):
+                        self.assertGreater(attempts, 0, "exercise an actual directory fsync")
+                        self.assertEqual(
+                            material, material_before, "preserve, never delete or reuse"
+                        )
+                        self.assertEqual(
+                            ledger, ledger_before, "no new witness past a failed boundary"
+                        )
+                        self.assertEqual(declaration, declaration_before)
+                        self.assertEqual(refused.exit_code, 2, refused.output)
+                        # output-contract: an unchanged environment cannot repair this failure.
+                        self.assertIn("unchanged conditions", refused.output)
+                        self.assertIn("required directory sync", refused.output)
+
+    def _dependent_bytes(self) -> dict[str, bytes]:
+        return {
+            path.as_posix(): path.read_bytes()
+            for path in (self._SNAPSHOT, self._EXTRACT)
+            if path.exists()
+        }
 
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
     @covers("REQ-0.35.0-04-02")

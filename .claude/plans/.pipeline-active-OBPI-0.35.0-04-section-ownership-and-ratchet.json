@@ -208,6 +208,84 @@
       "status": "in_progress",
       "result": null,
       "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:14:46.035598+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:14:46.270340+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:14:46.500864+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:59:58.910855+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:59:59.149595+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 5,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "codex-inherited",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T13:59:59.382481+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
     }
   ]
 }

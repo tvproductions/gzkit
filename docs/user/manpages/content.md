@@ -285,10 +285,12 @@ $ echo $?
 #### Fail-closed paths
 
 Every refusal prints what failed, why it is forbidden (citing the binding
-REQ), and a governed next step. **Exit 1** means nothing was written and the
-retry is yours to make; **exit 2** means the transaction reached a store, so
-recovery state is RETAINED and the next step completes or reconciles it rather
-than starting over.
+REQ), and a governed next step. **Exit 1** reports a precondition refusal or
+recovery of a different pending section; that recovery can write stores, and an
+earlier orphan sweep can remove files. Read the diagnostic for what this run
+did. **Exit 2** reports a storage failure or an outstanding recovery obligation;
+a failed initial durability boundary can refuse before any new transaction
+starts. Preserve the reported recovery material and follow the named next step.
 
 | Exit | Refused when |
 |------|--------------|
@@ -344,13 +346,15 @@ Consequences worth stating plainly:
 - **Never delete the journal because the ledger carries no `section_ownership_unowned` row.** States B and C both have an absent witness with the declaration already replaced, so an absent witness does not establish that nothing landed — deleting on that signal destroys the only record able to complete the transition.
 - **Never hand-edit the ownership declaration.** Its floor must stay witnessed by a real ledger event, and an edited one is refused on the next load.
 - **The command never rewrites the surface.** In state E it copies the retained measured bytes to `<surface>.unowning-recovery` and leaves your edit alone.
-- **A refusal never hands you a step it cannot keep.** When the measured bytes could not be extracted — unreadable, digest mismatch, or a failed write — the numbered reconcile sequence is withheld and that branch names its own next step instead. Naming a path to restore from without proving it holds the journalled bytes is an instruction the command cannot keep.
+- **A refusal never hands you a step it cannot keep.** When the measured bytes could not be verified and fully extracted, the numbered reconcile sequence is withheld. A failed extract write may leave an older file or a visible replacement whose durability is unconfirmed; the diagnostic names the failed path and the verified retained source rather than claiming the extract is absent.
+- **An unreadable or non-UTF-8 live source does not discard pending recovery.** The early refusal identifies the journal and retained-snapshot path without claiming it has read or verified that snapshot. Before changing the source, save its raw bytes outside the repository, restoring read access first if needed. Verify the retained snapshot's SHA-256 against the journal's `surface_digest` before deliberately restoring it, then retry. If verification fails, preserve the evidence and do not overwrite the source.
+- **Recovery ends at the restored measured version and a successful retry.** Keep newer edits saved outside the repository. Un-owning another section adds the same span to the floor and the live unowned total, so it cannot create headroom for an oversized edit in an already-unowned section.
 
 ```console
-$ gz content unown Doc.md --section alpha-section --attestor "g0" --reason "materialized as prose doc instead"
-Error: surface 'Doc.md' changed DURING the un-owning of section 'alpha-section': its bytes changed.
-Why forbidden: THREE OBLIGATIONS ARE SEPARATE HERE and exactly one is discharged -- transition witnessed; source reconciliation pending; recovery cleanup pending. THE STORES ARE IN § Recovery Protocol state D and the SOURCE IS IN state E -- the two are orthogonal axes, and this exit is the pair. THE TRANSITION DID LAND: the declaration carries the new floor and the ledger carries its witness, and neither is retracted -- an append-only witness is a truthful record of what was committed. But the floor was measured against the surface as it was journalled, so the committed declaration may record a byte span the surface no longer has, and `load_declaration` fails closed while the live span exceeds the floor (REQ-0.35.0-04-05). A durable witness does NOT establish that the source was reconciled, so what is refused here is the claim that this completed cleanly. The journal is RETAINED at '.../.gzkit/ownership/Doc.md.json.journal' with the measured source beside it, the extract is retained beside the surface, and your edit to the surface is untouched and was NOT reverted.
-  The bytes this transition measured are extracted to '.../Doc.md.unowning-recovery', and the immutable original is retained at '.../.gzkit/ownership/Doc.md.json.journal.source'. Reconcile in this order, which preserves your edit and ends with a declaration `load_declaration` accepts: 1. save your current work -- copy '.../Doc.md' to a path OUTSIDE this repository; those bytes stay yours and nothing below reads them; 2. diff that copy against '.../Doc.md.unowning-recovery' to see what moved; 3. restore the measured bytes over '.../Doc.md'; 4. re-run the same command, which has nothing left to complete -- the transition is already witnessed -- and clears the journal and the retained material. Your saved copy is untouched by every step above. RE-APPLYING IT IS A SEPARATE DECISION about the coverage claim and is never part of this recovery: an edit that grows an unowned section past the recorded floor stops the declaration loading at all, so raise the floor with `gz content unown` while the measured bytes are still in place and put your edit back afterwards -- never re-apply it first and then reach for a command whose own initial load rejects it. Do NOT delete the journal and do NOT hand-edit the ownership declaration -- its floor must stay witnessed by a real ledger event, and an edited one is refused on the next load.
+$ gz content unown Doc.md --section alpha-section --attestor "g0" --reason "probe"
+Error: the un-owning of section 'alpha-section' of 'Doc.md' was witnessed by an earlier run, but the surface no longer carries the bytes its floor was measured against: its bytes changed.
+Why forbidden: THREE OBLIGATIONS ARE SEPARATE HERE and exactly one is discharged -- transition witnessed; source reconciliation pending; recovery cleanup pending. THE STORES ARE IN § Recovery Protocol state D and the SOURCE IS IN state E -- the two are orthogonal axes, and this exit is the pair. THE TRANSITION DID LAND: the declaration carries the new floor and the ledger carries its witness, and neither is retracted -- an append-only witness is a truthful record of what was committed. But the floor was measured against the surface as it was journalled, so the committed declaration may record a byte span the surface no longer has, and `load_declaration` fails closed while the live span exceeds the floor (REQ-0.35.0-04-05). A durable witness does NOT establish that the source was reconciled, so what is refused here is the claim that this completed cleanly. The journal is RETAINED at '.../.gzkit/ownership/Doc.md.json.journal'. Your edit to the surface is untouched and was NOT reverted.
+  The bytes this transition measured are extracted to '.../Doc.md.unowning-recovery', and the immutable original is retained at '.../.gzkit/ownership/Doc.md.json.journal.source'. Reconcile in this order, which preserves your edit and ends with a declaration `load_declaration` accepts: 1. save your current work -- copy '.../Doc.md' to a path OUTSIDE this repository; those bytes stay yours and nothing below reads them; 2. diff that copy against '.../Doc.md.unowning-recovery' to see what moved; 3. restore the measured bytes over '.../Doc.md'; 4. re-run the same command, which clears the journal and the retained material once the surface matches what was measured. Your saved copy is untouched by every step above. RE-APPLYING IT IS A SEPARATE DECISION about the coverage claim and is never part of this recovery: an edit that grows an unowned section past the recorded floor is still refused. Un-owning another section increases the floor and live unowned span equally, so it does not create headroom for that edit. Keep the saved copy outside the repository while deciding how to revise it within the ratchet. Do NOT delete the journal and do NOT hand-edit the ownership declaration -- its floor must stay witnessed by a real ledger event, and an edited one is refused on the next load.
 $ echo $?
 2
 ```
@@ -368,6 +372,17 @@ obligation, and it is bounded by a durability barrier: the journal's absence is
 made durable BEFORE any file that depends on it is deleted or reused, and a
 barrier that cannot be established preserves everything and refuses.
 
+An unsupported or invalid required directory sync (`EINVAL`, `ENOSYS`,
+`ENOTSUP`, or `EOPNOTSUPP`) also preserves dependent recovery files and exits 2,
+including on a fresh entry or a retry that finds no journal. No new transaction
+starts past that failed boundary. The diagnostic names the attempted location
+and error; the errno alone does not identify a particular filesystem. Repeating
+under unchanged conditions cannot establish durability: preserve the recovery
+material and use an environment where the required directory sync succeeds
+before retrying. Ordinary transient storage faults retain their repair-and-retry
+guidance. Equivalent Windows directory durability remains unproved; the current
+Windows helper returns without establishing this guarantee.
+
 Past that boundary the two kinds of failure part company. A removal failure
 among **this transaction's own** material keeps what remains and reports the
 storage fault rather than reporting success. A removal failure on **unrelated
@@ -378,6 +393,13 @@ attached to the orphan through finalization, so the same leftover is never
 re-reported as the new transaction's cleanup failing. A warning buys no
 shortcut: the declaration is still validated and the new transaction's own
 recovery snapshot is still persisted.
+
+A directory-listing failure leaves its staging-file family **unknown**, not
+empty. The diagnostic names the directory, literal filename family, and storage
+error. Current-transaction cleanup remains non-success. A journal-absent entry
+may warn and continue, but unknown files cannot be treated as an observed list
+of old leftovers exempt from the new transaction's cleanup. Restore directory
+read access and storage health, then retry the inspection.
 
 | Path | Holds |
 |------|-------|

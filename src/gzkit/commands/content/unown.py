@@ -28,7 +28,6 @@ write, mirroring ``commands/content/commit.py``.
 
 from __future__ import annotations
 
-import glob
 import hashlib
 import json
 import sys
@@ -885,9 +884,9 @@ def _refuse_source_changed_since_measurement(
     THE RECONCILE SCRIPT IS NOT WRITTEN HERE. It is single-sourced through
     `_reconciliation_sequence`, and this site supplies only what step 4's
     re-run has left to do. It is printed CONDITIONALLY -- `if extracted:` below
-    -- because the sequence names the extract, and three of
-    `_extract_retained_source`'s four branches write no extract at all; each of
-    those carries its own next step instead. Printing it unconditionally is the
+    -- because the sequence requires a verified extraction, and
+    `_extract_retained_source`'s failure branches cannot establish one; each
+    carries its own next step instead. Printing it unconditionally is the
     retired behaviour, and `_reconciliation_sequence`'s own docstring states the
     live rule. It used to
     carry its own copy, and that copy is where the retired step 5 survived the
@@ -948,16 +947,9 @@ def _extract_retained_source(
 ) -> tuple[str, bool]:
     """Extract the retained measured bytes to a side path; report WHERE they are.
 
-    Returns the sentence to print AND whether an extract now exists, and the
-    second half is what makes the first safe to build an instruction on.
-    `_reconciliation_sequence` tells the operator to "diff that copy against
-    <extract>" and "restore the measured bytes over <surface>" -- three of the
-    four branches below write no extract at all, and both callers used to
-    append that sequence unconditionally, so an operator was told to diff
-    against a file one sentence after being told the extraction had failed.
-    A next step the command cannot keep is the defect class the 2026-09-05
-    ruling's point 2 forbids and that `_refuse_surface_identity` states in
-    this same module.
+    Returns guidance and whether extraction completed with verified measured
+    bytes. A write error can leave an older file or a visible replacement whose
+    durability is unconfirmed; neither permits the numbered recovery sequence.
 
     Extraction and disclosure are ONE act deliberately: naming a path the
     operator is told to restore from, without first proving that path holds the
@@ -970,7 +962,7 @@ def _extract_retained_source(
     fault the operator can clear, a digest mismatch is a divergence only the
     operator can rule on, and a failed extraction write is a storage fault
     whose retry is this same command. None of the three may borrow the
-    reconcile script -- it names an artifact none of them produced.
+    reconcile script -- none established a completed, verified extraction.
 
     The successful branch returns LOCATION, never an instruction: its two
     callers reach state E from different sides -- a pending transition versus
@@ -983,7 +975,7 @@ def _extract_retained_source(
             "The retained measured source at "
             f"{target.journal_source_path.as_posix()!r} could not be read "
             f"({exc}), so this command cannot hand you the bytes it measured "
-            "and there is nothing yet to diff or restore from. Restore read "
+            "and cannot offer a verified copy to diff or restore. Restore read "
             "access to that file -- check its permissions and the health of "
             f"the mount under {target.journal_source_path.parent.as_posix()!r} "
             "-- then re-run the same command, which extracts it and prints the "
@@ -1013,10 +1005,11 @@ def _extract_retained_source(
         write_bytes_atomically(target.recovery_extract_path, retained)
     except OSError as exc:
         return (
-            "The measured source is retained at "
+            "The verified measured source is retained at "
             f"{target.journal_source_path.as_posix()!r} but could not be "
-            f"extracted beside the surface ({exc}), so no extract exists to "
-            "diff or restore from yet. Fix the storage fault under "
+            f"fully extracted to {target.recovery_extract_path.as_posix()!r} ({exc}). "
+            "That path may hold an older copy or the new replacement; its final "
+            "state and durability are unconfirmed. Fix the storage fault under "
             f"{target.recovery_extract_path.parent.as_posix()!r} -- disk space, "
             "directory permissions, a read-only mount -- then re-run the same "
             "command, which retries the extraction and prints the "
@@ -1628,9 +1621,8 @@ def _staging_residue(path: Path) -> list[Path]:
     ['.doc.md.unowning-recovery.3.tmp'] RESIDUE_IS_MEASURED_SOURCE True`,
     retained across a successful recovery.
 
-    A directory that cannot be listed yields nothing rather than raising: this
-    is a sweep of residue, and a fault reaching it is reported by the removal
-    of the material actually named, never by the glob that looks for more.
+    Enumeration errors propagate: an unreadable directory is not an empty
+    sweep. `Path.glob` suppresses those errors, so use `iterdir` instead.
 
     THE NAME IS DATA, NEVER A PATTERN. A surface filename carrying `[`, `]`,
     `*` or `?` -- all legal on every supported platform -- is a glob expression
@@ -1638,12 +1630,14 @@ def _staging_residue(path: Path) -> list[Path]:
     a character class, so the sweep looks for `a1.md`'s residue instead. It
     would then leave its own complete copy of the measured source bytes in
     place and remove a stranger's, which is the opposite of both obligations.
-    `glob.escape` is what makes the interpolated name mean itself.
+    Literal prefix/suffix matching keeps metacharacters inert.
     """
-    try:
-        return sorted(path.parent.glob(f".{glob.escape(path.name)}.*.tmp"))
-    except OSError:
-        return []
+    prefix = f".{path.name}."
+    return sorted(
+        candidate
+        for candidate in path.parent.iterdir()
+        if candidate.name.startswith(prefix) and candidate.name.endswith(".tmp")
+    )
 
 
 _TWO_OF_THREE_DISCHARGED = (
@@ -1755,8 +1749,8 @@ This list used to end with *"an export (NFS, a network share) that cannot fsync
 a directory"*, on refusals whose entire next step is "re-run the same command".
 A filesystem without the operation is not a condition the operator clears by
 retrying, and naming it here told them to re-run against a fault no re-run
-reaches. That case is classified before these refusals now
-(`BARRIER_UNSUPPORTED_ERRNOS`) and disclosed by `_warn_barrier_unavailable`.
+reaches. `_barrier_next_step` gives unsupported operations a different remedy;
+both kinds of failure preserve recovery material and refuse.
 """
 
 
@@ -1792,15 +1786,8 @@ def _establish_durable_journal_absence(
     extracted rather than restated. Two descriptions of one durability
     discipline drift the way two implementations do (GHI #945).
 
-    A BARRIER THE FILESYSTEM CANNOT PROVIDE IS NOT A BARRIER THAT FAILED, and
-    the errno is what tells them apart (`BARRIER_UNSUPPORTED_ERRNOS`). This
-    function is already a no-op on Windows, where there is no directory handle
-    to sync; a POSIX export answering `EINVAL` is that same disposition
-    arriving through an errno. Refusing it made EVERY invocation exit 2 --
-    including a first-ever run with no journal and nothing to sweep -- under a
-    remedy telling the operator to re-run against a fault no re-run reaches.
-    The unavailable case is DISCLOSED and the run proceeds; every other errno
-    is a real fault and still refuses.
+    An unsupported directory sync also leaves this boundary unestablished.
+    It changes the remedy, never the preservation and non-success requirements.
 
     *removed_by_this_run* selects between two refusals that share no sentence,
     for the reason `_refuse_cleanup_pending` and `_warn_orphan_residue_pending`
@@ -1811,45 +1798,23 @@ def _establish_durable_journal_absence(
     try:
         commit_directory_entry(target.journal_path.parent)
     except OSError as exc:
-        if exc.errno in BARRIER_UNSUPPORTED_ERRNOS:
-            _warn_barrier_unavailable(target, exc)
-            return
         if removed_by_this_run:
             _refuse_unbarriered_journal_removal(target, exc)
         _refuse_unbarriered_orphan_boundary(target, exc)
 
 
-def _warn_barrier_unavailable(target: _TransactionTarget, exc: OSError) -> None:
-    """Warn on stderr: this filesystem HAS NO directory barrier. Then continue.
-
-    Reached only for `BARRIER_UNSUPPORTED_ERRNOS`, which report an operation
-    the filesystem does not implement rather than an attempt that failed. The
-    ordering the barrier would establish is genuinely unavailable here, and
-    saying so is the whole of what this run can do about it: refusing instead
-    would refuse every un-owning of the surface permanently, which is not a
-    stricter reading of the invariant but the loss of the command.
-
-    IT REPORTS RATHER THAN REPAIRS, and the remedy it offers is the only one
-    that reaches the condition -- a different filesystem. Naming a re-run here
-    would be the promise `_BARRIER_REMEDIES` was trimmed to stop making.
-    """
-    print(
-        f"Warning: the filesystem holding "
-        f"{target.journal_path.parent.as_posix()!r} cannot fsync a directory: "
-        f"{exc}.\n"
-        "Why it is only a warning: this reports an operation the filesystem does "
-        "not implement, never an attempt that failed, so no retry and no operator "
-        "action clears it -- refusing would refuse every un-owning of "
-        f"{target.surface!r} permanently, including a first-ever run with no "
-        "journal and nothing to sweep. It is the disposition Windows already has, "
-        "where there is no directory handle to sync and the barrier is a no-op by "
-        "construction, reached here through an errno instead of a platform name.\n"
-        "  What is LOST is stated rather than repaired: the ordering between the "
-        "journal's removal and its dependents' rests on statement order alone, so "
-        "a crash on this filesystem can leave a journal whose retained source is "
-        "already gone (REQ-0.35.0-04-02). Move `.gzkit/ownership/` to a filesystem "
-        "that fsyncs directories to get the guarantee back; nothing else does.",
-        file=sys.stderr,
+def _barrier_next_step(directory: Path, exc: OSError) -> str:
+    """Distinguish an unavailable required operation from a transient storage fault."""
+    if exc.errno in BARRIER_UNSUPPORTED_ERRNOS:
+        return (
+            f"  The required directory sync is unsupported or invalid at {directory.as_posix()!r}. "
+            "Repeating under unchanged conditions cannot establish durability. Preserve the "
+            "recovery material and use an environment where the required directory sync "
+            "succeeds before retrying. "
+        )
+    return (
+        f"  Fix the underlying condition -- {_BARRIER_REMEDIES} -- under "
+        f"{directory.as_posix()!r}, then re-run the same command. "
     )
 
 
@@ -1881,8 +1846,7 @@ def _refuse_unbarriered_journal_removal(target: _TransactionTarget, exc: OSError
         "survive -- a journal that comes back with its measured source destroyed "
         "(REQ-0.35.0-04-02). The un-owning itself is sound and no later run "
         "repeats it.\n"
-        f"  Fix the underlying condition -- {_BARRIER_REMEDIES} -- under "
-        f"{target.journal_path.parent.as_posix()!r}, then re-run the same command. "
+        f"{_barrier_next_step(target.journal_path.parent, exc)}"
         "The unlink SUCCEEDED -- only its barrier did not -- so the next run finds "
         "no journal and re-attempts the BARRIER ALONE, through the journal-absent "
         "boundary, which names this same directory. Nothing dependent is cleared "
@@ -1922,9 +1886,8 @@ def _refuse_unbarriered_orphan_boundary(target: _TransactionTarget, exc: OSError
         "This run completed nothing, witnessed nothing and wrote nothing: the "
         "recovery material is PRESERVED exactly as it was found and the ownership "
         "declaration is byte-unchanged.\n"
-        f"  Fix the underlying condition -- {_BARRIER_REMEDIES} -- under "
-        f"{target.journal_path.parent.as_posix()!r}, then re-run the same command, "
-        "which re-attempts the boundary before touching anything. Do NOT hand-edit "
+        f"{_barrier_next_step(target.journal_path.parent, exc)}"
+        "The retry re-attempts the boundary before touching anything. Do NOT hand-edit "
         "the ownership declaration: this run read nothing from it and establishes "
         "nothing about it.",
         file=sys.stderr,
@@ -2011,7 +1974,9 @@ def _warn_orphan_residue_pending(
     )
 
 
-def _journal_dependents(target: _TransactionTarget) -> list[Path]:
+def _journal_dependents(
+    target: _TransactionTarget,
+) -> tuple[list[Path], list[tuple[Path, OSError]]]:
     """Every artifact whose only purpose was to serve the journal.
 
     The two NAMED dependents -- the retained measured source and the extract
@@ -2021,9 +1986,38 @@ def _journal_dependents(target: _TransactionTarget) -> list[Path]:
     listed only final names would leave the very material it exists to remove.
     """
     dependents = [target.journal_source_path, target.recovery_extract_path]
+    inspection_failures = []
     for named in (target.journal_path, target.journal_source_path, target.recovery_extract_path):
-        dependents.extend(_staging_residue(named))
-    return dependents
+        try:
+            dependents.extend(_staging_residue(named))
+        except OSError as exc:
+            inspection_failures.append((named, exc))
+    return dependents, inspection_failures
+
+
+def _report_recovery_inspection_failure(
+    target: _TransactionTarget, failures: list[tuple[Path, OSError]], *, after_completion: bool
+) -> None:
+    """Report unknown file families without claiming observed orphan identities."""
+    details = "; ".join(
+        f"cannot inspect {path.parent.as_posix()!r} for staging files with literal prefix "
+        f"{f'.{path.name}.'!r} and suffix '.tmp': {exc}"
+        for path, exc in failures
+    )
+    if after_completion:
+        disposition = f"Error: recovery cleanup for {target.surface!r} is incomplete"
+    else:
+        disposition = "Warning: no pending-transition journal was found, but residue is unverified"
+    print(
+        f"{disposition}: {details}.\n"
+        "The directory contents are unknown; no successful sweep or set of old files was "
+        "established. Recovery material is retained. A new transaction must still persist "
+        "its own measured source and complete its own cleanup.\n"
+        f"  Restore directory read access and storage health, then retry. {_NO_HAND_EDIT}.",
+        file=sys.stderr,
+    )
+    if after_completion:
+        sys.exit(2)
 
 
 def _failed_removals(paths: list[Path]) -> list[tuple[Path, OSError]]:
@@ -2077,7 +2071,13 @@ def _sweep_recovery_residue(
     removal failure on it is this run's own cleanup failure. Carrying it would
     be a blanket suppression wearing the ruling's name.
     """
-    failures = _failed_removals(_journal_dependents(target))
+    dependents, inspection_failures = _journal_dependents(target)
+    if inspection_failures:
+        _report_recovery_inspection_failure(
+            target, inspection_failures, after_completion=after_completion
+        )
+        return frozenset()
+    failures = _failed_removals(dependents)
     if not failures:
         return frozenset()
     if not after_completion:
@@ -2143,15 +2143,9 @@ def _clear_recovery_state(
     not merely of this function's statement order -- see
     `_establish_durable_journal_absence`.
 
-    ON POSIX, AND SAYING SO IS PART OF THE CLAIM. Windows has no directory
-    handle to sync, so `commit_directory_entry` is a no-op there BY
-    CONSTRUCTION, and a filesystem answering `EINVAL` is the same case reached
-    by errno. On both, the ordering rests on statement order alone and the run
-    proceeds with that stated -- Windows silently, since the platform never had
-    the operation, and the errno case through `_warn_barrier_unavailable`.
-    Claiming the filesystem-level guarantee without the qualifier asserts on a
-    third of the supported platforms (`.claude/rules/cross-platform.md`)
-    something only the other two provide.
+    POSIX directory-sync errors preserve dependents and refuse, including
+    unsupported operations. The shared helper's Windows path remains a no-op;
+    equivalent Windows durability is unproved, not established by this path.
 
     THE RETIRED ARGUMENT, NAMED SO IT IS NOT RE-DERIVED. This docstring used to
     claim no barrier was needed because *"a crash can land before the fsync
@@ -2188,7 +2182,7 @@ def _reconciliation_sequence(target: _TransactionTarget, step_four: str) -> str:
     the command could not keep.
 
     Printed ONLY where the extract it names exists: `_extract_retained_source`
-    reports whether the extraction landed, and its three failure branches carry
+    reports whether a verified extraction completed, and its failure branches carry
     their own next step instead of this one.
 
     STEP 5 WAS A LIE AND IS GONE (operator ruling 2026-09-05, Step-4b round-11
@@ -2200,8 +2194,7 @@ def _reconciliation_sequence(target: _TransactionTarget, step_four: str) -> str:
     Operator verbatim: *"Do not instruct users to reapply an oversized edit and
     then invoke a command whose initial loader rejects it."* The sequence now
     ENDS at step 4 with a declaration the loader accepts, and re-application is
-    named for what it is -- a separate decision, with the only order that
-    actually works spelled out.
+    named for what it is -- a separate decision subject to the ratchet.
 
     Step 1 sends the operator's copy OUTSIDE the repository deliberately. A
     surface is a tracked Layer-1 file, `AGENTS.md` § Execution Rules mandates
@@ -2219,11 +2212,11 @@ def _reconciliation_sequence(target: _TransactionTarget, step_four: str) -> str:
         f"{target.surface_path.as_posix()!r}; 4. {step_four}. Your saved copy is "
         "untouched by every step above. RE-APPLYING IT IS A SEPARATE DECISION "
         "about the coverage claim and is never part of this recovery: an edit "
-        "that grows an unowned section past the recorded floor stops the "
-        "declaration loading at all, so raise the floor with `gz content unown` "
-        "while the measured bytes are still in place and put your edit back "
-        "afterwards -- never re-apply it first and then reach for a command "
-        "whose own initial load rejects it. Do NOT delete the journal and do "
+        "that grows an unowned section past the recorded floor is still refused. "
+        "Un-owning another section increases the floor and live unowned span "
+        "equally, so it does not create headroom for that edit. Keep the saved "
+        "copy outside the repository while deciding how to revise it within "
+        "the ratchet. Do NOT delete the journal and do "
         "NOT hand-edit the ownership declaration -- its floor must stay "
         "witnessed by a real ledger event, and an edited one is refused on the "
         "next load."
@@ -2327,9 +2320,8 @@ def _refuse_clean_success_on_a_moved_surface(
         "the live span exceeds the floor (REQ-0.35.0-04-05). A durable witness "
         "does NOT establish that the source was reconciled, so what is refused "
         "here is the claim that this completed cleanly. The journal is RETAINED "
-        f"at {target.journal_path.as_posix()!r} with the measured source beside "
-        "it, the extract is retained beside the surface, and your edit to the "
-        "surface is untouched and was NOT reverted.\n"
+        f"at {target.journal_path.as_posix()!r}. Your edit to the surface is "
+        "untouched and was NOT reverted.\n"
         f"  {located}",
         file=sys.stderr,
     )
@@ -2422,6 +2414,28 @@ def _read_surface_or_exit(surface_path: Path, surface: str) -> tuple[str, str, b
             file=sys.stderr,
         )
         sys.exit(1)
+
+
+def _read_transaction_surface_or_exit(target: _TransactionTarget) -> tuple[str, str, bytes]:
+    """Keep early read failures informative when a transaction already retained bytes."""
+    try:
+        return _read_surface_or_exit(target.surface_path, target.surface)
+    except SystemExit:
+        if target.journal_path.exists():
+            print(
+                f"Pending recovery journal: {target.journal_path.as_posix()!r}. "
+                f"Retained snapshot path: {target.journal_source_path.as_posix()!r}. "
+                "This run has not read or verified the snapshot. Preserve both files.\n"
+                "  Before changing the source, save its raw bytes to a path OUTSIDE this "
+                "repository; restore read access first if necessary. Verify the retained "
+                "snapshot's SHA-256 against the journal's surface_digest before deliberately "
+                "restoring those bytes over the source, then retry the same command. If the "
+                "snapshot cannot be read or verified, preserve the files for recovery and "
+                "do not overwrite the source. Do NOT delete the journal or hand-edit the "
+                "ownership declaration.",
+                file=sys.stderr,
+            )
+        raise
 
 
 def _refuse_surface_changed_under_us(
@@ -2523,9 +2537,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
     # but not sufficient -- `_refuse_surface_changed_under_us` below re-reads
     # once more before either store is touched.
     with exclusive_declaration_lock(target.declaration_path):
-        surface_text, surface_digest, surface_bytes = _read_surface_or_exit(
-            target.surface_path, surface
-        )
+        surface_text, surface_digest, surface_bytes = _read_transaction_surface_or_exit(target)
         # BEFORE the replay, because it is the state where no journal exists
         # that owes a durability boundary, and because the orphan identities it
         # returns must reach finalization.

@@ -1620,39 +1620,56 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
     @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
     @covers("REQ-0.35.0-04-02")
     def test_the_parent_directory_is_synced_so_the_rename_is_durable(self) -> None:
-        """Would break if the barrier stopped at the file descriptor.
-
-        Step-4b adversary finding 4. Syncing the staging descriptor makes the
-        BYTES durable and says nothing about the RENAME: on POSIX the directory
-        entry `os.replace` rewrites is buffered metadata, so a power loss right
-        after the swap can leave the directory still naming the old inode. The
-        write is then atomic but NOT durable, on the one artifact gating the
-        unowned-byte ratchet.
-
-        The assertion is on the fsync TARGETS, not on a call count: a count
-        cannot tell a second file-descriptor sync from a directory sync, so it
-        would stay green if the barrier were pointed at the wrong object. Here
-        the parent directory must appear among the synced fds, which is false
-        unless the directory itself was opened and synced.
-        """
-        synced_dirs: list[str] = []
-        real_fsync = os.fsync
+        """Sync the written inode before replacement and its actual parent after."""
+        operations: list[tuple[str, tuple[int, int]]] = []
+        parent = self._path.parent.stat()
+        expected_parent = (parent.st_dev, parent.st_ino)
+        real_fsync, real_replace = os.fsync, os.replace
 
         def tracking_fsync(fd: int) -> None:
-            try:
-                if stat.S_ISDIR(os.fstat(fd).st_mode):
-                    synced_dirs.append(os.path.realpath(f"/dev/fd/{fd}"))
-            except OSError:
-                pass
+            info = os.fstat(fd)
             real_fsync(fd)
+            kind = "directory" if stat.S_ISDIR(info.st_mode) else "file"
+            operations.append((kind, (info.st_dev, info.st_ino)))
 
-        with mock.patch.object(os, "fsync", tracking_fsync):
+        def tracking_replace(source, destination, *args, **kwargs):
+            result = real_replace(source, destination, *args, **kwargs)
+            if Path(destination) == self._path:
+                info = self._path.stat()
+                operations.append(("replace", (info.st_dev, info.st_ino)))
+            return result
+
+        with (
+            mock.patch.object(os, "fsync", tracking_fsync),
+            mock.patch.object(os, "replace", tracking_replace),
+        ):
             write_declaration_atomically(self._path, '{"surface": "Doc.md"}\n')
-
-        self.assertTrue(
-            synced_dirs,
-            msg="no directory was fsynced -- the rename is atomic but not durable",
+        self.assertEqual(self._path.read_bytes(), b'{"surface": "Doc.md"}\n')
+        replacement = next(i for i, (kind, _) in enumerate(operations) if kind == "replace")
+        self.assertIn(("file", operations[replacement][1]), operations[:replacement])
+        self.assertIn(
+            ("directory", expected_parent),
+            operations[replacement + 1 :],
+            "the actual parent must be synced after replacement",
         )
+
+    @unittest.skipUnless(os.name == "posix", "directory fsync is POSIX-only")
+    @covers("REQ-0.35.0-04-02")
+    def test_parent_directory_proof_rejects_syncing_an_unrelated_directory(self) -> None:
+        """The same positive assertion must reject an actual wrong-directory mutation."""
+        real_open = os.open
+        with tempfile.TemporaryDirectory() as other:
+
+            def open_directory(path, flags, *args, **kwargs):
+                if Path(path) == self._path.parent and flags == os.O_RDONLY:
+                    return real_open(other, flags, *args, **kwargs)
+                return real_open(path, flags, *args, **kwargs)
+
+            with (
+                mock.patch("gzkit.content.ownership.os.open", side_effect=open_directory),
+                self.assertRaisesRegex(AssertionError, "actual parent"),
+            ):
+                self.test_the_parent_directory_is_synced_so_the_rename_is_durable()
 
 
 class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):
