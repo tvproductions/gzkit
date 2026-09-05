@@ -1,7 +1,9 @@
 """Surface-delivery witness for per-turn agent-contract surfaces (GHI #712).
 
-Rendered root ``AGENTS.md`` was measured 560 B below Codex's 32,768 B
-``project_doc_max_bytes`` with ``uv run gz check`` green. Past that offset the
+Rendered root ``AGENTS.md`` was measured 560 B below Codex's then-unraised
+32,768 B ``project_doc_max_bytes`` with ``uv run gz check`` green (that margin
+is a dated record of 2026-07, not the live figure; gzkit now SETS the cap in the
+``.codex/config.toml`` it generates -- GHI #962). Past the cap in force the
 bytes are not delivered to the agent **at all** under Codex
 (openai/codex#7138) — silently. Nothing observed that distance: the operator
 ruling of 2026-07-06 decoupled gzkit's own budget ceiling from the vendor cap

@@ -271,7 +271,19 @@ verbatim:
 
 ## `agents-md-map-doctrine.md`
 
-### 0.10.0 — 2026-09-05
+### 0.11.0 — 2026-09-05
+
+**Withdraws `0.10.0` entirely. Its finding was false and the commit it justified was a regression.**
+
+`0.10.0` asserted that gzkit has *no route to deliver* `project_doc_max_bytes`, inferring it from `codex doctor` naming a single config source, `$CODEX_HOME/config.toml`. Doctor does not enumerate the project-local overlay, so its silence was read as absence — the failure `AGENTS.md` names verbatim: *"A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries."*
+
+Codex loads a project's `.codex/config.toml` in any directory the operator has trusted, and that file wins over the global one. Its own trust prompt states the mechanism: *"Trusting the directory allows project-local config, hooks, and exec policies to load."* Measured 2026-09-05 via `codex debug prompt-input`, holding trust constant and varying only the repo-local value: `32768` → 32768 B delivered, `65536` → 46876 B (the whole surface), `12000` → 12000 B.
+
+The cost of the false finding: `344f7189` (GHI #815) had set the cap to `65536` and it was working. `e43c55c9` lowered it to Codex's `32768` default on `0.10.0`'s reasoning, re-introducing the truncation #815 had fixed, and `b90d0484` propagated the claim into three more live surfaces. For roughly a day the tail of `AGENTS.md` — 14108 B, the IRON LAW included — reached no Codex session.
+
+The structural lesson, and why this is more than a value correction: every check on this surface compared one authored number to another. `CodexDocCapCoherenceTest` pinned the generated config to the manifest; the surface-delivery witness measured rendered bytes against the manifest's declared cap. All of them stayed green while delivery was capped 14108 B short, because none of them ever asked the vendor. `gz validate --instructions-files-budget` now carries a codex-delivery witness (`src/gzkit/governance/trust_audits/codex_delivery_witness.py`) that reads what Codex actually assembled, reports *unobserved* rather than passing when it cannot run, and is advisory on the standing 2026-07-06 ruling that an adapter limit must not gate the core.
+
+### 0.10.0 — 2026-09-05 (WITHDRAWN by 0.11.0 — recorded as authored; its finding does not hold)
 
 § Budget's transitional-window paragraph asserted that `project_doc_max_bytes` is *"a Codex **setting** gzkit writes into the `.codex/config.toml` it generates"*. Measured 2026-09-04 under GHI #962: Codex reads `$CODEX_HOME/config.toml` and never the project-local file gzkit generates, so gzkit has never written that setting anywhere Codex looks. Both remedies are closed — writing to `~/.codex/` is an adopter's global surface the operator ruled out 2026-09-04 (*"such locations are global to an adopter's project, i think the right answer is no"*), and repointing `CODEX_HOME` moves `auth.json` with it, leaving the tier-1 adversary unauthenticated. The paragraph now records the cap as Codex's own default, in force and unraisable from here.
 

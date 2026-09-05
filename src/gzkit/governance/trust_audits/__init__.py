@@ -73,6 +73,9 @@ from gzkit.governance.trust_audits.code_quality import (
     audit_test_tiers,
     audit_type_ignores,
 )
+from gzkit.governance.trust_audits.codex_delivery_witness import (
+    audit_codex_delivery_witness,
+)
 from gzkit.governance.trust_audits.complexity_doctrine_links import (
     validate_complexity_doctrine_links,
 )
@@ -233,6 +236,7 @@ __all__ = [
     "audit_persona_witness",
     "audit_instructions_files_budget",
     "audit_surface_delivery_witness",
+    "audit_codex_delivery_witness",
     "audit_status_writer_coverage",
     "audit_transcribed_counts",
     "audit_orientation_freshness",

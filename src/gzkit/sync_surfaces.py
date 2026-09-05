@@ -496,28 +496,34 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
 def render_codex_config() -> str:
     """Render the project-local Codex execution baseline.
 
-    **CODEX DOES NOT READ THIS FILE (measured 2026-09-04, GHI #962).** Codex
-    loads ``$CODEX_HOME/config.toml``, defaulting to ``~/.codex/config.toml``;
-    ``codex doctor`` run from a project root names that single source. Nothing
-    sets ``CODEX_HOME``, and gzkit may not: writing to ``~/.codex/`` is an
-    adopter's global surface (operator ruling 2026-09-04, *"such locations are
-    global to an adopter's project, i think the right answer is no"*), and
-    repointing ``CODEX_HOME`` at the project moves the whole Codex home --
-    ``auth.json`` included -- leaving the adversary unable to authenticate.
+    **Codex reads this file in any directory the operator has trusted**, and it
+    wins over ``$CODEX_HOME/config.toml``. Trust is the switch: Codex's own
+    prompt says so verbatim -- *"Trusting the directory allows project-local
+    config, hooks, and exec policies to load."*
 
-    So every key here is INERT and documents intent only. In particular
-    ``project_doc_max_bytes`` does NOT raise Codex's 32768-byte default for
-    root ``AGENTS.md`` (openai/codex#7138); GHI #815 landed the setting but it
-    has never reached Codex. It is declared at the default it cannot change, so
-    the value and ``data/vendor-manifest.json``
-    ``content_type_delivery_caps`` -- which the delivery witness compares
-    against -- both state the cap actually in force. Raising either without a
-    real delivery route re-creates the false-headroom reading GHI #962 names.
-    ``CodexDocCapCoherenceTest`` fail-closes if the two diverge.
+    ``project_doc_max_bytes`` therefore raises Codex's 32768-byte default for
+    root ``AGENTS.md`` (openai/codex#7138), and gzkit is the thing that sets it.
+    Measured 2026-09-05 via ``codex debug prompt-input``, holding trust constant
+    and varying only this value: 32768 -> 32768 B delivered, 65536 -> 46876 B
+    (the whole surface), 12000 -> 12000 B.
+
+    **Do not lower this to Codex's default on the theory that the file is
+    inert** -- that is exactly what happened at ``e43c55c9`` under GHI #962,
+    inferred from ``codex doctor`` naming only the global config source. Doctor
+    does not enumerate the project-local overlay, so its silence is not absence.
+    The regression re-introduced the truncation GHI #815 had already fixed, and
+    for a day 14108 B of the contract -- the IRON LAW included -- reached no
+    Codex session.
+
+    ``data/vendor-manifest.json`` ``content_type_delivery_caps`` records the
+    same number; ``CodexDocCapCoherenceTest`` fail-closes if the two diverge.
+    That test compares two authored numbers and cannot see delivery: the
+    observation lives in ``gz validate --instructions-files-budget``, whose
+    codex-delivery witness reads what Codex actually assembled.
     """
     return f"""{CODEX_CONFIG_MARKER}
 sandbox_mode = "workspace-write"
-project_doc_max_bytes = 32768
+project_doc_max_bytes = 65536
 [features]
 hooks = true
 

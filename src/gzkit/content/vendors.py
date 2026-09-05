@@ -178,9 +178,11 @@ def delivery_cap_for(
 ) -> int | None:
     """Return the vendor's hard delivery limit in bytes, or ``None`` if unknown.
 
-    A delivery cap is an *observed fact about someone else's product* — Codex
-    silently truncates root ``AGENTS.md`` past ``project_doc_max_bytes``
-    (openai/codex#7138). That is why this resolver fails **open** where
+    A delivery cap is a fact about *someone else's product* — Codex silently
+    truncates root ``AGENTS.md`` past ``project_doc_max_bytes``
+    (openai/codex#7138). The vendor owns the mechanism even where gzkit sets the
+    value, which for Codex it does, in the ``.codex/config.toml`` it generates
+    (GHI #962). That is why this resolver fails **open** where
     :func:`temperature_for` fails closed: temperature is a control gzkit
     chooses, so an undeclared value is an authoring omission worth blocking on,
     whereas an undeclared cap means gzkit knows of no limit for that vendor.

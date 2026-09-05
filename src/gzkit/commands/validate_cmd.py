@@ -246,12 +246,19 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         "instructions_files_budget",
         "explicit",
         True,
-        # Two checks on one surface family, one flag: the char budget gzkit sets
-        # for itself, and the witness that the rendered artifact still reaches
-        # the vendor that consumes it (GHI #712). The witness reports vendor-cap
-        # distance to stderr and returns findings only for declaration drift.
+        # Three checks on one surface family, one flag, in increasing strength:
+        # the char budget gzkit sets for itself; the witness that the rendered
+        # artifact still fits the cap the manifest DECLARES (GHI #712); and the
+        # witness that observes what the vendor ACTUALLY delivered (GHI #962).
+        # The first two compare authored numbers and stay green while delivery
+        # is zero -- which is how a cap lowered to the vendor default sat
+        # unnoticed while 14108 B of contract, the IRON LAW included, never
+        # reached a Codex session. All three report to stderr; only declaration
+        # drift returns findings.
         lambda r, _f: (
-            _ta().audit_instructions_files_budget(r) + _ta().audit_surface_delivery_witness(r)
+            _ta().audit_instructions_files_budget(r)
+            + _ta().audit_surface_delivery_witness(r)
+            + _ta().audit_codex_delivery_witness(r)
         ),
     ),
     _ScopeEntry(

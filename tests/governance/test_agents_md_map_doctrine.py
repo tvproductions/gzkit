@@ -60,7 +60,9 @@ _CLAUDE_MD = _PROJECT_ROOT / "CLAUDE.md"
 # past that many bytes UNDER CODEX (github.com/openai/codex issue #7138). Per
 # operator ruling 2026-07-06 ("that hard-coded value is noise, bump") this
 # ceiling is DECOUPLED from the Codex vendor cap — hexagonal: an adapter limit
-# must not gate the core contract. NOTE: AGENTS.md content between 32768 B and
+# must not gate the core contract. gzkit RAISES the 32768 default via the
+# generated .codex/config.toml, which Codex loads in a trusted directory
+# (GHI #962), so the live cut is the configured cap. NOTE: content past the cap
 # this ceiling still truncates under Codex at runtime; the durable headroom path
 # is corpus-splitting (GHI #533), not a larger number here.
 _PROJECT_DOC_BUDGET_CEILING_BYTES = 65536

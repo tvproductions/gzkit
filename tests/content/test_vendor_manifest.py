@@ -525,8 +525,11 @@ class TestAgentContractRootFence(unittest.TestCase):
         """Caps stay per-vendor — a cap is an observed fact about someone else's product.
 
         The asymmetry is the point: a route and a temperature are controls gzkit
-        chooses, so a second one is a doctrine breach. A cap is Codex's
-        ``project_doc_max_bytes``, which gzkit observes and cannot choose.
+        chooses per content type, so a second one is a doctrine breach. A cap is
+        the vendor's own knob — Codex's ``project_doc_max_bytes`` — and belongs
+        to the vendor even where gzkit sets its value, which for Codex it does,
+        in the ``.codex/config.toml`` it generates (GHI #962). The manifest
+        records the value; the vendor owns the mechanism.
         """
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

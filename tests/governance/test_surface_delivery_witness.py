@@ -2,8 +2,9 @@
 
 The witness answers a question no gate previously asked: *does the rendered
 per-turn agent-contract surface still arrive intact at the vendor that consumes
-it?*  Rendered ``AGENTS.md`` was measured 560 B below Codex's 32,768 B
-``project_doc_max_bytes`` with ``uv run gz check`` green, so the tail of the
+it?*  Rendered ``AGENTS.md`` was measured 560 B below Codex's then-unraised
+32,768 B ``project_doc_max_bytes`` with ``uv run gz check`` green (a dated 2026-07
+record; gzkit now sets that cap -- GHI #962), so the tail of the
 file — including ``operator-doctrine-verbatim-canon`` — could be silently
 dropped without any surface going red.
 

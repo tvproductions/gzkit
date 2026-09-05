@@ -35,8 +35,12 @@ _RULES_GLOB_DIR = _PROJECT_ROOT / ".claude" / "rules"
 # ``project_doc_max_bytes`` is 32768 B — root AGENTS.md is silently truncated
 # past that UNDER CODEX (github.com/openai/codex issue #7138). Per operator
 # ruling 2026-07-06 this ceiling is DECOUPLED from that vendor cap (hexagonal:
-# an adapter limit must not gate the core); Codex still truncates at 32768 B at
-# runtime — corpus-splitting (GHI #533) is the durable headroom path.
+# an adapter limit must not gate the core). gzkit RAISES that default to the
+# value in data/vendor-manifest.json via the .codex/config.toml it generates,
+# which Codex loads in a trusted directory (GHI #962) — so the runtime cut is
+# the configured cap, not 32768. `gz validate --instructions-files-budget`
+# observes the delivered bytes; corpus-splitting (GHI #533) remains the durable
+# headroom path.
 _PROJECT_DOC_BUDGET_CEILING_BYTES = 65536
 
 

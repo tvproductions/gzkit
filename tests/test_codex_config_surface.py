@@ -407,21 +407,23 @@ class TestCodexConfigGeneration(unittest.TestCase):
 class CodexDocCapCoherenceTest(unittest.TestCase):
     """The generated Codex config must declare the cap gzkit records for it.
 
-    ``project_doc_max_bytes`` is a Codex SETTING rather than an immovable
-    vendor fact (openai/codex#7138) -- but gzkit has no route to deliver it.
-    Measured 2026-09-04 (GHI #962): Codex reads ``$CODEX_HOME/config.toml``,
-    never a project-local ``.codex/config.toml``, and neither remedy is open --
-    writing to ``~/.codex/`` is an adopter's global surface the operator ruled
-    out, and repointing ``CODEX_HOME`` moves ``auth.json`` too, leaving the
-    adversary unauthenticated.
+    ``project_doc_max_bytes`` is a Codex SETTING, not an immovable vendor fact
+    (openai/codex#7138), and **gzkit is what sets it**: Codex loads a
+    project-local ``.codex/config.toml`` in any directory the operator has
+    trusted, and that file wins over ``$CODEX_HOME/config.toml``. Measured
+    2026-09-05 via ``codex debug prompt-input`` (GHI #962).
 
-    Both surfaces therefore record **32768**, the cap actually in force, so the
-    delivery witness reports a true overrun instead of false headroom. GHI #815
-    landed the setting at 65536 and it never reached Codex; the truncation it
-    was filed to stop is still happening and is tracked there.
+    **This test is not a delivery witness and must never be cited as one.** It
+    fail-closes when the two surfaces recording the cap disagree with each
+    other — two authored numbers agreeing while delivery could be anything. It
+    stayed green throughout the GHI #962 regression, when the cap had been
+    lowered to Codex's default and 14108 B of the contract reached no Codex
+    session. The observation lives in
+    ``gz validate --instructions-files-budget``, whose codex-delivery witness
+    reads the bytes Codex actually assembled.
 
-    This test is the coherence gate that keeps the two surfaces one number:
-    raise one without the other and it fails.
+    What this test does own is real and worth keeping: raise one surface without
+    the other and it fails.
     """
 
     def test_generated_config_declares_the_recorded_cap(self):
