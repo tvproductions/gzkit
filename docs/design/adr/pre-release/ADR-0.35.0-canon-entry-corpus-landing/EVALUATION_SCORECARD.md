@@ -1,9 +1,9 @@
 ADR STRUCTURAL-COMPLETENESS SCORECARD
 =====================================
 
-ADR: ADR-0.35.0-canon-entry-corpus-landing
+ADR: ADR-0.35.0
 Evaluator: gz adr eval (deterministic STRUCTURAL-COMPLETENESS lint)
-Date: 2026-08-07
+Date: 2026-09-05
 
 NOTE: This scorecard grades STRUCTURAL COMPLETENESS only — section
 presence, depth, counts, and references. It is NOT a judgment of decision
@@ -18,30 +18,31 @@ human substance review — they measure different things (GHI #624).
 |---|-----------|--------|-------------|----------|----------|
 | 1 | Problem Clarity | 15% | 4 | 0.60 | OK |
 | 2 | Decision Justification | 15% | 4 | 0.60 | OK |
-| 3 | Feature Checklist | 15% | 1 | 0.15 | Checklist items not prefixed with OBPI-; Checklist items have inconsistent granularity |
-| 4 | OBPI Decomposition | 15% | 4 | 0.60 | OK |
+| 3 | Feature Checklist | 15% | 1 | 0.15 | Checklist items not prefixed with OBPI-; Checklist count (13) != OBPI file count (11); Checklist items have inconsistent granularity |
+| 4 | OBPI Decomposition | 15% | 3 | 0.45 | OBPI numbering has gaps |
 | 5 | Lane Assignment | 10% | 4 | 0.40 | OK |
 | 6 | Scope Discipline | 10% | 4 | 0.40 | OK |
 | 7 | Evidence Requirements | 10% | 4 | 0.40 | OK |
 | 8 | Architectural Alignment | 10% | 4 | 0.40 | OK |
 
-WEIGHTED TOTAL: 3.55/4.0
+WEIGHTED TOTAL: 3.40/4.0
 THRESHOLD: 3.0 (GO), 2.5 (CONDITIONAL GO), <2.5 (NO GO)
 
 --- OBPI-Level Scores ---
 
 | OBPI | Independence | Testability | Value | Size | Clarity | Avg |
 |------|-------------|-------------|-------|------|---------|-----|
-| corpus-tombstone-schema-and-fold | 4 | 4 | 4 | 4 | 4 | 4.0 |
+| corpus-tombstone-schema-and-fold | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | content-withdraw-verb | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | retire-duplicate-invariant-entries | 4 | 4 | 4 | 4 | 3 | 3.8 |
-| section-ownership-and-ratchet | 4 | 4 | 4 | 3 | 4 | 3.8 |
+| section-ownership-and-ratchet | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | corpus-candidate-generator | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | validate-rendition-lineage | 4 | 4 | 4 | 3 | 4 | 3.8 |
 | content-land-orchestrator | 4 | 4 | 4 | 2 | 4 | 3.6 |
-| remember-post-append-advisory | 4 | 4 | 4 | 4 | 4 | 4.0 |
-| codex-playback-wiring | 4 | 4 | 4 | 3 | 4 | 3.8 |
+| remember-post-append-advisory | 2 | 4 | 4 | 2 | 4 | 3.2 |
+| codex-playback-wiring | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | classification-reader-and-ownership | 4 | 4 | 4 | 3 | 4 | 3.8 |
+| render-order-truncation-survival | 4 | 4 | 4 | 2 | 4 | 3.6 |
 
 OBPI THRESHOLD: Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised.
 
@@ -51,6 +52,19 @@ OBPI THRESHOLD: Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised
 |-----------|-------|--------|
 | Problem Substance | UNGRADED | no judge verdict recorded |
 | Decision Substance | UNGRADED | no judge verdict recorded |
+
+--- Persona Dispatch (mandated by the ceremony; never inferred) ---
+
+| Persona | Independent input | Source |
+|---------|-------------------|--------|
+| spec-reviewer | NOT DISPATCHED | no dispatch receipt recorded |
+| quality-reviewer | NOT DISPATCHED | no dispatch receipt recorded |
+| narrator | NOT DISPATCHED | no dispatch receipt recorded |
+
+DISPATCH MODE: SINGLE-DRIVER — 0 of 3 mandated personas produced receipted independent input.
+This scorecard is NOT an independent review. A single driver scoring its
+own scoring is the optimistic-bias defect `spec-reviewer`'s anti-traits
+name, and it is why the ceremony mandates the dispatch (GHI #770).
 
 --- Structural-Completeness Summary (NOT a quality/substance verdict) ---
 
