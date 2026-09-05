@@ -496,19 +496,28 @@ def sync_claude_settings(project_root: Path, config: GzkitConfig) -> None:
 def render_codex_config() -> str:
     """Render the project-local Codex execution baseline.
 
-    ``project_doc_max_bytes`` raises Codex's 32768-byte default for root
-    ``AGENTS.md`` (openai/codex#7138). It is a SETTING, not a vendor-imposed
-    limit -- gzkit generates this file, so leaving it unset was a choice, and
-    at the default 30% of the agent contract (including the IRON LAW) was
-    truncated away from the named cross-vendor adversary (GHI #815).
+    **CODEX DOES NOT READ THIS FILE (measured 2026-09-04, GHI #962).** Codex
+    loads ``$CODEX_HOME/config.toml``, defaulting to ``~/.codex/config.toml``;
+    ``codex doctor`` run from a project root names that single source. Nothing
+    sets ``CODEX_HOME``, and gzkit may not: writing to ``~/.codex/`` is an
+    adopter's global surface (operator ruling 2026-09-04, *"such locations are
+    global to an adopter's project, i think the right answer is no"*), and
+    repointing ``CODEX_HOME`` at the project moves the whole Codex home --
+    ``auth.json`` included -- leaving the adversary unable to authenticate.
 
-    The value is mirrored in ``data/vendor-manifest.json``
-    ``content_type_delivery_caps``, which the delivery witness compares
-    against. ``CodexDocCapCoherenceTest`` fail-closes if the two diverge.
+    So every key here is INERT and documents intent only. In particular
+    ``project_doc_max_bytes`` does NOT raise Codex's 32768-byte default for
+    root ``AGENTS.md`` (openai/codex#7138); GHI #815 landed the setting but it
+    has never reached Codex. It is declared at the default it cannot change, so
+    the value and ``data/vendor-manifest.json``
+    ``content_type_delivery_caps`` -- which the delivery witness compares
+    against -- both state the cap actually in force. Raising either without a
+    real delivery route re-creates the false-headroom reading GHI #962 names.
+    ``CodexDocCapCoherenceTest`` fail-closes if the two diverge.
     """
     return f"""{CODEX_CONFIG_MARKER}
 sandbox_mode = "workspace-write"
-project_doc_max_bytes = 65536
+project_doc_max_bytes = 32768
 [features]
 hooks = true
 

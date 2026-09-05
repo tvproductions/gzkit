@@ -27,7 +27,7 @@
   },
   "content_type_delivery_caps": {
     "AgentContract": {
-      "codex": 65536
+      "codex": 32768
     }
   },
   "content_type_temperatures": {

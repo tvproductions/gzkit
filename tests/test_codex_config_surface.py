@@ -407,14 +407,21 @@ class TestCodexConfigGeneration(unittest.TestCase):
 class CodexDocCapCoherenceTest(unittest.TestCase):
     """The generated Codex config must declare the cap gzkit records for it.
 
-    ``project_doc_max_bytes`` is a Codex SETTING, not an immovable vendor fact
-    (openai/codex#7138). gzkit generates ``.codex/config.toml`` and records the
-    cap in ``data/vendor-manifest.json``; before GHI #815 it set neither, so the
-    32768-byte default silently truncated 30% of the agent contract away from
-    the named cross-vendor adversary.
+    ``project_doc_max_bytes`` is a Codex SETTING rather than an immovable
+    vendor fact (openai/codex#7138) -- but gzkit has no route to deliver it.
+    Measured 2026-09-04 (GHI #962): Codex reads ``$CODEX_HOME/config.toml``,
+    never a project-local ``.codex/config.toml``, and neither remedy is open --
+    writing to ``~/.codex/`` is an adopter's global surface the operator ruled
+    out, and repointing ``CODEX_HOME`` moves ``auth.json`` too, leaving the
+    adversary unauthenticated.
 
-    The value therefore appears in two surfaces. This test is the coherence
-    gate that keeps them one number: raise one without the other and it fails.
+    Both surfaces therefore record **32768**, the cap actually in force, so the
+    delivery witness reports a true overrun instead of false headroom. GHI #815
+    landed the setting at 65536 and it never reached Codex; the truncation it
+    was filed to stop is still happening and is tracked there.
+
+    This test is the coherence gate that keeps the two surfaces one number:
+    raise one without the other and it fails.
     """
 
     def test_generated_config_declares_the_recorded_cap(self):
