@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-03-retire-duplicate-invariant-entries",
-  "timestamp": "2026-08-26T07:43:24.724980+00:00",
+  "timestamp": "2026-09-05T19:17:44.021395+00:00",
   "verdict": "PASS",
   "plan_file": "retire-duplicate-invariant-entries-OBPI-0.35.0-03.md",
   "gaps_found": 0

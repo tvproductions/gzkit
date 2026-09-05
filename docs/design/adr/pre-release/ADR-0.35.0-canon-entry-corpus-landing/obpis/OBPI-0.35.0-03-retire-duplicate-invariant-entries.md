@@ -3,7 +3,7 @@ id: OBPI-0.35.0-03-retire-duplicate-invariant-entries
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 3
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
 - .gzkit/corpus/AGENTS.md.jsonl
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md
@@ -23,7 +23,9 @@ req_atomic:
   - REQ-0.35.0-03-04  # STRUCTURAL-FENCE; audited at ADR closeout, no labor unit here.
 verification:
 - uv run gz validate --rendition-floor-coherence
-- uv run gz validate --documents
+- uv run gz validate --corpus-retirement-witness
+- uv run gz validate --briefs
+- uv run gz obpi validate docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md --authored
 - uv run gz validate --req-kind-discipline
 - uv run gz test
 tasks:
@@ -40,11 +42,34 @@ tasks:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #3 - "Retire the 8 duplicate invariant entries -- 7 byte-identical + the operator-ruled divergent pair; corpus 50 -> 42 (GHI #635)"
 
-**Status:** Draft
+**Status:** Completed — evidence reconciliation; human completion attestation pending
 
 ## Objective
 
-Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpus under one corpus-attestation batch — one redundant copy from each of the seven byte-identical groups, plus the operator-ruled loser of the divergent quote-style pair — discharging GHI #635. (This sentence read "taking the live invariant count from 50 to 42" until 2026-08-22; that figure was a measurement of a 51-row corpus, not a target the brief can still hit. Read the live count from the store, never from this line.)
+Verify and reconcile the EIGHT already-landed retirements from the AGENTS.md corpus — one redundant copy from each of the seven byte-identical groups, plus the operator-ruled loser of the divergent quote-style pair — discharging the retirement result of GHI #635. The original single-batch execution did not occur; its two landing occasions and process defects remain recorded below. (This sentence read "taking the live invariant count from 50 to 42" until 2026-08-22; that figure was a measurement of a 51-row corpus, not a target the brief can still hit. Read the live count from the store, never from this line.)
+
+> **AMENDED 2026-09-05 (operator-directed brief repair): current execution disposition.**
+> Operator instruction, verbatim: "yes, fix the brief". This amendment corrects the reviewed
+> proof claims and execution guidance before Claude resumes. It is not OBPI completion attestation.
+> The dated 2026-07/08 blocks below remain historical records; this block and the current
+> Acceptance Criteria govern the remaining work.
+>
+> All eight retirements are present. Do not replay the retirement commands: their targets are
+> already retired. Seven were hand-appended, violating the original command-only procedure;
+> that violation is retained, not reclassified as eight successful governed invocations.
+> Seven `corpus_retirement_reconciled` events now account for those targets (2026-08-26
+> 09:30:07 UTC); the divergent pair has its original `corpus_entry_retired` event.
+> GHI #885 closed 2026-08-26 and GHI #864 closed 2026-08-23. The recorded operator hold,
+> "hold -03 until #885 arm 1 lands the validator", has its prerequisite met:
+> `uv run gz validate --corpus-retirement-witness` passes. This removes that technical
+> blocker, not the separate human completion-attestation requirement.
+>
+> Remaining work: reproduce the scoped probes in § Demo, validate this authored brief,
+> reconcile evidence through Claude's governing workflow, and present it for human attestation.
+> `--documents` checks other document surfaces; it neither validates this OBPI's authored shape
+> nor proves corpus preservation. `--rendition-floor-coherence` checks rendering coverage,
+> not retirement witnesses or byte-identical duplicate absence. Their earlier attribution as
+> those proof channels was incorrect; the corrected channels are explicit below.
 
 > **AMENDED 2026-08-18 (operator-ruled, GHI #822): this brief's content-surface
 > attestation is renamed from "Gate 5" to CORPUS ATTESTATION.** Gate 5 names
@@ -175,7 +200,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 > `~~strikethrough~~` inside otherwise-live prose, for marking one retracted value or clause without
 > removing it, so the correction and the thing it corrects stay visually adjacent.
 
-**Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the withdraw verb). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
+**Dependency order (ADR-0.35.0 § Scope Minimization):** 03 depends on 01 (tombstone fields + fold) and 02 (the shipped `gz content retire` contract). 01 -> 02 -> 03 is the minimum shippable slice: it alone discharges GHI #635 and removes the live double-render, and it is a PREREQUISITE for 05, not a parallel workstream (ADR § Alternatives H).
 
 <!-- gz-validate-skip: command-shape -->
 > **PARTIALLY PRE-LANDED — read before implementing (reconciled 2026-07-22;
@@ -258,13 +283,13 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 ## Allowed Paths
 
-- `.gzkit/corpus/AGENTS.md.jsonl` — eight appended tombstone rows, written ONLY via gz content retire
+- `.gzkit/corpus/AGENTS.md.jsonl` — original retirement surface, already landed; remaining work reads it without appending. Any newly needed retirement is a blocker to reconcile before mutation.
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md` — this brief's evidence sections, including the eight entry ids and the operator ruling
 
 ## Denied Paths
 
 - `src/gzkit/**` — this OBPI writes NO code; the mechanism is OBPI-0.35.0-01 and OBPI-0.35.0-02
-- `tests/**` — a test asserting that this repository's corpus file holds 42 rows is a filesystem-grep that cannot fail when production behavior changes (`.gzkit/rules/tests.md` § REQ Scope Discipline). The fold's behavior is proven in OBPI-0.35.0-01; this OBPI's proof channels are the ledger and the parent ADR's Boundary Invariants.
+- `tests/**` — a test asserting that this repository's corpus file holds 42 rows is a filesystem-grep that cannot fail when production behavior changes (`.gzkit/rules/tests.md` § REQ Scope Discipline). The fold's behavior is proven in OBPI-0.35.0-01; this OBPI's proof channels are per-id corpus evidence, subject-matching ledger witnesses, historical byte comparisons, authored-brief validation, and the parent ADR's Boundary Invariants.
 - `AGENTS.md`, `.gzkit/renditions/**` — recomposing the rendition is OBPI-0.35.0-05 and OBPI-0.35.0-07
 - Direct edits to `.gzkit/corpus/AGENTS.md.jsonl` by any means other than gz content retire — hand-editing an append-only store is alternative E under another name
 - Any path not listed in Allowed Paths
@@ -280,10 +305,10 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 7. REQUIREMENT: GROUP 5 (cross-section, `obpi-acceptance-protocol` / `operator-doctrine-verbatim-canon`) — retire `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.194671+00:00`; RETAIN `corpus-obpi-acceptance-protocol-2026-06-11T10:50:22.318951+00:00`. ("There is no such thing as a 'headless' OBPI …")
 8. REQUIREMENT: GROUP 6 (cross-section, `defect-fix-routing` / `operator-doctrine-verbatim-canon`) — retire `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.563168+00:00`; RETAIN `corpus-defect-fix-routing-2026-06-11T11:12:06.972640+00:00`. ("GHIs are AUTHORIZED for direct repair, always …")
 9. REQUIREMENT: GROUP 7 (WITHIN `operator-doctrine-verbatim-canon` — the only intra-section group) — retire `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:46.373270+00:00`; RETAIN `corpus-operator-doctrine-verbatim-canon-2026-06-16T11:52:39.917448+00:00`. ("Never create feature branches …")
-10. REQUIREMENT: DIVERGENT PAIR (operator-ruled) — the two rows are 571 characters each and differ ONLY in quote style at four sites (`'discovering'`/`"discovering"`, `correction.'`/`correction."`, `'enhancement'`/`"enhancement"`, `'capability not yet built'`/`"capability not yet built"`). The SINGLE-QUOTE row `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00` IS CANON; retire `corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00`. This is the pair that already double-renders in AGENTS.md today.
+10. REQUIREMENT: DIVERGENT PAIR (operator-ruled) — the two rows are 571 characters each and differ ONLY in quote style at four sites (`'discovering'`/`"discovering"`, `correction.'`/`correction."`, `'enhancement'`/`"enhancement"`, `'capability not yet built'`/`"capability not yet built"`). The SINGLE-QUOTE row `corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00` IS CANON; retire `corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00`. This pair double-rendered at authoring time; its loser is now retired.
 11. REQUIREMENT: NEVER let the tool elect the winner. The divergent pair is settled by the recorded operator ruling above, never by a dedup heuristic — a silently-picked quote style is doctrine drift with no attestation (ADR § Alternatives D; AGENTS.md § MAKE LLM STOCHASTIC VIBES INERT operative claim 3).
 12. REQUIREMENT: ALWAYS retire the `operator-doctrine-verbatim-canon` row and RETAIN the TOPICAL-section original in groups 1-7 (operator ruling 2026-08-22, verbatim: "topical section wins, retire the canon-section copies"). **This INVERTS the disposition this requirement carried until 2026-08-22** — see the AMENDED block in § Objective for why, and do not read the inversion as drift. The superseded rationale was that the verbatim-canon section is the operator's own home for these utterances. It was outweighed by a fact not known when this brief was authored: the seven canon-section rows are all `origin=cli:content-remember` from one 2026-06-19T22:54 bulk import that FLATTENED seven differentiated classifications to `Ambiguous`, while the topical originals carry the real verdicts (Judgment, Promotable, Mechanical). Retaining the canon rows would have kept the copies that lost information.
-13. REQUIREMENT: ALWAYS supply a non-empty `--attestor` and `--reason` on every one of the eight invocations. All eight targets are `invariant` tier, so all eight are corpus-attestation fail-closed (OBPI-0.35.0-02).
+13. REQUIREMENT: **AMENDED 2026-09-05 — reconcile the actual execution; do not replay it.** The original requirement demanded eight `gz content retire` invocations with non-empty `--attestor` and `--reason`. Seven hand-appends violated that requirement and the command-only Denied Paths rule; later reconciliation does not prove that procedure ran. Preserve that defect attribution (GHI #862/#864/#885) and verify the seven `corpus_retirement_reconciled` witnesses plus the divergent pair's original `corpus_entry_retired` witness. The non-empty attestor/reason requirement remains binding for any future retirement; this pass performs none. This is a reconciliation of a recorded violation, not retroactive procedural compliance.
 14. REQUIREMENT: AFTER the batch, every retired id is absent from `effective_corpus()` and **no two live `invariant` entries share byte-identical text** — that last property is the one that matters and it is the subject of REQ-0.35.0-03-04. Verify it by re-deriving the live set from the store; do NOT verify it against a row count. This requirement read "the raw log holds 59 rows (51 + 8 tombstones) and `effective_corpus()` yields 42 live `invariant` entries and 1 `compressible`" until 2026-08-22, when it was measured at 76 rows / 51 `invariant` + 1 `compressible` — arithmetic pinned to a moving baseline, unsatisfiable as written and not restorable. Measured 2026-08-22: zero live byte-identical `invariant` texts.
 15. REQUIREMENT: NEVER delete, edit, or re-tier a row. All eight originals stay in the raw log verbatim; provenance survives (alternatives E and F).
 
@@ -316,9 +341,10 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 - [ ] OBPI-0.35.0-01 landed: `effective_corpus()` folds tombstones under the pinned algebra
 - [ ] OBPI-0.35.0-02 landed: `gz content retire` accepts `--attestor` and is corpus-attestation fail-closed on invariant tier. **Check the flag, not the verb** — the verb has shipped since 2026-07-22 and its mere existence proves nothing about this prerequisite (`uv run gz content retire --help` must list `--attestor`)
-- [ ] `.gzkit/corpus/AGENTS.md.jsonl` present and loading; 51 rows, 50 invariant + 1 compressible, re-measured at implementation time
+- [ ] `.gzkit/corpus/AGENTS.md.jsonl` loads under the current fold; re-measure ids and duplicate texts, never enforce the historical row count.
 - [ ] All sixteen entry ids enumerated in Requirements resolve against the corpus on disk
-- [ ] A human attestor is available — all eight retirements are corpus-attested and there is no self-close path
+- [ ] Retirement witnesses match all eight targets via `--corpus-retirement-witness`; distinguish original retirement from later reconciliation.
+- [ ] Human completion attestation remains pending; no corpus mutation or fresh corpus attestation is requested by this verification pass.
 
 **Existing Code (understand current state):**
 
@@ -337,8 +363,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 ### Gate 2: TDD (Red-Green-Refactor)
 
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
+- [ ] SUPPORT and STRUCTURAL-FENCE proof channels reproduced below; no BEHAVIOR REQ or code change exists in this brief.
 - [ ] Tests pass: `uv run gz test`
 - [ ] Validation commands recorded in evidence with real outputs
 
@@ -357,7 +382,7 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 
 - [ ] Acceptance scenarios pass: `uv run -m behave features/`
 
-### Gate 5: Human (Heavy only)
+### Gate 5: Human (universal)
 
 - [ ] Human attestation recorded
 
@@ -369,19 +394,65 @@ Retire exactly EIGHT redundant `invariant`-tier entries from the AGENTS.md corpu
 <!-- gz-validate-skip: command-shape -->
 ```bash
 uv run gz validate --rendition-floor-coherence
-uv run gz validate --documents
+uv run gz validate --corpus-retirement-witness
+uv run gz validate --briefs
+uv run gz obpi validate docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md --authored
 uv run gz validate --req-kind-discipline
 uv run gz test
 ```
 
 ## Demo
 
+Read-only probes; run from the repository root. They assert the named targets and historical
+bytes, not a frozen total. A tombstone's liveness is `id not in corpus.retired_ids()`;
+`effective_corpus()` deliberately excludes pure tombstone rows even when they are live.
+
 <!-- gz-validate-skip: command-shape -->
 ```bash
-uv run gz content retire AGENTS.md --entry corpus-prime-directive-ownership-2026-06-13T12:34:39.169495+00:00 --attestor "g0" --reason "GHI #635: divergent quote-style duplicate; the single-quote operator-doctrine-verbatim-canon row is canon by operator ruling."
-uv run python -c "from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.models.corpus import effective_corpus; from gzkit.content.tier_policy import invariant_entries; c = load_corpus(Path('.'), 'AGENTS.md'); print('raw rows', len(c.entries), '| live invariant', len(invariant_entries(c)))"
-uv run python -c "import collections; from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.content.tier_policy import invariant_entries; t = collections.Counter(e.text for e in invariant_entries(load_corpus(Path('.'), 'AGENTS.md'))); print('duplicate texts remaining:', sum(1 for v in t.values() if v > 1))"
+uv run python -c '
+import collections, json, re
+from pathlib import Path
+from gzkit.content.corpus_store import load_corpus
+from gzkit.content.models.corpus import effective_corpus
+brief = Path("docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md").read_text()
+requirements = brief.split("## Requirements (FAIL-CLOSED)")[1].split("## Discovery Checklist")[0]
+losers = re.findall(r"— retire `([^`]+)`; RETAIN", requirements) + re.findall(r"IS CANON; retire `([^`]+)`", requirements)
+winners = re.findall(r"; RETAIN `([^`]+)`", requirements) + re.findall(r"SINGLE-QUOTE row `([^`]+)`", requirements)
+corpus = load_corpus(Path("."), "AGENTS.md")
+raw = {e.id: e for e in corpus.entries}
+dead = corpus.retired_ids()
+live = effective_corpus(corpus)
+live_ids = {e.id for e in live.entries}
+assert len(set(losers)) == len(set(winners)) == 8
+assert all(x in raw and x not in live_ids for x in losers)
+assert all(x in live_ids for x in winners)
+assert all(sum(e.retires == x and e.id not in dead for e in corpus.entries) == 1 for x in losers)
+events = [json.loads(line) for line in Path(".gzkit/ledger.jsonl").read_text().splitlines() if line.strip()]
+subjects = {(e.get("surface"), e.get("retired_entry_id")) for e in events if e.get("event") in {"corpus_entry_retired", "corpus_retirement_reconciled"}}
+assert all(("AGENTS.md", x) in subjects for x in losers)
+counts = collections.Counter(e.text for e in live.entries if e.tier == "invariant")
+assert not any(n > 1 for n in counts.values())
+print("8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0")
+'
+uv run python -c '
+import json, subprocess
+from pathlib import Path
+path = ".gzkit/corpus/AGENTS.md.jsonl"
+current = Path(path).read_bytes()
+for revision, added in (("f314da7f53b79b67c5fdc55e0a34112ccdc77f47", 1), ("8ed48271017d247fcf5a7a7800b1117998b926d9", 7)):
+    before = subprocess.check_output(["git", "show", revision + "^:" + path])
+    after = subprocess.check_output(["git", "show", revision + ":" + path])
+    assert after.startswith(before), revision
+    assert current.startswith(after), revision
+    rows = [json.loads(line) for line in after[len(before):].splitlines()]
+    assert len(rows) == added and all(row.get("retires") for row in rows), revision
+    print(revision[:8], "appended", len(rows), "tombstones; prior bytes and current prefix preserved")
+'
 ```
+
+If a historical object is unavailable, recover its verified history before claiming append-only
+preservation; current id presence alone is insufficient. The two commits above resolve in the
+current checkout; older narrative uses a historical hash that no longer resolves here.
 
 ## Acceptance Criteria
 
@@ -393,9 +464,9 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
   [structural-fence] -> proven ONLY by a parent-ADR ## Boundary Invariants entry
 -->
 
-- [ ] REQ-0.35.0-03-01 [support]: **AMENDED 2026-08-26 (operator-ruled) — the ledger is no longer this REQ's proof channel.** Original predicate ("the ledger carries a `corpus_entry_retired` event for every entry id... spanning three sessions") is FALSE as measured: only 1 of the 8 ids (the GHI #635 divergent-pair loser) has a `corpus_entry_retired` event; the seven GHI #862 groups have none — see the AMENDED 2026-08-26 block in § Objective for the full measurement and cause. Per the operator ruling recorded verbatim in the AMENDED 2026-08-26 block (§ Objective). **New predicate:** every entry id enumerated in this brief's Requirements (groups 1-7 plus the divergent-pair loser) is named as `retires` by a LIVE retraction row in `.gzkit/corpus/AGENTS.md.jsonl`, verifiable per id against the store. Verified 2026-08-26: all 8 confirmed. The ledger gap (1/8 `corpus_entry_retired`, 0/8 `corpus_entry_appended` for the tombstone rows) is tracked as an open route at **GHI #885**, not repaired by this brief. Witnessed by `gz validate --rendition-floor-coherence` passing over the resulting corpus (the structural-validator arm of the SUPPORT proof channel, ADR-0.0.59, is unchanged by this amendment — only the recorded-artifact arm moved from ledger event to corpus row).
-- [ ] REQ-0.35.0-03-02 [support]: **AMENDED 2026-08-26 — now THREE rulings/decisions of record, not two, and not all three are operator-verbatim.** All three are recorded in `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md`, with the rationale each rests on and its authority correctly attributed: (1) the divergent pair (both ids, retained/retired disposition, the four quote-style divergence sites) — OPERATOR ruling, recorded at authoring time; (2) the 2026-08-22 ruling inverting groups 1-7, added by the AMENDED 2026-08-22 block — OPERATOR ruling, verbatim; a future maintainer meeting an inverted REQUIREMENT 12 must find the witnessed reason here rather than read it as drift; (3) the 2026-08-26 ruling moving REQ-0.35.0-03-01's proof channel from the ledger to the corpus tombstones — OPERATOR ruling, verbatim, recorded in the AMENDED 2026-08-26 block (§ Objective), naming REQ-0.35.0-03-01 only — **plus its AGENT-APPLIED EXTENSION to REQ-0.35.0-03-03's identical witness clause, disclosed in that same block as the agent's inference, not operator authority.** This REQ's own subject is discharged for the third item by that block existing and stating the attribution correctly. A future maintainer reads a witnessed ruling (and, for item 3's REQ-0.35.0-03-03 half, a witnessed and correctly-attributed agent inference) rather than re-deriving a winner or mistaking an inference for operator authority. Witnessed by an `artifact_edited` ledger event citing that path; `gz validate --documents` admits the brief's shape.
-- [ ] REQ-0.35.0-03-03 [support]: All eight retired originals are still present verbatim in `.gzkit/corpus/AGENTS.md.jsonl`, each named by a retraction row, proving retirement was append-only and no row was deleted, edited, or re-tiered. Verify by id against the store. This REQ pinned "59 raw rows ... the original 51 plus eight appended tombstones" until 2026-08-22; the store measured 76 rows that day because capture unrelated to this brief has grown it, so the row-count form was unsatisfiable and not restorable. Append-only-ness is provable per id without a total. **This predicate is TRUE as measured 2026-08-26 and is RETAINED unchanged.** Only the trailing witness clause is amended. **This amendment is an AGENT-APPLIED EXTENSION of the operator's 2026-08-26 ruling on REQ-0.35.0-03-01, not a second operator ruling** — the operator's verbatim ruling names REQ-0.35.0-03-01 only; the agent judged REQ-0.35.0-03-03 carries the identical false witness clause for the identical reason and applied the same treatment, disclosed as such in the AMENDED 2026-08-26 block in § Objective (both REQs carried the same false clause): ~~"Witnessed by eight `corpus_entry_appended` ledger events citing `.gzkit/corpus/AGENTS.md.jsonl`"~~ is FALSE (measured 0 of 8 — none of the eight tombstone/retraction rows, including the GHI #635 one, has a `corpus_entry_appended` event; that ingress predates the dual-emission change in OBPI-0.35.0-02). Witnessed instead by `gz validate --documents` admitting the resulting store; the ledger gap is tracked at **GHI #885**, not repaired by this brief.
+- [ ] REQ-0.35.0-03-01 [support]: Each of the eight retired-side ids in Requirements 3-10 is present in raw history, absent from `effective_corpus()`, and targeted by exactly one LIVE retraction row; each retained-side id remains live. Verify with the per-id Demo probe. **Witness amendment 2026-09-05:** the operator's 2026-08-26 corpus-tombstone predicate is retained; the subsequently shipped `gz validate --corpus-retirement-witness` now checks the structural witness arm against the ledger by surface and target id. Seven `corpus_retirement_reconciled` events and one `corpus_entry_retired` event account for the targets in `.gzkit/corpus/AGENTS.md.jsonl`. The earlier claim that `--rendition-floor-coherence` establishes this retirement predicate was incorrect; it checks rendering coverage only. The dated ledger-gap account remains in § Objective.
+- [ ] REQ-0.35.0-03-02 [support]: Preserve the divergent-pair operator disposition, the verbatim 2026-08-22 inversion ruling, and the verbatim 2026-08-26 proof-channel ruling on the first SUPPORT requirement with its separately attributed agent extension to the third SUPPORT requirement. Preserve the subsequent 2026-09-05 operator-directed repair and actual execution disposition without treating it as completion attestation. A maintainer must be able to identify each winner, rationale, and authority from this brief. Witnessed by a path-citing `artifact_edited` ledger event for `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md`, `gz validate --briefs` for brief structure, and `gz obpi validate` on this path with `--authored` for authored readiness. **Corrected 2026-09-05:** `gz validate --documents` skips OBPIs and never established this brief's authored shape. Shape validation does not independently judge the accuracy of the quoted rulings; that remains part of the evidence review.
+- [ ] REQ-0.35.0-03-03 [support]: All eight originals remain verbatim in the raw corpus, with text, tier and provenance preserved. Prove this by the historical-byte Demo probe: each retirement commit preserves its full parent corpus byte prefix, appends only its one or seven tombstones, and remains a byte prefix of the current corpus. Pair that historical evidence with the per-id probe and subject-matching `corpus_entry_retired` / `corpus_retirement_reconciled` ledger witnesses for `.gzkit/corpus/AGENTS.md.jsonl` checked by `gz validate --corpus-retirement-witness`. **Corrected 2026-09-05:** row presence alone cannot prove that a row was never edited; `gz validate --documents` does not admit this store or compare historical bytes. The 2026-08-26 agent extension replacing the false ledger clause is retained in § Objective as history; the present witness method supplies the missing historical comparison without claiming eight original retirement events.
 - [ ] REQ-0.35.0-03-04 [structural-fence]: No two LIVE `invariant`-tier entries in the AGENTS.md effective corpus share byte-identical text, and this property holds after every subsequent ADR-0.35.0 OBPI lands. This is the regression fence that alternative H names: the byte-identical groups are invisible today only because the floor check is a substring test, and they become literal double-emissions the instant the OBPI-0.35.0-05 generator materializes — so the property must be audited at ADR closeout across the whole decomposition, not per-OBPI.
 
 ## Completion Checklist
@@ -403,7 +474,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 <!-- Verify all gates before marking OBPI accepted. -->
 
 - [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
+- [ ] **Gate 2:** Scoped SUPPORT evidence and structural fence verified; no RGR cycle claimed for this code-free brief.
 - [ ] **Code Quality:** Lint, format, type checks clean
 - [ ] **Value Narrative:** Problem-before vs capability-now is documented
 - [ ] **Key Proof:** One concrete usage example is included
@@ -434,6 +505,9 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
+The following paragraph records the 2026-08-26 pass. Its validator attribution was incorrect;
+current proof channels are the 2026-09-05 Acceptance Criteria and verification evidence below.
+
 This OBPI writes NO code. `src/**` and `tests/**` are Denied Paths (§ Denied Paths: *"a test
 asserting that this repository's corpus file holds 42 rows is a filesystem-grep that cannot fail
 when production behavior changes"*). There is no Red-Green-Refactor cycle and no `@covers` test to
@@ -445,6 +519,8 @@ author or run — the two REQs amended by this pass (`REQ-0.35.0-03-01`, `REQ-0.
 `## Boundary Invariants`, audited at ADR closeout — never by a test in this brief's scope.
 
 ### Code Quality
+
+Historical receipts from 2026-08-26; not a fresh verification of the amended brief.
 
 ```text
 uv run gz arb ruff                -> exit 0, receipt arb-ruff-839fd99d838f4e18b37ccc80f0e6ba04
@@ -476,7 +552,112 @@ BDD sweep for the ADR-0.35.0 decomposition is deferred to ADR closeout, consiste
 # "attest completed" (or equivalent) IS Gate 5. Not fabricated ahead of that event.
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+Two rounds ran. **The STANDING verdict is Round 2** (`CORROBORATED` / `not-refuted`, no
+unresolved in-scope findings); Round 1 is preserved below as history, per the skill's
+independent-closure rule (operator ruling 2026-09-05: *"I don't think we should attest without
+the fixes creating a clean adversarial (4b) review"*). Round 1's verdict was reached against an
+earlier state of this brief and does not verify the repairs that followed it.
+
+#### Round 1 (2026-09-05T19:26:22Z) — history
+
+- **Adversary:** Codex (OpenAI, `codex-cli 0.153.3`), **tier 1** (cross-vendor), dispatched
+  2026-09-05 through the Codex plugin runtime (`codex-companion.mjs adversarial-review --wait
+  --scope working-tree`), ARB-wrapped: receipt
+  `arb-step-codexadversary-bdfaf2a751b24a77878c0bc33d5dd584` (`exit_status: 0`), thread
+  `01a07307-4e2d-7df1-a2c2-1c6ca53dcb5f`.
+- **Framing:** acceptance review — independently corroborate the bounded claim, adversarial
+  probing as the method. Threat model stated in the dispatch: writes to `.gzkit/ledger.jsonl`,
+  the corpus store, or `.gzkit/ownership/` are out of scope (accepted residual, GHI #952/#953);
+  the missing ORIGINAL `corpus_entry_retired` events for the seven GHI #862 groups are a recorded,
+  reconciled defect (GHI #885) and not a finding; `gz obpi present-evidence` splitting the
+  multi-line § Demo probes is a known tool defect (GHI #965) and not a finding.
+- **Verdict:** `CORROBORATED-WITH-CAVEATS` / `not-refuted` — *"No material findings."* No
+  in-scope critical or high.
+- **What it demonstrated (output pasted in the receipt):** both § Demo probes exit 0 with the
+  expected lines; `--corpus-retirement-witness`, `--briefs`, `--req-kind-discipline` and
+  `gz obpi validate … --authored` all exit 0; an independent re-derivation of all sixteen ids
+  from the raw store and `effective_corpus()` — `text_equal=True` for G1–G7 with the
+  classification pairs `Ambiguous/{Judgment,Promotable,Promotable,Mechanical,Mechanical,
+  Judgment,Mechanical}`, and the divergent pair differing at six characters (lengths 571/571)
+  across the four sites REQUIREMENT 10 names; each G1–G7 target matched its own
+  `corpus_retirement_reconciled` event at `2026-08-26T09:30:07` and the divergent target matched
+  `corpus-entry-retired-2026-07-22T10:31:32.832846+00:00`; `git show --stat 8ed48271` lists no
+  ledger file; the validator source confirms `--corpus-retirement-witness` compares surface plus
+  target id over exactly the two named event types, `--documents` skips the `obpi` schema, and
+  `--rendition-floor-coherence` is `entry.text not in rendered_text` — the brief's corrected
+  proof-channel attributions hold.
+- **Caveat (the one it named):** at review time no `artifact_edited` event cited this brief's
+  path with a 2026-09-05 timestamp (16 path-matching events, latest
+  `2026-08-26T08:55:25.195209+00:00`); REQ-0.35.0-03-02's witness for the current revision was
+  pending — as § Implementation Summary already said it would be until governed sync.
+  **Discharged in the same turn:** authoring this section through the governed edit path
+  emitted path-citing `artifact_edited` events for this brief at `2026-09-05T19:27:30`,
+  `19:27:34` and `19:27:46` (UTC), and recording this discharge emitted a fourth at
+  `19:28:56`; `gz obpi precomplete` then read `READY: all 11 preconditions met`. The ledger
+  count is re-verified in § Implementation Summary.
+- **Could not confirm:** REQ-0.35.0-03-04's preservation after later ADR-0.35.0 OBPIs (audited
+  at ADR closeout by design); conversational authority beyond the preserved ruling records; the
+  writable-temp unit suite under the read-only sandbox (covered instead by the canonical
+  Stage-3 step, `arb-step-unittest-a0c70f5175df46fc9437565e626d769e`, 9423 tests, exit 0).
+- **Weakest point (verbatim):** *"the first Demo derives its expected IDs from the brief, so it
+  cannot independently establish that those IDs represent the intended duplicate pairs."*
+  Answered in the same round by the adversary's own raw-text and classification comparison above.
+
+#### Round 2 (2026-09-05T19:54:16Z) — STANDING VERDICT, focused closure review
+
+Dispatched after three operator-directed corrections (canonical unittest receipt, narrator
+dispatch, REQ-02 witness sentence) under the skill's independent-closure rule: a fix confirmed
+only by the implementing agent does not close a finding.
+
+- **Adversary:** Codex (OpenAI, `codex-cli 0.153.3`), **tier 1** (cross-vendor), same plugin
+  runtime, ARB-wrapped: receipt `arb-step-codexadversary-0e8982ddb8a846e7a1f80edaea7e68ad`
+  (`exit_status: 0`, 98.8 s), thread `01a07321-52a5-73c3-9684-46a1b229b620`.
+- **Framing:** focused closure review — verify the claimed closures on the corrected artifacts
+  and check the affected REQs for regressions; explicitly NOT an unrestricted re-search for
+  stronger guarantees. Scope and threat-model boundary supplied unchanged from Round 1, with
+  the working-tree `*/skills/gz-obpi-pipeline/SKILL.md` edits named as out-of-scope (an operator
+  skill-doc update, outside this brief's allowlist). No preferred verdict was requested.
+- **Verdict:** `CORROBORATED` / `not-refuted` — verbatim: *"Focused closure review passes.
+  Unresolved IN-SCOPE findings: none."*
+- **Closure table (the adversary's own):**
+
+  | Prior item | Status | Deciding evidence |
+  |---|---|---|
+  | Finding A — no 2026-09-05 `artifact_edited` witness for REQ-02 | **CLOSED** | its own exact-path ledger filter: `path-matching artifact_edited: 25`, `2026-09-05 matches: 9`, first `19:27:30.490442`, latest `19:41:51.453554` |
+  | Observation B — Demo derives expected ids from the brief | **CLOSED** | Round 1's independent raw-text/classification comparison supplies the separate corroboration; disclosed, not unresolved |
+
+- **What it verified on the corrected artifacts (pasted output in the receipt):** the canonical
+  unittest receipt inspected directly — `exit_status: 0`, `timestamp_utc 2026-09-05T19:41:10Z`,
+  `step.command ["uv","run","unittest-parallel","-t",".","-s","tests","--buffer"]`,
+  **`canonical_match: True`** against `src/gzkit/canonical_steps.py`, `Ran 9423 tests in
+  30.084s`, `OK (skipped=4)` — and it judged this brief's handling of the superseded
+  non-canonical receipt *"honest: explicitly historical and excluded from attestation
+  evidence."* Both § Demo probes re-run verbatim, exit 0, same output. `--corpus-retirement-witness
+  --briefs --req-kind-discipline` exit 0; `obpi validate --authored` exit 0. It confirmed the
+  REQ-02 wording is *"true: its four historical timestamps match the ledger, and it directs
+  readers to measure the live count rather than treating four as the current total"*, that this
+  § Step 4b section *"accurately preserves round 1's … verdict, caveat and weakest-point
+  observation without material inflation or softening"*, and that the +211/−26 brief diff
+  introduced *"no regression, contradiction or new material false claim."*
+- **Could not confirm (verification limits, explicitly NOT unresolved findings):** future REQ-04
+  preservation after later ADR-0.35.0 OBPIs; conversational authority beyond the preserved
+  records; an independent rerun of the writable-temp suite in the read-only sandbox (the
+  canonical receipt was inspected, not regenerated).
+- **Weakest point (verbatim):** *"the first Demo still derives expected IDs from the brief.
+  Round 1's independent raw-text/classification comparison supplies the separate corroboration;
+  closing observation B does not make the Demo independently authoritative."* This restates
+  Round 1's disclosed limitation as a residual rather than a new finding, and no fix cycle was
+  run against it in between — so it is not the same-root-cause recurrence that the skill's
+  design-escalation rule addresses, and the skill forbids re-dispatching merely to remove
+  caveat wording once independent closure is established.
+
 ### Value Narrative
+
+Historical 2026-08-26 narrative follows. Its claim that the amended witness method was sufficient
+is superseded by the 2026-09-05 correction; current evidence includes ledger reconciliation and
+historical byte comparisons.
 
 **Before:** This brief's `REQ-0.35.0-03-01` and `REQ-0.35.0-03-03` asserted a ledger fact —
 `corpus_entry_retired` / `corpus_entry_appended` events for all eight of this brief's target ids —
@@ -499,6 +680,19 @@ replaced. The brief now completes on what is measured and provable, per the oper
 ruling, instead of blocking on or fabricating a witness that cannot exist.
 
 ### Key Proof
+
+
+Current 2026-09-05 proof is the two reproducible § Demo probes plus
+`uv run gz validate --corpus-retirement-witness`. Observed:
+
+```text
+8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0
+f314da7f appended 1 tombstones; prior bytes and current prefix preserved
+8ed48271 appended 7 tombstones; prior bytes and current prefix preserved
+```
+
+These byte-prefix checks establish preservation across both retirement commits and afterward.
+The previous 2026-08-26 observations below remain a dated record, not the current witness method.
 
 Reusing this brief's own § Demo probes, run 2026-08-26 against `.gzkit/corpus/AGENTS.md.jsonl`:
 
@@ -524,6 +718,54 @@ this is the new proof channel `REQ-0.35.0-03-01` and `REQ-0.35.0-03-03` cite in 
 
 ### Implementation Summary
 
+
+**Current 2026-09-05 amendment:** corrected proof channels, procedure disposition, prerequisites,
+and read-only demos before Claude resumes. Retirement state already holds; no new retirement,
+source change, test change, completion event, or human completion attestation is claimed.
+The historical summary below describes the 2026-08-26 pass; its open-issue statuses are superseded
+by § Tracked Defects.
+
+Current amendment verification (2026-09-05):
+
+| Check | Observed result |
+|---|---|
+| Both § Demo probes, executed as written | Exit 0; eight target dispositions and both historical byte-prefix checks pass |
+| Authored validation of this brief | Exit 0; `OBPI Validation Passed` |
+| `gz validate --briefs --corpus-retirement-witness --brief-headings --req-kind-discipline --rendition-floor-coherence` | Exit 0; all five scopes pass |
+| SUPPORT citation parser | First and third SUPPORT requirements select `corpus_retirement_witness` and the corpus path; second selects `briefs` and this brief path |
+| `gz obpi brief-drift` on this OBPI | Exit 0; zero deltas across all five dimensions |
+| `git diff --check` | Exit 0 |
+| `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | Exit 0; receipt `arb-step-mkdocs-f69635f091f748b8832f860c20ca0299` |
+
+Pipeline run 2026-09-05 (`gz obpi pipeline … --from verify`, Stage 3 baseline; the runtime
+also re-ran every command in this brief's `verification:` list, all exit 0):
+
+| Check | Observed result |
+|---|---|
+| `uv run gz arb ruff` | Exit 0; receipt `arb-ruff-d6567e65eb3d4cbf91fc55f80ba4bb14` |
+| `uv run gz arb typecheck` | Exit 0, `All checks passed!`; receipt `arb-step-typecheck-96e9ef70c22740d7a99abdfad7bcdd06` |
+| `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer` (canonical, `CANONICAL_STEP_COMMANDS`) | Exit 0, `Ran 9423 tests in 30.084s`, `OK (skipped=4)`; receipt `arb-step-unittest-a0c70f5175df46fc9437565e626d769e` (2026-09-05T19:41:10Z) |
+| `uv run gz arb step --name unittest -- uv run -m unittest -q` (the pipeline runtime's Stage-3 invocation — NOT the canonical form; retained as a historical result, not attestation evidence) | Exit 0, `Ran 9423 tests in 117.810s`, OK; receipt `arb-step-unittest-0118ee447a79452bb8c47d39ad16d4ae` |
+| `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | Exit 0; receipt `arb-step-mkdocs-bad16facbc2e48e69c4e59ebb2469930` |
+| `uv run gz covers <this OBPI> --json` | `behavior_uncovered_reqs: 0` (all four REQs are support/structural-fence; none carries `@covers` by proof channel) |
+| Both § Demo probes, executed as written | Exit 0; same three output lines as § Key Proof |
+| Stage-2 dispatch | Declared single-driver via `gz obpi dispatch --single-driver` (entered at `--from verify`; nothing left to implement — see reason in the ledger) |
+| Step 4b | Codex tier 1, `CORROBORATED-WITH-CAVEATS` / `not-refuted` — see § Step 4b |
+
+REQ-0.35.0-03-02's path-citing witness for the 2026-09-05 revision is RECORDED: the first four
+`artifact_edited` events citing this brief's path that day carry `ts`
+`2026-09-05T19:27:30.490442+00:00`, `19:27:34.974160`, `19:27:46.287223` and `19:28:56.533766`
+(UTC), emitted by the governed edit path while the § Step 4b section and this table were
+authored; every later governed edit to this brief (including the ones that corrected this
+paragraph) appends a further path-citing event, so read the live count from the ledger, never
+from this sentence. (This sentence read "is the
+remaining REQ-02 witness" until the same afternoon, written before those edits ran; the
+2026-09-05 19:05 permitted-entry repair itself emitted no `artifact_edited`, only
+`airlock_in`/`airlock_out`/`brief_reconciled` — the later pipeline-stage edits supplied the
+witness.) Prior edit events (16 through 2026-08-26) do not witness this revision.
+
+**Historical 2026-08-26 implementation inventory:**
+
 - **Authored (this pass, the single allowlisted file edited by hand):** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md` only. No `.gzkit/corpus/AGENTS.md.jsonl`, no `src/**`, no `tests/**` — the eight retirements were already landed prior to this pass (see § Objective PARTIALLY PRE-LANDED and AMENDED 2026-08-22 blocks); this pass amends the brief's proof channels and records the newly-measured ledger gap.
 - **Generated by the pipeline run itself (not authored edits — do not read as brief-scope changes):** this `gz-obpi-pipeline OBPI-0.35.0-03` run appended 17 rows to `.gzkit/ledger.jsonl` (`airlock_in` x1, `artifact_edited` x9, `brief_reconciled` x1, `obpi_lock_claimed` x1, `pipeline_launched` x1, `task_started` x4) and created untracked pipeline-state artifacts under `.claude/plans/` (a pipeline marker, a plan-audit receipt, and the pipeline's working plan file). These are runtime bookkeeping the pipeline itself produces on every run, not deliberate content edits to this OBPI's subject matter, and are listed here so the inventory is not silently incomplete.
 - Tests added: none — this OBPI writes no code (§ Denied Paths; see § Gate 2 above for the kind-by-kind proof-channel accounting).
@@ -537,17 +779,18 @@ this is the new proof channel `REQ-0.35.0-03-01` and `REQ-0.35.0-03-03` cite in 
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
 - [GHI #862](https://github.com/tvproductions/gzkit/issues/862) — the duplicate finding whose direct fix discharged this brief's groups 1-7 out-of-band, under the operator ruling that inverted their disposition. Closed; commits `8ed48271` (guard) and `f6407e9b` (rendition re-link).
-- [GHI #864](https://github.com/tvproductions/gzkit/issues/864) — the cause: `ghi-author` Step 0 reads GitHub issues only, so this brief was invisible to the pre-flight that exists to prevent exactly this collision. Open; direct-fix ready.
-- [GHI #885](https://github.com/tvproductions/gzkit/issues/885) — the seven GHI #862 retirements bypassed `gz content retire` and hand-appended tombstone rows with no `corpus_entry_retired`/`corpus_entry_appended` ledger witness (measured 2026-08-26: 1/8 and 0/8 respectively across this brief's eight ids). REQ-0.35.0-03-01 and REQ-0.35.0-03-03 are amended to cite the corpus tombstones as proof instead of the ledger, per operator ruling. Open; a systemic repair (detection validator and/or a constrained append ingress) is undecided.
+- [GHI #864](https://github.com/tvproductions/gzkit/issues/864) — the cause: `ghi-author` Step 0 reads GitHub issues only, so this brief was invisible to the pre-flight that exists to prevent exactly this collision. Closed 2026-08-23; the prior-art lookup repair landed. The original bypass remains historical fact.
+- [GHI #885](https://github.com/tvproductions/gzkit/issues/885) — the seven GHI #862 retirements bypassed `gz content retire` and hand-appended tombstone rows with no `corpus_entry_retired`/`corpus_entry_appended` ledger witness (measured 2026-08-26: 1/8 and 0/8 respectively across this brief's eight ids). Closed 2026-08-26: the subject-matching validator and reconciliation route shipped; seven `corpus_retirement_reconciled` events now account for the missing witnesses. The 2026-08-26 gap remains a dated observation. Current REQ-01/REQ-03 evidence uses those witnesses without fabricating original retirement events.
+- [GHI #965](https://github.com/tvproductions/gzkit/issues/965) — `gz obpi present-evidence` executes every physical line of the § Demo fence as its own command (`src/gzkit/governance/stage4_evidence.py:86-111`), so the tool-generated Stage-4a packet reports NOT-ATTESTABLE on this brief while both probes exit 0 when run as written. Surfaced at Stage 4 of this pipeline run, 2026-09-05. Open with a blocker comment: `src/**` is a Denied Path here; direct fix after this OBPI lands.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — eight duplicate invariant retirements verified and reconciled on provable channels, not on the ledger events that never existed. Stage 3 canonical receipts: arb-ruff-d6567e65eb3d4cbf91fc55f80ba4bb14, arb-step-typecheck-96e9ef70c22740d7a99abdfad7bcdd06, arb-step-unittest-a0c70f5175df46fc9437565e626d769e (Ran 9423 tests in 30.084s, OK (skipped=4)), arb-step-mkdocs-bad16facbc2e48e69c4e59ebb2469930 — all exit 0. Both brief Demo probes exit 0: eight targets retired, eight winners live, eight live tombstones witnessed, zero byte-identical live invariant texts; byte-prefix preservation holds across f314da7f and 8ed48271. gz covers reports behavior_uncovered_reqs 0 across four SUPPORT/STRUCTURAL-FENCE REQs. Step 4b ran twice at tier 1 against Codex: round 1 arb-step-codexadversary-bdfaf2a751b24a77878c0bc33d5dd584 (CORROBORATED-WITH-CAVEATS/not-refuted) and round 2 arb-step-codexadversary-0e8982ddb8a846e7a1f80edaea7e68ad (CORROBORATED/not-refuted, "Unresolved IN-SCOPE findings: none"), the follow-up closing both prior items on its own pasted evidence. Corpus file untouched; the sole authored surface is the brief at docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md.
+- Date: 2026-09-05
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-09-05
 
 **Evidence Hash:** -

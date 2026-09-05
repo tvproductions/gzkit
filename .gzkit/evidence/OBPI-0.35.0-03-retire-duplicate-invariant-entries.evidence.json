@@ -1,0 +1,304 @@
+{
+  "obpi_id": "OBPI-0.35.0-03-retire-duplicate-invariant-entries",
+  "generated_at": "2026-09-05T19:21:56.004955+00:00",
+  "demos": [
+    {
+      "command": "uv run python -c '",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: unexpected EOF while looking for matching `''\n/bin/sh: -c: line 1: syntax error: unexpected end of file"
+    },
+    {
+      "command": "import collections, json, re",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: import: command not found"
+    },
+    {
+      "command": "from pathlib import Path",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: from: command not found"
+    },
+    {
+      "command": "from gzkit.content.corpus_store import load_corpus",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: from: command not found"
+    },
+    {
+      "command": "from gzkit.content.models.corpus import effective_corpus",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: from: command not found"
+    },
+    {
+      "command": "brief = Path(\"docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md\").read_text()",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `brief = Path(\"docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md\").read_text()'"
+    },
+    {
+      "command": "requirements = brief.split(\"## Requirements (FAIL-CLOSED)\")[1].split(\"## Discovery Checklist\")[0]",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `requirements = brief.split(\"## Requirements (FAIL-CLOSED)\")[1].split(\"## Discovery Checklist\")[0]'"
+    },
+    {
+      "command": "losers = re.findall(r\"— retire `([^`]+)`; RETAIN\", requirements) + re.findall(r\"IS CANON; retire `([^`]+)`\", requirements)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `losers = re.findall(r\"— retire `([^`]+)`; RETAIN\", requirements) + re.findall(r\"IS CANON; retire `([^`]+)`\", requirements)'"
+    },
+    {
+      "command": "winners = re.findall(r\"; RETAIN `([^`]+)`\", requirements) + re.findall(r\"SINGLE-QUOTE row `([^`]+)`\", requirements)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `winners = re.findall(r\"; RETAIN `([^`]+)`\", requirements) + re.findall(r\"SINGLE-QUOTE row `([^`]+)`\", requirements)'"
+    },
+    {
+      "command": "corpus = load_corpus(Path(\".\"), \"AGENTS.md\")",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `corpus = load_corpus(Path(\".\"), \"AGENTS.md\")'"
+    },
+    {
+      "command": "raw = {e.id: e for e in corpus.entries}",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: raw: command not found"
+    },
+    {
+      "command": "dead = corpus.retired_ids()",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `dead = corpus.retired_ids()'"
+    },
+    {
+      "command": "live = effective_corpus(corpus)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `live = effective_corpus(corpus)'"
+    },
+    {
+      "command": "live_ids = {e.id for e in live.entries}",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: live_ids: command not found"
+    },
+    {
+      "command": "assert len(set(losers)) == len(set(winners)) == 8",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert len(set(losers)) == len(set(winners)) == 8'"
+    },
+    {
+      "command": "assert all(x in raw and x not in live_ids for x in losers)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert all(x in raw and x not in live_ids for x in losers)'"
+    },
+    {
+      "command": "assert all(x in live_ids for x in winners)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert all(x in live_ids for x in winners)'"
+    },
+    {
+      "command": "assert all(sum(e.retires == x and e.id not in dead for e in corpus.entries) == 1 for x in losers)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert all(sum(e.retires == x and e.id not in dead for e in corpus.entries) == 1 for x in losers)'"
+    },
+    {
+      "command": "events = [json.loads(line) for line in Path(\".gzkit/ledger.jsonl\").read_text().splitlines() if line.strip()]",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `events = [json.loads(line) for line in Path(\".gzkit/ledger.jsonl\").read_text().splitlines() if line.strip()]'"
+    },
+    {
+      "command": "subjects = {(e.get(\"surface\"), e.get(\"retired_entry_id\")) for e in events if e.get(\"event\") in {\"corpus_entry_retired\", \"corpus_retirement_reconciled\"}}",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `subjects = {(e.get(\"surface\"), e.get(\"retired_entry_id\")) for e in events if e.get(\"event\") in {\"corpus_entry_retired\", \"corpus_retirement_reconciled\"}}'"
+    },
+    {
+      "command": "assert all((\"AGENTS.md\", x) in subjects for x in losers)",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert all((\"AGENTS.md\", x) in subjects for x in losers)'"
+    },
+    {
+      "command": "counts = collections.Counter(e.text for e in live.entries if e.tier == \"invariant\")",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `counts = collections.Counter(e.text for e in live.entries if e.tier == \"invariant\")'"
+    },
+    {
+      "command": "assert not any(n > 1 for n in counts.values())",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert not any(n > 1 for n in counts.values())'"
+    },
+    {
+      "command": "print(\"8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0\")",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `\"8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0\"'\n/bin/sh: -c: line 0: `print(\"8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0\")'"
+    },
+    {
+      "command": "'",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: unexpected EOF while looking for matching `''\n/bin/sh: -c: line 1: syntax error: unexpected end of file"
+    },
+    {
+      "command": "uv run python -c '",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: unexpected EOF while looking for matching `''\n/bin/sh: -c: line 1: syntax error: unexpected end of file"
+    },
+    {
+      "command": "import json, subprocess",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: import: command not found"
+    },
+    {
+      "command": "from pathlib import Path",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: from: command not found"
+    },
+    {
+      "command": "path = \".gzkit/corpus/AGENTS.md.jsonl\"",
+      "ran": true,
+      "exit_status": 127,
+      "stdout_tail": "/bin/sh: path: command not found"
+    },
+    {
+      "command": "current = Path(path).read_bytes()",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `current = Path(path).read_bytes()'"
+    },
+    {
+      "command": "for revision, added in ((\"f314da7f53b79b67c5fdc55e0a34112ccdc77f47\", 1), (\"8ed48271017d247fcf5a7a7800b1117998b926d9\", 7)):",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `added'\n/bin/sh: -c: line 0: `for revision, added in ((\"f314da7f53b79b67c5fdc55e0a34112ccdc77f47\", 1), (\"8ed48271017d247fcf5a7a7800b1117998b926d9\", 7)):'"
+    },
+    {
+      "command": "before = subprocess.check_output([\"git\", \"show\", revision + \"^:\" + path])",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `before = subprocess.check_output([\"git\", \"show\", revision + \"^:\" + path])'"
+    },
+    {
+      "command": "after = subprocess.check_output([\"git\", \"show\", revision + \":\" + path])",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `after = subprocess.check_output([\"git\", \"show\", revision + \":\" + path])'"
+    },
+    {
+      "command": "assert after.startswith(before), revision",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert after.startswith(before), revision'"
+    },
+    {
+      "command": "assert current.startswith(after), revision",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert current.startswith(after), revision'"
+    },
+    {
+      "command": "rows = [json.loads(line) for line in after[len(before):].splitlines()]",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `rows = [json.loads(line) for line in after[len(before):].splitlines()]'"
+    },
+    {
+      "command": "assert len(rows) == added and all(row.get(\"retires\") for row in rows), revision",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `('\n/bin/sh: -c: line 0: `assert len(rows) == added and all(row.get(\"retires\") for row in rows), revision'"
+    },
+    {
+      "command": "print(revision[:8], \"appended\", len(rows), \"tombstones; prior bytes and current prefix preserved\")",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: syntax error near unexpected token `revision[:8],'\n/bin/sh: -c: line 0: `print(revision[:8], \"appended\", len(rows), \"tombstones; prior bytes and current prefix preserved\")'"
+    },
+    {
+      "command": "'",
+      "ran": true,
+      "exit_status": 2,
+      "stdout_tail": "/bin/sh: -c: line 0: unexpected EOF while looking for matching `''\n/bin/sh: -c: line 1: syntax error: unexpected end of file"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-d6567e65eb3d4cbf91fc55f80ba4bb14.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-96e9ef70c22740d7a99abdfad7bcdd06.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-0118ee447a79452bb8c47d39ad16d4ae.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 4,
+  "covers_uncovered": 0,
+  "attestable": false,
+  "blockers": [
+    "Demo exited 2 (expected 0): uv run python -c '",
+    "Demo exited 127 (expected 0): import collections, json, re",
+    "Demo exited 127 (expected 0): from pathlib import Path",
+    "Demo exited 127 (expected 0): from gzkit.content.corpus_store import load_corpus",
+    "Demo exited 127 (expected 0): from gzkit.content.models.corpus import effective_corpus",
+    "Demo exited 2 (expected 0): brief = Path(\"docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-duplicate-invariant-entries.md\").read_text()",
+    "Demo exited 2 (expected 0): requirements = brief.split(\"## Requirements (FAIL-CLOSED)\")[1].split(\"## Discovery Checklist\")[0]",
+    "Demo exited 2 (expected 0): losers = re.findall(r\"— retire `([^`]+)`; RETAIN\", requirements) + re.findall(r\"IS CANON; retire `([^`]+)`\", requirements)",
+    "Demo exited 2 (expected 0): winners = re.findall(r\"; RETAIN `([^`]+)`\", requirements) + re.findall(r\"SINGLE-QUOTE row `([^`]+)`\", requirements)",
+    "Demo exited 2 (expected 0): corpus = load_corpus(Path(\".\"), \"AGENTS.md\")",
+    "Demo exited 127 (expected 0): raw = {e.id: e for e in corpus.entries}",
+    "Demo exited 2 (expected 0): dead = corpus.retired_ids()",
+    "Demo exited 2 (expected 0): live = effective_corpus(corpus)",
+    "Demo exited 127 (expected 0): live_ids = {e.id for e in live.entries}",
+    "Demo exited 2 (expected 0): assert len(set(losers)) == len(set(winners)) == 8",
+    "Demo exited 2 (expected 0): assert all(x in raw and x not in live_ids for x in losers)",
+    "Demo exited 2 (expected 0): assert all(x in live_ids for x in winners)",
+    "Demo exited 2 (expected 0): assert all(sum(e.retires == x and e.id not in dead for e in corpus.entries) == 1 for x in losers)",
+    "Demo exited 2 (expected 0): events = [json.loads(line) for line in Path(\".gzkit/ledger.jsonl\").read_text().splitlines() if line.strip()]",
+    "Demo exited 2 (expected 0): subjects = {(e.get(\"surface\"), e.get(\"retired_entry_id\")) for e in events if e.get(\"event\") in {\"corpus_entry_retired\", \"corpus_retirement_reconciled\"}}",
+    "Demo exited 2 (expected 0): assert all((\"AGENTS.md\", x) in subjects for x in losers)",
+    "Demo exited 2 (expected 0): counts = collections.Counter(e.text for e in live.entries if e.tier == \"invariant\")",
+    "Demo exited 2 (expected 0): assert not any(n > 1 for n in counts.values())",
+    "Demo exited 2 (expected 0): print(\"8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0\")",
+    "Demo exited 2 (expected 0): '",
+    "Demo exited 2 (expected 0): uv run python -c '",
+    "Demo exited 127 (expected 0): import json, subprocess",
+    "Demo exited 127 (expected 0): from pathlib import Path",
+    "Demo exited 127 (expected 0): path = \".gzkit/corpus/AGENTS.md.jsonl\"",
+    "Demo exited 2 (expected 0): current = Path(path).read_bytes()",
+    "Demo exited 2 (expected 0): for revision, added in ((\"f314da7f53b79b67c5fdc55e0a34112ccdc77f47\", 1), (\"8ed48271017d247fcf5a7a7800b1117998b926d9\", 7)):",
+    "Demo exited 2 (expected 0): before = subprocess.check_output([\"git\", \"show\", revision + \"^:\" + path])",
+    "Demo exited 2 (expected 0): after = subprocess.check_output([\"git\", \"show\", revision + \":\" + path])",
+    "Demo exited 2 (expected 0): assert after.startswith(before), revision",
+    "Demo exited 2 (expected 0): assert current.startswith(after), revision",
+    "Demo exited 2 (expected 0): rows = [json.loads(line) for line in after[len(before):].splitlines()]",
+    "Demo exited 2 (expected 0): assert len(rows) == added and all(row.get(\"retires\") for row in rows), revision",
+    "Demo exited 2 (expected 0): print(revision[:8], \"appended\", len(rows), \"tombstones; prior bytes and current prefix preserved\")",
+    "Demo exited 2 (expected 0): '"
+  ]
+}
