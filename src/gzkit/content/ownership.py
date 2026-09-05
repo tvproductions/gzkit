@@ -46,8 +46,8 @@ _H2_PREFIX = "## "
 # The recognized roster of ledger event types that may witness a section-
 # ownership floor (REQ-0.35.0-04-02). ANY event type used to pass here as
 # long as its id resolved and its recorded floor matched -- the Step-4b
-# adversary showed a `task_started` event accepted as proof. Only these three
-# event types carry the `extra["surface"]` / `extra["new_unowned_byte_floor"]`
+# adversary showed a `task_started` event accepted as proof. Only the types on
+# this roster carry the `extra["surface"]` / `extra["new_unowned_byte_floor"]`
 # shape `load_declaration` cross-checks against.
 _OWNERSHIP_EVENT_TYPES: frozenset[str] = frozenset(
     {
@@ -1042,6 +1042,14 @@ def _windows_directory_apis() -> tuple[Any, Any]:
 
 def _windows_directory_error(directory: Path, code: int | None = None) -> OSError:
     """Keep Win32's errno mapping and the failing directory in the propagated error."""
+    if code is None:
+        # kernel32 is bound with `use_last_error=True`, so ctypes parks the
+        # callee's GetLastError in a thread-local slot that only
+        # `get_last_error()` reads back. A bare `WinError()` reads the LIVE
+        # value, which is the PRE-call one; a stale or zero code maps to EINVAL,
+        # and EINVAL sits in BARRIER_UNSUPPORTED_ERRNOS, so a transient sharing
+        # fault would be reported with the capability remedy.
+        code = getattr(ctypes, "get_last_error")()  # noqa: B009 - platform-conditional ctypes API
     error = getattr(ctypes, "WinError")(code)  # noqa: B009 - platform-conditional ctypes API
     error.filename = str(directory)
     return error

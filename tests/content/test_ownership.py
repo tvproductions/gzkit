@@ -1703,18 +1703,22 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
         ntdll.NtFlushBuffersFileEx.return_value = 0
         ntdll.RtlNtStatusToDosError.return_value = 5
         pending_before = len(ownership._PENDING_DIRECTORY_FLUSHES)
+        # kernel32 is bound with `use_last_error=True`, so the callee's error code
+        # lives in the thread-local slot `ctypes.get_last_error()` reads back. The
+        # double parks ERROR_SHARING_VIOLATION (32) there, a transient fault that
+        # must never be reported as an unsupported operation. `WinError` is a
+        # recording double so a test can see WHICH code production handed it.
+        self.win_error = mock.Mock(
+            side_effect=lambda code=None: OSError(errno.EACCES, f"Windows error {code}")
+        )
         try:
             with (
                 mock.patch.object(ownership, "os", wraps=os) as platform_os,
                 mock.patch.object(
                     ownership, "_windows_directory_apis", return_value=(kernel32, ntdll)
                 ),
-                mock.patch.object(
-                    ctypes,
-                    "WinError",
-                    side_effect=lambda code=None: OSError(errno.EACCES, f"Windows error {code}"),
-                    create=True,
-                ),
+                mock.patch.object(ctypes, "get_last_error", return_value=32, create=True),
+                mock.patch.object(ctypes, "WinError", self.win_error, create=True),
             ):
                 platform_os.name = "nt"
                 yield kernel32, ntdll
@@ -1753,6 +1757,38 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
                 self.assertEqual(refused.exception.errno, errno.EACCES)
                 ntdll.RtlNtStatusToDosError.assert_called_once_with(signed_status)
                 kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_failures_report_the_callee_error_code_not_a_stale_read(self) -> None:
+        # Round-12 medium finding. A bare `ctypes.WinError()` reads the LIVE
+        # GetLastError, which under `use_last_error=True` is the PRE-call value:
+        # the callee's code was swapped into the thread-local slot. A stale or
+        # zero code maps to EINVAL, and EINVAL sits in BARRIER_UNSUPPORTED_ERRNOS,
+        # so a sharing violation on CreateFileW, WaitForSingleObject or
+        # CloseHandle would be reported with the "unsupported, repeating cannot
+        # establish durability" remedy instead of the retry remedy. Preservation
+        # and non-success held either way; the REMEDY is what this pins.
+        def open_failure(kernel32: mock.Mock, _ntdll: mock.Mock) -> None:
+            kernel32.CreateFileW.return_value = None
+
+        def wait_failure(kernel32: mock.Mock, ntdll: mock.Mock) -> None:
+            ntdll.NtFlushBuffersFileEx.return_value = 0x103  # STATUS_PENDING
+            kernel32.WaitForSingleObject.return_value = 0xFFFFFFFF  # WAIT_FAILED
+
+        def close_failure(kernel32: mock.Mock, _ntdll: mock.Mock) -> None:
+            kernel32.CloseHandle.return_value = 0
+
+        for arm, arrange in (
+            ("CreateFileW", open_failure),
+            ("WaitForSingleObject", wait_failure),
+            ("CloseHandle", close_failure),
+        ):
+            with self.subTest(arm=arm), self._native_fault_boundary() as (kernel32, ntdll):
+                arrange(kernel32, ntdll)
+                with self.assertRaises(OSError):
+                    ownership.commit_directory_entry(Path("ownership"))
+                # The saved callee code, never a bare read (`None`) of the live value.
+                self.win_error.assert_called_once_with(32)
 
     @covers("REQ-0.35.0-04-02")
     def test_close_failure_is_observable_even_after_a_completed_flush(self) -> None:
@@ -1951,6 +1987,29 @@ class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
     @covers("REQ-0.35.0-04-02")
     def test_actual_windows_parent_is_flushed_after_replace_and_unlink(self) -> None:
         self._assert_real_windows_barrier()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_open_failure_reports_the_callee_error_code(self) -> None:
+        # Deterministic native FAILURE arm for the round-12 medium finding. A
+        # directory two levels below a real one cannot be opened, so CreateFileW
+        # sets ERROR_PATH_NOT_FOUND (3) in the thread slot ctypes saves under
+        # `use_last_error=True`. The LIVE last-error is pinned to 0 first: the
+        # stale-read defect reported THAT value, which `WinError(0)` maps to
+        # EINVAL -- a member of BARRIER_UNSUPPORTED_ERRNOS -- so a plain missing
+        # path was routed to the "unsupported, repeating cannot establish
+        # durability" remedy instead of the retry remedy.
+        windll = getattr(ctypes, "windll")  # noqa: B009 - platform-conditional ctypes API
+        with tempfile.TemporaryDirectory() as name:
+            parent = Path(name).resolve()
+            ownership.commit_directory_entry(parent)  # success arm: a real handle, no error
+            missing = parent / "missing" / "deeper"
+            windll.kernel32.SetLastError(0)  # the live slot, not the saved one
+            with self.assertRaises(OSError) as refused:
+                ownership.commit_directory_entry(missing)
+        self.assertEqual(getattr(refused.exception, "winerror"), 3)  # noqa: B009
+        self.assertEqual(refused.exception.errno, errno.ENOENT)
+        self.assertNotIn(refused.exception.errno, ownership.BARRIER_UNSUPPORTED_ERRNOS)
+        self.assertEqual(refused.exception.filename, str(missing))
 
     @covers("REQ-0.35.0-04-02")
     def test_native_success_witness_rejects_a_no_op_barrier(self) -> None:

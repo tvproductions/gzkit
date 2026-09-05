@@ -302,6 +302,7 @@ starts. Preserve the reported recovery material and follow the named next step.
 | 1 | the named section is already `unowned` — there is nothing to raise the floor by |
 | 1 | the surface's bytes changed between measurement and the commit, checked before either store is touched |
 | 1 | a pending transition for a DIFFERENT section was completed by this run; the requested section is a separate run |
+| 1 | the declaration loaded for a FRESH transition declares a different identity than the transaction's target — no journal exists yet, so no declaration byte changed and no witness was appended |
 | 2 | the measured source could not be retained, or the journal could not be written |
 | 2 | the declaration could not be written, or its durability barrier failed |
 | 2 | the ledger witness could not be appended |
@@ -312,7 +313,7 @@ starts. Preserve the reported recovery material and follow the named next step.
 | 2 | THIS transaction's recovery cleanup could not complete — one of its own retained artifacts could not be removed for a reason other than already being gone |
 | 2 | the journal's absence could not be made DURABLE after this run removed it — its dependent recovery material is preserved untouched |
 | 2 | the journal's absence could not be made DURABLE on an entry that found none — every orphaned artifact is preserved and no new transaction starts |
-| 2 | a declaration snapshot consumed under the lock declares a different identity than the transaction's target |
+| 2 | a declaration snapshot consumed under the lock DURING RECOVERY — the on-disk predecessor, the landed declaration, or the witness source — declares a different identity than the transaction's target; the journal is retained, so the transition stays completable |
 
 #### Recovery protocol
 
