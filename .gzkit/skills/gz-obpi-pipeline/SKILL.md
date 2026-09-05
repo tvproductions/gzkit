@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-25
+last_reviewed: 2026-09-05
 metadata:
-  skill-version: "6.43.0"
+  skill-version: "6.44.0"
 model: sonnet
 ---
 
@@ -881,11 +881,19 @@ catch.
 
 **Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
 
-**Step 4b CONVERGES at no-critical-and-no-high, never at silence (operator ruling 2026-09-03).** A round returning no critical and no high IN-SCOPE findings converges the gate. Medium and below are disclosed in the brief's Tracked Defects or routed to a GHI — never dropped, never silently. *"Clean adversary or we cannot pass"* is not a stopping rule: against an adversary told to refute it is an unbounded loop, and it was the stated bar for the five rounds above. This does NOT lower the gate — an in-scope critical or high still returns the OBPI to Stage 2.
+**Step 4b closes on independent confirmation of the corrected state (operator ruling 2026-09-05).** Operator verbatim: "I think we want that as a matter of course moving forward. I don't want 12 iterations like with OBPI-0.35.0-04, but I don't think we should attest without the fixes creating a clean adversarial (4b) review."
+
+The prior 2026-09-03 rule said: "A round returning no critical and no high IN-SCOPE findings converges the gate." This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.
+
+After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
+
+**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. The latest independent review must explicitly confirm closure on the corrected artifacts and return `not-refuted` before soliciting attestation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
+
+Do not redispatch merely to remove harmless caveat wording after independent closure is established. If a follow-up exposes the same root cause again, use the design-escalation rule below rather than another patch/review cycle. This closure discipline is a skill-level obligation; the runtime's existing refusal of refutation verdicts does not by itself verify finding closure or review freshness.
 
 **When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
 
-**Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator a known caveat dressed as clean. Present the adversary's verdict (and any fix) alongside Step 4a.
+**Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator an unresolved finding dressed as clean. Apply the independent-closure rule above to fixes after ANY verdict, including `not-refuted` with caveats; present the latest independent verdict and closure evidence alongside Step 4a.
 
 **This is now MECHANICAL, not advice (GHI #960).** `gz obpi complete` refuses both refutation verdicts outright — a resolution string does not clear one — so *"return to Stage 2"* is the only path a refuted round has. Do not solicit attestation on a refuted round: the completion it is attesting cannot be recorded. Re-run first, then attest on the verdict that round returns.
 
