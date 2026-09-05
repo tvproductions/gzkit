@@ -1,0 +1,933 @@
+{
+  "archived_at": "2026-09-05T15:36:46.908476+00:00",
+  "adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "obpi": "OBPI-0.35.0-04-section-ownership-and-ratchet",
+  "head": "18454c9066d54c8d14f61c5e43ff3241a45ee757",
+  "copy_policy": "Byte-identical historical inputs; temporary repository copies and bytecode omitted. Historical paths and claims are not current verification.",
+  "working_source_sha256": {
+    "src/gzkit/content/ownership.py": "cbd93539fb5c262b19a26f242b7ad12a33e5dc674bc7524067e2a1f550849057",
+    "src/gzkit/commands/content/unown.py": "8f61fd69efcc000cab688ea36704ae5f0c68d9a8ebf13bfc1d19d6951b6306a8",
+    "tests/content/test_ownership.py": "5f3c6646169197620d845efbe979c01df91a33e268478576e91956759c4c74db",
+    "tests/commands/test_content_unown.py": "5cbd952253096a9306a5b5fd752af963723106318aa49da66459a01f35bf03bb"
+  },
+  "files": [
+    {
+      "path": "CORRECTION.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/CORRECTION.md",
+      "sha256": "0ffbf2fc7c5a9a72f583eb80544db09eef1d37f0d39d8917c8c87b2e0343e340",
+      "bytes": 2230,
+      "storage": "evidence.zip:CORRECTION.md"
+    },
+    {
+      "path": "EXECUTION.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/EXECUTION.md",
+      "sha256": "29ed0af83bea2fa5223b6e1df3c87e71a38599eb5601936beb4e405742f332f3",
+      "bytes": 12138,
+      "storage": "evidence.zip:EXECUTION.md"
+    },
+    {
+      "path": "PLATFORM-FINDING.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/PLATFORM-FINDING.md",
+      "sha256": "ce56444004166ba9e868ed4ffde884264ff542ecf43bd81d3b5fc4ab40ca3f34",
+      "bytes": 6563,
+      "storage": "evidence.zip:PLATFORM-FINDING.md"
+    },
+    {
+      "path": "candidate-input.patch",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/candidate-input.patch",
+      "sha256": "f7ea7d6fd7c5cebfd35ab17c979083a9a36236a643b55c66fc5e3420e8da8c34",
+      "bytes": 428557,
+      "storage": "evidence.zip:candidate-input.patch"
+    },
+    {
+      "path": "candidate.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/candidate.json",
+      "sha256": "df25c411018206a9c52c21806a2ee39c56c90dd092ed4f99d107195eed3755b6",
+      "bytes": 839,
+      "storage": "evidence.zip:candidate.json"
+    },
+    {
+      "path": "contract-assessment.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/contract-assessment.md",
+      "sha256": "07d39bb2316fd1ffdfd3c9aa96e0434ae18e79fb7df838701e1185d7c46d207e",
+      "bytes": 18590,
+      "storage": "evidence.zip:contract-assessment.md"
+    },
+    {
+      "path": "correction-evidence.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-evidence.md",
+      "sha256": "353cd3adf079a1621b72119314118c9b28a51f64395098dad8621bef74fd0869",
+      "bytes": 5732,
+      "storage": "evidence.zip:correction-evidence.md"
+    },
+    {
+      "path": "correction-manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-manifest.json",
+      "sha256": "9ddfbe63928d9e5127971caa2a0005495249e0b3fc396b90579247ccc7ff6d71",
+      "bytes": 793,
+      "storage": "evidence.zip:correction-manifest.json"
+    },
+    {
+      "path": "correction-quality-review.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-quality-review.md",
+      "sha256": "f673f517d37601daf90d9f4616b58a823f45931c338d3362b2fa6599381afc49",
+      "bytes": 3553,
+      "storage": "evidence.zip:correction-quality-review.md"
+    },
+    {
+      "path": "correction-scoped-tests.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-scoped-tests.log",
+      "sha256": "0f8a43da1b08fe4b813d351e214039237e70055c95aa660e6b7a0d66d476bba9",
+      "bytes": 48318,
+      "storage": "evidence.zip:correction-scoped-tests.log"
+    },
+    {
+      "path": "correction-spec-review.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-spec-review.md",
+      "sha256": "b0b16b5ac144bc0c737b953364313c5d997b34b484736def744cf5e12d636ac4",
+      "bytes": 3184,
+      "storage": "evidence.zip:correction-spec-review.md"
+    },
+    {
+      "path": "correction-unsupported-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-unsupported-green.log",
+      "sha256": "a34a33221f1605ca09b94ad6279edddab7896db0b227d9729d81db3a3cf78d76",
+      "bytes": 1313,
+      "storage": "evidence.zip:correction-unsupported-green.log"
+    },
+    {
+      "path": "correction-unsupported-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-unsupported-red.log",
+      "sha256": "d873463c1c8f0489567ae33966218058d0193ecd79b09ffa6de226d797aa9e16",
+      "bytes": 45161,
+      "storage": "evidence.zip:correction-unsupported-red.log"
+    },
+    {
+      "path": "correction-validation/probe-output.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-validation/probe-output.log",
+      "sha256": "e6b65b336a5dc54cb6deb82ee51431486045d337de48b8a3e6dc0a3bc540ff07",
+      "bytes": 3768,
+      "storage": "evidence.zip:correction-validation/probe-output.log"
+    },
+    {
+      "path": "correction-validation/probe_unsupported_barrier.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-validation/probe_unsupported_barrier.py",
+      "sha256": "c3a505a0d36f491e08bd5b04bc0f3493490b15b7b6912ff2f2e97b2d8b324fba",
+      "bytes": 2633,
+      "storage": "evidence.zip:correction-validation/probe_unsupported_barrier.py"
+    },
+    {
+      "path": "correction-validation/unsupported-barrier-observations.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/correction-validation/unsupported-barrier-observations.json",
+      "sha256": "e6b65b336a5dc54cb6deb82ee51431486045d337de48b8a3e6dc0a3bc540ff07",
+      "bytes": 3768,
+      "storage": "evidence.zip:correction-validation/unsupported-barrier-observations.json"
+    },
+    {
+      "path": "input.patch",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/input.patch",
+      "sha256": "f040de323773f553abfcca642bd81669ca5fef522abcc2e53a9d8d659b6966b2",
+      "bytes": 389970,
+      "storage": "evidence.zip:input.patch"
+    },
+    {
+      "path": "justification.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/justification.md",
+      "sha256": "7d1d837a50d1712aac10f7a3a1c7196bad54efa52bc30289f3d3f8cde45f8972",
+      "bytes": 23565,
+      "storage": "evidence.zip:justification.md"
+    },
+    {
+      "path": "live-enumeration-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-enumeration-green.log",
+      "sha256": "f8732ec0ceec55f7ffedd6944aa622c30580f48e42139f352a0807e9732da1af",
+      "bytes": 1952,
+      "storage": "evidence.zip:live-enumeration-green.log"
+    },
+    {
+      "path": "live-enumeration-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-enumeration-red.log",
+      "sha256": "e34c9f295ab43ff0a4de30e5e52b974a6a03c95cc5b96821e939adbad2136a1f",
+      "bytes": 4076,
+      "storage": "evidence.zip:live-enumeration-red.log"
+    },
+    {
+      "path": "live-extraction-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-extraction-green.log",
+      "sha256": "c0513176a40eb19a5949e72b84d8d735eb0476fcd6095ee89eda7446a0a953c5",
+      "bytes": 1176,
+      "storage": "evidence.zip:live-extraction-green.log"
+    },
+    {
+      "path": "live-extraction-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-extraction-red.log",
+      "sha256": "ba685e70d90f980220f7dda9287f468f8e04f2307a5597a285c57b3041ef1ac2",
+      "bytes": 5744,
+      "storage": "evidence.zip:live-extraction-red.log"
+    },
+    {
+      "path": "live-final-scoped.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-final-scoped.log",
+      "sha256": "aa12e8adca7516fa9b64f5f49d566bf75947113bcc3aef5c77f26db13a0182ad",
+      "bytes": 49962,
+      "storage": "evidence.zip:live-final-scoped.log"
+    },
+    {
+      "path": "live-full-suite-corrected-environment.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-full-suite-corrected-environment.log",
+      "sha256": "7cf1d3a3aa4c5859b343e62a15301da8df116764cd88115de3754052e1144ed5",
+      "bytes": 9722,
+      "storage": "evidence.zip:live-full-suite-corrected-environment.log"
+    },
+    {
+      "path": "live-full-suite-rerun.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-full-suite-rerun.log",
+      "sha256": "f0a666db70d4a81b4c69aff17a3fb61a9cc171d2eda99b6f2b4f1ca745d0a8cf",
+      "bytes": 16385,
+      "storage": "evidence.zip:live-full-suite-rerun.log"
+    },
+    {
+      "path": "live-gz-check-after-lock-fixture.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-gz-check-after-lock-fixture.log",
+      "sha256": "096b5f5fec1cbb41cf2c080c807bf7234786bd59c3b888e4d120136c174643e6",
+      "bytes": 4798,
+      "storage": "evidence.zip:live-gz-check-after-lock-fixture.log"
+    },
+    {
+      "path": "live-gz-check-before-windows.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-gz-check-before-windows.log",
+      "sha256": "960ed69cbcb24ff097dc323a8bc32f50f3aef88003ccccc06c7a524d54e40e81",
+      "bytes": 358692,
+      "storage": "evidence.zip:live-gz-check-before-windows.log"
+    },
+    {
+      "path": "live-landed-capability-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-landed-capability-green.log",
+      "sha256": "ac81381d59c5863de1aa31fbfb7c323d5660fcaf5b51c7b8f72eb54d7d4c9d80",
+      "bytes": 103,
+      "storage": "evidence.zip:live-landed-capability-green.log"
+    },
+    {
+      "path": "live-landed-capability-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-landed-capability-red.log",
+      "sha256": "573611c2b04062d3750c821b323576364f46e0faa5ee0acf6c546486b7592ca8",
+      "bytes": 2308,
+      "storage": "evidence.zip:live-landed-capability-red.log"
+    },
+    {
+      "path": "live-manpage-output.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-manpage-output.log",
+      "sha256": "09157897b14a8b263f3651641cbdf5e4006d5a3c4ed13a4455640dae5c078f35",
+      "bytes": 2488,
+      "storage": "evidence.zip:live-manpage-output.log"
+    },
+    {
+      "path": "live-parent-proof-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-parent-proof-green.log",
+      "sha256": "9c1738c5709b68d9be84a1c423ab3da319e822801f2056db2fa511ec486fd33c",
+      "bytes": 1675,
+      "storage": "evidence.zip:live-parent-proof-green.log"
+    },
+    {
+      "path": "live-parent-proof-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-parent-proof-red.log",
+      "sha256": "f3b26b2596862e370f2cc14942dcf4eef27896986af0d244693655efd130af32",
+      "bytes": 1170,
+      "storage": "evidence.zip:live-parent-proof-red.log"
+    },
+    {
+      "path": "live-reconciliation-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-reconciliation-green.log",
+      "sha256": "6acaaad968f1b4ed38ed991324c6351d3921a69ad55eb0db2d786bc67c353de2",
+      "bytes": 1991,
+      "storage": "evidence.zip:live-reconciliation-green.log"
+    },
+    {
+      "path": "live-reconciliation-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-reconciliation-red.log",
+      "sha256": "2e5580856cf6473860b51d2d8897b0f51f27d4cdd574c1ccfae35b7cd8368150",
+      "bytes": 4275,
+      "storage": "evidence.zip:live-reconciliation-red.log"
+    },
+    {
+      "path": "live-source-read-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-source-read-green.log",
+      "sha256": "4a22cdd7476a79905d881e9131f47f7487673b7ffbf39bf3bc01a8f3c0d2db9c",
+      "bytes": 5453,
+      "storage": "evidence.zip:live-source-read-green.log"
+    },
+    {
+      "path": "live-source-read-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-source-read-red.log",
+      "sha256": "4f22ff6275257c316f8eec8e60a1e375f55bd1cc7292f3bd4a4d0b82530d5461",
+      "bytes": 6108,
+      "storage": "evidence.zip:live-source-read-red.log"
+    },
+    {
+      "path": "live-witnessed-extraction-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-witnessed-extraction-green.log",
+      "sha256": "41919cc1849a5baca889b145de1b4eb93cc6286c4e6b996e80ebf7981eee9f1c",
+      "bytes": 100,
+      "storage": "evidence.zip:live-witnessed-extraction-green.log"
+    },
+    {
+      "path": "live-witnessed-extraction-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/live-witnessed-extraction-red.log",
+      "sha256": "90270750b00561d0eaa074a371eb42167bc027c11fe65516ddf00705e4fd78e4",
+      "bytes": 3324,
+      "storage": "evidence.zip:live-witnessed-extraction-red.log"
+    },
+    {
+      "path": "module-size-nc-environment-diagnosis.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/module-size-nc-environment-diagnosis.json",
+      "sha256": "1d5cd5cca158e45f57b57f2a270a2778a453b8dc1a652eb48ddd85048bd6c6a1",
+      "bytes": 1843,
+      "storage": "evidence.zip:module-size-nc-environment-diagnosis.json"
+    },
+    {
+      "path": "mutation-sweep/README.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/README.md",
+      "sha256": "5fa8862ba61d755753fe65538ea7483d274bad13fa731cb12e097f7bd188ee33",
+      "bytes": 5951,
+      "storage": "evidence.zip:mutation-sweep/README.md"
+    },
+    {
+      "path": "mutation-sweep/build_manifest.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/build_manifest.py",
+      "sha256": "8459802457adeee6735ea9b8e23ea39d0f7a966428451a34b2215d528bc9152b",
+      "bytes": 16755,
+      "storage": "evidence.zip:mutation-sweep/build_manifest.py"
+    },
+    {
+      "path": "mutation-sweep/manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/manifest.json",
+      "sha256": "496e5efeecdc894d2f905f47a33fcd2526a5e6efd829ff42c787e1e32472cc78",
+      "bytes": 34448,
+      "storage": "evidence.zip:mutation-sweep/manifest.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/import_error/evidence/check.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/import_error/evidence/check.json",
+      "sha256": "66037ad356f75f1440dd0266e1b019a40538c6a36f683a3d2bcdcf2c21e30c58",
+      "bytes": 6753,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/import_error/evidence/check.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/import_error/evidence/check.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/import_error/evidence/check.provenance.json",
+      "sha256": "3c1d68ce9174967247692154a90bfbfcd25a334dcb6c3e8ed7ce3ab3431666f8",
+      "bytes": 152,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/import_error/evidence/check.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/method_assertion/evidence/check.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/method_assertion/evidence/check.json",
+      "sha256": "f77de328abf0c3e328db5f06d32bf31127c326d900b4dcd2bd0e24107b232727",
+      "bytes": 6794,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/method_assertion/evidence/check.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/method_assertion/evidence/check.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/method_assertion/evidence/check.provenance.json",
+      "sha256": "68f6aa1754d0871993f0f9cffafa40a97721711077fd491bac4a7d46fad364aa",
+      "bytes": 3408,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/method_assertion/evidence/check.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/origin_escape/evidence/check.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/origin_escape/evidence/check.json",
+      "sha256": "1d1466ca456d48451bd0775acc5a6e383aa86c343b3e0b588ca3c78a65a0d426",
+      "bytes": 6764,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/origin_escape/evidence/check.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/origin_escape/evidence/check.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/origin_escape/evidence/check.provenance.json",
+      "sha256": "a9d6d7f66a2cfbf38a503eb7195c7a8911a25054ac06ddd2fb2360533a949ad5",
+      "bytes": 1862,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/origin_escape/evidence/check.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/origin_escape/outside/probe.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/origin_escape/outside/probe.py",
+      "sha256": "e13df8c44af5dea1e412403910b99cc5a48f2ccbf68a66b3374d6ab9cef9fc65",
+      "bytes": 10,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/origin_escape/outside/probe.py"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/results.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/results.json",
+      "sha256": "3b1f2daceb30cc14c2e9268fafe2aea24858ab2733a46cecda348ab72302fc02",
+      "bytes": 35008,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/results.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.json",
+      "sha256": "d626d1c9903860c183108a9449f7c5abc5433b36176df6ee9c1e0d661bc03dec",
+      "bytes": 6784,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.provenance.json",
+      "sha256": "69693371dab74477f6783b45106c9d9b0cbab2057b7882c1562289ae487bb360",
+      "bytes": 3393,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/setup_assertion/evidence/check.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/setup_error/evidence/check.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/setup_error/evidence/check.json",
+      "sha256": "ecfb6646f1c81516e1647223cb9a17ce13663528f09c4dbadf7801faea855b7b",
+      "bytes": 6740,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/setup_error/evidence/check.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-controls-01/setup_error/evidence/check.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-controls-01/setup_error/evidence/check.provenance.json",
+      "sha256": "847d30a7fb821188e5b8b538203561a12dc4b3dbbdc83653d241eb992f5a32c3",
+      "bytes": 3134,
+      "storage": "evidence.zip:mutation-sweep/provenance-controls-01/setup_error/evidence/check.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/provenance-red/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/provenance-red/baseline.json",
+      "sha256": "d534ce32bb11259a6782be29d95b3868d77c9bc8a916f1cb92f345630803ee22",
+      "bytes": 1239,
+      "storage": "evidence.zip:mutation-sweep/provenance-red/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-01/manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-01/manifest.json",
+      "sha256": "496e5efeecdc894d2f905f47a33fcd2526a5e6efd829ff42c787e1e32472cc78",
+      "bytes": 34448,
+      "storage": "evidence.zip:mutation-sweep/representative-run-01/manifest.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/baseline-sha256.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/baseline-sha256.json",
+      "sha256": "b9ced208b11080fc24c426218927da5f27e9283e6c8a10a67d41c589ab993db7",
+      "bytes": 993433,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/baseline-sha256.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R01/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R01/baseline.json",
+      "sha256": "262724772cb89193557f4d1718203e6196b6b8e3f407f985e5aadaffd181c9f9",
+      "bytes": 1291,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R01/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R01/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R01/mutant.json",
+      "sha256": "ed4821f1ade23c0f1f76126f05a701ca4f61b1902345f47237eeb934bbb2f611",
+      "bytes": 1284,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R01/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R03/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R03/baseline.json",
+      "sha256": "d8e80fd6289f909d3f8dba7691eab0fef37041e6c4d3c7ff537d255f221bba82",
+      "bytes": 1316,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R03/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R03/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R03/mutant.json",
+      "sha256": "168f980a5795e97a4e7b8132a7ca7d26ea5c2c450da41cdae6984e4ed13f1df8",
+      "bytes": 1309,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R03/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R06/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R06/baseline.json",
+      "sha256": "2fa373b673a9e1ba604feee567dea3d2d84ab6f40f2433e18da7ac9956a9ec14",
+      "bytes": 1318,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R06/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R06/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R06/mutant.json",
+      "sha256": "aaf7c80369cd0da82e145a565b88069c54b0e6cd8702f64830afe7db4e7a5d52",
+      "bytes": 1310,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R06/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R07/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R07/baseline.json",
+      "sha256": "9d9fc25d414519c8c83fef018e4dbd203a7d6bf894eb69a65d24f91a318d1920",
+      "bytes": 1307,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R07/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R07/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R07/mutant.json",
+      "sha256": "eb9a7276c596b5ef62eea05b0e93660d9a1acac2b2158cd83808446025b20a64",
+      "bytes": 1300,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R07/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R08/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R08/baseline.json",
+      "sha256": "fce644265c86e8a84798e2161793ac3c864f8944346ac16cae8749299ca05cad",
+      "bytes": 1306,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R08/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R08/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R08/mutant.json",
+      "sha256": "0bcc7482911dade71aa91e63f0b784637448b4879d8fbb8d5125543a9368cafd",
+      "bytes": 1299,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R08/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R09/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R09/baseline.json",
+      "sha256": "55f31b594914398a0b04982bfe815445bf16e7f7c0cc6b523e90d00a450f8f62",
+      "bytes": 1290,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R09/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R09/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R09/mutant.json",
+      "sha256": "2d279243815db65e38c497ceb7c53f9a6973cc2c26aaf95fbd9d7f53075044fd",
+      "bytes": 1283,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R09/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R10/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R10/baseline.json",
+      "sha256": "c5a379be8291acd1efeedbb0c1b212df554197f72610638b6d62dd8674de7df0",
+      "bytes": 1290,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R10/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R10/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R10/mutant.json",
+      "sha256": "ff6395b965caa55f23aa67aac1a47f86473924c4e551638dab0732fe3fd04f9a",
+      "bytes": 1283,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R10/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R13/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R13/baseline.json",
+      "sha256": "2cca84aea736ff80a285afb8a0b1b5af0d363db36abcf9343992f89e39da0065",
+      "bytes": 1316,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R13/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R13/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R13/mutant.json",
+      "sha256": "4c2d90292ad680afb470ba3c7b076c168af14782526a5afa50256de9eedeb9d1",
+      "bytes": 1309,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R13/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R14/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R14/baseline.json",
+      "sha256": "7e50274b8b1322dcdb29483f447979e10b5489c47cc669ea096baf650cd04d6a",
+      "bytes": 1322,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R14/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/cases/R14/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/cases/R14/mutant.json",
+      "sha256": "c4e6beed659c630fff41614e69400e0848ba9f3d4f0660a2f90a8a1e44b16d45",
+      "bytes": 1315,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/cases/R14/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/manifest.json",
+      "sha256": "496e5efeecdc894d2f905f47a33fcd2526a5e6efd829ff42c787e1e32472cc78",
+      "bytes": 34448,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/manifest.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-02/results.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-02/results.json",
+      "sha256": "da7b84705a8d28a769479af8112c150aa73cb29609d3947d25153eb606d8bd56",
+      "bytes": 32409,
+      "storage": "evidence.zip:mutation-sweep/representative-run-02/results.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/baseline-sha256.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/baseline-sha256.json",
+      "sha256": "e7c916cf7cef6cacbbbedcd3ec01aed603bd134b921fe405e123342630fc82bc",
+      "bytes": 993433,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/baseline-sha256.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R09/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R09/baseline.json",
+      "sha256": "da49590adc10913eb759a78b23149701bd971b532f0d436b4852970528756ec1",
+      "bytes": 6676,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R09/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R09/baseline.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R09/baseline.provenance.json",
+      "sha256": "6a90c86c9ce34fb5685fc6a47913646cd00a062194b105cc1078de84ed688591",
+      "bytes": 30683,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R09/baseline.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R09/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R09/mutant.json",
+      "sha256": "1c0346e2d5a1b7074a58c3319942f919d39ac15b572848c2b3ce35cd854486f7",
+      "bytes": 6665,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R09/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R09/mutant.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R09/mutant.provenance.json",
+      "sha256": "8f40708a97edb4e215f2c65ff1e03d33d94e8d0005e0ad0ed67554511dc7114e",
+      "bytes": 30961,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R09/mutant.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R14/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R14/baseline.json",
+      "sha256": "62460584bd8415c038f1ed41a8067fd0ba6224279ba8c1c85ee926667dd24a44",
+      "bytes": 6728,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R14/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R14/baseline.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R14/baseline.provenance.json",
+      "sha256": "57baf6e899f75867b4a196956b45d875f04c42bb42d87c2e551cd958cb21e40a",
+      "bytes": 78835,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R14/baseline.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R14/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R14/mutant.json",
+      "sha256": "f88ee5c1951231edad7afa14b4beb6611bf52cb5835cd0d3f4c62a61d5fcc18f",
+      "bytes": 6716,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R14/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/cases/R14/mutant.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/cases/R14/mutant.provenance.json",
+      "sha256": "5f367da5d8a525591abeda945c943429de3cbed0ce875119ddefc3ed61e38d65",
+      "bytes": 80060,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/cases/R14/mutant.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/manifest.json",
+      "sha256": "496e5efeecdc894d2f905f47a33fcd2526a5e6efd829ff42c787e1e32472cc78",
+      "bytes": 34448,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/manifest.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-03/results.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-03/results.json",
+      "sha256": "c95a12af87c9ad8d0aaaa0ed96fbb8971004ec8e686b5ab4832ee8498a4e63a9",
+      "bytes": 30616,
+      "storage": "evidence.zip:mutation-sweep/representative-run-03/results.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/baseline-sha256.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/baseline-sha256.json",
+      "sha256": "e7c916cf7cef6cacbbbedcd3ec01aed603bd134b921fe405e123342630fc82bc",
+      "bytes": 993433,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/baseline-sha256.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R09/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R09/baseline.json",
+      "sha256": "216736ff7ea41eaebdbbd88d5a1045e7a8832dd7c0dac7f904f417812e04f18e",
+      "bytes": 6747,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R09/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R09/baseline.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R09/baseline.provenance.json",
+      "sha256": "8f24320945693da4f586ef9a15950adfee944d77320f50b4bedf5d84baefc3b2",
+      "bytes": 30683,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R09/baseline.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R09/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R09/mutant.json",
+      "sha256": "6373a2d4040ada498fb418a1b1a9d56e362bf4e599abe4d197734045382c1b07",
+      "bytes": 6737,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R09/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R09/mutant.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R09/mutant.provenance.json",
+      "sha256": "1773330e1022c5407dc292f89a33669d3f8bd9c4658106cd40abb212986f96ca",
+      "bytes": 30961,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R09/mutant.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R14/baseline.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R14/baseline.json",
+      "sha256": "2b5b6e58b38327450feb65037c16c063cacda422a83710945511875ad7db8e80",
+      "bytes": 6800,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R14/baseline.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R14/baseline.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R14/baseline.provenance.json",
+      "sha256": "8505712c68ec34260f743dbcc39b9771f4dde89333bca7b017a8c60fce64b096",
+      "bytes": 78835,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R14/baseline.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R14/mutant.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R14/mutant.json",
+      "sha256": "280af31ddec14bf9c0435348cf45d6cf5abb810990c95ebcfa5f7fb5e5d91570",
+      "bytes": 6789,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R14/mutant.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/cases/R14/mutant.provenance.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/cases/R14/mutant.provenance.json",
+      "sha256": "f23372b1f2c48714229e9cc9aceccc7dd39497d85778f55dfcc3f303fcfcfa96",
+      "bytes": 80060,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/cases/R14/mutant.provenance.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/manifest.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/manifest.json",
+      "sha256": "496e5efeecdc894d2f905f47a33fcd2526a5e6efd829ff42c787e1e32472cc78",
+      "bytes": 34448,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/manifest.json"
+    },
+    {
+      "path": "mutation-sweep/representative-run-04/results.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/representative-run-04/results.json",
+      "sha256": "cd49e4f21720c622428f335e9efbff0627f0e0285958853d3b6b2dcd2ef9f36e",
+      "bytes": 30928,
+      "storage": "evidence.zip:mutation-sweep/representative-run-04/results.json"
+    },
+    {
+      "path": "mutation-sweep/run_sweep.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/mutation-sweep/run_sweep.py",
+      "sha256": "f86b87e86616600c39e5de6d387fe6594baecbb870d030245f7636978189f32c",
+      "bytes": 18598,
+      "storage": "evidence.zip:mutation-sweep/run_sweep.py"
+    },
+    {
+      "path": "platform-candidate-input.patch",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/platform-candidate-input.patch",
+      "sha256": "31de32b0a5fc157fa4e50ec5b728968a7fef2d5876b1429423464baab0900072",
+      "bytes": 452481,
+      "storage": "evidence.zip:platform-candidate-input.patch"
+    },
+    {
+      "path": "platform-candidate.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/platform-candidate.json",
+      "sha256": "43a9fbf33e2c0fe3bcf645450c0449e49d2d0104e995ecd65f5b907dea55187e",
+      "bytes": 548,
+      "storage": "evidence.zip:platform-candidate.json"
+    },
+    {
+      "path": "probe_residue_enumeration.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/probe_residue_enumeration.py",
+      "sha256": "71ecc7860e51b8c4c7b4aef8e15ec640546acc1d48a8bc635feffd719cf96c39",
+      "bytes": 2047,
+      "storage": "evidence.zip:probe_residue_enumeration.py"
+    },
+    {
+      "path": "probe_source_recovery.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/probe_source_recovery.py",
+      "sha256": "d8a156ca2293325a7a22b0179b2c9910e329d2b74ed3863e784fa3e308496336",
+      "bytes": 2819,
+      "storage": "evidence.zip:probe_source_recovery.py"
+    },
+    {
+      "path": "probe_unsupported_barrier.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/probe_unsupported_barrier.py",
+      "sha256": "c3a505a0d36f491e08bd5b04bc0f3493490b15b7b6912ff2f2e97b2d8b324fba",
+      "bytes": 2633,
+      "storage": "evidence.zip:probe_unsupported_barrier.py"
+    },
+    {
+      "path": "probe_wrong_directory_test.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/probe_wrong_directory_test.py",
+      "sha256": "3532369669b30b9803e9cb147db818bb0884b889f0368ea42030be1d55d2003c",
+      "bytes": 1310,
+      "storage": "evidence.zip:probe_wrong_directory_test.py"
+    },
+    {
+      "path": "protocol-assessment.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/protocol-assessment.md",
+      "sha256": "1af7debf6268395780a487a021f57345575001213927b042b07c2a2f584955c2",
+      "bytes": 17891,
+      "storage": "evidence.zip:protocol-assessment.md"
+    },
+    {
+      "path": "recovery-contract-candidate.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-candidate.json",
+      "sha256": "a90e5cbf7b4bfddd643135d17e3f9f5c74650d3a9c81490532e95ff7ad3ccf7a",
+      "bytes": 12206,
+      "storage": "evidence.zip:recovery-contract-candidate.json"
+    },
+    {
+      "path": "recovery-contract-candidate.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-candidate.log",
+      "sha256": "1ec90180b47df160c721b101edcc6be03afb167761f00ba2f8d08784917a5106",
+      "bytes": 3741,
+      "storage": "evidence.zip:recovery-contract-candidate.log"
+    },
+    {
+      "path": "recovery-contract-live.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-live.json",
+      "sha256": "cc7be18133be29d343555cc82a8ac63df160bbb602e3bbbf44540cf5fc69715a",
+      "bytes": 11648,
+      "storage": "evidence.zip:recovery-contract-live.json"
+    },
+    {
+      "path": "recovery-contract-live.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-live.log",
+      "sha256": "fdf67888c061307532a2e73c9aff23f2641cb55c35e7ed18fd255569c211a0a0",
+      "bytes": 1203,
+      "storage": "evidence.zip:recovery-contract-live.log"
+    },
+    {
+      "path": "recovery-contract-original.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-original.json",
+      "sha256": "63f55f167758666cfbab2a65b9faa57fb0a1f89cbc1a94ec94f5e58601ee94a1",
+      "bytes": 11121,
+      "storage": "evidence.zip:recovery-contract-original.json"
+    },
+    {
+      "path": "recovery-contract-original.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-original.log",
+      "sha256": "17df1b2ec37a01f937d428423716969d0a80c9c4b276ac17e2aaa717cd89560e",
+      "bytes": 9046,
+      "storage": "evidence.zip:recovery-contract-original.log"
+    },
+    {
+      "path": "recovery-contract-runner.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/recovery-contract-runner.md",
+      "sha256": "5af2abb3fc4d7f9f2e51b7d5cfbfa143f0d27d115e4619772104bec4fc8085b5",
+      "bytes": 7134,
+      "storage": "evidence.zip:recovery-contract-runner.md"
+    },
+    {
+      "path": "snapshot.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/snapshot.json",
+      "sha256": "bad0f68e82b37b21b2c26e3efda67af5d6bc18794c9278277fc052b778d861f9",
+      "bytes": 970,
+      "storage": "evidence.zip:snapshot.json"
+    },
+    {
+      "path": "test-evidence.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/test-evidence.md",
+      "sha256": "31dd4d61d8dcd35b115a90445a5e0f7d226ac9bcde61195270ca01132867a59f",
+      "bytes": 15017,
+      "storage": "evidence.zip:test-evidence.md"
+    },
+    {
+      "path": "test_recovery_contract.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/test_recovery_contract.py",
+      "sha256": "b634e627a0a20480a0cdbf2c23569693d2ed002e589bfdac63c4ced7163e4b1b",
+      "bytes": 15304,
+      "storage": "evidence.zip:test_recovery_contract.py"
+    },
+    {
+      "path": "unsupported-barrier-correction.patch",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/unsupported-barrier-correction.patch",
+      "sha256": "0e342b2380db3eb11baa4f4e5fda8907ba22aa263d42134ab21a48dad36d28e6",
+      "bytes": 21535,
+      "storage": "evidence.zip:unsupported-barrier-correction.patch"
+    },
+    {
+      "path": "unsupported-barrier-observations.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/unsupported-barrier-observations.json",
+      "sha256": "b31ef96c26955a7f9a58b38bd765751e93bb93536f0dccf5e83a2d3e9a8da1a7",
+      "bytes": 4176,
+      "storage": "evidence.zip:unsupported-barrier-observations.json"
+    },
+    {
+      "path": "windows-barrier-controls.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-controls.log",
+      "sha256": "6d71516f1f52e40160987c634be3300ee7ba02f92b5980c085d6b41b98aa78ea",
+      "bytes": 126,
+      "storage": "evidence.zip:windows-barrier-controls.log"
+    },
+    {
+      "path": "windows-barrier-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-green.log",
+      "sha256": "fb184ea57734512b1f088f9181209901b9cd46df3eb7eaa2500ea9e48dde20b5",
+      "bytes": 98,
+      "storage": "evidence.zip:windows-barrier-green.log"
+    },
+    {
+      "path": "windows-barrier-mutations.json",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-mutations.json",
+      "sha256": "9a268e8c6ca3d0f9d31ac8c904e29bf4e20d6b2b555e52aa2c4cc951841779d0",
+      "bytes": 7226,
+      "storage": "evidence.zip:windows-barrier-mutations.json"
+    },
+    {
+      "path": "windows-barrier-mutations.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-mutations.py",
+      "sha256": "7533518907f2c863554e0df2190af8277b496e96a79b7baddf6227e97bd34c7b",
+      "bytes": 3415,
+      "storage": "evidence.zip:windows-barrier-mutations.py"
+    },
+    {
+      "path": "windows-barrier-red.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-red.log",
+      "sha256": "96a6228c105d651471e2e1003c6d48336929fae2601bb9aa108c03eef7c5ce76",
+      "bytes": 766,
+      "storage": "evidence.zip:windows-barrier-red.log"
+    },
+    {
+      "path": "windows-barrier-scoped.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-barrier-scoped.log",
+      "sha256": "a86a388b68607dac8324950f780ac6bd0b87a24afd2ecaf810c1cae80c8149f7",
+      "bytes": 2524,
+      "storage": "evidence.zip:windows-barrier-scoped.log"
+    },
+    {
+      "path": "windows-native-implementation.md",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-native-implementation.md",
+      "sha256": "a1a6c8201c3708609e24c8c48fd37b4298efd513dbd37181caafa6c54e173929",
+      "bytes": 3925,
+      "storage": "evidence.zip:windows-native-implementation.md"
+    },
+    {
+      "path": "windows-ownership-green.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-ownership-green.log",
+      "sha256": "968fba9c52bc92e91003abe4850f0786b9308e0645bf7575f7eb8aca08f1fdeb",
+      "bytes": 194,
+      "storage": "evidence.zip:windows-ownership-green.log"
+    },
+    {
+      "path": "windows-probe/ownership-directory-barrier-probe.yml",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-probe/ownership-directory-barrier-probe.yml",
+      "sha256": "73d954ece4b953ab3402a33797d918ff6f27f2cde525aa72fd5081b18849ecba",
+      "bytes": 12697,
+      "storage": "evidence.zip:windows-probe/ownership-directory-barrier-probe.yml"
+    },
+    {
+      "path": "windows-probe/probe_windows_directory_barrier.py",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-probe/probe_windows_directory_barrier.py",
+      "sha256": "ff2171780095795da4ee6a867006a0d2d9f3903239cde5e4674cd81c483612ba",
+      "bytes": 9698,
+      "storage": "evidence.zip:windows-probe/probe_windows_directory_barrier.py"
+    },
+    {
+      "path": "windows-probe/windows-run-33972482837.log",
+      "source": "/private/tmp/gzkit-obpi04-assessment-4dt92ti0/windows-probe/windows-run-33972482837.log",
+      "sha256": "da95b883bf473bbdd94b96ee7292fc7f5cf8f2692707c1c2042ede0aaba865a2",
+      "bytes": 62242,
+      "storage": "evidence.zip:windows-probe/windows-run-33972482837.log"
+    },
+    {
+      "path": "gzkit-obpi-04-identity-justify.md",
+      "source": "/tmp/gzkit-obpi-04-identity-justify.md",
+      "sha256": "70c20789bee993eb7a6e7ab6397782c9c378f7fadf40b97c53c2901790cbdb28",
+      "bytes": 28381,
+      "storage": "evidence.zip:gzkit-obpi-04-identity-justify.md"
+    }
+  ],
+  "evidence_zip_sha256": "2b7c582fefd774712f16aeae75d8161371f71ee29ac17315c0009c954fb87df2"
+}

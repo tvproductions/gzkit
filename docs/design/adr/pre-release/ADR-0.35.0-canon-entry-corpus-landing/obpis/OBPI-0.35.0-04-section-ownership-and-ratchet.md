@@ -172,6 +172,8 @@ Declare every AGENTS.md H1/H2 section either `corpus-owned` or `unowned`, record
   weaker platform contract or a production durability claim from a capability test.
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md` — this brief's evidence sections
 
+- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/appendices/obpi-04-recovery-2026-09-05/**` — durable assessment, execution, and verification archive; operator-directed 2026-09-05 preservation with this ADR/OBPI.
+
 ## Denied Paths
 
 > **`src/gzkit/ledger.py` is declared in the allowlist but is READ-ONLY here.**
@@ -1076,6 +1078,18 @@ source SHA `a4c2e3ad…`; `src/gzkit/commands/content/unown.py` is now `49b2ad58
 **the recorded 18-guard sweep does not establish mutation coverage of the current recovery
 protocol.** The table must be refreshed to the 22-guard sweep and its SHA before the next
 acceptance round is dispatched.
+
+### Durable recovery context — 2026-09-05
+
+Operator-directed preservation: the assessment and execution documents must live
+with this ADR/OBPI rather than only in temporary storage. Start at the
+[recovery archive index](../appendices/obpi-04-recovery-2026-09-05/README.md).
+It links the established execution path, acceptance matrix, original findings,
+correction reviews, diagnostic scripts, and recorded outputs. The archive manifest
+binds every original file to its SHA-256. The index separates historical statements
+from subsequent implementation and identifies remaining verification; it does not
+change this brief's requirements, standing verdict, or attestation status.
+Canonical continuation checkpoint: `.gzkit/handoffs/20260905T154223Z-obpi-04-durable-recovery-context.md` (linked to the preceding handoff).
 
 ### Codex continuation — 2026-09-05
 
