@@ -22,6 +22,11 @@ split, silent durability waiver, new recovery state, or general transaction mana
 was authorized. Preserve the accepted ledger exceptions and the existing threat
 boundary. Completion still requires the proper review and human attestation.
 
+## Latest continuation
+
+Read [final verification in progress](final/README.md) for the subsequent source,
+mutation, and verification results. The dated preservation record below remains historical.
+
 ## Status at preservation
 
 - Git HEAD was `18454c9066d54c8d14f61c5e43ff3241a45ee757`. Four production/test

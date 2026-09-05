@@ -1,0 +1,42 @@
+{
+  "source_commit": "40fd9994e5b0347acc19fcd35e40b7fb8c6a2a0f",
+  "source_hashes": {
+    "src/gzkit/commands/content/unown.py": "0128624028d2f5f7cce805b17c26a07f1a5b739bf18d035803b6a3a82d2328e1",
+    "tests/commands/test_content_unown.py": "28176d3795861007ff28a8581043b1256acbc4a7feadedd662546d4be01c13c7",
+    "src/gzkit/content/ownership.py": "cbd93539fb5c262b19a26f242b7ad12a33e5dc674bc7524067e2a1f550849057",
+    "tests/content/test_ownership.py": "7d4e0c7f72a018614508cd0ebe68af60592ab8149e19dd5374616e919db677c3"
+  },
+  "live_hashes_after_run": {
+    "src/gzkit/commands/content/unown.py": "0128624028d2f5f7cce805b17c26a07f1a5b739bf18d035803b6a3a82d2328e1",
+    "tests/commands/test_content_unown.py": "28176d3795861007ff28a8581043b1256acbc4a7feadedd662546d4be01c13c7",
+    "src/gzkit/content/ownership.py": "cbd93539fb5c262b19a26f242b7ad12a33e5dc674bc7524067e2a1f550849057",
+    "tests/content/test_ownership.py": "7d4e0c7f72a018614508cd0ebe68af60592ab8149e19dd5374616e919db677c3"
+  },
+  "live_inputs_still_match": true,
+  "counts": {
+    "KILLED": 43
+  },
+  "cases": 43,
+  "original36": {
+    "KILLED": 36
+  },
+  "mocked_native7": {
+    "KILLED": 7
+  },
+  "passing_unskipped_baselines": 43,
+  "all_provenance_valid": true,
+  "all_exact_restorations": true,
+  "baseline_unchanged": true,
+  "full_manifest_selected": true,
+  "obpi_sweep_complete": false,
+  "manifest_sha256": "f7197f9ffca6b1dd354ea384e54cd031827690f0d1c8c837838786548ef23afc",
+  "runner_sha256": "9d796bf9e3186235fdd4c0e46462d4ea2ebd16de07ce3c2d6b3fdaaa5dc102b4",
+  "started_at": "2026-09-05T15:56:50.364654+00:00",
+  "ended_at": "2026-09-05T15:57:46.102334+00:00",
+  "boundaries": [
+    "G1\u2013G18 are reconstructed exact current edits; historical runner lost.",
+    "Historical G19\u2013G22 remain missing. R01\u2013R18 and W01\u2013W07 do not replace them.",
+    "W01\u2013W07 mock native calls/ABI and do not establish actual Windows runtime behavior.",
+    "No physical power-loss proof, exhaustive fault coverage, or OBPI completion claimed."
+  ]
+}

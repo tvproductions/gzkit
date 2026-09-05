@@ -1,0 +1,16 @@
+{
+  "status": "running; no verdict yet",
+  "codex": {
+    "job_id": "review-mtoltt8y-gw5k5b",
+    "thread_id": "01a0726d-2135-7162-a7b9-48c14f04cbab",
+    "write": false,
+    "runtime": "codex-companion adversarial-review --wait --scope branch --base 5108d7cf68d71dad762f2ac5c25c91c6786ead68",
+    "local_log": "/tmp/gzkit-obpi04-final-codex-acceptance.log"
+  },
+  "claude": {
+    "purpose": "separate cross-vendor acceptance corroboration of Codex-primary correction",
+    "runtime": "claude --print --output-format json --no-session-persistence --permission-mode dontAsk",
+    "local_log": "/tmp/gzkit-obpi04-final-claude-acceptance.log"
+  },
+  "acceptance_source_commit": "f89520331ea3ccf26b6e85fc48b8d3fd55b813d5"
+}

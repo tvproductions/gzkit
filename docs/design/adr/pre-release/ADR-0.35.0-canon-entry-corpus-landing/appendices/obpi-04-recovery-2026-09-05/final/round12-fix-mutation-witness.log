@@ -1,0 +1,67 @@
+# Round-12 medium fix — sensitivity witness (2026-09-05)
+# ownership.py final sha256 d9561d7f0df0ef195767f379f424be2ab1f10ca9a793dda5b781940edff4c091
+# Mutation: the 'if code is None: ... code = ctypes.get_last_error()' block deleted in isolation; test run; bytes restored (sha256 equal before/after).
+# Command: uv run -m unittest tests.content.test_ownership.TestWindowsDirectoryBarrier.test_native_failures_report_the_callee_error_code_not_a_stale_read
+# REAL EXIT: 1
+FFF
+======================================================================
+FAIL: test_native_failures_report_the_callee_error_code_not_a_stale_read (tests.content.test_ownership.TestWindowsDirectoryBarrier.test_native_failures_report_the_callee_error_code_not_a_stale_read) (arm='CreateFileW')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/content/test_ownership.py", line 1791, in test_native_failures_report_the_callee_error_code_not_a_stale_read
+    self.win_error.assert_called_once_with(32)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 991, in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 979, in assert_called_with
+    raise AssertionError(_error_message()) from cause
+AssertionError: expected call not found.
+Expected: mock(32)
+  Actual: mock(None)
+
+======================================================================
+FAIL: test_native_failures_report_the_callee_error_code_not_a_stale_read (tests.content.test_ownership.TestWindowsDirectoryBarrier.test_native_failures_report_the_callee_error_code_not_a_stale_read) (arm='WaitForSingleObject')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/content/test_ownership.py", line 1791, in test_native_failures_report_the_callee_error_code_not_a_stale_read
+    self.win_error.assert_called_once_with(32)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 991, in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 979, in assert_called_with
+    raise AssertionError(_error_message()) from cause
+AssertionError: expected call not found.
+Expected: mock(32)
+  Actual: mock(None)
+
+======================================================================
+FAIL: test_native_failures_report_the_callee_error_code_not_a_stale_read (tests.content.test_ownership.TestWindowsDirectoryBarrier.test_native_failures_report_the_callee_error_code_not_a_stale_read) (arm='CloseHandle')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/Users/jeff/Documents/Code/gzkit/tests/content/test_ownership.py", line 1791, in test_native_failures_report_the_callee_error_code_not_a_stale_read
+    self.win_error.assert_called_once_with(32)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 991, in assert_called_once_with
+    return self.assert_called_with(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/Users/jeff/.local/share/uv/python/cpython-3.13.15-macos-aarch64-none/lib/python3.13/unittest/mock.py", line 979, in assert_called_with
+    raise AssertionError(_error_message()) from cause
+AssertionError: expected call not found.
+Expected: mock(32)
+  Actual: mock(None)
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=3)
+
+# --- restored bytes, whole class ---
+# Command: uv run -m unittest tests.content.test_ownership.TestWindowsDirectoryBarrier
+# REAL EXIT: 0
+............
+----------------------------------------------------------------------
+Ran 12 tests in 0.003s
+
+OK

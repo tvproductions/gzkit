@@ -1,0 +1,10 @@
+[
+  {
+    "member": "windows.log",
+    "sha256": "cc7d2e61d04d69a90d3f489fbb5565a8b6635c9afdbcacf59e04c94c67b8c430"
+  },
+  {
+    "member": "linux.log",
+    "sha256": "cbde339a6ff3c5bfd96b464831300cd4fad525ef42a74bc94e9a1f012d857832"
+  }
+]

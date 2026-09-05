@@ -1,0 +1,55 @@
+{
+  "source_commit": "d2280608f1a77a39ed54ad16f1183e56bdab4fd5",
+  "inputs_match_source_commit": true,
+  "source_hashes": {
+    "src/gzkit/commands/content/unown.py": "0128624028d2f5f7cce805b17c26a07f1a5b739bf18d035803b6a3a82d2328e1",
+    "src/gzkit/content/ownership.py": "d9561d7f0df0ef195767f379f424be2ab1f10ca9a793dda5b781940edff4c091",
+    "tests/commands/test_content_unown.py": "28176d3795861007ff28a8581043b1256acbc4a7feadedd662546d4be01c13c7",
+    "tests/content/test_ownership.py": "0eae3cbd04fcb9f7a95719e28dce61db0e7580cbfa9cc7ba03ac4260680e2be1"
+  },
+  "live_hashes_after_run": {
+    "src/gzkit/commands/content/unown.py": "0128624028d2f5f7cce805b17c26a07f1a5b739bf18d035803b6a3a82d2328e1",
+    "src/gzkit/content/ownership.py": "d9561d7f0df0ef195767f379f424be2ab1f10ca9a793dda5b781940edff4c091",
+    "tests/commands/test_content_unown.py": "28176d3795861007ff28a8581043b1256acbc4a7feadedd662546d4be01c13c7",
+    "tests/content/test_ownership.py": "0eae3cbd04fcb9f7a95719e28dce61db0e7580cbfa9cc7ba03ac4260680e2be1"
+  },
+  "live_inputs_still_match": true,
+  "counts": {
+    "KILLED": 44
+  },
+  "cases": 44,
+  "by_kind": {
+    "behavior:KILLED": 26,
+    "diagnostic:KILLED": 9,
+    "fixture-sensitivity:KILLED": 1,
+    "mocked-native-control:KILLED": 8
+  },
+  "original36": {
+    "KILLED": 36
+  },
+  "mocked_native8": {
+    "KILLED": 8
+  },
+  "passing_unskipped_baselines": 44,
+  "all_provenance_valid": true,
+  "all_exact_restorations": true,
+  "baseline_unchanged": true,
+  "full_manifest_selected": true,
+  "obpi_sweep_complete": false,
+  "manifest_sha256": "aef87ae587c1f0e9cf751c74a68dfd372737d9a651d2e1ddace3de92c05825c7",
+  "runner_sha256": "9d796bf9e3186235fdd4c0e46462d4ea2ebd16de07ce3c2d6b3fdaaa5dc102b4",
+  "started_at": "2026-09-05T17:39:01.965428+00:00",
+  "ended_at": "2026-09-05T17:39:58.015642+00:00",
+  "w08": {
+    "status": "KILLED",
+    "baseline_tests_run": 1,
+    "mutant_failures": 3,
+    "mutant_assertion_failure": true
+  },
+  "boundaries": [
+    "G1\u2013G18 remain reconstructed exact current edits; historical runner lost.",
+    "Historical G19\u2013G22 remain missing. Nothing was recovered by assertion.",
+    "W01\u2013W08 mock native calls/ABI and do not establish actual Windows runtime behavior; the deterministic native failure-path witness runs on Windows CI only.",
+    "No physical power-loss proof, exhaustive fault coverage, or OBPI completion claimed."
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "members": 1187,
+  "verified_members": 1187,
+  "byte_exact": true,
+  "archive_bytes": 9847889,
+  "archive_sha256": "6d5b0ec9e274dbcaf541c373be1eeb122051a7c5adb8135bc194f8f31e2a64cf",
+  "omitted": "duplicate complete baseline/worktree copies and bytecode caches; executed project source modules, full inventories, and every output retained"
+}

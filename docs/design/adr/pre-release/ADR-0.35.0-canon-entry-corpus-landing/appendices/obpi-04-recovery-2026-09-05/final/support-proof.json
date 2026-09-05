@@ -1,0 +1,20 @@
+{
+  "requirement": "REQ-0.35.0-04-08",
+  "artifact": ".gzkit/ownership/AGENTS.md.json",
+  "event": {
+    "schema": "gzkit.ledger.v1",
+    "event": "artifact_edited",
+    "id": ".gzkit/ownership/AGENTS.md.json",
+    "ts": "2026-09-02T15:33:32.964636+00:00",
+    "path": ".gzkit/ownership/AGENTS.md.json"
+  },
+  "validator_command": [
+    "uv",
+    "run",
+    "gz",
+    "validate",
+    "--documents"
+  ],
+  "observed_exit_status": 0,
+  "output": "Validated: documents\n\n\u2713 All validations passed (1 scopes).\n"
+}

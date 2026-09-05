@@ -1,0 +1,679 @@
+check (windows-latest)	Set up job	﻿2026-09-05T17:39:04.7267162Z Current runner version: '2.337.0'
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7782958Z ##[group]Runner Image Provisioner
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7784096Z Hosted Compute Agent
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7784817Z Version: 20260819.586
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7785570Z Commit: 3cc4a88dfa507ef76119ad1bb3eccc6378bb2b76
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7786552Z Build Date: 2026-08-18T23:20:18Z
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7787444Z Worker ID: {d5e1128c-a7bb-4da2-b72c-de46cdc06b2c}
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7788399Z Azure Region: northcentralus
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7789106Z ##[endgroup]
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7790624Z ##[group]Operating System
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7791506Z Microsoft Windows Server 2025
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7792237Z 10.0.26100
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7793020Z Datacenter
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7793636Z ##[endgroup]
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7794863Z ##[group]Runner Image
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7795592Z Image: windows-2025-vs2026
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7796314Z Version: 20260824.214.3
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7798124Z Included Software: https://github.com/actions/runner-images/blob/win25-vs2026/20260824.214/images/windows/Windows2025-VS2026-Readme.md
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7801291Z Image Release: https://github.com/actions/runner-images/releases/tag/win25-vs2026%2F20260824.214
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7802830Z ##[endgroup]
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7804256Z ##[group]GITHUB_TOKEN Permissions
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7806571Z Contents: read
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7807223Z Metadata: read
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7807783Z ##[endgroup]
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7810177Z Secret source: Actions
+check (windows-latest)	Set up job	2026-09-05T17:39:04.7811510Z Prepare workflow directory
+check (windows-latest)	Set up job	2026-09-05T17:39:04.9476422Z Prepare all required actions
+check (windows-latest)	Set up job	2026-09-05T17:39:04.9528328Z Getting action download info
+check (windows-latest)	Set up job	2026-09-05T17:39:05.1647534Z Download action repository 'actions/checkout@v6' (SHA:d23441a48e516b6c34aea4fa41551a30e30af803)
+check (windows-latest)	Set up job	2026-09-05T17:39:06.1392889Z Download action repository 'actions/setup-python@v6' (SHA:ece7cb06caefa5fff74198d8649806c4678c61a1)
+check (windows-latest)	Set up job	2026-09-05T17:39:06.3850632Z Download action repository 'astral-sh/setup-uv@v6' (SHA:d0cc045d04ccac9d8b7881df0226f9e82c39688e)
+check (windows-latest)	Set up job	2026-09-05T17:39:07.5548986Z Complete job name: check (windows-latest)
+check (windows-latest)	Run actions/checkout@v6	﻿2026-09-05T17:39:08.7343940Z ##[group]Run actions/checkout@v6
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7345527Z with:
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7346374Z   fetch-depth: 0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7347281Z   repository: tvproductions/gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7353987Z   token: ***
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7355115Z   ssh-strict: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7356019Z   ssh-user: git
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7356904Z   persist-credentials: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7357863Z   clean: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7358769Z   sparse-checkout-cone-mode: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7359771Z   fetch-tags: false
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7360635Z   show-progress: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7361535Z   lfs: false
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7362565Z   submodules: false
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7363468Z   set-safe-directory: true
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7364458Z   allow-unsafe-pr-checkout: false
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.7365751Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.9623552Z Syncing repository: tvproductions/gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.9626189Z ##[group]Getting Git version info
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:08.9627347Z Working directory is 'D:\a\gzkit\gzkit'
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.0716105Z [command]"C:\Program Files\Git\bin\git.exe" version
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.5628054Z git version 2.55.0.windows.5
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.5687363Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.5749708Z Temporarily overriding HOME='D:\a\_temp\18414fd6-2472-4765-b872-d68cc399dab1' before making global git config changes
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.5751108Z Adding repository directory to the temporary git global config as a safe directory
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.5752360Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\gzkit\gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.7147210Z Deleting the contents of 'D:\a\gzkit\gzkit'
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.7154481Z ##[group]Determining repository object format
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.7157344Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.7158123Z ##[group]Initializing the repository
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.7168035Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\gzkit\gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.8105108Z Initialized empty Git repository in D:/a/gzkit/gzkit/.git/
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.8157273Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/tvproductions/gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.8844449Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.8845051Z ##[group]Disabling automatic garbage collection
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.8858750Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.9179395Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.9180157Z ##[group]Setting up auth
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.9181127Z Removing SSH command configuration
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.9194012Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:09.9554000Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:11.7369646Z Removing HTTP extra header
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:11.7383516Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:11.7729477Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.3399437Z Removing includeIf entries pointing to credentials config files
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.3409334Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.3716161Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.8925069Z [command]"C:\Program Files\Git\bin\git.exe" config --file D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.9229398Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/gzkit/gzkit/.git.path D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.9519913Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:D:/a/gzkit/gzkit/.git/worktrees/*.path D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:12.9862504Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:13.0161307Z [command]"C:\Program Files\Git\bin\git.exe" config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:13.0466855Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:13.0467986Z ##[group]Fetching the repository
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:13.0485118Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/*
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7705294Z From https://github.com/tvproductions/gzkit
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7706251Z  * [new branch]        gh-pages   -> origin/gh-pages
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7707002Z  * [new branch]        main       -> origin/main
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7707939Z  * [new tag]           v0.10.0    -> v0.10.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7708587Z  * [new tag]           v0.11.0    -> v0.11.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7709230Z  * [new tag]           v0.12.0    -> v0.12.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7709816Z  * [new tag]           v0.14.0    -> v0.14.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7710901Z  * [new tag]           v0.15.0    -> v0.15.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7711448Z  * [new tag]           v0.16.0    -> v0.16.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7711857Z  * [new tag]           v0.17.0    -> v0.17.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7713231Z  * [new tag]           v0.18.0    -> v0.18.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7713677Z  * [new tag]           v0.18.1    -> v0.18.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7714138Z  * [new tag]           v0.19.0    -> v0.19.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7714517Z  * [new tag]           v0.20.0    -> v0.20.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7714860Z  * [new tag]           v0.21.0    -> v0.21.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7715258Z  * [new tag]           v0.22.0    -> v0.22.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7715699Z  * [new tag]           v0.23.0    -> v0.23.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7716061Z  * [new tag]           v0.24.0    -> v0.24.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7716459Z  * [new tag]           v0.24.1    -> v0.24.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7716801Z  * [new tag]           v0.24.2    -> v0.24.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7717153Z  * [new tag]           v0.24.3    -> v0.24.3
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7717565Z  * [new tag]           v0.25.0    -> v0.25.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7717929Z  * [new tag]           v0.25.1    -> v0.25.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7718296Z  * [new tag]           v0.25.10   -> v0.25.10
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7718669Z  * [new tag]           v0.25.11   -> v0.25.11
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7719043Z  * [new tag]           v0.25.12   -> v0.25.12
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7719486Z  * [new tag]           v0.25.13   -> v0.25.13
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7719886Z  * [new tag]           v0.25.14   -> v0.25.14
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7720812Z  * [new tag]           v0.25.15   -> v0.25.15
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7721901Z  * [new tag]           v0.25.16   -> v0.25.16
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7722360Z  * [new tag]           v0.25.17   -> v0.25.17
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7722754Z  * [new tag]           v0.25.18   -> v0.25.18
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7723201Z  * [new tag]           v0.25.19   -> v0.25.19
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7723615Z  * [new tag]           v0.25.2    -> v0.25.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7724070Z  * [new tag]           v0.25.3    -> v0.25.3
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7724447Z  * [new tag]           v0.25.4    -> v0.25.4
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7724812Z  * [new tag]           v0.25.5    -> v0.25.5
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7725143Z  * [new tag]           v0.25.6    -> v0.25.6
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7725457Z  * [new tag]           v0.25.7    -> v0.25.7
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7726558Z  * [new tag]           v0.25.8    -> v0.25.8
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7726881Z  * [new tag]           v0.25.9    -> v0.25.9
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7805823Z  * [new tag]           v0.26.0    -> v0.26.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7806616Z  * [new tag]           v0.26.1    -> v0.26.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7807135Z  * [new tag]           v0.26.2    -> v0.26.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7807591Z  * [new tag]           v0.26.3    -> v0.26.3
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7807879Z  * [new tag]           v0.26.4    -> v0.26.4
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7808146Z  * [new tag]           v0.26.5    -> v0.26.5
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7808399Z  * [new tag]           v0.26.6    -> v0.26.6
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7809058Z  * [new tag]           v0.27.0    -> v0.27.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7809348Z  * [new tag]           v0.27.1    -> v0.27.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7809614Z  * [new tag]           v0.28.0    -> v0.28.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7809913Z  * [new tag]           v0.28.1    -> v0.28.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7810165Z  * [new tag]           v0.29.0    -> v0.29.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7810423Z  * [new tag]           v0.3.1     -> v0.3.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7810676Z  * [new tag]           v0.30.0    -> v0.30.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7810932Z  * [new tag]           v0.30.1    -> v0.30.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7811177Z  * [new tag]           v0.30.2    -> v0.30.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7811440Z  * [new tag]           v0.31.0    -> v0.31.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7811812Z  * [new tag]           v0.32.0    -> v0.32.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7812263Z  * [new tag]           v0.33.0    -> v0.33.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7812703Z  * [new tag]           v0.33.1    -> v0.33.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7813126Z  * [new tag]           v0.33.2    -> v0.33.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7813566Z  * [new tag]           v0.33.3    -> v0.33.3
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7813819Z  * [new tag]           v0.34.0    -> v0.34.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7814072Z  * [new tag]           v0.34.1    -> v0.34.1
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7814640Z  * [new tag]           v0.34.2    -> v0.34.2
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7814894Z  * [new tag]           v0.34.3    -> v0.34.3
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7815140Z  * [new tag]           v0.34.4    -> v0.34.4
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7815385Z  * [new tag]           v0.34.5    -> v0.34.5
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7815697Z  * [new tag]           v0.34.6    -> v0.34.6
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7816182Z  * [new tag]           v0.34.7    -> v0.34.7
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7816668Z  * [new tag]           v0.4.0     -> v0.4.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7817051Z  * [new tag]           v0.5.0     -> v0.5.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7817427Z  * [new tag]           v0.6.0     -> v0.6.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7817840Z  * [new tag]           v0.7.0     -> v0.7.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7818248Z  * [new tag]           v0.8.0     -> v0.8.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7818667Z  * [new tag]           v0.9.0     -> v0.9.0
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.7820000Z [command]"C:\Program Files\Git\bin\git.exe" branch --list --remote origin/main
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8224821Z   origin/main
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8279108Z [command]"C:\Program Files\Git\bin\git.exe" rev-parse refs/remotes/origin/main
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8691892Z d2280608f1a77a39ed54ad16f1183e56bdab4fd5
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8731166Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8731591Z ##[group]Determining the checkout info
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8733523Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.8743612Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.9217934Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.9548127Z ##[group]Checking out the ref
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:47.9558637Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B main refs/remotes/origin/main
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6705572Z warning: created file symlink '.codex/tmp/arg0/codex-arg088aA51/apply_patch' pointing to '\opt\homebrew\bin\codex';
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6707018Z set the `symlink` gitattribute to `dir` if a directory symlink is required
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6708234Z warning: created file symlink '.codex/tmp/arg0/codex-arg088aA51/applypatch' pointing to '\opt\homebrew\bin\codex';
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6709777Z set the `symlink` gitattribute to `dir` if a directory symlink is required
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6711061Z warning: created file symlink '.codex/tmp/arg0/codex-arg088aA51/codex-execve-wrapper' pointing to '\opt\homebrew\bin\codex';
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:48.6712270Z set the `symlink` gitattribute to `dir` if a directory symlink is required
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.2306629Z Updating files:  17% (1264/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.2891922Z Updating files:  18% (1303/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.3087111Z Updating files:  19% (1376/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.3355982Z Updating files:  20% (1448/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.3600768Z Updating files:  21% (1520/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.3900989Z Updating files:  22% (1593/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.4127500Z Updating files:  23% (1665/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.4333915Z Updating files:  24% (1737/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.5708083Z Updating files:  25% (1810/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.6613579Z Updating files:  26% (1882/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.6864228Z Updating files:  27% (1954/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7127928Z Updating files:  28% (2027/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7287040Z Updating files:  29% (2099/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7473974Z Updating files:  30% (2172/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7628243Z Updating files:  31% (2244/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7787420Z Updating files:  32% (2316/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.7970349Z Updating files:  33% (2389/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.8139270Z Updating files:  34% (2461/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.8311013Z Updating files:  35% (2533/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.8470265Z Updating files:  36% (2606/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.8635609Z Updating files:  37% (2678/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.8824258Z Updating files:  38% (2751/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.9106562Z Updating files:  39% (2823/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.9305064Z Updating files:  40% (2895/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.9480511Z Updating files:  41% (2968/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.9674878Z Updating files:  42% (3040/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:49.9854325Z Updating files:  43% (3112/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.0019943Z Updating files:  44% (3185/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.0198677Z Updating files:  45% (3257/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.1614283Z Updating files:  46% (3330/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.2648802Z Updating files:  46% (3384/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.2954750Z Updating files:  47% (3402/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.3522917Z Updating files:  48% (3474/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.4623580Z Updating files:  49% (3547/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.8394092Z Updating files:  50% (3619/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:50.9356544Z Updating files:  51% (3691/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:51.0761241Z Updating files:  52% (3764/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:51.0786569Z Updating files:  52% (3830/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:51.4029503Z Updating files:  53% (3836/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:51.6087806Z Updating files:  54% (3908/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:51.8706721Z Updating files:  55% (3981/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:52.1619483Z Updating files:  56% (4053/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:52.3066504Z Updating files:  56% (4103/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:52.9621563Z Updating files:  57% (4126/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.1297273Z Updating files:  58% (4198/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.2790182Z Updating files:  58% (4228/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.3150529Z Updating files:  59% (4270/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.3610477Z Updating files:  60% (4343/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.3833239Z Updating files:  61% (4415/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.4160434Z Updating files:  62% (4487/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.4371413Z Updating files:  63% (4560/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.4766874Z Updating files:  64% (4632/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.5024747Z Updating files:  65% (4705/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.5252785Z Updating files:  66% (4777/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.6798489Z Updating files:  67% (4849/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.7719594Z Updating files:  68% (4922/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.8070217Z Updating files:  69% (4994/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.8302078Z Updating files:  70% (5066/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.8550558Z Updating files:  71% (5139/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:53.8987448Z Updating files:  72% (5211/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0022566Z Updating files:  73% (5284/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0325741Z Updating files:  74% (5356/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0500398Z Updating files:  75% (5428/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0698792Z Updating files:  76% (5501/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0877306Z Updating files:  77% (5573/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.0917665Z Updating files:  78% (5645/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.1071141Z Updating files:  78% (5662/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.1263353Z Updating files:  79% (5718/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.1446739Z Updating files:  80% (5790/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.1841366Z Updating files:  81% (5862/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.2104741Z Updating files:  82% (5935/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.2332958Z Updating files:  83% (6007/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.2539779Z Updating files:  84% (6080/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.2749440Z Updating files:  85% (6152/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.3013833Z Updating files:  86% (6224/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.3231157Z Updating files:  87% (6297/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.3432623Z Updating files:  88% (6369/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.3717791Z Updating files:  89% (6441/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.3943907Z Updating files:  90% (6514/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.4175957Z Updating files:  91% (6586/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.4997686Z Updating files:  92% (6659/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.5198599Z Updating files:  93% (6731/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.5474673Z Updating files:  94% (6803/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.7071213Z Updating files:  95% (6876/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.7560889Z Updating files:  96% (6948/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8129787Z Updating files:  97% (7020/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8342558Z Updating files:  98% (7093/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8577105Z Updating files:  99% (7165/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8577568Z Updating files: 100% (7237/7237)
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8578950Z Updating files: 100% (7237/7237), done.
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8830718Z Switched to a new branch 'main'
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.8850036Z branch 'main' set up to track 'origin/main'.
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.9211119Z ##[endgroup]
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.9581815Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+check (windows-latest)	Run actions/checkout@v6	2026-09-05T17:39:54.9869812Z d2280608f1a77a39ed54ad16f1183e56bdab4fd5
+check (windows-latest)	Configure git identity for the authorship audit	﻿2026-09-05T17:39:55.0302079Z ##[group]Run git config --global user.name "github-actions[bot]"
+check (windows-latest)	Configure git identity for the authorship audit	2026-09-05T17:39:55.0302676Z ^[[36;1mgit config --global user.name "github-actions[bot]"^[[0m
+check (windows-latest)	Configure git identity for the authorship audit	2026-09-05T17:39:55.0303198Z ^[[36;1mgit config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"^[[0m
+check (windows-latest)	Configure git identity for the authorship audit	2026-09-05T17:39:55.2188665Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+check (windows-latest)	Configure git identity for the authorship audit	2026-09-05T17:39:55.2189137Z ##[endgroup]
+check (windows-latest)	Run actions/setup-python@v6	﻿2026-09-05T17:39:55.7753584Z ##[group]Run actions/setup-python@v6
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7753928Z with:
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7754119Z   python-version: 3.13.15
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7754370Z   check-latest: false
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7756620Z   token: ***
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7756811Z   update-environment: true
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7757040Z   allow-prereleases: false
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7757243Z   freethreaded: false
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.7757425Z ##[endgroup]
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.9492748Z ##[group]Installed versions
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.9555711Z Successfully set up CPython (3.13.15)
+check (windows-latest)	Run actions/setup-python@v6	2026-09-05T17:39:55.9556684Z ##[endgroup]
+check (windows-latest)	Install uv	﻿2026-09-05T17:39:55.9923908Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9925327Z ##[group]Run astral-sh/setup-uv@v6
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9925576Z with:
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9925746Z   enable-cache: true
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9925950Z   activate-environment: false
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9926205Z   working-directory: D:\a\gzkit\gzkit
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9926468Z   server-url: https://github.com
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9928814Z   github-token: ***
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9929375Z   cache-dependency-glob: **/*requirements*.txt
+check (windows-latest)	Install uv	**/*requirements*.in
+check (windows-latest)	Install uv	**/*constraints*.txt
+check (windows-latest)	Install uv	**/*constraints*.in
+check (windows-latest)	Install uv	**/pyproject.toml
+check (windows-latest)	Install uv	**/uv.lock
+check (windows-latest)	Install uv	**/*.py.lock
+check (windows-latest)	Install uv	
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9929971Z   restore-cache: true
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9930160Z   save-cache: true
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9930375Z   prune-cache: true
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9930567Z   ignore-nothing-to-cache: false
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9930798Z   ignore-empty-workdir: false
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9931019Z   add-problem-matchers: true
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9931217Z env:
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9931457Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9932364Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.15\x64/lib/pkgconfig
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9932819Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9933213Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9933590Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Install uv	2026-09-05T17:39:55.9933886Z ##[endgroup]
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2218522Z (node:8340) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2219781Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2222861Z Trying to find version for uv in: D:\a\gzkit\gzkit\uv.toml
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2224126Z Could not find file: D:\a\gzkit\gzkit\uv.toml
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2225325Z Trying to find version for uv in: D:\a\gzkit\gzkit\pyproject.toml
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2278082Z Could not determine uv version from uv.toml or pyproject.toml. Falling back to latest.
+check (windows-latest)	Install uv	2026-09-05T17:39:56.2280060Z Getting latest version from GitHub API...
+check (windows-latest)	Install uv	2026-09-05T17:39:56.4713677Z manifest-file not provided, reading from local file.
+check (windows-latest)	Install uv	2026-09-05T17:39:56.4763789Z manifest-file does not contain version 0.12.10, arch x86_64, platform pc-windows-msvc. Falling back to GitHub releases.
+check (windows-latest)	Install uv	2026-09-05T17:39:56.4766544Z Downloading uv from "https://github.com/astral-sh/uv/releases/download/0.12.10/uv-x86_64-pc-windows-msvc.zip" ...
+check (windows-latest)	Install uv	2026-09-05T17:39:56.8775871Z [command]"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -Command "$ErrorActionPreference = 'Stop' ; try { Add-Type -AssemblyName System.IO.Compression.ZipFile } catch { } ; try { [System.IO.Compression.ZipFile]::ExtractToDirectory('D:\a\_temp\e8afe13a-8d6f-4fe2-9468-7f0fdeafff37.zip', 'D:\a\_temp\b6019d57-9a04-4c4a-95d4-087e0afe056e', $true) } catch { if (($_.Exception.GetType().FullName -eq 'System.Management.Automation.MethodException') -or ($_.Exception.GetType().FullName -eq 'System.Management.Automation.RuntimeException') ){ Expand-Archive -LiteralPath 'D:\a\_temp\e8afe13a-8d6f-4fe2-9468-7f0fdeafff37.zip' -DestinationPath 'D:\a\_temp\b6019d57-9a04-4c4a-95d4-087e0afe056e' -Force } else { throw $_ } } ;"
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4012919Z Set UV_TOOL_BIN_DIR to D:\a\_temp\uv-tool-bin-dir
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4017342Z Added D:\a\_temp\uv-tool-bin-dir to the path
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4025025Z Added C:\hostedtoolcache\windows\uv\0.12.10\x86_64 to the path
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4027800Z Set UV_TOOL_DIR to D:\a\_temp\uv-tool-dir
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4038190Z Set UV_CACHE_DIR to D:\a\_temp\setup-uv-cache
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4041164Z Successfully installed uv version 0.12.10
+check (windows-latest)	Install uv	2026-09-05T17:39:57.4042554Z Searching files using cache dependency glob: D:\a\gzkit\gzkit\**\*requirements*.txt,D:\a\gzkit\gzkit\**\*requirements*.in,D:\a\gzkit\gzkit\**\*constraints*.txt,D:\a\gzkit\gzkit\**\*constraints*.in,D:\a\gzkit\gzkit\**\pyproject.toml,D:\a\gzkit\gzkit\**\uv.lock,D:\a\gzkit\gzkit\**\*.py.lock
+check (windows-latest)	Install uv	2026-09-05T17:39:58.8282409Z D:\a\gzkit\gzkit\pyproject.toml
+check (windows-latest)	Install uv	2026-09-05T17:39:58.8308650Z D:\a\gzkit\gzkit\requirements-docs.txt
+check (windows-latest)	Install uv	2026-09-05T17:39:59.1734991Z D:\a\gzkit\gzkit\uv.lock
+check (windows-latest)	Install uv	2026-09-05T17:39:59.1748797Z Found 3 files to hash.
+check (windows-latest)	Install uv	2026-09-05T17:40:00.5536549Z Trying to restore uv cache from GitHub Actions cache with key: setup-uv-1-x86_64-pc-windows-msvc-3.13.15-pruned-112e801b7af7abf21380232c9cb4955cefb7bf5f000e6afa316b9fe9ac566cdf
+check (windows-latest)	Install uv	2026-09-05T17:40:00.7927557Z Cache hit for: setup-uv-1-x86_64-pc-windows-msvc-3.13.15-pruned-112e801b7af7abf21380232c9cb4955cefb7bf5f000e6afa316b9fe9ac566cdf
+check (windows-latest)	Install uv	2026-09-05T17:40:00.8050366Z (node:8340) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+check (windows-latest)	Install uv	2026-09-05T17:40:01.1007505Z Received 3406833 of 3406833 (100.0%), 15.3 MBs/sec
+check (windows-latest)	Install uv	2026-09-05T17:40:01.1008743Z Cache Size: ~3 MB (3406833 B)
+check (windows-latest)	Install uv	2026-09-05T17:40:01.1036445Z [command]"C:\Program Files\Git\usr\bin\tar.exe" -xf D:/a/_temp/38857efb-0e2c-4cf5-8f80-288c7d6004f2/cache.tzst -P -C D:/a/gzkit/gzkit --force-local --use-compress-program "zstd -d"
+check (windows-latest)	Install uv	2026-09-05T17:40:01.3074461Z Cache restored successfully
+check (windows-latest)	Install uv	2026-09-05T17:40:01.3084949Z uv cache restored from GitHub Actions cache with key: setup-uv-1-x86_64-pc-windows-msvc-3.13.15-pruned-112e801b7af7abf21380232c9cb4955cefb7bf5f000e6afa316b9fe9ac566cdf
+check (windows-latest)	Sync dependencies	﻿2026-09-05T17:40:01.3386860Z ##[group]Run uv sync --frozen --all-extras
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3387300Z ^[[36;1muv sync --frozen --all-extras^[[0m
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3498778Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3499317Z env:
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3499731Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3500431Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.15\x64/lib/pkgconfig
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3501131Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3501752Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3502382Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3503191Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3503622Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3504021Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.3504412Z ##[endgroup]
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.6454092Z Using CPython 3.13.15 interpreter at: C:\hostedtoolcache\windows\Python\3.13.15\x64\python3.exe
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.6455158Z Creating virtual environment at: .venv
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.7005254Z    Building py-gzkit @ file:///D:/a/gzkit/gzkit
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8064682Z Downloading babel (9.7MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8068750Z Downloading networkx (2.0MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8072641Z Downloading pygments (1.2MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8193863Z Downloading mkdocs (3.7MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8214313Z Downloading pydantic-core (2.0MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8221956Z Downloading mkdocs-material (8.9MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8239498Z Downloading plotly (9.5MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8247530Z Downloading ruff (11.5MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8251051Z Downloading ty (12.3MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:01.8266805Z Downloading pyinstaller (1.3MiB)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:02.5568845Z  Downloaded pydantic-core
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:02.5714613Z  Downloaded pygments
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:02.7110224Z  Downloaded mkdocs
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.0314654Z  Downloaded networkx
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.0562809Z  Downloaded pyinstaller
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.2674884Z  Downloaded ruff
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.2857131Z  Downloaded ty
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.2887579Z  Downloaded babel
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:03.5079818Z  Downloaded plotly
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:04.8164195Z       Built py-gzkit @ file:///D:/a/gzkit/gzkit
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:05.8314536Z  Downloaded mkdocs-material
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:05.8322876Z Prepared 84 packages in 4.15s
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0314989Z Installed 84 packages in 2.19s
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0316851Z  + altgraph==0.17.5
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0318440Z  + annotated-types==0.8.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0319277Z  + attrs==26.1.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0320561Z  + babel==2.18.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0321685Z  + backrefs==8.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0322282Z  + bandit==1.9.4
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0323860Z  + behave==1.3.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0324421Z  + certifi==2026.7.22
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0325951Z  + chardet==5.2.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0326643Z  + charset-normalizer==3.4.9
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0328088Z  + click==8.4.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0329098Z  + cohesion==1.2.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0330464Z  + colorama==0.4.6
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0331653Z  + colorlog==6.12.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0332938Z  + coverage==7.15.4
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0334271Z  + cucumber-expressions==20.1.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0335455Z  + cucumber-tag-expressions==11.0.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0337059Z  + detect-secrets==1.5.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0338546Z  + ghp-import==2.1.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0339716Z  + gitdb==4.0.12
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0341331Z  + gitpython==3.1.58
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0342006Z  + idna==3.18
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0343627Z  + interrogate==1.7.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0344885Z  + jinja2==3.1.6
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0346408Z  + jsonschema==4.26.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0347856Z  + jsonschema-specifications==2025.9.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0348874Z  + lizard==1.23.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0350589Z  + mando==0.7.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0351698Z  + markdown==3.10.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0353208Z  + markdown-it-py==4.2.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0356622Z  + markupsafe==3.0.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0356973Z  + mdurl==0.1.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0358585Z  + mergedeep==1.3.4
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0359930Z  + mkdocs==1.6.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0361249Z  + mkdocs-get-deps==0.2.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0362502Z  + mkdocs-material==9.7.7
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0363798Z  + mkdocs-material-extensions==1.3.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0365117Z  + narwhals==2.24.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0366397Z  + networkx==3.6.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0366958Z  + packaging==26.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0368820Z  + paginate==0.5.7
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0370053Z  + parse==1.22.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0371236Z  + parse-type==0.6.6
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0372199Z  + pathspec==1.1.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0373919Z  + pefile==2024.8.26
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0375217Z  + platformdirs==4.11.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0376671Z  + plotly==6.9.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0377860Z  + progress==1.6.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0379573Z  + py==1.11.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0381447Z  + py-gzkit==0.34.7 (from file:///D:/a/gzkit/gzkit)
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0382848Z  + pydantic==2.13.4
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0383975Z  + pydantic-core==2.46.4
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0385557Z  + pygments==2.20.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0386851Z  + pygount==3.2.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0388239Z  + pyinstaller==6.22.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0388900Z  + pyinstaller-hooks-contrib==2026.6
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0390680Z  + pymdown-extensions==11.0.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0392013Z  + python-dateutil==2.9.0.post0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0393337Z  + pywin32-ctypes==0.2.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0394674Z  + pyyaml==6.0.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0395796Z  + pyyaml-env-tag==1.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0397574Z  + radon==6.0.1
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0399026Z  + referencing==0.37.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0400325Z  + requests==2.34.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0401783Z  + rich==15.0.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0403160Z  + rpds-py==2026.6.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0404192Z  + ruff==0.16.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0405724Z  + setuptools==84.0.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0407120Z  + six==1.17.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0408438Z  + smmap==5.0.3
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0409641Z  + stevedore==5.9.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0410877Z  + structlog==26.1.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0412274Z  + tabulate==0.10.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0413443Z  + tree-sitter==0.26.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0415057Z  + tree-sitter-python==0.25.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0416382Z  + ty==0.0.69
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0417711Z  + typing-extensions==4.16.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0419180Z  + typing-inspection==0.4.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0420102Z  + unittest-parallel==1.8.6
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0421849Z  + urllib3==2.7.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0422448Z  + vulture==2.16
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0424213Z  + watchdog==6.0.0
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0425887Z  + wily==1.12.2
+check (windows-latest)	Sync dependencies	2026-09-05T17:40:08.0426562Z  + xenon==0.9.3
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	﻿2026-09-05T17:40:08.2203206Z ##[group]Run uv run gz check
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2203696Z ^[[36;1muv run gz check^[[0m
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2332771Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2333171Z env:
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2333462Z   pythonLocation: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2333938Z   PKG_CONFIG_PATH: C:\hostedtoolcache\windows\Python\3.13.15\x64/lib/pkgconfig
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2334399Z   Python_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2334808Z   Python2_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2335211Z   Python3_ROOT_DIR: C:\hostedtoolcache\windows\Python\3.13.15\x64
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2335557Z   UV_TOOL_BIN_DIR: D:\a\_temp\uv-tool-bin-dir
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2335848Z   UV_TOOL_DIR: D:\a\_temp\uv-tool-dir
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2336103Z   UV_CACHE_DIR: D:\a\_temp\setup-uv-cache
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:40:08.2336375Z ##[endgroup]
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:00.9379082Z [1/59] Test
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:00.9380507Z [2/59] Behave
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:00.9380856Z [3/59] Docs build
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:02.4783721Z [4/59] Format
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:07.5038270Z [5/59] Lint
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:09.2176281Z [6/59] Typecheck
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:09.7303356Z [7/59] Skill audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:10.1792566Z [8/59] Parity check
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:10.9526405Z [9/59] Readiness audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:12.4002659Z [10/59] Unscoped rules
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:13.1252197Z [11/59] CLI audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:13.7020807Z [12/59] Python version pins
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:14.3120999Z [13/59] Module size
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:14.4876181Z [14/59] ADR status freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:15.0532452Z [15/59] Advisory scorecard coverage
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:16.0985234Z [16/59] Adversarial validation
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:16.6428358Z [17/59] RED parity
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:16.7515653Z [18/59] OBPI lifecycle coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:17.3837943Z [19/59] Rendition freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:17.8789889Z [20/59] Rendition floor coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:18.0501413Z [21/59] Invariant coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:18.8493502Z [22/59] Corpus retirement witness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:19.3470344Z [23/59] Wheel path literals
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:19.5380870Z [24/59] Brief structure
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:20.1386356Z [25/59] Session green gate
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:20.8020302Z [26/59] Closeout proof
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:20.8313363Z [27/59] Kind invariance
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:21.4921763Z [28/59] Persona witness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:21.5390703Z [29/59] Validate default scopes
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:22.0955720Z [30/59] Pool interview schema
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:22.1338026Z [31/59] Interview transcripts
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:22.8242570Z [32/59] Orientation freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:22.9961496Z [33/59] Receipt shape
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:23.3756607Z [34/59] Instructions files budget
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:23.3873094Z [35/59] Insights shape
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:24.0885879Z [36/59] AGENTS.md map conformance
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:24.2746084Z [37/59] Complexity-doctrine links
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:24.6852044Z [38/59] Complexity-thresholds
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:25.8362682Z [39/59] REQ kind discipline
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:26.2658462Z [40/59] Transcribed ADR counts
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:27.9205113Z [41/59] Lock-exchange coupling
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:29.7970348Z [42/59] Status writer coverage
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:29.9313117Z [43/59] Task envelope coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:31.1384910Z [44/59] Fidelity presence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:31.1934562Z [45/59] Waiver ratchet
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:32.3775572Z [46/59] Config registry
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:32.4575800Z [47/59] Gate callers
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:33.6204571Z [48/59] Exemption controls
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:36.8635903Z [49/59] QC binding
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:37.6244748Z [50/59] tautological test audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:38.8729074Z [51/59] Surface fidelity
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:40.0264495Z [52/59] Preflight
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:40.1644326Z [53/59] Authorship policy
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:40.1675140Z [54/59] Dispatch absorption marker
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:44.4134056Z [55/59] Smoke tier
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:46.3301303Z [56/59] ADR taxonomy
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:46.8694469Z [57/59] Line endings
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:47.8023083Z [58/59] Enforcement floor
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:52.2587451Z [59/59] Handoff documents
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1891446Z   ✓ Lint
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1893959Z   ✓ Format
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1898167Z   ✓ Typecheck
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1902045Z   ✓ Module size
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1905455Z   ✓ Test
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1909202Z   ✓ Behave
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1913109Z   ✓ Docs build
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1917433Z   ✓ Validate default scopes
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1921023Z   ✓ Skill audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1924603Z   ✓ Parity check
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1928274Z   ✓ Readiness audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.1932078Z   ✓ CLI audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2056635Z   ✓ Unscoped rules
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2057994Z   ✓ Python version pins
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2058493Z   ✓ ADR status freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2059000Z   ✓ Advisory scorecard coverage
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2059534Z   ✓ OBPI lifecycle coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2060224Z   ✓ Adversarial validation
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2060740Z   ✓ RED parity
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2061133Z   ✓ Rendition freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2061578Z   ✓ Rendition floor coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2062047Z   ✓ Invariant coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2062500Z   ✓ Corpus retirement witness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2062977Z   ✓ Wheel path literals
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2063403Z   ✓ Brief structure
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2063817Z   ✓ Session green gate
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2064236Z   ✓ Closeout proof
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2064652Z   ✓ Kind invariance
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2065058Z   ✓ Persona witness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2065475Z   ✓ Interview transcripts
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2065949Z   ✓ Pool interview schema
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2066431Z   ✓ Receipt shape
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2066836Z   ✓ Orientation freshness
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2067287Z   ✓ Insights shape
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2067755Z   ✓ Instructions files budget
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2068796Z   ✓ AGENTS.md map conformance
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2069790Z   ✓ Complexity-doctrine links
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2070360Z   ✓ Complexity-thresholds
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2070844Z   ✓ REQ kind discipline
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2071326Z   ✓ Status writer coverage
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2071856Z   ✓ Transcribed ADR counts
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2072358Z   ✓ tautological test audit
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2072851Z   ✓ Task envelope coherence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2073314Z   ✓ Lock-exchange coupling
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2073848Z   ✓ QC binding
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2074212Z   ✓ Fidelity presence
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2074620Z   ✓ Waiver ratchet
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2075025Z   ✓ Config registry
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2075464Z   ✓ Gate callers
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2075876Z   ✓ Exemption controls
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2076344Z   ✓ Handoff documents
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2076753Z   ✓ Preflight
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2077148Z   ✓ Surface fidelity
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2077595Z   ✓ Line endings
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2078045Z   ✓ Authorship policy
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2078446Z   ✓ Smoke tier
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2078874Z   ✓ Dispatch absorption marker
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2079444Z   ✓ Enforcement floor
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2081358Z   ✓ ADR taxonomy
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2087350Z 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2088974Z ⚠ Advisory (does not affect exit code):
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2101670Z   Instructions files budget WARNING [surface-delivery-witness] AGENTS.md: 46876
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2103222Z B rendered against the codex delivery cap 32768 B — 14108 B OVER, so bytes past
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2104195Z the cap are not delivered under codex at all. Advisory, never blocking. Trim 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2105093Z via the chore: `uv run gz chores run instructions-files-diet`. Track via 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2105919Z `/ghi-author`; raising the budget cannot relieve a vendor cap.
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2116866Z   Instructions files budget WARNING [surface-delivery-witness] AGENTS.md: 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2118125Z must-survive section 'operator-doctrine-verbatim-canon' spans 30020-43941, 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2118883Z straddles the codex cap 32768 B — at risk of silent loss; undelivered canon is 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2120485Z not in force. Advisory, never blocking. Trim via the chore: `uv run gz chores 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2121042Z run instructions-files-diet`. Track via `/ghi-author`; raising the budget 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2121478Z cannot relieve a vendor cap.
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2129605Z   Instructions files budget WARNING [surface-delivery-witness] AGENTS.md: 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2130697Z must-survive section 'architectural-boundaries' starts 46281, past the codex 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2131489Z cap 32768 B — at risk of silent loss; undelivered canon is not in force. 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2132245Z Advisory, never blocking. Trim via the chore: `uv run gz chores run 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2132810Z instructions-files-diet`. Track via `/ghi-author`; raising the budget cannot 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2133212Z relieve a vendor cap.
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2142051Z   Complexity-thresholds Bootstrap-mode: 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2142840Z D:/a/gzkit/gzkit/.gzkit/rules/complexity-thresholds.md declares a Bootstrap 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2144119Z absolutes carve-out section; portability checks against bootstrap rows are 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2145487Z skipped per ADR-0.0.28 § Bootstrap absolutes (REQ-11). This is informational, 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2146449Z not a policy breach — review tracked GHIs (#404 parser zeros, #405 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.2147078Z polarity-aware model) for resolution.
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3762980Z 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3764252Z ✓ All checks passed.
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3768948Z 
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3769404Z ⚠ Advisory: spec-test-code drift detected
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3776522Z   advisory  Unlinked specs (REQs with no test): 694
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3786111Z   Total: 694 finding(s) (advisory — does not affect exit code)
+check (windows-latest)	Run gz check (full gate — lint, format, typecheck, test, behave, validators)	2026-09-05T17:46:56.3790435Z   Run `gz drift` for the full per-finding list.
+check (windows-latest)	Post Install uv	﻿2026-09-05T17:46:56.6103859Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+check (windows-latest)	Post Install uv	2026-09-05T17:46:56.6105499Z Post job cleanup.
+check (windows-latest)	Post Install uv	2026-09-05T17:46:56.7673793Z Cache hit occurred on key setup-uv-1-x86_64-pc-windows-msvc-3.13.15-pruned-112e801b7af7abf21380232c9cb4955cefb7bf5f000e6afa316b9fe9ac566cdf, not saving cache.
+check (windows-latest)	Post Install uv	2026-09-05T17:46:56.7675973Z (node:4552) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+check (windows-latest)	Post Install uv	2026-09-05T17:46:56.7677032Z (Use `node --trace-deprecation ...` to show where the warning was created)
+check (windows-latest)	Post Run actions/setup-python@v6	﻿2026-09-05T17:46:56.7974990Z Post job cleanup.
+check (windows-latest)	Post Run actions/checkout@v6	﻿2026-09-05T17:46:57.0082600Z Post job cleanup.
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2126477Z [command]"C:\Program Files\Git\bin\git.exe" version
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2408081Z git version 2.55.0.windows.5
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2469575Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\7049677c-3892-4fb8-83d9-cdff30898289\.gitconfig'
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2491607Z Temporarily overriding HOME='D:\a\_temp\7049677c-3892-4fb8-83d9-cdff30898289' before making global git config changes
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2493050Z Adding repository directory to the temporary git global config as a safe directory
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2504886Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\gzkit\gzkit
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2823568Z Removing SSH command configuration
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.2835845Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.3161603Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.8539491Z Removing HTTP extra header
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.8549838Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:57.8870326Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4482550Z Removing includeIf entries pointing to credentials config files
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4496099Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4785247Z includeif.gitdir:D:/a/gzkit/gzkit/.git.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4786339Z includeif.gitdir:D:/a/gzkit/gzkit/.git/worktrees/*.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4786786Z includeif.gitdir:/github/workspace/.git.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4787266Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.4831805Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/gzkit/gzkit/.git.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.5112259Z D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.5160045Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/gzkit/gzkit/.git.path D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.5475602Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:D:/a/gzkit/gzkit/.git/worktrees/*.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.5750035Z D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.5805312Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:D:/a/gzkit/gzkit/.git/worktrees/*.path D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.6127618Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.6409192Z /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.6450887Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.6765329Z [command]"C:\Program Files\Git\bin\git.exe" config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.7033460Z /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.7075066Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:58.7385316Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+check (windows-latest)	Post Run actions/checkout@v6	2026-09-05T17:46:59.2880997Z Removing credentials config 'D:\a\_temp\git-credentials-64dec103-29ff-49a2-bc32-3f9c4ef908fa.config'
+check (windows-latest)	Complete job	﻿2026-09-05T17:46:59.3098620Z Cleaning up orphan processes
+check (windows-latest)	Complete job	2026-09-05T17:46:59.3933420Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: astral-sh/setup-uv@v6. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

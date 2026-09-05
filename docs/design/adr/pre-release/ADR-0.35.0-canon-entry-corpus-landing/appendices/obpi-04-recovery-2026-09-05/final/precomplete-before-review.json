@@ -1,0 +1,72 @@
+{
+  "obpi_id": "OBPI-0.35.0-04-section-ownership-and-ratchet",
+  "ready": false,
+  "checks": [
+    {
+      "name": "brief_readiness",
+      "ok": true,
+      "message": "passes --authored validation (OBPI-0.35.0-04-section-ownership-and-ratchet.md)",
+      "remediation": null
+    },
+    {
+      "name": "reconcile_idempotent",
+      "ok": true,
+      "message": "no pending frontmatter rewrites",
+      "remediation": null
+    },
+    {
+      "name": "lock_held",
+      "ok": true,
+      "message": "lock present at .gzkit/locks/obpi/OBPI-0.35.0-04-section-ownership-and-ratchet.lock.json",
+      "remediation": null
+    },
+    {
+      "name": "arb_receipts",
+      "ok": true,
+      "message": "1185 ARB receipt(s) present (newest: arb-step-behave-556144265c2446a0a6a99090bb23cf23.json)",
+      "remediation": null
+    },
+    {
+      "name": "plan_audit_receipt",
+      "ok": true,
+      "message": "PASS receipt at .plan-audit-receipt-OBPI-0.35.0-04-section-ownership-and-ratchet.json",
+      "remediation": null
+    },
+    {
+      "name": "brief_headings",
+      "ok": true,
+      "message": "evidence headings are H3 (or absent)",
+      "remediation": null
+    },
+    {
+      "name": "behave_req_coverage",
+      "ok": true,
+      "message": "7 BEHAVIOR REQ(s) all covered (test or scenario)",
+      "remediation": null
+    },
+    {
+      "name": "task_envelope_coherence",
+      "ok": true,
+      "message": "No seq=01-only-without-req_atomic residue; completion will not reopen the gate.",
+      "remediation": null
+    },
+    {
+      "name": "adversarial_validation",
+      "ok": false,
+      "message": "Step 4b records refuted",
+      "remediation": "Read the Step 4b section and establish which verdict STANDS \u2014 this check cannot tell from prose. If the refutation was overturned in a later round, say so in the section. If it stands, either return to Stage 2 and fix the refuted claim, or complete with the refutation recorded: --adversary-verdict refuted --adversary-resolution '<what was fixed and how the adversary's own check was re-run>'. A known refutation must never be handed to the operator dressed as clean."
+    },
+    {
+      "name": "operator_block",
+      "ok": true,
+      "message": "no outstanding operator ruling",
+      "remediation": null
+    },
+    {
+      "name": "stage2_dispatch",
+      "ok": true,
+      "message": "--- Stage-2 Persona Dispatch (mandated by the ceremony; never inferred) ---\n\n| Role | Independent input | Source |\n|------|-------------------|--------|\n| Implementer | DISPATCHED | dispatch record in ledger |\n| SpecReviewer | DISPATCHED | dispatch record in ledger |\n| QualityReviewer | DISPATCHED | dispatch record in ledger |\n\nDISPATCH MODE: DISPATCHED \u2014 3 of 3 mandated roles produced receipted independent input.",
+      "remediation": null
+    }
+  ]
+}
