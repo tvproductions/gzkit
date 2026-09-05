@@ -66,7 +66,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | There is no size, lane, or kind exception to Step 4b. "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
 | "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch 4b in the same turn as 4a. |
 | "An independent Claude subagent is fine for 4b — I don't need Codex" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. "It was convenient" is not a fallback reason. |
-| "The adversary is there to find problems, so a round that confirms the feature works is a soft round" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |
+| "The adversary is there to find problems, so a round that confirms the feature works is a soft round" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never traces the feature doing its job, has not done the job. |
 | "The adversary refuted again, so I'll fix these findings and re-run" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
@@ -731,16 +731,39 @@ Refutation remains essential, but as a METHOD:
 
 1. Re-derive the claim independently.
 2. Try hard to falsify it within the declared scope.
-3. Demonstrate the intended behavior positively.
+3. Trace the intended behavior positively — the path that makes the feature WORK, not
+   only the paths that refuse.
 4. Corroborate only if both directions hold.
 
 > **Purpose:** independently corroborate correctness.
-> **Method:** adversarially attempt to falsify it.
+> **Method:** adversarially attempt to falsify it, **by reading**.
 > **Boundary:** the brief, requirements, and threat model.
-> **Pass condition:** positive behavior demonstrated and no critical/high in-scope defect remains.
+> **Pass condition:** the intended behavior traced positively in the code and the tests that
+> pin it, and no critical/high in-scope defect remains.
 
 That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
 unbounded argument.
+
+**THE ADVERSARY CANNOT EXECUTE, AND THE PASS CONDITION IS WORDED FOR THAT (operator ruling
+2026-09-04).** `codex-companion.mjs` hardcodes `sandbox: "read-only"` on the `adversarial-review`
+path — line 414, a literal, with no flag reaching it, while the generic `task` path one function
+below honours `request.write`. So a Step 4b round can read the repository and cannot run one
+command in it: no crash matrix, no concurrency matrix, no mutation sweep, no negative control.
+This is a permanent property of the mandated transport, not a bad round, and it is why the pass
+condition above says **traced**, never *demonstrated*. Tracked at **GHI #961**.
+
+Two consequences a future round must not blur:
+
+- **Do not ask the adversary to run anything.** An unrunnable ask returns findings about the
+  reviewer's own coverage, and those enter a verdict that gates the pipeline — the #941 shape,
+  where a PASS-shaped review reported CONCERNS because the reviewer could not execute. Ask for
+  citations, traces, and readings of the tests.
+- **Executed proof is Step 4a's burden, and Step 4b AUDITS it rather than reproducing it.** The
+  mutation discipline — delete one guard in isolation, run its named test, confirm it FAILS for
+  the right reason, restore byte-identically, then re-run the WHOLE set — belongs to the
+  implementing agent. Step 4b's job is to read that record adversarially and say whether it
+  proves what it claims. Nobody independently RE-RUNS it; that residual is real, it is disclosed
+  here rather than papered over, and it is the substance of GHI #961.
 
 **The June-24 framing confused the reviewer's TECHNIQUE with its OBJECTIVE.**
 *"Your job is to refute"* creates a motivated critic that can continually expand
@@ -750,18 +773,18 @@ refusal paths while none demonstrated that the feature still worked.
 
 Step 4a is authored by the same agent that may have fabricated it, so Step 4b does
 not take 4a's word for anything: it RE-DERIVES the completion claim from the REQs
-and the repository and must paste observed command output for every check. The
-operator attests holding **both** outcomes.
+and the repository, and must cite `file:line` and the exact asserting test for every
+check rather than restating 4a's summary. The operator attests holding **both** outcomes.
 
 **Confirmation must be EARNED, not inferred from silence.** "I looked and found nothing" is
-not a confirmation. A corroborating round demonstrates, with pasted output, that each guard
-FIRES when it should AND does NOT fire when it should not — a legitimate operation still
-succeeds. A guard never made to fire is a guard not confirmed; a refusal path never exercised
-with a legitimate input is a false-positive risk not ruled out. Ask for both directions
-explicitly: six rounds on OBPI-0.35.0-04 tested refusals and not one asked whether the
+not a confirmation. A corroborating round establishes, by citation, that each guard FIRES when
+it should AND does NOT fire when it should not — that a legitimate operation still reaches the
+success path. A guard whose firing path is never traced is a guard not confirmed; a refusal path
+never followed with a legitimate input is a false-positive risk not ruled out. Ask for both
+directions explicitly: six rounds on OBPI-0.35.0-04 tested refusals and not one asked whether the
 feature still worked.
 
-**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + does-not-trust-4a framing (re-derive from the REQs and the repo; adversarial probing as method) + evidence-backed (pastes real command output)* — are necessary but NOT sufficient: "independent context" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.
+**The adversary must satisfy three properties AND be selected by the binding tier order.** The properties — *independent context + does-not-trust-4a framing (re-derive from the REQs and the repo; adversarial probing as method) + evidence-backed (cites real `file:line` and the asserting test — it cannot run commands, GHI #961)* — are necessary but NOT sufficient: "independent context" does not make the vendor interchangeable. A Claude validating Claude satisfies all three properties and still shares this agent's failure modes, which is the exact blind spot Step 4b exists to break. Vendor order is therefore **binding, not advisory** — you do not get to pick a lower tier because it is the frictionless path.
 
 **Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**
 
@@ -841,7 +864,7 @@ catch.
 
 > This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` no longer preserves name inference for a tier-1 claim — GHI #780 retired that path after measuring that it was not a legacy tail but the only route in use (of 17 recorded `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor by name).
 
-**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and DEMONSTRATE the feature working, not merely failing to break. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with pasted output per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
+**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and TRACE the feature working, not merely failing to break. **The adversary cannot execute (GHI #961), so never ask it to run a command** — ask it to follow the success path through the code and name the test that pins it. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with a `file:line` citation and the asserting test named per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
 
 > **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator
 > ruling 2026-09-04, verbatim: *"NOT-REFUTED is arguably a passive way of saying CORROBORATED"*.
@@ -853,10 +876,10 @@ catch.
 >
 > Still require BOTH lines from the adversary — the `CORROBORATED | CORROBORATED-WITH-CAVEATS |
 > NOT-CORROBORATED` line and the enum word — because the distinction that matters is
-> *attacked hard and demonstrated working* versus *looked and found nothing*, and that
-> distinction lives in the PROMPT's demand for positive demonstration, never in the verdict
+> *attacked hard and traced it working* versus *looked and found nothing*, and that
+> distinction lives in the PROMPT's demand for a positive trace, never in the verdict
 > word. Two rounds can both land on `not-refuted` and mean entirely different things; the
-> pasted evidence is what tells them apart. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
+> cited evidence is what tells them apart. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
 
 **Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
 
