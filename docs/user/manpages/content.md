@@ -284,26 +284,127 @@ $ echo $?
 
 #### Fail-closed paths
 
-The command **fails closed** (exit 1, nothing written) when `--attestor` or
-`--reason` is empty or whitespace-only, when `--section` names no id in the
-surface's ownership declaration, or when the named section is already
-`unowned` — there is nothing to raise the floor by. Exit 2 signals a partial
-write: the declaration on disk already carries the raised floor but the
-ledger witness failed, so the operator is told exactly which surface is out
-of sync rather than a bare non-zero.
+Every refusal prints what failed, why it is forbidden (citing the binding
+REQ), and a governed next step. **Exit 1** means nothing was written and the
+retry is yours to make; **exit 2** means the transaction reached a store, so
+recovery state is RETAINED and the next step completes or reconciles it rather
+than starting over.
+
+| Exit | Refused when |
+|------|--------------|
+| 1 | `--attestor` or `--reason` is empty or whitespace-only |
+| 1 | `<surface>` does not resolve to the identity its ownership declaration declares — a different file, a missing file, or a declaration that does not declare itself |
+| 1 | the surface cannot be read, or is not UTF-8 |
+| 1 | the ownership declaration is missing, unreadable, malformed, or fails `load_declaration` |
+| 1 | `--section` names no id in the declaration |
+| 1 | the named section is already `unowned` — there is nothing to raise the floor by |
+| 1 | the surface's bytes changed between measurement and the commit, checked before either store is touched |
+| 1 | a pending transition for a DIFFERENT section was completed by this run; the requested section is a separate run |
+| 2 | the measured source could not be retained, or the journal could not be written |
+| 2 | the declaration could not be written, or its durability barrier failed |
+| 2 | the ledger witness could not be appended |
+| 2 | the surface changed DURING the un-owning, after the declaration and the witness were both durable |
+| 2 | a pending journal cannot be proven to continue the declaration on disk |
+| 2 | the surface no longer carries the bytes a pending transition was measured against — recovery state E below |
+| 2 | the transition was witnessed by an EARLIER run and the source is unreconciled — the state D+E pair; the witness stands, the claim of clean completion does not |
+| 2 | THIS transaction's recovery cleanup could not complete — one of its own retained artifacts could not be removed for a reason other than already being gone |
+| 2 | the journal's absence could not be made DURABLE after this run removed it — its dependent recovery material is preserved untouched |
+| 2 | the journal's absence could not be made DURABLE on an entry that found none — every orphaned artifact is preserved and no new transaction starts |
+| 2 | a declaration snapshot consumed under the lock declares a different identity than the transaction's target |
+
+#### Recovery protocol
+
+`gz content unown` updates two stores — a mutable declaration and the
+append-only ledger — and neither order is safe alone, so the pending
+transition is journalled before either is touched. The atomic writer renames
+and *then* syncs the parent directory, so **every** write has a window where
+the swap landed and its durability barrier did not. Re-running the same
+command is what completes an interrupted move. Below is what each interrupted
+state means; every refusal names the state its instruction was derived from.
+
+| State | What is established | Re-running does |
+|-------|---------------------|-----------------|
+| A | the journal persisted; the declaration is still the predecessor | re-validates the journal against the declaration on disk, writes the successor, witnesses it, clears the journal |
+| B | the declaration carries the new floor and its `floor_event_id`; no witness; **durability UNCONFIRMED** | re-establishes the durability barrier BEFORE witnessing or clearing; a persistent barrier failure keeps refusing with the journal retained |
+| C | the same shape on disk as B — the two are **indistinguishable by inspection** | the same action; the retry does not guess between them |
+| D | the ledger carries the transition's `event_id` | clears the journal and the retained material — **only when the source axis is also reconciled** |
+| E | the surface no longer matches the journalled digest | refuses, extracts the retained measured bytes beside the surface, and names the reconciliation |
+| **D+E** | the witness is durable AND the source has moved | **refuses** — the witness is preserved unduplicated, every retained artifact is kept, your edit is untouched, and the exit is non-zero |
+
+**Three obligations, established separately (operator ruling, 2026-09-05).** A
+transition is *witnessed*, its source is *reconciled*, and its recovery material
+is *cleaned* — and establishing one never discharges the others. `E` is an
+ORTHOGONAL axis, not a fifth state: a transition in any of `A`–`D` may also have
+a moved source, and the `D+E` pair is reported as the pair. A durable witness
+does not mean the source is reconciled; an attempted unlink does not mean
+cleanup is complete.
+
+Consequences worth stating plainly:
+
+- **Never delete the journal because the ledger carries no `section_ownership_unowned` row.** States B and C both have an absent witness with the declaration already replaced, so an absent witness does not establish that nothing landed — deleting on that signal destroys the only record able to complete the transition.
+- **Never hand-edit the ownership declaration.** Its floor must stay witnessed by a real ledger event, and an edited one is refused on the next load.
+- **The command never rewrites the surface.** In state E it copies the retained measured bytes to `<surface>.unowning-recovery` and leaves your edit alone.
+- **A refusal never hands you a step it cannot keep.** When the measured bytes could not be extracted — unreadable, digest mismatch, or a failed write — the numbered reconcile sequence is withheld and that branch names its own next step instead. Naming a path to restore from without proving it holds the journalled bytes is an instruction the command cannot keep.
+
+```console
+$ gz content unown Doc.md --section alpha-section --attestor "g0" --reason "materialized as prose doc instead"
+Error: surface 'Doc.md' changed DURING the un-owning of section 'alpha-section': its bytes changed.
+Why forbidden: THREE OBLIGATIONS ARE SEPARATE HERE and exactly one is discharged -- transition witnessed; source reconciliation pending; recovery cleanup pending. THE STORES ARE IN § Recovery Protocol state D and the SOURCE IS IN state E -- the two are orthogonal axes, and this exit is the pair. THE TRANSITION DID LAND: the declaration carries the new floor and the ledger carries its witness, and neither is retracted -- an append-only witness is a truthful record of what was committed. But the floor was measured against the surface as it was journalled, so the committed declaration may record a byte span the surface no longer has, and `load_declaration` fails closed while the live span exceeds the floor (REQ-0.35.0-04-05). A durable witness does NOT establish that the source was reconciled, so what is refused here is the claim that this completed cleanly. The journal is RETAINED at '.../.gzkit/ownership/Doc.md.json.journal' with the measured source beside it, the extract is retained beside the surface, and your edit to the surface is untouched and was NOT reverted.
+  The bytes this transition measured are extracted to '.../Doc.md.unowning-recovery', and the immutable original is retained at '.../.gzkit/ownership/Doc.md.json.journal.source'. Reconcile in this order, which preserves your edit and ends with a declaration `load_declaration` accepts: 1. save your current work -- copy '.../Doc.md' to a path OUTSIDE this repository; those bytes stay yours and nothing below reads them; 2. diff that copy against '.../Doc.md.unowning-recovery' to see what moved; 3. restore the measured bytes over '.../Doc.md'; 4. re-run the same command, which has nothing left to complete -- the transition is already witnessed -- and clears the journal and the retained material. Your saved copy is untouched by every step above. RE-APPLYING IT IS A SEPARATE DECISION about the coverage claim and is never part of this recovery: an edit that grows an unowned section past the recorded floor stops the declaration loading at all, so raise the floor with `gz content unown` while the measured bytes are still in place and put your edit back afterwards -- never re-apply it first and then reach for a command whose own initial load rejects it. Do NOT delete the journal and do NOT hand-edit the ownership declaration -- its floor must stay witnessed by a real ledger event, and an edited one is refused on the next load.
+$ echo $?
+2
+```
+
+Captured against a small fixture surface by running the command; project-root-absolute
+paths are elided to `...`. This is the **D+E pair** — the transition was witnessed by an
+earlier run and the source then moved — which is the state that previously reported clean
+success and destroyed the recovery material.
+
+#### Recovery artifacts
+
+An interrupted run leaves these behind. They are cleared together once the
+transition is complete AND its source is reconciled — cleanup is its own
+obligation, and it is bounded by a durability barrier: the journal's absence is
+made durable BEFORE any file that depends on it is deleted or reused, and a
+barrier that cannot be established preserves everything and refuses.
+
+Past that boundary the two kinds of failure part company. A removal failure
+among **this transaction's own** material keeps what remains and reports the
+storage fault rather than reporting success. A removal failure on **unrelated
+orphan residue** — material that outlived some earlier episode's journal —
+**warns and lets fresh work proceed**, because blocking a new transaction on an
+old leftover reports a fault the new run did not cause. The warning stays
+attached to the orphan through finalization, so the same leftover is never
+re-reported as the new transaction's cleanup failing. A warning buys no
+shortcut: the declaration is still validated and the new transaction's own
+recovery snapshot is still persisted.
+
+| Path | Holds |
+|------|-------|
+| `.gzkit/ownership/<surface>.json.journal` | the pending transition — both floors, the section, the attestor, the reason, the deterministic `event_id`, the parent it chains from, and the serialized successor declaration |
+| `.gzkit/ownership/<surface>.json.journal.source` | the MEASURED SOURCE BYTES, immutable for the life of the journal. A digest names the bytes recovery needs; only the bytes supply them |
+| `<surface>.unowning-recovery` | written by a state-E refusal, beside the surface, for you to diff and restore from |
+| `.<name>.<random>.tmp` beside any of the above | the atomic writer's staging file. An interruption mid-write leaves one holding the MEASURED SOURCE BYTES; recovery sweeps them, and `.gitignore` covers the whole family — final and staging, at every depth, because a surface does not only live at the repository root |
+
+The retained source is recovery material, never a second copy of canon —
+nothing loads from it, and the source surface is never rewritten from it.
 
 #### Ledger witnesses
 
-A successful raise emits exactly one `section_ownership_unowned` event,
-after the declaration write succeeds:
+A successful raise emits exactly one `section_ownership_unowned` event, after
+the declaration write succeeds:
 
 | Event | Carries |
 |-------|---------|
-| `section_ownership_unowned` | the surface, the section id, the prior and new `unowned_byte_floor`, the attestor, and the reason |
+| `section_ownership_unowned` | the surface, the section id, the digest of the complete section map that landed, the prior and new `unowned_byte_floor`, the attestor, and the reason |
+
+The event `id` is DETERMINISTIC — derived from the transition's own content and
+the floor it chains from — so a retry re-mints the same id and completing an
+interrupted append is idempotent by construction:
 
 ```console
-$ cat .gzkit/ledger.jsonl
-{"schema":"gzkit.ledger.v1","event":"section_ownership_unowned","id":"section-ownership-unowned-AGENTS.md-governance-doctrine-surfaces-2026-09-02T15:45:20.303343+00:00","ts":"2026-09-02T15:45:20.303343+00:00","surface":"AGENTS.md","section":"governance-doctrine-surfaces","prior_unowned_byte_floor":8637,"new_unowned_byte_floor":10977,"attestor":"g0","reason":"materialized as prose doc instead"}
+$ tail -1 .gzkit/ledger.jsonl
+{"schema":"gzkit.ledger.v1","event":"section_ownership_unowned","id":"section-ownership-unowned-Doc.md-alpha-section-ff1301bc5136427b","ts":"2026-09-05T10:01:23.556123+00:00","surface":"Doc.md","section":"alpha-section","sections_digest":"9b85bce39e25102c6cc439ef0ad84664","prior_unowned_byte_floor":26,"new_unowned_byte_floor":63,"attestor":"g0","reason":"materialized as prose doc instead"}
 ```
 
 ### reconcile-retirements

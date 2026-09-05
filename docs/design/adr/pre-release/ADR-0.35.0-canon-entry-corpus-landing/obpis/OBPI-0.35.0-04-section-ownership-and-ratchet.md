@@ -333,9 +333,67 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
-```text
-# Paste test output here
-```
+**Executed mutation sweep — 18 guards, all witnessed.** Each row deletes ONE
+guard from `src/gzkit/commands/content/unown.py` in isolation, runs only that
+guard's named test, and restores the file. Base
+`sha256 a4c2e3ad45e3e0ffff9941b5dcbe0aac71141308da60365e69971eedbfe93500`; every mutation ran AFTER `uv run ruff format .` and the file was
+verified byte-identical to that SHA after each restore.
+
+| Guard deleted | Named test's observed failure |
+|---|---|
+| G1 fresh-path snapshot identity check | `AssertionError: 2 != 1 : Error: the witness source declaration declares identity 'doc.md', but this transaction's target is 'Doc.md' ('/private/var/fo` |
+| G2 unlanded-branch snapshot identity check | `AssertionError: 'the on-disk predecessor declares identity' not found in "Error: the landed declaration declares identity 'Other.md', but this transac` |
+| G3 landed-branch snapshot identity check | `AssertionError: 'the landed declaration declares identity' not found in "Error: the witness source declaration declares identity 'Other.md', but this` |
+| G4 witness-site identity check | `AssertionError: SystemExit not raised` |
+| G5 witness-site transition validation | `AssertionError: SystemExit not raised` |
+| G6 entry different-file refusal | `AssertionError: 0 == 0 : Un-owned section 'alpha-section' of 'Doc.md'. Unowned-byte floor rose from 26 to 83 (+57 B). Attested by g0: probe` |
+| G7 entry missing-file arm | `AssertionError: 'does not exist' not found in 'Error: surface \'Missing.md\' does not resolve to the identity its ownership declaration declares: the` |
+| G8 _declared_surface fail-closed posture | `AssertionError: OSError not raised` |
+| G9 journal-identity check | `AssertionError: 0 != 2 : Completed the interrupted un-owning of section 'alpha-section' of 'Doc.md'. Unowned-byte floor rose from 26 to 83. Attested b` |
+| G10 pre-commit recheck raw-byte digest | `AssertionError: 2 != 1 : the recheck must refuse BEFORE either store is touched; exit 2 means the transition already landed. Error: surface 'Doc.md' c` |
+| G11 fresh-commit finalization digest guard | `AssertionError: 0 == 0 : the command must not report clean success when the surface moved inside the transaction. Un-owned section 'alpha-section' of` |
+| G12 replay finalization digest guard | `AssertionError: 0 == 0 : replay must not report clean recovery after the journalled surface changed. Completed the interrupted un-owning of section 'a` |
+| G13 alias canonicalization arm | `AssertionError: 1 != 0 : Error: the loaded declaration declares identity 'Doc.md', but this transaction's target is 'doc.md' ('/private/var/folders/7y` |
+| G14 next-step omits a declaration hand-edit | `` AssertionError: '  Re[66 chars]or "<your name>" --reason "<why>"`, or repair the declaration.' != '  Re[66 chars]or "<your name>" --reason "<why>"`.' `` |
+| G15 replay read-failure reported as a read failure | `AssertionError: 'cannot read the ownership declaration' not found in "Error: the on-disk predecessor declares identity None, but this transaction's ta` |
+| G16 refusal exit code / residue pairing | `AssertionError: 2 != 1 : Error: the loaded declaration declares identity 'doc.md', but this transaction's target is 'Doc.md' ('/private/var/folders/7y` |
+| G17 recovery-witness fixture sanity | `AssertionError: 0 != 1 : fixture sanity: this invocation must have completed the pending transition, or there is no durable change to contradict. Comp` |
+| G18 forged-journal next step omits a hand-edit | `AssertionError: 'by hand' unexpectedly found in "Error: the pending-transition journal '/private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpt1` |
+
+**What this sweep does NOT establish — two limits, stated because a sweep reads
+as stronger than it is.**
+
+1. **Each mutation runs only its ONE named test.** A row therefore proves *"this
+   test witnesses this guard"*. It never proves *"no other test depended on that
+   guard"*, and it never proves the guard is the only thing standing between the
+   defect and the operator. Four of the identity checks demonstrably overlap:
+   deleting any one still leaves a sibling refusing the same fixture, visible in
+   the G1/G2/G3 messages, where the refusal that arrives names a *different*
+   phase than the test pinned. Those tests remain guards for their own checks
+   only because each pins its phase string.
+2. **This is a mutation sweep, NOT an adversarial acceptance verdict.** It says
+   the tests are sensitive to the code they name. It says nothing about whether
+   the design is right, whether the threat model is correctly drawn, or whether
+   an unmodelled attack exists. Step 4b remains the arm that answers those.
+
+**A harness defect found while running it — and it cuts both ways.** Two
+mutations that delete byte-identical text produce files of the SAME SIZE, and
+CPython invalidates source caches on `(mtime-seconds, size)`. Back-to-back
+mutations therefore collide and the second subprocess imports the FIRST
+mutation's bytecode. Measured on G11/G12: G12 reported `PASSED — VACUOUS` inside
+the sweep and `FAIL` in isolation, reproducibly, twice.
+
+The contamination is **not** biased toward false PASSes. An observed FAILURE
+could equally be a prior mutation's code state rather than the one the row
+names — the subprocess simply runs whichever bytecode the cache retained, and a
+neighbouring mutation's tree can fail a test just as easily as it can pass one.
+Every row in an affected run is suspect in both directions, which is why no row
+above is carried over from a pre-fix run.
+
+The fix is a private `PYTHONPYCACHEPREFIX` per iteration, applied
+**unconditionally** to every mutation rather than only to the colliding pair, so
+no row in the table above retains the collision. The whole sweep was re-run from
+scratch under the fix.
 
 ### Code Quality
 
@@ -425,19 +483,41 @@ lint `arb-ruff-0381d7a4a04d46d3a971cb2d692fb646`; typecheck
 
 ### Step 4b — Independent Adversarial Validation
 
-**Verdict: REFUTED / `CORROBORATION: NOT-CORROBORATED` (round 8, the STANDING verdict).
-Receipt `arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, `exit_status: 0`,
-commit `b5138874`, dispatched 2026-09-04T01:54:35Z; the log was grepped for `Turn failed` /
-`Codex error` / `flagged for possible` / content-filter markers and carries none, and
-`stdout_truncated` is `False`.** Round 8 returned two high and one medium finding, ALL in
-scope. All three are FIXED at `a90a8d14` with mutation-verified tests.
+**Verdict: REFUTED / `CORROBORATION: NOT-CORROBORATED` (round 11, the STANDING verdict).
+Receipt `arb-step-codexadversary-cc9aa913064b4550807e717c51982f4b`, `exit_status: 0`,
+duration 925s, `stdout_truncated: False`, no failure markers. ONE HIGH and TWO MEDIUM
+in-scope findings, no critical — recorded at § Round 11. **Round 10's two high findings are
+DISCHARGED**; the high in round 11 is a NEW consequence of the D-beats-E correction.
 
-**NO ADVERSARY ROUND HAS RUN AGAINST THE CURRENT TREE.** `a90a8d14` is the last commit
-touching `src/gzkit/commands/content/unown.py`, and it landed *after* round 8 observed the
-tree. The standing verdict therefore describes a tree that no longer exists, exactly as
-rounds 1-7 do — the difference is that no later round has yet replaced it. A completion
-presented today would be presented against a REFUTED verdict whose findings are discharged
-but whose discharge is uncorroborated. Round 8 additionally **ran in a read-only sandbox**
+Round 10 is SUPERSEDED as the standing verdict. Its receipt was
+`arb-step-codexadversary-658c8ce606114de39730cd01a66e5f3d`, `exit_status: 0`,
+commit `397301c6` + the fixed-target working tree, dispatched 2026-09-05, duration 689s;
+log grepped for `Turn failed` / `Codex error` / `flagged for possible` / content-filter
+markers and carries NONE; `stdout_truncated` is `False`. **TWO HIGH in-scope findings, no
+critical, no medium** — both on a NEW root (recovery durability), recorded at § Round 10.
+**Round 9's root is CLOSED**: round 10 positively demonstrated the fixed-target correction
+holding across fresh, CRLF, unlanded-replay and landed-replay.
+
+Round 9 is SUPERSEDED as the standing verdict. Its receipt was
+`arb-step-codexadversary-dd8d6bbcb51c4f4a8d1042687a90964b`, `exit_status: 0`,
+commit `397301c6`, dispatched 2026-09-05T06:18:06Z; the log was grepped for `Turn failed` /
+`Codex error` / `flagged for possible` / content-filter markers and carries none, and
+`stdout_truncated` is `False`.** Round 9 returned ONE high and THREE medium findings, no
+critical, all in scope. It is recorded in full at § Round 9 below.
+
+**Round 8 is SUPERSEDED as the standing verdict.** Its receipt was
+`arb-step-codexadversary-9a16acc9764848088cfa9130a98db71b`, `exit_status: 0`, commit
+`b5138874`, dispatched 2026-09-04T01:54:35Z; it returned two high and one medium finding,
+ALL in scope, and all three are FIXED at `a90a8d14` with mutation-verified tests. Round 9
+re-derived those three fixes independently and confirmed each — see § Round 9.
+
+**THAT GAP IS NOW CLOSED — ROUND 9 OBSERVED THE CURRENT TREE.** Until 2026-09-05 no
+adversary round had: `a90a8d14` is the last commit touching
+`src/gzkit/commands/content/unown.py` and it landed *after* round 8 observed the tree, so
+the standing verdict described a tree that no longer existed. Round 9 ran against commit
+`397301c6` and independently re-derived all three of round 8's fixes. It did NOT converge
+the gate — it found a new high — but the discharge of round 8 is no longer uncorroborated.
+Round 8 additionally **ran in a read-only sandbox**
 (*"The writable CLI suite could not run because the sandbox has no writable temporary
 directory"*), so it could execute neither the failure/concurrency matrix nor the mutation
 sweep and found its three defects by reading. Its NOT-CORROBORATED is therefore partly a
@@ -466,14 +546,14 @@ the prior round, STOP dispatching and bring the design decision to the operator.
 and 4 each patched a different surfacing of one root cause at roughly 3h per cycle; the
 operator ruled round 4's design in a single exchange and it closed in one pass.
 
-**Eight rounds ran.** Each round's findings were repaired before the next was dispatched, so
-every round re-ran against a repaired tree. **Round 8 is the verdict that STANDS** — rounds
-1-7 are recorded below as history, and their verdicts describe trees that no longer exist.
+**Eleven rounds ran.** Each round's findings were repaired before the next was dispatched, so
+every round re-ran against a repaired tree. **ROUND 11 IS THE VERDICT THAT STANDS** — rounds
+1-10 are recorded below as history, and their verdicts describe trees that no longer exist.
 This section states that explicitly because `gz obpi precomplete` reads the section for a
-standing verdict and cannot infer supersession from prose. The same reading rule applies to
-round 8 itself: its findings are discharged at `a90a8d14`, which no round has seen.
+standing verdict and cannot infer supersession from prose. Round 9 is the FIRST round whose
+verdict describes the tree as it currently is.
 
-**Rounds 1-6 were prompted to REFUTE; rounds 7 and 8 were prompted to CORROBORATE.** That
+**Rounds 1-6 were prompted to REFUTE; rounds 7, 8 and 9 were prompted to CORROBORATE.** That
 wording changed mid-gate on an operator ruling (2026-09-04) and the change is load-bearing,
 not cosmetic — a model told *"your job is to REFUTE this, not to confirm it"* escalates until
 something falls, and its best available outcome is *"I could not refute it"*, which is absence
@@ -814,6 +894,177 @@ the replay-path finalization guard, and recovery-always-terminates.
 **A scalar has stood in for a structure FOUR times in this OBPI** — the map at round 4, the
 direction at round 5, the span at rounds 6 and 7. When a check compares a number where the
 property is a set or a map, assume that is the next finding.
+
+#### Round 9 — THE STANDING VERDICT, and the first round ever to observe the current tree
+
+Receipt `arb-step-codexadversary-dd8d6bbcb51c4f4a8d1042687a90964b`, `exit_status: 0`,
+commit `397301c6`, dispatched 2026-09-05T06:18:06Z, duration 737s. `--scope branch
+--base 5108d7cf`, dispatched through the Codex plugin runtime
+(`node .../codex-companion.mjs adversarial-review --wait`) — tier 1, cross-vendor. The log
+was grepped for `Turn failed` / `Codex error` / `flagged for possible` / content-filter
+markers and carries NONE; `stdout_truncated` is `False`.
+**`CORROBORATION: NOT-CORROBORATED` / `VERDICT: REFUTED`, one high and three medium
+findings, no critical, all in scope.**
+
+**This is the round the previous eight could not be: it saw `a90a8d14`.** Prompted from the
+operator's four-part Purpose / Method / Boundary / Pass-condition block, bounded by
+§ Threat Model, and told explicitly that `No usable temporary directory` is an environmental
+limit rather than a defect. It re-derived all three of round 8's fixes independently and
+**confirmed each**: both fresh and replay paths refuse a moved surface (`exit 2 journal True
+appended 1`) and accept a restored one (`exit 0 journal False appended 1 reload ACCEPTED`);
+raw-byte reads round-trip LF and CRLF to different digests; different-section recovery
+reports what it recovered, exits 1, and leaves the requested section owned.
+
+**IT ALSO DEMONSTRATED THE FEATURE WORKING — the thing six rounds never did.** Legitimate
+un-owning printed `Unowned-byte floor rose from 26 to 83 (+57 B)` and reloaded. The ratchet
+behaved in all three directions: `increase27 REFUSED writes 0 appended 0`, `equality26
+ACCEPTED`, `decrease18 ACCEPTED`. Blank attestor/reason, unknown and already-unowned
+sections, undeclared/stale/duplicate section ids and invalid UTF-8 were all refused. A
+title change with an unchanged section id loaded successfully (REQ-06). Baseline reported
+`10/22 owned sections, 8637/46876 unowned bytes, 81.57479307108116% coverage` with the
+per-section histogram (REQ-07), and empty/one-entry corpus controls moved the measurements
+appropriately.
+
+| # | Severity | Finding (adversary's own words, abridged) | Disposition |
+|---|---|---|---|
+| 1 | high | "Bind the witness to the declaration's canonical surface identity" (`unown.py:910-915`). On a case-insensitive filesystem `AGENTS.md` and `agents.md` are the same file. The command copies the declaration's surface unchanged but records THE CALLER'S SPELLING in the witness: `surface_samefile True`, `declaration_samefile True`, `PARSED_CLI exit 0 appended 1 journal False reload REJECTED` — the reload reporting *"declares surface 'AGENTS.md' ... but that event witnesses surface 'agents.md'."* A canonical retry also failed. Only the CLI argument changed; nothing was forged. **The command destroys recovery state while reporting success for a declaration its own loader then rejects.** | **OPEN — ESCALATED TO THE OPERATOR.** In scope and high, so the gate does not converge. See § Round 9 — same-root escalation below. |
+| 2 | medium | "Preserve raw bytes in the pre-commit surface recheck" (`unown.py:791-798`). The initial read preserves CRLF but this `read_text` call normalizes to LF, so an unchanged valid CRLF surface ALWAYS appears changed: `CRLF raw_bytes 129 measured_bytes 129 roundtrips True initial_load ACCEPTED` then `exit 1 writes [] appended 0 journal False`. The LF control succeeded 26 -> 83. "The raw-byte digest fix is correct, but fresh CRLF operations cannot reach it successfully." | **OPEN.** This is ROUND 8 FINDING 2 AT A THIRD READ SITE — the same root, not a new one. Part of the escalation below. |
+| 3 | medium | "Make schema rejection fixtures otherwise valid" (`tests/content/test_ownership.py:884-893`). The enum, extra-property and negative-floor tests all omit the required `floor_event_id` and merely assert `ValidationError`, so each fails on `required` before reaching the constraint it names: `validators=['required', 'enum']`, `['additionalProperties', 'required']`, `['required', 'minimum']`. "Each test would therefore survive deletion of its named schema constraint." | **OPEN — three more vacuous fixtures.** Found by reading, not mutation (it cannot write). This is the SEVENTH, EIGHTH and NINTH vacuous fixture in this OBPI. |
+| 4 | medium | "Distinguish replay coherence refusal from the later digest refusal" (`tests/commands/test_content_unown.py:520-530`). `test_replay_refuses_to_complete_into_a_state_the_loader_would_reject` asserts only a nonzero exit and a retained journal, but its changed surface also trips the digest guard: `landed_span exit 2 journal True satisfies_test_final_assertions True` / `post_digest exit 2 ... True`. Removing the landed-span check would still pass this test through the digest refusal. | **OPEN — GUARD MASKING, THE THIRD RECORDED INSTANCE** in this OBPI (round 6's `_refuse_surface_changed_under_us` masked the read-inside-the-lock fix; round 8's digest guard masked round 7's coverage guard). |
+
+**Coverage limits the adversary declared itself**, verbatim: *"real filesystem crash
+durability, concurrent writers, directory-fsync recovery, Windows execution, or a complete
+mutation sweep"* could not be confirmed — *"In-memory adapters demonstrate control flow, not
+storage guarantees."* It also noted that the brief records ten mutation checks while stating
+its harness is gone, and that this *"cannot establish mutation coverage of every remaining
+test."* The read-only two-module run was `Ran 111 tests`, 21 passing and 90 erroring on the
+declared-environmental temp-directory signature; an isolated read-only subset ran `23 tests
+... OK`. It correctly reported the temp-directory errors as a coverage limit, not a defect —
+the prompt instruction worked.
+
+**SAME-ROOT ESCALATION — THIS IS WHY ROUND 10 WAS NOT DISPATCHED.** The skill's rule is that
+when a round's *Weakest point* names the same root as the prior round, stop dispatching and
+put the DESIGN decision to the operator. Round 9's weakest point, verbatim: *"surface
+identity is not consistently bound across the CLI argument, filesystem alias, declaration,
+and ledger witness."* Finding 1 is that root at the witness; finding 2 is round 8's own
+finding 2 at a THIRD read site, after round 8 fixed the initial read and the final digest.
+The brief already records that **a scalar has stood in for a structure four times here** —
+the map at round 4, the direction at round 5, the span at rounds 6 and 7. Findings 1 and 2
+are the fifth and sixth: a surface's IDENTITY is a canonical structure, and it is being
+carried as the caller's raw string; a surface's BYTES are the governed property, and they
+are being re-read through a decoder at each new site. Patching site three invites site four.
+The design question is whether the transaction should canonicalize surface identity and
+raw-byte reads ONCE at entry, rather than at each call site. That is an operator decision,
+not another fix cycle.
+
+#### Round 10 — THE STANDING VERDICT: round 9's root CLOSED, a NEW root opened
+
+Receipt `arb-step-codexadversary-658c8ce606114de39730cd01a66e5f3d`, `exit_status: 0`,
+duration 689s, `--scope branch --base 5108d7cf`, dispatched through the Codex plugin runtime
+(tier 1, cross-vendor). Log carries none of the four failure markers; `stdout_truncated` is
+`False`. **`CORROBORATION: NOT-CORROBORATED` / `VERDICT: REFUTED` — two HIGH findings, no
+critical, no medium.** The prompt stated the claim EXACTLY as round 9 did (bounded by the
+ledger precondition, not strengthened) per the operator ruling of 2026-09-05, and required the
+adversary to state the access each finding's reproduction requires.
+
+**THE FIXED-TARGET CORRECTION IS CORROBORATED.** Round 10 ran the real CLI and canonical
+loader against in-memory storage adapters and demonstrated, positively:
+
+```
+fresh_alias    {'identity': 'Doc.md', 'floor': 83, 'witnesses': 1, 'journal': False, 'source_unchanged': True, 'reload': 'ACCEPTED'}
+CRLF_alias     {'identity': 'Doc.md', 'floor': 88, 'witnesses': 1, 'journal': False, 'source_unchanged': True, 'reload': 'ACCEPTED'}
+unlanded_replay{'identity': 'Doc.md', 'floor': 83, 'witnesses': 1, 'journal': False, 'source_unchanged': True, 'reload': 'ACCEPTED'}
+landed_replay  {'identity': 'Doc.md', 'floor': 83, 'witnesses': 1, 'journal': False, 'source_unchanged': True, 'reload': 'ACCEPTED'}
+RATCHET 27 REFUSED writes 0 witnesses 0 reload ACCEPTED
+```
+
+Verbatim: *"All paths used Doc.md.json for locking/declaration, Doc.md.json.journal for
+journalling/cleanup, and Doc.md for the witness. Actual host resolution also returned: REAL
+targets_equal True identity AGENTS.md."* It also confirmed all four snapshot identity guards
+fired at their named phases, and — as instructed — classified the injected foreign-snapshot
+probes as **defence-in-depth evidence, not in-scope findings**. The acceptance boundary held.
+
+**The two HIGH findings are a DIFFERENT ROOT, so the same-root escalation rule does not fire.**
+Rounds 8 and 9 rooted in identity/bytes re-derived per call site; that is closed. Round 10's
+weakest point, verbatim: *"recovery treats a visible declaration as durably committed and a
+retained digest as sufficient recovery information. The fixed target resolves identity
+consistency, but neither assumption establishes recoverability."*
+
+| # | Severity | Finding (adversary's words, abridged) | Required access | Disposition |
+|---|---|---|---|---|
+| 1 | high | "Re-establish declaration durability during landed recovery" (`unown.py:887-898`). After `os.replace` succeeds but the directory fsync fails, retry sees the new `floor_event_id` and SKIPS the atomic writer — appends the witness, deletes the journal, and reports success without ever retrying the failed durability barrier. `REAL_WRITER first_exit 2 directory_fsync_attempts 2` then `REAL_WRITER retry_exit 0 fsync_calls 0 witnesses 1 journal False`. The declaration rename remains unconfirmed as durable when recovery reports completion. | **Ordinary CLI invocation + a failing directory fsync. No `.gzkit/` write access.** | **OPEN — IN SCOPE.** Adversary states explicitly: *"This is independent of the disclosed `Ledger.append` defects"* — so it is NOT covered by the GHI #952/#953 residual. The consequence (a later crash losing acknowledged state) is inferred from the missing barrier, not observed through a physical crash. |
+| 2 | high | "Preserve enough information to recover a changed surface" (`unown.py:1342`). Recovery requires the exact original surface digest, but the journal retains no original surface bytes. If an editor replaces the uncommitted text, neither a retry nor a request for another section can complete: `UNBACKED requested alpha-section exit 2`, `doc-title exit 2`, `alpha-section exit 2`, each reporting *"surface 'Doc.md' changed DURING the un-owning"*. **The retained journal permanently blocks further governed ownership transitions.** Restoring the exact old bytes succeeds — but those bytes are an undisclosed recovery prerequisite. | **Ordinary CLI invocation + an atomic append failure + editor access to the source surface. No declaration, journal or ledger edits.** | **OPEN — IN SCOPE.** A liveness defect: the governed path can reach a state only an out-of-band byte restore can leave. |
+
+**Both findings were produced by the PRODUCTION CLI**, not by hand-built state — the adversary
+notes the production CLI generated every recovery artifact in the second probe
+(`journal_source_fields ['surface', 'surface_digest']`).
+
+#### Round 11 — THE STANDING VERDICT: round 10 discharged, the D-beats-E correction overreached
+
+Receipt `arb-step-codexadversary-cc9aa913064b4550807e717c51982f4b`, `exit_status: 0`, 925s,
+`--scope branch --base 5108d7cf`, Codex plugin runtime (tier 1, cross-vendor).
+`stdout_truncated: False`; none of the four failure markers present. Prompt stated the claim
+EXACTLY as rounds 9 and 10 did, not strengthened. **`CORROBORATION: NOT-CORROBORATED` /
+`VERDICT: REFUTED` — one high, two medium, no critical.** Both replay branches, case-alias
+handling and ratchet behaviour were positively demonstrated.
+
+**Round 10's two high findings are discharged.** The recovery protocol landed as one design
+(five states plus the orthogonal source axis) rather than per-finding patches.
+
+| # | Sev | Finding (adversary's words, abridged) | Required access | Disposition |
+|---|---|---|---|---|
+| 1 | high | "Preserve reconciliation material when D also has a changed source" (`unown.py:1229-1233`). First invocation correctly refuses in D+E; the retry skips the source binding, DELETES both recovery copies, and reports completion while the loader still rejects the surface. `D+E retry_exit 0 floor 83 span 102 journal False snapshot False extract False`, then `advertised_raise alpha-section exit 1` / `doc-title exit 1` with *"declares unowned_byte_floor 83, but the summed byte span … is 102, which exceeds it."* The advertised re-run cannot repair it — its initial load rejects the exceeded floor. *"D proves the original transition was witnessed, not that source reconciliation is finished."* | **Ordinary CLI + an editor save during the transaction. No `.gzkit/` writes.** | **OPEN — IN SCOPE.** A CONSEQUENCE OF THE D-BEATS-E CORRECTION recorded in the plan on 2026-09-05. That correction fixed E shadowing D by making D swallow E; the two are distinct obligations. Awaiting operator ruling on shape. |
+| 2 | medium | "Report cleanup failures instead of silently consuming later artifacts" (`unown.py:1370-1376`). `contextlib.suppress(OSError)` over all three unlinks lets journal deletion fail while its snapshot is deleted: `journal_unlink_failed exit 0 journal True snapshot False diagnostic_mentions_IO_fault False`. Later requests recover the same uncleared journal repeatedly without exposing the fault. | Ordinary CLI + an OS unlink failure. No `.gzkit/` writes. | **OPEN.** Suppress only expected absence; report other cleanup failures as state-D cleanup pending. |
+| 3 | medium | "Ignore and manage extraction staging files left by crashes" (`.gitignore:128-135`). The atomic writer stages under `.<surface>.unowning-recovery.<n>.tmp`; the new rule covers only the final extract. `EXTRACT_CRASH exit 99 residue ['/review/.doc.md.unowning-recovery.3.tmp']`, `RESIDUE_IS_MEASURED_SOURCE True`, and successful recovery retained it. | Ordinary CLI recovery + interruption during extraction. No `.gzkit/` writes. | **OPEN — INDEPENDENTLY VERIFIED HERE**: `git check-ignore` returns exit 0 for `AGENTS.md.unowning-recovery` and exit 1 (NOT ignored) for `.AGENTS.md.unowning-recovery.abc123.tmp`. |
+
+**Weakest point, verbatim:** *"the protocol still treats completion of the declaration/ledger
+transition as completion of all recovery obligations. D does not establish source
+reconciliation, and attempted unlink does not establish cleanup. Repair these lifecycle
+distinctions together, then repeat acceptance review."*
+
+##### OPERATOR RULING — 2026-09-05 (binding; booked at `.gzkit/handoffs/rulings.jsonl`)
+
+The round-11 high was put to the operator rather than settled by an agent, because the
+previous correction went wrong precisely by settling a lifecycle distinction without a ruling.
+Operator verbatim:
+
+> Reject "D beats E." Keep three obligations separate: the transition is durably witnessed;
+> the source is reconciled; recovery cleanup is complete. Establishing one does not discharge
+> the others.
+>
+> 1. D+E: preserve the existing witness without duplication, report "transition witnessed;
+>    source reconciliation pending," return a non-success status, and retain the measured bytes
+>    while preserving newer edits.
+> 2. Prove the recovery instructions actually work. Execute the printed sequence from the
+>    reproduced failure through a canonical loader accepting the recovered state. Restoring
+>    retained measured bytes can achieve that while newer edits remain safely saved. Do not
+>    instruct users to reapply an oversized edit and then invoke a command whose initial loader
+>    rejects it.
+> 3. Make cleanup recoverable. A journal-removal failure must preserve dependent recovery
+>    material and report the storage fault. Account for interruption between deletions,
+>    including their durability barriers. Retries must handle residual artifacts even when the
+>    journal is already absent.
+> 4. Handle the complete extraction-file family. Cover final and temporary filenames in ignore
+>    rules and recovery cleanup.
+> 5. Bind verification to the final code. Record the actual test and mutation results against
+>    its final SHA. Updating the brief with an unverified account of an earlier sweep does not
+>    establish current coverage.
+>
+> Correct the existing plan, implementation, tests, and recovery documentation together, then
+> run the required review. Preserve the existing scope and rulings.
+
+**The three obligations are now the module's organising distinction** — witnessed, reconciled,
+cleaned — each established independently and each reported independently. "D beats E" is
+RETIRED as a resolution; the orthogonality observation it was built on stands. The plan's
+§ CORRECTION (2026-09-05) records the superseded first attempt beside the ruling that replaced
+it, and § Binding constraints 5-7 carry points 3, 4 and 2 respectively.
+
+**EVIDENCE-CURRENCY GAP THE ADVERSARY CAUGHT.** The § Evidence Gate 2 mutation table records
+source SHA `a4c2e3ad…`; `src/gzkit/commands/content/unown.py` is now `49b2ad58…`. A later
+22-guard sweep was executed and reported during the fix cycle but was never written here, so
+**the recorded 18-guard sweep does not establish mutation coverage of the current recovery
+protocol.** The table must be refreshed to the 22-guard sweep and its SHA before the next
+acceptance round is dispatched.
 
 ## Threat Model (binding for this OBPI's Step 4b)
 

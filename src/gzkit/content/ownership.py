@@ -18,6 +18,7 @@ offending section id (REQ-0.35.0-04-01).
 from __future__ import annotations
 
 import contextlib
+import errno
 import hashlib
 import json
 import os
@@ -833,7 +834,7 @@ def _refuse_wrong_direction_witness(path: Path, event: Any, floor_event_id: str)
 
 
 def write_declaration_atomically(path: Path, text: str) -> None:
-    r"""Replace *path*'s contents with *text* in one atomic step, or not at all.
+    r"""Serialize *text* as UTF-8 and write it through `write_bytes_atomically`.
 
     `Path.write_text` opens the target with `mode='w'` -- it TRUNCATES before
     it writes, so an interrupted or disk-full write leaves a half-serialized
@@ -842,6 +843,38 @@ def write_declaration_atomically(path: Path, text: str) -> None:
     on the ONE store gating the unowned-byte ratchet, and every reader of it
     fails closed until a human hand-edits a repair -- exactly the silent
     hand-edit ADR-0.35.0 § Consequences Negative #4 exists to close.
+
+    THIS FUNCTION IS THE TEXT SPELLING AND NOTHING ELSE. The staging file, the
+    per-call unique name, the fsync-before-rename ordering, the parent-directory
+    barrier and the Windows reasoning all live in `write_bytes_atomically`; a
+    delegator that also narrates the mechanism is a second description of it,
+    and two descriptions of one durability discipline drift the way two
+    implementations do. Encoding is pinned to UTF-8 here because that is the
+    only decision left at this layer: the declaration is a TRACKED artifact, so
+    its bytes must not vary by platform. Line endings need no separate pin --
+    `str.encode` performs no newline translation, unlike the text-mode handle
+    this function used to open.
+    """
+    write_bytes_atomically(path, text.encode("utf-8"))
+
+
+def write_bytes_atomically(path: Path, data: bytes) -> None:
+    r"""Replace *path*'s contents with *data* in one atomic step, or not at all.
+
+    The byte-level primitive `write_declaration_atomically` delegates to, and
+    the one place this project's declaration-side durability discipline is
+    stated. It is spelled in BYTES because the un-owning transaction must also
+    retain the measured source (§ Recovery Protocol state E), and a source
+    snapshot is bytes.
+
+    THE REASON THIS EXISTS IS ONE DISCIPLINE, NOT TWO. It would be overstated
+    to claim the extraction was forced by byte-exactness: `_read_surface_or_exit`
+    guarantees the surface decodes as UTF-8, and a strict decode/encode round
+    trip is byte-exact, so the previous text writer would have written the
+    snapshot correctly. What it could not do is keep ONE statement of the
+    fsync/rename/barrier ordering -- the alternative was a second atomic writer
+    beside this one, which is the drift GHI #945 removed from the file-locking
+    primitive for the same reason.
 
     Staging lives in the TARGET's directory so `os.replace` is a
     same-filesystem rename (atomic on POSIX and on Windows), and the staging
@@ -854,17 +887,21 @@ def write_declaration_atomically(path: Path, text: str) -> None:
     `FlushFileBuffers`, which requires GENERIC_WRITE, so a read handle returns
     ERROR_ACCESS_DENIED and `os.fsync` raises -- which this function's own
     `except OSError` would re-raise, making every declaration write, and its
-    recovery path, unrunnable on Windows. `newline="\n"` is pinned for the
-    same reason: the declaration is a TRACKED artifact, and the platform
-    default would commit `\r\n` on Windows and `\n` everywhere else. This
-    mirrors `corpus_store._commit_atomically`, the project's other atomic
-    content write, rather than restating a second durability discipline.
+    recovery path, unrunnable on Windows. THAT MUCH mirrors
+    `corpus_store._commit_atomically`, the project's other atomic content
+    write, which fsyncs the same write handle for the same reason.
+
+    THE MIRROR STOPS AT THE FILE. `_commit_atomically` fsyncs the handle and
+    calls `Path.replace`, and takes NO directory barrier at all -- so the
+    `commit_directory_entry` call this function ends with has no counterpart
+    there, and reading the two as one discipline would suggest the corpus store
+    commits its rename's directory entry, which it does not. The barrier is
+    stated once, in `commit_directory_entry`, precisely so the two writers can
+    differ here without either restating it.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(
-        mode="w",
-        encoding="utf-8",
-        newline="\n",
+        mode="wb",
         dir=path.parent,
         prefix=f".{path.name}.",
         suffix=".tmp",
@@ -872,7 +909,7 @@ def write_declaration_atomically(path: Path, text: str) -> None:
     ) as handle:
         staging = Path(handle.name)
         try:
-            handle.write(text)
+            handle.write(data)
             handle.flush()
             os.fsync(handle.fileno())
         except OSError:
@@ -886,20 +923,65 @@ def write_declaration_atomically(path: Path, text: str) -> None:
             staging.unlink()
         raise
     # The fsync above makes the file's BYTES durable; it says nothing about the
-    # RENAME. On POSIX the directory entry `os.replace` rewrites is itself
-    # buffered metadata, so a power loss immediately after the swap can leave
-    # the directory still naming the old inode -- the replacement is atomic but
-    # not durable, and this store is the ONE artifact gating the unowned-byte
-    # ratchet. Syncing the parent directory is what commits the entry.
-    # Windows has no directory handle to sync (`os.open` on a directory raises
-    # PermissionError), so the barrier is POSIX-only by construction rather
-    # than by omission.
-    if os.name == "posix":
-        dir_fd = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
+    # RENAME. That barrier is `commit_directory_entry`, shared with the removal
+    # side rather than restated here.
+    commit_directory_entry(path.parent)
+
+
+BARRIER_UNSUPPORTED_ERRNOS: frozenset[int] = frozenset(
+    {errno.EINVAL, errno.ENOSYS, errno.ENOTSUP, errno.EOPNOTSUPP}
+)
+"""Errnos meaning the filesystem HAS NO directory-fsync operation.
+
+`commit_directory_entry` is already a no-op on Windows, where there is no
+directory handle to sync. These errnos are the SAME disposition arriving
+through an errno instead of through `os.name`: a POSIX export that answers
+`fsync` on a directory with `EINVAL` cannot provide the barrier at all, so a
+caller that treats the raise as a transient fault refuses every invocation
+forever and offers a remedy no retry can reach. A caller needing the ordering
+this barrier establishes MUST classify on this set before refusing; every other
+errno (a full disk, a read-only mount, a permissions change) is a real fault a
+retry can clear.
+"""
+
+
+def commit_directory_entry(directory: Path) -> None:
+    r"""Commit *directory*'s pending entry changes — the barrier, stated ONCE.
+
+    A directory entry created by `os.replace` or destroyed by `Path.unlink` is
+    buffered metadata on POSIX: the operation is atomic but NOT durable, so a
+    power loss immediately afterwards can leave the directory still naming the
+    old inode, or still naming an unlinked one. Syncing the parent directory is
+    what commits the entry, and this store is the ONE artifact gating the
+    unowned-byte ratchet.
+
+    IT IS EXTRACTED RATHER THAN DUPLICATED BECAUSE THE REMOVAL SIDE NEEDS THE
+    SAME BARRIER FOR A DIFFERENT INVARIANT. `write_bytes_atomically` needs it
+    so a VISIBLE file is a DURABLE one -- one file's own durability, where a
+    crash before the fsync and a crash before the rename are equally harmless.
+    `commands/content/unown.py` needs it for CROSS-FILE ORDERING: the
+    pending-transition journal gates replay of every dependent recovery file,
+    so the journal's absence must be committed before any dependent is deleted
+    or its path reused. Without the barrier between them, nothing forbids the
+    dependents' entry removals committing while the journal's does not --
+    journal back, retained source gone. That the two directories differ (the
+    journal beside the declaration, the extract beside the surface) is exactly
+    why the barrier is a function taking one: each entry is committed in the
+    directory that holds it.
+
+    Windows has no directory handle to sync (`os.open` on a directory raises
+    PermissionError), so the barrier is POSIX-only BY CONSTRUCTION rather than
+    by omission, and callers on Windows get a no-op that raises nothing. A
+    second statement of this discipline beside the first is the drift GHI #945
+    removed from the file-locking primitive for the same reason.
+    """
+    if os.name != "posix":
+        return
+    dir_fd = os.open(directory, os.O_RDONLY)
+    try:
+        os.fsync(dir_fd)
+    finally:
+        os.close(dir_fd)
 
 
 @contextlib.contextmanager
@@ -944,6 +1026,27 @@ def declaration_journal_path(root: Path, surface: str) -> Path:
     write side, never by softening the loader (REQ-0.35.0-04-02).
     """
     return declaration_path(root, surface).with_name(f"{surface}.json.journal")
+
+
+def declaration_journal_source_path(root: Path, surface: str) -> Path:
+    """Path to the MEASURED SOURCE BYTES retained beside *surface*'s journal.
+
+    Step-4b round-10 finding 2. The journal records the surface's DIGEST, and a
+    digest names the bytes recovery needs without being able to supply them: an
+    ordinary editor replacing the uncommitted text left the transition
+    permanently uncompletable and blocked every other section of the same
+    surface, recoverable only by restoring bytes the governed path had
+    discarded. Those bytes are retained here, immutable for the life of the
+    journal and cleared with it.
+
+    This is NOT a second copy of canon (operator ruling 2026-09-05): the
+    journal already copies the serialized successor declaration, and retained
+    recovery material is historical evidence about an interrupted transition,
+    never a surface anything reads as authority. Nothing loads from this file;
+    it is extracted to a side path for the operator to reconcile against, and
+    the source surface is never rewritten from it.
+    """
+    return declaration_path(root, surface).with_name(f"{surface}.json.journal.source")
 
 
 def declaration_path(root: Path, surface: str) -> Path:

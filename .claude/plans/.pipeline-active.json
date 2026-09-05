@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.35.0-04-section-ownership-and-ratchet",
+  "parent_adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-09-05T06:33:19Z",
+  "updated_at": "2026-09-05T06:33:19Z",
+  "receipt_state": "pass",
+  "nonce": "3bd014a3ae62807c4587095e2b8f5099",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-04-section-ownership-and-ratchet --from=verify",
+  "resume_point": "verify"
+}

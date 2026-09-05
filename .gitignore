@@ -119,3 +119,32 @@ site/
 .gzkit/ownership/**/*.lock
 .gzkit/ownership/**/*.tmp
 .gzkit/ownership/**/*.journal
+# The `.journal.source` is the MEASURED SOURCE BYTES retained beside that journal for its
+# lifetime (OBPI-0.35.0-04, Step-4b round-10 finding 2): recovery needs the exact bytes the
+# interrupted run measured, and a digest names them without being able to supply them. It
+# needs its own rule — the `*.journal` glob above requires the name to END in `.journal`,
+# so it does not match `<surface>.json.journal.source` at all.
+.gzkit/ownership/**/*.journal.source
+# The state-E extract is the one artifact written OUTSIDE `.gzkit/`. A refusal copies the
+# retained bytes beside the surface so the operator can diff and restore from them, which for
+# the real declaration means `AGENTS.md.unowning-recovery` — a full copy of Layer-1 canon in
+# the tracked repository root. `AGENTS.md` § Execution Rules mandates `git add -A` BEFORE
+# `gz check`, so an unignored copy is STAGED rather than merely noticed.
+#
+# NOT root-anchored, and the earlier `/`-anchored form was a measured defect. The extract path
+# is derived per-surface — `surface_path.with_name(name + ".unowning-recovery")`, `_target_for`
+# in `src/gzkit/commands/content/unown.py` — so it lands wherever the surface lives, and a
+# surface is NOT always at the root: `.gzkit/corpus/.gzkit/rules/governance-core.md.jsonl` is a
+# live corpus store today, so `.gzkit/rules/governance-core.md` is a content surface whose
+# state-E refusal would write `.gzkit/rules/governance-core.md.unowning-recovery` into a
+# tracked directory the root-anchored rule cannot see (Step-4b Task-1 quality review).
+*.unowning-recovery
+# The atomic writer stages into the TARGET's directory as `.<name>.<random>.tmp`
+# (`write_bytes_atomically`, `src/gzkit/content/ownership.py`), so a crash mid-extraction leaves
+# a staging file holding the MEASURED SOURCE BYTES behind. The rule above cannot match it: that
+# glob requires the name to BEGIN with the surface name, and a staging file begins with a dot.
+# Measured at Step-4b round 11: `EXTRACT_CRASH exit 99 residue
+# ['/review/.doc.md.unowning-recovery.3.tmp']`, `RESIDUE_IS_MEASURED_SOURCE True`, and a
+# successful recovery retained it. Cover the whole extraction-file family, final and temporary,
+# at every depth (operator ruling 2026-09-05 point 4).
+.*.unowning-recovery.*.tmp
