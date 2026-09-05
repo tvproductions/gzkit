@@ -271,6 +271,12 @@ verbatim:
 
 ## `agents-md-map-doctrine.md`
 
+### 0.10.0 — 2026-09-05
+
+§ Budget's transitional-window paragraph asserted that `project_doc_max_bytes` is *"a Codex **setting** gzkit writes into the `.codex/config.toml` it generates"*. Measured 2026-09-04 under GHI #962: Codex reads `$CODEX_HOME/config.toml` and never the project-local file gzkit generates, so gzkit has never written that setting anywhere Codex looks. Both remedies are closed — writing to `~/.codex/` is an adopter's global surface the operator ruled out 2026-09-04 (*"such locations are global to an adopter's project, i think the right answer is no"*), and repointing `CODEX_HOME` moves `auth.json` with it, leaving the tier-1 adversary unauthenticated. The paragraph now records the cap as Codex's own default, in force and unraisable from here.
+
+This is the doctrine arm of `e43c55c9`, which corrected the same false claim in `render_codex_config`'s docstring and `CodexDocCapCoherenceTest` and set both numeric surfaces to `32768`. The claim survived in two further live surfaces — this rule (with its wheel mirror) and `src/gzkit/schemas/vendor_manifest.json`'s `content_type_delivery_caps` description — which is why the witness could still be read as reporting headroom gzkit controlled. Binding budget values unchanged; the correction is to what the cap *is*.
+
 ### 0.9.0 — 2026-09-01
 
 Dead-pointer sweep under GHI #533. The § Budget destination pointed at `GHI #533 → ADR-0.35.0 § Decision 3`; #533 closed `superseded` into that ADR the same day, so the rule now cites the ADR directly. This is the second dead-pointer repair on the same sentence — `0.3.0` repointed it off terminal `ADR-0.0.37` under the same GHI (`fcff7b49`, `9c1c1230`). Binding rules unchanged; only the destination pointer moved.
