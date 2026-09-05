@@ -286,6 +286,32 @@
       "status": "in_progress",
       "result": null,
       "persona_loaded": null
+    },
+    {
+      "task_id": 1,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "gpt-6-astra",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T15:48:07.064582+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 1,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "gpt-6-astra",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-05T15:48:07.299991+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
     }
   ]
 }

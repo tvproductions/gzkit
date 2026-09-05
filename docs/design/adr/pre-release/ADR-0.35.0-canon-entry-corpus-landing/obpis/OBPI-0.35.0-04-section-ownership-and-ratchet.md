@@ -1111,12 +1111,24 @@ and canonical-loader test edits. Live scoped verification ran 183 tests successf
 `arb-step-ownershipunown-0b99a378bc45413d84b5828b58720270`. This is a scoped integration
 receipt, not the final full-suite, mutation, or Step-4b evidence.
 
-Equivalent Windows directory durability remains unproved: the current helper's
-Windows return performs no barrier. Its existence does not establish the mandatory
-boundary or authorize the unsupported-error exception. A standalone native Windows
-capability probe is prepared. The operator subsequently authorized its temporary CI
-exception above; it has not yet run on Windows and establishes no platform-equivalence
-claim until actual evidence is evaluated.
+The standalone Windows capability probe passed in GitHub Actions run
+`33972482837`: real directory handles and native flushes after rename and unlink
+completed successfully. Its full log is retained in the recovery appendix's
+`evidence.zip`. The temporary probe workflow is removed after that evidence capture.
+The production helper now uses the same stdlib `ctypes` mechanism with checked
+native status, pending completion, and owned-handle closure. Required failures
+still propagate; no Windows no-op or unsupported-error waiver remains. The integrated
+production implementation still requires actual Windows CI before its platform
+verification can be claimed. OS flush guarantees remain conditional on the filesystem
+and storage honoring the operation, not a claim of physical power-cut testing.
+
+The integrated local suite ran 204 tests successfully with three real-Windows tests
+skipped on macOS: `arb-step-ownershipunown-8a281168ae174561a125527b4a1add55`.
+Those three tests must run on Windows; a skip is not native-platform evidence.
+The landed-declaration retry diagnostic now distinguishes unavailable required
+operations from transient faults through the shared remedy helper; its new test
+first failed an assertion, then the five-test capability class passed. Original
+RED/GREEN logs are retained in the recovery appendix's evidence bundle.
 
 The remaining named recovery corrections are integrated: directory-enumeration
 errors are reported rather than treated as an empty result; residue matching treats

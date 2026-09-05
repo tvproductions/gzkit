@@ -11,12 +11,15 @@ from __future__ import annotations
 
 import ast
 import contextlib
+import ctypes
+import errno
 import json
 import os
 import stat
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from typing import get_args
 from unittest import mock
 
@@ -1670,6 +1673,300 @@ class TestWriteDeclarationAtomically(unittest.TestCase):
                 self.assertRaisesRegex(AssertionError, "actual parent"),
             ):
                 self.test_the_parent_directory_is_synced_so_the_rename_is_durable()
+
+
+class TestWindowsDirectoryBarrier(unittest.TestCase):
+    """The same required barrier must be operative, or refuse, on Windows."""
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unavailable_windows_barrier_refuses_instead_of_returning_success(self) -> None:
+        directory = Path("ownership")
+        unavailable = OSError(errno.ENOSYS, "native directory flush unavailable")
+        with (
+            mock.patch.object(ownership, "os", wraps=os, name="nt") as platform_os,
+            mock.patch.object(
+                ownership, "_windows_directory_apis", side_effect=unavailable, create=True
+            ),
+            self.assertRaises(OSError) as refused,
+        ):
+            platform_os.name = "nt"
+            ownership.commit_directory_entry(directory)
+        self.assertEqual(refused.exception.errno, errno.ENOSYS)
+
+    @contextlib.contextmanager
+    def _native_fault_boundary(self):
+        """Replace only native calls so every host can exercise failure propagation."""
+        kernel32, ntdll = mock.Mock(), mock.Mock()
+        kernel32.CreateFileW.return_value = 51
+        kernel32.CloseHandle.return_value = 1
+        kernel32.WaitForSingleObject.return_value = 0
+        ntdll.NtFlushBuffersFileEx.return_value = 0
+        ntdll.RtlNtStatusToDosError.return_value = 5
+        pending_before = len(ownership._PENDING_DIRECTORY_FLUSHES)
+        try:
+            with (
+                mock.patch.object(ownership, "os", wraps=os) as platform_os,
+                mock.patch.object(
+                    ownership, "_windows_directory_apis", return_value=(kernel32, ntdll)
+                ),
+                mock.patch.object(
+                    ctypes,
+                    "WinError",
+                    side_effect=lambda code=None: OSError(errno.EACCES, f"Windows error {code}"),
+                    create=True,
+                ),
+            ):
+                platform_os.name = "nt"
+                yield kernel32, ntdll
+        finally:
+            # These requests were Python doubles, so no kernel owns their buffers.
+            del ownership._PENDING_DIRECTORY_FLUSHES[pending_before:]
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_flush_requests_metadata_and_storage_synchronization(self) -> None:
+        with self._native_fault_boundary() as (_kernel32, ntdll):
+            ownership.commit_directory_entry(Path("ownership"))
+            # NO_SYNC can complete successfully without synchronizing storage.
+            # Completion alone therefore cannot witness the required barrier.
+            ntdll.NtFlushBuffersFileEx.assert_called_once_with(51, 0, None, 0, mock.ANY)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_open_failure_cannot_flush_or_close_an_unowned_handle(self) -> None:
+        for invalid in (None, 0, ctypes.c_void_p(-1).value):
+            with self.subTest(handle=invalid), self._native_fault_boundary() as (kernel32, ntdll):
+                kernel32.CreateFileW.return_value = invalid
+                with self.assertRaises(OSError) as refused:
+                    ownership.commit_directory_entry(Path("ownership"))
+                self.assertEqual(refused.exception.errno, errno.EACCES)
+                ntdll.NtFlushBuffersFileEx.assert_not_called()
+                kernel32.CloseHandle.assert_not_called()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_flush_errors_and_warnings_refuse_and_close_the_owned_handle(self) -> None:
+        # STATUS_ACCESS_DENIED and STATUS_BUFFER_OVERFLOW: neither establishes success.
+        for status in (0xC0000022, 0x80000005):
+            with self.subTest(status=status), self._native_fault_boundary() as (kernel32, ntdll):
+                signed_status = ctypes.c_int32(status).value
+                ntdll.NtFlushBuffersFileEx.return_value = signed_status
+                with self.assertRaises(OSError) as refused:
+                    ownership.commit_directory_entry(Path("ownership"))
+                self.assertEqual(refused.exception.errno, errno.EACCES)
+                ntdll.RtlNtStatusToDosError.assert_called_once_with(signed_status)
+                kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_close_failure_is_observable_even_after_a_completed_flush(self) -> None:
+        with self._native_fault_boundary() as (kernel32, _ntdll):
+            kernel32.CloseHandle.return_value = 0
+            with self.assertRaises(OSError):
+                ownership.commit_directory_entry(Path("ownership"))
+            kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_non_pending_return_is_authoritative_over_the_output_status(self) -> None:
+        with self._native_fault_boundary() as (kernel32, ntdll):
+
+            def completed_flush(_handle, _flags, _params, _size, output):
+                block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                block.contents.Status = ctypes.c_int32(0xC0000022).value
+                return 0
+
+            ntdll.NtFlushBuffersFileEx.side_effect = completed_flush
+            ownership.commit_directory_entry(Path("ownership"))
+            kernel32.WaitForSingleObject.assert_not_called()
+            kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_pending_flush_waits_then_checks_the_completion_status(self) -> None:
+        operations: list[str] = []
+        buffers: list[ownership._WindowsIOStatusBlock] = []
+        for completed_status in (0, ctypes.c_int32(0xC0000022).value):
+            with (
+                self.subTest(completed_status=completed_status),
+                self._native_fault_boundary() as (kernel32, ntdll),
+            ):
+                operations.clear()
+                buffers.clear()
+
+                def pending_flush(_handle, _flags, _params, _size, output):
+                    block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                    block.contents.Status = 0x103
+                    buffers.append(block.contents)
+                    operations.append("pending")
+                    return 0x103
+
+                def completed_wait(_handle, _timeout, completed_status=completed_status):
+                    buffers[0].Status = completed_status
+                    operations.append("completed")
+                    return 0
+
+                ntdll.NtFlushBuffersFileEx.side_effect = pending_flush
+                kernel32.WaitForSingleObject.side_effect = completed_wait
+                if completed_status:
+                    with self.assertRaises(OSError):
+                        ownership.commit_directory_entry(Path("ownership"))
+                else:
+                    ownership.commit_directory_entry(Path("ownership"))
+                self.assertEqual(operations, ["pending", "completed"])
+                kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unproved_pending_completion_refuses_and_retains_the_native_buffer(self) -> None:
+        for wait_result in (0xFFFFFFFF, 0x102, 0):
+            with self.subTest(wait=wait_result), self._native_fault_boundary() as (kernel32, ntdll):
+
+                def pending_flush(_handle, _flags, _params, _size, output):
+                    block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                    block.contents.Status = 0x103
+                    return 0x103
+
+                ntdll.NtFlushBuffersFileEx.side_effect = pending_flush
+                kernel32.WaitForSingleObject.return_value = wait_result
+                before = len(ownership._PENDING_DIRECTORY_FLUSHES)
+                with self.assertRaises(OSError):
+                    ownership.commit_directory_entry(Path("ownership"))
+                self.assertEqual(len(ownership._PENDING_DIRECTORY_FLUSHES), before + 1)
+                kernel32.CloseHandle.assert_called_once_with(51)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_unknown_platform_has_no_successful_no_op(self) -> None:
+        with mock.patch.object(ownership, "os", wraps=os) as platform_os:
+            platform_os.name = "unsupported"
+            with self.assertRaises(OSError) as refused:
+                ownership.commit_directory_entry(Path("ownership"))
+        self.assertEqual(refused.exception.errno, errno.ENOTSUP)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_abi_uses_windows_widths_and_pointer_alignment_on_every_host(self) -> None:
+        kernel32, ntdll = mock.Mock(), mock.Mock()
+        with mock.patch.object(ctypes, "WinDLL", side_effect=(kernel32, ntdll), create=True):
+            ownership._windows_directory_apis()
+        pointer_size = ctypes.sizeof(ctypes.c_void_p)
+        self.assertEqual(ctypes.sizeof(kernel32.CreateFileW.restype), pointer_size)
+        self.assertEqual(ctypes.sizeof(kernel32.CloseHandle.restype), 4)
+        self.assertEqual(ctypes.sizeof(kernel32.WaitForSingleObject.restype), 4)
+        for index in (1, 2, 4, 5):
+            self.assertEqual(ctypes.sizeof(kernel32.CreateFileW.argtypes[index]), 4)
+        self.assertEqual(ctypes.sizeof(ntdll.NtFlushBuffersFileEx.restype), 4)
+        for index in (1, 3):
+            self.assertEqual(ctypes.sizeof(ntdll.NtFlushBuffersFileEx.argtypes[index]), 4)
+        output_type = ntdll.NtFlushBuffersFileEx.argtypes[4]._type_
+        self.assertEqual(ctypes.sizeof(output_type), 2 * pointer_size)
+        self.assertEqual(output_type.Information.offset, pointer_size)
+        self.assertEqual(output_type.Status.size, 4)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_missing_native_entrypoint_is_an_unsupported_operation(self) -> None:
+        kernel32 = mock.Mock()
+        with (
+            mock.patch.object(
+                ctypes, "WinDLL", side_effect=(kernel32, SimpleNamespace()), create=True
+            ),
+            self.assertRaises(OSError) as refused,
+        ):
+            ownership._windows_directory_apis()
+        self.assertEqual(refused.exception.errno, errno.ENOSYS)
+        kernel32.CreateFileW.assert_not_called()
+
+
+@unittest.skipUnless(os.name == "nt", "native Windows directory handles require Windows")
+class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
+    """Call real DLLs and inspect their actual handle target, including a no-op control."""
+
+    def _assert_real_windows_barrier(self, directory_override: Path | None = None) -> None:
+        kernel32, ntdll = ownership._windows_directory_apis()
+        final_path = kernel32.GetFinalPathNameByHandleW
+        final_path.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32]
+        final_path.restype = ctypes.c_uint32
+        operations: list[str] = []
+        handles: set[int] = set()
+        with tempfile.TemporaryDirectory() as name:
+            parent = Path(name).resolve()
+            destination = parent / "journal"
+            real_fsync, real_replace = os.fsync, os.replace
+
+            def opened_directory(*args):
+                if directory_override is not None:
+                    args = (str(directory_override), *args[1:])
+                handle = kernel32.CreateFileW(*args)
+                if handle is None or handle == ctypes.c_void_p(-1).value:
+                    raise ownership._windows_directory_error(parent)
+                handles.add(handle)
+                try:
+                    length = final_path(handle, None, 0, 0)
+                    self.assertGreater(length, 0)
+                    buffer = ctypes.create_unicode_buffer(length + 1)
+                    written = final_path(handle, buffer, len(buffer), 0)
+                    self.assertGreater(written, 0)
+                    self.assertLess(written, len(buffer))
+                    self.assertTrue(
+                        os.path.samefile(buffer.value, parent), "actual directory handle"
+                    )
+                except BaseException:
+                    kernel32.CloseHandle(handle)
+                    raise
+                return handle
+
+            def flushed_directory(handle, *args):
+                self.assertIn(handle, handles)
+                self.assertEqual(args[0], 0, "metadata and storage-cache synchronization required")
+                status = ntdll.NtFlushBuffersFileEx(handle, *args)
+                self.assertEqual(status, 0, "the actual native flush must complete")
+                operations.append("directory")
+                return status
+
+            def synced_file(fd):
+                real_fsync(fd)
+                operations.append("file")
+
+            def replaced_file(source, target):
+                result = real_replace(source, target)
+                operations.append("replace")
+                return result
+
+            native_kernel = SimpleNamespace(
+                CreateFileW=opened_directory,
+                CloseHandle=kernel32.CloseHandle,
+                WaitForSingleObject=kernel32.WaitForSingleObject,
+            )
+            native_nt = SimpleNamespace(
+                NtFlushBuffersFileEx=flushed_directory,
+                RtlNtStatusToDosError=ntdll.RtlNtStatusToDosError,
+            )
+            with (
+                mock.patch.object(
+                    ownership, "_windows_directory_apis", return_value=(native_kernel, native_nt)
+                ),
+                mock.patch.object(os, "fsync", synced_file),
+                mock.patch.object(os, "replace", replaced_file),
+            ):
+                ownership.write_bytes_atomically(destination, b"pending recovery\n")
+                self.assertEqual(destination.read_bytes(), b"pending recovery\n")
+                destination.unlink()
+                operations.append("unlink")
+                ownership.commit_directory_entry(parent)
+            self.assertEqual(operations, ["file", "replace", "directory", "unlink", "directory"])
+            self.assertFalse(destination.exists())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_actual_windows_parent_is_flushed_after_replace_and_unlink(self) -> None:
+        self._assert_real_windows_barrier()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_success_witness_rejects_a_no_op_barrier(self) -> None:
+        with (
+            mock.patch.object(ownership, "commit_directory_entry", return_value=None),
+            self.assertRaises(AssertionError),
+        ):
+            self._assert_real_windows_barrier()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_native_success_witness_rejects_an_unrelated_directory_handle(self) -> None:
+        with (
+            tempfile.TemporaryDirectory() as other,
+            self.assertRaisesRegex(AssertionError, "actual directory handle"),
+        ):
+            self._assert_real_windows_barrier(Path(other))
 
 
 class TestRecordUnownedTotalReadsTheFloorInsideTheLock(unittest.TestCase):

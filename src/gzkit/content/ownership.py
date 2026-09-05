@@ -18,6 +18,7 @@ offending section id (REQ-0.35.0-04-01).
 from __future__ import annotations
 
 import contextlib
+import ctypes
 import errno
 import hashlib
 import json
@@ -964,17 +965,125 @@ def commit_directory_entry(directory: Path) -> None:
     why the barrier is a function taking one: each entry is committed in the
     directory that holds it.
 
-    The current Windows path returns without establishing this barrier.
-    Equivalent Windows durability remains unproved; this no-op does not
-    establish the ordering guarantee described above.
+    POSIX syncs an open directory descriptor. Windows sends a normal native
+    flush request through a writable directory handle; flags zero requests
+    metadata and underlying-storage cache synchronization. Both paths require
+    successful completion and propagate failures. These are filesystem flush
+    boundaries, subject to the filesystem and storage honoring that operation,
+    not an independent proof against arbitrary hardware or power-loss faults.
     """
-    if os.name != "posix":
+    if os.name == "nt":
+        _commit_windows_directory(directory)
         return
+    if os.name != "posix":
+        raise OSError(errno.ENOTSUP, "directory synchronization is unsupported", str(directory))
     dir_fd = os.open(directory, os.O_RDONLY)
     try:
         os.fsync(dir_fd)
     finally:
         os.close(dir_fd)
+
+
+class _WindowsStatusOrPointer(ctypes.Union):
+    """The native IO_STATUS_BLOCK union retains pointer-size alignment."""
+
+    _fields_ = [("Status", ctypes.c_int32), ("Pointer", ctypes.c_void_p)]
+
+
+class _WindowsIOStatusBlock(ctypes.Structure):
+    """Windows NTSTATUS is 32 bits, even where a Python C long is 64 bits."""
+
+    _anonymous_ = ("Result",)
+    _fields_ = [("Result", _WindowsStatusOrPointer), ("Information", ctypes.c_size_t)]
+
+
+# Only an unexpectedly failed completion wait reaches this retention path.
+# The kernel may still reference the output buffer, so keep it alive until
+# process exit instead of letting error handling free pending native I/O memory.
+_PENDING_DIRECTORY_FLUSHES: list[_WindowsIOStatusBlock] = []
+
+
+def _windows_directory_apis() -> tuple[Any, Any]:
+    """Bind the Windows calling convention and exact native argument widths."""
+    try:
+        # These APIs exist only on Windows; POSIX ctypes type stubs omit them.
+        win_dll = getattr(ctypes, "WinDLL")  # noqa: B009 - platform-conditional ctypes API
+        kernel32 = win_dll("kernel32", use_last_error=True)
+        ntdll = win_dll("ntdll")
+        kernel32.CreateFileW.argtypes = [
+            ctypes.c_wchar_p,
+            ctypes.c_uint32,
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+        ]
+        kernel32.CreateFileW.restype = ctypes.c_void_p
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+        kernel32.CloseHandle.restype = ctypes.c_int32
+        kernel32.WaitForSingleObject.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
+        kernel32.WaitForSingleObject.restype = ctypes.c_uint32
+        ntdll.NtFlushBuffersFileEx.argtypes = [
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.c_void_p,
+            ctypes.c_uint32,
+            ctypes.POINTER(_WindowsIOStatusBlock),
+        ]
+        ntdll.NtFlushBuffersFileEx.restype = ctypes.c_int32
+        ntdll.RtlNtStatusToDosError.argtypes = [ctypes.c_int32]
+        ntdll.RtlNtStatusToDosError.restype = ctypes.c_uint32
+    except AttributeError as exc:
+        message = "native Windows directory synchronization is unavailable"
+        raise OSError(errno.ENOSYS, message) from exc
+    return kernel32, ntdll
+
+
+def _windows_directory_error(directory: Path, code: int | None = None) -> OSError:
+    """Keep Win32's errno mapping and the failing directory in the propagated error."""
+    error = getattr(ctypes, "WinError")(code)  # noqa: B009 - platform-conditional ctypes API
+    error.filename = str(directory)
+    return error
+
+
+def _commit_windows_directory(directory: Path) -> None:
+    """Flush directory metadata using the synchronous native Windows operation.
+
+    CreateFileW's BACKUP_SEMANTICS flag permits opening a directory; no backup
+    privilege or volume handle is requested. NtFlushBuffersFileEx flags zero
+    requests data, metadata, and storage-cache synchronization. Its return is
+    authoritative except for STATUS_PENDING, which requires a completed wait
+    and the IO_STATUS_BLOCK result. See Microsoft's NtFlushBuffersFileEx and
+    IO_STATUS_BLOCK contracts, not the weaker data-only flush flags.
+    """
+    kernel32, ntdll = _windows_directory_apis()
+    # GENERIC_WRITE; share read/write/delete; OPEN_EXISTING; BACKUP_SEMANTICS.
+    # Omitting FILE_FLAG_OVERLAPPED makes this an owned synchronous handle.
+    handle = kernel32.CreateFileW(str(directory), 0x40000000, 7, None, 3, 0x02000000, None)
+    if not handle or handle == ctypes.c_void_p(-1).value:
+        raise _windows_directory_error(directory)
+    status_block = _WindowsIOStatusBlock()
+    status_block.Status = ctypes.c_int32(0xC0000001).value  # non-success until written
+    try:
+        status = ntdll.NtFlushBuffersFileEx(handle, 0, None, 0, ctypes.byref(status_block))
+        if status == 0x103:  # STATUS_PENDING is not completed success.
+            wait_result = kernel32.WaitForSingleObject(handle, 0xFFFFFFFF)
+            if wait_result != 0:  # WAIT_OBJECT_0
+                _PENDING_DIRECTORY_FLUSHES.append(status_block)
+                if wait_result == 0xFFFFFFFF:  # WAIT_FAILED owns GetLastError.
+                    raise _windows_directory_error(directory)
+                message = f"Windows directory completion wait returned {wait_result:#x}"
+                raise OSError(errno.EIO, message, str(directory))
+            status = status_block.Status
+            if status == 0x103:
+                _PENDING_DIRECTORY_FLUSHES.append(status_block)
+                raise OSError(errno.EIO, "Windows directory flush remains pending", str(directory))
+        if status != 0:  # STATUS_SUCCESS; warnings cannot establish this boundary.
+            raise _windows_directory_error(directory, ntdll.RtlNtStatusToDosError(status))
+    finally:
+        if not kernel32.CloseHandle(handle):
+            raise _windows_directory_error(directory)
 
 
 @contextlib.contextmanager

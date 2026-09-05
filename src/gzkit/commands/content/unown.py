@@ -1066,7 +1066,7 @@ def _reestablish_landed_declaration_durability(target: _TransactionTarget) -> No
     """Re-assert the durability barrier on a landed declaration — states B and C.
 
     Step-4b round-10 finding 1, `[high]`. `write_declaration_atomically`
-    performs `os.replace` and THEN fsyncs the parent directory, so EVERY write
+    performs `os.replace` and THEN syncs the parent directory, so EVERY write
     in `_commit_transition` has a window where the swap landed and its
     durability barrier did not. Landed recovery read ONE signal -- the
     declaration already carries the journalled `floor_event_id` -- and inferred
@@ -1107,9 +1107,8 @@ def _reestablish_landed_declaration_durability(target: _TransactionTarget) -> No
             "record able to re-apply it (REQ-0.35.0-04-05). The journal is "
             f"RETAINED at {target.journal_path.as_posix()!r} and no ledger "
             "witness was written.\n"
-            "  Fix the underlying storage fault -- a full or failing disk, a "
-            "read-only mount, an NFS export that cannot fsync a directory -- "
-            "then re-run the same command. Each retry re-attempts the barrier "
+            f"{_barrier_next_step(target.declaration_path.parent, exc)}"
+            "Each retry re-attempts the barrier "
             "and completes the SAME transition; nothing is witnessed or "
             "cleared until it succeeds. Do NOT delete the journal and do NOT "
             "hand-edit the declaration.",
@@ -1839,7 +1838,7 @@ def _refuse_unbarriered_journal_removal(target: _TransactionTarget, exc: OSError
         f"be made durable: {exc}.\n"
         f"{_TWO_OF_THREE_DISCHARGED} "
         "A directory entry removed by `unlink` is buffered metadata until "
-        "the parent directory is fsynced, so the journal is INVISIBLE but not yet "
+        "the parent directory is synced, so the journal is INVISIBLE but not yet "
         "GONE. Its dependent recovery material is RETAINED and NOT removed: the "
         "journal gates replay, so deleting the retained source while the journal's "
         "absence can still be taken back is the one ordering recovery cannot "
@@ -1877,7 +1876,7 @@ def _refuse_unbarriered_orphan_boundary(target: _TransactionTarget, exc: OSError
         f"{target.journal_path.as_posix()!r}, but that absence could not be made "
         f"durable: {exc}.\n"
         "Why forbidden: a directory entry is buffered metadata until the parent "
-        "directory is fsynced, so an absence nobody committed is one a crash can "
+        "directory is synced, so an absence nobody committed is one a crash can "
         "take back. This run would next DELETE the recovery material that outlived "
         "that journal and REUSE one of its paths for a fresh transaction's retained "
         "source -- and both moves rest on the journal being gone for good. If it "
@@ -2143,9 +2142,10 @@ def _clear_recovery_state(
     not merely of this function's statement order -- see
     `_establish_durable_journal_absence`.
 
-    POSIX directory-sync errors preserve dependents and refuse, including
-    unsupported operations. The shared helper's Windows path remains a no-op;
-    equivalent Windows durability is unproved, not established by this path.
+    Directory-sync errors preserve dependents and refuse, including unsupported
+    operations. The shared helper syncs a directory descriptor on POSIX and
+    completes a native directory flush on Windows. Both require the filesystem
+    and storage to honor the requested synchronization boundary.
 
     THE RETIRED ARGUMENT, NAMED SO IT IS NOT RE-DERIVED. This docstring used to
     claim no barrier was needed because *"a crash can land before the fsync

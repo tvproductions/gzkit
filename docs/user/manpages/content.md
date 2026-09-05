@@ -380,8 +380,10 @@ and error; the errno alone does not identify a particular filesystem. Repeating
 under unchanged conditions cannot establish durability: preserve the recovery
 material and use an environment where the required directory sync succeeds
 before retrying. Ordinary transient storage faults retain their repair-and-retry
-guidance. Equivalent Windows directory durability remains unproved; the current
-Windows helper returns without establishing this guarantee.
+guidance. POSIX uses a directory-descriptor sync; Windows opens the directory and
+requires a completed native metadata and storage-cache flush. Either operation
+can refuse when the environment cannot supply it. This guarantee relies on the
+filesystem and storage honoring the requested synchronization.
 
 Past that boundary the two kinds of failure part company. A removal failure
 among **this transaction's own** material keeps what remains and reports the

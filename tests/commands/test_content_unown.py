@@ -5520,12 +5520,10 @@ class TestJournalAbsenceIsMadeDurableBeforeDependentsMove(unittest.TestCase):
     journal and journal source under `.gzkit/ownership/`, the extract beside
     the surface.
 
-    THE INVARIANT IS POSIX-ONLY, AND SAYING SO IS PART OF STATING IT. Windows
-    has no directory handle to sync, so `commit_directory_entry` is a no-op
-    there BY CONSTRUCTION and the ordering rests on statement order alone --
-    which is why these tests skip off POSIX rather than assert an attempt that
-    the platform never makes. A cross-platform claim would be false on a third
-    of the supported platforms (`.claude/rules/cross-platform.md`).
+    These fault injections observe POSIX directory-descriptor fsync calls and
+    therefore skip on other platforms. The shared barrier uses a native
+    directory-handle flush on Windows; its actual operation and ordering are
+    exercised by TestNativeWindowsDirectoryBarrier in tests/content/test_ownership.py.
     """
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
@@ -5880,8 +5878,9 @@ class TestUnavailableBarrierPreservesRecoveryMaterial(unittest.TestCase):
     """Unsupported operations cannot waive the mandatory durability boundary.
 
     The plan requires preservation and non-success when durable journal
-    absence cannot be established. These are POSIX error-injection tests;
-    Windows durability remains unproved. All four names are exercised even
+    absence cannot be established. The fsync-specific cases exercise POSIX;
+    the landed-recovery case injects the shared barrier failure on every platform.
+    All four names are exercised even
     where ENOTSUP and EOPNOTSUPP are aliases on the host.
     """
 
@@ -5913,6 +5912,37 @@ class TestUnavailableBarrierPreservesRecoveryMaterial(unittest.TestCase):
     def test_unavailable_barrier_on_journal_absent_retry_preserves_dependents(self) -> None:
         """Retries must prove the boundary even when the journal is already absent."""
         self._exercise_unsupported_barriers(entry="journal-absent")
+
+    @covers("REQ-0.35.0-04-05")
+    def test_unavailable_landed_barrier_preserves_source_and_names_capability_remedy(self) -> None:
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration()
+            with patch.object(
+                unown_module, "_append_event_once", side_effect=OSError(errno.EIO, "append")
+            ):
+                first = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(first.exit_code, 2, first.output)
+            declaration_before = _DECLARATION_PATH.read_bytes()
+            retained = self._SNAPSHOT.read_bytes()
+            ledger_before = _ledger_events()
+            for _ in range(2):
+                with patch(
+                    "gzkit.content.ownership.commit_directory_entry",
+                    side_effect=OSError(errno.ENOSYS, "directory sync unavailable"),
+                ):
+                    refused = _unown(self._runner, attestor="g0", reason="probe")
+                self.assertEqual(refused.exit_code, 2, refused.output)
+                self.assertTrue(self._JOURNAL.exists())
+                self.assertEqual(self._SNAPSHOT.read_bytes(), retained)
+                self.assertEqual(_DECLARATION_PATH.read_bytes(), declaration_before)
+                self.assertEqual(_ledger_events(), ledger_before)
+                # output-contract: an unavailable operation needs a capability remedy.
+                self.assertIn("Repeating under unchanged conditions cannot", refused.output)
+            recovered = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(recovered.exit_code, 0, recovered.output)
+            self.assertEqual(len(self._witnesses()), 1)
+            load_declaration(_DECLARATION_PATH, retained.decode("utf-8"), Path("."))
 
     def _exercise_unsupported_barriers(self, *, entry: str) -> None:
         for name in self._ERRNOS:
