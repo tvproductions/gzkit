@@ -1,137 +1,161 @@
-# ADR-0.35.0 — Substance Evaluation (judge-graded)
+# ADR-0.35.0 Quality and Readiness Review
 
-**ADR:** `ADR-0.35.0-canon-entry-corpus-landing`
-**Evaluator:** agent judge, `gz-adr-evaluate` framework v1.0 Parts 1 and 3
-**Date:** 2026-08-07
-**ADR state at evaluation:** `Draft`, `feature`, `heavy`, 0/10 OBPIs landed
+Date: 2026-09-05
+Scope: all thirteen OBPIs; current implementation evidence, amended intent and next-work readiness.
+Verdict: **CONDITIONAL GO — 2.70/4.00**. Reconcile the named contracts before drawing dependent implementation.
 
-## Why this is a separate file from `EVALUATION_SCORECARD.md`
+## Evidence and disposition
 
-`gz adr evaluate` rewrites `EVALUATION_SCORECARD.md` wholesale on every run, so a
-judged substance scorecard written there is destroyed by the next invocation —
-even though `gz-adr-evaluate` SKILL.md § Step 7 instructs the judge to write it
-exactly there. Filed as **GHI #769**; this file is that issue's candidate shape 2
-(CLI owns the structural file, the judge owns the substance file) applied ahead of
-the fix. It also honors GHI #624's rule, printed in the structural scorecard
-itself: *"Do NOT composite these scores with a human substance review — they
-measure different things."* **Nothing below is averaged with the structural score.**
+The parent decomposition target and checklist both specify thirteen items. The missing files
+were 11 and 12. They are now semantically authored, linked to their existing parent items,
+and individually pass authored validation. Another concurrent session committed scaffold
+versions during review; the reviewed authored versions were restored and revalidated.
+This authoring does not constitute an implementation draw or completion attestation.
 
-## ⚠ Dispatch attestation: NOT PERFORMED — this is a single-driver evaluation
+Ledger-grounded status reports thirteen total, five completed, eight remaining, zero missing
+brief files. Completed: 01, 02, 03, 04 and 09. Remaining: 05, 06, 07, 08, 10, 11, 12 and 13.
+08's Active status is explicitly unauthorized residue; its dated note forbids treating that
+status as authorization to resume. The campaign permits ADR-0.35.0 to remain Draft through
+implementation; Draft alone is not the blocker.
 
-`gz-adr-evaluate` SKILL.md § Persona Dispatch mandates dispatching `spec-reviewer`,
-`quality-reviewer`, and `narrator` to produce independent dimension scores, on the
-stated ground that *"a single driver scoring its own scoring is the precise
-optimistic-bias defect `spec-reviewer`'s anti-traits name."*
+Independent session inputs were supplied by the spec-reviewer, quality-reviewer and narrator
+agents. Final focused spec review found no remaining authoring blockers in 11/12.
+The machine scorecard has no recorded dispatch receipts and therefore still reports
+SINGLE-DRIVER / NOT DISPATCHED. These session inputs are not claimed as mechanically receipted
+dispatches. No ten-challenge red-team protocol was run.
 
-**No dispatch occurred.** A standing session instruction forbade spawning
-subagents. Every score below was produced by one driver, so the optimistic-bias
-mitigation the skill prescribes is absent and the scores should be read as one
-reviewer's judgment, not a synthesized panel.
+## Configurable Codex cap
 
-This disclosure is voluntary — no mechanism required it. `run_dispatch_attestation_audit`
-in `gz check` checks only that `ADR-pool.obpi-pipeline-dispatch-attestation` still
-carries the string `absorbed_into: ADR-0.0.73`; it records nothing about whether a
-dispatch happened. Filed as **GHI #770**, whose minimum honest fix is precisely
-this marker made mandatory rather than optional.
+The operator's correction is accepted: Codex's default 32 KiB documentation budget is
+configurable through project_doc_max_bytes. It is not an immutable vendor ceiling.
+[Official AGENTS.md documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
+describes increasing this value; the
+[configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+documents the setting and configuration layers.
 
-## Structural pre-screen (traceability only — NOT composited)
+The observed local setting and declared-cap witness use 32768 bytes. The budget audit reported
+46876 bytes, 14108 above that declaration, with advisory exit 0. This establishes a comparison
+against the local declared value, not proof of the effective limit used by every running
+Codex session. Configuration changes and manifest-witness changes are distinct operations.
+No cap/configuration change was made by this review. OBPI-13 must state its desired configured
+budget and ordering contract explicitly, without presenting the default as unchangeable.
 
-`uv run gz adr evaluate ADR-0.35.0-canon-entry-corpus-landing`
-→ STRUCTURALLY COMPLETE, 3.55/4.0, 10 OBPIs scored, substance UNGRADED.
+## ADR dimensions and CLI reconciliation
 
-## Part 1 — Substance dimensions
+The generated structural pre-screen is 3.55/4.00. It measures section presence, counts and
+references; this manual score measures whether the contracts agree and can be implemented.
 
-<!-- gz-validate-skip: command-shape -->
-| # | Dimension | Weight | CLI | Judge | Weighted | Reconciliation |
-|---|-----------|--------|-----|-------|----------|----------------|
-| 1 | Problem Clarity | 15% | 4 | **4** | 0.60 | Agree. Quantified throughout: 9,966 B of 31,990 B (31.2%), 7 duplicate groups, the 63x `ByteEvidence` inflation, `codex.md` at 13,606 B with no playback. Every claim carries a file:line. |
-| 2 | Decision Justification | 15% | 4 | **4** | 0.60 | Agree. 9 decisions, 15 rejected alternatives (B–O), several citing in-repo precedent (`dc2bc605`, `d03ce98f`) and the cost of re-deciding (the 2026-07-19 session). Alternative B's analysis argues *against* the chosen path on attestation cost and says so. |
-| 3 | Feature Checklist Completeness | 15% | **1** | **3** | 0.45 | **Override.** CLI heuristic misfired on *"items not prefixed with `OBPI-`"* — the items are prose mapping 1:1 to briefs 01–10, each quoted verbatim in its brief's § ADR Item. Its second finding, *"inconsistent granularity"*, has partial substance (item 5 bundles three deliverables, item 7 five), but § Decomposition Scorecard adjudicates it explicitly rather than by accident. Not 4: item 7's split contingency (10 → 11) is an acknowledged, unresolved sizing risk. |
-| 4 | OBPI Decomposition Quality | 15% | 4 | **3** | 0.45 | **Override downward.** The CLI's own OBPI table scores Size = 2 on briefs 02, 05, and 07 — its dimension-4 score of 4 does not reconcile with its own per-OBPI data. Item 7 carries atomic multi-consumer write + resume + rollback + `--status`, and the ADR states it may split again. Dependency graph is acyclic, declared per brief, no numbering gaps. |
-| 5 | Lane Assignment Correctness | 10% | 4 | **4** | 0.40 | Agree. All 10 Heavy; each touches a CLI, schema, or runtime contract. Gate 3/4/5 obligations acknowledged per brief. |
-| 6 | Scope Discipline | 10% | 4 | **4** | 0.40 | Agree, and this is the ADR's strongest dimension. § 7 Scope Minimization gives cut lines *with pairing rules* ("04 and 06 together, never separately"), do-not-cut items with reasons, and 6 forced-onward follow-ons in § Closing. |
-| 7 | Evidence Requirements | 10% | 4 | **3** | 0.30 | **Override downward.** Every OBPI carries verification verbs and REQ-level acceptance criteria, so the floor is met. But three of six Fidelity Assertion rows are the same command (`gz validate --rendition-lineage`) proving three different claims, and `gz content land --dry-run → 0` passes against a stub. Verification breadth is thinner than the row count implies. |
-| 8 | Architectural Alignment | 10% | 4 | **4** | 0.40 | Agree. Exemplar files cited with line numbers throughout; analogues named (`gz obpi withdraw`/`repudiate`, ADR-0.0.71); anti-patterns named as rejected alternatives E, F, I. Append-only is honored rather than worked around. |
+| Dimension | Weight | CLI | Manual | Weighted | Reason for manual assessment |
+|---|---:|---:|---:|---:|---|
+| Problem clarity | 15% | 4 | 4 | 0.60 | The source-to-delivery gap and retirement need are concrete; agree with CLI. |
+| Decision justification | 15% | 4 | 3 | 0.45 | Extensive rationale satisfies presence heuristics, but later root-routing and metric rulings are not fully propagated. |
+| Feature checklist | 15% | 1 | 3 | 0.45 | Prefix/granularity heuristics understate actual coverage: all thirteen numbered items now map to briefs. The delivery units remain uneven. |
+| OBPI decomposition | 15% | 4 | 2 | 0.30 | Brief count and sections conceal broad 07/12 scope and unresolved prerequisite contracts. |
+| Lane assignment | 10% | 4 | 3 | 0.30 | Heavy is defensible for public validators and runtime changes; implementation scope for 13 still needs reconciliation. |
+| Scope discipline | 10% | 4 | 2 | 0.20 | Allowed/denied sections exist, but 06/13 omit required implementation paths and 13 contradicts exclusions. |
+| Evidence requirements | 10% | 4 | 2 | 0.20 | Numerous commands satisfy heuristics; several assertions do not prove the intended failure states. |
+| Architectural alignment | 10% | 4 | 2 | 0.20 | Architectural references exist, but lineage immutability and landing publication contracts conflict. |
+| **Total** | **100%** | **3.55** | | **2.70** | **CONDITIONAL GO** |
 
-**Substance weighted total: 3.60 / 4.0 → GO** (threshold ≥ 3.0).
-No dimension scores 1. Two dimensions were overridden downward against the CLI;
-one upward.
+## All OBPI scores
 
-## Part 2 — OBPI scores
+I = independence; T = testability; V = value; S = size; C = clarity. Scores evaluate
+brief quality, not a reversal of existing human attestation. Passing historical items
+are not reopened by current-template drift.
 
-The CLI's per-OBPI table is accepted as-is (all 10 average ≥ 3.6, none scores 1),
-with one qualification: its Size = 2 marks on OBPIs **02**, **05**, and **07** are
-judged accurate and are the evidence behind the dimension-4 override above. OBPI-07
-is the sizing risk the parent ADR itself flags as possibly splitting 10 → 11.
+| OBPI | I | T | V | S | C | Mean | Readiness |
+|---|---:|---:|---:|---:|---:|---:|---|
+| 01 Tombstone schema/fold | 4 | 3 | 4 | 3 | 3 | 3.4 | Completed in ledger |
+| 02 Withdraw verb | 3 | 3 | 4 | 3 | 3 | 3.2 | Completed in ledger |
+| 03 Duplicate retirement | 3 | 3 | 4 | 4 | 3 | 3.4 | Completed in ledger |
+| 04 Ownership/ratchet | 4 | 3 | 4 | 2 | 3 | 3.2 | Completed; its metric ruling must reach consumers |
+| 05 Candidate generator | 3 | 3 | 4 | 3 | 2 | 3.0 | Reconcile root route, metrics and provenance before implementation |
+| 06 Lineage validator | 3 | 3 | 4 | 4 | 2 | 3.2 | Depends on 05; repair parser allowlist |
+| 07 Land orchestrator | 3 | 3 | 4 | 2 | 2 | 2.8 | Revise publication/recovery and attestation contracts |
+| 08 Post-append advisory | 3 | 3 | 4 | 4 | 2 | 3.2 | Depends on 07; requires explicit draw |
+| 09 Codex wiring | 4 | 3 | 4 | 3 | 3 | 3.4 | Completed; root-only amendment governs |
+| 10 Classification ownership | 2 | 3 | 4 | 3 | 2 | 2.8 | Specify section-aware identity joins and failure cases |
+| 11 Corpus shape witness | 3 | 3 | 4 | 4 | 3 | 3.4 | Authored; ready for planning against landed 01 |
+| 12 Rules onboarding | 3 | 3 | 4 | 2 | 3 | 3.0 | Authored; depends on 05/06/07 and focused migration-plan review |
+| 13 Render order | 4 | 2 | 4 | 4 | 1 | 3.0 | Mandatory revision: clarity dimension is 1 |
 
-## Part 3 — Red-team protocol (10 challenges, all engaged)
+## Trackable findings and required corrections
 
-| # | Challenge | Result | Finding |
-|---|-----------|--------|---------|
-| 1 | So What? | **PASS** | § 7 Scope Minimization names the concrete capability lost per item; "do not cut 05 or 07 — without them 01–03 are schema with no consumer" is the model answer. |
-| 2 | Scope | **PASS** | Both directions answered. Excluded-but-arguable: the CLAUDE.md seam and `.gzkit/rules/*.md`, both named with reasons and forced onward. |
-| 3 | Alternative | **PASS** | Decomposition defended via explicit split adders; merge/split acknowledged rather than resisted (07 may split). |
-| 4 | Dependency | **PASS** (qualified) | A single point of failure exists — 01 heads the chain, 05 needs 01+04, 07 needs 05 — so the graph is a diamond, not resilient. It passes because the ADR states this explicitly and orders around it, not because the graph is robust. |
-| 5 | Gold Standard | **FAIL** | The ADR never compares itself structurally to a validated local exemplar (e.g. ADR-0.34.0, ADR-0.0.74). No such section exists. Cosmetic: costs a calibration check, not the design. |
-| 6 | Timeline | **PASS** | Critical path derivable and stated per brief; parallel stages explicit (04 runs alongside 01–03). |
-| 7 | Evidence | **PASS** | Every OBPI has at least one concrete verification command. See dimension 7 for the breadth qualification. |
-| 8 | Consumer | **PASS** | § Consequences (Negative) answers the operator's real questions, including the ones that damage the ADR. |
-| 9 | Regression | **FAIL** | **The material failure.** Pre-mortem #1 *is* the six-month silent-break scenario, and the ADR ships without a mitigation: *"Cadence, owner, and scheduled floor-raise are UNDECIDED and forced onward."* The failure *"requires nobody to do anything wrong"* — 18 months out the unowned total reads 22,100 B while "31.2% witnessed" has printed forty times. No monitoring or contract ensures the ADR's central value claim stays true. |
-| 10 | Parity | **PASS** | The weakest claim is assumption a2 (the 8 corpus-addressed sections are the high-value ones); the ADR marks it **← SHAKIEST** itself and gives the accretion-curve reasoning. |
+Paths below are relative to this ADR package unless stated otherwise.
 
-**2 failures → GO** (threshold: ≤ 2 GO, 3–4 CONDITIONAL GO, ≥ 5 NO GO).
+1. **F01 — Missing decomposition, repaired.** Parent Decomposition target is 13 and checklist
+   items 11/12 already existed. Authored
+   [11](obpis/OBPI-0.35.0-11-corpus-shape-witness.md) and
+   [12](obpis/OBPI-0.35.0-12-rules-corpus-onboarding.md) now supply those items.
+   11 audits effective corpus entries separately from the template and rendered-budget checks.
+   12 preserves full rule documents, requires explicit migration assignments, uses the shared
+   delivery chain and independently witnesses activation in the ledger.
 
-## Defect found outside the rubric — fixed during evaluation
+2. **F02 — Root routing conflicts in 05/07.** OBPI-05 REQ-05 requires claude/heavy and
+   codex/lite spans to differ; its demo still uses retired routing. OBPI-07 prerequisites
+   likewise name claude/codex artifacts. OBPI-09's root-only amendment and current
+   AgentContract manifest route govern. Rewrite the target matrix and expected spans;
+   distinct consumers cannot be required where only root is configured.
 
-The § Boundary Invariants set carried **two `BI-04` entries** (8 invariants under 7
-numbers), with `REQ-0.35.0-10-07` and `REQ-0.35.0-06-08` both citing "BI-04". A
-Boundary Invariant is the *sole* proof channel for a STRUCTURAL-FENCE REQ and both
-of these are cross-OBPI, auditable only at ADR closeout — so the collision would
-have surfaced at the worst possible moment. Blast radius was zero (only `BI-01` is
-cited by any brief), so the set was renumbered to BI-01…BI-08 and synced.
+3. **F03 — Metric contract unresolved in 05/06.** OBPI-04's operator amendment explicitly
+   chooses section-span bytes for the ownership ratchet. Its coupling note preserves
+   the parent's 31.2% entry-witness metric pending a separate ruling for 05/06.
+   These are different denominators, not merely stale counts. Present the two calculations
+   and obtain a scoped ruling before propagating either into generator/lineage acceptance.
 
-`gz validate --req-kind-discipline` passes over the duplicate: it checks that a REQ
-*names* a Boundary Invariant, not that the name resolves uniquely.
+4. **F04 — Whole-set atomicity is unproved in 07.** Staging every temporary file then
+   sequentially renaming destinations cannot itself make publication of the whole set atomic.
+   REQ-02 only proves staging failure behavior; REQ-05 must exercise failure after the
+   first destination is published. Define observable mixed-state refusal and recovery,
+   or an actual atomic publication mechanism, then test that state.
 
-## Verdict
+5. **F05 — Provenance shape conflicts.** Parent BI-03 says RenditionProvenance is
+   unextended across every OBPI; 05 repeats the invariant. 07 explicitly permits adding
+   landing_id. Reconcile storage ownership and the invariant before implementing 07.
 
-**GO — with two conditions, and a recommendation to shrink the first commitment.**
+6. **F06 — Attestation condition conflicts in 07.** Its unconditional empty-attestation
+   rejection conflicts with its discovery note describing corpus-delta-only attestation.
+   Specify initial/delta capture versus unchanged re-render behavior and refusal tests.
 
-The ADR is unusually well made. Its distinguishing quality is that it argues
-against itself in writing: it names the scenario in which it becomes
-*"retrospectively performative"*, marks its own shakiest assumption, and records
-that a rejected alternative beats the chosen path on attestation cost.
+7. **F07 — Missing parser scope in 06.** Add the actual CLI forwarding surface
+   src/gzkit/cli/parser_maintenance.py to both allowed-path representations and discovery.
+   Declaring a new validator flag without its parser path is not execution-ready.
 
-That same honesty is why Challenge 9 is a genuine failure rather than a quibble.
-An ADR that names its top-ranked failure and ships no mechanism against it has
-converted a design risk into a *documented* design risk. Documentation is not
-mitigation — and the ADR's central value claim (unwitnessed contract text becomes
-*declining* debt) is precisely what pre-mortem #1 predicts will not happen.
+8. **F08 — Identity mapping ambiguity in 10.** The existing bullet-retention scorecard
+   parser yields text/classification tuples without section identity. Define handling of
+   identical text in distinct sections, missing matches and ambiguous matches. Prove
+   identity-preserving ownership, not only equal totals.
 
-### Conditions
+9. **F09 — Unauthorized residue in 08.** Preserve the dated prohibition against resuming
+   from Active status. Clarify its dependency on 07 instead of describing it as independent.
+   A fresh explicit draw is required before implementation.
 
-1. **Resolve ratchet cadence, owner, and scheduled floor-raise before OBPI-04.**
-   04 is where the ratchet lands; past that point pre-mortem #1 stops being a risk
-   and becomes the architecture.
-2. **Treat "04 and 06 together or not at all" as binding.** The ADR states that
-   cutting 06 alone *is* pre-mortem #2 — the worst available combination — and it
-   is the cut a mid-campaign schedule squeeze reaches for first.
+10. **F10 — Scope and acceptance mismatch in 13.** Frontmatter has three REQs while the
+    body has six; allowed templates also appear denied; runtime/tests and the rendition
+    required by its joint-commit contract are absent. Demo is a placeholder and file-presence
+    checks cannot prove ordering/truncation behavior. Repair these together and express
+    the configurable-budget assumption accurately.
 
-### Recommendation on sizing
+## Next work
 
-Commit only to the **01 → 03 slice** first, then re-decide. It discharges GHI #635,
-removes a live double-render in AGENTS.md, and is a hard prerequisite for
-everything downstream (§ Alternatives H). The full ADR is 10 OBPIs and 97 REQs — 66
-of them BEHAVIOR, each requiring its own `@covers` test, none waivable — which is
-the largest single unit on the Build-to-1.0 board, in a repo whose stated blocker
-was accretion.
+**Recommend 05 next as a brief-reconciliation task, followed by implementation once resolved.**
+It advances the governing campaign's corpus-to-delivery chain and unlocks 06/07, then 08/12.
+First resolve F02/F03/F05 using current root-only routing and an explicit metric ruling.
+A scope recommendation is not authorization to pick between contradictory operator decisions.
 
-## Action items
+**If selecting an implementation candidate with the fewest unresolved contracts, choose 11.**
+Its fold prerequisite is delivered, it has a bounded audit surface, and the authored brief
+includes semantic negative controls through the public validator. It is ready for planning,
+not automatically drawn or attested. 12 is correctly authored but cannot precede 05/06/07.
 
-| # | Item | Blocking? |
-|---|------|-----------|
-| 1 | Decide ratchet cadence / owner / floor-raise | Blocks OBPI-04, not 01–03 |
-| 2 | Add a Gold Standard comparison against a validated local exemplar (Challenge 5) | No — cosmetic |
-| 3 | Broaden Fidelity Assertions so distinct claims have distinct commands | No — but do it before closeout, when the assertions are run |
-| 4 | Re-verify the 31.2% coverage figure at implementation time | No — Fidelity Assertions re-measure by design |
-| 5 | Reconcile briefs 04–10 against the tree as 01–03 were | Recommended before each is opened; the reconciler cannot see pre-landed work (GHI #581) |
+## Verification limits
+
+- Both new briefs pass individual gz obpi validate --authored checks after final edits.
+- Document, decomposition, requirement-kind, command-shape and brief-reconcile validations pass.
+- The full authored-validation batch also inspects completed briefs and reported historical
+  completion/scope/template evidence issues; this review does not claim all thirteen pass
+  that command or use those failures to nullify recorded attestation.
+- No implementation test suite, runtime delivery gate or completion attestation was claimed.
+- Existing brief conflicts remain tracked as F02–F10 here; they were not silently rewritten.
+
+> Consider: uv run -m gzkit justify OBPI-0.35.0-05

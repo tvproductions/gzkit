@@ -5,22 +5,30 @@ item: 11
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
-  - src/gzkit/templates/agents.md
-  - AGENTS.md
-  - src/gzkit/templates/agents.md
-  - src/gzkit/templates/adr.md
-  - src/gzkit/sync_surfaces.py
+  - src/gzkit/governance/trust_audits/agents_md_map_conformance.py
+  - src/gzkit/governance/trust_audits/_qc_negative_controls.py
+  - tests/governance/test_agents_md_map_conformance.py
+  - tests/governance/test_agents_md_map_doctrine_application.py
+  - features/agents_md_map_conformance.feature
+  - features/steps/agents_md_map_conformance_steps.py
+  - docs/user/manpages/validate.md
+  - docs/governance/governance_runbook.md
+  - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-11-corpus-shape-witness.md
 reqs:
   - REQ-0.35.0-11-01
   - REQ-0.35.0-11-02
   - REQ-0.35.0-11-03
+  - REQ-0.35.0-11-04
+  - REQ-0.35.0-11-05
+  - REQ-0.35.0-11-06
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
-  - test -f src/gzkit/templates/agents.md
-  - rg -n "^## Persona$" AGENTS.md
-  - test -f src/gzkit/templates/adr.md
-  - test -f src/gzkit/sync_surfaces.py
+  - uv run -m unittest tests.governance.test_agents_md_map_conformance tests.governance.test_agents_md_map_doctrine_application
+  - uv run -m behave features/agents_md_map_conformance.feature
+  - uv run gz validate --agents-md-map-conformance
+  - uv run gz validate --documents --req-kind-discipline
+  - uv run gz lint
+  - uv run gz typecheck
+  - uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-11-corpus-shape-witness: Corpus Shape Witness
@@ -28,261 +36,210 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-- **Checklist Item:** #11 - "Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922)"
-
-**Status:** Draft
+- **Checklist Item:** #11 — "Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922)"
 
 ## Objective
 
-<!-- One-sentence concrete outcome. What does "done" look like? -->
+Extend the existing map-conformance scope to check each effective AGENTS.md corpus entry
+for the existing paragraph, prohibited-title and link criteria, with entry-addressed
+diagnostics. Retain independent template bootstrap checks and the advisory rendered budget.
+A clean template must no longer hide invalid source entries.
 
-Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922).
+**Dependencies:** OBPI-01's effective fold is required and attested. This source check
+does not wait for 04/05/06/07: it checks entry text before rendition generation and makes
+no claim about assembled section shape or lineage coverage. Rule-family migration is 12;
+root render order is 13. The broader original GHI #922 is not wholly discharged by this item.
 
 ## Lane
 
-**Heavy** - This OBPI changes a command/API/schema/runtime contract surface.
-
-> Heavy is reserved for command/API/schema/runtime-contract changes. Process,
-> documentation, and template-only work stays Lite unless it changes one of
-> those external surfaces.
+**Heavy** — changes what the existing public validator rejects. Gates 1–5 apply.
 
 ## Allowed Paths
 
-<!-- What files/directories are IN SCOPE? Be explicit with paths. -->
+- `src/gzkit/governance/trust_audits/agents_md_map_conformance.py`
+- `src/gzkit/governance/trust_audits/_qc_negative_controls.py`
+- `tests/governance/test_agents_md_map_conformance.py`
+- `tests/governance/test_agents_md_map_doctrine_application.py`
+- `features/agents_md_map_conformance.feature`
+- `features/steps/agents_md_map_conformance_steps.py` — **CREATE**; adjacent feature steps establish the convention.
+- `docs/user/manpages/validate.md`
+- `docs/governance/governance_runbook.md`
+- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-11-corpus-shape-witness.md`
 
-- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md` — parent ADR for intent and scope
-- `src/gzkit/templates/agents.md` — explicitly referenced by the checklist item
-- `AGENTS.md` — primary context-frame contract
-- `src/gzkit/templates/agents.md` — generated AGENTS template source
-- `src/gzkit/templates/adr.md` — ADR template surface for future context frames
-- `src/gzkit/sync_surfaces.py` — AGENTS regeneration surface
+The negative-control registry gains a corpus-specific violation fixture; its existing
+template control remains. No new CLI scope or parser flag is needed.
 
 ## Denied Paths
 
-<!-- What files/directories are OUT OF SCOPE? Agents will not touch these. -->
-
-- Paths not listed in Allowed Paths
-- New dependencies
-- CI files, lockfiles
+- `src/gzkit/content/models/corpus.py`, `src/gzkit/content/corpus_store.py`, `src/gzkit/content/vendors.py` — read-only fold, store and routing contracts.
+- `.gzkit/corpus/AGENTS.md.jsonl`, `AGENTS.md`, `src/gzkit/templates/agents.md` — subjects, never rewritten to pass the audit.
+- `data/vendor-manifest.json`, `data/instructions_files_budget.json` — no cap or budget change.
+- Paths not listed in Allowed Paths; new dependencies, CI files and lockfiles.
 
 ## Requirements (FAIL-CLOSED)
 
-<!-- Constraints that MUST hold. Numbered list. NEVER/ALWAYS language.
-     These are the rules agents ground against. If not met, OBPI fails. -->
+1. ALWAYS run the existing shape criteria over effective entry text, regardless of tier,
+   without substituting the template or a committed rendition for that source.
+2. ALWAYS preserve each entry boundary and identify corpus path, entry id, logical surface
+   and offending entry-local line. Never concatenate entries so unrelated paragraphs
+   merge or a fence in one entry suppresses findings in another.
+3. ALWAYS use the shipped fold. Pure tombstones contribute no text; superseded and retired
+   content is excluded according to the existing algebra. No second liveness algorithm.
+4. ALWAYS resolve relative links against the logical AGENTS.md location, then the existing
+   project-root fallback. The JSONL storage directory is never a link base.
+5. ALWAYS distinguish absent-store bootstrap from a malformed or unreadable present store.
+   The former retains the template audit; the latter reports a hard source failure.
+6. NEVER change the existing shape criteria or turn budget/bullet advisories into errors.
+   The template arm stays independently effective; retained off-route renditions and
+   candidate files cannot affect the source verdict.
+7. ALWAYS register a live corpus negative control with clean template/rendered fixtures,
+   so the registered claim proves the new source arm actually ran.
 
-1. REQUIREMENT: This OBPI MUST deliver: Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922).
-1. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief
-1. REQUIREMENT: Verification commands MUST be concrete and runnable before acceptance
-1. NEVER: Mark the OBPI accepted while scaffold defaults remain in the brief
-1. ALWAYS: Reconcile the brief with the parent ADR before implementation begins
-
-> STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+> STOP-on-BLOCKERS: report missing prerequisites before implementation; do not weaken the source check.
 
 ## Discovery Checklist
 
-<!-- What to read before implementation. Complete this checklist first.
-     Order matters: read the structured input (parent ADR § Decision)
-     before the unstructured one (allowed paths, prerequisites). -->
+**Parent ADR (read first):**
 
-**Parent ADR (read first; order pinned — GHI #321):**
+- [ ] Read § Decision SOURCE-OF-TRUTH DIRECTION and quote it in Implementation Summary.
+- [ ] Read § Intent, then checklist item 11 and the 2026-09-01 scope amendment.
+- [ ] Read parent: `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`.
 
-- [ ] **Parent ADR § Decision item — quote the line this OBPI implements** verbatim into the brief's Implementation Summary. The Decision item is the contract; everything else hangs off it.
-- [ ] Parent ADR § Intent — the why-frame for the Decision read above.
-- [ ] Parent ADR file: `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
+> STOP: if the parent Decision grounding cannot be quoted, re-read it before implementation.
 
-> **STOP:** If you cannot quote the parent ADR § Decision item that this OBPI implements, STOP and re-read. Do not proceed to Allowed Paths, Prerequisites, or implementation until the Decision quote is in hand.
+**Governance:**
 
-**Governance (read once, cache):**
+- [ ] Read AGENTS.md and `.gzkit/rules/agents-md-map-doctrine.md`; preserve advisory budget posture.
+- [ ] Read `.gzkit/rules/tests.md` for semantic tests and proof channels.
 
-- [ ] `.github/discovery-index.json` - repo structure
-- [ ] `AGENTS.md` or `CLAUDE.md` - agent operating contract
+**Prerequisites:**
 
-**Context:**
+- [ ] Verify completed OBPI-01 and the available `effective_corpus` API.
+- [ ] Confirm the existing public scope is wired through validate_cmd.py and parser_maintenance.py.
+- [ ] Read the corpus and classify current source findings; no fixed entry count is a completion criterion.
 
-- [ ] Related OBPIs in same ADR
+**Existing Code:**
 
-**Prerequisites (check existence, STOP if missing):**
-
-- [ ] Required path exists or is intentionally created in this OBPI: `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-- [ ] Required path exists or is intentionally created in this OBPI: `src/gzkit/templates/agents.md`
-- [ ] Parent ADR evidence artifacts referenced by this brief are present
-
-**Existing Code (understand current state):**
-
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
-- [ ] Parent ADR integration points reviewed for local conventions
+- [ ] Read the whole `agents_md_map_conformance.py` audit and its paragraph/title/link helpers.
+- [ ] Read `corpus_store.load_corpus` absent-store behavior and effective-fold tests.
+- [ ] Read `_qc_negative_controls.py` template fixture; it cannot witness this new corpus arm.
+- [ ] Read the two named governance test modules and the existing map-conformance feature.
 
 ## Quality Gates
 
-<!-- Which gates apply and how to verify them. -->
-
 ### Gate 1: ADR
 
-- [ ] Intent and scope recorded in this OBPI brief
-- [ ] Parent ADR checklist item quoted
+- [ ] Parent checklist and this brief remain in 1:1 correspondence.
 
 ### Gate 2: TDD (Red-Green-Refactor)
 
-- [ ] Tests derived from brief acceptance criteria, not from implementation
-- [ ] Red-Green-Refactor cycle followed per behavior increment
-- [ ] Tests pass: `uv run gz test`
-- [ ] Validation commands recorded in evidence with real outputs
+- [ ] Each BEHAVIOR REQ has a semantic failing test before implementation and passing evidence afterward.
+- [ ] Negative controls exercise the production command path, not a substituted helper.
+- [ ] Full tests pass with canonical ARB receipts before completion.
 
-### Code Quality
+### Gate 3: Docs
 
-- [ ] Lint clean: `uv run gz lint`
-- [ ] Type check clean: `uv run gz typecheck`
+- [ ] User documentation carries observed output and strict MkDocs build passes.
 
-<!-- Heavy lane only: -->
-### Gate 3: Docs (Heavy only)
+### Gate 4: BDD
 
-- [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated
+- [ ] The named feature scenarios prove the delivered behavior through the CLI.
 
-### Gate 4: BDD (Heavy only)
+### Gate 5: Human
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/`
-
-### Gate 5: Human (Heavy only)
-
-- [ ] Human attestation recorded
+- [ ] Present concrete evidence and obtain explicit human completion attestation.
+- [ ] Record the operator's words verbatim, with evidence enrichment, before completion.
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
-     test, mkdocs) — they prove the codebase is healthy, not what the OBPI
-     yielded. The yielded product belongs in the `## Demo` section below.
-
-     AUTHORING CONTRACT: Every command in this section must be a single-program,
-     shell-less invocation — no &&, ||, |, ;, $(...), or redirects. The
-     OBPI-pipeline verify stage executes commands via shlex.split + shell=False
-     (GHI #415); compound commands are blocked at authoring time by
-     gz validate --brief-command-shape and rejected at the verify stage.
-     Write multi-step verification as separate uv run ... lines. -->
-
 ```bash
-uv run gz validate --documents
+uv run -m unittest tests.governance.test_agents_md_map_conformance tests.governance.test_agents_md_map_doctrine_application
+uv run -m behave features/agents_md_map_conformance.feature
+uv run gz validate --agents-md-map-conformance
+uv run gz validate --documents --req-kind-discipline
 uv run gz lint
 uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
-test -f src/gzkit/templates/agents.md
-rg -n "^## Persona$" AGENTS.md
-test -f src/gzkit/templates/adr.md
-test -f src/gzkit/sync_surfaces.py
+uv run mkdocs build --strict
 ```
 
 ## Demo
 
-<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
-     that demonstrate the capability this OBPI delivers — e.g. an actual
-     diagnosis run against a real file, the `--json` form, an auto-chain
-     trigger. The closeout ceremony walkthrough harvests this section
-     (parser-validated; unregistered verbs are dropped). Prefer real paths
-     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+Run against the actual corpus after implementation; the unit/BDD fixtures supply the
+known-bad and repaired counterparts without mutating repository canon.
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+uv run gz validate --agents-md-map-conformance
+uv run gz validate --agents-md-map-conformance --json
+uv run -m behave features/agents_md_map_conformance.feature
 ```
 
 ## Acceptance Criteria
 
-<!--
-Specific, testable criteria for completion.
-Each checkbox MUST carry a deterministic REQ ID:
-REQ-<semver>-<obpi_item>-<criterion_index>
--->
-
-- [ ] REQ-0.35.0-11-01: Given the parent ADR intent, when the OBPI implementation is complete, then the primary scoped artifacts exist and match the documented contract
-- [ ] REQ-0.35.0-11-02: Given the Allowed Paths in this brief, when the OBPI is executed, then changes remain inside scope and denied paths remain untouched
-- [ ] REQ-0.35.0-11-03: Given the Verification commands in this brief, when they run, then evidence is recorded before the OBPI is accepted
-
-## Completion Checklist
-
-<!-- Verify all gates before marking OBPI accepted. -->
-
-- [ ] **Gate 1 (ADR):** Intent recorded in brief
-- [ ] **Gate 2 (TDD):** RGR cycle followed, tests derived from brief, coverage maintained
-- [ ] **Code Quality:** Lint, format, type checks clean
-- [ ] **Value Narrative:** Problem-before vs capability-now is documented
-- [ ] **Key Proof:** One concrete usage example is included
-- [ ] **OBPI Acceptance:** Evidence recorded below
-
-> For ceremony steps and lane-inheritance attestation rules, see `AGENTS.md` section `OBPI Acceptance Protocol`.
-
-## Evidence
-
-<!-- Record observations during/after implementation.
-     Command outputs, file:line references, dates. -->
-
-### Gate 1 (ADR)
-
-- [ ] Intent and scope recorded
-
-### Gate 2 (TDD — Red-Green-Refactor)
-
-```text
-# Paste test output here
-```
-
-### Code Quality
-
-```text
-# Paste lint/format/type check output here
-```
-
-### Gate 3 (Docs)
-
-```text
-# Paste docs-build output here when Gate 3 applies
-```
-
-### Gate 4 (BDD)
-
-```text
-# Paste behave output here when Gate 4 applies
-```
-
-### Gate 5 (Human)
-
-```text
-# Record attestation text here when required by parent lane
-```
-
-### Value Narrative
-
-<!-- What problem existed before this OBPI, and what capability exists now? -->
-
-### Key Proof
-
-<!-- One concrete usage example, command, or before/after behavior. -->
-
-### Implementation Summary
-
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+- [ ] REQ-0.35.0-11-01 [BEHAVIOR]: Given clean template and rendered files but an effective corpus entry violating an existing paragraph or prohibited-title criterion, the public scope exits 3 with corpus path, entry id and entry-local line; a conforming counterpart exits 0. The registered corpus-specific QC negative control invokes this production scope and proves that the corpus violation is detected with otherwise clean fixtures.
+- [ ] REQ-0.35.0-11-02 [BEHAVIOR]: Given the same violating text first live, then retired or superseded, only its effective live state contributes a finding; retiring a pure retirement tombstone restores the finding according to the shipped fold.
+- [ ] REQ-0.35.0-11-03 [BEHAVIOR]: Given an entry with a relative link and file anchor, valid logical-surface-relative targets pass and missing files or invalid anchors fail with entry attribution; placing a decoy target under .gzkit/corpus cannot make an invalid logical link pass.
+- [ ] REQ-0.35.0-11-04 [BEHAVIOR]: Given no corpus store, the independent template audit still detects a template violation; a malformed or unreadable present corpus produces a hard corpus finding rather than a template fallback, and corpus violations are detected even without a template.
+- [ ] REQ-0.35.0-11-05 [BEHAVIOR]: Given unchanged corpus entries, adding retained off-route renditions or candidates leaves source findings unchanged; template violations remain independently detectable while budget and binding-bullet advisories alone do not make the scope fail.
+- [ ] REQ-0.35.0-11-06 [SUPPORT]: Validator documentation describes the effective-corpus arm, retained template arm, entry diagnostics and logical link base, witnessed by an artifact_edited event citing docs/user/manpages/validate.md and by gz validate --documents.
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+- GHI #922 — this brief implements the parent-ratified corpus-source slice; the issue's wider nested-budget questions are not silently declared solved.
 
-_No defects tracked._
+## Completion Checklist
+
+- [ ] Gate 1 intent and scope recorded.
+- [ ] Gate 2 semantic tests and negative controls verified.
+- [ ] Lint, type checks, docs and BDD verified.
+- [ ] Value narrative and key proof show the delivered capability.
+- [ ] Human attestation recorded through the governed completion command.
+
+## Evidence
+
+### Gate 1 (ADR)
+
+Authored on 2026-09-05 at the operator's request to rectify the thirteen-item decomposition.
+This is authoring authorization, not an implementation draw or completion attestation.
+
+### Gate 2 (TDD — Red-Green-Refactor)
+
+No implementation test result claimed at authoring.
+
+### Code Quality
+
+Execution receipts will be recorded when this OBPI is implemented.
+
+### Gate 3 (Docs)
+
+Implementation documentation and observed command output remain to be delivered.
+
+### Gate 4 (BDD)
+
+No implementation scenario result claimed at authoring.
+
+### Gate 5 (Human)
+
+No completion attestation recorded.
+
+### Value Narrative
+
+The Objective states the missing capability. Record the measured before/after at implementation.
+
+### Key Proof
+
+Run the Demo after implementation and preserve its observed output with negative-control evidence.
+
+### Implementation Summary
+
+Parent Decision grounding, verbatim:
+
+> SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather than inherited): the corpus is the SOURCE that AGENTS.md is generated from.
+
+The specific deliverable is the linked checklist item quoted above. No source implementation
+was performed while authoring this brief.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
-
----
-
-**Date Completed:** -
-
-**Evidence Hash:** -
+- Attestor: pending
+- Attestation: pending explicit human completion attestation
+- Date: pending
