@@ -73,7 +73,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mx-mode.md` | `1.4.0` |
 | `pythonic.md` | `0.5.1` |
 | `tool-skill-runbook-alignment.md` | `0.5.0` |
-| `tests.md` | `0.19.0` |
+| `tests.md` | `0.20.0` |
 | `task-discovery.md` | `0.8.0` |
 | `token-block-discipline.md` | `0.7.0` |
 
@@ -180,6 +180,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 38 | Coverage >=40.00% | **Mechanical** | Pre-commit hook |
 | 39 | Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` | **Mechanical** | Enforced by `gz validate --behave-req-tags` (GHI #211, reversed direction GHI #276) — enumerates heavy-lane OBPI briefs (pool ADRs excluded), extracts REQ-IDs from each brief's Acceptance Criteria, and asserts every REQ has a matching scenario-level `@REQ-*` tag under `features/**`. Heavy OBPIs that defer BDD (schema-only, template-only) register in `data/behave_coverage_waivers.json`. |
 | 66 | **Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. | **Mechanical** | **Promoted 2026-08-05 (rule `0.14.0`).** `verifier-pipe-gate.py`, a `PreToolUse` hook on `Bash`, refuses a verifier in any non-final pipeline stage; decision in `src/gzkit/verifier_pipe_gate.py` (`decide`), live negative control `verifier-exit-status-masked` wired into `_ensure_production_claims_registered`. The named promotion path said "refusing `<verifier> \| <filter>`"; that was built one step wider **on purpose** — the shell reports the LAST stage's exit whatever it is, so a filter allowlist would pass `gz check \| cat`, the identical defect renamed. Verifier set is READ from `CANONICAL_STEP_COMMANDS`, not restated. Quote-aware `shlex` parsing single-sourced into `src/gzkit/shell_reading.py`, shared with `handoff_resume_gate._is_compound` so the two gates cannot disagree about what a pipe is. `set -o pipefail` and `${PIPESTATUS[0]}` opt out. Coverage limits declared in `UNWITNESSABLE`. |
+| 89 | **Mutation-sweep integrity (binding, GHI #963).** A failing mutant run is not a kill; sweeps report four outcomes; every mutant runs with its own bytecode cache | **Judgment** | **Added 2026-09-06 (rule `0.20.0`), GHI #963 — never scored.** The MECHANISM exists and is not the difficulty: `gzkit.mutation_witness.run_mutation_sweep` verifies baseline, activation, per-mutant `PYTHONPYCACHEPREFIX` isolation and failure cause, returns `killed`/`survived`/`invalid`/`inconclusive`, and is itself swept — that self-sweep found one of its own guards vacuous (the isolation test asserted a recorded field rather than what the subprocess saw). **What has no witness is that a given sweep USED it.** A sweep is an ad-hoc act inside a session, not a repository artifact: nothing on disk records that one ran, so there is no surface a checker could read, which is the unmodelled-caller ground of rows 29/30 rather than a check nobody has written. The adjacent mechanical arm is the harness's own test suite, and citing it here would be the scope-level-control-as-property-proof substitution this scorecard refuses — it proves the harness classifies correctly, never that an agent reached for it instead of a shell loop. Reclassify if sweeps ever emit a receipt (the `gz arb red` shape is the obvious precedent), which would give the claim a surface for the first time. |
 | 67 | **RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". | **Mechanical** | `uv run gz arb red --req <REQ-ID>` emits `gzkit.arb.red_receipt.v1` + a `red_receipt_emitted` ledger event carrying `failure_class`; `gz validate --red-parity` is a bound QC step. A `none` verdict (test passes without its implementation) fail-closes as the § 6f defect (GHI #642). |
 | 68 | **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. | **Mechanical** | `gz validate --commit-trailers` (GHI #552 strict mode); `has_task_trailer()` in `src/gzkit/tasks.py`. Auto-stamped by `.gzkit/hooks/prepare-commit-msg-task-trailers`. Accepted forms single-sourced through `_ANY_TASK_TRAILER_RE`; the `-#<ghi>` anchor is OPTIONAL (operator moratorium on reflexive GHI-filing, 2026-06-01). |
 | 69 | **Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. | **Judgment** | `gz test-shape` reads the markers, but an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported **advisory, never fail-closed** (GHI #571). **Re-scored 2026-08-08 (rule `0.15.0`), Movement C rules arm.** The former promotion path — "flip that arm closed once the declared-marker backlog drains" — is not observed-drift evidence, and flipping it would fail-close the whole legacy corpus at once, which is why the arm was left open. The rule now states the advisory posture as settled in its own text; this row is not a re-score alone. |
@@ -485,7 +486,7 @@ decays in whichever direction the next reader's grep happens to point.
 |-------|-------|---|
 | **Mechanical** | 67 | 42% |
 | **Promotable** | 30 | 19% |
-| **Judgment** | 62 | 39% |
+| **Judgment** | 63 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -500,7 +501,8 @@ decays in whichever direction the next reader's grep happens to point.
      had never been scored were scored for real. Two came in Promotable, not Mechanical:
      unit-test enforcement is not a registered negative control. The denominator is
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
-     lane-is-not-route carve-out, 2026-09-06); the entries between 131 and 158 were
+     lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
+     integrity, GHI #963); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
