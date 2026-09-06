@@ -151,6 +151,23 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "rendition_advisor_verdict",
         "rendition_committed",
         "security_floor_overridden",
+        # Both wired into the union by GHI #877, which is why they arrive here
+        # together: the model classes existed and were simply never union members,
+        # so `ledger_event_discriminators()` could not see them and this set was
+        # never asked about them. Dispositioned OUT on their own merits, not
+        # because they are new.
+        #
+        # `session_exit_bookmark_skipped` is session-scoped, on exactly the ground
+        # the `handoff_resume_*` family above is dispositioned: it binds to a
+        # harness session id and names a handoff that is already a node via its
+        # own frontmatter. There is no second artifact, so there is no edge.
+        "session_exit_bookmark_skipped",
+        # `surface_weight_recalibrated` records that a control surface's floor and
+        # green/yellow bands moved. Same ground as the `section_ownership_*` family
+        # below: a property OF a surface, never lineage BETWEEN governance
+        # artifacts. The corpus graph edges PRD -> ADR -> OBPI; a band threshold is
+        # read from the surface's own declaration, never from this projection.
+        "surface_weight_recalibrated",
         "task_blocked",
         # Section ownership and the unowned-byte ratchet (OBPI-0.35.0-04).
         # DISPOSITIONED OUT, not overlooked: these image which SECTIONS of a

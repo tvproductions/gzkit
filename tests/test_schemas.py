@@ -368,6 +368,39 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
 _BASE_FIELDS = {"schema_", "event", "id", "ts", "parent"}
 
 
+def _union_members() -> tuple[type, ...]:
+    """Return the concrete model classes inside the `TypedLedgerEvent` union."""
+    import typing
+
+    from gzkit.events import TypedLedgerEvent
+
+    args = typing.get_args(TypedLedgerEvent)
+    # Annotated[A | B | ..., Field(discriminator=...)] -> unwrap the Annotated payload
+    if args and typing.get_args(args[0]):
+        args = typing.get_args(args[0])
+    return tuple(a for a in args if isinstance(a, type))
+
+
+def _union_model_names() -> set[str]:
+    return {cls.__name__ for cls in _union_members()}
+
+
+def _union_event_tags() -> set[str]:
+    """Return the `event` discriminator literal each union member is tagged with."""
+    import typing
+
+    tags: set[str] = set()
+    for cls in _union_members():
+        field = cls.model_fields.get("event")
+        if field is None:
+            continue
+        # The discriminator is carried as `Literal["name"]`, not as a default.
+        tags.update(a for a in typing.get_args(field.annotation) if isinstance(a, str))
+        if isinstance(field.default, str):
+            tags.add(field.default)
+    return tags
+
+
 class TestLedgerSchemaAlignment(unittest.TestCase):
     """Verify typed event models match ledger.json event definitions."""
 
@@ -429,6 +462,41 @@ class TestLedgerSchemaAlignment(unittest.TestCase):
                     missing,
                     f"{model_cls.__name__} missing schema properties: {missing}",
                 )
+
+    def test_every_schema_event_is_a_member_of_the_typed_union(self) -> None:
+        """The PRODUCTION union — not the hand-maintained map above — must cover the schema.
+
+        `_EVENT_MODELS` is authored by hand in this test module, so
+        `test_all_schema_events_have_models` witnesses the map rather than the read
+        path. Measured under GHI #877: the map carried all 74 schema events and passed,
+        while `TypedLedgerEvent` carried 72. `SessionExitBookmarkSkippedEvent` and
+        `SurfaceWeightRecalibratedEvent` were authored, exported and registered in the
+        map, and simply never added to the union — so 99 committed rows had no typed
+        reader while every alignment test stayed green.
+
+        This asserts against `typing.get_args(TypedLedgerEvent)` so a model can never
+        again be authored-but-unwired.
+        """
+        self.assertEqual(
+            set(self.event_rules) - _union_event_tags(),
+            set(),
+            "ledger.json declares events the TypedLedgerEvent union cannot discriminate",
+        )
+
+    def test_the_hand_maintained_map_agrees_with_the_typed_union(self) -> None:
+        """The map and the union must name the same models, in both directions.
+
+        Either direction of drift is a defect: a model in the map but not the union is
+        the #877 shape (alignment tests pass, the read path is blind); a model in the
+        union but not the map means the alignment assertions above silently skip it.
+        """
+        map_models = {cls.__name__ for cls in _EVENT_MODELS.values()}
+        union_models = _union_model_names()
+        self.assertEqual(
+            (map_models - union_models, union_models - map_models),
+            (set(), set()),
+            "_EVENT_MODELS and TypedLedgerEvent disagree about which models exist",
+        )
 
     @covers("REQ-0.15.0-01-01")
     def test_base_required_fields(self) -> None:
@@ -876,29 +944,25 @@ class TestTypedModelParsesEveryCommittedLedgerRow(unittest.TestCase):
         if not ledger.exists():  # pragma: no cover - only in a stripped checkout
             self.skipTest("no committed ledger in this checkout")
 
-        # SCOPED to the corpus events, deliberately. Measured 2026-08-25: ~300
-        # committed rows across 14 other event-type/field combinations already fail
-        # this union (`artifact_renamed`, `obpi_lock_released`, `airlock_in`, ... all
-        # carrying keys their models forbid). That is a real, larger pre-existing gap
-        # -- tracked separately -- and swallowing it here would mean either a
-        # permanently red test or an allowlist that quietly grows until the fence
-        # asserts nothing. Scope names what this OBPI is accountable for.
-        scope = {"corpus_entry_retired", "corpus_entry_appended"}
+        # REPO-WIDE since GHI #877. This was scoped to the two corpus events while
+        # 373 rows across 14 event-type/field combinations still failed the union;
+        # that gap is closed, so the fence now covers the ledger the project ships.
+        # There is deliberately no allowlist: an allowlist here would grow quietly
+        # until the fence asserted nothing, which is the failure the scoping comment
+        # it replaced was guarding against.
 
         failures: list[str] = []
         for lineno, line in enumerate(ledger.read_text(encoding="utf-8").splitlines(), start=1):
             if not line.strip():
                 continue
             row = json.loads(line)
-            if row.get("event") not in scope:
-                continue
             try:
                 parse_typed_event(row)
             except ValueError as exc:
-                # An event type with no typed model is a different (declared) gap;
-                # this test is about a row the union CLAIMS to model and cannot parse.
-                if "Unknown event" in str(exc) or "no typed model" in str(exc).lower():
-                    continue
+                # No "unknown event" escape any more: an event the schema declares
+                # but the union omits is exactly the defect #877 found (two models
+                # existed and were simply never wired in), so swallowing it here
+                # would hide the class this fence exists to catch.
                 failures.append(f"{ledger.name}:{lineno} {row.get('event')}: {exc}")
 
         self.assertEqual(

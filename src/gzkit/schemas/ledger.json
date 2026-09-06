@@ -38,6 +38,12 @@
             "null"
           ],
           "min_length": 1
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -58,6 +64,12 @@
             "string",
             "null"
           ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -66,9 +78,21 @@
         "path"
       ],
       "properties": {
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "path": {
           "type": "string",
           "min_length": 1
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "session": {
           "type": [
@@ -78,12 +102,6 @@
           "min_length": 1
         },
         "task_id": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "commit": {
           "type": [
             "string",
             "null"
@@ -486,9 +504,57 @@
         "new_id"
       ],
       "properties": {
+        "collision_resolution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "demoted_at": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ghi": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "new_id": {
           "type": "string",
           "min_length": 1
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "operator": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prior_kind": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prior_semver": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "reason": {
           "type": [
@@ -496,6 +562,12 @@
             "null"
           ],
           "min_length": 1
+        },
+        "semver": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "task_id": {
           "type": [
@@ -795,6 +867,12 @@
         },
         "force": {
           "type": "boolean"
+        },
+        "handoff_path": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },
@@ -862,7 +940,16 @@
         "manifest_path"
       ],
       "properties": {
-        "version": {
+        "foundation_summary": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "ghi_summary": {
+          "type": "array"
+        },
+        "manifest_path": {
           "type": "string",
           "min_length": 1
         },
@@ -876,10 +963,7 @@
             "null"
           ]
         },
-        "ghi_summary": {
-          "type": "array"
-        },
-        "manifest_path": {
+        "version": {
           "type": "string",
           "min_length": 1
         }
@@ -1822,10 +1906,50 @@
       }
     },
     "airlock_in": {
-      "required": []
+      "required": [],
+      "properties": {
+        "decision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "unaccounted": {
+          "type": [
+            "array",
+            "null"
+          ]
+        }
+      }
     },
     "airlock_out": {
-      "required": []
+      "required": [],
+      "properties": {
+        "bodies": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "drift": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "routing": {
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "verdict": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
     },
     "surface_weight_recalibrated": {
       "required": [
@@ -1990,11 +2114,23 @@
         "reason"
       ],
       "properties": {
-        "unparked_from": {
+        "attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ghi": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
           "type": "string",
           "min_length": 1
         },
-        "reason": {
+        "unparked_from": {
           "type": "string",
           "min_length": 1
         }

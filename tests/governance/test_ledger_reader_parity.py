@@ -51,14 +51,15 @@ from gzkit.validate_pkg.ledger_check import validate_ledger
 REPO_ROOT = Path(__file__).resolve().parents[2]
 LEDGER_SCHEMA = REPO_ROOT / "src" / "gzkit" / "schemas" / "ledger.json"
 
-#: Schema events with no typed model. `parse_typed_event` cannot replay these at
-#: all, which is GHI #877's declared subject (the typed union rejecting rows the
-#: JSON schema accepts) rather than this issue's. Listed explicitly rather than
-#: skipped silently so a NEW model-less event fails immediately instead of
-#: joining an invisible backlog.
-_UNMODELLED_EVENTS: frozenset[str] = frozenset(
-    {"session_exit_bookmark_skipped", "surface_weight_recalibrated"}
-)
+#: Schema events with no typed model. EMPTY since GHI #877 was repaired: both
+#: former entries (`session_exit_bookmark_skipped`, `surface_weight_recalibrated`)
+#: had model classes all along and were simply never added to the
+#: `TypedLedgerEvent` union, so the typed reader could not replay 99 committed
+#: rows. Kept as an empty waiver rather than deleted: it is the shrink-only
+#: ratchet that makes a NEW model-less event fail immediately instead of joining
+#: an invisible backlog, and `test_the_unmodelled_waiver_names_only_genuinely_
+#: unmodelled_events` fails closed if an entry ever outlives its subject again.
+_UNMODELLED_EVENTS: frozenset[str] = frozenset()
 
 
 def _schema_events() -> dict[str, Any]:

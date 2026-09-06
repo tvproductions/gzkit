@@ -103,6 +103,7 @@ class ObpiCreatedEvent(_EventBase):
     """obpi_created event."""
 
     event: Literal["obpi_created"]
+    source: str | None = None
 
 
 class AdrCreatedEvent(_EventBase):
@@ -110,6 +111,7 @@ class AdrCreatedEvent(_EventBase):
 
     event: Literal["adr_created"]
     lane: str
+    source: str | None = None
 
 
 class ArtifactEditedEvent(_EventBase):
@@ -122,6 +124,7 @@ class ArtifactEditedEvent(_EventBase):
         default=None, description="Commit SHA the backstop recorder observed (GHI #847)"
     )
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+    reason: str | None = None
 
 
 class AttestedEvent(_EventBase):
@@ -184,6 +187,15 @@ class ArtifactRenamedEvent(_EventBase):
     new_id: str
     reason: str | None = None
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+    kind: str | None = None
+    semver: str | None = None
+    prior_kind: str | None = None
+    prior_semver: str | None = None
+    demoted_at: str | None = None
+    collision_resolution: str | None = None
+    operator: str | None = None
+    note: str | None = None
+    ghi: int | None = None
 
 
 class FoundationGrandfatheredEvent(_EventBase):
@@ -305,6 +317,7 @@ class ObpiLockReleasedEvent(_EventBase):
     event: Literal["obpi_lock_released"]
     agent: str
     force: bool = False
+    handoff_path: str | None = None
 
 
 class ObpiLockTtlWarningEvent(_EventBase):
@@ -350,6 +363,8 @@ class ObpiUnparkedEvent(_EventBase):
     event: Literal["obpi_unparked"]
     unparked_from: str = Field(..., min_length=1, description="Pool id the parent promoted from")
     reason: str = Field(..., min_length=1, description="Transition that released the park")
+    attestor: str | None = None
+    ghi: str | None = None
 
 
 class ObpiBlockedOnOperatorEvent(_EventBase):
@@ -496,6 +511,7 @@ class PatchReleaseEvent(_EventBase):
     tag: str | None = None
     ghi_summary: list[dict[str, Any]]
     manifest_path: str
+    foundation_summary: list[dict[str, Any]] | None = None
 
 
 class PipelineMarkerPurgedEvent(_EventBase):
@@ -1011,12 +1027,18 @@ class AirlockInEvent(_EventBase):
     """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate)."""
 
     event: Literal["airlock_in"]
+    decision: str | None = None
+    unaccounted: list[str] | None = None
 
 
 class AirlockOutEvent(_EventBase):
     """airlock_out event — a transit exited the airlock (drift-diff -> decision -> L2)."""
 
     event: Literal["airlock_out"]
+    verdict: str | None = None
+    drift: list[str] | None = None
+    routing: list[str] | None = None
+    bodies: int | None = None
 
 
 class SurfaceWeightRecalibratedEvent(_EventBase):
@@ -1360,7 +1382,9 @@ TypedLedgerEvent = Annotated[
     | SectionOwnershipGenesisEvent
     | UnownedRatchetUpdatedEvent
     | SectionOwnershipUnownedEvent
-    | SectionOwnershipReanchoredEvent,
+    | SectionOwnershipReanchoredEvent
+    | SessionExitBookmarkSkippedEvent
+    | SurfaceWeightRecalibratedEvent,
     Field(discriminator="event"),
 ]
 
