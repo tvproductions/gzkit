@@ -935,6 +935,18 @@ def run_red_parity_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --red-parity", cwd=project_root)
 
 
+def run_producer_fields_audit(project_root: Path) -> QualityResult:
+    """Run the producer-side ledger contract-parity gate (GHI #877, reopened).
+
+    Fails when a ledger producer writes a payload field that `schemas/ledger.json`
+    or the typed union does not declare. The typed union is `extra="forbid"`, so
+    such a producer writes a row that replay then refuses — and a fence reading
+    committed rows cannot see it until the producer first fires.
+    Recovery: declare the field in BOTH contracts.
+    """
+    return run_command("uv run gz validate --producer-fields", cwd=project_root)
+
+
 def run_rendition_freshness_audit(project_root: Path) -> QualityResult:
     """Run the rendition-freshness gate (OBPI-0.0.37-22).
 

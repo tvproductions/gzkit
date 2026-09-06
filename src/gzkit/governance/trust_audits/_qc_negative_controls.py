@@ -788,6 +788,29 @@ def _build_red_parity() -> Path:
     return root
 
 
+def _build_producer_field_parity() -> Path:
+    """Violation: a producer writes a payload field neither contract declares.
+
+    The exact shape GHI #877 missed — ``_book_aborted_exit`` wrote ``aborted``
+    on ``airlock_out`` while both contracts were silent. The fixture producer has
+    never fired, so no row exists to parse: a committed-row fence is green here by
+    construction, which is why this control is bound to the PRODUCER-side audit.
+    """
+    root = _mkroot("producer-field-parity")
+    _write(
+        root / "src" / "gzkit" / "producer.py",
+        "from gzkit.ledger import LedgerEvent\n\n\n"
+        "def emit() -> LedgerEvent:\n"
+        '    return LedgerEvent(event="airlock_out", id="OBPI-X", '
+        'extra={"undeclared_field": True})\n',
+    )
+    _write(
+        root / "src" / "gzkit" / "schemas" / "ledger.json",
+        json.dumps({"events": {"airlock_out": {"required": [], "properties": {}}}}),
+    )
+    return root
+
+
 def _build_rendition_freshness() -> Path:
     root = _mkroot("rendition-freshness")
     _write(
@@ -1380,6 +1403,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("adr-taxonomy", _build_adr_taxonomy, _ep._ep_adr_taxonomy),
     ("adversarial-validation", _build_adversarial_validation, _ep._ep_adversarial_validation),
     ("red-parity", _build_red_parity, _ep._ep_red_parity),
+    ("producer-field-parity", _build_producer_field_parity, _ep._ep_producer_field_parity),
     ("rendition-freshness", _build_rendition_freshness, _ep._ep_rendition_freshness),
     (
         "rendition-floor-coherence",

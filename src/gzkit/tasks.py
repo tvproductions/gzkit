@@ -19,6 +19,8 @@ from typing import TypeVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.ledger_corrections import live_events
+
 # ---------------------------------------------------------------------------
 # TASK identifier
 # ---------------------------------------------------------------------------
@@ -264,8 +266,7 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
     except OSError:
         return []
 
-    started: list[str] = []
-    closed: set[str] = set()
+    rows: list[dict] = []
     for line in raw.splitlines():
         if not line.strip():
             continue
@@ -273,8 +274,17 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
             event = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if not isinstance(event, dict):
-            continue
+        if isinstance(event, dict):
+            rows.append(event)
+
+    # This reader parses the JSONL itself rather than going through
+    # ``Ledger.read_all`` (it runs inside a commit hook, where an exception
+    # blocks all work), so it must apply the corrections explicitly or it
+    # disagrees with `gz task list` about the same TASK — a discharged blocker
+    # reads in_progress there and closed here (GHI #611).
+    started: list[str] = []
+    closed: set[str] = set()
+    for event in live_events(rows):
         task_id = event.get("task_id")
         if not isinstance(task_id, str) or not task_id:
             continue

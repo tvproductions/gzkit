@@ -161,6 +161,10 @@
       "class": "read_only",
       "measured_seconds": 0.85
     },
+    "Producer field parity": {
+      "class": "read_only",
+      "measured_seconds": 0.76
+    },
     "Python version pins": {
       "class": "read_only",
       "measured_seconds": 0.21

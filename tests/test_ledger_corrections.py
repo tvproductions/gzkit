@@ -67,6 +67,18 @@ def _correction(
     )
 
 
+def _validate_rows(case: unittest.TestCase, rows: list[dict]) -> list:
+    """Run the shipped ledger validator over ``rows`` in a temp file."""
+    from gzkit.validate_pkg.ledger_check import validate_ledger
+
+    tmp = Path(case.enterContext(tempfile.TemporaryDirectory()))
+    path = tmp / "ledger.jsonl"
+    path.write_text(
+        "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows), encoding="utf-8"
+    )
+    return validate_ledger(path)
+
+
 class TestCorrectionEventFailsClosed(unittest.TestCase):
     """A correction with no accountable author is not a correction."""
 
@@ -124,22 +136,35 @@ class TestCorrectionEventFailsClosed(unittest.TestCase):
         )
         self.assertEqual(parsed.event, CORRECTION_EVENT)
 
-    def test_declared_in_the_ledger_json_schema(self) -> None:
-        """Both contracts must declare the event, per GHI #877's ruling."""
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        declared = schema["events"][CORRECTION_EVENT]
-        self.assertEqual(
-            sorted(declared["required"]),
+    def test_gz_validate_ledger_accepts_a_well_formed_correction(self) -> None:
+        """The OTHER contract must admit the row too, per GHI #877's ruling.
+
+        Asserted through ``validate_ledger`` rather than by reading
+        ``ledger.json``: what matters is that the shipped validator accepts the
+        row, and a test that greps the schema file passes even if the validator
+        never consults it.
+        """
+        errors = _validate_rows(
+            self,
             [
-                "attestor",
-                "cause",
-                "disposition",
-                "reason",
-                "subject_event",
-                "subject_id",
-                "subject_ts",
+                _correction(
+                    _row("pipeline_launched", "OBPI-X", "2026-08-23T13:12:21.832251+00:00"),
+                    "void",
+                    ts="2026-09-06T20:00:00+00:00",
+                )
             ],
         )
+        self.assertEqual([e.message for e in errors], [])
+
+    def test_gz_validate_ledger_rejects_a_correction_missing_its_subject(self) -> None:
+        """The schema entry is load-bearing, so prove it fails closed too."""
+        bad = _correction(
+            _row("pipeline_launched", "OBPI-X", "2026-08-23T13:12:21.832251+00:00"),
+            "void",
+            ts="2026-09-06T20:00:00+00:00",
+        )
+        del bad["subject_ts"]
+        self.assertTrue(_validate_rows(self, [bad]))
 
 
 class TestSubjectResolution(unittest.TestCase):
@@ -312,8 +337,13 @@ class TestLedgerConsumers(unittest.TestCase):
         )
         return Ledger(path)
 
-    def test_history_is_preserved_by_read_all(self) -> None:
-        """Append-only: the corrected row stays readable, byte-for-byte, forever."""
+    def test_history_is_preserved_by_read_history(self) -> None:
+        """Append-only: the corrected row stays readable, byte-for-byte, forever.
+
+        ``read_all`` answers *what is currently true* and therefore nets; the raw
+        append-only history is ``read_history``, and nothing may remove a row
+        from it.
+        """
         launched = _row("pipeline_launched", "OBPI-0.35.0-08", "2026-08-23T13:12:21.832251+00:00")
         rows = [
             _row(
@@ -322,7 +352,7 @@ class TestLedgerConsumers(unittest.TestCase):
             launched,
             _correction(launched, "void", ts="2026-09-06T20:00:00+00:00"),
         ]
-        events = self._ledger(rows).read_all()
+        events = self._ledger(rows).read_history()
         self.assertEqual([e.event for e in events], [r["event"] for r in rows])
 
     def test_voiding_the_launch_returns_the_obpi_to_pending(self) -> None:
@@ -514,3 +544,239 @@ class TestFactoryProducesAValidRow(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestProducerContractParity(unittest.TestCase):
+    """A producer may not write a field neither contract declares (GHI #877 class).
+
+    GHI #877 fenced this over *committed rows*, which is green while a producer
+    that has never fired writes undeclared keys. ``_book_aborted_exit`` is that
+    case: it fires only when an airlock exit raises, which has not happened in
+    this repository, so zero rows exist and the committed-row fence saw nothing.
+    """
+
+    def test_no_producer_writes_an_undeclared_field(self) -> None:
+        from gzkit.governance.trust_audits import audit_producer_fields
+
+        errors = audit_producer_fields(Path(__file__).resolve().parents[1])
+        self.assertEqual(
+            [f"{e.artifact}: {e.message}" for e in errors],
+            [],
+            "A ledger producer writes a field that ledger.json or the typed union "
+            "does not declare. Declare it in BOTH, per GHI #877's ruling.",
+        )
+
+    def test_the_aborted_airlock_exit_row_parses(self) -> None:
+        """The exact shape ``_book_aborted_exit`` writes (GHI #877, reopened)."""
+        parsed = parse_typed_event(
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "airlock_out",
+                "id": "OBPI-X",
+                "ts": "2026-01-01T00:00:00+00:00",
+                "verdict": "aborted",
+                "aborted": True,
+                "error": "RuntimeError",
+            }
+        )
+        self.assertTrue(parsed.aborted)
+        self.assertEqual(parsed.error, "RuntimeError")
+
+    def test_gz_validate_ledger_accepts_the_aborted_exit_row(self) -> None:
+        """The second contract, proven through the validator that enforces it."""
+        errors = _validate_rows(
+            self,
+            [
+                {
+                    "schema": "gzkit.ledger.v1",
+                    "event": "airlock_out",
+                    "id": "OBPI-X",
+                    "ts": "2026-01-01T00:00:00+00:00",
+                    "verdict": "aborted",
+                    "aborted": True,
+                    "error": "RuntimeError",
+                }
+            ],
+        )
+        self.assertEqual([e.message for e in errors], [])
+
+
+class TestCorrectionsAreValidatedAtTheReplayBoundary(unittest.TestCase):
+    """The CLI guard protects the write path; replay is what every reader uses.
+
+    A correction reaching a reader has NOT necessarily passed the CLI — it may
+    have been minted by the exported factory, hand-written, or merged in. The
+    netting must therefore enforce the event's own declared contract itself, or
+    the guard is decorative.
+    """
+
+    def _subject(self) -> dict:
+        return _row("pipeline_launched", "OBPI-X", "2026-09-02T00:00:00+00:00")
+
+    def _invalid(self, **overrides: str) -> list[dict]:
+        subject = self._subject()
+        correction = _correction(subject, "void", ts="2026-09-06T20:00:00+00:00")
+        correction.update(overrides)
+        return [subject, correction]
+
+    def test_an_empty_attestor_makes_the_correction_inert(self) -> None:
+        rows = self._invalid(attestor="")
+        self.assertEqual(correction_state(rows), {})
+        self.assertIn(rows[0], live_events(rows))
+
+    def test_a_whitespace_attestor_makes_the_correction_inert(self) -> None:
+        self.assertEqual(correction_state(self._invalid(attestor="   ")), {})
+
+    def test_an_empty_reason_makes_the_correction_inert(self) -> None:
+        rows = self._invalid(reason="")
+        self.assertEqual(correction_state(rows), {})
+        self.assertIn(rows[0], live_events(rows))
+
+    def test_an_unknown_cause_makes_the_correction_inert(self) -> None:
+        self.assertEqual(correction_state(self._invalid(cause="because")), {})
+
+    def test_an_unknown_disposition_makes_the_correction_inert(self) -> None:
+        self.assertEqual(correction_state(self._invalid(disposition="cancelled")), {})
+
+    def test_the_factory_refuses_to_mint_an_invalid_correction(self) -> None:
+        """A constructor that mints what both validators reject is a hole."""
+        with self.assertRaises(ValidationError):
+            ledger_event_corrected_event(
+                subject_event="pipeline_launched",
+                subject_id="OBPI-X",
+                subject_ts="2026-09-02T00:00:00+00:00",
+                disposition="void",
+                cause="agent-error",
+                attestor="",
+                reason="",
+            )
+
+    def test_the_factory_still_mints_a_valid_correction(self) -> None:
+        event = ledger_event_corrected_event(
+            subject_event="pipeline_launched",
+            subject_id="OBPI-X",
+            subject_ts="2026-09-02T00:00:00+00:00",
+            disposition="void",
+            cause="agent-error",
+            attestor="g0",
+            reason="started in error",
+        )
+        self.assertEqual(event.extra["disposition"], "void")
+
+
+class TestEveryGoverningConsumerReadsTheCorrectedStream(unittest.TestCase):
+    """The netting must reach the readers that decide, not only the graph.
+
+    The first pass wired ``get_artifact_graph`` and claimed every consumer
+    followed. It did not: the sibling ``Ledger`` methods each run their own
+    ``read_all()`` pass, and ``active_task_trailers`` reads the JSONL directly.
+    """
+
+    def _ledger(self, rows: list[dict]) -> Ledger:
+        tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        path = tmp / "ledger.jsonl"
+        path.write_text(
+            "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows), encoding="utf-8"
+        )
+        return Ledger(path)
+
+    def test_a_voided_gate_pass_stops_counting_as_a_pass(self) -> None:
+        """The readiness surface must not report a gate that never truly passed."""
+        created = _row("adr_created", "ADR-9.9.9-demo", "2026-09-01T00:00:00+00:00", lane="heavy")
+        gate = _row(
+            "gate_checked", "ADR-9.9.9-demo", "2026-09-02T00:00:00+00:00", gate=2, status="pass"
+        )
+        ledger = self._ledger([created, gate])
+        self.assertEqual(ledger.get_latest_gate_statuses("ADR-9.9.9-demo"), {2: "pass"})
+
+        corrected = self._ledger(
+            [
+                created,
+                gate,
+                _correction(gate, "void", ts="2026-09-03T00:00:00+00:00", reason="gate never ran"),
+            ]
+        )
+        self.assertEqual(corrected.get_latest_gate_statuses("ADR-9.9.9-demo"), {})
+        self.assertEqual(corrected.get_effective_gate_statuses("ADR-9.9.9-demo"), {})
+
+    def test_an_earlier_gate_result_resurfaces_when_the_later_one_is_voided(self) -> None:
+        """Voiding is not truncation: the prior legitimate result is still there."""
+        created = _row("adr_created", "ADR-9.9.9-demo", "2026-09-01T00:00:00+00:00", lane="heavy")
+        first = _row(
+            "gate_checked", "ADR-9.9.9-demo", "2026-09-02T00:00:00+00:00", gate=2, status="fail"
+        )
+        second = _row(
+            "gate_checked", "ADR-9.9.9-demo", "2026-09-03T00:00:00+00:00", gate=2, status="pass"
+        )
+        ledger = self._ledger(
+            [
+                created,
+                first,
+                second,
+                _correction(second, "void", ts="2026-09-04T00:00:00+00:00", reason="never ran"),
+            ]
+        )
+        self.assertEqual(ledger.get_latest_gate_statuses("ADR-9.9.9-demo"), {2: "fail"})
+
+    def test_a_correction_is_never_an_artifacts_latest_event(self) -> None:
+        """A correction is bookkeeping about a row, not an event in the artifact's life."""
+        created = _row("obpi_created", "OBPI-X", "2026-09-01T00:00:00+00:00", parent="ADR-9.9.9")
+        launched = _row("pipeline_launched", "OBPI-X", "2026-09-02T00:00:00+00:00")
+        ledger = self._ledger(
+            [created, launched, _correction(launched, "void", ts="2026-09-03T00:00:00+00:00")]
+        )
+        latest = ledger.latest_event("OBPI-X")
+        assert latest is not None
+        self.assertEqual(latest.event, "obpi_created")
+
+    def test_a_discharged_blocker_reopens_the_trailer_channel(self) -> None:
+        """`gz task list` and the trailer stamper must not disagree about one TASK."""
+        from gzkit.tasks import active_task_trailers
+
+        started = _row(
+            "task_started",
+            "TASK-9.9.9-01-01-01",
+            "2026-09-02T01:00:00+00:00",
+            obpi_id="OBPI-X",
+            task_id="TASK-9.9.9-01-01-01",
+        )
+        blocked = _row(
+            "task_blocked",
+            "TASK-9.9.9-01-01-01",
+            "2026-09-02T02:00:00+00:00",
+            obpi_id="OBPI-X",
+            task_id="TASK-9.9.9-01-01-01",
+            reason="awaiting an operator ruling",
+        )
+        blocked_ledger = self._ledger([started, blocked])
+        self.assertEqual(active_task_trailers(blocked_ledger.path, ["src/gzkit/x.py"]), [])
+
+        discharged = self._ledger(
+            [
+                started,
+                blocked,
+                _correction(
+                    blocked,
+                    "discharged",
+                    ts="2026-09-06T20:00:00+00:00",
+                    cause="condition-resolved",
+                    reason="operator ruled",
+                ),
+            ]
+        )
+        self.assertEqual(
+            active_task_trailers(discharged.path, ["src/gzkit/x.py"]),
+            ["Task: TASK-9.9.9-01-01-01"],
+        )
+
+    def test_raw_history_stays_reachable_for_the_readers_that_need_it(self) -> None:
+        """Replay, the census, and subject resolution must still see every row."""
+        launched = _row("pipeline_launched", "OBPI-X", "2026-09-02T00:00:00+00:00")
+        rows = [
+            _row("obpi_created", "OBPI-X", "2026-09-01T00:00:00+00:00", parent="ADR-9.9.9"),
+            launched,
+            _correction(launched, "void", ts="2026-09-03T00:00:00+00:00"),
+        ]
+        ledger = self._ledger(rows)
+        self.assertEqual([e.event for e in ledger.read_history()], [r["event"] for r in rows])
+        self.assertEqual(ledger.get_replay_manifest().event_count, 3)

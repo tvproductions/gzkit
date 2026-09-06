@@ -147,21 +147,29 @@ def ledger_event_corrected_event(
     this forward event is what every reader nets against it
     (:mod:`gzkit.ledger_corrections`). The event's ``id`` is the SUBJECT's id so
     the correction attaches to the artifact it corrects.
+
+    Minted THROUGH :class:`~gzkit.events.LedgerEventCorrectedEvent` rather than
+    straight into an untyped ``extra`` bag, so the factory cannot produce what
+    both validators reject. ``LedgerEvent.extra`` is ``dict[str, Any]`` and
+    validates nothing about its contents; building the row directly let an empty
+    attestor and reason through the one constructor callers actually reach.
+    Raises ``pydantic.ValidationError`` on an invalid correction.
     """
-    return LedgerEvent(
+    from gzkit.events import LedgerEventCorrectedEvent
+
+    typed = LedgerEventCorrectedEvent(
         event="ledger_event_corrected",
         id=subject_id,
         parent=parent,
-        extra={
-            "subject_event": subject_event,
-            "subject_id": subject_id,
-            "subject_ts": subject_ts,
-            "disposition": disposition,
-            "cause": cause,
-            "attestor": attestor,
-            "reason": reason,
-        },
+        subject_event=subject_event,
+        subject_id=subject_id,
+        subject_ts=subject_ts,
+        disposition=disposition,  # ty: ignore[invalid-argument-type]
+        cause=cause,  # ty: ignore[invalid-argument-type]
+        attestor=attestor,
+        reason=reason,
     )
+    return LedgerEvent.model_validate(typed.model_dump())
 
 
 def security_floor_overridden_event(

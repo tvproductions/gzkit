@@ -154,7 +154,7 @@
       "gates_step": "ledger vocabulary inertness (chore: ledger-vocabulary-inertness)",
       "mechanism": "shrink-ratchet",
       "entries_path": "never_fired",
-      "baseline_count": 15
+      "baseline_count": 11
     },
     {
       "data_file": "data/release_tag_reachability_grandfather.json",

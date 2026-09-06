@@ -105,6 +105,7 @@ from gzkit.governance.trust_audits.evaluation_justify_binding import (
 from gzkit.governance.trust_audits.events import (
     audit_event_handlers,
     audit_event_schemas,
+    audit_producer_fields,
     audit_validator_fields,
 )
 from gzkit.governance.trust_audits.exemption_controls import audit_exemption_controls
@@ -231,6 +232,7 @@ __all__ = [
     "audit_lifecycle_pointers",
     "audit_event_handlers",
     "audit_event_schemas",
+    "audit_producer_fields",
     "audit_insights_shape",
     "audit_kind_invariance",
     "audit_persona_witness",

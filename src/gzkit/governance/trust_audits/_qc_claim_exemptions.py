@@ -76,6 +76,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # non-finding return is "no committed rendition exists" — nothing to compare.
     "invariant-coherence": EXEMPTS_NONE,
     "corpus-retirement-witness": EXEMPTS_NONE,
+    # AST-scans producers for payload keys neither ledger contract declares. No
+    # waiver table, allowlist, escape marker or opt-in flag: every undeclared key
+    # it finds is a finding. Its static-analysis scope (literal keys only) limits
+    # what it CAN see and is disclosed in the audit docstring — a scope predicate,
+    # not an exemption, and the committed-row parity fence covers the other side.
+    "producer-field-parity": EXEMPTS_NONE,
     # Scans wheel-shipped Markdown for environment-rooted path literals. Nothing
     # project-controllable admits a literal it has judged in violation: there is no
     # waiver table, allowlist, escape marker or opt-in flag. The roots it does NOT

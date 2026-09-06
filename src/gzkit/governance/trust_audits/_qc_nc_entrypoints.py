@@ -396,6 +396,12 @@ def _ep_red_parity(root: Path) -> list[ValidationError]:
     return audit_red_parity(root)
 
 
+def _ep_producer_field_parity(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.events import audit_producer_fields  # noqa: PLC0415
+
+    return audit_producer_fields(root)
+
+
 def _ep_rendition_freshness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.rendition_freshness import (  # noqa: PLC0415
         validate_rendition_freshness,

@@ -1948,6 +1948,18 @@
             "string",
             "null"
           ]
+        },
+        "aborted": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

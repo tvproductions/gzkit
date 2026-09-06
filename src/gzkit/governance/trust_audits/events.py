@@ -490,3 +490,147 @@ def _collect_ledger_written_fields(source: Path) -> set[str]:
                     if isinstance(key, ast.Constant) and isinstance(key.value, str):
                         written.add(key.value)
     return written
+
+
+# ---------------------------------------------------------------------------
+# Producer-side contract parity (GHI #877, reopened)
+# ---------------------------------------------------------------------------
+
+_PRODUCER_ROOT = Path("src") / "gzkit"
+_ENVELOPE_FIELDS = frozenset({"schema", "schema_", "event", "id", "ts", "parent"})
+
+
+def _typed_model_fields() -> dict[str, set[str]]:
+    """Map each discriminator to the payload fields its typed model declares."""
+    from typing import get_args
+
+    from gzkit.events import TypedLedgerEvent
+
+    union, _discriminator = get_args(TypedLedgerEvent)
+    declared: dict[str, set[str]] = {}
+    for member in get_args(union):
+        tag = get_args(member.model_fields["event"].annotation)[0]
+        declared[tag] = set(member.model_fields) - _ENVELOPE_FIELDS
+    return declared
+
+
+def _literal_dict_keys(node: ast.Dict) -> set[str]:
+    return {
+        key.value
+        for key in node.keys
+        if isinstance(key, ast.Constant) and isinstance(key.value, str)
+    }
+
+
+def _payload_keys(
+    scope: ast.FunctionDef | ast.AsyncFunctionDef, extra: ast.expr | None
+) -> set[str]:
+    """Return the literal payload keys a ``LedgerEvent(...)`` call writes.
+
+    Two shapes are read, because both occur: an inline ``extra={...}`` literal,
+    and a named dict the function mutates before passing it (the
+    ``extra["handoff_path"] = ...`` shape GHI #877 recorded). Keys computed at
+    runtime are invisible to any static reader; that limit is stated in the
+    audit's docstring rather than implied.
+    """
+    if isinstance(extra, ast.Dict):
+        return _literal_dict_keys(extra)
+    if not isinstance(extra, ast.Name):
+        return set()
+    keys: set[str] = set()
+    for node in ast.walk(scope):
+        if (
+            isinstance(node, ast.Assign)
+            and len(node.targets) == 1
+            and isinstance(node.targets[0], ast.Name)
+            and node.targets[0].id == extra.id
+            and isinstance(node.value, ast.Dict)
+        ):
+            keys |= _literal_dict_keys(node.value)
+        if (
+            isinstance(node, ast.Subscript)
+            and isinstance(node.value, ast.Name)
+            and node.value.id == extra.id
+            and isinstance(node.slice, ast.Constant)
+            and isinstance(node.slice.value, str)
+        ):
+            keys.add(node.slice.value)
+    return keys
+
+
+def audit_producer_fields(project_root: Path) -> list[ValidationError]:
+    """Every field a producer writes must be declared by BOTH ledger contracts.
+
+    GHI #877 closed this over the ledger's **committed rows** — a repo-wide fence
+    asserting the typed union parses every row on disk. That fence is green while
+    a producer that has never fired writes undeclared keys, and this audit exists
+    because exactly that happened: ``_book_aborted_exit`` (``gzkit.airlock.exit``)
+    writes ``aborted`` and ``error`` on ``airlock_out``, neither contract declared
+    them, and the path had never raised in this repository. Zero rows, so nothing
+    to parse, so nothing to catch. The first real aborted exit would have written
+    a row that replay then refused — ``_EventBase`` is ``extra="forbid"``.
+
+    So the committed-row fence tests HISTORY and this one tests PRODUCERS; they
+    fail on different days by construction and neither subsumes the other.
+
+    **Scope, stated rather than implied.** Static analysis reads the two shapes
+    that occur in this codebase: an inline ``extra={...}`` literal and a named
+    dict mutated by literal-key subscript before it is passed. A key computed at
+    runtime, spread from ``**kwargs``, or assembled in a helper is invisible here.
+    That residual is why this audit ACCOMPANIES the committed-row fence rather
+    than replacing it.
+    """
+    schema_file = project_root / "src" / "gzkit" / "schemas" / "ledger.json"
+    if not schema_file.is_file():
+        return []
+    schema_events = json.loads(schema_file.read_text(encoding="utf-8")).get("events", {})
+    model_fields = _typed_model_fields()
+    errors: list[ValidationError] = []
+
+    for source in sorted((project_root / _PRODUCER_ROOT).rglob("*.py")):
+        try:
+            tree = ast.parse(source.read_text(encoding="utf-8", errors="replace"))
+        except (OSError, SyntaxError):
+            continue
+        for scope in [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef)
+        ]:
+            for call in [node for node in ast.walk(scope) if isinstance(node, ast.Call)]:
+                func = call.func
+                name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", "")
+                if name != "LedgerEvent":
+                    continue
+                keywords = {kw.arg: kw.value for kw in call.keywords}
+                event = keywords.get("event")
+                if not (isinstance(event, ast.Constant) and isinstance(event.value, str)):
+                    continue
+                declared_schema = set(schema_events.get(event.value, {}).get("properties", {}))
+                declared_model = model_fields.get(event.value, set())
+                rel = source.relative_to(project_root).as_posix()
+                for key in sorted(_payload_keys(scope, keywords.get("extra"))):
+                    missing = [
+                        contract
+                        for contract, declared in (
+                            ("schemas/ledger.json", declared_schema),
+                            ("the typed union", declared_model),
+                        )
+                        if key not in declared
+                    ]
+                    if not missing:
+                        continue
+                    errors.append(
+                        ValidationError(
+                            type="producer_fields",
+                            artifact=f"{rel}::{event.value}.{key}",
+                            message=(
+                                f"Producer writes `{key}` on `{event.value}` but "
+                                f"{' and '.join(missing)} does not declare it. The typed "
+                                'union is extra="forbid", so the first row this producer '
+                                "writes would fail replay. Declare the field in BOTH "
+                                "contracts (GHI #877)."
+                            ),
+                        )
+                    )
+    return errors

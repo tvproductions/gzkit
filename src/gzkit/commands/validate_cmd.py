@@ -197,6 +197,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     ),
     _ScopeEntry("event_handlers", "explicit", True, lambda r, _f: _ta().audit_event_handlers(r)),
     _ScopeEntry("event_schemas", "explicit", True, lambda r, _f: _ta().audit_event_schemas(r)),
+    _ScopeEntry("producer_fields", "explicit", True, lambda r, _f: _ta().audit_producer_fields(r)),
     _ScopeEntry(
         "validator_fields", "explicit", True, lambda r, _f: _ta().audit_validator_fields(r)
     ),
@@ -1400,6 +1401,7 @@ def validate(
     check_cli_alignment: bool = False,
     check_event_handlers: bool = False,
     check_event_schemas: bool = False,
+    check_producer_fields: bool = False,
     check_validator_fields: bool = False,
     check_authorship: bool = False,
     check_python_version_pins: bool = False,
@@ -1538,6 +1540,7 @@ def validate(
         "cli_alignment": check_cli_alignment,
         "event_handlers": check_event_handlers,
         "event_schemas": check_event_schemas,
+        "producer_fields": check_producer_fields,
         "validator_fields": check_validator_fields,
         "authorship": check_authorship,
         "python_version_pins": check_python_version_pins,

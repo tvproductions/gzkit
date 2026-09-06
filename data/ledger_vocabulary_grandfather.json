@@ -8,12 +8,8 @@
     "discovered_from",
     "intrinsic-complexity-attestation",
     "ledger_event_corrected",
-    "obpi_blocked_on_operator",
     "obpi_superseded",
-    "obpi_unblocked",
     "section_ownership_unowned",
-    "stage2_dispatch_recorded",
-    "stage2_single_driver_declared",
     "task_escalated",
     "unowned_ratchet_updated",
     "validates"

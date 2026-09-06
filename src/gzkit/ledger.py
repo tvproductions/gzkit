@@ -313,13 +313,12 @@ class Ledger:
                 return True
         return False
 
-    def read_all(self) -> list[LedgerEvent]:
-        """Read all events from the ledger.
+    def read_history(self) -> list[LedgerEvent]:
+        """Read every row on disk, corrections included and none netted.
 
-        Returns:
-            List of all events in chronological order.
-            Results are cached for the lifetime of this Ledger instance.
-
+        The RAW append-only history. Use it only where every row is the subject
+        — replay fidelity, the corrections census, resolving a correction's
+        subject. For "what is currently true", use :meth:`read_all`.
         """
         if self._cached_events is not None:
             return self._cached_events
@@ -337,6 +336,29 @@ class Ledger:
 
         self._cached_events = events
         return events
+
+    def read_all(self) -> list[LedgerEvent]:
+        """Read the CORRECTED event stream — what the ledger currently asserts.
+
+        Returns rows in chronological order with :mod:`gzkit.ledger_corrections`
+        applied: voided and discharged subjects removed, and the correction rows
+        themselves excluded (they are bookkeeping about a row, never an event in
+        an artifact's own life).
+
+        **Netting is the default, and that is the whole point (GHI #611).** The
+        first pass left this raw and wrapped ``get_artifact_graph`` alone, which
+        was wrong in a way worth stating: every sibling method here runs its own
+        ``read_all()`` pass, so a voided ``gate_checked: pass`` still reported a
+        pass to the readiness surface. Netting per call site is the per-consumer
+        hand-patching this GHI exists to end — and it fails OPEN, because a
+        consumer written next year is correction-blind unless its author
+        remembers. Defaulting to the corrected stream makes forgetting safe;
+        :meth:`read_history` is the explicit opt-out for the few readers whose
+        subject genuinely is every row.
+
+        Results are cached for the lifetime of this Ledger instance.
+        """
+        return live_events(self.read_history())
 
     def query(
         self,
@@ -890,12 +912,11 @@ class Ledger:
             return self._cached_graph
 
         graph: dict[str, dict[str, Any]] = {}
-        history = self.read_all()
-        # State derivation reads the NETTED stream: a corrected row must not
-        # contribute to what is currently true (GHI #611). The replay manifest
-        # below stays over the raw history, because replay fidelity is a claim
-        # about what the ledger CONTAINS, not about what it currently asserts.
-        events = live_events(history)
+        # State derivation reads the NETTED stream (``read_all``); the replay
+        # manifest below stays over the RAW history, because replay fidelity is
+        # a claim about what the ledger CONTAINS, not what it currently asserts.
+        history = self.read_history()
+        events = self.read_all()
         rename_map = self._build_rename_map(events)
 
         for event in events:

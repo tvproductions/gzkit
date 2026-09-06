@@ -416,6 +416,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every emitted ledger event type must have a schemas/ledger.json entry",
     )
     p_validate.add_argument(
+        "--producer-fields",
+        dest="check_producer_fields",
+        action="store_true",
+        help="Every field a ledger producer writes must be declared by both contracts",
+    )
+    p_validate.add_argument(
         "--validator-fields",
         dest="check_validator_fields",
         action="store_true",
@@ -985,6 +991,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_cli_alignment=a.check_cli_alignment,
             check_event_handlers=a.check_event_handlers,
             check_event_schemas=a.check_event_schemas,
+            check_producer_fields=a.check_producer_fields,
             check_validator_fields=a.check_validator_fields,
             check_authorship=a.check_authorship,
             check_python_version_pins=a.check_python_version_pins,

@@ -124,6 +124,9 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
 #   guarantees exactly as unequal as the GHI found them.
 _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
     {
+        # GHI #877 (reopened): producer-side contract parity, sibling of
+        # `event_schemas`/`event_handlers` and tiered with them.
+        "producer_fields",
         "persona_witness",
         "qc_binding",
         "fidelity_presence",

@@ -1062,13 +1062,26 @@ class AirlockInEvent(_EventBase):
 
 
 class AirlockOutEvent(_EventBase):
-    """airlock_out event — a transit exited the airlock (drift-diff -> decision -> L2)."""
+    """airlock_out event — a transit exited the airlock (drift-diff -> decision -> L2).
+
+    ``aborted`` and ``error`` are written ONLY by ``_book_aborted_exit``
+    (``gzkit.airlock.exit``), the failure-atomic path that books a terminal
+    ``airlock_out`` when the exit's fallible work raised before the drift-diff
+    could run (GHI #679). They were undeclared here and in ``ledger.json`` until
+    GHI #877 was reopened: that path has never fired in this repository, so zero
+    such rows are committed and a fence reading committed history could not see
+    them. Declared on both contracts rather than tolerated, because the typed
+    union is ``extra="forbid"`` — the first real aborted exit would have written
+    a row that replay then refused to parse.
+    """
 
     event: Literal["airlock_out"]
     verdict: str | None = None
     drift: list[str] | None = None
     routing: list[str] | None = None
     bodies: int | None = None
+    aborted: bool | None = None
+    error: str | None = None
 
 
 class SurfaceWeightRecalibratedEvent(_EventBase):

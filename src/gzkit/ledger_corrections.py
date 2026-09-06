@@ -125,6 +125,30 @@ def resolve_subject(events: Iterable[Any], key: SubjectKey) -> list[Any]:
     return [event for event in events if subject_key(event) == key]
 
 
+def is_well_formed(correction: Any) -> bool:
+    """Report whether a correction satisfies its own declared contract.
+
+    The same requirements :class:`~gzkit.events.LedgerEventCorrectedEvent`
+    declares and ``gz ledger correct`` enforces, applied at the READ boundary so
+    a correction that never passed the CLI cannot change derived state. An
+    unattributed or unexplained correction is refused for the reason the event
+    exists at all: a state change nobody signed is the thing being corrected,
+    not a correction.
+
+    The subject triple must be complete, and it may not name another correction
+    — ``reinstated`` is the in-family reversal, so the netting never resolves
+    itself recursively.
+    """
+    subject = corrected_subject(correction)
+    if not all(subject) or subject[0] == CORRECTION_EVENT:
+        return False
+    if _field(correction, "disposition") not in DISPOSITIONS:
+        return False
+    if _field(correction, "cause") not in CAUSES:
+        return False
+    return bool(_field(correction, "attestor").strip() and _field(correction, "reason").strip())
+
+
 def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
     """Return ``{subject: disposition}`` for every currently-corrected row.
 
@@ -135,12 +159,22 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
     makes ``void -> reinstate -> void`` resolve to ``void`` rather than to an
     order-dependent answer.
 
-    Two references are ignored rather than applied:
+    **Every correction is validated HERE, not only at the CLI.** A correction
+    reaching a reader has not necessarily passed ``gz ledger correct``: the
+    exported factory can be called directly, a row can be hand-written, and a
+    merge can carry one in. Replay is what every consumer actually uses, so a
+    guard that lives only on the write path is decorative — an invalid
+    correction would still change derived state everywhere. :func:`is_well_formed`
+    applies the event's own declared contract, and a correction failing it is
+    INERT rather than partially applied.
 
+    Ignored rather than applied:
+
+    * a malformed correction (empty attestor or reason, unknown disposition or
+      cause, incomplete subject triple) — :func:`is_well_formed`;
     * one whose ``subject_event`` is itself :data:`CORRECTION_EVENT` — a
       correction is reversed by ``reinstated``, never by a second correction
-      naming it, so the netting can never need to resolve itself recursively;
-    * one whose triple is incomplete.
+      naming it, so the netting can never need to resolve itself recursively.
 
     A reference that resolves to no row is NOT filtered here: this function is
     pure over the sequence it is handed, and a caller holding only a window of
@@ -150,15 +184,13 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
     """
     state: dict[SubjectKey, str] = {}
     for event in events:
-        if not is_correction(event):
+        if not is_correction(event) or not is_well_formed(event):
             continue
         subject = corrected_subject(event)
-        if not all(subject) or subject[0] == CORRECTION_EVENT:
-            continue
         disposition = _field(event, "disposition")
         if disposition in {VOID, DISCHARGED}:
             state[subject] = disposition
-        elif disposition == REINSTATED:
+        else:  # REINSTATED — the only remaining member of the closed vocabulary
             state.pop(subject, None)
     return state
 

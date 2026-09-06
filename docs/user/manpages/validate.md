@@ -2353,6 +2353,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills must resolve to a registered parser verb |
 | `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
 | `--event-schemas` | opt-in | Every event type emitted by a `ledger_events.py` factory or an `events.py` typed model must have a paired `src/gzkit/schemas/ledger.json` entry, and no schema entry may be stale (GHI #581) |
+| `--producer-fields` | opt-in | Every field a ledger producer writes must be declared by BOTH `schemas/ledger.json` and the typed union. Complements the committed-row parity fence, which is green while a producer that has never fired writes undeclared keys — the shape that let `_book_aborted_exit` write `aborted`/`error` undeclared (GHI #877) |
 | `--validator-fields` | opt-in | Every validator `info.get(field)` lookup must have a matching graph writer |
 | `--authorship` | opt-in | Fail closed when the effective `git user.email` violates `authorship.required_email_suffix` in `.gzkit.json`. No-op when no policy is declared, so adopters inherit no identity rule (GHI #725) |
 | `--python-version-pins` | opt-in | Fail closed when a CI interpreter declaration in `.github/workflows/**` disagrees with `.python-version`, which is what uv resolves the project interpreter from. Also rejects a pin below the `requires-python` floor. The floor itself is never compared for equality — it is a floor, not a pin |

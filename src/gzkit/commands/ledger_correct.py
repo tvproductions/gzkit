@@ -80,7 +80,7 @@ def ledger_correct_cmd(
     config = ensure_initialized()
     project_root = get_project_root()
     ledger = Ledger(project_root / config.paths.ledger)
-    history = ledger.read_all()
+    history = ledger.read_history()
 
     key = (subject_event, subject_id, subject_ts)
     matches = resolve_subject(history, key)
@@ -143,7 +143,7 @@ def ledger_corrections_cmd(*, as_json: bool = False) -> None:
     """List every currently-corrected ledger row and its disposition."""
     config = ensure_initialized()
     ledger = Ledger(get_project_root() / config.paths.ledger)
-    state = correction_state(ledger.read_all())
+    state = correction_state(ledger.read_history())
 
     if as_json:
         console.print(
