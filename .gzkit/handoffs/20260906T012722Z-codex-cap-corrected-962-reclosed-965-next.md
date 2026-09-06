@@ -308,8 +308,24 @@ Re-run at the start of the next context and confirm each:
 
 ## Evidence / Artifacts
 
-Branch: main. No feature branch (operator directive). Working tree clean at authoring
-apart from this handoff and the ledger row its own creation appends.
+Branch: main. No feature branch (operator directive).
+
+CORRECTED AFTER AUTHORING: this section originally read "Working tree clean at
+authoring apart from this handoff and the ledger row its own creation appends."
+That was FALSE. A concurrent session was working ADR-0.35.0 between 00:57 and
+01:18 (ledger: airlock permitted-entry, 15 brief_reconciled, adr-evaluation +
+adr_eval_completed), and `git add -A` absorbed 14 of its files into 7ff97fd1 --
+the ADR body, an EVALUATION_SUBSTANCE rewrite, OBPI-0.35.0-05-PLAN-REVIEW.md, a
+plan-audit receipt, and edits to briefs 05/06/07/08/10/12/13. That commit's
+message describes only the handoff, so this note is the provenance record.
+Operator ruled 2026-09-06, verbatim: "its fine". No history was rewritten.
+
+This is GHI #708's shape ("git-sync: add -A absorbs staged work into a ceremony
+chore commit", CLOSED) recurring on the handoff/close path, where AGENTS.md
+§ Execution Rules positively instructs `git add -A` before `gz check`. NEXT
+SESSION: check `git status` for another session's work before staging, and stage
+selectively on ceremony commits. ADR-0.35.0 remained 5/13 across the episode;
+no locks were held and no pipeline marker was present.
 
 COMMIT AUTHORED THIS CONTEXT:
 - e702060e fix(codex-cap-doctrine): gzkit does set the Codex cap -- restore 65536 and
