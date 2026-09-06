@@ -111,7 +111,7 @@ restates. A correction applies only when **all** of the following hold.
 
 | Requirement | Refused when | Checked by |
 |---|---|---|
-| **Envelope** — this ledger's `schema` tag, a non-empty `id`, a parseable ISO8601 `ts` | a foreign tag, a blank id, `ts: "not-a-date"` | `_has_valid_envelope` |
+| **Envelope** — this ledger's `schema` tag, a non-empty `id`, a parseable ISO8601 `ts`, and a `parent` that is absent, null, or a string | a foreign tag, a blank id, `ts: "not-a-date"`, `parent: 7` | `_has_valid_envelope` |
 | **Payload** — seven `str` fields; `disposition` and `cause` in their closed vocabularies | a wrong type, whitespace-only content, an unknown term | `is_well_formed` |
 | **Subject resolution** — the named `(event, id, ts)` triple exists | nothing carries that identity | `gz validate --ledger` (it holds the whole file) |
 | **Append order** — the subject appears *earlier in the sequence* | the correction stands ahead of the row it names | `correction_state`, and the validator by line number |
@@ -119,6 +119,30 @@ restates. A correction applies only when **all** of the following hold.
 Two of these used to live only in the validator, so a correction it **reported**
 still voided its subject at replay — the operator saw the gate fire and the row
 was corrected anyway. That split is the defect; sharing the predicate is the fix.
+
+**The verdict describes the stored row, never the object holding it.** The same
+predicate is handed a raw dict by the tolerant reader and a `LedgerEvent` by the
+strict one, and they are the same row, so they may not disagree — but they did,
+in both directions a gap can open.
+
+*A default filled one.* `LedgerEvent` supplies `schema_` and `ts` from field
+defaults, so a correction whose bytes carried **neither** arrived at replay
+wearing this ledger's tag and a timestamp of *this instant*. The envelope check
+read those manufactured values and passed the row: `gz validate --ledger`
+reported it, `read_corrected_rows` left it inert, and the artifact graph applied
+its void. As a *reinstatement* the same row revived a subject a valid correction
+had voided. `LedgerEvent.parse_stored_row` is the repair, applied at the one
+boundary that knows a row already exists (`Ledger.read_history`): an absent
+envelope field reads as empty rather than as a default, because at read time the
+envelope is a fact about the file. The constructor defaults are untouched — an
+event being *authored* has no timestamp until something stamps one.
+
+*A missing check was the other.* `parent` is the fifth envelope field. The
+validator checks it and `LedgerEvent` refuses a non-string outright, so the
+strict reader never applied `parent: 7` — it raises, which is its documented
+contract for a malformed row. That left the tolerant reader as the only path that
+could apply it, and it did. A gap in a shared guard is not redundant coverage on
+the one reader that is forbidden to raise.
 
 **Order is position, never the timestamp.** The file *is* the append order. Two
 rows may legitimately share a `ts` — the committed ledger already holds such a

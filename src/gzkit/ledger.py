@@ -152,6 +152,45 @@ class LedgerEvent(BaseModel):
             result.update(self.extra)
         return result
 
+    @classmethod
+    def parse_stored_row(cls, data: dict[str, Any]) -> "LedgerEvent":
+        """Parse a row that ALREADY EXISTS on disk, inventing no envelope field.
+
+        ``schema_`` and ``ts`` carry constructor defaults, and those defaults are
+        legitimate for the path they were written for: an event being AUTHORED
+        has no timestamp until something stamps one, and every producer in the
+        tree relies on it. They are not legitimate at the READ boundary, where
+        the envelope is a fact about the file and reading is not the moment to
+        invent it.
+
+        Applying them there manufactured the evidence that made a malformed
+        correction effective (GHI #611). A ``ledger_event_corrected`` row whose
+        bytes carried neither field arrived at replay wearing this ledger's tag
+        and a timestamp of *this instant*, so
+        :func:`~gzkit.ledger_corrections.is_well_formed` — which checks exactly
+        those two envelope facts — read the defaults and passed the row. The
+        result was three answers to one set of bytes: ``gz validate --ledger``
+        reported the row, :func:`read_corrected_rows` left it inert, and the
+        artifact graph applied its void. In the reinstatement direction it was
+        worse, because the manufactured envelope REVIVED a subject a valid
+        correction had voided.
+
+        An absent field is therefore read as EMPTY: ``""`` is not this ledger's
+        schema tag and does not parse as a timestamp, so every consumer that
+        judges a row reaches the verdict the bytes earn. This does NOT weaken the
+        model — a stored row carrying a WRONG type (``parent: 7``, ``ts: 7``) is
+        still refused outright by validation, which is
+        :class:`Ledger`'s documented strict contract. The defect was never that
+        the model failed to refuse what it could see; it was that it invented
+        what was absent.
+        """
+        row = dict(data)
+        if "schema" not in row and "schema_" not in row:
+            row["schema"] = ""
+        if "ts" not in row:
+            row["ts"] = ""
+        return cls.model_validate(row)
+
 
 def parse_frontmatter_value(content: str, key: str) -> str | None:
     """Extract a single value from YAML frontmatter.
@@ -322,6 +361,12 @@ class Ledger:
         The RAW append-only history. Use it only where every row is the subject
         — replay fidelity, the corrections census, resolving a correction's
         subject. For "what is currently true", use :meth:`read_all`.
+
+        Parsed through :meth:`LedgerEvent.parse_stored_row`, never the plain
+        constructor path: this is the boundary that knows a row already exists,
+        and it is the only one, so it is where the envelope must be read rather
+        than defaulted. See that method for what a default at this boundary let
+        through.
         """
         if self._cached_events is not None:
             return self._cached_events
@@ -335,7 +380,7 @@ class Ledger:
                 line = line.strip()
                 if line:
                     data = json.loads(line)
-                    events.append(LedgerEvent.model_validate(data))
+                    events.append(LedgerEvent.parse_stored_row(data))
 
         self._cached_events = events
         return events

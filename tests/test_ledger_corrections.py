@@ -25,12 +25,16 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from gzkit.events import LedgerEventCorrectedEvent, parse_typed_event
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import Ledger, LedgerEvent, read_corrected_rows
 from gzkit.ledger_corrections import (
     CORRECTION_EVENT,
+    LEDGER_SCHEMA,
     correction_state,
     evidence_events,
+    is_correction,
+    is_well_formed,
     live_events,
+    parse_ledger_ts,
     resolve_subject,
     subject_key,
 )
@@ -1468,6 +1472,283 @@ class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
         messages, replayed = self._both([self.subject, self._correcting(ts=self.SUBJECT_TS)])
         self.assertEqual(messages, [])
         self.assertEqual(replayed, [])
+
+
+class TestAStoredRowsEnvelopeIsNeverManufactured(unittest.TestCase):
+    """A correction's validity must describe the STORED ROW, not the parsed object.
+
+    The class above proves the two paths refuse the same correction when the
+    envelope carries a WRONG value. It could not see the other half: an ABSENT
+    one. ``LedgerEvent`` supplies ``schema_`` and ``ts`` from field defaults, and
+    :meth:`~gzkit.ledger.Ledger.read_history` parsed every stored row through it
+    — so a correction whose bytes carry neither arrived at replay wearing this
+    ledger's tag and a timestamp of *this instant*. The envelope check then read
+    those manufactured values and passed. ``gz validate --ledger`` reported the
+    row, ``read_corrected_rows`` left it inert, and the graph applied its void:
+    three readers, one set of bytes, three answers.
+
+    The defaults themselves are legitimate — an event being AUTHORED has no
+    timestamp until something stamps one. What is not legitimate is applying
+    them to a row that already exists on disk, because there the envelope is a
+    fact about the file and reading is not the moment to invent it.
+
+    The second half is the guard's own gap: ``parent`` is the fifth envelope
+    field, ``gz validate --ledger`` checks it and ``LedgerEvent`` refuses it, but
+    :func:`~gzkit.ledger_corrections.is_well_formed` never read it — so
+    ``parent: 7`` was refused by both of those and applied by the tolerant reader
+    that exists precisely to stand in for them where raising is not allowed.
+
+    Every case hands the SAME temporary file to all three readers. The assertion
+    is the SUBJECT'S STATE — the graph's ``pipeline_launched`` flag and the row's
+    presence in the tolerant stream — never a helper's return value, because a
+    helper agreeing while derived state diverges is the defect being closed.
+    """
+
+    SUBJECT_TS = "2026-09-02T00:00:00+00:00"
+    VOID_TS = "2026-09-06T20:00:00+00:00"
+    REINSTATE_TS = "2026-09-06T21:00:00+00:00"
+    OBPI = "OBPI-0.35.0-08"
+
+    #: Schema-complete, so a positive case asserting the validator reports
+    #: NOTHING is answering about the correction rather than about the fixture.
+    LAUNCH_FIELDS = {
+        "nonce": "b8f1c2",
+        "marker_path": ".gzkit/pipeline/OBPI-0.35.0-08.json",
+        "lane": "lite",
+    }
+
+    def setUp(self) -> None:
+        self.created = _row(
+            "obpi_created", self.OBPI, "2026-07-21T23:36:03+00:00", parent="ADR-0.35.0"
+        )
+        self.subject = _row("pipeline_launched", self.OBPI, self.SUBJECT_TS, **self.LAUNCH_FIELDS)
+
+    # -- fixtures ---------------------------------------------------------
+
+    def _void(self, **overrides: object) -> dict:
+        row = _correction(self.subject, "void", ts=self.VOID_TS, reason="started in error")
+        row.update(overrides)
+        return row
+
+    def _reinstate(self, **overrides: object) -> dict:
+        row = _correction(
+            self.subject,
+            "reinstated",
+            ts=self.REINSTATE_TS,
+            cause="operator-error",
+            reason="the void was itself wrong",
+        )
+        row.update(overrides)
+        return row
+
+    @staticmethod
+    def _without(row: dict, field: str) -> dict:
+        """Return ``row`` with ``field`` ABSENT — not empty, not null, gone.
+
+        Absence is the shape the model repaired; an empty or null value is a
+        different case that the parser and the validator both already refuse.
+        """
+        stripped = dict(row)
+        del stripped[field]
+        return stripped
+
+    # -- the three readers, one file --------------------------------------
+
+    def _readers(self, rows: list[dict]) -> tuple[list[str], bool, bool]:
+        """Return ``(validator messages, tolerant subject live, graph flag)``.
+
+        One temporary file, read three ways. The last two are SUBJECT STATE:
+        whether the corrected row survives the tolerant live stream, and what
+        the artifact graph says about the OBPI it launched.
+        """
+        from gzkit.validate_pkg.ledger_check import validate_ledger
+
+        path = _ledger_file(self, rows)
+        messages = [e.message for e in validate_ledger(path)]
+        tolerant = read_corrected_rows(path, stream="live")
+        live = any(row.get("event") == "pipeline_launched" for row in tolerant)
+        graph = Ledger(path).get_artifact_graph()[self.OBPI]["pipeline_launched"]
+        return messages, live, bool(graph)
+
+    def _assert_inert_everywhere(self, correction: dict, expected: str) -> None:
+        """A void the validator reports must leave the launch standing in BOTH readers."""
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, correction]
+        )
+        self.assertTrue(
+            any(expected in message for message in messages),
+            f"the validator did not report it: {messages}",
+        )
+        self.assertTrue(tolerant_live, "the tolerant reader applied a correction it must refuse")
+        self.assertTrue(graph_flag, "the graph applied a correction the validator rejects")
+
+    def _assert_cannot_revive(self, reinstatement: dict, expected: str) -> None:
+        """A malformed reinstatement must leave a validly-voided launch voided."""
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, self._void(), reinstatement]
+        )
+        self.assertTrue(
+            any(expected in message for message in messages),
+            f"the validator did not report it: {messages}",
+        )
+        self.assertFalse(tolerant_live, "a rejected reinstatement revived a validly voided row")
+        self.assertFalse(graph_flag, "a rejected reinstatement revived a validly voided row")
+
+    # -- absent schema ----------------------------------------------------
+
+    def test_a_void_with_no_schema_tag_is_inert_in_every_reader(self) -> None:
+        self._assert_inert_everywhere(
+            self._without(self._void(), "schema"), "Missing required field: schema"
+        )
+
+    def test_a_reinstatement_with_no_schema_tag_cannot_revive(self) -> None:
+        self._assert_cannot_revive(
+            self._without(self._reinstate(), "schema"), "Missing required field: schema"
+        )
+
+    # -- absent timestamp -------------------------------------------------
+
+    def test_a_void_with_no_timestamp_is_inert_in_every_reader(self) -> None:
+        self._assert_inert_everywhere(
+            self._without(self._void(), "ts"), "Missing required field: ts"
+        )
+
+    def test_a_reinstatement_with_no_timestamp_cannot_revive(self) -> None:
+        self._assert_cannot_revive(
+            self._without(self._reinstate(), "ts"), "Missing required field: ts"
+        )
+
+    # -- non-string parent ------------------------------------------------
+
+    def test_a_void_with_a_non_string_parent_is_inert_in_the_tolerant_reader(self) -> None:
+        """The gap the guard itself had, on the one path that had to catch it.
+
+        ``gz validate --ledger`` reports this row and ``LedgerEvent`` refuses to
+        parse it, so the strict :class:`~gzkit.ledger.Ledger` never applies it —
+        it raises instead, which is that reader's documented contract for a
+        malformed row. The tolerant reader exists BECAUSE raising is forbidden
+        inside a pipeline gate or a commit hook, which left it as the only path
+        that could apply the correction, and it did.
+        """
+        rows = [self.created, self.subject, self._void(parent=7)]
+        path = _ledger_file(self, rows)
+        from gzkit.validate_pkg.ledger_check import validate_ledger
+
+        self.assertTrue(
+            any("Field 'parent' must be a string" in e.message for e in validate_ledger(path)),
+            "the validator did not report the non-string parent",
+        )
+        with self.assertRaises(ValidationError):
+            Ledger(path).read_history()
+        self.assertTrue(
+            any(
+                row.get("event") == "pipeline_launched"
+                for row in read_corrected_rows(path, stream="live")
+            ),
+            "the tolerant reader applied a correction both other readers refuse",
+        )
+
+    def test_a_reinstatement_with_a_non_string_parent_cannot_revive(self) -> None:
+        rows = [self.created, self.subject, self._void(), self._reinstate(parent=7)]
+        path = _ledger_file(self, rows)
+        self.assertFalse(
+            any(
+                row.get("event") == "pipeline_launched"
+                for row in read_corrected_rows(path, stream="live")
+            ),
+            "a rejected reinstatement revived a validly voided row",
+        )
+
+    def test_a_string_parent_is_still_accepted(self) -> None:
+        """The repair refuses the wrong TYPE, never the field itself."""
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, self._void(parent="ADR-0.35.0")]
+        )
+        self.assertEqual(messages, [])
+        self.assertFalse(tolerant_live)
+        self.assertFalse(graph_flag)
+
+    # -- the shared contract ----------------------------------------------
+
+    def test_both_readers_reach_the_same_verdict_on_the_same_bytes(self) -> None:
+        """``is_well_formed`` must answer identically however the row was read.
+
+        The property underneath every case above, asserted directly: for one set
+        of bytes, the raw dict a tolerant reader holds and the
+        :class:`~gzkit.ledger.LedgerEvent` a strict reader parses are the same
+        row, so they cannot be allowed to disagree about whether it is a valid
+        correction. They did, in the two directions a default can fill.
+        """
+        for label, correction in (
+            ("no schema", self._without(self._void(), "schema")),
+            ("no ts", self._without(self._void(), "ts")),
+            ("valid", self._void()),
+        ):
+            with self.subTest(label):
+                path = _ledger_file(self, [self.created, self.subject, correction])
+                raw = [
+                    json.loads(line)
+                    for line in path.read_text(encoding="utf-8").splitlines()
+                    if line.strip()
+                ]
+                typed = Ledger(path).read_history()
+                self.assertEqual(
+                    [is_well_formed(row) for row in raw if is_correction(row)],
+                    [is_well_formed(event) for event in typed if is_correction(event)],
+                    "the raw and typed readings of one row disagree about its validity",
+                )
+
+    # -- positive cases, unchanged ----------------------------------------
+
+    def test_a_valid_void_still_reaches_every_reader(self) -> None:
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, self._void()]
+        )
+        self.assertEqual(messages, [])
+        self.assertFalse(tolerant_live, "a valid void left its subject live")
+        self.assertFalse(graph_flag, "a valid void left the graph reading the launch")
+
+    def test_a_valid_reinstatement_still_revives_its_subject(self) -> None:
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, self._void(), self._reinstate()]
+        )
+        self.assertEqual(messages, [])
+        self.assertTrue(tolerant_live, "a valid reinstatement did not restore its subject")
+        self.assertTrue(graph_flag, "a valid reinstatement did not restore the graph flag")
+
+    def test_repeated_corrections_still_resolve_to_the_last(self) -> None:
+        messages, tolerant_live, graph_flag = self._readers(
+            [
+                self.created,
+                self.subject,
+                self._void(),
+                self._reinstate(),
+                self._void(ts="2026-09-06T22:00:00+00:00"),
+            ]
+        )
+        self.assertEqual(messages, [])
+        self.assertFalse(tolerant_live)
+        self.assertFalse(graph_flag)
+
+    def test_equal_timestamps_in_valid_append_order_are_still_accepted(self) -> None:
+        """Sharing an instant is legitimate; the repair reads absence, not order."""
+        messages, tolerant_live, graph_flag = self._readers(
+            [self.created, self.subject, self._void(ts=self.SUBJECT_TS)]
+        )
+        self.assertEqual(messages, [])
+        self.assertFalse(tolerant_live)
+        self.assertFalse(graph_flag)
+
+    def test_an_authored_event_still_gets_its_defaults(self) -> None:
+        """The constructor defaults are legitimate and stay.
+
+        Repairing the READ path must not disturb the AUTHORING path: an event
+        being minted has no timestamp until something stamps one, and every
+        producer in the tree relies on that.
+        """
+        authored = LedgerEvent(event="prd_created", id="PRD-1")
+        self.assertEqual(authored.schema_, LEDGER_SCHEMA)
+        self.assertIsNotNone(parse_ledger_ts(authored.ts))
 
 
 class TestProducerAuditReadsTheRealAirlockProducer(unittest.TestCase):

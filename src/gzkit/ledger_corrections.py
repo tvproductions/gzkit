@@ -231,15 +231,33 @@ def resolve_subject(events: Iterable[Any], key: SubjectKey) -> list[Any]:
 def _has_valid_envelope(event: Any) -> bool:
     """Report whether ``event`` is a well-formed ledger row at the envelope level.
 
-    The three envelope facts ``gz validate --ledger`` checks on every row before
+    The four envelope facts ``gz validate --ledger`` checks on every row before
     it looks at any payload: the format tag is THIS ledger's, ``id`` is a
-    non-empty string, and ``ts`` parses as ISO8601. ``event`` itself is not
-    re-checked here — :func:`is_correction` has already matched it.
+    non-empty string, ``ts`` parses as ISO8601, and ``parent`` — when it carries
+    a value at all — is a string. ``event`` itself is not re-checked here —
+    :func:`is_correction` has already matched it.
+
+    ``parent`` was the omission, and it mattered on exactly one path. A
+    correction carrying ``parent: 7`` is reported by ``gz validate --ledger`` and
+    refused outright by :class:`~gzkit.ledger.LedgerEvent`, so the strict
+    :class:`~gzkit.ledger.Ledger` never applied it — it raises, which is that
+    reader's documented contract for a malformed row. That left
+    :func:`~gzkit.ledger.read_corrected_rows` as the only reader that could apply
+    it, and it did: the tolerant reader exists BECAUSE raising is forbidden
+    inside a pipeline gate or a commit hook, which makes it the one path where a
+    gap in this guard is the whole defence rather than a redundant one.
+
+    The rule is the validator's rule verbatim — a value that is absent or
+    ``None`` is fine, any non-string value is not — because a second reading of
+    ``parent`` here would be the drift this shared contract exists to prevent.
     """
     if _schema_value(event) != LEDGER_SCHEMA:
         return False
     row_id = _envelope(event, "id")
     if not isinstance(row_id, str) or not row_id.strip():
+        return False
+    parent = _envelope(event, "parent")
+    if parent is not None and not isinstance(parent, str):
         return False
     return parse_ledger_ts(_envelope(event, "ts")) is not None
 
@@ -271,10 +289,23 @@ def is_well_formed(correction: Any) -> bool:
     took down every reader that touched it.
 
     The ENVELOPE is checked too, not only the payload. A correction is first a
-    ledger row: it carries this ledger's ``schema`` tag, a non-empty ``id``, and
-    a parseable ``ts``. Omitting that check is what let a row ``gz validate
-    --ledger`` rejects go on voiding its subject at replay, which is the split
-    this contract exists to close — the two paths now refuse the same rows.
+    ledger row: it carries this ledger's ``schema`` tag, a non-empty ``id``, a
+    string ``parent`` if any, and a parseable ``ts``. Omitting that check is what
+    let a row ``gz validate --ledger`` rejects go on voiding its subject at
+    replay, which is the split this contract exists to close — the two paths now
+    refuse the same rows.
+
+    **The verdict must describe the STORED ROW, not the object holding it.** This
+    function is handed a raw dict by one reader and a
+    :class:`~gzkit.ledger.LedgerEvent` by another, and the two are the same row,
+    so they may not disagree. They did: the model supplies ``schema_`` and ``ts``
+    from field defaults, so a correction whose bytes carried NEITHER passed here
+    on the typed path while failing on the raw one — and, as a reinstatement,
+    revived a subject a valid correction had voided.
+    :meth:`~gzkit.ledger.LedgerEvent.parse_stored_row` is the repair, at the one
+    boundary that knows a row already exists; the check here is what reads its
+    result. A guard cannot be sound about a row whose envelope its own caller
+    invented.
     """
     if not _has_valid_envelope(correction):
         return False
