@@ -258,6 +258,15 @@ def _check_req(
         # proof — non-failing, like "pass", until repaired off the snapshot.
         if proof_status in ("pass", "grandfathered-support"):
             return None
+        if proof_status == "undeclared-support":
+            return _err(
+                artifact,
+                f"{req_id} [SUPPORT]: undeclared-support — the REQ declares no "
+                f"unambiguous witness clause, so no proof channel was resolved "
+                f"(GHI #888). Append exactly one clause of the form: Witnessed by "
+                f"`<event_type>` [citing `<path>`] + `gz validate --<scope>`. "
+                f"Re-run: uv run gz validate --closeout-proof",
+            )
         rerun = _extract_rerun_command(line)
         suffix = f" Re-run: {rerun}" if rerun else ""
         return _err(artifact, f"{req_id} [SUPPORT]: {proof_status}.{suffix}")

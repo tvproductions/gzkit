@@ -75,6 +75,61 @@ _SUPPORT_PATH_RE = re.compile(
 )
 
 
+# GHI #888. A SUPPORT REQ DECLARES its proof; the parser never infers it.
+#
+# The witness clause is delimited prose, and everything outside it is commentary
+# the parser must not read. The previous parser scanned the whole REQ body for
+# known event names with ``in`` — a substring test over free text — so a REQ that
+# DENIED an event existed ("the ledger carries NO corpus_entry_retired event")
+# returned that event as its proof channel and resolved green for the very reason
+# it had been amended. The failure was directional: substring presence can only
+# ADD types, so a REQ could only ever look MORE proven than it was.
+#
+# Reading only the clause is what closes the class, and it closes it for every
+# phrasing at once — a denial, a quoted sibling REQ, a rejected alternative, a
+# measured absence. Detecting negation was considered and refused: it is the same
+# substring guessing one level deeper, and it fails open on the first rephrasing.
+#
+#     Witnessed by `<event_type>` [citing `<path>`] + `gz validate --<scope>`.
+#
+# Exactly one clause, exactly one recognized event type, exactly one validator
+# scope. Anything else is ambiguous or missing, and both are REFUSED rather than
+# resolved by preference — picking a favourite among competing claims is the
+# inference this rule exists to end.
+_WITNESS_MARKER_RE: re.Pattern[str] = re.compile(r"witnessed\s+by", re.IGNORECASE)
+
+# The artifact the clause names, when it names one with the `citing` keyword.
+_WITNESS_CITING_RE: re.Pattern[str] = re.compile(r"citing\s+`?([^`\s,;]+)`?")
+
+
+def _witness_clause(req_text: str) -> str | None:
+    """Return the REQ's single witness clause, or ``None`` when it is not declared.
+
+    Zero markers is a MISSING declaration; two or more is an AMBIGUOUS one. Both
+    return ``None``: the caller must not be handed a clause the author did not
+    unambiguously write.
+    """
+    markers = list(_WITNESS_MARKER_RE.finditer(req_text))
+    if len(markers) != 1:
+        return None
+    return req_text[markers[0].end() :]
+
+
+def _sole_event_type(clause: str) -> str | None:
+    """Return the one recognized ledger event type named in *clause*.
+
+    Word-boundary matched, never substring: an event name is a token the author
+    wrote, not a sequence of characters that happens to occur. Zero or two or more
+    distinct types is refused — a proof channel with two candidates names neither.
+    """
+    found = {
+        event_type
+        for event_type in _KNOWN_LEDGER_EVENT_TYPES
+        if re.search(rf"(?<![\w-]){re.escape(event_type)}(?![\w-])", clause)
+    }
+    return next(iter(found)) if len(found) == 1 else None
+
+
 class SupportCitation(BaseModel):
     """Parsed SUPPORT-channel citation: validator scope + ledger event types."""
 
@@ -94,36 +149,48 @@ class SupportCitation(BaseModel):
 
 
 def parse_support_citation(req_text: str) -> SupportCitation | None:
-    """Parse ledger-event type(s), validator scope, and cited artifact path.
+    """Parse the REQ's declared witness clause into its proof channel.
 
-    Returns ``None`` when the citation is missing or unparseable (no recognized
-    ``gz validate --<scope>`` reference or no recognized ledger event type).
-    Both components must be present for the citation to be considered parseable.
-    The artifact path (GHI #647) is captured when the REQ names one; it scopes
+    Returns ``None`` when the declaration is MISSING (no clause) or AMBIGUOUS
+    (two clauses, two event types, two validator scopes) — never a best guess.
+    Only the clause is read, so nothing the REQ body says can become its proof:
+    a denial, a quoted sibling REQ, a rejected alternative and a measured absence
+    are all commentary, whatever event names they contain (GHI #888).
+
+    The artifact path (GHI #647) is captured when the clause names one; it scopes
     the ledger arm to an event CITING that path, not merely one of the type.
     """
-    scopes = [s.replace("-", "_") for s in _GZ_VALIDATE_SCOPE_RE.findall(req_text)]
-    if not scopes:
-        return None
-    # Prefer the actual proof validator over a recursion-fence scope mentioned as
-    # the documented SUBJECT (e.g. a REQ that *documents* `--req-kind-discipline`
-    # but is *proven* by `--documents`). Fall back to the first when all cited
-    # scopes are fence scopes (the recursion guard then fires legitimately). GHI #647.
-    scope = next((s for s in scopes if s not in _RECURSION_FENCE_SCOPES), scopes[0])
-
-    found_types = [et for et in _KNOWN_LEDGER_EVENT_TYPES if et in req_text]
-    if not found_types:
+    clause = _witness_clause(req_text)
+    if clause is None:
         return None
 
-    # The cited artifact is the most directory-qualified path token (e.g.
-    # "src/gzkit/events.py" over a bare "events.py" mention elsewhere in the
-    # text) — the artifact a SUPPORT REQ names usually carries its full path.
-    path_matches = _SUPPORT_PATH_RE.findall(req_text)
-    artifact_path = (
-        max(path_matches, key=lambda p: (p.count("/"), len(p))) if path_matches else None
-    )
+    # The clause is the WHOLE declaration. Borrowing a scope from the body would
+    # reopen the same seam one field over: the body would once again decide what
+    # the REQ is proven by.
+    scopes = {s.replace("-", "_") for s in _GZ_VALIDATE_SCOPE_RE.findall(clause)}
+    if len(scopes) != 1:
+        return None
+    scope = next(iter(scopes))
 
-    return SupportCitation(event_types=found_types, scope=scope, artifact_path=artifact_path)
+    event_type = _sole_event_type(clause)
+    if event_type is None:
+        return None
+
+    # `citing <path>` is the declared artifact. Falling back to the loose path
+    # token keeps the clause readable when the author writes the path without the
+    # keyword, and the search is confined to the clause either way.
+    citing = _WITNESS_CITING_RE.search(clause)
+    if citing:
+        artifact_path = citing.group(1)
+    else:
+        path_matches = _SUPPORT_PATH_RE.findall(clause)
+        artifact_path = (
+            max(path_matches, key=lambda path: (path.count("/"), len(path)))
+            if path_matches
+            else None
+        )
+
+    return SupportCitation(event_types=[event_type], scope=scope, artifact_path=artifact_path)
 
 
 def _ledger_has_event(event_types: list[str], project_root: Path) -> bool:
@@ -273,7 +340,9 @@ def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | No
     - ``"grandfathered-support"`` — the REQ cites a path no ledger event cites,
       but it is named in the GHI #647 grandfather snapshot (pre-cutover hollow
       proof, tolerated; consumers treat as non-failing).
-    - ``"unproven-support"`` — citation absent/unparseable, event not found
+    - ``"undeclared-support"`` — the REQ declares no unambiguous witness clause,
+      so there is no channel to resolve (GHI #888). Never a pass.
+    - ``"unproven-support"`` — event not found
       (or, when a path is cited, no event cites it and the REQ is not
       grandfathered), or validator returned errors (fail-close).
     - ``"unproven-recursion-fence"`` — cited scope would re-enter req-kind or
@@ -286,7 +355,11 @@ def resolve_support_proof(req_text: str, project_root: Path, *, req_id: str | No
     """
     citation = parse_support_citation(req_text)
     if citation is None:
-        return "unproven-support"
+        # Distinct from "unproven": nothing was CLAIMED, so nothing was checked.
+        # Collapsing the two would report a REQ that declared no proof channel as
+        # though its declared channel had failed, and send the author looking for
+        # a missing ledger event instead of a missing clause (GHI #888).
+        return "undeclared-support"
 
     if citation.scope in _RECURSION_FENCE_SCOPES:
         return "unproven-recursion-fence"

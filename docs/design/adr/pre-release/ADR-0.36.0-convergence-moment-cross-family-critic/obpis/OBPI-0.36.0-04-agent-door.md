@@ -218,7 +218,7 @@ uv run gz arb step --name adversary -- codex exec --sandbox read-only "Refute: t
 - [ ] REQ-0.36.0-04-01 [BEHAVIOR]: Given a decision whose category OBPI-06 tiers as mandatory, when the agent door is invoked, then the critic is dispatched — and given a decision the tier resolves as not-selected, then it is not, regardless of any confidence value supplied by the caller.
 - [ ] REQ-0.36.0-04-02 [BEHAVIOR]: Given a caller-supplied confidence field on the door's input, when the firing decision is computed, then that field is dropped and never reaches the tier resolution — a door that weights it fails.
 - [ ] REQ-0.36.0-04-03 [BEHAVIOR]: Given a verdict carrying PREMISE-ATTACK, VERDICT and UNASKED, when the agent door renders it, then all three fields appear verbatim — identical to OBPI-03's contract, so the agent path cannot soften what the operator path preserves.
-- [ ] REQ-0.36.0-04-04 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` declares the agent-invocation contract and does NOT carry `disable-model-invocation`, keeping the same skill reachable from both doors — `gz validate --documents` + `artifact_edited` event citing that path.
+- [ ] REQ-0.36.0-04-04 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` declares the agent-invocation contract and does NOT carry `disable-model-invocation`, keeping the same skill reachable from both doors. Witnessed by `artifact_edited` citing `.gzkit/skills/second-opinion/SKILL.md` + `gz validate --documents`.
 
 ## Completion Checklist
 

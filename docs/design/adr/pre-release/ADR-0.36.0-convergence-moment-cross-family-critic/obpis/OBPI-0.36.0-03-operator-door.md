@@ -176,7 +176,7 @@ uv run gz arb step --name adversary -- codex exec --sandbox read-only "Refute: h
 
 - [ ] REQ-0.36.0-03-01 [BEHAVIOR]: Given no active OBPI, no active ADR and no pipeline stage, when the operator door is invoked with a free-text decision, then it dispatches the critic and returns a verdict — governance context is never a precondition.
 - [ ] REQ-0.36.0-03-02 [BEHAVIOR]: Given a verdict carrying PREMISE-ATTACK, VERDICT and UNASKED, when the door renders it to the operator, then all three fields appear verbatim — a rendering that drops or paraphrases any field fails.
-- [ ] REQ-0.36.0-03-03 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` declares the operator-invocation contract without `disable-model-invocation`, keeping the same skill agent-invocable for OBPI-04 — `gz validate --documents` + `artifact_edited` event.
+- [ ] REQ-0.36.0-03-03 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` declares the operator-invocation contract without `disable-model-invocation`, keeping the same skill agent-invocable for OBPI-04. Witnessed by `artifact_edited` citing `.gzkit/skills/second-opinion/SKILL.md` + `gz validate --documents`.
 
 ## Completion Checklist
 

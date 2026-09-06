@@ -184,7 +184,7 @@ uv run python -m gzkit.second_opinion --validate tests/fixtures/second_opinion/w
 
 - [ ] REQ-0.36.0-01-01 [BEHAVIOR]: Given a verdict object that omits the scope-challenge (UNASKED) field, when it is validated against `second_opinion_verdict.json`, then validation fails with a message naming the missing question — a one-question verdict is invalid, never partial.
 - [ ] REQ-0.36.0-01-02 [BEHAVIOR]: Given a verdict carrying both PREMISE-ATTACK/VERDICT and UNASKED fields, when it is validated, then it passes and the UNASKED text is retrievable as a discrete field rather than parsed out of prose.
-- [ ] REQ-0.36.0-01-03 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` exists carrying both mandatory questions and the raw-surface directive, and declares `metadata.skill-version` — `gz validate --documents` + `artifact_edited` event.
+- [ ] REQ-0.36.0-01-03 [SUPPORT]: `.gzkit/skills/second-opinion/SKILL.md` exists carrying both mandatory questions and the raw-surface directive, and declares `metadata.skill-version`. Witnessed by `artifact_edited` citing `.gzkit/skills/second-opinion/SKILL.md` + `gz validate --documents`.
 - [ ] REQ-0.36.0-01-04 [BEHAVIOR]: Given the delivered verdict vocabulary, when it is compared against `events.py::adversarial_validation`, then the two agree on the verdict tokens — a second, differently-spelled vocabulary for the same concept fails.
 
 ## Completion Checklist

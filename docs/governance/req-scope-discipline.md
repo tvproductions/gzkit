@@ -139,6 +139,41 @@ the validator proves it passes structural acceptance.
 - `REQ-0.0.59-01-01 [SUPPORT]: .gzkit/rules/tests.md carries a new ## REQ Scope Discipline subsection`
 - `REQ-0.0.54-01-03 [SUPPORT]: docs/governance/advisory-rules-audit.md gains scorecard row 58`
 
+**The witness clause (binding, GHI #888).** A SUPPORT REQ **declares** its proof
+channel; the resolver never infers one. The declaration is a single trailing clause:
+
+```
+Witnessed by `<event_type>` [citing `<path>`] + `gz validate --<scope>`.
+```
+
+Exactly one clause per REQ, naming exactly one recognized ledger event type and
+exactly one validator scope. `parse_support_citation` reads **only** the clause, so
+everything before it is commentary and cannot become the proof channel.
+
+Zero clauses is a **missing** declaration; two clauses, two event types, or two
+scopes is an **ambiguous** one. Both are refused — `resolve_support_proof` returns
+`undeclared-support`, which never passes — rather than resolved by preference.
+Picking a favourite among competing claims is exactly the inference this rule ends.
+
+*Why declaration and not inference.* The parser previously scanned the whole REQ
+body for known event names with `in`, a substring test over free text. It could not
+distinguish a REQ that **cites** an event from one that **denies the event exists**:
+a REQ reading *"the ledger carries NO `corpus_entry_retired` event — measured 0 of
+8"* returned that event as its proof channel and resolved green for the very reason
+it had been amended. The failure was directional and silent — substring presence can
+only **add** types, so a REQ could only ever look more proven than it was. Negation
+detection was considered and refused: it is the same substring guessing one level
+deeper, and it fails open on the first rephrasing. Reading only a declared clause
+closes the class for every phrasing at once.
+
+*Migration state, measured 2026-09-06.* All **13** SUPPORT REQs in live briefs
+declare a clause. **162** in terminal (sealed) briefs do not: a sealed brief is a
+historical record and is not rewritten to satisfy a later rule. Those resolve
+`undeclared-support` if their ADR is ever re-gated at closeout — tracked, not
+silently tolerated. Superseded in passing: GHI #647's `_RECURSION_FENCE_SCOPES`
+*preference* heuristic for scope selection, which the clause makes unnecessary (the
+fence set still guards recursion at resolution time).
+
 **Anti-pattern:** A Python test that does `subprocess.run(["grep", "-q", "## REQ Scope Discipline", ".gzkit/rules/tests.md"])` is NOT a SUPPORT proof. It is a tautological filesystem operation that fails only when a human deletes the heading — zero code regression value.
 
 ### STRUCTURAL-FENCE

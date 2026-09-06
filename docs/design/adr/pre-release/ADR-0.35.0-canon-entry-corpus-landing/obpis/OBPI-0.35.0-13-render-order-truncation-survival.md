@@ -251,7 +251,7 @@ uv run -m behave features/render_order.feature
 - [ ] REQ-0.35.0-13-02 [BEHAVIOR]: Given a permuted surface, when `Pillar.order` is read back, then it matches the new document position; governed rendition playback is byte-identical to the approved surface, including repeated generation, without asserting that the lossy model parser itself preserves arbitrary bytes
 - [ ] REQ-0.35.0-13-03 [BEHAVIOR]: Given any section, when the surface is permuted, then that section's text is byte-identical before and after — the permutation reorders and never rewrites
 - [ ] REQ-0.35.0-13-04 [BEHAVIOR]: Given the permuted `AGENTS.md`, when the surface-delivery witness runs, then its measured byte offsets show every must-survive section ending at or before the recorded configured cap; a too-small-cap fixture reports residual loss and refuses publication rather than trimming text or changing policy
-- [ ] REQ-0.35.0-13-05 [SUPPORT]: `docs/user/manpages/content.md` documents the read-only ranking source, configurable budget, infeasible-order refusal and governed publication flow — `gz validate --documents` + path-citing `artifact_edited` event
+- [ ] REQ-0.35.0-13-05 [SUPPORT]: `docs/user/manpages/content.md` documents the read-only ranking source, configurable budget, infeasible-order refusal and governed publication flow. Witnessed by `artifact_edited` citing `docs/user/manpages/content.md` + `gz validate --documents`.
 - [ ] REQ-0.35.0-13-06 [STRUCTURAL-FENCE]: `Pillar.order` remains document order and is never repurposed as a criticality axis — audited at ADR closeout against § Boundary Invariants
 
 ## Completion Checklist

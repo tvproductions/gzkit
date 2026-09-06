@@ -261,7 +261,7 @@ uv run gz content show AGENTS.md --section prime-directive-ownership
 - [ ] REQ-0.35.0-10-03 [behavior]: Given a bullet classified by BOTH surfaces with disagreeing values on an owned section, when the audit runs, then the corpus value binds AND the disagreement is reported to the operator rather than silently discarded
 - [ ] REQ-0.35.0-10-04 [behavior]: Given a corpus-owned section with at least one live entry whose classification is the capture-default `Ambiguous`, when the audit runs, then it fails closed naming each unreconciled entry id, the rule that binds, and the runnable next step
 - [ ] REQ-0.35.0-10-05 [behavior]: Given the committed corpus, when this OBPI's reconciliation has landed, then `corpus_fingerprint()` over the pre-existing rows is unchanged and every reconciliation is an appended row rather than an edited one
-- [ ] REQ-0.35.0-10-06 [support]: `docs/governance/advisory-rules-audit.md` records that its authority is now narrowed to non-corpus-owned sections, so the scorecard cannot be read as the sole classification authority — `gz validate --documents` + `artifact_edited` event
+- [ ] REQ-0.35.0-10-06 [support]: `docs/governance/advisory-rules-audit.md` records that its authority is now narrowed to non-corpus-owned sections, so the scorecard cannot be read as the sole classification authority. Witnessed by `artifact_edited` citing `docs/governance/advisory-rules-audit.md` + `gz validate --documents`.
 - [ ] REQ-0.35.0-10-07 [structural-fence]: no classification surface exists without a reader, and no bullet resolves from two surfaces at once, after every ADR-0.35.0 OBPI has landed
 
 ## Completion Checklist

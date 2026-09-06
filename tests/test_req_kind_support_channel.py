@@ -40,8 +40,8 @@ class TestResolveSupportProofPass(unittest.TestCase):
         from gzkit.req_kind_support import resolve_support_proof
 
         req_text = (
-            "manpage updated — artifact_edited ledger event "
-            "+ gz validate --documents (doc-tree structural validator)"
+            "manpage updated. Witnessed by `artifact_edited` "
+            "+ `gz validate --documents` (doc-tree structural validator)"
         )
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -66,7 +66,9 @@ class TestResolveSupportProofPass(unittest.TestCase):
         rid = ReqId.parse("REQ-0.0.59-99-01")
         entity = ReqEntity(
             id=rid,
-            description=("rule updated — artifact_edited ledger event + gz validate --documents"),
+            description=(
+                "rule updated. Witnessed by `artifact_edited` + `gz validate --documents`"
+            ),
             status=ReqStatus.UNCHECKED,
             parent_obpi="OBPI-0.0.59-99",
             kind=ReqTestability.CODE,
@@ -123,8 +125,8 @@ class TestSupportProofPathAware(unittest.TestCase):
 
     # A REQ citing artifact_edited FOR a specific source path + a validator scope.
     _REQ = (
-        "events.py registered — artifact_edited ledger event for "
-        "src/gzkit/events.py + gz validate --ledger"
+        "events.py registered. Witnessed by `artifact_edited` citing "
+        "`src/gzkit/events.py` + `gz validate --ledger`"
     )
 
     def test_path_cited_but_no_event_cites_path_is_unproven(self) -> None:
@@ -171,8 +173,8 @@ class TestSupportProofPathAware(unittest.TestCase):
         from gzkit.req_kind_support import resolve_support_proof
 
         req = (
-            "rule shipped — corpus_entry_appended ledger event for "
-            ".gzkit/rules/x.md + gz validate --ledger"
+            "rule shipped. Witnessed by `corpus_entry_appended` citing "
+            "`.gzkit/rules/x.md` + `gz validate --ledger`"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -206,8 +208,8 @@ class TestSupportProofPathAware(unittest.TestCase):
         from gzkit.req_kind_support import resolve_support_proof
 
         req = (
-            "composer staged — composition_candidate_emitted ledger event for "
-            "src/gzkit/schemas/ledger.json + gz validate --ledger"
+            "composer staged. Witnessed by `composition_candidate_emitted` citing "
+            "`src/gzkit/schemas/ledger.json` + `gz validate --ledger`"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -226,8 +228,8 @@ class TestSupportProofPathAware(unittest.TestCase):
         from gzkit.req_kind_support import resolve_support_proof
 
         req = (
-            "composer staged — composition_candidate_emitted ledger event for "
-            "src/gzkit/schemas/ledger.json + gz validate --ledger"
+            "composer staged. Witnessed by `composition_candidate_emitted` citing "
+            "`src/gzkit/schemas/ledger.json` + `gz validate --ledger`"
         )
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -236,29 +238,34 @@ class TestSupportProofPathAware(unittest.TestCase):
                 result = resolve_support_proof(req, root, req_id="REQ-X")
             self.assertEqual(result, "pass")
 
-    def test_scope_prefers_non_recursion_fence_validator(self) -> None:
-        """When a REQ mentions a recursion-fence scope as the documented SUBJECT
-        (e.g. 'documents `gz validate --req-kind-discipline`') AND cites a real
-        proof validator ('`gz validate --documents` passes'), the parser binds
-        the proof to the non-fence scope — not the first-mentioned fence scope
-        (which would wrongly resolve unproven-recursion-fence). GHI #647."""
+    def test_a_fence_scope_named_in_the_body_does_not_bind_the_proof(self) -> None:
+        """GHI #647's case, now decided by declaration rather than by preference.
+
+        A REQ may DOCUMENT `gz validate --req-kind-discipline` while being PROVEN
+        by `--documents`. The old parser scanned the whole body, found both, and
+        picked the non-fence one by a `_RECURSION_FENCE_SCOPES` preference — a
+        workaround GHI #888 names as treating one symptom of the substring class.
+        Reading only the clause decides it outright: the body's fence scope is
+        commentary, and the declared scope is the proof. Same outcome, no heuristic.
+        """
         from gzkit.req_kind_support import parse_support_citation
 
         req = (
-            "`docs/governance/x.md` documents `gz validate --req-kind-discipline` — "
-            "`uv run gz validate --documents` passes; `artifact_edited` event citing "
-            "`docs/governance/x.md`"
+            "`docs/governance/x.md` documents `gz validate --req-kind-discipline`. "
+            "Witnessed by `artifact_edited` citing `docs/governance/x.md` + "
+            "`gz validate --documents`."
         )
         cit = parse_support_citation(req)
         assert cit is not None
         self.assertEqual(cit.scope, "documents")
+        self.assertEqual(cit.artifact_path, "docs/governance/x.md")
 
     def test_no_path_citation_falls_back_to_type_only(self) -> None:
         """A SUPPORT REQ that cites NO path keeps the type-only ledger check —
         path-aware enforcement only fires when a path is actually cited."""
         from gzkit.req_kind_support import resolve_support_proof
 
-        req = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        req = "manpage updated. Witnessed by `artifact_edited` + `gz validate --documents`"
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _make_ledger_with_events(root, [_ev("artifact_edited", None)])
@@ -275,7 +282,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
         """Cited event NOT in ledger → unproven; never "advisory-support"."""
         from gzkit.req_kind_support import resolve_support_proof
 
-        req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        req_text = "manpage updated. Witnessed by `artifact_edited` + `gz validate --documents`"
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -291,7 +298,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
         """No ledger at all → unproven; never "advisory-support"."""
         from gzkit.req_kind_support import resolve_support_proof
 
-        req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        req_text = "manpage updated. Witnessed by `artifact_edited` + `gz validate --documents`"
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -370,7 +377,7 @@ class TestResolveSupportProofFailClose(unittest.TestCase):
         """Cited validator dispatch non-zero → unproven; never "advisory-support"."""
         from gzkit.req_kind_support import resolve_support_proof
 
-        req_text = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        req_text = "manpage updated. Witnessed by `artifact_edited` + `gz validate --documents`"
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -432,7 +439,8 @@ class TestRecursionFence(unittest.TestCase):
         from gzkit.req_kind_support import resolve_support_proof
 
         req_text = (
-            "discipline enforced — artifact_edited ledger event + gz validate --req-kind-discipline"
+            "discipline enforced. Witnessed by `artifact_edited` "
+            "+ `gz validate --req-kind-discipline`"
         )
 
         with tempfile.TemporaryDirectory() as tmp:
@@ -448,7 +456,7 @@ class TestRecursionFence(unittest.TestCase):
         """Citing gz validate --closeout-proof resolves unproven (not dispatched)."""
         from gzkit.req_kind_support import resolve_support_proof
 
-        req_text = "proof computed — artifact_edited ledger event + gz validate --closeout-proof"
+        req_text = "proof computed. Witnessed by `artifact_edited` + `gz validate --closeout-proof`"
 
         with tempfile.TemporaryDirectory() as tmp:
             project_root = Path(tmp)
@@ -474,8 +482,8 @@ class TestEarlyReturnScopeDispatch(unittest.TestCase):
     """
 
     _QC_BINDING_REQ = (
-        "the --qc-binding scope is wired as a bound QC step — "
-        "artifact_edited ledger event + gz validate --qc-binding"
+        "the --qc-binding scope is wired as a bound QC step. "
+        "Witnessed by `artifact_edited` + `gz validate --qc-binding`"
     )
 
     @covers("REQ-0.0.69-01-01")
@@ -586,3 +594,128 @@ class TestKnownLedgerEventTypesCoherence(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestWitnessClauseGrammar(unittest.TestCase):
+    """GHI #888: a SUPPORT REQ declares its proof; the parser never infers it.
+
+    `parse_support_citation` scanned the whole REQ body for known event names with
+    `in`, a substring test over free text. It could not tell a REQ that CITES an
+    event from one that DENIES the event exists, and the failure was directional:
+    it could only ever ADD event types, so a REQ could only look more proven than
+    it was. These tests pin the replacement — an explicit, delimited witness
+    clause that is READ, never a body that is GUESSED at.
+    """
+
+    _EV = "artifact_edited"
+
+    def test_the_declaration_is_read_from_the_clause_not_the_body(self) -> None:
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = (
+            "the retirement is recorded. Witnessed by `artifact_edited` citing "
+            "`docs/user/runbook.md` + `gz validate --documents`."
+        )
+        cit = parse_support_citation(req)
+        assert cit is not None
+        self.assertEqual(cit.event_types, [self._EV])
+        self.assertEqual(cit.scope, "documents")
+        self.assertEqual(cit.artifact_path, "docs/user/runbook.md")
+
+    def test_a_denial_in_the_body_is_not_a_citation(self) -> None:
+        # THE DEFECT, verbatim from GHI #888's reproduction. The sentence states
+        # the event does NOT exist. Under the substring parser it was returned as
+        # the REQ's proof channel and resolved green for the very reason the REQ
+        # was amended. The clause is the only thing read, so the body cannot reach
+        # the proof channel however it phrases itself.
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = (
+            "The ledger carries NO corpus_entry_retired event for these ids — measured "
+            "0 of 8. Proven instead by the corpus row; gz validate "
+            "--rendition-floor-coherence passes."
+        )
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_an_unrelated_mention_in_the_body_is_not_a_citation(self) -> None:
+        # The same class in its quieter form: a REQ that QUOTES another REQ, or
+        # documents a rejected alternative, acquired that event as proof. Nothing
+        # about this text declares a witness, so nothing is parsed from it.
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = (
+            "the writer rejects an `artifact_edited` payload lacking a path, per the "
+            "alternative considered in REQ-02 — `gz validate --documents` passes."
+        )
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_a_missing_declaration_is_refused_never_inferred(self) -> None:
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_two_clauses_are_ambiguous_and_refused(self) -> None:
+        # Ambiguity is refused, not resolved by preference. Picking one would put
+        # the parser back in the business of guessing which claim is the proof.
+        from gzkit.req_kind_support import parse_support_citation
+
+        # The two clauses name the SAME event and the SAME scope deliberately. An
+        # earlier version of this test used different ones and passed for the wrong
+        # reason — the event/scope ambiguity guards rejected it, so the marker-count
+        # rule was never exercised and a mutation relaxing it survived. Identical
+        # clauses leave marker-count as the only rule that can refuse this input.
+        req = (
+            "Witnessed by `artifact_edited` + `gz validate --documents`. "
+            "Witnessed by `artifact_edited` + `gz validate --documents`."
+        )
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_two_event_types_in_one_clause_are_ambiguous_and_refused(self) -> None:
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = "Witnessed by `artifact_edited` and `obpi_created` + `gz validate --documents`."
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_two_validator_scopes_in_one_clause_are_ambiguous_and_refused(self) -> None:
+        # A clause naming two scopes names neither as THE structural arm. Refused
+        # rather than resolved by preference — the old parser's fence-scope
+        # preference is exactly the inference this grammar retires.
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = (
+            "Witnessed by `artifact_edited` + `gz validate --documents` and "
+            "`gz validate --surfaces`."
+        )
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_a_clause_naming_no_recognized_event_is_refused(self) -> None:
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = "Witnessed by `totally_made_up_event` + `gz validate --documents`."
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_a_clause_with_no_validator_scope_is_refused(self) -> None:
+        from gzkit.req_kind_support import parse_support_citation
+
+        self.assertIsNone(parse_support_citation("Witnessed by `artifact_edited`."))
+
+    def test_a_body_scope_does_not_complete_a_clause_that_lacks_one(self) -> None:
+        # The clause is the whole declaration. Borrowing the scope from the body
+        # would reopen the same seam one field over.
+        from gzkit.req_kind_support import parse_support_citation
+
+        req = "`gz validate --documents` passes. Witnessed by `artifact_edited`."
+        self.assertIsNone(parse_support_citation(req))
+
+    def test_an_undeclared_req_resolves_undeclared_never_pass(self) -> None:
+        from gzkit.req_kind_support import resolve_support_proof
+
+        req = "manpage updated — artifact_edited ledger event + gz validate --documents"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _make_ledger_with_events(root, [_ev("artifact_edited", None)])
+            with patch(_PATCH_SCOPE, return_value=True):
+                result = resolve_support_proof(req, root, req_id="REQ-X")
+        self.assertEqual(result, "undeclared-support")
+        self.assertNotEqual(result, "pass")

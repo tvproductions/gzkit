@@ -481,9 +481,10 @@ class TestCloseoutProofSupportGrandfatherMalformed(unittest.TestCase):
             _make_adr_dir(self.root, adr_id),
             "OBPI-0.0.99-01-test",
             [
-                "REQ-0.0.99-01-01 [SUPPORT]: doc updated -- artifact_edited ledger "
-                "event citing src/gzkit/nonexistent_fixture_file.py -- "
-                "uv run gz validate --documents"
+                "REQ-0.0.99-01-01 [SUPPORT]: doc updated. Witnessed by "
+                "`artifact_edited` citing "
+                "`src/gzkit/nonexistent_fixture_file.py` + "
+                "`uv run gz validate --documents`"
             ],
         )
         data_dir = self.root / "data"
