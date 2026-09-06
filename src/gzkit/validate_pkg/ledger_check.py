@@ -538,6 +538,89 @@ def _validate_ledger_entry(
     _validate_ledger_event_fields(entry, event_name, event_rule, errors, ledger_path, line_no)
 
 
+def _validate_ledger_corrections(
+    entries: list[tuple[int, dict[str, Any]]],
+    errors: list[ValidationError],
+    ledger_path: Path,
+) -> None:
+    """Enforce the three cross-row properties `gz ledger correct` refuses (GHI #611).
+
+    The command holds the whole ledger when it writes, so it can check that a
+    correction's subject exists, is not itself a correction, and was written
+    first. Nothing else could: every check above this one reads a single row, and
+    a contract-violating correction is individually well-formed. But a row
+    reaching the file did not necessarily pass the command — the exported factory
+    is callable directly, a merge can carry a correction in, and a row can be
+    hand-written — and `gz validate --ledger` is the gate that reads what actually
+    landed. Its silence meant such a row sat in the ledger reading as valid.
+
+    **The contract is imported, never restated.** `is_well_formed` and
+    `corrected_subject` come from `gzkit.ledger_corrections`, which is where the
+    netting rule lives. A validator that re-derived "is this correction well
+    formed" would be a second, drifting implementation of the primitive — the
+    per-consumer hand-patching GHI #611 exists to end — and the two copies would
+    disagree at the first amendment to either.
+    """
+    from gzkit.ledger_corrections import (  # noqa: PLC0415 — avoids an import cycle
+        CORRECTION_EVENT,
+        corrected_subject,
+        is_correction,
+        is_well_formed,
+        subject_key,
+    )
+
+    subjects = {
+        subject_key(entry): line_no for line_no, entry in entries if not is_correction(entry)
+    }
+    for line_no, entry in entries:
+        if not is_correction(entry):
+            continue
+        subject = corrected_subject(entry)
+        if subject[0] == CORRECTION_EVENT:
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                "This correction names another correction as its subject. Correcting a "
+                "correction would make the netting resolve itself recursively, so 'what "
+                "is live' would depend on evaluation order; 'reinstated' against the "
+                "ORIGINAL row is the in-family reversal.",
+                field="subject_event",
+            )
+            continue
+        # A correction failing its own declared contract is already reported
+        # field-by-field above, and is inert at replay. Re-reporting it here
+        # would say the same defect twice in different words.
+        if not is_well_formed(entry):
+            continue
+        subject_line = subjects.get(subject)
+        if subject_line is None:
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"This correction names no ledger row: (event={subject[0]}, "
+                f"id={subject[1]}, ts={subject[2]}). A dangling reference sits in the "
+                "ledger asserting a correction no reader can apply.",
+                field="subject_ts",
+            )
+            continue
+        correction_ts = parse_ledger_ts(entry.get("ts"))
+        subject_ts = parse_ledger_ts(subject[2])
+        if correction_ts is not None and subject_ts is not None and correction_ts < subject_ts:
+            _append_ledger_error(
+                errors,
+                ledger_path,
+                line_no,
+                f"This correction precedes its subject: the correction is stamped "
+                f"{correction_ts.isoformat()} and the row it corrects (line "
+                f"{subject_line}) is stamped {subject_ts.isoformat()}. A corrective "
+                "action is appended AFTER the fact it corrects; a row ordered before "
+                "its subject cannot have been written by `gz ledger correct`.",
+                field="ts",
+            )
+
+
 def validate_ledger(ledger_path: Path) -> list[ValidationError]:
     """Validate append-only ledger JSONL entries against ledger schema."""
     errors: list[ValidationError] = []
@@ -572,6 +655,10 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
     # (GHI #812).
     previous_ts: datetime | None = None
     previous_line = 0
+    #: Every well-shaped row, for the cross-row correction pass below. A
+    #: correction's subject may sit anywhere in the file, so the property is not
+    #: decidable while streaming.
+    entries: list[tuple[int, dict[str, Any]]] = []
 
     with ledger_path.open(encoding="utf-8") as f:
         for line_no, raw in enumerate(f, start=1):
@@ -599,6 +686,7 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
                 )
                 continue
 
+            entries.append((line_no, entry))
             _validate_ledger_entry(
                 entry=entry,
                 required_fields=required_fields,
@@ -629,4 +717,5 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
             previous_ts = current_ts
             previous_line = line_no
 
+    _validate_ledger_corrections(entries, errors, ledger_path)
     return errors

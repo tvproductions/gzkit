@@ -167,14 +167,23 @@ def _parse_ts(raw: object) -> datetime | None:
 
 
 def _locked_paths(base_path: Path) -> set[str]:
-    """Project-relative handoff paths recorded on obpi_lock_released events."""
+    """Project-relative handoff paths recorded on obpi_lock_released events.
+
+    Reads the EVIDENTIARY stream, not the live one. The question here is *did
+    some token surrender ever cite this file*, and a discharged release still
+    did: discharging says the condition the row recorded has ended, never that
+    the surrender was fictitious. Under the live reading a discharge deleted the
+    protection and the exchange record became archivable (GHI #611). ``void``
+    remains the disposition that correctly returns a handoff to the pool — a
+    release that never happened cites nothing.
+    """
     from gzkit.ledger import Ledger  # local import keeps the domain core ledger-free
 
     ledger_path = base_path / ".gzkit" / "ledger.jsonl"
     if not ledger_path.is_file():
         return set()
     locked: set[str] = set()
-    for event in Ledger(ledger_path).query(event_type="obpi_lock_released"):
+    for event in Ledger(ledger_path).query(event_type="obpi_lock_released", stream="evidence"):
         handoff_path = event.extra.get("handoff_path")
         if isinstance(handoff_path, str) and handoff_path:
             locked.add(handoff_path.removeprefix("./"))

@@ -757,7 +757,10 @@
           "type": "number"
         },
         "red_team_challenges_fired": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "evaluator_persona": {
           "type": "string",
@@ -944,10 +947,16 @@
           "type": [
             "array",
             "null"
-          ]
+          ],
+          "items": {
+            "type": "object"
+          }
         },
         "ghi_summary": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
         },
         "manifest_path": {
           "type": "string",
@@ -1731,7 +1740,10 @@
           "min_length": 1
         },
         "inspection_scope": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1901,7 +1913,10 @@
           ]
         },
         "test_names": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1917,6 +1932,27 @@
         "unaccounted": {
           "type": [
             "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "override_seam": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "override_attestor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "override_revoked": {
+          "type": [
+            "boolean",
             "null"
           ]
         }
@@ -1935,13 +1971,19 @@
           "type": [
             "array",
             "null"
-          ]
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "routing": {
           "type": [
             "array",
             "null"
-          ]
+          ],
+          "items": {
+            "type": "string"
+          }
         },
         "verdict": {
           "type": [
@@ -2067,7 +2109,10 @@
           ]
         },
         "set_aside": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

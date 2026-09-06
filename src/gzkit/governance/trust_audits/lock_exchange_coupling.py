@@ -46,7 +46,11 @@ def validate_lock_exchange_coupling(project_root: Path) -> list[ValidationError]
     if not ledger_path.exists():
         return []
 
-    events = Ledger(ledger_path).read_all()
+    # EVIDENTIARY stream: this audit asks what a past release owes, and a
+    # discharged release still happened, so its exchange-record obligation
+    # stands. Only `void` — the release never happened — retires the coupling.
+    # Same class as `handoff_archive._locked_paths`, fixed with it (GHI #611).
+    events = Ledger(ledger_path).read_evidence()
     cutover_ts = _find_cutover_ts(events)
     if cutover_ts is None:
         return []

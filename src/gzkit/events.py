@@ -12,7 +12,9 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    StrictBool,
     TypeAdapter,
+    ValidationInfo,
     field_validator,
     model_serializer,
     model_validator,
@@ -298,7 +300,7 @@ class AuditGeneratedEvent(_EventBase):
     event: Literal["audit_generated"]
     audit_file: str
     audit_plan_file: str
-    passed: bool
+    passed: StrictBool
 
 
 class ObpiLockClaimedEvent(_EventBase):
@@ -316,7 +318,7 @@ class ObpiLockReleasedEvent(_EventBase):
 
     event: Literal["obpi_lock_released"]
     agent: str
-    force: bool = False
+    force: StrictBool = False
     handoff_path: str | None = None
 
 
@@ -508,6 +510,28 @@ class LedgerEventCorrectedEvent(_EventBase):
     cause: Literal["agent-error", "operator-error", "runtime-error", "condition-resolved"]
     attestor: str = Field(..., min_length=1, description="Human recording the correction")
     reason: str = Field(..., min_length=1, description="Why the correction is warranted")
+
+    @field_validator("subject_event", "subject_id", "subject_ts", "attestor", "reason")
+    @classmethod
+    def _is_not_blank(cls, value: str, info: ValidationInfo) -> str:
+        """Reject a whitespace-only value on every field that must carry content.
+
+        ``min_length=1`` counts CHARACTERS, so ``"   "`` satisfied it. The other
+        two surfaces that read these fields already measure the STRIPPED length —
+        ``gz ledger correct`` strips before its guard, and the ledger validator
+        was taught to strip under GHI #882 — which left this model, the one
+        constructor callers actually reach, as the single surface that would mint
+        a whitespace-attributed correction. Same invariant as
+        ``FoundationGrandfatheredEvent._attestor_is_not_blank`` above, applied to
+        the whole set of fields whose emptiness would make the row meaningless.
+        """
+        if not value.strip():
+            msg = (
+                f"{info.field_name} must carry content — whitespace names no "
+                "subject, no witness and no reason"
+            )
+            raise ValueError(msg)
+        return value
 
 
 class SecurityFloorOverriddenEvent(_EventBase):
@@ -830,13 +854,13 @@ class BriefReconciledEvent(_EventBase):
 
     event: Literal["brief_reconciled"]
     brief_id: str
-    has_drift: bool
+    has_drift: StrictBool
     allowlist_delta_count: int
     discovery_delta_count: int
     verification_delta_count: int
     req_count_delta: int
     citation_delta_count: int
-    applied: bool = False
+    applied: StrictBool = False
     attestor: str | None = None
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
@@ -1054,11 +1078,26 @@ class RedReceiptEmittedEvent(_EventBase):
 
 
 class AirlockInEvent(_EventBase):
-    """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate)."""
+    """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate).
+
+    The three ``override_*`` fields are written ONLY when a logged captain
+    override crosses a NO-GO: ``_override_extra`` (``gzkit.airlock.enter``)
+    returns them and ``_book_transit`` merges them into the payload. They were
+    undeclared on both contracts until GHI #877's second pass, and the static
+    producer audit could not see them — the payload is built in a HELPER and
+    merged with ``payload.update(extra)``, so no literal key appears at the
+    ``LedgerEvent(...)`` call site the scan reads. Zero findings over a shape the
+    scanner cannot reach is not evidence of absence, which is why the audit now
+    follows helper returns and why this class is proven by running the real
+    override path rather than by a hand-written row.
+    """
 
     event: Literal["airlock_in"]
     decision: str | None = None
     unaccounted: list[str] | None = None
+    override_seam: str | None = None
+    override_attestor: str | None = None
+    override_revoked: StrictBool | None = None
 
 
 class AirlockOutEvent(_EventBase):
@@ -1080,7 +1119,7 @@ class AirlockOutEvent(_EventBase):
     drift: list[str] | None = None
     routing: list[str] | None = None
     bodies: int | None = None
-    aborted: bool | None = None
+    aborted: StrictBool | None = None
     error: str | None = None
 
 

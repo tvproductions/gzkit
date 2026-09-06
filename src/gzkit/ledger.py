@@ -8,7 +8,7 @@ import json
 import re
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
@@ -360,22 +360,53 @@ class Ledger:
         """
         return live_events(self.read_history())
 
+    def read_evidence(self) -> list[LedgerEvent]:
+        """Read the EVIDENTIARY stream — what the ledger says was ever TRUE.
+
+        Drops ``void`` rows and keeps ``discharged`` ones, which is the whole
+        difference from :meth:`read_all`: voiding says a row records something
+        that was never the case, while discharging says its condition ended
+        after being genuinely in force.
+
+        Use this wherever the question is *did this happen* rather than *is this
+        in force now* — an audit of past acts, a witness census, a protection
+        that attaches to a file some past act referenced. Making the corrected
+        stream the default was right, but the default is the STATE reading, and
+        it silently moved evidence consumers with it: a discharged
+        ``obpi_lock_released`` vanished from ``handoff_archive._locked_paths``,
+        so the exchange record a real token surrender cited became archivable.
+        """
+        return evidence_events(self.read_history())
+
     def query(
         self,
         event_type: str | None = None,
         artifact_id: str | None = None,
+        *,
+        stream: Literal["live", "evidence", "history"] = "live",
     ) -> list[LedgerEvent]:
         """Query events by type and/or artifact ID.
 
         Args:
             event_type: Filter by event type (e.g., "adr_created").
             artifact_id: Filter by artifact ID.
+            stream: Which reading to query. ``live`` (the default) is state —
+                what is in force now. ``evidence`` is what was ever true, for a
+                consumer auditing past acts. ``history`` is the raw append-only
+                file, for a consumer whose subject genuinely is every row.
+                The default stays the narrowest reading so a consumer that has
+                not thought about corrections still gets the safe one; the other
+                two are named opt-ins rather than something to remember.
 
         Returns:
             Filtered list of events.
 
         """
-        events = self.read_all()
+        events = {
+            "live": self.read_all,
+            "evidence": self.read_evidence,
+            "history": self.read_history,
+        }[stream]()
 
         if event_type:
             events = [e for e in events if e.event == event_type]
@@ -1008,7 +1039,48 @@ class Ledger:
 # which breaks the circular-import chain (the sub-modules only need names
 # that are already bound above).
 # ---------------------------------------------------------------------------
-from gzkit.ledger_corrections import live_events  # noqa: E402
+from gzkit.ledger_corrections import evidence_events, live_events  # noqa: E402
+
+
+def read_corrected_rows(
+    ledger_path: Path,
+    *,
+    stream: Literal["live", "evidence"] = "live",
+) -> list[dict[str, Any]]:
+    """Read the ledger as TOLERANT raw dicts, with corrections applied.
+
+    The counterpart to :meth:`Ledger.read_history` for readers that must not
+    raise. ``Ledger`` validates every row through :class:`LedgerEvent`, so one
+    malformed line aborts the whole read — correct for a governance command, and
+    wrong inside a pipeline gate or a commit hook, where an exception blocks all
+    work rather than reporting a finding. These readers therefore parse the JSONL
+    themselves and skip what will not decode.
+
+    Parsing it themselves is also exactly how they missed corrections: making
+    ``Ledger.read_all()`` correction-aware reached every caller of ``Ledger`` and
+    none of the direct-JSONL readers, so a voided ``brief_reconciled`` receipt
+    went on opening Stage 2 and satisfying Stage 5 (GHI #611). This function
+    exists so the tolerant path is corrected by construction rather than by each
+    author remembering — the same reason the strict default was flipped.
+
+    ``stream`` selects the same two readings :meth:`Ledger.read_all` and
+    :meth:`Ledger.read_evidence` select, over the flattened dict shape.
+    """
+    if not ledger_path.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    for raw in ledger_path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if not raw.strip():
+            continue
+        try:
+            parsed = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(parsed, dict):
+            rows.append(parsed)
+    return live_events(rows) if stream == "live" else evidence_events(rows)
+
+
 from gzkit.ledger_events import (  # noqa: E402, F401
     adr_created_event,
     adr_eval_completed_event,

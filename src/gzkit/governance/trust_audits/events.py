@@ -522,39 +522,103 @@ def _literal_dict_keys(node: ast.Dict) -> set[str]:
     }
 
 
+def _returned_dict_keys(module: ast.Module, func_name: str) -> set[str]:
+    """Return the literal keys every ``return {...}`` in ``func_name`` writes.
+
+    The third payload shape, and the one that let three undeclared fields ship:
+    ``_override_extra`` (``gzkit.airlock.enter``) BUILDS the payload and the call
+    site merges it, so no literal key is reachable from the ``LedgerEvent(...)``
+    call at all. Resolution is single-level and same-module by construction — a
+    helper calling a further helper is not followed, which is a limit stated in
+    :func:`audit_producer_fields`'s docstring rather than implied.
+    """
+    keys: set[str] = set()
+    for node in ast.walk(module):
+        if not isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            continue
+        if node.name != func_name:
+            continue
+        for statement in ast.walk(node):
+            if isinstance(statement, ast.Return) and isinstance(statement.value, ast.Dict):
+                keys |= _literal_dict_keys(statement.value)
+    return keys
+
+
+def _helper_name(node: ast.expr | None) -> str | None:
+    """Return the called function's name when ``node`` is a plain same-module call."""
+    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+        return node.func.id
+    return None
+
+
+def _mutation_keys(node: ast.AST, module: ast.Module, name: str) -> set[str]:
+    """Return the payload keys ONE statement contributes to the dict called ``name``.
+
+    Three mutation shapes, split out of :func:`_payload_keys` so each stays
+    readable and the dispatch is one pass rather than a nest: a whole-dict
+    assignment, a literal-key subscript, and an ``.update()`` merge of either a
+    literal or a same-module helper's return.
+    """
+    if (
+        isinstance(node, ast.Assign)
+        and len(node.targets) == 1
+        and isinstance(node.targets[0], ast.Name)
+        and node.targets[0].id == name
+        and isinstance(node.value, ast.Dict)
+    ):
+        return _literal_dict_keys(node.value)
+    if (
+        isinstance(node, ast.Subscript)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == name
+        and isinstance(node.slice, ast.Constant)
+        and isinstance(node.slice.value, str)
+    ):
+        return {node.slice.value}
+    if (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "update"
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == name
+        and node.args
+    ):
+        argument = node.args[0]
+        if isinstance(argument, ast.Dict):
+            return _literal_dict_keys(argument)
+        if (merged := _helper_name(argument)) is not None:
+            return _returned_dict_keys(module, merged)
+    return set()
+
+
 def _payload_keys(
-    scope: ast.FunctionDef | ast.AsyncFunctionDef, extra: ast.expr | None
+    module: ast.Module, scope: ast.FunctionDef | ast.AsyncFunctionDef, extra: ast.expr | None
 ) -> set[str]:
     """Return the literal payload keys a ``LedgerEvent(...)`` call writes.
 
-    Two shapes are read, because both occur: an inline ``extra={...}`` literal,
-    and a named dict the function mutates before passing it (the
-    ``extra["handoff_path"] = ...`` shape GHI #877 recorded). Keys computed at
-    runtime are invisible to any static reader; that limit is stated in the
-    audit's docstring rather than implied.
+    Three shapes are read, because all three occur:
+
+    1. an inline ``extra={...}`` literal;
+    2. a named dict the function mutates before passing it — both the
+       ``extra["handoff_path"] = ...`` subscript GHI #877 recorded and the
+       ``payload.update(_helper(...))`` merge ``_book_transit`` uses;
+    3. a payload a same-module HELPER returns, whether passed straight through
+       (``extra=_helper(x)``) or merged into a named dict.
+
+    Shape 3 is the one this audit missed on its first pass: it reported zero
+    findings while ``_override_extra`` contributed three undeclared fields to
+    ``airlock_in``. Keys computed at runtime remain invisible to any static
+    reader; that limit is stated in the audit's docstring rather than implied.
     """
     if isinstance(extra, ast.Dict):
         return _literal_dict_keys(extra)
+    if (helper := _helper_name(extra)) is not None:
+        return _returned_dict_keys(module, helper)
     if not isinstance(extra, ast.Name):
         return set()
     keys: set[str] = set()
     for node in ast.walk(scope):
-        if (
-            isinstance(node, ast.Assign)
-            and len(node.targets) == 1
-            and isinstance(node.targets[0], ast.Name)
-            and node.targets[0].id == extra.id
-            and isinstance(node.value, ast.Dict)
-        ):
-            keys |= _literal_dict_keys(node.value)
-        if (
-            isinstance(node, ast.Subscript)
-            and isinstance(node.value, ast.Name)
-            and node.value.id == extra.id
-            and isinstance(node.slice, ast.Constant)
-            and isinstance(node.slice.value, str)
-        ):
-            keys.add(node.slice.value)
+        keys |= _mutation_keys(node, module, extra.id)
     return keys
 
 
@@ -573,12 +637,26 @@ def audit_producer_fields(project_root: Path) -> list[ValidationError]:
     So the committed-row fence tests HISTORY and this one tests PRODUCERS; they
     fail on different days by construction and neither subsumes the other.
 
-    **Scope, stated rather than implied.** Static analysis reads the two shapes
-    that occur in this codebase: an inline ``extra={...}`` literal and a named
-    dict mutated by literal-key subscript before it is passed. A key computed at
-    runtime, spread from ``**kwargs``, or assembled in a helper is invisible here.
-    That residual is why this audit ACCOMPANIES the committed-row fence rather
-    than replacing it.
+    **Scope, stated rather than implied.** Static analysis reads the three shapes
+    that occur in this codebase: an inline ``extra={...}`` literal, a named dict
+    mutated before it is passed (literal-key subscript, or a ``.update()`` merge),
+    and a payload returned by a same-module helper — resolved ONE level deep, by
+    name, within the file being scanned.
+
+    Still invisible, and the reason this audit ACCOMPANIES the committed-row fence
+    rather than replacing it: a key computed at runtime, a payload spread from
+    ``**kwargs``, a helper imported from another module, a helper reached through
+    a second helper, and a dict built by comprehension or conditional assembly.
+
+    **A zero-finding run is not evidence that no producer writes an undeclared
+    field.** It is evidence that none does *in the shapes above*. That distinction
+    is the whole history of this audit: its first pass reported zero findings
+    while ``_override_extra`` (``gzkit.airlock.enter``) contributed
+    ``override_seam``, ``override_attestor`` and ``override_revoked`` to
+    ``airlock_in`` and no contract declared any of them — the payload was built in
+    a helper, which the scan could not then follow. A known producer defect is
+    discharged by declaring the field, never by a clean scan over a shape the
+    scanner cannot reach.
     """
     schema_file = project_root / "src" / "gzkit" / "schemas" / "ledger.json"
     if not schema_file.is_file():
@@ -609,7 +687,7 @@ def audit_producer_fields(project_root: Path) -> list[ValidationError]:
                 declared_schema = set(schema_events.get(event.value, {}).get("properties", {}))
                 declared_model = model_fields.get(event.value, set())
                 rel = source.relative_to(project_root).as_posix()
-                for key in sorted(_payload_keys(scope, keywords.get("extra"))):
+                for key in sorted(_payload_keys(tree, scope, keywords.get("extra"))):
                     missing = [
                         contract
                         for contract, declared in (

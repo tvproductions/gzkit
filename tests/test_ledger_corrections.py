@@ -136,6 +136,19 @@ class TestCorrectionEventFailsClosed(unittest.TestCase):
         )
         self.assertEqual(parsed.event, CORRECTION_EVENT)
 
+    #: A complete subject row. The correction fixtures below need the row they
+    #: name to be PRESENT: `validate_ledger` refuses a dangling reference across
+    #: rows, so a fixture carrying the correction alone asserts the validator
+    #: accepts exactly the shape `gz ledger correct` refuses to write.
+    SUBJECT = _row(
+        "pipeline_launched",
+        "OBPI-X",
+        "2026-08-23T13:12:21.832251+00:00",
+        nonce="0" * 32,
+        marker_path=".gzkit/pipeline/OBPI-X.json",
+        lane="heavy",
+    )
+
     def test_gz_validate_ledger_accepts_a_well_formed_correction(self) -> None:
         """The OTHER contract must admit the row too, per GHI #877's ruling.
 
@@ -147,24 +160,17 @@ class TestCorrectionEventFailsClosed(unittest.TestCase):
         errors = _validate_rows(
             self,
             [
-                _correction(
-                    _row("pipeline_launched", "OBPI-X", "2026-08-23T13:12:21.832251+00:00"),
-                    "void",
-                    ts="2026-09-06T20:00:00+00:00",
-                )
+                self.SUBJECT,
+                _correction(self.SUBJECT, "void", ts="2026-09-06T20:00:00+00:00"),
             ],
         )
         self.assertEqual([e.message for e in errors], [])
 
     def test_gz_validate_ledger_rejects_a_correction_missing_its_subject(self) -> None:
         """The schema entry is load-bearing, so prove it fails closed too."""
-        bad = _correction(
-            _row("pipeline_launched", "OBPI-X", "2026-08-23T13:12:21.832251+00:00"),
-            "void",
-            ts="2026-09-06T20:00:00+00:00",
-        )
+        bad = _correction(self.SUBJECT, "void", ts="2026-09-06T20:00:00+00:00")
         del bad["subject_ts"]
-        self.assertTrue(_validate_rows(self, [bad]))
+        self.assertTrue(_validate_rows(self, [self.SUBJECT, bad]))
 
 
 class TestSubjectResolution(unittest.TestCase):
@@ -780,3 +786,408 @@ class TestEveryGoverningConsumerReadsTheCorrectedStream(unittest.TestCase):
         ledger = self._ledger(rows)
         self.assertEqual([e.event for e in ledger.read_history()], [r["event"] for r in rows])
         self.assertEqual(ledger.get_replay_manifest().event_count, 3)
+
+
+class TestTheAirlockOverrideProducerIsDeclared(unittest.TestCase):
+    """The REAL override path, run end-to-end, must survive both readers (GHI #877).
+
+    ``TestProducerContractParity`` above hand-writes the payload it expects.
+    That proves the contracts agree with the *test author's* idea of the row and
+    is silent on what the producer actually emits — which is how this survived:
+    ``_override_extra`` (``gzkit.airlock.enter``) contributes ``override_seam``,
+    ``override_attestor`` and ``override_revoked`` to the ``airlock_in`` payload,
+    neither contract declared any of the three, and the static producer audit
+    could not see them because the payload is built in a HELPER and merged with
+    ``payload.update(extra)`` — no literal key ever appears at the call site.
+
+    So this class exercises ``airlock_enter`` itself and reads the row back off
+    the ledger, which is the only way the producer's own output is the subject.
+    """
+
+    def _emit_override_row(self) -> LedgerEvent:
+        """Run the real airlock override path and return the row it wrote."""
+        from gzkit.airlock.enter import CaptainOverride, airlock_enter
+
+        tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        brief = tmp / "OBPI-X.md"
+        brief.write_text(
+            "# OBPI-X\n\n## Allowed Paths\n\n- `src/gzkit/declared.py`\n",
+            encoding="utf-8",
+        )
+        ledger = Ledger(tmp / "ledger.jsonl")
+        airlock_enter(
+            "OBPI-X",
+            brief,
+            reach_fn=lambda _node: ["src/gzkit/unaccounted.py"],
+            override=CaptainOverride(attestor="g0", seam="src/gzkit/unaccounted.py"),
+            ledger=ledger,
+        )
+        rows = [e for e in ledger.read_history() if e.event == "airlock_in"]
+        self.assertEqual(len(rows), 1, "the override path booked no airlock_in row")
+        return rows[0]
+
+    def test_the_producer_really_writes_the_three_override_fields(self) -> None:
+        """Guards every assertion below against a probe that emits nothing.
+
+        If the override payload stopped being written, the parity assertions
+        would pass vacuously — a green that proves the opposite of its claim.
+        """
+        row = self._emit_override_row()
+        self.assertEqual(
+            sorted(k for k in row.extra if k.startswith("override_")),
+            ["override_attestor", "override_revoked", "override_seam"],
+        )
+
+    def test_the_emitted_row_replays_through_the_typed_union(self) -> None:
+        """``_EventBase`` is ``extra="forbid"``: an undeclared field refuses the row."""
+        parsed = parse_typed_event(self._emit_override_row().model_dump(exclude_none=True))
+        self.assertEqual(parsed.event, "airlock_in")
+
+    def test_the_emitted_row_passes_the_ledger_validator(self) -> None:
+        errors = _validate_rows(self, [self._emit_override_row().model_dump(exclude_none=True)])
+        self.assertEqual([e.message for e in errors], [])
+
+    def test_the_payload_survives_the_round_trip_intact(self) -> None:
+        """Declaring a field is worthless if replay drops its value."""
+        parsed = parse_typed_event(self._emit_override_row().model_dump(exclude_none=True))
+        self.assertEqual(parsed.override_seam, "src/gzkit/unaccounted.py")
+        self.assertEqual(parsed.override_attestor, "g0")
+        self.assertIs(parsed.override_revoked, False)
+
+    def test_a_revoked_override_round_trips_as_revoked(self) -> None:
+        """``revoked`` is the field a boolean-coercing reader would silently flip."""
+        from gzkit.airlock.enter import CaptainOverride, airlock_enter
+
+        tmp = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        brief = tmp / "OBPI-Y.md"
+        brief.write_text("# OBPI-Y\n\n## Allowed Paths\n\n- `src/gzkit/a.py`\n", encoding="utf-8")
+        ledger = Ledger(tmp / "ledger.jsonl")
+        airlock_enter(
+            "OBPI-Y",
+            brief,
+            reach_fn=lambda _node: ["src/gzkit/b.py"],
+            override=CaptainOverride(attestor="g0", seam="src/gzkit/b.py", revoked=True),
+            ledger=ledger,
+        )
+        row = next(e for e in ledger.read_history() if e.event == "airlock_in")
+        self.assertIs(parse_typed_event(row.model_dump(exclude_none=True)).override_revoked, True)
+
+
+class TestProducerAuditReadsHelperBuiltPayloads(unittest.TestCase):
+    """The static audit must see a payload a HELPER returns (GHI #877, second pass).
+
+    The first pass read two shapes — an inline ``extra={...}`` literal and a
+    named dict mutated by literal-key subscript. ``_override_extra`` is neither:
+    it RETURNS a literal dict that the call site merges. The audit reported zero
+    findings while three undeclared fields were in flight, and a zero-finding
+    scan over a shape the scanner cannot see is not evidence of absence.
+    """
+
+    def _audit(self, producer_source: str) -> list[str]:
+        from gzkit.governance.trust_audits import audit_producer_fields
+
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        source = root / "src" / "gzkit" / "producer.py"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(producer_source, encoding="utf-8")
+        schema = root / "src" / "gzkit" / "schemas" / "ledger.json"
+        schema.parent.mkdir(parents=True, exist_ok=True)
+        schema.write_text(
+            json.dumps({"events": {"airlock_in": {"required": [], "properties": {}}}}),
+            encoding="utf-8",
+        )
+        return [e.artifact for e in audit_producer_fields(root)]
+
+    def test_a_helper_returned_payload_is_scanned(self) -> None:
+        findings = self._audit(
+            "from gzkit.ledger import LedgerEvent\n\n\n"
+            "def _extra() -> dict:\n"
+            '    return {"undeclared_helper_field": 1}\n\n\n'
+            "def emit() -> LedgerEvent:\n"
+            '    return LedgerEvent(event="airlock_in", id="X", extra=_extra())\n'
+        )
+        self.assertEqual(findings, ["src/gzkit/producer.py::airlock_in.undeclared_helper_field"])
+
+    def test_a_helper_payload_merged_into_a_named_dict_is_scanned(self) -> None:
+        """The exact ``payload.update(_helper(...))`` shape ``_book_transit`` uses."""
+        findings = self._audit(
+            "from gzkit.ledger import LedgerEvent\n\n\n"
+            "def _extra(flag: bool) -> dict:\n"
+            '    return {"undeclared_merged_field": flag}\n\n\n'
+            "def book(flag: bool) -> LedgerEvent:\n"
+            "    payload = {}\n"
+            "    payload.update(_extra(flag))\n"
+            '    return LedgerEvent(event="airlock_in", id="X", extra=payload)\n'
+        )
+        self.assertEqual(findings, ["src/gzkit/producer.py::airlock_in.undeclared_merged_field"])
+
+    def test_a_declared_helper_field_is_not_reported(self) -> None:
+        """The scan must not become a false-positive generator."""
+        from gzkit.governance.trust_audits import audit_producer_fields
+
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        source = root / "src" / "gzkit" / "producer.py"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text(
+            "from gzkit.ledger import LedgerEvent\n\n\n"
+            "def _extra() -> dict:\n"
+            '    return {"decision": "GO"}\n\n\n'
+            "def emit() -> LedgerEvent:\n"
+            '    return LedgerEvent(event="airlock_in", id="X", extra=_extra())\n',
+            encoding="utf-8",
+        )
+        schema = root / "src" / "gzkit" / "schemas" / "ledger.json"
+        schema.parent.mkdir(parents=True, exist_ok=True)
+        schema.write_text(
+            json.dumps(
+                {"events": {"airlock_in": {"required": [], "properties": {"decision": {}}}}}
+            ),
+            encoding="utf-8",
+        )
+        self.assertEqual([e.artifact for e in audit_producer_fields(root)], [])
+
+    def test_the_runtime_scan_over_this_repository_is_clean(self) -> None:
+        """The class fix, applied to the real tree the audit guards."""
+        from gzkit.governance.trust_audits import audit_producer_fields
+
+        errors = audit_producer_fields(Path(__file__).resolve().parents[1])
+        self.assertEqual([f"{e.artifact}: {e.message}" for e in errors], [])
+
+
+class TestCorrectionAttributionIsTypeStrict(unittest.TestCase):
+    """A correction's attribution must be a real string on every reader.
+
+    ``_field`` returned ``str(value)``, so ``attestor: None`` became the string
+    ``"None"``, ``attestor: 7`` became ``"7"``, ``False`` became ``"False"`` and
+    ``{}`` became ``"{}"`` — each non-empty, each passing ``is_well_formed``, and
+    each therefore voiding its subject at replay. Both declared validators refuse
+    all four: ``LedgerEventCorrectedEvent.attestor`` is ``str`` and the ledger
+    schema declares ``string``. Replay is what every consumer uses, so the
+    stringifying reader was the one that decided.
+    """
+
+    SUBJECT = _row("gate_checked", "ADR-0.0.1", "2026-09-06T00:00:00+00:00")
+
+    def _correction(self, field: str, value: object) -> dict:
+        correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        correction[field] = value
+        return correction
+
+    def test_a_non_string_attribution_is_not_well_formed(self) -> None:
+        from gzkit.ledger_corrections import is_well_formed
+
+        for field in ("attestor", "reason"):
+            for label, value in (("null", None), ("number", 7), ("bool", False), ("object", {})):
+                with self.subTest(field=field, value=label):
+                    self.assertFalse(is_well_formed(self._correction(field, value)))
+
+    def test_a_non_string_attribution_leaves_the_subject_live(self) -> None:
+        """The property that matters: an inert correction changes no state."""
+        for field in ("attestor", "reason"):
+            for label, value in (("null", None), ("number", 7), ("bool", False), ("object", {})):
+                with self.subTest(field=field, value=label):
+                    stream = [self.SUBJECT, self._correction(field, value)]
+                    self.assertIn(self.SUBJECT, live_events(stream))
+                    self.assertIn(self.SUBJECT, evidence_events(stream))
+
+    def test_the_ledger_validator_refuses_the_same_rows(self) -> None:
+        """All three readers must agree, which is the point of the repair."""
+        for field in ("attestor", "reason"):
+            for label, value in (("null", None), ("number", 7), ("bool", False), ("object", {})):
+                with self.subTest(field=field, value=label):
+                    errors = _validate_rows(self, [self.SUBJECT, self._correction(field, value)])
+                    self.assertNotEqual(errors, [], "the ledger validator accepted it")
+
+    def test_a_genuine_string_attribution_still_applies(self) -> None:
+        """Guard: the strictness must not make every correction inert."""
+        stream = [self.SUBJECT, _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")]
+        self.assertNotIn(self.SUBJECT, live_events(stream))
+
+
+class TestSubjectIdentityIsTypeStrict(unittest.TestCase):
+    """``subject_id: 7`` must not name the artifact whose id is the string ``"7"``.
+
+    Both sides were stringified before comparison, so an integer subject id
+    matched a string artifact id and voided a row the correction never named.
+    """
+
+    SUBJECT = _row("artifact_created", "7", "2026-09-06T00:00:00+00:00")
+
+    def test_a_numeric_subject_id_does_not_match_a_string_artifact_id(self) -> None:
+        correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        correction["subject_id"] = 7
+        stream = [self.SUBJECT, correction]
+        self.assertIn(self.SUBJECT, live_events(stream), "an int subject_id voided a string id")
+
+    def test_the_matching_string_subject_id_still_matches(self) -> None:
+        """Guard: strictness must not break the ordinary case."""
+        stream = [self.SUBJECT, _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")]
+        self.assertNotIn(self.SUBJECT, live_events(stream))
+
+
+class TestTheFactoryRefusesBlankAttribution(unittest.TestCase):
+    """``min_length=1`` counts characters, so ``"   "`` satisfied it.
+
+    ``gz ledger correct`` strips before checking and the ledger validator
+    measures the STRIPPED length (GHI #882), so the factory — the one
+    constructor callers actually reach — was the only surface that would mint a
+    whitespace-attributed correction.
+    """
+
+    def _mint(self, **overrides: str) -> None:
+        payload = {
+            "subject_event": "gate_checked",
+            "subject_id": "ADR-0.0.1",
+            "subject_ts": "2026-09-06T00:00:00+00:00",
+            "disposition": "void",
+            "cause": "agent-error",
+            "attestor": "g0",
+            "reason": "recorded in error",
+        }
+        ledger_event_corrected_event(**{**payload, **overrides})
+
+    def test_a_whitespace_attestor_is_refused(self) -> None:
+        with self.assertRaises(ValidationError):
+            self._mint(attestor="   ")
+
+    def test_a_whitespace_reason_is_refused(self) -> None:
+        with self.assertRaises(ValidationError):
+            self._mint(reason="\t\n ")
+
+    def test_a_whitespace_subject_reference_is_refused(self) -> None:
+        for field in ("subject_event", "subject_id", "subject_ts"):
+            with self.subTest(field=field), self.assertRaises(ValidationError):
+                self._mint(**{field: "  "})
+
+    def test_a_real_attribution_still_mints(self) -> None:
+        self._mint()
+
+
+class TestValidateLedgerEnforcesTheCommandsContract(unittest.TestCase):
+    """``gz ledger correct`` refuses three shapes; the ledger accepted all three.
+
+    The command holds the whole ledger and can therefore check what a
+    single-row reader cannot. But a hand-written row, a merge, or a direct
+    factory call never passes through the command, and ``gz validate --ledger``
+    is the gate that reads what actually landed — so its silence meant a
+    contract-violating correction sat in the file reading as valid.
+    """
+
+    SUBJECT = _row(
+        "gate_checked",
+        "ADR-0.0.1",
+        "2026-09-06T00:00:00+00:00",
+        gate=2,
+        status="pass",
+        command="uv run gz check",
+        returncode=0,
+    )
+
+    def test_a_dangling_subject_reference_is_refused(self) -> None:
+        correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        correction["subject_ts"] = "2999-01-01T00:00:00+00:00"
+        errors = _validate_rows(self, [self.SUBJECT, correction])
+        self.assertTrue(
+            any("no ledger row" in e.message for e in errors),
+            f"expected a dangling-reference finding, got {[e.message for e in errors]}",
+        )
+
+    def test_a_correction_naming_another_correction_is_refused(self) -> None:
+        first = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        second = _correction(self.SUBJECT, "reinstated", ts="2026-09-06T02:00:00+00:00")
+        second["subject_event"] = CORRECTION_EVENT
+        second["subject_ts"] = first["ts"]
+        errors = _validate_rows(self, [self.SUBJECT, first, second])
+        self.assertTrue(
+            any("another correction" in e.message for e in errors),
+            f"expected a correction-of-correction finding, got {[e.message for e in errors]}",
+        )
+
+    def test_a_correction_preceding_its_subject_is_refused(self) -> None:
+        """The ledger is ts-ordered, so a correction can never predate its subject."""
+        correction = _correction(self.SUBJECT, "void", ts="2026-09-05T00:00:00+00:00")
+        errors = _validate_rows(self, [correction, self.SUBJECT])
+        self.assertTrue(
+            any("precedes its subject" in e.message for e in errors),
+            f"expected an ordering finding, got {[e.message for e in errors]}",
+        )
+
+    def test_a_well_formed_correction_is_still_accepted(self) -> None:
+        """Guard: none of the three refusals may fire on the ordinary case."""
+        correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        self.assertEqual([e.message for e in _validate_rows(self, [self.SUBJECT, correction])], [])
+
+    def test_the_validator_shares_the_replay_contract(self) -> None:
+        """It must not become a second, drifting implementation of `is_well_formed`.
+
+        The netting rule already lives in `gzkit.ledger_corrections`. A validator
+        that re-derived "is this correction well formed" would be the per-consumer
+        re-implementation this primitive exists to end — and the two copies would
+        disagree on the first amendment to either.
+        """
+        import inspect
+
+        from gzkit.validate_pkg import ledger_check
+
+        source = inspect.getsource(ledger_check)
+        self.assertIn("is_well_formed", source)
+        self.assertIn("corrected_subject", source)
+
+
+class TestInvalidCorrectionsCannotChangeDerivedState(unittest.TestCase):
+    """The end-to-end property: an invalid correction moves nothing.
+
+    Asserted against the derived readings a consumer actually calls, not against
+    `is_well_formed` alone — a predicate can be right while a caller ignores it.
+    """
+
+    SUBJECT = _row("obpi_completed", "OBPI-X", "2026-09-06T00:00:00+00:00")
+
+    def _invalid_corrections(self) -> list[tuple[str, dict]]:
+        def mutate(label: str, **fields: object) -> tuple[str, dict]:
+            correction = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+            correction.update(fields)
+            return label, correction
+
+        return [
+            mutate("empty attestor", attestor=""),
+            mutate("whitespace attestor", attestor="   "),
+            mutate("null attestor", attestor=None),
+            mutate("numeric attestor", attestor=7),
+            mutate("empty reason", reason=""),
+            mutate("null reason", reason=None),
+            mutate("object reason", reason={"why": "x"}),
+            mutate("unknown disposition", disposition="deleted"),
+            mutate("unknown cause", cause="because"),
+            mutate("blank subject event", subject_event=""),
+            mutate("numeric subject id", subject_id=7),
+            mutate("correction as subject", subject_event=CORRECTION_EVENT),
+        ]
+
+    def test_no_invalid_void_removes_its_subject(self) -> None:
+        for label, correction in self._invalid_corrections():
+            with self.subTest(correction=label):
+                stream = [self.SUBJECT, correction]
+                self.assertIn(self.SUBJECT, live_events(stream))
+                self.assertIn(self.SUBJECT, evidence_events(stream))
+                self.assertEqual(correction_state(stream), {})
+
+    def test_no_invalid_reinstatement_revives_a_voided_subject(self) -> None:
+        """The reversal direction, which a `void`-only test would miss entirely."""
+        void = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        for label, template in self._invalid_corrections():
+            reinstate = dict(template)
+            reinstate["ts"] = "2026-09-06T02:00:00+00:00"
+            if reinstate.get("disposition") == "void":
+                reinstate["disposition"] = "reinstated"
+            with self.subTest(correction=label):
+                stream = [self.SUBJECT, void, reinstate]
+                self.assertNotIn(
+                    self.SUBJECT, live_events(stream), "an invalid reinstatement revived the row"
+                )
+
+    def test_a_valid_reinstatement_still_revives_it(self) -> None:
+        """Guard: the assertion above must not pass because nothing ever revives."""
+        void = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
+        good = _correction(self.SUBJECT, "reinstated", ts="2026-09-06T02:00:00+00:00")
+        self.assertIn(self.SUBJECT, live_events([self.SUBJECT, void, good]))

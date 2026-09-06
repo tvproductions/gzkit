@@ -75,34 +75,70 @@ CAUSES: frozenset[str] = frozenset(
 SubjectKey = tuple[str, str, str]
 
 
-def _field(event: Any, key: str) -> str:
-    """Read a payload field across both serialization shapes."""
+def _field(event: Any, key: str) -> Any:
+    """Read a payload field across both serialization shapes, VALUE UNCHANGED.
+
+    This deliberately does not stringify. It used to return ``str(value)``, and
+    that single coercion decided three separate questions wrongly:
+
+    * ``attestor: None`` became ``"None"`` — non-empty, so an unattributed
+      correction passed :func:`is_well_formed` and voided its subject, while
+      both declared validators refuse a null attestor;
+    * ``7`` became ``"7"``, so a numeric ``subject_id`` matched the artifact
+      whose id is the *string* ``"7"`` and voided a row nothing had named;
+    * ``False`` and ``{}`` became ``"False"`` and ``"{}"``, non-empty by the
+      same accident.
+
+    The callers below therefore type-check what they read, which is what the
+    event's own declaration says: every one of these fields is ``str``.
+    """
     if isinstance(event, Mapping):
         if key in event:
-            return str(event.get(key, ""))
+            return event.get(key)
         extra = event.get("extra")
-        return str(extra.get(key, "")) if isinstance(extra, Mapping) else ""
+        return extra.get(key) if isinstance(extra, Mapping) else None
     value = getattr(event, key, None)
     if value is not None:
-        return str(value)
+        return value
     extra = getattr(event, "extra", None)
-    return str(extra.get(key, "")) if isinstance(extra, Mapping) else ""
+    return extra.get(key) if isinstance(extra, Mapping) else None
 
 
-def _envelope(event: Any, key: str) -> str:
+def _text(event: Any, key: str) -> str:
+    """Read a payload field that must be a string, or ``""`` when it is not.
+
+    A non-string value reads as ABSENT rather than as its repr: the declared
+    contract for every field this is used on is ``str``, so anything else is
+    malformed input, never content.
+    """
+    value = _field(event, key)
+    return value if isinstance(value, str) else ""
+
+
+def _envelope(event: Any, key: str) -> Any:
     """Read an envelope field (``event``, ``id``, ``ts``) from either shape."""
     if isinstance(event, Mapping):
-        return str(event.get(key, ""))
-    return str(getattr(event, key, ""))
+        return event.get(key, "")
+    return getattr(event, key, "")
 
 
 def subject_key(event: Any) -> SubjectKey:
-    """Return the identity of ``event`` itself — what a correction would name."""
+    """Return the identity of ``event`` itself — what a correction would name.
+
+    Values are returned as they are, never stringified, so identity comparison
+    is type-strict: an integer ``7`` and the string ``"7"`` are different rows.
+    """
     return (_envelope(event, "event"), _envelope(event, "id"), _envelope(event, "ts"))
 
 
 def corrected_subject(correction: Any) -> SubjectKey:
-    """Return the row identity a correction event names."""
+    """Return the row identity a correction event names, values unchanged.
+
+    Compared against :func:`subject_key` by equality, so a subject reference of
+    the wrong TYPE names nothing — which is the correct reading: the event
+    declares all three components ``str``, and :func:`is_well_formed` refuses a
+    correction whose reference is not.
+    """
     return (
         _field(correction, "subject_event"),
         _field(correction, "subject_id"),
@@ -135,18 +171,26 @@ def is_well_formed(correction: Any) -> bool:
     exists at all: a state change nobody signed is the thing being corrected,
     not a correction.
 
-    The subject triple must be complete, and it may not name another correction
-    — ``reinstated`` is the in-family reversal, so the netting never resolves
+    The subject triple must be complete and must be STRINGS — the event declares
+    all three ``str``, and a reference of another type names a row that does not
+    exist under this ledger's identity rule. It may not name another correction:
+    ``reinstated`` is the in-family reversal, so the netting never resolves
     itself recursively.
+
+    Type is checked, not just emptiness. Reading these fields through ``str()``
+    made ``None``, ``7``, ``False`` and ``{}`` all read as non-empty content, so
+    a correction both declared validators refuse still changed derived state.
     """
     subject = corrected_subject(correction)
-    if not all(subject) or subject[0] == CORRECTION_EVENT:
+    if not all(isinstance(part, str) and part.strip() for part in subject):
+        return False
+    if subject[0] == CORRECTION_EVENT:
         return False
     if _field(correction, "disposition") not in DISPOSITIONS:
         return False
     if _field(correction, "cause") not in CAUSES:
         return False
-    return bool(_field(correction, "attestor").strip() and _field(correction, "reason").strip())
+    return bool(_text(correction, "attestor").strip() and _text(correction, "reason").strip())
 
 
 def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
@@ -187,7 +231,7 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
         if not is_correction(event) or not is_well_formed(event):
             continue
         subject = corrected_subject(event)
-        disposition = _field(event, "disposition")
+        disposition = _text(event, "disposition")
         if disposition in {VOID, DISCHARGED}:
             state[subject] = disposition
         else:  # REINSTATED — the only remaining member of the closed vocabulary

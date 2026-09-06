@@ -509,8 +509,16 @@ def check_reconcile_receipt_gate(
 ) -> list[str]:
     """Check that a fresh, drift-free brief_reconciled receipt exists for Stage 1 entry.
 
-    Reads ``.gzkit/ledger.jsonl`` directly to find the most recent
+    Reads ``.gzkit/ledger.jsonl`` through
+    :func:`~gzkit.ledger.read_corrected_rows` — the TOLERANT reader, which skips
+    an undecodable line instead of raising, because an exception here blocks the
+    pipeline rather than reporting a finding — to find the most recent
     ``brief_reconciled`` event whose ``brief_id`` matches ``obpi_id``.
+
+    That reader applies corrections, which parsing the JSONL inline did not:
+    making ``Ledger.read_all()`` correction-aware reached every caller of
+    ``Ledger`` and neither of the two reconciliation readers, so a VOIDED receipt
+    still opened Stage 2 (GHI #611).
 
     Returns an empty list when the gate passes.  Returns a list with one
     blocking message when the gate fails (absent, stale, or drifted receipt).
@@ -519,6 +527,7 @@ def check_reconcile_receipt_gate(
     return — this is a Policy Breach per the CLI exit-code map.
     """
     from gzkit.governance.reconcile_freshness import is_receipt_fresh  # noqa: PLC0415
+    from gzkit.ledger import read_corrected_rows  # noqa: PLC0415
 
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.is_file():
@@ -528,13 +537,7 @@ def check_reconcile_receipt_gate(
     has_drift = False
     drifted_dims: list[str] = []
 
-    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
-        if not raw.strip():
-            continue
-        try:
-            event = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
+    for event in read_corrected_rows(ledger_path, stream="evidence"):
         if event.get("event") != "brief_reconciled":
             continue
         if event.get("brief_id") != obpi_id:

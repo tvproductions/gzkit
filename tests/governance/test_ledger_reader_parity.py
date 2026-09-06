@@ -82,6 +82,40 @@ def _typed_models() -> dict[str, Any]:
     return models
 
 
+#: JSON-schema type name for each element type a `list[...]` model field uses.
+#: Only the shapes this ledger actually declares — a new one fails the mapping
+#: rather than silently resolving to "unchecked", which is the state the
+#: assertions below exist to refuse.
+_ELEMENT_JSON_TYPE: dict[Any, str] = {str: "string", int: "integer", bool: "boolean"}
+
+
+def _declares_array(rule: dict[str, Any]) -> bool:
+    """Report whether a field rule permits an array, in either declaration form."""
+    declared = rule.get("type")
+    return declared == "array" or (isinstance(declared, list) and "array" in declared)
+
+
+def _model_item_type(annotation: Any) -> str | None:
+    """Return the JSON type name of a `list[...]` annotation's element, if any.
+
+    Unwraps one level of `X | None`, then reads the list's parameter. Returns
+    `None` for an unparameterized or non-list annotation, so a field this cannot
+    resolve is skipped rather than reported — an assertion is worth only what its
+    probe can see, and a false finding here would be as bad as a missed one.
+    """
+    for candidate in (annotation, *typing.get_args(annotation)):
+        if typing.get_origin(candidate) is not list:
+            continue
+        args = typing.get_args(candidate)
+        if not args:
+            return None
+        element = args[0]
+        if typing.get_origin(element) is dict:
+            return "object"
+        return _ELEMENT_JSON_TYPE.get(element)
+    return None
+
+
 def _ledger_verdict(row: dict[str, Any]) -> str:
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / "ledger.jsonl"
@@ -126,6 +160,69 @@ class LedgerDeclarationCoherence(unittest.TestCase):
         """A waiver that outlives its subject silently exempts a live model."""
         stale = sorted(name for name in _UNMODELLED_EVENTS if name in self.models)
         self.assertEqual(stale, [], "these events now HAVE typed models; drop them from the waiver")
+
+    def test_every_array_property_declares_its_item_type(self) -> None:
+        """An array field with no ``items`` is checked for nothing past `isinstance(list)`.
+
+        GHI #883 descended into ``items`` and fixed "9 fields across 5 event
+        types" — every array field that DECLARED items. The residual was the
+        fields that declare none: the validator confirms the outer value is a
+        list and stops, so ``[7]`` passes the schema and fails typed replay, the
+        same defect one layer out. Nine properties were in that state when this
+        assertion was written (``unaccounted``, ``drift``, ``routing``,
+        ``foundation_summary``, ``ghi_summary``, ``red_team_challenges_fired``,
+        ``inspection_scope``, ``test_names``, ``set_aside``) — the review named
+        four of them, and the other five were the same defect nobody had counted.
+
+        Asserted as a DECLARATION property rather than per-field verdict parity,
+        because a verdict test proves one field and this proves the class.
+        """
+        undeclared = []
+        for event, spec in sorted(self.schema.items()):
+            model = self.models.get(event)
+            if model is None:
+                continue
+            for field, rule in sorted((spec.get("properties") or {}).items()):
+                if not isinstance(rule, dict) or not _declares_array(rule):
+                    continue
+                info = model.model_fields.get(field)
+                if info is None or not _model_item_type(info.annotation):
+                    continue
+                if not isinstance(rule.get("items"), dict):
+                    undeclared.append(f"{event}.{field}")
+        self.assertEqual(
+            undeclared,
+            [],
+            "these array properties declare no `items`, so the schema accepts item "
+            "types typed replay refuses; declare `items` matching the model's element "
+            "type (GHI #883 class, second pass)",
+        )
+
+    def test_declared_item_types_match_the_models_element_type(self) -> None:
+        """Declaring `items` is only worth having while it agrees with the model.
+
+        A `{"type": "string"}` items rule under a `list[dict]` field would refuse
+        every valid row instead of admitting an invalid one — the same drift,
+        pointed the other way.
+        """
+        mismatched = []
+        for event, spec in sorted(self.schema.items()):
+            model = self.models.get(event)
+            if model is None:
+                continue
+            for field, rule in sorted((spec.get("properties") or {}).items()):
+                if not isinstance(rule, dict) or not _declares_array(rule):
+                    continue
+                info = model.model_fields.get(field)
+                items = rule.get("items")
+                if info is None or not isinstance(items, dict):
+                    continue
+                expected = _model_item_type(info.annotation)
+                if expected and items.get("type") != expected:
+                    mismatched.append(
+                        f"{event}.{field}: schema={items.get('type')!r} model={expected!r}"
+                    )
+        self.assertEqual(mismatched, [], "schema `items` disagrees with the model element type")
 
     def test_schema_and_model_agree_on_nullability(self) -> None:
         """An optional field must be nullable on both sides or on neither.
@@ -211,6 +308,101 @@ class LedgerReaderVerdictParity(unittest.TestCase):
 
     def test_non_list_where_an_array_is_declared(self) -> None:
         self._assert_agree(self._row(floor_moved_ids="not-a-list"), "rejects")
+
+
+class RepairedArrayFieldsAgreeAcrossTheMatrix(unittest.TestCase):
+    """Every field the `items` repair touched, across the full verdict matrix.
+
+    `LedgerReaderVerdictParity` above runs the matrix on `floor_moved_ids`, the
+    one field GHI #883 observed. That proved the mechanism and not the fields:
+    nine array properties declared no `items` at all, so each accepted `[7]` on
+    the schema side and failed typed replay. This class runs the same five
+    questions — valid items, a wrongly-typed item, an absent field, an explicit
+    null, and a null item — against the four the review named plus the
+    `list[dict]` shape, whose element type is different and could not be assumed
+    to behave like the `list[str]` ones.
+    """
+
+    #: (event, field, base row without the field, a valid element)
+    CASES: typing.ClassVar[tuple[tuple[str, str, dict[str, Any], Any], ...]] = (
+        (
+            "airlock_in",
+            "unaccounted",
+            {"event": "airlock_in", "id": "OBPI-X", "decision": "GO"},
+            "src/gzkit/seam.py",
+        ),
+        (
+            "airlock_out",
+            "drift",
+            {"event": "airlock_out", "id": "OBPI-X", "verdict": "clean"},
+            "src/gzkit/drifted.py",
+        ),
+        (
+            "airlock_out",
+            "routing",
+            {"event": "airlock_out", "id": "OBPI-X", "verdict": "clean"},
+            "GHI #611",
+        ),
+        (
+            "patch-release",
+            "foundation_summary",
+            {
+                "event": "patch-release",
+                "id": "v0.1.0",
+                "version": "0.1.0",
+                "previous_version": "0.0.9",
+                "ghi_summary": [],
+                "manifest_path": "data/manifest.json",
+            },
+            {"adr": "ADR-0.0.1"},
+        ),
+    )
+
+    BASE: typing.ClassVar[dict[str, Any]] = {
+        "schema": "gzkit.ledger.v1",
+        "ts": "2026-09-06T00:00:00+00:00",
+    }
+
+    def _assert_agree(self, row: dict[str, Any], expected: str, label: str) -> None:
+        ledger, typed = _ledger_verdict(row), _typed_verdict(row)
+        self.assertEqual(
+            (ledger, typed),
+            (expected, expected),
+            f"{label}: validate_ledger={ledger} parse_typed_event={typed}",
+        )
+
+    def test_the_matrix_agrees_on_every_repaired_array_field(self) -> None:
+        for event, field, base, element in self.CASES:
+            row = {**self.BASE, **base}
+            with self.subTest(field=f"{event}.{field}"):
+                self._assert_agree(row, "accepts", f"{event}.{field} absent")
+                self._assert_agree({**row, field: [element]}, "accepts", f"{event}.{field} valid")
+                self._assert_agree({**row, field: []}, "accepts", f"{event}.{field} empty")
+                self._assert_agree({**row, field: None}, "accepts", f"{event}.{field} null field")
+                self._assert_agree({**row, field: [None]}, "rejects", f"{event}.{field} null item")
+                self._assert_agree(
+                    {**row, field: ["wrong" if not isinstance(element, str) else 7]},
+                    "rejects",
+                    f"{event}.{field} wrongly-typed item",
+                )
+                self._assert_agree(
+                    {**row, field: "not-a-list"}, "rejects", f"{event}.{field} non-list"
+                )
+
+    def test_the_override_fields_agree_across_both_readers(self) -> None:
+        """The three fields the airlock override path writes (GHI #877, second pass)."""
+        row = {
+            **self.BASE,
+            "event": "airlock_in",
+            "id": "OBPI-X",
+            "decision": "GO",
+            "override_seam": "src/gzkit/unaccounted.py",
+            "override_attestor": "g0",
+            "override_revoked": False,
+        }
+        self._assert_agree(row, "accepts", "override payload")
+        self._assert_agree({**row, "override_revoked": "yes"}, "rejects", "override_revoked str")
+        self._assert_agree({**row, "override_seam": 7}, "rejects", "override_seam int")
 
 
 class LedgerValidatorEnforcesDeclaredTypes(unittest.TestCase):

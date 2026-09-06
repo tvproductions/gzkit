@@ -126,15 +126,18 @@ def enforce(root: Path) -> int:
         "  Why: a declared type with no producer is vocabulary that records "
         "nothing while reading as a modelled fact. Growth is allowed but must be "
         "visible — an undisclosed one is indistinguishable from a wired producer.\n"
-        "  Next step: wire the producer, or disclose it by adding the type to "
-        f"{_BASELINE_REL.as_posix()} with a reason. Set 'never_fired' to the CURRENT "
-        "set and 'baseline_count' in data/waiver_ratchet_registry.json to its length "
-        "-- run this script with --report --write to compute both. Drained types come "
-        "OUT in the same edit, which is usually why the count still falls. RAISE the "
-        "baseline only when the honest current set is genuinely larger, and say so in "
-        "the commit: ADR-0.0.73 BI #8 makes this a shrink-ratchet, 'a committed "
-        "baseline the list can only decrease against', and a raise to clear this gate "
-        "is the laundering it exists to refuse (GHI #611 review, 2026-09-06).",
+        "  Next step: WIRE THE PRODUCER, or retire the declaration. Those are the "
+        "two recoveries this gate has. ADR-0.0.73 BI #8 registers this surface as a "
+        "shrink-ratchet -- 'a committed baseline the list can only decrease against' "
+        "-- so raising 'baseline_count' is not a recovery step and is never an "
+        "agent's move to make: it is the laundering the ratchet exists to refuse. "
+        f"Draining a type that now fires updates {_BASELINE_REL.as_posix()} and "
+        "'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; "
+        "run this script with --report --write to compute the drained set, which "
+        "refuses to write when the never-fired set has grown. If a newly declared "
+        "type genuinely cannot be wired yet, that is an operator ruling on the "
+        "ratchet, not a line an agent edits to clear its own gate "
+        "(GHI #611 review, 2026-09-06).",
         file=sys.stderr,
     )
     return 3

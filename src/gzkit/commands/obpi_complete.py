@@ -59,6 +59,7 @@ from gzkit.ledger import (
     Ledger,
     LedgerEvent,
     parse_frontmatter_value,
+    read_corrected_rows,
     resolve_adr_lane,
 )
 
@@ -723,6 +724,13 @@ def _latest_reconcile_receipt(
 ) -> tuple[datetime | None, bool, list[str], str | None]:
     """Scan the ledger for the most recent ``brief_reconciled`` event for ``obpi_id``.
 
+    Reads through :func:`~gzkit.pipeline_runtime._corrected_rows`, the same
+    correction-applying raw reader the Stage-2 entry gate uses, so the two ends
+    of the pipeline agree about which receipts exist. Parsing the JSONL here
+    without it is how a voided receipt went on satisfying Stage-5 completion
+    after ``Ledger.read_all()`` became correction-aware (GHI #611): this reader
+    never touches ``Ledger``, so the default flip reached it not at all.
+
     Returns ``(latest_ts, has_drift, drifted_dims, receipt_id)``; ``latest_ts`` is
     ``None`` when no matching event exists.
     """
@@ -734,13 +742,7 @@ def _latest_reconcile_receipt(
     if not ledger_path.is_file():
         return latest_ts, has_drift, drifted_dims, receipt_id
 
-    for raw in ledger_path.read_text(encoding="utf-8").splitlines():
-        if not raw.strip():
-            continue
-        try:
-            event = json.loads(raw)
-        except json.JSONDecodeError:
-            continue
+    for event in read_corrected_rows(ledger_path, stream="evidence"):
         if event.get("event") != "brief_reconciled" or event.get("brief_id") != obpi_id:
             continue
         try:
